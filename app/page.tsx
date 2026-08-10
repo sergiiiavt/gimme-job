@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Section = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "news";
+type Section = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobFeedback = "RELEVANT" | "NOT_RELEVANT" | null;
 
@@ -126,6 +126,9 @@ function Icon({ name, size = 18 }: { name: string; size?: number }) {
     trends: <><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></>,
     agentic: <><circle cx="12" cy="12" r="3"/><path d="M19 12h3M2 12h3M12 2v3M12 19v3M17 7l2-2M5 19l2-2M17 17l2 2M5 5l2 2"/></>,
     llm: <><path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1 0 8v1a4 4 0 0 1-8 0v-1a4 4 0 0 1 0-8V6a4 4 0 0 1 4-4Z"/><path d="M8 8h8M8 14h8M12 5v14"/></>,
+    security: <><path d="M12 3 4.5 6v5.5c0 4.4 3 7.8 7.5 9.5 4.5-1.7 7.5-5.1 7.5-9.5V6Z"/><path d="m9 12 2 2 4-5"/></>,
+    devops: <><path d="M7 7h5V2M17 17h-5v5"/><path d="M12 7 8.5 3.5A5 5 0 1 0 8 12M12 17l3.5 3.5A5 5 0 1 0 16 12"/></>,
+    standards: <><path d="M6 3h9l3 3v15H6Z"/><path d="M14 3v4h4M9 11h6M9 15h6M9 19h4"/></>,
     news: <><path d="M4 4h16v16H4z"/><path d="M8 8h4v4H8zM15 8h2M15 11h2M8 15h9M8 18h9"/></>,
     search: <><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></>,
     sync: <><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18 9a7 7 0 0 0-12-3L4 8M6 15a7 7 0 0 0 12 3l2-2"/></>,
@@ -243,6 +246,9 @@ export default function Home() {
     { id: "trends", label: "Trends", icon: "trends", note: "Soon" },
     { id: "agentic", label: "Agentic lab", icon: "agentic", note: "Soon" },
     { id: "llm", label: "LLM lab", icon: "llm", note: "Soon" },
+    { id: "security", label: "Security lab", icon: "security", note: "Soon" },
+    { id: "devops", label: "DevOps lab", icon: "devops", note: "Soon" },
+    { id: "standards", label: "Standards", icon: "standards", note: "Soon" },
     { id: "news", label: "News", icon: "news", note: "Soon" },
   ];
 
@@ -344,6 +350,9 @@ function ComingSoon({ section }: { section: Exclude<Section, "jobs"> }) {
     trends: ["Market trends", "Skills, tools, role demand, salary signals, and patterns extracted from collected vacancies and resume versions."],
     agentic: ["Agentic lab", "Notes, architectures, experiments, and small portfolio projects built around autonomous agents."],
     llm: ["LLM lab", "Knowledge, evaluation patterns, testing techniques, prompts, and pet projects for LLM-based products."],
+    security: ["Security lab", "Application security notes, practical testing checklists, threat modelling, OWASP topics, and safe portfolio experiments."],
+    devops: ["DevOps lab", "CI/CD, containers, observability, cloud infrastructure, reliability practices, and hands-on automation projects."],
+    standards: ["Standards", "A structured reference for ISO, IEC, IEEE, testing, quality, security, medical-software, and compliance standards."],
     news: ["News", "A focused feed of useful QA, agentic engineering, LLM, tooling, and job-market updates without general tech noise."],
   } as const;
   const [title, copy] = content[section];

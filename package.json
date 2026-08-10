@@ -16,6 +16,7 @@
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "check:agent": "tsc -p tsconfig.agent.json",
+    "check": "npm run lint && npm run check:agent",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
     "agent:init": "node --import tsx agent/src/cli.ts init",
@@ -57,7 +58,7 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "displayName": "JobPilot — Local Job Search Agent",
+  "displayName": "GimmeJob — Personal Career Workspace",
   "overrides": {
     "@google-cloud/local-auth": {
       "google-auth-library": "10.5.0"
