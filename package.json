@@ -60,7 +60,7 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "displayName": "GimmeJob — Personal Career Workspace",
+  "displayName": "GimmeJob",
   "overrides": {
     "@google-cloud/local-auth": {
       "google-auth-library": "10.5.0"

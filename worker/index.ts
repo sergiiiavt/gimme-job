@@ -16,6 +16,8 @@ interface Env {
 }
 
 const BASIC_AUTH_USERNAME = "gimmejob";
+const PRIVATE_SESSION_COOKIE = "gimmejob_session";
+const PRIVATE_SESSION_SECONDS = 60 * 60 * 24 * 14;
 
 function isTrustedDevelopmentOrSitesHost(hostname: string): boolean {
   return (
@@ -55,35 +57,170 @@ function readBasicCredentials(request: Request): { username: string; password: s
   }
 }
 
-function requireExternalPassword(request: Request, env: Env): Response | null {
-  const hostname = new URL(request.url).hostname.toLowerCase();
-  if (isTrustedDevelopmentOrSitesHost(hostname)) return null;
-
-  if (!env.APP_PASSWORD) {
-    return new Response("GimmeJob is not configured for external access.", {
-      status: 503,
-      headers: {
-        "cache-control": "no-store",
-        "content-type": "text/plain; charset=utf-8",
-      },
-    });
-  }
-
+function hasValidBasicCredentials(request: Request, password: string): boolean {
   const credentials = readBasicCredentials(request);
-  if (
+  return Boolean(
     credentials &&
     constantTimeEqual(credentials.username, BASIC_AUTH_USERNAME) &&
-    constantTimeEqual(credentials.password, env.APP_PASSWORD)
-  ) {
-    return null;
+    constantTimeEqual(credentials.password, password)
+  );
+}
+
+function readCookie(request: Request, name: string): string | null {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return null;
+
+  for (const part of cookieHeader.split(";")) {
+    const [cookieName, ...valueParts] = part.trim().split("=");
+    if (cookieName === name) return valueParts.join("=");
   }
 
-  return new Response("Authentication required.", {
-    status: 401,
+  return null;
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+async function sessionSignature(expiresAt: number, password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(String(expiresAt)));
+  return toBase64Url(new Uint8Array(signature));
+}
+
+async function hasValidSession(request: Request, password: string): Promise<boolean> {
+  const token = readCookie(request, PRIVATE_SESSION_COOKIE);
+  if (!token) return false;
+
+  const separator = token.indexOf(".");
+  if (separator < 1) return false;
+
+  const expiresAt = Number(token.slice(0, separator));
+  const signature = token.slice(separator + 1);
+  if (!Number.isSafeInteger(expiresAt) || expiresAt <= Math.floor(Date.now() / 1000)) return false;
+
+  const expected = await sessionSignature(expiresAt, password);
+  return constantTimeEqual(signature, expected);
+}
+
+async function hasPrivateAccess(request: Request, env: Env): Promise<boolean> {
+  const hostname = new URL(request.url).hostname.toLowerCase();
+  if (isTrustedDevelopmentOrSitesHost(hostname)) return true;
+  if (!env.APP_PASSWORD) return false;
+  if (hasValidBasicCredentials(request, env.APP_PASSWORD)) return true;
+  return hasValidSession(request, env.APP_PASSWORD);
+}
+
+function privateCookie(value: string, maxAge: number): string {
+  return `${PRIVATE_SESSION_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
+}
+
+function loginPage(options: { error?: boolean; configured?: boolean; status?: number } = {}): Response {
+  const configured = options.configured ?? true;
+  const message = configured
+    ? options.error ? '<p class="error">Incorrect password.</p>' : ""
+    : '<p class="error">Private access is not configured.</p>';
+  const disabled = configured ? "" : " disabled";
+  const body = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Private workspace — GimmeJob</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { align-items: center; background: #f5f6f3; color: #1e2925; display: flex; justify-content: center; margin: 0; min-height: 100vh; padding: 24px; }
+    main { background: #fff; border: 1px solid #dfe4df; border-radius: 12px; box-shadow: 0 18px 45px rgba(28,39,35,.08); max-width: 420px; padding: 30px; width: 100%; }
+    a { color: #43554b; font-size: 13px; text-decoration: none; }
+    h1 { font-size: 28px; letter-spacing: -.04em; margin: 26px 0 8px; }
+    p { color: #6d7771; font-size: 14px; line-height: 1.55; margin: 0 0 22px; }
+    label { display: block; font-size: 12px; font-weight: 750; margin-bottom: 7px; }
+    input { border: 1px solid #cfd6d0; border-radius: 7px; font: inherit; height: 44px; outline: none; padding: 0 12px; width: 100%; }
+    input:focus { border-color: #557a39; box-shadow: 0 0 0 3px rgba(85,122,57,.12); }
+    button { background: #1e2925; border: 0; border-radius: 7px; color: #fff; cursor: pointer; font: inherit; font-weight: 750; height: 44px; margin-top: 12px; width: 100%; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    .error { background: #fff1ef; border: 1px solid #f1cfca; border-radius: 7px; color: #9a3f35; margin: 0 0 16px; padding: 10px 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/">← Public site</a>
+    <h1>Private workspace</h1>
+    <p>Enter the password to manage vacancy statuses and feedback.</p>
+    ${message}
+    <form method="post" action="/workspace/login">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" autofocus required${disabled}>
+      <button type="submit"${disabled}>Sign in</button>
+    </form>
+  </main>
+</body>
+</html>`;
+
+  return new Response(body, {
+    status: options.status ?? 200,
     headers: {
       "cache-control": "no-store",
-      "content-type": "text/plain; charset=utf-8",
-      "www-authenticate": 'Basic realm="GimmeJob", charset="UTF-8"',
+      "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+      "content-type": "text/html; charset=utf-8",
+      "referrer-policy": "no-referrer",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-robots-tag": "noindex, nofollow, noarchive",
+    },
+  });
+}
+
+async function handleLogin(request: Request, env: Env): Promise<Response> {
+  if (request.method === "GET" || request.method === "HEAD") {
+    if (await hasPrivateAccess(request, env)) {
+      return new Response(null, { status: 303, headers: { location: "/workspace" } });
+    }
+    return loginPage({ configured: Boolean(env.APP_PASSWORD), status: env.APP_PASSWORD ? 200 : 503 });
+  }
+
+  if (request.method !== "POST") {
+    return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD, POST" } });
+  }
+  if (!env.APP_PASSWORD) return loginPage({ configured: false, status: 503 });
+
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > 4096) {
+    return new Response("Request is too large.", { status: 413 });
+  }
+
+  let submittedPassword = "";
+  try {
+    const form = await request.formData();
+    const value = form.get("password");
+    submittedPassword = typeof value === "string" ? value : "";
+  } catch {
+    return loginPage({ error: true, status: 400 });
+  }
+
+  if (!constantTimeEqual(submittedPassword, env.APP_PASSWORD)) {
+    return loginPage({ error: true, status: 401 });
+  }
+
+  const expiresAt = Math.floor(Date.now() / 1000) + PRIVATE_SESSION_SECONDS;
+  const signature = await sessionSignature(expiresAt, env.APP_PASSWORD);
+  return new Response(null, {
+    status: 303,
+    headers: {
+      location: "/workspace",
+      "set-cookie": privateCookie(`${expiresAt}.${signature}`, PRIVATE_SESSION_SECONDS),
     },
   });
 }
@@ -137,10 +274,26 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === "/workspace/login") return handleLogin(request, env);
+    if (url.pathname === "/workspace/logout") {
+      return new Response(null, {
+        status: 303,
+        headers: {
+          location: "/",
+          "set-cookie": privateCookie("", 0),
+        },
+      });
+    }
+
     const privateRequest = isPrivateRequest(request, url);
-    if (privateRequest) {
-      const accessResponse = requireExternalPassword(request, env);
-      if (accessResponse) return accessResponse;
+    if (privateRequest && !(await hasPrivateAccess(request, env))) {
+      if (url.pathname === "/workspace" || url.pathname.startsWith("/workspace/")) {
+        return new Response(null, { status: 303, headers: { location: "/workspace/login" } });
+      }
+      return Response.json(
+        { error: env.APP_PASSWORD ? "Authentication required." : "Private access is not configured." },
+        { status: env.APP_PASSWORD ? 401 : 503, headers: { "cache-control": "no-store" } },
+      );
     }
 
     if (url.pathname === "/robots.txt") return robotsResponse(url);

@@ -5,32 +5,17 @@ import Link from "next/link";
 
 export type SiteSection = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
 
-export const navigationGroups: Array<{ label: string; items: Array<{ id: SiteSection; label: string; marker: string }> }> = [
-  {
-    label: "Career",
-    items: [
-      { id: "jobs", label: "Jobs", marker: "J" },
-      { id: "interview", label: "Interview questions", marker: "Q" },
-      { id: "certifications", label: "Certifications", marker: "C" },
-      { id: "trends", label: "Market trends", marker: "T" },
-    ],
-  },
-  {
-    label: "Engineering labs",
-    items: [
-      { id: "agentic", label: "Agentic lab", marker: "A" },
-      { id: "llm", label: "LLM lab", marker: "L" },
-      { id: "security", label: "Security lab", marker: "S" },
-      { id: "devops", label: "DevOps lab", marker: "D" },
-    ],
-  },
-  {
-    label: "Reference",
-    items: [
-      { id: "standards", label: "Standards", marker: "I" },
-      { id: "news", label: "News", marker: "N" },
-    ],
-  },
+export const navigationItems: Array<{ id: SiteSection; label: string }> = [
+  { id: "jobs", label: "Jobs" },
+  { id: "interview", label: "Interview questions" },
+  { id: "certifications", label: "Certifications" },
+  { id: "trends", label: "Trends" },
+  { id: "agentic", label: "Agentic" },
+  { id: "llm", label: "LLM" },
+  { id: "security", label: "Security" },
+  { id: "devops", label: "DevOps" },
+  { id: "standards", label: "Standards" },
+  { id: "news", label: "News" },
 ];
 
 interface SidebarProps {
@@ -44,38 +29,31 @@ interface SidebarProps {
 export function SiteSidebar({ activeSection, mobileOpen, mode, onSelect, online }: SidebarProps) {
   return (
     <aside className={mobileOpen ? "kb-sidebar open" : "kb-sidebar"}>
-      <div className="kb-brand"><span>GJ</span><div><strong>GimmeJob</strong><small>Career workspace</small></div></div>
-      <nav aria-label="GimmeJob sections">
-        {navigationGroups.map((group) => (
-          <div className="kb-nav-group" key={group.label}>
-            <h2>{group.label}</h2>
-            {group.items.map((item) => mode === "public" ? (
-              <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
-                <i>{item.marker}</i><span>{item.label}</span>
-              </button>
-            ) : (
-              <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/#${item.id}`} key={item.id}>
-                <i>{item.marker}</i><span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
+      <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
+
+      <nav className="kb-nav-list" aria-label="GimmeJob sections">
+        {navigationItems.map((item) => mode === "public" ? (
+          <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
+            {item.label}
+          </button>
+        ) : (
+          <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/#${item.id}`} key={item.id}>
+            {item.label}
+          </Link>
         ))}
       </nav>
 
-      {mode === "public" ? (
-        <div className="kb-private">
-          <span>PRIVATE WORKSPACE</span>
-          <p>Application statuses, feedback, resume versions, drafts, and agent actions.</p>
-          <Link href="/workspace"><i>↳</i> Manage jobs</Link>
-        </div>
-      ) : (
-        <div className="kb-private kb-private-current">
-          <span>PRIVATE WORKSPACE</span>
-          <div className="kb-storage-state"><i className={online ? "online" : ""}/><strong>{online ? "Database connected" : online === null ? "Connecting" : "Demo mode"}</strong></div>
-          <p>{online ? "Statuses and feedback are saved privately." : "Changes are not being stored."}</p>
-          <Link href="/"><i>←</i> Public view</Link>
-        </div>
-      )}
+      <div className="kb-sidebar-footer">
+        {mode === "public" ? (
+          <Link href="/workspace">Private workspace</Link>
+        ) : (
+          <>
+            <span className="kb-storage-state"><i className={online ? "online" : ""}/>{online ? "Database connected" : online === null ? "Connecting" : "Database unavailable"}</span>
+            <Link href="/">Public site</Link>
+            <Link href="/workspace/logout">Sign out</Link>
+          </>
+        )}
+      </div>
     </aside>
   );
 }
@@ -91,8 +69,8 @@ export function SiteTopbar({ children, mode, onMenu, title }: TopbarProps) {
   return (
     <header className="kb-topbar">
       <button className="kb-menu" onClick={onMenu} aria-label="Toggle navigation">☰</button>
-      <div><span>{mode === "public" ? "Knowledge base" : "Private workspace"}</span><strong>{title}</strong></div>
-      <div className={`kb-view-state ${mode}`}><i/>{mode === "public" ? "Public view" : "Private view"}</div>
+      <strong className="kb-topbar-title">{title}</strong>
+      <div className={`kb-view-state ${mode}`}><i/>{mode === "public" ? "Public" : "Private"}</div>
       <div className="kb-top-actions">{children}</div>
     </header>
   );

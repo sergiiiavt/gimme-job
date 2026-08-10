@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GimmeJob — Career knowledge base",
-  description: "An open knowledge base for jobs, interview preparation, market trends, QA, AI agents, security, DevOps, and software standards.",
+  title: "GimmeJob",
+  description: "Jobs, interview questions, QA notes, AI agents, security, DevOps, and software standards.",
   applicationName: "GimmeJob",
   keywords: ["jobs", "QA jobs", "career", "interview questions", "AI agents", "LLM testing", "DevOps", "security"],
   robots: {
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "GimmeJob — Career knowledge base",
-    description: "Jobs, interview preparation, engineering notes, labs, and software standards in one open knowledge base.",
+    title: "GimmeJob",
+    description: "Jobs, interview questions, engineering notes, and software standards.",
     siteName: "GimmeJob",
   },
   other: {

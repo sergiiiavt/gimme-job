@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { navigationGroups, SiteSidebar, SiteTopbar, type SiteSection } from "./site-navigation";
+import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection } from "./site-navigation";
 
 type PublicSection = SiteSection;
 
@@ -118,7 +118,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
   },
   news: {
     title: "News",
-    description: "A focused reading list for QA, AI agents, LLM engineering, security, and delivery tooling.",
+    description: "Links and notes about QA, AI agents, LLM engineering, security, and delivery tooling.",
     items: [
       { title: "QA and test automation", copy: "Framework releases, quality-engineering practices, and useful case studies.", tags: ["QA"] },
       { title: "Agents and LLMs", copy: "Agent platforms, model releases, evaluation research, and applied engineering.", tags: ["AI"] },
@@ -147,7 +147,7 @@ function shortText(value: string) {
 function currentSectionFromHash(): PublicSection {
   if (typeof window === "undefined") return "jobs";
   const candidate = window.location.hash.replace("#", "") as PublicSection;
-  return navigationGroups.some((group) => group.items.some((item) => item.id === candidate)) ? candidate : "jobs";
+  return navigationItems.some((item) => item.id === candidate) ? candidate : "jobs";
 }
 
 export default function PublicSite() {
@@ -201,7 +201,7 @@ export default function PublicSite() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeLabel = navigationGroups.flatMap((group) => group.items).find((item) => item.id === section)?.label ?? "Jobs";
+  const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Jobs";
 
   return (
     <main className="kb-shell">
@@ -215,7 +215,7 @@ export default function PublicSite() {
         {section === "jobs" ? (
           <div className="kb-content">
             <header className="kb-page-head">
-              <div><span>CAREER / JOBS</span><h1>Jobs</h1><p>Collected vacancies, ordered from newest to oldest. This page is public and read-only.</p></div>
+              <div><span>JOBS</span><h1>Jobs</h1><p>Vacancies from connected sources, ordered from newest to oldest.</p></div>
               <div className="kb-page-stats"><div><strong>{jobs.length}</strong><span>Vacancies</span></div><div><strong>Newest</strong><span>First</span></div><div><strong>Read-only</strong><span>Public view</span></div></div>
             </header>
 
@@ -259,12 +259,12 @@ function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs">
   return (
     <div className="kb-content">
       <header className="kb-page-head kb-article-head">
-        <div><span>KNOWLEDGE BASE / {content.title.toUpperCase()}</span><h1>{content.title}</h1><p>{content.description}</p></div>
+        <div><span>{content.title.toUpperCase()}</span><h1>{content.title}</h1><p>{content.description}</p></div>
         <div className="kb-outline-badge"><i/>Public section</div>
       </header>
       <section className="kb-article-intro">
         <div><strong>Section index</strong><span>{content.items.length} topics</span></div>
-        <p>This is a working outline. Notes, links, examples, and projects will be added directly inside these topics.</p>
+        <p>Questions, answers, notes, links, and examples will be organized under these topics.</p>
       </section>
       <div className="kb-topic-grid">
         {content.items.map((item, index) => (

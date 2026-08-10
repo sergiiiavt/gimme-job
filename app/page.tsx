@@ -257,7 +257,7 @@ export function WorkspaceApp() {
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div><span className="eyebrow">JOB PIPELINE</span><h1>Opportunities, without the noise.</h1><p>Newest jobs first. Track every decision and teach the future agent what is relevant.</p></div>
+            <div><span className="eyebrow">PRIVATE JOBS</span><h1>Jobs</h1><p>Update the status and relevance feedback for each vacancy.</p></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
           </section>
 

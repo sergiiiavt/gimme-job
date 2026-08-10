@@ -1,6 +1,6 @@
 # GimmeJob
 
-Public career-engineering hub with a private workspace for collecting vacancies, tracking applications, analysing the market, and building professional knowledge bases.
+Public job and engineering knowledge base with a private vacancy-management workspace.
 
 ## Current product state
 
@@ -16,7 +16,7 @@ The **Jobs** module is functional:
 - search and status filtering;
 - source, original link, dates, location, salary, and description;
 - pipeline statuses from `NEW` to `OFFER`, `REJECTED`, or `ARCHIVED`;
-- separate `RELEVANT` / `NOT_RELEVANT` feedback for future agent learning;
+- separate `RELEVANT` / `NOT_RELEVANT` feedback for relevance tracking;
 - RSS, Greenhouse, and Lever source sync;
 - deterministic matching without a paid AI API.
 
@@ -83,7 +83,7 @@ After the three repository secrets below are configured, every successful push t
 3. applies all migrations from `drizzle/`;
 4. deploys the Worker and static assets;
 5. keeps `/` and `/api/public/jobs` public;
-6. protects `/workspace` and all private API/write operations with HTTP Basic authentication.
+6. protects `/workspace` and all private API/write operations with a signed password session.
 
 Required GitHub repository secrets:
 
@@ -91,7 +91,7 @@ Required GitHub repository secrets:
 - `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit, D1 Edit, and Cloudflare Images Edit permissions;
 - `APP_PASSWORD`, at least 16 characters.
 
-At the `/workspace` login prompt, use `gimmejob` as the username and the `APP_PASSWORD` secret as the password. The public homepage does not ask for a password. Secrets are never written into source or the build artifact.
+Open `/workspace` and enter the `APP_PASSWORD` value on the login page. The public homepage does not ask for a password. Basic authentication remains available for deployment scripts. Secrets are never written into source or the build artifact.
 
 The Cloudflare deployment creates its own D1 database. Data in the existing private Sites database is not copied automatically.
 
