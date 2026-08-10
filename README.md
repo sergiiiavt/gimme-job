@@ -1,8 +1,13 @@
 # GimmeJob
 
-Private career workspace for collecting vacancies, tracking applications, analysing the market, and building professional knowledge bases.
+Public career-engineering hub with a private workspace for collecting vacancies, tracking applications, analysing the market, and building professional knowledge bases.
 
 ## Current product state
+
+The product now has two surfaces:
+
+- `/` — public, search-engine-indexable site with a sanitized vacancy feed and the knowledge/lab roadmap;
+- `/workspace` — private job tracking and automation workspace protected on the external Cloudflare deployment.
 
 The **Jobs** module is functional:
 
@@ -35,9 +40,9 @@ The navigation also contains planned knowledge modules:
 - `agent/` — optional local collection and analysis agent;
 - `.github/workflows/ci.yml` — GitHub validation and Cloudflare deployment pipeline;
 - `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile;
-- `.openai/hosting.json` — private Sites deployment and D1 binding.
+- `.openai/hosting.json` — temporary compatibility configuration for the existing Sites checkpoint and its separate D1 binding.
 
-Production currently runs as a private Sites deployment. Its database and HTTPS address are managed by Sites. The repository also contains an independent Cloudflare Workers deployment path for true GitHub-driven CI/CD.
+The canonical deployment path is GitHub Actions → Cloudflare Workers + D1. The older Sites deployment remains as a separate checkpoint until the external Cloudflare site and its address are confirmed, then its compatibility configuration can be removed in a dedicated cleanup.
 
 ## VS Code setup
 
@@ -77,7 +82,8 @@ After the three repository secrets below are configured, every successful push t
 2. finds or creates the `gimmejob-db` D1 database;
 3. applies all migrations from `drizzle/`;
 4. deploys the Worker and static assets;
-5. protects the public Worker address with HTTP Basic authentication.
+5. keeps `/` and `/api/public/jobs` public;
+6. protects `/workspace` and all private API/write operations with HTTP Basic authentication.
 
 Required GitHub repository secrets:
 
@@ -85,7 +91,7 @@ Required GitHub repository secrets:
 - `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit, D1 Edit, and Cloudflare Images Edit permissions;
 - `APP_PASSWORD`, at least 16 characters.
 
-At the external Worker login prompt, use `gimmejob` as the username and the `APP_PASSWORD` secret as the password. Secrets are never written into source or the build artifact.
+At the `/workspace` login prompt, use `gimmejob` as the username and the `APP_PASSWORD` secret as the password. The public homepage does not ask for a password. Secrets are never written into source or the build artifact.
 
 The Cloudflare deployment creates its own D1 database. Data in the existing private Sites database is not copied automatically.
 
@@ -103,21 +109,25 @@ Edit `db/schema.ts`, then generate and inspect a migration:
 npm run db:generate
 ```
 
-Never commit `.env`, OAuth credentials, tokens, or files from `data/`.
+Even a new database needs the initial migration: it creates the first set of tables. Every later schema change gets a new ordered migration so local, test, and production databases can be reproduced safely. Never commit `.env`, OAuth credentials, tokens, or files from `data/`.
 
 ## Deployment models
 
-Private Sites flow:
+Temporary Sites checkpoint flow:
 
 1. validate the application;
 2. build a Cloudflare-compatible worker artifact;
 3. apply D1 migrations;
 4. publish an immutable private Sites version.
 
-External Cloudflare flow:
+Canonical Cloudflare flow:
 
 1. push to `main`;
 2. GitHub Actions validates and builds;
-3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates its private access password.
+3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates the private-workspace password.
+
+## Public address
+
+The free address follows `<worker>.<account-subdomain>.workers.dev`. The account subdomain can be renamed in **Cloudflare Dashboard → Workers & Pages → Change next to Your subdomain**; that change affects every Worker in the account. An owned domain can instead be attached from the Worker's **Settings → Domains & Routes → Add Custom Domain** after the domain is active in Cloudflare.
 
 The Cloudflare Free plan is enough for an early personal prototype within its usage limits. Keep all production credentials in GitHub and Cloudflare secret stores, never in source control.

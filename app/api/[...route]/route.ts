@@ -4,6 +4,7 @@ import {
   analyzeJobs,
   dashboard,
   jsonError,
+  publicJobs,
   readPayload,
   saveSetting,
   settingsView,
@@ -23,6 +24,7 @@ export async function GET(_request: Request, context: RouteContext) {
   try {
     const route = await parts(context);
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
+    if (route[0] === "public" && route[1] === "jobs") return Response.json(await publicJobs());
     if (route[0] === "dashboard") return Response.json(await dashboard());
     if (route[0] === "settings") return Response.json(await settingsView());
     return Response.json({ error: "Route not found." }, { status: 404 });

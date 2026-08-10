@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import PublicSite from "./public-site";
 
 type Section = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
@@ -165,7 +166,7 @@ function statusLabel(status: JobStatus) {
   return STATUS_OPTIONS.find((item) => item.value === status)?.label ?? status;
 }
 
-export default function Home() {
+export function WorkspaceApp() {
   const [section, setSection] = useState<Section>("jobs");
   const [jobs, setJobs] = useState<Job[]>(DEMO_JOBS);
   const [online, setOnline] = useState<boolean | null>(null);
@@ -308,6 +309,10 @@ export default function Home() {
       {notice && <div className="toast">{notice}</div>}
     </main>
   );
+}
+
+export default function Home() {
+  return <PublicSite/>;
 }
 
 function Stat({ value, label }: { value: number; label: string }) {

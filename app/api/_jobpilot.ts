@@ -120,6 +120,46 @@ function mapJob(row: Row) {
   };
 }
 
+function publicSource(source: string) {
+  const normalized = source.toLowerCase();
+  if (normalized.includes("linkedin")) return "LinkedIn";
+  if (normalized.includes("dou")) return "DOU";
+  if (normalized.includes("djinni")) return "Djinni";
+  if (normalized.includes("workua") || normalized.includes("work.ua")) return "Work.ua";
+  if (normalized.includes("greenhouse")) return "Greenhouse";
+  if (normalized.includes("lever")) return "Lever";
+  if (normalized.includes("ashby")) return "Ashby";
+  if (normalized.startsWith("rss:")) return "RSS job board";
+  return "Job board";
+}
+
+export async function publicJobs() {
+  const result = await (await db()).prepare(`SELECT
+    id, source, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, discovered_at
+    FROM jobs
+    ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+    LIMIT 200`).all<Row>();
+
+  return {
+    jobs: result.results.map((row) => ({
+      id: String(row.id),
+      source: publicSource(String(row.source)),
+      title: String(row.title),
+      company: String(row.company),
+      location: String(row.location),
+      remote: Number(row.remote) === 1,
+      url: String(row.url),
+      applyUrl: String(row.apply_url),
+      description: String(row.description),
+      salaryText: row.salary_text ? String(row.salary_text) : null,
+      postedAt: row.posted_at ? String(row.posted_at) : null,
+      discoveredAt: String(row.discovered_at),
+    })),
+    generatedAt: now(),
+  };
+}
+
 function mapDraft(row: Row) {
   return {
     id: String(row.id), jobId: String(row.job_id), recipient: row.recipient ? String(row.recipient) : null,

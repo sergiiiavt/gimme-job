@@ -31,3 +31,34 @@ test("renders development preview metadata", async () => {
   );
   assert.match(await response.text(), developmentPreviewMeta);
 });
+
+test("keeps the public site open and protects the private workspace", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("access-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const env = {
+    APP_PASSWORD: "0123456789abcdef",
+    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+  };
+  const context = { waitUntil() {}, passThroughOnException() {} };
+
+  const publicResponse = await worker.fetch(new Request("https://gimmejob.example/"), env, context);
+  assert.equal(publicResponse.status, 200);
+
+  const privateResponse = await worker.fetch(new Request("https://gimmejob.example/workspace"), env, context);
+  assert.equal(privateResponse.status, 401);
+  assert.match(privateResponse.headers.get("www-authenticate") ?? "", /^Basic\b/);
+
+  const authorization = `Basic ${Buffer.from("gimmejob:0123456789abcdef").toString("base64")}`;
+  const authorizedResponse = await worker.fetch(
+    new Request("https://gimmejob.example/workspace", { headers: { authorization } }),
+    env,
+    context,
+  );
+  assert.equal(authorizedResponse.status, 200);
+  assert.equal(authorizedResponse.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+
+  const robotsResponse = await worker.fetch(new Request("https://gimmejob.example/robots.txt"), env, context);
+  assert.equal(robotsResponse.status, 200);
+  assert.match(await robotsResponse.text(), /Disallow: \/workspace/);
+});
