@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+type PublicSection = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
+
 interface PublicJob {
   id: string;
   source: string;
@@ -17,17 +19,140 @@ interface PublicJob {
   discoveredAt: string;
 }
 
-const modules = [
-  { id: "interview", title: "Interview questions", tag: "Knowledge", copy: "Structured notes for QA, automation, APIs, leadership, system design, and behavioural interviews." },
-  { id: "certifications", title: "Certifications", tag: "Roadmap", copy: "Practical certification paths across quality, cloud, security, AI, and engineering." },
-  { id: "trends", title: "Market trends", tag: "Analysis", copy: "Role demand, recurring skills, tooling signals, salary visibility, and vacancy patterns." },
-  { id: "agentic", title: "Agentic lab", tag: "Projects", copy: "Architectures, experiments, and portfolio projects for safe, approval-based agents." },
-  { id: "llm", title: "LLM lab", tag: "Projects", copy: "Evaluation patterns, testing techniques, prompt experiments, and LLM product notes." },
-  { id: "security", title: "Security lab", tag: "Practice", copy: "Application-security checklists, threat modelling, OWASP topics, and safe labs." },
-  { id: "devops", title: "DevOps lab", tag: "Practice", copy: "CI/CD, containers, observability, infrastructure, and reliability projects." },
-  { id: "standards", title: "Standards", tag: "Reference", copy: "ISO, IEC, IEEE, testing, quality, security, and compliance references." },
-  { id: "news", title: "News", tag: "Digest", copy: "A focused feed for QA, agents, LLM engineering, tooling, and the job market." },
-] as const;
+const navigation: Array<{ label: string; items: Array<{ id: PublicSection; label: string; marker: string }> }> = [
+  {
+    label: "Career",
+    items: [
+      { id: "jobs", label: "Jobs", marker: "J" },
+      { id: "interview", label: "Interview questions", marker: "Q" },
+      { id: "certifications", label: "Certifications", marker: "C" },
+      { id: "trends", label: "Market trends", marker: "T" },
+    ],
+  },
+  {
+    label: "Engineering labs",
+    items: [
+      { id: "agentic", label: "Agentic lab", marker: "A" },
+      { id: "llm", label: "LLM lab", marker: "L" },
+      { id: "security", label: "Security lab", marker: "S" },
+      { id: "devops", label: "DevOps lab", marker: "D" },
+    ],
+  },
+  {
+    label: "Reference",
+    items: [
+      { id: "standards", label: "Standards", marker: "I" },
+      { id: "news", label: "News", marker: "N" },
+    ],
+  },
+];
+
+const knowledge: Record<Exclude<PublicSection, "jobs">, {
+  title: string;
+  description: string;
+  items: Array<{ title: string; copy: string; tags: string[] }>;
+}> = {
+  interview: {
+    title: "Interview questions",
+    description: "Structured preparation notes for technical, leadership, and behavioural interviews.",
+    items: [
+      { title: "QA leadership", copy: "Team coordination, mentoring, quality ownership, conflict handling, and stakeholder communication.", tags: ["Lead", "People"] },
+      { title: "Test strategy", copy: "Risk-based testing, coverage, release criteria, metrics, and practical quality planning.", tags: ["Strategy", "Risk"] },
+      { title: "Automation", copy: "Framework design, Playwright, Selenium, Pytest, maintainability, and CI execution.", tags: ["TypeScript", "Python"] },
+      { title: "API and databases", copy: "HTTP, contracts, authentication, integration testing, SQL, and data validation.", tags: ["API", "SQL"] },
+      { title: "System design", copy: "Testability, distributed systems, queues, caching, observability, and failure modes.", tags: ["Architecture"] },
+      { title: "Behavioural questions", copy: "Project examples, difficult decisions, failures, improvements, and measurable outcomes.", tags: ["STAR", "Communication"] },
+    ],
+  },
+  certifications: {
+    title: "Certifications",
+    description: "A practical map of certifications worth evaluating for QA leadership, cloud, security, and AI work.",
+    items: [
+      { title: "ISTQB", copy: "Testing foundations, advanced test management, automation, and specialist tracks.", tags: ["QA"] },
+      { title: "Cloud", copy: "Azure and AWS fundamentals before role-specific engineering certifications.", tags: ["Azure", "AWS"] },
+      { title: "Security", copy: "Application security, cloud security, and security-testing foundations.", tags: ["Security"] },
+      { title: "AI engineering", copy: "Model, data, evaluation, and responsible-AI certification paths.", tags: ["AI", "LLM"] },
+    ],
+  },
+  trends: {
+    title: "Market trends",
+    description: "Patterns collected from vacancies, requirements, tools, and role descriptions.",
+    items: [
+      { title: "Role demand", copy: "Track recurring QA Lead, Test Automation Lead, Senior QA, and Quality Engineering roles.", tags: ["Roles"] },
+      { title: "Skills and tools", copy: "Compare automation stacks, cloud platforms, AI expectations, and leadership requirements.", tags: ["Skills"] },
+      { title: "Salary signals", copy: "Measure salary disclosure, location differences, and seniority signals when data is available.", tags: ["Salary"] },
+      { title: "Resume signals", copy: "Connect common requirements to verified experience and identify useful learning gaps.", tags: ["Resume"] },
+    ],
+  },
+  agentic: {
+    title: "Agentic lab",
+    description: "Notes and small projects for building agents that act through tools with explicit approval gates.",
+    items: [
+      { title: "Tools and actions", copy: "Typed tools, validation, permissions, retries, and safe external actions.", tags: ["Tools"] },
+      { title: "State and memory", copy: "Session state, durable memory, retrieval, and boundaries between user and agent data.", tags: ["State"] },
+      { title: "Approval workflows", copy: "Human confirmation before applications, messages, or any consequential action.", tags: ["Safety"] },
+      { title: "Agent evaluation", copy: "Task success, trajectory checks, tool correctness, regression suites, and observability.", tags: ["Evals"] },
+      { title: "MCP experiments", copy: "Small integrations for job sources, Gmail, GitHub, and structured knowledge.", tags: ["MCP"] },
+      { title: "Pet projects", copy: "A portfolio backlog of narrow, testable agents instead of one uncontrolled system.", tags: ["Projects"] },
+    ],
+  },
+  llm: {
+    title: "LLM lab",
+    description: "A testing and engineering knowledge base for products built around language models.",
+    items: [
+      { title: "LLM testing", copy: "Functional behaviour, robustness, safety, consistency, and model-change regression.", tags: ["Testing"] },
+      { title: "Evaluations", copy: "Datasets, rubrics, model graders, human review, thresholds, and experiment tracking.", tags: ["Evals"] },
+      { title: "RAG", copy: "Retrieval quality, grounding, citations, chunking, permissions, and freshness.", tags: ["RAG"] },
+      { title: "Prompt security", copy: "Prompt injection, data leakage, tool misuse, and layered mitigations.", tags: ["Security"] },
+      { title: "Observability", copy: "Traces, token usage, latency, failures, feedback, and production diagnostics.", tags: ["Ops"] },
+      { title: "Pet projects", copy: "Practical QA copilots, test generators, review tools, and evaluation harnesses.", tags: ["Projects"] },
+    ],
+  },
+  security: {
+    title: "Security lab",
+    description: "Practical application-security notes and controlled exercises for quality engineers.",
+    items: [
+      { title: "OWASP", copy: "Web, API, and LLM application risks with testing ideas and mitigations.", tags: ["OWASP"] },
+      { title: "Threat modelling", copy: "Assets, trust boundaries, abuse cases, controls, and residual risk.", tags: ["Risk"] },
+      { title: "Authentication", copy: "Sessions, OAuth, access control, identity boundaries, and negative testing.", tags: ["Auth"] },
+      { title: "Secrets and data", copy: "Credential handling, sensitive data, logging, retention, and least privilege.", tags: ["Data"] },
+    ],
+  },
+  devops: {
+    title: "DevOps lab",
+    description: "Reference notes and projects for delivery pipelines, cloud systems, and reliability.",
+    items: [
+      { title: "CI/CD", copy: "Build gates, test stages, artifacts, deployments, rollbacks, and branch controls.", tags: ["Pipelines"] },
+      { title: "Containers", copy: "Docker images, compose environments, dependencies, and test execution.", tags: ["Docker"] },
+      { title: "Cloud", copy: "Workers, serverless services, storage, networking, and environment configuration.", tags: ["Cloud"] },
+      { title: "Observability", copy: "Logs, metrics, traces, alerts, dashboards, and actionable diagnostics.", tags: ["Monitoring"] },
+      { title: "Infrastructure as code", copy: "Repeatable environments, reviewable changes, drift, and secret separation.", tags: ["IaC"] },
+      { title: "Resilience", copy: "Failure injection, dependency degradation, recovery, and reliability checks.", tags: ["Resilience"] },
+    ],
+  },
+  standards: {
+    title: "Standards",
+    description: "A working index of standards relevant to software quality, security, and regulated products.",
+    items: [
+      { title: "ISO/IEC 25010", copy: "Software product quality model and quality characteristics.", tags: ["Quality"] },
+      { title: "ISO/IEC/IEEE 29119", copy: "Software-testing processes, documentation, and techniques.", tags: ["Testing"] },
+      { title: "ISO/IEC 27001", copy: "Information-security management systems and risk-based controls.", tags: ["Security"] },
+      { title: "IEC 62304", copy: "Medical-device software lifecycle processes and safety classification.", tags: ["Medical"] },
+      { title: "IEC 60601", copy: "Safety and essential performance requirements for medical electrical equipment.", tags: ["Medical"] },
+      { title: "ISO 9001", copy: "Quality-management principles, processes, evidence, and improvement.", tags: ["QMS"] },
+    ],
+  },
+  news: {
+    title: "News",
+    description: "A focused reading list for QA, AI agents, LLM engineering, security, and delivery tooling.",
+    items: [
+      { title: "QA and test automation", copy: "Framework releases, quality-engineering practices, and useful case studies.", tags: ["QA"] },
+      { title: "Agents and LLMs", copy: "Agent platforms, model releases, evaluation research, and applied engineering.", tags: ["AI"] },
+      { title: "Security", copy: "Important vulnerabilities, guidance, and defensive engineering updates.", tags: ["Security"] },
+      { title: "Cloud and DevOps", copy: "Platform changes, CI/CD tooling, reliability, and observability updates.", tags: ["DevOps"] },
+    ],
+  },
+};
 
 function dateLabel(value: string | null) {
   if (!value) return "Recently found";
@@ -38,13 +163,31 @@ function dateLabel(value: string | null) {
 
 function shortText(value: string) {
   const cleaned = value.replace(/\s+/g, " ").trim();
-  return cleaned.length > 190 ? `${cleaned.slice(0, 187)}…` : cleaned;
+  return cleaned.length > 210 ? `${cleaned.slice(0, 207)}…` : cleaned;
+}
+
+function currentSectionFromHash(): PublicSection {
+  if (typeof window === "undefined") return "jobs";
+  const candidate = window.location.hash.replace("#", "") as PublicSection;
+  return navigation.some((group) => group.items.some((item) => item.id === candidate)) ? candidate : "jobs";
 }
 
 export default function PublicSite() {
+  const [section, setSection] = useState<PublicSection>("jobs");
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
+
+  useEffect(() => {
+    const onHashChange = () => setSection(currentSectionFromHash());
+    const frame = window.requestAnimationFrame(onHashChange);
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -69,74 +212,113 @@ export default function PublicSite() {
     const needle = query.trim().toLowerCase();
     return jobs
       .filter((job) => !needle || `${job.title} ${job.company} ${job.location} ${job.source}`.toLowerCase().includes(needle))
-      .slice(0, 30);
+      .slice(0, 50);
   }, [jobs, query]);
 
+  const openSection = (next: PublicSection) => {
+    setSection(next);
+    setMobileNav(false);
+    window.history.replaceState(null, "", next === "jobs" ? window.location.pathname : `#${next}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const activeLabel = navigation.flatMap((group) => group.items).find((item) => item.id === section)?.label ?? "Jobs";
+
   return (
-    <main className="public-shell">
-      <header className="public-nav">
-        <a className="public-logo" href="#top" aria-label="GimmeJob home"><span>GJ</span><strong>GimmeJob</strong></a>
-        <nav aria-label="Public navigation">
-          <a href="#jobs">Jobs</a>
-          <a href="#knowledge">Knowledge</a>
-          <a href="#about">About</a>
-        </nav>
-        <a className="workspace-link" href="/workspace">Private workspace <span aria-hidden="true">→</span></a>
-      </header>
-
-      <section className="public-hero" id="top">
-        <div className="hero-copy">
-          <span className="public-kicker">PUBLIC CAREER ENGINEERING HUB</span>
-          <h1>Find better work.<br/><em>Build better systems.</em></h1>
-          <p>Curated vacancies, interview knowledge, market signals, and practical labs for QA, AI agents, security, and DevOps.</p>
-          <div className="hero-actions"><a href="#jobs">Explore jobs</a><a href="#knowledge">Browse the roadmap</a></div>
-        </div>
-        <div className="hero-board" aria-label="How GimmeJob works">
-          <div><span>01</span><strong>Collect</strong><small>Vacancies from approved sources</small></div>
-          <div><span>02</span><strong>Understand</strong><small>Requirements and market patterns</small></div>
-          <div><span>03</span><strong>Prepare</strong><small>Knowledge, projects, and CV variants</small></div>
-          <div><span>04</span><strong>Apply safely</strong><small>Every send requires approval</small></div>
-        </div>
-      </section>
-
-      <section className="public-section jobs-showcase" id="jobs">
-        <div className="section-heading">
-          <div><span className="public-kicker">LIVE DATABASE</span><h2>Newest opportunities</h2><p>Public vacancy data only. Personal tracking, feedback, contacts, analyses, resumes, and drafts stay private.</p></div>
-          <label className="public-search"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs, companies, locations"/></label>
-        </div>
-
-        <div className="public-jobs">
-          {loaded && visibleJobs.map((job) => (
-            <article className="public-job" key={job.id}>
-              <div className="public-job-mark">{job.company.slice(0, 2).toUpperCase()}</div>
-              <div className="public-job-copy">
-                <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
-                <h3>{job.title}</h3>
-                <p className="job-company">{job.company} · {job.location}</p>
-                <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
-                <div className="public-job-meta">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
-              </div>
-              <a href={job.url} target="_blank" rel="noreferrer">Open vacancy <span aria-hidden="true">↗</span></a>
-            </article>
+    <main className="kb-shell">
+      <aside className={mobileNav ? "kb-sidebar open" : "kb-sidebar"}>
+        <div className="kb-brand"><span>GJ</span><div><strong>GimmeJob</strong><small>Knowledge base</small></div></div>
+        <nav aria-label="Knowledge base sections">
+          {navigation.map((group) => (
+            <div className="kb-nav-group" key={group.label}>
+              <h2>{group.label}</h2>
+              {group.items.map((item) => (
+                <button className={section === item.id ? "active" : ""} key={item.id} onClick={() => openSection(item.id)}>
+                  <i>{item.marker}</i><span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           ))}
-          {!loaded && <div className="public-empty"><strong>Loading vacancies…</strong><span>Reading the public job database.</span></div>}
-          {loaded && visibleJobs.length === 0 && <div className="public-empty"><strong>{jobs.length ? "No matching vacancies" : "The public feed is ready"}</strong><span>{jobs.length ? "Try another search." : "Run the first source sync in the private workspace to publish sanitized vacancies here."}</span></div>}
+        </nav>
+        <div className="kb-private">
+          <span>PRIVATE AREA</span>
+          <p>Status, feedback, resume versions, drafts, and agent actions.</p>
+          <a href="/workspace"><i>↳</i> Manage jobs</a>
         </div>
+      </aside>
+
+      <section className="kb-main">
+        <header className="kb-topbar">
+          <button className="kb-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
+          <div><span>Knowledge base</span><strong>{activeLabel}</strong></div>
+          <div className="kb-public-state"><i/>Public view</div>
+          <a href="/workspace">Manage statuses & feedback</a>
+        </header>
+
+        {section === "jobs" ? (
+          <div className="kb-content">
+            <header className="kb-page-head">
+              <div><span>CAREER / JOBS</span><h1>Jobs</h1><p>Collected vacancies, ordered from newest to oldest. This page is public and read-only.</p></div>
+              <div className="kb-page-stats"><div><strong>{jobs.length}</strong><span>Vacancies</span></div><div><strong>Newest</strong><span>First</span></div><div><strong>Read-only</strong><span>Public view</span></div></div>
+            </header>
+
+            <section className="kb-jobs-panel">
+              <div className="kb-jobs-tools">
+                <label><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, company, location, or source"/></label>
+                <a href="/workspace">Private management →</a>
+              </div>
+              <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Statuses and personal feedback are visible only after authentication.</p></div>
+              <div className="kb-job-list">
+                {loaded && visibleJobs.map((job) => (
+                  <article className="kb-job-row" key={job.id}>
+                    <div className="kb-company-mark">{job.company.slice(0, 2).toUpperCase()}</div>
+                    <div className="kb-job-copy">
+                      <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
+                      <h2>{job.title}</h2>
+                      <p className="kb-job-company">{job.company} · {job.location}</p>
+                      <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
+                      <div className="kb-job-tags">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
+                    </div>
+                    <a href={job.url} target="_blank" rel="noreferrer">Open ↗</a>
+                  </article>
+                ))}
+                {!loaded && <div className="kb-empty"><strong>Loading jobs…</strong><span>Reading the public database.</span></div>}
+                {loaded && visibleJobs.length === 0 && <div className="kb-empty"><strong>{jobs.length ? "No matching jobs" : "No jobs collected yet"}</strong><span>{jobs.length ? "Try another search." : "Use the private workspace to run the first source sync."}</span></div>}
+              </div>
+            </section>
+          </div>
+        ) : (
+          <KnowledgeSection section={section}/>
+        )}
       </section>
 
-      <section className="public-section knowledge-section" id="knowledge">
-        <div className="section-heading compact"><div><span className="public-kicker">KNOWLEDGE + LABS</span><h2>A career system, not just a job list</h2><p>The information architecture is ready. Jobs work now; each module can become a searchable knowledge base next.</p></div></div>
-        <div className="module-grid">
-          {modules.map((module, index) => <article key={module.id} id={module.id}><div><span>{String(index + 1).padStart(2, "0")}</span><em>{module.tag}</em></div><h3>{module.title}</h3><p>{module.copy}</p><small>Planned module</small></article>)}
-        </div>
-      </section>
-
-      <section className="public-about" id="about">
-        <div><span className="public-kicker">DESIGN PRINCIPLES</span><h2>Public knowledge.<br/>Private decisions.</h2></div>
-        <div className="principle-grid"><p><strong>Approval first</strong>No application or message is sent without confirmation.</p><p><strong>Useful signals</strong>Vacancies and trends stay focused on the target career path.</p><p><strong>Portable system</strong>Code, CI/CD, and database structure live in the GitHub project.</p></div>
-      </section>
-
-      <footer className="public-footer"><a className="public-logo" href="#top"><span>GJ</span><strong>GimmeJob</strong></a><p>Public career engineering hub · Built on Cloudflare</p><a href="/workspace">Open private workspace →</a></footer>
+      {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
     </main>
+  );
+}
+
+function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs"> }) {
+  const content = knowledge[section];
+  return (
+    <div className="kb-content">
+      <header className="kb-page-head kb-article-head">
+        <div><span>KNOWLEDGE BASE / {content.title.toUpperCase()}</span><h1>{content.title}</h1><p>{content.description}</p></div>
+        <div className="kb-outline-badge"><i/>Public section</div>
+      </header>
+      <section className="kb-article-intro">
+        <div><strong>Section index</strong><span>{content.items.length} topics</span></div>
+        <p>This is a working outline. Notes, links, examples, and projects will be added directly inside these topics.</p>
+      </section>
+      <div className="kb-topic-grid">
+        {content.items.map((item, index) => (
+          <article key={item.title}>
+            <div><span>{String(index + 1).padStart(2, "0")}</span><small>Outline</small></div>
+            <h2>{item.title}</h2>
+            <p>{item.copy}</p>
+            <footer>{item.tags.map((tag) => <em key={tag}>{tag}</em>)}</footer>
+          </article>
+        ))}
+      </div>
+    </div>
   );
 }
