@@ -33,11 +33,11 @@ The navigation also contains planned knowledge modules:
 - `db/schema.ts` — D1 schema;
 - `drizzle/` — versioned database migrations;
 - `agent/` — optional local collection and analysis agent;
-- `.github/workflows/ci.yml` — GitHub validation pipeline;
+- `.github/workflows/ci.yml` — GitHub validation and Cloudflare deployment pipeline;
 - `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile;
 - `.openai/hosting.json` — private Sites deployment and D1 binding.
 
-Production currently runs as a private Sites deployment. Its database and HTTPS address are managed by Sites. The code is ready for GitHub CI, but the current Sites deployment is not automatically triggered by pushes to GitHub.
+Production currently runs as a private Sites deployment. Its database and HTTPS address are managed by Sites. The repository also contains an independent Cloudflare Workers deployment path for true GitHub-driven CI/CD.
 
 ## VS Code setup
 
@@ -64,9 +64,36 @@ On Windows PowerShell, if `npm.ps1` is blocked, use `npm.cmd install` and `npm.c
 npm run lint
 npm run check:agent
 npm run build
+npm run check:cloudflare
 ```
 
 The same commands run in GitHub Actions for every pull request and push to `main` after this version is pushed to GitHub.
+
+## Cloudflare CI/CD
+
+After the three repository secrets below are configured, every successful push to `main` automatically:
+
+1. validates and builds the application;
+2. finds or creates the `gimmejob-db` D1 database;
+3. applies all migrations from `drizzle/`;
+4. deploys the Worker and static assets;
+5. protects the public Worker address with HTTP Basic authentication.
+
+Required GitHub repository secrets:
+
+- `CLOUDFLARE_ACCOUNT_ID`;
+- `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit, D1 Edit, and Cloudflare Images Edit permissions;
+- `APP_PASSWORD`, at least 16 characters.
+
+At the external Worker login prompt, use `gimmejob` as the username and the `APP_PASSWORD` secret as the password. Secrets are never written into source or the build artifact.
+
+The Cloudflare deployment creates its own D1 database. Data in the existing private Sites database is not copied automatically.
+
+For a one-off deployment from VS Code, put the same three values in the terminal environment and run:
+
+```bash
+npm run deploy:cloudflare
+```
 
 ## Database changes
 
@@ -78,13 +105,19 @@ npm run db:generate
 
 Never commit `.env`, OAuth credentials, tokens, or files from `data/`.
 
-## Deployment model
+## Deployment models
 
-Current production flow:
+Private Sites flow:
 
 1. validate the application;
 2. build a Cloudflare-compatible worker artifact;
 3. apply D1 migrations;
 4. publish an immutable private Sites version.
 
-To get true `push to main → deploy` from the public GitHub repository, connect the repository to a supported hosting account and add its deployment credentials as GitHub secrets. Keep production secrets in the hosting provider, not in source control.
+External Cloudflare flow:
+
+1. push to `main`;
+2. GitHub Actions validates and builds;
+3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates its private access password.
+
+The Cloudflare Free plan is enough for an early personal prototype within its usage limits. Keep all production credentials in GitHub and Cloudflare secret stores, never in source control.

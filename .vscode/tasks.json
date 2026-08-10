@@ -37,6 +37,17 @@
       "script": "build",
       "problemMatcher": [],
       "group": "build"
+    },
+    {
+      "label": "GimmeJob: Deploy to Cloudflare",
+      "type": "npm",
+      "script": "deploy:cloudflare",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
     }
   ]
 }

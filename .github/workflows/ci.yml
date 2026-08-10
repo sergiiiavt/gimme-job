@@ -1,6 +1,7 @@
-name: CI
+name: CI and Cloudflare deploy
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -38,3 +39,20 @@ jobs:
 
       - name: Build production artifact
         run: npm run build
+
+      - name: Validate Cloudflare deployment artifact
+        run: npm run check:cloudflare
+
+      - name: Deploy Worker and D1
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN repository secrets are configured."
+            exit 0
+          fi
+          node scripts/deploy-cloudflare.mjs
