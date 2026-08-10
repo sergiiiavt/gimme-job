@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 430" role="img" aria-labelledby="title description">
+  <title id="title">Risk matrix</title>
+  <desc id="description">A five by five matrix combining likelihood from rare to frequent and impact from minor to critical.</desc>
+  <rect width="760" height="430" rx="24" fill="#f6f7f5"/>
+  <text x="76" y="50" fill="#1e2925" font-family="Arial, sans-serif" font-size="24" font-weight="700">Risk = likelihood × impact</text>
+  <g transform="translate(176 82)" stroke="#ffffff" stroke-width="4">
+    <path fill="#dff0b7" d="M0 0h80v64H0zM80 0h80v64H80zM0 64h80v64H0z"/>
+    <path fill="#f4e48d" d="M160 0h80v64h-80zM80 64h80v64H80zM160 64h80v64h-80zM0 128h80v64H0zM80 128h80v64H80zM0 192h80v64H0z"/>
+    <path fill="#efb667" d="M240 0h80v64h-80zM240 64h80v64h-80zM160 128h80v64h-80zM240 128h80v64h-80zM80 192h80v64H80zM160 192h80v64h-80zM0 256h80v64H0zM80 256h80v64H80z"/>
+    <path fill="#db7568" d="M320 0h80v64h-80zM320 64h80v64h-80zM320 128h80v64h-80zM240 192h80v64h-80zM320 192h80v64h-80zM160 256h80v64h-80zM240 256h80v64h-80zM320 256h80v64h-80z"/>
+  </g>
+  <g fill="#526059" font-family="Arial, sans-serif" font-size="14">
+    <text x="183" y="420">Rare</text><text x="257" y="420">Unlikely</text><text x="342" y="420">Possible</text><text x="424" y="420">Likely</text><text x="498" y="420">Frequent</text>
+    <text transform="translate(115 367) rotate(-90)">Minor</text><text transform="translate(115 305) rotate(-90)">Moderate</text><text transform="translate(115 240) rotate(-90)">Major</text><text transform="translate(115 178) rotate(-90)">Severe</text><text transform="translate(115 112) rotate(-90)">Critical</text>
+  </g>
+  <text x="360" y="398" text-anchor="middle" fill="#1e2925" font-family="Arial, sans-serif" font-size="16" font-weight="700">Likelihood</text>
+  <text transform="translate(44 255) rotate(-90)" text-anchor="middle" fill="#1e2925" font-family="Arial, sans-serif" font-size="16" font-weight="700">Impact</text>
+</svg>

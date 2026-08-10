@@ -18,43 +18,66 @@ export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "news", label: "News" },
 ];
 
+export interface SubnavItem {
+  id: string;
+  label: string;
+  count?: number;
+}
+
 interface SidebarProps {
   activeSection: SiteSection;
   mobileOpen: boolean;
   mode: "public" | "private";
   onSelect?: (section: SiteSection) => void;
   online?: boolean | null;
+  secondaryTitle: string;
+  secondaryItems: SubnavItem[];
+  activeSubsection: string;
+  onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, mobileOpen, mode, onSelect, online }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode, onSelect, onSelectSubsection, online, secondaryItems, secondaryTitle }: SidebarProps) {
   return (
-    <aside className={mobileOpen ? "kb-sidebar open" : "kb-sidebar"}>
-      <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
+    <div className={mobileOpen ? "kb-navigation open" : "kb-navigation"}>
+      <aside className="kb-sidebar">
+        <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
 
-      <nav className="kb-nav-list" aria-label="GimmeJob sections">
-        {navigationItems.map((item) => mode === "public" ? (
-          <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
-            {item.label}
-          </button>
-        ) : (
-          <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/#${item.id}`} key={item.id}>
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+        <nav className="kb-nav-list" aria-label="GimmeJob sections">
+          {navigationItems.map((item) => mode === "public" ? (
+            <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
+              {item.label}
+            </button>
+          ) : (
+            <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/#${item.id}`} key={item.id}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-      <div className="kb-sidebar-footer">
-        {mode === "public" ? (
-          <Link href="/workspace">Private workspace</Link>
-        ) : (
-          <>
-            <span className="kb-storage-state"><i className={online ? "online" : ""}/>{online ? "Database connected" : online === null ? "Connecting" : "Database unavailable"}</span>
-            <Link href="/">Public site</Link>
-            <Link href="/workspace/logout">Sign out</Link>
-          </>
-        )}
-      </div>
-    </aside>
+        <div className="kb-sidebar-footer">
+          {mode === "public" ? (
+            <Link href="/workspace">Private workspace</Link>
+          ) : (
+            <>
+              <span className="kb-storage-state"><i className={online ? "online" : ""}/>{online ? "DB connected" : online === null ? "Connecting" : "DB unavailable"}</span>
+              <Link href="/">Public site</Link>
+              <Link href="/workspace/logout">Sign out</Link>
+            </>
+          )}
+        </div>
+      </aside>
+
+      <aside className="kb-subnav">
+        <header><span>Section</span><strong>{secondaryTitle}</strong></header>
+        <nav aria-label={`${secondaryTitle} subsections`}>
+          {secondaryItems.map((item) => (
+            <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
+              <span>{item.label}</span>{typeof item.count === "number" && <small>{item.count}</small>}
+            </button>
+          ))}
+        </nav>
+      </aside>
+    </div>
   );
 }
 

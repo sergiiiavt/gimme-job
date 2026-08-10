@@ -1,0 +1,648 @@
+{
+  "collection": "expanded-canonical-coverage",
+  "questions": [
+    {
+      "id": "seven-testing-principles", "level": "Junior", "category": "Fundamentals", "kind": "Theory",
+      "question": "Which testing principles change how you plan real work rather than merely define terminology?",
+      "shortAnswer": "Testing shows the presence of defects, exhaustive testing is impossible, early testing saves cost, defects cluster, repeated tests lose effectiveness, testing is context-dependent, and a defect-free product can still fail user needs. The practical consequence is risk-based, changing coverage.",
+      "strongAnswerSignals": ["connects principles to decisions", "rejects exhaustive testing", "explains the absence-of-errors fallacy"],
+      "tags": ["principles", "risk", "planning"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "static-versus-dynamic-testing", "level": "Junior", "category": "Fundamentals", "kind": "Theory",
+      "question": "What can static testing discover before executable software exists?",
+      "shortAnswer": "Reviews and static analysis can expose ambiguous requirements, inconsistent rules, unreachable code, security smells and maintainability problems without running the product. Dynamic testing observes behaviour during execution; the two approaches find different classes of problems.",
+      "strongAnswerSignals": ["reviews are testing", "finds defects in work products", "distinguishes execution from analysis"],
+      "tags": ["static-testing", "reviews", "early-testing"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "black-grey-white-box", "level": "Junior", "category": "Fundamentals", "kind": "Theory",
+      "question": "How does the information available to a tester change black-box, grey-box and white-box testing?",
+      "shortAnswer": "Black-box tests derive behaviour from externally visible requirements, white-box tests use internal structure, and grey-box work uses partial architectural or data knowledge. These are perspectives, not competing test levels, and a feature can benefit from all three.",
+      "strongAnswerSignals": ["basis for test design", "not confused with test levels", "gives a practical example"],
+      "tags": ["black-box", "white-box", "coverage"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "smoke-sanity-purpose", "level": "Junior", "category": "Fundamentals", "kind": "Theory",
+      "question": "How would you define a smoke suite without turning it into a full regression suite?",
+      "shortAnswer": "A smoke suite quickly proves that a build and its critical paths are testable enough for deeper work. It should be small, stable and release-aware. A focused sanity check validates a narrow changed area rather than overall build viability.",
+      "strongAnswerSignals": ["build acceptance purpose", "small critical-path scope", "distinguishes focused change checks"],
+      "tags": ["smoke", "sanity", "regression"], "sourceIds": ["dou-qa-2022", "istqb-glossary"]
+    },
+    {
+      "id": "end-to-end-value-limits", "level": "Middle", "category": "Fundamentals", "kind": "Theory",
+      "question": "What evidence does an end-to-end test provide, and why should a suite contain relatively few of them?",
+      "shortAnswer": "It proves that a realistic business flow crosses integrated components successfully. Because it depends on many systems, data and environments, it is slower and harder to diagnose; narrower tests should cover most rules and failure cases.",
+      "strongAnswerSignals": ["integrated business evidence", "diagnostic cost", "balanced test layers"],
+      "tags": ["e2e", "test-levels", "architecture"], "sourceIds": ["istqb-ctfl-v4", "playwright-best-practices"]
+    },
+    {
+      "id": "configuration-compatibility-matrix", "level": "Middle", "category": "Fundamentals", "kind": "Scenario",
+      "question": "How do you select browser, operating-system and device combinations when every combination is impossible?",
+      "shortAnswer": "Use supported-product policy, production analytics, market share, technical risk and change history. Cover representative rendering engines and critical devices, then state excluded combinations and monitor production evidence for gaps.",
+      "strongAnswerSignals": ["data-based matrix", "representative coverage", "documents exclusions"],
+      "tags": ["compatibility", "browsers", "devices"], "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+
+    {
+      "id": "pairwise-combinatorial-testing", "level": "Middle", "category": "Test design", "kind": "Theory",
+      "question": "When does pairwise testing reduce effort safely, and what risks can it miss?",
+      "shortAnswer": "Pairwise selects combinations so every pair of parameter values appears at least once. It is useful when interactions are likely to be low-order, but it can miss specific three-way or higher interactions and must not replace explicit high-risk scenarios.",
+      "strongAnswerSignals": ["pair coverage", "interaction assumption", "adds risk-specific cases"],
+      "tags": ["pairwise", "combinatorial", "optimization"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "use-case-test-design", "level": "Junior", "category": "Test design", "kind": "Theory",
+      "question": "How do use cases help derive tests beyond the happy path?",
+      "shortAnswer": "Start from the main actor goal, preconditions and successful flow, then cover alternative flows, exceptions, permission differences, interrupted steps and postconditions. The result connects business intent to observable outcomes.",
+      "strongAnswerSignals": ["actor goal", "alternative and exception flows", "checks postconditions"],
+      "tags": ["use-cases", "business-flows", "test-cases"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "branch-statement-coverage", "level": "Middle", "category": "Test design", "kind": "Theory",
+      "question": "Why can full statement coverage still leave important logic untested?",
+      "shortAnswer": "Executing every statement does not guarantee that every decision outcome or condition combination was exercised. Branch coverage is stronger for decisions, but no structural percentage proves behavioural correctness or sufficient risk coverage.",
+      "strongAnswerSignals": ["statement versus branch", "coverage is evidence not proof", "connects to behaviour and risk"],
+      "tags": ["white-box", "branch-coverage", "metrics"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "error-guessing-checklists", "level": "Junior", "category": "Test design", "kind": "Theory",
+      "question": "How can experience-based testing remain systematic rather than depend on memory?",
+      "shortAnswer": "Turn defect history, production incidents, domain traps and team heuristics into evolving checklists and exploratory charters. Record outcomes and refresh the heuristics so experience complements specification-based techniques instead of replacing them.",
+      "strongAnswerSignals": ["uses defect history", "externalizes heuristics", "combines techniques"],
+      "tags": ["error-guessing", "checklists", "exploratory"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "classification-tree-testing", "level": "Senior", "category": "Test design", "kind": "Theory",
+      "question": "How would you model a feature with many input dimensions before choosing combinations?",
+      "shortAnswer": "Identify independent classifications, partition each into meaningful classes, add constraints, and combine representative classes into tests. A classification tree makes the model visible and helps avoid accidental gaps or impossible combinations.",
+      "strongAnswerSignals": ["classifications and classes", "constraints", "traceable combinations"],
+      "tags": ["classification-tree", "partitions", "combinations"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "test-design-from-risk", "level": "Senior", "category": "Test design", "kind": "Scenario",
+      "question": "How do you choose between boundary, state, decision-table and exploratory techniques for one feature?",
+      "shortAnswer": "Map each risk to the model that exposes it: numeric edges suggest boundaries, lifecycle rules suggest states, interacting business rules suggest decision tables, and uncertainty suggests exploration. Combine techniques when the feature contains several risk shapes.",
+      "strongAnswerSignals": ["technique follows risk model", "uses multiple techniques", "avoids technique-by-habit"],
+      "tags": ["test-design", "risk", "technique-selection"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+
+    {
+      "id": "test-plan-right-sizing", "level": "Middle", "category": "Documentation and defects", "kind": "Scenario",
+      "question": "When is a formal test plan useful, and when is a shorter strategy note enough?",
+      "shortAnswer": "Documentation should support decisions, coordination and audit needs. Regulated or multi-team work may need formal scope, responsibilities, environments, schedule, risks and exit criteria; a small team may capture the same decisions in a concise living document.",
+      "strongAnswerSignals": ["purpose over template", "context and compliance", "keeps the document current"],
+      "tags": ["test-plan", "documentation", "governance"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "checklist-versus-test-case", "level": "Junior", "category": "Documentation and defects", "kind": "Theory",
+      "question": "What determines whether a check should be documented as a checklist item or a detailed test case?",
+      "shortAnswer": "Use detailed cases when repeatability, training, auditability or complex data matters. Use checklists when experienced testers need flexible reminders and the behaviour is simple. Both should identify intent and expected evidence without unnecessary ceremony.",
+      "strongAnswerSignals": ["repeatability and audit needs", "tester context", "avoids universal rules"],
+      "tags": ["test-cases", "checklists", "documentation"], "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "traceability-useful", "level": "Middle", "category": "Documentation and defects", "kind": "Theory",
+      "question": "How can traceability help a release decision without becoming a spreadsheet-maintenance exercise?",
+      "shortAnswer": "Link important requirements and risks to tests, results and defects so change impact and uncovered scope are visible. Automate links where possible and maintain detail proportional to regulatory, contractual and product risk.",
+      "strongAnswerSignals": ["risk-to-evidence links", "supports impact analysis", "right-sized maintenance"],
+      "tags": ["traceability", "coverage", "requirements"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "actionable-bug-report", "level": "Junior", "category": "Documentation and defects", "kind": "Practical",
+      "question": "What makes a defect report actionable for someone who did not observe the failure?",
+      "shortAnswer": "Give a precise title, environment and build, minimal reproduction steps, actual and expected results, evidence, impact and reproducibility. Include data and logs that help diagnosis while excluding secrets and irrelevant noise.",
+      "strongAnswerSignals": ["reproducible evidence", "expected versus actual", "impact and safe diagnostics"],
+      "tags": ["bug-report", "evidence", "communication"], "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "defect-lifecycle-context", "level": "Middle", "category": "Documentation and defects", "kind": "Theory",
+      "question": "Why should a defect workflow reflect team decisions instead of using every possible status?",
+      "shortAnswer": "Statuses should show ownership and the next meaningful action: reported, triaged, in progress, resolved, verified or closed, with explicit rejected or deferred outcomes. Extra states that do not change responsibility create stale queues and misleading reports.",
+      "strongAnswerSignals": ["ownership and next action", "triage outcomes", "avoids status theatre"],
+      "tags": ["defect-lifecycle", "triage", "workflow"], "sourceIds": ["istqb-glossary", "dou-qa-2022"]
+    },
+    {
+      "id": "test-artifact-review", "level": "Senior", "category": "Documentation and defects", "kind": "Scenario",
+      "question": "How do you review test cases for value rather than formatting consistency?",
+      "shortAnswer": "Check whether cases trace to material risks, use clear oracles, avoid duplication, cover important negative paths and can be maintained. Sample execution evidence and defect history to find missing coverage instead of reviewing only wording.",
+      "strongAnswerSignals": ["risk and oracle review", "duplication and maintainability", "uses execution evidence"],
+      "tags": ["review", "test-cases", "quality"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+
+    {
+      "id": "client-server-request-path", "level": "Junior", "category": "Web, API and data", "kind": "Theory",
+      "question": "What happens between entering a URL and receiving a rendered web page?",
+      "shortAnswer": "The client resolves the host, establishes a connection, negotiates TLS when used, sends an HTTP request, receives headers and content, then the browser parses resources and executes page logic. Caches, proxies, CDNs and service workers may alter the path.",
+      "strongAnswerSignals": ["DNS, connection and HTTP", "browser rendering", "intermediaries and cache"],
+      "tags": ["client-server", "http", "browser"], "sourceIds": ["mdn-http", "dou-qa-2022"]
+    },
+    {
+      "id": "http-message-anatomy", "level": "Junior", "category": "Web, API and data", "kind": "Theory",
+      "question": "Which parts of HTTP requests and responses should an API tester inspect?",
+      "shortAnswer": "Inspect method and target, status, headers, cookies, content type, body, timing and redirects. Validate semantics and side effects, not only payload values, and correlate the exchange with server logs or persisted state when available.",
+      "strongAnswerSignals": ["headers and body", "semantics and side effects", "observability"],
+      "tags": ["http", "headers", "api-testing"], "sourceIds": ["mdn-http"]
+    },
+    {
+      "id": "http-status-families", "level": "Junior", "category": "Web, API and data", "kind": "Theory",
+      "question": "What do the five HTTP status-code families communicate, and why is a successful code not enough?",
+      "shortAnswer": "1xx is informational, 2xx success, 3xx redirection, 4xx client-side request failure and 5xx server failure. Tests must also check the specific code, response contract, cache behaviour and whether the intended state change occurred.",
+      "strongAnswerSignals": ["all five families", "specific code semantics", "checks state beyond status"],
+      "tags": ["http", "status-codes", "contracts"], "sourceIds": ["mdn-http", "dou-qa-2022"]
+    },
+    {
+      "id": "put-versus-patch", "level": "Middle", "category": "Web, API and data", "kind": "Theory",
+      "question": "How should tests differ for PUT and PATCH update operations?",
+      "shortAnswer": "PUT normally represents replacement of a resource and is idempotent; PATCH applies a partial modification whose semantics depend on the patch format. Test omitted fields, repeated requests, conflicting updates, validation and resulting representation.",
+      "strongAnswerSignals": ["replacement versus partial change", "idempotency", "omitted and conflicting fields"],
+      "tags": ["http-methods", "put", "patch"], "sourceIds": ["mdn-http", "openapi-31"]
+    },
+    {
+      "id": "cache-testing-model", "level": "Middle", "category": "Web, API and data", "kind": "Scenario",
+      "question": "How would you detect a cache that serves stale or private data incorrectly?",
+      "shortAnswer": "Vary users, authorization, query parameters and freshness conditions; inspect cache headers and validators; update the origin and verify invalidation. Test shared caches for cross-user leakage and browser caches for offline or back-navigation behaviour.",
+      "strongAnswerSignals": ["freshness and validators", "invalidation", "private-data isolation"],
+      "tags": ["cache", "privacy", "http"], "sourceIds": ["mdn-http", "owasp-wstg"]
+    },
+    {
+      "id": "rest-soap-tradeoffs", "level": "Junior", "category": "Web, API and data", "kind": "Theory",
+      "question": "What practical testing differences arise between REST-style HTTP APIs and SOAP services?",
+      "shortAnswer": "REST commonly uses HTTP resources and varied representations, while SOAP uses XML envelopes and formal service contracts with protocol extensions. In both, test contract, transport, authentication, faults, compatibility and business side effects rather than relying on labels.",
+      "strongAnswerSignals": ["resource versus message orientation", "contracts and faults", "avoids claiming one is inherently better"],
+      "tags": ["rest", "soap", "api"], "sourceIds": ["mdn-http", "openapi-31", "dou-qa-2022"]
+    },
+    {
+      "id": "async-api-testing", "level": "Middle", "category": "Web, API and data", "kind": "Scenario",
+      "question": "How do you test an API that accepts work now and completes it later?",
+      "shortAnswer": "Verify acceptance semantics and correlation IDs, then observe status resources, callbacks, queues or events until a defined terminal outcome. Cover duplicate submissions, retries, timeouts, ordering, partial failure and eventual consistency without fixed sleeps.",
+      "strongAnswerSignals": ["correlation and terminal states", "eventual consistency", "retries and idempotency"],
+      "tags": ["asynchronous", "queues", "eventual-consistency"], "sourceIds": ["mdn-http", "openapi-31"]
+    },
+    {
+      "id": "websocket-reconnection", "level": "Middle", "category": "Web, API and data", "kind": "Scenario",
+      "question": "What should be tested when a WebSocket connection is interrupted?",
+      "shortAnswer": "Check handshake and authorization, heartbeat and timeout behaviour, reconnect backoff, resubscription, duplicate or missing messages, ordering, offline UI state and recovery after server restart. Confirm that reconnects do not bypass access controls.",
+      "strongAnswerSignals": ["connection lifecycle", "message integrity", "authorization after reconnect"],
+      "tags": ["websocket", "reconnection", "realtime"], "sourceIds": ["mdn-http", "owasp-wstg"]
+    },
+    {
+      "id": "openapi-contract-coverage", "level": "Middle", "category": "Web, API and data", "kind": "Theory",
+      "question": "What can an OpenAPI document generate or validate, and what remains outside the contract?",
+      "shortAnswer": "It can describe operations, parameters, schemas, responses and security schemes, enabling validation and generated clients or tests. It cannot prove business-rule correctness, authorization policy, data persistence, performance or compatibility with undocumented consumers.",
+      "strongAnswerSignals": ["schema-driven checks", "generation opportunities", "clear contract limits"],
+      "tags": ["openapi", "contracts", "schema"], "sourceIds": ["openapi-31"]
+    },
+    {
+      "id": "graphql-test-model", "level": "Middle", "category": "Web, API and data", "kind": "Theory",
+      "question": "How does testing GraphQL differ from testing resource-oriented REST endpoints?",
+      "shortAnswer": "Validate schema and type rules, queries, mutations, variables, fragments, null propagation and field-level authorization. Also test query complexity, batching and resolver failures because one endpoint can expose many operations and partial errors.",
+      "strongAnswerSignals": ["schema and resolver behaviour", "field-level authorization", "complexity and partial errors"],
+      "tags": ["graphql", "api", "authorization"], "sourceIds": ["graphql-spec", "owasp-api-2023"]
+    },
+    {
+      "id": "database-test-scope", "level": "Middle", "category": "Web, API and data", "kind": "Theory",
+      "question": "What database risks should integration tests cover beyond checking that a row exists?",
+      "shortAnswer": "Check constraints, transactions, isolation, defaults, migrations, referential integrity, concurrent updates, encoding, time zones, audit fields and rollback behaviour. Validate through supported interfaces unless direct database access is explicitly part of the test objective.",
+      "strongAnswerSignals": ["integrity and transactions", "concurrency and migrations", "appropriate observation layer"],
+      "tags": ["database", "transactions", "integrity"], "sourceIds": ["postgres-docs", "dou-qa-2022"]
+    },
+    {
+      "id": "sql-joins-and-aggregation", "level": "Junior", "category": "Web, API and data", "kind": "Practical",
+      "question": "How would you explain INNER JOIN, LEFT JOIN, grouping and aggregation during a data-validation task?",
+      "shortAnswer": "INNER JOIN returns matching rows from both sides; LEFT JOIN retains every left-side row and adds matching right data. GROUP BY forms sets for aggregate functions such as COUNT or SUM, while HAVING filters groups after aggregation.",
+      "strongAnswerSignals": ["matching versus retained rows", "grouping before aggregation", "WHERE versus HAVING"],
+      "tags": ["sql", "joins", "aggregation"], "sourceIds": ["postgres-docs", "dou-qa-2022"]
+    },
+
+    {
+      "id": "mobile-app-types", "level": "Junior", "category": "Mobile", "kind": "Theory",
+      "question": "How do native, mobile-web and hybrid applications change the test scope?",
+      "shortAnswer": "Native apps integrate deeply with one platform, mobile web runs in a browser, and hybrid apps combine web content with a native shell. The mix changes installation, permissions, rendering engines, offline behaviour, device APIs and release paths.",
+      "strongAnswerSignals": ["platform integration differences", "installation and release", "device API implications"],
+      "tags": ["native", "hybrid", "mobile-web"], "sourceIds": ["android-test", "appium-docs", "dou-qa-2022"]
+    },
+    {
+      "id": "mobile-device-matrix", "level": "Middle", "category": "Mobile", "kind": "Scenario",
+      "question": "How would you build a useful mobile device matrix with limited physical devices?",
+      "shortAnswer": "Prioritize supported OS versions, production usage, screen classes, chip and memory profiles, vendor customizations and critical hardware. Use emulators for broad deterministic coverage and physical devices for sensors, performance, interruptions and vendor-specific risk.",
+      "strongAnswerSignals": ["usage and support data", "emulator versus device roles", "hardware and vendor risk"],
+      "tags": ["device-matrix", "android", "ios"], "sourceIds": ["android-test", "appium-docs"]
+    },
+    {
+      "id": "mobile-lifecycle-interruptions", "level": "Middle", "category": "Mobile", "kind": "Scenario",
+      "question": "Which lifecycle and interruption scenarios commonly reveal mobile defects?",
+      "shortAnswer": "Exercise background and foreground transitions, process death, rotation, low memory, calls and notifications, lock and unlock, permission changes and interrupted uploads. Verify state restoration, data integrity and absence of duplicate actions.",
+      "strongAnswerSignals": ["process and activity lifecycle", "real interruptions", "state restoration and idempotency"],
+      "tags": ["lifecycle", "interruptions", "state"], "sourceIds": ["android-test", "dou-qa-2022"]
+    },
+    {
+      "id": "mobile-permissions-biometric", "level": "Middle", "category": "Mobile", "kind": "Scenario",
+      "question": "How do you test runtime permissions and biometric authentication without treating them as one happy path?",
+      "shortAnswer": "Cover first request, denial, permanent denial, settings changes, revocation, unavailable hardware, enrollment changes, fallback authentication and app resume. Ensure sensitive actions require fresh authorization when policy demands it and do not expose biometric data.",
+      "strongAnswerSignals": ["permission state transitions", "fallback and hardware states", "security boundary"],
+      "tags": ["permissions", "biometrics", "authentication"], "sourceIds": ["android-test", "owasp-wstg"]
+    },
+    {
+      "id": "mobile-network-offline", "level": "Middle", "category": "Mobile", "kind": "Scenario",
+      "question": "What should a mobile app do when connectivity changes during a user action?",
+      "shortAnswer": "Test offline start, loss and restoration during requests, slow and captive networks, switching Wi-Fi and cellular, queued work, retries and conflict resolution. The UI should communicate state and avoid duplicate purchases or data corruption.",
+      "strongAnswerSignals": ["network transitions", "retry and conflict policy", "user-visible state"],
+      "tags": ["offline", "network", "retries"], "sourceIds": ["android-test", "google-sre"]
+    },
+    {
+      "id": "mobile-upgrade-data-migration", "level": "Senior", "category": "Mobile", "kind": "Scenario",
+      "question": "How would you test an app upgrade that migrates local user data?",
+      "shortAnswer": "Create representative data on supported old versions, upgrade through valid paths, verify schema transformation, encryption, rollback policy and synchronization. Cover low storage, interrupted migration, reinstall, downgrade restrictions and recovery from corrupt legacy data.",
+      "strongAnswerSignals": ["real upgrade paths", "interruption and rollback", "data integrity and recovery"],
+      "tags": ["upgrade", "migration", "local-storage"], "sourceIds": ["android-test", "dou-qa-2022"]
+    },
+
+    {
+      "id": "automation-strategy-roadmap", "level": "Senior", "category": "Automation and CI", "kind": "Scenario",
+      "question": "How would you introduce automation into a product that currently relies on manual regression?",
+      "shortAnswer": "Baseline risks and repetitive cost, improve testability and environments, choose a thin valuable slice, establish ownership and CI feedback, then expand using measured reliability and maintenance cost. Do not begin by translating every manual case.",
+      "strongAnswerSignals": ["value-first roadmap", "testability and ownership", "measures reliability and cost"],
+      "tags": ["automation-strategy", "roadmap", "roi"], "sourceIds": ["playwright-best-practices", "dou-qa-2022"]
+    },
+    {
+      "id": "automation-test-pyramid", "level": "Middle", "category": "Automation and CI", "kind": "Theory",
+      "question": "What is useful about the test-pyramid idea, and where can teams misuse it?",
+      "shortAnswer": "It encourages many fast isolated checks and fewer slow integrated UI checks. It is a heuristic, not a fixed percentage: architecture, risk and available interfaces determine the shape, and duplicated assertions across layers add cost without evidence.",
+      "strongAnswerSignals": ["feedback speed and isolation", "no universal ratio", "avoids duplicated coverage"],
+      "tags": ["test-pyramid", "test-levels", "automation"], "sourceIds": ["playwright-best-practices", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "locator-strategy", "level": "Middle", "category": "Automation and CI", "kind": "Theory",
+      "question": "Which locator strategy makes UI tests both stable and meaningful?",
+      "shortAnswer": "Prefer user-visible roles, labels and stable product contracts; avoid styling and deep DOM structure. A locator should identify what the user interacts with, remain unique, and fail clearly when accessibility or product behaviour changes.",
+      "strongAnswerSignals": ["user-facing locators", "resists DOM coupling", "uniqueness and useful failure"],
+      "tags": ["locators", "playwright", "selenium"], "sourceIds": ["playwright-best-practices", "selenium-docs"]
+    },
+    {
+      "id": "deterministic-waits", "level": "Middle", "category": "Automation and CI", "kind": "Theory",
+      "question": "Why are fixed sleeps a weak synchronization strategy, and what should replace them?",
+      "shortAnswer": "A fixed delay is either unnecessarily slow or still too short under load. Wait for an observable condition such as a user-visible state, network completion or domain event, with a bounded timeout and diagnostics for the unmet condition.",
+      "strongAnswerSignals": ["condition-based synchronization", "bounded timeout", "diagnosable failure"],
+      "tags": ["waits", "flakiness", "synchronization"], "sourceIds": ["playwright-best-practices", "selenium-docs"]
+    },
+    {
+      "id": "parallel-test-isolation", "level": "Senior", "category": "Automation and CI", "kind": "Scenario",
+      "question": "What must be true before a test suite can run safely in parallel?",
+      "shortAnswer": "Tests need isolated users, data and resources, deterministic setup and teardown, no ordering dependency and enough environment capacity. Parallelism should be bounded by the slowest shared dependency and preserve debuggable artifacts per worker.",
+      "strongAnswerSignals": ["data and resource isolation", "capacity awareness", "per-worker diagnostics"],
+      "tags": ["parallelism", "isolation", "ci"], "sourceIds": ["playwright-best-practices", "selenium-docs"]
+    },
+    {
+      "id": "automation-report-signal", "level": "Senior", "category": "Automation and CI", "kind": "Theory",
+      "question": "What information turns an automated test report into an actionable CI signal?",
+      "shortAnswer": "Show the tested build, environment, suite, duration, result trend, retries, failure category and links to logs, traces and screenshots. Separate product failures from infrastructure and known quarantine so a gate reflects trustworthy evidence.",
+      "strongAnswerSignals": ["traceable build and environment", "diagnostic artifacts", "failure classification"],
+      "tags": ["reporting", "ci", "quality-gates"], "sourceIds": ["playwright-best-practices", "dora"]
+    },
+
+    {
+      "id": "oop-in-test-code", "level": "Junior", "category": "Programming", "kind": "Theory",
+      "question": "How can encapsulation, abstraction, inheritance and polymorphism help or hurt test code?",
+      "shortAnswer": "Encapsulation and small abstractions can centralize stable behaviour; polymorphism can support interchangeable drivers. Deep inheritance and hidden side effects make tests harder to understand. Use OOP where it reduces change cost, not to imitate production architecture.",
+      "strongAnswerSignals": ["explains principles through test code", "warns about deep inheritance", "optimizes readability"],
+      "tags": ["oop", "test-code", "design"], "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "interface-versus-abstract-class", "level": "Junior", "category": "Programming", "kind": "Theory",
+      "question": "When would a test framework use an interface instead of an abstract base class?",
+      "shortAnswer": "An interface defines a capability that unrelated implementations can provide; an abstract class can share state and partial implementation. Prefer the smallest contract needed and composition when shared inheritance would couple tests to framework internals.",
+      "strongAnswerSignals": ["contract versus shared implementation", "multiple implementations", "composition awareness"],
+      "tags": ["interfaces", "abstraction", "frameworks"], "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "solid-automation-example", "level": "Middle", "category": "Programming", "kind": "Theory",
+      "question": "Which SOLID ideas are most useful when an automation framework begins to resist change?",
+      "shortAnswer": "Separate unrelated responsibilities, depend on narrow abstractions, and make implementations substitutable without changing tests. Apply principles to concrete change pain; extra layers that have only one implementation can make a small suite harder to navigate.",
+      "strongAnswerSignals": ["specific design pressure", "narrow dependencies", "avoids abstraction for its own sake"],
+      "tags": ["solid", "maintainability", "automation-framework"], "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "dry-kiss-yagni-balance", "level": "Middle", "category": "Programming", "kind": "Theory",
+      "question": "How do DRY, KISS and YAGNI prevent an automation framework from becoming over-engineered?",
+      "shortAnswer": "Remove duplication only when the duplicated knowledge changes together, keep common paths obvious, and do not build extension points for imagined needs. Readability and diagnostic clarity are more valuable than the smallest possible line count.",
+      "strongAnswerSignals": ["knowledge duplication", "simple observable flows", "avoids speculative framework features"],
+      "tags": ["dry", "kiss", "yagni"], "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "exception-handling-tests", "level": "Middle", "category": "Programming", "kind": "Scenario",
+      "question": "How should test code handle exceptions without hiding the original failure?",
+      "shortAnswer": "Catch only when adding context, performing safe cleanup or translating a known boundary. Preserve the cause and stack, avoid broad catch-and-continue behaviour, and let unexpected failures fail the test with relevant artifacts.",
+      "strongAnswerSignals": ["preserves original cause", "bounded cleanup", "no silent continuation"],
+      "tags": ["exceptions", "diagnostics", "test-code"], "sourceIds": ["playwright-best-practices"]
+    },
+    {
+      "id": "concurrency-race-testing", "level": "Senior", "category": "Programming", "kind": "Scenario",
+      "question": "How would you design a repeatable test for a suspected race condition?",
+      "shortAnswer": "Identify the shared state and competing operations, control synchronization to widen the critical interleaving, repeat with unique correlation data, and assert invariants. Capture timing and server evidence instead of relying only on random high concurrency.",
+      "strongAnswerSignals": ["shared state and interleaving", "controlled synchronization", "asserts invariants"],
+      "tags": ["concurrency", "race-condition", "invariants"], "sourceIds": ["google-sre", "postgres-docs"]
+    },
+
+    {
+      "id": "git-commit-branch-merge", "level": "Junior", "category": "Infrastructure", "kind": "Theory",
+      "question": "How do commits, branches and merges support safe delivery work?",
+      "shortAnswer": "A commit records a snapshot and parent history, a branch names a moving line of development, and a merge combines histories. Small coherent commits and reviewed branches make changes traceable, reversible and easier to validate in CI.",
+      "strongAnswerSignals": ["snapshot and history", "branch as a reference", "review and rollback value"],
+      "tags": ["git", "branches", "version-control"], "sourceIds": ["git-docs", "dou-qa-2022"]
+    },
+    {
+      "id": "merge-versus-rebase", "level": "Middle", "category": "Infrastructure", "kind": "Theory",
+      "question": "What trade-off do merge and rebase make when integrating branch history?",
+      "shortAnswer": "Merge preserves the existing branch topology with a merge commit; rebase rewrites commits onto a new base for a linear history. Do not rebase shared history without coordination, and choose based on repository policy and audit needs.",
+      "strongAnswerSignals": ["history preservation versus rewrite", "shared-history safety", "policy context"],
+      "tags": ["git", "merge", "rebase"], "sourceIds": ["git-docs"]
+    },
+    {
+      "id": "container-versus-vm", "level": "Middle", "category": "Infrastructure", "kind": "Theory",
+      "question": "Why can containers improve test reproducibility, and what isolation do they not provide by default?",
+      "shortAnswer": "Containers package an application and dependencies while sharing the host kernel, making environments portable and fast to start. Virtual machines include a guest OS and stronger boundary. Neither removes external-data, network or configuration drift automatically.",
+      "strongAnswerSignals": ["shared kernel versus guest OS", "reproducible dependencies", "recognizes remaining drift"],
+      "tags": ["containers", "virtual-machines", "docker"], "sourceIds": ["docker-docs", "dou-qa-2022"]
+    },
+    {
+      "id": "environment-configuration-management", "level": "Senior", "category": "Infrastructure", "kind": "Scenario",
+      "question": "How do you keep test environments comparable without pretending they are identical to production?",
+      "shortAnswer": "Version infrastructure and configuration, separate secrets, use production-like topology and data shape, and continuously detect drift. Document intentional differences and ensure tests that depend on them run at an appropriate later stage.",
+      "strongAnswerSignals": ["versioned configuration", "drift detection", "explicit environment differences"],
+      "tags": ["environments", "configuration", "drift"], "sourceIds": ["docker-docs", "dora"]
+    },
+    {
+      "id": "linux-log-investigation", "level": "Middle", "category": "Infrastructure", "kind": "Practical",
+      "question": "How would you investigate an error across rotating Linux service logs?",
+      "shortAnswer": "Identify service, host, time window and correlation ID; use journal or file search with bounded filters; include rotated and compressed logs; then connect events across services. Preserve relevant evidence without exposing credentials or personal data.",
+      "strongAnswerSignals": ["time and correlation scope", "rotated logs", "safe evidence handling"],
+      "tags": ["linux", "logs", "diagnostics"], "sourceIds": ["google-sre", "dou-qa-2022"]
+    },
+    {
+      "id": "dns-tls-nat-debugging", "level": "Senior", "category": "Infrastructure", "kind": "Scenario",
+      "question": "How do DNS, TLS and NAT create different failure symptoms in a distributed test environment?",
+      "shortAnswer": "DNS maps names and can fail through resolution or stale records; TLS authenticates and protects the connection and can fail on certificates or negotiation; NAT rewrites addresses and can affect reachability and return paths. Diagnose each layer separately.",
+      "strongAnswerSignals": ["separates name, security and routing", "recognizes caching and certificates", "layered diagnosis"],
+      "tags": ["dns", "tls", "networking"], "sourceIds": ["mdn-http", "google-sre"]
+    },
+
+    {
+      "id": "performance-test-types", "level": "Middle", "category": "Performance and resilience", "kind": "Theory",
+      "question": "How do load, stress, spike and soak tests answer different questions?",
+      "shortAnswer": "Load tests expected demand, stress finds behaviour beyond capacity, spike tests sudden change, and soak tests sustained operation and resource leaks. Each needs a representative workload, explicit service objectives and production-like bottlenecks.",
+      "strongAnswerSignals": ["distinct objectives", "representative workload", "service-level targets"],
+      "tags": ["load", "stress", "soak"], "sourceIds": ["k6-docs", "dou-qa-2022"]
+    },
+    {
+      "id": "workload-model-from-production", "level": "Senior", "category": "Performance and resilience", "kind": "Scenario",
+      "question": "How do you turn production usage into a defensible performance-test workload?",
+      "shortAnswer": "Use traffic volumes, operation mix, concurrency, arrival patterns, payload sizes, cache state and data distribution. Include growth and peak assumptions, document uncertainty, and model think time and asynchronous work instead of scaling one endpoint uniformly.",
+      "strongAnswerSignals": ["operation mix and arrival rate", "data and cache realism", "documents assumptions"],
+      "tags": ["workload-model", "production-data", "capacity"], "sourceIds": ["k6-docs", "google-sre"]
+    },
+    {
+      "id": "latency-percentiles-throughput", "level": "Middle", "category": "Performance and resilience", "kind": "Theory",
+      "question": "Why are latency percentiles, throughput and error rate more useful together than average response time?",
+      "shortAnswer": "Averages hide slow users and distribution shape. Percentiles show tail latency, throughput shows delivered work, and error rate reveals overload or dependency failure. Interpret them with resource saturation and the exact workload model.",
+      "strongAnswerSignals": ["tail latency", "work and failure rates", "correlates resource saturation"],
+      "tags": ["latency", "percentiles", "throughput"], "sourceIds": ["k6-docs", "google-sre"]
+    },
+    {
+      "id": "performance-bottleneck-analysis", "level": "Senior", "category": "Performance and resilience", "kind": "Scenario",
+      "question": "What evidence helps distinguish an application bottleneck from a database or downstream dependency bottleneck?",
+      "shortAnswer": "Correlate end-to-end traces, queue time, service latency, database plans and locks, connection pools, CPU, memory, I/O and dependency errors. Change one controlled variable or bypass a dependency to test the hypothesis.",
+      "strongAnswerSignals": ["cross-layer correlation", "queues and pools", "controlled hypothesis testing"],
+      "tags": ["bottlenecks", "observability", "diagnostics"], "sourceIds": ["google-sre", "k6-docs"]
+    },
+    {
+      "id": "resilience-failure-injection", "level": "Senior", "category": "Performance and resilience", "kind": "Scenario",
+      "question": "How can a team test resilience without creating an uncontrolled outage?",
+      "shortAnswer": "Define a steady-state signal and hypothesis, limit blast radius, inject one realistic failure, monitor automatic safeguards, and stop on agreed thresholds. Begin in controlled environments and promote experiments only when observability and rollback are proven.",
+      "strongAnswerSignals": ["steady state and hypothesis", "bounded blast radius", "stop and rollback criteria"],
+      "tags": ["resilience", "failure-injection", "recovery"], "sourceIds": ["google-sre"]
+    },
+    {
+      "id": "slo-error-budget-testing", "level": "Lead", "category": "Performance and resilience", "kind": "Theory",
+      "question": "How can SLOs and error budgets influence test priorities?",
+      "shortAnswer": "An SLO defines an acceptable reliability target for a user-visible indicator; the error budget is the permitted unreliability. Tests should protect the journeys and failure modes that consume that budget and verify detection, mitigation and recovery.",
+      "strongAnswerSignals": ["user-visible indicator", "permitted unreliability", "links tests to operational risk"],
+      "tags": ["slo", "error-budget", "reliability"], "sourceIds": ["google-sre"]
+    },
+
+    {
+      "id": "threat-model-for-testers", "level": "Senior", "category": "Security and accessibility", "kind": "Theory",
+      "question": "How does a lightweight threat model improve security test selection?",
+      "shortAnswer": "Identify assets, actors, entry points, trust boundaries, data flows and plausible abuse cases, then map controls and residual risk. This focuses tests on system-specific threats instead of treating a generic top-ten list as a complete test plan.",
+      "strongAnswerSignals": ["assets and trust boundaries", "abuse cases", "risk-specific controls"],
+      "tags": ["threat-model", "security", "risk"], "sourceIds": ["owasp-wstg", "owasp-top10-2025"]
+    },
+    {
+      "id": "injection-xss-csrf-differences", "level": "Middle", "category": "Security and accessibility", "kind": "Theory",
+      "question": "How do injection, cross-site scripting and cross-site request forgery differ as test risks?",
+      "shortAnswer": "Injection makes untrusted data alter an interpreter command; XSS executes attacker-controlled content in a browser context; CSRF causes an authenticated browser to send an unwanted request. Their preconditions, evidence and controls differ.",
+      "strongAnswerSignals": ["distinct execution contexts", "preconditions", "control-aware testing"],
+      "tags": ["injection", "xss", "csrf"], "sourceIds": ["owasp-wstg", "owasp-top10-2025"]
+    },
+    {
+      "id": "api-object-authorization", "level": "Middle", "category": "Security and accessibility", "kind": "Scenario",
+      "question": "How would you test object-level authorization in an API?",
+      "shortAnswer": "Create multiple identities and objects, then vary object identifiers across read, update and delete operations. Test nested resources, bulk endpoints and indirect references, and verify denial without leaking object existence or fields.",
+      "strongAnswerSignals": ["cross-user object access", "all operation types", "no information leakage"],
+      "tags": ["bola", "authorization", "api-security"], "sourceIds": ["owasp-api-2023"]
+    },
+    {
+      "id": "tls-and-secret-handling", "level": "Middle", "category": "Security and accessibility", "kind": "Theory",
+      "question": "Why does application-level encryption not replace TLS, and what should testers inspect around secrets?",
+      "shortAnswer": "TLS protects transport, authenticates endpoints and provides integrity across the connection; ad hoc payload encryption rarely replaces those properties. Verify certificate handling, secure storage, rotation, least privilege and that logs, reports and client code expose no secrets.",
+      "strongAnswerSignals": ["transport authentication and integrity", "secret lifecycle", "log and client exposure"],
+      "tags": ["tls", "secrets", "encryption"], "sourceIds": ["mdn-http", "owasp-wstg"]
+    },
+    {
+      "id": "keyboard-and-focus-testing", "level": "Junior", "category": "Security and accessibility", "kind": "Practical",
+      "question": "What can a keyboard-only test reveal about a web interface?",
+      "shortAnswer": "Verify every action is reachable and operable, focus order follows meaning, focus is visible, dialogs trap and restore focus correctly, and no component requires pointer gestures. Keyboard access also exposes semantic and custom-control problems.",
+      "strongAnswerSignals": ["operability and order", "visible focus", "dialog focus management"],
+      "tags": ["accessibility", "keyboard", "focus"], "sourceIds": ["wcag-22"]
+    },
+    {
+      "id": "wcag-conformance-evidence", "level": "Senior", "category": "Security and accessibility", "kind": "Theory",
+      "question": "Why can an automated accessibility scan not establish WCAG conformance by itself?",
+      "shortAnswer": "Tools detect only machine-verifiable patterns. Conformance also needs human evaluation of meaning, keyboard interaction, focus, alternatives, instructions and assistive-technology behaviour across complete processes. Automation is useful for repeatable regression, not final proof.",
+      "strongAnswerSignals": ["automation coverage limits", "human and assistive-technology checks", "complete-process scope"],
+      "tags": ["wcag", "accessibility", "automation"], "sourceIds": ["wcag-22"]
+    },
+
+    {
+      "id": "scrum-versus-kanban", "level": "Junior", "category": "Agile and delivery", "kind": "Theory",
+      "question": "How do Scrum and Kanban shape planning and quality work differently?",
+      "shortAnswer": "Scrum uses a defined framework of accountabilities, events and sprint commitments; Kanban manages flow through visualization, work-in-progress limits and explicit policies. Either can support quality, and teams may combine practices if responsibilities remain clear.",
+      "strongAnswerSignals": ["framework versus flow method", "WIP and commitments", "quality is not method-specific"],
+      "tags": ["scrum", "kanban", "flow"], "sourceIds": ["scrum-guide", "dou-qa-2022"]
+    },
+    {
+      "id": "definition-of-done-quality", "level": "Middle", "category": "Agile and delivery", "kind": "Theory",
+      "question": "What quality purpose does a Definition of Done serve?",
+      "shortAnswer": "It creates a shared, transparent minimum for a usable increment. It may include review, testing, security and documentation expectations, but it should describe achieved quality rather than list one role's activities or hide unfinished work.",
+      "strongAnswerSignals": ["shared quality commitment", "usable increment", "not a QA-only checklist"],
+      "tags": ["definition-of-done", "scrum", "quality"], "sourceIds": ["scrum-guide", "dou-qa-2022"]
+    },
+    {
+      "id": "acceptance-criteria-refinement", "level": "Middle", "category": "Agile and delivery", "kind": "Scenario",
+      "question": "How should QA contribute during refinement before a story reaches development?",
+      "shortAnswer": "Clarify user value, examples, boundaries, error behaviour, data, dependencies, observability and non-functional constraints. Surface unknowns and testability needs early while keeping acceptance criteria focused on outcomes rather than exhaustive implementation steps.",
+      "strongAnswerSignals": ["examples and boundaries", "dependencies and observability", "outcome-focused criteria"],
+      "tags": ["refinement", "acceptance-criteria", "shift-left"], "sourceIds": ["istqb-ctfl-v4", "scrum-guide"]
+    },
+    {
+      "id": "shift-left-without-bottleneck", "level": "Senior", "category": "Agile and delivery", "kind": "Theory",
+      "question": "What does shift-left mean when it is not simply moving more work to QA earlier?",
+      "shortAnswer": "Build quality feedback into discovery, design, code and pipelines: examples, reviews, static analysis, component tests and testability. Responsibility shifts to the whole team, while later integrated and production checks remain necessary.",
+      "strongAnswerSignals": ["earlier feedback mechanisms", "shared ownership", "does not eliminate later testing"],
+      "tags": ["shift-left", "quality-engineering", "feedback"], "sourceIds": ["istqb-ctfl-v4", "dora"]
+    },
+    {
+      "id": "qa-work-within-sprint", "level": "Middle", "category": "Agile and delivery", "kind": "Scenario",
+      "question": "How can a team avoid accumulating all testing at the end of a sprint?",
+      "shortAnswer": "Slice work vertically, agree examples early, test components and contracts continuously, prepare data and environments ahead, and keep work-in-progress low. The team finishes small increments together instead of handing a large batch to QA.",
+      "strongAnswerSignals": ["vertical slicing", "continuous feedback", "limits WIP and handoffs"],
+      "tags": ["sprint", "flow", "continuous-testing"], "sourceIds": ["scrum-guide", "dora"]
+    },
+    {
+      "id": "continuous-delivery-test-selection", "level": "Senior", "category": "Agile and delivery", "kind": "Scenario",
+      "question": "How should test selection change when a team deploys many times per day?",
+      "shortAnswer": "Use fast deterministic pre-merge checks, change-aware service and contract tests, small critical journeys, progressive delivery and production monitoring. Keep rollback safe and move expensive suites off the critical path unless their signal must block release.",
+      "strongAnswerSignals": ["fast layered feedback", "progressive delivery", "rollback and production evidence"],
+      "tags": ["continuous-delivery", "pipelines", "test-selection"], "sourceIds": ["dora", "google-sre"]
+    },
+
+    {
+      "id": "product-and-project-risk", "level": "Middle", "category": "Strategy and risk", "kind": "Theory",
+      "question": "How do product risks differ from project risks in a test strategy?",
+      "shortAnswer": "Product risks concern undesirable quality outcomes such as incorrect behaviour, security or performance; project risks threaten delivery, such as skills, environments or schedule. Tests mitigate product risk, while planning and management actions address both kinds.",
+      "strongAnswerSignals": ["quality outcome versus delivery threat", "different mitigations", "links risks to actions"],
+      "tags": ["product-risk", "project-risk", "strategy"], "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "test-estimation-techniques", "level": "Senior", "category": "Strategy and risk", "kind": "Theory",
+      "question": "How do you estimate testing when scope and uncertainty are both changing?",
+      "shortAnswer": "Decompose work, use analogous evidence and team estimates, include setup, investigation and retest, and express a range with assumptions and risk. Re-estimate when evidence changes instead of defending an early single number.",
+      "strongAnswerSignals": ["decomposition and historical evidence", "range and assumptions", "continuous re-estimation"],
+      "tags": ["estimation", "uncertainty", "planning"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "meaningful-test-coverage", "level": "Senior", "category": "Strategy and risk", "kind": "Theory",
+      "question": "How can a team describe test coverage without using the number of test cases as a proxy for quality?",
+      "shortAnswer": "Report coverage across important requirements, risks, user journeys, configurations, data partitions and code where relevant. Show execution results and known gaps. A useful coverage model explains what evidence exists and what uncertainty remains.",
+      "strongAnswerSignals": ["multidimensional coverage", "known gaps", "rejects case counts as quality"],
+      "tags": ["coverage", "risk", "metrics"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "quality-metric-system", "level": "Lead", "category": "Strategy and risk", "kind": "Scenario",
+      "question": "How would you design a quality dashboard that does not reward gaming?",
+      "shortAnswer": "Start from decisions, combine customer and production outcomes with delivery and test-health signals, show trends and distributions, and attach context. Never rank individuals by defect or test counts; review whether each metric still changes action.",
+      "strongAnswerSignals": ["decision-driven measures", "balanced leading and lagging signals", "anti-gaming design"],
+      "tags": ["metrics", "dashboard", "quality"], "sourceIds": ["dora", "google-sre"]
+    },
+    {
+      "id": "exit-criteria-exception", "level": "Senior", "category": "Strategy and risk", "kind": "Scenario",
+      "question": "What should happen when agreed exit criteria are not met but release pressure remains?",
+      "shortAnswer": "Make the unmet criteria and residual risk explicit, provide impact evidence and mitigation options, identify the accountable decision owner, and record the exception and rollback plan. Criteria guide decisions; they should not be silently redefined after failure.",
+      "strongAnswerSignals": ["transparent exception", "options and decision owner", "rollback and record"],
+      "tags": ["exit-criteria", "release", "risk-acceptance"], "sourceIds": ["istqb-ctfl-v4", "dou-qa-2022"]
+    },
+    {
+      "id": "automation-roi-model", "level": "Senior", "category": "Strategy and risk", "kind": "Theory",
+      "question": "How would you evaluate automation ROI without claiming every automated run saves the full manual execution time?",
+      "shortAnswer": "Compare realistic avoided effort and faster risk feedback with design, implementation, infrastructure, review, triage and maintenance cost. Include reliability and opportunity cost, then revisit the model using actual run and failure data.",
+      "strongAnswerSignals": ["full lifecycle cost", "feedback value", "uses actual maintenance data"],
+      "tags": ["roi", "automation", "cost"], "sourceIds": ["dou-qa-2022", "dora"]
+    },
+
+    {
+      "id": "leadership-conflict-decision", "level": "Lead", "category": "Leadership", "kind": "Scenario",
+      "question": "How do you resolve a technical conflict when both sides have evidence and the decision cannot wait?",
+      "shortAnswer": "Agree on the decision criterion, separate facts from assumptions, run the smallest useful experiment if time permits, and assign the accountable decider. Document the trade-off and revisit it when new evidence appears without turning disagreement into hierarchy.",
+      "strongAnswerSignals": ["decision criteria", "small experiment", "clear accountability"],
+      "tags": ["conflict", "decision-making", "leadership"], "sourceIds": ["google-structured-interviews"]
+    },
+    {
+      "id": "leadership-capacity-system", "level": "Lead", "category": "Leadership", "kind": "Scenario",
+      "question": "What do you change when the QA team is permanently overloaded rather than temporarily busy?",
+      "shortAnswer": "Measure demand, queues and interruptions; reduce low-value work and batch size; shift suitable quality controls to the team; improve environments and automation; and negotiate scope, staffing or service levels. Permanent overtime is not a capacity strategy.",
+      "strongAnswerSignals": ["system-level diagnosis", "reduces demand and handoffs", "negotiates constraints"],
+      "tags": ["capacity", "flow", "team-health"], "sourceIds": ["dora", "google-structured-interviews"]
+    },
+    {
+      "id": "leadership-delegation", "level": "Lead", "category": "Leadership", "kind": "Theory",
+      "question": "How do you delegate ownership without delegating only tasks or abandoning the person?",
+      "shortAnswer": "Define the outcome, boundaries, decision rights and checkpoints, provide context and resources, then let the owner choose the approach. Review evidence and learning rather than prescribing every step, and adjust support to experience and risk.",
+      "strongAnswerSignals": ["outcome and decision rights", "bounded autonomy", "evidence-based checkpoints"],
+      "tags": ["delegation", "ownership", "coaching"], "sourceIds": ["google-structured-interviews"]
+    },
+    {
+      "id": "leadership-executive-quality", "level": "Lead", "category": "Leadership", "kind": "Scenario",
+      "question": "How would you communicate a deteriorating quality trend to executives?",
+      "shortAnswer": "Lead with affected customer and business outcomes, show the trend and confidence, explain likely causes and uncertainty, and present a small set of decisions with cost and risk. Keep detailed test activity available as supporting evidence, not the headline.",
+      "strongAnswerSignals": ["business outcomes", "trend and uncertainty", "decision options"],
+      "tags": ["stakeholders", "executive-communication", "quality"], "sourceIds": ["google-structured-interviews", "dora"]
+    },
+    {
+      "id": "leadership-first-quarter", "level": "Lead", "category": "Leadership", "kind": "Scenario",
+      "question": "What evidence would you collect before changing a team's QA process in your first quarter?",
+      "shortAnswer": "Understand product risks, architecture, incidents, customer signals, delivery flow, test reliability, skills and stakeholder expectations. Observe work and establish a baseline, then choose a small measurable improvement rather than replacing tools immediately.",
+      "strongAnswerSignals": ["product and flow baseline", "listens before changing", "measurable experiment"],
+      "tags": ["first-90-days", "assessment", "change"], "sourceIds": ["google-structured-interviews", "dora"]
+    },
+    {
+      "id": "leadership-change-adoption", "level": "Lead", "category": "Leadership", "kind": "Scenario",
+      "question": "How do you introduce a quality practice that teams initially see as extra process?",
+      "shortAnswer": "Tie it to a visible pain, involve the people doing the work, pilot the smallest version, measure whether it improves an agreed outcome, and remove old work it replaces. Scale only after learning and make ownership explicit.",
+      "strongAnswerSignals": ["starts from real pain", "pilot and measure", "removes replaced work"],
+      "tags": ["change-management", "adoption", "process"], "sourceIds": ["google-structured-interviews", "dora"]
+    },
+
+    {
+      "id": "practical-login-form", "level": "Junior", "category": "Practical tasks", "kind": "Practical",
+      "question": "You receive a login form with email, password and submit. How do you build a compact but defensible test set?",
+      "shortAnswer": "Model field rules and boundaries, valid and invalid credentials, account states, rate limits, error messages, keyboard and accessibility behaviour, sessions, redirects and security. Prioritize the normal login, lockout risk and account isolation before cosmetic variants.",
+      "strongAnswerSignals": ["partitions and account states", "security and session checks", "risk-based prioritization"],
+      "tags": ["login", "test-design", "security"], "sourceIds": ["dou-qa-2022", "owasp-wstg", "wcag-22"]
+    },
+    {
+      "id": "practical-payment-flow", "level": "Middle", "category": "Practical tasks", "kind": "Practical",
+      "question": "How would you test an online payment flow when the payment provider is external?",
+      "shortAnswer": "Cover amount and currency, redirects or tokenization, authentication, success, decline, cancellation, timeout, duplicate submission, webhook ordering, retries, reconciliation and privacy. Use provider test modes and verify local state against provider outcomes.",
+      "strongAnswerSignals": ["asynchronous provider outcomes", "idempotency and reconciliation", "sensitive-data boundaries"],
+      "tags": ["payments", "integrations", "idempotency"], "sourceIds": ["dou-qa-2022", "owasp-api-2023"]
+    },
+    {
+      "id": "practical-search-feature", "level": "Junior", "category": "Practical tasks", "kind": "Practical",
+      "question": "How would you test a search field reused across several pages?",
+      "shortAnswer": "Define matching, tokenization, case, language, whitespace, special characters, empty input, limits, ranking, no-result state, pagination, permissions and performance. Separate shared component behaviour from page-specific scope and data.",
+      "strongAnswerSignals": ["search semantics", "shared versus contextual behaviour", "permissions and performance"],
+      "tags": ["search", "reusable-component", "test-design"], "sourceIds": ["dou-qa-2022", "wcag-22"]
+    },
+    {
+      "id": "practical-failed-message", "level": "Middle", "category": "Practical tasks", "kind": "Scenario",
+      "question": "A messenger shows “Failed to send” for a file. When is that a product defect and how do you investigate?",
+      "shortAnswer": "First determine expected behaviour for size, type, permissions, connectivity and server limits. Inspect client network and logs, correlation IDs, retries and server outcome. The failure may be valid, but missing explanation, unsafe retry or inconsistent state can still be defects.",
+      "strongAnswerSignals": ["validates preconditions", "layered evidence", "distinguishes failure from poor handling"],
+      "tags": ["messaging", "files", "troubleshooting"], "sourceIds": ["dou-qa-2022", "google-sre"]
+    },
+    {
+      "id": "practical-wrong-calculation", "level": "Senior", "category": "Practical tasks", "kind": "Scenario",
+      "question": "A calculator returns an incorrect result for a simple expression. How do you localize the failure?",
+      "shortAnswer": "Reproduce with controlled inputs, inspect the displayed value and request payload, isolate client and service calculation, verify parsing, locale, types and rounding, then compare logs and persisted data. Reduce the case until one layer violates a clear invariant.",
+      "strongAnswerSignals": ["reduces the example", "isolates layers", "checks parsing and numeric rules"],
+      "tags": ["root-cause", "calculation", "debugging"], "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "practical-legacy-no-documentation", "level": "Senior", "category": "Practical tasks", "kind": "Scenario",
+      "question": "You join a mature product with no reliable documentation and continuous feature demand. What do you do first?",
+      "shortAnswer": "Map critical users, flows, architecture, data and incidents; observe production signals; interview domain owners; create a small risk inventory and smoke set; document discoveries alongside current work. Do not pause delivery for a complete retrospective documentation project.",
+      "strongAnswerSignals": ["risk-led discovery", "production and stakeholder evidence", "incremental documentation"],
+      "tags": ["legacy", "discovery", "strategy"], "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    }
+  ]
+}

@@ -247,7 +247,19 @@ export function WorkspaceApp() {
 
   return (
     <main className="kb-shell">
-      <SiteSidebar activeSection="jobs" mobileOpen={mobileNav} mode="private" online={online}/>
+      <SiteSidebar
+        activeSection="jobs"
+        activeSubsection={statusFilter}
+        mobileOpen={mobileNav}
+        mode="private"
+        onSelectSubsection={(next) => { setStatusFilter(next as JobStatus | "ALL"); setMobileNav(false); }}
+        online={online}
+        secondaryItems={[
+          { id: "ALL", label: "All statuses", count: jobs.length },
+          ...STATUS_OPTIONS.map((status) => ({ id: status.value, label: status.label, count: jobs.filter((job) => job.status === status.value).length })),
+        ]}
+        secondaryTitle="Jobs"
+      />
 
       <section className="kb-main">
         <SiteTopbar mode="private" onMenu={() => setMobileNav((value) => !value)} title="Jobs">

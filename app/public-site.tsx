@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection } from "./site-navigation";
-import interviewContent from "@/content/interview/common-qa.json";
+import Image from "next/image";
+import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection, type SubnavItem } from "./site-navigation";
+import interviewCatalog from "@/content/interview/catalog";
 
 type PublicSection = SiteSection;
 
@@ -28,16 +29,59 @@ interface InterviewQuestion {
   id: string;
   level: InterviewLevel;
   category: string;
+  kind?: string;
   question: string;
   shortAnswer: string;
   strongAnswerSignals: string[];
   sourceIds: string[];
+  tags?: string[];
+  media?: Array<{ src: string; alt: string; caption: string; credit: string }>;
 }
 
-const interviewQuestions = interviewContent.questions as InterviewQuestion[];
+interface InterviewSource {
+  id: string;
+  title: string;
+  url: string;
+  publisher: string;
+  kind: string;
+  role: string;
+}
+
+interface InterviewTaxonomyItem {
+  id: string;
+  label: string;
+  category?: string;
+  description: string;
+}
+
+const interviewQuestions = interviewCatalog.questions as InterviewQuestion[];
 const interviewLevels: Array<"All" | InterviewLevel> = ["All", "Junior", "Middle", "Senior", "Lead"];
-const interviewCategories = ["All", ...Array.from(new Set(interviewQuestions.map((question) => question.category)))];
-const interviewSources = new Map(interviewContent.sources.map((source) => [source.id, source]));
+const interviewTaxonomy = interviewCatalog.taxonomy as InterviewTaxonomyItem[];
+const interviewSourcesList = interviewCatalog.sources as InterviewSource[];
+const interviewSources = new Map(interviewSourcesList.map((source) => [source.id, source]));
+
+const fallbackTags: Record<string, string[]> = {
+  Fundamentals: ["testing-theory", "core"],
+  "Test design": ["test-design", "coverage"],
+  "Documentation and defects": ["documentation", "defects"],
+  "Web, API and data": ["web", "api", "data"],
+  Mobile: ["mobile", "devices"],
+  "Automation and CI": ["automation", "ci"],
+  Programming: ["programming", "test-code"],
+  Infrastructure: ["infrastructure", "devops"],
+  "Performance and resilience": ["performance", "resilience"],
+  "Security and accessibility": ["security", "accessibility"],
+  "Agile and delivery": ["agile", "delivery"],
+  "Strategy and risk": ["strategy", "risk"],
+  Leadership: ["leadership", "people"],
+  "Practical tasks": ["practical", "scenario"],
+};
+
+function tagsFor(question: InterviewQuestion) {
+  return question.tags?.length ? question.tags : fallbackTags[question.category] ?? ["qa"];
+}
+
+const interviewTags = Array.from(new Set(interviewQuestions.flatMap(tagsFor))).sort((a, b) => a.localeCompare(b));
 
 const knowledge: Record<Exclude<PublicSection, "jobs">, {
   title: string;
@@ -168,15 +212,48 @@ function currentSectionFromHash(): PublicSection {
   return navigationItems.some((item) => item.id === candidate) ? candidate : "jobs";
 }
 
+function topicId(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function secondaryNavigation(section: PublicSection, jobs: PublicJob[]): SubnavItem[] {
+  if (section === "interview") {
+    return interviewTaxonomy.map((item) => ({
+      id: item.id,
+      label: item.label,
+      count: item.category ? interviewQuestions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewQuestions.length : undefined,
+    }));
+  }
+
+  if (section === "jobs") {
+    const sources = Array.from(new Set(jobs.map((job) => job.source))).sort();
+    return [
+      { id: "all", label: "All vacancies", count: jobs.length },
+      { id: "remote", label: "Remote", count: jobs.filter((job) => job.remote).length },
+      ...sources.map((source) => ({ id: `source:${source}`, label: source.replace(/^\w+:/, ""), count: jobs.filter((job) => job.source === source).length })),
+    ];
+  }
+
+  const items = knowledge[section].items;
+  return [
+    { id: "all", label: "All topics", count: items.length },
+    ...items.map((item) => ({ id: topicId(item.title), label: item.title })),
+  ];
+}
+
 export default function PublicSite() {
   const [section, setSection] = useState<PublicSection>("jobs");
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
+  const [subsection, setSubsection] = useState("all");
 
   useEffect(() => {
-    const onHashChange = () => setSection(currentSectionFromHash());
+    const onHashChange = () => {
+      setSection(currentSectionFromHash());
+      setSubsection("all");
+    };
     const frame = window.requestAnimationFrame(onHashChange);
     window.addEventListener("hashchange", onHashChange);
     return () => {
@@ -208,22 +285,34 @@ export default function PublicSite() {
     const needle = query.trim().toLowerCase();
     return jobs
       .filter((job) => !needle || displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(needle))
+      .filter((job) => subsection === "all" || (subsection === "remote" && job.remote) || (subsection.startsWith("source:") && job.source === subsection.slice(7)))
       .sort((a, b) => new Date(b.postedAt ?? b.discoveredAt).getTime() - new Date(a.postedAt ?? a.discoveredAt).getTime())
       .slice(0, 50);
-  }, [jobs, query]);
+  }, [jobs, query, subsection]);
 
   const openSection = (next: PublicSection) => {
     setSection(next);
+    setSubsection("all");
     setMobileNav(false);
     window.history.replaceState(null, "", next === "jobs" ? window.location.pathname : `#${next}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Jobs";
+  const secondaryItems = secondaryNavigation(section, jobs);
 
   return (
     <main className="kb-shell">
-      <SiteSidebar activeSection={section} mobileOpen={mobileNav} mode="public" onSelect={openSection}/>
+      <SiteSidebar
+        activeSection={section}
+        activeSubsection={subsection}
+        mobileOpen={mobileNav}
+        mode="public"
+        onSelect={openSection}
+        onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
+        secondaryItems={secondaryItems}
+        secondaryTitle={activeLabel}
+      />
 
       <section className="kb-main">
         <SiteTopbar mode="public" onMenu={() => setMobileNav((value) => !value)} title={activeLabel}>
@@ -263,7 +352,7 @@ export default function PublicSite() {
             </section>
           </div>
         ) : (
-          <KnowledgeSection section={section}/>
+          <KnowledgeSection activeTopic={subsection} onTopicChange={setSubsection} section={section}/>
         )}
       </section>
 
@@ -272,22 +361,19 @@ export default function PublicSite() {
   );
 }
 
-function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs"> }) {
-  if (section === "interview") return <InterviewKnowledgeBase/>;
+function KnowledgeSection({ activeTopic, onTopicChange, section }: { activeTopic: string; onTopicChange: (topic: string) => void; section: Exclude<PublicSection, "jobs"> }) {
+  if (section === "interview") return <InterviewKnowledgeBase activeTopic={activeTopic} onTopicChange={onTopicChange}/>;
 
   const content = knowledge[section];
+  const visibleItems = activeTopic === "all" ? content.items : content.items.filter((item) => topicId(item.title) === activeTopic);
   return (
     <div className="kb-content">
       <header className="kb-page-head kb-article-head">
         <div><span>{content.title.toUpperCase()}</span><h1>{content.title}</h1><p>{content.description}</p></div>
         <div className="kb-outline-badge"><i/>Public section</div>
       </header>
-      <section className="kb-article-intro">
-        <div><strong>Section index</strong><span>{content.items.length} topics</span></div>
-        <p>Questions, answers, notes, links, and examples will be organized under these topics.</p>
-      </section>
       <div className="kb-topic-grid">
-        {content.items.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <article key={item.title}>
             <div><span>{String(index + 1).padStart(2, "0")}</span><small>Outline</small></div>
             <h2>{item.title}</h2>
@@ -300,53 +386,53 @@ function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs">
   );
 }
 
-function InterviewKnowledgeBase() {
+function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: string; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<(typeof interviewLevels)[number]>("All");
-  const [category, setCategory] = useState("All");
+  const [tag, setTag] = useState("All");
+
+  const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
+  const activeCategory = activeTaxonomy?.category;
 
   const visibleQuestions = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return interviewQuestions.filter((item) => {
+      const tags = tagsFor(item);
       const matchesLevel = level === "All" || item.level === level;
-      const matchesCategory = category === "All" || item.category === category;
-      const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
-      return matchesLevel && matchesCategory && (!needle || searchable.includes(needle));
+      const matchesCategory = !activeCategory || item.category === activeCategory;
+      const matchesTag = tag === "All" || tags.includes(tag);
+      const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
+      return matchesLevel && matchesCategory && matchesTag && (!needle || searchable.includes(needle));
     });
-  }, [category, level, query]);
+  }, [activeCategory, level, query, tag]);
+
+  if (activeTopic === "methodology") return <InterviewMethodology onBack={() => onTopicChange("all")}/>;
 
   return (
     <div className="kb-content iq-page">
       <header className="kb-page-head iq-head">
         <div>
           <span>INTERVIEW QUESTIONS</span>
-          <h1>QA interview core</h1>
-          <p>Common questions with concise answers and signals that distinguish a strong response from memorized terminology.</p>
+          <h1>{activeTaxonomy?.category ? activeTaxonomy.label : "QA interview knowledge base"}</h1>
+          <p>{activeTaxonomy?.description ?? interviewCatalog.description}</p>
         </div>
         <div className="kb-page-stats">
           <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
-          <div><strong>{interviewCategories.length - 1}</strong><span>Topics</span></div>
-          <div><strong>v{interviewContent.version}</strong><span>Reviewed set</span></div>
+          <div><strong>{interviewTaxonomy.filter((item) => item.category).length}</strong><span>Topics</span></div>
+          <div><strong>{interviewSourcesList.length}</strong><span>Sources</span></div>
         </div>
       </header>
-
-      <section className="iq-source-note">
-        <div>
-          <strong>How this collection is maintained</strong>
-          <p>The questions are versioned with the site. DOU is used as a coverage signal; answers are rewritten and checked against current technical references. Personal progress belongs in the private database, not in this public content.</p>
-        </div>
-        <a href="https://dou.ua/lenta/articles/interview-qa/" target="_blank" rel="noreferrer">DOU source list ↗</a>
-      </section>
 
       <section className="iq-toolbar" aria-label="Interview question filters">
         <label className="iq-search">
           <span>⌕</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search questions, answers, or skills"/>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search questions, answers, tags, or skills"/>
         </label>
         <label className="iq-category">
-          <span>Topic</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
-            {interviewCategories.map((item) => <option key={item} value={item}>{item}</option>)}
+          <span>Tag</span>
+          <select value={tag} onChange={(event) => setTag(event.target.value)}>
+            <option value="All">All tags</option>
+            {interviewTags.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
       </section>
@@ -355,43 +441,87 @@ function InterviewKnowledgeBase() {
         {interviewLevels.map((item) => (
           <button key={item} className={level === item ? "active" : ""} onClick={() => setLevel(item)}>{item}</button>
         ))}
+        {(activeCategory || tag !== "All" || query || level !== "All") && <button className="iq-clear" onClick={() => { setQuery(""); setLevel("All"); setTag("All"); onTopicChange("all"); }}>Clear filters</button>}
         <span>{visibleQuestions.length} shown</span>
       </div>
 
       <div className="iq-list">
-        {visibleQuestions.map((item, index) => (
-          <details className="iq-question" key={item.id}>
-            <summary>
-              <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
-              <div>
-                <small>{item.category} · {String(index + 1).padStart(2, "0")}</small>
-                <h2>{item.question}</h2>
+        {visibleQuestions.map((item, index) => {
+          const tags = tagsFor(item);
+          return (
+            <details className="iq-question" key={item.id}>
+              <summary>
+                <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
+                <div>
+                  <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(index + 1).padStart(3, "0")}</small>
+                  <h2>{item.question}</h2>
+                  <span className="iq-question-tags">{tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}</span>
+                </div>
+                <i aria-hidden="true">+</i>
+              </summary>
+              <div className="iq-answer">
+                <section>
+                  <h3>Answer</h3>
+                  <p>{item.shortAnswer}</p>
+                  {item.media?.map((media) => (
+                    <figure className="iq-media" key={media.src}>
+                      <Image src={media.src} alt={media.alt} height={430} loading="lazy" unoptimized width={760}/>
+                      <figcaption>{media.caption}<small>{media.credit}</small></figcaption>
+                    </figure>
+                  ))}
+                </section>
+                <section>
+                  <h3>Strong answer includes</h3>
+                  <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
+                  <div className="iq-answer-tags">{tags.map((questionTag) => <button key={questionTag} onClick={() => setTag(questionTag)}>#{questionTag}</button>)}</div>
+                </section>
+                <footer>
+                  <span>References</span>
+                  {item.sourceIds.map((sourceId) => {
+                    const source = interviewSources.get(sourceId);
+                    return source ? <a href={source.url} target="_blank" rel="noreferrer" key={sourceId}>{source.publisher}: {source.title} ↗</a> : null;
+                  })}
+                </footer>
               </div>
-              <i aria-hidden="true">+</i>
-            </summary>
-            <div className="iq-answer">
-              <section>
-                <h3>Short answer</h3>
-                <p>{item.shortAnswer}</p>
-              </section>
-              <section>
-                <h3>Strong answer includes</h3>
-                <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
-              </section>
-              <footer>
-                <span>References</span>
-                {item.sourceIds.map((sourceId) => {
-                  const source = interviewSources.get(sourceId);
-                  return source ? <a href={source.url} target="_blank" rel="noreferrer" key={sourceId}>{source.title} ↗</a> : null;
-                })}
-              </footer>
-            </div>
-          </details>
-        ))}
+            </details>
+          );
+        })}
         {visibleQuestions.length === 0 && (
-          <div className="kb-empty iq-empty"><strong>No matching questions</strong><span>Change the level, topic, or search phrase.</span></div>
+          <div className="kb-empty iq-empty"><strong>No matching questions</strong><span>Change the level, section, tag, or search phrase.</span></div>
         )}
       </div>
+    </div>
+  );
+}
+
+function InterviewMethodology({ onBack }: { onBack: () => void }) {
+  const method = interviewCatalog.methodology;
+  return (
+    <div className="kb-content iq-page iq-methodology">
+      <header className="kb-page-head iq-head">
+        <div><span>INTERVIEW QUESTIONS</span><h1>Sources & methodology</h1><p>The research, source roles, editorial rules and storage model behind the public collection.</p></div>
+        <button className="iq-back" onClick={onBack}>View all questions</button>
+      </header>
+
+      <section className="iq-method-grid">
+        <article><span>01</span><h2>Coverage</h2><p>{method.coverage}</p></article>
+        <article><span>02</span><h2>Answer validation</h2><p>{method.answers}</p></article>
+        <article><span>03</span><h2>Publishing</h2><p>{method.publishing}</p></article>
+        <article><span>04</span><h2>Images and diagrams</h2><p>{method.media}</p></article>
+      </section>
+
+      <section className="iq-source-catalog">
+        <header><div><span>SOURCE CATALOG</span><h2>{interviewSourcesList.length} research and validation sources</h2></div><p>Community collections show what is asked. Official documentation, specifications and standards are used to validate technical answers.</p></header>
+        <div>
+          {interviewSourcesList.map((source) => (
+            <article key={source.id}>
+              <div><span>{source.kind}</span><small>{source.publisher}</small></div>
+              <h3><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a></h3>
+              <p>{source.role}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
