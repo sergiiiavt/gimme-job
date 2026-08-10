@@ -102,7 +102,12 @@ interface ProfileForm {
   contactLocation: string;
 }
 
-const API = "http://127.0.0.1:4317/api";
+function apiBase() {
+  if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    return "http://127.0.0.1:4317/api";
+  }
+  return "/api";
+}
 
 const demoAnalysis = (
   score: number,
@@ -257,7 +262,7 @@ function relativeDate(value: string | null) {
 }
 
 async function api<T>(path: string, method = "GET", payload?: unknown): Promise<T> {
-  const response = await fetch(`${API}${path}`, {
+  const response = await fetch(`${apiBase()}${path}`, {
     method,
     headers: payload ? { "content-type": "application/json" } : undefined,
     body: payload ? JSON.stringify(payload) : undefined,
@@ -287,11 +292,11 @@ export default function Home() {
       const result = await api<DashboardData>("/dashboard");
       setData(result);
       setOnline(true);
-      if (!quiet) setNotice({ tone: "success", text: "Dashboard is connected to the local agent." });
+      if (!quiet) setNotice({ tone: "success", text: "Dashboard is connected to JobPilot Cloud." });
     } catch {
       setOnline(false);
       setData(DEMO);
-      if (!quiet) setNotice({ tone: "error", text: "Local API is offline. Start it with npm run local; demo data is shown for now." });
+      if (!quiet) setNotice({ tone: "error", text: "JobPilot API is unavailable; demo data is shown for now." });
     }
   };
 
@@ -353,7 +358,7 @@ export default function Home() {
 
   const run = async (key: string, path: string, payload: unknown, success: string) => {
     if (!online) {
-      setNotice({ tone: "error", text: "Start the local agent first: npm run local" });
+      setNotice({ tone: "error", text: "JobPilot API is unavailable." });
       return;
     }
     setBusy(key);
@@ -370,7 +375,7 @@ export default function Home() {
   };
 
   const saveProfile = async () => {
-    if (!online) return setNotice({ tone: "error", text: "Start the local agent first." });
+    if (!online) return setNotice({ tone: "error", text: "JobPilot API is unavailable." });
     setBusy("profile");
     try {
       const list = (value: string) => value.split(/\n|,/).map((item) => item.trim()).filter(Boolean);
@@ -394,7 +399,7 @@ export default function Home() {
       };
       await api("/profile", "PUT", { profile: next });
       setProfileRaw(next);
-      setNotice({ tone: "success", text: "Candidate profile saved locally." });
+      setNotice({ tone: "success", text: "Candidate profile saved to your private cloud database." });
     } catch (error) {
       setNotice({ tone: "error", text: error instanceof Error ? error.message : String(error) });
     } finally {
@@ -403,7 +408,7 @@ export default function Home() {
   };
 
   const saveSources = async () => {
-    if (!online) return setNotice({ tone: "error", text: "Start the local agent first." });
+    if (!online) return setNotice({ tone: "error", text: "JobPilot API is unavailable." });
     setBusy("sources");
     try {
       await api("/sources", "PUT", { sources: JSON.parse(sourcesText) });
@@ -449,7 +454,7 @@ export default function Home() {
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark"><Icon name="spark" size={18}/></div>
-          <div><strong>JobPilot</strong><span>local agent</span></div>
+          <div><strong>JobPilot</strong><span>cloud agent</span></div>
         </div>
         <nav className="main-nav" aria-label="Main navigation">
           <p className="nav-label">Workspace</p>
@@ -462,7 +467,7 @@ export default function Home() {
         <div className="sidebar-bottom">
           <div className="agent-state">
             <span className={`state-dot ${online ? "on" : "off"}`}/>
-            <div><strong>{online ? "Agent online" : online === null ? "Connecting…" : "Demo mode"}</strong><span>{online ? "Local data only" : "Run npm run local"}</span></div>
+            <div><strong>{online ? "Agent online" : online === null ? "Connecting…" : "Demo mode"}</strong><span>{online ? "Private cloud data" : "API unavailable"}</span></div>
           </div>
           <div className="mini-profile"><span>{profile.name.slice(0, 1) || "Y"}</span><div><strong>{profile.name}</strong><small>{profile.headline.split("/")[0]}</small></div></div>
         </div>
@@ -480,7 +485,7 @@ export default function Home() {
           </div>
         </header>
 
-        {!online && online !== null && <div className="offline-strip"><span>Demo preview</span> The interface is ready. Start the API with <code>npm run local</code> to use your data and actions.</div>}
+        {!online && online !== null && <div className="offline-strip"><span>Demo preview</span> The interface is ready, but the private cloud API is currently unavailable.</div>}
 
         <div className="page-content">
           {view === "overview" && <Overview data={data} jobs={data.jobs} queue={queue} onOpen={(id, tab = "match") => { setSelectedId(id); setDetailTab(tab); }} onView={setView} onRun={() => void run("run", "/run", { limit: 25 }, "New jobs collected and analyzed. Nothing was sent.")} busy={busy === "run"}/>}
@@ -628,7 +633,7 @@ function SettingsView({ profile, setProfile, sourcesText, setSourcesText, connec
   const update = (key: keyof ProfileForm, value: string) => setProfile({ ...profile, [key]: value });
   const boardCount = Object.values(connections.boards).reduce((sum, value) => sum + value, 0);
   return <>
-    <PageHeading eyebrow="Setup" title="Connect your search stack." copy="Everything stays on this computer: profile, tokens, jobs, analysis, drafts, and approval history."/>
+    <PageHeading eyebrow="Setup" title="Connect your search stack." copy="Profile, jobs, analysis, drafts, and approval history stay in your private cloud workspace."/>
     <section className="settings-grid">
       <div className="panel settings-panel">
         <PanelTitle title="Candidate profile" copy="The only facts the agent may use when tailoring your resume"/>
@@ -636,8 +641,8 @@ function SettingsView({ profile, setProfile, sourcesText, setSourcesText, connec
         <div className="panel-footer"><span>Keep achievements and work history factual in <code>config/profile.json</code>.</span><button className="primary-button" disabled={busy !== null} onClick={onSaveProfile}>{busy === "profile" ? <span className="spinner"/> : <Icon name="check"/>} Save profile</button></div>
       </div>
       <div className="settings-side">
-        <div className="panel connections-panel"><PanelTitle title="Connections" copy="Local credentials and data sources"/>
-          <Connection icon="mail" title="Gmail" copy={connections.gmail.connected ? "Connected for alerts and approved sends" : connections.gmail.configured ? "Credentials ready — finish OAuth" : "Add data/google-credentials.json first"} connected={connections.gmail.connected} action={!connections.gmail.connected ? <button onClick={onConnectGmail} disabled={busy !== null}>Connect</button> : undefined}/>
+        <div className="panel connections-panel"><PanelTitle title="Connections" copy="Private cloud credentials and data sources"/>
+          <Connection icon="mail" title="Gmail" copy={connections.gmail.connected ? "Connected for alerts and approved sends" : connections.gmail.configured ? "Credentials ready — finish OAuth" : "Available after the first cloud deployment"} connected={connections.gmail.connected} action={!connections.gmail.connected ? <button onClick={onConnectGmail} disabled={busy !== null}>Connect</button> : undefined}/>
           <Connection icon="spark" title="OpenAI" copy={connections.openai.connected ? `Agent analysis · ${connections.openai.model}` : "Deterministic analysis is active"} connected={connections.openai.connected}/>
           <Connection icon="briefcase" title="Job sources" copy={`${boardCount} direct feeds · LinkedIn/Djinni/Work.ua via Gmail alerts`} connected={boardCount > 0}/>
         </div>
