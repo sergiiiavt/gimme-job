@@ -1,0 +1,18 @@
+{
+  "rss": [
+    {
+      "name": "dou-qa",
+      "url": "https://jobs.dou.ua/vacancies/feeds/?search=QA"
+    }
+  ],
+  "greenhouse": [],
+  "lever": [],
+  "ashby": [],
+  "gmail": {
+    "enabled": false,
+    "query": "label:JobAlerts newer_than:14d",
+    "maxResults": 100,
+    "allowedSendDomains": []
+  },
+  "manualFiles": ["./data/manual-jobs.json"]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "Your Name",
+  "headline": "QA Lead / Team Lead Test Engineer",
+  "summary": "QA professional with 10+ years in software testing and leadership experience.",
+  "targetRoles": [
+    "QA Lead",
+    "Team Lead Test Engineer",
+    "Test Automation Lead",
+    "Senior QA Engineer"
+  ],
+  "locations": ["Kyiv", "Remote", "Ukraine"],
+  "languages": ["English", "Ukrainian"],
+  "skills": [
+    "QA leadership",
+    "Manual testing",
+    "Test automation",
+    "Python",
+    "TypeScript",
+    "Playwright",
+    "Selenium",
+    "Pytest",
+    "API testing",
+    "SQL",
+    "Azure DevOps",
+    "Scrum",
+    "Mentoring",
+    "Stakeholder communication",
+    "AI-assisted testing"
+  ],
+  "mustHaveSignals": ["remote", "Kyiv", "Ukraine"],
+  "preferredSignals": [
+    "reservation from mobilization",
+    "бронювання",
+    "flexible",
+    "part-time",
+    "leadership",
+    "automation"
+  ],
+  "excludedSignals": [],
+  "facts": [
+    "10+ years of software testing experience across web applications and APIs.",
+    "4+ years of test automation experience with Python and TypeScript tooling.",
+    "Led a QA team of 12, including planning, mentoring, quality processes, and stakeholder communication."
+  ],
+  "experience": [
+    {
+      "company": "Replace with company",
+      "role": "QA Lead",
+      "period": "Replace with dates",
+      "achievements": [
+        "Replace this example with a factual, measurable achievement."
+      ]
+    }
+  ],
+  "education": [],
+  "links": [],
+  "contact": {
+    "email": "replace@example.com",
+    "phone": "",
+    "location": "Kyiv, Ukraine"
+  }
+}
