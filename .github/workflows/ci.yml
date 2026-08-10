@@ -37,6 +37,9 @@ jobs:
       - name: Type-check local agent
         run: npm run check:agent
 
+      - name: Validate interview content
+        run: npm run check:content
+
       - name: Build production artifact
         run: npm run build
 
