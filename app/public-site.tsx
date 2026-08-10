@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection } from "./site-navigation";
+import interviewContent from "@/content/interview/common-qa.json";
 
 type PublicSection = SiteSection;
 
@@ -20,6 +21,23 @@ interface PublicJob {
   postedAt: string | null;
   discoveredAt: string;
 }
+
+type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
+
+interface InterviewQuestion {
+  id: string;
+  level: InterviewLevel;
+  category: string;
+  question: string;
+  shortAnswer: string;
+  strongAnswerSignals: string[];
+  sourceIds: string[];
+}
+
+const interviewQuestions = interviewContent.questions as InterviewQuestion[];
+const interviewLevels: Array<"All" | InterviewLevel> = ["All", "Junior", "Middle", "Senior", "Lead"];
+const interviewCategories = ["All", ...Array.from(new Set(interviewQuestions.map((question) => question.category)))];
+const interviewSources = new Map(interviewContent.sources.map((source) => [source.id, source]));
 
 const knowledge: Record<Exclude<PublicSection, "jobs">, {
   title: string;
@@ -255,6 +273,8 @@ export default function PublicSite() {
 }
 
 function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs"> }) {
+  if (section === "interview") return <InterviewKnowledgeBase/>;
+
   const content = knowledge[section];
   return (
     <div className="kb-content">
@@ -275,6 +295,102 @@ function KnowledgeSection({ section }: { section: Exclude<PublicSection, "jobs">
             <footer>{item.tags.map((tag) => <em key={tag}>{tag}</em>)}</footer>
           </article>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function InterviewKnowledgeBase() {
+  const [query, setQuery] = useState("");
+  const [level, setLevel] = useState<(typeof interviewLevels)[number]>("All");
+  const [category, setCategory] = useState("All");
+
+  const visibleQuestions = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return interviewQuestions.filter((item) => {
+      const matchesLevel = level === "All" || item.level === level;
+      const matchesCategory = category === "All" || item.category === category;
+      const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
+      return matchesLevel && matchesCategory && (!needle || searchable.includes(needle));
+    });
+  }, [category, level, query]);
+
+  return (
+    <div className="kb-content iq-page">
+      <header className="kb-page-head iq-head">
+        <div>
+          <span>INTERVIEW QUESTIONS</span>
+          <h1>QA interview core</h1>
+          <p>Common questions with concise answers and signals that distinguish a strong response from memorized terminology.</p>
+        </div>
+        <div className="kb-page-stats">
+          <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
+          <div><strong>{interviewCategories.length - 1}</strong><span>Topics</span></div>
+          <div><strong>v{interviewContent.version}</strong><span>Reviewed set</span></div>
+        </div>
+      </header>
+
+      <section className="iq-source-note">
+        <div>
+          <strong>How this collection is maintained</strong>
+          <p>The questions are versioned with the site. DOU is used as a coverage signal; answers are rewritten and checked against current technical references. Personal progress belongs in the private database, not in this public content.</p>
+        </div>
+        <a href="https://dou.ua/lenta/articles/interview-qa/" target="_blank" rel="noreferrer">DOU source list ↗</a>
+      </section>
+
+      <section className="iq-toolbar" aria-label="Interview question filters">
+        <label className="iq-search">
+          <span>⌕</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search questions, answers, or skills"/>
+        </label>
+        <label className="iq-category">
+          <span>Topic</span>
+          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            {interviewCategories.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+      </section>
+
+      <div className="iq-levels" aria-label="Seniority filter">
+        {interviewLevels.map((item) => (
+          <button key={item} className={level === item ? "active" : ""} onClick={() => setLevel(item)}>{item}</button>
+        ))}
+        <span>{visibleQuestions.length} shown</span>
+      </div>
+
+      <div className="iq-list">
+        {visibleQuestions.map((item, index) => (
+          <details className="iq-question" key={item.id}>
+            <summary>
+              <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
+              <div>
+                <small>{item.category} · {String(index + 1).padStart(2, "0")}</small>
+                <h2>{item.question}</h2>
+              </div>
+              <i aria-hidden="true">+</i>
+            </summary>
+            <div className="iq-answer">
+              <section>
+                <h3>Short answer</h3>
+                <p>{item.shortAnswer}</p>
+              </section>
+              <section>
+                <h3>Strong answer includes</h3>
+                <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
+              </section>
+              <footer>
+                <span>References</span>
+                {item.sourceIds.map((sourceId) => {
+                  const source = interviewSources.get(sourceId);
+                  return source ? <a href={source.url} target="_blank" rel="noreferrer" key={sourceId}>{source.title} ↗</a> : null;
+                })}
+              </footer>
+            </div>
+          </details>
+        ))}
+        {visibleQuestions.length === 0 && (
+          <div className="kb-empty iq-empty"><strong>No matching questions</strong><span>Change the level, topic, or search phrase.</span></div>
+        )}
       </div>
     </div>
   );

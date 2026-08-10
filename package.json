@@ -17,6 +17,7 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
+    "check:content": "node scripts/validate-interview-content.mjs",
     "check:agent": "tsc -p tsconfig.agent.json",
     "check": "npm run lint && npm run check:agent",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",

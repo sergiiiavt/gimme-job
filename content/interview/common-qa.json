@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "title": "Common QA interview core",
+  "description": "A reviewed starting set of common QA questions. Wording and answers are original; external sources are used as topic signals and technical references.",
+  "lastReviewedAt": "2026-08-10",
+  "sources": [
+    { "id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions for Junior, Middle and Senior", "url": "https://dou.ua/lenta/articles/interview-qa/", "role": "Topic coverage and interview signal" },
+    { "id": "istqb-ctfl-v4", "title": "ISTQB Certified Tester Foundation Level v4.0", "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/", "role": "Testing terminology and answer validation" },
+    { "id": "playwright-best-practices", "title": "Playwright best practices", "url": "https://playwright.dev/docs/best-practices", "role": "Modern web automation guidance" },
+    { "id": "owasp-wstg", "title": "OWASP Web Security Testing Guide", "url": "https://owasp.org/www-project-web-security-testing-guide/stable/", "role": "Web security testing reference" },
+    { "id": "google-structured-interviews", "title": "Google re:Work — structured interviewing", "url": "https://rework.withgoogle.com/intl/en/guides/a-guide-to-structured-interviewing-for-better-hiring-practices", "role": "Behavioural questions and answer rubrics" }
+  ],
+  "questions": [
+    {
+      "id": "testing-purpose-and-limits", "level": "Junior", "category": "Fundamentals",
+      "question": "What information should testing provide, and what can testing never guarantee?",
+      "shortAnswer": "Testing supplies evidence about quality and risk so the team can make release decisions. It can reveal failures and reduce uncertainty, but it cannot prove that a non-trivial product has no defects.",
+      "strongAnswerSignals": ["risk and decision support", "evidence rather than certainty", "quality is shared by the team"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "verification-versus-validation", "level": "Junior", "category": "Fundamentals",
+      "question": "How do verification and validation differ in day-to-day QA work?",
+      "shortAnswer": "Verification checks whether work products satisfy specified requirements; validation checks whether the delivered product solves the user's real need. Reviews can support verification, while execution and user-focused evaluation often support validation.",
+      "strongAnswerSignals": ["specified requirements", "user need", "practical example of each"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "severity-versus-priority", "level": "Junior", "category": "Fundamentals",
+      "question": "How do severity and priority differ, and can they point in opposite directions?",
+      "shortAnswer": "Severity describes impact; priority describes the order in which the business wants the issue addressed. Context can therefore make a low-severity issue urgent or a severe but extremely rare issue lower priority after a documented risk review.",
+      "strongAnswerSignals": ["impact versus urgency", "business context", "credible contrasting example"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "confirmation-versus-regression", "level": "Junior", "category": "Fundamentals",
+      "question": "What is the difference between confirmation testing and regression testing?",
+      "shortAnswer": "Confirmation testing checks that a specific reported defect was fixed. Regression testing checks that the change did not damage related or previously working behaviour; its scope should follow change impact and product risk.",
+      "strongAnswerSignals": ["specific fix versus side effects", "impact analysis", "risk-based scope"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "test-levels", "level": "Junior", "category": "Fundamentals",
+      "question": "Which test levels would you use for a typical web feature, and what different risk does each level cover?",
+      "shortAnswer": "Component tests isolate small units, integration tests verify interfaces, system tests evaluate the complete product, and acceptance testing checks business readiness. A strong plan distributes checks across levels instead of repeating every scenario through the UI.",
+      "strongAnswerSignals": ["component, integration, system and acceptance", "different purpose per level", "avoids a UI-only strategy"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "equivalence-and-boundaries", "level": "Junior", "category": "Test design",
+      "question": "How would you combine equivalence partitioning and boundary-value analysis for an input accepting integers from 18 through 99?",
+      "shortAnswer": "Create valid and invalid partitions, then sample directly around both boundaries. A compact set includes 17, 18, 19, 98, 99 and 100, plus representative values and invalid data types where the interface permits them.",
+      "strongAnswerSignals": ["valid and invalid partitions", "values around both limits", "does not brute-force every number"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "decision-table", "level": "Junior", "category": "Test design",
+      "question": "When is a decision table more useful than a simple checklist?",
+      "shortAnswer": "Use it when an outcome depends on combinations of independent conditions or business rules. The table exposes missing, contradictory and redundant rules and helps select one test for each meaningful combination.",
+      "strongAnswerSignals": ["combinations of conditions", "business-rule coverage", "detects gaps or contradictions"],
+      "sourceIds": ["istqb-ctfl-v4"]
+    },
+    {
+      "id": "state-transition", "level": "Junior", "category": "Test design",
+      "question": "How would you test a workflow whose behaviour depends on its current state?",
+      "shortAnswer": "Model the states, allowed events, resulting transitions and forbidden transitions. Cover valid paths, invalid events from each relevant state, terminal states and recovery or timeout behaviour.",
+      "strongAnswerSignals": ["states, events and transitions", "invalid transitions", "recovery and terminal states"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "exploratory-session", "level": "Junior", "category": "Test design",
+      "question": "How do you keep exploratory testing focused and reproducible?",
+      "shortAnswer": "Define a time-boxed charter with scope and risk, record important observations and data, and finish with findings and follow-up actions. Exploration is adaptive, but it should still leave useful evidence.",
+      "strongAnswerSignals": ["charter and time box", "notes and evidence", "debrief or follow-up"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "risk-based-selection", "level": "Junior", "category": "Test design",
+      "question": "If you cannot run every test, how do you select the most valuable subset?",
+      "shortAnswer": "Prioritize by impact and likelihood, then account for recent changes, dependency reach, usage, defect history and detection capability. Protect critical user journeys first and state the residual risk explicitly.",
+      "strongAnswerSignals": ["impact and likelihood", "change and usage signals", "communicates residual risk"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "http-method-semantics", "level": "Middle", "category": "Web and API",
+      "question": "What HTTP method properties matter when designing API tests?",
+      "shortAnswer": "Check the operation's intended semantics, safety and idempotency, not only its name. Repeated PUT or DELETE requests should have predictable effects, while POST commonly creates or triggers work and may not be idempotent without an explicit key.",
+      "strongAnswerSignals": ["safety and idempotency", "repeat-request behaviour", "tests observable side effects"],
+      "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "api-test-model", "level": "Middle", "category": "Web and API",
+      "question": "What would you test for an endpoint that creates a new user?",
+      "shortAnswer": "Cover schema and field rules, authentication and authorization, duplicate and concurrent requests, response codes and headers, persistence, downstream effects, rate limits, sensitive-data handling and observability.",
+      "strongAnswerSignals": ["more than status-code checks", "security and concurrency", "database and downstream verification"],
+      "sourceIds": ["dou-qa-2022", "owasp-wstg"]
+    },
+    {
+      "id": "authentication-authorization", "level": "Middle", "category": "Web and API",
+      "question": "How would you distinguish authentication failures from authorization failures in testing?",
+      "shortAnswer": "Authentication proves identity; authorization decides what that identity may access. Test absent, expired and malformed credentials separately from valid users attempting forbidden actions, including object-level access to another user's data.",
+      "strongAnswerSignals": ["identity versus permission", "negative cases", "object-level access control"],
+      "sourceIds": ["owasp-wstg"]
+    },
+    {
+      "id": "browser-state", "level": "Middle", "category": "Web and API",
+      "question": "How do cookies, server sessions, browser storage and cache affect web testing?",
+      "shortAnswer": "They hold different kinds of client or server-linked state and can change authentication, personalization and freshness. Test clean and returning sessions, expiry, revocation, multi-tab behaviour, cache invalidation and isolation between users.",
+      "strongAnswerSignals": ["understands where state lives", "expiry and invalidation", "cross-user isolation"],
+      "sourceIds": ["dou-qa-2022", "owasp-wstg"]
+    },
+    {
+      "id": "contract-testing", "level": "Middle", "category": "Web and API",
+      "question": "What problem does contract testing solve, and what does it not replace?",
+      "shortAnswer": "Contract tests detect incompatible expectations between a service consumer and provider earlier and more cheaply than full environments. They do not replace provider logic tests, realistic end-to-end journeys, performance checks or production observability.",
+      "strongAnswerSignals": ["consumer-provider compatibility", "fast feedback", "clear limits of contract tests"],
+      "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "automation-candidate", "level": "Middle", "category": "Automation and CI",
+      "question": "How do you decide whether a test should be automated?",
+      "shortAnswer": "Automate when the check is repeatable, valuable, stable enough and cheaper to maintain than to rerun manually. Consider execution frequency, risk, data and environment control, feedback speed and whether automation can make a reliable assertion.",
+      "strongAnswerSignals": ["value and maintainability", "risk and repetition", "rejects a 100-percent automation goal"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "flaky-tests", "level": "Middle", "category": "Automation and CI",
+      "question": "How would you investigate and reduce flaky automated tests?",
+      "shortAnswer": "Classify failures using traces, logs and repetition, then remove shared state, uncontrolled data, arbitrary waits and brittle selectors. Fix the cause, track flake rate and quarantine only temporarily with a named owner.",
+      "strongAnswerSignals": ["evidence-led diagnosis", "isolation and deterministic waits", "quarantine is temporary"],
+      "sourceIds": ["playwright-best-practices"]
+    },
+    {
+      "id": "automation-layers", "level": "Senior", "category": "Automation and CI",
+      "question": "How would you distribute automated checks across unit, service and UI layers?",
+      "shortAnswer": "Place each assertion at the lowest layer that can provide trustworthy feedback. Use many focused component and service checks, keep UI tests for critical integrated behaviour, and retain a small set of end-to-end journeys.",
+      "strongAnswerSignals": ["fast feedback", "layer chosen by risk", "avoids duplicated UI suites"],
+      "sourceIds": ["dou-qa-2022", "playwright-best-practices"]
+    },
+    {
+      "id": "stable-ui-automation", "level": "Senior", "category": "Automation and CI",
+      "question": "What design choices make browser automation maintainable?",
+      "shortAnswer": "Test user-visible behaviour, isolate tests, control data, prefer accessible user-facing locators and web-first assertions, and capture useful traces on failure. Abstract business actions without hiding every interaction behind a large framework.",
+      "strongAnswerSignals": ["user-facing locators", "isolation", "useful diagnostics without over-abstraction"],
+      "sourceIds": ["playwright-best-practices"]
+    },
+    {
+      "id": "ci-quality-gates", "level": "Senior", "category": "Automation and CI",
+      "question": "How would you design test stages and quality gates in CI/CD?",
+      "shortAnswer": "Run fast deterministic checks early, broader integration checks after deployable artifacts exist, and targeted end-to-end or non-functional suites where environments support them. A gate needs an owner, reliable signal, failure policy and auditable emergency override.",
+      "strongAnswerSignals": ["ordered feedback layers", "reliability before blocking", "explicit override and ownership"],
+      "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "starting-qa-strategy", "level": "Senior", "category": "Strategy and risk",
+      "question": "How would you establish a test strategy for an existing product with little documentation?",
+      "shortAnswer": "Map users, critical flows, architecture, data and dependencies; interview stakeholders; inspect incidents and analytics; and build a risk register. Add lightweight documentation and coverage incrementally while continuing delivery.",
+      "strongAnswerSignals": ["product and architecture discovery", "risk register", "incremental improvement"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "release-with-known-defect", "level": "Senior", "category": "Strategy and risk",
+      "question": "A critical deadline is near and a serious defect remains open. How do you support the release decision?",
+      "shortAnswer": "Describe impact, affected users, likelihood, detectability and containment; present evidence and options such as scope reduction, feature flags, rollback or delay. The accountable business owner decides while QA makes residual risk visible.",
+      "strongAnswerSignals": ["options rather than a binary veto", "mitigation and rollback", "clear decision ownership"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "escaped-defect-rca", "level": "Senior", "category": "Strategy and risk",
+      "question": "How would you run a useful root-cause analysis after a production defect?",
+      "shortAnswer": "Separate the technical cause, the reason it escaped and the conditions that increased impact. Use evidence from the delivery system, avoid blaming individuals, and create a small number of owned preventive and detective actions.",
+      "strongAnswerSignals": ["cause versus escape point", "systemic and blameless", "owned measurable actions"],
+      "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "quality-metrics", "level": "Senior", "category": "Strategy and risk",
+      "question": "Which quality metrics are useful, and how do you prevent them from becoming misleading targets?",
+      "shortAnswer": "Choose a balanced set tied to decisions: escaped-defect impact, change failure and recovery, risk coverage, cycle time, flake rate and customer signals. Use trends and context, avoid ranking people by counts, and retire metrics that no longer change decisions.",
+      "strongAnswerSignals": ["outcomes plus leading indicators", "trend and context", "recognizes gaming risk"],
+      "sourceIds": ["dou-qa-2022"]
+    },
+    {
+      "id": "compressed-regression", "level": "Senior", "category": "Strategy and risk",
+      "question": "You have two days for a regression suite that normally takes much longer. What do you do?",
+      "shortAnswer": "Use change-impact and product-risk analysis to create tiers, run stable automation and critical journeys first, parallelize where data allows, and add focused exploration around changed areas. Report what was not tested and the remaining risk.",
+      "strongAnswerSignals": ["risk-based tiers", "parallel and automated feedback", "explicit residual coverage"],
+      "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
+    },
+    {
+      "id": "quality-strategy-first-90-days", "level": "Lead", "category": "Leadership",
+      "question": "What would your first 90 days as QA Lead look like?",
+      "shortAnswer": "First understand the product, people, risks and current signals; then agree on a small set of priorities and ownership; finally deliver one or two measurable improvements. Avoid replacing tools before learning why they exist.",
+      "strongAnswerSignals": ["listen and baseline first", "prioritized roadmap", "measurable early outcomes"],
+      "sourceIds": ["google-structured-interviews"]
+    },
+    {
+      "id": "qa-developer-conflict", "level": "Lead", "category": "Leadership",
+      "question": "How do you handle a disagreement between QA and engineering about whether something is a defect?",
+      "shortAnswer": "Move the discussion from labels to expected behaviour, user impact, evidence and product risk. Clarify the decision owner, document the outcome, and prevent recurring ambiguity through examples, acceptance criteria or shared refinement.",
+      "strongAnswerSignals": ["evidence over authority", "user and business impact", "prevents repeat conflict"],
+      "sourceIds": ["dou-qa-2022", "google-structured-interviews"]
+    },
+    {
+      "id": "mentoring-plan", "level": "Lead", "category": "Leadership",
+      "question": "How do you help a tester grow without becoming the permanent solution to every problem?",
+      "shortAnswer": "Agree on a specific skill goal and evidence of progress, combine coaching with progressively harder ownership, and review outcomes regularly. Give context and feedback while letting the person make bounded decisions.",
+      "strongAnswerSignals": ["specific growth outcome", "delegated ownership", "regular evidence-based feedback"],
+      "sourceIds": ["google-structured-interviews"]
+    },
+    {
+      "id": "stakeholder-risk-communication", "level": "Lead", "category": "Leadership",
+      "question": "How would you explain release quality to an executive who does not want test-case details?",
+      "shortAnswer": "Summarize business risk, affected journeys, evidence, trend and available decisions. State what is known, what remains uncertain, the recommended action and its trade-offs using product language rather than QA activity counts.",
+      "strongAnswerSignals": ["business language", "uncertainty and options", "clear recommendation"],
+      "sourceIds": ["google-structured-interviews"]
+    },
+    {
+      "id": "team-capacity-prioritization", "level": "Lead", "category": "Leadership",
+      "question": "How do you plan QA capacity when demand is consistently higher than the team's availability?",
+      "shortAnswer": "Make demand and constraints visible, prioritize by product risk, shift suitable checks earlier to developers, reduce low-value work and negotiate scope or time. Track queues and interruptions rather than normalizing permanent overtime.",
+      "strongAnswerSignals": ["risk-based portfolio view", "shared quality ownership", "addresses the system rather than pushing overtime"],
+      "sourceIds": ["dou-qa-2022", "google-structured-interviews"]
+    }
+  ]
+}
