@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { navigationGroups, SiteSidebar, SiteTopbar, type SiteSection } from "./site-navigation";
 
-type PublicSection = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
+type PublicSection = SiteSection;
 
 interface PublicJob {
   id: string;
@@ -18,34 +20,6 @@ interface PublicJob {
   postedAt: string | null;
   discoveredAt: string;
 }
-
-const navigation: Array<{ label: string; items: Array<{ id: PublicSection; label: string; marker: string }> }> = [
-  {
-    label: "Career",
-    items: [
-      { id: "jobs", label: "Jobs", marker: "J" },
-      { id: "interview", label: "Interview questions", marker: "Q" },
-      { id: "certifications", label: "Certifications", marker: "C" },
-      { id: "trends", label: "Market trends", marker: "T" },
-    ],
-  },
-  {
-    label: "Engineering labs",
-    items: [
-      { id: "agentic", label: "Agentic lab", marker: "A" },
-      { id: "llm", label: "LLM lab", marker: "L" },
-      { id: "security", label: "Security lab", marker: "S" },
-      { id: "devops", label: "DevOps lab", marker: "D" },
-    ],
-  },
-  {
-    label: "Reference",
-    items: [
-      { id: "standards", label: "Standards", marker: "I" },
-      { id: "news", label: "News", marker: "N" },
-    ],
-  },
-];
 
 const knowledge: Record<Exclude<PublicSection, "jobs">, {
   title: string;
@@ -169,7 +143,7 @@ function shortText(value: string) {
 function currentSectionFromHash(): PublicSection {
   if (typeof window === "undefined") return "jobs";
   const candidate = window.location.hash.replace("#", "") as PublicSection;
-  return navigation.some((group) => group.items.some((item) => item.id === candidate)) ? candidate : "jobs";
+  return navigationGroups.some((group) => group.items.some((item) => item.id === candidate)) ? candidate : "jobs";
 }
 
 export default function PublicSite() {
@@ -222,38 +196,16 @@ export default function PublicSite() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeLabel = navigation.flatMap((group) => group.items).find((item) => item.id === section)?.label ?? "Jobs";
+  const activeLabel = navigationGroups.flatMap((group) => group.items).find((item) => item.id === section)?.label ?? "Jobs";
 
   return (
     <main className="kb-shell">
-      <aside className={mobileNav ? "kb-sidebar open" : "kb-sidebar"}>
-        <div className="kb-brand"><span>GJ</span><div><strong>GimmeJob</strong><small>Knowledge base</small></div></div>
-        <nav aria-label="Knowledge base sections">
-          {navigation.map((group) => (
-            <div className="kb-nav-group" key={group.label}>
-              <h2>{group.label}</h2>
-              {group.items.map((item) => (
-                <button className={section === item.id ? "active" : ""} key={item.id} onClick={() => openSection(item.id)}>
-                  <i>{item.marker}</i><span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div className="kb-private">
-          <span>PRIVATE AREA</span>
-          <p>Status, feedback, resume versions, drafts, and agent actions.</p>
-          <a href="/workspace"><i>↳</i> Manage jobs</a>
-        </div>
-      </aside>
+      <SiteSidebar activeSection={section} mobileOpen={mobileNav} mode="public" onSelect={openSection}/>
 
       <section className="kb-main">
-        <header className="kb-topbar">
-          <button className="kb-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
-          <div><span>Knowledge base</span><strong>{activeLabel}</strong></div>
-          <div className="kb-public-state"><i/>Public view</div>
-          <a href="/workspace">Manage statuses & feedback</a>
-        </header>
+        <SiteTopbar mode="public" onMenu={() => setMobileNav((value) => !value)} title={activeLabel}>
+          <Link className="kb-top-link" href="/workspace">Manage statuses & feedback</Link>
+        </SiteTopbar>
 
         {section === "jobs" ? (
           <div className="kb-content">
@@ -283,7 +235,7 @@ export default function PublicSite() {
                   </article>
                 ))}
                 {!loaded && <div className="kb-empty"><strong>Loading jobs…</strong><span>Reading the public database.</span></div>}
-                {loaded && visibleJobs.length === 0 && <div className="kb-empty"><strong>{jobs.length ? "No matching jobs" : "No jobs collected yet"}</strong><span>{jobs.length ? "Try another search." : "Use the private workspace to run the first source sync."}</span></div>}
+                {loaded && visibleJobs.length === 0 && <div className="kb-empty"><strong>{jobs.length ? "No matching jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Try another search." : "A new database syncs automatically. Reload shortly, or use Sync jobs in the private workspace."}</span></div>}
               </div>
             </section>
           </div>

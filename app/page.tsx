@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
 import PublicSite from "./public-site";
+import { SiteSidebar, SiteTopbar } from "./site-navigation";
 
-type Section = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobFeedback = "RELEVANT" | "NOT_RELEVANT" | null;
 
@@ -167,8 +168,7 @@ function statusLabel(status: JobStatus) {
 }
 
 export function WorkspaceApp() {
-  const [section, setSection] = useState<Section>("jobs");
-  const [jobs, setJobs] = useState<Job[]>(DEMO_JOBS);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [online, setOnline] = useState<boolean | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -240,39 +240,17 @@ export function WorkspaceApp() {
     } finally { setBusy(null); }
   };
 
-  const navigation: Array<{ id: Section; label: string; icon: string; note?: string }> = [
-    { id: "jobs", label: "Jobs", icon: "jobs" },
-    { id: "interview", label: "Interview questions", icon: "interview", note: "Soon" },
-    { id: "certifications", label: "Certifications", icon: "certifications", note: "Soon" },
-    { id: "trends", label: "Trends", icon: "trends", note: "Soon" },
-    { id: "agentic", label: "Agentic lab", icon: "agentic", note: "Soon" },
-    { id: "llm", label: "LLM lab", icon: "llm", note: "Soon" },
-    { id: "security", label: "Security lab", icon: "security", note: "Soon" },
-    { id: "devops", label: "DevOps lab", icon: "devops", note: "Soon" },
-    { id: "standards", label: "Standards", icon: "standards", note: "Soon" },
-    { id: "news", label: "News", icon: "news", note: "Soon" },
-  ];
-
   return (
-    <main className="shell">
-      <aside className={mobileNav ? "sidebar open" : "sidebar"}>
-        <div className="brand"><span>GJ</span><div><strong>GimmeJob</strong><small>personal workspace</small></div></div>
-        <nav aria-label="Workspace sections">
-          {navigation.map((item) => <button key={item.id} className={section === item.id ? "nav-item active" : "nav-item"} onClick={() => { setSection(item.id); setMobileNav(false); }}>
-            <Icon name={item.icon}/><span>{item.label}</span>{item.note && <em>{item.note}</em>}
-          </button>)}
-        </nav>
-        <div className="cloud-state"><i className={online ? "online" : ""}/><div><strong>{online ? "Cloud database" : online === null ? "Connecting" : "Demo mode"}</strong><span>{online ? "All changes are saved" : "No changes are stored"}</span></div></div>
-      </aside>
+    <main className="kb-shell">
+      <SiteSidebar activeSection="jobs" mobileOpen={mobileNav} mode="private" online={online}/>
 
-      <section className="workspace">
-        <header className="topbar">
-          <button className="mobile-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation"><Icon name="menu"/></button>
-          <div><strong>{navigation.find((item) => item.id === section)?.label}</strong><span>{section === "jobs" ? "Your job search database" : "Knowledge base"}</span></div>
-          {section === "jobs" && <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>}
-        </header>
+      <section className="kb-main">
+        <SiteTopbar mode="private" onMenu={() => setMobileNav((value) => !value)} title="Jobs">
+          <Link className="kb-top-link" href="/">Public view</Link>
+          <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
+        </SiteTopbar>
 
-        {section === "jobs" ? <div className="jobs-page">
+        <div className="jobs-page private-jobs-page">
           <section className="page-intro">
             <div><span className="eyebrow">JOB PIPELINE</span><h1>Opportunities, without the noise.</h1><p>Newest jobs first. Track every decision and teach the future agent what is relevant.</p></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
@@ -294,7 +272,7 @@ export function WorkspaceApp() {
                   <div className="job-copy"><div><strong>{job.title}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{job.company} · {job.location}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </button>)}
-                {visibleJobs.length === 0 && <div className="empty"><strong>No matching jobs</strong><span>Change the search or status filter.</span></div>}
+                {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or status filter." : online === null ? "Connecting to the job database…" : "The first sync runs automatically. You can also press Sync jobs."}</span></div>}
               </div>
             </div>
 
@@ -302,10 +280,10 @@ export function WorkspaceApp() {
               {selected ? <JobDetail job={selected} disabled={busy === `job-${selected.id}`} onChange={(change) => void updateTracking(selected, change)}/> : <div className="empty large"><strong>Select a job</strong><span>The vacancy details and tracking controls will appear here.</span></div>}
             </div>
           </section>
-        </div> : <ComingSoon section={section}/>}
+        </div>
       </section>
 
-      {mobileNav && <button className="backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
+      {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
       {notice && <div className="toast">{notice}</div>}
     </main>
   );
@@ -346,20 +324,4 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
 
     <section className="description"><h3>Vacancy description</h3><p>{job.description || "No description was collected for this vacancy."}</p></section>
   </article>;
-}
-
-function ComingSoon({ section }: { section: Exclude<Section, "jobs"> }) {
-  const content = {
-    interview: ["Interview questions", "A structured knowledge base for QA, leadership, automation, APIs, databases, system design, and behavioural interviews."],
-    certifications: ["Certifications", "A practical roadmap for relevant QA, cloud, security, AI, and engineering certifications, with priorities and progress tracking."],
-    trends: ["Market trends", "Skills, tools, role demand, salary signals, and patterns extracted from collected vacancies and resume versions."],
-    agentic: ["Agentic lab", "Notes, architectures, experiments, and small portfolio projects built around autonomous agents."],
-    llm: ["LLM lab", "Knowledge, evaluation patterns, testing techniques, prompts, and pet projects for LLM-based products."],
-    security: ["Security lab", "Application security notes, practical testing checklists, threat modelling, OWASP topics, and safe portfolio experiments."],
-    devops: ["DevOps lab", "CI/CD, containers, observability, cloud infrastructure, reliability practices, and hands-on automation projects."],
-    standards: ["Standards", "A structured reference for ISO, IEC, IEEE, testing, quality, security, medical-software, and compliance standards."],
-    news: ["News", "A focused feed of useful QA, agentic engineering, LLM, tooling, and job-market updates without general tech noise."],
-  } as const;
-  const [title, copy] = content[section];
-  return <div className="coming-soon"><span>PLANNED MODULE</span><h1>{title}</h1><p>{copy}</p><div><Icon name="clock"/><strong>Next iteration</strong><small>The navigation is ready; content and editing will be added after the Jobs workflow is stable.</small></div></div>;
 }

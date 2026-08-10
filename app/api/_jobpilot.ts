@@ -133,7 +133,23 @@ function publicSource(source: string) {
   return "Job board";
 }
 
+async function bootstrapJobsIfEmpty() {
+  const database = await db();
+  const countRow = await database.prepare("SELECT COUNT(*) AS count FROM jobs").first<Row>();
+  if (Number(countRow?.count ?? 0) > 0) return;
+
+  const state = await setting<{ attemptedAt?: string }>("jobs_bootstrap", {});
+  const attemptedAt = state.attemptedAt ? Date.parse(state.attemptedAt) : 0;
+  if (Number.isFinite(attemptedAt) && Date.now() - attemptedAt < 15 * 60 * 1000) return;
+
+  const startedAt = now();
+  await saveSetting("jobs_bootstrap", { attemptedAt: startedAt, status: "running" });
+  const result = await syncSources();
+  await saveSetting("jobs_bootstrap", { attemptedAt: startedAt, completedAt: now(), status: result.accepted > 0 ? "completed" : "empty", result });
+}
+
 export async function publicJobs() {
+  await bootstrapJobsIfEmpty();
   const result = await (await db()).prepare(`SELECT
     id, source, title, company, location, remote, url, apply_url, description,
     salary_text, posted_at, discovered_at
@@ -201,6 +217,7 @@ function countBy(values: string[]) {
 }
 
 export async function dashboard() {
+  await bootstrapJobsIfEmpty();
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
     (await db()).prepare("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC LIMIT 500").all<Row>(),
     (await db()).prepare("SELECT * FROM analyses").all<Row>(),
@@ -273,9 +290,9 @@ export async function upsertJobs(values: unknown[]) {
 }
 
 function decodeEntities(value: string) {
-  return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ").trim();
+  return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function tag(block: string, name: string) {
@@ -291,9 +308,14 @@ async function collectRss(source: Json) {
   return blocks.map((block) => {
     const rawLink = tag(block, "link") || block.match(/<link[^>]+href=["']([^"']+)/i)?.[1] || sourceUrl.toString();
     const title = tag(block, "title") || "Untitled role";
-    return { source: `rss:${cleanText(source.name, sourceUrl.hostname)}`, externalId: tag(block, "guid") || null, title,
-      company: tag(block, "author") || tag(block, "dc:creator") || "Unknown", location: "Unknown", remote: /remote|віддал/i.test(title),
-      url: rawLink, applyUrl: rawLink, description: tag(block, "description") || tag(block, "summary") || tag(block, "content"),
+    const douTitle = sourceUrl.hostname.endsWith("dou.ua") ? title.match(/^(.+?)\s+в\s+(.+?)(?:,\s+(.+))?$/i) : null;
+    const role = douTitle?.[1] ?? title;
+    const company = tag(block, "author") || tag(block, "dc:creator") || douTitle?.[2] || sourceUrl.hostname;
+    const location = douTitle?.[3] || "Unknown";
+    const description = tag(block, "description") || tag(block, "summary") || tag(block, "content");
+    return { source: `rss:${cleanText(source.name, sourceUrl.hostname)}`, externalId: tag(block, "guid") || null, title: role,
+      company, location, remote: /remote|віддал/i.test(`${title} ${description}`),
+      url: rawLink, applyUrl: rawLink, description,
       salaryText: null, postedAt: tag(block, "pubDate") || tag(block, "published") || null, contactEmail: null };
   });
 }
