@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { fetchDouJobs } from "./rss-jobs.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const wranglerCli = path.join(projectRoot, "node_modules", "wrangler", "bin", "wrangler.js");
@@ -10,6 +11,7 @@ const generatedConfigPath = path.join(projectRoot, "dist", "server", "wrangler.g
 const wranglerRuntimePath = path.join(projectRoot, ".wrangler");
 const databaseName = "gimmejob-db";
 const dryRunDatabaseId = "00000000-0000-4000-8000-000000000000";
+const productionUrl = "https://gimmejob.gimmejob.workers.dev";
 
 function requiredEnvironment(name) {
   const value = process.env[name]?.trim();
@@ -111,6 +113,34 @@ async function validateConfig() {
   }
 }
 
+async function importCurrentJobs(appPassword) {
+  const jobs = await fetchDouJobs();
+  const authorization = Buffer.from(`gimmejob:${appPassword}`, "utf8").toString("base64");
+
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const response = await fetch(`${productionUrl}/api/import`, {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${authorization}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ jobs }),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (response.ok) {
+      const payload = await response.json();
+      console.log(`Imported ${payload.result?.accepted ?? jobs.length} current jobs into D1.`);
+      return;
+    }
+
+    if (![401, 503].includes(response.status) || attempt === 4) {
+      throw new Error(`Cloud job import returned HTTP ${response.status}.`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+  }
+}
+
 async function main() {
   await mkdir(path.join(wranglerRuntimePath, "xdg-config"), { recursive: true });
 
@@ -160,6 +190,9 @@ async function main() {
       ["secret", "put", "APP_PASSWORD", "--config", generatedConfigPath],
       { input: `${appPassword}\n` },
     );
+
+    console.log("Importing the current DOU job feed...");
+    await importCurrentJobs(appPassword);
 
     console.log("Cloudflare deployment completed.");
   } finally {
