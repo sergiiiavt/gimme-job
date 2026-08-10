@@ -1,15 +1,5 @@
 {
-  "version": 1,
-  "title": "Common QA interview core",
-  "description": "A reviewed starting set of common QA questions. Wording and answers are original; external sources are used as topic signals and technical references.",
-  "lastReviewedAt": "2026-08-10",
-  "sources": [
-    { "id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions for Junior, Middle and Senior", "url": "https://dou.ua/lenta/articles/interview-qa/", "role": "Topic coverage and interview signal" },
-    { "id": "istqb-ctfl-v4", "title": "ISTQB Certified Tester Foundation Level v4.0", "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/", "role": "Testing terminology and answer validation" },
-    { "id": "playwright-best-practices", "title": "Playwright best practices", "url": "https://playwright.dev/docs/best-practices", "role": "Modern web automation guidance" },
-    { "id": "owasp-wstg", "title": "OWASP Web Security Testing Guide", "url": "https://owasp.org/www-project-web-security-testing-guide/stable/", "role": "Web security testing reference" },
-    { "id": "google-structured-interviews", "title": "Google re:Work — structured interviewing", "url": "https://rework.withgoogle.com/intl/en/guides/a-guide-to-structured-interviewing-for-better-hiring-practices", "role": "Behavioural questions and answer rubrics" }
-  ],
+  "collection": "core",
   "questions": [
     {
       "id": "testing-purpose-and-limits", "level": "Junior", "category": "Fundamentals",
@@ -79,38 +69,39 @@
       "question": "If you cannot run every test, how do you select the most valuable subset?",
       "shortAnswer": "Prioritize by impact and likelihood, then account for recent changes, dependency reach, usage, defect history and detection capability. Protect critical user journeys first and state the residual risk explicitly.",
       "strongAnswerSignals": ["impact and likelihood", "change and usage signals", "communicates residual risk"],
+      "media": [{ "src": "/content/interview/risk-based-selection/risk-matrix.svg", "alt": "A five by five risk matrix combining likelihood and impact", "caption": "A simple prioritization model; product context determines the actual thresholds.", "credit": "Original GimmeJob diagram" }],
       "sourceIds": ["dou-qa-2022", "istqb-ctfl-v4"]
     },
     {
-      "id": "http-method-semantics", "level": "Middle", "category": "Web and API",
+      "id": "http-method-semantics", "level": "Middle", "category": "Web, API and data",
       "question": "What HTTP method properties matter when designing API tests?",
       "shortAnswer": "Check the operation's intended semantics, safety and idempotency, not only its name. Repeated PUT or DELETE requests should have predictable effects, while POST commonly creates or triggers work and may not be idempotent without an explicit key.",
       "strongAnswerSignals": ["safety and idempotency", "repeat-request behaviour", "tests observable side effects"],
       "sourceIds": ["dou-qa-2022"]
     },
     {
-      "id": "api-test-model", "level": "Middle", "category": "Web and API",
+      "id": "api-test-model", "level": "Middle", "category": "Web, API and data",
       "question": "What would you test for an endpoint that creates a new user?",
       "shortAnswer": "Cover schema and field rules, authentication and authorization, duplicate and concurrent requests, response codes and headers, persistence, downstream effects, rate limits, sensitive-data handling and observability.",
       "strongAnswerSignals": ["more than status-code checks", "security and concurrency", "database and downstream verification"],
       "sourceIds": ["dou-qa-2022", "owasp-wstg"]
     },
     {
-      "id": "authentication-authorization", "level": "Middle", "category": "Web and API",
+      "id": "authentication-authorization", "level": "Middle", "category": "Web, API and data",
       "question": "How would you distinguish authentication failures from authorization failures in testing?",
       "shortAnswer": "Authentication proves identity; authorization decides what that identity may access. Test absent, expired and malformed credentials separately from valid users attempting forbidden actions, including object-level access to another user's data.",
       "strongAnswerSignals": ["identity versus permission", "negative cases", "object-level access control"],
       "sourceIds": ["owasp-wstg"]
     },
     {
-      "id": "browser-state", "level": "Middle", "category": "Web and API",
+      "id": "browser-state", "level": "Middle", "category": "Web, API and data",
       "question": "How do cookies, server sessions, browser storage and cache affect web testing?",
       "shortAnswer": "They hold different kinds of client or server-linked state and can change authentication, personalization and freshness. Test clean and returning sessions, expiry, revocation, multi-tab behaviour, cache invalidation and isolation between users.",
       "strongAnswerSignals": ["understands where state lives", "expiry and invalidation", "cross-user isolation"],
       "sourceIds": ["dou-qa-2022", "owasp-wstg"]
     },
     {
-      "id": "contract-testing", "level": "Middle", "category": "Web and API",
+      "id": "contract-testing", "level": "Middle", "category": "Web, API and data",
       "question": "What problem does contract testing solve, and what does it not replace?",
       "shortAnswer": "Contract tests detect incompatible expectations between a service consumer and provider earlier and more cheaply than full environments. They do not replace provider logic tests, realistic end-to-end journeys, performance checks or production observability.",
       "strongAnswerSignals": ["consumer-provider compatibility", "fast feedback", "clear limits of contract tests"],
