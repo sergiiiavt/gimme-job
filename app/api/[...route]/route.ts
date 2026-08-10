@@ -9,6 +9,7 @@ import {
   settingsView,
   syncSources,
   updateDraft,
+  updateJobTracking,
   upsertJobs,
 } from "../_jobpilot";
 
@@ -67,6 +68,17 @@ export async function POST(request: Request, context: RouteContext) {
     }
     if (route[0] === "gmail" && route[1] === "connect") {
       return Response.json({ ok: false, error: "Deploy the cloud app first, then add its URL to a Google Desktop/Web OAuth client. Nothing was changed." }, { status: 409 });
+    }
+    return Response.json({ error: "Route not found." }, { status: 404 });
+  } catch (error) { return jsonError(error); }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  try {
+    const route = await parts(context); const payload = await readPayload(request);
+    if (route[0] === "jobs" && route[1]) {
+      const job = await updateJobTracking(route[1], payload);
+      return Response.json({ ok: true, job, dashboard: await dashboard() });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
   } catch (error) { return jsonError(error); }

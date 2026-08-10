@@ -113,6 +113,9 @@ function mapJob(row: Row) {
     description: String(row.description), salaryText: row.salary_text ? String(row.salary_text) : null,
     postedAt: row.posted_at ? String(row.posted_at) : null, contactEmail: row.contact_email ? String(row.contact_email) : null,
     discoveredAt: String(row.discovered_at), updatedAt: String(row.updated_at), status: String(row.status),
+    statusUpdatedAt: row.status_updated_at ? String(row.status_updated_at) : null,
+    feedback: row.feedback ? String(row.feedback) : null,
+    feedbackAt: row.feedback_at ? String(row.feedback_at) : null,
     raw: parse(row.raw_json, {}),
   };
 }
@@ -159,7 +162,7 @@ function countBy(values: string[]) {
 
 export async function dashboard() {
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
-    (await db()).prepare("SELECT * FROM jobs ORDER BY discovered_at DESC LIMIT 500").all<Row>(),
+    (await db()).prepare("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC LIMIT 500").all<Row>(),
     (await db()).prepare("SELECT * FROM analyses").all<Row>(),
     (await db()).prepare("SELECT * FROM resume_variants").all<Row>(),
     (await db()).prepare("SELECT * FROM application_drafts").all<Row>(),
@@ -383,6 +386,34 @@ export async function updateDraft(id: string, action: string, recipient?: string
     if (status !== "APPROVED") throw new Error("Approve this application before sending.");
     throw new Error("Cloud Gmail sending is not configured yet. The application remains APPROVED and nothing was sent.");
   } else throw new Error("Unsupported draft action.");
+}
+
+const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED", "NOT_INTERESTED", "ARCHIVED"]);
+const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
+
+export async function updateJobTracking(id: string, input: Json) {
+  const database = await db();
+  const row = await database.prepare("SELECT status, status_updated_at, feedback, feedback_at FROM jobs WHERE id = ?").bind(id).first<Row>();
+  if (!row) throw new Error("Job not found.");
+
+  const hasStatus = Object.prototype.hasOwnProperty.call(input, "status");
+  const hasFeedback = Object.prototype.hasOwnProperty.call(input, "feedback");
+  if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
+
+  const currentStatus = String(row.status);
+  const nextStatus = hasStatus ? cleanText(input.status) : currentStatus;
+  if (!JOB_STATUSES.has(nextStatus)) throw new Error("Unsupported job status.");
+
+  const currentFeedback = row.feedback ? String(row.feedback) : null;
+  const requestedFeedback = hasFeedback ? (input.feedback === null ? null : cleanText(input.feedback)) : currentFeedback;
+  if (requestedFeedback !== null && !JOB_FEEDBACK.has(requestedFeedback)) throw new Error("Unsupported job feedback.");
+
+  const timestamp = now();
+  const statusUpdatedAt = nextStatus !== currentStatus ? timestamp : (row.status_updated_at ? String(row.status_updated_at) : null);
+  const feedbackAt = requestedFeedback !== currentFeedback ? (requestedFeedback ? timestamp : null) : (row.feedback_at ? String(row.feedback_at) : null);
+  await database.prepare("UPDATE jobs SET status = ?, status_updated_at = ?, feedback = ?, feedback_at = ?, updated_at = ? WHERE id = ?")
+    .bind(nextStatus, statusUpdatedAt, requestedFeedback, feedbackAt, timestamp, id).run();
+  return { id, status: nextStatus, feedback: requestedFeedback, statusUpdatedAt, feedbackAt };
 }
 
 export function jsonError(error: unknown) {

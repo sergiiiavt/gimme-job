@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "JobPilot — Private Cloud Job Search Agent",
-  description: "A private cloud, approval-first dashboard for job discovery, market analysis, resume tailoring, and applications.",
+  title: "GimmeJob — Personal Job Workspace",
+  description: "A private job database for collecting, reviewing, and tracking opportunities.",
   other: {
     "codex-preview": "development",
   },
