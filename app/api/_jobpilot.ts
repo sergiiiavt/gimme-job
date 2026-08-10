@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
 
@@ -47,9 +45,14 @@ const SKILLS: Array<[string, RegExp]> = [
   ["IEC 62304", /\biec\s*62304\b/i], ["IEC 60601", /\biec\s*60601\b/i], ["English", /\benglish\b/i],
 ];
 
-function db() {
-  if (!env.DB) throw new Error("Cloud database is not available.");
-  return env.DB;
+async function runtimeEnv() {
+  return (await import("cloudflare:workers")).env;
+}
+
+async function db() {
+  const runtime = await runtimeEnv();
+  if (!runtime.DB) throw new Error("Cloud database is not available.");
+  return runtime.DB;
 }
 
 function parse<T>(value: unknown, fallback: T): T {
@@ -92,12 +95,12 @@ function assertPublicHttps(value: string) {
 }
 
 async function setting<T>(key: string, fallback: T): Promise<T> {
-  const row = await db().prepare("SELECT value_json FROM settings WHERE key = ?").bind(key).first<Row>();
+  const row = await (await db()).prepare("SELECT value_json FROM settings WHERE key = ?").bind(key).first<Row>();
   return row ? parse(row.value_json, fallback) : fallback;
 }
 
 async function saveSetting(key: string, value: unknown) {
-  await db().prepare(`INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)
+  await (await db()).prepare(`INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)
     ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at`)
     .bind(key, JSON.stringify(value), now()).run();
 }
@@ -126,7 +129,7 @@ function mapDraft(row: Row) {
 
 async function connections() {
   const sources = await setting<Json>("sources", DEFAULT_SOURCES);
-  const runtime = env as unknown as Record<string, unknown>;
+  const runtime = await runtimeEnv() as unknown as Record<string, unknown>;
   const gmail = (sources.gmail ?? DEFAULT_SOURCES.gmail) as Json;
   return {
     gmail: { configured: Boolean(runtime.GOOGLE_CLIENT_ID), connected: false, enabled: Boolean(gmail.enabled) },
@@ -156,10 +159,10 @@ function countBy(values: string[]) {
 
 export async function dashboard() {
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
-    db().prepare("SELECT * FROM jobs ORDER BY discovered_at DESC LIMIT 500").all<Row>(),
-    db().prepare("SELECT * FROM analyses").all<Row>(),
-    db().prepare("SELECT * FROM resume_variants").all<Row>(),
-    db().prepare("SELECT * FROM application_drafts").all<Row>(),
+    (await db()).prepare("SELECT * FROM jobs ORDER BY discovered_at DESC LIMIT 500").all<Row>(),
+    (await db()).prepare("SELECT * FROM analyses").all<Row>(),
+    (await db()).prepare("SELECT * FROM resume_variants").all<Row>(),
+    (await db()).prepare("SELECT * FROM application_drafts").all<Row>(),
     connections(),
   ]);
   const analyses = new Map(analysisResult.results.map((row) => [String(row.job_id), parse<Json>(row.payload_json, {})]));
@@ -210,7 +213,7 @@ export async function upsertJobs(values: unknown[]) {
   const timestamp = now(); let accepted = 0;
   for (const [index, value] of values.entries()) {
     const job = normalizeJob(value, index);
-    await db().prepare(`INSERT INTO jobs (
+    await (await db()).prepare(`INSERT INTO jobs (
       id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
       salary_text, posted_at, contact_email, discovered_at, updated_at, status, raw_json
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?)
@@ -339,43 +342,43 @@ function analyze(job: ReturnType<typeof mapJob>, profile: Json) {
 export async function analyzeJobs(jobId?: string, limit = 25) {
   const profile = await setting<Json>("profile", DEFAULT_PROFILE);
   const jobRows = jobId
-    ? await db().prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).all<Row>()
-    : await db().prepare("SELECT jobs.* FROM jobs LEFT JOIN analyses ON analyses.job_id = jobs.id WHERE analyses.job_id IS NULL AND jobs.status <> 'ARCHIVED' ORDER BY jobs.discovered_at DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
+    ? await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).all<Row>()
+    : await (await db()).prepare("SELECT jobs.* FROM jobs LEFT JOIN analyses ON analyses.job_id = jobs.id WHERE analyses.job_id IS NULL AND jobs.status <> 'ARCHIVED' ORDER BY jobs.discovered_at DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
   if (jobId && !jobRows.results.length) throw new Error("Job not found.");
   const completed: Json[] = [];
   for (const row of jobRows.results) {
     const job = mapJob(row); const pkg = analyze(job, profile); const timestamp = now(); const suffix = job.id.replace(/^job_/, "");
-    await db().batch([
-      db().prepare(`INSERT INTO analyses (job_id, mode, score, verdict, payload_json, created_at, updated_at) VALUES (?, 'deterministic', ?, ?, ?, ?, ?)
+    await (await db()).batch([
+      (await db()).prepare(`INSERT INTO analyses (job_id, mode, score, verdict, payload_json, created_at, updated_at) VALUES (?, 'deterministic', ?, ?, ?, ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET score=excluded.score, verdict=excluded.verdict, payload_json=excluded.payload_json, updated_at=excluded.updated_at`)
         .bind(job.id, pkg.analysis.score, pkg.analysis.verdict, JSON.stringify(pkg.analysis), timestamp, timestamp),
-      db().prepare(`INSERT INTO resume_variants (id, job_id, markdown, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
+      (await db()).prepare(`INSERT INTO resume_variants (id, job_id, markdown, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET markdown=excluded.markdown, updated_at=excluded.updated_at`)
         .bind(`resume_${suffix}`, job.id, pkg.resume, timestamp, timestamp),
     ]);
-    const existing = await db().prepare("SELECT status FROM application_drafts WHERE job_id = ?").bind(job.id).first<Row>();
+    const existing = await (await db()).prepare("SELECT status FROM application_drafts WHERE job_id = ?").bind(job.id).first<Row>();
     if (!existing || ["PENDING_APPROVAL", "REJECTED"].includes(String(existing.status))) {
-      await db().prepare(`INSERT INTO application_drafts (id, job_id, recipient, subject, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
+      await (await db()).prepare(`INSERT INTO application_drafts (id, job_id, recipient, subject, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET recipient=COALESCE(excluded.recipient, application_drafts.recipient), subject=excluded.subject, body=excluded.body, status='PENDING_APPROVAL', approved_at=NULL, updated_at=excluded.updated_at`)
         .bind(`draft_${suffix}`, job.id, pkg.draft.recipient, pkg.draft.subject, pkg.draft.body, timestamp, timestamp).run();
     }
-    await db().prepare("UPDATE jobs SET status='REVIEWED', updated_at=? WHERE id=?").bind(timestamp, job.id).run();
+    await (await db()).prepare("UPDATE jobs SET status='REVIEWED', updated_at=? WHERE id=?").bind(timestamp, job.id).run();
     completed.push({ id: job.id, score: pkg.analysis.score, verdict: pkg.analysis.verdict, mode: "deterministic" });
   }
   return completed;
 }
 
 export async function updateDraft(id: string, action: string, recipient?: string) {
-  const draft = await db().prepare("SELECT * FROM application_drafts WHERE id = ?").bind(id).first<Row>();
+  const draft = await (await db()).prepare("SELECT * FROM application_drafts WHERE id = ?").bind(id).first<Row>();
   if (!draft) throw new Error("Application draft not found.");
   const status = String(draft.status); const timestamp = now();
   if (action === "approve") {
     if (!recipient && !draft.recipient) throw new Error("Add a recipient before approval.");
-    await db().prepare("UPDATE application_drafts SET recipient=?, status='APPROVED', approved_at=?, updated_at=? WHERE id=?")
+    await (await db()).prepare("UPDATE application_drafts SET recipient=?, status='APPROVED', approved_at=?, updated_at=? WHERE id=?")
       .bind(recipient || draft.recipient, timestamp, timestamp, id).run();
   } else if (action === "reject") {
     if (status === "SENT") throw new Error("A sent application cannot be rejected.");
-    await db().prepare("UPDATE application_drafts SET status='REJECTED', approved_at=NULL, updated_at=? WHERE id=?").bind(timestamp, id).run();
+    await (await db()).prepare("UPDATE application_drafts SET status='REJECTED', approved_at=NULL, updated_at=? WHERE id=?").bind(timestamp, id).run();
   } else if (action === "send") {
     if (status !== "APPROVED") throw new Error("Approve this application before sending.");
     throw new Error("Cloud Gmail sending is not configured yet. The application remains APPROVED and nothing was sent.");
