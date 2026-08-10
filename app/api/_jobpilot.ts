@@ -259,12 +259,14 @@ function normalizeJob(value: unknown, index: number) {
   const title = cleanText(job.title); const company = cleanText(job.company);
   if (!title || !company) throw new Error(`Job ${index + 1} requires title and company.`);
   const url = safeUrl(job.url);
+  const postedValue = cleanText(job.postedAt);
+  const postedTime = postedValue ? Date.parse(postedValue) : Number.NaN;
   const fingerprint = stableId(normalize(`${company}|${title}|${url}`));
   return {
     id: `job_${fingerprint}`, fingerprint, source: cleanText(job.source, "manual:web"), externalId: cleanText(job.externalId) || null,
     title, company, location: cleanText(job.location, "Unknown"), remote: Boolean(job.remote) || /remote|віддал/i.test(cleanText(job.location)),
     url, applyUrl: safeUrl(job.applyUrl, url), description: cleanText(job.description), salaryText: cleanText(job.salaryText) || null,
-    postedAt: cleanText(job.postedAt) || null, contactEmail: cleanText(job.contactEmail) || null, rawJson: JSON.stringify(job).slice(0, 100_000),
+    postedAt: Number.isFinite(postedTime) ? new Date(postedTime).toISOString() : null, contactEmail: cleanText(job.contactEmail) || null, rawJson: JSON.stringify(job).slice(0, 100_000),
   };
 }
 

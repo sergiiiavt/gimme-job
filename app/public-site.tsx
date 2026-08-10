@@ -135,8 +135,12 @@ function dateLabel(value: string | null) {
   return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date);
 }
 
+function displayText(value: string) {
+  return value.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+}
+
 function shortText(value: string) {
-  const cleaned = value.replace(/\s+/g, " ").trim();
+  const cleaned = displayText(value).replace(/\s+/g, " ").trim();
   return cleaned.length > 210 ? `${cleaned.slice(0, 207)}…` : cleaned;
 }
 
@@ -185,7 +189,8 @@ export default function PublicSite() {
   const visibleJobs = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return jobs
-      .filter((job) => !needle || `${job.title} ${job.company} ${job.location} ${job.source}`.toLowerCase().includes(needle))
+      .filter((job) => !needle || displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(needle))
+      .sort((a, b) => new Date(b.postedAt ?? b.discoveredAt).getTime() - new Date(a.postedAt ?? a.discoveredAt).getTime())
       .slice(0, 50);
   }, [jobs, query]);
 
@@ -223,11 +228,11 @@ export default function PublicSite() {
               <div className="kb-job-list">
                 {loaded && visibleJobs.map((job) => (
                   <article className="kb-job-row" key={job.id}>
-                    <div className="kb-company-mark">{job.company.slice(0, 2).toUpperCase()}</div>
+                    <div className="kb-company-mark">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
                     <div className="kb-job-copy">
                       <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
-                      <h2>{job.title}</h2>
-                      <p className="kb-job-company">{job.company} · {job.location}</p>
+                      <h2>{displayText(job.title)}</h2>
+                      <p className="kb-job-company">{displayText(job.company)} · {displayText(job.location)}</p>
                       <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
                       <div className="kb-job-tags">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
                     </div>

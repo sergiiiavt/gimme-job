@@ -163,6 +163,10 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
+function displayText(value: string) {
+  return value.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+}
+
 function statusLabel(status: JobStatus) {
   return STATUS_OPTIONS.find((item) => item.value === status)?.label ?? status;
 }
@@ -182,9 +186,10 @@ export function WorkspaceApp() {
     api<DashboardData>("/dashboard")
       .then((result) => {
         if (!active) return;
-        setJobs(result.jobs);
+        const orderedJobs = [...result.jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
+        setJobs(orderedJobs);
         setOnline(true);
-        setSelectedId(result.jobs[0]?.id ?? null);
+        setSelectedId(orderedJobs[0]?.id ?? null);
       })
       .catch(() => {
         if (!active) return;
@@ -202,7 +207,7 @@ export function WorkspaceApp() {
 
   const visibleJobs = useMemo(() => jobs
     .filter((job) => statusFilter === "ALL" || job.status === statusFilter)
-    .filter((job) => `${job.title} ${job.company} ${job.location} ${job.source}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [jobs, query, statusFilter]);
 
   const selected = jobs.find((job) => job.id === selectedId) ?? visibleJobs[0] ?? null;
@@ -268,8 +273,8 @@ export function WorkspaceApp() {
               <div className="feed-meta"><span>{visibleJobs.length} jobs</span><span>Newest first</span></div>
               <div className="job-feed">
                 {visibleJobs.map((job) => <button key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"} onClick={() => setSelectedId(job.id)}>
-                  <div className="company-mark">{job.company.slice(0, 2).toUpperCase()}</div>
-                  <div className="job-copy"><div><strong>{job.title}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{job.company} · {job.location}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
+                  <div className="company-mark">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
+                  <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </button>)}
                 {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or status filter." : online === null ? "Connecting to the job database…" : "The first sync runs automatically. You can also press Sync jobs."}</span></div>}
@@ -300,8 +305,8 @@ function Stat({ value, label }: { value: number; label: string }) {
 function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
   return <article className="job-detail">
     <div className="detail-head">
-      <div className="company-mark large">{job.company.slice(0, 2).toUpperCase()}</div>
-      <div><span>{job.company}</span><h2>{job.title}</h2><p>{job.location}{job.salaryText ? ` · ${job.salaryText}` : ""}</p></div>
+      <div className="company-mark large">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
+      <div><span>{displayText(job.company)}</span><h2>{displayText(job.title)}</h2><p>{displayText(job.location)}{job.salaryText ? ` · ${job.salaryText}` : ""}</p></div>
       {typeof job.analysis?.score === "number" && <div className="score"><strong>{job.analysis.score}</strong><span>match</span></div>}
     </div>
 
@@ -322,6 +327,6 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
 
     {(job.analysis?.matchingSkills?.length || job.analysis?.missingSkills?.length) && <section className="skills"><h3>Quick match</h3>{Boolean(job.analysis?.matchingSkills?.length) && <div><span>Matches</span><p>{job.analysis?.matchingSkills?.map((skill) => <em key={skill}>{skill}</em>)}</p></div>}{Boolean(job.analysis?.missingSkills?.length) && <div><span>Gaps</span><p>{job.analysis?.missingSkills?.map((skill) => <em key={skill} className="gap">{skill}</em>)}</p></div>}</section>}
 
-    <section className="description"><h3>Vacancy description</h3><p>{job.description || "No description was collected for this vacancy."}</p></section>
+    <section className="description"><h3>Vacancy description</h3><p>{displayText(job.description || "No description was collected for this vacancy.")}</p></section>
   </article>;
 }
