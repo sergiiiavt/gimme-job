@@ -55,6 +55,8 @@ test("lazy-loads the catalog and caps each rendered page at 60", async () => {
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
   assert.match(uiSource, /function MultiSelectFilter/);
   assert.match(uiSource, />Clear all</);
+  assert.match(uiSource, /<section className="iq-toolbar"[\s\S]*?<div className="iq-filter-status"/);
+  assert.doesNotMatch(uiSource, /<i aria-hidden="true">\+<\/i>/);
 
   const assetDirectory = projectFile("dist/client/assets/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
