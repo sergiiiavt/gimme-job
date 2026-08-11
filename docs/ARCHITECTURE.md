@@ -5,7 +5,7 @@
 | Module | Current state | Intended responsibility |
 | --- | --- | --- |
 | Jobs | Functional | Vacancy inbox, relevance feedback, application pipeline |
-| Interview questions | Functional | 520-question public QA catalog with research references and bounded rendering |
+| Interview questions | Functional | Growing public QA catalog with research references and bounded rendering |
 | Certifications | Planned | Certification roadmap and progress |
 | Trends | Planned | Market, vacancy, skill, and resume analysis |
 | Agentic lab | Planned | Agent patterns and portfolio projects |

@@ -15,11 +15,11 @@ The failure had four causes:
 
 ## Corrective model
 
-`content/interview/canonical-baseline.json` is the explicit baseline. It contains 30 directly searchable questions across all 18 topics. The generator fills the remaining catalog capacity after loading this baseline, so adding a required question replaces a lower-value generated scenario instead of increasing the 520-question total.
+`content/interview/canonical-baseline.json` is the explicit baseline. It contains 30 directly searchable questions across all 18 topics. The generator now treats topic targets as minimum coverage floors and preserves every existing generated question, so adding a required question increases the catalog instead of silently deleting another entry.
 
 Validation now requires:
 
-- exactly 520 questions, 18 topics and 46 sources;
+- at least the current 541-question baseline, exactly 18 topics and exactly 46 sources;
 - exactly 30 canonical-baseline questions covering every topic;
 - stable explicit IDs for canonical questions;
 - explicit presence of critical foundational questions;
@@ -32,10 +32,16 @@ The first baseline audit added direct questions for testing vocabulary and proce
 
 The same topic-count failure later appeared in “Data & BI.” The topic contained 29 entries, but most were generated pipeline scenarios with nearly identical answers; only two questions explicitly asked about databases or SQL. Search therefore made the topic look absent even though database words appeared inside a few answers and source descriptions.
 
-`content/interview/database-sql-qa.json` is now a second explicit audited set. Its 25 stable questions cover relational and non-relational models, SQL command families, keys and constraints, NULL, filtering and aggregation, duplicates and orphans, normalization, CTEs, window functions, transactions, isolation, locks, indexes, query plans, migrations, data-type boundaries, test-data isolation, recovery, injection, database-side logic, star schemas and dashboard reconciliation. The generator counts these questions before filling the topic, so they replace repetitive scenarios and the catalog remains exactly 520 questions.
+`content/interview/database-sql-qa.json` is now a second explicit audited set. Its 25 stable questions cover relational and non-relational models, SQL command families, keys and constraints, NULL, filtering and aggregation, duplicates and orphans, normalization, CTEs, window functions, transactions, isolation, locks, indexes, query plans, migrations, data-type boundaries, test-data isolation, recovery, injection, database-side logic, star schemas and dashboard reconciliation.
+
+## Non-destructive growth correction
+
+A history review found that three later content commits recorded 58 deletions while keeping the total fixed at 520. Many were repetitive generated variants, but the fixed-cap generator also removed useful coverage. `content/interview/restored-coverage-qa.json` restores 21 high-value concepts as stable, directly searchable questions, bringing the catalog to 541.
+
+The generator now loads and preserves existing generated entries before checking topic floors. It creates questions only when a topic falls below its minimum and never removes an entry merely because reviewed content was added. Validation and regression tests enforce a rolling catalog-wide minimum instead of a maximum and require all 21 restored IDs.
 
 ## Readability and media policy
 
-Answers remain plain public content in Git. The UI turns short answers into a lead statement plus readable points, while retaining the separate “Strong answer includes” checklist and source links. This improves all 520 entries without embedding presentation markup into source data.
+Answers remain plain public content in Git. The UI turns short answers into a lead statement plus readable points, while retaining the separate “Strong answer includes” checklist and source links. This improves the full catalog without embedding presentation markup into source data.
 
 Visuals are added only when a relationship is materially easier to understand spatially. The test-levels/test-types matrix qualifies because it separates two independent axes; decorative images do not. Every visual requires alternative text, a caption and a credit and is loaded only with its expanded answer.
