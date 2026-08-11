@@ -107,9 +107,10 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
 
-test("lazy-loads the catalog and caps each rendered page at 60", async () => {
-  const [uiSource, navigationSource, routeSource, schemaSource] = await Promise.all([
+test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
+    readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
     readFile(projectFile("db/schema.ts"), "utf8"),
@@ -118,12 +119,19 @@ test("lazy-loads the catalog and caps each rendered page at 60", async () => {
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
   assert.match(uiSource, /const INTERVIEW_PAGE_SIZE = 60;/);
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
-  assert.match(uiSource, /function MultiSelectFilter/);
-  assert.match(uiSource, />Clear all</);
+  assert.match(uiSource, /function InterviewFilter/);
+  assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
+  assert.doesNotMatch(uiSource, /<label className="iq-category">/);
+  assert.match(uiSource, />Reset filters</);
   assert.match(uiSource, /<section className="iq-toolbar"[\s\S]*?<div className="iq-filter-status"/);
+  assert.match(stylesSource, /\.iq-filter-grid/);
+  assert.match(stylesSource, /\.iq-filter-control summary/);
   assert.doesNotMatch(uiSource, /<i aria-hidden="true">\+<\/i>/);
-  assert.match(uiSource, /openFilter === "tags"/);
-  assert.match(uiSource, /openFilter === "levels"/);
+  for (const filter of ["prevalence", "sort", "tags", "levels"]) {
+    assert.match(uiSource, new RegExp(`openFilter === "${filter}"`));
+  }
+  assert.match(uiSource, /event\.key === "Escape"/);
+  assert.match(uiSource, /closest\("\.iq-filter-control"\)/);
   assert.match(uiSource, /Personal progress/);
   assert.match(routeSource, /interview-progress/);
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
