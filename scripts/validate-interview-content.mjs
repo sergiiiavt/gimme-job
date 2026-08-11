@@ -3,14 +3,15 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
+  readJson("../content/interview/canonical-baseline.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const sourceIds = new Set(sources.map((source) => source.id));
@@ -23,6 +24,12 @@ assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 assert.equal(questions.length, 520, "The public collection must contain exactly 520 canonical questions.");
 assert.equal(sources.length, 46, "The source catalog must contain exactly 46 researched sources.");
 assert.equal(categories.size, 18, "The taxonomy must contain exactly 18 question topics.");
+assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
+assert.deepEqual(
+  new Set(canonical.questions.map((question) => question.category)),
+  categories,
+  "The explicit canonical baseline must cover every topic.",
+);
 assert.deepEqual(
   new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"].filter((category) => categories.has(category))),
   new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"]),
@@ -47,6 +54,7 @@ for (const question of questions) {
   assert.ok(prevalenceLevels.has(question.prevalence), `Invalid prevalence for ${question.id}`);
   assert.ok(categories.has(question.category), `Unknown category ${question.category} in ${question.id}`);
   assert.ok(question.question?.trim(), `Missing question for ${question.id}`);
+  assert.doesNotMatch(question.question, /\btest testing\b/i, `Awkward generated wording in ${question.id}`);
   assert.ok(question.shortAnswer?.trim(), `Missing answer for ${question.id}`);
   assert.ok(question.shortAnswer.trim().length >= 100, `Answer is too short for ${question.id}`);
   assert.ok(question.strongAnswerSignals?.length >= 2, `Add at least two answer signals for ${question.id}`);
@@ -61,6 +69,10 @@ for (const question of questions) {
     assert.ok(media.credit?.trim(), `Missing media credit in ${question.id}`);
     await access(new URL(`../public${media.src}`, import.meta.url));
   }
+}
+
+for (const question of canonical.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `Canonical baseline question must have a stable explicit id: ${question.id}`);
 }
 
 for (const prevalence of prevalenceLevels) {

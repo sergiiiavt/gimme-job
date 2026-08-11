@@ -72,7 +72,7 @@ interface InterviewCatalog {
 }
 
 const INTERVIEW_PAGE_SIZE = 60;
-const interviewLevels: Array<"All" | InterviewLevel> = ["All", "Junior", "Middle", "Senior", "Lead"];
+const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"];
 const interviewPrevalence: Array<"All" | InterviewPrevalence> = ["All", "Very common", "Common", "Occasional", "Specialist"];
 const prevalenceOrder: Record<InterviewPrevalence, number> = { "Very common": 0, Common: 1, Occasional: 2, Specialist: 3 };
 const levelOrder: Record<InterviewLevel, number> = { Junior: 0, Middle: 1, Senior: 2, Lead: 3 };
@@ -106,6 +106,76 @@ const fallbackTags: Record<string, string[]> = {
 
 function tagsFor(question: InterviewQuestion) {
   return question.tags?.length ? question.tags : fallbackTags[question.category] ?? ["qa"];
+}
+
+function normalizeSearch(value: string) {
+  return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function MultiSelectFilter<T extends string>({ allLabel, label, onChange, options, searchable = false, selected }: {
+  allLabel: string;
+  label: string;
+  onChange: (selected: T[]) => void;
+  options: T[];
+  searchable?: boolean;
+  selected: T[];
+}) {
+  const [optionQuery, setOptionQuery] = useState("");
+  const needle = normalizeSearch(optionQuery);
+  const visibleOptions = needle ? options.filter((option) => normalizeSearch(option).includes(needle)) : options;
+  const toggle = (option: T) => onChange(selected.includes(option) ? selected.filter((item) => item !== option) : [...selected, option]);
+
+  return (
+    <div className="iq-multi">
+      <span className="iq-filter-label">{label}</span>
+      <details name="interview-filter">
+        <summary aria-label={`${label}: ${selected.length ? `${selected.length} selected` : allLabel}`}>
+          <strong>{selected.length ? `${selected.length} selected` : allLabel}</strong>
+          <i aria-hidden="true">⌄</i>
+        </summary>
+        <div className="iq-multi-menu">
+        {searchable && (
+          <label className="iq-option-search">
+            <span>⌕</span>
+            <input value={optionQuery} onChange={(event) => setOptionQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}`}/>
+          </label>
+        )}
+        <label className="iq-option iq-option-all">
+          <input type="checkbox" checked={selected.length === 0} onChange={() => onChange([])}/>
+          <span>{allLabel}</span>
+        </label>
+        <div className="iq-option-list">
+          {visibleOptions.map((option) => (
+            <label className="iq-option" key={option}>
+              <input type="checkbox" checked={selected.includes(option)} onChange={() => toggle(option)}/>
+              <span>{option}</span>
+            </label>
+          ))}
+          {visibleOptions.length === 0 && <span className="iq-option-empty">No matching tags</span>}
+        </div>
+        <small>Matches any selected {label.toLowerCase().replace(/s$/, "")}.</small>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function StructuredAnswer({ value }: { value: string }) {
+  const paragraphs = value.split(/\n{2,}/).map((item) => item.trim()).filter(Boolean);
+  const sentences = paragraphs.length > 1
+    ? paragraphs
+    : Array.from(new Intl.Segmenter("en", { granularity: "sentence" }).segment(value), ({ segment }) => segment.trim()).filter(Boolean);
+
+  if (sentences.length < 3) {
+    return <div className="iq-answer-copy">{sentences.map((sentence) => <p key={sentence}>{sentence}</p>)}</div>;
+  }
+
+  return (
+    <div className="iq-answer-copy">
+      <p className="iq-answer-lead">{sentences[0]}</p>
+      <ul className="iq-answer-points">{sentences.slice(1).map((sentence) => <li key={sentence}>{sentence}</li>)}</ul>
+    </div>
+  );
 }
 
 const knowledge: Record<Exclude<PublicSection, "jobs">, {
@@ -453,10 +523,10 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
 
 function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
-  const [level, setLevel] = useState<(typeof interviewLevels)[number]>("All");
+  const [levels, setLevels] = useState<InterviewLevel[]>([]);
   const [prevalence, setPrevalence] = useState<(typeof interviewPrevalence)[number]>("All");
   const [sort, setSort] = useState<InterviewSort>("prevalence");
-  const [tag, setTag] = useState("All");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [page, setPage] = useState(0);
 
   const interviewQuestions = catalog.questions;
@@ -469,16 +539,16 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
   const activeCategory = activeTaxonomy?.category;
 
   const matchingQuestions = useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const searchTerms = normalizeSearch(query).split(" ").filter(Boolean);
     return interviewQuestions
       .filter((item) => {
         const tags = tagsFor(item);
-        const matchesLevel = level === "All" || item.level === level;
+        const matchesLevel = levels.length === 0 || levels.includes(item.level);
         const matchesPrevalence = prevalence === "All" || item.prevalence === prevalence;
         const matchesCategory = !activeCategory || item.category === activeCategory;
-        const matchesTag = tag === "All" || tags.includes(tag);
-        const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${item.prevalence} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
-        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && (!needle || searchable.includes(needle));
+        const matchesTag = selectedTags.length === 0 || tags.some((tag) => selectedTags.includes(tag));
+        const searchable = normalizeSearch(`${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${item.prevalence} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`);
+        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && searchTerms.every((term) => searchable.includes(term));
       })
       .sort((left, right) => {
         const editorialDifference = (editorialOrder.get(left.id) ?? 0) - (editorialOrder.get(right.id) ?? 0);
@@ -491,7 +561,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
         }
         return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || editorialDifference;
       });
-  }, [activeCategory, editorialOrder, interviewQuestions, level, prevalence, query, sort, tag]);
+  }, [activeCategory, editorialOrder, interviewQuestions, levels, prevalence, query, selectedTags, sort]);
 
   const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -500,19 +570,27 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
 
   if (activeTopic === "methodology") return <InterviewMethodology catalog={catalog} onBack={() => onTopicChange("all")}/>;
 
-  const setQuestionTag = (nextTag: string) => {
-    setTag(nextTag);
+  const setQuestionTags = (nextTags: string[]) => {
+    setSelectedTags(nextTags);
+    setPage(0);
+  };
+  const toggleQuestionTag = (nextTag: string) => setQuestionTags(
+    selectedTags.includes(nextTag) ? selectedTags.filter((tag) => tag !== nextTag) : [...selectedTags, nextTag],
+  );
+  const setQuestionLevels = (nextLevels: InterviewLevel[]) => {
+    setLevels(nextLevels);
     setPage(0);
   };
   const clearFilters = () => {
     setQuery("");
-    setLevel("All");
+    setLevels([]);
     setPrevalence("All");
     setSort("prevalence");
-    setTag("All");
+    setSelectedTags([]);
     setPage(0);
     onTopicChange("all");
   };
+  const hasActiveFilters = Boolean(activeCategory || selectedTags.length || query || levels.length || prevalence !== "All" || sort !== "prevalence");
 
   return (
     <div className="kb-content iq-page">
@@ -544,20 +622,12 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
             {interviewSortOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
           </select>
         </label>
-        <label className="iq-category">
-          <span>Tag</span>
-          <select value={tag} onChange={(event) => setQuestionTag(event.target.value)}>
-            <option value="All">All tags</option>
-            {interviewTags.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
-        </label>
+        <MultiSelectFilter allLabel="All tags" label="Tags" onChange={setQuestionTags} options={interviewTags} searchable selected={selectedTags}/>
+        <MultiSelectFilter allLabel="All levels" label="Seniority levels" onChange={setQuestionLevels} options={interviewLevels} selected={levels}/>
       </section>
 
-      <div className="iq-levels" aria-label="Seniority filter">
-        {interviewLevels.map((item) => (
-          <button key={item} className={level === item ? "active" : ""} onClick={() => { setLevel(item); setPage(0); }}>{item}</button>
-        ))}
-        {(activeCategory || tag !== "All" || query || level !== "All" || prevalence !== "All" || sort !== "prevalence") && <button className="iq-clear" onClick={clearFilters}>Clear filters</button>}
+      <div className="iq-filter-status" aria-live="polite">
+        <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Clear all</button>
         <span>{matchingQuestions.length} matches · {visibleQuestions.length} rendered</span>
       </div>
 
@@ -578,19 +648,19 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
               <div className="iq-answer">
                 <section>
                   <h3>Answer</h3>
-                  <p>{item.shortAnswer}</p>
-                  {item.media?.map((media) => (
-                    <figure className="iq-media" key={media.src}>
-                      <Image src={media.src} alt={media.alt} height={430} loading="lazy" unoptimized width={760}/>
-                      <figcaption>{media.caption}<small>{media.credit}</small></figcaption>
-                    </figure>
-                  ))}
+                  <StructuredAnswer value={item.shortAnswer}/>
                 </section>
                 <section>
                   <h3>Strong answer includes</h3>
                   <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
-                  <div className="iq-answer-tags">{tags.map((questionTag) => <button key={questionTag} onClick={() => setQuestionTag(questionTag)}>#{questionTag}</button>)}</div>
+                  <div className="iq-answer-tags">{tags.map((questionTag) => <button className={selectedTags.includes(questionTag) ? "active" : ""} key={questionTag} onClick={() => toggleQuestionTag(questionTag)}>#{questionTag}</button>)}</div>
                 </section>
+                {item.media?.map((media) => (
+                  <figure className="iq-media" key={media.src}>
+                    <Image src={media.src} alt={media.alt} height={430} loading="lazy" unoptimized width={760}/>
+                    <figcaption>{media.caption}<small>{media.credit}</small></figcaption>
+                  </figure>
+                ))}
                 <footer>
                   <span>References</span>
                   {item.sourceIds.map((sourceId) => {

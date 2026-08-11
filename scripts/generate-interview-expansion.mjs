@@ -167,7 +167,7 @@ const topics = [
     concepts: ["structured logs", "service metrics", "distributed traces", "health probes", "alerts and dashboards", "deployment verification", "incident response"],
     scenarios: ["across a distributed request path", "during a canary rollout", "when failures are intermittent", "under a partial dependency outage", "after telemetry volume or cardinality suddenly grows"],
     sources: ["opentelemetry-concepts", "prometheus-alerting", "kubernetes-probes", "grafana-loki", "google-sre"], tags: ["observability", "production", "sre"],
-    start: "starting from a user-visible symptom and ensuring telemetry can connect it to the responsible change and dependency", oracle: "service-level objectives, known test events and correlated logs, metrics and traces", coverage: "signal correctness, context propagation, sampling, alert routing, rollout and recovery", evidence: "a responder can detect, scope and diagnose the failure within the agreed operational target", signals: ["tests telemetry as product behavior", "prefers actionable symptom-based alerts"],
+    start: "tracing a user-visible symptom through telemetry to the responsible change and dependency", oracle: "service-level objectives, known test events and correlated logs, metrics and traces", coverage: "signal correctness, context propagation, sampling, alert routing, rollout and recovery", evidence: "a responder can detect, scope and diagnose the failure within the agreed operational target", signals: ["tests telemetry as product behavior", "prefers actionable symptom-based alerts"],
   },
   {
     id: "regulated-domains", label: "Regulated domains", category: "Regulated domains", target: 28,
@@ -190,34 +190,36 @@ const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 const levelSequence = ["Junior", "Middle", "Middle", "Senior", "Senior", "Lead"];
 const kinds = ["Scenario", "Risk analysis", "Test design", "Troubleshooting", "Automation", "Release decision"];
 const questionTemplates = [
-  (concept, scenario) => `How would you test ${concept} ${scenario}?`,
-  (concept, scenario) => `Which risks and test oracles matter most when validating ${concept} ${scenario}?`,
-  (concept, scenario) => `How would you design an efficient test strategy for ${concept} ${scenario}?`,
-  (concept, scenario) => `What failure modes would you investigate first for ${concept} ${scenario}?`,
-  (concept, scenario) => `How would you automate trustworthy checks for ${concept} ${scenario}?`,
-  (concept, scenario) => `What evidence would you require before releasing ${concept} ${scenario}?`,
+  (concept, scenario) => `How would you approach ${concept} ${scenario}?`,
+  (concept, scenario) => `Which risks and test oracles matter most for ${concept} ${scenario}?`,
+  (concept, scenario) => `How would you design a focused test strategy for ${concept} ${scenario}?`,
+  (concept, scenario) => `Which failure modes would you investigate first in ${concept} ${scenario}?`,
+  (concept, scenario) => `What would you automate for ${concept} ${scenario}, and what would you leave manual?`,
+  (concept, scenario) => `What evidence would you require to make a release decision about ${concept} ${scenario}?`,
 ];
 
 function generatedAnswer(topic, concept, scenario, index) {
   const openings = [
     `Start by ${topic.start}.`,
-    `Prioritize the risks that could invalidate the user or business outcome, then ${topic.start}.`,
+    `Prioritize the risks that could invalidate the user or business outcome before ${topic.start}.`,
     `Build the smallest useful model of the behavior by ${topic.start}.`,
-    `Reproduce the relevant state and dependencies, then ${topic.start}.`,
-    `Automate only stable, repeatable observations after ${topic.start}.`,
-    `Define the release decision first by ${topic.start}.`,
+    `Make the investigation reproducible by ${topic.start}.`,
+    `Before automating, begin by ${topic.start}.`,
+    `Frame the release decision by ${topic.start}.`,
   ];
-  return `${openings[index % openings.length]} For ${concept} ${scenario}, use ${topic.oracle} as the oracle and cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
+  return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, expanded, currentSources] = await Promise.all([
+const [common, canonical, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
+  readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
 
 const authoredExpandedQuestions = expanded.questions.filter((question) => !question.id.startsWith("expanded-"));
-const baseQuestions = [...common.questions, ...authoredExpandedQuestions].map((question) => {
+const canonicalPrevalence = new Map(canonical.questions.map((question) => [question.id, question.prevalence]));
+const baseQuestions = [...common.questions, ...authoredExpandedQuestions, ...canonical.questions].map((question) => {
   const questionWithoutPrevalence = { ...question };
   delete questionWithoutPrevalence.prevalence;
   return questionWithoutPrevalence;
@@ -257,7 +259,7 @@ for (const topic of topics) {
   }
 }
 
-assert.equal(generated.length, 400, "The expansion must add exactly 400 questions to the 120-question base.");
+assert.equal(baseQuestions.length + generated.length, 520, "The canonical and generated catalog must contain exactly 520 questions.");
 
 const generatedByCategory = new Map(topics.map((topic) => [topic.category, []]));
 for (const question of generated) generatedByCategory.get(question.category).push(question);
@@ -267,7 +269,7 @@ function addPrevalence(questions) {
   return questions.map((question) => {
     const position = positions.get(question.category) ?? 0;
     positions.set(question.category, position + 1);
-    return { ...question, prevalence: prevalenceByPosition(position) };
+    return { ...question, prevalence: canonicalPrevalence.get(question.id) ?? prevalenceByPosition(position) };
   });
 }
 
@@ -278,6 +280,7 @@ for (const topic of topics) {
 const enrichedById = new Map(addPrevalence(combinedEditorialOrder).map((question) => [question.id, question]));
 
 common.questions = common.questions.map((question) => enrichedById.get(question.id));
+canonical.questions = canonical.questions.map((question) => enrichedById.get(question.id));
 expanded.questions = [
   ...authoredExpandedQuestions.map((question) => enrichedById.get(question.id)),
   ...generated.map((question) => enrichedById.get(question.id)),
@@ -297,9 +300,10 @@ const taxonomy = [
 
 await Promise.all([
   writeJson("content/interview/common-qa.json", common),
+  writeJson("content/interview/canonical-baseline.json", canonical),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

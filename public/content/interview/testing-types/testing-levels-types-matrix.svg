@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="title description">
+  <title id="title">Test levels and test types matrix</title>
+  <desc id="description">Five test levels are listed vertically and four test types horizontally. Dots in every cell show that each type can be applied at each level. Notes distinguish static and dynamic execution from confirmation and regression testing after change.</desc>
+  <rect width="960" height="560" rx="24" fill="#f7f9f5"/>
+  <text x="42" y="54" fill="#17201d" font-family="Arial, sans-serif" font-size="25" font-weight="700">Two axes, not one long list</text>
+  <text x="42" y="82" fill="#617069" font-family="Arial, sans-serif" font-size="14">Test level = where the activity is organized. Test type = what focus or perspective is used.</text>
+
+  <rect x="42" y="112" width="876" height="326" rx="16" fill="#ffffff" stroke="#dce3dc"/>
+  <rect x="42" y="112" width="246" height="326" rx="16" fill="#edf3e7"/>
+  <path d="M288 112V438M445 112V438M602 112V438M759 112V438" stroke="#e2e7e2"/>
+  <path d="M42 178H918M42 230H918M42 282H918M42 334H918M42 386H918" stroke="#e2e7e2"/>
+
+  <text x="62" y="153" fill="#355b42" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1">TEST LEVELS</text>
+  <text x="366" y="145" text-anchor="middle" fill="#33433b" font-family="Arial, sans-serif" font-size="13" font-weight="700">Functional</text>
+  <text x="523" y="145" text-anchor="middle" fill="#33433b" font-family="Arial, sans-serif" font-size="13" font-weight="700">Non-functional</text>
+  <text x="680" y="145" text-anchor="middle" fill="#33433b" font-family="Arial, sans-serif" font-size="13" font-weight="700">Black-box</text>
+  <text x="838" y="145" text-anchor="middle" fill="#33433b" font-family="Arial, sans-serif" font-size="13" font-weight="700">White-box</text>
+
+  <g fill="#33433b" font-family="Arial, sans-serif" font-size="14">
+    <text x="62" y="211">Component</text>
+    <text x="62" y="263">Component integration</text>
+    <text x="62" y="315">System</text>
+    <text x="62" y="367">System integration</text>
+    <text x="62" y="419">Acceptance</text>
+  </g>
+
+  <g fill="#5f843f">
+    <circle cx="366" cy="204" r="6"/><circle cx="523" cy="204" r="6"/><circle cx="680" cy="204" r="6"/><circle cx="838" cy="204" r="6"/>
+    <circle cx="366" cy="256" r="6"/><circle cx="523" cy="256" r="6"/><circle cx="680" cy="256" r="6"/><circle cx="838" cy="256" r="6"/>
+    <circle cx="366" cy="308" r="6"/><circle cx="523" cy="308" r="6"/><circle cx="680" cy="308" r="6"/><circle cx="838" cy="308" r="6"/>
+    <circle cx="366" cy="360" r="6"/><circle cx="523" cy="360" r="6"/><circle cx="680" cy="360" r="6"/><circle cx="838" cy="360" r="6"/>
+    <circle cx="366" cy="412" r="6"/><circle cx="523" cy="412" r="6"/><circle cx="680" cy="412" r="6"/><circle cx="838" cy="412" r="6"/>
+  </g>
+
+  <rect x="42" y="462" width="427" height="66" rx="12" fill="#e8f0f7"/>
+  <text x="62" y="488" fill="#365f7d" font-family="Arial, sans-serif" font-size="12" font-weight="700">EXECUTION APPROACH</text>
+  <text x="62" y="511" fill="#43565f" font-family="Arial, sans-serif" font-size="14">Static = no execution · Dynamic = execute the object</text>
+
+  <rect x="491" y="462" width="427" height="66" rx="12" fill="#f5eee1"/>
+  <text x="511" y="488" fill="#7d582e" font-family="Arial, sans-serif" font-size="12" font-weight="700">AFTER A CHANGE</text>
+  <text x="511" y="511" fill="#5e5142" font-family="Arial, sans-serif" font-size="14">Confirmation = fix works · Regression = no side effects</text>
+</svg>

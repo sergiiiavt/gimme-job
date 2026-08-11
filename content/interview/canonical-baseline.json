@@ -1,0 +1,699 @@
+{
+  "description": "Explicit baseline questions that must remain directly discoverable instead of being implied by generated scenarios, answers, or tags.",
+  "questions": [
+    {
+      "id": "qa-testing-debugging",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "question": "How do quality assurance, testing and debugging differ?",
+      "shortAnswer": "Quality assurance improves the processes used to build a quality product and aims to prevent defects. Testing evaluates work products and software to reveal defects, failures and risk. Debugging begins after a failure or defect is observed: it locates the cause, changes the code and verifies the fix.",
+      "strongAnswerSignals": [
+        "prevention versus evaluation",
+        "testing and debugging are separate activities",
+        "connects the activities in a real workflow"
+      ],
+      "tags": [
+        "quality-assurance",
+        "testing",
+        "debugging",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "error-defect-failure-root-cause",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "question": "What is the relationship between a root cause, human error, defect and failure?",
+      "shortAnswer": "A root cause creates conditions in which a person can make an error. That error can introduce a defect into a work product. When executable software reaches the affected path under the right conditions, the defect may cause an observable failure; a defect can also remain dormant and never fail in a particular run.",
+      "strongAnswerSignals": [
+        "describes the causal chain",
+        "distinguishes a defect from an observed failure",
+        "recognizes dormant defects"
+      ],
+      "tags": [
+        "error",
+        "defect",
+        "failure",
+        "root-cause"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-process-activities",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "question": "What are the main test-process activities, and what does each produce?",
+      "shortAnswer": "The process includes planning, monitoring and control, analysis, design, implementation, execution and completion. Analysis identifies what to test; design turns conditions into cases and coverage; implementation prepares procedures, data and environments; execution records results; completion summarizes evidence, open risks and reusable testware.",
+      "strongAnswerSignals": [
+        "names the activities in a useful sequence",
+        "distinguishes analysis from design and implementation",
+        "includes monitoring, control and completion"
+      ],
+      "tags": [
+        "test-process",
+        "testware",
+        "planning",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "independence-of-testing",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "question": "What are the benefits and drawbacks of independent testing?",
+      "shortAnswer": "A person who did not create the work can bring different assumptions, skills and defect-detection perspectives. Greater independence can also slow feedback, create handoffs and encourage developers to outsource quality. Use the level of independence that matches the risk while keeping quality a whole-team responsibility.",
+      "strongAnswerSignals": [
+        "explains cognitive diversity",
+        "recognizes handoff and ownership risks",
+        "adapts independence to context"
+      ],
+      "tags": [
+        "test-independence",
+        "whole-team",
+        "risk",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "scrum-guide"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-technique-families",
+      "level": "Junior",
+      "category": "Test design",
+      "question": "How do black-box, white-box and experience-based test techniques differ?",
+      "shortAnswer": "Black-box techniques derive tests from specified behavior without using the implementation structure. White-box techniques derive coverage from code, architecture or control flow. Experience-based techniques use tester knowledge, heuristics and defect history. They are complementary perspectives, not competing labels for the same test.",
+      "strongAnswerSignals": [
+        "basis is specification, structure or experience",
+        "gives a technique example for each family",
+        "treats the families as complementary"
+      ],
+      "tags": [
+        "black-box",
+        "white-box",
+        "experience-based",
+        "test-design"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "positive-negative-testing",
+      "level": "Junior",
+      "category": "Test design",
+      "question": "What is the difference between positive and negative testing?",
+      "shortAnswer": "Positive tests show that valid input and expected user paths produce the intended result. Negative tests challenge invalid input, forbidden actions, unavailable dependencies and incorrect sequences, then verify safe rejection, useful feedback and preserved state. Negative testing is not random invalid data; it is derived from risks and rules.",
+      "strongAnswerSignals": [
+        "valid path versus controlled misuse",
+        "checks safe failure and state preservation",
+        "derives negative cases from risks"
+      ],
+      "tags": [
+        "positive-testing",
+        "negative-testing",
+        "error-handling",
+        "test-design"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "katalon-qa-interviews"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-scenario-case-suite",
+      "level": "Junior",
+      "category": "Documentation and defects",
+      "question": "How do a test condition, test scenario, test case, test procedure and test suite differ?",
+      "shortAnswer": "A test condition identifies something testable. A scenario describes a user or system flow at a high level. A test case defines preconditions, data, actions and expected results. A procedure orders cases and operational steps for execution, while a suite groups related tests for a purpose such as smoke or regression.",
+      "strongAnswerSignals": [
+        "moves from test idea to executable detail",
+        "distinguishes procedure from case",
+        "explains why suites group tests"
+      ],
+      "tags": [
+        "test-condition",
+        "test-scenario",
+        "test-case",
+        "test-suite"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-progress-completion-reports",
+      "level": "Middle",
+      "category": "Documentation and defects",
+      "question": "How does a test progress report differ from a test completion report?",
+      "shortAnswer": "A progress report supports control while testing is active: it shows status, deviations, impediments, changed risks, metrics and next work. A completion report evaluates the finished scope against objectives and exit criteria, records residual risks and unresolved defects, explains deviations and captures lessons for later work.",
+      "strongAnswerSignals": [
+        "ongoing control versus final evaluation",
+        "tailors reporting to its audience",
+        "includes residual risk and deviations"
+      ],
+      "tags": [
+        "test-reporting",
+        "test-progress",
+        "test-completion",
+        "documentation"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "api-request-components",
+      "level": "Junior",
+      "category": "Web, API and data",
+      "question": "Which parts of an API request should a tester vary, and what should be verified in the response?",
+      "shortAnswer": "Vary the method, path and path parameters, query parameters, headers, credentials, content type, body and transport conditions. Verify status and headers, schema and values, error contract, timing, persistence and downstream side effects. Also check that authorization and validation are enforced by the server, not only by the client.",
+      "strongAnswerSignals": [
+        "covers every request location",
+        "checks side effects as well as the body",
+        "includes server-side authorization"
+      ],
+      "tags": [
+        "api",
+        "http",
+        "request",
+        "response"
+      ],
+      "sourceIds": [
+        "mdn-http",
+        "openapi-31",
+        "owasp-api-2023"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "emulator-simulator-real-device",
+      "level": "Junior",
+      "category": "Mobile",
+      "question": "When should mobile testing use an emulator, a simulator or a real device?",
+      "shortAnswer": "Emulators and simulators are fast, repeatable and useful for broad OS, screen and early functional coverage. Real devices are needed for trustworthy evidence about sensors, radios, notifications, biometrics, thermal and memory pressure, vendor behavior and real network transitions. Use virtual coverage broadly and a risk-based physical-device set deeply.",
+      "strongAnswerSignals": [
+        "explains virtual-device speed and coverage",
+        "names hardware behaviors requiring real devices",
+        "uses a risk-based device matrix"
+      ],
+      "tags": [
+        "emulator",
+        "simulator",
+        "real-device",
+        "mobile"
+      ],
+      "sourceIds": [
+        "android-test",
+        "appium-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "automation-framework-components",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "question": "What components belong in a maintainable test automation framework?",
+      "shortAnswer": "A framework normally separates test intent from configuration, browser or API drivers, domain actions, test data, assertions, synchronization, setup and cleanup, reporting and diagnostics. It also defines ownership, coding conventions and CI execution. Add abstractions only where they reduce repeated change or make failures easier to understand.",
+      "strongAnswerSignals": [
+        "separates concerns without over-engineering",
+        "includes diagnostics and lifecycle control",
+        "treats CI and ownership as framework concerns"
+      ],
+      "tags": [
+        "automation-framework",
+        "architecture",
+        "reporting",
+        "maintainability"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "selenium-docs",
+        "katalon-qa-interviews"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "automation-benefits-risks",
+      "level": "Junior",
+      "category": "Automation and CI",
+      "question": "What are the main benefits and risks of test automation?",
+      "shortAnswer": "Automation provides repeatable, fast feedback, executes checks at scale and preserves regression evidence. It also creates code and infrastructure that require design, maintenance, data control and diagnosis. Poorly chosen checks can be flaky, slow or falsely reassuring, so automate stable observations with clear value rather than chasing a percentage.",
+      "strongAnswerSignals": [
+        "balances feedback benefits with ownership cost",
+        "mentions false confidence and flakiness",
+        "selects automation by value"
+      ],
+      "tags": [
+        "automation",
+        "benefits",
+        "risks",
+        "roi"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "katalon-qa-interviews"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "synchronous-asynchronous-code",
+      "level": "Junior",
+      "category": "Programming",
+      "question": "How does asynchronous code change the way automated tests should be written?",
+      "shortAnswer": "Synchronous code completes before the next statement, while asynchronous work may finish later or fail through a promise, callback, event or queue. Tests should await an observable completion condition, assert timeouts and errors, control clocks and dependencies where appropriate, and avoid fixed sleeps that create races and wasted time.",
+      "strongAnswerSignals": [
+        "waits for conditions rather than time",
+        "tests rejection, timeout and ordering",
+        "controls asynchronous dependencies"
+      ],
+      "tags": [
+        "asynchronous",
+        "promises",
+        "synchronization",
+        "test-code"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "selenium-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "ci-versus-delivery-deployment",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "question": "How do continuous integration, continuous delivery and continuous deployment differ?",
+      "shortAnswer": "Continuous integration frequently combines small changes and verifies them with automated feedback. Continuous delivery keeps a verified build releasable through an automated pipeline but may retain a human production decision. Continuous deployment automatically releases every qualifying change. Each stage needs fast checks, traceable artifacts and a safe rollback path.",
+      "strongAnswerSignals": [
+        "distinguishes delivery from deployment",
+        "connects CI to frequent integration",
+        "includes artifact traceability and rollback"
+      ],
+      "tags": [
+        "ci",
+        "continuous-delivery",
+        "continuous-deployment",
+        "pipeline"
+      ],
+      "sourceIds": [
+        "dora",
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "performance-baseline-benchmark-load",
+      "level": "Middle",
+      "category": "Performance and resilience",
+      "question": "How do a performance baseline, benchmark and load test differ?",
+      "shortAnswer": "A baseline records the current system under defined conditions so later results can be compared. A benchmark compares a system, version or configuration using a standardized workload and metric. A load test evaluates behavior under a representative workload against explicit service objectives. None is meaningful without controlled data, environment and workload assumptions.",
+      "strongAnswerSignals": [
+        "comparison point versus comparative test versus workload validation",
+        "requires controlled conditions",
+        "uses service objectives rather than vague speed"
+      ],
+      "tags": [
+        "baseline",
+        "benchmark",
+        "load-testing",
+        "performance"
+      ],
+      "sourceIds": [
+        "k6-docs",
+        "google-sre"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "accessibility-test-baseline",
+      "level": "Junior",
+      "category": "Security and accessibility",
+      "question": "What should a practical first accessibility test of a web page include?",
+      "shortAnswer": "Start with keyboard navigation, visible focus, logical order, accessible names, headings and landmarks, labels and instructions, contrast, zoom and reflow, error feedback and dynamic status messages. Use automated checks to find detectable rules, then manually verify task completion with a keyboard and representative assistive technology.",
+      "strongAnswerSignals": [
+        "covers keyboard and semantic structure",
+        "combines automation with manual checks",
+        "tests complete user tasks"
+      ],
+      "tags": [
+        "accessibility",
+        "wcag",
+        "keyboard",
+        "screen-reader"
+      ],
+      "sourceIds": [
+        "wcag-22"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "scrum-roles-events-artifacts",
+      "level": "Junior",
+      "category": "Agile and delivery",
+      "question": "What are Scrum's accountabilities, events and artifacts, and where does testing fit?",
+      "shortAnswer": "Scrum defines the Product Owner, Scrum Master and Developers; the Sprint and its planning, Daily Scrum, review and retrospective; and the Product Backlog, Sprint Backlog and Increment with their commitments. Testing is not a separate phase or accountability: the whole Scrum Team creates a Done, usable Increment each Sprint.",
+      "strongAnswerSignals": [
+        "names the core Scrum elements",
+        "does not invent a separate QA role in Scrum",
+        "connects testing to the Definition of Done"
+      ],
+      "tags": [
+        "scrum",
+        "roles",
+        "events",
+        "artifacts"
+      ],
+      "sourceIds": [
+        "scrum-guide",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "tdd-bdd-atdd",
+      "level": "Middle",
+      "category": "Agile and delivery",
+      "question": "How do TDD, BDD and ATDD differ, and how are they related?",
+      "shortAnswer": "TDD drives code in short test-code-refactor cycles, usually with developer-facing component tests. ATDD derives acceptance examples collaboratively before implementation. BDD uses examples and shared domain language, often in Given/When/Then form, to describe behavior. All are test-first approaches, but their audience, scope and primary design conversation differ.",
+      "strongAnswerSignals": [
+        "distinguishes code design from acceptance design",
+        "explains BDD as collaboration and examples",
+        "recognizes all three as test-first approaches"
+      ],
+      "tags": [
+        "tdd",
+        "bdd",
+        "atdd",
+        "test-first"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "entry-versus-exit-criteria",
+      "level": "Junior",
+      "category": "Strategy and risk",
+      "question": "What is the difference between entry criteria and exit criteria?",
+      "shortAnswer": "Entry criteria describe the preconditions for starting an activity effectively, such as an available build, environment, test basis and data. Exit criteria define what must be achieved to call the activity complete, such as required coverage, acceptable residual risk and resolved critical defects. Unmet criteria trigger an explicit risk decision, not automatic silence.",
+      "strongAnswerSignals": [
+        "preconditions versus completion evidence",
+        "uses objective, measurable examples",
+        "explains exception handling"
+      ],
+      "tags": [
+        "entry-criteria",
+        "exit-criteria",
+        "test-planning",
+        "release"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-plan-versus-strategy",
+      "level": "Middle",
+      "category": "Strategy and risk",
+      "question": "How does a test strategy differ from a test plan?",
+      "shortAnswer": "A test strategy sets durable principles and approaches: risk posture, levels, types, automation, environments, evidence and governance. A test plan applies those choices to a specific scope, schedule, people, dependencies, entry and exit criteria and deliverables. Teams may combine them in a lightweight document, but should preserve both decisions and execution detail.",
+      "strongAnswerSignals": [
+        "organization or product approach versus scoped execution plan",
+        "names practical plan contents",
+        "allows right-sized documentation"
+      ],
+      "tags": [
+        "test-strategy",
+        "test-plan",
+        "planning",
+        "documentation"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "lead-quality-ownership",
+      "level": "Lead",
+      "category": "Leadership",
+      "question": "How does a QA Lead create shared quality ownership without making QA irrelevant?",
+      "shortAnswer": "Make product risks, quality expectations and evidence visible to the whole team, then place preventive and detective controls with the people closest to the work. QA still contributes specialist testing, coaching, strategy and independent challenge. Measure outcomes and learning rather than centralizing every check or acting as the final quality gatekeeper.",
+      "strongAnswerSignals": [
+        "whole-team ownership with specialist QA value",
+        "places controls near the work",
+        "avoids gatekeeper behavior"
+      ],
+      "tags": [
+        "quality-ownership",
+        "leadership",
+        "whole-team",
+        "coaching"
+      ],
+      "sourceIds": [
+        "scrum-guide",
+        "dora"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "practical-elevator",
+      "level": "Junior",
+      "category": "Practical tasks",
+      "question": "How would you test an elevator when the requirements are incomplete?",
+      "shortAnswer": "Clarify the building, users, capacity, accessibility and safety constraints, then model floors, doors, motion and service states. Cover normal trips, call ordering, capacity and boundaries, obstruction, emergency controls, power or sensor failures and recovery. Prioritize safety invariants first and state which specialist certification evidence is outside the interview exercise.",
+      "strongAnswerSignals": [
+        "asks clarifying questions before listing cases",
+        "models states and safety invariants",
+        "covers failure and recovery"
+      ],
+      "tags": [
+        "elevator",
+        "practical",
+        "state-transition",
+        "safety"
+      ],
+      "sourceIds": [
+        "dou-qa-2022",
+        "katalon-qa-interviews",
+        "indeed-qa-interviews"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "ai-versus-deterministic-testing",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "question": "How does testing an AI system differ from testing deterministic software?",
+      "shortAnswer": "Deterministic rules often support exact expected results for a defined input. AI behavior also depends on data, model, prompt, retrieval and sampling, so evaluation uses representative datasets, task rubrics, statistical thresholds and reviewed failure slices. Deterministic system invariants such as authorization, privacy and tool limits still require exact tests.",
+      "strongAnswerSignals": [
+        "uses datasets and statistical evidence",
+        "separates model behavior from system invariants",
+        "segments failures instead of relying on averages"
+      ],
+      "tags": [
+        "ai-testing",
+        "non-determinism",
+        "evaluation",
+        "oracles"
+      ],
+      "sourceIds": [
+        "istqb-ai-testing",
+        "openai-evals",
+        "nist-genai-profile"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "classification-metrics",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "question": "How do precision, recall, F1 score and a confusion matrix guide classification testing?",
+      "shortAnswer": "The confusion matrix separates true and false positives and negatives. Precision asks how many predicted positives were correct; recall asks how many actual positives were found; F1 balances both through their harmonic mean. Choose the decision threshold and metric by the cost of each error, then inspect results by meaningful user and data segments.",
+      "strongAnswerSignals": [
+        "derives metrics from the confusion matrix",
+        "connects thresholds to error cost",
+        "checks segmented performance"
+      ],
+      "tags": [
+        "precision",
+        "recall",
+        "f1",
+        "confusion-matrix"
+      ],
+      "sourceIds": [
+        "sklearn-model-evaluation",
+        "istqb-ai-testing"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "etl-testing-basics",
+      "level": "Middle",
+      "category": "Data and BI",
+      "question": "What should ETL or ELT pipeline testing cover end to end?",
+      "shortAnswer": "Verify source extraction, schema and type handling, transformation rules, joins and filters, target loading and idempotent reruns. Reconcile counts and control totals at boundaries, test late, duplicate, missing and malformed records, and verify lineage, freshness, observability and recovery. Protect sensitive data throughout the test path.",
+      "strongAnswerSignals": [
+        "covers extract, transform and load boundaries",
+        "uses reconciliation and adversarial records",
+        "tests reruns, recovery and data protection"
+      ],
+      "tags": [
+        "etl",
+        "elt",
+        "pipeline",
+        "reconciliation"
+      ],
+      "sourceIds": [
+        "google-dataflow-testing",
+        "dbt-data-tests",
+        "great-expectations"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "data-quality-dimensions",
+      "level": "Junior",
+      "category": "Data and BI",
+      "question": "Which data-quality dimensions should a tester evaluate?",
+      "shortAnswer": "Common dimensions include completeness, validity, accuracy, consistency, uniqueness, timeliness or freshness and referential integrity. Define each dimension as a measurable rule tied to a business decision, identify the authoritative source and acceptable threshold, and monitor results by source and time rather than reporting one blended quality score.",
+      "strongAnswerSignals": [
+        "names several distinct dimensions",
+        "turns dimensions into measurable business rules",
+        "identifies authoritative data and thresholds"
+      ],
+      "tags": [
+        "data-quality",
+        "completeness",
+        "validity",
+        "freshness"
+      ],
+      "sourceIds": [
+        "great-expectations",
+        "dbt-data-tests"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "logs-metrics-traces",
+      "level": "Middle",
+      "category": "Observability and production",
+      "question": "How do logs, metrics and distributed traces complement one another?",
+      "shortAnswer": "Metrics efficiently show numerical trends and alertable symptoms across time. Logs provide detailed discrete events and local context. Traces connect spans across a request path to show timing and dependency relationships. Correlation identifiers and consistent attributes let responders move between the three signals instead of investigating isolated data stores.",
+      "strongAnswerSignals": [
+        "trend versus event detail versus request path",
+        "uses correlation and shared context",
+        "selects signals by diagnostic question"
+      ],
+      "tags": [
+        "logs",
+        "metrics",
+        "traces",
+        "opentelemetry"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "grafana-loki"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "sli-slo-sla",
+      "level": "Middle",
+      "category": "Observability and production",
+      "question": "What is the difference between an SLI, SLO and SLA?",
+      "shortAnswer": "An SLI is a measured indicator of service behavior, such as the proportion of successful requests below a latency threshold. An SLO is the internal target for that indicator over a period. An SLA is an external agreement that may attach consequences to missed commitments. Tests should validate measurement semantics, not only the dashboard value.",
+      "strongAnswerSignals": [
+        "measurement versus target versus agreement",
+        "uses a user-centered example",
+        "tests the telemetry definition"
+      ],
+      "tags": [
+        "sli",
+        "slo",
+        "sla",
+        "reliability"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "prometheus-alerting"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "regulated-requirements-traceability",
+      "level": "Senior",
+      "category": "Regulated domains",
+      "question": "Why is bidirectional requirements traceability important in regulated software?",
+      "shortAnswer": "Forward traceability shows that each approved requirement and risk control has design, implementation and verification evidence. Backward traceability shows that every implementation and test exists for an authorized need. Together they expose gaps, unintended scope and change impact, while preserving an auditable path from intended use and hazards to objective evidence.",
+      "strongAnswerSignals": [
+        "explains both traceability directions",
+        "connects risk controls to verification",
+        "uses traceability for change impact"
+      ],
+      "tags": [
+        "traceability",
+        "requirements",
+        "risk-control",
+        "regulated"
+      ],
+      "sourceIds": [
+        "fda-csa",
+        "fda-iec-62304",
+        "iso-26262"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "audit-trail-data-integrity",
+      "level": "Senior",
+      "category": "Regulated domains",
+      "question": "How would you test an audit trail for electronic records and signatures?",
+      "shortAnswer": "Verify that creation, change, deletion and signature events capture who did what, when, to which record and, where required, why. Records must be secure, time-consistent, attributable and linked to the original value without ordinary users altering history. Test access, search, export, retention, clock handling, failed actions and review workflows.",
+      "strongAnswerSignals": [
+        "captures actor, action, time, object and reason",
+        "protects original records and history",
+        "covers access, retention and review"
+      ],
+      "tags": [
+        "audit-trail",
+        "data-integrity",
+        "electronic-records",
+        "part-11"
+      ],
+      "sourceIds": [
+        "ecfr-part-11",
+        "eu-gmp-annex-11"
+      ],
+      "prevalence": "Specialist"
+    }
+  ]
+}
