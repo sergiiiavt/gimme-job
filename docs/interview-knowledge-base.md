@@ -10,6 +10,7 @@ content/interview/
   common-qa.json      # original core collection
   canonical-baseline.json # directly searchable topic baseline
   database-sql-qa.json # audited database and SQL coverage
+  observability-production-qa.json # audited observability and production coverage
   restored-coverage-qa.json # valuable coverage restored from history
   expanded-qa.json    # broad canonical coverage
   taxonomy.json       # stable sections and labels
@@ -55,7 +56,7 @@ Images require an accessible alternative, caption and credit. Original diagrams 
 - Official syllabi, standards, specifications and product documentation validate technical claims.
 - `sources.json` documents why each source is used.
 
-The catalog currently contains 541 canonical questions across 18 topics and 46 sources. The generator preserves every existing stable question ID and allows reviewed additions to increase the total; the validated minimum advances with the catalog so the count cannot regress. Its four prevalence bands are editorial signals, not invented percentages: **Very common**, **Common**, **Occasional**, and **Specialist**. The default view sorts most-common first; editorial, Junior-to-Lead, and alphabetical sorting remain available.
+The catalog currently contains 566 canonical questions across 18 topics and 46 sources. The generator preserves every existing stable question ID and allows reviewed additions to increase the total; the validated minimum advances with the catalog so the count cannot regress. Its four prevalence bands are editorial signals, not invented percentages: **Very common**, **Common**, **Occasional**, and **Specialist**. The default view sorts most-common first; editorial, Junior-to-Lead, and alphabetical sorting remain available.
 
 The catalog module is loaded only after the Interview section is opened. Filtering and search operate over the full in-memory catalog, but pagination renders no more than 60 question rows at once.
 
@@ -78,4 +79,4 @@ The private progress status is unrelated to editorial publication status.
 
 ## Validation and deployment
 
-`npm run check:content` enforces the current 541-question minimum, 18 topics, 46 sources, four specialist topics, prevalence values, duplicate IDs, known categories and sources, complete answers, answer signals, and valid media. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge. Production deployment is available only from the GitHub Actions workflow after changes reach `main`.
+`npm run check:content` enforces the current 566-question minimum, 18 topics, 46 sources, four specialist topics, prevalence values, duplicate IDs, known categories and sources, complete answers, answer signals, and valid media. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge. Production deployment is available only from the GitHub Actions workflow after changes reach `main`.

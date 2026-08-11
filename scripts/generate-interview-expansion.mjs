@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
-const MINIMUM_QUESTION_COUNT = 541;
+const MINIMUM_QUESTION_COUNT = 566;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },
@@ -211,10 +211,11 @@ function generatedAnswer(topic, concept, scenario, index) {
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, databaseSql, restoredCoverage, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/database-sql-qa.json"),
+  readJson("content/interview/observability-production-qa.json"),
   readJson("content/interview/restored-coverage-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
@@ -227,6 +228,7 @@ const baseQuestions = [
   ...common.questions,
   ...authoredExpandedQuestions,
   ...databaseSql.questions,
+  ...observabilityProduction.questions,
   ...restoredCoverage.questions,
   ...canonical.questions,
   ...preservedGeneratedQuestions,
@@ -299,6 +301,7 @@ const enrichedById = new Map(addPrevalence(combinedEditorialOrder).map((question
 common.questions = common.questions.map((question) => enrichedById.get(question.id));
 canonical.questions = canonical.questions.map((question) => enrichedById.get(question.id));
 databaseSql.questions = databaseSql.questions.map((question) => enrichedById.get(question.id));
+observabilityProduction.questions = observabilityProduction.questions.map((question) => enrichedById.get(question.id));
 restoredCoverage.questions = restoredCoverage.questions.map((question) => enrichedById.get(question.id));
 expanded.questions = [
   ...authoredExpandedQuestions.map((question) => enrichedById.get(question.id)),
@@ -322,10 +325,11 @@ await Promise.all([
   writeJson("content/interview/common-qa.json", common),
   writeJson("content/interview/canonical-baseline.json", canonical),
   writeJson("content/interview/database-sql-qa.json", databaseSql),
+  writeJson("content/interview/observability-production-qa.json", observabilityProduction),
   writeJson("content/interview/restored-coverage-qa.json", restoredCoverage),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + restoredCoverage.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
