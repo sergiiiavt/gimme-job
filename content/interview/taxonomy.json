@@ -1,18 +1,120 @@
 [
-  { "id": "all", "label": "All questions", "description": "The complete canonical interview collection." },
-  { "id": "fundamentals", "label": "Fundamentals", "category": "Fundamentals", "description": "Testing purpose, principles, levels, types and terminology." },
-  { "id": "test-design", "label": "Test design", "category": "Test design", "description": "Black-box, white-box and experience-based techniques." },
-  { "id": "documentation-defects", "label": "Documentation & defects", "category": "Documentation and defects", "description": "Test artifacts, defect lifecycle, reviews and traceability." },
-  { "id": "web-api-data", "label": "Web, API & data", "category": "Web, API and data", "description": "HTTP, browsers, services, integrations, databases and SQL." },
-  { "id": "mobile", "label": "Mobile", "category": "Mobile", "description": "Android, iOS, devices, lifecycle, networks and releases." },
-  { "id": "automation-ci", "label": "Automation & CI", "category": "Automation and CI", "description": "Automation strategy, frameworks, UI tools and pipelines." },
-  { "id": "programming", "label": "Programming", "category": "Programming", "description": "Code design, OOP, patterns, concurrency and maintainability." },
-  { "id": "infrastructure", "label": "Infrastructure", "category": "Infrastructure", "description": "Git, containers, cloud, Linux, networking and environments." },
-  { "id": "performance-resilience", "label": "Performance & resilience", "category": "Performance and resilience", "description": "Load models, bottlenecks, reliability and recovery." },
-  { "id": "security-accessibility", "label": "Security & accessibility", "category": "Security and accessibility", "description": "Application security, authorization, privacy and WCAG." },
-  { "id": "agile-delivery", "label": "Agile & delivery", "category": "Agile and delivery", "description": "Scrum, Kanban, shift-left and continuous delivery." },
-  { "id": "strategy-risk", "label": "Strategy & risk", "category": "Strategy and risk", "description": "Quality strategy, estimation, metrics and release risk." },
-  { "id": "leadership", "label": "Leadership", "category": "Leadership", "description": "People, stakeholders, conflict, coaching and change." },
-  { "id": "practical", "label": "Practical tasks", "category": "Practical tasks", "description": "Scenario analysis and hands-on interview exercises." },
-  { "id": "methodology", "label": "Sources & methodology", "description": "Source analysis, editorial approach and maintenance model." }
+  {
+    "id": "all",
+    "label": "All questions",
+    "description": "The complete canonical interview collection."
+  },
+  {
+    "id": "fundamentals",
+    "label": "Fundamentals",
+    "category": "Fundamentals",
+    "description": "Testing purpose, principles, levels, types and terminology."
+  },
+  {
+    "id": "test-design",
+    "label": "Test design",
+    "category": "Test design",
+    "description": "Black-box, white-box and experience-based techniques."
+  },
+  {
+    "id": "documentation-defects",
+    "label": "Documentation & defects",
+    "category": "Documentation and defects",
+    "description": "Test artifacts, defect lifecycle, reviews and traceability."
+  },
+  {
+    "id": "web-api-data",
+    "label": "Web, API & data",
+    "category": "Web, API and data",
+    "description": "HTTP, browsers, services, integrations, databases and SQL."
+  },
+  {
+    "id": "mobile",
+    "label": "Mobile",
+    "category": "Mobile",
+    "description": "Android, iOS, devices, lifecycle, networks and releases."
+  },
+  {
+    "id": "automation-ci",
+    "label": "Automation & CI",
+    "category": "Automation and CI",
+    "description": "Automation strategy, frameworks, UI tools and pipelines."
+  },
+  {
+    "id": "programming",
+    "label": "Programming",
+    "category": "Programming",
+    "description": "Code design, OOP, patterns, concurrency and maintainability."
+  },
+  {
+    "id": "infrastructure",
+    "label": "Infrastructure",
+    "category": "Infrastructure",
+    "description": "Git, containers, cloud, Linux, networking and environments."
+  },
+  {
+    "id": "performance-resilience",
+    "label": "Performance & resilience",
+    "category": "Performance and resilience",
+    "description": "Load models, bottlenecks, reliability and recovery."
+  },
+  {
+    "id": "security-accessibility",
+    "label": "Security & accessibility",
+    "category": "Security and accessibility",
+    "description": "Application security, authorization, privacy and WCAG."
+  },
+  {
+    "id": "agile-delivery",
+    "label": "Agile & delivery",
+    "category": "Agile and delivery",
+    "description": "Scrum, Kanban, shift-left and continuous delivery."
+  },
+  {
+    "id": "strategy-risk",
+    "label": "Strategy & risk",
+    "category": "Strategy and risk",
+    "description": "Quality strategy, estimation, metrics and release risk."
+  },
+  {
+    "id": "leadership",
+    "label": "Leadership",
+    "category": "Leadership",
+    "description": "People, stakeholders, conflict, coaching and change."
+  },
+  {
+    "id": "practical",
+    "label": "Practical tasks",
+    "category": "Practical tasks",
+    "description": "Scenario analysis and hands-on interview exercises."
+  },
+  {
+    "id": "ai-ml-llm",
+    "label": "AI, ML & LLM",
+    "category": "AI, ML and LLM",
+    "description": "Datasets, model metrics, generative evaluations, safety and AI-system operations."
+  },
+  {
+    "id": "data-bi",
+    "label": "Data & BI",
+    "category": "Data and BI",
+    "description": "Pipelines, warehouses, transformations, semantic models and analytical reports."
+  },
+  {
+    "id": "observability-production",
+    "label": "Observability & production",
+    "category": "Observability and production",
+    "description": "Telemetry, health checks, deployment verification, incidents and operational learning."
+  },
+  {
+    "id": "regulated-domains",
+    "label": "Regulated domains",
+    "category": "Regulated domains",
+    "description": "Risk-based assurance, traceability, data integrity and safety-critical change control."
+  },
+  {
+    "id": "methodology",
+    "label": "Sources & methodology",
+    "description": "Source analysis, prevalence model, editorial approach and maintenance rules."
+  }
 ]
