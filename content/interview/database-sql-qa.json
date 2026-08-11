@@ -1,0 +1,590 @@
+{
+  "questions": [
+    {
+      "id": "relational-versus-nonrelational-databases",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "How do relational and non-relational databases differ, and what changes in the test approach?",
+      "shortAnswer": "Relational databases organize data into tables with declared relationships, constraints and transaction semantics, while non-relational systems use models such as documents, key-value pairs, wide columns or graphs. The choice changes query patterns, consistency guarantees, schema enforcement and scaling behaviour. Testers should verify the product's actual data model, integrity rules, concurrency guarantees, failure recovery and supported query paths instead of assuming every database behaves like SQL.",
+      "strongAnswerSignals": [
+        "contrasts data models and consistency guarantees",
+        "connects architecture choices to test scope",
+        "avoids treating NoSQL as one uniform technology"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "nosql",
+        "data-model"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "dou-qa-2022"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "sql-command-families",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "What do SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, COMMIT and ROLLBACK do?",
+      "shortAnswer": "SELECT reads data; INSERT, UPDATE and DELETE change rows; and CREATE, ALTER and DROP define or change database objects. COMMIT makes a transaction's successful work durable, while ROLLBACK abandons its uncommitted changes. A tester should know which statements can change state, restrict write access in shared environments, use precise WHERE clauses and verify both the affected-row count and resulting business state.",
+      "strongAnswerSignals": [
+        "separates querying, data changes, schema changes and transaction control",
+        "recognizes destructive-statement risk",
+        "verifies affected rows and final state"
+      ],
+      "tags": [
+        "sql",
+        "crud",
+        "ddl",
+        "transactions"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "database-keys-and-constraints",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "How do primary keys, foreign keys, UNIQUE, NOT NULL, CHECK and DEFAULT constraints differ?",
+      "shortAnswer": "A primary key uniquely identifies each row, while a foreign key requires a referenced value and protects relationships between tables. UNIQUE prevents duplicate values, NOT NULL requires a value, CHECK enforces a row-level rule and DEFAULT supplies a value when one is omitted. Tests should cover valid writes, each violation, composite keys, update and delete actions, null behaviour and whether application errors accurately represent the database rejection.",
+      "strongAnswerSignals": [
+        "explains identity and referential integrity",
+        "distinguishes all major constraint types",
+        "tests negative writes and update/delete behaviour"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "constraints",
+        "keys"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "sql-null-semantics",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "Why does NULL require special handling in SQL queries and tests?",
+      "shortAnswer": "NULL represents an unknown or absent value, so ordinary comparisons with it usually produce UNKNOWN rather than TRUE or FALSE. Use IS NULL or IS NOT NULL instead of equals, and remember that NULL affects joins, aggregates, NOT IN, sorting and uniqueness differently across database products. Test missing values explicitly at input, storage, query, calculation, export and UI boundaries because silent null handling can change both row counts and business totals.",
+      "strongAnswerSignals": [
+        "understands SQL three-valued logic",
+        "uses IS NULL rather than equality",
+        "covers joins, aggregates and end-to-end null propagation"
+      ],
+      "tags": [
+        "sql",
+        "database",
+        "null",
+        "three-valued-logic"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "sql-where-group-by-having",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Practical",
+      "question": "When should a SQL query use WHERE, GROUP BY and HAVING?",
+      "shortAnswer": "WHERE filters individual rows before grouping, GROUP BY forms groups for aggregate functions, and HAVING filters the resulting groups. For example, WHERE can restrict orders to one year, GROUP BY customer can calculate totals, and HAVING SUM(amount) greater than a threshold can retain only high-value customers. A strong test checks boundary values, nulls, duplicate join rows, grouping grain and an independently calculated control total.",
+      "strongAnswerSignals": [
+        "places row filtering before aggregation",
+        "uses HAVING for aggregate conditions",
+        "checks grouping grain and duplicate amplification"
+      ],
+      "tags": [
+        "sql",
+        "group-by",
+        "having",
+        "aggregation"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "sql-union-versus-union-all",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "What is the difference between UNION and UNION ALL, and how would you test either result?",
+      "shortAnswer": "UNION combines compatible result sets and removes duplicate rows, while UNION ALL keeps every row and normally avoids the duplicate-removal work. Both sides must return compatible column counts and types, but column names and ordering still need deliberate handling. Tests should include duplicates within and across inputs, NULL values, empty inputs, type conversions, ordering applied only at the final result and reconciliation of expected row counts.",
+      "strongAnswerSignals": [
+        "distinguishes duplicate removal from retention",
+        "mentions compatible result shapes",
+        "tests nulls, empty inputs and row-count reconciliation"
+      ],
+      "tags": [
+        "sql",
+        "union",
+        "duplicates",
+        "query-results"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "sql-find-duplicate-rows",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Practical",
+      "question": "How would you use SQL to find duplicate business keys in a table?",
+      "shortAnswer": "Group by the business-key columns and filter groups with HAVING COUNT(*) greater than one, for example SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1. First define whether case, whitespace, NULL and historical versions should count as the same key. Then inspect the underlying rows, confirm the intended uniqueness rule and avoid deleting anything until ownership, retention and recovery are clear.",
+      "strongAnswerSignals": [
+        "uses GROUP BY with HAVING COUNT",
+        "clarifies the real business key",
+        "separates detection from destructive cleanup"
+      ],
+      "tags": [
+        "sql",
+        "database",
+        "duplicates",
+        "data-quality"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "dbt-data-tests"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "sql-find-orphan-records",
+      "level": "Junior",
+      "category": "Databases, SQL and BI",
+      "kind": "Practical",
+      "question": "How would you find orphan records or missing relationships with SQL?",
+      "shortAnswer": "Use a LEFT JOIN from the child to the parent and filter where the parent key is NULL, or use NOT EXISTS with a correlated subquery. Confirm whether a nullable foreign key is valid before treating every missing relationship as a defect. Compare the query with declared foreign-key rules, soft deletes, effective dates and ingestion order so that legitimate temporary states are not misclassified as broken integrity.",
+      "strongAnswerSignals": [
+        "uses LEFT JOIN or NOT EXISTS correctly",
+        "distinguishes valid null relationships from orphans",
+        "checks constraints, soft deletes and timing"
+      ],
+      "tags": [
+        "sql",
+        "database",
+        "referential-integrity",
+        "joins"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "dbt-data-tests"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "database-normalization-denormalization",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "What problem does database normalization solve, and when can denormalization be justified?",
+      "shortAnswer": "Normalization separates facts to reduce duplication and update, insert and delete anomalies; first, second and third normal forms progressively constrain repeating groups, partial dependencies and transitive dependencies. Denormalization deliberately duplicates or precomputes data to simplify reads or improve measured performance. Testers should verify the source of truth, write consistency, migration and repair paths, concurrency behaviour and whether performance evidence actually justifies the extra integrity risk.",
+      "strongAnswerSignals": [
+        "connects normalization to data anomalies",
+        "treats denormalization as an evidence-based tradeoff",
+        "tests consistency and repair paths"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "normalization",
+        "data-model"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "sql-subqueries-and-ctes",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "When would you use a subquery or common table expression instead of another join?",
+      "shortAnswer": "A subquery can express existence, scalar lookup or set membership, while a common table expression gives a named intermediate result that can make a complex query easier to read and test. A join is often clearer when combining related row sets, but equivalent syntax does not guarantee an identical plan on every database. Verify empty and multi-row cases, NULL behaviour in IN or NOT IN, duplicate amplification, recursive termination and the actual execution plan for performance-sensitive queries.",
+      "strongAnswerSignals": [
+        "chooses syntax for semantics and clarity",
+        "recognizes NULL and cardinality traps",
+        "does not assume equivalent syntax has identical performance"
+      ],
+      "tags": [
+        "sql",
+        "cte",
+        "subquery",
+        "joins"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "sql-window-functions",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Practical",
+      "question": "What are SQL window functions, and how would you get the latest row or top value per group?",
+      "shortAnswer": "A window function calculates across related rows while retaining each row, using an OVER clause with optional PARTITION BY, ORDER BY and frame rules. A common pattern assigns ROW_NUMBER() OVER (PARTITION BY group_key ORDER BY timestamp DESC) and keeps row number one to select the latest row per group. Tests should include ties, duplicate timestamps, NULL ordering, deterministic secondary ordering, empty groups and frame boundaries for running or rolling calculations.",
+      "strongAnswerSignals": [
+        "distinguishes windows from collapsing aggregation",
+        "uses partitioning and deterministic ordering",
+        "tests ties, null ordering and frame boundaries"
+      ],
+      "tags": [
+        "sql",
+        "window-functions",
+        "row-number",
+        "analytics"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "powerbi-star-schema"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "star-schema-facts-dimensions-grain",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "How do fact tables, dimension tables and grain work in a star schema?",
+      "shortAnswer": "A fact table stores measurable events at a declared grain, while dimension tables provide descriptive context such as customer, product or date. Tests must prove that every fact row represents exactly one event at that grain and that dimension relationships do not duplicate or drop measures. Reconcile counts and totals from source to model, cover unknown and late-arriving dimensions, effective dates, slowly changing attributes and filter behaviour across every relationship.",
+      "strongAnswerSignals": [
+        "defines fact, dimension and grain",
+        "detects duplicate amplification and missing relationships",
+        "reconciles measures and slowly changing attributes"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "star-schema",
+        "bi"
+      ],
+      "sourceIds": [
+        "powerbi-star-schema",
+        "postgres-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "bi-dashboard-reconciliation",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Practical",
+      "question": "How would you reconcile a BI dashboard value with its source database?",
+      "shortAnswer": "Start from the displayed measure's business definition, filter context, time zone, refresh time and aggregation grain, then trace its lineage through the semantic model and transformations to authoritative source rows. Reproduce the calculation with an independent SQL query and control totals rather than copying the dashboard's own logic. Test drill-downs, hidden filters, many-to-many relationships, rounding, late data, row-level security, cache or refresh lag and exports so matching one headline number does not hide inconsistent detail.",
+      "strongAnswerSignals": [
+        "traces business definition and lineage",
+        "uses independent SQL and control totals",
+        "covers filters, security, freshness and detail-level consistency"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "bi",
+        "reconciliation"
+      ],
+      "sourceIds": [
+        "powerbi-star-schema",
+        "dbt-data-tests"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "database-transactions-acid",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "What do database transactions and ACID properties mean for testing?",
+      "shortAnswer": "A transaction groups operations into one unit that commits completely or rolls back, while ACID describes atomicity, consistency, isolation and durability. Test success, expected rejection and a failure between each significant step to prove that partial business state is not left behind. Also verify retry behaviour, duplicate requests, visibility to concurrent sessions, constraints at commit time and durable state after reconnect or recovery.",
+      "strongAnswerSignals": [
+        "explains all four ACID properties",
+        "injects failures between transaction steps",
+        "covers concurrency, retries and durable outcomes"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "transactions",
+        "acid"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "transaction-isolation-anomalies",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "Which concurrency anomalies do transaction isolation levels try to prevent?",
+      "shortAnswer": "Relevant anomalies include dirty reads, non-repeatable reads, phantom reads, lost updates and serialization failures, although exact guarantees vary by database implementation. Design tests with two controlled sessions, barriers between statements and assertions about what each session can observe at every step. Verify the configured isolation level, lock or MVCC behaviour, retry handling and the business invariant rather than relying only on the generic isolation-level name.",
+      "strongAnswerSignals": [
+        "names concrete concurrency anomalies",
+        "uses deterministic multi-session tests",
+        "checks product-specific guarantees and retries"
+      ],
+      "tags": [
+        "database",
+        "transactions",
+        "isolation",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "database-locks-and-deadlocks",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Troubleshooting",
+      "question": "How would you test and diagnose database locks, blocking and deadlocks?",
+      "shortAnswer": "Create controlled concurrent transactions that acquire the same resources in known orders, then measure waiting, timeout, cancellation and rollback behaviour. A deadlock forms a cycle of sessions waiting on one another, so the database normally aborts one participant and the application must handle that failure safely. Inspect active sessions, lock views and query logs; verify consistent lock ordering, short transaction scope, bounded waits, safe retries and no duplicated business effect.",
+      "strongAnswerSignals": [
+        "distinguishes ordinary blocking from a deadlock cycle",
+        "uses controlled concurrent sessions and lock diagnostics",
+        "verifies rollback, timeout and idempotent retry behaviour"
+      ],
+      "tags": [
+        "database",
+        "locking",
+        "deadlocks",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "database-indexes",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "What does a database index improve, and what costs or risks does it introduce?",
+      "shortAnswer": "An index provides an additional structure that can locate or order selected rows faster than scanning the whole table. It consumes storage and adds work to inserts, updates and deletes, and the optimizer may correctly ignore it when a query returns much of the table. Test representative data volume and distribution, query predicates, ordering, write cost, uniqueness requirements, stale statistics and the measured plan instead of merely checking that an index exists.",
+      "strongAnswerSignals": [
+        "balances read benefit against write and storage cost",
+        "recognizes that optimizers may choose a scan",
+        "uses representative data and measured plans"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "indexes",
+        "performance"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "google-sre"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "sql-explain-query-plan",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Troubleshooting",
+      "question": "How would you use EXPLAIN or an execution plan to investigate a slow SQL query?",
+      "shortAnswer": "Start with the non-executing plan to inspect scan types, join order, estimated rows, filters, sorts and aggregate steps, then use an analyze mode only where executing the statement is safe. Compare estimated with actual row counts and timing because large differences can reveal stale statistics, skew or a predicate the optimizer cannot estimate well. Reproduce with production-like volume and parameters, measure end-to-end latency and I/O, and never treat the plan's abstract cost as elapsed milliseconds.",
+      "strongAnswerSignals": [
+        "reads scans, joins, estimates and filters",
+        "uses executing analysis safely",
+        "compares estimates with actual rows and real workload"
+      ],
+      "tags": [
+        "sql",
+        "database",
+        "explain",
+        "query-plan"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "composite-index-column-order",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Theory",
+      "question": "Why does column order matter in a composite database index?",
+      "shortAnswer": "A multi-column index is ordered by its key sequence, so predicates and sorting that use the leading columns usually benefit most, while a condition only on a later column may not use it efficiently. Selectivity, range predicates, equality predicates, requested ordering and database-specific optimizer behaviour all influence the result. Verify several realistic query shapes with representative distributions and plans, and also measure write overhead before adding overlapping indexes.",
+      "strongAnswerSignals": [
+        "understands leading-column behaviour",
+        "considers predicates, ordering and selectivity",
+        "validates with plans and write-cost measurements"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "composite-index",
+        "performance"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "database-schema-migrations",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Test design",
+      "question": "How would you test a database schema migration with existing production data?",
+      "shortAnswer": "Test the migration against a representative, sanitized copy that includes old versions, large tables, invalid historical edge cases and realistic indexes and constraints. Verify forward migration, application compatibility during rollout, transformed values, row and control totals, locks and duration, restart after interruption, rollback or forward-fix strategy and backups. Rehearse the exact deployment order and prove that mixed application versions cannot corrupt data during a rolling release.",
+      "strongAnswerSignals": [
+        "uses representative historical data and volume",
+        "covers compatibility, interruption and recovery",
+        "rehearses mixed-version rollout behaviour"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "schema-migration",
+        "deployment"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "google-sre"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "database-data-types-and-boundaries",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Test design",
+      "question": "Which database data-type boundaries commonly cause defects?",
+      "shortAnswer": "High-risk boundaries include integer overflow, decimal precision and rounding, floating-point comparison, text length and encoding, case and collation, dates, time zones, daylight-saving transitions, binary data and NULL. Generate values immediately inside and outside each declared limit and trace conversions across API, application, database, export and report layers. Verify rejection or rounding rules, storage fidelity, sorting and comparison behaviour, and that migrations do not silently narrow existing values.",
+      "strongAnswerSignals": [
+        "covers numeric, text and temporal boundaries",
+        "traces conversions across system layers",
+        "checks storage fidelity and migration narrowing"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "data-types",
+        "boundaries"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "database-test-data-isolation",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Practice",
+      "question": "How do you keep database integration tests isolated, repeatable and safe?",
+      "shortAnswer": "Give each test controlled data and ownership through a transaction, unique tenant or schema, deterministic fixture or disposable database, depending on what the test must observe. Clean up reliably, but do not hide commit, trigger, locking or cross-transaction behaviour by wrapping every test in a rollback that production never uses. Parallel runs need collision-proof identifiers, bounded permissions, no production credentials, representative constraints and diagnostics that identify the created records when cleanup fails.",
+      "strongAnswerSignals": [
+        "selects isolation that preserves the behaviour under test",
+        "handles parallel data collisions and cleanup",
+        "uses least privilege and never production credentials"
+      ],
+      "tags": [
+        "database",
+        "integration-testing",
+        "test-data",
+        "isolation"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "playwright-best-practices"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "database-replication-backup-recovery",
+      "level": "Lead",
+      "category": "Databases, SQL and BI",
+      "kind": "Scenario",
+      "question": "How would you test database replication, backup restoration and failover without trusting status indicators alone?",
+      "shortAnswer": "Write identifiable records and verify their values, ordering and visibility on replicas under normal load, lag, network interruption and failover. Restore backups into an isolated environment and prove schema, constraints, row counts, critical business totals, permissions and point-in-time recovery against defined recovery objectives. Exercise client reconnection, read-after-write expectations, duplicate or lost writes, split-brain protections and failback, while measuring actual data loss and recovery time rather than only checking green dashboards.",
+      "strongAnswerSignals": [
+        "verifies data rather than only infrastructure status",
+        "performs real isolated restore tests",
+        "measures recovery objectives and client behaviour"
+      ],
+      "tags": [
+        "database",
+        "replication",
+        "backup",
+        "recovery"
+      ],
+      "sourceIds": [
+        "postgres-docs",
+        "google-sre"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "sql-injection-parameterized-queries",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "kind": "Security",
+      "question": "How do parameterized queries prevent SQL injection, and what should still be tested?",
+      "shortAnswer": "Parameterized queries send SQL structure separately from data values, so hostile input is treated as a value rather than executable syntax. They do not automatically make dynamically chosen identifiers, sort clauses, stored procedures, excessive database privileges or unsafe query construction secure. Test every input path including headers and imported files, verify server-side parameter binding and allowlists, use least-privileged database accounts and confirm that errors and logs do not disclose sensitive query or schema details.",
+      "strongAnswerSignals": [
+        "explains the code-versus-data boundary",
+        "recognizes dynamic identifiers and privilege risks",
+        "tests indirect inputs, errors and logging"
+      ],
+      "tags": [
+        "sql",
+        "database",
+        "sql-injection",
+        "security"
+      ],
+      "sourceIds": [
+        "owasp-wstg",
+        "postgres-docs"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "database-views-procedures-triggers",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "kind": "Test design",
+      "question": "What should be tested when business logic is implemented in views, stored procedures or triggers?",
+      "shortAnswer": "Verify the declared inputs, result shape, permissions, transaction boundaries, side effects and error behaviour of stored procedures, plus row visibility and freshness for normal or materialized views. Triggers need tests for every firing operation, ordering, recursion, bulk statements, rollback, disabled states and unexpected writes to audit or derived tables. Cover direct and application-mediated access, schema changes, performance at realistic volume and observability so hidden database logic does not become an untraceable second application.",
+      "strongAnswerSignals": [
+        "covers permissions, transactions and hidden side effects",
+        "tests trigger firing, recursion and bulk behaviour",
+        "includes schema compatibility, performance and observability"
+      ],
+      "tags": [
+        "database",
+        "sql",
+        "stored-procedures",
+        "triggers"
+      ],
+      "sourceIds": [
+        "postgres-docs"
+      ],
+      "prevalence": "Specialist"
+    }
+  ]
+}

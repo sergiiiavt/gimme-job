@@ -111,7 +111,7 @@ const fallbackTags: Record<string, string[]> = {
   Leadership: ["leadership", "people"],
   "Practical tasks": ["practical", "scenario"],
   "AI, ML and LLM": ["ai", "ml", "llm"],
-  "Data and BI": ["data", "bi", "analytics"],
+  "Databases, SQL and BI": ["database", "sql", "data", "bi", "analytics"],
   "Observability and production": ["observability", "production", "sre"],
   "Regulated domains": ["regulated", "compliance", "safety"],
 };
@@ -264,14 +264,14 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   data: {
-    title: "Data & BI testing",
-    description: "Validate data pipelines, transformations, analytical meaning, governance, and decision-facing outputs.",
+    title: "Databases, SQL & BI testing",
+    description: "Investigate relational data with SQL and validate integrity, transactions, pipelines, analytical meaning, governance, and decision-facing outputs.",
     items: [
-      { title: "SQL investigation", copy: "Query, join, aggregate, compare, and trace data while understanding transactions and constraints.", tags: ["SQL"] },
+      { title: "SQL foundations", copy: "Query, filter, join, aggregate, use subqueries and windows, and reason correctly about NULL and duplicates.", tags: ["SQL"] },
+      { title: "Database integrity", copy: "Validate keys, constraints, normalization, transactions, isolation, locking, migrations, and recovery.", tags: ["Database"] },
       { title: "ETL and ELT", copy: "Test extraction, transformation rules, loading, incremental runs, backfills, and restart safety.", tags: ["Pipelines"] },
       { title: "Data quality", copy: "Measure completeness, validity, consistency, uniqueness, timeliness, and referential integrity.", tags: ["Quality"] },
-      { title: "BI semantics", copy: "Verify measures, dimensions, filters, time zones, drill-downs, and dashboard reconciliation.", tags: ["BI"] },
-      { title: "Privacy and lineage", copy: "Track sensitive fields, access, retention, masking, provenance, and transformation history.", tags: ["Governance"] },
+      { title: "BI semantics and lineage", copy: "Verify measures, dimensions, filters, time zones, drill-downs, dashboard reconciliation, masking, and provenance.", tags: ["BI", "Governance"] },
     ],
   },
   mobile: {

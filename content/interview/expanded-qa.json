@@ -652,7 +652,7 @@
     {
       "id": "database-test-scope",
       "level": "Middle",
-      "category": "Web, API and data",
+      "category": "Databases, SQL and BI",
       "kind": "Theory",
       "question": "What database risks should integration tests cover beyond checking that a row exists?",
       "shortAnswer": "Check constraints, transactions, isolation, defaults, migrations, referential integrity, concurrent updates, encoding, time zones, audit fields and rollback behaviour. Validate through supported interfaces unless direct database access is explicitly part of the test objective.",
@@ -670,12 +670,12 @@
         "postgres-docs",
         "dou-qa-2022"
       ],
-      "prevalence": "Common"
+      "prevalence": "Very common"
     },
     {
       "id": "sql-joins-and-aggregation",
       "level": "Junior",
-      "category": "Web, API and data",
+      "category": "Databases, SQL and BI",
       "kind": "Practical",
       "question": "How would you explain INNER JOIN, LEFT JOIN, grouping and aggregation during a data-validation task?",
       "shortAnswer": "INNER JOIN returns matching rows from both sides; LEFT JOIN retains every left-side row and adds matching right data. GROUP BY forms sets for aggregate functions such as COUNT or SUM, while HAVING filters groups after aggregation.",
@@ -693,7 +693,7 @@
         "postgres-docs",
         "dou-qa-2022"
       ],
-      "prevalence": "Common"
+      "prevalence": "Very common"
     },
     {
       "id": "mobile-app-types",
@@ -3302,7 +3302,7 @@
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-behind-retries-and-a-cdn",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Web, API and data",
       "kind": "Scenario",
       "question": "How would you approach HTTP caching and conditional requests behind retries and a CDN?",
@@ -3324,11 +3324,11 @@
         "openapi-31",
         "graphql-spec"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-with-backward-compatible-clients",
-      "level": "Middle",
+      "level": "Lead",
       "category": "Web, API and data",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for HTTP caching and conditional requests with backward-compatible clients?",
@@ -3353,7 +3353,7 @@
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-during-concurrent-updates",
-      "level": "Middle",
+      "level": "Junior",
       "category": "Web, API and data",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for HTTP caching and conditional requests during concurrent updates?",
@@ -3378,7 +3378,7 @@
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-when-a-downstream-dependency-degrades",
-      "level": "Senior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in HTTP caching and conditional requests when a downstream dependency degrades?",
@@ -3403,7 +3403,7 @@
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-with-tenant-scoped-sensitive-data",
-      "level": "Senior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Automation",
       "question": "What would you automate for HTTP caching and conditional requests with tenant-scoped sensitive data, and what would you leave manual?",
@@ -3429,7 +3429,7 @@
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-behind-retries-and-a-cdn",
-      "level": "Lead",
+      "level": "Senior",
       "category": "Web, API and data",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about REST resource contracts behind retries and a CDN?",
@@ -3454,7 +3454,7 @@
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-with-backward-compatible-clients",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Web, API and data",
       "kind": "Scenario",
       "question": "How would you approach REST resource contracts with backward-compatible clients?",
@@ -3475,11 +3475,11 @@
         "mdn-http",
         "openapi-31"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-during-concurrent-updates",
-      "level": "Middle",
+      "level": "Lead",
       "category": "Web, API and data",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for REST resource contracts during concurrent updates?",
@@ -3500,11 +3500,11 @@
         "mdn-http",
         "openapi-31"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-when-a-downstream-dependency-degrades",
-      "level": "Middle",
+      "level": "Junior",
       "category": "Web, API and data",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for REST resource contracts when a downstream dependency degrades?",
@@ -3530,7 +3530,7 @@
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-with-tenant-scoped-sensitive-data",
-      "level": "Senior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in REST resource contracts with tenant-scoped sensitive data?",
@@ -3555,7 +3555,7 @@
     },
     {
       "id": "expanded-web-api-data-graphql-schemas-and-resolvers-behind-retries-and-a-cdn",
-      "level": "Senior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Automation",
       "question": "What would you automate for GraphQL schemas and resolvers behind retries and a CDN, and what would you leave manual?",
@@ -3575,6 +3575,57 @@
       "sourceIds": [
         "mdn-http",
         "openapi-31"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "expanded-web-api-data-graphql-schemas-and-resolvers-with-backward-compatible-clients",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Release decision",
+      "question": "What evidence would you require to make a release decision about GraphQL schemas and resolvers with backward-compatible clients?",
+      "shortAnswer": "Frame the release decision by mapping the request, state changes, dependencies and trust boundaries end to end. Focus on GraphQL schemas and resolvers with backward-compatible clients. Use protocol semantics, the published contract and authoritative persisted state as the oracle. Cover status codes, schemas, idempotency, concurrency, authorization and failure recovery. Keep data and dependencies controlled enough to reproduce failures. Release only when client-visible behavior and stored data remain consistent across retries and partial failures.",
+      "strongAnswerSignals": [
+        "explicit risk and test oracle for GraphQL schemas and resolvers",
+        "checks both contract and side effects",
+        "includes concurrency and authorization",
+        "measurable evidence and residual-risk statement"
+      ],
+      "tags": [
+        "web",
+        "api",
+        "data",
+        "graphql-schemas-and-resolvers"
+      ],
+      "sourceIds": [
+        "mdn-http",
+        "openapi-31"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "expanded-web-api-data-graphql-schemas-and-resolvers-during-concurrent-updates",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Scenario",
+      "question": "How would you approach GraphQL schemas and resolvers during concurrent updates?",
+      "shortAnswer": "Start by mapping the request, state changes, dependencies and trust boundaries end to end. Focus on GraphQL schemas and resolvers during concurrent updates. Use protocol semantics, the published contract and authoritative persisted state as the oracle. Cover status codes, schemas, idempotency, concurrency, authorization and failure recovery. Keep data and dependencies controlled enough to reproduce failures. Release only when client-visible behavior and stored data remain consistent across retries and partial failures.",
+      "strongAnswerSignals": [
+        "explicit risk and test oracle for GraphQL schemas and resolvers",
+        "checks both contract and side effects",
+        "includes concurrency and authorization",
+        "measurable evidence and residual-risk statement"
+      ],
+      "tags": [
+        "web",
+        "api",
+        "data",
+        "graphql-schemas-and-resolvers"
+      ],
+      "sourceIds": [
+        "mdn-http",
+        "openapi-31",
+        "graphql-spec"
       ],
       "prevalence": "Specialist"
     },
@@ -9160,688 +9211,6 @@
       "sourceIds": [
         "istqb-ai-testing",
         "openai-evals"
-      ],
-      "prevalence": "Specialist"
-    },
-    {
-      "id": "expanded-data-bi-source-to-target-mappings-with-late-duplicate-and-out-of-order-records",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Scenario",
-      "question": "How would you approach source-to-target mappings with late, duplicate and out-of-order records?",
-      "shortAnswer": "Start by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on source-to-target mappings with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for source-to-target mappings",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "source-to-target-mappings"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-source-to-target-mappings-after-an-upstream-schema-change",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Risk analysis",
-      "question": "Which risks and test oracles matter most for source-to-target mappings after an upstream schema change?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before tracing lineage from source contracts through transformations to the business decision made from the output. Focus on source-to-target mappings after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for source-to-target mappings",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "source-to-target-mappings"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-source-to-target-mappings-across-time-zones-and-fiscal-calendars",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for source-to-target mappings across time zones and fiscal calendars?",
-      "shortAnswer": "Build the smallest useful model of the behavior by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on source-to-target mappings across time zones and fiscal calendars. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for source-to-target mappings",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "source-to-target-mappings"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-source-to-target-mappings-when-totals-differ-between-reports",
-      "level": "Lead",
-      "category": "Data and BI",
-      "kind": "Troubleshooting",
-      "question": "Which failure modes would you investigate first in source-to-target mappings when totals differ between reports?",
-      "shortAnswer": "Make the investigation reproducible by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on source-to-target mappings when totals differ between reports. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for source-to-target mappings",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "source-to-target-mappings"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-source-to-target-mappings-with-personally-identifiable-information-in-test-data",
-      "level": "Junior",
-      "category": "Data and BI",
-      "kind": "Automation",
-      "question": "What would you automate for source-to-target mappings with personally identifiable information in test data, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on source-to-target mappings with personally identifiable information in test data. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for source-to-target mappings",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "source-to-target-mappings"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-batch-and-streaming-pipelines-with-late-duplicate-and-out-of-order-records",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about batch and streaming pipelines with late, duplicate and out-of-order records?",
-      "shortAnswer": "Frame the release decision by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on batch and streaming pipelines with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for batch and streaming pipelines",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "batch-and-streaming-pipelines"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Very common"
-    },
-    {
-      "id": "expanded-data-bi-batch-and-streaming-pipelines-after-an-upstream-schema-change",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Scenario",
-      "question": "How would you approach batch and streaming pipelines after an upstream schema change?",
-      "shortAnswer": "Start by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on batch and streaming pipelines after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for batch and streaming pipelines",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "batch-and-streaming-pipelines"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-batch-and-streaming-pipelines-across-time-zones-and-fiscal-calendars",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Risk analysis",
-      "question": "Which risks and test oracles matter most for batch and streaming pipelines across time zones and fiscal calendars?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before tracing lineage from source contracts through transformations to the business decision made from the output. Focus on batch and streaming pipelines across time zones and fiscal calendars. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for batch and streaming pipelines",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "batch-and-streaming-pipelines"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-batch-and-streaming-pipelines-when-totals-differ-between-reports",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for batch and streaming pipelines when totals differ between reports?",
-      "shortAnswer": "Build the smallest useful model of the behavior by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on batch and streaming pipelines when totals differ between reports. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for batch and streaming pipelines",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "batch-and-streaming-pipelines"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-batch-and-streaming-pipelines-with-personally-identifiable-information-in-test-data",
-      "level": "Lead",
-      "category": "Data and BI",
-      "kind": "Troubleshooting",
-      "question": "Which failure modes would you investigate first in batch and streaming pipelines with personally identifiable information in test data?",
-      "shortAnswer": "Make the investigation reproducible by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on batch and streaming pipelines with personally identifiable information in test data. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for batch and streaming pipelines",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "batch-and-streaming-pipelines"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-data-quality-rules-with-late-duplicate-and-out-of-order-records",
-      "level": "Junior",
-      "category": "Data and BI",
-      "kind": "Automation",
-      "question": "What would you automate for data quality rules with late, duplicate and out-of-order records, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on data quality rules with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for data quality rules",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "data-quality-rules"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-data-quality-rules-after-an-upstream-schema-change",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about data quality rules after an upstream schema change?",
-      "shortAnswer": "Frame the release decision by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on data quality rules after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for data quality rules",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "data-quality-rules"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-data-quality-rules-across-time-zones-and-fiscal-calendars",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Scenario",
-      "question": "How would you approach data quality rules across time zones and fiscal calendars?",
-      "shortAnswer": "Start by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on data quality rules across time zones and fiscal calendars. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for data quality rules",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "data-quality-rules"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-data-quality-rules-when-totals-differ-between-reports",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Risk analysis",
-      "question": "Which risks and test oracles matter most for data quality rules when totals differ between reports?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before tracing lineage from source contracts through transformations to the business decision made from the output. Focus on data quality rules when totals differ between reports. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for data quality rules",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "data-quality-rules"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-data-quality-rules-with-personally-identifiable-information-in-test-data",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for data quality rules with personally identifiable information in test data?",
-      "shortAnswer": "Build the smallest useful model of the behavior by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on data quality rules with personally identifiable information in test data. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for data quality rules",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "data-quality-rules"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Common"
-    },
-    {
-      "id": "expanded-data-bi-slowly-changing-dimensions-with-late-duplicate-and-out-of-order-records",
-      "level": "Lead",
-      "category": "Data and BI",
-      "kind": "Troubleshooting",
-      "question": "Which failure modes would you investigate first in slowly changing dimensions with late, duplicate and out-of-order records?",
-      "shortAnswer": "Make the investigation reproducible by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on slowly changing dimensions with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for slowly changing dimensions",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "slowly-changing-dimensions"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-slowly-changing-dimensions-after-an-upstream-schema-change",
-      "level": "Junior",
-      "category": "Data and BI",
-      "kind": "Automation",
-      "question": "What would you automate for slowly changing dimensions after an upstream schema change, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on slowly changing dimensions after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for slowly changing dimensions",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "slowly-changing-dimensions"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-slowly-changing-dimensions-across-time-zones-and-fiscal-calendars",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about slowly changing dimensions across time zones and fiscal calendars?",
-      "shortAnswer": "Frame the release decision by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on slowly changing dimensions across time zones and fiscal calendars. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for slowly changing dimensions",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "slowly-changing-dimensions"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-slowly-changing-dimensions-when-totals-differ-between-reports",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Scenario",
-      "question": "How would you approach slowly changing dimensions when totals differ between reports?",
-      "shortAnswer": "Start by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on slowly changing dimensions when totals differ between reports. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for slowly changing dimensions",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "slowly-changing-dimensions"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-slowly-changing-dimensions-with-personally-identifiable-information-in-test-data",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Risk analysis",
-      "question": "Which risks and test oracles matter most for slowly changing dimensions with personally identifiable information in test data?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before tracing lineage from source contracts through transformations to the business decision made from the output. Focus on slowly changing dimensions with personally identifiable information in test data. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for slowly changing dimensions",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "slowly-changing-dimensions"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-fact-table-grain-with-late-duplicate-and-out-of-order-records",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for fact-table grain with late, duplicate and out-of-order records?",
-      "shortAnswer": "Build the smallest useful model of the behavior by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on fact-table grain with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for fact-table grain",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "fact-table-grain"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-fact-table-grain-after-an-upstream-schema-change",
-      "level": "Lead",
-      "category": "Data and BI",
-      "kind": "Troubleshooting",
-      "question": "Which failure modes would you investigate first in fact-table grain after an upstream schema change?",
-      "shortAnswer": "Make the investigation reproducible by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on fact-table grain after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for fact-table grain",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "fact-table-grain"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Occasional"
-    },
-    {
-      "id": "expanded-data-bi-fact-table-grain-across-time-zones-and-fiscal-calendars",
-      "level": "Junior",
-      "category": "Data and BI",
-      "kind": "Automation",
-      "question": "What would you automate for fact-table grain across time zones and fiscal calendars, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on fact-table grain across time zones and fiscal calendars. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for fact-table grain",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "fact-table-grain"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Specialist"
-    },
-    {
-      "id": "expanded-data-bi-fact-table-grain-when-totals-differ-between-reports",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about fact-table grain when totals differ between reports?",
-      "shortAnswer": "Frame the release decision by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on fact-table grain when totals differ between reports. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for fact-table grain",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "fact-table-grain"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Specialist"
-    },
-    {
-      "id": "expanded-data-bi-fact-table-grain-with-personally-identifiable-information-in-test-data",
-      "level": "Middle",
-      "category": "Data and BI",
-      "kind": "Scenario",
-      "question": "How would you approach fact-table grain with personally identifiable information in test data?",
-      "shortAnswer": "Start by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on fact-table grain with personally identifiable information in test data. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for fact-table grain",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "fact-table-grain"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema",
-        "dbt-data-tests"
-      ],
-      "prevalence": "Specialist"
-    },
-    {
-      "id": "expanded-data-bi-semantic-model-measures-with-late-duplicate-and-out-of-order-records",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Risk analysis",
-      "question": "Which risks and test oracles matter most for semantic-model measures with late, duplicate and out-of-order records?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before tracing lineage from source contracts through transformations to the business decision made from the output. Focus on semantic-model measures with late, duplicate and out-of-order records. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for semantic-model measures",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "semantic-model-measures"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
-      ],
-      "prevalence": "Specialist"
-    },
-    {
-      "id": "expanded-data-bi-semantic-model-measures-after-an-upstream-schema-change",
-      "level": "Senior",
-      "category": "Data and BI",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for semantic-model measures after an upstream schema change?",
-      "shortAnswer": "Build the smallest useful model of the behavior by tracing lineage from source contracts through transformations to the business decision made from the output. Focus on semantic-model measures after an upstream schema change. Use reconciled control totals, business definitions and versioned data contracts as the oracle. Cover completeness, validity, uniqueness, freshness, referential integrity and aggregation grain. Keep data and dependencies controlled enough to reproduce failures. Release only when results reconcile at each boundary and anomalies are observable without exposing sensitive records.",
-      "strongAnswerSignals": [
-        "explicit risk and test oracle for semantic-model measures",
-        "tests lineage and business semantics",
-        "covers late and duplicate data",
-        "measurable evidence and residual-risk statement"
-      ],
-      "tags": [
-        "data",
-        "bi",
-        "analytics",
-        "semantic-model-measures"
-      ],
-      "sourceIds": [
-        "postgres-docs",
-        "powerbi-star-schema"
       ],
       "prevalence": "Specialist"
     },

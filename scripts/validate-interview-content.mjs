@@ -3,15 +3,16 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, databaseSql, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
+  readJson("../content/interview/database-sql-qa.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...canonical.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const sourceIds = new Set(sources.map((source) => source.id));
@@ -25,14 +26,15 @@ assert.equal(questions.length, 520, "The public collection must contain exactly 
 assert.equal(sources.length, 46, "The source catalog must contain exactly 46 researched sources.");
 assert.equal(categories.size, 18, "The taxonomy must contain exactly 18 question topics.");
 assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
+assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
 assert.deepEqual(
   new Set(canonical.questions.map((question) => question.category)),
   categories,
   "The explicit canonical baseline must cover every topic.",
 );
 assert.deepEqual(
-  new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"].filter((category) => categories.has(category))),
-  new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"]),
+  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains"].filter((category) => categories.has(category))),
+  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains"]),
   "The four expanded specialist topics are required.",
 );
 
@@ -73,6 +75,11 @@ for (const question of questions) {
 
 for (const question of canonical.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Canonical baseline question must have a stable explicit id: ${question.id}`);
+}
+
+for (const question of databaseSql.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `Database and SQL question must have a stable explicit id: ${question.id}`);
+  assert.equal(question.category, "Databases, SQL and BI", `Database and SQL question has the wrong topic: ${question.id}`);
 }
 
 for (const prevalence of prevalenceLevels) {

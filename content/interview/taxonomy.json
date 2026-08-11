@@ -96,9 +96,9 @@
   },
   {
     "id": "data-bi",
-    "label": "Data & BI",
-    "category": "Data and BI",
-    "description": "Pipelines, warehouses, transformations, semantic models and analytical reports."
+    "label": "Databases, SQL & BI",
+    "category": "Databases, SQL and BI",
+    "description": "Relational databases, SQL, transactions, data pipelines, warehouses and analytical reports."
   },
   {
     "id": "observability-production",

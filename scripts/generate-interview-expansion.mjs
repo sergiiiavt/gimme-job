@@ -154,11 +154,11 @@ const topics = [
     start: "defining the intended behavior, affected groups, unacceptable harms and a representative frozen evaluation set", oracle: "task-specific rubrics, calibrated human judgment, reference data and invariant safety rules", coverage: "quality, robustness, bias, privacy, security, latency, cost and change regression", evidence: "segmented metrics and reviewed failures meet thresholds with monitoring for new production distributions", signals: ["uses representative evals instead of demos", "separates model, data and system failures"],
   },
   {
-    id: "data-bi", label: "Data & BI", category: "Data and BI", target: 29,
-    description: "Pipelines, warehouses, transformations, semantic models and analytical reports.",
-    concepts: ["source-to-target mappings", "batch and streaming pipelines", "data quality rules", "slowly changing dimensions", "fact-table grain", "semantic-model measures", "dashboard filters and exports"],
+    id: "data-bi", label: "Databases, SQL & BI", category: "Databases, SQL and BI", target: 29,
+    description: "Relational databases, SQL, transactions, data pipelines, warehouses and analytical reports.",
+    concepts: ["database integrity and transactions", "SQL reconciliation queries", "source-to-target mappings", "batch and streaming pipelines", "data quality rules", "fact-table grain", "semantic-model measures"],
     scenarios: ["with late, duplicate and out-of-order records", "after an upstream schema change", "across time zones and fiscal calendars", "when totals differ between reports", "with personally identifiable information in test data"],
-    sources: ["postgres-docs", "powerbi-star-schema", "dbt-data-tests", "google-dataflow-testing", "great-expectations"], tags: ["data", "bi", "analytics"],
+    sources: ["postgres-docs", "powerbi-star-schema", "dbt-data-tests", "google-dataflow-testing", "great-expectations"], tags: ["database", "sql", "data", "bi"],
     start: "tracing lineage from source contracts through transformations to the business decision made from the output", oracle: "reconciled control totals, business definitions and versioned data contracts", coverage: "completeness, validity, uniqueness, freshness, referential integrity and aggregation grain", evidence: "results reconcile at each boundary and anomalies are observable without exposing sensitive records", signals: ["tests lineage and business semantics", "covers late and duplicate data"],
   },
   {
@@ -210,16 +210,17 @@ function generatedAnswer(topic, concept, scenario, index) {
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
+  readJson("content/interview/database-sql-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
 
 const authoredExpandedQuestions = expanded.questions.filter((question) => !question.id.startsWith("expanded-"));
 const canonicalPrevalence = new Map(canonical.questions.map((question) => [question.id, question.prevalence]));
-const baseQuestions = [...common.questions, ...authoredExpandedQuestions, ...canonical.questions].map((question) => {
+const baseQuestions = [...common.questions, ...authoredExpandedQuestions, ...databaseSql.questions, ...canonical.questions].map((question) => {
   const questionWithoutPrevalence = { ...question };
   delete questionWithoutPrevalence.prevalence;
   return questionWithoutPrevalence;
@@ -281,6 +282,7 @@ const enrichedById = new Map(addPrevalence(combinedEditorialOrder).map((question
 
 common.questions = common.questions.map((question) => enrichedById.get(question.id));
 canonical.questions = canonical.questions.map((question) => enrichedById.get(question.id));
+databaseSql.questions = databaseSql.questions.map((question) => enrichedById.get(question.id));
 expanded.questions = [
   ...authoredExpandedQuestions.map((question) => enrichedById.get(question.id)),
   ...generated.map((question) => enrichedById.get(question.id)),
@@ -301,9 +303,10 @@ const taxonomy = [
 await Promise.all([
   writeJson("content/interview/common-qa.json", common),
   writeJson("content/interview/canonical-baseline.json", canonical),
+  writeJson("content/interview/database-sql-qa.json", databaseSql),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

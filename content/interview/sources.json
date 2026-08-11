@@ -50,10 +50,10 @@
   {
     "id": "postgres-docs",
     "title": "PostgreSQL documentation",
-    "url": "https://www.postgresql.org/docs/current/tutorial-sql.html",
+    "url": "https://www.postgresql.org/docs/current/index.html",
     "publisher": "PostgreSQL Global Development Group",
     "kind": "Official documentation",
-    "role": "Relational data, SQL, joins, transactions and constraints"
+    "role": "Relational modelling, SQL, joins, constraints, transactions, concurrency, indexes, query plans and recovery"
   },
   {
     "id": "playwright-best-practices",
