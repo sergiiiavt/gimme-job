@@ -670,6 +670,110 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
+const PLANT_TIPS: Record<PlantKind, string> = {
+  sunbloom: "Grows sunlight, your currency",
+  thornbramble: "Blocks the path, hits close enemies",
+  vinewhip: "Hits from range and slows enemies",
+  sporecap: "Damages every enemy nearby at once",
+  rootreclaimer: "Heals corrupted ground it stands on",
+  elderoak: "Grows into a powerful late-game guardian",
+};
+
+const ENEMY_TIPS: Record<Exclude<EnemyKind, "fragment">, string> = {
+  clickbait: "Fast and weak, rushes in groups",
+  deepfake: "Slow and tough, splits when killed",
+  popup: "Disables your nearest plant",
+};
+
+function TutorialIcon({ paint }: { paint: (ctx: CanvasRenderingContext2D) => void }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const ctx = ref.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, TILE, TILE);
+    paint(ctx);
+  }, [paint]);
+  return <canvas ref={ref} width={TILE} height={TILE} aria-hidden="true"/>;
+}
+
+function plantIconPaint(kind: PlantKind) {
+  return (ctx: CanvasRenderingContext2D) => {
+    const plant: PlantEntity = { id: 0, kind, col: 0, row: 0, hp: PLANTS[kind].maxHp, cooldown: 0, age: kind === "elderoak" ? 20 : 0, reclaimTimer: 0, disabledUntil: 0 };
+    drawPlant(ctx, plant, { elapsed: 0 } as GameState);
+  };
+}
+
+function enemyIconPaint(kind: EnemyKind) {
+  return (ctx: CanvasRenderingContext2D) => {
+    const config = ENEMIES[kind];
+    const enemy: EnemyEntity = { id: 0, kind, x: .5, y: .5, hp: config.hp, maxHp: config.hp, cooldown: 0, pathTimer: 0, path: [], slowUntil: 0 };
+    drawEnemy(ctx, enemy, 0);
+  };
+}
+
+function nodeIconPaint() {
+  return (ctx: CanvasRenderingContext2D) => {
+    const node: DataNode = { id: 0, col: 0, row: 0, hp: 150, maxHp: 150, spreadTimer: 0, spawnTimer: 0, boss: false };
+    drawNode(ctx, node, 0);
+  };
+}
+
+function houseIconPaint(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = "#ead7a0"; ctx.fillRect(6, 18, 28, 18);
+  ctx.fillStyle = "#9b553d"; ctx.fillRect(3, 10, 34, 10); ctx.fillRect(9, 5, 22, 6);
+  ctx.fillStyle = "#68452e"; ctx.fillRect(17, 26, 8, 10);
+  ctx.fillStyle = "#8bc4c0"; ctx.fillRect(9, 21, 6, 6); ctx.fillRect(25, 21, 6, 6);
+}
+
+function RewildQuickGuide() {
+  return (
+    <section className="rw-tut-section">
+      <span>SIXTY-SECOND GUIDE</span>
+      <h2>What does what</h2>
+      <div className="rw-tut-group">
+        <h3>Plant these</h3>
+        <div className="rw-tut-row">
+          {PLANT_ORDER.map((kind) => (
+            <div className="rw-tut-block" key={kind}>
+              <TutorialIcon paint={plantIconPaint(kind)}/>
+              <span className="rw-tut-arrow">→</span>
+              <p><strong>{PLANTS[kind].name}</strong>{PLANT_TIPS[kind]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="rw-tut-group">
+        <h3>Watch for these</h3>
+        <div className="rw-tut-row">
+          {(["clickbait", "deepfake", "popup"] as const).map((kind) => (
+            <div className="rw-tut-block" key={kind}>
+              <TutorialIcon paint={enemyIconPaint(kind)}/>
+              <span className="rw-tut-arrow">→</span>
+              <p><strong>{ENEMIES[kind].name}</strong>{ENEMY_TIPS[kind]}</p>
+            </div>
+          ))}
+          <div className="rw-tut-block">
+            <TutorialIcon paint={nodeIconPaint()}/>
+            <span className="rw-tut-arrow">→</span>
+            <p><strong>AI Slop Server</strong>Spawns enemies and spreads corruption, destroy it</p>
+          </div>
+        </div>
+      </div>
+      <div className="rw-tut-group">
+        <h3>Your goal</h3>
+        <div className="rw-tut-row">
+          <div className="rw-tut-block">
+            <TutorialIcon paint={houseIconPaint}/>
+            <span className="rw-tut-arrow">→</span>
+            <p><strong>The house</strong>Defend it, game over at 0 HP</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainder = Math.floor(seconds % 60);
@@ -680,6 +784,7 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
       <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to fight AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
+      <RewildQuickGuide/>
       <section className="rw-guide-grid">
         <article><span>01</span><h2>Arm</h2><p>Plant defenses on healthy grass. Sunblooms fund the fight; blockers and attackers turn the path into a trap.</p></article>
         <article><span>02</span><h2>Crush</h2><p>AI slop servers spread corruption and manufacture junk. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>
