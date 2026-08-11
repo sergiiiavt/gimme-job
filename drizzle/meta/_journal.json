@@ -15,6 +15,13 @@
       "when": 1786372326673,
       "tag": "0001_brief_shiver_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786446019492,
+      "tag": "0002_wet_loa",
+      "breakpoints": true
     }
   ]
 }

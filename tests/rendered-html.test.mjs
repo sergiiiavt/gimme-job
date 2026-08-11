@@ -51,7 +51,11 @@ test("keeps the public site open and protects the private workspace", async () =
 
   const loginPage = await worker.fetch(new Request("https://gimmejob.example/workspace/login"), env, context);
   assert.equal(loginPage.status, 200);
-  assert.match(await loginPage.text(), /Enter the password to manage vacancy statuses and feedback\./);
+  assert.match(await loginPage.text(), /Enter the password to open your personal jobs and interview-learning progress\./);
+
+  const personalLearningResponse = await worker.fetch(new Request("https://gimmejob.example/workspace/learn?section=interview"), env, context);
+  assert.equal(personalLearningResponse.status, 303);
+  assert.equal(personalLearningResponse.headers.get("location"), "/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview");
 
   const wrongLogin = await worker.fetch(
     new Request("https://gimmejob.example/workspace/login", {
@@ -78,6 +82,18 @@ test("keeps the public site open and protects the private workspace", async () =
   const sessionCookie = loginResponse.headers.get("set-cookie")?.split(";", 1)[0];
   assert.match(sessionCookie ?? "", /^gimmejob_session=/);
 
+  const learningLoginResponse = await worker.fetch(
+    new Request("https://gimmejob.example/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ password: env.APP_PASSWORD }),
+    }),
+    env,
+    context,
+  );
+  assert.equal(learningLoginResponse.status, 303);
+  assert.equal(learningLoginResponse.headers.get("location"), "/workspace/learn?section=interview");
+
   const sessionResponse = await worker.fetch(
     new Request("https://gimmejob.example/workspace", { headers: { cookie: sessionCookie } }),
     env,
@@ -98,6 +114,9 @@ test("keeps the public site open and protects the private workspace", async () =
   const privateApiResponse = await worker.fetch(new Request("https://gimmejob.example/api/dashboard"), env, context);
   assert.equal(privateApiResponse.status, 401);
   assert.deepEqual(await privateApiResponse.json(), { error: "Authentication required." });
+
+  const progressApiResponse = await worker.fetch(new Request("https://gimmejob.example/api/interview-progress"), env, context);
+  assert.equal(progressApiResponse.status, 401);
 
   const robotsResponse = await worker.fetch(new Request("https://gimmejob.example/robots.txt"), env, context);
   assert.equal(robotsResponse.status, 200);

@@ -176,6 +176,41 @@ export async function publicJobs() {
   };
 }
 
+const INTERVIEW_PROGRESS_STATUSES = new Set(["PLANNED", "LEARNING", "LEARNED"]);
+
+function validQuestionId(value: string) {
+  return /^[a-z0-9][a-z0-9-]{0,119}$/.test(value);
+}
+
+export async function interviewProgress() {
+  const result = await (await db()).prepare(`SELECT question_id, status, updated_at
+    FROM interview_progress ORDER BY updated_at DESC`).all<Row>();
+  return {
+    progress: result.results.map((row) => ({
+      questionId: String(row.question_id),
+      status: String(row.status),
+      updatedAt: String(row.updated_at),
+    })),
+  };
+}
+
+export async function updateInterviewProgress(questionId: string, input: Json) {
+  if (!validQuestionId(questionId)) throw new Error("Unsupported question identifier.");
+  const database = await db();
+  if (input.status === null) {
+    await database.prepare("DELETE FROM interview_progress WHERE question_id = ?").bind(questionId).run();
+    return { questionId, status: null, updatedAt: null };
+  }
+
+  const status = cleanText(input.status).toUpperCase();
+  if (!INTERVIEW_PROGRESS_STATUSES.has(status)) throw new Error("Unsupported interview progress status.");
+  const updatedAt = now();
+  await database.prepare(`INSERT INTO interview_progress (question_id, status, updated_at) VALUES (?, ?, ?)
+    ON CONFLICT(question_id) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at`)
+    .bind(questionId, status, updatedAt).run();
+  return { questionId, status, updatedAt };
+}
+
 function mapDraft(row: Row) {
   return {
     id: String(row.id), jobId: String(row.job_id), recipient: row.recipient ? String(row.recipient) : null,

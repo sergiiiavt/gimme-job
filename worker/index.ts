@@ -124,8 +124,16 @@ function privateCookie(value: string, maxAge: number): string {
   return `${PRIVATE_SESSION_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 }
 
-function loginPage(options: { error?: boolean; configured?: boolean; status?: number } = {}): Response {
+function privateNextPath(url: URL): string {
+  const requested = url.searchParams.get("next");
+  if (!requested || !requested.startsWith("/workspace") || requested.startsWith("//") || requested.includes("\\")) return "/workspace";
+  const parsed = new URL(requested, "https://gimmejob.invalid");
+  return parsed.origin === "https://gimmejob.invalid" ? `${parsed.pathname}${parsed.search}` : "/workspace";
+}
+
+function loginPage(options: { error?: boolean; configured?: boolean; nextPath?: string; status?: number } = {}): Response {
   const configured = options.configured ?? true;
+  const nextPath = options.nextPath ?? "/workspace";
   const message = configured
     ? options.error ? '<p class="error">Incorrect password.</p>' : ""
     : '<p class="error">Private access is not configured.</p>';
@@ -157,9 +165,9 @@ function loginPage(options: { error?: boolean; configured?: boolean; status?: nu
   <main>
     <a href="/">← Public site</a>
     <h1>Private workspace</h1>
-    <p>Enter the password to manage vacancy statuses and feedback.</p>
+    <p>Enter the password to open your personal jobs and interview-learning progress.</p>
     ${message}
-    <form method="post" action="/workspace/login">
+    <form method="post" action="/workspace/login?next=${encodeURIComponent(nextPath)}">
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" autofocus required${disabled}>
       <button type="submit"${disabled}>Sign in</button>
@@ -183,17 +191,18 @@ function loginPage(options: { error?: boolean; configured?: boolean; status?: nu
 }
 
 async function handleLogin(request: Request, env: Env): Promise<Response> {
+  const nextPath = privateNextPath(new URL(request.url));
   if (request.method === "GET" || request.method === "HEAD") {
     if (await hasPrivateAccess(request, env)) {
-      return new Response(null, { status: 303, headers: { location: "/workspace" } });
+      return new Response(null, { status: 303, headers: { location: nextPath } });
     }
-    return loginPage({ configured: Boolean(env.APP_PASSWORD), status: env.APP_PASSWORD ? 200 : 503 });
+    return loginPage({ configured: Boolean(env.APP_PASSWORD), nextPath, status: env.APP_PASSWORD ? 200 : 503 });
   }
 
   if (request.method !== "POST") {
     return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD, POST" } });
   }
-  if (!env.APP_PASSWORD) return loginPage({ configured: false, status: 503 });
+  if (!env.APP_PASSWORD) return loginPage({ configured: false, nextPath, status: 503 });
 
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (Number.isFinite(contentLength) && contentLength > 4096) {
@@ -206,11 +215,11 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     const value = form.get("password");
     submittedPassword = typeof value === "string" ? value : "";
   } catch {
-    return loginPage({ error: true, status: 400 });
+    return loginPage({ error: true, nextPath, status: 400 });
   }
 
   if (!constantTimeEqual(submittedPassword, env.APP_PASSWORD)) {
-    return loginPage({ error: true, status: 401 });
+    return loginPage({ error: true, nextPath, status: 401 });
   }
 
   const expiresAt = Math.floor(Date.now() / 1000) + PRIVATE_SESSION_SECONDS;
@@ -218,7 +227,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   return new Response(null, {
     status: 303,
     headers: {
-      location: "/workspace",
+      location: nextPath,
       "set-cookie": privateCookie(`${expiresAt}.${signature}`, PRIVATE_SESSION_SECONDS),
     },
   });
@@ -287,7 +296,9 @@ const worker = {
     const privateRequest = isPrivateRequest(request, url);
     if (privateRequest && !(await hasPrivateAccess(request, env))) {
       if (url.pathname === "/workspace" || url.pathname.startsWith("/workspace/")) {
-        return new Response(null, { status: 303, headers: { location: "/workspace/login" } });
+        const next = `${url.pathname}${url.search}`;
+        const location = next === "/workspace" ? "/workspace/login" : `/workspace/login?next=${encodeURIComponent(next)}`;
+        return new Response(null, { status: 303, headers: { location } });
       }
       return Response.json(
         { error: env.APP_PASSWORD ? "Authentication required." : "Private access is not configured." },

@@ -48,7 +48,12 @@ test("keeps the interview catalog exact, explicit, and prevalence-complete", asy
 });
 
 test("lazy-loads the catalog and caps each rendered page at 60", async () => {
-  const uiSource = await readFile(projectFile("app/public-site.tsx"), "utf8");
+  const [uiSource, navigationSource, routeSource, schemaSource] = await Promise.all([
+    readFile(projectFile("app/public-site.tsx"), "utf8"),
+    readFile(projectFile("app/site-navigation.tsx"), "utf8"),
+    readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
+    readFile(projectFile("db/schema.ts"), "utf8"),
+  ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
   assert.match(uiSource, /const INTERVIEW_PAGE_SIZE = 60;/);
@@ -57,6 +62,17 @@ test("lazy-loads the catalog and caps each rendered page at 60", async () => {
   assert.match(uiSource, />Clear all</);
   assert.match(uiSource, /<section className="iq-toolbar"[\s\S]*?<div className="iq-filter-status"/);
   assert.doesNotMatch(uiSource, /<i aria-hidden="true">\+<\/i>/);
+  assert.match(uiSource, /openFilter === "tags"/);
+  assert.match(uiSource, /openFilter === "levels"/);
+  assert.match(uiSource, /Personal progress/);
+  assert.match(routeSource, /interview-progress/);
+  assert.match(schemaSource, /sqliteTable\("interview_progress"/);
+  assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
+
+  for (const label of ["Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM"]) {
+    assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
+  }
+  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "news"'), "Trends must be immediately before News in the navigation taxonomy.");
 
   const assetDirectory = projectFile("dist/client/assets/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));

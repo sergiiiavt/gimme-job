@@ -1,20 +1,29 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Link from "next/link";
 
-export type SiteSection = "jobs" | "interview" | "certifications" | "trends" | "agentic" | "llm" | "security" | "devops" | "standards" | "news";
+export type SiteSection = "jobs" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
 
 export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "jobs", label: "Jobs" },
   { id: "interview", label: "Interview questions" },
   { id: "certifications", label: "Certifications" },
+  { id: "strategy", label: "Strategy & leadership" },
+  { id: "programming", label: "Programming for QA" },
+  { id: "automation", label: "Test automation" },
+  { id: "api", label: "API & integration" },
+  { id: "data", label: "Data & BI" },
+  { id: "mobile", label: "Mobile & accessibility" },
+  { id: "performance", label: "Performance & reliability" },
+  { id: "security", label: "Security testing" },
+  { id: "devops", label: "Cloud & DevOps" },
+  { id: "observability", label: "Observability & SRE" },
+  { id: "networking", label: "Networking" },
+  { id: "linux", label: "Linux & shell" },
+  { id: "llm", label: "Generative AI & LLM" },
+  { id: "agentic", label: "AI agents & MCP" },
+  { id: "standards", label: "Standards & compliance" },
   { id: "trends", label: "Trends" },
-  { id: "agentic", label: "Agentic" },
-  { id: "llm", label: "LLM" },
-  { id: "security", label: "Security" },
-  { id: "devops", label: "DevOps" },
-  { id: "standards", label: "Standards" },
   { id: "news", label: "News" },
 ];
 
@@ -27,43 +36,39 @@ export interface SubnavItem {
 interface SidebarProps {
   activeSection: SiteSection;
   mobileOpen: boolean;
-  mode: "public" | "private";
+  mode: "public" | "personal";
   onSelect?: (section: SiteSection) => void;
-  online?: boolean | null;
+  personalHref?: string;
+  publicHref?: string;
   secondaryTitle: string;
   secondaryItems: SubnavItem[];
   activeSubsection: string;
   onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode, onSelect, onSelectSubsection, online, secondaryItems, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondaryTitle }: SidebarProps) {
   return (
     <div className={mobileOpen ? "kb-navigation open" : "kb-navigation"}>
       <aside className="kb-sidebar">
         <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
 
         <nav className="kb-nav-list" aria-label="GimmeJob sections">
-          {navigationItems.map((item) => mode === "public" ? (
+          {navigationItems.map((item) => onSelect ? (
             <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
               {item.label}
             </button>
           ) : (
-            <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/#${item.id}`} key={item.id}>
+            <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
               {item.label}
             </Link>
           ))}
         </nav>
 
         <div className="kb-sidebar-footer">
-          {mode === "public" ? (
-            <Link href="/workspace">Private workspace</Link>
-          ) : (
-            <>
-              <span className="kb-storage-state"><i className={online ? "online" : ""}/>{online ? "DB connected" : online === null ? "Connecting" : "DB unavailable"}</span>
-              <Link href="/">Public site</Link>
-              <Link href="/workspace/logout">Sign out</Link>
-            </>
-          )}
+          <nav className="kb-view-switch" aria-label="Site view">
+            <Link className={mode === "public" ? "active" : ""} href={publicHref}>Public</Link>
+            <Link className={mode === "personal" ? "active" : ""} href={personalHref}>Personal</Link>
+          </nav>
         </div>
       </aside>
 
@@ -77,21 +82,5 @@ export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode,
         </nav>
       </aside>
     </div>
-  );
-}
-
-interface TopbarProps {
-  children: ReactNode;
-  mode: "public" | "private";
-  onMenu: () => void;
-}
-
-export function SiteTopbar({ children, mode, onMenu }: TopbarProps) {
-  return (
-    <header className="kb-topbar">
-      <button className="kb-menu" onClick={onMenu} aria-label="Toggle navigation">☰</button>
-      <div className={`kb-view-state ${mode}`}><i/>{mode === "public" ? "Public" : "Private"}</div>
-      <div className="kb-top-actions">{children}</div>
-    </header>
   );
 }
