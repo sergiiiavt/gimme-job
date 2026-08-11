@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 
-export type SiteSection = "jobs" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
+export type SiteSection = "jobs" | "interview" | "rewild" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
 
 export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "jobs", label: "Jobs" },
   { id: "interview", label: "Interview questions" },
+  { id: "rewild", label: "Rewild game" },
   { id: "certifications", label: "Certifications" },
   { id: "strategy", label: "Strategy & leadership" },
   { id: "programming", label: "Programming for QA" },
