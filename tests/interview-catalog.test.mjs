@@ -131,6 +131,12 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /role=\{selectionMode === "single" \? "radiogroup"/);
   assert.match(uiSource, /const \[prevalences, setPrevalences\] = useState<InterviewPrevalence\[]>\(\[\]\)/);
   assert.match(uiSource, /prevalences\.length === 0 \|\| prevalences\.includes\(item\.prevalence\)/);
+  assert.match(uiSource, /\{ value: "learning", label: "Learning path" \}/);
+  assert.doesNotMatch(uiSource, /Editorial order/);
+  assert.match(uiSource, /if \(sort === "learning"\)/);
+  assert.match(uiSource, /learningTopicOrder\.get\(left\.category\)/);
+  assert.match(uiSource, /levelOrder\[left\.level\] - levelOrder\[right\.level\]/);
+  assert.match(uiSource, /prevalenceOrder\[left\.prevalence\] - prevalenceOrder\[right\.prevalence\]/);
   assert.doesNotMatch(uiSource, /<i aria-hidden="true">\+<\/i>/);
   for (const filter of ["prevalence", "sort", "tags", "levels"]) {
     assert.match(uiSource, new RegExp(`openFilter === "${filter}"`));
