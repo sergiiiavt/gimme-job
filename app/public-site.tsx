@@ -124,50 +124,73 @@ function normalizeSearch(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function MultiSelectFilter<T extends string>({ allLabel, label, onChange, onOpenChange, open, options, searchable = false, selected }: {
-  allLabel: string;
+function InterviewFilter<T extends string>({ emptyLabel, helpText, label, onChange, onOpenChange, open, options, searchable = false, selected, selectionMode = "multiple" }: {
+  emptyLabel: string;
+  helpText: string;
   label: string;
   onChange: (selected: T[]) => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  options: T[];
+  options: Array<{ label: string; value: T }>;
   searchable?: boolean;
   selected: T[];
+  selectionMode?: "multiple" | "single";
 }) {
   const [optionQuery, setOptionQuery] = useState("");
   const needle = normalizeSearch(optionQuery);
-  const visibleOptions = needle ? options.filter((option) => normalizeSearch(option).includes(needle)) : options;
-  const toggle = (option: T) => onChange(selected.includes(option) ? selected.filter((item) => item !== option) : [...selected, option]);
+  const visibleOptions = needle ? options.filter((option) => normalizeSearch(option.label).includes(needle)) : options;
+  const selectedOptions = options.filter((option) => selected.includes(option.value));
+  const selectedLabel = selectedOptions.length === 0
+    ? emptyLabel
+    : selectedOptions.length === 1
+      ? selectedOptions[0].label
+      : `${selectedOptions.length} selected`;
+
+  const select = (option: T) => {
+    if (selectionMode === "single") {
+      onChange([option]);
+      onOpenChange(false);
+      return;
+    }
+    onChange(selected.includes(option) ? selected.filter((item) => item !== option) : [...selected, option]);
+  };
 
   return (
-    <div className="iq-multi">
-      <span className="iq-filter-label">{label}</span>
-      <details open={open} onToggle={(event) => onOpenChange(event.currentTarget.open)}>
-        <summary aria-label={`${label}: ${selected.length ? `${selected.length} selected` : allLabel}`}>
-          <strong>{selected.length ? `${selected.length} selected` : allLabel}</strong>
-          <i aria-hidden="true">⌄</i>
+    <div className={`iq-filter-control${searchable ? " iq-filter-control-wide" : ""}`}>
+      <details open={open} onToggle={(event) => {
+        if (!event.currentTarget.open) setOptionQuery("");
+        onOpenChange(event.currentTarget.open);
+      }}>
+        <summary aria-label={`${label}: ${selectedLabel}`}>
+          <span className="iq-filter-summary-copy">
+            <small>{label}</small>
+            <strong>{selectedLabel}</strong>
+          </span>
+          <i className="iq-filter-chevron" aria-hidden="true">⌄</i>
         </summary>
-        <div className="iq-multi-menu">
+        <div className="iq-filter-menu">
         {searchable && (
           <label className="iq-option-search">
             <span>⌕</span>
             <input value={optionQuery} onChange={(event) => setOptionQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}`}/>
           </label>
         )}
-        <label className="iq-option iq-option-all">
-          <input type="checkbox" checked={selected.length === 0} onChange={() => onChange([])}/>
-          <span>{allLabel}</span>
-        </label>
-        <div className="iq-option-list">
+        {selectionMode === "multiple" && (
+          <button className={`iq-filter-option iq-filter-option-all${selected.length === 0 ? " active" : ""}`} type="button" aria-pressed={selected.length === 0} onClick={() => onChange([])}>
+            <i aria-hidden="true">{selected.length === 0 ? "✓" : ""}</i>
+            <span>{emptyLabel}</span>
+          </button>
+        )}
+        <div className="iq-filter-options">
           {visibleOptions.map((option) => (
-            <label className="iq-option" key={option}>
-              <input type="checkbox" checked={selected.includes(option)} onChange={() => toggle(option)}/>
-              <span>{option}</span>
-            </label>
+            <button className={`iq-filter-option${selected.includes(option.value) ? " active" : ""}`} type="button" aria-pressed={selected.includes(option.value)} key={option.value} onClick={() => select(option.value)}>
+              <i aria-hidden="true">{selected.includes(option.value) ? "✓" : ""}</i>
+              <span>{option.label}</span>
+            </button>
           ))}
-          {visibleOptions.length === 0 && <span className="iq-option-empty">No matching tags</span>}
+          {visibleOptions.length === 0 && <span className="iq-option-empty">No matching options</span>}
         </div>
-        <small>Matches any selected {label.toLowerCase().replace(/s$/, "")}.</small>
+        <small>{helpText}</small>
         </div>
       </details>
     </div>
@@ -661,7 +684,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const [prevalence, setPrevalence] = useState<(typeof interviewPrevalence)[number]>("All");
   const [sort, setSort] = useState<InterviewSort>("prevalence");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [openFilter, setOpenFilter] = useState<"tags" | "levels" | null>(null);
+  const [openFilter, setOpenFilter] = useState<"prevalence" | "sort" | "tags" | "levels" | null>(null);
   const [page, setPage] = useState(0);
   const [progress, setProgress] = useState<Record<string, QuestionProgressStatus>>({});
   const [progressBusy, setProgressBusy] = useState<string | null>(null);
@@ -676,6 +699,21 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const editorialOrder = useMemo(() => new Map(interviewQuestions.map((question, index) => [question.id, index])), [interviewQuestions]);
   const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
   const activeCategory = activeTaxonomy?.category;
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest(".iq-filter-control")) setOpenFilter(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenFilter(null);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     if (mode !== "personal") return;
@@ -746,6 +784,9 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     setLevels(nextLevels);
     setPage(0);
   };
+  const setFilterOpen = (filter: NonNullable<typeof openFilter>, nextOpen: boolean) => {
+    setOpenFilter((current) => nextOpen ? filter : current === filter ? null : current);
+  };
   const clearFilters = () => {
     setQuery("");
     setLevels([]);
@@ -808,27 +849,22 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
       )}
 
       <section className="iq-toolbar" aria-label="Interview question filters">
-        <label className="iq-search">
-          <span>⌕</span>
-          <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search questions, answers, tags, or skills"/>
-        </label>
-        <label className="iq-category">
-          <span>Prevalence</span>
-          <select value={prevalence} onChange={(event) => { setPrevalence(event.target.value as (typeof interviewPrevalence)[number]); setPage(0); }}>
-            {interviewPrevalence.map((item) => <option key={item} value={item}>{item === "All" ? "All prevalence levels" : item}</option>)}
-          </select>
-        </label>
-        <label className="iq-category">
-          <span>Sort</span>
-          <select value={sort} onChange={(event) => { setSort(event.target.value as InterviewSort); setPage(0); }}>
-            {interviewSortOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-        </label>
-        <MultiSelectFilter allLabel="All tags" label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setOpenFilter((current) => nextOpen ? "tags" : current === "tags" ? null : current)} open={openFilter === "tags"} options={interviewTags} searchable selected={selectedTags}/>
-        <MultiSelectFilter allLabel="All levels" label="Seniority levels" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setOpenFilter((current) => nextOpen ? "levels" : current === "levels" ? null : current)} open={openFilter === "levels"} options={interviewLevels} selected={levels}/>
-        <div className="iq-filter-status" aria-live="polite">
-          <span>{matchingQuestions.length} matches<br/>{visibleQuestions.length} rendered</span>
-          <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Clear all</button>
+        <div className="iq-toolbar-main">
+          <label className="iq-search">
+            <span>⌕</span>
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search questions, answers, tags, or skills"/>
+          </label>
+          <div className="iq-filter-status" aria-live="polite">
+            <span><strong>{matchingQuestions.length}</strong> matches</span>
+            <span><strong>{visibleQuestions.length}</strong> rendered</span>
+          </div>
+        </div>
+        <div className="iq-filter-grid">
+          <InterviewFilter emptyLabel="All prevalence" helpText="Choose how frequently a question appears in interviews." label="Prevalence" onChange={(next) => { setPrevalence(next[0] ?? "All"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalence.map((item) => ({ label: item === "All" ? "All prevalence" : item, value: item }))} selected={[prevalence]} selectionMode="single"/>
+          <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
+          <InterviewFilter emptyLabel="All tags" helpText="Matches any selected tag." label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setFilterOpen("tags", nextOpen)} open={openFilter === "tags"} options={interviewTags.map((tag) => ({ label: tag, value: tag }))} searchable selected={selectedTags}/>
+          <InterviewFilter emptyLabel="All levels" helpText="Matches any selected seniority level." label="Seniority" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setFilterOpen("levels", nextOpen)} open={openFilter === "levels"} options={interviewLevels.map((level) => ({ label: level, value: level }))} selected={levels}/>
+          <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
         </div>
       </section>
 
