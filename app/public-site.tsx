@@ -31,7 +31,7 @@ interface PublicJob {
 
 type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
 type InterviewPrevalence = "Very common" | "Common" | "Occasional" | "Specialist";
-type InterviewSort = "prevalence" | "editorial" | "level" | "alphabetical";
+type InterviewSort = "prevalence" | "learning" | "level" | "alphabetical";
 
 interface InterviewQuestion {
   id: string;
@@ -90,7 +90,7 @@ const progressOptions: Array<{ value: QuestionProgressStatus; label: string }> =
 ];
 const interviewSortOptions: Array<{ value: InterviewSort; label: string }> = [
   { value: "prevalence", label: "Most common first" },
-  { value: "editorial", label: "Editorial order" },
+  { value: "learning", label: "Learning path" },
   { value: "level", label: "Junior → Lead" },
   { value: "alphabetical", label: "Question A–Z" },
 ];
@@ -699,7 +699,10 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const interviewSourcesList = catalog.sources;
   const interviewSources = useMemo(() => new Map(interviewSourcesList.map((source) => [source.id, source])), [interviewSourcesList]);
   const interviewTags = useMemo(() => Array.from(new Set(interviewQuestions.flatMap(tagsFor))).sort((a, b) => a.localeCompare(b)), [interviewQuestions]);
-  const editorialOrder = useMemo(() => new Map(interviewQuestions.map((question, index) => [question.id, index])), [interviewQuestions]);
+  const catalogOrder = useMemo(() => new Map(interviewQuestions.map((question, index) => [question.id, index])), [interviewQuestions]);
+  const learningTopicOrder = useMemo(() => new Map(
+    interviewTaxonomy.filter((item) => item.category).map((item, index) => [item.category as string, index]),
+  ), [interviewTaxonomy]);
   const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
   const activeCategory = activeTaxonomy?.category;
 
@@ -753,17 +756,22 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && searchTerms.every((term) => searchable.includes(term));
       })
       .sort((left, right) => {
-        const editorialDifference = (editorialOrder.get(left.id) ?? 0) - (editorialOrder.get(right.id) ?? 0);
-        if (sort === "editorial") return editorialDifference;
-        if (sort === "alphabetical") return left.question.localeCompare(right.question) || editorialDifference;
+        const catalogDifference = (catalogOrder.get(left.id) ?? 0) - (catalogOrder.get(right.id) ?? 0);
+        if (sort === "learning") {
+          return (learningTopicOrder.get(left.category) ?? Number.MAX_SAFE_INTEGER) - (learningTopicOrder.get(right.category) ?? Number.MAX_SAFE_INTEGER)
+            || levelOrder[left.level] - levelOrder[right.level]
+            || prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence]
+            || catalogDifference;
+        }
+        if (sort === "alphabetical") return left.question.localeCompare(right.question) || catalogDifference;
         if (sort === "level") {
           return levelOrder[left.level] - levelOrder[right.level]
             || prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence]
-            || editorialDifference;
+            || catalogDifference;
         }
-        return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || editorialDifference;
+        return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || catalogDifference;
       });
-  }, [activeCategory, editorialOrder, interviewQuestions, levels, prevalences, query, selectedTags, sort]);
+  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, prevalences, query, selectedTags, sort]);
 
   const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
