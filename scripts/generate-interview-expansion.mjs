@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
-const MINIMUM_QUESTION_COUNT = 566;
+const MINIMUM_QUESTION_COUNT = 601;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },
@@ -31,11 +31,15 @@ const addedSources = [
   { id: "pci-dss", title: "Payment Card Industry Data Security Standard", url: "https://www.pcisecuritystandards.org/standards/pci-dss/", publisher: "PCI Security Standards Council", kind: "Industry standard", role: "Payment-data security controls, testing evidence and continuous compliance" },
   { id: "owasp-asvs", title: "OWASP Application Security Verification Standard", url: "https://owasp.org/www-project-application-security-verification-standard/", publisher: "OWASP", kind: "Verification standard", role: "Testable application-security requirements and assurance levels" },
   { id: "fda-samd", title: "Software as a Medical Device (SaMD)", url: "https://www.fda.gov/medical-devices/digital-health-center-excellence/software-medical-device-samd", publisher: "US FDA", kind: "Regulatory guidance", role: "Risk categorization, clinical evaluation and quality expectations for medical software" },
+  { id: "zephyr-testing", title: "Testing — Zephyr Project Documentation", url: "https://docs.zephyrproject.org/latest/develop/test/index.html", publisher: "Zephyr Project", kind: "Official documentation", role: "Embedded unit, integration, simulation and hardware test frameworks and execution" },
+  { id: "linux-kunit", title: "KUnit — Linux Kernel Unit Testing", url: "https://docs.kernel.org/dev-tools/kunit/", publisher: "Linux Kernel", kind: "Official documentation", role: "In-kernel unit testing, dependency isolation, test harnesses, QEMU and architecture coverage" },
+  { id: "mcuboot-design", title: "MCUboot design documentation", url: "https://docs.mcuboot.com/design.html", publisher: "MCUboot", kind: "Official documentation", role: "Firmware image validation, secure boot, update swaps, rollback and downgrade protection" },
+  { id: "nist-iot-8259a", title: "NIST IR 8259A — IoT Device Cybersecurity Capability Core Baseline", url: "https://csrc.nist.gov/pubs/ir/8259/a/final", publisher: "NIST", kind: "Government guidance", role: "IoT device identity, configuration, data protection, interface access, software update and security-state capabilities" },
 ];
 
 const topics = [
   {
-    id: "fundamentals", label: "Fundamentals", category: "Fundamentals", target: 29,
+    id: "fundamentals", label: "Testing principles & fundamentals", category: "Fundamentals", target: 29,
     description: "Testing purpose, principles, levels, types and terminology.",
     concepts: ["testing objectives", "verification and validation", "test levels", "functional and non-functional quality", "static and dynamic testing", "regression and confirmation testing", "test independence"],
     scenarios: ["on a fast-moving product with incomplete requirements", "when the team has one day before release", "for a feature shared by several services", "after a high-impact production defect", "when stakeholders disagree about acceptable quality"],
@@ -43,7 +47,7 @@ const topics = [
     start: "clarifying the user goal, product context and decision the test evidence must support", oracle: "observable requirements, user outcomes and credible comparison sources", coverage: "positive, negative, boundary and change-related risks", evidence: "the residual risk is explicit and the agreed acceptance criteria have objective evidence", signals: ["distinguishes evidence from proof", "connects terminology to a practical decision"],
   },
   {
-    id: "test-design", label: "Test design", category: "Test design", target: 29,
+    id: "test-design", label: "Test design techniques", category: "Test design", target: 29,
     description: "Black-box, white-box and experience-based techniques.",
     concepts: ["equivalence partitions", "boundary values", "decision tables", "state transitions", "pairwise combinations", "branch coverage", "exploratory charters"],
     scenarios: ["for a rule-heavy pricing flow", "with many interacting inputs", "where historical defects cluster", "under a strict execution budget", "when requirements contain examples but no formal rules"],
@@ -73,6 +77,14 @@ const topics = [
     scenarios: ["while the network switches between Wi-Fi and cellular", "under low memory and low battery", "after the app is killed in the background", "across an old and a current OS version", "with interrupted installation or migration"],
     sources: ["android-test", "appium-docs", "fda-samd"], tags: ["mobile", "devices"],
     start: "selecting a risk-based device matrix and controlling lifecycle, network and account state", oracle: "platform guidance, synchronized server state and visible user feedback", coverage: "interruptions, permissions, resource pressure, upgrades and recovery", evidence: "critical flows preserve data and give correct feedback on representative real devices", signals: ["uses a justified device matrix", "tests interruptions and recovery"],
+  },
+  {
+    id: "embedded-iot", label: "Embedded & IoT QA", category: "Embedded and IoT", target: 29,
+    description: "Firmware, hardware interfaces, timing, power, OTA updates, constrained devices and connected-product security.",
+    concepts: ["hardware and firmware integration", "interrupt timing", "power-loss recovery", "firmware updates", "device identity", "real-time deadlines", "test-lab automation"],
+    scenarios: ["across board revisions", "under constrained memory and power", "with intermittent connectivity", "during a boot or update interruption", "on a shared hardware-in-the-loop rig"],
+    sources: ["zephyr-testing", "linux-kunit", "mcuboot-design", "nist-iot-8259a"], tags: ["embedded", "firmware", "iot"],
+    start: "mapping software, hardware, timing, power and connectivity boundaries before selecting the lowest credible test layer", oracle: "protocol specifications, independent instruments, traceable reference inputs and persistent-state invariants", coverage: "build variants, interfaces, timing, faults, recovery, security and representative hardware", evidence: "the released binary behaves safely and recoverably on identified hardware under realistic operating conditions", signals: ["combines fast simulated checks with representative hardware evidence", "keeps device, firmware and fixture identity traceable"],
   },
   {
     id: "automation-ci", label: "Automation & CI", category: "Automation and CI", target: 29,
@@ -211,12 +223,14 @@ function generatedAnswer(topic, concept, scenario, index) {
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/database-sql-qa.json"),
   readJson("content/interview/observability-production-qa.json"),
   readJson("content/interview/restored-coverage-qa.json"),
+  readJson("content/interview/testing-foundations-qa.json"),
+  readJson("content/interview/embedded-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
@@ -230,6 +244,8 @@ const baseQuestions = [
   ...databaseSql.questions,
   ...observabilityProduction.questions,
   ...restoredCoverage.questions,
+  ...testingFoundations.questions,
+  ...embedded.questions,
   ...canonical.questions,
   ...preservedGeneratedQuestions,
 ];
@@ -313,7 +329,7 @@ const addedSourceIds = new Set(addedSources.map((source) => source.id));
 const originalSources = currentSources.filter((source) => !addedSourceIds.has(source.id));
 assert.equal(originalSources.length, 22, "The generator expects the researched 22-source base from PR #2.");
 const sources = [...originalSources, ...addedSources];
-assert.equal(sources.length, 46, "The catalog must contain exactly 46 sources.");
+assert.equal(sources.length, 50, "The catalog must contain exactly 50 sources.");
 
 const taxonomy = [
   { id: "all", label: "All questions", description: "The complete canonical interview collection." },
@@ -327,9 +343,11 @@ await Promise.all([
   writeJson("content/interview/database-sql-qa.json", databaseSql),
   writeJson("content/interview/observability-production-qa.json", observabilityProduction),
   writeJson("content/interview/restored-coverage-qa.json", restoredCoverage),
+  writeJson("content/interview/testing-foundations-qa.json", testingFoundations),
+  writeJson("content/interview/embedded-qa.json", embedded),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + testingFoundations.questions.length + embedded.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

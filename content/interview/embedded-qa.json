@@ -1,0 +1,688 @@
+{
+  "collection": "embedded-and-iot-explicit-coverage",
+  "questions": [
+    {
+      "id": "embedded-layered-test-strategy",
+      "level": "Junior",
+      "category": "Embedded and IoT",
+      "kind": "Strategy",
+      "question": "What makes an embedded-software test strategy different from a web or desktop strategy?",
+      "shortAnswer": "Embedded quality depends on firmware, electronics, timing, memory, power, physical inputs and often unreliable connectivity. Use fast host-level tests for logic, simulation or emulation for repeatable integration, and representative hardware for electrical, timing and environmental evidence. Trace coverage across board revisions, build options and bootloader, firmware and backend versions.",
+      "strongAnswerSignals": [
+        "covers software and hardware boundaries",
+        "uses several execution layers rather than only device end-to-end tests",
+        "includes configuration and board-revision risk"
+      ],
+      "tags": [
+        "embedded",
+        "firmware",
+        "test-strategy",
+        "hardware"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "linux-kunit"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-host-simulation-hardware-split",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "How would you divide embedded tests among host execution, simulation and physical hardware?",
+      "shortAnswer": "Run deterministic algorithms and error handling on the host with controlled dependencies; use native simulation or emulation for operating-system services, drivers and integration paths; reserve boards for electrical behaviour, peripherals, timing, power and assumptions the model cannot reproduce. Keep a traceable hardware smoke set and compare simulator limitations against escaped defects.",
+      "strongAnswerSignals": [
+        "places checks at the lowest credible layer",
+        "states what simulation cannot prove",
+        "keeps a small repeatable real-hardware gate"
+      ],
+      "tags": [
+        "embedded",
+        "simulation",
+        "hardware-in-loop",
+        "test-pyramid"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "linux-kunit"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-hardware-in-loop-purpose",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Theory",
+      "question": "When is hardware-in-the-loop testing worth its cost?",
+      "shortAnswer": "HIL is valuable when software behaviour depends on realistic electrical signals, timing, loads or closed-loop physical responses that mocks cannot represent safely. Use programmable instruments to inject inputs and measure outputs, but keep scenarios deterministic, calibrate the rig, version its configuration and separate product failures from fixture, wiring or instrument failures.",
+      "strongAnswerSignals": [
+        "justifies HIL through model limitations and risk",
+        "controls and calibrates the test rig",
+        "distinguishes fixture health from device health"
+      ],
+      "tags": [
+        "embedded",
+        "hardware-in-loop",
+        "test-lab"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "iso-26262"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-board-revision-matrix",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Risk analysis",
+      "question": "How would you choose a device matrix across board revisions and component variants?",
+      "shortAnswer": "Map differences that can change behaviour: MCU stepping, memory size, sensor vendor, radio, power circuit, bootloader, production options and regulatory region. Select representatives by usage, change and failure impact, then add targeted checks for unique components. Record exact hardware identity in results so a passing run is never detached from the device actually tested.",
+      "strongAnswerSignals": [
+        "selects variants by technical difference and risk",
+        "captures traceable hardware identity",
+        "avoids testing only the newest engineering sample"
+      ],
+      "tags": [
+        "embedded",
+        "device-matrix",
+        "hardware-revision"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "iso-26262"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-build-configuration-coverage",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "How should QA cover compile-time options and cross-compiled firmware configurations?",
+      "shortAnswer": "Treat build options, target architecture, linker layout and feature flags as product inputs. Validate supported combinations, reject invalid ones early, archive the exact toolchain and configuration, and run smoke tests on each released binary. Use pairwise or risk-based selection when the full configuration space is too large, with dedicated coverage for safety and security options.",
+      "strongAnswerSignals": [
+        "treats the binary and toolchain as traceable artifacts",
+        "covers invalid as well as supported combinations",
+        "uses a justified combinatorial strategy"
+      ],
+      "tags": [
+        "embedded",
+        "cross-compilation",
+        "configuration"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-gpio-digital-interfaces",
+      "level": "Junior",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "What should GPIO and other digital-interface tests verify beyond a happy-path signal?",
+      "shortAnswer": "Verify direction, default and pull states, active polarity, debounce, edge handling, timing, invalid reconfiguration and safe behaviour during boot, reset and low power. Exercise stuck-high, stuck-low, noisy and missing signals with measured electrical levels, and confirm that diagnostics distinguish an external wiring problem from an internal software fault.",
+      "strongAnswerSignals": [
+        "covers electrical state and firmware interpretation",
+        "injects stuck and noisy inputs",
+        "checks safe defaults during lifecycle transitions"
+      ],
+      "tags": [
+        "embedded",
+        "gpio",
+        "hardware-interface"
+      ],
+      "sourceIds": [
+        "zephyr-testing"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-uart-i2c-spi-testing",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "How would you test UART, I²C or SPI communication robustly?",
+      "shortAnswer": "Start with framing, addressing, byte order, timing and valid transactions, then inject truncation, corruption, unexpected devices, bus busy conditions, absent acknowledgements, clock variation and reset mid-transfer. Verify timeouts, retries, bounded buffers, recovery without reboot where required, and diagnostic evidence from both the device and an independent protocol capture.",
+      "strongAnswerSignals": [
+        "uses an independent bus or serial trace",
+        "injects protocol-specific failures",
+        "verifies bounded recovery rather than infinite retry"
+      ],
+      "tags": [
+        "embedded",
+        "uart",
+        "i2c",
+        "spi"
+      ],
+      "sourceIds": [
+        "zephyr-testing"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-can-bus-testing",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "Which risks should a CAN-bus test plan cover?",
+      "shortAnswer": "Cover identifier priority, payload encoding, timing, bus load, duplicate or missing frames, counters, checksums, error states and recovery from disconnection. Verify behaviour during arbitration pressure and malformed traffic, plus compatibility between nodes and database versions. Safety-relevant signals need explicit stale-data, timeout and safe-state expectations.",
+      "strongAnswerSignals": [
+        "includes load, arbitration and error recovery",
+        "checks signal-database compatibility",
+        "defines safe handling of stale or invalid data"
+      ],
+      "tags": [
+        "embedded",
+        "can-bus",
+        "automotive"
+      ],
+      "sourceIds": [
+        "iso-26262",
+        "zephyr-testing"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-sensor-calibration-faults",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Scenario",
+      "question": "How would you test a sensor pipeline including calibration and fault handling?",
+      "shortAnswer": "Use traceable reference inputs across the operating range, boundaries, noise and environmental conditions. Verify raw conversion, units, filtering, calibration coefficients, saturation and drift, then inject open, short, stuck, implausible and intermittent readings. Confirm diagnostics, fallback behaviour and persistence of calibration across reset and firmware update.",
+      "strongAnswerSignals": [
+        "uses an independent traceable reference",
+        "separates raw, converted and filtered values",
+        "tests fault detection and safe fallback"
+      ],
+      "tags": [
+        "embedded",
+        "sensors",
+        "calibration",
+        "fault-injection"
+      ],
+      "sourceIds": [
+        "iso-26262",
+        "zephyr-testing"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-actuator-safety",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Risk analysis",
+      "question": "How should tests protect people and equipment when firmware controls an actuator?",
+      "shortAnswer": "Begin with hazards, permitted operating envelopes and a physically safe test setup with independent limits and emergency stop. Verify normal commands, interlocks, feedback disagreement, command loss, sensor faults, watchdog reset and power transitions. The expected safe state and maximum reaction time must be measurable without relying only on the software under test.",
+      "strongAnswerSignals": [
+        "starts from hazards and independent safeguards",
+        "measures safe-state timing",
+        "does not use the product software as the only protection"
+      ],
+      "tags": [
+        "embedded",
+        "actuator",
+        "functional-safety"
+      ],
+      "sourceIds": [
+        "iso-26262",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-interrupt-race-testing",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Troubleshooting",
+      "question": "How would you expose race conditions involving interrupts, tasks and shared peripherals?",
+      "shortAnswer": "Identify shared state and pre-emption points, then vary interrupt timing, priority, load and task scheduling while checking atomicity and ordering invariants. Use stress repetition with reproducible seeds, instrumentation that minimally changes timing, and targeted unit tests around critical sections. Capture the event sequence needed to reproduce any failure rather than only the final symptom.",
+      "strongAnswerSignals": [
+        "models shared state and pre-emption points",
+        "balances stress with deterministic reproduction",
+        "recognizes that instrumentation can change timing"
+      ],
+      "tags": [
+        "embedded",
+        "interrupts",
+        "concurrency",
+        "race-condition"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "linux-kunit"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-real-time-deadlines-jitter",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Performance",
+      "question": "How do you test a real-time deadline rather than only average performance?",
+      "shortAnswer": "Define the triggering event, completion point, maximum deadline and allowed jitter, then measure worst-case behaviour under representative concurrent load, interrupt activity, memory pressure and peripheral traffic. Use hardware timestamps or suitable tracing, report distributions and worst cases, and fail on missed deadlines even when the average remains excellent.",
+      "strongAnswerSignals": [
+        "measures end-to-end worst-case latency",
+        "loads competing resources and interrupts",
+        "distinguishes a hard deadline from an average target"
+      ],
+      "tags": [
+        "embedded",
+        "real-time",
+        "jitter",
+        "performance"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "iso-26262"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-watchdog-reset-recovery",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Scenario",
+      "question": "What should watchdog testing prove?",
+      "shortAnswer": "Prove the watchdog detects the intended hangs within the required time, cannot be accidentally serviced by an unhealthy task, and drives the device to a controlled recovery path. Inject blocked loops, deadlocks and scheduler starvation; verify reset reason, persistent-state integrity, rate limiting for reset loops, diagnostics and any escalation to a safe mode.",
+      "strongAnswerSignals": [
+        "injects realistic hangs rather than merely waiting",
+        "verifies reset cause and persistent data",
+        "covers repeated-reset containment"
+      ],
+      "tags": [
+        "embedded",
+        "watchdog",
+        "recovery"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "iso-26262"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-memory-resource-limits",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Risk analysis",
+      "question": "How would you test firmware under constrained stack, heap and buffer capacity?",
+      "shortAnswer": "Establish static and runtime budgets, instrument high-water marks, and exercise worst-case call depth, concurrency, message bursts and malformed input. Check allocation failures, fragmentation, stack overflow detection and buffer boundaries, then run long enough to reveal leaks. The build should fail or alarm before safety margin disappears, not only after a device crashes.",
+      "strongAnswerSignals": [
+        "measures high-water marks and safety margin",
+        "forces allocation and buffer failures",
+        "combines static analysis with runtime stress"
+      ],
+      "tags": [
+        "embedded",
+        "memory",
+        "stack",
+        "heap"
+      ],
+      "sourceIds": [
+        "linux-kunit",
+        "zephyr-testing"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-flash-persistence-wear",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "What risks belong in flash or EEPROM persistence testing?",
+      "shortAnswer": "Verify erased values, layout and versioning, boundary sizes, checksums, atomic updates, wear levelling and recovery from interrupted writes. Exercise near-endurance conditions where feasible, corrupt individual records and metadata, and confirm defaults or migration do not silently destroy recoverable user data. Track compatibility across bootloader and firmware versions.",
+      "strongAnswerSignals": [
+        "covers physical endurance and logical format",
+        "injects partial writes and corruption",
+        "tests versioned migration and recovery"
+      ],
+      "tags": [
+        "embedded",
+        "flash",
+        "eeprom",
+        "persistence"
+      ],
+      "sourceIds": [
+        "mcuboot-design",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-power-loss-atomicity",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "How would you test power-loss recovery during a critical write?",
+      "shortAnswer": "Automate power interruption at many controlled points before, during and after erase or write operations, then reboot and verify invariants rather than one expected byte sequence. The device must select either the old or new valid state, detect corruption, avoid boot loops and retain enough evidence for diagnosis. Repeat across voltage, storage wear and relevant hardware variants.",
+      "strongAnswerSignals": [
+        "sweeps interruption points systematically",
+        "asserts atomic state invariants",
+        "repeats across hardware and storage conditions"
+      ],
+      "tags": [
+        "embedded",
+        "power-loss",
+        "atomicity",
+        "recovery"
+      ],
+      "sourceIds": [
+        "mcuboot-design",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-brownout-boot-reset",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Scenario",
+      "question": "Which behaviours should be checked around brownout, slow power ramps and rapid reset cycling?",
+      "shortAnswer": "Vary supply voltage and ramp rate around specified thresholds while monitoring reset, clocks, outputs and storage access. Confirm the device never drives unsafe outputs, writes corrupted state or enters an unrecoverable boot loop. Test rapid off-on cycling, marginal batteries and peripheral power sequencing with instruments that record voltage and device events on the same timeline.",
+      "strongAnswerSignals": [
+        "measures electrical and software events together",
+        "checks unsafe output and storage behaviour",
+        "covers marginal and repeated power transitions"
+      ],
+      "tags": [
+        "embedded",
+        "brownout",
+        "power",
+        "boot"
+      ],
+      "sourceIds": [
+        "iso-26262",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-firmware-update-interruption",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Test design",
+      "question": "What should an interrupted firmware-update test matrix include?",
+      "shortAnswer": "Interrupt download, validation, erase, copy, swap, first boot and confirmation using lost power, reset, lost network and corrupt data. Verify the old image remains bootable until the new one is validated, retries are bounded, progress metadata is consistent, and the device either resumes safely or rolls back. Include low storage, low battery and multi-image dependencies.",
+      "strongAnswerSignals": [
+        "covers every update phase",
+        "requires a bootable recovery path",
+        "includes integrity, capacity and dependency failures"
+      ],
+      "tags": [
+        "embedded",
+        "firmware-update",
+        "ota",
+        "recovery"
+      ],
+      "sourceIds": [
+        "mcuboot-design",
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "embedded-secure-boot-image-validation",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Security",
+      "question": "How would you test secure boot and firmware-image validation?",
+      "shortAnswer": "Verify accepted algorithms, keys, image structure and valid signatures, then reject altered payloads, metadata, signatures, sizes and incompatible targets. Test revoked or wrong keys, corrupted primary and candidate slots, protected security counters and recovery images. Confirm failure is safe, observable and cannot fall through to executing unverified code.",
+      "strongAnswerSignals": [
+        "tamper-tests both payload and metadata",
+        "covers key and target identity",
+        "verifies no path executes an unverified image"
+      ],
+      "tags": [
+        "embedded",
+        "secure-boot",
+        "firmware",
+        "security"
+      ],
+      "sourceIds": [
+        "mcuboot-design",
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-rollback-downgrade-compatibility",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Scenario",
+      "question": "How do rollback, downgrade protection and data compatibility interact in firmware testing?",
+      "shortAnswer": "A failed candidate should revert to a known-good image, but security policy may forbid vulnerable versions and migrated data may no longer be readable by old firmware. Test version and security counters, image confirmation, forward and backward data schemas, factory recovery and emergency policy. Define which rollback paths are supported before testing them.",
+      "strongAnswerSignals": [
+        "separates reliability rollback from security downgrade",
+        "tests persistent-data compatibility",
+        "requires an explicit supported-version policy"
+      ],
+      "tags": [
+        "embedded",
+        "rollback",
+        "downgrade-protection",
+        "compatibility"
+      ],
+      "sourceIds": [
+        "mcuboot-design",
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-bootloader-application-contract",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Integration",
+      "question": "What belongs in the contract between a bootloader and an application image?",
+      "shortAnswer": "Test memory layout, vector and entry points, image metadata, signing, version rules, shared data, reset reasons, confirmation and recovery commands. Verify compatible and incompatible combinations explicitly, including an older bootloader with a newer application. A release should state the supported matrix and preserve an independently reachable recovery path.",
+      "strongAnswerSignals": [
+        "covers memory, metadata and lifecycle handoff",
+        "tests version combinations in both directions",
+        "protects an independent recovery mechanism"
+      ],
+      "tags": [
+        "embedded",
+        "bootloader",
+        "integration",
+        "compatibility"
+      ],
+      "sourceIds": [
+        "mcuboot-design"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "iot-device-identity-provisioning",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Security",
+      "question": "How would you test IoT device identity and provisioning?",
+      "shortAnswer": "Verify that each device receives a unique, traceable identity and protected credentials through an authorized manufacturing or onboarding flow. Test duplicate identity, replay, partial provisioning, credential rotation, ownership transfer, factory reset and decommissioning. Secrets must not appear in logs or unsecured interfaces, and backend state must agree with the physical device.",
+      "strongAnswerSignals": [
+        "covers the full identity lifecycle",
+        "tests duplicate, replay and interrupted provisioning",
+        "reconciles device and backend ownership state"
+      ],
+      "tags": [
+        "iot",
+        "device-identity",
+        "provisioning",
+        "security"
+      ],
+      "sourceIds": [
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "iot-logical-interface-access",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Security",
+      "question": "What should be tested about logical access to an IoT device's interfaces?",
+      "shortAnswer": "Inventory local, network, radio, debug and maintenance interfaces, including those disabled in normal operation. Verify authentication, authorization, rate limits, session handling and least privilege; reject undocumented commands and malformed input. Confirm production builds disable or protect debug access and that recovery access cannot bypass ownership or update policy.",
+      "strongAnswerSignals": [
+        "includes physical debug and maintenance interfaces",
+        "tests authorization as well as authentication",
+        "compares development and production configuration"
+      ],
+      "tags": [
+        "iot",
+        "interfaces",
+        "access-control",
+        "security"
+      ],
+      "sourceIds": [
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "iot-data-protection-telemetry",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Security",
+      "question": "How should QA validate data protection on a connected device with limited resources?",
+      "shortAnswer": "Classify credentials, user data, telemetry and configuration, then verify protection at rest, in transit and through local interfaces within the device's constraints. Test key storage, certificate validation, rotation, clock errors, redaction and factory reset. Confirm failures do not silently fall back to plaintext or expose secrets through crash logs and diagnostics.",
+      "strongAnswerSignals": [
+        "covers local storage, transport and diagnostics",
+        "tests key and certificate lifecycle failures",
+        "rejects insecure fallback behaviour"
+      ],
+      "tags": [
+        "iot",
+        "data-protection",
+        "telemetry",
+        "security"
+      ],
+      "sourceIds": [
+        "nist-iot-8259a"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "iot-offline-reconnect-behaviour",
+      "level": "Middle",
+      "category": "Embedded and IoT",
+      "kind": "Scenario",
+      "question": "How would you test an IoT device through offline periods and repeated reconnects?",
+      "shortAnswer": "Vary outage length, packet loss, DNS, time validity and network changes while producing local events. Verify bounded retry and backoff, local operation, queue capacity, ordering, duplicate handling and reconciliation after reconnect. The device should not exhaust battery or storage, and the backend should distinguish delayed data from current state.",
+      "strongAnswerSignals": [
+        "covers local behaviour and backend reconciliation",
+        "checks queue bounds, ordering and duplicates",
+        "includes power impact of retry behaviour"
+      ],
+      "tags": [
+        "iot",
+        "offline",
+        "reconnect",
+        "reliability"
+      ],
+      "sourceIds": [
+        "nist-iot-8259a",
+        "google-sre"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "iot-fleet-observability-diagnostics",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Operations",
+      "question": "What production evidence is needed to diagnose failures across an IoT fleet?",
+      "shortAnswer": "Capture device and hardware identity, firmware and configuration versions, reset reason, update state, resource health, connectivity and bounded diagnostic events with reliable timestamps. Validate upload under poor networks, privacy controls and retention, then prove operators can distinguish a device defect from backend, network, battery or environmental failure without collecting sensitive raw data unnecessarily.",
+      "strongAnswerSignals": [
+        "correlates device, version and backend evidence",
+        "works under intermittent connectivity",
+        "balances diagnostic value with privacy and resource limits"
+      ],
+      "tags": [
+        "iot",
+        "fleet",
+        "observability",
+        "diagnostics"
+      ],
+      "sourceIds": [
+        "nist-iot-8259a",
+        "opentelemetry-concepts"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "embedded-long-duration-environmental-stress",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Reliability",
+      "question": "What should a long-duration embedded reliability test measure?",
+      "shortAnswer": "Run representative workloads across relevant temperature, supply and connectivity conditions while tracking memory, handles, queues, timing, storage writes, radio behaviour, resets and output correctness. Include periodic fault and recovery events. Define trend and failure thresholds before the run, preserve exact hardware identity, and inspect degradation rather than reporting only that the device survived.",
+      "strongAnswerSignals": [
+        "measures trends and correctness over time",
+        "combines workload with environmental conditions",
+        "defines thresholds and recovery events before execution"
+      ],
+      "tags": [
+        "embedded",
+        "soak",
+        "reliability",
+        "environment"
+      ],
+      "sourceIds": [
+        "iso-26262",
+        "fda-iec-62304"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-manufacturing-calibration-test",
+      "level": "Senior",
+      "category": "Embedded and IoT",
+      "kind": "Strategy",
+      "question": "How does manufacturing test differ from development verification for an embedded device?",
+      "shortAnswer": "Manufacturing test must quickly detect assembly, component, programming and calibration defects on every unit with controlled fixtures and traceable limits. Development verification proves design behaviour more deeply. Validate fixture self-tests, golden units, measurement uncertainty, serial-number association, rework flow and secure provisioning so a fast pass remains meaningful and auditable.",
+      "strongAnswerSignals": [
+        "distinguishes design evidence from per-unit screening",
+        "controls fixture health and measurement uncertainty",
+        "links results to device identity and provisioning"
+      ],
+      "tags": [
+        "embedded",
+        "manufacturing",
+        "calibration",
+        "traceability"
+      ],
+      "sourceIds": [
+        "fda-iec-62304",
+        "iso-26262"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "embedded-test-lab-automation",
+      "level": "Lead",
+      "category": "Embedded and IoT",
+      "kind": "Automation",
+      "question": "How would you design reliable automation for a shared embedded-device lab?",
+      "shortAnswer": "Give every board, instrument, relay and firmware artifact a traceable identity; reserve resources atomically and run fixture health checks before product tests. Support remote power and recovery, collect serial and instrument evidence, isolate hazardous operations, and quarantine unhealthy rigs. Results must separate infrastructure failure from product failure and remain reproducible on a named setup.",
+      "strongAnswerSignals": [
+        "manages boards and instruments as versioned resources",
+        "runs fixture health checks and automated recovery",
+        "classifies lab failures separately from product failures"
+      ],
+      "tags": [
+        "embedded",
+        "test-lab",
+        "automation",
+        "hardware-in-loop"
+      ],
+      "sourceIds": [
+        "zephyr-testing",
+        "linux-kunit"
+      ],
+      "prevalence": "Specialist"
+    }
+  ]
+}

@@ -6,13 +6,13 @@
   },
   {
     "id": "fundamentals",
-    "label": "Fundamentals",
+    "label": "Testing principles & fundamentals",
     "category": "Fundamentals",
     "description": "Testing purpose, principles, levels, types and terminology."
   },
   {
     "id": "test-design",
-    "label": "Test design",
+    "label": "Test design techniques",
     "category": "Test design",
     "description": "Black-box, white-box and experience-based techniques."
   },
@@ -33,6 +33,12 @@
     "label": "Mobile",
     "category": "Mobile",
     "description": "Android, iOS, devices, lifecycle, networks and releases."
+  },
+  {
+    "id": "embedded-iot",
+    "label": "Embedded & IoT QA",
+    "category": "Embedded and IoT",
+    "description": "Firmware, hardware interfaces, timing, power, OTA updates, constrained devices and connected-product security."
   },
   {
     "id": "automation-ci",

@@ -103,6 +103,7 @@ const fallbackTags: Record<string, string[]> = {
   "Documentation and defects": ["documentation", "defects"],
   "Web, API and data": ["web", "api", "data"],
   Mobile: ["mobile", "devices"],
+  "Embedded and IoT": ["embedded", "firmware", "iot", "hardware"],
   "Automation and CI": ["automation", "ci"],
   Programming: ["programming", "test-code"],
   Infrastructure: ["infrastructure", "devops"],
@@ -124,6 +125,12 @@ function tagsFor(question: InterviewQuestion) {
 
 function normalizeSearch(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function matchesAllSearchTerms(query: string, values: string[]) {
+  const terms = normalizeSearch(query).split(" ").filter(Boolean);
+  const searchable = normalizeSearch(values.join(" "));
+  return terms.every((term) => searchable.includes(term));
 }
 
 function InterviewFilter<T extends string>({ emptyLabel, helpText, label, onChange, onOpenChange, open, options, searchable = false, selected, selectionMode = "multiple" }: {
@@ -311,6 +318,18 @@ const knowledge: Record<Exclude<PublicSection, "jobs" | "rewild">, {
       { title: "Network transitions", copy: "Exercise offline use, weak connections, Wi-Fi/cellular changes, retries, and synchronization conflicts.", tags: ["Network"] },
       { title: "Accessibility", copy: "Use WCAG criteria, keyboard and switch access, screen readers, focus, names, contrast, and status messages.", tags: ["WCAG"] },
       { title: "Release and upgrades", copy: "Validate store packaging, signing, installation, migration, deep links, and backward compatibility.", tags: ["Release"] },
+    ],
+  },
+  embedded: {
+    title: "Embedded & IoT QA",
+    description: "Test firmware and connected devices where software, electronics, timing, power, networks, and physical behaviour meet.",
+    items: [
+      { title: "Layered test strategy", copy: "Balance fast host tests, native simulation, emulation, hardware-in-the-loop, and representative real-device evidence.", tags: ["Firmware", "HIL"] },
+      { title: "Hardware interfaces", copy: "Validate GPIO, UART, I²C, SPI, CAN, sensors, actuators, electrical limits, timing, and protocol error handling.", tags: ["Hardware", "Protocols"] },
+      { title: "Real-time behaviour", copy: "Measure deadlines, jitter, interrupt latency, scheduling, concurrency, watchdog recovery, and sustained resource pressure.", tags: ["RTOS", "Timing"] },
+      { title: "Power and persistence", copy: "Interrupt boot, writes, updates, and shutdown at controlled points; verify atomicity, recovery, wear, and safe defaults.", tags: ["Power loss", "Flash"] },
+      { title: "Firmware lifecycle", copy: "Test signed images, compatibility, migration, OTA interruption, rollback, downgrade protection, and fleet observability.", tags: ["OTA", "Bootloader"] },
+      { title: "IoT security", copy: "Verify identity, configuration, interface access, data protection, secure updates, security state, and long-term support behaviour.", tags: ["IoT", "Security"] },
     ],
   },
   performance: {
@@ -720,6 +739,9 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const learningTopicOrder = useMemo(() => new Map(
     interviewTaxonomy.filter((item) => item.category).map((item, index) => [item.category as string, index]),
   ), [interviewTaxonomy]);
+  const topicSearchLabels = useMemo(() => new Map(
+    interviewTaxonomy.filter((item) => item.category).map((item) => [item.category as string, item.label]),
+  ), [interviewTaxonomy]);
   const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
   const activeCategory = activeTaxonomy?.category;
 
@@ -761,7 +783,6 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   }, [mode]);
 
   const matchingQuestions = useMemo(() => {
-    const searchTerms = normalizeSearch(query).split(" ").filter(Boolean);
     return interviewQuestions
       .filter((item) => {
         const tags = tagsFor(item);
@@ -769,8 +790,8 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         const matchesPrevalence = prevalences.length === 0 || prevalences.includes(item.prevalence);
         const matchesCategory = !activeCategory || item.category === activeCategory;
         const matchesTag = selectedTags.length === 0 || tags.some((tag) => selectedTags.includes(tag));
-        const searchable = normalizeSearch(`${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${item.prevalence} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`);
-        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && searchTerms.every((term) => searchable.includes(term));
+        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, ...tags, ...item.strongAnswerSignals]);
+        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && matchesSearch;
       })
       .sort((left, right) => {
         const catalogDifference = (catalogOrder.get(left.id) ?? 0) - (catalogOrder.get(right.id) ?? 0);
@@ -788,7 +809,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         }
         return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || catalogDifference;
       });
-  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, prevalences, query, selectedTags, sort]);
+  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, prevalences, query, selectedTags, sort, topicSearchLabels]);
 
   const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -884,7 +905,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         <div className="iq-toolbar-main">
           <label className="iq-search">
             <span>⌕</span>
-            <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search questions, answers, tags, or skills"/>
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search all words across questions, answers, tags, or skills"/>
           </label>
           <div className="iq-filter-status" aria-live="polite">
             <span><strong>{matchingQuestions.length}</strong> matches</span>
