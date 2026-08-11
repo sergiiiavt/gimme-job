@@ -12,7 +12,7 @@ export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "programming", label: "Programming for QA" },
   { id: "automation", label: "Test automation" },
   { id: "api", label: "API & integration" },
-  { id: "data", label: "Data & BI" },
+  { id: "data", label: "Databases, SQL & BI" },
   { id: "mobile", label: "Mobile & accessibility" },
   { id: "performance", label: "Performance & reliability" },
   { id: "security", label: "Security testing" },

@@ -558,7 +558,7 @@
     {
       "id": "etl-testing-basics",
       "level": "Middle",
-      "category": "Data and BI",
+      "category": "Databases, SQL and BI",
       "question": "What should ETL or ELT pipeline testing cover end to end?",
       "shortAnswer": "Verify source extraction, schema and type handling, transformation rules, joins and filters, target loading and idempotent reruns. Reconcile counts and control totals at boundaries, test late, duplicate, missing and malformed records, and verify lineage, freshness, observability and recovery. Protect sensitive data throughout the test path.",
       "strongAnswerSignals": [
@@ -582,7 +582,7 @@
     {
       "id": "data-quality-dimensions",
       "level": "Junior",
-      "category": "Data and BI",
+      "category": "Databases, SQL and BI",
       "question": "Which data-quality dimensions should a tester evaluate?",
       "shortAnswer": "Common dimensions include completeness, validity, accuracy, consistency, uniqueness, timeliness or freshness and referential integrity. Define each dimension as a measurable rule tied to a business decision, identify the authoritative source and acceptable threshold, and monitor results by source and time rather than reporting one blended quality score.",
       "strongAnswerSignals": [

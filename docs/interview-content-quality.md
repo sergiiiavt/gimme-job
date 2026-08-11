@@ -28,6 +28,12 @@ Validation now requires:
 
 The first baseline audit added direct questions for testing vocabulary and process, test-technique families, test artifacts and reports, API request anatomy, mobile device choices, automation frameworks and risks, asynchronous test code, CI/CD terminology, performance comparisons, accessibility, Scrum and test-first approaches, planning criteria, leadership, a classic practical task, AI evaluation, data pipelines and quality, production telemetry, reliability objectives and regulated traceability.
 
+## Database and SQL coverage correction
+
+The same topic-count failure later appeared in “Data & BI.” The topic contained 29 entries, but most were generated pipeline scenarios with nearly identical answers; only two questions explicitly asked about databases or SQL. Search therefore made the topic look absent even though database words appeared inside a few answers and source descriptions.
+
+`content/interview/database-sql-qa.json` is now a second explicit audited set. Its 25 stable questions cover relational and non-relational models, SQL command families, keys and constraints, NULL, filtering and aggregation, duplicates and orphans, normalization, CTEs, window functions, transactions, isolation, locks, indexes, query plans, migrations, data-type boundaries, test-data isolation, recovery, injection, database-side logic, star schemas and dashboard reconciliation. The generator counts these questions before filling the topic, so they replace repetitive scenarios and the catalog remains exactly 520 questions.
+
 ## Readability and media policy
 
 Answers remain plain public content in Git. The UI turns short answers into a lead statement plus readable points, while retaining the separate “Strong answer includes” checklist and source links. This improves all 520 entries without embedding presentation markup into source data.
