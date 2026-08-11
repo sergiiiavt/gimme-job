@@ -624,12 +624,11 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
         </label>
         <MultiSelectFilter allLabel="All tags" label="Tags" onChange={setQuestionTags} options={interviewTags} searchable selected={selectedTags}/>
         <MultiSelectFilter allLabel="All levels" label="Seniority levels" onChange={setQuestionLevels} options={interviewLevels} selected={levels}/>
+        <div className="iq-filter-status" aria-live="polite">
+          <span>{matchingQuestions.length} matches<br/>{visibleQuestions.length} rendered</span>
+          <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Clear all</button>
+        </div>
       </section>
-
-      <div className="iq-filter-status" aria-live="polite">
-        <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Clear all</button>
-        <span>{matchingQuestions.length} matches · {visibleQuestions.length} rendered</span>
-      </div>
 
       <div className="iq-list">
         {visibleQuestions.map((item, index) => {
@@ -643,7 +642,6 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
                   <h2>{item.question}</h2>
                   <span className="iq-question-tags"><em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>{tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}</span>
                 </div>
-                <i aria-hidden="true">+</i>
               </summary>
               <div className="iq-answer">
                 <section>
