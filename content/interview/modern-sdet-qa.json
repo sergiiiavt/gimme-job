@@ -1,0 +1,836 @@
+{
+  "questions": [
+    {
+      "id": "test-doubles-taxonomy",
+      "level": "Junior",
+      "category": "Programming",
+      "kind": "Theory",
+      "question": "What is the difference between a dummy, stub, spy, mock and fake?",
+      "shortAnswer": "They are all test doubles, but they serve different purposes. A dummy only fills a parameter, a stub returns configured answers, a spy records calls, a mock carries interaction expectations, and a fake is a lightweight working implementation such as an in-memory repository. Library terminology varies, so explain the behavior you need instead of relying only on the label.",
+      "strongAnswerSignals": [
+        "uses test double as the umbrella term",
+        "distinguishes state setup from interaction verification",
+        "notes that framework terminology can differ"
+      ],
+      "tags": ["test-doubles", "unit-testing", "sdet"],
+      "sourceIds": ["android-test-doubles"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "choosing-test-double",
+      "level": "Middle",
+      "category": "Programming",
+      "kind": "Test design",
+      "question": "How do you choose between a stub, mock, spy, fake and the real dependency?",
+      "shortAnswer": "Choose the simplest collaborator that preserves the behavior the test needs to trust. Use a stub to drive a specific branch, a mock or spy only when an externally meaningful interaction is the behavior, a fake for reusable stateful behavior, and the real dependency when fidelity outweighs speed and setup cost. Keep at least one contract or integration check wherever a double could drift from reality.",
+      "strongAnswerSignals": [
+        "starts from the behavior and test boundary",
+        "avoids interaction assertions for implementation details",
+        "pairs doubles with contract or integration evidence"
+      ],
+      "tags": ["test-doubles", "unit-testing", "test-design", "sdet"],
+      "sourceIds": ["android-test-doubles", "playwright-best-practices"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "over-mocking-refactoring-risk",
+      "level": "Senior",
+      "category": "Programming",
+      "kind": "Risk analysis",
+      "question": "How can over-mocking make a test suite unreliable even when it passes?",
+      "shortAnswer": "Over-mocked tests can reproduce the implementation rather than validate observable behavior. They pass against invented dependency behavior, fail during harmless refactoring, and miss incompatible schemas, defaults, timing and failure modes. Review whether each interaction matters to a consumer, prefer state or outcome assertions, and retain contract and integration tests at real boundaries.",
+      "strongAnswerSignals": [
+        "identifies false confidence and refactoring coupling",
+        "mentions behavioral drift between doubles and real dependencies",
+        "proposes outcome assertions and boundary checks"
+      ],
+      "tags": ["test-doubles", "maintainability", "unit-testing", "sdet"],
+      "sourceIds": ["android-test-doubles", "playwright-best-practices"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "fake-contract-drift",
+      "level": "Senior",
+      "category": "Automation and CI",
+      "kind": "Integration",
+      "question": "How would you prevent a fake service or in-memory repository from drifting from the real implementation?",
+      "shortAnswer": "Define a shared behavioral contract and run the same conformance examples against the fake and the real implementation. Cover schemas, defaults, error semantics, ordering, idempotency and important concurrency behavior; version the contract and run it in CI for both providers. A fake should fail fast on unsupported behavior instead of silently returning convenient results.",
+      "strongAnswerSignals": [
+        "runs one contract suite against fake and real implementations",
+        "covers failures and state semantics, not only happy paths",
+        "treats unsupported fake behavior explicitly"
+      ],
+      "tags": ["test-doubles", "contract-testing", "ci", "automation-engineer"],
+      "sourceIds": ["android-test-doubles", "openapi-31"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "property-based-testing",
+      "level": "Middle",
+      "category": "Test design",
+      "kind": "Theory",
+      "question": "What is property-based testing, and when is it more useful than example-based testing?",
+      "shortAnswer": "Property-based testing generates many inputs from a defined domain and checks invariants that should always hold, such as sorting preserving elements and order. It is valuable for parsers, transformations, protocols and rule-heavy code with large input spaces. Keep a few readable examples, constrain generators to meaningful data, and make failures reproducible with saved seeds and minimized counterexamples.",
+      "strongAnswerSignals": [
+        "defines properties and generated input domains",
+        "uses invariants rather than duplicating implementation logic",
+        "mentions shrinking or minimized reproducible failures"
+      ],
+      "tags": ["property-based-testing", "test-design", "automation-engineer", "sdet"],
+      "sourceIds": ["hypothesis-property-testing"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "property-based-generators-shrinking",
+      "level": "Senior",
+      "category": "Test design",
+      "kind": "Test design",
+      "question": "How would you design useful generators and shrinking for a property-based test?",
+      "shortAnswer": "Model the valid and invalid input domains explicitly, bias generation toward boundaries and structurally interesting cases, and preserve relationships between dependent fields. A shrinker should reduce a failure toward the smallest case that still violates the property without breaking required structure. Record the seed and minimized example, and reject so few values that generation remains efficient and representative.",
+      "strongAnswerSignals": [
+        "models dependent fields instead of generating them independently",
+        "targets boundaries and meaningful invalid data",
+        "keeps minimized counterexamples reproducible"
+      ],
+      "tags": ["property-based-testing", "generators", "shrinking", "sdet"],
+      "sourceIds": ["hypothesis-property-testing"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "mutation-testing-suite-strength",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Theory",
+      "question": "What does mutation testing reveal that line coverage does not?",
+      "shortAnswer": "Mutation testing makes small changes to production code and checks whether the tests fail. A covered line can still have weak or missing assertions, while a surviving mutant shows that a plausible behavior change was not detected. Mutation score is a diagnostic signal rather than a universal target because equivalent, irrelevant and expensive mutants still require judgment.",
+      "strongAnswerSignals": [
+        "distinguishes executing code from detecting incorrect behavior",
+        "explains killed and surviving mutants",
+        "avoids treating mutation score as an absolute quality number"
+      ],
+      "tags": ["mutation-testing", "code-coverage", "unit-testing", "sdet"],
+      "sourceIds": ["stryker-mutation-testing"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "mutation-testing-ci-scope",
+      "level": "Senior",
+      "category": "Automation and CI",
+      "kind": "Strategy",
+      "question": "How would you introduce mutation testing without making CI prohibitively slow?",
+      "shortAnswer": "Start with high-risk domain code and changed files, exclude generated or trivial code, and establish a baseline before adding a ratcheting threshold. Run a focused mutation set on pull requests and a broader scheduled job, cache or reuse coverage where supported, and review surviving mutants for missing assertions rather than chasing a score mechanically.",
+      "strongAnswerSignals": [
+        "uses risk and change scope to control cost",
+        "separates pull-request feedback from scheduled depth",
+        "reviews surviving mutants instead of gaming the metric"
+      ],
+      "tags": ["mutation-testing", "ci", "test-selection", "automation-engineer"],
+      "sourceIds": ["stryker-mutation-testing", "dora"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "visual-regression-purpose",
+      "level": "Junior",
+      "category": "Automation and CI",
+      "kind": "Theory",
+      "question": "What is visual regression testing, and what defects is it good at finding?",
+      "shortAnswer": "Visual regression testing compares a rendered page or component with an approved baseline image. It is effective for unintended layout, typography, spacing, color, clipping and responsive changes that DOM assertions may miss. It should complement semantic and accessibility checks because a matching screenshot does not prove correct behavior, usable focus order or meaningful content.",
+      "strongAnswerSignals": [
+        "explains baseline image comparison",
+        "names visual defects that semantic assertions miss",
+        "does not replace functional or accessibility testing"
+      ],
+      "tags": ["visual-regression", "screenshots", "web-qa", "automation-engineer"],
+      "sourceIds": ["playwright-visual-comparisons"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "visual-regression-stable-baselines",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Automation",
+      "question": "How do you make screenshot comparisons stable enough for CI?",
+      "shortAnswer": "Generate and compare baselines in a controlled environment with pinned browser, operating system, fonts, viewport, color settings and test data. Wait for deterministic application state, disable or freeze animation and time, and mask only truly dynamic regions. Use a small justified tolerance and component-level snapshots where possible; broad thresholds can hide real regressions.",
+      "strongAnswerSignals": [
+        "controls rendering environment and application state",
+        "uses masking and tolerances narrowly",
+        "prefers focused snapshots with diagnosable diffs"
+      ],
+      "tags": ["visual-regression", "determinism", "ci", "automation-engineer"],
+      "sourceIds": ["playwright-visual-comparisons", "playwright-best-practices"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "visual-regression-review-workflow",
+      "level": "Senior",
+      "category": "Automation and CI",
+      "kind": "Strategy",
+      "question": "What review workflow prevents teams from blindly accepting new visual baselines?",
+      "shortAnswer": "Store baselines with the code and make updates an explicit reviewed change. The reviewer should see expected, actual and diff images, connect the change to an approved design or requirement, and reject unrelated churn. Separate intentional platform baselines, require ownership for high-impact surfaces, and monitor how often snapshots are updated without a corresponding product change.",
+      "strongAnswerSignals": [
+        "treats baseline changes as reviewable product changes",
+        "shows expected, actual and diff evidence",
+        "tracks unexplained baseline churn"
+      ],
+      "tags": ["visual-regression", "code-review", "governance", "qa-lead"],
+      "sourceIds": ["playwright-visual-comparisons", "git-docs"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "cross-browser-risk-matrix",
+      "level": "Junior",
+      "category": "Automation and CI",
+      "kind": "Strategy",
+      "question": "How would you choose a cross-browser and operating-system test matrix?",
+      "shortAnswer": "Start with supported-product commitments and production usage, then cover distinct rendering engines, current and older supported versions, desktop and mobile form factors, and business-critical accessibility modes. Run a small representative matrix on every change and broader compatibility checks on schedule or before release. Revisit the matrix using traffic, incidents and deprecation plans.",
+      "strongAnswerSignals": [
+        "uses support policy and production evidence",
+        "covers distinct engines rather than browser brand count",
+        "balances pull-request speed with scheduled breadth"
+      ],
+      "tags": ["cross-browser", "browser-matrix", "web-qa", "automation-engineer"],
+      "sourceIds": ["selenium-grid", "playwright-best-practices"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "browser-grid-parallel-strategy",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Automation",
+      "question": "How would you design reliable parallel execution on a browser grid?",
+      "shortAnswer": "Make each test independent with isolated accounts, data, downloads and browser state; declare capabilities explicitly and avoid ordering assumptions. Shard by measured duration, cap concurrency to grid and backend capacity, and preserve per-session logs, video, screenshots and network evidence. Distinguish product failures from grid capacity, browser startup and infrastructure failures in reporting.",
+      "strongAnswerSignals": [
+        "isolates state and data per worker",
+        "matches concurrency to grid and system capacity",
+        "separates infrastructure failures from product failures"
+      ],
+      "tags": ["selenium-grid", "parallel-testing", "cross-browser", "automation-engineer"],
+      "sourceIds": ["selenium-grid", "selenium-docs"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "real-device-cloud-strategy",
+      "level": "Middle",
+      "category": "Mobile",
+      "kind": "Strategy",
+      "question": "When should a mobile team use emulators, local devices and a real-device cloud?",
+      "shortAnswer": "Use emulators for fast deterministic checks and broad OS configuration, local devices for development and hardware-specific debugging, and a device cloud for scalable coverage of real models, OS versions and manufacturers. Keep a small physical lab for critical sensors or peripherals the cloud cannot represent, and choose the matrix from users, supported versions and historical failures rather than device popularity alone.",
+      "strongAnswerSignals": [
+        "assigns a distinct purpose to emulators, local devices and cloud devices",
+        "retains physical coverage for unsupported hardware interactions",
+        "bases the matrix on product evidence"
+      ],
+      "tags": ["device-farm", "mobile-qa", "device-matrix", "automation-engineer"],
+      "sourceIds": ["appium-docs", "android-test", "selenium-grid"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "big-o-test-automation",
+      "level": "Junior",
+      "category": "Programming",
+      "kind": "Theory",
+      "question": "Why should an SDET understand time and space complexity?",
+      "shortAnswer": "Complexity explains how an algorithm or test utility grows as input size increases. It helps an SDET spot quadratic data setup, slow log processing, expensive polling and memory-heavy fixtures before they make suites unusable. State the dominant time and space costs, test representative scale, and remember that Big O does not replace measurement of constants, I/O and real bottlenecks.",
+      "strongAnswerSignals": [
+        "connects asymptotic growth to test-suite maintainability",
+        "considers both time and auxiliary space",
+        "combines analysis with measurement"
+      ],
+      "tags": ["algorithms", "big-o", "sdet", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "choosing-data-structure",
+      "level": "Junior",
+      "category": "Programming",
+      "kind": "Theory",
+      "question": "How do you choose between an array, set, map, stack and queue in a coding exercise?",
+      "shortAnswer": "Choose from the operations the problem needs. Arrays preserve indexed order, sets provide uniqueness and membership, maps associate keys with values or counts, stacks support last-in-first-out traversal, and queues support first-in-first-out work. Explain expected lookup, insertion, deletion and ordering costs, then test empty, duplicate and boundary cases for the chosen structure.",
+      "strongAnswerSignals": [
+        "chooses from required operations rather than habit",
+        "explains ordering and complexity tradeoffs",
+        "tests empty and duplicate inputs"
+      ],
+      "tags": ["data-structures", "algorithms", "sdet", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "coding-frequency-map",
+      "level": "Junior",
+      "category": "Programming",
+      "kind": "Practical",
+      "question": "How would you find duplicates or compare character frequencies efficiently?",
+      "shortAnswer": "Walk the input once and store each value or normalized character in a set or frequency map. A set is enough to detect whether a duplicate exists; counts are needed to report duplicates or compare multisets such as anagrams. Clarify case, whitespace and Unicode rules, then test empty input, repeated values, equivalent normalized text and inputs with no duplicates.",
+      "strongAnswerSignals": [
+        "selects a set or frequency map for the required output",
+        "states normalization assumptions",
+        "covers empty, unique and repeated inputs"
+      ],
+      "tags": ["hash-map", "strings", "sdet", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "unicode-text-segmentation", "gfg-testing-interviews"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "coding-linked-list-cycle",
+      "level": "Middle",
+      "category": "Programming",
+      "kind": "Practical",
+      "question": "How would you detect a cycle in a linked list and test the solution?",
+      "shortAnswer": "Use a slow pointer that advances one node and a fast pointer that advances two. They meet if a cycle exists; reaching the end proves the list is acyclic. This uses linear time and constant extra space. Test an empty list, one node with and without a self-cycle, a cycle beginning at the head or middle, and a long acyclic list.",
+      "strongAnswerSignals": [
+        "explains the slow and fast pointer invariant",
+        "states linear time and constant auxiliary space",
+        "covers self-cycles and cycles at different positions"
+      ],
+      "tags": ["linked-list", "cycle-detection", "sdet", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "coding-merge-intervals",
+      "level": "Middle",
+      "category": "Programming",
+      "kind": "Practical",
+      "question": "How would you merge overlapping intervals and validate the result?",
+      "shortAnswer": "Validate each interval, sort by start, then scan once: extend the current interval when the next start is within its end, otherwise emit it and start a new one. Sorting dominates at O(n log n). Clarify whether touching intervals merge, then test empty input, one interval, nested ranges, equal endpoints, unsorted input and invalid reversed ranges.",
+      "strongAnswerSignals": [
+        "sorts before performing a linear merge",
+        "clarifies boundary semantics for touching intervals",
+        "derives tests from the algorithm's invariants"
+      ],
+      "tags": ["intervals", "sorting", "sdet", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "coding-queue-retry-simulation",
+      "level": "Middle",
+      "category": "Programming",
+      "kind": "Practical",
+      "question": "How would you model and test a bounded retry queue in a coding exercise?",
+      "shortAnswer": "Represent each item with attempt count and next eligible time, process ready items in queue order, and move retryable failures back only while attempts remain. Inject the clock and outcome function so tests are deterministic. Cover success, terminal failure, retry exhaustion, backoff timing, multiple items, duplicate delivery and the invariant that one failing item cannot block all later work.",
+      "strongAnswerSignals": [
+        "makes time and outcomes injectable",
+        "defines retry and terminal-failure state transitions",
+        "tests fairness, exhaustion and duplicate delivery"
+      ],
+      "tags": ["queue", "retries", "state-machine", "coding-interview"],
+      "sourceIds": ["mit-algorithms", "google-sre"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "coding-test-cases-before-code",
+      "level": "Junior",
+      "category": "Programming",
+      "kind": "Practical",
+      "question": "How should you derive test cases before coding an interview solution?",
+      "shortAnswer": "Restate the contract, ask about invalid input and constraints, and write one normal example plus empty, smallest, largest, duplicate and boundary cases that fit the problem. Use those examples to expose hidden assumptions and choose a data structure. After coding, trace the algorithm through the same cases and add one case aimed at its most fragile branch.",
+      "strongAnswerSignals": [
+        "clarifies the contract before implementation",
+        "uses boundaries and constraints to select cases",
+        "targets the algorithm's fragile branch after coding"
+      ],
+      "tags": ["coding-interview", "test-design", "sdet", "problem-solving"],
+      "sourceIds": ["gfg-testing-interviews", "istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "coding-review-complexity-correctness",
+      "level": "Senior",
+      "category": "Programming",
+      "kind": "Scenario",
+      "question": "How would you review a coding solution for correctness, complexity and testability?",
+      "shortAnswer": "Start from the stated contract and identify the loop, recursion or data-structure invariants that make the result correct. Check termination, overflow, mutation, error handling and behavior at size limits; then derive time and space complexity from actual operations. Finally, separate pure logic from I/O or time, name adversarial examples, and confirm failures are observable rather than swallowed.",
+      "strongAnswerSignals": [
+        "uses invariants instead of intuition alone",
+        "derives complexity from the implementation",
+        "reviews dependency control and failure observability"
+      ],
+      "tags": ["code-review", "algorithms", "testability", "sdet"],
+      "sourceIds": ["mit-algorithms", "playwright-best-practices"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "i18n-l10n-difference",
+      "level": "Junior",
+      "category": "Web, API and data",
+      "kind": "Theory",
+      "question": "What is the difference between internationalization and localization testing?",
+      "shortAnswer": "Internationalization testing checks whether the product can support different languages, scripts, formats and cultural rules without code changes. Localization testing checks a particular locale's translations, formats, terminology, layout and appropriateness. Test both: a correct Ukrainian translation can still fail if the product hard-codes English word order, while flexible code can still ship a bad translation.",
+      "strongAnswerSignals": [
+        "separates product capability from locale-specific quality",
+        "includes scripts, formats and layout beyond translation",
+        "explains why both test layers are needed"
+      ],
+      "tags": ["internationalization", "localization", "web-qa", "mobile-qa"],
+      "sourceIds": ["unicode-cldr", "w3c-bidi"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "locale-formatting-tests",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "kind": "Test design",
+      "question": "How would you test locale-sensitive dates, numbers, currencies and measurements?",
+      "shortAnswer": "Choose representative locales that vary decimal and grouping separators, currency position and precision, date order, calendars, week starts and measurement systems. Verify formatting and parsing round trips, negative and zero values, large numbers and user-locale fallback. Keep storage and APIs locale-neutral where possible, and derive expected display values from trusted locale data rather than hand-written English rules.",
+      "strongAnswerSignals": [
+        "selects locales for distinct formatting behavior",
+        "tests both display and parsing",
+        "keeps persisted values separate from presentation locale"
+      ],
+      "tags": ["localization", "locale-formatting", "web-qa", "data"],
+      "sourceIds": ["unicode-cldr"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "pluralization-rules-tests",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "kind": "Test design",
+      "question": "Why is testing only singular and plural English forms insufficient?",
+      "shortAnswer": "Plural categories vary by locale and may include zero, one, two, few, many and other; decimals can follow different rules from integers. Use the locale's CLDR rules and test minimal representative values around category changes, including 0, teens, numbers ending in 1 or 2, and fractions where relevant. Verify the whole translated message because nouns, verbs and cases may all change.",
+      "strongAnswerSignals": [
+        "knows plural categories are locale-specific",
+        "tests values around rule transitions and fractions",
+        "validates complete messages rather than isolated nouns"
+      ],
+      "tags": ["localization", "pluralization", "unicode", "web-qa"],
+      "sourceIds": ["unicode-cldr"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "rtl-bidirectional-layout",
+      "level": "Middle",
+      "category": "Security and accessibility",
+      "kind": "Test design",
+      "question": "What should an RTL and bidirectional-text test strategy cover?",
+      "shortAnswer": "Test full right-to-left layout mirroring, logical navigation order, alignment, icons whose meaning should or should not mirror, and mixed-direction strings such as Arabic text containing phone numbers, URLs or product codes. Verify forms, tables, truncation and copy/paste with real content. Prefer semantic direction markup and isolation, then include keyboard and screen-reader checks because visual mirroring alone is insufficient.",
+      "strongAnswerSignals": [
+        "covers mixed-direction content, not only mirrored layout",
+        "distinguishes semantic direction from visual alignment",
+        "includes keyboard and assistive-technology behavior"
+      ],
+      "tags": ["rtl", "bidirectional-text", "localization", "accessibility"],
+      "sourceIds": ["w3c-bidi", "wcag-22"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "unicode-normalization-graphemes",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Test design",
+      "question": "How can Unicode normalization and grapheme clusters break validation, search or length limits?",
+      "shortAnswer": "Visually identical text can use different code-point sequences, and one user-perceived character can contain several code points. Byte, code-unit, code-point and grapheme counts therefore answer different questions. Test composed and decomposed forms, combining marks, emoji sequences and mixed scripts; define where normalization occurs, preserve security-relevant distinctions, and apply user-facing length rules to grapheme clusters when appropriate.",
+      "strongAnswerSignals": [
+        "distinguishes bytes, code points and grapheme clusters",
+        "tests canonically equivalent representations",
+        "defines normalization and security boundaries explicitly"
+      ],
+      "tags": ["unicode", "normalization", "grapheme-clusters", "web-qa"],
+      "sourceIds": ["unicode-text-segmentation", "unicode-cldr"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "pseudo-localization",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Automation",
+      "question": "How does pseudo-localization find internationalization defects before translations are ready?",
+      "shortAnswer": "Pseudo-localization transforms source strings to expand length, add accented characters, mark boundaries and optionally simulate right-to-left direction while keeping the text recognizable. Automated smoke tests can reveal clipped UI, concatenated fragments, unexternalized strings and encoding assumptions early. Exclude identifiers and user data deliberately, and still perform real-locale linguistic and bidi testing later.",
+      "strongAnswerSignals": [
+        "uses expansion and marked characters to expose layout issues",
+        "detects hard-coded or concatenated strings",
+        "does not replace real translation review"
+      ],
+      "tags": ["pseudo-localization", "internationalization", "ci", "automation-engineer"],
+      "sourceIds": ["unicode-cldr", "w3c-bidi"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "timezone-calendar-localization",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Scenario",
+      "question": "How would you test scheduling across time zones, daylight-saving changes and locale calendars?",
+      "shortAnswer": "Separate an instant from its displayed local time and preserve the intended time-zone identifier when future local schedules must follow regional rule changes. Test DST gaps and repeated hours, midnight and date-boundary crossings, zones with non-hour offsets, user-zone changes and server/client disagreement. Verify recurrence, sorting, notifications and exported data against an independent time-zone library or calendar.",
+      "strongAnswerSignals": [
+        "separates instants, local times and zone identifiers",
+        "covers skipped and repeated daylight-saving times",
+        "tests downstream ordering, recurrence and notification effects"
+      ],
+      "tags": ["time-zones", "localization", "calendars", "data"],
+      "sourceIds": ["unicode-cldr", "postgres-docs"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "ai-generated-test-review",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "kind": "Automation",
+      "question": "How should you review tests generated by an AI coding assistant?",
+      "shortAnswer": "Review them as untrusted code. Trace every assertion to a requirement or risk, check that setup reaches the intended state, reject invented APIs and tautological expectations, and run the test against both correct and deliberately broken behavior. Inspect isolation, cleanup, secrets, dependencies and maintainability, then keep human ownership for the final oracle and merge decision.",
+      "strongAnswerSignals": [
+        "validates that the test can fail for the intended defect",
+        "checks invented assumptions and security risks",
+        "keeps human ownership of the oracle"
+      ],
+      "tags": ["ai-assisted-testing", "code-review", "sdet", "ai-qa"],
+      "sourceIds": ["istqb-ai-testing", "openai-evals", "playwright-best-practices"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "ai-generated-test-grounding",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "kind": "Test design",
+      "question": "How would you ground AI-generated test ideas in real product risk instead of producing a longer checklist?",
+      "shortAnswer": "Provide versioned requirements, architecture, incident history, analytics and explicit exclusions, then ask for tests mapped to named risks and evidence. Evaluate the result against a curated human set for risk recall, false assumptions, duplicates and executable oracles. Use the model to propose and transform; require deterministic validation, traceability and review before generated cases enter the maintained suite.",
+      "strongAnswerSignals": [
+        "grounds generation in controlled product context",
+        "evaluates risk coverage and false assumptions",
+        "requires traceability and deterministic validation"
+      ],
+      "tags": ["ai-assisted-testing", "risk-based-testing", "evals", "ai-qa"],
+      "sourceIds": ["istqb-ai-testing", "openai-evals", "nist-genai-profile"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "self-healing-locator-risks",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Risk analysis",
+      "question": "What are the benefits and failure modes of self-healing UI locators?",
+      "shortAnswer": "Self-healing can reduce maintenance when a semantically equivalent element changes attributes, but it can also retarget the wrong control and turn a real regression into a passing test. Prefer accessible roles, names and explicit test contracts first. If healing is used, constrain candidate similarity, log every substitution, fail or require review for ambiguous changes, and measure false heals separately from saved maintenance.",
+      "strongAnswerSignals": [
+        "recognizes false-positive healing as the central risk",
+        "prefers stable semantic locators before healing",
+        "requires visible, reviewable substitutions"
+      ],
+      "tags": ["self-healing", "locators", "ai-assisted-testing", "automation-engineer"],
+      "sourceIds": ["playwright-best-practices", "istqb-ai-testing"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "ai-assisted-flaky-triage",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "kind": "Troubleshooting",
+      "question": "How would you evaluate an AI system that classifies or explains flaky test failures?",
+      "shortAnswer": "Build a labeled set from reviewed historical failures with categories such as product defect, test defect, environment failure and unknown. Measure per-class precision and recall, calibration and abstention, then test on new time periods to expose drift. Require linked evidence such as logs and traces, prevent automatic quarantine on low confidence, and audit whether rare high-impact product failures are being mislabeled as flakes.",
+      "strongAnswerSignals": [
+        "uses reviewed labels and time-separated evaluation data",
+        "measures errors per class rather than accuracy alone",
+        "keeps high-impact quarantine decisions controlled"
+      ],
+      "tags": ["ai-assisted-testing", "flaky-tests", "triage", "ai-qa"],
+      "sourceIds": ["openai-evals", "sklearn-model-evaluation", "nist-genai-profile"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "mcp-testing-workflows",
+      "level": "Junior",
+      "category": "AI, ML and LLM",
+      "kind": "Theory",
+      "question": "What is MCP, and how can it support a testing workflow?",
+      "shortAnswer": "Model Context Protocol standardizes how an AI host connects to servers that expose resources, prompts and executable tools. In testing, an MCP server might expose browser inspection, test execution, logs or issue data so an agent can gather evidence through declared schemas. MCP provides interoperability, not correctness or safety; tool permissions, inputs, outputs and user approvals still need independent controls and tests.",
+      "strongAnswerSignals": [
+        "explains hosts, clients, servers and exposed capabilities",
+        "gives concrete testing-tool examples",
+        "does not treat the protocol as a security boundary"
+      ],
+      "tags": ["mcp", "ai-agents", "ai-assisted-testing", "sdet"],
+      "sourceIds": ["mcp-spec", "playwright-mcp"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "playwright-mcp-test-workflow",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "kind": "Automation",
+      "question": "When would you use Playwright MCP for exploration, and when would you still write deterministic tests?",
+      "shortAnswer": "Use an agent-driven browser tool for discovery, reproducing unfamiliar flows, gathering page structure and proposing coverage. Convert stable, release-critical behavior into reviewed Playwright tests with explicit setup, locators and assertions so CI is reproducible and cheap. Keep exploratory artifacts, network evidence and discovered risks, but do not make a probabilistic agent loop the only release oracle.",
+      "strongAnswerSignals": [
+        "separates exploration from deterministic regression gates",
+        "turns discoveries into reviewed maintainable tests",
+        "retains evidence without relying on agent narration"
+      ],
+      "tags": ["playwright-mcp", "mcp", "exploratory-testing", "ai-qa"],
+      "sourceIds": ["playwright-mcp", "playwright-best-practices", "openai-evals"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "mcp-agent-tool-security",
+      "level": "Senior",
+      "category": "Security and accessibility",
+      "kind": "Security",
+      "question": "How would you test the security boundary of an AI agent connected to MCP tools?",
+      "shortAnswer": "Inventory tools, data and side effects, then grant the least privilege needed for each role and environment. Test direct and indirect prompt injection, unauthorized tool discovery or invocation, parameter tampering, data exfiltration, approval bypass, replay and runaway loops. Enforce authorization in downstream systems, isolate test credentials and workspaces, log every call, and require parameter-bound approval for consequential actions.",
+      "strongAnswerSignals": [
+        "tests both model behavior and downstream authorization",
+        "covers indirect injection and excessive agency",
+        "uses least privilege, isolation and auditable approvals"
+      ],
+      "tags": ["mcp", "ai-agent-security", "prompt-injection", "security-qa"],
+      "sourceIds": ["mcp-spec", "owasp-llm-top10", "playwright-mcp"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "test-generating-agent-evaluation",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "kind": "Test design",
+      "question": "How would you evaluate an agent that writes and runs automated tests?",
+      "shortAnswer": "Use frozen representative tasks with known risks and seeded defects, and execute the generated tests in isolated reproducible environments. Measure valid-code rate, defect detection, false failures, duplicate coverage, maintenance quality, runtime and cost; also inspect whether the agent weakens existing tests or invents oracles. Repeat trials, segment results by task type, and retain human review for security and release-critical changes.",
+      "strongAnswerSignals": [
+        "uses seeded defects and executable evidence",
+        "measures quality, reliability, maintainability and cost",
+        "checks for weakened tests and fabricated oracles"
+      ],
+      "tags": ["agent-evals", "ai-assisted-testing", "test-generation", "ai-qa"],
+      "sourceIds": ["openai-evals", "istqb-ai-testing", "nist-genai-profile"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "agentic-testing-observability-cost",
+      "level": "Lead",
+      "category": "AI, ML and LLM",
+      "kind": "Strategy",
+      "question": "What would you monitor before scaling an agentic testing workflow across a team?",
+      "shortAnswer": "Track task success with independent verification, human correction rate, escaped defects, false failures, tool-call and token cost, latency, retries, approval frequency and maintenance burden. Trace model, prompt, tool and environment versions for each run, and compare the workflow with a simpler deterministic baseline. Set budgets and stop conditions, sample outputs for review, and expand only where measured feedback value exceeds risk and operating cost.",
+      "strongAnswerSignals": [
+        "measures verified outcomes rather than generated test count",
+        "tracks versions, tool calls, cost and human corrections",
+        "compares against a simpler baseline with stop conditions"
+      ],
+      "tags": ["agentic-testing", "observability", "cost", "qa-lead"],
+      "sourceIds": ["openai-evals", "opentelemetry-concepts", "dora"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "oauth-oidc-difference",
+      "level": "Junior",
+      "category": "Security and accessibility",
+      "kind": "Theory",
+      "question": "What is the difference between OAuth and OpenID Connect from a tester's perspective?",
+      "shortAnswer": "OAuth delegates authorization to access protected resources; OpenID Connect adds an identity layer for authentication and user claims. A tester should distinguish access tokens from ID tokens, resource audience from client identity, and consent from sign-in. Verify each token at its intended recipient and never infer authentication merely because an OAuth access token exists.",
+      "strongAnswerSignals": [
+        "separates delegated authorization from authentication",
+        "distinguishes access tokens and ID tokens",
+        "mentions issuer, audience and intended recipient validation"
+      ],
+      "tags": ["oauth", "openid-connect", "authentication", "security-qa"],
+      "sourceIds": ["oauth-security-bcp", "openid-connect-core"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "oauth-authorization-code-pkce-tests",
+      "level": "Senior",
+      "category": "Security and accessibility",
+      "kind": "Test design",
+      "question": "How would you test an authorization-code flow with PKCE?",
+      "shortAnswer": "Verify exact registered redirect handling, unpredictable state and nonce where applicable, one-time short-lived authorization codes, and a valid verifier for the original challenge. Test missing, wrong, replayed and intercepted codes; issuer and audience confusion; canceled consent; refresh-token rotation; logout and session mix-up across tabs. Confirm secrets and tokens never appear in URLs, logs or browser storage outside the design.",
+      "strongAnswerSignals": [
+        "covers state, nonce, PKCE verifier and replay resistance",
+        "tests issuer, audience and redirect validation",
+        "checks token storage, rotation and leakage"
+      ],
+      "tags": ["oauth", "pkce", "authentication", "security-qa"],
+      "sourceIds": ["oauth-security-bcp", "openid-connect-core", "owasp-wstg"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "event-driven-contract-testing",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "kind": "Integration",
+      "question": "What belongs in a contract test for an event-driven integration?",
+      "shortAnswer": "Validate channel or topic, message schema, required metadata, key or partition semantics, compatibility rules and the business meaning of each event. Exercise producer serialization and consumer deserialization with versioned examples, including optional and unknown fields. The contract should not pretend to prove broker delivery, ordering or end-to-end side effects; cover those with integration and system tests.",
+      "strongAnswerSignals": [
+        "covers message semantics and metadata, not only JSON shape",
+        "tests producer and consumer compatibility",
+        "separates contract evidence from broker and workflow behavior"
+      ],
+      "tags": ["event-driven", "contract-testing", "api-qa", "sdet"],
+      "sourceIds": ["asyncapi-30", "openapi-31"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "idempotent-event-consumer",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "kind": "Test design",
+      "question": "How would you test an event consumer for duplicate delivery and idempotency?",
+      "shortAnswer": "Deliver the same event identifier more than once, concurrently and after consumer restart, then verify that business side effects occur at most once while acknowledgments and metrics remain correct. Test duplicates before and after partial failure, expired deduplication state and semantically repeated events with different IDs. Use authoritative persisted state as the oracle, not only consumer logs.",
+      "strongAnswerSignals": [
+        "tests duplicate delivery across restarts and concurrency",
+        "covers partial failure around side effect and acknowledgment",
+        "uses persisted business state as the oracle"
+      ],
+      "tags": ["event-driven", "idempotency", "messaging", "api-qa"],
+      "sourceIds": ["asyncapi-30", "google-sre"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "message-ordering-replay-dead-letter",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Troubleshooting",
+      "question": "How would you test ordering, replay and dead-letter behavior in a messaging system?",
+      "shortAnswer": "Define where ordering is promised—globally, per key or not at all—and publish interleaved messages across partitions and consumers. Inject poison messages, timeouts and crashes around acknowledgment; verify retry limits, backoff, dead-letter metadata and that unrelated messages continue. Replay a bounded range and confirm idempotent outcomes, preserved provenance and observable lag without silently skipping data.",
+      "strongAnswerSignals": [
+        "states the actual ordering scope",
+        "injects failures around processing and acknowledgment",
+        "verifies replay safety, dead-letter evidence and progress"
+      ],
+      "tags": ["messaging", "dead-letter-queue", "replay", "api-qa"],
+      "sourceIds": ["asyncapi-30", "google-sre"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "async-trace-correlation",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Integration",
+      "question": "How would you verify trace correlation across an asynchronous producer and consumer?",
+      "shortAnswer": "Emit a known message with a trace context and business correlation identifier, then verify that producer, broker and consumer telemetry can be joined without making high-cardinality business IDs metric labels. Cover batching, retries, delayed consumption and fan-out; confirm context is propagated rather than accidentally reused. Sample failures deliberately and retain links from the trace to message and consumer logs.",
+      "strongAnswerSignals": [
+        "propagates context through message metadata",
+        "covers batching, retries and fan-out",
+        "controls cardinality while preserving diagnostic correlation"
+      ],
+      "tags": ["messaging", "distributed-tracing", "correlation", "sre"],
+      "sourceIds": ["opentelemetry-concepts", "asyncapi-30"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "api-property-based-fuzzing",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "kind": "Test design",
+      "question": "How would you combine an API schema with property-based or fuzz testing?",
+      "shortAnswer": "Generate valid requests from the schema, then mutate boundaries, optional fields, encodings and structural constraints to produce targeted invalid cases. Assert protocol invariants such as no server errors for client mistakes, schema-valid responses, authorization isolation and consistent idempotency. Rate-limit the campaign, preserve seeds and minimized requests, and add important failures as deterministic regression tests.",
+      "strongAnswerSignals": [
+        "generates both schema-valid and targeted invalid requests",
+        "asserts security and protocol invariants",
+        "preserves minimized failures as regression cases"
+      ],
+      "tags": ["api-fuzzing", "property-based-testing", "openapi", "api-qa"],
+      "sourceIds": ["openapi-31", "hypothesis-property-testing", "owasp-api-2023"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "core-web-vitals-test-strategy",
+      "level": "Middle",
+      "category": "Performance and resilience",
+      "kind": "Test design",
+      "question": "How would you test and monitor Core Web Vitals?",
+      "shortAnswer": "Measure LCP, INP and CLS for critical journeys, segmenting real-user data by page, device and connection at the 75th percentile. Use controlled lab tests for repeatable regression feedback and field telemetry for actual user experience; lab proxies cannot fully reproduce INP or population variance. Set page-specific budgets, preserve diagnostic traces, and investigate regressions rather than optimizing only a single aggregate score.",
+      "strongAnswerSignals": [
+        "names LCP, INP and CLS and their user outcomes",
+        "uses both lab and field evidence",
+        "segments the 75th percentile instead of averaging everything"
+      ],
+      "tags": ["core-web-vitals", "frontend-performance", "rum", "web-qa"],
+      "sourceIds": ["web-vitals", "google-sre"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "lab-versus-field-web-performance",
+      "level": "Senior",
+      "category": "Performance and resilience",
+      "kind": "Strategy",
+      "question": "Why can lab and field web-performance results disagree, and how should a team use both?",
+      "shortAnswer": "Lab tests control hardware, network, cache and actions, so they are reproducible and useful before release; field data includes real devices, geography, long tasks, cache states and user behavior. Compare equivalent page and cohort definitions, use lab traces to diagnose regressions seen in field percentiles, and avoid declaring success from a fast synthetic run when a meaningful user segment remains slow.",
+      "strongAnswerSignals": [
+        "explains the populations and controls behind each data source",
+        "uses field data for outcomes and lab data for diagnosis",
+        "segments users instead of hiding slow cohorts"
+      ],
+      "tags": ["frontend-performance", "lab-testing", "rum", "performance-qa"],
+      "sourceIds": ["web-vitals", "google-sre"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "frontend-performance-budgets",
+      "level": "Senior",
+      "category": "Performance and resilience",
+      "kind": "Release decision",
+      "question": "How would you define a frontend performance budget that is useful in CI?",
+      "shortAnswer": "Choose user-centered journey metrics plus controllable contributors such as JavaScript, image and font size, request count and main-thread work. Establish a stable baseline, set thresholds per representative device and page, and fail on meaningful regression rather than noisy absolute variation. Allow an explicit reviewed exception with expiry, and confirm CI budgets correlate with field experience after release.",
+      "strongAnswerSignals": [
+        "combines user outcomes with actionable resource limits",
+        "controls environment and statistical noise",
+        "uses reviewed exceptions and field correlation"
+      ],
+      "tags": ["performance-budget", "ci", "frontend-performance", "performance-qa"],
+      "sourceIds": ["web-vitals", "dora"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "software-supply-chain-provenance",
+      "level": "Senior",
+      "category": "Security and accessibility",
+      "kind": "Security",
+      "question": "How would you verify that a tested artifact is the artifact being released?",
+      "shortAnswer": "Identify the immutable source revision and build inputs, generate the artifact in an isolated controlled build, and attach verifiable provenance containing its digest and production process. At release, validate signature or attestation identity, expected source, builder and policy before promotion. Keep test evidence tied to the same digest; a later rebuild with the same version label is a different artifact and requires new trust evidence.",
+      "strongAnswerSignals": [
+        "ties source, build provenance, tests and release to one digest",
+        "verifies builder and policy identity, not only a version label",
+        "recognizes rebuilds as distinct artifacts"
+      ],
+      "tags": ["software-supply-chain", "provenance", "ci", "security-qa"],
+      "sourceIds": ["slsa-12", "git-docs"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "ci-secrets-untrusted-pull-requests",
+      "level": "Senior",
+      "category": "Security and accessibility",
+      "kind": "Security",
+      "question": "How would you test that untrusted pull-request code cannot steal CI secrets?",
+      "shortAnswer": "Map which workflows execute contributor-controlled code and ensure they receive no production credentials or privileged write tokens. Use disposable test credentials, protected environments and explicit approval for trusted stages; test attempts to print environment values, modify artifacts, poison caches and exfiltrate over the network. Masking logs is defense in depth, not a substitute for withholding the secret.",
+      "strongAnswerSignals": [
+        "separates untrusted execution from privileged credentials",
+        "tests cache, artifact, log and network exfiltration paths",
+        "uses short-lived scoped credentials and protected promotion"
+      ],
+      "tags": ["ci-security", "secrets", "supply-chain", "security-qa"],
+      "sourceIds": ["slsa-12", "owasp-asvs"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "dependency-upgrade-risk-strategy",
+      "level": "Lead",
+      "category": "Infrastructure",
+      "kind": "Strategy",
+      "question": "What evidence should support a high-risk framework or dependency upgrade?",
+      "shortAnswer": "Review release notes, advisories, transitive changes, runtime and license compatibility, then build the exact locked dependency graph in a reproducible environment. Run focused contract, integration, performance and security checks on affected boundaries plus rollback rehearsal. Release progressively with telemetry, keep provenance for the artifact actually tested, and record accepted incompatibilities with an owner and removal date.",
+      "strongAnswerSignals": [
+        "reviews transitive, compatibility and security impact",
+        "tests affected boundaries and rollback",
+        "uses locked inputs, provenance and progressive release evidence"
+      ],
+      "tags": ["dependencies", "supply-chain", "upgrade-testing", "qa-lead"],
+      "sourceIds": ["slsa-12", "dora", "owasp-asvs"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "ai-assisted-requirement-review",
+      "level": "Junior",
+      "category": "AI, ML and LLM",
+      "kind": "Practical",
+      "question": "How can an AI assistant help review requirements without becoming the source of truth?",
+      "shortAnswer": "Give the assistant the controlled requirement and relevant glossary, then ask it to identify ambiguity, missing actors, states, boundaries, error behavior and conflicting examples with citations to the supplied text. A product owner or domain expert must resolve each finding. Record accepted decisions in the real specification, discard unsupported inventions, and evaluate the workflow on known omissions before trusting it broadly.",
+      "strongAnswerSignals": [
+        "asks for traceable findings rather than invented requirements",
+        "keeps domain decisions with accountable humans",
+        "evaluates the assistant on seeded ambiguities and omissions"
+      ],
+      "tags": ["ai-assisted-testing", "requirements", "review", "ai-qa"],
+      "sourceIds": ["istqb-ai-testing", "openai-evals"],
+      "prevalence": "Common"
+    }
+  ]
+}

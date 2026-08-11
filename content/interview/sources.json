@@ -398,5 +398,133 @@
     "publisher": "NIST",
     "kind": "Government guidance",
     "role": "IoT device identity, configuration, data protection, interface access, software update and security-state capabilities"
+  },
+  {
+    "id": "android-test-doubles",
+    "title": "Use test doubles in Android",
+    "url": "https://developer.android.com/training/testing/fundamentals/test-doubles",
+    "publisher": "Google",
+    "kind": "Official documentation",
+    "role": "Definitions, selection and limitations of dummies, stubs, spies, mocks and fakes"
+  },
+  {
+    "id": "hypothesis-property-testing",
+    "title": "Hypothesis property-based testing documentation",
+    "url": "https://hypothesis.readthedocs.io/en/latest/",
+    "publisher": "Hypothesis",
+    "kind": "Official documentation",
+    "role": "Property-based test design, generators, shrinking and reproducible counterexamples"
+  },
+  {
+    "id": "stryker-mutation-testing",
+    "title": "Stryker mutation testing documentation",
+    "url": "https://stryker-mutator.io/docs/",
+    "publisher": "Stryker Mutator",
+    "kind": "Official documentation",
+    "role": "Mutation testing, surviving mutants and test-suite effectiveness"
+  },
+  {
+    "id": "playwright-visual-comparisons",
+    "title": "Playwright visual comparisons",
+    "url": "https://playwright.dev/docs/test-snapshots",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Screenshot baselines, visual comparisons and rendering-environment stability"
+  },
+  {
+    "id": "selenium-grid",
+    "title": "Selenium Grid documentation",
+    "url": "https://www.selenium.dev/documentation/grid/",
+    "publisher": "Selenium Project",
+    "kind": "Official documentation",
+    "role": "Parallel remote execution across browser versions and platforms"
+  },
+  {
+    "id": "w3c-bidi",
+    "title": "W3C internationalization guidance for bidirectional text",
+    "url": "https://www.w3.org/International/questions/qa-bidi-controls.en.html",
+    "publisher": "W3C",
+    "kind": "Web guidance",
+    "role": "Right-to-left content, bidirectional isolation and semantic direction markup"
+  },
+  {
+    "id": "unicode-cldr",
+    "title": "Unicode CLDR plural and locale data",
+    "url": "https://cldr.unicode.org/index/cldr-spec/plural-rules",
+    "publisher": "Unicode Consortium",
+    "kind": "Internationalization standard data",
+    "role": "Locale formats, plural categories and representative localization cases"
+  },
+  {
+    "id": "unicode-text-segmentation",
+    "title": "Unicode Standard Annex #29 — Text Segmentation",
+    "url": "https://unicode.org/reports/tr29/",
+    "publisher": "Unicode Consortium",
+    "kind": "Unicode standard",
+    "role": "Grapheme clusters, text boundaries and user-perceived characters"
+  },
+  {
+    "id": "mcp-spec",
+    "title": "Model Context Protocol specification",
+    "url": "https://modelcontextprotocol.io/specification/latest",
+    "publisher": "Model Context Protocol",
+    "kind": "Protocol specification",
+    "role": "AI host, client, server and tool behavior plus security and consent principles"
+  },
+  {
+    "id": "playwright-mcp",
+    "title": "Playwright MCP",
+    "url": "https://github.com/microsoft/playwright-mcp",
+    "publisher": "Microsoft",
+    "kind": "Official repository",
+    "role": "Agent-driven browser automation, capabilities, configuration and security boundaries"
+  },
+  {
+    "id": "mit-algorithms",
+    "title": "MIT OpenCourseWare — Introduction to Algorithms",
+    "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/",
+    "publisher": "MIT OpenCourseWare",
+    "kind": "University course",
+    "role": "Data structures, algorithmic reasoning and time and space complexity"
+  },
+  {
+    "id": "oauth-security-bcp",
+    "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security",
+    "url": "https://datatracker.ietf.org/doc/html/rfc9700",
+    "publisher": "IETF",
+    "kind": "Internet standard",
+    "role": "Current OAuth threat model, authorization flow protections and token security"
+  },
+  {
+    "id": "openid-connect-core",
+    "title": "OpenID Connect Core 1.0",
+    "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+    "publisher": "OpenID Foundation",
+    "kind": "Identity specification",
+    "role": "Authentication, ID tokens, claims, issuer, audience and nonce validation"
+  },
+  {
+    "id": "asyncapi-30",
+    "title": "AsyncAPI Specification 3.0.0",
+    "url": "https://www.asyncapi.com/docs/reference/specification/v3.0.0",
+    "publisher": "AsyncAPI Initiative",
+    "kind": "Specification",
+    "role": "Message-driven API channels, operations, messages, schemas and bindings"
+  },
+  {
+    "id": "web-vitals",
+    "title": "Web Vitals",
+    "url": "https://web.dev/articles/vitals",
+    "publisher": "Google",
+    "kind": "Official guidance",
+    "role": "LCP, INP, CLS, lab measurement, field measurement and performance thresholds"
+  },
+  {
+    "id": "slsa-12",
+    "title": "SLSA specification 1.2",
+    "url": "https://slsa.dev/spec/v1.2/",
+    "publisher": "OpenSSF",
+    "kind": "Supply-chain specification",
+    "role": "Build and source provenance, artifact integrity and software supply-chain assurance"
   }
 ]

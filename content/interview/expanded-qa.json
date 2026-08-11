@@ -38,7 +38,7 @@
       ],
       "tags": [
         "static-testing",
-        "reviews",
+        "review",
         "early-testing"
       ],
       "sourceIds": [
@@ -153,7 +153,7 @@
       ],
       "tags": [
         "compatibility",
-        "browsers",
+        "browser",
         "devices"
       ],
       "sourceIds": [
@@ -308,7 +308,7 @@
         "keeps the document current"
       ],
       "tags": [
-        "test-plan",
+        "test-plans",
         "documentation",
         "governance"
       ],
@@ -608,7 +608,7 @@
       ],
       "tags": [
         "websocket",
-        "reconnection",
+        "reconnect",
         "realtime"
       ],
       "sourceIds": [
@@ -1199,7 +1199,7 @@
         "explicit environment differences"
       ],
       "tags": [
-        "environments",
+        "environment",
         "configuration",
         "drift"
       ],
@@ -1655,7 +1655,7 @@
       ],
       "tags": [
         "continuous-delivery",
-        "pipelines",
+        "pipeline",
         "test-selection"
       ],
       "sourceIds": [
@@ -1975,7 +1975,7 @@
       ],
       "tags": [
         "payments",
-        "integrations",
+        "integration",
         "idempotency"
       ],
       "sourceIds": [
@@ -2795,7 +2795,7 @@
       "tags": [
         "test-design",
         "coverage",
-        "state-transitions"
+        "state-transition"
       ],
       "sourceIds": [
         "istqb-ctfl-v4",
@@ -8017,9 +8017,10 @@
       "category": "Practical tasks",
       "kind": "Scenario",
       "question": "How would you approach a login form with no written requirements?",
-      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a login form with no written requirements. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback. Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a login form",
+        "covers authentication, session and abuse risks",
+        "adapts evidence to the constraint: with no written requirements",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8042,9 +8043,10 @@
       "category": "Practical tasks",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for a login form during a thirty-minute interview exercise?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a login form during a thirty-minute interview exercise. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback. Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a login form",
+        "covers authentication, session and abuse risks",
+        "adapts evidence to the constraint: during a thirty-minute interview exercise",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8066,9 +8068,10 @@
       "category": "Practical tasks",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for a login form after one vague customer complaint?",
-      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a login form after one vague customer complaint. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback. Preserve the report, obtain the exact input, time, device, account and observed result, inspect available telemetry, form competing hypotheses and vary one controlled factor at a time. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a login form",
+        "covers authentication, session and abuse risks",
+        "adapts evidence to the constraint: after one vague customer complaint",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8090,9 +8093,10 @@
       "category": "Practical tasks",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in a login form with only production-like black-box access?",
-      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a login form with only production-like black-box access. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback. Use safe accounts and reversible data, observe requests, state and timing from supported interfaces, avoid destructive or load-heavy checks, and capture enough evidence for a deeper controlled reproduction. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a login form",
+        "covers authentication, session and abuse risks",
+        "adapts evidence to the constraint: with only production-like black-box access",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8114,9 +8118,10 @@
       "category": "Practical tasks",
       "kind": "Automation",
       "question": "What would you automate for a login form when only the highest risks can be demonstrated, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a login form when only the highest risks can be demonstrated. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback. Rank by user harm, financial or data impact, likelihood and detectability; demonstrate safety, security, integrity and recovery risks first, and state what is deferred and why. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a login form",
+        "covers authentication, session and abuse risks",
+        "adapts evidence to the constraint: when only the highest risks can be demonstrated",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8139,9 +8144,10 @@
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about an elevator with no written requirements?",
-      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on an elevator with no written requirements. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states. Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for an elevator",
+        "covers safety interlocks, emergency behavior and recovery",
+        "adapts evidence to the constraint: with no written requirements",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8163,9 +8169,10 @@
       "category": "Practical tasks",
       "kind": "Scenario",
       "question": "How would you approach an elevator during a thirty-minute interview exercise?",
-      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on an elevator during a thirty-minute interview exercise. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states. Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for an elevator",
+        "covers safety interlocks, emergency behavior and recovery",
+        "adapts evidence to the constraint: during a thirty-minute interview exercise",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8187,9 +8194,10 @@
       "category": "Practical tasks",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for an elevator after one vague customer complaint?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on an elevator after one vague customer complaint. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states. Preserve the report, obtain the exact input, time, device, account and observed result, inspect available telemetry, form competing hypotheses and vary one controlled factor at a time. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for an elevator",
+        "covers safety interlocks, emergency behavior and recovery",
+        "adapts evidence to the constraint: after one vague customer complaint",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8211,9 +8219,10 @@
       "category": "Practical tasks",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for an elevator with only production-like black-box access?",
-      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on an elevator with only production-like black-box access. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states. Use safe accounts and reversible data, observe requests, state and timing from supported interfaces, avoid destructive or load-heavy checks, and capture enough evidence for a deeper controlled reproduction. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for an elevator",
+        "covers safety interlocks, emergency behavior and recovery",
+        "adapts evidence to the constraint: with only production-like black-box access",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8236,9 +8245,10 @@
       "category": "Practical tasks",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in an elevator when only the highest risks can be demonstrated?",
-      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on an elevator when only the highest risks can be demonstrated. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states. Rank by user harm, financial or data impact, likelihood and detectability; demonstrate safety, security, integrity and recovery risks first, and state what is deferred and why. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for an elevator",
+        "covers safety interlocks, emergency behavior and recovery",
+        "adapts evidence to the constraint: when only the highest risks can be demonstrated",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8260,9 +8270,10 @@
       "category": "Practical tasks",
       "kind": "Automation",
       "question": "What would you automate for a payment checkout with no written requirements, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a payment checkout with no written requirements. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice. Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a payment checkout",
+        "covers money integrity, idempotency and partial failure",
+        "adapts evidence to the constraint: with no written requirements",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8284,9 +8295,10 @@
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about a payment checkout during a thirty-minute interview exercise?",
-      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a payment checkout during a thirty-minute interview exercise. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice. Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a payment checkout",
+        "covers money integrity, idempotency and partial failure",
+        "adapts evidence to the constraint: during a thirty-minute interview exercise",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8308,9 +8320,10 @@
       "category": "Practical tasks",
       "kind": "Scenario",
       "question": "How would you approach a payment checkout after one vague customer complaint?",
-      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a payment checkout after one vague customer complaint. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice. Preserve the report, obtain the exact input, time, device, account and observed result, inspect available telemetry, form competing hypotheses and vary one controlled factor at a time. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a payment checkout",
+        "covers money integrity, idempotency and partial failure",
+        "adapts evidence to the constraint: after one vague customer complaint",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8333,9 +8346,10 @@
       "category": "Practical tasks",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for a payment checkout with only production-like black-box access?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a payment checkout with only production-like black-box access. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice. Use safe accounts and reversible data, observe requests, state and timing from supported interfaces, avoid destructive or load-heavy checks, and capture enough evidence for a deeper controlled reproduction. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a payment checkout",
+        "covers money integrity, idempotency and partial failure",
+        "adapts evidence to the constraint: with only production-like black-box access",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8357,9 +8371,10 @@
       "category": "Practical tasks",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for a payment checkout when only the highest risks can be demonstrated?",
-      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a payment checkout when only the highest risks can be demonstrated. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice. Rank by user harm, financial or data impact, likelihood and detectability; demonstrate safety, security, integrity and recovery risks first, and state what is deferred and why. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a payment checkout",
+        "covers money integrity, idempotency and partial failure",
+        "adapts evidence to the constraint: when only the highest risks can be demonstrated",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8381,9 +8396,10 @@
       "category": "Practical tasks",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in a file upload with no written requirements?",
-      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a file upload with no written requirements. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup. Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a file upload",
+        "covers content validation, security and interrupted transfer",
+        "adapts evidence to the constraint: with no written requirements",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8405,9 +8421,10 @@
       "category": "Practical tasks",
       "kind": "Automation",
       "question": "What would you automate for a file upload during a thirty-minute interview exercise, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a file upload during a thirty-minute interview exercise. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Before automating, begin by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup. Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a file upload",
+        "covers content validation, security and interrupted transfer",
+        "adapts evidence to the constraint: during a thirty-minute interview exercise",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8430,9 +8447,10 @@
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about a file upload after one vague customer complaint?",
-      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a file upload after one vague customer complaint. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Frame the release decision by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup. Preserve the report, obtain the exact input, time, device, account and observed result, inspect available telemetry, form competing hypotheses and vary one controlled factor at a time. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a file upload",
+        "covers content validation, security and interrupted transfer",
+        "adapts evidence to the constraint: after one vague customer complaint",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8454,9 +8472,10 @@
       "category": "Practical tasks",
       "kind": "Scenario",
       "question": "How would you approach a file upload with only production-like black-box access?",
-      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a file upload with only production-like black-box access. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Start by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup. Use safe accounts and reversible data, observe requests, state and timing from supported interfaces, avoid destructive or load-heavy checks, and capture enough evidence for a deeper controlled reproduction. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a file upload",
+        "covers content validation, security and interrupted transfer",
+        "adapts evidence to the constraint: with only production-like black-box access",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8478,9 +8497,10 @@
       "category": "Practical tasks",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for a file upload when only the highest risks can be demonstrated?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a file upload when only the highest risks can be demonstrated. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup. Rank by user harm, financial or data impact, likelihood and detectability; demonstrate safety, security, integrity and recovery risks first, and state what is deferred and why. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a file upload",
+        "covers content validation, security and interrupted transfer",
+        "adapts evidence to the constraint: when only the highest risks can be demonstrated",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8502,9 +8522,10 @@
       "category": "Practical tasks",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for a search box with no written requirements?",
-      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a search box with no written requirements. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Build the smallest useful model of the behavior by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover exact and partial matches, ranking, filters, pagination, empty and no-result states, spelling and Unicode, indexing freshness, injection resistance, keyboard access and response time. Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a search box",
+        "covers relevance, indexing, input handling and performance",
+        "adapts evidence to the constraint: with no written requirements",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"
@@ -8527,9 +8548,10 @@
       "category": "Practical tasks",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in a search box during a thirty-minute interview exercise?",
-      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Focus on a search box during a thirty-minute interview exercise. Use user goals, invariants, comparable behavior and observable state changes as the oracle. Cover happy paths, boundaries, misuse, dependencies and non-functional risks. Keep data and dependencies controlled enough to reproduce failures. Release only when the interviewer can follow the prioritization and see how new information changes the plan.",
+      "shortAnswer": "Make the investigation reproducible by asking a few high-value questions, stating assumptions and building a compact risk model aloud. Cover exact and partial matches, ranking, filters, pagination, empty and no-result states, spelling and Unicode, indexing freshness, injection resistance, keyboard access and response time. Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next. Use user goals, invariants, comparable behavior and observable state changes as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for a search box",
+        "covers relevance, indexing, input handling and performance",
+        "adapts evidence to the constraint: during a thirty-minute interview exercise",
         "states assumptions and questions",
         "prioritizes before listing cases",
         "measurable evidence and residual-risk statement"

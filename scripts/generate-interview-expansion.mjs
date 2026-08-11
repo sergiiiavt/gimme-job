@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
-const MINIMUM_QUESTION_COUNT = 602;
+const MINIMUM_QUESTION_COUNT = 654;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },
@@ -35,6 +35,22 @@ const addedSources = [
   { id: "linux-kunit", title: "KUnit — Linux Kernel Unit Testing", url: "https://docs.kernel.org/dev-tools/kunit/", publisher: "Linux Kernel", kind: "Official documentation", role: "In-kernel unit testing, dependency isolation, test harnesses, QEMU and architecture coverage" },
   { id: "mcuboot-design", title: "MCUboot design documentation", url: "https://docs.mcuboot.com/design.html", publisher: "MCUboot", kind: "Official documentation", role: "Firmware image validation, secure boot, update swaps, rollback and downgrade protection" },
   { id: "nist-iot-8259a", title: "NIST IR 8259A — IoT Device Cybersecurity Capability Core Baseline", url: "https://csrc.nist.gov/pubs/ir/8259/a/final", publisher: "NIST", kind: "Government guidance", role: "IoT device identity, configuration, data protection, interface access, software update and security-state capabilities" },
+  { id: "android-test-doubles", title: "Use test doubles in Android", url: "https://developer.android.com/training/testing/fundamentals/test-doubles", publisher: "Google", kind: "Official documentation", role: "Definitions, selection and limitations of dummies, stubs, spies, mocks and fakes" },
+  { id: "hypothesis-property-testing", title: "Hypothesis property-based testing documentation", url: "https://hypothesis.readthedocs.io/en/latest/", publisher: "Hypothesis", kind: "Official documentation", role: "Property-based test design, generators, shrinking and reproducible counterexamples" },
+  { id: "stryker-mutation-testing", title: "Stryker mutation testing documentation", url: "https://stryker-mutator.io/docs/", publisher: "Stryker Mutator", kind: "Official documentation", role: "Mutation testing, surviving mutants and test-suite effectiveness" },
+  { id: "playwright-visual-comparisons", title: "Playwright visual comparisons", url: "https://playwright.dev/docs/test-snapshots", publisher: "Microsoft", kind: "Official documentation", role: "Screenshot baselines, visual comparisons and rendering-environment stability" },
+  { id: "selenium-grid", title: "Selenium Grid documentation", url: "https://www.selenium.dev/documentation/grid/", publisher: "Selenium Project", kind: "Official documentation", role: "Parallel remote execution across browser versions and platforms" },
+  { id: "w3c-bidi", title: "W3C internationalization guidance for bidirectional text", url: "https://www.w3.org/International/questions/qa-bidi-controls.en.html", publisher: "W3C", kind: "Web guidance", role: "Right-to-left content, bidirectional isolation and semantic direction markup" },
+  { id: "unicode-cldr", title: "Unicode CLDR plural and locale data", url: "https://cldr.unicode.org/index/cldr-spec/plural-rules", publisher: "Unicode Consortium", kind: "Internationalization standard data", role: "Locale formats, plural categories and representative localization cases" },
+  { id: "unicode-text-segmentation", title: "Unicode Standard Annex #29 — Text Segmentation", url: "https://unicode.org/reports/tr29/", publisher: "Unicode Consortium", kind: "Unicode standard", role: "Grapheme clusters, text boundaries and user-perceived characters" },
+  { id: "mcp-spec", title: "Model Context Protocol specification", url: "https://modelcontextprotocol.io/specification/latest", publisher: "Model Context Protocol", kind: "Protocol specification", role: "AI host, client, server and tool behavior plus security and consent principles" },
+  { id: "playwright-mcp", title: "Playwright MCP", url: "https://github.com/microsoft/playwright-mcp", publisher: "Microsoft", kind: "Official repository", role: "Agent-driven browser automation, capabilities, configuration and security boundaries" },
+  { id: "mit-algorithms", title: "MIT OpenCourseWare — Introduction to Algorithms", url: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/", publisher: "MIT OpenCourseWare", kind: "University course", role: "Data structures, algorithmic reasoning and time and space complexity" },
+  { id: "oauth-security-bcp", title: "RFC 9700 — Best Current Practice for OAuth 2.0 Security", url: "https://datatracker.ietf.org/doc/html/rfc9700", publisher: "IETF", kind: "Internet standard", role: "Current OAuth threat model, authorization flow protections and token security" },
+  { id: "openid-connect-core", title: "OpenID Connect Core 1.0", url: "https://openid.net/specs/openid-connect-core-1_0.html", publisher: "OpenID Foundation", kind: "Identity specification", role: "Authentication, ID tokens, claims, issuer, audience and nonce validation" },
+  { id: "asyncapi-30", title: "AsyncAPI Specification 3.0.0", url: "https://www.asyncapi.com/docs/reference/specification/v3.0.0", publisher: "AsyncAPI Initiative", kind: "Specification", role: "Message-driven API channels, operations, messages, schemas and bindings" },
+  { id: "web-vitals", title: "Web Vitals", url: "https://web.dev/articles/vitals", publisher: "Google", kind: "Official guidance", role: "LCP, INP, CLS, lab measurement, field measurement and performance thresholds" },
+  { id: "slsa-12", title: "SLSA specification 1.2", url: "https://slsa.dev/spec/v1.2/", publisher: "OpenSSF", kind: "Supply-chain specification", role: "Build and source provenance, artifact integrity and software supply-chain assurance" },
 ];
 
 const topics = [
@@ -211,6 +227,30 @@ const questionTemplates = [
   (concept, scenario) => `What evidence would you require to make a release decision about ${concept} ${scenario}?`,
 ];
 
+const practicalFocusByConcept = {
+  "a login form": "Cover accepted and rejected credentials, error-message privacy, rate limits and lockout, password recovery, MFA, session creation and expiry, secure cookies, keyboard use and accessible feedback.",
+  "an elevator": "Cover floor and direction selection, capacity, obstruction sensors, door interlocks, emergency controls and alarms, accessibility, power or sensor loss, and safe degraded states.",
+  "a payment checkout": "Cover price, tax, discounts and currency; authorization, challenge and callback states; idempotent retries; cancellation and refund; partial failure; and the invariant that the customer is never charged twice.",
+  "a file upload": "Cover filename, size and declared versus detected type; empty and malformed content; authorization; malware scanning; interrupted or resumed transfer; storage failure; duplicate submission; progress and cleanup.",
+  "a search box": "Cover exact and partial matches, ranking, filters, pagination, empty and no-result states, spelling and Unicode, indexing freshness, injection resistance, keyboard access and response time.",
+};
+
+const practicalSignalByConcept = {
+  "a login form": "authentication, session and abuse risks",
+  "an elevator": "safety interlocks, emergency behavior and recovery",
+  "a payment checkout": "money integrity, idempotency and partial failure",
+  "a file upload": "content validation, security and interrupted transfer",
+  "a search box": "relevance, indexing, input handling and performance",
+};
+
+const practicalConstraintByScenario = {
+  "with no written requirements": "Ask about users, supported platforms, business rules and unacceptable outcomes; compare with credible product behavior, and label every inferred rule as an assumption requiring confirmation.",
+  "during a thirty-minute interview exercise": "Time-box clarification and modelling, demonstrate the highest-risk happy path plus representative boundaries, misuse and recovery, and explain what the remaining time would cover next.",
+  "after one vague customer complaint": "Preserve the report, obtain the exact input, time, device, account and observed result, inspect available telemetry, form competing hypotheses and vary one controlled factor at a time.",
+  "with only production-like black-box access": "Use safe accounts and reversible data, observe requests, state and timing from supported interfaces, avoid destructive or load-heavy checks, and capture enough evidence for a deeper controlled reproduction.",
+  "when only the highest risks can be demonstrated": "Rank by user harm, financial or data impact, likelihood and detectability; demonstrate safety, security, integrity and recovery risks first, and state what is deferred and why.",
+};
+
 function generatedAnswer(topic, concept, scenario, index) {
   const openings = [
     `Start by ${topic.start}.`,
@@ -220,10 +260,13 @@ function generatedAnswer(topic, concept, scenario, index) {
     `Before automating, begin by ${topic.start}.`,
     `Frame the release decision by ${topic.start}.`,
   ];
+  if (topic.id === "practical" && practicalFocusByConcept[concept] && practicalConstraintByScenario[scenario]) {
+    return `${openings[index % openings.length]} ${practicalFocusByConcept[concept]} ${practicalConstraintByScenario[scenario]} Use ${topic.oracle} as the oracle, control data and dependencies enough to reproduce failures, and finish with observed evidence, residual risk and the next most valuable check.`;
+  }
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/database-sql-qa.json"),
@@ -231,12 +274,34 @@ const [common, canonical, databaseSql, observabilityProduction, restoredCoverage
   readJson("content/interview/restored-coverage-qa.json"),
   readJson("content/interview/testing-foundations-qa.json"),
   readJson("content/interview/embedded-qa.json"),
+  readJson("content/interview/modern-sdet-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
 
 const authoredExpandedQuestions = expanded.questions.filter((question) => !question.id.startsWith("expanded-"));
-const preservedGeneratedQuestions = expanded.questions.filter((question) => question.id.startsWith("expanded-"));
+const practicalTopic = topics.find((topic) => topic.id === "practical");
+const practicalCasesById = new Map(
+  practicalTopic.concepts
+    .flatMap((concept) => practicalTopic.scenarios.map((scenario) => ({ concept, scenario })))
+    .map((item, index) => [`expanded-practical-${slug(item.concept)}-${slug(item.scenario)}`, { ...item, index }]),
+);
+const preservedGeneratedQuestions = expanded.questions.filter((question) => question.id.startsWith("expanded-"))
+  .map((question) => {
+    const practicalCase = practicalCasesById.get(question.id);
+    if (!practicalCase) return question;
+    const { concept, scenario, index } = practicalCase;
+    return {
+      ...question,
+      shortAnswer: generatedAnswer(practicalTopic, concept, scenario, index),
+      strongAnswerSignals: [
+        `covers ${practicalSignalByConcept[concept]}`,
+        `adapts evidence to the constraint: ${scenario}`,
+        ...practicalTopic.signals,
+        "measurable evidence and residual-risk statement",
+      ],
+    };
+  });
 const canonicalPrevalence = new Map(canonical.questions.map((question) => [question.id, question.prevalence]));
 const baseQuestions = [
   ...common.questions,
@@ -246,6 +311,7 @@ const baseQuestions = [
   ...restoredCoverage.questions,
   ...testingFoundations.questions,
   ...embedded.questions,
+  ...modernSdet.questions,
   ...canonical.questions,
   ...preservedGeneratedQuestions,
 ];
@@ -329,7 +395,7 @@ const addedSourceIds = new Set(addedSources.map((source) => source.id));
 const originalSources = currentSources.filter((source) => !addedSourceIds.has(source.id));
 assert.equal(originalSources.length, 22, "The generator expects the researched 22-source base from PR #2.");
 const sources = [...originalSources, ...addedSources];
-assert.equal(sources.length, 50, "The catalog must contain exactly 50 sources.");
+assert.equal(sources.length, 66, "The catalog must contain exactly 66 sources.");
 
 const taxonomy = [
   { id: "all", label: "All questions", description: "The complete canonical interview collection." },
@@ -350,4 +416,4 @@ await Promise.all([
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + testingFoundations.questions.length + embedded.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + testingFoundations.questions.length + embedded.questions.length + modernSdet.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

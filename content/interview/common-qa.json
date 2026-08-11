@@ -16,7 +16,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "verification-versus-validation",
@@ -33,7 +34,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "severity-versus-priority",
@@ -50,7 +52,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "confirmation-versus-regression",
@@ -67,7 +70,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "test-levels",
@@ -92,7 +96,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "equivalence-and-boundaries",
@@ -109,7 +114,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Test design"
     },
     {
       "id": "decision-table",
@@ -125,7 +131,8 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Test design"
     },
     {
       "id": "state-transition",
@@ -142,7 +149,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Test design"
     },
     {
       "id": "exploratory-session",
@@ -159,7 +167,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Practical"
     },
     {
       "id": "risk-based-selection",
@@ -184,7 +193,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "http-method-semantics",
@@ -200,7 +210,8 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "api-test-model",
@@ -217,7 +228,8 @@
         "dou-qa-2022",
         "owasp-wstg"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Test design"
     },
     {
       "id": "authentication-authorization",
@@ -233,7 +245,8 @@
       "sourceIds": [
         "owasp-wstg"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Security"
     },
     {
       "id": "browser-state",
@@ -250,7 +263,8 @@
         "dou-qa-2022",
         "owasp-wstg"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "contract-testing",
@@ -266,7 +280,8 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Integration"
     },
     {
       "id": "automation-candidate",
@@ -283,7 +298,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "flaky-tests",
@@ -299,7 +315,8 @@
       "sourceIds": [
         "playwright-best-practices"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Troubleshooting"
     },
     {
       "id": "automation-layers",
@@ -316,7 +333,8 @@
         "dou-qa-2022",
         "playwright-best-practices"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "stable-ui-automation",
@@ -332,7 +350,8 @@
       "sourceIds": [
         "playwright-best-practices"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Automation"
     },
     {
       "id": "ci-quality-gates",
@@ -348,7 +367,8 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Release decision"
     },
     {
       "id": "starting-qa-strategy",
@@ -365,7 +385,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "release-with-known-defect",
@@ -382,7 +403,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Release decision"
     },
     {
       "id": "escaped-defect-rca",
@@ -398,7 +420,8 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Troubleshooting"
     },
     {
       "id": "quality-metrics",
@@ -414,7 +437,8 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "compressed-regression",
@@ -431,7 +455,8 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Risk analysis"
     },
     {
       "id": "quality-strategy-first-90-days",
@@ -447,7 +472,8 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Leadership"
     },
     {
       "id": "qa-developer-conflict",
@@ -464,7 +490,8 @@
         "dou-qa-2022",
         "google-structured-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Behavioral"
     },
     {
       "id": "mentoring-plan",
@@ -480,7 +507,8 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Leadership"
     },
     {
       "id": "stakeholder-risk-communication",
@@ -496,7 +524,8 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Leadership"
     },
     {
       "id": "team-capacity-prioritization",
@@ -513,7 +542,8 @@
         "dou-qa-2022",
         "google-structured-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Leadership"
     }
   ]
 }

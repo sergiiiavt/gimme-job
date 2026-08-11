@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "GimmeJob | QA engineering portfolio",
-    description: "A live QA engineering portfolio with career tools, 602 researched interview questions, and an auditable cloud delivery pipeline.",
+    description: "A live QA engineering portfolio with career tools, 654 researched interview questions, and an auditable cloud delivery pipeline.",
     siteName: "GimmeJob",
   },
   other: {

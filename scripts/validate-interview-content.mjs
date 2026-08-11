@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
   readJson("../content/interview/database-sql-qa.json"),
@@ -11,14 +11,17 @@ const [common, canonical, databaseSql, observabilityProduction, restoredCoverage
   readJson("../content/interview/restored-coverage-qa.json"),
   readJson("../content/interview/testing-foundations-qa.json"),
   readJson("../content/interview/embedded-qa.json"),
+  readJson("../content/interview/modern-sdet-qa.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
+const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Test design", "Scenario", "Security", "Strategy", "Risk analysis", "Release decision", "Leadership", "Behavioral", "Performance", "Integration", "Operations", "Reliability", "Automation"]);
+const deprecatedTags = new Set(["defect", "risks", "audit-trail", "test-plan", "test-case", "test-condition", "state-transitions", "pipelines", "environments", "integrations", "reviews", "oracles", "browsers", "reconnection"]);
 const sourceIds = new Set(sources.map((source) => source.id));
 const categories = new Set(taxonomy.flatMap((item) => item.category ? [item.category] : []));
 const questionIds = new Set();
@@ -26,8 +29,8 @@ const questionTexts = new Set();
 
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 
-assert.ok(questions.length >= 602, "The public collection must not regress below the current 602-question baseline.");
-assert.equal(sources.length, 50, "The source catalog must contain exactly 50 researched sources.");
+assert.ok(questions.length >= 654, "The public collection must not regress below the current 654-question baseline.");
+assert.ok(sources.length >= 66, "The source catalog must contain at least 66 researched sources.");
 assert.equal(categories.size, 19, "The taxonomy must contain exactly 19 question topics.");
 assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
@@ -35,6 +38,7 @@ assert.equal(observabilityProduction.questions.length, 25, "The explicit observa
 assert.equal(restoredCoverage.questions.length, 21, "The restored coverage set must contain 21 audited questions.");
 assert.equal(testingFoundations.questions.length, 7, "The explicit testing foundations set must contain 7 audited questions.");
 assert.equal(embedded.questions.length, 29, "The explicit embedded and IoT set must contain 29 audited questions.");
+assert.equal(modernSdet.questions.length, 52, "The modern SDET coverage set must contain 52 audited questions.");
 assert.deepEqual(
   new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)),
   categories,
@@ -62,12 +66,17 @@ for (const question of questions) {
   questionTexts.add(normalizedQuestion);
   assert.ok(levels.has(question.level), `Invalid level for ${question.id}`);
   assert.ok(prevalenceLevels.has(question.prevalence), `Invalid prevalence for ${question.id}`);
+  assert.ok(kinds.has(question.kind), `Invalid or missing kind for ${question.id}`);
   assert.ok(categories.has(question.category), `Unknown category ${question.category} in ${question.id}`);
   assert.ok(question.question?.trim(), `Missing question for ${question.id}`);
   assert.doesNotMatch(question.question, /\btest testing\b/i, `Awkward generated wording in ${question.id}`);
   assert.ok(question.shortAnswer?.trim(), `Missing answer for ${question.id}`);
   assert.ok(question.shortAnswer.trim().length >= 100, `Answer is too short for ${question.id}`);
   assert.ok(question.strongAnswerSignals?.length >= 2, `Add at least two answer signals for ${question.id}`);
+  for (const tag of question.tags ?? []) {
+    assert.match(tag, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid tag ${tag} in ${question.id}`);
+    assert.ok(!deprecatedTags.has(tag), `Replace deprecated tag ${tag} in ${question.id}`);
+  }
   assert.ok(question.sourceIds?.length, `Add at least one source for ${question.id}`);
   for (const sourceId of question.sourceIds) {
     assert.ok(sourceIds.has(sourceId), `Unknown source ${sourceId} in ${question.id}`);
@@ -102,6 +111,15 @@ for (const question of restoredCoverage.questions) {
 for (const question of embedded.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Embedded question must have a stable explicit id: ${question.id}`);
   assert.equal(question.category, "Embedded and IoT", `Embedded question has the wrong topic: ${question.id}`);
+}
+
+for (const question of modernSdet.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `Modern SDET question must have a stable explicit id: ${question.id}`);
+}
+
+const referencedSourceIds = new Set(questions.flatMap((question) => question.sourceIds));
+for (const sourceId of sourceIds) {
+  assert.ok(referencedSourceIds.has(sourceId), `Source ${sourceId} is not referenced by any question.`);
 }
 
 for (const prevalence of prevalenceLevels) {

@@ -5,12 +5,13 @@ import observabilityProduction from "./observability-production-qa.json";
 import restoredCoverage from "./restored-coverage-qa.json";
 import testingFoundations from "./testing-foundations-qa.json";
 import embedded from "./embedded-qa.json";
+import modernSdet from "./modern-sdet-qa.json";
 import expanded from "./expanded-qa.json";
 import sources from "./sources.json";
 import taxonomy from "./taxonomy.json";
 
 export const interviewCatalog = {
-  version: 8,
+  version: 9,
   title: "QA interview knowledge base",
   description: "Canonical interview questions with original answers, practical signals, tags and traceable technical sources.",
   lastReviewedAt: "2026-08-11",
@@ -23,7 +24,7 @@ export const interviewCatalog = {
   },
   taxonomy,
   sources,
-  questions: [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions]
+  questions: [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...expanded.questions]
 };
 
 export default interviewCatalog;
