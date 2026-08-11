@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 
-export type SiteSection = "jobs" | "resume" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+export type SiteSection = "about" | "jobs" | "resume" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+
+export const navigationIntroItem: { id: SiteSection; label: string } = { id: "about", label: "About this site" };
 
 export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: Array<{ id: SiteSection; label: string }> }> = [
   {
@@ -48,7 +50,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
   },
 ];
 
-export const navigationItems = navigationGroups.flatMap((group) => group.items);
+export const navigationItems = [navigationIntroItem, ...navigationGroups.flatMap((group) => group.items)];
 
 export interface SubnavItem {
   id: string;
@@ -66,29 +68,33 @@ interface SidebarProps {
   secondaryTitle: string;
   secondaryItems: SubnavItem[];
   activeSubsection: string;
+  hideSecondary?: boolean;
   onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondaryTitle }: SidebarProps) {
+  const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
+    <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
+      {item.label}
+    </button>
+  ) : (
+    <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
+      {item.label}
+    </Link>
+  );
+
   return (
-    <div className={mobileOpen ? "kb-navigation open" : "kb-navigation"}>
+    <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
         <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
 
         <nav className="kb-nav-list" aria-label="GimmeJob sections">
+          {renderItem(navigationIntroItem, true)}
           {navigationGroups.map((group) => (
             <section className={`kb-area-group kb-area-group-${group.id}`} aria-labelledby={`kb-area-${group.id}`} key={group.id}>
               <h2 id={`kb-area-${group.id}`}>{group.label}</h2>
               <div>
-                {group.items.map((item) => onSelect ? (
-                  <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect(item.id)}>
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
-                    {item.label}
-                  </Link>
-                ))}
+                {group.items.map((item) => renderItem(item))}
               </div>
             </section>
           ))}
@@ -102,7 +108,7 @@ export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode,
         </div>
       </aside>
 
-      <aside className="kb-subnav">
+      {!hideSecondary && <aside className="kb-subnav">
         <nav aria-label={`${secondaryTitle} subsections`}>
           {secondaryItems.map((item) => (
             <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
@@ -110,7 +116,7 @@ export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode,
             </button>
           ))}
         </nav>
-      </aside>
+      </aside>}
     </div>
   );
 }

@@ -2,21 +2,44 @@ type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
 
 const DEFAULT_PROFILE = {
-  name: "Your Name",
-  headline: "QA Lead / Team Lead Test Engineer",
-  summary: "QA professional with software testing, automation, and leadership experience.",
-  targetRoles: ["QA Lead", "Team Lead Test Engineer", "Test Automation Lead", "Senior QA Engineer"],
-  locations: ["Kyiv", "Remote", "Ukraine"],
-  languages: ["English", "Ukrainian"],
-  skills: ["QA leadership", "Manual testing", "Test automation", "Python", "TypeScript", "Playwright", "Selenium", "Pytest", "API testing", "SQL", "Azure DevOps", "Scrum", "Mentoring"],
-  mustHaveSignals: ["remote", "Kyiv", "Ukraine"],
+  name: "Serhii Yavtushkevych",
+  headline: "Lead QA Engineer | Senior QA Engineer | QA Automation Engineer",
+  summary: "QA Lead / Test Engineer with 12+ years of experience in comprehensive software testing, primarily web applications and APIs. 4+ years of test automation experience using Python, Selenium, Behave, Pytest, Playwright, and TypeScript.",
+  targetRoles: ["Lead QA Engineer", "Senior QA Engineer", "QA Automation Engineer"],
+  locations: ["Remote"],
+  languages: ["English: Upper-Intermediate", "Ukrainian"],
+  skills: ["QA leadership", "Manual testing", "Test automation", "Python", "TypeScript", "Playwright", "Selenium", "Behave", "Pytest", "API testing", "Postman", "SQL", "JMeter", "Jenkins", "Azure", "Docker", "Git", "Scrum", "Mentoring", "AI/LLM testing"],
+  mustHaveSignals: ["remote"],
   preferredSignals: ["бронювання", "reservation from mobilization", "flexible", "part-time", "leadership", "automation"],
   excludedSignals: [],
-  facts: ["Add verified professional facts in Connections before approving an application."],
-  experience: [],
-  education: [],
-  links: [],
-  contact: { email: "", phone: "", location: "Ukraine" },
+  facts: [
+    "12+ years of comprehensive software testing experience across web applications and APIs.",
+    "4+ years of test automation experience with Python and TypeScript tooling.",
+    "Led a QA team of 12 people, including planning, mentoring, quality processes, and stakeholder communication.",
+  ],
+  experience: [
+    {
+      company: "TIETO UKRAINE LTD",
+      role: "Lead QA Engineer",
+      period: "April 2021 - Present",
+      achievements: ["Led a 12-person QA team.", "Planned testing activities and managed priorities and scope.", "Mentored employees and improved QA processes."],
+    },
+    {
+      company: "GlobalLogic",
+      role: "Senior QA Automation Engineer",
+      period: "January 2019 - May 2021",
+      achievements: ["Developed automated tests for web applications.", "Integrated automated tests into CI/CD.", "Performed API and database testing."],
+    },
+    {
+      company: "GlobalLogic",
+      role: "Lead QA Engineer",
+      period: "January 2014 - June 2019",
+      achievements: ["Performed manual testing, requirements analysis, and test design.", "Created test documentation and managed defect tracking.", "Coordinated QA activities across teams."],
+    },
+  ],
+  education: ["Master's Degree, Computer Science - National Technical University of Ukraine, 2008 - 2014", "ISTQB Certified Software Tester - Foundation Level"],
+  links: ["https://www.linkedin.com/in/serhii-yavtushkevych/"],
+  contact: { email: "", phone: "", location: "" },
 };
 
 const DEFAULT_SOURCES = {

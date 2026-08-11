@@ -16,13 +16,17 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /lazy\(\(\) => import\("\.\/rewild-game"\)\)/);
   assert.match(publicSource, /\{ id: "all", label: "Fight AI slop" \}/);
   assert.match(publicSource, /\{ id: "guide", label: "Field guide" \}/);
-  assert.match(publicSource, /<RewildGame view=\{activeTopic\}\/>/);
-  assert.match(publicSource, /"kb-main kb-main-game"/);
+  assert.match(publicSource, /<RewildGame onViewChange=\{onTopicChange\} view=\{activeTopic\}\/>/);
+  assert.match(publicSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
+  assert.match(publicSource, /section === "rewild" && subsection === "all" \? " kb-main-game"/);
   assert.match(stylesSource, /\.rw-play-page \.rw-game-shell/);
-  assert.match(stylesSource, /\.rw-play-page \.rw-stage \{ max-width: none; \}/);
+  assert.match(stylesSource, /\.rw-play-page \.rw-stage \{[^}]*height: 100%;[^}]*max-height: 100%;[^}]*max-width: none;[^}]*width: 100%;/);
+  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: contain;/);
+  assert.match(stylesSource, /\.kb-main-game \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
+  assert.match(stylesSource, /\.rw-play-page \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
 
-  assert.match(gameSource, /const COLS = 16;/);
-  assert.match(gameSource, /const ROWS = 12;/);
+  assert.match(gameSource, /const COLS = 30;/);
+  assert.match(gameSource, /const ROWS = 14;/);
   assert.match(gameSource, /const TILE = 40;/);
   assert.match(gameSource, /width=\{CANVAS_WIDTH\} height=\{CANVAS_HEIGHT\}/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
@@ -35,13 +39,18 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
     assert.match(gameSource, new RegExp(enemy));
   }
 
-  assert.match(gameSource, /type GameMode = "siege" \| "endless"/);
+  assert.doesNotMatch(gameSource, /endless/i);
+  assert.doesNotMatch(gameSource, /GameMode/);
+  assert.match(gameSource, />Field guide<\/button>/);
+  assert.match(gameSource, /state\.wave === 5 && !state\.bossSpawned/);
   assert.match(gameSource, /function findPath/);
   assert.match(gameSource, /function spreadCorruption/);
   assert.match(gameSource, /function reclaimNear/);
   assert.match(gameSource, /state\.selected === "rootreclaimer" \? tile === "corrupt" : tile === "grass"/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
   assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
+  assert.match(gameSource, /const renderedWidth = boxRatio > boardRatio/);
+  assert.match(gameSource, /if \(x < 0 \|\| y < 0 \|\| x >= renderedWidth \|\| y >= renderedHeight\) return/);
   assert.match(gameSource, /event\.key === "Enter"/);
   assert.match(gameSource, /window\.localStorage\.setItem\(STORAGE_KEY/);
   assert.doesNotMatch(gameSource, /\/api\//);
