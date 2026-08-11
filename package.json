@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "dev": "vite",
     "api": "node --import tsx agent/server.ts",
-    "local:web": "vite --host 127.0.0.1 --port 4173",
+    "local:web": "vite --host 127.0.0.1 --port 4173 --strictPort",
     "local": "concurrently -k -n WEB,AGENT -c cyan,green \"npm run local:web\" \"npm run api\"",
     "build": "node scripts/build-verified.mjs",
     "check:cloudflare": "node scripts/deploy-cloudflare.mjs --dry-run",

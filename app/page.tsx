@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import PublicSite from "./public-site";
 import { SiteSidebar } from "./site-navigation";
 
@@ -103,18 +104,38 @@ const DEMO_JOBS: Job[] = [
   },
 ];
 
-function apiBase() {
-  if (typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname)) return "http://127.0.0.1:4317/api";
-  return "/api";
+const configuredLocalAgentPort = Number(import.meta.env.VITE_JOB_AGENT_PORT ?? DEFAULT_LOCAL_AGENT_PORT);
+const configuredLocalAgentInstanceId = String(import.meta.env.VITE_JOB_AGENT_INSTANCE_ID ?? "");
+const localAgentApi = createLocalAgentApiResolver();
+
+function usesLocalAgent() {
+  return typeof window !== "undefined"
+    && ["localhost", "127.0.0.1", "terminal.local"].includes(window.location.hostname);
+}
+
+async function apiBase() {
+  if (!usesLocalAgent()) return "/api";
+  return localAgentApi.resolve({
+    instanceId: configuredLocalAgentInstanceId,
+    startPort: configuredLocalAgentPort,
+  });
 }
 
 async function api<T>(path: string, method = "GET", payload?: unknown): Promise<T> {
-  const response = await fetch(`${apiBase()}${path}`, {
-    method,
-    headers: payload !== undefined ? { "content-type": "application/json" } : undefined,
-    body: payload !== undefined ? JSON.stringify(payload) : undefined,
-  });
-  const result = await response.json() as T & { error?: string };
+  const base = await apiBase();
+  let response: Response;
+  let result: T & { error?: string };
+  try {
+    response = await fetch(`${base}${path}`, {
+      method,
+      headers: payload !== undefined ? { "content-type": "application/json" } : undefined,
+      body: payload !== undefined ? JSON.stringify(payload) : undefined,
+    });
+    result = await response.json() as T & { error?: string };
+  } catch (error) {
+    if (usesLocalAgent()) localAgentApi.invalidate();
+    throw error;
+  }
   if (!response.ok) throw new Error(result.error ?? `Request failed: ${response.status}`);
   return result;
 }
@@ -182,7 +203,8 @@ export function WorkspaceApp() {
 
   useEffect(() => {
     let active = true;
-    api<DashboardData>("/dashboard")
+    let retryTimer: number | undefined;
+    const loadDashboard = (attempt = 0) => api<DashboardData>("/dashboard")
       .then((result) => {
         if (!active) return;
         const orderedJobs = [...result.jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
@@ -192,11 +214,19 @@ export function WorkspaceApp() {
       })
       .catch(() => {
         if (!active) return;
+        if (attempt < 2) {
+          retryTimer = window.setTimeout(() => loadDashboard(attempt + 1), 400);
+          return;
+        }
         setJobs(DEMO_JOBS);
         setOnline(false);
         setSelectedId(DEMO_JOBS[0].id);
       });
-    return () => { active = false; };
+    void loadDashboard();
+    return () => {
+      active = false;
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+    };
   }, []);
   useEffect(() => {
     if (!notice) return;
@@ -209,7 +239,7 @@ export function WorkspaceApp() {
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [jobs, query, statusFilter]);
 
-  const selected = jobs.find((job) => job.id === selectedId) ?? visibleJobs[0] ?? null;
+  const selected = visibleJobs.find((job) => job.id === selectedId) ?? visibleJobs[0] ?? null;
   const counts = {
     total: jobs.length,
     new: jobs.filter((job) => job.status === "NEW").length,
@@ -218,11 +248,11 @@ export function WorkspaceApp() {
   };
 
   const sync = async () => {
-    if (!online) return setNotice("Cloud API is unavailable; demo data cannot be synced.");
     setBusy("sync");
     try {
       const result = await api<{ dashboard: DashboardData }>("/sync", "POST", {});
       setJobs(result.dashboard.jobs);
+      setOnline(true);
       setNotice("Job sources synced. Nothing was sent.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error));
@@ -273,7 +303,7 @@ export function WorkspaceApp() {
           <section className="job-workbench">
             <div className="feed-panel">
               <div className="feed-tools">
-                <label className="search"><Icon name="search"/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
+                <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
                 <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
                   <option value="ALL">All statuses</option>
                   {STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
@@ -281,7 +311,7 @@ export function WorkspaceApp() {
               </div>
               <div className="feed-meta"><span>{visibleJobs.length} jobs</span><span>Newest first</span></div>
               <div className="job-feed">
-                {visibleJobs.map((job) => <button key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"} onClick={() => setSelectedId(job.id)}>
+                {visibleJobs.map((job) => <button key={job.id} aria-controls="selected-vacancy-detail" aria-pressed={selected?.id === job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"} onClick={() => setSelectedId(job.id)}>
                   <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </button>)}
@@ -289,7 +319,7 @@ export function WorkspaceApp() {
               </div>
             </div>
 
-            <div className="detail-panel">
+            <div className="detail-panel" id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
               {selected ? <JobDetail job={selected} disabled={busy === `job-${selected.id}`} onChange={(change) => void updateTracking(selected, change)}/> : <div className="empty large"><strong>Select a job</strong><span>The vacancy details and tracking controls will appear here.</span></div>}
             </div>
           </section>
@@ -297,7 +327,7 @@ export function WorkspaceApp() {
       </section>
 
       {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
-      {notice && <div className="toast">{notice}</div>}
+      {notice && <div className="toast" role="status" aria-live="polite">{notice}</div>}
     </main>
   );
 }
@@ -333,8 +363,8 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
     <section className="tracking-box">
       <div><label htmlFor={`status-${job.id}`}>Pipeline status</label><select id={`status-${job.id}`} value={job.status} disabled={disabled} onChange={(event) => onChange({ status: event.target.value as JobStatus })}>{STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></div>
       <div><label>Feedback for the agent</label><div className="feedback-buttons">
-        <button className={job.feedback === "RELEVANT" ? "active positive" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "RELEVANT" ? null : "RELEVANT" })}><Icon name="check"/>Relevant</button>
-        <button className={job.feedback === "NOT_RELEVANT" ? "active negative" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "NOT_RELEVANT" ? null : "NOT_RELEVANT" })}><Icon name="x"/>Not relevant</button>
+        <button aria-pressed={job.feedback === "RELEVANT"} className={job.feedback === "RELEVANT" ? "active positive" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "RELEVANT" ? null : "RELEVANT" })}><Icon name="check"/>Relevant</button>
+        <button aria-pressed={job.feedback === "NOT_RELEVANT"} className={job.feedback === "NOT_RELEVANT" ? "active negative" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "NOT_RELEVANT" ? null : "NOT_RELEVANT" })}><Icon name="x"/>Not relevant</button>
       </div></div>
     </section>
 

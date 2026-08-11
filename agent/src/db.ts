@@ -5,8 +5,12 @@ import {
   JobAnalysisSchema,
   type ApplicationDraftRecord,
   type DraftStatus,
+  type JobFeedback,
   type JobInput,
   type JobPackage,
+  type JobPipelineStatus,
+  type JobTrackingRecord,
+  type JobTrackingUpdate,
   type MarketReport,
   type MarketRow,
   type StoredJob,
@@ -66,13 +70,24 @@ function mapDraft(row: DbRow): ApplicationDraftRecord {
   };
 }
 
+function mapJobTracking(row: DbRow): JobTrackingRecord {
+  return {
+    jobId: String(row.job_id),
+    status: String(row.status) as JobPipelineStatus,
+    statusUpdatedAt: nullableString(row.status_updated_at),
+    feedback: nullableString(row.feedback) as JobFeedback | null,
+    feedbackAt: nullableString(row.feedback_at),
+    updatedAt: String(row.updated_at),
+  };
+}
+
 export class JobDatabase {
   private readonly db: DatabaseSync;
 
   constructor(dbPath: string) {
     if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
     this.db = new DatabaseSync(dbPath);
-    this.db.exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;");
+    this.db.exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
     this.migrate();
   }
 
@@ -106,6 +121,16 @@ export class JobDatabase {
 
       CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
       CREATE INDEX IF NOT EXISTS idx_jobs_discovered_at ON jobs(discovered_at);
+
+      CREATE TABLE IF NOT EXISTS job_tracking (
+        job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+        status TEXT NOT NULL DEFAULT 'NEW'
+          CHECK (status IN ('NEW', 'INTERESTED', 'APPLIED', 'INTERVIEW', 'OFFER', 'REJECTED', 'NOT_INTERESTED', 'ARCHIVED')),
+        status_updated_at TEXT,
+        feedback TEXT CHECK (feedback IS NULL OR feedback IN ('RELEVANT', 'NOT_RELEVANT')),
+        feedback_at TEXT,
+        updated_at TEXT NOT NULL
+      );
 
       CREATE TABLE IF NOT EXISTS analyses (
         job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
@@ -226,6 +251,61 @@ export class JobDatabase {
       | DbRow
       | undefined;
     return row ? mapJob(row) : null;
+  }
+
+  getJobTracking(jobIdValue: string): JobTrackingRecord | null {
+    const row = this.db
+      .prepare("SELECT * FROM job_tracking WHERE job_id = ?")
+      .get(jobIdValue) as DbRow | undefined;
+    return row ? mapJobTracking(row) : null;
+  }
+
+  updateJobTracking(jobIdValue: string, input: JobTrackingUpdate): JobTrackingRecord {
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const job = this.getJob(jobIdValue);
+      if (!job) throw new Error("Job not found.");
+
+      const current = this.getJobTracking(jobIdValue);
+      const currentStatus: JobPipelineStatus = current?.status
+        ?? (job.status === "ARCHIVED" ? "ARCHIVED" : "NEW");
+      const currentFeedback = current?.feedback ?? null;
+      const nextStatus = input.status ?? currentStatus;
+      const nextFeedback = input.feedback !== undefined ? input.feedback : currentFeedback;
+      const now = new Date().toISOString();
+      const statusUpdatedAt = nextStatus !== currentStatus
+        ? now
+        : current?.statusUpdatedAt ?? null;
+      const feedbackAt = nextFeedback !== currentFeedback
+        ? nextFeedback ? now : null
+        : current?.feedbackAt ?? null;
+
+      this.db.prepare(`
+        INSERT INTO job_tracking (
+          job_id, status, status_updated_at, feedback, feedback_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(job_id) DO UPDATE SET
+          status = excluded.status,
+          status_updated_at = excluded.status_updated_at,
+          feedback = excluded.feedback,
+          feedback_at = excluded.feedback_at,
+          updated_at = excluded.updated_at
+      `).run(
+        jobIdValue,
+        nextStatus,
+        statusUpdatedAt,
+        nextFeedback,
+        feedbackAt,
+        now,
+      );
+
+      const updated = this.getJobTracking(jobIdValue) as JobTrackingRecord;
+      this.db.exec("COMMIT");
+      return updated;
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
   }
 
   listJobs(limit = 100, status?: StoredJob["status"]): StoredJob[] {

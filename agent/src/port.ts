@@ -1,29 +1,76 @@
-import { createConnection } from "node:net";
+import type { Server } from "node:net";
 
-export async function resolvePort(initialPort: number, host = "127.0.0.1", attempts = 5): Promise<number> {
-  for (let offset = 0; offset < attempts; offset += 1) {
-    const candidate = initialPort + offset;
-    const available = await new Promise<boolean>((resolve) => {
-      const socket = createConnection({ host, port: candidate });
-      socket.once("connect", () => {
-        socket.destroy();
-        resolve(false);
-      });
-      socket.once("error", (error: NodeJS.ErrnoException) => {
-        if (error.code === "ECONNREFUSED") {
-          resolve(true);
-          return;
-        }
-        if (error.code === "EADDRNOTAVAIL") {
-          resolve(false);
-          return;
-        }
-        resolve(false);
-      });
-    });
+export const MIN_PORT = 1;
+export const MAX_PORT = 65_535;
 
-    if (available) return candidate;
+export function getPortCandidates(initialPort: number, attempts = 5): number[] {
+  if (!Number.isInteger(initialPort) || initialPort < MIN_PORT || initialPort > MAX_PORT) {
+    throw new RangeError(`Port must be an integer between ${MIN_PORT} and ${MAX_PORT}.`);
+  }
+  if (!Number.isInteger(attempts) || attempts < 1) {
+    throw new RangeError("Port attempts must be a positive integer.");
   }
 
-  throw new Error(`Unable to find a free port after ${attempts} attempts.`);
+  const finalPort = Math.min(MAX_PORT, initialPort + attempts - 1);
+  return Array.from(
+    { length: finalPort - initialPort + 1 },
+    (_, offset) => initialPort + offset,
+  );
+}
+
+function isRetryableBindError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error
+    && "code" in error
+    && (error.code === "EADDRINUSE" || error.code === "EACCES");
+}
+
+function listen(server: Server, port: number, host: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const onListening = () => {
+      cleanup();
+      resolve();
+    };
+    const cleanup = () => {
+      server.off("error", onError);
+      server.off("listening", onListening);
+    };
+
+    server.once("error", onError);
+    server.once("listening", onListening);
+    try {
+      server.listen({ host, port });
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
+  });
+}
+
+export async function listenOnAvailablePort(
+  server: Server,
+  initialPort: number,
+  host = "127.0.0.1",
+  attempts = 5,
+): Promise<number> {
+  const candidates = getPortCandidates(initialPort, attempts);
+  let lastBindError: NodeJS.ErrnoException | undefined;
+
+  for (const candidate of candidates) {
+    try {
+      await listen(server, candidate, host);
+      return candidate;
+    } catch (error) {
+      if (!isRetryableBindError(error)) throw error;
+      lastBindError = error;
+    }
+  }
+
+  throw new Error(
+    `Unable to bind the local agent to ports ${candidates[0]}-${candidates.at(-1)}.`,
+    { cause: lastBindError },
+  );
 }

@@ -633,7 +633,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
 
             <section className="kb-jobs-panel">
               <div className="kb-jobs-tools">
-                <label><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, company, location, or source"/></label>
+                <label><span>⌕</span><input aria-label="Search public vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, company, location, or source"/></label>
               </div>
               <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Switch to Personal in the lower-left corner to track applications.</p></div>
               <div className="kb-job-list">
@@ -691,7 +691,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
   onTopicChange: (topic: string) => void;
   section: Exclude<PublicSection, "jobs">;
 }) {
-  if (section === "about") return <AboutSite/>;
+  if (section === "about") return <AboutSite mode={mode}/>;
   if (section === "resume") return <ResumePage mode={mode}/>;
 
   if (section === "interview") {

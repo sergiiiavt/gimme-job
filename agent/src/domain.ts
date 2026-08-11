@@ -59,6 +59,38 @@ export type SourcesConfig = z.infer<typeof SourcesConfigSchema>;
 
 export type JobStatus = "NEW" | "REVIEWED" | "ARCHIVED";
 
+export const JobPipelineStatusSchema = z.enum([
+  "NEW",
+  "INTERESTED",
+  "APPLIED",
+  "INTERVIEW",
+  "OFFER",
+  "REJECTED",
+  "NOT_INTERESTED",
+  "ARCHIVED",
+]);
+export const JobFeedbackSchema = z.enum(["RELEVANT", "NOT_RELEVANT"]);
+export const JobTrackingUpdateSchema = z.object({
+  status: JobPipelineStatusSchema.optional(),
+  feedback: JobFeedbackSchema.nullable().optional(),
+}).refine(
+  (value) => value.status !== undefined || value.feedback !== undefined,
+  "Provide status or feedback.",
+);
+
+export type JobPipelineStatus = z.infer<typeof JobPipelineStatusSchema>;
+export type JobFeedback = z.infer<typeof JobFeedbackSchema>;
+export type JobTrackingUpdate = z.infer<typeof JobTrackingUpdateSchema>;
+
+export interface JobTrackingRecord {
+  jobId: string;
+  status: JobPipelineStatus;
+  statusUpdatedAt: string | null;
+  feedback: JobFeedback | null;
+  feedbackAt: string | null;
+  updatedAt: string;
+}
+
 export interface JobInput {
   source: string;
   externalId: string | null;

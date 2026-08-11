@@ -54,7 +54,7 @@ The only production deployment path is GitHub Actions → Cloudflare Workers + D
 
 ## VS Code setup
 
-Requirements: Node.js 22.13 or newer, npm, Git, and VS Code.
+Requirements: Node.js 22.22 or newer, npm, Git, and VS Code.
 
 ```bash
 npm install
