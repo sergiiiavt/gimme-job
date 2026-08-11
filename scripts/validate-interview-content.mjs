@@ -3,18 +3,20 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
   readJson("../content/interview/database-sql-qa.json"),
   readJson("../content/interview/observability-production-qa.json"),
   readJson("../content/interview/restored-coverage-qa.json"),
+  readJson("../content/interview/testing-foundations-qa.json"),
+  readJson("../content/interview/embedded-qa.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const sourceIds = new Set(sources.map((source) => source.id));
@@ -24,22 +26,24 @@ const questionTexts = new Set();
 
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 
-assert.ok(questions.length >= 566, "The public collection must not regress below the current 566-question baseline.");
-assert.equal(sources.length, 46, "The source catalog must contain exactly 46 researched sources.");
-assert.equal(categories.size, 18, "The taxonomy must contain exactly 18 question topics.");
+assert.ok(questions.length >= 601, "The public collection must not regress below the current 601-question baseline.");
+assert.equal(sources.length, 50, "The source catalog must contain exactly 50 researched sources.");
+assert.equal(categories.size, 19, "The taxonomy must contain exactly 19 question topics.");
 assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
 assert.equal(observabilityProduction.questions.length, 25, "The explicit observability and production set must contain 25 audited questions.");
 assert.equal(restoredCoverage.questions.length, 21, "The restored coverage set must contain 21 audited questions.");
+assert.equal(testingFoundations.questions.length, 6, "The explicit testing foundations set must contain 6 audited questions.");
+assert.equal(embedded.questions.length, 29, "The explicit embedded and IoT set must contain 29 audited questions.");
 assert.deepEqual(
-  new Set(canonical.questions.map((question) => question.category)),
+  new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)),
   categories,
-  "The explicit canonical baseline must cover every topic.",
+  "The explicit audited collections must cover every topic.",
 );
 assert.deepEqual(
-  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains"].filter((category) => categories.has(category))),
-  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains"]),
-  "The four expanded specialist topics are required.",
+  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains", "Embedded and IoT"].filter((category) => categories.has(category))),
+  new Set(["AI, ML and LLM", "Databases, SQL and BI", "Observability and production", "Regulated domains", "Embedded and IoT"]),
+  "The five expanded specialist topics are required.",
 );
 
 for (const source of sources) {
@@ -93,6 +97,11 @@ for (const question of observabilityProduction.questions) {
 
 for (const question of restoredCoverage.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Restored question must have a stable explicit id: ${question.id}`);
+}
+
+for (const question of embedded.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `Embedded question must have a stable explicit id: ${question.id}`);
+  assert.equal(question.category, "Embedded and IoT", `Embedded question has the wrong topic: ${question.id}`);
 }
 
 for (const prevalence of prevalenceLevels) {

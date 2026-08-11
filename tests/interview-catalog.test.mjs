@@ -5,27 +5,32 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("keeps the interview catalog additive, explicit, and prevalence-complete", async () => {
-  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, expanded, sources, taxonomy] = await Promise.all([
+  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, sources, taxonomy] = await Promise.all([
     readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/observability-production-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/restored-coverage-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/testing-foundations-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/embedded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/sources.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/taxonomy.json"), "utf8").then(JSON.parse),
   ]);
-  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...expanded.questions];
+  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions];
 
-  assert.ok(questions.length >= 566);
+  assert.ok(questions.length >= 601);
   assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
-  assert.equal(taxonomy.filter((item) => item.category).length, 18);
-  assert.equal(sources.length, 46);
+  assert.equal(taxonomy.filter((item) => item.category).length, 19);
+  assert.equal(sources.length, 50);
   assert.equal(canonical.questions.length, 30);
   assert.equal(databaseSql.questions.length, 25);
   assert.equal(observabilityProduction.questions.length, 25);
   assert.equal(restoredCoverage.questions.length, 21);
+  assert.equal(testingFoundations.questions.length, 6);
+  assert.equal(embedded.questions.length, 29);
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
+  assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 19);
   assert.deepEqual(
     new Set(questions.map((question) => question.prevalence)),
     new Set(["Very common", "Common", "Occasional", "Specialist"]),
@@ -79,6 +84,12 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     "telemetry-pipeline-validation",
     "error-budget-release-decisions",
     "blameless-postmortem-actions",
+    "testing-principle-defect-clustering",
+    "test-design-technique-and-oracle",
+    "embedded-layered-test-strategy",
+    "embedded-power-loss-atomicity",
+    "embedded-firmware-update-interruption",
+    "iot-device-identity-provisioning",
   ]) {
     const question = questions.find((item) => item.id === id);
     assert.ok(question, `${id} must be present as an explicit foundational question.`);
@@ -88,6 +99,8 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   assert.ok(questions.filter((question) => /\b(sql|database|databases)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 25);
   assert.ok(questions.filter((question) => question.category === "Observability and production").length >= 54);
   assert.ok(questions.filter((question) => /\b(observability|telemetry|monitoring|alert|alerts|alerting|slo|logs|metrics|traces)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 25);
+  assert.equal(questions.filter((question) => question.category === "Embedded and IoT").length, 29);
+  assert.ok(questions.filter((question) => /\b(embedded|firmware|iot|hardware)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 29);
 
   for (const id of ["test-levels", "testing-types"]) {
     const question = questions.find((item) => item.id === id);
@@ -103,6 +116,9 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.match(generatorSource, /const preservedGeneratedQuestions = expanded\.questions\.filter/);
   assert.match(generatorSource, /const needed = Math\.max\(0, topic\.target - existingCount\);/);
   assert.match(generatorSource, /readJson\("content\/interview\/observability-production-qa\.json"\)/);
+  assert.match(generatorSource, /readJson\("content\/interview\/testing-foundations-qa\.json"\)/);
+  assert.match(generatorSource, /readJson\("content\/interview\/embedded-qa\.json"\)/);
+  assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 601;/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
@@ -118,6 +134,10 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
   assert.match(uiSource, /const INTERVIEW_PAGE_SIZE = 60;/);
+  assert.match(uiSource, /function matchesAllSearchTerms/);
+  assert.match(uiSource, /terms\.every\(\(term\) => searchable\.includes\(term\)\)/);
+  assert.match(uiSource, /topicSearchLabels\.get\(item\.category\)/);
+  assert.match(uiSource, /placeholder="Search all words across questions, answers, tags, or skills"/);
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
   assert.match(uiSource, /function InterviewFilter/);
   assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
@@ -151,10 +171,15 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
 
-  for (const label of ["Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM"]) {
+  for (const label of ["Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "Rewild game"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "news"'), "Trends must be immediately before News in the navigation taxonomy.");
+  assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
+  assert.ok(navigationSource.indexOf('id: "agentic"') < navigationSource.indexOf('id: "certifications"'), "Both AI topics must appear directly after Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Rewild must be the final section above the view switch.");
+  assert.match(uiSource, /embedded: \{[\s\S]*?title: "Embedded & IoT QA"/);
 
   const assetDirectory = projectFile("dist/client/assets/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
@@ -165,9 +190,12 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(catalogOutput, /testing-purpose-and-limits/);
   assert.match(catalogOutput, /data-source-target-lineage/);
   assert.match(catalogOutput, /monitoring-versus-observability/);
+  assert.match(catalogOutput, /embedded-layered-test-strategy/);
+  assert.match(catalogOutput, /testing-principle-defect-clustering/);
 
   const initialOutput = (await Promise.all(scripts.filter((file) => !catalogScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /testing-purpose-and-limits/);
   assert.doesNotMatch(initialOutput, /data-source-target-lineage/);
   assert.doesNotMatch(initialOutput, /monitoring-versus-observability/);
+  assert.doesNotMatch(initialOutput, /embedded-layered-test-strategy/);
 });

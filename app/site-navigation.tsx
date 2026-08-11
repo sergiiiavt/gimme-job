@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 
-export type SiteSection = "jobs" | "interview" | "rewild" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
+export type SiteSection = "jobs" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
 
 export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "jobs", label: "Jobs" },
   { id: "interview", label: "Interview questions" },
-  { id: "rewild", label: "Rewild game" },
+  { id: "llm", label: "Generative AI & LLM" },
+  { id: "agentic", label: "AI agents & MCP" },
   { id: "certifications", label: "Certifications" },
   { id: "strategy", label: "Strategy & leadership" },
   { id: "programming", label: "Programming for QA" },
@@ -15,17 +16,17 @@ export const navigationItems: Array<{ id: SiteSection; label: string }> = [
   { id: "api", label: "API & integration" },
   { id: "data", label: "Databases, SQL & BI" },
   { id: "mobile", label: "Mobile & accessibility" },
+  { id: "embedded", label: "Embedded & IoT QA" },
   { id: "performance", label: "Performance & reliability" },
   { id: "security", label: "Security testing" },
   { id: "devops", label: "Cloud & DevOps" },
   { id: "observability", label: "Observability & SRE" },
   { id: "networking", label: "Networking" },
   { id: "linux", label: "Linux & shell" },
-  { id: "llm", label: "Generative AI & LLM" },
-  { id: "agentic", label: "AI agents & MCP" },
   { id: "standards", label: "Standards & compliance" },
   { id: "trends", label: "Trends" },
   { id: "news", label: "News" },
+  { id: "rewild", label: "Rewild game" },
 ];
 
 export interface SubnavItem {

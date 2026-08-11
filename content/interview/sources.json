@@ -366,5 +366,37 @@
     "publisher": "US FDA",
     "kind": "Regulatory guidance",
     "role": "Risk categorization, clinical evaluation and quality expectations for medical software"
+  },
+  {
+    "id": "zephyr-testing",
+    "title": "Testing — Zephyr Project Documentation",
+    "url": "https://docs.zephyrproject.org/latest/develop/test/index.html",
+    "publisher": "Zephyr Project",
+    "kind": "Official documentation",
+    "role": "Embedded unit, integration, simulation and hardware test frameworks and execution"
+  },
+  {
+    "id": "linux-kunit",
+    "title": "KUnit — Linux Kernel Unit Testing",
+    "url": "https://docs.kernel.org/dev-tools/kunit/",
+    "publisher": "Linux Kernel",
+    "kind": "Official documentation",
+    "role": "In-kernel unit testing, dependency isolation, test harnesses, QEMU and architecture coverage"
+  },
+  {
+    "id": "mcuboot-design",
+    "title": "MCUboot design documentation",
+    "url": "https://docs.mcuboot.com/design.html",
+    "publisher": "MCUboot",
+    "kind": "Official documentation",
+    "role": "Firmware image validation, secure boot, update swaps, rollback and downgrade protection"
+  },
+  {
+    "id": "nist-iot-8259a",
+    "title": "NIST IR 8259A — IoT Device Cybersecurity Capability Core Baseline",
+    "url": "https://csrc.nist.gov/pubs/ir/8259/a/final",
+    "publisher": "NIST",
+    "kind": "Government guidance",
+    "role": "IoT device identity, configuration, data protection, interface access, software update and security-state capabilities"
   }
 ]

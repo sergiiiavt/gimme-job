@@ -1,0 +1,139 @@
+{
+  "collection": "testing-foundations-explicit-coverage",
+  "questions": [
+    {
+      "id": "testing-principle-defect-clustering",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "How should the defect-clustering principle influence test planning without causing blind spots?",
+      "shortAnswer": "Defect clustering means a small number of components often contain a large share of observed defects, so history should increase attention there. It does not justify ignoring the rest of the product: combine defect data with current change, complexity, usage and business impact, then keep a broad minimum safety net while concentrating deeper testing on the highest-risk clusters.",
+      "strongAnswerSignals": [
+        "uses defect history as one risk signal rather than a permanent verdict",
+        "preserves baseline coverage outside known clusters",
+        "reassesses clusters after architecture and team changes"
+      ],
+      "tags": [
+        "testing-principles",
+        "defect-clustering",
+        "risk"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "testing-principle-tests-wear-out",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "What does the testing principle that tests wear out mean for a regression suite?",
+      "shortAnswer": "Repeatedly running unchanged tests eventually finds fewer new defects because the product, risks and known failure patterns evolve around them. Keep valuable regression checks, but review their signal, add tests for new behaviour and escaped defects, vary data and paths where useful, and retire redundant checks whose maintenance cost exceeds the evidence they provide.",
+      "strongAnswerSignals": [
+        "does not confuse worn-out tests with flaky tests",
+        "refreshes coverage from change and production evidence",
+        "retains stable checks that still protect important behaviour"
+      ],
+      "tags": [
+        "testing-principles",
+        "regression",
+        "coverage"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "testing-principle-context-dependent",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "kind": "Scenario",
+      "question": "How does context-dependent testing change the strategy for two products with the same feature list?",
+      "shortAnswer": "The same features can demand different evidence when users, consequences, regulations, platforms, data sensitivity, usage frequency or release constraints differ. Start from product risks and quality expectations, then choose suitable techniques, environments, depth and independence. Reusing a checklist is reasonable, but treating it as a universal strategy is not.",
+      "strongAnswerSignals": [
+        "compares consequences and users rather than only functionality",
+        "adapts techniques and evidence to risk",
+        "explains which reusable checks remain valuable"
+      ],
+      "tags": [
+        "testing-principles",
+        "context",
+        "strategy"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-design-conditions-before-cases",
+      "level": "Junior",
+      "category": "Test design",
+      "kind": "Test design",
+      "question": "Why identify test conditions before writing detailed test cases?",
+      "shortAnswer": "Test conditions describe what needs to be examined: rules, risks, states, interfaces, quality characteristics or acceptance criteria. Defining them first exposes omissions and duplication before implementation detail takes over. The team can then select suitable techniques, derive focused cases and trace each case back to a meaningful coverage objective.",
+      "strongAnswerSignals": [
+        "separates coverage intent from execution steps",
+        "connects conditions to risks and requirements",
+        "uses the model to detect gaps and duplication"
+      ],
+      "tags": [
+        "test-design-techniques",
+        "test-conditions",
+        "traceability"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-design-technique-and-oracle",
+      "level": "Middle",
+      "category": "Test design",
+      "kind": "Test design",
+      "question": "How do a test-design technique and a test oracle solve different problems?",
+      "shortAnswer": "A technique helps select inputs, states, paths or combinations that provide useful coverage; an oracle tells the tester how to decide whether the observed result is correct. Boundary-value analysis can choose 17, 18 and 19, but the expected outcome still needs a credible source such as an explicit rule, independent calculation, state model or trusted reference implementation.",
+      "strongAnswerSignals": [
+        "distinguishes selecting a revealing test from judging its result",
+        "names credible oracle sources and their limitations",
+        "avoids copying the implementation logic as the only oracle"
+      ],
+      "tags": [
+        "test-design-techniques",
+        "oracle",
+        "coverage"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-design-combine-techniques",
+      "level": "Middle",
+      "category": "Test design",
+      "kind": "Scenario",
+      "question": "When should one feature be tested with several test-design techniques rather than one?",
+      "shortAnswer": "Combine techniques when the feature contains different risk shapes. Equivalence partitions and boundaries fit ranges, decision tables expose interacting rules, state-transition testing covers lifecycle behaviour, white-box coverage reveals unexercised logic, and exploratory testing investigates uncertainty. Choose each technique for a stated risk and remove redundant cases instead of mechanically applying every technique.",
+      "strongAnswerSignals": [
+        "maps each technique to a distinct defect class",
+        "uses coverage evidence to remove redundancy",
+        "includes experience-based exploration for unknown risks"
+      ],
+      "tags": [
+        "test-design-techniques",
+        "risk",
+        "coverage"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
+      "prevalence": "Very common"
+    }
+  ]
+}
