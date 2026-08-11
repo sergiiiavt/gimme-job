@@ -126,12 +126,20 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /<section className="iq-toolbar"[\s\S]*?<div className="iq-filter-status"/);
   assert.match(stylesSource, /\.iq-filter-grid/);
   assert.match(stylesSource, /\.iq-filter-control summary/);
+  assert.match(stylesSource, /\.iq-filter-option-radio \.iq-filter-option-mark/);
+  assert.match(uiSource, /type=\{selectionMode === "single" \? "radio" : "checkbox"\}/);
+  assert.match(uiSource, /role=\{selectionMode === "single" \? "radiogroup"/);
+  assert.match(uiSource, /const \[prevalences, setPrevalences\] = useState<InterviewPrevalence\[]>\(\[\]\)/);
+  assert.match(uiSource, /prevalences\.length === 0 \|\| prevalences\.includes\(item\.prevalence\)/);
   assert.doesNotMatch(uiSource, /<i aria-hidden="true">\+<\/i>/);
   for (const filter of ["prevalence", "sort", "tags", "levels"]) {
     assert.match(uiSource, new RegExp(`openFilter === "${filter}"`));
   }
   assert.match(uiSource, /event\.key === "Escape"/);
   assert.match(uiSource, /closest\("\.iq-filter-control"\)/);
+  const filterGrid = uiSource.slice(uiSource.indexOf('<div className="iq-filter-grid">'), uiSource.indexOf('<div className="iq-list">'));
+  assert.ok(filterGrid.indexOf('label="Sort"') < filterGrid.indexOf('label="Prevalence"'), "Sort must appear before Prevalence.");
+  assert.doesNotMatch(filterGrid.match(/label="Prevalence"[^\n]+/)?.[0] ?? "", /selectionMode="single"/);
   assert.match(uiSource, /Personal progress/);
   assert.match(routeSource, /interview-progress/);
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
