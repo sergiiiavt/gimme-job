@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { navigationItems, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
+
+const RewildGame = lazy(() => import("./rewild-game"));
 
 type PublicSection = SiteSection;
 type SiteMode = "public" | "personal";
@@ -218,7 +220,7 @@ function StructuredAnswer({ value }: { value: string }) {
   );
 }
 
-const knowledge: Record<Exclude<PublicSection, "jobs">, {
+const knowledge: Record<Exclude<PublicSection, "jobs" | "rewild">, {
   title: string;
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
@@ -464,6 +466,13 @@ function topicId(value: string) {
 }
 
 function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null): SubnavItem[] {
+  if (section === "rewild") {
+    return [
+      { id: "all", label: "Play Rewild" },
+      { id: "guide", label: "Field guide" },
+    ];
+  }
+
   if (section === "interview") {
     if (!interviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
     return interviewCatalog.taxonomy.map((item) => ({
@@ -658,6 +667,14 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
       );
     }
     return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
+  }
+
+  if (section === "rewild") {
+    return (
+      <Suspense fallback={<div className="kb-content rw-page"><div className="kb-empty rw-loading"><strong>Growing the field…</strong><span>Loading the game separately from the rest of the site.</span></div></div>}>
+        <RewildGame view={activeTopic}/>
+      </Suspense>
+    );
   }
 
   const content = knowledge[section];
