@@ -495,7 +495,7 @@
       "id": "database-test-data-isolation",
       "level": "Middle",
       "category": "Databases, SQL and BI",
-      "kind": "Practice",
+      "kind": "Practical",
       "question": "How do you keep database integration tests isolated, repeatable and safe?",
       "shortAnswer": "Give each test controlled data and ownership through a transaction, unique tenant or schema, deterministic fixture or disposable database, depending on what the test must observe. Clean up reliably, but do not hide commit, trigger, locking or cross-transaction behaviour by wrapping every test in a rollback that production never uses. Parallel runs need collision-proof identifiers, bounded permissions, no production credentials, representative constraints and diagnostics that identify the created records when cleanup fails.",
       "strongAnswerSignals": [

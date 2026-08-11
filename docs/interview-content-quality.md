@@ -19,11 +19,12 @@ The failure had four causes:
 
 Validation now requires:
 
-- at least the current 602-question baseline, exactly 19 topics and exactly 50 sources;
+- at least the current 654-question baseline, exactly 19 topics and at least 66 sources;
 - exactly 30 canonical-baseline questions covering every topic;
 - stable explicit IDs for canonical questions;
 - explicit presence of critical foundational questions;
-- no duplicated titles or invalid source references;
+- no duplicated titles, missing question types, deprecated tag variants or invalid source references;
+- every researched source referenced by at least one question;
 - no known awkward generated wording such as “test testing.”
 
 The first baseline audit added direct questions for testing vocabulary and process, test-technique families, test artifacts and reports, API request anatomy, mobile device choices, automation frameworks and risks, asynchronous test code, CI/CD terminology, performance comparisons, accessibility, Scrum and test-first approaches, planning criteria, leadership, a classic practical task, AI evaluation, data pipelines and quality, production telemetry, reliability objectives and regulated traceability.
@@ -49,6 +50,14 @@ The observability topic had useful direct entries for telemetry signals, SLO ter
 ## Testing foundations and direct discoverability
 
 The catalog keeps broad interview wording explicit as well as detailed scenarios. The `testing-types` answer organizes common labels by purpose, knowledge of internals, change, execution approach and lifecycle level, so practical types are not hidden behind a four-item list. `content/interview/testing-foundations-qa.json` also includes a direct inventory question covering specification-based, structure-based and experience-based test-design techniques. Both remain searchable by the terms candidates commonly use.
+
+## Modern SDET and cross-platform coverage
+
+`content/interview/modern-sdet-qa.json` adds 52 stable, hand-authored questions without removing or renaming any existing entry. It covers test doubles, property-based and mutation testing, visual regression, browser grids and real-device clouds, coding complexity and data-structure exercises, internationalization and localization, AI-assisted test review, self-healing locators, MCP and agent evaluation, OAuth and OpenID Connect, event-driven systems, Core Web Vitals and software-supply-chain assurance.
+
+The expansion is role-aware through reusable tags such as `sdet`, `automation-engineer`, `web-qa`, `mobile-qa`, `ai-qa`, `security-qa`, `performance-qa` and `qa-lead`. Emerging agentic topics are marked Occasional or Specialist rather than being presented as universal QA requirements. Sixteen new primary or authoritative references support the added material, bringing the catalog to 654 questions and 66 sources.
+
+The previously generic practical cluster remains intact for stable IDs, but all 22 existing login, elevator, payment and upload scenarios now include product-specific failure modes and adapt their evidence to the stated constraint. This preserves additive history while removing the weakest boilerplate from the candidate experience.
 
 ## Readability and media policy
 

@@ -23,7 +23,8 @@
         "istqb-glossary",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "error-defect-failure-root-cause",
@@ -38,7 +39,7 @@
       ],
       "tags": [
         "error",
-        "defect",
+        "defects",
         "failure",
         "root-cause"
       ],
@@ -46,7 +47,8 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "test-process-activities",
@@ -69,7 +71,8 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "independence-of-testing",
@@ -92,7 +95,8 @@
         "istqb-ctfl-v4",
         "scrum-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "test-technique-families",
@@ -115,7 +119,8 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "positive-negative-testing",
@@ -138,7 +143,8 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Test design"
     },
     {
       "id": "test-scenario-case-suite",
@@ -152,9 +158,9 @@
         "explains why suites group tests"
       ],
       "tags": [
-        "test-condition",
+        "test-conditions",
         "test-scenario",
-        "test-case",
+        "test-cases",
         "test-suite"
       ],
       "sourceIds": [
@@ -162,7 +168,8 @@
         "istqb-glossary",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "test-progress-completion-reports",
@@ -184,7 +191,8 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "api-request-components",
@@ -208,7 +216,8 @@
         "openapi-31",
         "owasp-api-2023"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "emulator-simulator-real-device",
@@ -231,7 +240,8 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "automation-framework-components",
@@ -255,7 +265,8 @@
         "selenium-docs",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "automation-benefits-risks",
@@ -271,14 +282,15 @@
       "tags": [
         "automation",
         "benefits",
-        "risks",
+        "risk",
         "roi"
       ],
       "sourceIds": [
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Strategy"
     },
     {
       "id": "synchronous-asynchronous-code",
@@ -301,7 +313,8 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "ci-versus-delivery-deployment",
@@ -324,7 +337,8 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "performance-baseline-benchmark-load",
@@ -347,7 +361,8 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "accessibility-test-baseline",
@@ -369,7 +384,8 @@
       "sourceIds": [
         "wcag-22"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Test design"
     },
     {
       "id": "scrum-roles-events-artifacts",
@@ -392,7 +408,8 @@
         "scrum-guide",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "tdd-bdd-atdd",
@@ -414,7 +431,8 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "entry-versus-exit-criteria",
@@ -437,7 +455,8 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "test-plan-versus-strategy",
@@ -452,14 +471,15 @@
       ],
       "tags": [
         "test-strategy",
-        "test-plan",
+        "test-plans",
         "planning",
         "documentation"
       ],
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Theory"
     },
     {
       "id": "lead-quality-ownership",
@@ -482,7 +502,8 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Leadership"
     },
     {
       "id": "practical-elevator",
@@ -506,7 +527,8 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Very common",
+      "kind": "Practical"
     },
     {
       "id": "ai-versus-deterministic-testing",
@@ -523,14 +545,15 @@
         "ai-testing",
         "non-determinism",
         "evaluation",
-        "oracles"
+        "oracle"
       ],
       "sourceIds": [
         "istqb-ai-testing",
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "classification-metrics",
@@ -553,7 +576,8 @@
         "sklearn-model-evaluation",
         "istqb-ai-testing"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "etl-testing-basics",
@@ -577,7 +601,8 @@
         "dbt-data-tests",
         "great-expectations"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "data-quality-dimensions",
@@ -600,7 +625,8 @@
         "great-expectations",
         "dbt-data-tests"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "logs-metrics-traces",
@@ -623,7 +649,8 @@
         "opentelemetry-concepts",
         "grafana-loki"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "sli-slo-sla",
@@ -646,7 +673,8 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Common",
+      "kind": "Theory"
     },
     {
       "id": "regulated-requirements-traceability",
@@ -670,7 +698,8 @@
         "fda-iec-62304",
         "iso-26262"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Specialist",
+      "kind": "Theory"
     },
     {
       "id": "audit-trail-data-integrity",
@@ -684,7 +713,7 @@
         "covers access, retention and review"
       ],
       "tags": [
-        "audit-trail",
+        "audit-trails",
         "data-integrity",
         "electronic-records",
         "part-11"
@@ -693,7 +722,8 @@
         "ecfr-part-11",
         "eu-gmp-annex-11"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Specialist",
+      "kind": "Theory"
     }
   ]
 }

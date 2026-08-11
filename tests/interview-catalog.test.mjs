@@ -5,7 +5,7 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("keeps the interview catalog additive, explicit, and prevalence-complete", async () => {
-  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, expanded, sources, taxonomy] = await Promise.all([
+  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, expanded, sources, taxonomy] = await Promise.all([
     readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
@@ -13,22 +13,24 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     readFile(projectFile("content/interview/restored-coverage-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/testing-foundations-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/embedded-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/modern-sdet-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/sources.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/taxonomy.json"), "utf8").then(JSON.parse),
   ]);
-  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions];
+  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...expanded.questions];
 
-  assert.ok(questions.length >= 602);
+  assert.ok(questions.length >= 654);
   assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
   assert.equal(taxonomy.filter((item) => item.category).length, 19);
-  assert.equal(sources.length, 50);
+  assert.ok(sources.length >= 66);
   assert.equal(canonical.questions.length, 30);
   assert.equal(databaseSql.questions.length, 25);
   assert.equal(observabilityProduction.questions.length, 25);
   assert.equal(restoredCoverage.questions.length, 21);
   assert.equal(testingFoundations.questions.length, 7);
   assert.equal(embedded.questions.length, 29);
+  assert.equal(modernSdet.questions.length, 52);
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
   assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 19);
   assert.deepEqual(
@@ -91,6 +93,20 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     "embedded-power-loss-atomicity",
     "embedded-firmware-update-interruption",
     "iot-device-identity-provisioning",
+    "test-doubles-taxonomy",
+    "property-based-testing",
+    "mutation-testing-suite-strength",
+    "visual-regression-purpose",
+    "cross-browser-risk-matrix",
+    "big-o-test-automation",
+    "i18n-l10n-difference",
+    "unicode-normalization-graphemes",
+    "ai-generated-test-review",
+    "mcp-testing-workflows",
+    "oauth-oidc-difference",
+    "event-driven-contract-testing",
+    "core-web-vitals-test-strategy",
+    "software-supply-chain-provenance",
   ]) {
     const question = questions.find((item) => item.id === id);
     assert.ok(question, `${id} must be present as an explicit foundational question.`);
@@ -146,7 +162,9 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.match(generatorSource, /readJson\("content\/interview\/observability-production-qa\.json"\)/);
   assert.match(generatorSource, /readJson\("content\/interview\/testing-foundations-qa\.json"\)/);
   assert.match(generatorSource, /readJson\("content\/interview\/embedded-qa\.json"\)/);
-  assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 602;/);
+  assert.match(generatorSource, /readJson\("content\/interview\/modern-sdet-qa\.json"\)/);
+  assert.match(generatorSource, /practicalFocusByConcept/);
+  assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 654;/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
@@ -252,9 +270,9 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(aboutSource, /skills showcase/i);
   assert.match(aboutSource, /View the source on GitHub/);
   assert.match(aboutSource, /mode === "personal" \? "\/workspace\/learn\?section=interview" : "#interview"/);
-  assert.match(aboutSource, /602\+[\s\S]{0,80}researched QA questions/);
+  assert.match(aboutSource, /654[\s\S]{0,80}researched QA questions/);
   assert.match(aboutSource, /19\+[\s\S]{0,80}interview topics/);
-  assert.match(aboutSource, /50\+[\s\S]{0,80}source references/);
+  assert.match(aboutSource, /66[\s\S]{0,80}source references/);
   assert.match(aboutSource, /60[\s\S]{0,80}maximum rendered rows/);
   assert.match(aboutSource, /What must pass/);
   assert.match(aboutSource, /What is public and private/);
@@ -287,10 +305,14 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(catalogOutput, /monitoring-versus-observability/);
   assert.match(catalogOutput, /embedded-layered-test-strategy/);
   assert.match(catalogOutput, /testing-principle-defect-clustering/);
+  assert.match(catalogOutput, /test-doubles-taxonomy/);
+  assert.match(catalogOutput, /mcp-testing-workflows/);
 
   const initialOutput = (await Promise.all(scripts.filter((file) => !catalogScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /testing-purpose-and-limits/);
   assert.doesNotMatch(initialOutput, /data-source-target-lineage/);
   assert.doesNotMatch(initialOutput, /monitoring-versus-observability/);
   assert.doesNotMatch(initialOutput, /embedded-layered-test-strategy/);
+  assert.doesNotMatch(initialOutput, /test-doubles-taxonomy/);
+  assert.doesNotMatch(initialOutput, /mcp-testing-workflows/);
 });
