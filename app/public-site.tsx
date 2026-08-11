@@ -625,7 +625,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
       return (
         <div className="kb-content iq-page">
           <div className="kb-empty iq-catalog-state">
-            <strong>{interviewCatalogError ? "Interview catalog unavailable" : "Loading 520-question catalog…"}</strong>
+            <strong>{interviewCatalogError ? "Interview catalog unavailable" : "Loading interview catalog…"}</strong>
             <span>{interviewCatalogError ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
           </div>
         </div>

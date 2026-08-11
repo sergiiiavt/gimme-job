@@ -4,6 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
+const MINIMUM_QUESTION_COUNT = 541;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },
@@ -210,21 +211,26 @@ function generatedAnswer(topic, concept, scenario, index) {
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, databaseSql, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, restoredCoverage, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/database-sql-qa.json"),
+  readJson("content/interview/restored-coverage-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
 
 const authoredExpandedQuestions = expanded.questions.filter((question) => !question.id.startsWith("expanded-"));
+const preservedGeneratedQuestions = expanded.questions.filter((question) => question.id.startsWith("expanded-"));
 const canonicalPrevalence = new Map(canonical.questions.map((question) => [question.id, question.prevalence]));
-const baseQuestions = [...common.questions, ...authoredExpandedQuestions, ...databaseSql.questions, ...canonical.questions].map((question) => {
-  const questionWithoutPrevalence = { ...question };
-  delete questionWithoutPrevalence.prevalence;
-  return questionWithoutPrevalence;
-});
+const baseQuestions = [
+  ...common.questions,
+  ...authoredExpandedQuestions,
+  ...databaseSql.questions,
+  ...restoredCoverage.questions,
+  ...canonical.questions,
+  ...preservedGeneratedQuestions,
+];
 const byCategory = new Map(topics.map((topic) => [topic.category, []]));
 for (const question of baseQuestions) {
   assert.ok(byCategory.has(question.category), `Unknown existing category: ${question.category}`);
@@ -232,18 +238,21 @@ for (const question of baseQuestions) {
 }
 
 const generated = [];
+const existingQuestionIds = new Set(baseQuestions.map((question) => question.id));
 for (const topic of topics) {
   const existingCount = byCategory.get(topic.category).length;
-  const needed = topic.target - existingCount;
-  assert.ok(needed >= 0, `${topic.category} already exceeds its target`);
-  const combinations = topic.concepts.flatMap((concept) => topic.scenarios.map((scenario) => ({ concept, scenario })));
+  const needed = Math.max(0, topic.target - existingCount);
+  const combinations = topic.concepts
+    .flatMap((concept) => topic.scenarios.map((scenario) => ({ concept, scenario })))
+    .filter(({ concept, scenario }) => !existingQuestionIds.has(`expanded-${topic.id}-${slug(concept)}-${slug(scenario)}`));
   assert.ok(combinations.length >= needed, `Not enough combinations for ${topic.category}`);
 
   for (let index = 0; index < needed; index += 1) {
     const { concept, scenario } = combinations[index];
     const templateIndex = index % questionTemplates.length;
+    const id = `expanded-${topic.id}-${slug(concept)}-${slug(scenario)}`;
     generated.push({
-      id: `expanded-${topic.id}-${slug(concept)}-${slug(scenario)}`,
+      id,
       level: levelSequence[(existingCount + index) % levelSequence.length],
       category: topic.category,
       kind: kinds[templateIndex],
@@ -257,10 +266,14 @@ for (const topic of topics) {
       tags: [...topic.tags, slug(concept)].slice(0, 4),
       sourceIds: topic.sources.slice(0, index % 4 === 0 ? 3 : 2),
     });
+    existingQuestionIds.add(id);
   }
 }
 
-assert.equal(baseQuestions.length + generated.length, 520, "The canonical and generated catalog must contain exactly 520 questions.");
+assert.ok(
+  baseQuestions.length + generated.length >= MINIMUM_QUESTION_COUNT,
+  `The catalog must contain at least ${MINIMUM_QUESTION_COUNT} questions.`,
+);
 
 const generatedByCategory = new Map(topics.map((topic) => [topic.category, []]));
 for (const question of generated) generatedByCategory.get(question.category).push(question);
@@ -270,7 +283,10 @@ function addPrevalence(questions) {
   return questions.map((question) => {
     const position = positions.get(question.category) ?? 0;
     positions.set(question.category, position + 1);
-    return { ...question, prevalence: canonicalPrevalence.get(question.id) ?? prevalenceByPosition(position) };
+    return {
+      ...question,
+      prevalence: question.prevalence ?? canonicalPrevalence.get(question.id) ?? prevalenceByPosition(position),
+    };
   });
 }
 
@@ -283,8 +299,10 @@ const enrichedById = new Map(addPrevalence(combinedEditorialOrder).map((question
 common.questions = common.questions.map((question) => enrichedById.get(question.id));
 canonical.questions = canonical.questions.map((question) => enrichedById.get(question.id));
 databaseSql.questions = databaseSql.questions.map((question) => enrichedById.get(question.id));
+restoredCoverage.questions = restoredCoverage.questions.map((question) => enrichedById.get(question.id));
 expanded.questions = [
   ...authoredExpandedQuestions.map((question) => enrichedById.get(question.id)),
+  ...preservedGeneratedQuestions.map((question) => enrichedById.get(question.id)),
   ...generated.map((question) => enrichedById.get(question.id)),
 ];
 
@@ -304,9 +322,10 @@ await Promise.all([
   writeJson("content/interview/common-qa.json", common),
   writeJson("content/interview/canonical-baseline.json", canonical),
   writeJson("content/interview/database-sql-qa.json", databaseSql),
+  writeJson("content/interview/restored-coverage-qa.json", restoredCoverage),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + restoredCoverage.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

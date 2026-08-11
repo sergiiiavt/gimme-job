@@ -22,8 +22,8 @@ The **Jobs** module is functional:
 
 The **Interview questions** module contains:
 
-- exactly 520 QA questions across 18 topics;
-- dedicated AI/ML/LLM, Data/BI, Observability/Production, and Regulated-domain sections;
+- 541 QA questions across 18 topics, with the current total enforced as a rolling non-destructive minimum;
+- dedicated AI/ML/LLM, Databases/SQL/BI, Observability/Production, and Regulated-domain sections;
 - four evidence-informed prevalence bands and most-common-first sorting;
 - prevalence, seniority, tag, topic and full-text filters;
 - 46 research and validation sources;

@@ -4,23 +4,25 @@ import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
-test("keeps the interview catalog exact, explicit, and prevalence-complete", async () => {
-  const [common, canonical, databaseSql, expanded, sources, taxonomy] = await Promise.all([
+test("keeps the interview catalog additive, explicit, and prevalence-complete", async () => {
+  const [common, canonical, databaseSql, restoredCoverage, expanded, sources, taxonomy] = await Promise.all([
     readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/restored-coverage-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/sources.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/taxonomy.json"), "utf8").then(JSON.parse),
   ]);
-  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...expanded.questions];
+  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...restoredCoverage.questions, ...expanded.questions];
 
-  assert.equal(questions.length, 520);
-  assert.equal(new Set(questions.map((question) => question.id)).size, 520);
+  assert.ok(questions.length >= 541);
+  assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
   assert.equal(taxonomy.filter((item) => item.category).length, 18);
   assert.equal(sources.length, 46);
   assert.equal(canonical.questions.length, 30);
   assert.equal(databaseSql.questions.length, 25);
+  assert.equal(restoredCoverage.questions.length, 21);
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
   assert.deepEqual(
     new Set(questions.map((question) => question.prevalence)),
@@ -46,12 +48,33 @@ test("keeps the interview catalog exact, explicit, and prevalence-complete", asy
     "sql-injection-parameterized-queries",
     "star-schema-facts-dimensions-grain",
     "bi-dashboard-reconciliation",
+    "data-source-target-lineage",
+    "data-batch-streaming-late-events",
+    "data-upstream-schema-drift",
+    "data-slowly-changing-dimensions",
+    "data-sensitive-test-data",
+    "bi-semantic-measures-calendars",
+    "test-levels-stakeholder-disagreement",
+    "testing-incomplete-requirements-time-pressure",
+    "state-transitions-interacting-inputs",
+    "defect-triage-audit-evidence",
+    "defect-cannot-reproduce",
+    "mobile-push-after-termination",
+    "automation-waits-ci-nightly",
+    "automation-unreliable-third-party",
+    "parallel-tests-shared-data",
+    "release-criteria-under-pressure",
+    "leadership-rebuild-quality-trust",
+    "llm-prompt-injection-high-stakes",
+    "production-canary-verification",
+    "regulated-change-control-migration",
+    "grey-box-testing",
   ]) {
     const question = questions.find((item) => item.id === id);
     assert.ok(question, `${id} must be present as an explicit foundational question.`);
   }
 
-  assert.equal(questions.filter((question) => question.category === "Databases, SQL and BI").length, 29);
+  assert.ok(questions.filter((question) => question.category === "Databases, SQL and BI").length >= 35);
   assert.ok(questions.filter((question) => /\b(sql|database|databases)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 25);
 
   for (const id of ["test-levels", "testing-types"]) {
@@ -60,6 +83,15 @@ test("keeps the interview catalog exact, explicit, and prevalence-complete", asy
     assert.equal(question.level, "Junior");
     assert.equal(question.prevalence, "Very common");
   }
+});
+
+test("preserves existing generated questions when authored coverage grows", async () => {
+  const generatorSource = await readFile(projectFile("scripts/generate-interview-expansion.mjs"), "utf8");
+
+  assert.match(generatorSource, /const preservedGeneratedQuestions = expanded\.questions\.filter/);
+  assert.match(generatorSource, /const needed = Math\.max\(0, topic\.target - existingCount\);/);
+  assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
+  assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
 
 test("lazy-loads the catalog and caps each rendered page at 60", async () => {
@@ -96,7 +128,9 @@ test("lazy-loads the catalog and caps each rendered page at 60", async () => {
 
   const catalogOutput = (await Promise.all(catalogScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(catalogOutput, /testing-purpose-and-limits/);
+  assert.match(catalogOutput, /data-source-target-lineage/);
 
   const initialOutput = (await Promise.all(scripts.filter((file) => !catalogScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /testing-purpose-and-limits/);
+  assert.doesNotMatch(initialOutput, /data-source-target-lineage/);
 });

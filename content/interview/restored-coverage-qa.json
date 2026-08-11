@@ -1,0 +1,521 @@
+{
+  "questions": [
+    {
+      "id": "data-source-target-lineage",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Scenario",
+      "question": "How would you validate source-to-target mappings and data lineage across a transformation pipeline?",
+      "shortAnswer": "Start with a versioned mapping that identifies each source field, transformation rule, target field and allowed exception. Test representative rows and aggregate reconciliations at every boundary so a discrepancy can be localized instead of discovered only in the final report. Include rejected records, defaults, type conversions, joins and lineage metadata, then retain evidence that connects the source input to the published result.",
+      "strongAnswerSignals": [
+        "uses a versioned field-level mapping as the oracle",
+        "combines row-level checks with aggregate reconciliation",
+        "preserves traceable evidence through every transformation"
+      ],
+      "tags": [
+        "database",
+        "etl",
+        "lineage",
+        "mapping"
+      ],
+      "sourceIds": [
+        "dbt-data-tests",
+        "google-dataflow-testing",
+        "powerbi-star-schema"
+      ]
+    },
+    {
+      "id": "data-batch-streaming-late-events",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Scenario",
+      "question": "How would you test batch and streaming pipelines with late, duplicate and out-of-order events?",
+      "shortAnswer": "Define the product's event-time, processing-time, deduplication, watermark and replay rules before choosing expected results. Inject late, repeated, reordered and missing events around window boundaries, then verify both intermediate state and final aggregates after the allowed lateness expires. Replaying the same input should produce the documented idempotent result, and operational metrics should expose dropped, delayed or quarantined records.",
+      "strongAnswerSignals": [
+        "distinguishes event time from processing time",
+        "tests watermarks, replay and idempotency at boundaries",
+        "verifies data results and operational evidence"
+      ],
+      "tags": [
+        "data",
+        "streaming",
+        "batch",
+        "events"
+      ],
+      "sourceIds": [
+        "google-dataflow-testing",
+        "dbt-data-tests",
+        "great-expectations"
+      ]
+    },
+    {
+      "id": "data-upstream-schema-drift",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Scenario",
+      "question": "How would you test a data pipeline against upstream schema drift and contract changes?",
+      "shortAnswer": "Treat the producer schema and compatibility policy as a versioned contract, including field names, types, nullability, defaults and semantic meaning. Exercise additive, removed, renamed and incompatible changes against old and new consumers, and verify whether the pipeline accepts, transforms, quarantines or rejects each version deliberately. Add contract checks before deployment and production monitoring for unexpected shapes so silent data corruption cannot pass as a successful job.",
+      "strongAnswerSignals": [
+        "checks structural and semantic compatibility",
+        "covers mixed producer and consumer versions",
+        "prevents silent corruption with early validation and monitoring"
+      ],
+      "tags": [
+        "data",
+        "schema",
+        "contracts",
+        "compatibility"
+      ],
+      "sourceIds": [
+        "google-dataflow-testing",
+        "dbt-data-tests",
+        "postgres-docs"
+      ]
+    },
+    {
+      "id": "data-slowly-changing-dimensions",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Theory",
+      "question": "What are slowly changing dimensions, and how would you test their history rules?",
+      "shortAnswer": "A slowly changing dimension defines how warehouse attributes are handled when a business entity changes, such as overwriting the current value or creating a dated historical row. Test unchanged, first-time, repeated, backdated and multiple changes while checking surrogate keys, effective dates, current-row flags and joins from facts to the correct version. Rerunning the same load must not create duplicate history, and reports for past dates should retain the intended historical meaning.",
+      "strongAnswerSignals": [
+        "distinguishes overwrite and history-preserving behavior",
+        "checks effective dates, current flags and surrogate keys",
+        "verifies idempotency and historical reporting"
+      ],
+      "tags": [
+        "database",
+        "warehouse",
+        "dimensions",
+        "history"
+      ],
+      "sourceIds": [
+        "powerbi-star-schema",
+        "dbt-data-tests"
+      ]
+    },
+    {
+      "id": "data-sensitive-test-data",
+      "level": "Middle",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Practical",
+      "question": "How should personally identifiable and other sensitive data be handled in database testing?",
+      "shortAnswer": "Use synthetic or irreversibly masked data by default and collect only the attributes required for the test purpose. If production-derived data is exceptionally necessary, apply documented authorization, minimization, encryption, access controls, retention limits and audit logging across extracts, backups and test results. Verify that masking preserves needed relationships without exposing original values, and include deletion, export and unauthorized-access cases in the test scope.",
+      "strongAnswerSignals": [
+        "prefers synthetic or irreversibly masked fixtures",
+        "applies least privilege, minimization and retention controls",
+        "tests privacy behavior as well as data utility"
+      ],
+      "tags": [
+        "database",
+        "privacy",
+        "test-data",
+        "security"
+      ],
+      "sourceIds": [
+        "owasp-asvs",
+        "pci-dss",
+        "eu-gmp-annex-11"
+      ]
+    },
+    {
+      "id": "bi-semantic-measures-calendars",
+      "level": "Senior",
+      "category": "Databases, SQL and BI",
+      "prevalence": "Specialist",
+      "kind": "Scenario",
+      "question": "How would you test BI semantic measures across time zones and fiscal calendars?",
+      "shortAnswer": "Write the business definition for every measure, including grain, filters, aggregation, currency, time zone and fiscal-period rules. Reconcile known records from source to model to visualization around daylight-saving changes, month and year boundaries, incomplete periods and fiscal-calendar exceptions. Compare totals at multiple drill levels and roles so a correct grand total cannot hide incorrect slicing, security or period assignment.",
+      "strongAnswerSignals": [
+        "uses explicit business semantics rather than visual similarity",
+        "tests time and fiscal boundaries with controlled records",
+        "reconciles totals across drill levels and access roles"
+      ],
+      "tags": [
+        "bi",
+        "analytics",
+        "measures",
+        "calendars"
+      ],
+      "sourceIds": [
+        "powerbi-star-schema",
+        "dbt-data-tests",
+        "great-expectations"
+      ]
+    },
+    {
+      "id": "test-levels-stakeholder-disagreement",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "prevalence": "Common",
+      "kind": "Scenario",
+      "question": "How would you choose test levels when stakeholders disagree about acceptable quality?",
+      "shortAnswer": "Translate each stakeholder concern into a concrete product risk, failure impact and observable acceptance condition before debating test volume. Place fast checks at the lowest level that can expose the risk reliably, then add integration or end-to-end evidence only where component isolation cannot answer the question. Record unresolved assumptions, ownership and residual risk so the release decision is explicit rather than hidden inside a test-count argument.",
+      "strongAnswerSignals": [
+        "turns opinions into risks and observable criteria",
+        "chooses the lowest trustworthy test level",
+        "makes residual risk and decision ownership explicit"
+      ],
+      "tags": [
+        "fundamentals",
+        "test-levels",
+        "risk",
+        "stakeholders"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dou-qa-2022"
+      ]
+    },
+    {
+      "id": "testing-incomplete-requirements-time-pressure",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "prevalence": "Common",
+      "kind": "Scenario",
+      "question": "How do you balance functional and non-functional testing when requirements are incomplete and release time is short?",
+      "shortAnswer": "Clarify the primary user outcomes, critical data and unacceptable failures, then build a risk-ranked list that includes both functional behavior and quality characteristics such as security, performance and accessibility. Use examples, existing behavior, production evidence and stakeholder decisions as temporary oracles while labeling assumptions that still need confirmation. Test the highest-impact risks first, report what was not covered and avoid presenting a narrow functional pass as evidence that the whole product is ready.",
+      "strongAnswerSignals": [
+        "includes non-functional risks in prioritization",
+        "uses transparent temporary oracles and assumptions",
+        "communicates untested risk instead of only pass counts"
+      ],
+      "tags": [
+        "fundamentals",
+        "requirements",
+        "risk",
+        "quality"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "katalon-qa-interviews",
+        "indeed-qa-interviews"
+      ]
+    },
+    {
+      "id": "state-transitions-interacting-inputs",
+      "level": "Middle",
+      "category": "Test design",
+      "prevalence": "Common",
+      "kind": "Practical",
+      "question": "How would you test state transitions when many inputs interact and historical defects cluster around boundaries?",
+      "shortAnswer": "Model valid states, events, guards and forbidden transitions first, including what should happen after invalid or repeated events. Use historical defects to identify risky guards and boundaries, then combine state-transition coverage with decision tables or pairwise selection instead of attempting every input permutation. Automate stable high-value paths and assert the resulting state, side effects and recoverability after interruption or retry.",
+      "strongAnswerSignals": [
+        "models states, guards and invalid transitions explicitly",
+        "uses defect history to focus combinatorial coverage",
+        "checks side effects, retries and recovery"
+      ],
+      "tags": [
+        "test-design",
+        "state-transition",
+        "boundaries",
+        "risk"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "defect-triage-audit-evidence",
+      "level": "Senior",
+      "category": "Documentation and defects",
+      "prevalence": "Very common",
+      "kind": "Scenario",
+      "question": "What evidence should defect triage preserve when decisions may be audited?",
+      "shortAnswer": "Preserve the original observation, environment, data, steps, expected basis, actual evidence, severity rationale and links to affected requirements or risks. Record every status, ownership, priority and disposition change with the decision maker, timestamp and reason rather than overwriting history. Attach retest and closure evidence and control access to sensitive artifacts so an independent reviewer can reconstruct what happened and why the final decision was justified.",
+      "strongAnswerSignals": [
+        "maintains an immutable decision trail",
+        "links evidence to requirements, risks and dispositions",
+        "supports independent reconstruction without private context"
+      ],
+      "tags": [
+        "defects",
+        "triage",
+        "audit",
+        "traceability"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "ecfr-part-11",
+        "eu-gmp-annex-11"
+      ]
+    },
+    {
+      "id": "defect-cannot-reproduce",
+      "level": "Middle",
+      "category": "Documentation and defects",
+      "prevalence": "Very common",
+      "kind": "Practical",
+      "question": "How should you investigate a defect that cannot be reproduced reliably?",
+      "shortAnswer": "Do not close it merely because one attempt passed; compare versions, configuration, account state, timing, network, device, data and recent changes against the original occurrence. Improve observability and collect timestamps, logs, traces, screenshots or session identifiers, then vary one suspected condition at a time and repeat enough to detect an intermittent pattern. Document the evidence, reproduction probability and remaining user impact before deciding whether to monitor, mitigate, fix or close.",
+      "strongAnswerSignals": [
+        "compares environmental and temporal conditions systematically",
+        "improves evidence collection before repeating blindly",
+        "reports probability and residual impact honestly"
+      ],
+      "tags": [
+        "defects",
+        "triage",
+        "intermittent",
+        "diagnostics"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "google-sre"
+      ]
+    },
+    {
+      "id": "mobile-push-after-termination",
+      "level": "Middle",
+      "category": "Mobile",
+      "prevalence": "Very common",
+      "kind": "Scenario",
+      "question": "How would you test push notifications after a mobile app is backgrounded, killed or restarted?",
+      "shortAnswer": "Cover foreground, background, force-stopped and restarted states across supported operating-system versions, permission states and token changes. Verify delivery, deduplication, displayed content, deep-link routing, badge state and behavior when the referenced content is expired, unauthorized or already handled. Include delayed and out-of-order notifications, offline recovery and privacy checks so notification text or navigation cannot expose data on a locked or different user's device.",
+      "strongAnswerSignals": [
+        "covers lifecycle, permission and token-state combinations",
+        "verifies delivery and destination behavior separately",
+        "includes ordering, offline and privacy risks"
+      ],
+      "tags": [
+        "mobile",
+        "notifications",
+        "lifecycle",
+        "deep-links"
+      ],
+      "sourceIds": [
+        "android-test",
+        "appium-docs"
+      ]
+    },
+    {
+      "id": "automation-waits-ci-nightly",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "prevalence": "Common",
+      "kind": "Scenario",
+      "question": "How should wait strategies differ between pull-request checks and nightly automation suites?",
+      "shortAnswer": "Both suites should wait for observable application conditions rather than fixed delays, but they may use different time budgets, retry policies and diagnostic depth. Pull-request checks should fail quickly on high-signal conditions, while nightly runs can cover slower workflows without hiding failures behind broad retries. Track duration and flakiness by test, preserve timeout evidence and treat repeated retries as a defect signal rather than proof of stability.",
+      "strongAnswerSignals": [
+        "uses condition-based waits instead of fixed sleeps",
+        "separates feedback goals from correctness rules",
+        "measures retries and timeouts as quality signals"
+      ],
+      "tags": [
+        "automation",
+        "ci",
+        "waits",
+        "flakiness"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "selenium-docs"
+      ]
+    },
+    {
+      "id": "automation-unreliable-third-party",
+      "level": "Senior",
+      "category": "Automation and CI",
+      "prevalence": "Common",
+      "kind": "Scenario",
+      "question": "How would you test workflows that depend on an unreliable third-party service?",
+      "shortAnswer": "Separate tests of your integration contract and failure handling from a small number of live end-to-end checks against the real provider. Use controlled fakes or fault injection for timeouts, rate limits, malformed responses, partial success and recovery, while validating retries, idempotency, circuit breaking and user-visible status. Monitor the live dependency independently and avoid retrying whole tests in ways that turn a real resilience defect into a misleading pass.",
+      "strongAnswerSignals": [
+        "separates deterministic contract tests from live provider checks",
+        "injects realistic failures and verifies recovery semantics",
+        "does not use retries to conceal dependency defects"
+      ],
+      "tags": [
+        "automation",
+        "dependencies",
+        "resilience",
+        "contracts"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "playwright-best-practices",
+        "openapi-31"
+      ]
+    },
+    {
+      "id": "parallel-tests-shared-data",
+      "level": "Middle",
+      "category": "Programming",
+      "prevalence": "Very common",
+      "kind": "Practical",
+      "question": "What problems can shared data structures cause during parallel test execution?",
+      "shortAnswer": "Mutable shared state can create races, order dependence, lost updates and failures that disappear when a test runs alone. Prefer isolated fixtures and unique data; when sharing is unavoidable, use concurrency-safe structures, explicit synchronization and atomic setup and cleanup with ownership that is easy to reason about. Stress the suite with repeated randomized parallel runs and capture worker, seed and timing information so failures remain reproducible.",
+      "strongAnswerSignals": [
+        "recognizes races and order dependence",
+        "prefers isolation before synchronization",
+        "retains enough execution context to reproduce concurrency failures"
+      ],
+      "tags": [
+        "programming",
+        "parallelism",
+        "test-data",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "selenium-docs"
+      ]
+    },
+    {
+      "id": "release-criteria-under-pressure",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "prevalence": "Common",
+      "kind": "Scenario",
+      "question": "How should release criteria change when available testing time is cut in half or several services share the risk?",
+      "shortAnswer": "Do not quietly weaken the meaning of ready; recalculate coverage around business impact, change scope, dependencies, reversibility and production detectability. Agree on a small set of non-negotiable evidence, assign cross-service owners and identify which lower risks are deferred with explicit monitoring, rollback or feature-control measures. The release decision should state residual risk and accountable acceptance instead of converting schedule pressure into an unexplained QA sign-off.",
+      "strongAnswerSignals": [
+        "reprioritizes by impact and reversibility",
+        "coordinates evidence and ownership across services",
+        "documents deferred risk and compensating controls"
+      ],
+      "tags": [
+        "strategy",
+        "release",
+        "risk",
+        "criteria"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dora",
+        "google-sre"
+      ]
+    },
+    {
+      "id": "leadership-rebuild-quality-trust",
+      "level": "Lead",
+      "category": "Leadership",
+      "prevalence": "Common",
+      "kind": "Behavioral",
+      "question": "How would you resolve a delivery-versus-quality conflict after trust between people has been damaged?",
+      "shortAnswer": "Begin with separate fact-finding and active listening so each person can explain impact, assumptions and needs without relitigating motives in public. Bring the group back to shared customer outcomes, observable evidence and decision rights, then agree on a small repair plan with owners, dates and a neutral follow-up measure. A lead should acknowledge their own contribution, protect respectful dissent and watch whether behavior changes over time instead of declaring trust restored after one meeting.",
+      "strongAnswerSignals": [
+        "separates facts, impact and intent",
+        "creates concrete repair commitments and follow-up",
+        "models accountability and protects constructive dissent"
+      ],
+      "tags": [
+        "leadership",
+        "conflict",
+        "trust",
+        "quality-culture"
+      ],
+      "sourceIds": [
+        "google-structured-interviews",
+        "scrum-guide",
+        "dora"
+      ]
+    },
+    {
+      "id": "llm-prompt-injection-high-stakes",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "prevalence": "Very common",
+      "kind": "Scenario",
+      "question": "How would you test prompt-injection defenses for non-deterministic output used in a high-stakes decision?",
+      "shortAnswer": "Model direct, indirect, encoded and multi-turn injection attempts across every untrusted input and tool boundary, including retrieval content and user-controlled metadata. Evaluate many seeded runs against explicit security and decision-quality criteria because a single safe response cannot establish a non-deterministic failure rate. Enforce least-privilege tools, independent authorization and human review for consequential actions, then retain adversarial cases and production incidents as regression evaluations.",
+      "strongAnswerSignals": [
+        "covers indirect injection and tool boundaries",
+        "uses repeated evaluations with explicit failure criteria",
+        "requires controls outside the model for consequential actions"
+      ],
+      "tags": [
+        "ai",
+        "llm",
+        "prompt-injection",
+        "security"
+      ],
+      "sourceIds": [
+        "owasp-llm-top10",
+        "nist-genai-profile",
+        "openai-evals"
+      ]
+    },
+    {
+      "id": "production-canary-verification",
+      "level": "Senior",
+      "category": "Observability and production",
+      "prevalence": "Very common",
+      "kind": "Scenario",
+      "question": "How would you verify a canary deployment when failures may be intermittent?",
+      "shortAnswer": "Define canary success and rollback signals before rollout, covering user outcomes, errors, latency, saturation and business invariants rather than deployment status alone. Compare the canary with a valid control over enough traffic and time to expose intermittent behavior, segmenting by version, region, tenant and dependency while correlating logs, metrics and traces. Automate rollback for clear safety thresholds and preserve evidence for ambiguous cases so low-frequency harm is not averaged away.",
+      "strongAnswerSignals": [
+        "defines outcome-based success and rollback signals in advance",
+        "uses a comparable control and meaningful observation window",
+        "segments and correlates telemetry to expose intermittent failures"
+      ],
+      "tags": [
+        "observability",
+        "deployment",
+        "canary",
+        "production"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "opentelemetry-concepts",
+        "dora"
+      ]
+    },
+    {
+      "id": "regulated-change-control-migration",
+      "level": "Lead",
+      "category": "Regulated domains",
+      "prevalence": "Very common",
+      "kind": "Scenario",
+      "question": "What should regulated change control require for a validated data migration after a safety-impacting defect?",
+      "shortAnswer": "Open a controlled change linked to the defect, affected requirements, risk assessment and intended migration, with independent review appropriate to the product's safety impact. Approve versioned transformation rules and reconciliation criteria before execution, qualify tools where required and preserve source, exceptions, approvals and results in an audit trail. Test rollback, partial failure, data integrity and representative safety workflows, then complete impact-based regression and formal release authorization before closing the change.",
+      "strongAnswerSignals": [
+        "links the change to risk, requirements and independent approval",
+        "preserves migration rules, exceptions and reconciliation evidence",
+        "covers rollback, integrity and safety-impacting regression"
+      ],
+      "tags": [
+        "regulated",
+        "change-control",
+        "migration",
+        "safety"
+      ],
+      "sourceIds": [
+        "fda-csa",
+        "fda-iec-62304",
+        "eu-gmp-annex-11"
+      ]
+    },
+    {
+      "id": "grey-box-testing",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "prevalence": "Common",
+      "kind": "Theory",
+      "question": "What is grey-box testing, and how does it differ from black-box and white-box testing?",
+      "shortAnswer": "Black-box testing derives checks from externally visible behavior without relying on internal implementation, while white-box testing uses knowledge of code structure and paths. Grey-box testing uses partial internal knowledge, such as architecture, database schemas or logs, to design stronger external tests without necessarily exercising code branches directly. These are perspectives on available information, not mutually exclusive test levels, and a tester may combine them for the same feature.",
+      "strongAnswerSignals": [
+        "defines the approaches by available implementation knowledge",
+        "gives practical examples of partial internal visibility",
+        "does not confuse box approaches with test levels"
+      ],
+      "tags": [
+        "fundamentals",
+        "black-box",
+        "grey-box",
+        "white-box"
+      ],
+      "sourceIds": [
+        "istqb-glossary",
+        "dou-qa-2022"
+      ]
+    }
+  ]
+}
