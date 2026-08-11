@@ -22,12 +22,13 @@ import {
 import { buildMarketReport } from "./src/market.js";
 import { buildSources } from "./src/sources/index.js";
 import { collectAllSources } from "./src/sources/types.js";
+import { resolvePort } from "./src/port.js";
 
 loadEnvironment();
 
 const paths = initializeConfig();
 const db = new JobDatabase(paths.db);
-const port = Number.parseInt(process.env.JOB_AGENT_PORT ?? "4317", 10);
+const requestedPort = Number.parseInt(process.env.JOB_AGENT_PORT ?? "4317", 10);
 const allowedOrigins = new Set([
   "http://localhost:4173",
   "http://127.0.0.1:4173",
@@ -330,17 +331,29 @@ const server = createServer((request, response) => {
   });
 });
 
-server.listen(port, "127.0.0.1", async () => {
-  if (db.listJobs(1).length === 0) {
-    try {
-      await syncJobs(true);
-      await analyzeJobs({ limit: 5 });
-    } catch (error) {
-      console.warn("Starter data could not be loaded:", error);
-    }
+let port = requestedPort;
+
+async function startServer() {
+  try {
+    port = await resolvePort(requestedPort, "127.0.0.1");
+    server.listen(port, "127.0.0.1", async () => {
+      if (db.listJobs(1).length === 0) {
+        try {
+          await syncJobs(true);
+          await analyzeJobs({ limit: 5 });
+        } catch (error) {
+          console.warn("Starter data could not be loaded:", error);
+        }
+      }
+      console.log(`Job Search API ready at http://127.0.0.1:${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start local agent server:", error);
+    process.exit(1);
   }
-  console.log(`Job Search API ready at http://127.0.0.1:${port}`);
-});
+}
+
+void startServer();
 
 function shutdown() {
   server.close(() => {

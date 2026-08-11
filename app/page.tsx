@@ -282,7 +282,6 @@ export function WorkspaceApp() {
               <div className="feed-meta"><span>{visibleJobs.length} jobs</span><span>Newest first</span></div>
               <div className="job-feed">
                 {visibleJobs.map((job) => <button key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"} onClick={() => setSelectedId(job.id)}>
-                  <div className="company-mark">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
                   <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </button>)}
@@ -312,9 +311,15 @@ function Stat({ value, label }: { value: number; label: string }) {
 }
 
 function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
+  const summaryTags = [
+    job.remote ? "Remote" : null,
+    job.salaryText ? "Salary listed" : null,
+    job.location && !job.remote ? displayText(job.location) : null,
+    sourceLabel(job.source) ? sourceLabel(job.source) : null,
+  ].filter(Boolean).slice(0, 3);
+
   return <article className="job-detail">
     <div className="detail-head">
-      <div className="company-mark large">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
       <div><span>{displayText(job.company)}</span><h2>{displayText(job.title)}</h2><p>{displayText(job.location)}{job.salaryText ? ` · ${job.salaryText}` : ""}</p></div>
       {typeof job.analysis?.score === "number" && <div className="score"><strong>{job.analysis.score}</strong><span>match</span></div>}
     </div>
@@ -323,6 +328,7 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
       <a href={job.url} target="_blank" rel="noreferrer"><Icon name="external"/>View vacancy</a>
       {job.applyUrl && job.applyUrl !== job.url && <a className="secondary-link" href={job.applyUrl} target="_blank" rel="noreferrer">Apply link</a>}
     </div>
+    <div className="job-summary-tags">{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
 
     <section className="tracking-box">
       <div><label htmlFor={`status-${job.id}`}>Pipeline status</label><select id={`status-${job.id}`} value={job.status} disabled={disabled} onChange={(event) => onChange({ status: event.target.value as JobStatus })}>{STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></div>

@@ -10,22 +10,22 @@ const technologyGroups = [
 const productAreas = [
   {
     title: "Interview preparation",
-    copy: "602 researched QA questions across 19 topics, with answers, source traceability, prevalence, levels, tags, AND search, and private learning progress.",
+    copy: "A catalog of researched QA questions with answers, sources, tags, and learning progress.",
     tags: ["Research", "Taxonomy", "Learning UX"],
   },
   {
     title: "Career workspace",
-    copy: "A public vacancy feed and resume sit beside a protected workspace for job tracking, relevance feedback, notes, and application status.",
+    copy: "A public vacancy feed sits beside a private workspace for tracking applications, notes, and relevance.",
     tags: ["Product design", "Private state", "D1"],
   },
   {
     title: "Quality engineering",
-    copy: "Content invariants, linting, type checks, rendered-worker tests, artifact validation, and live checks protect every production change.",
+    copy: "Validation checks and automated tests protect the content and deployment flow.",
     tags: ["Automation", "Risk controls", "CI"],
   },
   {
     title: "Working experiments",
-    copy: "The learning map and Fight AI slop game demonstrate responsive interaction, accessibility, local persistence, and separately loaded client code.",
+    copy: "The interview map and anti-slop game demonstrate interaction patterns and accessibility choices.",
     tags: ["Frontend", "Accessibility", "Performance"],
   },
 ];
@@ -56,9 +56,9 @@ export default function AboutSite() {
     <div className="kb-content about-page">
       <header className="about-intro">
         <div>
-          <span>PET PROJECT · LIVE PRODUCTION SYSTEM</span>
-          <h1>Built to show the work, not just describe it.</h1>
-          <p>GimmeJob is my inspectable QA engineering portfolio. It combines product analysis, researched testing knowledge, frontend implementation, automation, privacy boundaries, and an auditable cloud delivery process in one application.</p>
+          <span>PROJECT OVERVIEW</span>
+          <h1>A practical QA engineering portfolio in production.</h1>
+          <p>GimmeJob combines public interview content, a private workspace, and the implementation behind them in one place.</p>
         </div>
         <nav className="about-links" aria-label="Project links">
           <a href="https://github.com/sergiiiavt/gimmejob" target="_blank" rel="noreferrer">View the source on GitHub ↗</a>

@@ -319,7 +319,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* Public knowledge base */
 .kb-shell { background: #f6f7f5; color: #1e2925; min-height: 100vh; }
-.kb-sidebar { background: #fff; border-right: 1px solid #e1e5e1; display: flex; flex-direction: column; height: 100vh; left: 0; overflow-y: auto; padding: 22px 14px 16px; position: fixed; top: 0; width: 252px; z-index: 45; }
+.kb-sidebar { background: #fff; border-right: 1px solid #e1e5e1; display: flex; flex-direction: column; height: 100vh; left: 0; overflow-y: auto; padding: 22px 14px 16px; position: fixed; top: 0; width: 220px; z-index: 45; }
 .kb-brand { align-items: center; display: flex; gap: 10px; padding: 0 9px 25px; }
 .kb-brand > span { align-items: center; background: #1c2723; border-radius: 8px; color: #d7f65a; display: flex; font-size: 10px; font-weight: 900; height: 34px; justify-content: center; letter-spacing: -.03em; width: 34px; }
 .kb-brand strong, .kb-brand small { display: block; }
@@ -340,7 +340,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-private a { align-items: center; background: #1c2723; border-radius: 7px; color: #fff; display: flex; font-size: 9px; font-weight: 750; gap: 7px; justify-content: center; min-height: 34px; }
 .kb-private a i { color: #d7f65a; font-style: normal; }
 
-.kb-main { margin-left: 252px; min-height: 100vh; }
+.kb-main { margin-left: 220px; min-height: 100vh; }
 .kb-topbar { align-items: center; background: rgba(255,255,255,.94); border-bottom: 1px solid #e1e5e1; display: flex; gap: 18px; min-height: 64px; padding: 0 28px; position: sticky; top: 0; z-index: 30; backdrop-filter: blur(14px); }
 .kb-topbar > div:nth-of-type(1) { flex: 1; }
 .kb-topbar > div:nth-of-type(1) span, .kb-topbar > div:nth-of-type(1) strong { display: block; }
@@ -386,6 +386,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-job-copy p.kb-job-company { color: #4c5953; font-weight: 650; margin-top: 3px; }
 .kb-job-tags { display: flex; gap: 5px; margin-top: 9px; }
 .kb-job-tags span { background: #edf5ef; border-radius: 4px; color: #397657; font-size: 7px; font-weight: 750; padding: 3px 6px; }
+.kb-job-action-stack { align-items: flex-end; display: flex; flex-direction: column; gap: 7px; min-width: 120px; }
+.kb-job-summary-tags { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+.kb-job-summary-tags span { background: #edf5ef; border: 1px solid #dfe7e0; border-radius: 999px; color: #42704f; font-size: 8px; font-weight: 750; padding: 3px 7px; }
+.job-summary-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.job-summary-tags span { background: #edf5ef; border: 1px solid #dfe7e0; border-radius: 999px; color: #42704f; font-size: 9px; font-weight: 750; padding: 3px 7px; }
 .kb-job-row > a { border: 1px solid #dfe3df; border-radius: 6px; font-size: 8px; font-weight: 800; min-height: 31px; padding: 10px 9px 0; }
 .kb-job-row > a:hover { background: #1c2723; border-color: #1c2723; color: #fff; }
 .kb-empty { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 210px; padding: 25px; text-align: center; }
@@ -438,9 +443,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .kb-page-stats > div { min-width: 0; padding: 2px 8px; }
   .kb-jobs-tools { align-items: stretch; flex-direction: column; }
   .kb-jobs-note p { display: none; }
-  .kb-job-row { grid-template-columns: 34px minmax(0,1fr); padding: 15px; }
+  .kb-job-row { grid-template-columns: minmax(0,1fr) auto; padding: 15px; }
   .kb-company-mark { height: 34px; width: 34px; }
-  .kb-job-row > a { grid-column: 2; justify-self: start; padding-top: 9px; }
+  .kb-job-action-stack { align-items: flex-start; grid-column: 2; justify-self: start; min-width: 0; }
+  .kb-job-summary-tags { justify-content: flex-start; }
   .kb-article-intro { gap: 12px; grid-template-columns: 1fr; }
   .kb-article-intro > div { border-bottom: 1px solid #d5dfce; border-right: 0; padding-bottom: 10px; }
   .kb-topic-grid { grid-template-columns: 1fr; }
@@ -448,7 +454,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* Shared public/private workspace */
-.kb-sidebar { padding: 25px 16px 18px; width: 232px; }
+.kb-sidebar { padding: 25px 16px 18px; width: 220px; }
 .kb-brand { color: #1e2925; display: block; font-size: 20px; font-weight: 800; letter-spacing: -.04em; padding: 0 10px 22px; }
 .kb-nav-list { display: flex; flex: 1; flex-direction: column; gap: 2px; }
 .kb-nav-list .kb-nav-link { background: transparent; border: 0; border-left: 3px solid transparent; border-radius: 5px; color: #59645e; cursor: pointer; display: block; font-size: 13px; min-height: 37px; padding: 10px 11px; text-align: left; width: 100%; }
@@ -461,7 +467,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-storage-state i { background: #d9984a; border-radius: 50%; box-shadow: 0 0 0 3px rgba(217,152,74,.12); height: 7px; width: 7px; }
 .kb-storage-state i.online { background: #30a873; box-shadow: 0 0 0 3px rgba(48,168,115,.12); }
 
-.kb-main { margin-left: 232px; }
+.kb-main { margin-left: 220px; }
 .kb-topbar { gap: 12px; min-height: 46px; padding: 0 24px; }
 .kb-view-state { align-items: center; color: #66736c; display: flex; font-size: 10px; font-weight: 700; gap: 7px; margin-left: auto; white-space: nowrap; }
 .kb-view-state i, .kb-outline-badge i { background: #30a873; border-radius: 50%; box-shadow: 0 0 0 3px rgba(48,168,115,.12); height: 7px; width: 7px; }
@@ -619,12 +625,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* Two-level knowledge navigation */
-.kb-navigation { background: #fff; display: flex; height: 100vh; left: 0; position: fixed; top: 0; width: 404px; z-index: 45; }
-.kb-navigation .kb-sidebar { border-right: 1px solid #e1e5e1; height: 100%; left: auto; overflow: hidden; padding: 18px 10px 12px; position: static; top: auto; width: 168px; }
+.kb-navigation { background: #fff; display: flex; height: 100vh; left: 0; position: fixed; top: 0; width: 456px; z-index: 45; }
+.kb-navigation .kb-sidebar { border-right: 1px solid #e1e5e1; height: 100%; left: auto; overflow: hidden; padding: 18px 10px 12px; position: static; top: auto; width: 220px; }
 .kb-navigation .kb-brand { font-size: 19px; padding: 0 8px 20px; }
 .kb-navigation .kb-nav-list { gap: 8px; min-height: 0; overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
 .kb-navigation .kb-nav-list .kb-nav-link { font-size: 12px; line-height: 1.3; min-height: 36px; padding: 8px 7px; }
-.kb-navigation.compact { width: 168px; }
+.kb-navigation.compact { width: 220px; }
 .kb-nav-intro { background: #edf3e9 !important; border: 1px solid #dfe8d9 !important; border-left-color: #789455 !important; color: #314335 !important; flex: 0 0 auto; font-weight: 850; margin-bottom: 1px; }
 .kb-nav-intro:hover { background: #e3eddf !important; }
 .kb-nav-intro.active { background: #2a3932 !important; border-left-color: #d7f65a !important; color: #fff !important; }
@@ -649,8 +655,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-subnav nav button.active { background: #e6eddf; color: #284d37; font-weight: 800; }
 .kb-subnav nav button span { line-height: 1.25; }
 .kb-subnav nav button small { background: rgba(255,255,255,.75); border: 1px solid #dce2db; border-radius: 10px; color: #758079; flex: 0 0 auto; font-size: 9px; min-width: 26px; padding: 3px 5px; text-align: center; }
-.kb-main { margin-left: 404px; }
-.kb-main-compact-nav { margin-left: 168px; }
+.kb-main { margin-left: 456px; }
+.kb-main-compact-nav { margin-left: 220px; }
 
 .iq-page { max-width: 1380px; }
 .iq-search, .iq-filter-control { min-width: 0; }
@@ -871,32 +877,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .resume-sheet { background: #fff; border: 1px solid #dce2df; border-radius: 14px; box-shadow: 0 18px 50px rgba(30,42,36,.07); overflow: hidden; padding: clamp(26px,5vw,60px); }
 .resume-header { border-bottom: 1px solid #dbe1de; padding-bottom: 27px; text-align: center; }
 .resume-header > span { color: #367294; display: block; font-size: 8px; font-weight: 900; letter-spacing: .14em; margin-bottom: 11px; }
-.resume-header h1 { color: #202a2d; font-size: clamp(30px,5vw,49px); letter-spacing: .09em; line-height: 1; margin: 0; }
-.resume-header > p { color: #2f6b8c; font-size: 13px; font-weight: 800; margin: 14px 0 9px; }
+.resume-header h1 { color: #202a2d; font-size: clamp(24px,4vw,36px); letter-spacing: .08em; line-height: 1; margin: 0; }
+.resume-header > p { color: #2f6b8c; font-size: 14px; font-weight: 800; margin: 14px 0 9px; }
 .resume-header > p i { background: #a8b4b9; border-radius: 50%; display: inline-block; height: 4px; margin: 0 7px 3px; width: 4px; }
 .resume-contact, .resume-credentials { align-items: center; display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: center; }
-.resume-contact span, .resume-contact a, .resume-credentials span { color: #59656a; font-size: 10px; line-height: 1.5; }
+.resume-contact span, .resume-contact a, .resume-credentials span { color: #59656a; font-size: 11px; line-height: 1.5; }
 .resume-contact a { color: #286e94; font-weight: 750; }
 .resume-contact > * + *::before, .resume-credentials > * + *::before { color: #a1aaae; content: "•"; margin-right: 16px; }
 .resume-credentials { margin-top: 7px; }
 .resume-section { color: #354146; margin-top: 28px; }
 .resume-section > h2 { background: #dcecf5; color: #234d65; font-size: 11px; letter-spacing: .1em; margin: 0 0 17px; padding: 8px 10px; text-transform: uppercase; }
-.resume-section > p { font-size: 11px; line-height: 1.72; margin: 0; }
+.resume-section > p { font-size: 12px; line-height: 1.72; margin: 0; }
 .resume-skill-grid { display: grid; gap: 8px 30px; grid-template-columns: repeat(2,minmax(0,1fr)); list-style: none; margin: 0; padding: 0; }
-.resume-skill-grid li, .resume-additional li, .resume-timeline li { font-size: 10px; line-height: 1.55; padding-left: 14px; position: relative; }
+.resume-skill-grid li, .resume-additional li, .resume-timeline li { font-size: 11px; line-height: 1.55; padding-left: 14px; position: relative; }
 .resume-skill-grid li::before, .resume-additional li::before, .resume-timeline li::before { color: #31759a; content: "•"; font-weight: 900; left: 0; position: absolute; }
 .resume-timeline article { border-bottom: 1px solid #e7ebea; display: grid; gap: 30px; grid-template-columns: 235px minmax(0,1fr); padding: 18px 0; }
 .resume-timeline article:first-child { padding-top: 1px; }
 .resume-timeline article:last-child { border-bottom: 0; padding-bottom: 0; }
-.resume-timeline h3 { font-size: 13px; margin: 0 0 5px; }
+.resume-timeline h3 { font-size: 14px; margin: 0 0 5px; }
 .resume-timeline article > div span, .resume-timeline time { display: block; }
-.resume-timeline article > div span { color: #2d6e91; font-size: 10px; font-weight: 800; }
-.resume-timeline time { color: #778187; font-size: 9px; margin-top: 5px; }
-.resume-timeline article > div small { color: #778187; display: block; font-size: 9px; margin-top: 4px; }
+.resume-timeline article > div span { color: #2d6e91; font-size: 11px; font-weight: 800; }
+.resume-timeline time { color: #778187; font-size: 10px; margin-top: 5px; }
+.resume-timeline article > div small { color: #778187; display: block; font-size: 10px; margin-top: 4px; }
 .resume-timeline ul, .resume-additional { display: grid; gap: 5px; list-style: none; margin: 0; padding: 0; }
 .resume-education > div { display: grid; gap: 5px; grid-template-columns: minmax(190px,.7fr) minmax(260px,1fr) auto; }
-.resume-education strong { font-size: 11px; }
-.resume-education span, .resume-education time, .resume-education > p { color: #647077; font-size: 10px; }
+.resume-education strong { font-size: 12px; }
+.resume-education span, .resume-education time, .resume-education > p { color: #647077; font-size: 11px; }
 .resume-education time { text-align: right; }
 .resume-education > p { border-top: 1px solid #e8ecea; margin: 15px 0 0; padding-top: 12px; }
 .resume-additional { grid-template-columns: repeat(2,minmax(0,1fr)); }

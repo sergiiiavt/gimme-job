@@ -637,19 +637,30 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
               </div>
               <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Switch to Personal in the lower-left corner to track applications.</p></div>
               <div className="kb-job-list">
-                {loaded && visibleJobs.map((job) => (
-                  <article className="kb-job-row" key={job.id}>
-                    <div className="kb-company-mark">{displayText(job.company).slice(0, 2).toUpperCase()}</div>
-                    <div className="kb-job-copy">
-                      <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
-                      <h2>{displayText(job.title)}</h2>
-                      <p className="kb-job-company">{displayText(job.company)} · {displayText(job.location)}</p>
-                      <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
-                      <div className="kb-job-tags">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
-                    </div>
-                    <a href={job.url} target="_blank" rel="noreferrer">Open ↗</a>
-                  </article>
-                ))}
+                {loaded && visibleJobs.map((job) => {
+                  const summaryTags = [
+                    job.remote ? "Remote" : null,
+                    job.salaryText ? "Salary listed" : null,
+                    job.location && !job.remote ? displayText(job.location) : null,
+                    job.source ? displayText(job.source) : null,
+                  ].filter(Boolean).slice(0, 3);
+
+                  return (
+                    <article className="kb-job-row" key={job.id}>
+                      <div className="kb-job-copy">
+                        <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
+                        <h2>{displayText(job.title)}</h2>
+                        <p className="kb-job-company">{displayText(job.company)} · {displayText(job.location)}</p>
+                        <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
+                        <div className="kb-job-tags">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
+                      </div>
+                      <div className="kb-job-action-stack">
+                        <a href={job.url} target="_blank" rel="noreferrer">Open ↗</a>
+                        <div className="kb-job-summary-tags">{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+                      </div>
+                    </article>
+                  );
+                })}
                 {!loaded && <div className="kb-empty"><strong>Loading jobs…</strong><span>Reading the public database.</span></div>}
                 {loaded && visibleJobs.length === 0 && <div className="kb-empty"><strong>{jobs.length ? "No matching jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Try another search." : "A new database syncs automatically. Reload shortly, or use Sync jobs in the private workspace."}</span></div>}
               </div>
