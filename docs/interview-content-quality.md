@@ -19,7 +19,7 @@ The failure had four causes:
 
 Validation now requires:
 
-- at least the current 566-question baseline, exactly 18 topics and exactly 46 sources;
+- at least the current 602-question baseline, exactly 19 topics and exactly 50 sources;
 - exactly 30 canonical-baseline questions covering every topic;
 - stable explicit IDs for canonical questions;
 - explicit presence of critical foundational questions;
@@ -45,6 +45,10 @@ The generator now loads and preserves existing generated entries before checking
 The observability topic had useful direct entries for telemetry signals, SLO terminology and canary verification, but 26 of its 29 questions were generated combinations. That made foundational production concepts harder to discover and left the answers too repetitive for practical preparation.
 
 `content/interview/observability-production-qa.json` adds 25 stable, researched questions without displacing any existing ID. The audited set covers monitoring and observability, signal selection, golden signals, metric shapes, latency percentiles, structured logs, trace propagation and sampling, telemetry cardinality and privacy, Kubernetes probes, production smoke tests, synthetic and real-user monitoring, telemetry-pipeline validation, actionable alerting, metamonitoring, error budgets, burn-rate alerts, incident evidence and postmortem actions. The catalog therefore grows from 541 to 566 questions.
+
+## Testing foundations and direct discoverability
+
+The catalog keeps broad interview wording explicit as well as detailed scenarios. The `testing-types` answer organizes common labels by purpose, knowledge of internals, change, execution approach and lifecycle level, so practical types are not hidden behind a four-item list. `content/interview/testing-foundations-qa.json` also includes a direct inventory question covering specification-based, structure-based and experience-based test-design techniques. Both remain searchable by the terms candidates commonly use.
 
 ## Readability and media policy
 

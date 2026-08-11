@@ -22,11 +22,11 @@ The **Jobs** module is functional:
 
 The **Interview questions** module contains:
 
-- 566 QA questions across 18 topics, with the current total enforced as a rolling non-destructive minimum;
+- 602 QA questions across 19 topics, with the current total enforced as a rolling non-destructive minimum;
 - dedicated AI/ML/LLM, Databases/SQL/BI, Observability/Production, and Regulated-domain sections;
 - four evidence-informed prevalence bands and most-common-first sorting;
 - prevalence, seniority, tag, topic and full-text filters;
-- 46 research and validation sources;
+- 50 research and validation sources;
 - a lazy-loaded catalog with at most 60 question rows rendered at once.
 
 The navigation also contains planned knowledge modules:
@@ -50,7 +50,7 @@ The navigation also contains planned knowledge modules:
 - `.github/workflows/ci.yml` — GitHub validation and Cloudflare deployment pipeline;
 - `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile.
 
-The only production deployment path is GitHub Actions → Cloudflare Workers + D1. Public interview content remains in Git; D1 is reserved for private vacancy data and future per-user progress, notes and bookmarks.
+The only production deployment path is GitHub Actions → Cloudflare Workers + D1. Public interview content remains in Git; D1 stores private vacancy data, interview progress, notes and bookmarks.
 
 ## VS Code setup
 

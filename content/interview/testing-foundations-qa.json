@@ -134,6 +134,36 @@
         "istqb-ctfl-v4"
       ],
       "prevalence": "Very common"
+    },
+    {
+      "id": "test-design-techniques-inventory",
+      "level": "Junior",
+      "category": "Test design",
+      "kind": "Theory",
+      "question": "What test-design techniques do you know, and what does each one help you test?",
+      "shortAnswer": "No single inventory contains all techniques for every context. The ISTQB Foundation core groups techniques by the information used to derive tests. Its specification-based techniques are equivalence partitioning for groups expected to behave alike, boundary-value analysis for edges, decision-table testing for interacting rules, and state-transition testing for lifecycle behaviour. Its structure-based techniques use statement and branch coverage to expose unexercised code structure. Its experience-based techniques are error guessing, exploratory testing and checklist-based testing. Teams also use pairwise or other combinatorial testing for input interactions, use-case or scenario testing for user flows, classification trees and cause-effect graphs for complex logic, and condition or MC/DC coverage where context requires it. Select techniques for the product's risks and available model rather than applying every technique mechanically.",
+      "strongAnswerSignals": [
+        "groups techniques into specification-based, structure-based and experience-based families",
+        "connects each named technique to the kind of risk or behaviour it reveals",
+        "chooses techniques deliberately instead of treating the list as a mandatory checklist"
+      ],
+      "tags": [
+        "test-design-techniques",
+        "equivalence-partitioning",
+        "boundary-value-analysis",
+        "decision-tables",
+        "state-transition-testing",
+        "pairwise-testing",
+        "white-box-testing",
+        "exploratory-testing",
+        "error-guessing",
+        "checklist-based-testing"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
+      "prevalence": "Very common"
     }
   ]
 }

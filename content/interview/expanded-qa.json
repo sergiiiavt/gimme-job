@@ -51,31 +51,44 @@
       "level": "Junior",
       "category": "Fundamentals",
       "kind": "Theory",
-      "question": "What are the main test types, and how do they differ from test levels and execution approaches?",
-      "shortAnswer": "Test types describe the focus of testing: functional, non-functional, black-box and white-box are the four categories highlighted by the current ISTQB Foundation syllabus. Confirmation and regression testing address change. Test levels describe where testing is organized in the lifecycle, from component through acceptance. Static and dynamic describe whether the test object is executed. Teams use broader labels in practice, so a strong answer states the classification before giving examples.",
+      "question": "What test types do you know, and how would you classify them without mixing test levels, techniques and execution approaches?",
+      "shortAnswer": "There is no single universal flat list, so state the classification axis. By purpose, testing can be functional or non-functional; non-functional examples include performance, load and stress, security, usability and accessibility, compatibility, reliability and recovery, maintainability, portability and safety. By knowledge of internals, teams describe black-box, white-box and grey-box testing. Confirmation or retesting and regression address change, while smoke and sanity describe a suite's purpose and scope. Static versus dynamic and manual versus automated are approaches; component, integration, system and acceptance are test levels; equivalence partitioning and boundary-value analysis are techniques. One test can fit several labels.",
       "strongAnswerSignals": [
-        "distinguishes focus, lifecycle level, execution and change",
-        "does not confuse testing types, test levels and test techniques",
-        "gives a practical example"
+        "organizes examples by purpose, internal knowledge, change, approach and level",
+        "names practical functional and non-functional examples beyond the four syllabus categories",
+        "explains that labels can overlap instead of presenting one misleading flat list"
       ],
       "tags": [
         "testing-types",
         "functional-testing",
         "non-functional-testing",
+        "performance-testing",
+        "security-testing",
+        "usability-testing",
+        "accessibility-testing",
+        "compatibility-testing",
+        "reliability-testing",
+        "maintainability-testing",
+        "portability-testing",
+        "safety-testing",
         "black-box-testing",
         "white-box-testing",
+        "grey-box-testing",
+        "confirmation-testing",
+        "regression-testing",
         "static-and-dynamic-testing"
       ],
       "media": [
         {
           "src": "/content/interview/testing-types/testing-levels-types-matrix.svg",
           "alt": "A matrix showing five test levels crossed with functional, non-functional, black-box and white-box test types",
-          "caption": "Levels answer where testing is organized; types answer what focus or perspective is used. Types can be applied at every level.",
+          "caption": "One formal classification, not a complete list: levels answer where testing is organized, while these four types answer what focus or perspective is used.",
           "credit": "Original GimmeJob diagram based on ISTQB CTFL v4.0.1"
         }
       ],
       "sourceIds": [
         "istqb-ctfl-v4",
+        "istqb-glossary",
         "dou-qa-2022"
       ],
       "prevalence": "Very common"
@@ -167,7 +180,7 @@
         "optimization"
       ],
       "sourceIds": [
-        "istqb-ctfl-v4",
+        "istqb-glossary",
         "dou-qa-2022"
       ],
       "prevalence": "Very common"
@@ -190,7 +203,7 @@
         "test-cases"
       ],
       "sourceIds": [
-        "istqb-ctfl-v4"
+        "istqb-glossary"
       ],
       "prevalence": "Very common"
     },
@@ -256,7 +269,7 @@
         "combinations"
       ],
       "sourceIds": [
-        "istqb-ctfl-v4"
+        "istqb-glossary"
       ],
       "prevalence": "Common"
     },
