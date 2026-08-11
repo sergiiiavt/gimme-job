@@ -73,12 +73,19 @@
       "id": "test-levels",
       "level": "Junior",
       "category": "Fundamentals",
-      "question": "Which test levels would you use for a typical web feature, and what different risk does each level cover?",
+      "question": "What are the main test levels, and what different risk does each level cover?",
       "shortAnswer": "Component tests isolate small units, integration tests verify interfaces, system tests evaluate the complete product, and acceptance testing checks business readiness. A strong plan distributes checks across levels instead of repeating every scenario through the UI.",
       "strongAnswerSignals": [
         "component, integration, system and acceptance",
         "different purpose per level",
         "avoids a UI-only strategy"
+      ],
+      "tags": [
+        "test-levels",
+        "component-testing",
+        "integration-testing",
+        "system-testing",
+        "acceptance-testing"
       ],
       "sourceIds": [
         "dou-qa-2022",

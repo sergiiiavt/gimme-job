@@ -262,14 +262,14 @@ export function WorkspaceApp() {
       />
 
       <section className="kb-main">
-        <SiteTopbar mode="private" onMenu={() => setMobileNav((value) => !value)} title="Jobs">
+        <SiteTopbar mode="private" onMenu={() => setMobileNav((value) => !value)}>
           <Link className="kb-top-link" href="/">Public view</Link>
           <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
         </SiteTopbar>
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div><span className="eyebrow">PRIVATE JOBS</span><h1>Jobs</h1><p>Update the status and relevance feedback for each vacancy.</p></div>
+            <div><h1>Jobs</h1></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
           </section>
 
