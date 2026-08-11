@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection, type SubnavItem } from "./site-navigation";
+import { navigationItems, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
 type PublicSection = SiteSection;
+type SiteMode = "public" | "personal";
+type QuestionProgressStatus = "PLANNED" | "LEARNING" | "LEARNED";
+
+interface QuestionProgressEntry {
+  questionId: string;
+  status: QuestionProgressStatus;
+  updatedAt: string;
+}
 
 interface PublicJob {
   id: string;
@@ -76,6 +83,11 @@ const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"]
 const interviewPrevalence: Array<"All" | InterviewPrevalence> = ["All", "Very common", "Common", "Occasional", "Specialist"];
 const prevalenceOrder: Record<InterviewPrevalence, number> = { "Very common": 0, Common: 1, Occasional: 2, Specialist: 3 };
 const levelOrder: Record<InterviewLevel, number> = { Junior: 0, Middle: 1, Senior: 2, Lead: 3 };
+const progressOptions: Array<{ value: QuestionProgressStatus; label: string }> = [
+  { value: "PLANNED", label: "Planned" },
+  { value: "LEARNING", label: "Learning" },
+  { value: "LEARNED", label: "Learned" },
+];
 const interviewSortOptions: Array<{ value: InterviewSort; label: string }> = [
   { value: "prevalence", label: "Most common first" },
   { value: "editorial", label: "Editorial order" },
@@ -112,10 +124,12 @@ function normalizeSearch(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function MultiSelectFilter<T extends string>({ allLabel, label, onChange, options, searchable = false, selected }: {
+function MultiSelectFilter<T extends string>({ allLabel, label, onChange, onOpenChange, open, options, searchable = false, selected }: {
   allLabel: string;
   label: string;
   onChange: (selected: T[]) => void;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
   options: T[];
   searchable?: boolean;
   selected: T[];
@@ -128,7 +142,7 @@ function MultiSelectFilter<T extends string>({ allLabel, label, onChange, option
   return (
     <div className="iq-multi">
       <span className="iq-filter-label">{label}</span>
-      <details name="interview-filter">
+      <details open={open} onToggle={(event) => onOpenChange(event.currentTarget.open)}>
         <summary aria-label={`${label}: ${selected.length ? `${selected.length} selected` : allLabel}`}>
           <strong>{selected.length ? `${selected.length} selected` : allLabel}</strong>
           <i aria-hidden="true">⌄</i>
@@ -205,8 +219,85 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
       { title: "AI engineering", copy: "Model, data, evaluation, and responsible-AI certification paths.", tags: ["AI", "LLM"] },
     ],
   },
+  strategy: {
+    title: "Quality strategy & leadership",
+    description: "Move from executing tests to shaping risk, testability, delivery decisions, and team capability.",
+    items: [
+      { title: "Risk-based strategy", copy: "Connect product risks, architecture, users, and business impact to an intentional coverage model.", tags: ["Risk", "Strategy"] },
+      { title: "Testability", copy: "Influence interfaces, diagnostics, environments, data controls, and design before testing becomes expensive.", tags: ["Design", "Quality"] },
+      { title: "Release decisions", copy: "Communicate evidence, uncertainty, residual risk, ownership, and rollback options without false confidence.", tags: ["Release", "Evidence"] },
+      { title: "Useful metrics", copy: "Measure feedback speed, escaped risk, reliability, and outcomes while avoiding activity-count targets.", tags: ["Metrics"] },
+      { title: "Coaching and leadership", copy: "Grow judgement, ownership, collaboration, and technical depth across a quality-focused team.", tags: ["People", "Lead"] },
+    ],
+  },
+  programming: {
+    title: "Programming for QA",
+    description: "The coding and debugging foundation needed for maintainable automation and deeper technical investigation.",
+    items: [
+      { title: "Code reading", copy: "Follow control flow, data flow, error paths, and dependencies well enough to identify meaningful checks.", tags: ["Code"] },
+      { title: "Data structures", copy: "Choose and manipulate collections, maps, queues, trees, and structured data safely in test code.", tags: ["CS"] },
+      { title: "Asynchronous systems", copy: "Reason about promises, threads, race conditions, retries, timeouts, and eventual completion.", tags: ["Async"] },
+      { title: "Debugging", copy: "Reduce failures with logs, breakpoints, stack traces, minimal reproductions, and hypothesis-driven diagnosis.", tags: ["Debug"] },
+      { title: "Git and review", copy: "Work with branches, focused commits, pull requests, conflict resolution, and constructive code review.", tags: ["Git"] },
+    ],
+  },
+  automation: {
+    title: "Test automation",
+    description: "Design fast, reliable feedback systems across code, services, interfaces, and delivery pipelines.",
+    items: [
+      { title: "Automation strategy", copy: "Select checks by feedback value, repeatability, risk, execution layer, and maintenance cost.", tags: ["Strategy"] },
+      { title: "Framework architecture", copy: "Build clear fixtures, drivers, assertions, reporting, configuration, and ownership boundaries.", tags: ["Architecture"] },
+      { title: "Service and contract tests", copy: "Validate APIs, schemas, compatibility, side effects, and integration assumptions below the UI.", tags: ["API", "Contracts"] },
+      { title: "Browser and mobile", copy: "Use stable locators, controlled state, deterministic waits, device coverage, and useful diagnostics.", tags: ["UI", "Mobile"] },
+      { title: "CI reliability", copy: "Parallelize safely, investigate flakiness, manage quarantine, and keep failures actionable.", tags: ["CI", "Flakiness"] },
+    ],
+  },
+  api: {
+    title: "API & integration testing",
+    description: "Understand protocols, contracts, trust boundaries, distributed state, and failure handling between systems.",
+    items: [
+      { title: "HTTP foundations", copy: "Methods, status codes, headers, caching, cookies, content negotiation, and idempotency.", tags: ["HTTP"] },
+      { title: "Contracts and schemas", copy: "OpenAPI, GraphQL, compatibility, consumer expectations, and schema-based validation.", tags: ["Contracts"] },
+      { title: "Identity and authorization", copy: "Authentication, sessions, scopes, roles, tenants, and server-side object access.", tags: ["Auth"] },
+      { title: "Messaging and events", copy: "Queues, delivery semantics, ordering, duplication, retries, and eventual consistency.", tags: ["Events"] },
+      { title: "Failure behaviour", copy: "Timeouts, partial responses, dependency degradation, rate limits, and safe recovery.", tags: ["Resilience"] },
+    ],
+  },
+  data: {
+    title: "Data & BI testing",
+    description: "Validate data pipelines, transformations, analytical meaning, governance, and decision-facing outputs.",
+    items: [
+      { title: "SQL investigation", copy: "Query, join, aggregate, compare, and trace data while understanding transactions and constraints.", tags: ["SQL"] },
+      { title: "ETL and ELT", copy: "Test extraction, transformation rules, loading, incremental runs, backfills, and restart safety.", tags: ["Pipelines"] },
+      { title: "Data quality", copy: "Measure completeness, validity, consistency, uniqueness, timeliness, and referential integrity.", tags: ["Quality"] },
+      { title: "BI semantics", copy: "Verify measures, dimensions, filters, time zones, drill-downs, and dashboard reconciliation.", tags: ["BI"] },
+      { title: "Privacy and lineage", copy: "Track sensitive fields, access, retention, masking, provenance, and transformation history.", tags: ["Governance"] },
+    ],
+  },
+  mobile: {
+    title: "Mobile & accessibility",
+    description: "Cover device behaviour, platform lifecycle, constrained networks, assistive technology, and inclusive interaction.",
+    items: [
+      { title: "Device strategy", copy: "Build a risk-based matrix across hardware, operating systems, screens, locales, and user populations.", tags: ["Devices"] },
+      { title: "Lifecycle and interruptions", copy: "Test backgrounding, process death, permissions, calls, notifications, battery, and storage pressure.", tags: ["Lifecycle"] },
+      { title: "Network transitions", copy: "Exercise offline use, weak connections, Wi-Fi/cellular changes, retries, and synchronization conflicts.", tags: ["Network"] },
+      { title: "Accessibility", copy: "Use WCAG criteria, keyboard and switch access, screen readers, focus, names, contrast, and status messages.", tags: ["WCAG"] },
+      { title: "Release and upgrades", copy: "Validate store packaging, signing, installation, migration, deep links, and backward compatibility.", tags: ["Release"] },
+    ],
+  },
+  performance: {
+    title: "Performance & reliability",
+    description: "Model realistic workload, measure user outcomes, find constraints, and verify graceful degradation and recovery.",
+    items: [
+      { title: "Workload modelling", copy: "Translate traffic, user journeys, data volumes, arrival rates, and concurrency into realistic tests.", tags: ["Workload"] },
+      { title: "Load test types", copy: "Use baseline, load, stress, spike, soak, volume, and scalability tests for distinct questions.", tags: ["Load"] },
+      { title: "Service objectives", copy: "Connect latency, throughput, error rate, saturation, SLIs, SLOs, and business expectations.", tags: ["SLO"] },
+      { title: "Bottleneck analysis", copy: "Correlate response time with CPU, memory, I/O, queues, databases, dependencies, and traces.", tags: ["Diagnosis"] },
+      { title: "Resilience and recovery", copy: "Test overload controls, retries, circuit breakers, failover, restoration, and data correctness.", tags: ["Reliability"] },
+    ],
+  },
   trends: {
-    title: "Market trends",
+    title: "QA & market trends",
     description: "Patterns collected from vacancies, requirements, tools, and role descriptions.",
     items: [
       { title: "Role demand", copy: "Track recurring QA Lead, Test Automation Lead, Senior QA, and Quality Engineering roles.", tags: ["Roles"] },
@@ -216,7 +307,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   agentic: {
-    title: "Agentic lab",
+    title: "AI agents & MCP",
     description: "Notes and small projects for building agents that act through tools with explicit approval gates.",
     items: [
       { title: "Tools and actions", copy: "Typed tools, validation, permissions, retries, and safe external actions.", tags: ["Tools"] },
@@ -228,7 +319,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   llm: {
-    title: "LLM lab",
+    title: "Generative AI & LLM testing",
     description: "A testing and engineering knowledge base for products built around language models.",
     items: [
       { title: "LLM testing", copy: "Functional behaviour, robustness, safety, consistency, and model-change regression.", tags: ["Testing"] },
@@ -240,7 +331,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   security: {
-    title: "Security lab",
+    title: "Security testing",
     description: "Practical application-security notes and controlled exercises for quality engineers.",
     items: [
       { title: "OWASP", copy: "Web, API, and LLM application risks with testing ideas and mitigations.", tags: ["OWASP"] },
@@ -250,7 +341,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   devops: {
-    title: "DevOps lab",
+    title: "Cloud & DevOps",
     description: "Reference notes and projects for delivery pipelines, cloud systems, and reliability.",
     items: [
       { title: "CI/CD", copy: "Build gates, test stages, artifacts, deployments, rollbacks, and branch controls.", tags: ["Pipelines"] },
@@ -261,8 +352,41 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
       { title: "Resilience", copy: "Failure injection, dependency degradation, recovery, and reliability checks.", tags: ["Resilience"] },
     ],
   },
+  observability: {
+    title: "Observability & SRE",
+    description: "Use production signals and reliability practices to test what users experience and shorten diagnosis.",
+    items: [
+      { title: "Logs, metrics and traces", copy: "Understand what each signal explains and correlate them with shared context across a request path.", tags: ["Telemetry"] },
+      { title: "SLIs, SLOs and error budgets", copy: "Turn user-visible reliability into measurable indicators, targets, and explicit trade-offs.", tags: ["SRE"] },
+      { title: "Distributed tracing", copy: "Follow spans, dependencies, latency, errors, retries, and context propagation across services.", tags: ["Tracing"] },
+      { title: "Alert quality", copy: "Prefer actionable symptoms, meaningful thresholds, ownership, and runbooks over noisy infrastructure alarms.", tags: ["Alerts"] },
+      { title: "Production verification", copy: "Use canaries, synthetic checks, feature flags, safe probes, and incident learning without exposing users.", tags: ["Production"] },
+    ],
+  },
+  networking: {
+    title: "Networking fundamentals",
+    description: "Build the protocol knowledge needed to diagnose failures that application-only testing cannot explain.",
+    items: [
+      { title: "TCP/IP", copy: "Addresses, ports, packets, connections, retransmission, latency, loss, routing, and common failure patterns.", tags: ["TCP/IP"] },
+      { title: "DNS", copy: "Resolution, record types, caching, TTLs, propagation, split-horizon behaviour, and diagnostic tools.", tags: ["DNS"] },
+      { title: "TLS", copy: "Certificates, trust chains, hostnames, expiry, protocol negotiation, and secure connection failures.", tags: ["TLS"] },
+      { title: "HTTP path", copy: "Clients, proxies, CDNs, load balancers, gateways, services, caching, and request correlation.", tags: ["HTTP"] },
+      { title: "Troubleshooting", copy: "Use curl, dig, traceroute, packet capture, connection statistics, and controlled comparisons.", tags: ["Tools"] },
+    ],
+  },
+  linux: {
+    title: "Linux & shell",
+    description: "Operate and troubleshoot the environments where test systems, services, containers, and CI jobs actually run.",
+    items: [
+      { title: "Filesystem and permissions", copy: "Navigate paths, inspect ownership, manage permissions, find files, and understand mounts and storage.", tags: ["Filesystem"] },
+      { title: "Processes and services", copy: "Inspect processes, signals, resource use, environment variables, startup, and service health.", tags: ["Processes"] },
+      { title: "Logs and text tools", copy: "Search and transform evidence with journal tools, grep, sed, awk, sort, diff, and structured output.", tags: ["CLI"] },
+      { title: "Network tools", copy: "Inspect sockets, DNS, routes, HTTP, certificates, and connectivity from the host running the software.", tags: ["Network"] },
+      { title: "Shell automation", copy: "Write safe, composable scripts with quoting, exit handling, pipes, parameters, and deterministic output.", tags: ["Bash"] },
+    ],
+  },
   standards: {
-    title: "Standards",
+    title: "Standards & compliance",
     description: "A working index of standards relevant to software quality, security, and regulated products.",
     items: [
       { title: "ISO/IEC 25010", copy: "Software product quality model and quality characteristics.", tags: ["Quality"] },
@@ -274,7 +398,7 @@ const knowledge: Record<Exclude<PublicSection, "jobs">, {
     ],
   },
   news: {
-    title: "News",
+    title: "Industry news",
     description: "Links and notes about QA, AI agents, LLM engineering, security, and delivery tooling.",
     items: [
       { title: "QA and test automation", copy: "Framework releases, quality-engineering practices, and useful case studies.", tags: ["QA"] },
@@ -301,10 +425,12 @@ function shortText(value: string) {
   return cleaned.length > 210 ? `${cleaned.slice(0, 207)}…` : cleaned;
 }
 
-function currentSectionFromHash(): PublicSection {
-  if (typeof window === "undefined") return "jobs";
-  const candidate = window.location.hash.replace("#", "") as PublicSection;
-  return navigationItems.some((item) => item.id === candidate) ? candidate : "jobs";
+function currentSectionFromLocation(mode: SiteMode): PublicSection {
+  if (typeof window === "undefined") return mode === "personal" ? "interview" : "jobs";
+  const candidate = (mode === "personal"
+    ? new URLSearchParams(window.location.search).get("section")
+    : window.location.hash.replace("#", "")) as PublicSection | null;
+  return candidate && navigationItems.some((item) => item.id === candidate) ? candidate : mode === "personal" ? "interview" : "jobs";
 }
 
 function topicId(value: string) {
@@ -337,8 +463,8 @@ function secondaryNavigation(section: PublicSection, jobs: PublicJob[], intervie
   ];
 }
 
-export default function PublicSite() {
-  const [section, setSection] = useState<PublicSection>("jobs");
+export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
+  const [section, setSection] = useState<PublicSection>(mode === "personal" ? "interview" : "jobs");
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState("");
@@ -349,16 +475,18 @@ export default function PublicSite() {
 
   useEffect(() => {
     const onHashChange = () => {
-      setSection(currentSectionFromHash());
+      setSection(currentSectionFromLocation(mode));
       setSubsection("all");
     };
     const frame = window.requestAnimationFrame(onHashChange);
     window.addEventListener("hashchange", onHashChange);
+    window.addEventListener("popstate", onHashChange);
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("hashchange", onHashChange);
+      window.removeEventListener("popstate", onHashChange);
     };
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     if (section !== "interview" || interviewCatalog) return;
@@ -402,15 +530,21 @@ export default function PublicSite() {
   }, [jobs, query, subsection]);
 
   const openSection = (next: PublicSection) => {
+    if (mode === "personal" && next === "jobs") {
+      window.location.assign("/workspace");
+      return;
+    }
     setSection(next);
     setSubsection("all");
     setMobileNav(false);
-    window.history.replaceState(null, "", next === "jobs" ? window.location.pathname : `#${next}`);
+    window.history.replaceState(null, "", mode === "personal" ? `/workspace/learn?section=${next}` : next === "jobs" ? window.location.pathname : `#${next}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Jobs";
   const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog);
+  const publicHref = section === "jobs" ? "/" : `/#${section}`;
+  const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
 
   return (
     <main className="kb-shell">
@@ -418,17 +552,17 @@ export default function PublicSite() {
         activeSection={section}
         activeSubsection={subsection}
         mobileOpen={mobileNav}
-        mode="public"
+        mode={mode}
         onSelect={openSection}
         onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
+        personalHref={personalHref}
+        publicHref={publicHref}
         secondaryItems={secondaryItems}
         secondaryTitle={activeLabel}
       />
 
       <section className="kb-main">
-        <SiteTopbar mode="public" onMenu={() => setMobileNav((value) => !value)}>
-          <Link className="kb-top-link" href="/workspace">Manage statuses & feedback</Link>
-        </SiteTopbar>
+        <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
 
         {section === "jobs" ? (
           <div className="kb-content">
@@ -440,9 +574,8 @@ export default function PublicSite() {
             <section className="kb-jobs-panel">
               <div className="kb-jobs-tools">
                 <label><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, company, location, or source"/></label>
-                <a href="/workspace">Private management →</a>
               </div>
-              <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Statuses and personal feedback are visible only after authentication.</p></div>
+              <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Switch to Personal in the lower-left corner to track applications.</p></div>
               <div className="kb-job-list">
                 {loaded && visibleJobs.map((job) => (
                   <article className="kb-job-row" key={job.id}>
@@ -467,6 +600,7 @@ export default function PublicSite() {
             activeTopic={subsection}
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
+            mode={mode}
             onTopicChange={setSubsection}
             section={section}
           />
@@ -478,10 +612,11 @@ export default function PublicSite() {
   );
 }
 
-function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, onTopicChange, section }: {
+function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, section }: {
   activeTopic: string;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
+  mode: SiteMode;
   onTopicChange: (topic: string) => void;
   section: Exclude<PublicSection, "jobs">;
 }) {
@@ -496,7 +631,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} onTopicChange={onTopicChange}/>;
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
   }
 
   const content = knowledge[section];
@@ -505,7 +640,6 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
     <div className="kb-content">
       <header className="kb-page-head kb-article-head">
         <div><h1>{content.title}</h1></div>
-        <div className="kb-outline-badge"><i/>Public section</div>
       </header>
       <div className="kb-topic-grid">
         {visibleItems.map((item, index) => (
@@ -521,13 +655,18 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
   );
 }
 
-function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; onTopicChange: (topic: string) => void }) {
+function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; mode: SiteMode; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<InterviewLevel[]>([]);
   const [prevalence, setPrevalence] = useState<(typeof interviewPrevalence)[number]>("All");
   const [sort, setSort] = useState<InterviewSort>("prevalence");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [openFilter, setOpenFilter] = useState<"tags" | "levels" | null>(null);
   const [page, setPage] = useState(0);
+  const [progress, setProgress] = useState<Record<string, QuestionProgressStatus>>({});
+  const [progressBusy, setProgressBusy] = useState<string | null>(null);
+  const [progressError, setProgressError] = useState<string | null>(null);
+  const [progressLoaded, setProgressLoaded] = useState(mode === "public");
 
   const interviewQuestions = catalog.questions;
   const interviewTaxonomy = catalog.taxonomy;
@@ -537,6 +676,28 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
   const editorialOrder = useMemo(() => new Map(interviewQuestions.map((question, index) => [question.id, index])), [interviewQuestions]);
   const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
   const activeCategory = activeTaxonomy?.category;
+
+  useEffect(() => {
+    if (mode !== "personal") return;
+    let active = true;
+    fetch("/api/interview-progress")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Personal progress is temporarily unavailable.");
+        return response.json() as Promise<{ progress?: QuestionProgressEntry[] }>;
+      })
+      .then((result) => {
+        if (!active) return;
+        setProgress(Object.fromEntries((result.progress ?? []).map((entry) => [entry.questionId, entry.status])));
+        setProgressError(null);
+      })
+      .catch((error) => {
+        if (active) setProgressError(error instanceof Error ? error.message : "Personal progress is temporarily unavailable.");
+      })
+      .finally(() => {
+        if (active) setProgressLoaded(true);
+      });
+    return () => { active = false; };
+  }, [mode]);
 
   const matchingQuestions = useMemo(() => {
     const searchTerms = normalizeSearch(query).split(" ").filter(Boolean);
@@ -567,6 +728,10 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
   const safePage = Math.min(page, pageCount - 1);
   const pageStart = safePage * INTERVIEW_PAGE_SIZE;
   const visibleQuestions = matchingQuestions.slice(pageStart, pageStart + INTERVIEW_PAGE_SIZE);
+  const progressCounts = progressOptions.reduce<Record<QuestionProgressStatus, number>>((counts, option) => {
+    counts[option.value] = Object.values(progress).filter((status) => status === option.value).length;
+    return counts;
+  }, { PLANNED: 0, LEARNING: 0, LEARNED: 0 });
 
   if (activeTopic === "methodology") return <InterviewMethodology catalog={catalog} onBack={() => onTopicChange("all")}/>;
 
@@ -587,10 +752,40 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
     setPrevalence("All");
     setSort("prevalence");
     setSelectedTags([]);
+    setOpenFilter(null);
     setPage(0);
     onTopicChange("all");
   };
   const hasActiveFilters = Boolean(activeCategory || selectedTags.length || query || levels.length || prevalence !== "All" || sort !== "prevalence");
+  const updateProgress = async (questionId: string, status: QuestionProgressStatus | null) => {
+    const previous = progress[questionId] ?? null;
+    setProgressBusy(questionId);
+    setProgress((current) => {
+      const next = { ...current };
+      if (status) next[questionId] = status;
+      else delete next[questionId];
+      return next;
+    });
+    try {
+      const response = await fetch(`/api/interview-progress/${encodeURIComponent(questionId)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Could not save this learning status.");
+      setProgressError(null);
+    } catch (error) {
+      setProgress((current) => {
+        const next = { ...current };
+        if (previous) next[questionId] = previous;
+        else delete next[questionId];
+        return next;
+      });
+      setProgressError(error instanceof Error ? error.message : "Could not save this learning status.");
+    } finally {
+      setProgressBusy(null);
+    }
+  };
 
   return (
     <div className="kb-content iq-page">
@@ -604,6 +799,13 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
           <div><strong>{interviewSourcesList.length}</strong><span>Sources</span></div>
         </div>
       </header>
+
+      {mode === "personal" && (
+        <section className="iq-progress-summary" aria-live="polite">
+          <div><span>Personal learning</span><strong>{progressCounts.LEARNED} learned</strong><strong>{progressCounts.LEARNING} learning</strong><strong>{progressCounts.PLANNED} planned</strong></div>
+          <small>{progressError ?? (progressLoaded ? "Saved privately in your Personal view." : "Loading your progress…")}</small>
+        </section>
+      )}
 
       <section className="iq-toolbar" aria-label="Interview question filters">
         <label className="iq-search">
@@ -622,8 +824,8 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
             {interviewSortOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
           </select>
         </label>
-        <MultiSelectFilter allLabel="All tags" label="Tags" onChange={setQuestionTags} options={interviewTags} searchable selected={selectedTags}/>
-        <MultiSelectFilter allLabel="All levels" label="Seniority levels" onChange={setQuestionLevels} options={interviewLevels} selected={levels}/>
+        <MultiSelectFilter allLabel="All tags" label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setOpenFilter((current) => nextOpen ? "tags" : current === "tags" ? null : current)} open={openFilter === "tags"} options={interviewTags} searchable selected={selectedTags}/>
+        <MultiSelectFilter allLabel="All levels" label="Seniority levels" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setOpenFilter((current) => nextOpen ? "levels" : current === "levels" ? null : current)} open={openFilter === "levels"} options={interviewLevels} selected={levels}/>
         <div className="iq-filter-status" aria-live="polite">
           <span>{matchingQuestions.length} matches<br/>{visibleQuestions.length} rendered</span>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Clear all</button>
@@ -640,7 +842,11 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
                 <div>
                   <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(pageStart + index + 1).padStart(3, "0")}</small>
                   <h2>{item.question}</h2>
-                  <span className="iq-question-tags"><em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>{tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}</span>
+                  <span className="iq-question-tags">
+                    <em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>
+                    {mode === "personal" && progress[item.id] && <em className={`iq-progress-badge iq-progress-${progress[item.id].toLowerCase()}`}>{progressOptions.find((option) => option.value === progress[item.id])?.label}</em>}
+                    {tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}
+                  </span>
                 </div>
               </summary>
               <div className="iq-answer">
@@ -653,6 +859,17 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
                   <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
                   <div className="iq-answer-tags">{tags.map((questionTag) => <button className={selectedTags.includes(questionTag) ? "active" : ""} key={questionTag} onClick={() => toggleQuestionTag(questionTag)}>#{questionTag}</button>)}</div>
                 </section>
+                {mode === "personal" && (
+                  <section className="iq-progress-control">
+                    <div><h3>Personal progress</h3><small>Saved privately</small></div>
+                    <div>
+                      {progressOptions.map((option) => (
+                        <button className={progress[item.id] === option.value ? `active iq-progress-${option.value.toLowerCase()}` : ""} disabled={progressBusy === item.id} key={option.value} onClick={() => void updateProgress(item.id, option.value)}>{option.label}</button>
+                      ))}
+                      {progress[item.id] && <button className="iq-progress-reset" disabled={progressBusy === item.id} onClick={() => void updateProgress(item.id, null)}>Reset</button>}
+                    </div>
+                  </section>
+                )}
                 {item.media?.map((media) => (
                   <figure className="iq-media" key={media.src}>
                     <Image src={media.src} alt={media.alt} height={430} loading="lazy" unoptimized width={760}/>

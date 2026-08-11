@@ -3,6 +3,7 @@ import {
   DEFAULT_SOURCES,
   analyzeJobs,
   dashboard,
+  interviewProgress,
   jsonError,
   publicJobs,
   readPayload,
@@ -10,6 +11,7 @@ import {
   settingsView,
   syncSources,
   updateDraft,
+  updateInterviewProgress,
   updateJobTracking,
   upsertJobs,
 } from "../_jobpilot";
@@ -25,6 +27,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const route = await parts(context);
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
     if (route[0] === "public" && route[1] === "jobs") return Response.json(await publicJobs());
+    if (route[0] === "interview-progress") return Response.json(await interviewProgress());
     if (route[0] === "dashboard") return Response.json(await dashboard());
     if (route[0] === "settings") return Response.json(await settingsView());
     return Response.json({ error: "Route not found." }, { status: 404 });
@@ -81,6 +84,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (route[0] === "jobs" && route[1]) {
       const job = await updateJobTracking(route[1], payload);
       return Response.json({ ok: true, job, dashboard: await dashboard() });
+    }
+    if (route[0] === "interview-progress" && route[1]) {
+      const progress = await updateInterviewProgress(route[1], payload);
+      return Response.json({ ok: true, progress });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
   } catch (error) { return jsonError(error); }

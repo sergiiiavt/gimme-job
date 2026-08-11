@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import Link from "next/link";
 import PublicSite from "./public-site";
-import { SiteSidebar, SiteTopbar } from "./site-navigation";
+import { SiteSidebar } from "./site-navigation";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobFeedback = "RELEVANT" | "NOT_RELEVANT" | null;
@@ -251,9 +250,10 @@ export function WorkspaceApp() {
         activeSection="jobs"
         activeSubsection={statusFilter}
         mobileOpen={mobileNav}
-        mode="private"
+        mode="personal"
         onSelectSubsection={(next) => { setStatusFilter(next as JobStatus | "ALL"); setMobileNav(false); }}
-        online={online}
+        personalHref="/workspace"
+        publicHref="/"
         secondaryItems={[
           { id: "ALL", label: "All statuses", count: jobs.length },
           ...STATUS_OPTIONS.map((status) => ({ id: status.value, label: status.label, count: jobs.filter((job) => job.status === status.value).length })),
@@ -262,14 +262,11 @@ export function WorkspaceApp() {
       />
 
       <section className="kb-main">
-        <SiteTopbar mode="private" onMenu={() => setMobileNav((value) => !value)}>
-          <Link className="kb-top-link" href="/">Public view</Link>
-          <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
-        </SiteTopbar>
+        <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div><h1>Jobs</h1></div>
+            <div className="private-page-heading"><h1>Jobs</h1><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
           </section>
 

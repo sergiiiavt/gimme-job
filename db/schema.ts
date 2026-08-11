@@ -6,6 +6,12 @@ export const settings = sqliteTable("settings", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const interviewProgress = sqliteTable("interview_progress", {
+  questionId: text("question_id").primaryKey(),
+  status: text("status").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const jobs = sqliteTable("jobs", {
   id: text("id").primaryKey(),
   fingerprint: text("fingerprint").notNull().unique(),
