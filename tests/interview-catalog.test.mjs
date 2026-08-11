@@ -171,14 +171,21 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
 
-  for (const label of ["Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "Rewild game"]) {
+  for (const label of ["Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
-  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "news"'), "Trends must be immediately before News in the navigation taxonomy.");
+  assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "trends"/);
+  assert.match(navigationSource, /id: "learning",[\s\S]*?label: "Learning path"/);
+  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "rewild"/);
+  assert.match(stylesSource, /\.kb-area-group-career/);
+  assert.match(stylesSource, /\.kb-area-group-learning/);
+  assert.match(stylesSource, /\.kb-area-group-misc/);
+  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "llm"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
   assert.ok(navigationSource.indexOf('id: "agentic"') < navigationSource.indexOf('id: "certifications"'), "Both AI topics must appear directly after Interview questions.");
-  assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Rewild must be the final section above the view switch.");
+  assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Fight AI slop must be the final section above the view switch.");
+  assert.match(uiSource, /resume: \{[\s\S]*?title: "My Resume"/);
   assert.match(uiSource, /embedded: \{[\s\S]*?title: "Embedded & IoT QA"/);
 
   const assetDirectory = projectFile("dist/client/assets/");

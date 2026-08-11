@@ -232,6 +232,18 @@ const knowledge: Record<Exclude<PublicSection, "jobs" | "rewild">, {
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
 }> = {
+  resume: {
+    title: "My Resume",
+    description: "Build an evidence-first resume that can be tailored without inventing experience.",
+    items: [
+      { title: "Verified profile", copy: "Keep your contact details, location, work preferences, and professional links accurate and current.", tags: ["Identity", "Contact"] },
+      { title: "Target roles", copy: "Define the QA roles and seniority levels you want so every resume version has a clear target.", tags: ["Positioning", "Goals"] },
+      { title: "Evidence bank", copy: "Collect projects, outcomes, metrics, and concrete examples before turning them into resume claims.", tags: ["Evidence", "Impact"] },
+      { title: "Skills and keywords", copy: "Map tools and capabilities to proof from real work, then match the language used by relevant vacancies.", tags: ["Skills", "ATS"] },
+      { title: "Experience bullets", copy: "Write concise action, context, and result statements. Prefer measurable change over responsibility lists.", tags: ["Experience", "Results"] },
+      { title: "Tailored versions", copy: "Create focused variants for leadership, automation, platform, or specialist roles while keeping facts consistent.", tags: ["Tailoring", "Review"] },
+    ],
+  },
   interview: {
     title: "Interview questions",
     description: "Structured preparation notes for technical, leadership, and behavioural interviews.",
@@ -487,7 +499,7 @@ function topicId(value: string) {
 function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null): SubnavItem[] {
   if (section === "rewild") {
     return [
-      { id: "all", label: "Play Rewild" },
+      { id: "all", label: "Fight AI slop" },
       { id: "guide", label: "Field guide" },
     ];
   }
@@ -595,7 +607,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Jobs";
+  const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
   const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog);
   const publicHref = section === "jobs" ? "/" : `/#${section}`;
   const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
@@ -615,13 +627,13 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         secondaryTitle={activeLabel}
       />
 
-      <section className="kb-main">
+      <section className={section === "rewild" && subsection === "all" ? "kb-main kb-main-game" : "kb-main"}>
         <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
 
         {section === "jobs" ? (
           <div className="kb-content">
             <header className="kb-page-head">
-              <div><h1>Jobs</h1></div>
+              <div><h1>Vacancies</h1></div>
               <div className="kb-page-stats"><div><strong>{jobs.length}</strong><span>Vacancies</span></div><div><strong>Newest</strong><span>First</span></div><div><strong>Read-only</strong><span>Public view</span></div></div>
             </header>
 
@@ -690,7 +702,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
 
   if (section === "rewild") {
     return (
-      <Suspense fallback={<div className="kb-content rw-page"><div className="kb-empty rw-loading"><strong>Growing the field…</strong><span>Loading the game separately from the rest of the site.</span></div></div>}>
+      <Suspense fallback={<div className="rw-play-page"><div className="kb-empty rw-loading"><strong>Loading the anti-slop defenses…</strong><span>The game is loaded separately from the rest of the site.</span></div></div>}>
         <RewildGame view={activeTopic}/>
       </Suspense>
     );
