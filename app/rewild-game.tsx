@@ -670,21 +670,6 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
-const PLANT_TIPS: Record<PlantKind, string> = {
-  sunbloom: "Grows sunlight, your currency",
-  thornbramble: "Blocks the path, hits close enemies",
-  vinewhip: "Hits from range and slows enemies",
-  sporecap: "Damages every enemy nearby at once",
-  rootreclaimer: "Heals corrupted ground it stands on",
-  elderoak: "Grows into a powerful late-game guardian",
-};
-
-const ENEMY_TIPS: Record<Exclude<EnemyKind, "fragment">, string> = {
-  clickbait: "Fast and weak, rushes in groups",
-  deepfake: "Slow and tough, splits when killed",
-  popup: "Disables your nearest plant",
-};
-
 function TutorialIcon({ paint }: { paint: (ctx: CanvasRenderingContext2D) => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -719,61 +704,6 @@ function nodeIconPaint() {
   };
 }
 
-function houseIconPaint(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#ead7a0"; ctx.fillRect(6, 18, 28, 18);
-  ctx.fillStyle = "#9b553d"; ctx.fillRect(3, 10, 34, 10); ctx.fillRect(9, 5, 22, 6);
-  ctx.fillStyle = "#68452e"; ctx.fillRect(17, 26, 8, 10);
-  ctx.fillStyle = "#8bc4c0"; ctx.fillRect(9, 21, 6, 6); ctx.fillRect(25, 21, 6, 6);
-}
-
-function RewildQuickGuide() {
-  return (
-    <section className="rw-tut-section">
-      <span>SIXTY-SECOND GUIDE</span>
-      <h2>What does what</h2>
-      <div className="rw-tut-group">
-        <h3>Plant these</h3>
-        <div className="rw-tut-row">
-          {PLANT_ORDER.map((kind) => (
-            <div className="rw-tut-block" key={kind}>
-              <TutorialIcon paint={plantIconPaint(kind)}/>
-              <span className="rw-tut-arrow">→</span>
-              <p><strong>{PLANTS[kind].name}</strong>{PLANT_TIPS[kind]}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="rw-tut-group">
-        <h3>Watch for these</h3>
-        <div className="rw-tut-row">
-          {(["clickbait", "deepfake", "popup"] as const).map((kind) => (
-            <div className="rw-tut-block" key={kind}>
-              <TutorialIcon paint={enemyIconPaint(kind)}/>
-              <span className="rw-tut-arrow">→</span>
-              <p><strong>{ENEMIES[kind].name}</strong>{ENEMY_TIPS[kind]}</p>
-            </div>
-          ))}
-          <div className="rw-tut-block">
-            <TutorialIcon paint={nodeIconPaint()}/>
-            <span className="rw-tut-arrow">→</span>
-            <p><strong>AI Slop Server</strong>Spawns enemies and spreads corruption, destroy it</p>
-          </div>
-        </div>
-      </div>
-      <div className="rw-tut-group">
-        <h3>Your goal</h3>
-        <div className="rw-tut-row">
-          <div className="rw-tut-block">
-            <TutorialIcon paint={houseIconPaint}/>
-            <span className="rw-tut-arrow">→</span>
-            <p><strong>The house</strong>Defend it, game over at 0 HP</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainder = Math.floor(seconds % 60);
@@ -783,8 +713,7 @@ function formatTime(seconds: number) {
 function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to fight AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
-      <RewildQuickGuide/>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to fight AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed. Defend the house at the center of the field: it is game over at 0 HP.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
       <section className="rw-guide-grid">
         <article><span>01</span><h2>Arm</h2><p>Plant defenses on healthy grass. Sunblooms fund the fight; blockers and attackers turn the path into a trap.</p></article>
         <article><span>02</span><h2>Crush</h2><p>AI slop servers spread corruption and manufacture junk. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>
@@ -793,11 +722,14 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
       </section>
       <section className="rw-field-guide">
         <div><span>DEFENDERS</span><h2>Weapons that grow</h2></div>
-        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><i style={{ background: PLANTS[kind].color }}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
+        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><TutorialIcon paint={plantIconPaint(kind)}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
       </section>
       <section className="rw-field-guide rw-enemy-guide">
         <div><span>AI SLOP</span><h2>Targets to destroy</h2></div>
-        <div className="rw-guide-list">{(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><i style={{ background: ENEMIES[kind].color }}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, disposable, and engineered to steal attention." : kind === "deepfake" ? "Slow synthetic sludge. Splits into two more problems when destroyed." : "A hostile popup that disables defenders with junk nobody requested."}</p></div></article>)}</div>
+        <div className="rw-guide-list">
+          {(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><TutorialIcon paint={enemyIconPaint(kind)}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, disposable, and engineered to steal attention." : kind === "deepfake" ? "Slow synthetic sludge. Splits into two more problems when destroyed." : "A hostile popup that disables defenders with junk nobody requested."}</p></div></article>)}
+          <article><TutorialIcon paint={nodeIconPaint()}/><div><strong>AI Slop Server</strong><span>150 HP · spreads corruption</span><p>Spawns enemies and slowly corrupts nearby tiles. Destroy it to stop the spread.</p></div></article>
+        </div>
       </section>
     </div>
   );
