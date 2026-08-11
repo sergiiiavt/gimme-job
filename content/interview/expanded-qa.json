@@ -47,21 +47,22 @@
       "prevalence": "Very common"
     },
     {
-      "id": "black-grey-white-box",
+      "id": "testing-types",
       "level": "Junior",
       "category": "Fundamentals",
       "kind": "Theory",
-      "question": "How does the information available to a tester change black-box, grey-box and white-box testing?",
-      "shortAnswer": "Black-box tests derive behaviour from externally visible requirements, white-box tests use internal structure, and grey-box work uses partial architectural or data knowledge. These are perspectives, not competing test levels, and a feature can benefit from all three.",
+      "question": "What are the main testing types, and how do functional, non-functional, static, dynamic and change-related testing differ?",
+      "shortAnswer": "Testing types classify checks by objective or execution: functional testing covers behaviour, non-functional testing covers qualities such as performance, security and usability, static testing evaluates work products without execution, and dynamic testing runs the software. Confirmation testing checks a fix, while regression testing looks for unintended effects elsewhere. Black-box, white-box and grey-box describe the information or perspective used; unit, integration, system and acceptance are test levels, not testing types.",
       "strongAnswerSignals": [
-        "basis for test design",
-        "not confused with test levels",
+        "distinguishes classifications by objective, execution and change",
+        "does not confuse testing types, test levels and test techniques",
         "gives a practical example"
       ],
       "tags": [
-        "black-box",
-        "white-box",
-        "coverage"
+        "testing-types",
+        "functional-testing",
+        "non-functional-testing",
+        "static-and-dynamic-testing"
       ],
       "sourceIds": [
         "istqb-ctfl-v4",

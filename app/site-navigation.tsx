@@ -68,7 +68,6 @@ export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode,
       </aside>
 
       <aside className="kb-subnav">
-        <header><span>Section</span><strong>{secondaryTitle}</strong></header>
         <nav aria-label={`${secondaryTitle} subsections`}>
           {secondaryItems.map((item) => (
             <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
@@ -85,14 +84,12 @@ interface TopbarProps {
   children: ReactNode;
   mode: "public" | "private";
   onMenu: () => void;
-  title: string;
 }
 
-export function SiteTopbar({ children, mode, onMenu, title }: TopbarProps) {
+export function SiteTopbar({ children, mode, onMenu }: TopbarProps) {
   return (
     <header className="kb-topbar">
       <button className="kb-menu" onClick={onMenu} aria-label="Toggle navigation">☰</button>
-      <strong className="kb-topbar-title">{title}</strong>
       <div className={`kb-view-state ${mode}`}><i/>{mode === "public" ? "Public" : "Private"}</div>
       <div className="kb-top-actions">{children}</div>
     </header>

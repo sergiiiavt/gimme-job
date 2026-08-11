@@ -21,6 +21,14 @@ test("keeps the interview catalog exact and prevalence-complete", async () => {
     new Set(questions.map((question) => question.prevalence)),
     new Set(["Very common", "Common", "Occasional", "Specialist"]),
   );
+
+  for (const id of ["test-levels", "testing-types"]) {
+    const question = questions.find((item) => item.id === id);
+    assert.ok(question, `${id} must be present as an explicit foundational question.`);
+    assert.equal(question.category, "Fundamentals");
+    assert.equal(question.level, "Junior");
+    assert.equal(question.prevalence, "Very common");
+  }
 });
 
 test("lazy-loads the catalog and caps each rendered page at 60", async () => {

@@ -356,14 +356,14 @@ export default function PublicSite() {
       />
 
       <section className="kb-main">
-        <SiteTopbar mode="public" onMenu={() => setMobileNav((value) => !value)} title={activeLabel}>
+        <SiteTopbar mode="public" onMenu={() => setMobileNav((value) => !value)}>
           <Link className="kb-top-link" href="/workspace">Manage statuses & feedback</Link>
         </SiteTopbar>
 
         {section === "jobs" ? (
           <div className="kb-content">
             <header className="kb-page-head">
-              <div><span>JOBS</span><h1>Jobs</h1><p>Vacancies from connected sources, ordered from newest to oldest.</p></div>
+              <div><h1>Jobs</h1></div>
               <div className="kb-page-stats"><div><strong>{jobs.length}</strong><span>Vacancies</span></div><div><strong>Newest</strong><span>First</span></div><div><strong>Read-only</strong><span>Public view</span></div></div>
             </header>
 
@@ -434,7 +434,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
   return (
     <div className="kb-content">
       <header className="kb-page-head kb-article-head">
-        <div><span>{content.title.toUpperCase()}</span><h1>{content.title}</h1><p>{content.description}</p></div>
+        <div><h1>{content.title}</h1></div>
         <div className="kb-outline-badge"><i/>Public section</div>
       </header>
       <div className="kb-topic-grid">
@@ -518,9 +518,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activ
     <div className="kb-content iq-page">
       <header className="kb-page-head iq-head">
         <div>
-          <span>INTERVIEW QUESTIONS</span>
           <h1>{activeTaxonomy?.category ? activeTaxonomy.label : "QA interview knowledge base"}</h1>
-          <p>{activeTaxonomy?.description ?? catalog.description}</p>
         </div>
         <div className="kb-page-stats">
           <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
@@ -626,7 +624,7 @@ function InterviewMethodology({ catalog, onBack }: { catalog: InterviewCatalog; 
   return (
     <div className="kb-content iq-page iq-methodology">
       <header className="kb-page-head iq-head">
-        <div><span>INTERVIEW QUESTIONS</span><h1>Sources & methodology</h1><p>The research, source roles, editorial rules and storage model behind the public collection.</p></div>
+        <div><h1>Sources & methodology</h1></div>
         <button className="iq-back" onClick={onBack}>View all questions</button>
       </header>
 
