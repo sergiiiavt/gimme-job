@@ -152,7 +152,7 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, gameSource] = await Promise.all([
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, gameSource, privateJobsSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -161,6 +161,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
     readFile(projectFile("app/resume-page.tsx"), "utf8"),
     readFile(projectFile("app/about-site.tsx"), "utf8"),
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
+    readFile(projectFile("app/page.tsx"), "utf8"),
   ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
@@ -214,27 +215,53 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(stylesSource, /\.kb-nav-intro/);
   assert.match(stylesSource, /\.kb-navigation \.kb-nav-list \.kb-nav-link \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.about-intro p \{[^}]*font-size: 15px/);
+  assert.match(stylesSource, /\.about-card header p \{[^}]*font-size: 13px/);
+  assert.match(stylesSource, /\.about-detail-grid dd \{[^}]*font-size: 13px/);
   assert.match(stylesSource, /\.rw-controls p \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.rw-guide-grid p \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.rw-guide-list p \{[^}]*font-size: 11px/);
+  assert.doesNotMatch(privateJobsSource, /company-mark/);
+  assert.doesNotMatch(uiSource, /kb-company-mark/);
+  assert.doesNotMatch(stylesSource, /\.job-card\s*\{[^}]*grid-template-columns:\s*\d+px/);
+  assert.doesNotMatch(stylesSource, /\.detail-head\s*\{[^}]*grid-template-columns:\s*\d+px/);
+  assert.doesNotMatch(stylesSource, /\.kb-job-row\s*\{[^}]*grid-template-columns:\s*\d+px/);
+  assert.match(stylesSource, /\.kb-job-action-stack > a \{/);
+  assert.match(privateJobsSource, /createLocalAgentApiResolver/);
+  assert.match(privateJobsSource, /const base = await apiBase\(\)/);
+  assert.match(privateJobsSource, /fetch\(`\$\{base\}\$\{path\}`/);
+  assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_PORT/);
+  assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_INSTANCE_ID/);
+  assert.match(privateJobsSource, /aria-controls="selected-vacancy-detail"/);
+  assert.match(privateJobsSource, /aria-pressed=\{selected\?\.id === job\.id\}/);
+  assert.match(privateJobsSource, /id="selected-vacancy-detail" role="region"/);
+  assert.match(privateJobsSource, /aria-label="Search vacancies"/);
+  assert.match(privateJobsSource, /aria-pressed=\{job\.feedback === "RELEVANT"\}/);
+  assert.match(privateJobsSource, /className="toast" role="status" aria-live="polite"/);
+  assert.match(uiSource, /aria-label="Search public vacancies"/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "llm"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
   assert.ok(navigationSource.indexOf('id: "agentic"') < navigationSource.indexOf('id: "certifications"'), "Both AI topics must appear directly after Interview questions.");
   assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Fight AI slop must be the final section above the view switch.");
-  assert.match(uiSource, /if \(section === "about"\) return <AboutSite\/>/);
+  assert.match(uiSource, /if \(section === "about"\) return <AboutSite mode=\{mode\}\/>/);
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
   assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
   assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
-  assert.match(aboutSource, /PET PROJECT · LIVE PRODUCTION SYSTEM/);
+  assert.match(aboutSource, /production pet project/i);
+  assert.match(aboutSource, /skills showcase/i);
   assert.match(aboutSource, /View the source on GitHub/);
-  assert.match(aboutSource, /602 researched QA questions/);
+  assert.match(aboutSource, /mode === "personal" \? "\/workspace\/learn\?section=interview" : "#interview"/);
+  assert.match(aboutSource, /602\+[\s\S]{0,80}researched QA questions/);
+  assert.match(aboutSource, /19\+[\s\S]{0,80}interview topics/);
+  assert.match(aboutSource, /50\+[\s\S]{0,80}source references/);
+  assert.match(aboutSource, /60[\s\S]{0,80}maximum rendered rows/);
   assert.match(aboutSource, /What must pass/);
   assert.match(aboutSource, /What is public and private/);
   assert.match(aboutSource, /Runtime architecture/);
   assert.match(aboutSource, /Deployment flow/);
-  assert.match(aboutSource, /Git catalog \/ D1 private data/);
+  assert.match(aboutSource, /Public: Git \+ sanitized vacancies · Private: authenticated D1/);
+  assert.match(aboutSource, /Sanitized vacancies are projected publicly/);
   assert.doesNotMatch(aboutSource, /about-hero/);
   assert.match(gameSource, /How to fight AI slop/);
   assert.doesNotMatch(gameSource, /How to kill AI slop|Kill the feed/);

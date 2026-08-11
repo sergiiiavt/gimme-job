@@ -10,6 +10,7 @@ import {
 import { JobDatabase } from "./src/db.js";
 import {
   CandidateProfileSchema,
+  JobTrackingUpdateSchema,
   SourcesConfigSchema,
   type JobInput,
   type StoredJob,
@@ -22,13 +23,17 @@ import {
 import { buildMarketReport } from "./src/market.js";
 import { buildSources } from "./src/sources/index.js";
 import { collectAllSources } from "./src/sources/types.js";
-import { resolvePort } from "./src/port.js";
+import { localAgentInstanceId } from "./src/identity.js";
+import { listenOnAvailablePort } from "./src/port.js";
 
 loadEnvironment();
 
 const paths = initializeConfig();
 const db = new JobDatabase(paths.db);
-const requestedPort = Number.parseInt(process.env.JOB_AGENT_PORT ?? "4317", 10);
+const requestedPort = Number(process.env.JOB_AGENT_PORT ?? "4317");
+const agentStartedAt = Date.now();
+const agentInstanceId = process.env.JOB_AGENT_INSTANCE_ID
+  ?? localAgentInstanceId(process.cwd(), paths.db);
 const allowedOrigins = new Set([
   "http://localhost:4173",
   "http://127.0.0.1:4173",
@@ -44,7 +49,7 @@ function json(
 ): void {
   response.writeHead(status, {
     "access-control-allow-headers": "content-type",
-    "access-control-allow-methods": "GET, POST, PUT, OPTIONS",
+    "access-control-allow-methods": "GET, POST, PUT, PATCH, OPTIONS",
     "cache-control": "no-store",
     "content-type": "application/json; charset=utf-8",
   });
@@ -73,8 +78,14 @@ function draftForJob(jobId: string) {
 }
 
 function jobView(job: StoredJob) {
+  const tracking = db.getJobTracking(job.id);
   return {
     ...job,
+    agentStatus: job.status,
+    status: tracking?.status ?? (job.status === "ARCHIVED" ? "ARCHIVED" : "NEW"),
+    statusUpdatedAt: tracking?.statusUpdatedAt ?? null,
+    feedback: tracking?.feedback ?? null,
+    feedbackAt: tracking?.feedbackAt ?? null,
     analysis: db.getAnalysis(job.id),
     resume: db.getResume(job.id),
     draft: draftForJob(job.id),
@@ -212,7 +223,13 @@ async function route(request: IncomingMessage, response: ServerResponse) {
   const routePath = requestUrl.pathname;
 
   if (request.method === "GET" && routePath === "/api/health") {
-    json(response, 200, { ok: true, service: "job-search-agent" });
+    json(response, 200, {
+      ok: true,
+      service: "job-search-agent",
+      apiVersion: 1,
+      instanceId: agentInstanceId,
+      startedAt: agentStartedAt,
+    });
     return;
   }
   if (request.method === "GET" && routePath === "/api/dashboard") {
@@ -280,6 +297,15 @@ async function route(request: IncomingMessage, response: ServerResponse) {
     return;
   }
 
+  const jobMatch = routePath.match(/^\/api\/jobs\/([^/]+)$/);
+  if (request.method === "PATCH" && jobMatch) {
+    const jobIdValue = decodeURIComponent(jobMatch[1] ?? "");
+    const update = JobTrackingUpdateSchema.parse(await body(request));
+    const job = db.updateJobTracking(jobIdValue, update);
+    json(response, 200, { ok: true, job, dashboard: dashboard() });
+    return;
+  }
+
   const draftMatch = routePath.match(/^\/api\/drafts\/([^/]+)\/(approve|reject|recipient|send)$/);
   if (request.method === "POST" && draftMatch) {
     const [, rawId, action] = draftMatch;
@@ -332,21 +358,26 @@ const server = createServer((request, response) => {
 });
 
 let port = requestedPort;
+let serverStarted = false;
+
+server.on("error", (error) => {
+  if (serverStarted) console.error("Local agent server error:", error);
+});
 
 async function startServer() {
   try {
-    port = await resolvePort(requestedPort, "127.0.0.1");
-    server.listen(port, "127.0.0.1", async () => {
-      if (db.listJobs(1).length === 0) {
-        try {
-          await syncJobs(true);
-          await analyzeJobs({ limit: 5 });
-        } catch (error) {
-          console.warn("Starter data could not be loaded:", error);
-        }
+    port = await listenOnAvailablePort(server, requestedPort, "127.0.0.1");
+    serverStarted = true;
+
+    if (db.listJobs(1).length === 0) {
+      try {
+        await syncJobs(true);
+        await analyzeJobs({ limit: 5 });
+      } catch (error) {
+        console.warn("Starter data could not be loaded:", error);
       }
-      console.log(`Job Search API ready at http://127.0.0.1:${port}`);
-    });
+    }
+    console.log(`Job Search API ready at http://127.0.0.1:${port}`);
   } catch (error) {
     console.error("Failed to start local agent server:", error);
     process.exit(1);

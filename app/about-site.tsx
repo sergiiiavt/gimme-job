@@ -10,22 +10,22 @@ const technologyGroups = [
 const productAreas = [
   {
     title: "Interview preparation",
-    copy: "A catalog of researched QA questions with answers, sources, tags, and learning progress.",
+    copy: "An additive QA catalog with sourced answers, AND search, multi-select filters, learning progress, and a strict 60-row render cap.",
     tags: ["Research", "Taxonomy", "Learning UX"],
   },
   {
     title: "Career workspace",
-    copy: "A public vacancy feed sits beside a private workspace for tracking applications, notes, and relevance.",
+    copy: "A sanitized public vacancy feed sits beside private D1-backed application statuses, relevance feedback, learning progress, and resume details.",
     tags: ["Product design", "Private state", "D1"],
   },
   {
     title: "Quality engineering",
-    copy: "Validation checks and automated tests protect the content and deployment flow.",
+    copy: "ID and source validation, linting, type checks, behavior tests, artifact inspection, and live checks gate every production change.",
     tags: ["Automation", "Risk controls", "CI"],
   },
   {
     title: "Working experiments",
-    copy: "The interview map and anti-slop game demonstrate interaction patterns and accessibility choices.",
+    copy: "Lazy catalog chunks, the full-screen Fight AI slop game, responsive layouts, and accessible controls exercise real interface tradeoffs.",
     tags: ["Frontend", "Accessibility", "Performance"],
   },
 ];
@@ -51,25 +51,25 @@ function Flow({ items }: { items: string[] }) {
   );
 }
 
-export default function AboutSite() {
+export default function AboutSite({ mode = "public" }: { mode?: "public" | "personal" }) {
   return (
     <div className="kb-content about-page">
       <header className="about-intro">
         <div>
-          <span>PROJECT OVERVIEW</span>
-          <h1>A practical QA engineering portfolio in production.</h1>
-          <p>GimmeJob combines public interview content, a private workspace, and the implementation behind them in one place.</p>
+          <span>PRODUCTION PET PROJECT · QA ENGINEERING PORTFOLIO</span>
+          <h1>A working skills showcase, built and operated in production.</h1>
+          <p>GimmeJob is my production pet project for demonstrating practical QA, product, and engineering skills. It brings together at least 602 researched QA interview questions across 19+ topics and 50+ referenced sources, private career and learning tools, automated quality gates, and a GitHub Actions → Cloudflare delivery pipeline.</p>
         </div>
         <nav className="about-links" aria-label="Project links">
           <a href="https://github.com/sergiiiavt/gimmejob" target="_blank" rel="noreferrer">View the source on GitHub ↗</a>
-          <a href="#interview">Open the interview catalog →</a>
+          <a href={mode === "personal" ? "/workspace/learn?section=interview" : "#interview"}>Open the interview catalog →</a>
         </nav>
       </header>
 
       <section className="about-proof" aria-label="Project scope">
-        <div><strong>602</strong><span>researched QA questions</span></div>
-        <div><strong>19</strong><span>interview topics</span></div>
-        <div><strong>50</strong><span>source references</span></div>
+        <div><strong>602+</strong><span>researched QA questions</span></div>
+        <div><strong>19+</strong><span>interview topics</span></div>
+        <div><strong>50+</strong><span>source references</span></div>
         <div><strong>60</strong><span>maximum rendered rows</span></div>
       </section>
 
@@ -96,8 +96,8 @@ export default function AboutSite() {
         </section>
 
         <section className="about-card">
-          <header><span>06</span><div><h2>Runtime architecture</h2><p>The browser receives public Git content; authenticated requests unlock private D1 state.</p></div></header>
-          <Flow items={["Browser UI", "Worker router + protected API", "Git catalog / D1 private data"]}/>
+          <header><span>06</span><div><h2>Runtime architecture</h2><p>Public routes combine the Git catalog with a sanitized D1 vacancy projection; authenticated routes unlock private D1 state.</p></div></header>
+          <Flow items={["Browser UI", "Worker routes", "Public: Git + sanitized vacancies · Private: authenticated D1"]}/>
         </section>
 
         <section className="about-card">
@@ -117,7 +117,7 @@ export default function AboutSite() {
           <h2>What is public and private</h2>
           <dl>
             <div><dt>Git</dt><dd>Public questions, answers, sources, learning material, interface code, and deployment history.</dd></div>
-            <div><dt>D1</dt><dd>Private progress, notes, bookmarks, resume contact details, vacancies, and application state.</dd></div>
+            <div><dt>D1</dt><dd>Sanitized vacancies are projected publicly; learning progress, resume contact details, and application state require authentication.</dd></div>
             <div><dt>Sessions</dt><dd>Protected workspace and write APIs; public pages cannot read personal settings.</dd></div>
           </dl>
         </article>
