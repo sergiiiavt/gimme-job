@@ -359,7 +359,7 @@ function addWaveNode(state: GameState, boss = false) {
   if (!available.length) return;
   const point = available[Math.floor(Math.random() * available.length)];
   createNode(state, point, boss);
-  setMessage(state, boss ? "AI SLOP MAINFRAME ONLINE. Kill the feed." : "A fresh AI slop server is poisoning the field.", 4);
+  setMessage(state, boss ? "AI SLOP MAINFRAME ONLINE. Break the feed." : "A fresh AI slop server is poisoning the field.", 4);
 }
 
 function updateNodes(state: GameState, dt: number) {
@@ -679,7 +679,7 @@ function formatTime(seconds: number) {
 function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to kill AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to fight AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
       <section className="rw-guide-grid">
         <article><span>01</span><h2>Arm</h2><p>Plant defenses on healthy grass. Sunblooms fund the fight; blockers and attackers turn the path into a trap.</p></article>
         <article><span>02</span><h2>Crush</h2><p>AI slop servers spread corruption and manufacture junk. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>

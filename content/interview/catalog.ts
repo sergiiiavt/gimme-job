@@ -10,7 +10,7 @@ import sources from "./sources.json";
 import taxonomy from "./taxonomy.json";
 
 export const interviewCatalog = {
-  version: 7,
+  version: 8,
   title: "QA interview knowledge base",
   description: "Canonical interview questions with original answers, practical signals, tags and traceable technical sources.",
   lastReviewedAt: "2026-08-11",

@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
-const MINIMUM_QUESTION_COUNT = 601;
+const MINIMUM_QUESTION_COUNT = 602;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },

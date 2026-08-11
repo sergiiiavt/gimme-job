@@ -26,14 +26,14 @@ const questionTexts = new Set();
 
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 
-assert.ok(questions.length >= 601, "The public collection must not regress below the current 601-question baseline.");
+assert.ok(questions.length >= 602, "The public collection must not regress below the current 602-question baseline.");
 assert.equal(sources.length, 50, "The source catalog must contain exactly 50 researched sources.");
 assert.equal(categories.size, 19, "The taxonomy must contain exactly 19 question topics.");
 assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
 assert.equal(observabilityProduction.questions.length, 25, "The explicit observability and production set must contain 25 audited questions.");
 assert.equal(restoredCoverage.questions.length, 21, "The restored coverage set must contain 21 audited questions.");
-assert.equal(testingFoundations.questions.length, 6, "The explicit testing foundations set must contain 6 audited questions.");
+assert.equal(testingFoundations.questions.length, 7, "The explicit testing foundations set must contain 7 audited questions.");
 assert.equal(embedded.questions.length, 29, "The explicit embedded and IoT set must contain 29 audited questions.");
 assert.deepEqual(
   new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)),

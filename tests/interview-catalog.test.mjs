@@ -19,7 +19,7 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   ]);
   const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...expanded.questions];
 
-  assert.ok(questions.length >= 601);
+  assert.ok(questions.length >= 602);
   assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
   assert.equal(taxonomy.filter((item) => item.category).length, 19);
   assert.equal(sources.length, 50);
@@ -27,7 +27,7 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   assert.equal(databaseSql.questions.length, 25);
   assert.equal(observabilityProduction.questions.length, 25);
   assert.equal(restoredCoverage.questions.length, 21);
-  assert.equal(testingFoundations.questions.length, 6);
+  assert.equal(testingFoundations.questions.length, 7);
   assert.equal(embedded.questions.length, 29);
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
   assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 19);
@@ -85,6 +85,7 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     "error-budget-release-decisions",
     "blameless-postmortem-actions",
     "testing-principle-defect-clustering",
+    "test-design-techniques-inventory",
     "test-design-technique-and-oracle",
     "embedded-layered-test-strategy",
     "embedded-power-loss-atomicity",
@@ -108,6 +109,33 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     assert.equal(question.level, "Junior");
     assert.equal(question.prevalence, "Very common");
   }
+
+  const testingTypes = questions.find((question) => question.id === "testing-types");
+  assert.match(testingTypes.question, /What test types do you know/i);
+  for (const type of ["performance", "load and stress", "security", "usability and accessibility", "compatibility", "reliability and recovery", "maintainability", "portability", "safety"]) {
+    assert.match(testingTypes.shortAnswer, new RegExp(type, "i"));
+  }
+  assert.match(testingTypes.shortAnswer, /component, integration, system and acceptance are test levels/i);
+
+  const techniqueInventory = questions.find((question) => question.id === "test-design-techniques-inventory");
+  assert.match(techniqueInventory.question, /What test-design techniques do you know/i);
+  for (const technique of ["equivalence partitioning", "boundary-value analysis", "decision-table testing", "state-transition testing", "pairwise", "statement", "branch", "exploratory testing", "error guessing", "checklist-based testing"]) {
+    assert.match(techniqueInventory.shortAnswer, new RegExp(technique, "i"));
+  }
+
+  const matchesAllWords = (question, query) => {
+    const searchable = `${question.question} ${question.shortAnswer} ${question.tags.join(" ")}`.toLowerCase();
+    return query.toLowerCase().trim().split(/\s+/).every((term) => searchable.includes(term));
+  };
+  assert.ok(matchesAllWords(testingTypes, "test types"));
+  assert.ok(matchesAllWords(techniqueInventory, "test design techniques"));
+  assert.ok(matchesAllWords(techniqueInventory, "what all techniques do you know"));
+
+  for (const id of ["pairwise-combinatorial-testing", "use-case-test-design", "classification-tree-testing"]) {
+    const question = questions.find((item) => item.id === id);
+    assert.ok(question.sourceIds.includes("istqb-glossary"));
+    assert.ok(!question.sourceIds.includes("istqb-ctfl-v4"), `${id} must not attribute a technique outside the Foundation syllabus to CTFL v4.`);
+  }
 });
 
 test("preserves existing generated questions when authored coverage grows", async () => {
@@ -118,13 +146,13 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.match(generatorSource, /readJson\("content\/interview\/observability-production-qa\.json"\)/);
   assert.match(generatorSource, /readJson\("content\/interview\/testing-foundations-qa\.json"\)/);
   assert.match(generatorSource, /readJson\("content\/interview\/embedded-qa\.json"\)/);
-  assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 601;/);
+  assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 602;/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource] = await Promise.all([
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, gameSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -132,6 +160,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
     readFile(projectFile("db/schema.ts"), "utf8"),
     readFile(projectFile("app/resume-page.tsx"), "utf8"),
     readFile(projectFile("app/about-site.tsx"), "utf8"),
+    readFile(projectFile("app/rewild-game.tsx"), "utf8"),
   ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
@@ -183,6 +212,11 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(stylesSource, /\.kb-area-group-learning/);
   assert.match(stylesSource, /\.kb-area-group-misc/);
   assert.match(stylesSource, /\.kb-nav-intro/);
+  assert.match(stylesSource, /\.kb-navigation \.kb-nav-list \.kb-nav-link \{[^}]*font-size: 12px/);
+  assert.match(stylesSource, /\.about-intro p \{[^}]*font-size: 15px/);
+  assert.match(stylesSource, /\.rw-controls p \{[^}]*font-size: 12px/);
+  assert.match(stylesSource, /\.rw-guide-grid p \{[^}]*font-size: 12px/);
+  assert.match(stylesSource, /\.rw-guide-list p \{[^}]*font-size: 11px/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "llm"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
@@ -193,11 +227,17 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
   assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
   assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
-  assert.match(aboutSource, /PET PROJECT \/ LIVE SYSTEM/);
-  assert.match(aboutSource, /GitHub repository/);
+  assert.match(aboutSource, /PET PROJECT · LIVE PRODUCTION SYSTEM/);
+  assert.match(aboutSource, /View the source on GitHub/);
+  assert.match(aboutSource, /602 researched QA questions/);
+  assert.match(aboutSource, /What must pass/);
+  assert.match(aboutSource, /What is public and private/);
   assert.match(aboutSource, /Runtime architecture/);
   assert.match(aboutSource, /Deployment flow/);
   assert.match(aboutSource, /Git catalog \/ D1 private data/);
+  assert.doesNotMatch(aboutSource, /about-hero/);
+  assert.match(gameSource, /How to fight AI slop/);
+  assert.doesNotMatch(gameSource, /How to kill AI slop|Kill the feed/);
   assert.match(resumeSource, /fetch\("\/api\/settings"\)/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.phone/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.email/);
