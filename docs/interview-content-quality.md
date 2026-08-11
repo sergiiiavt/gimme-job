@@ -19,7 +19,7 @@ The failure had four causes:
 
 Validation now requires:
 
-- at least the current 541-question baseline, exactly 18 topics and exactly 46 sources;
+- at least the current 566-question baseline, exactly 18 topics and exactly 46 sources;
 - exactly 30 canonical-baseline questions covering every topic;
 - stable explicit IDs for canonical questions;
 - explicit presence of critical foundational questions;
@@ -39,6 +39,12 @@ The same topic-count failure later appeared in “Data & BI.” The topic contai
 A history review found that three later content commits recorded 58 deletions while keeping the total fixed at 520. Many were repetitive generated variants, but the fixed-cap generator also removed useful coverage. `content/interview/restored-coverage-qa.json` restores 21 high-value concepts as stable, directly searchable questions, bringing the catalog to 541.
 
 The generator now loads and preserves existing generated entries before checking topic floors. It creates questions only when a topic falls below its minimum and never removes an entry merely because reviewed content was added. Validation and regression tests enforce a rolling catalog-wide minimum instead of a maximum and require all 21 restored IDs.
+
+## Observability and production coverage correction
+
+The observability topic had useful direct entries for telemetry signals, SLO terminology and canary verification, but 26 of its 29 questions were generated combinations. That made foundational production concepts harder to discover and left the answers too repetitive for practical preparation.
+
+`content/interview/observability-production-qa.json` adds 25 stable, researched questions without displacing any existing ID. The audited set covers monitoring and observability, signal selection, golden signals, metric shapes, latency percentiles, structured logs, trace propagation and sampling, telemetry cardinality and privacy, Kubernetes probes, production smoke tests, synthetic and real-user monitoring, telemetry-pipeline validation, actionable alerting, metamonitoring, error budgets, burn-rate alerts, incident evidence and postmortem actions. The catalog therefore grows from 541 to 566 questions.
 
 ## Readability and media policy
 

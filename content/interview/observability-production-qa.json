@@ -1,0 +1,601 @@
+{
+  "questions": [
+    {
+      "id": "monitoring-versus-observability",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "How do monitoring and observability differ?",
+      "shortAnswer": "Monitoring checks known conditions through selected measurements, dashboards and alerts. Observability is the broader ability to infer a system's internal state from its outputs and investigate questions that were not predicted when instrumentation was added. A useful production approach needs both: monitor critical user outcomes and expected failure modes, while preserving enough contextual telemetry to diagnose unfamiliar behaviour without immediately shipping new instrumentation.",
+      "strongAnswerSignals": [
+        "distinguishes known-condition checks from open-ended investigation",
+        "connects observability to purposeful instrumentation",
+        "keeps user outcomes central"
+      ],
+      "tags": [
+        "observability",
+        "monitoring",
+        "telemetry",
+        "production"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "google-sre"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "choosing-observability-signals",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "When should you use metrics, logs or traces to investigate production behaviour?",
+      "shortAnswer": "Use metrics for aggregated rates, distributions and trends; logs for discrete events with detailed context; and traces for the path and timing of one request across components. Start from the decision or failure mode rather than collecting every possible field. Correlate the signals with consistent service, environment, version and request context so a tester can move from an abnormal metric to a representative trace and then to the relevant events.",
+      "strongAnswerSignals": [
+        "selects each signal for a distinct question",
+        "correlates signals with shared context",
+        "avoids indiscriminate telemetry collection"
+      ],
+      "tags": [
+        "metrics",
+        "logs",
+        "traces",
+        "telemetry"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "google-sre"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "four-golden-signals",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "What are the four golden signals, and how do they guide production testing?",
+      "shortAnswer": "The four golden signals are latency, traffic, errors and saturation. Together they show how much work arrives, how long it takes, whether it succeeds and how close constrained resources are to their limits. A production test should relate them to a user journey and deployment version, separate successful from failed latency, and adapt the model for asynchronous systems by checking measures such as backlog age, throughput and time to completion.",
+      "strongAnswerSignals": [
+        "names latency, traffic, errors and saturation",
+        "relates signals to user-visible outcomes",
+        "adapts the model for queued or batch work"
+      ],
+      "tags": [
+        "golden-signals",
+        "metrics",
+        "reliability",
+        "production"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "prometheus-alerting"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "metric-counters-gauges-histograms",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "When should production telemetry use a counter, gauge or histogram?",
+      "shortAnswer": "A counter represents a total that accumulates, such as completed requests or failures; queries usually calculate its rate over time. A gauge represents a value that can rise or fall, such as queue depth or current concurrency. A histogram groups observations such as request duration into a distribution that supports counts, thresholds and percentile estimates. Test resets, missing intervals, bucket boundaries, units and labels before trusting any dashboard or alert derived from them.",
+      "strongAnswerSignals": [
+        "matches each metric shape to its behaviour",
+        "recognizes rates and process resets",
+        "checks units, buckets and labels"
+      ],
+      "tags": [
+        "metrics",
+        "counter",
+        "gauge",
+        "histogram"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "prometheus-alerting"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "latency-percentiles-versus-averages",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "Why are latency percentiles usually more useful than an average in production?",
+      "shortAnswer": "An average can hide a slow minority behind many fast requests, while percentiles show a boundary for a chosen share of observations: p95 is the value at or below which about 95 percent fall. A tester must still define the population, time window, operation and success state, because mixed endpoints or failed fast requests distort the result. Compare several percentiles with request volume, errors and resources, and retain raw distribution evidence where possible.",
+      "strongAnswerSignals": [
+        "explains the tail hidden by an average",
+        "defines population and time window",
+        "correlates latency with volume, errors and resources"
+      ],
+      "tags": [
+        "latency",
+        "percentiles",
+        "metrics",
+        "performance"
+      ],
+      "sourceIds": [
+        "k6-docs",
+        "google-sre"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "structured-production-logging",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Test design",
+      "question": "What makes a production log useful for investigation?",
+      "shortAnswer": "A useful log records a stable event name, timestamp, severity, service and environment, deployment version, outcome and enough domain context to explain what happened. Structured fields make filtering and aggregation safer than parsing free-form prose, while trace or request identifiers connect related work. Verify clock handling, field types and coverage of failure paths, and keep secrets, credentials and unnecessary personal data out of both messages and metadata.",
+      "strongAnswerSignals": [
+        "uses stable structured fields",
+        "includes correlation and deployment context",
+        "excludes sensitive data"
+      ],
+      "tags": [
+        "logs",
+        "structured-logging",
+        "correlation",
+        "production"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "grafana-loki"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "trace-context-log-correlation",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Test design",
+      "question": "How would you test trace-context and log correlation across services?",
+      "shortAnswer": "Trigger a known request and verify that valid trace and span context is propagated through synchronous calls, queues, retries and fan-out without creating unrelated root traces. Logs emitted during the work should carry the active identifiers so an investigator can move between a trace and its events. Also test malformed or untrusted incoming context, boundaries to third parties, sampling behaviour and asynchronous continuation so correlation does not become a security leak or a false causal link.",
+      "strongAnswerSignals": [
+        "covers synchronous and asynchronous propagation",
+        "verifies logs contain active trace context",
+        "tests trust boundaries and malformed context"
+      ],
+      "tags": [
+        "trace-context",
+        "logs",
+        "distributed-tracing",
+        "correlation"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "distributed-trace-critical-path",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Practical",
+      "question": "How do you use a distributed trace to find the critical path of a slow request?",
+      "shortAnswer": "Follow the parent-child span relationships and timing rather than adding every span duration, because child work can overlap. Identify the chain that determines end-to-end completion, then inspect long or erroneous spans, gaps, retries, fan-out and queue time on that path. Confirm that service names, operation names, status and attributes are accurate and compare the trace with metrics and logs; one sampled request is evidence for a case, not proof of the whole population.",
+      "strongAnswerSignals": [
+        "accounts for concurrent spans",
+        "separates the critical path from total work",
+        "correlates a trace with aggregate evidence"
+      ],
+      "tags": [
+        "distributed-tracing",
+        "spans",
+        "critical-path",
+        "latency"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "google-sre"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "trace-sampling-strategy",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Strategy",
+      "question": "How would you test a distributed-trace sampling strategy?",
+      "shortAnswer": "Start from investigation needs, traffic volume, cost and privacy constraints. Verify that the chosen head- or tail-sampling rules keep decisions consistent across a trace and retain enough errors, slow requests and representative normal traffic to answer operational questions. Exercise bursts, rare routes, retries, collector backpressure and configuration changes; compare kept and observed request counts, and document which conclusions are unsafe because sampling can bias the retained population.",
+      "strongAnswerSignals": [
+        "distinguishes head and tail decision tradeoffs",
+        "tests rare failures and high-volume behaviour",
+        "recognizes sampling bias"
+      ],
+      "tags": [
+        "tracing",
+        "sampling",
+        "telemetry-cost",
+        "observability"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "telemetry-cardinality-control",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Risk analysis",
+      "question": "Why is telemetry cardinality a production risk, and how would you test it?",
+      "shortAnswer": "Cardinality is the number of distinct attribute or label combinations. Unbounded values such as user IDs, raw URLs, timestamps or request IDs can create excessive metric state, log streams, storage cost and slow queries. Review every dimension for boundedness, generate many realistic values, measure series or stream growth and verify configured limits and overflow signals. Preserve high-cardinality investigation data in logs, traces or structured metadata instead of turning it into indexed metric labels.",
+      "strongAnswerSignals": [
+        "identifies unbounded label values",
+        "measures growth rather than checking a single request",
+        "chooses a more suitable signal for detailed context"
+      ],
+      "tags": [
+        "cardinality",
+        "metrics",
+        "logs",
+        "telemetry-cost"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "grafana-loki"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "sensitive-data-in-telemetry",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Risk analysis",
+      "question": "How would you prevent and test sensitive-data leakage through telemetry?",
+      "shortAnswer": "Define an allowlist of operational fields and classify data before it reaches logs, metrics, spans or propagated baggage. Exercise credentials, tokens, personal data, payment values and confidential payloads through success, validation, exception and retry paths, then search every collector and backend representation for raw and encoded variants. Verify redaction at the earliest safe boundary, access control, retention and deletion, and ensure diagnostic usefulness survives without copying full requests or secrets.",
+      "strongAnswerSignals": [
+        "tests all telemetry signals and propagation fields",
+        "covers exceptional as well as successful paths",
+        "checks access and retention in addition to redaction"
+      ],
+      "tags": [
+        "telemetry",
+        "privacy",
+        "redaction",
+        "secrets"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "owasp-asvs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "liveness-readiness-startup-probes",
+      "level": "Junior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "How do liveness, readiness and startup probes differ in Kubernetes?",
+      "shortAnswer": "A liveness probe asks whether a container is stuck and should be restarted. A readiness probe asks whether it should receive service traffic and can change throughout its lifetime. A startup probe protects slow initialization by delaying liveness and readiness checks until startup succeeds. Test each failure independently: readiness failure should remove traffic without an unnecessary restart, liveness failure should recover the container, and startup timing should cover the slowest credible initialization.",
+      "strongAnswerSignals": [
+        "distinguishes restart from traffic eligibility",
+        "explains startup-probe protection",
+        "tests each probe independently"
+      ],
+      "tags": [
+        "kubernetes",
+        "liveness",
+        "readiness",
+        "startup"
+      ],
+      "sourceIds": [
+        "kubernetes-probes"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "production-health-check-design",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Test design",
+      "question": "What should a useful production health check verify?",
+      "shortAnswer": "A health check should be fast, deterministic, bounded by a short timeout and aligned with the action its result triggers. Liveness should prove only that local progress requires no restart; readiness may check the minimum conditions needed to serve traffic, but should not fail for every optional dependency. Test stale caches, degraded dependencies, overload, partial initialization and authentication boundaries, and keep sensitive diagnostics out of public responses while exposing deeper detail to authorized operators.",
+      "strongAnswerSignals": [
+        "designs the check around its operational action",
+        "separates required from optional dependencies",
+        "covers degraded and overloaded states"
+      ],
+      "tags": [
+        "health-checks",
+        "kubernetes",
+        "dependencies",
+        "production"
+      ],
+      "sourceIds": [
+        "kubernetes-probes",
+        "google-sre"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "probe-cascading-failure-risk",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Troubleshooting",
+      "question": "How can a badly designed health probe turn degradation into a cascading failure?",
+      "shortAnswer": "A liveness check that depends on a slow downstream service can restart otherwise recoverable instances, adding cold-start load while remaining instances receive more traffic. An overly broad readiness check can remove every replica at once, and thresholds shorter than normal startup or garbage-collection pauses can cause repeated churn. Reproduce dependency latency and high load, inspect endpoint membership and restarts, tune timeouts and failure thresholds, and verify the system keeps a safe degraded mode.",
+      "strongAnswerSignals": [
+        "connects false liveness failures to restart amplification",
+        "checks fleet-level traffic effects",
+        "validates degraded operation under load"
+      ],
+      "tags": [
+        "kubernetes",
+        "health-checks",
+        "cascading-failure",
+        "resilience"
+      ],
+      "sourceIds": [
+        "kubernetes-probes",
+        "google-sre"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "post-deployment-production-smoke-tests",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Practical",
+      "question": "What should post-deployment production smoke tests verify beyond a 200 health response?",
+      "shortAnswer": "Verify the intended version and configuration, a small set of critical user paths, authentication and authorization, an authoritative read and safe write where feasible, dependency connectivity and the telemetry needed to diagnose failures. Use identifiable synthetic accounts or idempotent data with cleanup and strict rate limits. Compare key signals with the pre-deploy baseline, confirm alarms and rollback criteria, and avoid tests that trigger real notifications, payments or other harmful side effects.",
+      "strongAnswerSignals": [
+        "checks version, configuration and critical outcomes",
+        "uses safe identifiable synthetic data",
+        "connects results to rollback criteria"
+      ],
+      "tags": [
+        "deployment",
+        "smoke-testing",
+        "production",
+        "rollback"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "dora"
+      ],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "synthetic-versus-real-user-monitoring",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "How do synthetic monitoring and real-user monitoring complement each other?",
+      "shortAnswer": "Synthetic monitoring runs controlled journeys on a schedule or from selected locations, so it can detect outages before traffic arrives and provide a stable comparison. Real-user monitoring observes actual devices, networks, regions and behaviour, revealing variability that scripts may miss. Validate that both measure the same user outcomes, separate test traffic from customer analytics, protect personal data and compare their coverage; neither proves health for flows, populations or times it does not observe.",
+      "strongAnswerSignals": [
+        "contrasts controlled checks with real population evidence",
+        "keeps synthetic traffic identifiable",
+        "states the coverage limits of both approaches"
+      ],
+      "tags": [
+        "synthetic-monitoring",
+        "real-user-monitoring",
+        "user-journeys",
+        "production"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "k6-docs"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "telemetry-pipeline-validation",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Test design",
+      "question": "How would you test that a telemetry pipeline is not silently losing or corrupting data?",
+      "shortAnswer": "Emit a known set of uniquely identifiable metrics, logs and traces, then reconcile what each application, collector, queue, exporter and backend accepts, retries, drops and stores. Verify timestamps, units, resource attributes, trace relationships, transformations and end-to-end delay. Exercise backend outages, rate limits, malformed records, restarts and backpressure, and monitor the monitoring path itself so dropped data, rejected batches, queue saturation and sampling decisions are visible.",
+      "strongAnswerSignals": [
+        "reconciles known inputs through every pipeline stage",
+        "tests outages, backpressure and malformed data",
+        "makes drops and delay observable"
+      ],
+      "tags": [
+        "telemetry-pipeline",
+        "opentelemetry",
+        "data-loss",
+        "metamonitoring"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "grafana-loki"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "symptom-versus-cause-alerting",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "Why should paging alerts usually focus on symptoms rather than possible causes?",
+      "shortAnswer": "A page should represent urgent user or business impact that needs human action. Alerting on every low-level cause creates duplicates and noise because many component anomalies are tolerated or already represented by one higher-level failure. Page on outcomes such as sustained error rate, latency or processing delay, then use dashboards and diagnostic alerts to find causes. Add a lower-level page only when it independently demands action before user impact or protects critical data or cost.",
+      "strongAnswerSignals": [
+        "ties paging to urgent actionable impact",
+        "separates notification from diagnosis",
+        "allows justified proactive exceptions"
+      ],
+      "tags": [
+        "alerting",
+        "symptoms",
+        "on-call",
+        "reliability"
+      ],
+      "sourceIds": [
+        "prometheus-alerting",
+        "google-sre"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "actionable-alert-runbook",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Test design",
+      "question": "What makes an alert actionable, and how would you test its runbook?",
+      "shortAnswer": "An actionable alert states the affected service and user symptom, severity, start time, current evidence and a clear owner; it links to focused dashboards and a versioned runbook. Trigger the rule with controlled data and verify routing, deduplication, escalation and recovery notification. A responder unfamiliar with the service should be able to assess impact, run safe diagnostic steps, choose mitigation or escalation and find rollback instructions without relying on hidden team knowledge.",
+      "strongAnswerSignals": [
+        "tests the complete notification route",
+        "requires decision-focused context",
+        "validates the runbook with a realistic responder"
+      ],
+      "tags": [
+        "alerting",
+        "runbooks",
+        "on-call",
+        "incident-response"
+      ],
+      "sourceIds": [
+        "prometheus-alerting",
+        "google-sre"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "alert-grouping-inhibition-silences",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Troubleshooting",
+      "question": "How would you reduce alert noise without hiding real incidents?",
+      "shortAnswer": "Remove alerts that have no required action, group notifications that share one incident and inhibit dependent symptoms when an authoritative root condition is firing. Use narrowly scoped, expiring silences for maintenance rather than disabling rules. Replay historical incidents and controlled failures to verify grouping keys, thresholds, delays, escalation and recovery; track pages per incident, false positives, false negatives and responder feedback while preserving separate alerts for distinct user impacts.",
+      "strongAnswerSignals": [
+        "uses grouping, inhibition and silences for different purposes",
+        "tests against historical and injected incidents",
+        "measures both missed and noisy alerts"
+      ],
+      "tags": [
+        "alertmanager",
+        "alert-fatigue",
+        "grouping",
+        "silences"
+      ],
+      "sourceIds": [
+        "prometheus-alerting",
+        "google-sre"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "monitoring-the-monitoring-system",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Risk analysis",
+      "question": "How do you monitor the monitoring system itself?",
+      "shortAnswer": "Use independent evidence that traverses the real path: emit a known signal, verify collection and storage, evaluate a rule and confirm delivery to a controlled destination. Monitor scraper and collector health, queue depth, rejected or dropped data, rule-evaluation failures, notification errors and query availability. Keep an external black-box check and a separate failure path where practical, because a dashboard hosted only inside the broken system cannot prove that monitoring still works.",
+      "strongAnswerSignals": [
+        "tests the observability path end to end",
+        "uses independent black-box evidence",
+        "covers collection, rule and delivery failures"
+      ],
+      "tags": [
+        "metamonitoring",
+        "alerting",
+        "telemetry-pipeline",
+        "black-box"
+      ],
+      "sourceIds": [
+        "prometheus-alerting",
+        "grafana-loki"
+      ],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "error-budget-release-decisions",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Release decision",
+      "question": "How should an error budget influence release and reliability decisions?",
+      "shortAnswer": "The error budget is the allowed unreliability implied by an SLO over its measurement window. A healthy budget supports normal change, while rapid or repeated consumption is evidence to reduce risky releases and prioritize reliability work under an agreed policy. Verify the calculation uses the intended SLI population, exclusions and window, show which incidents or changes consumed it, and avoid treating the policy as punishment or a substitute for judgment about safety and irreversible impact.",
+      "strongAnswerSignals": [
+        "connects the budget mathematically to the SLO",
+        "uses an agreed policy to balance change and reliability",
+        "validates the underlying SLI and exclusions"
+      ],
+      "tags": [
+        "error-budget",
+        "slo",
+        "release",
+        "reliability"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "dora"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "slo-burn-rate-alerts",
+      "level": "Senior",
+      "category": "Observability and production",
+      "kind": "Theory",
+      "question": "What does an SLO burn-rate alert tell an on-call engineer?",
+      "shortAnswer": "Burn rate compares the current rate of bad events with the rate that would consume the error budget exactly over the SLO window. A high burn rate means the service will exhaust its budget quickly if the condition continues. Test the rule with known good and bad event counts, missing and low traffic, window boundaries and delayed data. Pair fast and slow windows so severe incidents page quickly while persistent smaller failures are still detected without brief noise.",
+      "strongAnswerSignals": [
+        "relates burn rate to budget exhaustion speed",
+        "tests traffic and time-window edge cases",
+        "balances fast detection with sustained evidence"
+      ],
+      "tags": [
+        "slo",
+        "burn-rate",
+        "alerting",
+        "error-budget"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "prometheus-alerting"
+      ],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "incident-timeline-evidence",
+      "level": "Middle",
+      "category": "Observability and production",
+      "kind": "Practical",
+      "question": "What evidence should be preserved in a production-incident timeline?",
+      "shortAnswer": "Record timestamps with a consistent time zone for detection, declaration, user impact, major observations, decisions, mitigations, recovery and follow-up. Link alerts, dashboards, queries, traces, deployments, feature-flag or configuration changes and communication updates while preserving the evidence available at the time, not hindsight. Note source uncertainty and clock skew, protect sensitive data, and capture who owned each decision so another person can reconstruct both system behaviour and response latency.",
+      "strongAnswerSignals": [
+        "separates observation, decision and action",
+        "links telemetry and change evidence",
+        "records uncertainty and time consistency"
+      ],
+      "tags": [
+        "incident",
+        "timeline",
+        "evidence",
+        "response"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "opentelemetry-concepts"
+      ],
+      "prevalence": "Common"
+    },
+    {
+      "id": "blameless-postmortem-actions",
+      "level": "Lead",
+      "category": "Observability and production",
+      "kind": "Leadership",
+      "question": "What makes a production postmortem useful rather than performative?",
+      "shortAnswer": "A useful postmortem explains impact, detection, contributing technical and organizational conditions, response and recovery without reducing the event to one person's mistake. It distinguishes evidence from inference and asks why safeguards and assumptions made the action reasonable at the time. Follow-up items should address meaningful recurrence or detection risk, have owners and due dates, and be prioritized and verified; publishing a long document without completing the highest-value actions does not improve reliability.",
+      "strongAnswerSignals": [
+        "examines system conditions without personal blame",
+        "separates evidence from inference",
+        "requires owned, prioritized and verified actions"
+      ],
+      "tags": [
+        "postmortem",
+        "incident",
+        "learning",
+        "leadership"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "dora"
+      ],
+      "prevalence": "Common"
+    }
+  ]
+}

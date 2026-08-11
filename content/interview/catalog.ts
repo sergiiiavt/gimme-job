@@ -1,13 +1,14 @@
 import common from "./common-qa.json";
 import canonical from "./canonical-baseline.json";
 import databaseSql from "./database-sql-qa.json";
+import observabilityProduction from "./observability-production-qa.json";
 import restoredCoverage from "./restored-coverage-qa.json";
 import expanded from "./expanded-qa.json";
 import sources from "./sources.json";
 import taxonomy from "./taxonomy.json";
 
 export const interviewCatalog = {
-  version: 5,
+  version: 6,
   title: "QA interview knowledge base",
   description: "Canonical interview questions with original answers, practical signals, tags and traceable technical sources.",
   lastReviewedAt: "2026-08-11",
@@ -20,7 +21,7 @@ export const interviewCatalog = {
   },
   taxonomy,
   sources,
-  questions: [...common.questions, ...canonical.questions, ...databaseSql.questions, ...restoredCoverage.questions, ...expanded.questions]
+  questions: [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...expanded.questions]
 };
 
 export default interviewCatalog;

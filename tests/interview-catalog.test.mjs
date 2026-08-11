@@ -5,23 +5,25 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("keeps the interview catalog additive, explicit, and prevalence-complete", async () => {
-  const [common, canonical, databaseSql, restoredCoverage, expanded, sources, taxonomy] = await Promise.all([
+  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, expanded, sources, taxonomy] = await Promise.all([
     readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/observability-production-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/restored-coverage-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/sources.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/taxonomy.json"), "utf8").then(JSON.parse),
   ]);
-  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...restoredCoverage.questions, ...expanded.questions];
+  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...expanded.questions];
 
-  assert.ok(questions.length >= 541);
+  assert.ok(questions.length >= 566);
   assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
   assert.equal(taxonomy.filter((item) => item.category).length, 18);
   assert.equal(sources.length, 46);
   assert.equal(canonical.questions.length, 30);
   assert.equal(databaseSql.questions.length, 25);
+  assert.equal(observabilityProduction.questions.length, 25);
   assert.equal(restoredCoverage.questions.length, 21);
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
   assert.deepEqual(
@@ -69,6 +71,14 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     "production-canary-verification",
     "regulated-change-control-migration",
     "grey-box-testing",
+    "monitoring-versus-observability",
+    "four-golden-signals",
+    "structured-production-logging",
+    "liveness-readiness-startup-probes",
+    "post-deployment-production-smoke-tests",
+    "telemetry-pipeline-validation",
+    "error-budget-release-decisions",
+    "blameless-postmortem-actions",
   ]) {
     const question = questions.find((item) => item.id === id);
     assert.ok(question, `${id} must be present as an explicit foundational question.`);
@@ -76,6 +86,8 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
 
   assert.ok(questions.filter((question) => question.category === "Databases, SQL and BI").length >= 35);
   assert.ok(questions.filter((question) => /\b(sql|database|databases)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 25);
+  assert.ok(questions.filter((question) => question.category === "Observability and production").length >= 54);
+  assert.ok(questions.filter((question) => /\b(observability|telemetry|monitoring|alert|alerts|alerting|slo|logs|metrics|traces)\b/i.test(`${question.question} ${question.tags?.join(" ") ?? ""}`)).length >= 25);
 
   for (const id of ["test-levels", "testing-types"]) {
     const question = questions.find((item) => item.id === id);
@@ -90,6 +102,7 @@ test("preserves existing generated questions when authored coverage grows", asyn
 
   assert.match(generatorSource, /const preservedGeneratedQuestions = expanded\.questions\.filter/);
   assert.match(generatorSource, /const needed = Math\.max\(0, topic\.target - existingCount\);/);
+  assert.match(generatorSource, /readJson\("content\/interview\/observability-production-qa\.json"\)/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
@@ -129,8 +142,10 @@ test("lazy-loads the catalog and caps each rendered page at 60", async () => {
   const catalogOutput = (await Promise.all(catalogScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(catalogOutput, /testing-purpose-and-limits/);
   assert.match(catalogOutput, /data-source-target-lineage/);
+  assert.match(catalogOutput, /monitoring-versus-observability/);
 
   const initialOutput = (await Promise.all(scripts.filter((file) => !catalogScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /testing-purpose-and-limits/);
   assert.doesNotMatch(initialOutput, /data-source-target-lineage/);
+  assert.doesNotMatch(initialOutput, /monitoring-versus-observability/);
 });
