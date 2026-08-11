@@ -20,12 +20,13 @@ The public site contains only production-ready content. Drafts exist in Git bran
 
 ## Question model
 
-Every question has a stable ID, level, category, original question wording, concise answer, strong-answer signals, source IDs and optional tags or media.
+Every question has a stable ID, level, prevalence band, category, original question wording, concise answer, strong-answer signals, source IDs and optional tags or media.
 
 ```json
 {
   "id": "risk-based-selection",
   "level": "Junior",
+  "prevalence": "Very common",
   "category": "Test design",
   "question": "If you cannot run every test, how do you select the most valuable subset?",
   "shortAnswer": "...",
@@ -45,13 +46,15 @@ Images require an accessible alternative, caption and credit. Original diagrams 
 
 ## Editorial approach
 
-- Community question banks, including DOU, are coverage inputs rather than answer authorities.
+- DOU, Katalon, Indeed and GeeksforGeeks are cross-checked as coverage and prevalence inputs rather than answer authorities.
 - Duplicate and obsolete trivia is consolidated into canonical questions.
 - Wording and answers are original.
 - Official syllabi, standards, specifications and product documentation validate technical claims.
 - `sources.json` documents why each source is used.
 
-The first broad release contains 120 canonical questions across 14 topics and 22 sources.
+The expanded release contains exactly 520 canonical questions across 18 topics and 46 sources. Its four prevalence bands are editorial signals, not invented percentages: **Very common**, **Common**, **Occasional**, and **Specialist**. The default view sorts most-common first; editorial, Junior-to-Lead, and alphabetical sorting remain available.
+
+The catalog module is loaded only after the Interview section is opened. Filtering and search operate over the full in-memory catalog, but pagination renders no more than 60 question rows at once.
 
 ## Private D1 data
 
@@ -72,4 +75,4 @@ The private progress status is unrelated to editorial publication status.
 
 ## Validation and deployment
 
-`npm run check:content` rejects duplicate IDs, unknown categories or sources, incomplete answers, missing answer signals, invalid media metadata and missing image files. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge.
+`npm run check:content` enforces the exact counts, four specialist topics, prevalence values, duplicate IDs, known categories and sources, complete answers, answer signals, and valid media. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge. Production deployment is available only from the GitHub Actions workflow after changes reach `main`.

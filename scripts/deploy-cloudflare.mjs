@@ -149,6 +149,10 @@ async function main() {
     return;
   }
 
+  if (process.env.GITHUB_ACTIONS !== "true") {
+    throw new Error("Production deployment is restricted to the GitHub Actions → Cloudflare workflow.");
+  }
+
   requiredEnvironment("CLOUDFLARE_API_TOKEN");
   requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
   const appPassword = requiredEnvironment("APP_PASSWORD");

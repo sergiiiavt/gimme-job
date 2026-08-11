@@ -12,13 +12,22 @@ const [common, expanded, sources, taxonomy] = await Promise.all([
 
 const questions = [...common.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
+const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const sourceIds = new Set(sources.map((source) => source.id));
 const categories = new Set(taxonomy.flatMap((item) => item.category ? [item.category] : []));
 const questionIds = new Set();
+const questionTexts = new Set();
 
-assert.ok(questions.length >= 120, "The public collection must contain at least 120 canonical questions.");
-assert.ok(sources.length >= 15, "The source catalog must contain broad technical coverage.");
-assert.ok(categories.size >= 12, "The taxonomy must contain at least 12 question categories.");
+assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
+
+assert.equal(questions.length, 520, "The public collection must contain exactly 520 canonical questions.");
+assert.equal(sources.length, 46, "The source catalog must contain exactly 46 researched sources.");
+assert.equal(categories.size, 18, "The taxonomy must contain exactly 18 question topics.");
+assert.deepEqual(
+  new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"].filter((category) => categories.has(category))),
+  new Set(["AI, ML and LLM", "Data and BI", "Observability and production", "Regulated domains"]),
+  "The four expanded specialist topics are required.",
+);
 
 for (const source of sources) {
   assert.match(source.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid source id: ${source.id}`);
@@ -31,10 +40,15 @@ for (const question of questions) {
   assert.match(question.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid question id: ${question.id}`);
   assert.ok(!questionIds.has(question.id), `Duplicate question id: ${question.id}`);
   questionIds.add(question.id);
+  const normalizedQuestion = question.question.trim().toLowerCase();
+  assert.ok(!questionTexts.has(normalizedQuestion), `Duplicate question text: ${question.question}`);
+  questionTexts.add(normalizedQuestion);
   assert.ok(levels.has(question.level), `Invalid level for ${question.id}`);
+  assert.ok(prevalenceLevels.has(question.prevalence), `Invalid prevalence for ${question.id}`);
   assert.ok(categories.has(question.category), `Unknown category ${question.category} in ${question.id}`);
   assert.ok(question.question?.trim(), `Missing question for ${question.id}`);
   assert.ok(question.shortAnswer?.trim(), `Missing answer for ${question.id}`);
+  assert.ok(question.shortAnswer.trim().length >= 100, `Answer is too short for ${question.id}`);
   assert.ok(question.strongAnswerSignals?.length >= 2, `Add at least two answer signals for ${question.id}`);
   assert.ok(question.sourceIds?.length, `Add at least one source for ${question.id}`);
   for (const sourceId of question.sourceIds) {
@@ -47,6 +61,15 @@ for (const question of questions) {
     assert.ok(media.credit?.trim(), `Missing media credit in ${question.id}`);
     await access(new URL(`../public${media.src}`, import.meta.url));
   }
+}
+
+for (const prevalence of prevalenceLevels) {
+  assert.ok(questions.some((question) => question.prevalence === prevalence), `No questions use prevalence ${prevalence}`);
+}
+
+for (const category of categories) {
+  const count = questions.filter((question) => question.category === category).length;
+  assert.ok(count === 28 || count === 29, `Topic ${category} must contain 28 or 29 questions, found ${count}.`);
 }
 
 console.log(`Interview content validated: ${questions.length} questions, ${categories.size} topics, ${sources.length} sources.`);

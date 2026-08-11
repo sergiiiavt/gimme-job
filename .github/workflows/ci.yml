@@ -43,6 +43,9 @@ jobs:
       - name: Build production artifact
         run: npm run build
 
+      - name: Test rendered Worker behavior
+        run: node --test
+
       - name: Validate Cloudflare deployment artifact
         run: npm run check:cloudflare
 

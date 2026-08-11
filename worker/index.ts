@@ -19,12 +19,11 @@ const BASIC_AUTH_USERNAME = "gimmejob";
 const PRIVATE_SESSION_COOKIE = "gimmejob_session";
 const PRIVATE_SESSION_SECONDS = 60 * 60 * 24 * 14;
 
-function isTrustedDevelopmentOrSitesHost(hostname: string): boolean {
+function isTrustedDevelopmentHost(hostname: string): boolean {
   return (
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
-    hostname === "terminal.local" ||
-    hostname.endsWith(".chatgpt.site")
+    hostname === "terminal.local"
   );
 }
 
@@ -115,7 +114,7 @@ async function hasValidSession(request: Request, password: string): Promise<bool
 
 async function hasPrivateAccess(request: Request, env: Env): Promise<boolean> {
   const hostname = new URL(request.url).hostname.toLowerCase();
-  if (isTrustedDevelopmentOrSitesHost(hostname)) return true;
+  if (isTrustedDevelopmentHost(hostname)) return true;
   if (!env.APP_PASSWORD) return false;
   if (hasValidBasicCredentials(request, env.APP_PASSWORD)) return true;
   return hasValidSession(request, env.APP_PASSWORD);

@@ -1,24 +1,370 @@
 [
-  { "id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions", "url": "https://dou.ua/lenta/articles/interview-qa/", "publisher": "DOU", "kind": "Community question bank", "role": "Coverage signal across Junior, Middle, Senior, AQA, web, mobile and practical topics" },
-  { "id": "istqb-ctfl-v4", "title": "ISTQB CTFL syllabus v4.0.1", "url": "https://istqb.org/sdm_downloads/istqb-certified-tester-foundation-level-syllabus-v4-0/", "publisher": "ISTQB", "kind": "Official syllabus", "role": "Testing vocabulary, principles, lifecycle and test-design concepts" },
-  { "id": "istqb-glossary", "title": "ISTQB Glossary", "url": "https://glossary.istqb.org/", "publisher": "ISTQB", "kind": "Official glossary", "role": "Terminology verification" },
-  { "id": "mdn-http", "title": "MDN HTTP reference", "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP", "publisher": "Mozilla", "kind": "Technical reference", "role": "HTTP methods, messages, status codes, headers, cookies and caching" },
-  { "id": "openapi-31", "title": "OpenAPI Specification 3.1", "url": "https://spec.openapis.org/oas/v3.1.1.html", "publisher": "OpenAPI Initiative", "kind": "Specification", "role": "API contracts, schemas and operation descriptions" },
-  { "id": "graphql-spec", "title": "GraphQL specification", "url": "https://spec.graphql.org/October2021/", "publisher": "GraphQL Foundation", "kind": "Specification", "role": "GraphQL schema, execution and validation concepts" },
-  { "id": "postgres-docs", "title": "PostgreSQL documentation", "url": "https://www.postgresql.org/docs/current/tutorial-sql.html", "publisher": "PostgreSQL Global Development Group", "kind": "Official documentation", "role": "Relational data, SQL, joins, transactions and constraints" },
-  { "id": "playwright-best-practices", "title": "Playwright best practices", "url": "https://playwright.dev/docs/best-practices", "publisher": "Microsoft", "kind": "Official documentation", "role": "Reliable modern browser automation" },
-  { "id": "selenium-docs", "title": "Selenium documentation", "url": "https://www.selenium.dev/documentation/", "publisher": "Selenium Project", "kind": "Official documentation", "role": "WebDriver architecture, waits, Grid and browser automation" },
-  { "id": "appium-docs", "title": "Appium documentation", "url": "https://appium.io/docs/en/latest/", "publisher": "Appium Project", "kind": "Official documentation", "role": "Cross-platform mobile automation architecture" },
-  { "id": "android-test", "title": "Android testing documentation", "url": "https://developer.android.com/training/testing", "publisher": "Google", "kind": "Official documentation", "role": "Android test layers, devices, lifecycle and tooling" },
-  { "id": "owasp-wstg", "title": "OWASP Web Security Testing Guide", "url": "https://owasp.org/www-project-web-security-testing-guide/", "publisher": "OWASP", "kind": "Testing guide", "role": "Web application security test coverage" },
-  { "id": "owasp-api-2023", "title": "OWASP API Security Top 10 — 2023", "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/", "publisher": "OWASP", "kind": "Security reference", "role": "Authorization, authentication, resource consumption and API-specific risks" },
-  { "id": "owasp-top10-2025", "title": "OWASP Top 10 — 2025", "url": "https://owasp.org/Top10/2025/", "publisher": "OWASP", "kind": "Security reference", "role": "Current web application risk categories" },
-  { "id": "wcag-22", "title": "Web Content Accessibility Guidelines 2.2", "url": "https://www.w3.org/TR/WCAG22/", "publisher": "W3C", "kind": "Web standard", "role": "Accessibility requirements and conformance" },
-  { "id": "k6-docs", "title": "Grafana k6 documentation", "url": "https://grafana.com/docs/k6/latest/", "publisher": "Grafana Labs", "kind": "Official documentation", "role": "Performance test modelling, execution and metrics" },
-  { "id": "google-sre", "title": "Google SRE books", "url": "https://sre.google/books/", "publisher": "Google", "kind": "Engineering reference", "role": "Reliability, SLOs, monitoring, incidents and resilience" },
-  { "id": "git-docs", "title": "Git reference", "url": "https://git-scm.com/docs", "publisher": "Git Project", "kind": "Official documentation", "role": "Version control concepts and commands" },
-  { "id": "docker-docs", "title": "Docker documentation", "url": "https://docs.docker.com/", "publisher": "Docker", "kind": "Official documentation", "role": "Containers, images, networks and reproducible environments" },
-  { "id": "scrum-guide", "title": "The Scrum Guide", "url": "https://scrumguides.org/scrum-guide.html", "publisher": "Scrum Guides", "kind": "Official guide", "role": "Scrum accountabilities, events, commitments and empiricism" },
-  { "id": "dora", "title": "DORA research program", "url": "https://dora.dev/", "publisher": "Google Cloud", "kind": "Research program", "role": "Software delivery performance and organizational capabilities" },
-  { "id": "google-structured-interviews", "title": "Google re:Work — structured interviewing", "url": "https://rework.withgoogle.com/intl/en/guides/a-guide-to-structured-interviewing-for-better-hiring-practices", "publisher": "Google", "kind": "Interviewing guide", "role": "Behavioural questions and evidence-based answer rubrics" }
+  {
+    "id": "dou-qa-2022",
+    "title": "DOU — QA interview: 250+ questions",
+    "url": "https://dou.ua/lenta/articles/interview-qa/",
+    "publisher": "DOU",
+    "kind": "Community question bank",
+    "role": "Coverage signal across Junior, Middle, Senior, AQA, web, mobile and practical topics"
+  },
+  {
+    "id": "istqb-ctfl-v4",
+    "title": "ISTQB CTFL syllabus v4.0.1",
+    "url": "https://istqb.org/sdm_downloads/istqb-certified-tester-foundation-level-syllabus-v4-0/",
+    "publisher": "ISTQB",
+    "kind": "Official syllabus",
+    "role": "Testing vocabulary, principles, lifecycle and test-design concepts"
+  },
+  {
+    "id": "istqb-glossary",
+    "title": "ISTQB Glossary",
+    "url": "https://glossary.istqb.org/",
+    "publisher": "ISTQB",
+    "kind": "Official glossary",
+    "role": "Terminology verification"
+  },
+  {
+    "id": "mdn-http",
+    "title": "MDN HTTP reference",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+    "publisher": "Mozilla",
+    "kind": "Technical reference",
+    "role": "HTTP methods, messages, status codes, headers, cookies and caching"
+  },
+  {
+    "id": "openapi-31",
+    "title": "OpenAPI Specification 3.1",
+    "url": "https://spec.openapis.org/oas/v3.1.1.html",
+    "publisher": "OpenAPI Initiative",
+    "kind": "Specification",
+    "role": "API contracts, schemas and operation descriptions"
+  },
+  {
+    "id": "graphql-spec",
+    "title": "GraphQL specification",
+    "url": "https://spec.graphql.org/October2021/",
+    "publisher": "GraphQL Foundation",
+    "kind": "Specification",
+    "role": "GraphQL schema, execution and validation concepts"
+  },
+  {
+    "id": "postgres-docs",
+    "title": "PostgreSQL documentation",
+    "url": "https://www.postgresql.org/docs/current/tutorial-sql.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "Official documentation",
+    "role": "Relational data, SQL, joins, transactions and constraints"
+  },
+  {
+    "id": "playwright-best-practices",
+    "title": "Playwright best practices",
+    "url": "https://playwright.dev/docs/best-practices",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Reliable modern browser automation"
+  },
+  {
+    "id": "selenium-docs",
+    "title": "Selenium documentation",
+    "url": "https://www.selenium.dev/documentation/",
+    "publisher": "Selenium Project",
+    "kind": "Official documentation",
+    "role": "WebDriver architecture, waits, Grid and browser automation"
+  },
+  {
+    "id": "appium-docs",
+    "title": "Appium documentation",
+    "url": "https://appium.io/docs/en/latest/",
+    "publisher": "Appium Project",
+    "kind": "Official documentation",
+    "role": "Cross-platform mobile automation architecture"
+  },
+  {
+    "id": "android-test",
+    "title": "Android testing documentation",
+    "url": "https://developer.android.com/training/testing",
+    "publisher": "Google",
+    "kind": "Official documentation",
+    "role": "Android test layers, devices, lifecycle and tooling"
+  },
+  {
+    "id": "owasp-wstg",
+    "title": "OWASP Web Security Testing Guide",
+    "url": "https://owasp.org/www-project-web-security-testing-guide/",
+    "publisher": "OWASP",
+    "kind": "Testing guide",
+    "role": "Web application security test coverage"
+  },
+  {
+    "id": "owasp-api-2023",
+    "title": "OWASP API Security Top 10 — 2023",
+    "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/",
+    "publisher": "OWASP",
+    "kind": "Security reference",
+    "role": "Authorization, authentication, resource consumption and API-specific risks"
+  },
+  {
+    "id": "owasp-top10-2025",
+    "title": "OWASP Top 10 — 2025",
+    "url": "https://owasp.org/Top10/2025/",
+    "publisher": "OWASP",
+    "kind": "Security reference",
+    "role": "Current web application risk categories"
+  },
+  {
+    "id": "wcag-22",
+    "title": "Web Content Accessibility Guidelines 2.2",
+    "url": "https://www.w3.org/TR/WCAG22/",
+    "publisher": "W3C",
+    "kind": "Web standard",
+    "role": "Accessibility requirements and conformance"
+  },
+  {
+    "id": "k6-docs",
+    "title": "Grafana k6 documentation",
+    "url": "https://grafana.com/docs/k6/latest/",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "role": "Performance test modelling, execution and metrics"
+  },
+  {
+    "id": "google-sre",
+    "title": "Google SRE books",
+    "url": "https://sre.google/books/",
+    "publisher": "Google",
+    "kind": "Engineering reference",
+    "role": "Reliability, SLOs, monitoring, incidents and resilience"
+  },
+  {
+    "id": "git-docs",
+    "title": "Git reference",
+    "url": "https://git-scm.com/docs",
+    "publisher": "Git Project",
+    "kind": "Official documentation",
+    "role": "Version control concepts and commands"
+  },
+  {
+    "id": "docker-docs",
+    "title": "Docker documentation",
+    "url": "https://docs.docker.com/",
+    "publisher": "Docker",
+    "kind": "Official documentation",
+    "role": "Containers, images, networks and reproducible environments"
+  },
+  {
+    "id": "scrum-guide",
+    "title": "The Scrum Guide",
+    "url": "https://scrumguides.org/scrum-guide.html",
+    "publisher": "Scrum Guides",
+    "kind": "Official guide",
+    "role": "Scrum accountabilities, events, commitments and empiricism"
+  },
+  {
+    "id": "dora",
+    "title": "DORA research program",
+    "url": "https://dora.dev/",
+    "publisher": "Google Cloud",
+    "kind": "Research program",
+    "role": "Software delivery performance and organizational capabilities"
+  },
+  {
+    "id": "google-structured-interviews",
+    "title": "Google re:Work — structured interviewing",
+    "url": "https://rework.withgoogle.com/intl/en/guides/a-guide-to-structured-interviewing-for-better-hiring-practices",
+    "publisher": "Google",
+    "kind": "Interviewing guide",
+    "role": "Behavioural questions and evidence-based answer rubrics"
+  },
+  {
+    "id": "katalon-qa-interviews",
+    "title": "QA Interview Questions: 60+ With Model Answers",
+    "url": "https://katalon.com/resources-center/blog/qa-interview-questions",
+    "publisher": "Katalon",
+    "kind": "Community question bank",
+    "role": "Prevalence signal for current QA, automation, leadership and scenario questions"
+  },
+  {
+    "id": "indeed-qa-interviews",
+    "title": "35 QA Interview Questions",
+    "url": "https://www.indeed.com/career-advice/interviewing/qa-interview-questions",
+    "publisher": "Indeed",
+    "kind": "Career question bank",
+    "role": "Prevalence signal for foundational, experience and practical interview prompts"
+  },
+  {
+    "id": "gfg-testing-interviews",
+    "title": "Software Testing Interview Questions and Answers",
+    "url": "https://www.geeksforgeeks.org/software-testing/software-testing-interview-questions/",
+    "publisher": "GeeksforGeeks",
+    "kind": "Community question bank",
+    "role": "Prevalence signal across manual, automation and technical testing topics"
+  },
+  {
+    "id": "istqb-ai-testing",
+    "title": "Certified Tester AI Testing (CT-AI)",
+    "url": "https://www.istqb.org/certifications/certified-tester-ai-testing-ct-ai/",
+    "publisher": "ISTQB",
+    "kind": "Official syllabus",
+    "role": "AI-system quality characteristics, ML testing and use of AI in testing"
+  },
+  {
+    "id": "openai-evals",
+    "title": "Evaluation best practices",
+    "url": "https://developers.openai.com/api/docs/guides/evaluation-best-practices",
+    "publisher": "OpenAI",
+    "kind": "Official documentation",
+    "role": "LLM evaluation design, datasets, graders, continuous evaluation and human calibration"
+  },
+  {
+    "id": "nist-genai-profile",
+    "title": "AI RMF Generative AI Profile",
+    "url": "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence",
+    "publisher": "NIST",
+    "kind": "Risk framework",
+    "role": "Generative-AI trustworthiness, risk identification, measurement and governance"
+  },
+  {
+    "id": "owasp-llm-top10",
+    "title": "OWASP Top 10 for LLM Applications",
+    "url": "https://genai.owasp.org/llm-top-10/",
+    "publisher": "OWASP",
+    "kind": "Security reference",
+    "role": "Prompt injection, data disclosure, excessive agency and other LLM-specific risks"
+  },
+  {
+    "id": "sklearn-model-evaluation",
+    "title": "Model selection and evaluation",
+    "url": "https://scikit-learn.org/stable/model_selection.html",
+    "publisher": "scikit-learn",
+    "kind": "Official documentation",
+    "role": "Cross-validation, metrics, threshold selection and model-evaluation pitfalls"
+  },
+  {
+    "id": "powerbi-star-schema",
+    "title": "Understand star schema and its importance for Power BI",
+    "url": "https://learn.microsoft.com/en-us/power-bi/guidance/star-schema",
+    "publisher": "Microsoft",
+    "kind": "Official guidance",
+    "role": "Facts, dimensions, grain, relationships and semantic-model quality"
+  },
+  {
+    "id": "dbt-data-tests",
+    "title": "Add data tests to your DAG",
+    "url": "https://docs.getdbt.com/docs/build/data-tests",
+    "publisher": "dbt Labs",
+    "kind": "Official documentation",
+    "role": "Reusable assertions for analytics transformations and data contracts"
+  },
+  {
+    "id": "google-dataflow-testing",
+    "title": "Develop and test Dataflow pipelines",
+    "url": "https://cloud.google.com/dataflow/docs/guides/develop-and-test-pipelines",
+    "publisher": "Google Cloud",
+    "kind": "Official documentation",
+    "role": "Unit, integration and end-to-end testing for batch and streaming pipelines"
+  },
+  {
+    "id": "great-expectations",
+    "title": "Great Expectations Core",
+    "url": "https://docs.greatexpectations.io/docs/core/introduction/try_gx/",
+    "publisher": "Great Expectations",
+    "kind": "Official documentation",
+    "role": "Data-quality expectations, validation definitions and evidence"
+  },
+  {
+    "id": "opentelemetry-concepts",
+    "title": "OpenTelemetry concepts",
+    "url": "https://opentelemetry.io/docs/concepts/",
+    "publisher": "OpenTelemetry",
+    "kind": "Official documentation",
+    "role": "Traces, metrics, logs, context propagation and instrumentation"
+  },
+  {
+    "id": "prometheus-alerting",
+    "title": "Prometheus alerting practices",
+    "url": "https://prometheus.io/docs/practices/alerting/",
+    "publisher": "Prometheus",
+    "kind": "Official documentation",
+    "role": "Symptom-based actionable alerts, metamonitoring and noise reduction"
+  },
+  {
+    "id": "kubernetes-probes",
+    "title": "Configure liveness, readiness and startup probes",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/",
+    "publisher": "Kubernetes",
+    "kind": "Official documentation",
+    "role": "Service health, traffic readiness, recovery and probe failure modes"
+  },
+  {
+    "id": "grafana-loki",
+    "title": "Grafana Loki documentation",
+    "url": "https://grafana.com/docs/loki/latest/",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "role": "Production log collection, queries, correlation and alerting"
+  },
+  {
+    "id": "fda-csa",
+    "title": "Computer Software Assurance for Production and Quality Management System Software",
+    "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/computer-software-assurance-production-and-quality-management-system-software",
+    "publisher": "US FDA",
+    "kind": "Regulatory guidance",
+    "role": "Risk-based assurance and objective evidence for quality-system software"
+  },
+  {
+    "id": "fda-iec-62304",
+    "title": "FDA recognition of IEC 62304",
+    "url": "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfStandards/detail.cfm?standard__identification_no=38829",
+    "publisher": "US FDA",
+    "kind": "Recognized standard",
+    "role": "Medical-device software lifecycle processes, safety classification and maintenance"
+  },
+  {
+    "id": "ecfr-part-11",
+    "title": "21 CFR Part 11 — Electronic Records; Electronic Signatures",
+    "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-11",
+    "publisher": "US eCFR",
+    "kind": "Regulation",
+    "role": "Electronic records, signatures, access, audit trails and system controls"
+  },
+  {
+    "id": "eu-gmp-annex-11",
+    "title": "EudraLex Volume 4, Annex 11 — Computerised Systems",
+    "url": "https://health.ec.europa.eu/medicinal-products/eudralex/eudralex-volume-4_en",
+    "publisher": "European Commission",
+    "kind": "Regulatory guidance",
+    "role": "GMP computerized-system validation, data integrity, change and continuity controls"
+  },
+  {
+    "id": "iso-26262",
+    "title": "ISO 26262 — Road vehicles functional safety",
+    "url": "https://www.iso.org/standard/68383.html",
+    "publisher": "ISO",
+    "kind": "International standard",
+    "role": "Automotive functional-safety lifecycle, risk classification and verification"
+  },
+  {
+    "id": "pci-dss",
+    "title": "Payment Card Industry Data Security Standard",
+    "url": "https://www.pcisecuritystandards.org/standards/pci-dss/",
+    "publisher": "PCI Security Standards Council",
+    "kind": "Industry standard",
+    "role": "Payment-data security controls, testing evidence and continuous compliance"
+  },
+  {
+    "id": "owasp-asvs",
+    "title": "OWASP Application Security Verification Standard",
+    "url": "https://owasp.org/www-project-application-security-verification-standard/",
+    "publisher": "OWASP",
+    "kind": "Verification standard",
+    "role": "Testable application-security requirements and assurance levels"
+  },
+  {
+    "id": "fda-samd",
+    "title": "Software as a Medical Device (SaMD)",
+    "url": "https://www.fda.gov/medical-devices/digital-health-center-excellence/software-medical-device-samd",
+    "publisher": "US FDA",
+    "kind": "Regulatory guidance",
+    "role": "Risk categorization, clinical evaluation and quality expectations for medical software"
+  }
 ]

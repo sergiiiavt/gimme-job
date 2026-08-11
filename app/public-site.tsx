@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { navigationItems, SiteSidebar, SiteTopbar, type SiteSection, type SubnavItem } from "./site-navigation";
-import interviewCatalog from "@/content/interview/catalog";
 
 type PublicSection = SiteSection;
 
@@ -24,10 +23,13 @@ interface PublicJob {
 }
 
 type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
+type InterviewPrevalence = "Very common" | "Common" | "Occasional" | "Specialist";
+type InterviewSort = "prevalence" | "editorial" | "level" | "alphabetical";
 
 interface InterviewQuestion {
   id: string;
   level: InterviewLevel;
+  prevalence: InterviewPrevalence;
   category: string;
   kind?: string;
   question: string;
@@ -54,11 +56,32 @@ interface InterviewTaxonomyItem {
   description: string;
 }
 
-const interviewQuestions = interviewCatalog.questions as InterviewQuestion[];
+interface InterviewCatalog {
+  title: string;
+  description: string;
+  methodology: {
+    coverage: string;
+    answers: string;
+    publishing: string;
+    prevalence: string;
+    media: string;
+  };
+  questions: InterviewQuestion[];
+  sources: InterviewSource[];
+  taxonomy: InterviewTaxonomyItem[];
+}
+
+const INTERVIEW_PAGE_SIZE = 60;
 const interviewLevels: Array<"All" | InterviewLevel> = ["All", "Junior", "Middle", "Senior", "Lead"];
-const interviewTaxonomy = interviewCatalog.taxonomy as InterviewTaxonomyItem[];
-const interviewSourcesList = interviewCatalog.sources as InterviewSource[];
-const interviewSources = new Map(interviewSourcesList.map((source) => [source.id, source]));
+const interviewPrevalence: Array<"All" | InterviewPrevalence> = ["All", "Very common", "Common", "Occasional", "Specialist"];
+const prevalenceOrder: Record<InterviewPrevalence, number> = { "Very common": 0, Common: 1, Occasional: 2, Specialist: 3 };
+const levelOrder: Record<InterviewLevel, number> = { Junior: 0, Middle: 1, Senior: 2, Lead: 3 };
+const interviewSortOptions: Array<{ value: InterviewSort; label: string }> = [
+  { value: "prevalence", label: "Most common first" },
+  { value: "editorial", label: "Editorial order" },
+  { value: "level", label: "Junior → Lead" },
+  { value: "alphabetical", label: "Question A–Z" },
+];
 
 const fallbackTags: Record<string, string[]> = {
   Fundamentals: ["testing-theory", "core"],
@@ -75,13 +98,15 @@ const fallbackTags: Record<string, string[]> = {
   "Strategy and risk": ["strategy", "risk"],
   Leadership: ["leadership", "people"],
   "Practical tasks": ["practical", "scenario"],
+  "AI, ML and LLM": ["ai", "ml", "llm"],
+  "Data and BI": ["data", "bi", "analytics"],
+  "Observability and production": ["observability", "production", "sre"],
+  "Regulated domains": ["regulated", "compliance", "safety"],
 };
 
 function tagsFor(question: InterviewQuestion) {
   return question.tags?.length ? question.tags : fallbackTags[question.category] ?? ["qa"];
 }
-
-const interviewTags = Array.from(new Set(interviewQuestions.flatMap(tagsFor))).sort((a, b) => a.localeCompare(b));
 
 const knowledge: Record<Exclude<PublicSection, "jobs">, {
   title: string;
@@ -216,12 +241,13 @@ function topicId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function secondaryNavigation(section: PublicSection, jobs: PublicJob[]): SubnavItem[] {
+function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null): SubnavItem[] {
   if (section === "interview") {
-    return interviewTaxonomy.map((item) => ({
+    if (!interviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+    return interviewCatalog.taxonomy.map((item) => ({
       id: item.id,
       label: item.label,
-      count: item.category ? interviewQuestions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewQuestions.length : undefined,
+      count: item.category ? interviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewCatalog.questions.length : undefined,
     }));
   }
 
@@ -248,6 +274,8 @@ export default function PublicSite() {
   const [query, setQuery] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
   const [subsection, setSubsection] = useState("all");
+  const [interviewCatalog, setInterviewCatalog] = useState<InterviewCatalog | null>(null);
+  const [interviewCatalogError, setInterviewCatalogError] = useState(false);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -261,6 +289,19 @@ export default function PublicSite() {
       window.removeEventListener("hashchange", onHashChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (section !== "interview" || interviewCatalog) return;
+    let active = true;
+    import("@/content/interview/catalog")
+      .then((module) => {
+        if (active) setInterviewCatalog(module.default as unknown as InterviewCatalog);
+      })
+      .catch(() => {
+        if (active) setInterviewCatalogError(true);
+      });
+    return () => { active = false; };
+  }, [interviewCatalog, section]);
 
   useEffect(() => {
     let active = true;
@@ -299,7 +340,7 @@ export default function PublicSite() {
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Jobs";
-  const secondaryItems = secondaryNavigation(section, jobs);
+  const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog);
 
   return (
     <main className="kb-shell">
@@ -352,7 +393,13 @@ export default function PublicSite() {
             </section>
           </div>
         ) : (
-          <KnowledgeSection activeTopic={subsection} onTopicChange={setSubsection} section={section}/>
+          <KnowledgeSection
+            activeTopic={subsection}
+            interviewCatalog={interviewCatalog}
+            interviewCatalogError={interviewCatalogError}
+            onTopicChange={setSubsection}
+            section={section}
+          />
         )}
       </section>
 
@@ -361,8 +408,26 @@ export default function PublicSite() {
   );
 }
 
-function KnowledgeSection({ activeTopic, onTopicChange, section }: { activeTopic: string; onTopicChange: (topic: string) => void; section: Exclude<PublicSection, "jobs"> }) {
-  if (section === "interview") return <InterviewKnowledgeBase activeTopic={activeTopic} onTopicChange={onTopicChange}/>;
+function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, onTopicChange, section }: {
+  activeTopic: string;
+  interviewCatalog: InterviewCatalog | null;
+  interviewCatalogError: boolean;
+  onTopicChange: (topic: string) => void;
+  section: Exclude<PublicSection, "jobs">;
+}) {
+  if (section === "interview") {
+    if (!interviewCatalog) {
+      return (
+        <div className="kb-content iq-page">
+          <div className="kb-empty iq-catalog-state">
+            <strong>{interviewCatalogError ? "Interview catalog unavailable" : "Loading 520-question catalog…"}</strong>
+            <span>{interviewCatalogError ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
+          </div>
+        </div>
+      );
+    }
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} onTopicChange={onTopicChange}/>;
+  }
 
   const content = knowledge[section];
   const visibleItems = activeTopic === "all" ? content.items : content.items.filter((item) => topicId(item.title) === activeTopic);
@@ -386,27 +451,68 @@ function KnowledgeSection({ activeTopic, onTopicChange, section }: { activeTopic
   );
 }
 
-function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: string; onTopicChange: (topic: string) => void }) {
+function InterviewKnowledgeBase({ activeTopic, catalog, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<(typeof interviewLevels)[number]>("All");
+  const [prevalence, setPrevalence] = useState<(typeof interviewPrevalence)[number]>("All");
+  const [sort, setSort] = useState<InterviewSort>("prevalence");
   const [tag, setTag] = useState("All");
+  const [page, setPage] = useState(0);
 
+  const interviewQuestions = catalog.questions;
+  const interviewTaxonomy = catalog.taxonomy;
+  const interviewSourcesList = catalog.sources;
+  const interviewSources = useMemo(() => new Map(interviewSourcesList.map((source) => [source.id, source])), [interviewSourcesList]);
+  const interviewTags = useMemo(() => Array.from(new Set(interviewQuestions.flatMap(tagsFor))).sort((a, b) => a.localeCompare(b)), [interviewQuestions]);
+  const editorialOrder = useMemo(() => new Map(interviewQuestions.map((question, index) => [question.id, index])), [interviewQuestions]);
   const activeTaxonomy = interviewTaxonomy.find((item) => item.id === activeTopic);
   const activeCategory = activeTaxonomy?.category;
 
-  const visibleQuestions = useMemo(() => {
+  const matchingQuestions = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return interviewQuestions.filter((item) => {
-      const tags = tagsFor(item);
-      const matchesLevel = level === "All" || item.level === level;
-      const matchesCategory = !activeCategory || item.category === activeCategory;
-      const matchesTag = tag === "All" || tags.includes(tag);
-      const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
-      return matchesLevel && matchesCategory && matchesTag && (!needle || searchable.includes(needle));
-    });
-  }, [activeCategory, level, query, tag]);
+    return interviewQuestions
+      .filter((item) => {
+        const tags = tagsFor(item);
+        const matchesLevel = level === "All" || item.level === level;
+        const matchesPrevalence = prevalence === "All" || item.prevalence === prevalence;
+        const matchesCategory = !activeCategory || item.category === activeCategory;
+        const matchesTag = tag === "All" || tags.includes(tag);
+        const searchable = `${item.question} ${item.shortAnswer} ${item.category} ${item.kind ?? ""} ${item.prevalence} ${tags.join(" ")} ${item.strongAnswerSignals.join(" ")}`.toLowerCase();
+        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && (!needle || searchable.includes(needle));
+      })
+      .sort((left, right) => {
+        const editorialDifference = (editorialOrder.get(left.id) ?? 0) - (editorialOrder.get(right.id) ?? 0);
+        if (sort === "editorial") return editorialDifference;
+        if (sort === "alphabetical") return left.question.localeCompare(right.question) || editorialDifference;
+        if (sort === "level") {
+          return levelOrder[left.level] - levelOrder[right.level]
+            || prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence]
+            || editorialDifference;
+        }
+        return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || editorialDifference;
+      });
+  }, [activeCategory, editorialOrder, interviewQuestions, level, prevalence, query, sort, tag]);
 
-  if (activeTopic === "methodology") return <InterviewMethodology onBack={() => onTopicChange("all")}/>;
+  const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageStart = safePage * INTERVIEW_PAGE_SIZE;
+  const visibleQuestions = matchingQuestions.slice(pageStart, pageStart + INTERVIEW_PAGE_SIZE);
+
+  if (activeTopic === "methodology") return <InterviewMethodology catalog={catalog} onBack={() => onTopicChange("all")}/>;
+
+  const setQuestionTag = (nextTag: string) => {
+    setTag(nextTag);
+    setPage(0);
+  };
+  const clearFilters = () => {
+    setQuery("");
+    setLevel("All");
+    setPrevalence("All");
+    setSort("prevalence");
+    setTag("All");
+    setPage(0);
+    onTopicChange("all");
+  };
 
   return (
     <div className="kb-content iq-page">
@@ -414,7 +520,7 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
         <div>
           <span>INTERVIEW QUESTIONS</span>
           <h1>{activeTaxonomy?.category ? activeTaxonomy.label : "QA interview knowledge base"}</h1>
-          <p>{activeTaxonomy?.description ?? interviewCatalog.description}</p>
+          <p>{activeTaxonomy?.description ?? catalog.description}</p>
         </div>
         <div className="kb-page-stats">
           <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
@@ -426,11 +532,23 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
       <section className="iq-toolbar" aria-label="Interview question filters">
         <label className="iq-search">
           <span>⌕</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search questions, answers, tags, or skills"/>
+          <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search questions, answers, tags, or skills"/>
+        </label>
+        <label className="iq-category">
+          <span>Prevalence</span>
+          <select value={prevalence} onChange={(event) => { setPrevalence(event.target.value as (typeof interviewPrevalence)[number]); setPage(0); }}>
+            {interviewPrevalence.map((item) => <option key={item} value={item}>{item === "All" ? "All prevalence levels" : item}</option>)}
+          </select>
+        </label>
+        <label className="iq-category">
+          <span>Sort</span>
+          <select value={sort} onChange={(event) => { setSort(event.target.value as InterviewSort); setPage(0); }}>
+            {interviewSortOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          </select>
         </label>
         <label className="iq-category">
           <span>Tag</span>
-          <select value={tag} onChange={(event) => setTag(event.target.value)}>
+          <select value={tag} onChange={(event) => setQuestionTag(event.target.value)}>
             <option value="All">All tags</option>
             {interviewTags.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -439,10 +557,10 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
 
       <div className="iq-levels" aria-label="Seniority filter">
         {interviewLevels.map((item) => (
-          <button key={item} className={level === item ? "active" : ""} onClick={() => setLevel(item)}>{item}</button>
+          <button key={item} className={level === item ? "active" : ""} onClick={() => { setLevel(item); setPage(0); }}>{item}</button>
         ))}
-        {(activeCategory || tag !== "All" || query || level !== "All") && <button className="iq-clear" onClick={() => { setQuery(""); setLevel("All"); setTag("All"); onTopicChange("all"); }}>Clear filters</button>}
-        <span>{visibleQuestions.length} shown</span>
+        {(activeCategory || tag !== "All" || query || level !== "All" || prevalence !== "All" || sort !== "prevalence") && <button className="iq-clear" onClick={clearFilters}>Clear filters</button>}
+        <span>{matchingQuestions.length} matches · {visibleQuestions.length} rendered</span>
       </div>
 
       <div className="iq-list">
@@ -453,9 +571,9 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
               <summary>
                 <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
                 <div>
-                  <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(index + 1).padStart(3, "0")}</small>
+                  <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(pageStart + index + 1).padStart(3, "0")}</small>
                   <h2>{item.question}</h2>
-                  <span className="iq-question-tags">{tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}</span>
+                  <span className="iq-question-tags"><em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>{tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}</span>
                 </div>
                 <i aria-hidden="true">+</i>
               </summary>
@@ -473,7 +591,7 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
                 <section>
                   <h3>Strong answer includes</h3>
                   <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
-                  <div className="iq-answer-tags">{tags.map((questionTag) => <button key={questionTag} onClick={() => setTag(questionTag)}>#{questionTag}</button>)}</div>
+                  <div className="iq-answer-tags">{tags.map((questionTag) => <button key={questionTag} onClick={() => setQuestionTag(questionTag)}>#{questionTag}</button>)}</div>
                 </section>
                 <footer>
                   <span>References</span>
@@ -486,16 +604,25 @@ function InterviewKnowledgeBase({ activeTopic, onTopicChange }: { activeTopic: s
             </details>
           );
         })}
-        {visibleQuestions.length === 0 && (
-          <div className="kb-empty iq-empty"><strong>No matching questions</strong><span>Change the level, section, tag, or search phrase.</span></div>
+        {matchingQuestions.length === 0 && (
+          <div className="kb-empty iq-empty"><strong>No matching questions</strong><span>Change the topic, level, prevalence, tag, or search phrase.</span></div>
         )}
       </div>
+
+      {matchingQuestions.length > INTERVIEW_PAGE_SIZE && (
+        <nav className="iq-pagination" aria-label="Interview question result pages">
+          <button disabled={safePage === 0} onClick={() => setPage(Math.max(0, safePage - 1))}>← Previous 60</button>
+          <span>Page {safePage + 1} of {pageCount} · results {pageStart + 1}–{pageStart + visibleQuestions.length}</span>
+          <button disabled={safePage >= pageCount - 1} onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}>Next 60 →</button>
+        </nav>
+      )}
     </div>
   );
 }
 
-function InterviewMethodology({ onBack }: { onBack: () => void }) {
-  const method = interviewCatalog.methodology;
+function InterviewMethodology({ catalog, onBack }: { catalog: InterviewCatalog; onBack: () => void }) {
+  const method = catalog.methodology;
+  const interviewSourcesList = catalog.sources;
   return (
     <div className="kb-content iq-page iq-methodology">
       <header className="kb-page-head iq-head">
@@ -507,7 +634,8 @@ function InterviewMethodology({ onBack }: { onBack: () => void }) {
         <article><span>01</span><h2>Coverage</h2><p>{method.coverage}</p></article>
         <article><span>02</span><h2>Answer validation</h2><p>{method.answers}</p></article>
         <article><span>03</span><h2>Publishing</h2><p>{method.publishing}</p></article>
-        <article><span>04</span><h2>Images and diagrams</h2><p>{method.media}</p></article>
+        <article><span>04</span><h2>Prevalence</h2><p>{method.prevalence}</p></article>
+        <article><span>05</span><h2>Images and diagrams</h2><p>{method.media}</p></article>
       </section>
 
       <section className="iq-source-catalog">

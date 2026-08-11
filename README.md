@@ -20,6 +20,15 @@ The **Jobs** module is functional:
 - RSS, Greenhouse, and Lever source sync;
 - deterministic matching without a paid AI API.
 
+The **Interview questions** module contains:
+
+- exactly 520 QA questions across 18 topics;
+- dedicated AI/ML/LLM, Data/BI, Observability/Production, and Regulated-domain sections;
+- four evidence-informed prevalence bands and most-common-first sorting;
+- prevalence, seniority, tag, topic and full-text filters;
+- 46 research and validation sources;
+- a lazy-loaded catalog with at most 60 question rows rendered at once.
+
 The navigation also contains planned knowledge modules:
 
 - Interview questions;
@@ -39,10 +48,9 @@ The navigation also contains planned knowledge modules:
 - `drizzle/` — versioned database migrations;
 - `agent/` — optional local collection and analysis agent;
 - `.github/workflows/ci.yml` — GitHub validation and Cloudflare deployment pipeline;
-- `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile;
-- `.openai/hosting.json` — temporary compatibility configuration for the existing Sites checkpoint and its separate D1 binding.
+- `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile.
 
-The canonical deployment path is GitHub Actions → Cloudflare Workers + D1. The older Sites deployment remains as a separate checkpoint until the external Cloudflare site and its address are confirmed, then its compatibility configuration can be removed in a dedicated cleanup.
+The only production deployment path is GitHub Actions → Cloudflare Workers + D1. Public interview content remains in Git; D1 is reserved for private vacancy data and future per-user progress, notes and bookmarks.
 
 ## VS Code setup
 
@@ -93,13 +101,7 @@ Required GitHub repository secrets:
 
 Open `/workspace` and enter the `APP_PASSWORD` value on the login page. The public homepage does not ask for a password. Basic authentication remains available for deployment scripts. Secrets are never written into source or the build artifact.
 
-The Cloudflare deployment creates its own D1 database. Data in the existing private Sites database is not copied automatically.
-
-For a one-off deployment from VS Code, put the same three values in the terminal environment and run:
-
-```bash
-npm run deploy:cloudflare
-```
+The Cloudflare deployment creates and migrates its named D1 database from the workflow. The production deployment script intentionally refuses to run outside GitHub Actions.
 
 ## Database changes
 
@@ -111,16 +113,7 @@ npm run db:generate
 
 Even a new database needs the initial migration: it creates the first set of tables. Every later schema change gets a new ordered migration so local, test, and production databases can be reproduced safely. Never commit `.env`, OAuth credentials, tokens, or files from `data/`.
 
-## Deployment models
-
-Temporary Sites checkpoint flow:
-
-1. validate the application;
-2. build a Cloudflare-compatible worker artifact;
-3. apply D1 migrations;
-4. publish an immutable private Sites version.
-
-Canonical Cloudflare flow:
+## Deployment model
 
 1. push to `main`;
 2. GitHub Actions validates and builds;
