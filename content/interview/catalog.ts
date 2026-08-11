@@ -1,15 +1,16 @@
 import common from "./common-qa.json";
+import canonical from "./canonical-baseline.json";
 import expanded from "./expanded-qa.json";
 import sources from "./sources.json";
 import taxonomy from "./taxonomy.json";
 
 export const interviewCatalog = {
-  version: 3,
+  version: 4,
   title: "QA interview knowledge base",
   description: "Canonical interview questions with original answers, practical signals, tags and traceable technical sources.",
   lastReviewedAt: "2026-08-11",
   methodology: {
-    coverage: "DOU, Katalon, Indeed and GeeksforGeeks are cross-checked to identify recurring interview themes. Duplicate, outdated and tool-trivia prompts are consolidated into canonical questions instead of being copied.",
+    coverage: "DOU, Katalon, Indeed and GeeksforGeeks are cross-checked for recurring interview themes. A separate explicit baseline covers every topic and is validated so foundational concepts cannot be hidden inside generated scenarios, answers or tags.",
     answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available.",
     publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks.",
     prevalence: "Prevalence is an editorial four-band signal, not a fabricated percentage. It combines overlap across the four interview banks with how broadly a concept applies across QA roles; specialist prompts remain available without being presented as common.",
@@ -17,7 +18,7 @@ export const interviewCatalog = {
   },
   taxonomy,
   sources,
-  questions: [...common.questions, ...expanded.questions]
+  questions: [...common.questions, ...canonical.questions, ...expanded.questions]
 };
 
 export default interviewCatalog;

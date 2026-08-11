@@ -520,11 +520,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-search input { background: transparent; border: 0; color: #1e2925; font-size: 13px; outline: 0; width: 100%; }
 .iq-category > span { color: #7c8781; display: block; font-size: 9px; font-weight: 800; letter-spacing: .07em; margin-bottom: 6px; text-transform: uppercase; }
 .iq-category select { background: #fff; border: 1px solid #dde2dd; border-radius: 8px; color: #1e2925; font-size: 12px; min-height: 43px; padding: 0 11px; width: 100%; }
-.iq-levels { align-items: center; background: #fff; border: 1px solid #e0e4e0; border-top: 0; display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 15px; }
-.iq-levels button { background: #f3f5f2; border: 1px solid transparent; border-radius: 17px; color: #65716b; cursor: pointer; font-size: 10px; font-weight: 750; min-height: 31px; padding: 0 12px; }
-.iq-levels button:hover { border-color: #bdc8bf; }
-.iq-levels button.active { background: #1c2723; color: #fff; }
-.iq-levels > span { color: #8b9590; font-size: 10px; font-weight: 700; margin-left: auto; }
+.iq-filter-status { align-items: center; background: #fff; border: 1px solid #e0e4e0; border-top: 0; display: flex; gap: 12px; justify-content: space-between; padding: 0 16px 15px; }
+.iq-filter-status > span { color: #8b9590; font-size: 10px; font-weight: 700; margin-left: auto; }
 .iq-list { background: #fff; border: 1px solid #e0e4e0; border-radius: 0 0 11px 11px; border-top: 0; overflow: hidden; }
 .iq-question { border-top: 1px solid #e8ebe7; }
 .iq-question:first-child { border-top: 0; }
@@ -545,6 +542,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-answer { border-top: 1px solid #e5e9e4; display: grid; gap: 20px 34px; grid-template-columns: minmax(0,1.35fr) minmax(260px,.65fr); padding: 23px 25px 25px 101px; }
 .iq-answer h3 { color: #77827c; font-size: 9px; letter-spacing: .08em; margin: 0 0 9px; text-transform: uppercase; }
 .iq-answer p { color: #45534c; font-size: 13px; line-height: 1.7; margin: 0; }
+.iq-answer-copy { display: grid; gap: 10px; }
+.iq-answer-copy .iq-answer-lead { color: #2f4038; font-size: 14px; font-weight: 650; line-height: 1.65; }
+.iq-answer .iq-answer-points { gap: 8px; list-style: disc; padding-left: 19px; }
+.iq-answer .iq-answer-points li { color: #45534c; font-size: 13px; line-height: 1.6; padding-left: 2px; }
+.iq-answer .iq-answer-points li::before { content: none; }
 .iq-answer ul { display: grid; gap: 7px; list-style: none; margin: 0; padding: 0; }
 .iq-answer li { color: #526059; font-size: 12px; line-height: 1.45; padding-left: 16px; position: relative; }
 .iq-answer li::before { color: #5f7e35; content: "✓"; font-weight: 850; left: 0; position: absolute; }
@@ -609,7 +611,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .iq-question > summary { align-items: start; gap: 11px; grid-template-columns: 55px minmax(0,1fr) 25px; padding: 17px 14px; }
   .iq-question h2 { font-size: 14px; }
   .iq-answer { grid-template-columns: 1fr; padding: 20px 18px 22px; }
-  .iq-levels > span { flex-basis: 100%; margin: 4px 0 0; }
+  .iq-filter-status > span { margin-left: auto; }
 }
 
 @media (max-width: 430px) {
@@ -634,8 +636,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-main { margin-left: 404px; }
 
 .iq-page { max-width: 1380px; }
-.iq-toolbar { grid-template-columns: minmax(300px,1fr) repeat(3,minmax(150px,210px)); }
+.iq-toolbar { grid-template-columns: minmax(220px,1.6fr) repeat(4,minmax(0,1fr)); }
+.iq-filter-label { color: #7c8781; display: block; font-size: 9px; font-weight: 800; letter-spacing: .07em; margin-bottom: 6px; text-transform: uppercase; }
+.iq-multi { min-width: 0; position: relative; }
+.iq-multi details { position: relative; }
+.iq-multi details[open] { z-index: 20; }
+.iq-multi summary { align-items: center; background: #fff; border: 1px solid #dde2dd; border-radius: 8px; color: #1e2925; cursor: pointer; display: flex; gap: 8px; justify-content: space-between; list-style: none; min-height: 43px; padding: 0 10px 0 11px; }
+.iq-multi summary::-webkit-details-marker { display: none; }
+.iq-multi summary:hover, .iq-multi details[open] summary { border-color: #a9b7b0; }
+.iq-multi summary strong { font-size: 12px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iq-multi summary i { color: #758079; font-size: 13px; font-style: normal; transition: transform .15s ease; }
+.iq-multi details[open] summary i { transform: rotate(180deg); }
+.iq-multi-menu { background: #fff; border: 1px solid #d9dfda; border-radius: 9px; box-shadow: 0 14px 34px rgba(28,39,35,.14); left: 0; min-width: 250px; padding: 8px; position: absolute; top: calc(100% + 6px); width: max-content; z-index: 25; }
+.iq-toolbar > .iq-multi:last-child .iq-multi-menu { left: auto; right: 0; }
+.iq-multi-menu > small { color: #8a948f; display: block; font-size: 8px; padding: 8px 7px 2px; }
+.iq-option-search { align-items: center; background: #f6f8f5; border: 1px solid #e0e5e0; border-radius: 6px; display: flex; gap: 7px; margin-bottom: 7px; min-height: 36px; padding: 0 9px; }
+.iq-option-search span { color: #7a867f; font-size: 14px; }
+.iq-option-search input { background: transparent; border: 0; color: #1e2925; font-size: 11px; min-width: 0; outline: 0; width: 100%; }
+.iq-option-list { max-height: 270px; overflow-y: auto; overscroll-behavior: contain; }
+.iq-option { align-items: center; border-radius: 6px; color: #435149; cursor: pointer; display: flex; font-size: 11px; gap: 9px; min-height: 34px; padding: 6px 7px; }
+.iq-option:hover { background: #f2f5f0; }
+.iq-option input { accent-color: #446b35; height: 14px; margin: 0; width: 14px; }
+.iq-option-all { border-bottom: 1px solid #edf0ec; font-weight: 750; margin-bottom: 4px; }
+.iq-option-empty { color: #8a948f; display: block; font-size: 10px; padding: 12px 8px; }
 .iq-clear { background: transparent !important; border-color: #d6ddd7 !important; color: #526059 !important; }
+.iq-clear { border-style: solid; border-width: 1px; border-radius: 15px; cursor: pointer; font-size: 9px; font-weight: 800; min-height: 28px; padding: 0 10px; }
+.iq-clear:hover:not(:disabled) { background: #1c2723 !important; border-color: #1c2723 !important; color: #fff !important; }
+.iq-clear:disabled { cursor: default; opacity: .38; }
 .iq-question-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 .iq-question-tags em { background: #f0f3ef; border-radius: 4px; color: #6c7771; font-size: 8px; font-style: normal; font-weight: 700; padding: 3px 6px; }
 .iq-question-tags .iq-prevalence { border: 1px solid transparent; }
@@ -646,7 +673,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-answer-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 16px; }
 .iq-answer-tags button { background: #f2f5f0; border: 1px solid #dce3da; border-radius: 5px; color: #4f6957; cursor: pointer; font-size: 9px; padding: 5px 7px; }
 .iq-answer-tags button:hover { background: #e6eddf; }
-.iq-media { background: #f6f8f4; border: 1px solid #dfe5dc; border-radius: 9px; margin: 18px 0 0; overflow: hidden; }
+.iq-answer-tags button.active { background: #dfead9; border-color: #afc3a5; color: #284d37; }
+.iq-media { background: #f6f8f4; border: 1px solid #dfe5dc; border-radius: 9px; grid-column: 1 / -1; margin: 0; overflow: hidden; }
 .iq-media img { display: block; height: auto; max-height: 430px; object-fit: contain; width: 100%; }
 .iq-media figcaption { color: #5f6b64; font-size: 10px; line-height: 1.5; padding: 10px 12px; }
 .iq-media figcaption small { color: #929b96; display: block; font-size: 8px; margin-top: 3px; text-transform: uppercase; }
@@ -702,6 +730,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .kb-subnav nav button { font-size: 10px; padding-left: 7px; padding-right: 7px; }
   .iq-toolbar { grid-template-columns: 1fr; }
   .iq-search { grid-column: auto; }
+  .iq-multi-menu { min-width: 0; width: 100%; }
   .iq-method-grid, .iq-source-catalog > div { grid-template-columns: 1fr; }
   .iq-source-catalog article:nth-child(odd) { border-right: 0; }
   .iq-source-catalog > header { align-items: flex-start; flex-direction: column; }

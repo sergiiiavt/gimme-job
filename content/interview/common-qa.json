@@ -74,17 +74,18 @@
       "level": "Junior",
       "category": "Fundamentals",
       "question": "What are the main test levels, and what different risk does each level cover?",
-      "shortAnswer": "Component tests isolate small units, integration tests verify interfaces, system tests evaluate the complete product, and acceptance testing checks business readiness. A strong plan distributes checks across levels instead of repeating every scenario through the UI.",
+      "shortAnswer": "Component testing isolates individual units. Component integration testing checks interfaces between units, while system integration testing checks the product's connections to other systems and services. System testing evaluates the complete product, and acceptance testing validates readiness for users, operations, contracts or regulation. A strong plan gives each level a distinct purpose instead of repeating every scenario through the UI.",
       "strongAnswerSignals": [
-        "component, integration, system and acceptance",
+        "component, component integration, system, system integration and acceptance",
         "different purpose per level",
         "avoids a UI-only strategy"
       ],
       "tags": [
         "test-levels",
         "component-testing",
-        "integration-testing",
+        "component-integration-testing",
         "system-testing",
+        "system-integration-testing",
         "acceptance-testing"
       ],
       "sourceIds": [
