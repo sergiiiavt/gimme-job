@@ -2,18 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GimmeJob",
-  description: "Jobs, interview questions, QA notes, AI agents, security, DevOps, and software standards.",
+  title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
+  description: "A live QA engineering portfolio with a researched interview catalog, career tools, learning paths, and a Cloudflare delivery pipeline.",
   applicationName: "GimmeJob",
-  keywords: ["jobs", "QA jobs", "career", "interview questions", "AI agents", "LLM testing", "DevOps", "security"],
+  keywords: ["QA engineering portfolio", "QA jobs", "career", "interview questions", "test automation", "AI agents", "LLM testing", "DevOps", "security"],
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
     type: "website",
-    title: "GimmeJob",
-    description: "Jobs, interview questions, engineering notes, and software standards.",
+    title: "GimmeJob | QA engineering portfolio",
+    description: "A live QA engineering portfolio with career tools, 601 researched interview questions, and an auditable cloud delivery pipeline.",
     siteName: "GimmeJob",
   },
   other: {

@@ -124,12 +124,14 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource] = await Promise.all([
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
     readFile(projectFile("db/schema.ts"), "utf8"),
+    readFile(projectFile("app/resume-page.tsx"), "utf8"),
+    readFile(projectFile("app/about-site.tsx"), "utf8"),
   ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
@@ -171,7 +173,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
 
-  for (const label of ["Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
+  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
   assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "trends"/);
@@ -180,12 +182,31 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(stylesSource, /\.kb-area-group-career/);
   assert.match(stylesSource, /\.kb-area-group-learning/);
   assert.match(stylesSource, /\.kb-area-group-misc/);
+  assert.match(stylesSource, /\.kb-nav-intro/);
+  assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "llm"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
   assert.ok(navigationSource.indexOf('id: "agentic"') < navigationSource.indexOf('id: "certifications"'), "Both AI topics must appear directly after Interview questions.");
   assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Fight AI slop must be the final section above the view switch.");
-  assert.match(uiSource, /resume: \{[\s\S]*?title: "My Resume"/);
+  assert.match(uiSource, /if \(section === "about"\) return <AboutSite\/>/);
+  assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
+  assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
+  assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
+  assert.match(aboutSource, /PET PROJECT \/ LIVE SYSTEM/);
+  assert.match(aboutSource, /GitHub repository/);
+  assert.match(aboutSource, /Runtime architecture/);
+  assert.match(aboutSource, /Deployment flow/);
+  assert.match(aboutSource, /Git catalog \/ D1 private data/);
+  assert.match(resumeSource, /fetch\("\/api\/settings"\)/);
+  assert.match(resumeSource, /mode === "personal" && contact\?\.phone/);
+  assert.match(resumeSource, /mode === "personal" && contact\?\.email/);
+  assert.match(resumeSource, /PUBLIC RESUME \/ LINKEDIN ONLY/);
+  assert.match(resumeSource, /Lead QA Engineer/);
+  assert.match(resumeSource, /TIETO UKRAINE LTD/);
+  assert.match(resumeSource, /National Technical University of Ukraine/);
+  assert.doesNotMatch(resumeSource, /sergii\.iavt@gmail\.com/i);
+  assert.doesNotMatch(resumeSource, /095[^\n]{0,20}574/);
   assert.match(uiSource, /embedded: \{[\s\S]*?title: "Embedded & IoT QA"/);
 
   const assetDirectory = projectFile("dist/client/assets/");

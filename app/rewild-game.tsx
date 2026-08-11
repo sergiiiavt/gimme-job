@@ -2,18 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const COLS = 16;
-const ROWS = 12;
+const COLS = 30;
+const ROWS = 14;
 const TILE = 40;
 const CANVAS_WIDTH = COLS * TILE;
 const CANVAS_HEIGHT = ROWS * TILE;
-const HOUSE_TILES = new Set(["7,5", "8,5", "7,6", "8,6"]);
+const HOUSE_COL = 14;
+const HOUSE_ROW = 6;
+const HOUSE_TILES = new Set(["14,6", "15,6", "14,7", "15,7"]);
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 
 type TileKind = "grass" | "corrupt" | "forest" | "pond" | "rock" | "flowers" | "house";
 type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | "rootreclaimer" | "elderoak";
 type EnemyKind = "clickbait" | "deepfake" | "popup" | "fragment";
-type GameMode = "siege" | "endless";
 type GameStatus = "menu" | "playing" | "paused" | "won" | "lost";
 
 interface Point { col: number; row: number }
@@ -83,7 +84,6 @@ interface Beam {
 }
 
 interface GameState {
-  mode: GameMode;
   status: GameStatus;
   tiles: TileKind[][];
   plants: PlantEntity[];
@@ -106,7 +106,6 @@ interface GameState {
 }
 
 interface UiSnapshot {
-  mode: GameMode;
   status: GameStatus;
   sunlight: number;
   houseHp: number;
@@ -124,14 +123,17 @@ interface UiSnapshot {
 }
 
 const BORDER_SPAWNS: Point[] = [
-  { col: 2, row: 0 }, { col: 7, row: 0 }, { col: 13, row: 0 }, { col: 15, row: 3 },
-  { col: 15, row: 8 }, { col: 12, row: 11 }, { col: 6, row: 11 }, { col: 0, row: 9 }, { col: 0, row: 3 },
+  { col: 2, row: 0 }, { col: 9, row: 0 }, { col: 16, row: 0 }, { col: 23, row: 0 }, { col: 28, row: 0 },
+  { col: 29, row: 3 }, { col: 29, row: 7 }, { col: 29, row: 11 }, { col: 25, row: 13 },
+  { col: 18, row: 13 }, { col: 10, row: 13 }, { col: 4, row: 13 }, { col: 0, row: 10 }, { col: 0, row: 6 }, { col: 0, row: 2 },
 ];
 
 const OBSTACLES: Array<[number, number, TileKind]> = [
-  [3, 2, "forest"], [4, 2, "forest"], [3, 3, "forest"], [12, 2, "flowers"], [13, 2, "flowers"],
-  [2, 6, "pond"], [2, 7, "pond"], [3, 7, "pond"], [12, 8, "rock"], [13, 8, "rock"],
-  [4, 9, "forest"], [11, 9, "flowers"],
+  [3, 2, "forest"], [4, 2, "forest"], [3, 3, "forest"], [10, 1, "flowers"], [11, 1, "flowers"],
+  [22, 2, "flowers"], [23, 2, "flowers"], [26, 3, "rock"], [17, 3, "pond"], [18, 3, "pond"], [18, 4, "pond"],
+  [6, 5, "pond"], [6, 6, "pond"], [7, 6, "pond"], [3, 9, "forest"], [4, 9, "forest"], [4, 10, "forest"],
+  [25, 6, "forest"], [26, 6, "forest"], [23, 10, "rock"], [24, 10, "rock"], [20, 12, "flowers"], [21, 12, "flowers"],
+  [10, 12, "forest"], [11, 12, "forest"],
 ];
 
 function createTiles() {
@@ -161,15 +163,15 @@ function createNode(state: GameState, point: Point, boss = false) {
   });
 }
 
-function createGameState(mode: GameMode, best: number, status: GameStatus = "playing"): GameState {
+function createGameState(best: number, status: GameStatus = "playing"): GameState {
   const state: GameState = {
-    mode, status, tiles: createTiles(), plants: [], enemies: [], nodes: [], beams: [],
+    status, tiles: createTiles(), plants: [], enemies: [], nodes: [], beams: [],
     sunlight: 120, houseHp: 100, wave: 1, nextWave: 24, elapsed: 0, score: 0,
-    selected: "vinewhip", cursor: { col: 6, row: 4 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
+    selected: "vinewhip", cursor: { col: 13, row: 5 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
     bossSpawned: false, nextId: 1, best,
   };
   createNode(state, BORDER_SPAWNS[1]);
-  createNode(state, BORDER_SPAWNS[4]);
+  createNode(state, BORDER_SPAWNS[5]);
   return state;
 }
 
@@ -346,7 +348,7 @@ function spreadCorruption(state: GameState) {
   if (!frontier.length) return;
   const target = frontier[Math.floor(Math.random() * frontier.length)];
   if (HOUSE_TILES.has(tileKey(target.col, target.row))) {
-    if (state.mode === "siege") finishGame(state, "lost", "AI slop breached the garden perimeter.");
+    finishGame(state, "lost", "AI slop breached the garden perimeter.");
     return;
   }
   if (!plantAt(state, target.col, target.row)) state.tiles[target.row][target.col] = "corrupt";
@@ -388,7 +390,7 @@ function attackPlantOrHouse(state: GameState, enemy: EnemyEntity, targetCol: num
   if (HOUSE_TILES.has(tileKey(targetCol, targetRow))) {
     if (enemy.cooldown <= 0) {
       const nextHp = state.houseHp - ENEMIES[enemy.kind].damage;
-      state.houseHp = state.mode === "endless" ? Math.max(1, nextHp) : Math.max(0, nextHp);
+      state.houseHp = Math.max(0, nextHp);
       enemy.cooldown = .85;
       addBeam(state, enemy.x, enemy.y, targetCol + .5, targetRow + .5, "#f36c76");
       if (state.houseHp <= 0) finishGame(state, "lost", "AI slop flattened the last human house.");
@@ -473,10 +475,8 @@ function advanceWave(state: GameState) {
   state.sunlight += 35 + state.wave * 4;
   setMessage(state, `Wave ${state.wave}: more AI slop crawled out of the feed.`, 3.5);
   if (state.wave % 2 === 0) addWaveNode(state);
-  if (state.mode === "siege" && state.wave === 5 && !state.bossSpawned) {
+  if (state.wave === 5 && !state.bossSpawned) {
     state.bossSpawned = true;
-    addWaveNode(state, true);
-  } else if (state.mode === "endless" && state.wave % 6 === 0) {
     addWaveNode(state, true);
   }
 }
@@ -495,7 +495,7 @@ function updateGame(state: GameState, dt: number) {
   state.beams = state.beams.filter((beam) => beam.life > 0);
   cleanupDefeated(state);
 
-  if (state.mode === "siege" && state.bossSpawned && state.nodes.length === 0 && state.enemies.length === 0 && corruptionPercent(state) === 0) {
+  if (state.bossSpawned && state.nodes.length === 0 && state.enemies.length === 0 && corruptionPercent(state) === 0) {
     finishGame(state, "won", "AI slop erased. The field belongs to people again.");
   }
 }
@@ -519,7 +519,7 @@ function placePlant(state: GameState, col: number, row: number) {
 
 function toUi(state: GameState): UiSnapshot {
   return {
-    mode: state.mode, status: state.status, sunlight: Math.floor(state.sunlight), houseHp: Math.round(state.houseHp),
+    status: state.status, sunlight: Math.floor(state.sunlight), houseHp: Math.round(state.houseHp),
     corruption: corruptionPercent(state), wave: state.wave, nextWave: Math.max(0, Math.ceil(state.nextWave)),
     elapsed: state.elapsed, score: state.score, selected: state.selected,
     message: state.messageUntil >= state.elapsed || state.status === "won" || state.status === "lost" ? state.message : "Grow something useful.",
@@ -565,8 +565,8 @@ function drawTile(ctx: CanvasRenderingContext2D, tile: TileKind, col: number, ro
 }
 
 function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
-  const x = 7 * TILE;
-  const y = 5 * TILE;
+  const x = HOUSE_COL * TILE;
+  const y = HOUSE_ROW * TILE;
   ctx.fillStyle = "rgba(45,61,39,.18)"; ctx.fillRect(x + 7, y + 18, 70, 60);
   ctx.fillStyle = "#ead7a0"; ctx.fillRect(x + 10, y + 29, 60, 43);
   ctx.fillStyle = "#9b553d"; ctx.fillRect(x + 5, y + 20, 70, 16); ctx.fillRect(x + 15, y + 12, 50, 9);
@@ -651,7 +651,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles[row][col], col, row, state.elapsed);
   }
-  ctx.fillStyle = "rgba(243,217,115,.12)"; ctx.fillRect(5 * TILE, 3 * TILE, 6 * TILE, 6 * TILE);
+  ctx.fillStyle = "rgba(243,217,115,.12)"; ctx.fillRect((HOUSE_COL - 4) * TILE, (HOUSE_ROW - 4) * TILE, 10 * TILE, 10 * TILE);
   drawHouse(ctx, state.houseHp);
   for (const plant of state.plants) drawPlant(ctx, plant, state);
   for (const node of state.nodes) drawNode(ctx, node, state.elapsed);
@@ -676,10 +676,10 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
-function RewildGuide() {
+function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to kill AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p></header>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to kill AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
       <section className="rw-guide-grid">
         <article><span>01</span><h2>Arm</h2><p>Plant defenses on healthy grass. Sunblooms fund the fight; blockers and attackers turn the path into a trap.</p></article>
         <article><span>02</span><h2>Crush</h2><p>AI slop servers spread corruption and manufacture junk. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>
@@ -698,18 +698,18 @@ function RewildGuide() {
   );
 }
 
-export default function RewildGame({ view = "all" }: { view?: string }) {
+export default function RewildGame({ onViewChange = () => {}, view = "all" }: { onViewChange?: (view: string) => void; view?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastUiRef = useRef(0);
-  const [ui, setUi] = useState<UiSnapshot>(() => toUi(createGameState("siege", 0, "menu")));
+  const [ui, setUi] = useState<UiSnapshot>(() => toUi(createGameState(0, "menu")));
 
   useEffect(() => {
     let best = 0;
     try { best = Number(window.localStorage.getItem(STORAGE_KEY) ?? 0) || 0; } catch { /* local persistence is optional */ }
-    stateRef.current = createGameState("siege", best, "menu");
+    stateRef.current = createGameState(best, "menu");
     setUi(toUi(stateRef.current));
   }, []);
 
@@ -758,11 +758,11 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  if (view === "guide") return <RewildGuide/>;
+  if (view === "guide") return <RewildGuide onPlay={() => onViewChange("all")}/>;
 
-  const start = (mode: GameMode) => {
+  const start = () => {
     const best = stateRef.current?.best ?? 0;
-    stateRef.current = createGameState(mode, best);
+    stateRef.current = createGameState(best);
     lastFrameRef.current = 0;
     setUi(toUi(stateRef.current));
   };
@@ -783,8 +783,17 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
     const canvas = canvasRef.current;
     if (!state || !canvas) return;
     const bounds = canvas.getBoundingClientRect();
-    const col = Math.floor(((event.clientX - bounds.left) / bounds.width) * COLS);
-    const row = Math.floor(((event.clientY - bounds.top) / bounds.height) * ROWS);
+    const boardRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+    const boxRatio = bounds.width / bounds.height;
+    const renderedWidth = boxRatio > boardRatio ? bounds.height * boardRatio : bounds.width;
+    const renderedHeight = boxRatio > boardRatio ? bounds.height : bounds.width / boardRatio;
+    const offsetX = (bounds.width - renderedWidth) / 2;
+    const offsetY = (bounds.height - renderedHeight) / 2;
+    const x = event.clientX - bounds.left - offsetX;
+    const y = event.clientY - bounds.top - offsetY;
+    if (x < 0 || y < 0 || x >= renderedWidth || y >= renderedHeight) return;
+    const col = Math.floor((x / renderedWidth) * COLS);
+    const row = Math.floor((y / renderedHeight) * ROWS);
     state.cursor = { col, row };
     placePlant(state, col, row);
     setUi(toUi(state));
@@ -810,7 +819,7 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
     <div className="rw-play-page">
       <section className="rw-game-shell" aria-label="Fight AI slop game">
         <div className="rw-hud" aria-live="polite">
-          <div className="rw-hud-brand"><span>Pixel defense · {ui.mode}</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best</small></div>
+          <div className="rw-hud-brand"><span>Pixel defense · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best</small></div>
           <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div>
           <div><span>House</span><strong>{ui.houseHp}%</strong></div>
           <div><span>Corruption</span><strong>{ui.corruption}%</strong></div>
@@ -819,7 +828,7 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
         </div>
 
         <div className="rw-stage">
-          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A sixteen by twelve pixel field under attack by AI slop. Select a plant, then click a tile or use arrow keys and Enter to plant."/>
+          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A thirty by fourteen pixel field under attack by AI slop. Select a plant, then click a tile or use arrow keys and Enter to plant."/>
           {overlay && (
             <div className={`rw-overlay rw-overlay-${ui.status}`}>
               <span>{ui.status === "menu" ? "AI SLOP DETECTED" : ui.status === "won" ? "FEED TERMINATED" : "AI SLOP WON"}</span>
@@ -827,8 +836,7 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
               <p>{ui.status === "menu" ? "AI slop servers are poisoning the field. Grow defenses, break the feed, and keep the last human house standing." : ui.message}</p>
               {ui.status !== "menu" && <div className="rw-result"><span>{ui.wave} waves</span><span>{formatTime(ui.elapsed)}</span><span>{ui.score.toLocaleString()} score</span></div>}
               <div className="rw-overlay-actions">
-                <button onClick={() => start("siege")}>{ui.status === "menu" ? "Start the fight" : "Fight again"}</button>
-                <button className="secondary" onClick={() => start("endless")}>Endless war</button>
+                <button onClick={start}>{ui.status === "menu" ? "Start the fight" : "Fight again"}</button>
               </div>
             </div>
           )}
@@ -852,7 +860,7 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
 
         <footer className="rw-controls">
           <p><strong>Plant:</strong> choose a card or press 1–6, then click a tile. Keyboard: arrows + Enter. Rootreclaimers only grow on corruption.</p>
-          <div><button onClick={togglePause} disabled={ui.status === "menu" || ui.status === "won" || ui.status === "lost"}>{ui.status === "paused" ? "Resume" : "Pause"}</button><button onClick={() => start(ui.mode)}>Restart</button></div>
+          <div><button onClick={() => onViewChange("guide")}>Field guide</button><button onClick={togglePause} disabled={ui.status === "menu" || ui.status === "won" || ui.status === "lost"}>{ui.status === "paused" ? "Resume" : "Pause"}</button><button onClick={start}>Restart</button></div>
         </footer>
       </section>
     </div>
