@@ -258,7 +258,7 @@ export function WorkspaceApp() {
           { id: "ALL", label: "All statuses", count: jobs.length },
           ...STATUS_OPTIONS.map((status) => ({ id: status.value, label: status.label, count: jobs.filter((job) => job.status === status.value).length })),
         ]}
-        secondaryTitle="Jobs"
+        secondaryTitle="Vacancies"
       />
 
       <section className="kb-main">
@@ -266,7 +266,7 @@ export function WorkspaceApp() {
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div className="private-page-heading"><h1>Jobs</h1><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button></div>
+            <div className="private-page-heading"><h1>Vacancies</h1><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
           </section>
 

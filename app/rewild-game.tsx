@@ -23,7 +23,7 @@ interface EnemyConfig { name: string; hp: number; speed: number; damage: number;
 const PLANT_ORDER: PlantKind[] = ["sunbloom", "thornbramble", "sporecap", "vinewhip", "rootreclaimer", "elderoak"];
 const PLANTS: Record<PlantKind, PlantConfig> = {
   sunbloom: { name: "Sunbloom", shortName: "Sun", cost: 25, role: "Economy", detail: "+2 sunlight each second", unlockWave: 1, color: "#f3c94f", maxHp: 45 },
-  thornbramble: { name: "Thornbramble", shortName: "Thorn", cost: 40, role: "Blocker", detail: "Blocks and hurts adjacent slop", unlockWave: 1, color: "#597b39", maxHp: 100 },
+  thornbramble: { name: "Thornbramble", shortName: "Thorn", cost: 40, role: "Blocker", detail: "Blocks and shreds adjacent AI slop", unlockWave: 1, color: "#597b39", maxHp: 100 },
   vinewhip: { name: "Vinewhip", shortName: "Vine", cost: 50, role: "Ranged", detail: "Long reach and a slowing hit", unlockWave: 1, color: "#7fad4d", maxHp: 55 },
   sporecap: { name: "Sporecap", shortName: "Spore", cost: 60, role: "Area damage", detail: "Pulses damage in a wide circle", unlockWave: 2, color: "#c99ed8", maxHp: 50 },
   rootreclaimer: { name: "Rootreclaimer", shortName: "Root", cost: 45, role: "Reclaim", detail: "Planted on corruption; restores land", unlockWave: 2, color: "#79b57b", maxHp: 65 },
@@ -31,10 +31,10 @@ const PLANTS: Record<PlantKind, PlantConfig> = {
 };
 
 const ENEMIES: Record<EnemyKind, EnemyConfig> = {
-  clickbait: { name: "Clickbait Swarm", hp: 10, speed: 1.15, damage: 2, color: "#d7f04f" },
-  deepfake: { name: "Deepfake Blob", hp: 60, speed: .55, damage: 6, color: "#8da1ad" },
-  popup: { name: "Popup Spammer", hp: 25, speed: .48, damage: 4, color: "#f08fc5" },
-  fragment: { name: "Deepfake Fragment", hp: 15, speed: .9, damage: 3, color: "#a5b7bd" },
+  clickbait: { name: "AI Slop Swarm", hp: 10, speed: 1.15, damage: 2, color: "#d7f04f" },
+  deepfake: { name: "Deepfake Sludge", hp: 60, speed: .55, damage: 6, color: "#8da1ad" },
+  popup: { name: "Popup Parasite", hp: 25, speed: .48, damage: 4, color: "#f08fc5" },
+  fragment: { name: "AI Slop Fragment", hp: 15, speed: .9, damage: 3, color: "#a5b7bd" },
 };
 
 interface PlantEntity {
@@ -165,7 +165,7 @@ function createGameState(mode: GameMode, best: number, status: GameStatus = "pla
   const state: GameState = {
     mode, status, tiles: createTiles(), plants: [], enemies: [], nodes: [], beams: [],
     sunlight: 120, houseHp: 100, wave: 1, nextWave: 24, elapsed: 0, score: 0,
-    selected: "vinewhip", cursor: { col: 6, row: 4 }, message: "The garden is awake.", messageUntil: 3,
+    selected: "vinewhip", cursor: { col: 6, row: 4 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
     bossSpawned: false, nextId: 1, best,
   };
   createNode(state, BORDER_SPAWNS[1]);
@@ -346,7 +346,7 @@ function spreadCorruption(state: GameState) {
   if (!frontier.length) return;
   const target = frontier[Math.floor(Math.random() * frontier.length)];
   if (HOUSE_TILES.has(tileKey(target.col, target.row))) {
-    if (state.mode === "siege") finishGame(state, "lost", "Corruption reached the garden gate.");
+    if (state.mode === "siege") finishGame(state, "lost", "AI slop breached the garden perimeter.");
     return;
   }
   if (!plantAt(state, target.col, target.row)) state.tiles[target.row][target.col] = "corrupt";
@@ -357,7 +357,7 @@ function addWaveNode(state: GameState, boss = false) {
   if (!available.length) return;
   const point = available[Math.floor(Math.random() * available.length)];
   createNode(state, point, boss);
-  setMessage(state, boss ? "MAINFRAME CORE ONLINE. It has a very normal number of eyes." : "A new datacenter has achieved unwanted product-market fit.", 4);
+  setMessage(state, boss ? "AI SLOP MAINFRAME ONLINE. Kill the feed." : "A fresh AI slop server is poisoning the field.", 4);
 }
 
 function updateNodes(state: GameState, dt: number) {
@@ -391,7 +391,7 @@ function attackPlantOrHouse(state: GameState, enemy: EnemyEntity, targetCol: num
       state.houseHp = state.mode === "endless" ? Math.max(1, nextHp) : Math.max(0, nextHp);
       enemy.cooldown = .85;
       addBeam(state, enemy.x, enemy.y, targetCol + .5, targetRow + .5, "#f36c76");
-      if (state.houseHp <= 0) finishGame(state, "lost", "The house was flattened by aggressively mediocre content.");
+      if (state.houseHp <= 0) finishGame(state, "lost", "AI slop flattened the last human house.");
     }
     return true;
   }
@@ -407,7 +407,7 @@ function updateEnemies(state: GameState, dt: number) {
         nearby.disabledUntil = state.elapsed + 3.2;
         enemy.cooldown = 5;
         addBeam(state, enemy.x, enemy.y, nearby.col + .5, nearby.row + .5, "#ff8dcb");
-        setMessage(state, `${PLANTS[nearby.kind].name} closed an extremely persistent popup.`);
+        setMessage(state, `${PLANTS[nearby.kind].name} tore down an AI slop popup.`);
         continue;
       }
     }
@@ -461,7 +461,7 @@ function cleanupDefeated(state: GameState) {
   const deadNodes = state.nodes.filter((node) => node.hp <= 0);
   for (const node of deadNodes) {
     state.score += node.boss ? 800 : 180;
-    setMessage(state, node.boss ? "The Mainframe Core has logged off forever." : "Datacenter composted. The uptime graph looks terrible.", 4);
+    setMessage(state, node.boss ? "The AI Slop Mainframe is dead. Good." : "AI slop server destroyed. Keep pushing.", 4);
   }
   state.nodes = state.nodes.filter((node) => node.hp > 0);
   state.plants = state.plants.filter((plant) => plant.hp > 0);
@@ -471,7 +471,7 @@ function advanceWave(state: GameState) {
   state.wave += 1;
   state.nextWave = Math.max(15, 25 - state.wave);
   state.sunlight += 35 + state.wave * 4;
-  setMessage(state, `Wave ${state.wave}: the algorithm has discovered scale.`, 3.5);
+  setMessage(state, `Wave ${state.wave}: more AI slop crawled out of the feed.`, 3.5);
   if (state.wave % 2 === 0) addWaveNode(state);
   if (state.mode === "siege" && state.wave === 5 && !state.bossSpawned) {
     state.bossSpawned = true;
@@ -496,7 +496,7 @@ function updateGame(state: GameState, dt: number) {
   cleanupDefeated(state);
 
   if (state.mode === "siege" && state.bossSpawned && state.nodes.length === 0 && state.enemies.length === 0 && corruptionPercent(state) === 0) {
-    finishGame(state, "won", "The field is alive again. Please refrain from pivoting it into a platform.");
+    finishGame(state, "won", "AI slop erased. The field belongs to people again.");
   }
 }
 
@@ -679,20 +679,20 @@ function formatTime(seconds: number) {
 function RewildGuide() {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>FIELD MANUAL / 01</span><h1>How to rewild a bad idea</h1><p>Plants are your towers, sunlight is your budget, and every concrete-grey tile is a tiny product decision waiting to be reversed.</p></header>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 01</span><h1>How to kill AI slop</h1><p>Plants are weapons, sunlight is ammunition, and every concrete-grey tile is territory stolen by the feed.</p></header>
       <section className="rw-guide-grid">
-        <article><span>01</span><h2>Grow</h2><p>Place plants on healthy grass. Sunblooms fund the garden; blockers and attackers shape the path to the house.</p></article>
-        <article><span>02</span><h2>Contain</h2><p>Datacenters spread corruption and manufacture slop. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>
-        <article><span>03</span><h2>Reclaim</h2><p>Rootreclaimers are the only plants that begin on corrupted tiles. Give them time and they restore nearby ground.</p></article>
-        <article><span>04</span><h2>Finish</h2><p>In Siege mode, compost every node and the Mainframe Core, clear the remaining slop, and regrow every tile.</p></article>
+        <article><span>01</span><h2>Arm</h2><p>Plant defenses on healthy grass. Sunblooms fund the fight; blockers and attackers turn the path into a trap.</p></article>
+        <article><span>02</span><h2>Crush</h2><p>AI slop servers spread corruption and manufacture junk. Reach them with Vinewhips, Sporecaps, and mature Elder Oaks.</p></article>
+        <article><span>03</span><h2>Reclaim</h2><p>Rootreclaimers invade corrupted tiles. Give them time and they rip the grey rot out of nearby ground.</p></article>
+        <article><span>04</span><h2>Erase</h2><p>Destroy every AI slop server and the Mainframe, clear the remaining sludge, and take back every tile.</p></article>
       </section>
       <section className="rw-field-guide">
-        <div><span>PLANTS</span><h2>The useful things</h2></div>
+        <div><span>DEFENDERS</span><h2>Weapons that grow</h2></div>
         <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><i style={{ background: PLANTS[kind].color }}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
       </section>
       <section className="rw-field-guide rw-enemy-guide">
-        <div><span>SLOP</span><h2>The suspicious things</h2></div>
-        <div className="rw-guide-list">{(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><i style={{ background: ENEMIES[kind].color }}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, numerous, and desperate for your attention." : kind === "deepfake" ? "Slow and lumpy. Splits into two more problems when removed." : "Disables plants with modal dialogue nobody requested."}</p></div></article>)}</div>
+        <div><span>AI SLOP</span><h2>Targets to destroy</h2></div>
+        <div className="rw-guide-list">{(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><i style={{ background: ENEMIES[kind].color }}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, disposable, and engineered to steal attention." : kind === "deepfake" ? "Slow synthetic sludge. Splits into two more problems when destroyed." : "A hostile popup that disables defenders with junk nobody requested."}</p></div></article>)}</div>
       </section>
     </div>
   );
@@ -807,14 +807,10 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
 
   const overlay = ui.status === "menu" || ui.status === "won" || ui.status === "lost";
   return (
-    <div className="kb-content rw-page">
-      <header className="rw-head">
-        <div><span>PIXEL DEFENSE / PUBLIC BETA</span><h1>Rewild</h1><p>Defend one small, stubborn garden from datacenters and the content-shaped things they manufacture.</p></div>
-        <div className="rw-mode-mark"><strong>{ui.mode === "siege" ? "Siege" : "Endless"}</strong><span>{ui.best.toLocaleString()} best</span></div>
-      </header>
-
-      <section className="rw-game-shell" aria-label="Rewild game">
+    <div className="rw-play-page">
+      <section className="rw-game-shell" aria-label="Fight AI slop game">
         <div className="rw-hud" aria-live="polite">
+          <div className="rw-hud-brand"><span>Pixel defense · {ui.mode}</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best</small></div>
           <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div>
           <div><span>House</span><strong>{ui.houseHp}%</strong></div>
           <div><span>Corruption</span><strong>{ui.corruption}%</strong></div>
@@ -823,23 +819,23 @@ export default function RewildGame({ view = "all" }: { view?: string }) {
         </div>
 
         <div className="rw-stage">
-          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A sixteen by twelve pixel field. Select a plant, then click a tile or use arrow keys and Enter to plant."/>
+          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A sixteen by twelve pixel field under attack by AI slop. Select a plant, then click a tile or use arrow keys and Enter to plant."/>
           {overlay && (
             <div className={`rw-overlay rw-overlay-${ui.status}`}>
-              <span>{ui.status === "menu" ? "THE FIELD IS STILL HERE" : ui.status === "won" ? "FULL BLOOM" : "GARDEN OFFLINE"}</span>
-              <h2>{ui.status === "menu" ? "Grow back." : ui.status === "won" ? "The concrete lost." : "The slop got through."}</h2>
-              <p>{ui.status === "menu" ? "Choose a mode. Plant on grass, reclaim grey tiles, and keep the tiny house standing." : ui.message}</p>
+              <span>{ui.status === "menu" ? "AI SLOP DETECTED" : ui.status === "won" ? "FEED TERMINATED" : "AI SLOP WON"}</span>
+              <h2>{ui.status === "menu" ? "Fight back." : ui.status === "won" ? "AI slop erased." : "The feed ate everything."}</h2>
+              <p>{ui.status === "menu" ? "AI slop servers are poisoning the field. Grow defenses, break the feed, and keep the last human house standing." : ui.message}</p>
               {ui.status !== "menu" && <div className="rw-result"><span>{ui.wave} waves</span><span>{formatTime(ui.elapsed)}</span><span>{ui.score.toLocaleString()} score</span></div>}
               <div className="rw-overlay-actions">
-                <button onClick={() => start("siege")}>{ui.status === "menu" ? "Start Siege" : "Retry Siege"}</button>
-                <button className="secondary" onClick={() => start("endless")}>Endless Bloom</button>
+                <button onClick={() => start("siege")}>{ui.status === "menu" ? "Start the fight" : "Fight again"}</button>
+                <button className="secondary" onClick={() => start("endless")}>Endless war</button>
               </div>
             </div>
           )}
-          {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>The weeds are respecting this boundary.</strong><button onClick={togglePause}>Resume</button></div>}
+          {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>AI slop is still waiting. It never gets tired.</strong><button onClick={togglePause}>Resume</button></div>}
         </div>
 
-        <div className="rw-status-line"><span>{ui.message}</span><small>{ui.enemies} slop · {ui.nodes} nodes · {ui.plants} plants</small></div>
+        <div className="rw-status-line"><span>{ui.message}</span><small>{ui.enemies} AI slop · {ui.nodes} slop servers · {ui.plants} defenders</small></div>
 
         <div className="rw-plant-bar" aria-label="Plants">
           {PLANT_ORDER.map((kind, index) => {

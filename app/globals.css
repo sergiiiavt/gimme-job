@@ -622,8 +622,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-navigation { background: #fff; display: flex; height: 100vh; left: 0; position: fixed; top: 0; width: 404px; z-index: 45; }
 .kb-navigation .kb-sidebar { border-right: 1px solid #e1e5e1; height: 100%; left: auto; overflow: hidden; padding: 18px 10px 12px; position: static; top: auto; width: 168px; }
 .kb-navigation .kb-brand { font-size: 18px; padding: 0 8px 20px; }
-.kb-navigation .kb-nav-list { min-height: 0; overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
+.kb-navigation .kb-nav-list { gap: 8px; min-height: 0; overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
 .kb-navigation .kb-nav-list .kb-nav-link { font-size: 10px; line-height: 1.2; min-height: 31px; padding: 7px 6px; }
+.kb-area-group { border: 1px solid transparent; border-radius: 9px; flex: 0 0 auto; padding: 7px 6px; }
+.kb-area-group > h2 { color: #7a857f; font-size: 7px; font-weight: 900; letter-spacing: .12em; margin: 0 5px 5px; text-transform: uppercase; }
+.kb-area-group > div { display: flex; flex-direction: column; gap: 1px; }
+.kb-area-group-career { background: #fbf6ed; border-color: #f0e6d6; }
+.kb-area-group-learning { background: #f1f6ef; border-color: #e2ebde; }
+.kb-area-group-misc { background: #f5f2f7; border-color: #e8e1eb; }
+.kb-area-group-career .kb-nav-link.active { background: #f2e5cf; border-left-color: #ad7338; }
+.kb-area-group-learning .kb-nav-link.active { background: #e3eddf; border-left-color: #5f7e35; }
+.kb-area-group-misc .kb-nav-link.active { background: #eae2ef; border-left-color: #7b538e; }
 .kb-navigation .kb-sidebar-footer { padding-left: 3px; padding-right: 3px; }
 .kb-view-switch { background: #eef1ed; border: 1px solid #dce2dc; border-radius: 7px; display: grid; flex: none !important; grid-template-columns: 1fr 1fr; padding: 3px; }
 .kb-view-switch a { border-radius: 5px; color: #657069; font-size: 9px; font-weight: 800; padding: 7px 3px; text-align: center; }
@@ -785,7 +794,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .iq-pagination { align-items: stretch; flex-direction: column; }
 }
 
-/* Rewild pixel-defense game */
+/* Fight AI slop pixel-defense game */
 .rw-page { max-width: 1100px; }
 .rw-head { align-items: flex-end; display: flex; gap: 30px; justify-content: space-between; margin-bottom: 16px; }
 .rw-head > div:first-child { max-width: 680px; }
@@ -795,13 +804,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .rw-mode-mark { align-items: flex-end; background: #fff; border: 1px solid #dce3da; border-radius: 10px; display: flex; flex-direction: column; min-width: 120px; padding: 11px 13px; }
 .rw-mode-mark strong { color: #263b2d; font-size: 13px; }
 .rw-mode-mark span { color: #89938d; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 8px; margin-top: 4px; text-transform: uppercase; }
+.kb-main-game { background: #101b17; overflow-x: hidden; }
+.rw-play-page { background: #101b17; min-height: 100vh; width: 100%; }
 .rw-game-shell { background: #18251f; border: 1px solid #253a30; border-radius: 13px; box-shadow: 0 20px 55px rgba(30,45,37,.16); color: #e8f0e4; overflow: hidden; }
-.rw-hud { background: #101b17; border-bottom: 1px solid #30443a; display: grid; grid-template-columns: repeat(5,1fr); }
+.rw-play-page .rw-game-shell { border: 0; border-radius: 0; box-shadow: none; min-height: 100vh; width: 100%; }
+.rw-hud { background: #101b17; border-bottom: 1px solid #30443a; display: grid; grid-template-columns: 1.35fr repeat(5,1fr); }
 .rw-hud > div { border-right: 1px solid #2a3d34; min-width: 0; padding: 11px 13px; }
 .rw-hud > div:last-child { border-right: 0; }
 .rw-hud span { color: #82978b; display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 7px; font-weight: 850; letter-spacing: .1em; margin-bottom: 4px; text-transform: uppercase; }
 .rw-hud strong { color: #eaf3df; display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-hud-brand strong { color: #d8e46c; text-transform: uppercase; }
+.rw-hud-brand small { color: #657c70; display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 7px; margin-top: 3px; text-transform: uppercase; }
 .rw-stage { aspect-ratio: 4 / 3; background: #26372d; margin: 0 auto; max-width: 800px; position: relative; width: 100%; }
+.rw-play-page .rw-stage { max-width: none; }
 .rw-stage canvas { cursor: crosshair; display: block; height: 100%; image-rendering: crisp-edges; image-rendering: pixelated; touch-action: manipulation; width: 100%; }
 .rw-stage canvas:focus-visible { outline: 3px solid #f4ef9d; outline-offset: -3px; }
 .rw-overlay { align-items: center; backdrop-filter: blur(2px); background: rgba(15,27,22,.83); display: flex; flex-direction: column; inset: 0; justify-content: center; padding: 28px; position: absolute; text-align: center; }
@@ -837,6 +852,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .rw-controls button:hover:not(:disabled) { border-color: #7b927f; color: #fff; }
 .rw-controls button:disabled { cursor: default; opacity: .35; }
 .rw-loading { margin-top: 30px; }
+.rw-play-page .rw-loading { color: #eaf3df; margin: 0; min-height: 100vh; }
+.rw-play-page .rw-loading span { color: #82978b; }
 .rw-guide-head { background: #edf2e7; border: 1px solid #dce4d6; border-radius: 12px; margin-bottom: 13px; padding: clamp(24px,5vw,50px); }
 .rw-guide-grid { display: grid; gap: 10px; grid-template-columns: repeat(4,1fr); margin-bottom: 13px; }
 .rw-guide-grid article { background: #fff; border: 1px solid #dfe4df; border-radius: 10px; min-height: 180px; padding: 17px; }
@@ -863,6 +880,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .rw-head { align-items: flex-start; flex-direction: column; gap: 12px; }
   .rw-mode-mark { align-items: flex-start; width: 100%; }
   .rw-hud > div { padding: 9px 6px; text-align: center; }
+  .rw-hud { grid-template-columns: repeat(3,1fr); }
   .rw-hud span { font-size: 6px; }
   .rw-hud strong { font-size: 10px; }
   .rw-overlay { padding: 17px; }

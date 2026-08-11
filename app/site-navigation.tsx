@@ -2,32 +2,53 @@
 
 import Link from "next/link";
 
-export type SiteSection = "jobs" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+export type SiteSection = "jobs" | "resume" | "interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
 
-export const navigationItems: Array<{ id: SiteSection; label: string }> = [
-  { id: "jobs", label: "Jobs" },
-  { id: "interview", label: "Interview questions" },
-  { id: "llm", label: "Generative AI & LLM" },
-  { id: "agentic", label: "AI agents & MCP" },
-  { id: "certifications", label: "Certifications" },
-  { id: "strategy", label: "Strategy & leadership" },
-  { id: "programming", label: "Programming for QA" },
-  { id: "automation", label: "Test automation" },
-  { id: "api", label: "API & integration" },
-  { id: "data", label: "Databases, SQL & BI" },
-  { id: "mobile", label: "Mobile & accessibility" },
-  { id: "embedded", label: "Embedded & IoT QA" },
-  { id: "performance", label: "Performance & reliability" },
-  { id: "security", label: "Security testing" },
-  { id: "devops", label: "Cloud & DevOps" },
-  { id: "observability", label: "Observability & SRE" },
-  { id: "networking", label: "Networking" },
-  { id: "linux", label: "Linux & shell" },
-  { id: "standards", label: "Standards & compliance" },
-  { id: "trends", label: "Trends" },
-  { id: "news", label: "News" },
-  { id: "rewild", label: "Rewild game" },
+export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: Array<{ id: SiteSection; label: string }> }> = [
+  {
+    id: "career",
+    label: "Career",
+    items: [
+      { id: "jobs", label: "Vacancies" },
+      { id: "resume", label: "My Resume" },
+      { id: "interview", label: "Interview questions" },
+      { id: "trends", label: "Trends" },
+    ],
+  },
+  {
+    id: "learning",
+    label: "Learning path",
+    items: [
+      { id: "llm", label: "Generative AI & LLM" },
+      { id: "agentic", label: "AI agents & MCP" },
+      { id: "certifications", label: "Certifications" },
+      { id: "strategy", label: "Strategy & leadership" },
+      { id: "programming", label: "Programming for QA" },
+      { id: "automation", label: "Test automation" },
+      { id: "api", label: "API & integration" },
+      { id: "data", label: "Databases, SQL & BI" },
+      { id: "mobile", label: "Mobile & accessibility" },
+      { id: "embedded", label: "Embedded & IoT QA" },
+      { id: "performance", label: "Performance & reliability" },
+      { id: "security", label: "Security testing" },
+      { id: "devops", label: "Cloud & DevOps" },
+      { id: "observability", label: "Observability & SRE" },
+      { id: "networking", label: "Networking" },
+      { id: "linux", label: "Linux & shell" },
+      { id: "standards", label: "Standards & compliance" },
+    ],
+  },
+  {
+    id: "misc",
+    label: "Misc",
+    items: [
+      { id: "news", label: "News" },
+      { id: "rewild", label: "Fight AI slop" },
+    ],
+  },
 ];
+
+export const navigationItems = navigationGroups.flatMap((group) => group.items);
 
 export interface SubnavItem {
   id: string;
@@ -55,14 +76,21 @@ export function SiteSidebar({ activeSection, activeSubsection, mobileOpen, mode,
         <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
 
         <nav className="kb-nav-list" aria-label="GimmeJob sections">
-          {navigationItems.map((item) => onSelect ? (
-            <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect?.(item.id)}>
-              {item.label}
-            </button>
-          ) : (
-            <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
-              {item.label}
-            </Link>
+          {navigationGroups.map((group) => (
+            <section className={`kb-area-group kb-area-group-${group.id}`} aria-labelledby={`kb-area-${group.id}`} key={group.id}>
+              <h2 id={`kb-area-${group.id}`}>{group.label}</h2>
+              <div>
+                {group.items.map((item) => onSelect ? (
+                  <button className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} key={item.id} onClick={() => onSelect(item.id)}>
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link className={activeSection === item.id ? "kb-nav-link active" : "kb-nav-link"} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
           ))}
         </nav>
 
