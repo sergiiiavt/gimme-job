@@ -18,7 +18,15 @@ const SPRITE_FILES: Record<string, string> = {
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak": "/rewild/obj-elderoak.png", "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
   "obj-swarm": "/rewild/obj-swarm.png", "obj-sludge": "/rewild/obj-sludge.png", "obj-popup": "/rewild/obj-popup.png", "obj-fragment": "/rewild/obj-fragment.png",
+  "decal-tuft": "/rewild/decal-tuft.png", "decal-flower": "/rewild/decal-flower.png", "decal-pebble": "/rewild/decal-pebble.png",
+  "decal-leaf": "/rewild/decal-leaf.png", "decal-mushroom": "/rewild/decal-mushroom.png",
 };
+const DECAL_KINDS = ["tuft", "flower", "pebble", "leaf", "mushroom"] as const;
+function hashInt(a: number, b: number, salt: number) {
+  let h = (a * 374761393 + b * 668265263 + salt * 2147483647) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177 | 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
 const spriteCache = new Map<string, HTMLImageElement>();
 function getSpriteByPath(path: string): HTMLImageElement | null {
   let img = spriteCache.get(path);
@@ -576,6 +584,13 @@ function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, cy: 
   ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 }
 
+function drawGroundShadow(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+  ctx.fillStyle = "rgba(20,26,16,.28)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + size * .34, size * .34, size * .13, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function isKindAt(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
   return col >= 0 && row >= 0 && col < COLS && row < ROWS && tiles[row][col] === kind;
 }
@@ -597,11 +612,22 @@ function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: numbe
   ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
   ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
 
+  let nearBiome = false;
   for (const kind of WANG_KINDS) {
     const key = cellCornerKey(tiles, col, row, kind);
     if (key === "uuuu") continue;
+    nearBiome = true;
     const img = getWangSprite(kind, key);
     if (img) ctx.drawImage(img, x, y, TILE, TILE);
+  }
+
+  if (!nearBiome && tiles[row][col] === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
+    const kind = DECAL_KINDS[hashInt(col, row, 2) % DECAL_KINDS.length];
+    const offX = (hashInt(col, row, 3) % 16) - 8;
+    const offY = (hashInt(col, row, 4) % 16) - 8;
+    const size = TILE * .4;
+    const img = getSprite(`decal-${kind}`);
+    if (img) ctx.drawImage(img, x + TILE / 2 - size / 2 + offX, y + TILE / 2 - size / 2 + offY, size, size);
   }
 
   if (tiles[row][col] === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
@@ -622,6 +648,11 @@ function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
   const x = (HOUSE_COL + 1) * TILE;
   const y = (HOUSE_ROW + 1) * TILE;
   const size = TILE * 2.15;
+  ctx.fillStyle = "rgba(154,122,74,.28)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + size * .3, size * .48, size * .19, 0, 0, Math.PI * 2);
+  ctx.fill();
+  drawGroundShadow(ctx, x, y, size);
   drawSprite(ctx, "obj-house", x, y, size);
   const barW = size * .55;
   const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
@@ -635,6 +666,7 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   const mature = plant.kind !== "elderoak" || plant.age >= 15;
   const growth = plant.kind === "elderoak" && !mature ? .58 + .42 * (plant.age / 15) : 1;
   const size = TILE * .96 * growth;
+  drawGroundShadow(ctx, x, y, size);
   ctx.save();
   if (disabled) ctx.globalAlpha = .55;
   drawSprite(ctx, `obj-${plant.kind}`, x, y, size);
@@ -651,6 +683,7 @@ function drawNode(ctx: CanvasRenderingContext2D, node: DataNode, time: number) {
   const y = node.row * TILE + TILE / 2;
   const glitch = Math.floor(time * 11 + node.id) % 5 === 0 ? 3 : 0;
   const size = TILE * (node.boss ? 1.35 : 1);
+  drawGroundShadow(ctx, x, y, size);
   drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, y, size);
   drawHealth(ctx, x - 18, y - size / 2 - 8, 36, node.hp / node.maxHp);
 }
@@ -660,6 +693,7 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: numb
   const y = enemy.y * TILE;
   const glitch = Math.floor(time * 13 + enemy.id) % 7 === 0 ? 3 : 0;
   const size = TILE * (enemy.kind === "deepfake" ? .85 : enemy.kind === "fragment" ? .5 : .68);
+  drawGroundShadow(ctx, x, y, size);
   drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, y, size);
   drawHealth(ctx, x - 14, y - size / 2 - 8, 28, enemy.hp / enemy.maxHp);
 }
