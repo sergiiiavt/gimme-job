@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
 const writeJson = async (path, value) => writeFile(new URL(path, root), `${JSON.stringify(value, null, 2)}\n`);
-const MINIMUM_QUESTION_COUNT = 654;
+const MINIMUM_QUESTION_COUNT = 672;
 
 const addedSources = [
   { id: "katalon-qa-interviews", title: "QA Interview Questions: 60+ With Model Answers", url: "https://katalon.com/resources-center/blog/qa-interview-questions", publisher: "Katalon", kind: "Community question bank", role: "Prevalence signal for current QA, automation, leadership and scenario questions" },
@@ -51,6 +51,7 @@ const addedSources = [
   { id: "asyncapi-30", title: "AsyncAPI Specification 3.0.0", url: "https://www.asyncapi.com/docs/reference/specification/v3.0.0", publisher: "AsyncAPI Initiative", kind: "Specification", role: "Message-driven API channels, operations, messages, schemas and bindings" },
   { id: "web-vitals", title: "Web Vitals", url: "https://web.dev/articles/vitals", publisher: "Google", kind: "Official guidance", role: "LCP, INP, CLS, lab measurement, field measurement and performance thresholds" },
   { id: "slsa-12", title: "SLSA specification 1.2", url: "https://slsa.dev/spec/v1.2/", publisher: "OpenSSF", kind: "Supply-chain specification", role: "Build and source provenance, artifact integrity and software supply-chain assurance" },
+  { id: "nasa-requirements-handbook", title: "NASA Systems Engineering Handbook — How to Write a Good Requirement", url: "https://www.nasa.gov/reference/system-engineering-handbook-appendix/", publisher: "NASA", kind: "Government engineering guidance", role: "Requirement clarity, correctness, feasibility, singularity, completeness, consistency, traceability and verifiability" },
 ];
 
 const topics = [
@@ -266,7 +267,7 @@ function generatedAnswer(topic, concept, scenario, index) {
   return `${openings[index % openings.length]} Focus on ${concept} ${scenario}. Use ${topic.oracle} as the oracle. Cover ${topic.coverage}. Keep data and dependencies controlled enough to reproduce failures. Release only when ${topic.evidence}.`;
 }
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, expanded, currentSources] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded, currentSources] = await Promise.all([
   readJson("content/interview/common-qa.json"),
   readJson("content/interview/canonical-baseline.json"),
   readJson("content/interview/database-sql-qa.json"),
@@ -275,6 +276,7 @@ const [common, canonical, databaseSql, observabilityProduction, restoredCoverage
   readJson("content/interview/testing-foundations-qa.json"),
   readJson("content/interview/embedded-qa.json"),
   readJson("content/interview/modern-sdet-qa.json"),
+  readJson("content/interview/core-foundations-qa.json"),
   readJson("content/interview/expanded-qa.json"),
   readJson("content/interview/sources.json"),
 ]);
@@ -312,6 +314,7 @@ const baseQuestions = [
   ...testingFoundations.questions,
   ...embedded.questions,
   ...modernSdet.questions,
+  ...coreFoundations.questions,
   ...canonical.questions,
   ...preservedGeneratedQuestions,
 ];
@@ -395,7 +398,7 @@ const addedSourceIds = new Set(addedSources.map((source) => source.id));
 const originalSources = currentSources.filter((source) => !addedSourceIds.has(source.id));
 assert.equal(originalSources.length, 22, "The generator expects the researched 22-source base from PR #2.");
 const sources = [...originalSources, ...addedSources];
-assert.equal(sources.length, 66, "The catalog must contain exactly 66 sources.");
+assert.equal(sources.length, 67, "The catalog must contain exactly 67 sources.");
 
 const taxonomy = [
   { id: "all", label: "All questions", description: "The complete canonical interview collection." },
@@ -416,4 +419,4 @@ await Promise.all([
   writeJson("content/interview/taxonomy.json", taxonomy),
 ]);
 
-console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + testingFoundations.questions.length + embedded.questions.length + modernSdet.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);
+console.log(`Generated ${common.questions.length + canonical.questions.length + databaseSql.questions.length + observabilityProduction.questions.length + restoredCoverage.questions.length + testingFoundations.questions.length + embedded.questions.length + modernSdet.questions.length + coreFoundations.questions.length + expanded.questions.length} questions across ${topics.length} topics with ${sources.length} sources.`);

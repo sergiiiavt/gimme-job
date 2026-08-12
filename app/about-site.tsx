@@ -58,7 +58,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         <div>
           <span>PRODUCTION PET PROJECT · QA ENGINEERING PORTFOLIO</span>
           <h1>A working skills showcase, built and operated in production.</h1>
-          <p>GimmeJob is my production pet project for demonstrating practical QA, product, and engineering skills. It brings together at least 654 researched QA interview questions across 19+ topics and 66 referenced sources, private career and learning tools, automated quality gates, and a GitHub Actions → Cloudflare delivery pipeline.</p>
+          <p>GimmeJob is my production pet project for demonstrating practical QA, product, and engineering skills. It brings together at least 672 researched QA interview questions across 19+ topics and 67 referenced sources, private career and learning tools, automated quality gates, and a GitHub Actions → Cloudflare delivery pipeline.</p>
         </div>
         <nav className="about-links" aria-label="Project links">
           <a href="https://github.com/sergiiiavt/gimmejob" target="_blank" rel="noreferrer">View the source on GitHub ↗</a>
@@ -67,9 +67,9 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
       </header>
 
       <section className="about-proof" aria-label="Project scope">
-        <div><strong>654</strong><span>researched QA questions</span></div>
+        <div><strong>672</strong><span>researched QA questions</span></div>
         <div><strong>19+</strong><span>interview topics</span></div>
-        <div><strong>66</strong><span>source references</span></div>
+        <div><strong>67</strong><span>source references</span></div>
         <div><strong>60</strong><span>maximum rendered rows</span></div>
       </section>
 

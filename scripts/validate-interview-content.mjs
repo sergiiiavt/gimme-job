@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, editorialStars, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
   readJson("../content/interview/database-sql-qa.json"),
@@ -12,12 +12,14 @@ const [common, canonical, databaseSql, observabilityProduction, restoredCoverage
   readJson("../content/interview/testing-foundations-qa.json"),
   readJson("../content/interview/embedded-qa.json"),
   readJson("../content/interview/modern-sdet-qa.json"),
+  readJson("../content/interview/core-foundations-qa.json"),
+  readJson("../content/interview/editorial-starred-question-ids.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...coreFoundations.questions, ...expanded.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Test design", "Scenario", "Security", "Strategy", "Risk analysis", "Release decision", "Leadership", "Behavioral", "Performance", "Integration", "Operations", "Reliability", "Automation"]);
@@ -29,8 +31,8 @@ const questionTexts = new Set();
 
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 
-assert.ok(questions.length >= 654, "The public collection must not regress below the current 654-question baseline.");
-assert.ok(sources.length >= 66, "The source catalog must contain at least 66 researched sources.");
+assert.ok(questions.length >= 672, "The public collection must not regress below the current 672-question baseline.");
+assert.ok(sources.length >= 67, "The source catalog must contain at least 67 researched sources.");
 assert.equal(categories.size, 19, "The taxonomy must contain exactly 19 question topics.");
 assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
@@ -39,6 +41,7 @@ assert.equal(restoredCoverage.questions.length, 21, "The restored coverage set m
 assert.equal(testingFoundations.questions.length, 7, "The explicit testing foundations set must contain 7 audited questions.");
 assert.equal(embedded.questions.length, 29, "The explicit embedded and IoT set must contain 29 audited questions.");
 assert.equal(modernSdet.questions.length, 52, "The modern SDET coverage set must contain 52 audited questions.");
+assert.equal(coreFoundations.questions.length, 18, "The core QA foundations set must contain 18 audited questions.");
 assert.deepEqual(
   new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)),
   categories,
@@ -115,6 +118,16 @@ for (const question of embedded.questions) {
 
 for (const question of modernSdet.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Modern SDET question must have a stable explicit id: ${question.id}`);
+}
+
+for (const question of coreFoundations.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `Core foundation question must have a stable explicit id: ${question.id}`);
+}
+
+assert.equal(new Set(editorialStars.questionIds).size, editorialStars.questionIds.length, "Editorial star question IDs must be unique.");
+assert.ok(editorialStars.questionIds.length >= 40, "Keep a useful curated set of starred foundations.");
+for (const questionId of editorialStars.questionIds) {
+  assert.ok(questionIds.has(questionId), `Editorial star references an unknown question: ${questionId}`);
 }
 
 const referencedSourceIds = new Set(questions.flatMap((question) => question.sourceIds));

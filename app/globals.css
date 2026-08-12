@@ -533,6 +533,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-question > summary > div { min-width: 0; }
 .iq-question > summary small { color: #84908a; display: block; font-size: 9px; font-weight: 750; letter-spacing: .04em; margin-bottom: 5px; text-transform: uppercase; }
 .iq-question h2 { font-size: 16px; letter-spacing: -.015em; line-height: 1.38; margin: 0; }
+.iq-star-marker { align-items: center; background: #fff3bf; border: 1px solid #ead783; border-radius: 4px; color: #78570a; display: inline-flex; font-size: 10px; height: 19px; justify-content: center; margin-right: 7px; transform: translateY(-1px); vertical-align: middle; width: 19px; }
 .iq-question[open] > summary { background: #f7f9f5; }
 .iq-level { border-radius: 5px; font-size: 9px; font-weight: 800; padding: 6px 7px; text-align: center; }
 .iq-level-junior { background: #edf3e7; color: #49702d; }

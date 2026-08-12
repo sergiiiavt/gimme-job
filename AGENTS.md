@@ -15,7 +15,7 @@ Do not bundle opportunistic copy rewrites, visual redesigns, backend refactors, 
 ## Product invariants
 
 - Public interview questions, answers, sources, and learning content stay in Git. Never move the public QA catalog into D1.
-- Interview content is additive. Preserve every existing question ID and title unless the user explicitly approves a correction. The current 654-question validation floor is a rolling minimum, never a target or maximum.
+- Interview content is additive. Preserve every existing question ID and title unless the user explicitly approves a correction. The current 672-question validation floor is a rolling minimum, never a target or maximum.
 - The catalog generator may add questions to satisfy coverage floors; it must never delete existing questions to keep a fixed count.
 - Interview search applies AND logic between entered words.
 - The interview catalog stays lazy-loaded and renders no more than 60 question rows simultaneously.

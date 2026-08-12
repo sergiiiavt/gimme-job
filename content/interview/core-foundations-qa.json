@@ -1,0 +1,293 @@
+{
+  "collection": "core-qa-foundations",
+  "questions": [
+    {
+      "id": "acceptance-testing-uat-alpha-beta",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "How do acceptance testing, user acceptance testing, alpha testing and beta testing differ?",
+      "shortAnswer": "Acceptance testing is the test level that evaluates whether a system is ready for acceptance against business, user, contractual or regulatory criteria. User acceptance testing is performed from the customer's or users' perspective to confirm that real business work can be completed. Alpha testing is controlled pre-release testing at or for the developing organization, while beta testing exposes a release candidate to selected external users in realistic environments. Alpha and beta can contribute acceptance evidence, but neither automatically replaces explicit acceptance criteria or release authorization.",
+      "strongAnswerSignals": [
+        "treats acceptance as a test level rather than one execution event",
+        "distinguishes UAT ownership and business purpose",
+        "contrasts controlled alpha testing with external beta feedback"
+      ],
+      "tags": ["acceptance-testing", "uat", "alpha-testing", "beta-testing"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "integration-test-approaches",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "kind": "Strategy",
+      "question": "How do big-bang, top-down, bottom-up and incremental integration approaches change testing risk?",
+      "shortAnswer": "Big-bang integration combines many components late, which simplifies initial coordination but makes interface failures hard to isolate. Top-down integration exercises control flows early and replaces unfinished lower components with stubs; bottom-up integration validates foundational services first and uses drivers for missing callers. Incremental or sandwich approaches integrate in small slices from one or both directions, giving earlier feedback and clearer fault localization. Choose the sequence from architecture and risk, and plan realistic contracts, observability, test doubles and end-to-end checks for gaps each approach creates.",
+      "strongAnswerSignals": [
+        "compares fault isolation and feedback timing",
+        "explains why stubs or drivers may be needed",
+        "selects an approach from architecture and integration risk"
+      ],
+      "tags": ["integration-testing", "top-down", "bottom-up", "incremental-testing"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "static-review-analysis-techniques",
+      "level": "Junior",
+      "category": "Test design",
+      "kind": "Theory",
+      "question": "How do informal reviews, walkthroughs, technical reviews, inspections and static analysis differ?",
+      "shortAnswer": "All are static testing because they evaluate work products without executing the software. An informal review has little prescribed process; a walkthrough is commonly led by the author to explain the work and gather feedback; a technical review uses qualified peers to assess technical suitability; and an inspection is a formal review with defined roles, entry criteria, preparation, defect logging and follow-up. Static analysis uses tools to examine code or models for properties such as control flow, data flow, complexity, unreachable code, dependency or security rules. The appropriate rigor depends on risk, cost and required evidence.",
+      "strongAnswerSignals": [
+        "separates human reviews from tool-based static analysis",
+        "orders review forms by purpose and formality without treating names as universal",
+        "connects review rigor to risk and evidence needs"
+      ],
+      "tags": ["static-testing", "review", "inspection", "static-analysis"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "cause-effect-graph-testing",
+      "level": "Middle",
+      "category": "Test design",
+      "kind": "Test design",
+      "question": "When would you use a cause-effect graph before writing a decision table or test cases?",
+      "shortAnswer": "Use a cause-effect graph when several input conditions, constraints and logical relationships combine to produce outcomes that are difficult to reason about from prose. Represent causes and effects, connect them with Boolean relationships, and add constraints for combinations that are required or impossible. Review the model with stakeholders, then convert meaningful combinations into a decision table and test cases. The graph can expose missing, contradictory or redundant rules, but it does not make every combination equally valuable; prioritize by risk and add state, sequence and non-functional coverage separately.",
+      "strongAnswerSignals": [
+        "connects cause-effect models to interacting business logic",
+        "uses constraints and Boolean relationships before deriving a decision table",
+        "treats the model as a reviewable coverage aid rather than an exhaustive generator"
+      ],
+      "tags": ["cause-effect-graph", "decision-tables", "business-rules", "test-modeling"],
+      "sourceIds": ["istqb-glossary"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "condition-decision-mcdc-coverage",
+      "level": "Senior",
+      "category": "Test design",
+      "kind": "Theory",
+      "question": "How do statement, decision, condition and MC/DC coverage differ?",
+      "shortAnswer": "Statement coverage asks whether executable statements ran. Decision or branch coverage requires each decision outcome, such as true and false, to occur. Condition coverage requires each atomic condition inside a compound decision to take both values, but that alone may not prove that each condition can affect the decision. Modified condition/decision coverage adds that independent-effect requirement while also covering decision outcomes, so it is stronger and more expensive. Coverage measures exercised structure, not correctness: good assertions, meaningful data, missing requirements and infeasible paths still require separate analysis.",
+      "strongAnswerSignals": [
+        "distinguishes decision outcomes from atomic conditions",
+        "explains independent effect in MC/DC",
+        "does not equate structural coverage with defect detection or correctness"
+      ],
+      "tags": ["white-box-testing", "condition-coverage", "decision-coverage", "mcdc"],
+      "sourceIds": ["istqb-glossary"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "experience-based-techniques-comparison",
+      "level": "Junior",
+      "category": "Test design",
+      "kind": "Theory",
+      "question": "How do error guessing, checklist-based testing, exploratory testing and ad hoc testing differ?",
+      "shortAnswer": "Error guessing deliberately targets likely failures using defect history, domain knowledge and common developer mistakes. Checklist-based testing uses a reusable set of conditions or reminders to make experience more consistent. Exploratory testing integrates learning, test design and execution within a time-boxed mission while recording coverage, observations and follow-up ideas. Ad hoc testing has little explicit structure and may be useful for a quick probe, but it is harder to explain, reproduce or assess. Experience-based techniques are strongest when their charter, oracle and evidence remain visible and complement systematic coverage.",
+      "strongAnswerSignals": [
+        "distinguishes purposeful exploration from unstructured clicking",
+        "explains the different knowledge artifact behind each technique",
+        "keeps charters, oracles and evidence visible"
+      ],
+      "tags": ["experience-based", "error-guessing", "checklist-based", "exploratory-testing"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-plan-essential-contents",
+      "level": "Middle",
+      "category": "Documentation and defects",
+      "kind": "Theory",
+      "question": "What decisions and information should a useful test plan contain?",
+      "shortAnswer": "A useful plan identifies scope and exclusions, objectives, product and project risks, test basis, levels and types, techniques, environments, data, tools, responsibilities, dependencies, estimates, schedule, entry and exit criteria, deliverables, reporting, defect handling and residual-risk escalation. It should also record assumptions and how changes will be controlled. The document can be a formal regulated artifact or a concise living plan, but every included section should support coordination, evidence or a decision. Repeating a template without owners, priorities or measurable completion criteria does not create a usable plan.",
+      "strongAnswerSignals": [
+        "covers scope, risk, approach, resources, schedule and completion criteria",
+        "includes assumptions, dependencies, reporting and change control",
+        "right-sizes formality without omitting decisions"
+      ],
+      "tags": ["test-plans", "test-strategy", "test-management", "documentation"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "good-test-case-characteristics",
+      "level": "Junior",
+      "category": "Documentation and defects",
+      "kind": "Theory",
+      "question": "What characteristics make a test case valuable and maintainable?",
+      "shortAnswer": "A valuable test case has a clear purpose linked to a requirement or risk, controlled preconditions and data, understandable actions, and an observable expected result that can reveal failure. It should be accurate, reproducible enough for its context, independent where practical, focused on one coherent behavior, and free of duplicate detail that will quickly drift. Names and structure should help people find and diagnose the test. Reusability and brevity are benefits only when they preserve intent; a short ambiguous case or a highly reusable case with a weak oracle is not high quality.",
+      "strongAnswerSignals": [
+        "connects the case to risk and a clear oracle",
+        "balances repeatability, independence and maintainability with context",
+        "rejects formatting or case count as the definition of quality"
+      ],
+      "tags": ["test-cases", "testware", "maintainability", "test-oracle"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "testing-work-products-map",
+      "level": "Junior",
+      "category": "Documentation and defects",
+      "kind": "Theory",
+      "question": "What testing work products can exist from planning through test completion?",
+      "shortAnswer": "Planning can produce a policy, strategy, plan, risk register, estimates and schedule. Analysis and design produce test conditions, charters, cases, procedures, suites, traceability and data requirements; implementation adds executable tests, data and environment configuration. Execution produces logs, results, evidence, incidents and defect reports. Monitoring and completion produce progress reports, completion or summary reports, residual-risk statements and archived reusable testware. A team should keep only artifacts that serve communication, execution, traceability, learning, audit or release decisions, with ownership and versioning appropriate to the risk.",
+      "strongAnswerSignals": [
+        "organizes artifacts by test activity rather than listing random documents",
+        "distinguishes cases, procedures, suites, data, logs and reports",
+        "applies purpose, ownership and risk-based formality"
+      ],
+      "tags": ["testware", "documentation", "test-reports", "traceability"],
+      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "good-requirement-quality-characteristics",
+      "level": "Junior",
+      "category": "Agile and delivery",
+      "kind": "Theory",
+      "question": "What quality characteristics should a good requirement have?",
+      "shortAnswer": "Individually, a requirement should be necessary, correct, clear, concise, feasible, implementation-independent where appropriate, singular, unambiguous, measurable and verifiable. It needs a stable identifier, rationale or assumptions when they affect interpretation, and traceability to a stakeholder need and downstream evidence. As a set, requirements should be complete, consistent, non-duplicative, prioritized, modifiable and cover relevant functional, interface, data, quality, security, operational and failure behavior. A polished sentence is not sufficient if the requirement solves the wrong need or has no practical verification method.",
+      "strongAnswerSignals": [
+        "separates qualities of one requirement from qualities of the complete set",
+        "includes necessity, feasibility, clarity, singularity and verifiability",
+        "connects requirements to stakeholder need, assumptions and traceability"
+      ],
+      "tags": ["requirements-quality", "testability", "requirements-review", "core-foundations"],
+      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "requirement-acceptance-criteria-business-rule",
+      "level": "Junior",
+      "category": "Agile and delivery",
+      "kind": "Theory",
+      "question": "How do a requirement, user story, acceptance criterion, business rule and constraint differ?",
+      "shortAnswer": "A requirement states a needed capability, quality or condition. A user story is a lightweight conversation placeholder that expresses value from a user's perspective, not the complete specification. Acceptance criteria make the boundaries and observable conditions for accepting that item explicit. A business rule applies domain policy or logic that may affect many stories, while a constraint limits the solution or operation, such as a legal, platform, performance or compatibility boundary. Keeping these artifacts linked prevents teams from duplicating global rules in every story or mistaking a few examples for complete requirements.",
+      "strongAnswerSignals": [
+        "does not treat a user story as a complete requirement specification",
+        "separates acceptance conditions from reusable domain rules",
+        "explains how constraints and linked artifacts affect coverage"
+      ],
+      "tags": ["requirements", "acceptance-criteria", "user-stories", "business-rules"],
+      "sourceIds": ["istqb-ctfl-v4", "scrum-guide", "nasa-requirements-handbook"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "requirements-review-techniques",
+      "level": "Middle",
+      "category": "Agile and delivery",
+      "kind": "Practical",
+      "question": "How would you review requirements for ambiguity, omissions and contradictions before development starts?",
+      "shortAnswer": "Identify actors, goals, inputs, states, decisions, outputs, interfaces and failure paths, then turn prose into examples, boundaries, decision tables, state models or simple prototypes. Look for vague adjectives, hidden assumptions, compound statements, undefined terms, conflicting rules, missing units or tolerances, absent permissions, unhandled errors and non-functional needs. Trace each statement to a stakeholder goal and a possible verification method, and review the resulting questions with product, engineering, operations and affected specialists. Record unresolved items with an owner and deadline instead of silently inventing behavior in tests.",
+      "strongAnswerSignals": [
+        "uses examples and test models to expose ambiguity",
+        "checks functional, quality, interface, data and failure requirements",
+        "makes assumptions and unresolved decisions visible to stakeholders"
+      ],
+      "tags": ["requirements-review", "ambiguity", "static-testing", "shift-left"],
+      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "requirement-verification-methods",
+      "level": "Middle",
+      "category": "Agile and delivery",
+      "kind": "Test design",
+      "question": "How do you decide whether a requirement will be verified by test, demonstration, inspection or analysis?",
+      "shortAnswer": "Choose the method that can produce objective evidence at the level where the requirement is stated. Use a test when controlled inputs and measurable outputs can establish behavior or performance; a demonstration when observable operation is sufficient without formal measurement; inspection for direct examination of an artifact or property; and analysis when evidence must be calculated, modeled or inferred from other verified data. Define success criteria, environment, data, tolerances and evidence early. If no feasible method can distinguish compliance from non-compliance, the requirement is not yet sufficiently verifiable.",
+      "strongAnswerSignals": [
+        "distinguishes test, demonstration, inspection and analysis",
+        "requires measurable success criteria and objective evidence",
+        "feeds verification difficulty back into requirement refinement"
+      ],
+      "tags": ["requirements-verification", "testability", "verification-method", "acceptance-criteria"],
+      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-estimation-technique-families",
+      "level": "Junior",
+      "category": "Strategy and risk",
+      "kind": "Theory",
+      "question": "Which test-estimation techniques should a tester know, and when is each useful?",
+      "shortAnswer": "Decomposition or a work breakdown structure estimates identifiable testing activities and exposes omitted work. Analogy and historical ratios use comparable delivered work, while extrapolation updates a forecast from current execution data. Expert techniques such as Wideband Delphi or Planning Poker combine independent judgments and discussion; three-point estimation expresses optimistic, most-likely and pessimistic outcomes. Size measures such as function, use-case or test points can inform a model when an organization has calibrated evidence, but are not universal conversions to test effort. Combine methods, state assumptions and give a range rather than false precision.",
+      "strongAnswerSignals": [
+        "covers decomposition, historical, extrapolation and expert-based techniques",
+        "explains three-point estimates and calibrated sizing inputs",
+        "communicates assumptions and ranges rather than one unsupported number"
+      ],
+      "tags": ["test-estimation", "wideband-delphi", "planning-poker", "historical-data"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "three-point-test-estimation",
+      "level": "Middle",
+      "category": "Strategy and risk",
+      "kind": "Practical",
+      "question": "How would you use three-point estimation for a risky testing task?",
+      "shortAnswer": "Estimate an optimistic effort if the favorable assumptions hold, a most-likely effort for the expected path, and a pessimistic effort for credible complications. Discuss what creates the spread, such as unstable environments, unfamiliar technology, data preparation, defect investigation or dependency delays. A common PERT-style estimate is (optimistic + 4 × most likely + pessimistic) ÷ 6, but the inputs and uncertainty matter more than the formula. Report the range, assumptions and confidence, separate external waiting time, and re-estimate when the identified risks resolve or occur.",
+      "strongAnswerSignals": [
+        "defines optimistic, most-likely and pessimistic cases",
+        "ties the estimate range to explicit uncertainty drivers",
+        "uses the calculation as decision support rather than a guarantee"
+      ],
+      "tags": ["three-point-estimation", "pert", "uncertainty", "test-estimation"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "test-effort-versus-duration",
+      "level": "Junior",
+      "category": "Strategy and risk",
+      "kind": "Theory",
+      "question": "Why are test effort and calendar duration not the same estimate?",
+      "shortAnswer": "Effort is the amount of working time needed, such as person-hours or person-days; duration is elapsed calendar time from start to finish. Duration also depends on available skills, parallelizable work, handoffs, environment and data readiness, build frequency, review queues, external dependencies and waiting for fixes. Ten person-days cannot automatically be completed by ten people in one day because setup, communication, shared resources and sequential activities limit parallelism. State both values, the assumed capacity and dependencies, and distinguish productive effort from unavoidable elapsed waiting time.",
+      "strongAnswerSignals": [
+        "defines effort separately from elapsed duration",
+        "accounts for capacity, dependencies and limited parallelism",
+        "rejects mechanically dividing effort by headcount"
+      ],
+      "tags": ["test-estimation", "effort", "duration", "capacity-planning"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-estimation-work-breakdown-hidden-work",
+      "level": "Middle",
+      "category": "Strategy and risk",
+      "kind": "Practical",
+      "question": "What work is commonly forgotten when decomposing a testing estimate?",
+      "shortAnswer": "Include requirement and risk analysis, clarification, test modeling and review, automation or manual procedure design, data creation, account and permission setup, environments, tools, service virtualization, execution, monitoring and evidence collection. Also estimate defect investigation and reporting, reruns, confirmation and impact-based regression, meetings and handoffs, accessibility or security specialists, cleanup, completion reporting and contingency for named risks. Separate one-time setup from per-cycle work and identify activities owned by other teams. A work breakdown should expose assumptions and dependencies, not create a deceptively precise total from hidden uncertainty.",
+      "strongAnswerSignals": [
+        "includes preparation, environments, data, investigation, retest and reporting",
+        "separates one-time, repeated, waiting and externally owned work",
+        "uses decomposition to expose uncertainty and dependencies"
+      ],
+      "tags": ["work-breakdown-structure", "test-estimation", "test-data", "environment"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "test-reestimation-actuals-feedback",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "question": "When should a test estimate be revised, and how should actuals improve future estimates?",
+      "shortAnswer": "Re-estimate when scope, risk, staffing, environments, dependencies, defect arrival or observed execution rates materially differ from the assumptions behind the forecast. Preserve the original estimate and assumptions, explain the new evidence and show the effect on effort, duration, coverage and residual risk instead of silently moving the date. After completion, compare estimated and actual work by activity and uncertainty driver to improve decomposition, reference classes and ranges. Use the comparison for forecasting and system improvement, not to punish people for surfacing risk or to make future estimates artificially safe.",
+      "strongAnswerSignals": [
+        "updates forecasts when assumptions or evidence change",
+        "preserves an audit trail between original and revised estimates",
+        "uses actuals for calibration rather than individual performance scoring"
+      ],
+      "tags": ["reestimation", "forecasting", "historical-data", "continuous-improvement"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Common"
+    }
+  ]
+}

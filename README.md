@@ -22,7 +22,8 @@ The **Jobs** module is functional:
 
 The **Interview questions** module contains:
 
-- 654 QA questions across 19 topics and 66 references, with the current total enforced as a rolling non-destructive minimum;
+- 672 QA questions across 19 topics and 67 references, with the current total enforced as a rolling non-destructive minimum;
+- an editorial Starred foundation set that remains separate from frequency-based prevalence and future personal stars;
 - dedicated AI/ML/LLM, Databases/SQL/BI, Observability/Production, and Regulated-domain sections;
 - four evidence-informed prevalence bands and most-common-first sorting;
 - prevalence, seniority, tag, topic and full-text filters;
