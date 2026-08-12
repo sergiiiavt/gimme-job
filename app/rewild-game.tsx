@@ -12,6 +12,29 @@ const STORAGE_KEY = "gimmejob.rewild.best.v1";
 const TILE = 40;
 const CANVAS_WIDTH = COLS * TILE;
 const CANVAS_HEIGHT = ROWS * TILE;
+const MIN_ZOOM = 0.6;
+const MAX_ZOOM = 2.4;
+
+interface Camera { x: number; y: number; zoom: number }
+function createCamera(): Camera { return { x: 0, y: 0, zoom: 1 }; }
+function clampCamera(camera: Camera) {
+  const viewW = CANVAS_WIDTH / camera.zoom;
+  const viewH = CANVAS_HEIGHT / camera.zoom;
+  const slackX = Math.max(0, CANVAS_WIDTH - viewW);
+  const slackY = Math.max(0, CANVAS_HEIGHT - viewH);
+  camera.x = slackX > 0 ? Math.min(Math.max(camera.x, 0), slackX) : (CANVAS_WIDTH - viewW) / 2;
+  camera.y = slackY > 0 ? Math.min(Math.max(camera.y, 0), slackY) : (CANVAS_HEIGHT - viewH) / 2;
+}
+function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: number) {
+  const bounds = canvas.getBoundingClientRect();
+  const boardRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+  const boxRatio = bounds.width / bounds.height;
+  const renderedWidth = boxRatio > boardRatio ? bounds.height * boardRatio : bounds.width;
+  const renderedHeight = boxRatio > boardRatio ? bounds.height : bounds.width / boardRatio;
+  const offsetX = (bounds.width - renderedWidth) / 2;
+  const offsetY = (bounds.height - renderedHeight) / 2;
+  return { x: clientX - bounds.left - offsetX, y: clientY - bounds.top - offsetY, renderedWidth, renderedHeight };
+}
 
 const SPRITE_FILES: Record<string, string> = {
   "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
@@ -82,6 +105,15 @@ const ENEMIES: Record<EnemyKind, EnemyConfig> = {
   fragment: { name: "AI Slop Fragment", hp: 15, speed: .9, damage: 3, color: "#a5b7bd" },
 };
 
+type Difficulty = "easy" | "normal" | "hard";
+interface DifficultyConfig { name: string; description: string; sunlightStart: number; houseHp: number; enemyHp: number; enemySpeed: number; enemyDamage: number; waveTime: number }
+const DIFFICULTY_ORDER: Difficulty[] = ["easy", "normal", "hard"];
+const DIFFICULTIES: Record<Difficulty, DifficultyConfig> = {
+  easy: { name: "Easy", description: "Extra sunlight, slower and weaker AI slop.", sunlightStart: 160, houseHp: 130, enemyHp: .75, enemySpeed: .85, enemyDamage: .7, waveTime: 1.25 },
+  normal: { name: "Normal", description: "The standard fight against AI slop.", sunlightStart: 120, houseHp: 100, enemyHp: 1, enemySpeed: 1, enemyDamage: 1, waveTime: 1 },
+  hard: { name: "Hard", description: "Less sunlight, faster and tougher AI slop.", sunlightStart: 90, houseHp: 80, enemyHp: 1.35, enemySpeed: 1.15, enemyDamage: 1.4, waveTime: .8 },
+};
+
 interface PlantEntity {
   id: number;
   kind: PlantKind;
@@ -101,6 +133,8 @@ interface EnemyEntity {
   y: number;
   hp: number;
   maxHp: number;
+  speed: number;
+  damage: number;
   cooldown: number;
   pathTimer: number;
   path: Point[];
@@ -147,6 +181,7 @@ interface GameState {
   bossSpawned: boolean;
   nextId: number;
   best: number;
+  difficulty: Difficulty;
 }
 
 interface UiSnapshot {
@@ -161,6 +196,7 @@ interface UiSnapshot {
   selected: PlantKind;
   message: string;
   best: number;
+  difficulty: Difficulty;
   plants: number;
   enemies: number;
   nodes: number;
@@ -207,12 +243,13 @@ function createNode(state: GameState, point: Point, boss = false) {
   });
 }
 
-function createGameState(best: number, status: GameStatus = "playing"): GameState {
+function createGameState(best: number, difficulty: Difficulty, status: GameStatus = "playing"): GameState {
+  const config = DIFFICULTIES[difficulty];
   const state: GameState = {
     status, tiles: createTiles(), plants: [], enemies: [], nodes: [], beams: [],
-    sunlight: 120, houseHp: 100, wave: 1, nextWave: 24, elapsed: 0, score: 0,
+    sunlight: config.sunlightStart, houseHp: config.houseHp, wave: 1, nextWave: 24 * config.waveTime, elapsed: 0, score: 0,
     selected: "vinewhip", cursor: { col: 13, row: 5 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
-    bossSpawned: false, nextId: 1, best,
+    bossSpawned: false, nextId: 1, best, difficulty,
   };
   createNode(state, BORDER_SPAWNS[1]);
   createNode(state, BORDER_SPAWNS[5]);
@@ -357,15 +394,20 @@ function spawnEnemy(state: GameState, node: DataNode, kind: EnemyKind, offset = 
     .filter((point) => inBounds(point.col, point.row) && !isObstacle(state.tiles[point.row][point.col]) && !HOUSE_TILES.has(tileKey(point.col, point.row)));
   const spawn = neighbors[offset % Math.max(1, neighbors.length)] ?? { col: node.col, row: node.row };
   const config = ENEMIES[kind];
+  const mult = DIFFICULTIES[state.difficulty];
+  const hp = Math.round(config.hp * mult.enemyHp);
   state.enemies.push({
     id: nextId(state), kind, x: spawn.col + .5 + offset * .03, y: spawn.row + .5 + offset * .03,
-    hp: config.hp, maxHp: config.hp, cooldown: .4, pathTimer: 0, path: [], slowUntil: 0,
+    hp, maxHp: hp, speed: config.speed * mult.enemySpeed, damage: config.damage * mult.enemyDamage,
+    cooldown: .4, pathTimer: 0, path: [], slowUntil: 0,
   });
 }
 
 function spawnEnemyAt(state: GameState, kind: EnemyKind, x: number, y: number) {
   const config = ENEMIES[kind];
-  state.enemies.push({ id: nextId(state), kind, x, y, hp: config.hp, maxHp: config.hp, cooldown: .4, pathTimer: 0, path: [], slowUntil: 0 });
+  const mult = DIFFICULTIES[state.difficulty];
+  const hp = Math.round(config.hp * mult.enemyHp);
+  state.enemies.push({ id: nextId(state), kind, x, y, hp, maxHp: hp, speed: config.speed * mult.enemySpeed, damage: config.damage * mult.enemyDamage, cooldown: .4, pathTimer: 0, path: [], slowUntil: 0 });
 }
 
 function spawnFromNode(state: GameState, node: DataNode) {
@@ -425,7 +467,7 @@ function attackPlantOrHouse(state: GameState, enemy: EnemyEntity, targetCol: num
   const plant = plantAt(state, targetCol, targetRow);
   if (plant) {
     if (enemy.cooldown <= 0) {
-      plant.hp -= ENEMIES[enemy.kind].damage;
+      plant.hp -= enemy.damage;
       enemy.cooldown = 1;
       addBeam(state, enemy.x, enemy.y, plant.col + .5, plant.row + .5, "#c8ff45");
     }
@@ -433,7 +475,7 @@ function attackPlantOrHouse(state: GameState, enemy: EnemyEntity, targetCol: num
   }
   if (HOUSE_TILES.has(tileKey(targetCol, targetRow))) {
     if (enemy.cooldown <= 0) {
-      const nextHp = state.houseHp - ENEMIES[enemy.kind].damage;
+      const nextHp = state.houseHp - enemy.damage;
       state.houseHp = Math.max(0, nextHp);
       enemy.cooldown = .85;
       addBeam(state, enemy.x, enemy.y, targetCol + .5, targetRow + .5, "#f36c76");
@@ -477,7 +519,7 @@ function updateEnemies(state: GameState, dt: number) {
     const dy = targetY - enemy.y;
     const magnitude = Math.max(.001, Math.hypot(dx, dy));
     const slow = enemy.slowUntil > state.elapsed ? .7 : 1;
-    const step = ENEMIES[enemy.kind].speed * slow * dt;
+    const step = enemy.speed * slow * dt;
     enemy.x += (dx / magnitude) * Math.min(step, magnitude);
     enemy.y += (dy / magnitude) * Math.min(step, magnitude);
     if (magnitude < .08) enemy.path.shift();
@@ -515,7 +557,7 @@ function cleanupDefeated(state: GameState) {
 
 function advanceWave(state: GameState) {
   state.wave += 1;
-  state.nextWave = Math.max(15, 25 - state.wave);
+  state.nextWave = Math.max(15, 25 - state.wave) * DIFFICULTIES[state.difficulty].waveTime;
   state.sunlight += 35 + state.wave * 4;
   setMessage(state, `Wave ${state.wave}: more AI slop crawled out of the feed.`, 3.5);
   if (state.wave % 2 === 0) addWaveNode(state);
@@ -567,7 +609,7 @@ function toUi(state: GameState): UiSnapshot {
     corruption: corruptionPercent(state), wave: state.wave, nextWave: Math.max(0, Math.ceil(state.nextWave)),
     elapsed: state.elapsed, score: state.score, selected: state.selected,
     message: state.messageUntil >= state.elapsed || state.status === "won" || state.status === "lost" ? state.message : "Grow something useful.",
-    best: state.best, plants: state.plants.length, enemies: state.enemies.length, nodes: state.nodes.length,
+    best: state.best, difficulty: state.difficulty, plants: state.plants.length, enemies: state.enemies.length, nodes: state.nodes.length,
   };
 }
 
@@ -698,9 +740,12 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: numb
   drawHealth(ctx, x - 14, y - size / 2 - 8, 28, enemy.hp / enemy.maxHp);
 }
 
-function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
+function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Camera) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.save();
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
@@ -717,6 +762,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
     ctx.lineWidth = 3;
     ctx.strokeRect(state.cursor.col * TILE + 3, state.cursor.row * TILE + 3, TILE - 6, TILE - 6);
   }
+  ctx.restore();
   if (corruptionPercent(state) > 18) {
     ctx.fillStyle = `rgba(205,255,65,${Math.min(.08, corruptionPercent(state) / 1200)})`;
     for (let y = Math.floor(state.elapsed * 25) % 8; y < CANVAS_HEIGHT; y += 8) ctx.fillRect(0, y, CANVAS_WIDTH, 1);
@@ -764,13 +810,16 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const lastUiRef = useRef(0);
-  const [ui, setUi] = useState<UiSnapshot>(() => toUi(createGameState(0, "menu")));
+  const cameraRef = useRef<Camera>(createCamera());
+  const dragRef = useRef<{ x: number; y: number; scaleX: number; scaleY: number } | null>(null);
+  const [ui, setUi] = useState<UiSnapshot>(() => toUi(createGameState(0, "normal", "menu")));
+  const [difficulty, setDifficulty] = useState<Difficulty>("normal");
 
   useEffect(() => {
     preloadSprites();
     let best = 0;
     try { best = Number(window.localStorage.getItem(STORAGE_KEY) ?? 0) || 0; } catch { /* local persistence is optional */ }
-    stateRef.current = createGameState(best, "menu");
+    stateRef.current = createGameState(best, "normal", "menu");
     setUi(toUi(stateRef.current));
   }, []);
 
@@ -785,7 +834,7 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
         const dt = lastFrameRef.current ? Math.min(.05, (time - lastFrameRef.current) / 1000) : 0;
         lastFrameRef.current = time;
         updateGame(state, dt);
-        renderGame(context, state);
+        renderGame(context, state, cameraRef.current);
         if (time - lastUiRef.current > 150) {
           lastUiRef.current = time;
           setUi(toUi(state));
@@ -795,6 +844,54 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     };
     animationRef.current = window.requestAnimationFrame(frame);
     return () => { if (animationRef.current !== null) window.cancelAnimationFrame(animationRef.current); };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const onContextMenu = (event: MouseEvent) => event.preventDefault();
+    const onMouseDown = (event: MouseEvent) => {
+      if (event.button !== 2) return;
+      event.preventDefault();
+      const { renderedWidth, renderedHeight } = toCanvasPixel(canvas, event.clientX, event.clientY);
+      dragRef.current = { x: event.clientX, y: event.clientY, scaleX: CANVAS_WIDTH / renderedWidth, scaleY: CANVAS_HEIGHT / renderedHeight };
+    };
+    const onMouseMove = (event: MouseEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const camera = cameraRef.current;
+      camera.x -= ((event.clientX - drag.x) * drag.scaleX) / camera.zoom;
+      camera.y -= ((event.clientY - drag.y) * drag.scaleY) / camera.zoom;
+      clampCamera(camera);
+      dragRef.current = { ...drag, x: event.clientX, y: event.clientY };
+    };
+    const onMouseUp = () => { dragRef.current = null; };
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const camera = cameraRef.current;
+      const { x, y, renderedWidth, renderedHeight } = toCanvasPixel(canvas, event.clientX, event.clientY);
+      const canvasX = (x / renderedWidth) * CANVAS_WIDTH;
+      const canvasY = (y / renderedHeight) * CANVAS_HEIGHT;
+      const worldX = canvasX / camera.zoom + camera.x;
+      const worldY = canvasY / camera.zoom + camera.y;
+      const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, camera.zoom * Math.exp(-event.deltaY * 0.0015)));
+      camera.zoom = nextZoom;
+      camera.x = worldX - canvasX / nextZoom;
+      camera.y = worldY - canvasY / nextZoom;
+      clampCamera(camera);
+    };
+    canvas.addEventListener("contextmenu", onContextMenu);
+    canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      canvas.removeEventListener("contextmenu", onContextMenu);
+      canvas.removeEventListener("mousedown", onMouseDown);
+      canvas.removeEventListener("wheel", onWheel);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
   }, []);
 
   useEffect(() => {
@@ -823,8 +920,9 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
 
   const start = () => {
     const best = stateRef.current?.best ?? 0;
-    stateRef.current = createGameState(best);
+    stateRef.current = createGameState(best, difficulty);
     lastFrameRef.current = 0;
+    cameraRef.current = createCamera();
     setUi(toUi(stateRef.current));
   };
   const choosePlant = (kind: PlantKind) => {
@@ -843,18 +941,13 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     const state = stateRef.current;
     const canvas = canvasRef.current;
     if (!state || !canvas) return;
-    const bounds = canvas.getBoundingClientRect();
-    const boardRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-    const boxRatio = bounds.width / bounds.height;
-    const renderedWidth = boxRatio > boardRatio ? bounds.height * boardRatio : bounds.width;
-    const renderedHeight = boxRatio > boardRatio ? bounds.height : bounds.width / boardRatio;
-    const offsetX = (bounds.width - renderedWidth) / 2;
-    const offsetY = (bounds.height - renderedHeight) / 2;
-    const x = event.clientX - bounds.left - offsetX;
-    const y = event.clientY - bounds.top - offsetY;
+    const { x, y, renderedWidth, renderedHeight } = toCanvasPixel(canvas, event.clientX, event.clientY);
     if (x < 0 || y < 0 || x >= renderedWidth || y >= renderedHeight) return;
-    const col = Math.floor((x / renderedWidth) * COLS);
-    const row = Math.floor((y / renderedHeight) * ROWS);
+    const camera = cameraRef.current;
+    const canvasX = (x / renderedWidth) * CANVAS_WIDTH;
+    const canvasY = (y / renderedHeight) * CANVAS_HEIGHT;
+    const col = Math.floor((canvasX / camera.zoom + camera.x) / TILE);
+    const row = Math.floor((canvasY / camera.zoom + camera.y) / TILE);
     state.cursor = { col, row };
     placePlant(state, col, row);
     setUi(toUi(state));
@@ -880,7 +973,7 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     <div className="rw-play-page">
       <section className="rw-game-shell" aria-label="Fight AI slop game">
         <div className="rw-hud" aria-live="polite">
-          <div className="rw-hud-brand"><span>Pixel defense · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best</small></div>
+          <div className="rw-hud-brand"><span>Pixel defense · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best · {DIFFICULTIES[ui.difficulty].name}</small></div>
           <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div>
           <div><span>House</span><strong>{ui.houseHp}%</strong></div>
           <div><span>Corruption</span><strong>{ui.corruption}%</strong></div>
@@ -889,38 +982,49 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
         </div>
 
         <div className="rw-stage">
-          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A thirty by fourteen pixel field under attack by AI slop. Select a plant, then click a tile or use arrow keys and Enter to plant."/>
+          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label="A thirty by fourteen pixel field under attack by AI slop. Select a plant, then click a tile or use arrow keys and Enter to plant. Right-drag to pan the camera, scroll to zoom."/>
           {overlay && (
             <div className={`rw-overlay rw-overlay-${ui.status}`}>
               <span>{ui.status === "menu" ? "AI SLOP DETECTED" : ui.status === "won" ? "FEED TERMINATED" : "AI SLOP WON"}</span>
               <h2>{ui.status === "menu" ? "Fight back." : ui.status === "won" ? "AI slop erased." : "The feed ate everything."}</h2>
               <p>{ui.status === "menu" ? "AI slop servers are poisoning the field. Grow defenses, break the feed, and keep the last human house standing." : ui.message}</p>
               {ui.status !== "menu" && <div className="rw-result"><span>{ui.wave} waves</span><span>{formatTime(ui.elapsed)}</span><span>{ui.score.toLocaleString()} score</span></div>}
+              <div className="rw-difficulty-picker" role="group" aria-label="Difficulty">
+                {DIFFICULTY_ORDER.map((key) => (
+                  <button type="button" className={difficulty === key ? "active" : ""} aria-pressed={difficulty === key} key={key} onClick={() => setDifficulty(key)}>
+                    <strong>{DIFFICULTIES[key].name}</strong>
+                    <small>{DIFFICULTIES[key].description}</small>
+                  </button>
+                ))}
+              </div>
               <div className="rw-overlay-actions">
                 <button onClick={start}>{ui.status === "menu" ? "Start the fight" : "Fight again"}</button>
               </div>
             </div>
           )}
           {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>AI slop is still waiting. It never gets tired.</strong><button onClick={togglePause}>Resume</button></div>}
+
+          <div className="rw-build-menu" aria-label="Build menu">
+            <div className="rw-build-menu-head"><span>Build</span></div>
+            <div className="rw-plant-bar" aria-label="Plants">
+              {PLANT_ORDER.map((kind, index) => {
+                const config = PLANTS[kind];
+                const locked = ui.wave < config.unlockWave;
+                return (
+                  <button className={ui.selected === kind ? "active" : ""} disabled={locked || ui.status === "menu" || ui.status === "won" || ui.status === "lost"} aria-pressed={ui.selected === kind} key={kind} onClick={() => choosePlant(kind)}>
+                    <i style={{ background: config.color }}>{locked ? "×" : index + 1}</i>
+                    <span><strong>{config.shortName}</strong><small>{locked ? `Wave ${config.unlockWave}` : `${config.cost} sun`}</small></span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="rw-status-line"><span>{ui.message}</span><small>{ui.enemies} AI slop · {ui.nodes} slop servers · {ui.plants} defenders</small></div>
 
-        <div className="rw-plant-bar" aria-label="Plants">
-          {PLANT_ORDER.map((kind, index) => {
-            const config = PLANTS[kind];
-            const locked = ui.wave < config.unlockWave;
-            return (
-              <button className={ui.selected === kind ? "active" : ""} disabled={locked || ui.status === "menu" || ui.status === "won" || ui.status === "lost"} aria-pressed={ui.selected === kind} key={kind} onClick={() => choosePlant(kind)}>
-                <i style={{ background: config.color }}>{locked ? "×" : index + 1}</i>
-                <span><strong>{config.shortName}</strong><small>{locked ? `Wave ${config.unlockWave}` : `${config.cost} sun`}</small></span>
-              </button>
-            );
-          })}
-        </div>
-
         <footer className="rw-controls">
-          <p><strong>Plant:</strong> choose a card or press 1–6, then click a tile. Keyboard: arrows + Enter. Rootreclaimers only grow on corruption.</p>
+          <p><strong>Plant:</strong> choose a card from the build menu or press 1–6, then click a tile. Right-drag to pan, scroll to zoom, arrows + Enter to plant. Rootreclaimers only grow on corruption.</p>
           <div><button onClick={() => onViewChange("guide")}>Field guide</button><button onClick={togglePause} disabled={ui.status === "menu" || ui.status === "won" || ui.status === "lost"}>{ui.status === "paused" ? "Resume" : "Pause"}</button><button onClick={start}>Restart</button></div>
         </footer>
       </section>
