@@ -14,25 +14,38 @@ const CANVAS_WIDTH = COLS * TILE;
 const CANVAS_HEIGHT = ROWS * TILE;
 
 const SPRITE_FILES: Record<string, string> = {
-  "tile-forest": "/rewild/tile-forest.png", "tile-pond": "/rewild/tile-pond.png",
-  "tile-rock": "/rewild/tile-rock.png", "tile-flowers": "/rewild/tile-flowers.png", "tile-corrupt": "/rewild/tile-corrupt.png",
   "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak": "/rewild/obj-elderoak.png", "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
   "obj-swarm": "/rewild/obj-swarm.png", "obj-sludge": "/rewild/obj-sludge.png", "obj-popup": "/rewild/obj-popup.png", "obj-fragment": "/rewild/obj-fragment.png",
 };
 const spriteCache = new Map<string, HTMLImageElement>();
-function getSprite(key: string): HTMLImageElement | null {
-  let img = spriteCache.get(key);
+function getSpriteByPath(path: string): HTMLImageElement | null {
+  let img = spriteCache.get(path);
   if (!img) {
     img = new window.Image();
-    img.src = SPRITE_FILES[key];
-    spriteCache.set(key, img);
+    img.src = path;
+    spriteCache.set(path, img);
   }
   return img.complete && img.naturalWidth > 0 ? img : null;
 }
+function getSprite(key: string): HTMLImageElement | null {
+  return getSpriteByPath(SPRITE_FILES[key]);
+}
+
+const WANG_KINDS = ["pond", "forest", "rock", "flowers", "corrupt"] as const;
+function allWangCornerKeys(): string[] {
+  const keys: string[] = [];
+  for (const nw of ["l", "u"]) for (const ne of ["l", "u"]) for (const sw of ["l", "u"]) for (const se of ["l", "u"]) keys.push(nw + ne + sw + se);
+  return keys;
+}
+function getWangSprite(kind: string, cornerKey: string): HTMLImageElement | null {
+  return getSpriteByPath(`/rewild/wang-${kind}-${cornerKey}.png`);
+}
+
 function preloadSprites() {
   for (const key of Object.keys(SPRITE_FILES)) getSprite(key);
+  for (const kind of WANG_KINDS) for (const key of allWangCornerKeys()) getWangSprite(kind, key);
 }
 
 type TileKind = "grass" | "corrupt" | "forest" | "pond" | "rock" | "flowers" | "house";
@@ -563,31 +576,35 @@ function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, cy: 
   ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 }
 
-function tileSpriteKey(tile: TileKind) {
-  if (tile === "corrupt") return "tile-corrupt";
-  if (tile === "forest") return "tile-forest";
-  if (tile === "pond") return "tile-pond";
-  if (tile === "rock") return "tile-rock";
-  if (tile === "flowers") return "tile-flowers";
-  return null;
+function isKindAt(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
+  return col >= 0 && row >= 0 && col < COLS && row < ROWS && tiles[row][col] === kind;
+}
+function vertexTouchesKind(tiles: TileKind[][], vx: number, vy: number, kind: TileKind) {
+  return isKindAt(tiles, vx - 1, vy - 1, kind) || isKindAt(tiles, vx, vy - 1, kind) || isKindAt(tiles, vx - 1, vy, kind) || isKindAt(tiles, vx, vy, kind);
+}
+function cellCornerKey(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
+  const corner = (vx: number, vy: number) => (vertexTouchesKind(tiles, vx, vy, kind) ? "l" : "u");
+  return corner(col, row) + corner(col + 1, row) + corner(col, row + 1) + corner(col + 1, row + 1);
 }
 
-function drawTile(ctx: CanvasRenderingContext2D, tile: TileKind, col: number, row: number, time: number) {
+function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-  const key = tileSpriteKey(tile);
-  const img = key ? getSprite(key) : null;
-  if (img) {
-    ctx.drawImage(img, x, y, TILE, TILE);
-  } else {
-    const grass = (col + row) % 2 === 0 ? "#88ad56" : "#82a951";
-    ctx.fillStyle = grass;
-    ctx.fillRect(x, y, TILE, TILE);
-    ctx.fillStyle = "rgba(49,91,45,.22)";
-    ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
-    ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
+  const grass = (col + row) % 2 === 0 ? "#88ad56" : "#82a951";
+  ctx.fillStyle = grass;
+  ctx.fillRect(x, y, TILE, TILE);
+  ctx.fillStyle = "rgba(49,91,45,.22)";
+  ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
+  ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
+
+  for (const kind of WANG_KINDS) {
+    const key = cellCornerKey(tiles, col, row, kind);
+    if (key === "uuuu") continue;
+    const img = getWangSprite(kind, key);
+    if (img) ctx.drawImage(img, x, y, TILE, TILE);
   }
-  if (tile === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
+
+  if (tiles[row][col] === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
     ctx.fillStyle = "rgba(200,243,72,.35)";
     ctx.fillRect(x + 6, y + 14, 10, 2);
     ctx.fillRect(x + 22, y + 24, 9, 2);
@@ -651,7 +668,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles[row][col], col, row, state.elapsed);
+    for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
   ctx.fillStyle = "rgba(243,217,115,.12)"; ctx.fillRect((HOUSE_COL - 4) * TILE, (HOUSE_ROW - 4) * TILE, 10 * TILE, 10 * TILE);
   drawHouse(ctx, state.houseHp);
