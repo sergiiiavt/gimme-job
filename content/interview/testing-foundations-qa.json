@@ -13,6 +13,15 @@
         "preserves baseline coverage outside known clusters",
         "reassesses clusters after architecture and team changes"
       ],
+      "questionUk": "Як принцип кластеризації дефектів має впливати на планування тестування, щоб не створювати сліпих зон?",
+      "shortAnswerUk": "Кластеризація дефектів означає, що невелика кількість компонентів часто містить значну частку виявлених дефектів, тому історія дефектів повинна підвищувати увагу саме до них. Але це не привід ігнорувати решту продукту: комбінуйте дані про дефекти з поточними змінами, складністю, інтенсивністю використання та впливом на бізнес, зберігаючи широке базове покриття як мінімальну страховку, і концентруючи глибше тестування на кластерах із найвищим ризиком.",
+      "strongAnswerSignalsUk": [
+        "розглядає історію дефектів як один із сигналів ризику, а не як остаточний вирок",
+        "зберігає базове покриття поза межами відомих кластерів",
+        "переоцінює кластери після змін в архітектурі та команді"
+      ],
+      "example": "In a payments service, the checkout module historically produced about 60% of all production defects, so the QA team tripled the regression cases there and added contract tests for the payment gateway integration. At the same time they kept a lightweight smoke suite covering the rarely-touched reporting module, and when that module was later rewritten, it started generating new defects, prompting the team to reassess its risk cluster.",
+      "exampleUk": "У платіжному сервісі модуль оформлення замовлення історично давав близько 60% усіх дефектів у продакшені, тому команда QA втричі збільшила кількість регресійних кейсів для нього і додала контрактні тести для інтеграції з платіжним шлюзом. Водночас вони залишили легкий smoke-набір для рідко змінюваного модуля звітності, а коли цей модуль пізніше переписали, він почав генерувати нові дефекти, що змусило команду переоцінити кластер ризику.",
       "tags": [
         "testing-principles",
         "defect-clustering",
@@ -35,6 +44,15 @@
         "refreshes coverage from change and production evidence",
         "retains stable checks that still protect important behaviour"
       ],
+      "questionUk": "Що означає принцип «тести зношуються» (pesticide paradox) для регресійного набору тестів?",
+      "shortAnswerUk": "Багаторазовий запуск незмінних тестів з часом знаходить дедалі менше нових дефектів, бо продукт, ризики та відомі патерни збоїв еволюціонують навколо них. Цінні регресійні перевірки варто зберігати, але потрібно періодично оцінювати їхню інформативність, додавати тести на нову поведінку та пропущені дефекти, урізноманітнювати дані й шляхи виконання там, де це доцільно, і виводити з обігу надлишкові перевірки, витрати на підтримку яких перевищують цінність доказів, які вони дають.",
+      "strongAnswerSignalsUk": [
+        "не плутає «зношені» тести з нестабільними (flaky) тестами",
+        "оновлює покриття на основі змін та даних із продакшену",
+        "зберігає стабільні перевірки, які й далі захищають важливу поведінку"
+      ],
+      "example": "A team ran the same 200 regression cases for two years without change, and the defect-detection rate had dropped to near zero, while production incidents kept appearing in areas the suite never touched. They analyzed six months of escaped defects, added twenty new cases targeting those gaps, retired thirty cases that duplicated newer checks, and the detection rate on the next three releases went back up.",
+      "exampleUk": "Команда два роки поспіль запускала одні й ті самі 200 регресійних кейсів без змін, і рівень виявлення дефектів впав майже до нуля, тоді як інциденти в продакшені продовжували виникати в областях, які набір взагалі не покривав. Вони проаналізували пропущені дефекти за півроку, додали двадцять нових кейсів на ці прогалини, вивели з обігу тридцять кейсів, що дублювали новіші перевірки, і рівень виявлення дефектів у наступних трьох релізах знову зріс.",
       "tags": [
         "testing-principles",
         "regression",
@@ -57,6 +75,15 @@
         "adapts techniques and evidence to risk",
         "explains which reusable checks remain valuable"
       ],
+      "questionUk": "Як контекстно-залежний підхід до тестування змінює стратегію для двох продуктів з однаковим переліком функцій?",
+      "shortAnswerUk": "Одні й ті самі функції можуть вимагати різних доказів якості, якщо відрізняються користувачі, наслідки помилок, регуляторні вимоги, платформи, чутливість даних, частота використання або обмеження релізу. Починати варто з ризиків продукту й очікувань щодо якості, а вже потім обирати відповідні техніки, середовища, глибину тестування та рівень незалежності тестувальників. Повторно використовувати чекліст — цілком розумно, але сприймати його як універсальну стратегію — ні.",
+      "strongAnswerSignalsUk": [
+        "порівнює наслідки та користувачів, а не лише функціональність",
+        "адаптує техніки та докази якості до ризику",
+        "пояснює, які перевірки залишаються цінними при повторному використанні"
+      ],
+      "example": "A banking app and a recipe-sharing app can share the same 'user profile with photo upload' feature, but the bank needs strict input validation, audit logging and penetration testing because a data leak has legal consequences, while the recipe app can rely on lighter checks and faster exploratory testing since a bug there mainly causes minor annoyance. Reusing the same test checklist for both would either over-test the recipe app or dangerously under-test the bank.",
+      "exampleUk": "Банківський застосунок і застосунок для обміну рецептами можуть мати однакову функцію «профіль користувача із завантаженням фото», але банку потрібні сувора валідація вхідних даних, аудит-логування та тестування на проникнення, бо витік даних матиме юридичні наслідки, тоді як застосунок з рецептами може обійтися легшими перевірками та швидшим дослідницьким тестуванням, оскільки баг там спричинить лише незначну незручність. Використання одного й того самого чекліста для обох або надмірно перевантажило б тестуванням застосунок з рецептами, або небезпечно недотестувало б банк.",
       "tags": [
         "testing-principles",
         "context",
@@ -79,6 +106,15 @@
         "connects conditions to risks and requirements",
         "uses the model to detect gaps and duplication"
       ],
+      "questionUk": "Чому варто визначати умови тестування (test conditions) до написання детальних тест-кейсів?",
+      "shortAnswerUk": "Умови тестування описують, що саме потрібно перевірити: правила, ризики, стани, інтерфейси, характеристики якості чи критерії прийнятності. Якщо визначити їх заздалегідь, легше виявити прогалини та дублювання ще до того, як увага переключиться на деталі реалізації. Після цього команда може обрати відповідні техніки, вивести сфокусовані тест-кейси й простежити зв'язок кожного кейса зі змістовною метою покриття.",
+      "strongAnswerSignalsUk": [
+        "відокремлює намір щодо покриття від кроків виконання",
+        "пов'язує умови тестування з ризиками та вимогами",
+        "використовує цю модель для виявлення прогалин і дублювання"
+      ],
+      "example": "Before writing test cases for a discount-coupon feature, a tester first lists the conditions to cover: coupon expiry, minimum order value, stacking with other promotions, and single-use enforcement. Only after reviewing that list with the team does she draft the actual step-by-step test cases, which immediately reveals that no one had planned to test coupon stacking at all.",
+      "exampleUk": "Перш ніж писати тест-кейси для функції знижкових купонів, тестувальниця спершу складає перелік умов для покриття: термін дії купона, мінімальна сума замовлення, поєднання з іншими акціями та обмеження на одноразове використання. Лише після узгодження цього переліку з командою вона пише покрокові тест-кейси, і це одразу виявляє, що ніхто взагалі не планував перевіряти поєднання купонів з іншими акціями.",
       "tags": [
         "test-design-techniques",
         "test-conditions",
@@ -102,6 +138,15 @@
         "names credible oracle sources and their limitations",
         "avoids copying the implementation logic as the only oracle"
       ],
+      "questionUk": "Чим відрізняються задачі, які вирішують техніка тест-дизайну та тестовий оракул?",
+      "shortAnswerUk": "Техніка тест-дизайну допомагає обрати вхідні дані, стани, шляхи чи комбінації, які дають корисне покриття; оракул підказує тестувальнику, як визначити, чи є отриманий результат правильним. Аналіз граничних значень може підказати обрати 17, 18 і 19, але для очікуваного результату все одно потрібне достовірне джерело — явне правило, незалежний розрахунок, модель станів або довірена еталонна реалізація.",
+      "strongAnswerSignalsUk": [
+        "розрізняє вибір показового тесту від оцінки його результату",
+        "називає достовірні джерела оракула та їхні обмеження",
+        "не використовує логіку самої реалізації як єдиний оракул"
+      ],
+      "example": "For an age-verification rule 'must be 18 or older', boundary-value analysis picks the test inputs 17, 18 and 19 as the technique. The oracle for those inputs comes from the written business rule itself, not from reading the developer's code, because if the code has an off-by-one bug, copying its logic as the oracle would make the test pass even though the feature is broken.",
+      "exampleUk": "Для правила перевірки віку «має бути 18 років або старше» аналіз граничних значень як техніка підказує обрати вхідні дані 17, 18 і 19. Оракулом для цих значень слугує саме письмове бізнес-правило, а не код розробника, бо якщо в коді є помилка зсуву на одиницю, копіювання його логіки як оракула призвело б до того, що тест пройшов би, попри те що функція насправді зламана.",
       "tags": [
         "test-design-techniques",
         "oracle",
@@ -125,6 +170,15 @@
         "uses coverage evidence to remove redundancy",
         "includes experience-based exploration for unknown risks"
       ],
+      "questionUk": "Коли одну функцію варто тестувати кількома техніками тест-дизайну, а не однією?",
+      "shortAnswerUk": "Комбінувати техніки варто, коли функція має різні за природою ризики. Класи еквівалентності й граничні значення підходять для діапазонів, таблиці рішень виявляють взаємодію правил, тестування переходів станів покриває поведінку впродовж життєвого циклу, покриття білого ящика розкриває невиконану логіку, а дослідницьке тестування досліджує невизначеність. Кожну техніку варто обирати під конкретний ризик і прибирати надлишкові кейси, а не механічно застосовувати всі техніки поспіль.",
+      "strongAnswerSignalsUk": [
+        "зіставляє кожну техніку з окремим класом дефектів",
+        "використовує дані про покриття, щоб прибрати надлишковість",
+        "включає дослідницьке тестування на основі досвіду для невідомих ризиків"
+      ],
+      "example": "For a loan-application form, a tester uses boundary-value analysis on the income and age fields, a decision table for the combination of credit score, income and employment type that determines approval, and state-transition testing for the application's lifecycle from draft through submitted, under review, approved or rejected. Relying on just one of these techniques would leave the rule interactions or the lifecycle transitions completely unchecked.",
+      "exampleUk": "Для форми заявки на кредит тестувальник застосовує аналіз граничних значень для полів доходу та віку, таблицю рішень для комбінації кредитного рейтингу, доходу та типу зайнятості, які визначають рішення про схвалення, і тестування переходів станів для життєвого циклу заявки — від чернетки до подання, розгляду, схвалення чи відхилення. Використання лише однієї з цих технік залишило б взаємодію правил або переходи станів повністю неперевіреними.",
       "tags": [
         "test-design-techniques",
         "risk",
@@ -147,6 +201,15 @@
         "connects each named technique to the kind of risk or behaviour it reveals",
         "chooses techniques deliberately instead of treating the list as a mandatory checklist"
       ],
+      "questionUk": "Які техніки тест-дизайну ви знаєте і що кожна з них дозволяє перевірити?",
+      "shortAnswerUk": "Єдиного вичерпного переліку технік тест-дизайну для будь-якого контексту не існує. Базовий курс ISTQB Foundation групує техніки за типом інформації, яка використовується для виведення тестів. Техніки на основі специфікації (specification-based) — це аналіз класів еквівалентності (equivalence partitioning) для груп, що мають поводитися однаково, аналіз граничних значень (boundary-value analysis) для меж, тестування таблиць рішень (decision-table testing) для взаємодіючих правил і тестування переходів станів (state-transition testing) для поведінки впродовж життєвого циклу. Техніки на основі структури коду (structure-based) використовують покриття операторів (statement coverage) і покриття гілок (branch coverage), щоб виявити невиконані ділянки коду. Техніки на основі досвіду (experience-based) — це вгадування помилок (error guessing), дослідницьке тестування (exploratory testing) і тестування за чеклістами (checklist-based testing). Команди також застосовують попарне (pairwise) чи інше комбінаторне тестування для взаємодії вхідних параметрів, тестування прецедентів або сценаріїв (use-case/scenario testing) для користувацьких потоків, дерева класифікації (classification trees) та графи причин-наслідків (cause-effect graphs) для складної логіки, а також покриття умов чи MC/DC там, де цього вимагає контекст. Техніки слід обирати відповідно до ризиків продукту й наявної моделі, а не застосовувати всі механічно.",
+      "strongAnswerSignalsUk": [
+        "групує техніки в родини: на основі специфікації, на основі структури та на основі досвіду",
+        "пов'язує кожну названу техніку з типом ризику чи поведінки, який вона розкриває",
+        "свідомо обирає техніки, а не сприймає перелік як обов'язковий чекліст"
+      ],
+      "example": "For a hotel booking search filter with room type, price range, star rating and amenities checkboxes, a tester applies boundary-value analysis on the price range, a decision table for how star rating and amenities combine, and pairwise testing to cover interactions between the four filters without testing every combination. She also runs a short exploratory session on the sort-order feature, which uncovers a defect no scripted technique had targeted.",
+      "exampleUk": "Для фільтра пошуку бронювання готелів із типом номера, ціновим діапазоном, зірковістю та чекбоксами зручностей тестувальниця застосовує аналіз граничних значень для цінового діапазону, таблицю рішень для поєднання зірковості й зручностей та попарне тестування, щоб покрити взаємодію чотирьох фільтрів без перевірки кожної можливої комбінації. Вона також проводить коротку дослідницьку сесію для функції сортування, яка виявляє дефект, на який жодна скриптована техніка не була націлена.",
       "tags": [
         "test-design-techniques",
         "equivalence-partitioning",

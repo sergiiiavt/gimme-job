@@ -76,6 +76,14 @@ for (const question of questions) {
   assert.ok(question.shortAnswer?.trim(), `Missing answer for ${question.id}`);
   assert.ok(question.shortAnswer.trim().length >= 100, `Answer is too short for ${question.id}`);
   assert.ok(question.strongAnswerSignals?.length >= 2, `Add at least two answer signals for ${question.id}`);
+  assert.ok(question.questionUk?.trim(), `Missing Ukrainian question for ${question.id}`);
+  assert.ok(question.shortAnswerUk?.trim(), `Missing Ukrainian answer for ${question.id}`);
+  assert.ok(question.shortAnswerUk.trim().length >= 100, `Ukrainian answer is too short for ${question.id}`);
+  assert.ok(question.strongAnswerSignalsUk?.length === question.strongAnswerSignals.length, `Ukrainian answer signals must match the English signal count for ${question.id}`);
+  assert.ok(question.example?.trim(), `Missing practical example for ${question.id}`);
+  assert.ok(question.example.trim().length >= 60, `Practical example is too short for ${question.id}`);
+  assert.ok(question.exampleUk?.trim(), `Missing Ukrainian practical example for ${question.id}`);
+  assert.ok(question.exampleUk.trim().length >= 60, `Ukrainian practical example is too short for ${question.id}`);
   for (const tag of question.tags ?? []) {
     assert.match(tag, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid tag ${tag} in ${question.id}`);
     assert.ok(!deprecatedTags.has(tag), `Replace deprecated tag ${tag} in ${question.id}`);

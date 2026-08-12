@@ -12,6 +12,15 @@
         "connects architecture choices to test scope",
         "avoids treating NoSQL as one uniform technology"
       ],
+      "questionUk": "Чим відрізняються реляційні та нереляційні бази даних і що це змінює в підході до тестування?",
+      "shortAnswerUk": "Реляційні бази даних організовують дані в таблиці з заданими зв'язками, обмеженнями (constraints) та транзакційною семантикою, тоді як нереляційні системи використовують інші моделі — документи, пари ключ-значення, широкі колонки або графи. Цей вибір впливає на патерни запитів, гарантії узгодженості даних, суворість схеми та поведінку при масштабуванні. Тестувальник має перевіряти реальну модель даних продукту, правила цілісності, гарантії при паралельному доступі, відновлення після збоїв і підтримувані шляхи запитів, а не припускати, що будь-яка база поводиться як SQL.",
+      "strongAnswerSignalsUk": [
+        "порівнює моделі даних і гарантії узгодженості",
+        "пов'язує архітектурні рішення з обсягом тестування",
+        "не трактує NoSQL як єдину однорідну технологію"
+      ],
+      "example": "For instance, a candidate might compare storing an order in a PostgreSQL table with a foreign key to a customers table versus storing the same order as a single JSON document in MongoDB with the customer info embedded, then explain that testing the relational version focuses on foreign-key violations and JOIN correctness, while testing the document version focuses on embedded-data consistency when the customer's address changes.",
+      "exampleUk": "Наприклад, кандидат може порівняти зберігання замовлення в таблиці PostgreSQL із зовнішнім ключем на таблицю клієнтів і зберігання того самого замовлення як єдиного JSON-документа в MongoDB з вкладеною інформацією про клієнта, а потім пояснити, що тестування реляційної версії фокусується на порушеннях зовнішнього ключа та коректності JOIN, тоді як тестування документної версії — на узгодженості вкладених даних при зміні адреси клієнта.",
       "tags": [
         "database",
         "sql",
@@ -36,6 +45,15 @@
         "recognizes destructive-statement risk",
         "verifies affected rows and final state"
       ],
+      "questionUk": "Що роблять команди SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, COMMIT і ROLLBACK?",
+      "shortAnswerUk": "SELECT читає дані; INSERT, UPDATE і DELETE змінюють рядки; а CREATE, ALTER і DROP визначають або змінюють об'єкти бази даних. COMMIT робить успішну роботу транзакції незворотною (durable), а ROLLBACK скасовує її незафіксовані зміни. Тестувальник має розуміти, які команди можуть змінювати стан, обмежувати доступ на запис у спільних середовищах, використовувати точні умови WHERE та перевіряти як кількість зачеплених рядків, так і кінцевий бізнес-стан.",
+      "strongAnswerSignalsUk": [
+        "розділяє читання даних, зміну даних, зміну схеми та керування транзакціями",
+        "усвідомлює ризик деструктивних команд",
+        "перевіряє кількість зачеплених рядків і кінцевий стан"
+      ],
+      "example": "For example, before running UPDATE orders SET status equals 'cancelled' WHERE customer_id equals 42 in a shared staging database, a tester would first run the equivalent SELECT to count and inspect the rows that will be affected, then re-check the row count and business state after the UPDATE to confirm only the intended orders changed.",
+      "exampleUk": "Наприклад, перед виконанням запиту UPDATE orders SET status дорівнює 'cancelled' WHERE customer_id дорівнює 42 у спільній тестовій базі даних тестувальник спочатку виконає еквівалентний SELECT, щоб порахувати й переглянути рядки, які будуть зачеплені, а потім перевірить кількість рядків і бізнес-стан після UPDATE, щоб переконатися, що змінилися лише потрібні замовлення.",
       "tags": [
         "sql",
         "crud",
@@ -59,6 +77,15 @@
         "distinguishes all major constraint types",
         "tests negative writes and update/delete behaviour"
       ],
+      "questionUk": "Чим відрізняються первинний ключ, зовнішній ключ та обмеження UNIQUE, NOT NULL, CHECK і DEFAULT?",
+      "shortAnswerUk": "Первинний ключ (primary key) унікально ідентифікує кожен рядок, а зовнішній ключ (foreign key) вимагає, щоб значення посилалося на існуючий запис, і захищає зв'язки між таблицями. UNIQUE забороняє дублікати значень, NOT NULL вимагає наявності значення, CHECK перевіряє правило на рівні рядка, а DEFAULT підставляє значення, якщо воно не вказане. Тести мають охоплювати коректні записи, кожне порушення обмеження окремо, складені (composite) ключі, дії при оновленні й видаленні, поведінку з NULL і те, чи точно повідомлення про помилку на рівні застосунку відображає відмову бази даних.",
+      "strongAnswerSignalsUk": [
+        "пояснює ідентичність рядків і referential integrity (цілісність зв'язків)",
+        "розрізняє всі основні типи обмежень",
+        "тестує негативні сценарії запису та поведінку при оновленні/видаленні"
+      ],
+      "example": "For example, a users table might have id as primary key, email as UNIQUE and NOT NULL, and orders.user_id as a foreign key referencing users.id; a good test tries inserting a duplicate email, inserting a NULL email, inserting an order with a user_id that does not exist, and deleting a user who still has orders to see whether the database rejects it or cascades.",
+      "exampleUk": "Наприклад, таблиця users може мати id як первинний ключ, email як UNIQUE і NOT NULL, а orders.user_id — як зовнішній ключ на users.id; хороший тест спробує вставити дубльований email, вставити NULL у email, додати замовлення з неіснуючим user_id та видалити користувача, у якого ще є замовлення, щоб перевірити, чи база відхилить операцію, чи застосує каскадне видалення.",
       "tags": [
         "database",
         "sql",
@@ -82,6 +109,15 @@
         "uses IS NULL rather than equality",
         "covers joins, aggregates and end-to-end null propagation"
       ],
+      "questionUk": "Чому NULL потребує особливої обробки в SQL-запитах і тестах?",
+      "shortAnswerUk": "NULL означає невідоме або відсутнє значення, тому звичайні порівняння з ним зазвичай дають UNKNOWN, а не TRUE чи FALSE. Замість оператора рівності слід використовувати IS NULL або IS NOT NULL, і варто пам'ятати, що NULL по-різному впливає на JOIN, агрегатні функції, NOT IN, сортування та унікальність залежно від конкретної СУБД. Відсутні значення потрібно тестувати явно на кожній межі — вводі, зберіганні, запиті, обчисленні, експорті та в UI, — оскільки непомітна обробка NULL може змінити і кількість рядків, і бізнес-підсумки.",
+      "strongAnswerSignalsUk": [
+        "розуміє трійкову (three-valued) логіку SQL",
+        "використовує IS NULL, а не оператор рівності",
+        "охоплює JOIN, агрегатні функції та наскрізне поширення NULL"
+      ],
+      "example": "For example, a query filtering WHERE phone equals NULL will silently return zero rows because NULL is never equal to anything, while the correct WHERE phone IS NULL returns the customers with no phone number, and a tester should check both forms plus how a NOT IN subquery containing a NULL behaves.",
+      "exampleUk": "Наприклад, запит з умовою WHERE phone дорівнює NULL мовчки поверне нуль рядків, бо NULL ніколи не дорівнює нічому, тоді як правильний варіант WHERE phone IS NULL поверне клієнтів без номера телефону; тестувальнику варто перевірити обидва варіанти, а також те, як поводиться підзапит з NOT IN, що містить NULL.",
       "tags": [
         "sql",
         "database",
@@ -105,6 +141,15 @@
         "uses HAVING for aggregate conditions",
         "checks grouping grain and duplicate amplification"
       ],
+      "questionUk": "Коли в SQL-запиті слід використовувати WHERE, GROUP BY та HAVING?",
+      "shortAnswerUk": "WHERE фільтрує окремі рядки до групування, GROUP BY формує групи для агрегатних функцій, а HAVING фільтрує вже отримані групи. Наприклад, WHERE може обмежити замовлення одним роком, GROUP BY customer — порахувати підсумки, а HAVING SUM(amount) більше за поріг — залишити лише клієнтів із високим сумарним чеком. Надійний тест перевіряє граничні значення, NULL, дубльовані рядки після JOIN, рівень деталізації групування (grain) та незалежно порахований контрольний підсумок.",
+      "strongAnswerSignalsUk": [
+        "розміщує фільтрацію рядків до агрегації",
+        "використовує HAVING для умов на агрегати",
+        "перевіряє рівень деталізації групування та ефект дублювання рядків"
+      ],
+      "example": "For example, to find customers who spent over 1000 in 2025, the query filters WHERE order_date is in 2025, groups rows with GROUP BY customer_id, and keeps only groups satisfying HAVING SUM(amount) greater than 1000; a tester would independently recompute the total for one customer from raw rows to confirm the aggregated result is correct.",
+      "exampleUk": "Наприклад, щоб знайти клієнтів, які витратили понад 1000 у 2025 році, запит фільтрує WHERE order_date у межах 2025 року, групує рядки за GROUP BY customer_id і залишає лише групи, що задовольняють HAVING SUM(amount) більше 1000; тестувальник незалежно перерахує підсумок для одного клієнта із сирих рядків, щоб підтвердити коректність агрегованого результату.",
       "tags": [
         "sql",
         "group-by",
@@ -128,6 +173,15 @@
         "mentions compatible result shapes",
         "tests nulls, empty inputs and row-count reconciliation"
       ],
+      "questionUk": "У чому різниця між UNION та UNION ALL і як би ви тестували результат кожного з них?",
+      "shortAnswerUk": "UNION об'єднує сумісні набори результатів і видаляє дублікати рядків, тоді як UNION ALL зберігає кожен рядок і зазвичай уникає витрат на видалення дублікатів. Обидві частини запиту повинні повертати сумісну кількість і типи колонок, але з назвами колонок та порядком рядків усе одно потрібно працювати свідомо. Тести мають охоплювати дублікати всередині та між джерелами, значення NULL, порожні вхідні набори, перетворення типів, сортування, застосоване лише до фінального результату, та звірку очікуваної кількості рядків.",
+      "strongAnswerSignalsUk": [
+        "розрізняє видалення дублікатів і їх збереження",
+        "згадує сумісність форми результатів (кількість і типи колонок)",
+        "тестує NULL, порожні вхідні дані та звірку кількості рядків"
+      ],
+      "example": "For example, combining active_customers and archived_customers with UNION would silently drop a customer that appears identically in both tables, while UNION ALL would keep both copies, so a tester should count rows in each source table and confirm the combined result matches the expected total for the chosen operator.",
+      "exampleUk": "Наприклад, об'єднання таблиць active_customers і archived_customers через UNION мовчки прибере клієнта, який ідентично зустрічається в обох таблицях, тоді як UNION ALL збереже обидва записи; тестувальнику варто порахувати рядки в кожній вихідній таблиці та переконатися, що об'єднаний результат відповідає очікуваній сумі для обраного оператора.",
       "tags": [
         "sql",
         "union",
@@ -151,6 +205,15 @@
         "clarifies the real business key",
         "separates detection from destructive cleanup"
       ],
+      "questionUk": "Як би ви використали SQL, щоб знайти дублікати бізнес-ключів у таблиці?",
+      "shortAnswerUk": "Згрупуйте рядки за колонками бізнес-ключа та відфільтруйте групи через HAVING COUNT(*) більше одиниці, наприклад SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1. Спершу варто визначити, чи регістр, пробіли, NULL та історичні версії мають вважатися однаковим ключем. Потім слід переглянути самі рядки, підтвердити реальне правило унікальності й не видаляти нічого, поки не з'ясовані відповідальність (ownership), політика зберігання та можливість відновлення.",
+      "strongAnswerSignalsUk": [
+        "використовує GROUP BY разом з HAVING COUNT",
+        "уточнює, що насправді є бізнес-ключем",
+        "відокремлює виявлення дублікатів від деструктивного очищення"
+      ],
+      "example": "For example, running SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) greater than 1 might reveal that the same email appears three times because of trailing whitespace and different casing, so before deleting anything the tester would confirm with the team whether emails should be compared case-insensitively and trimmed.",
+      "exampleUk": "Наприклад, запит SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) більше 1 може показати, що один і той самий email трапляється тричі через зайві пробіли та різний регістр; перш ніж щось видаляти, тестувальник уточнить із командою, чи потрібно порівнювати email без урахування регістру та обрізаючи пробіли.",
       "tags": [
         "sql",
         "database",
@@ -175,6 +238,15 @@
         "distinguishes valid null relationships from orphans",
         "checks constraints, soft deletes and timing"
       ],
+      "questionUk": "Як би ви знайшли \"осиротілі\" (orphan) записи або відсутні зв'язки за допомогою SQL?",
+      "shortAnswerUk": "Використайте LEFT JOIN від дочірньої таблиці до батьківської та відфільтруйте рядки, де ключ батьківської таблиці дорівнює NULL, або застосуйте NOT EXISTS із корельованим підзапитом. Спершу перевірте, чи є nullable зовнішній ключ допустимим станом, перш ніж вважати кожен відсутній зв'язок дефектом. Порівняйте результат запиту з оголошеними правилами зовнішніх ключів, м'яким видаленням (soft delete), датами набуття чинності та порядком завантаження даних, щоб легітимний тимчасовий стан не був помилково класифікований як порушення цілісності.",
+      "strongAnswerSignalsUk": [
+        "коректно використовує LEFT JOIN або NOT EXISTS",
+        "розрізняє допустимі NULL-зв'язки та справжніх \"сиріт\"",
+        "перевіряє обмеження, м'яке видалення та часові фактори"
+      ],
+      "example": "For example, running a LEFT JOIN from orders to customers ON orders.customer_id equals customers.id and filtering WHERE customers.id IS NULL would surface orders referencing a customer that no longer exists, but if customer_id is intentionally nullable for guest checkouts, the tester must first exclude those legitimate NULL cases before treating the rest as broken referential integrity.",
+      "exampleUk": "Наприклад, LEFT JOIN від orders до customers за orders.customer_id дорівнює customers.id з фільтром WHERE customers.id IS NULL покаже замовлення, що посилаються на неіснуючого клієнта; але якщо customer_id навмисно допускає NULL для гостьових замовлень, тестувальник спершу має виключити ці легітимні випадки, перш ніж вважати решту порушенням цілісності зв'язків.",
       "tags": [
         "sql",
         "database",
@@ -199,6 +271,15 @@
         "treats denormalization as an evidence-based tradeoff",
         "tests consistency and repair paths"
       ],
+      "questionUk": "Яку проблему вирішує нормалізація бази даних і коли виправдана денормалізація?",
+      "shortAnswerUk": "Нормалізація розділяє факти, щоб зменшити дублювання та аномалії при оновленні, вставці й видаленні; перша, друга й третя нормальні форми послідовно обмежують повторювані групи, часткові залежності та транзитивні залежності. Денормалізація свідомо дублює або попередньо обчислює дані, щоб спростити читання або підвищити виміряну продуктивність. Тестувальники мають перевіряти джерело істини (source of truth), узгодженість запису, шляхи міграції й виправлення, поведінку при паралельному доступі та чи справді доказова продуктивність виправдовує додатковий ризик для цілісності даних.",
+      "strongAnswerSignalsUk": [
+        "пов'язує нормалізацію з аномаліями даних",
+        "розглядає денормалізацію як компроміс, що має спиратися на докази",
+        "тестує узгодженість і шляхи виправлення даних"
+      ],
+      "example": "For example, storing a customer's address only once in a customers table (normalized) avoids the anomaly where updating an address in one order row leaves stale addresses in other orders, whereas a denormalized reporting table that copies the address into every order row for faster reads must be tested for what happens when the customer later changes their address.",
+      "exampleUk": "Наприклад, зберігання адреси клієнта лише один раз у таблиці customers (нормалізований варіант) уникає аномалії, коли оновлення адреси в одному рядку замовлення залишає застарілі адреси в інших замовленнях, тоді як денормалізована звітна таблиця, що копіює адресу в кожен рядок замовлення заради швидшого читання, вимагає тестування того, що станеться, коли клієнт пізніше змінить адресу.",
       "tags": [
         "database",
         "sql",
@@ -222,6 +303,15 @@
         "recognizes NULL and cardinality traps",
         "does not assume equivalent syntax has identical performance"
       ],
+      "questionUk": "Коли варто використати підзапит (subquery) або спільний табличний вираз (CTE) замість ще одного JOIN?",
+      "shortAnswerUk": "Підзапит може виражати перевірку існування, скалярний пошук або належність до множини, а спільний табличний вираз (CTE) дає іменований проміжний результат, що робить складний запит легшим для читання й тестування. JOIN часто зрозуміліший при об'єднанні пов'язаних наборів рядків, але еквівалентний синтаксис не гарантує однаковий план виконання на будь-якій СУБД. Перевіряйте порожні та багаторядкові випадки, поведінку NULL в IN чи NOT IN, ефект дублювання рядків, завершення рекурсії та реальний план виконання для запитів, чутливих до продуктивності.",
+      "strongAnswerSignalsUk": [
+        "обирає синтаксис виходячи з семантики та зрозумілості",
+        "розпізнає пастки з NULL та кардинальністю",
+        "не припускає, що еквівалентний синтаксис дає однакову продуктивність"
+      ],
+      "example": "For example, a recursive CTE can walk an employee-manager hierarchy to find everyone under a given manager, while a plain subquery like WHERE customer_id IN (SELECT customer_id FROM vip_list) checks membership; a tester should verify what happens when vip_list contains a NULL customer_id, since NOT IN with a NULL in the list can unexpectedly return zero rows.",
+      "exampleUk": "Наприклад, рекурсивний CTE може обійти ієрархію employee-manager, щоб знайти всіх підлеглих певного керівника, тоді як звичайний підзапит на кшталт WHERE customer_id IN (SELECT customer_id FROM vip_list) перевіряє належність до множини; тестувальнику варто перевірити, що станеться, якщо в vip_list є NULL у customer_id, оскільки NOT IN зі списком, що містить NULL, може несподівано повернути нуль рядків.",
       "tags": [
         "sql",
         "cte",
@@ -245,6 +335,15 @@
         "uses partitioning and deterministic ordering",
         "tests ties, null ordering and frame boundaries"
       ],
+      "questionUk": "Що таке віконні функції (window functions) SQL і як би ви отримали останній рядок або топове значення в кожній групі?",
+      "shortAnswerUk": "Віконна функція обчислює значення на основі пов'язаних рядків, зберігаючи при цьому кожен окремий рядок, за допомогою конструкції OVER з опціональними PARTITION BY, ORDER BY та правилами вікна (frame). Поширений патерн — присвоїти ROW_NUMBER() OVER (PARTITION BY group_key ORDER BY timestamp DESC) і залишити лише рядки з номером один, щоб отримати останній рядок у кожній групі. Тести мають охоплювати нічиї (ties), однакові timestamp, порядок сортування NULL, детерміноване вторинне сортування, порожні групи та межі вікна для наростаючих чи ковзних обчислень.",
+      "strongAnswerSignalsUk": [
+        "розрізняє віконні функції та агрегацію, що згортає рядки",
+        "використовує партиціювання та детерміноване сортування",
+        "тестує нічиї, порядок сортування NULL та межі вікна"
+      ],
+      "example": "For example, to find each customer's most recent order, a query assigns ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) as rn and then filters WHERE rn equals 1; a tester should check what happens when two orders for the same customer share the exact same timestamp, since without a deterministic tiebreaker like order_id the chosen row may vary between runs.",
+      "exampleUk": "Наприклад, щоб знайти останнє замовлення кожного клієнта, запит присвоює ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) як rn, а потім фільтрує WHERE rn дорівнює 1; тестувальнику варто перевірити, що станеться, якщо два замовлення одного клієнта мають однаковий timestamp, адже без детермінованого критерію на випадок нічиєї, наприклад order_id, обраний рядок може відрізнятися від запуску до запуску.",
       "tags": [
         "sql",
         "window-functions",
@@ -269,6 +368,15 @@
         "detects duplicate amplification and missing relationships",
         "reconciles measures and slowly changing attributes"
       ],
+      "questionUk": "Як влаштовані таблиці фактів, таблиці вимірів (dimensions) і рівень деталізації (grain) у зірковій схемі (star schema)?",
+      "shortAnswerUk": "Таблиця фактів зберігає вимірювані події на заданому рівні деталізації (grain), а таблиці вимірів надають описовий контекст, наприклад клієнта, товар чи дату. Тести мають довести, що кожен рядок факту представляє рівно одну подію на цьому рівні деталізації і що зв'язки з вимірами не дублюють і не втрачають показники. Звіряйте кількості й підсумки від джерела до моделі, охоплюйте невідомі та ті, що надходять із запізненням, виміри (late-arriving dimensions), дати набуття чинності, повільно змінювані атрибути (slowly changing dimensions) та поведінку фільтрів по кожному зв'язку.",
+      "strongAnswerSignalsUk": [
+        "визначає факт, вимір і рівень деталізації (grain)",
+        "виявляє ефект дублювання рядків та відсутні зв'язки",
+        "звіряє показники та повільно змінювані атрибути"
+      ],
+      "example": "For example, a sales fact table at the grain of one row per order line joins to a date dimension, a product dimension and a customer dimension; a tester would verify that joining to a product dimension with duplicate product_id rows does not silently multiply the revenue total, and would reconcile the summed revenue against the source orders system.",
+      "exampleUk": "Наприклад, таблиця фактів продажів із рівнем деталізації один рядок на позицію замовлення приєднується до виміру дати, виміру товару та виміру клієнта; тестувальник перевірить, що приєднання до виміру товару з дубльованими рядками product_id не подвоює мовчки сумарний дохід, і звірить суму доходу з вихідною системою замовлень.",
       "tags": [
         "database",
         "sql",
@@ -293,6 +401,15 @@
         "uses independent SQL and control totals",
         "covers filters, security, freshness and detail-level consistency"
       ],
+      "questionUk": "Як би ви звірили значення на BI-дашборді з даними в базі-джерелі?",
+      "shortAnswerUk": "Почніть із бізнес-визначення показника, що відображається, контексту фільтрів, часового поясу, часу оновлення та рівня агрегації, а потім простежте його походження (lineage) через семантичну модель і трансформації до достовірних вихідних рядків. Відтворіть обчислення незалежним SQL-запитом і контрольними підсумками, а не копіюючи логіку самого дашборда. Тестуйте деталізацію (drill-down), приховані фільтри, зв'язки many-to-many, округлення, дані, що надходять із запізненням, захист на рівні рядків (row-level security), затримку кешу чи оновлення та експорт даних, щоб збіг одного підсумкового числа не приховував неузгодженості в деталях.",
+      "strongAnswerSignalsUk": [
+        "простежує бізнес-визначення показника та його походження (lineage)",
+        "використовує незалежний SQL-запит і контрольні підсумки",
+        "охоплює фільтри, безпеку, актуальність даних та узгодженість на рівні деталей"
+      ],
+      "example": "For example, if the dashboard shows total revenue of 50000 for last month but an independent SQL query against the source orders table returns 48000, a tester would check whether the dashboard's filter silently includes a different time zone cutoff, excludes refunds differently, or is reading from a cache that has not refreshed since the latest data load.",
+      "exampleUk": "Наприклад, якщо дашборд показує сумарний дохід 50000 за минулий місяць, а незалежний SQL-запит до вихідної таблиці orders повертає 48000, тестувальник перевірить, чи не використовує фільтр дашборда інший часовий пояс для межі періоду, чи інакше враховує повернення коштів, або чи не читає дашборд дані з кешу, який не оновлювався після останнього завантаження даних.",
       "tags": [
         "database",
         "sql",
@@ -317,6 +434,15 @@
         "injects failures between transaction steps",
         "covers concurrency, retries and durable outcomes"
       ],
+      "questionUk": "Що означають транзакції бази даних та властивості ACID для тестування?",
+      "shortAnswerUk": "Транзакція об'єднує операції в одну одиницю, яка або фіксується повністю, або повністю відкочується, а ACID описує атомарність (atomicity), узгодженість (consistency), ізольованість (isolation) та стійкість (durability). Тестуйте успішний сценарій, очікуване відхилення та збій між кожним значущим кроком, щоб довести відсутність часткового бізнес-стану, що залишився. Також перевіряйте поведінку при повторних спробах, дубльовані запити, видимість для паралельних сесій, обмеження, які перевіряються в момент COMMIT, та стійкість стану після перепідключення чи відновлення.",
+      "strongAnswerSignalsUk": [
+        "пояснює всі чотири властивості ACID",
+        "імітує збої між кроками транзакції",
+        "охоплює паралельний доступ, повторні спроби та стійкість результату"
+      ],
+      "example": "For example, a transaction that debits one account and credits another should be tested by killing the connection right after the debit but before the credit, then confirming the whole transaction rolled back and neither balance changed, rather than leaving money silently missing from the system.",
+      "exampleUk": "Наприклад, транзакцію, яка списує кошти з одного рахунку і зараховує на інший, варто протестувати, обірвавши з'єднання одразу після списання, але до зарахування, а потім переконатися, що вся транзакція відкотилася і жоден баланс не змінився, замість того щоб кошти мовчки зникли із системи.",
       "tags": [
         "database",
         "sql",
@@ -340,6 +466,15 @@
         "uses deterministic multi-session tests",
         "checks product-specific guarantees and retries"
       ],
+      "questionUk": "Які аномалії паралельного доступу (concurrency anomalies) покликані запобігати рівні ізоляції транзакцій?",
+      "shortAnswerUk": "До відповідних аномалій належать брудне читання (dirty read), неповторюване читання (non-repeatable read), фантомне читання (phantom read), втрачене оновлення (lost update) та помилки серіалізації, хоча точні гарантії відрізняються залежно від реалізації конкретної СУБД. Проєктуйте тести з двома контрольованими сесіями, бар'єрами між командами та твердженнями про те, що кожна сесія може спостерігати на кожному кроці. Перевіряйте налаштований рівень ізоляції, поведінку блокувань чи MVCC, обробку повторних спроб та бізнес-інваріант, а не покладайтеся лише на загальну назву рівня ізоляції.",
+      "strongAnswerSignalsUk": [
+        "називає конкретні аномалії паралельного доступу",
+        "використовує детерміновані тести з кількома сесіями",
+        "перевіряє гарантії конкретної СУБД та обробку повторних спроб"
+      ],
+      "example": "For example, to test for a lost update, open two sessions that both read the same product's stock count, have session A decrement and commit, then have session B decrement based on its stale read and commit, and check whether the database's isolation level and locking actually prevented the second write from overwriting the first one's effect.",
+      "exampleUk": "Наприклад, щоб перевірити втрачене оновлення, відкрийте дві сесії, які обидві читають однаковий залишок товару на складі, дайте сесії A зменшити значення і зробити COMMIT, потім дайте сесії B зменшити значення на основі вже застарілого прочитаного стану і теж зробити COMMIT, і перевірте, чи справді рівень ізоляції та блокування бази даних запобігли тому, щоб другий запис перезаписав ефект першого.",
       "tags": [
         "database",
         "transactions",
@@ -363,6 +498,15 @@
         "uses controlled concurrent sessions and lock diagnostics",
         "verifies rollback, timeout and idempotent retry behaviour"
       ],
+      "questionUk": "Як би ви тестували та діагностували блокування (locks), очікування (blocking) і взаємні блокування (deadlocks) у базі даних?",
+      "shortAnswerUk": "Створіть контрольовані паралельні транзакції, що захоплюють ті самі ресурси у відомому порядку, а потім вимірюйте очікування, тайм-аут, скасування та поведінку відкату. Взаємне блокування (deadlock) утворює цикл сесій, що чекають одна на одну, тому база даних зазвичай перериває одного з учасників, а застосунок повинен безпечно обробити цю відмову. Перевіряйте активні сесії, подання блокувань (lock views) та логи запитів; переконайтеся в послідовному порядку захоплення блокувань, короткій тривалості транзакцій, обмеженому часі очікування, безпечних повторних спробах та відсутності дубльованого бізнес-ефекту.",
+      "strongAnswerSignalsUk": [
+        "розрізняє звичайне очікування та цикл взаємного блокування",
+        "використовує контрольовані паралельні сесії та діагностику блокувань",
+        "перевіряє відкат, тайм-аут та ідемпотентність повторних спроб"
+      ],
+      "example": "For example, open two sessions where session A locks row 1 then tries to lock row 2, while session B locks row 2 then tries to lock row 1 in the opposite order; the database should detect the resulting deadlock, abort one session with an error, and the tester verifies the application retries that transaction safely without applying its effect twice.",
+      "exampleUk": "Наприклад, відкрийте дві сесії, де сесія A блокує рядок 1, а потім намагається заблокувати рядок 2, тоді як сесія B блокує рядок 2, а потім намагається заблокувати рядок 1 у зворотному порядку; база даних має виявити утворене взаємне блокування, перервати одну із сесій з помилкою, а тестувальник перевіряє, що застосунок безпечно повторює цю транзакцію, не застосовуючи її ефект двічі.",
       "tags": [
         "database",
         "locking",
@@ -386,6 +530,15 @@
         "recognizes that optimizers may choose a scan",
         "uses representative data and measured plans"
       ],
+      "questionUk": "Що покращує індекс бази даних і які витрати чи ризики він приносить?",
+      "shortAnswerUk": "Індекс — це додаткова структура, яка може знаходити або впорядковувати вибрані рядки швидше, ніж повне сканування таблиці. Він займає місце на диску та додає роботи операціям INSERT, UPDATE і DELETE, а оптимізатор може цілком правомірно проігнорувати його, якщо запит повертає значну частину таблиці. Тестуйте на репрезентативному обсязі та розподілі даних, реальних предикатах запитів, сортуванні, вартості запису, вимогах унікальності, застарілій статистиці та виміряному плані виконання, а не просто перевіряйте факт існування індексу.",
+      "strongAnswerSignalsUk": [
+        "зважує вигоду для читання проти витрат на запис і зберігання",
+        "розуміє, що оптимізатор може обрати повне сканування замість індексу",
+        "використовує репрезентативні дані та виміряні плани виконання"
+      ],
+      "example": "For example, adding an index on orders.customer_id should speed up a query filtering one customer's orders, but a tester should also measure how much slower a bulk INSERT of ten thousand rows becomes with the index present, and check the actual execution plan to confirm the optimizer is really using the index rather than a full table scan.",
+      "exampleUk": "Наприклад, додавання індексу на orders.customer_id має пришвидшити запит, що фільтрує замовлення одного клієнта, але тестувальнику варто також виміряти, наскільки повільнішою стає масова вставка десяти тисяч рядків за наявності індексу, і перевірити реальний план виконання, щоб переконатися, що оптимізатор справді використовує індекс, а не повне сканування таблиці.",
       "tags": [
         "database",
         "sql",
@@ -410,6 +563,15 @@
         "uses executing analysis safely",
         "compares estimates with actual rows and real workload"
       ],
+      "questionUk": "Як би ви використали EXPLAIN або план виконання, щоб дослідити повільний SQL-запит?",
+      "shortAnswerUk": "Почніть із плану без виконання, щоб оглянути типи сканування, порядок JOIN, оцінену кількість рядків, фільтри, сортування та кроки агрегації, а потім використовуйте режим аналізу з фактичним виконанням лише там, де це безпечно. Порівнюйте оцінену та фактичну кількість рядків і час, оскільки велика розбіжність може вказувати на застарілу статистику, перекіс даних (skew) або предикат, який оптимізатор не може добре оцінити. Відтворюйте ситуацію на обсязі й параметрах, наближених до продакшену, вимірюйте наскрізну затримку та I/O, і ніколи не сприймайте абстрактну вартість плану як реальні мілісекунди.",
+      "strongAnswerSignalsUk": [
+        "читає типи сканування, JOIN, оцінки та фільтри",
+        "безпечно застосовує аналіз із реальним виконанням",
+        "порівнює оцінені та фактичні рядки на реальному навантаженні"
+      ],
+      "example": "For example, if EXPLAIN ANALYZE shows the optimizer estimated 100 rows from a filter but actually found 50000, that huge gap points to stale table statistics, and a tester would recommend running an ANALYZE or updating statistics before concluding that the query itself or its indexing is the real problem.",
+      "exampleUk": "Наприклад, якщо EXPLAIN ANALYZE показує, що оптимізатор оцінив фільтр у 100 рядків, а насправді їх виявилося 50000, така велика розбіжність вказує на застарілу статистику таблиці, і тестувальник порадить оновити статистику (ANALYZE), перш ніж робити висновок, що проблема саме в самому запиті чи його індексації.",
       "tags": [
         "sql",
         "database",
@@ -433,6 +595,15 @@
         "considers predicates, ordering and selectivity",
         "validates with plans and write-cost measurements"
       ],
+      "questionUk": "Чому порядок колонок має значення в складеному (composite) індексі бази даних?",
+      "shortAnswerUk": "Багатоколонковий індекс упорядкований за послідовністю своїх ключів, тому предикати та сортування, які використовують перші (leading) колонки, зазвичай отримують найбільшу вигоду, а умова лише на пізнішій колонці може не використовувати індекс ефективно. На результат впливають селективність, предикати діапазону, предикати рівності, потрібний порядок сортування та специфічна для конкретної СУБД поведінка оптимізатора. Перевіряйте кілька реалістичних форм запитів на репрезентативних розподілах даних і планах виконання, а також вимірюйте додаткові витрати на запис, перш ніж додавати індекси, що перекриваються.",
+      "strongAnswerSignalsUk": [
+        "розуміє роль першої (leading) колонки",
+        "враховує предикати, сортування та селективність",
+        "підтверджує планами виконання та вимірюванням витрат на запис"
+      ],
+      "example": "For example, an index on (last_name, first_name) efficiently supports a query filtering WHERE last_name equals 'Smith', but a query filtering only WHERE first_name equals 'John' cannot use the leading column and typically falls back to a full scan or a separate index, so a tester should verify the plan for each realistic query shape rather than assuming any column in the index helps every query.",
+      "exampleUk": "Наприклад, індекс на (last_name, first_name) ефективно підтримує запит з умовою WHERE last_name дорівнює 'Smith', але запит лише з умовою WHERE first_name дорівнює 'John' не може використати першу колонку індексу і зазвичай зводиться до повного сканування чи потребує окремого індексу, тож тестувальнику варто перевіряти план для кожної реалістичної форми запиту, а не припускати, що будь-яка колонка в індексі допомагає кожному запиту.",
       "tags": [
         "database",
         "sql",
@@ -456,6 +627,15 @@
         "covers compatibility, interruption and recovery",
         "rehearses mixed-version rollout behaviour"
       ],
+      "questionUk": "Як би ви тестували міграцію схеми бази даних із наявними продакшн-даними?",
+      "shortAnswerUk": "Тестуйте міграцію на репрезентативній, знеособленій копії даних, що включає старі версії, великі таблиці, реальні граничні випадки з історії та реалістичні індекси й обмеження. Перевіряйте пряму міграцію, сумісність застосунку під час викочування, перетворені значення, кількість рядків і контрольні підсумки, блокування й тривалість, перезапуск після переривання, стратегію відкату чи виправлення вперед (rollback / forward-fix) та резервні копії. Відрепетируйте точний порядок розгортання та доведіть, що змішані версії застосунку не можуть пошкодити дані під час поетапного (rolling) релізу.",
+      "strongAnswerSignalsUk": [
+        "використовує репрезентативні історичні дані та обсяг",
+        "охоплює сумісність, переривання та відновлення",
+        "репетирує поведінку розгортання зі змішаними версіями"
+      ],
+      "example": "For example, before adding a NOT NULL column to a large production orders table, a tester would run the migration against a sanitized copy with the same row count and old data shapes, verify the migration completes within an acceptable lock duration, and confirm the application still works correctly while old and new application versions run side by side during the rollout.",
+      "exampleUk": "Наприклад, перед додаванням колонки NOT NULL до великої продакшн-таблиці orders тестувальник запустить міграцію на знеособленій копії з такою самою кількістю рядків і старими форматами даних, перевірить, що міграція завершується в межах прийнятної тривалості блокування, і підтвердить, що застосунок коректно працює, поки старі й нові версії застосунку виконуються паралельно під час розгортання.",
       "tags": [
         "database",
         "sql",
@@ -480,6 +660,15 @@
         "traces conversions across system layers",
         "checks storage fidelity and migration narrowing"
       ],
+      "questionUk": "Які межі типів даних у базі даних найчастіше спричиняють дефекти?",
+      "shortAnswerUk": "До групи високого ризику належать переповнення цілих чисел, точність і округлення дробових чисел, порівняння чисел з плаваючою комою, довжина й кодування тексту, регістр і сортування (collation), дати, часові пояси, переходи на літній/зимовий час, бінарні дані та NULL. Генеруйте значення одразу всередині та за межами кожного заданого ліміту й відстежуйте перетворення на рівнях API, застосунку, бази даних, експорту та звітів. Перевіряйте правила відхилення чи округлення, точність зберігання, поведінку сортування й порівняння та те, що міграції не звужують наявні значення непомітно.",
+      "strongAnswerSignalsUk": [
+        "охоплює числові, текстові та часові межі",
+        "відстежує перетворення на різних рівнях системи",
+        "перевіряє точність зберігання та непомітне звуження при міграції"
+      ],
+      "example": "For example, storing 9999999999 into an INT column that maxes out at 2147483647 should be rejected or should fail loudly, and a tester should also check what happens to a decimal price like 19.995 stored in a column with only two decimal places, since silent rounding can quietly shift totals across thousands of orders.",
+      "exampleUk": "Наприклад, спроба записати 9999999999 у колонку типу INT з максимумом 2147483647 має бути відхилена або явно провалитися з помилкою, а тестувальнику варто також перевірити, що станеться з дробовою ціною на кшталт 19.995 у колонці лише з двома знаками після коми, оскільки непомітне округлення може непомітно змістити підсумки на тисячах замовлень.",
       "tags": [
         "database",
         "sql",
@@ -503,6 +692,15 @@
         "handles parallel data collisions and cleanup",
         "uses least privilege and never production credentials"
       ],
+      "questionUk": "Як забезпечити ізольованість, повторюваність і безпечність інтеграційних тестів для бази даних?",
+      "shortAnswerUk": "Надайте кожному тесту контрольовані дані та володіння ними через транзакцію, окремого орендаря (tenant) чи схему, детерміновану фікстуру або одноразову базу даних — залежно від того, що саме тест повинен спостерігати. Прибирайте за собою надійно, але не приховуйте поведінку COMMIT, тригерів, блокувань чи міжтранзакційну взаємодію, огортаючи кожен тест у відкат, якого продакшн ніколи не використовує. Паралельні прогони потребують ідентифікаторів, стійких до колізій, обмежених прав доступу, відсутності продакшн-облікових даних, реалістичних обмежень (constraints) та діагностики, що вказує на створені записи, якщо очищення не вдалося.",
+      "strongAnswerSignalsUk": [
+        "обирає спосіб ізоляції, що зберігає поведінку, яка перевіряється",
+        "обробляє колізії даних при паралельних прогонах і очищення",
+        "застосовує принцип найменших привілеїв і ніколи не використовує продакшн-облікові дані"
+      ],
+      "example": "For example, wrapping every test in a transaction that gets rolled back at the end is fast and keeps the database clean, but it would hide a bug where a trigger only fires correctly on COMMIT, so a test specifically covering trigger behaviour needs a real commit and explicit cleanup with a uniquely tagged test-run identifier instead.",
+      "exampleUk": "Наприклад, огортання кожного тесту в транзакцію з відкатом наприкінці є швидким і тримає базу чистою, але приховає баг, коли тригер коректно спрацьовує лише при COMMIT; тому тест, що конкретно перевіряє поведінку тригера, потребує реального COMMIT та явного очищення з унікальним ідентифікатором тестового прогону.",
       "tags": [
         "database",
         "integration-testing",
@@ -527,6 +725,15 @@
         "performs real isolated restore tests",
         "measures recovery objectives and client behaviour"
       ],
+      "questionUk": "Як би ви тестували реплікацію бази даних, відновлення з резервної копії та перемикання на резерв (failover), не покладаючись лише на індикатори стану?",
+      "shortAnswerUk": "Записуйте ідентифіковані записи та перевіряйте їхні значення, порядок і видимість на репліках при звичайному навантаженні, затримці (lag), розриві мережі та failover. Відновлюйте резервні копії в ізольованому середовищі та доводьте коректність схеми, обмежень, кількості рядків, критичних бізнес-підсумків, прав доступу й відновлення на певний момент часу (point-in-time recovery) відповідно до заданих цілей відновлення (RPO/RTO). Перевіряйте перепідключення клієнтів, очікування read-after-write, дубльовані чи втрачені записи, захист від split-brain та failback, вимірюючи фактичну втрату даних і час відновлення, а не лише перевіряючи зелені індикатори на дашборді.",
+      "strongAnswerSignalsUk": [
+        "перевіряє самі дані, а не лише стан інфраструктури",
+        "виконує реальні тестові відновлення в ізольованому середовищі",
+        "вимірює цілі відновлення (RPO/RTO) та поведінку клієнтів"
+      ],
+      "example": "For example, write a row with a unique marker like test_run_id equals 'restore-check-42', trigger a failover to the replica, confirm that exact row is visible and correct there, then separately restore last night's backup into an isolated environment and verify the row count and a critical revenue total match what was expected at that backup's point in time.",
+      "exampleUk": "Наприклад, запишіть рядок з унікальною міткою на кшталт test_run_id дорівнює 'restore-check-42', ініціюйте failover на репліку та переконайтеся, що саме цей рядок видимий там і коректний, а потім окремо відновіть вчорашню резервну копію в ізольованому середовищі та перевірте, що кількість рядків і критичний підсумок доходу відповідають очікуваним на момент створення цієї резервної копії.",
       "tags": [
         "database",
         "replication",
@@ -551,6 +758,15 @@
         "recognizes dynamic identifiers and privilege risks",
         "tests indirect inputs, errors and logging"
       ],
+      "questionUk": "Як параметризовані запити запобігають SQL-ін'єкціям і що все одно потрібно тестувати?",
+      "shortAnswerUk": "Параметризовані запити передають структуру SQL окремо від значень даних, тому ворожий вхід трактується як значення, а не як виконуваний синтаксис. Вони автоматично не роблять безпечними динамічно обрані ідентифікатори, умови сортування, збережені процедури, надмірні привілеї бази даних чи небезпечне формування запитів. Тестуйте кожен шлях вводу даних, включно з заголовками та імпортованими файлами, перевіряйте прив'язку параметрів на боці сервера та allowlist-и, використовуйте облікові записи бази даних з мінімальними привілеями та переконайтеся, що помилки й логи не розкривають чутливі деталі запитів чи схеми.",
+      "strongAnswerSignalsUk": [
+        "пояснює межу між кодом і даними",
+        "розпізнає ризики динамічних ідентифікаторів і надмірних привілеїв",
+        "тестує непрямі джерела вводу, помилки та логування"
+      ],
+      "example": "For example, a query built with a parameter placeholder like WHERE username equals the bound parameter safely handles an input of O'Brien' OR '1'='1, but if the same endpoint builds the ORDER BY clause by directly concatenating a user-supplied column name, that identifier is not protected by parameter binding and still needs strict allowlist validation.",
+      "exampleUk": "Наприклад, запит, побудований з плейсхолдером параметра на кшталт WHERE username дорівнює прив'язаний параметр, безпечно обробляє ввід O'Brien' OR '1'='1, але якщо той самий ендпоінт формує частину ORDER BY шляхом прямої конкатенації назви колонки, наданої користувачем, цей ідентифікатор не захищений прив'язкою параметрів і все одно потребує суворої перевірки за allowlist.",
       "tags": [
         "sql",
         "database",
@@ -575,6 +791,15 @@
         "tests trigger firing, recursion and bulk behaviour",
         "includes schema compatibility, performance and observability"
       ],
+      "questionUk": "Що потрібно тестувати, коли бізнес-логіка реалізована у view, збережених процедурах (stored procedures) чи тригерах?",
+      "shortAnswerUk": "Перевіряйте оголошені вхідні дані, форму результату, права доступу, межі транзакцій, побічні ефекти й поведінку при помилках для збережених процедур, а також видимість рядків і актуальність даних для звичайних чи матеріалізованих view. Тригери потребують тестів на кожну операцію, що їх запускає, порядок спрацювання, рекурсію, масові операції, відкат, вимкнений стан і неочікувані записи в аудиторські чи похідні таблиці. Охоплюйте прямий і опосередкований через застосунок доступ, зміни схеми, продуктивність на реалістичному обсязі даних та спостережуваність, щоб прихована логіка в базі даних не перетворилася на непрозорий другий застосунок.",
+      "strongAnswerSignalsUk": [
+        "охоплює права доступу, транзакції та приховані побічні ефекти",
+        "тестує спрацювання тригера, рекурсію та поведінку при масових операціях",
+        "включає сумісність схеми, продуктивність і спостережуваність"
+      ],
+      "example": "For example, a trigger that logs every update to an audit table should be tested with a bulk UPDATE affecting ten thousand rows at once to confirm it logs every row and not just the first one, and also tested with the trigger temporarily disabled during a data migration to confirm no unexpected audit gaps or duplicate entries appear afterward.",
+      "exampleUk": "Наприклад, тригер, що логує кожне оновлення в аудиторську таблицю, варто протестувати масовим UPDATE, що одразу зачіпає десять тисяч рядків, аби переконатися, що логується кожен рядок, а не лише перший, а також протестувати з тимчасово вимкненим тригером під час міграції даних, щоб підтвердити відсутність несподіваних прогалин чи дублікатів в аудиті після цього.",
       "tags": [
         "database",
         "sql",

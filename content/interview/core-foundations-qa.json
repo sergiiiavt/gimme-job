@@ -13,8 +13,25 @@
         "distinguishes UAT ownership and business purpose",
         "contrasts controlled alpha testing with external beta feedback"
       ],
-      "tags": ["acceptance-testing", "uat", "alpha-testing", "beta-testing"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Чим відрізняються приймальне тестування, приймальне тестування користувачами (UAT), альфа-тестування та бета-тестування?",
+      "shortAnswerUk": "Приймальне тестування (acceptance testing) — це рівень тестування, який оцінює готовність системи до прийняття за бізнесовими, користувацькими, контрактними або регуляторними критеріями. Приймальне тестування користувачами (UAT) проводиться з погляду замовника чи користувачів, щоб підтвердити, що реальну бізнес-роботу можна виконати. Альфа-тестування — це контрольоване тестування перед релізом, яке проводиться в організації-розробнику або для неї, тоді як бета-тестування дає доступ до реліз-кандидата обраним зовнішнім користувачам у реальних умовах. Альфа- та бета-тестування можуть надавати докази готовності до приймання, але жодне з них автоматично не замінює явних критеріїв приймання чи дозволу на реліз.",
+      "strongAnswerSignalsUk": [
+        "розглядає приймальне тестування як рівень тестування, а не одноразову подію виконання",
+        "розрізняє відповідальність за UAT та його бізнес-мету",
+        "протиставляє контрольоване альфа-тестування зовнішньому зворотному зв'язку з бета-тестування"
+      ],
+      "example": "A payments team finishes a new checkout flow and runs internal acceptance tests against the signed-off business criteria before showing it to anyone outside the company. Two weeks later, five employees from another department run alpha testing on the staging build and find a rounding bug in tax calculation. After the fix, the team ships a beta build to 200 opted-in customers, who report that the confirmation email arrives in the wrong language for non-English locales — a gap the internal team never had users to catch.",
+      "exampleUk": "Команда, що займається платежами, завершує розробку нового чекауту (checkout) і перед тим, як показати щось стороннім, проводить внутрішнє приймальне тестування за узгодженими бізнес-критеріями. Через два тижні п'ятеро співробітників з іншого відділу проводять альфа-тестування на staging-збірці та знаходять баг округлення в розрахунку податку. Після виправлення команда випускає бета-збірку для 200 клієнтів, які підписалися на участь, і ті повідомляють, що лист-підтвердження приходить не тією мовою для не-англомовних локалей — прогалину, яку внутрішня команда не могла виявити, бо в неї не було таких користувачів.",
+      "tags": [
+        "acceptance-testing",
+        "uat",
+        "alpha-testing",
+        "beta-testing"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -29,8 +46,25 @@
         "explains why stubs or drivers may be needed",
         "selects an approach from architecture and integration risk"
       ],
-      "tags": ["integration-testing", "top-down", "bottom-up", "incremental-testing"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Як підходи до інтеграційного тестування — «великий вибух» (big-bang), зверху вниз (top-down), знизу вгору (bottom-up) та інкрементний — впливають на ризики тестування?",
+      "shortAnswerUk": "Інтеграція за принципом «великого вибуху» об'єднує багато компонентів одразу наприкінці розробки, що спрощує початкову координацію, але ускладнює локалізацію збоїв на інтерфейсах. Інтеграція зверху вниз перевіряє потоки керування на ранніх етапах і замінює недороблені нижні компоненти заглушками (stubs); інтеграція знизу вгору спочатку перевіряє базові сервіси й використовує драйвери (drivers) для відсутніх викликачів. Інкрементні або «сендвіч»-підходи інтегрують систему невеликими зрізами з одного чи обох напрямків, забезпечуючи ранній зворотний зв'язок і чіткішу локалізацію дефектів. Послідовність інтеграції обирають виходячи з архітектури й ризиків, плануючи реалістичні контракти між компонентами, спостережуваність (observability), тестові двійники (test doubles) та наскрізні перевірки для прогалин, які створює кожен підхід.",
+      "strongAnswerSignalsUk": [
+        "порівнює локалізацію дефектів та швидкість отримання зворотного зв'язку",
+        "пояснює, чому можуть знадобитися заглушки (stubs) або драйвери (drivers)",
+        "обирає підхід виходячи з архітектури та ризиків інтеграції"
+      ],
+      "example": "A team building a microservices order system chooses bottom-up integration: they first validate the inventory and payment services in isolation using drivers that simulate the order-orchestrator calls, then integrate upward. This catches a payment-service timeout bug two sprints before the UI even exists, whereas a previous project that used big-bang integration only discovered a similar timeout issue during a chaotic three-day integration freeze right before release.",
+      "exampleUk": "Команда, що розробляє мікросервісну систему замовлень, обирає інтеграцію знизу вгору: спочатку вони перевіряють сервіси інвентаризації та оплати окремо, використовуючи драйвери, які імітують виклики від оркестратора замовлень, а потім інтегрують систему вище. Це дозволяє виявити баг таймауту в сервісі оплати за два спринти до того, як з'явиться UI, тоді як у попередньому проєкті з інтеграцією за принципом «великого вибуху» подібний таймаут знайшли лише під час хаотичного триденного інтеграційного «заморожування» безпосередньо перед релізом.",
+      "tags": [
+        "integration-testing",
+        "top-down",
+        "bottom-up",
+        "incremental-testing"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Common"
     },
     {
@@ -45,8 +79,25 @@
         "orders review forms by purpose and formality without treating names as universal",
         "connects review rigor to risk and evidence needs"
       ],
-      "tags": ["static-testing", "review", "inspection", "static-analysis"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Чим відрізняються неформальні рев'ю, walkthrough (пояснювальні перегляди), технічні рев'ю, інспекції та статичний аналіз?",
+      "shortAnswerUk": "Усе це статичне тестування, оскільки воно оцінює робочі продукти без виконання програми. Неформальне рев'ю має мінімально прописаний процес; walkthrough зазвичай веде сам автор, щоб пояснити роботу та зібрати відгуки; технічне рев'ю залучає кваліфікованих колег для оцінки технічної придатності рішення; а інспекція — це формальне рев'ю з чітко визначеними ролями, критеріями входу, підготовкою, фіксацією дефектів і подальшим контролем. Статичний аналіз використовує інструменти для перевірки коду чи моделей за такими властивостями, як потік керування, потік даних, складність, недосяжний код, залежності або правила безпеки. Потрібний рівень суворості залежить від ризику, вартості та необхідних доказів.",
+      "strongAnswerSignalsUk": [
+        "відокремлює рев'ю за участю людей від статичного аналізу на основі інструментів",
+        "впорядковує форми рев'ю за метою та рівнем формальності, не вважаючи назви універсальними",
+        "пов'язує суворість рев'ю з ризиком та потребою в доказах"
+      ],
+      "example": "Before a release, a team runs a static analysis tool that flags a null-pointer dereference in a rarely-used discount module. Because that module handles financial calculations, the lead escalates it from a quick informal review to a full inspection with a dedicated moderator, checklist and logged defect — while a low-risk UI tweak in the same release only gets a walkthrough where the author talks a colleague through the change.",
+      "exampleUk": "Перед релізом інструмент статичного аналізу виявляє розіменування нульового вказівника (null-pointer dereference) у рідко використовуваному модулі знижок. Оскільки цей модуль відповідає за фінансові розрахунки, тімлід підвищує рівень перевірки з швидкого неформального рев'ю до повноцінної інспекції з модератором, чекліст і зафіксованим дефектом — тоді як низькоризикова правка UI в тому самому релізі отримує лише walkthrough, де автор проговорює зміну з колегою.",
+      "tags": [
+        "static-testing",
+        "review",
+        "inspection",
+        "static-analysis"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -61,8 +112,24 @@
         "uses constraints and Boolean relationships before deriving a decision table",
         "treats the model as a reviewable coverage aid rather than an exhaustive generator"
       ],
-      "tags": ["cause-effect-graph", "decision-tables", "business-rules", "test-modeling"],
-      "sourceIds": ["istqb-glossary"],
+      "questionUk": "Коли варто використовувати граф причинно-наслідкових зв'язків (cause-effect graph) перед створенням таблиці рішень чи тест-кейсів?",
+      "shortAnswerUk": "Граф причинно-наслідкових зв'язків варто використовувати, коли кілька вхідних умов, обмежень і логічних залежностей комбінуються так, що результат складно осмислити з текстового опису. Причини й наслідки зображують і з'єднують булевими залежностями, додаючи обмеження для комбінацій, які є обов'язковими або неможливими. Модель узгоджують зі стейкхолдерами, а потім перетворюють значущі комбінації на таблицю рішень і тест-кейси. Граф здатен виявити відсутні, суперечливі або надлишкові правила, але не робить усі комбінації однаково цінними — пріоритизацію варто робити за ризиком, а покриття станів, послідовностей і нефункціональних вимог додавати окремо.",
+      "strongAnswerSignalsUk": [
+        "пов'язує причинно-наслідкові моделі зі взаємодією бізнес-логіки",
+        "використовує обмеження та булеві залежності перед побудовою таблиці рішень",
+        "розглядає модель як допоміжний інструмент для рев'ю покриття, а не як генератор вичерпного набору тестів"
+      ],
+      "example": "For a loan-approval feature where eligibility depends on income, credit score, existing debt and residency status combined with several exclusion rules, a tester draws a cause-effect graph to map how these four causes interact through AND/OR/NOT relationships. Reviewing the graph with the business analyst reveals a rule contradiction — high income was supposed to override a low credit score, but the written requirements never stated that — and the team fixes the requirement before deriving the decision table.",
+      "exampleUk": "Для функції схвалення кредиту, де прийнятність залежить від доходу, кредитного рейтингу, наявної заборгованості та статусу резидентства в поєднанні з кількома правилами винятків, тестувальник будує граф причинно-наслідкових зв'язків, щоб відобразити, як ці чотири причини взаємодіють через AND/OR/NOT-залежності. Рев'ю графа з бізнес-аналітиком виявляє суперечність у правилах — високий дохід мав перекривати низький кредитний рейтинг, але в письмових вимогах цього ніде не було зазначено — і команда виправляє вимогу ще до побудови таблиці рішень.",
+      "tags": [
+        "cause-effect-graph",
+        "decision-tables",
+        "business-rules",
+        "test-modeling"
+      ],
+      "sourceIds": [
+        "istqb-glossary"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -77,8 +144,24 @@
         "explains independent effect in MC/DC",
         "does not equate structural coverage with defect detection or correctness"
       ],
-      "tags": ["white-box-testing", "condition-coverage", "decision-coverage", "mcdc"],
-      "sourceIds": ["istqb-glossary"],
+      "questionUk": "Чим відрізняються покриття операторів (statement coverage), покриття рішень (decision coverage), покриття умов (condition coverage) та MC/DC?",
+      "shortAnswerUk": "Покриття операторів перевіряє, чи виконувалися виконувані оператори коду. Покриття рішень (гілок) вимагає, щоб кожен результат рішення, наприклад true і false, був досягнутий хоча б раз. Покриття умов вимагає, щоб кожна атомарна умова всередині складеного рішення набувала обох значень, але саме по собі це не доводить, що кожна умова здатна вплинути на результат рішення. Modified Condition/Decision Coverage (MC/DC) додає вимогу незалежного впливу (independent effect), одночасно покриваючи й результати рішень, тому цей вид покриття сильніший, але й дорожчий. Покриття вимірює виконану структуру коду, а не коректність: якісні перевірки (assertions), змістовні дані, відсутні вимоги та недосяжні шляхи все одно потребують окремого аналізу.",
+      "strongAnswerSignalsUk": [
+        "розрізняє результати рішень і атомарні умови",
+        "пояснює вимогу незалежного впливу (independent effect) в MC/DC",
+        "не ототожнює структурне покриття з виявленням дефектів чи коректністю"
+      ],
+      "example": "In an avionics-style module with the condition `if (A && B) || C`, a team reaches 100% decision coverage with just two test cases, but a code review shows condition B never actually changes the outcome in either case — it's masked by A always being true. Adding MC/DC-driven test cases that isolate B's independent effect exposes a logic bug where B was supposed to gate an emergency override but never actually could.",
+      "exampleUk": "У модулі авіаційного типу з умовою `if (A && B) || C` команда досягає 100% покриття рішень лише двома тест-кейсами, але код-рев'ю показує, що умова B насправді ніколи не впливає на результат в жодному з випадків — її маскує те, що A завжди істинне. Додавання тест-кейсів на основі MC/DC, які ізолюють незалежний вплив B, виявляє логічну помилку: B мала вмикати аварійне перевизначення, але фактично ніколи не могла цього зробити.",
+      "tags": [
+        "white-box-testing",
+        "condition-coverage",
+        "decision-coverage",
+        "mcdc"
+      ],
+      "sourceIds": [
+        "istqb-glossary"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -93,8 +176,25 @@
         "explains the different knowledge artifact behind each technique",
         "keeps charters, oracles and evidence visible"
       ],
-      "tags": ["experience-based", "error-guessing", "checklist-based", "exploratory-testing"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Чим відрізняються передбачення помилок (error guessing), тестування за чеклистом, дослідницьке тестування (exploratory testing) та ad hoc тестування?",
+      "shortAnswerUk": "Error guessing цілеспрямовано шукає ймовірні збої, спираючись на історію дефектів, знання предметної області та типові помилки розробників. Тестування за чеклистом використовує повторно застосовний набір умов чи нагадувань, щоб зробити застосування досвіду більш послідовним. Дослідницьке тестування поєднує навчання, проєктування тестів і виконання в межах обмеженої за часом місії, фіксуючи покриття, спостереження та ідеї для подальшої роботи. Ad hoc тестування має мало явної структури і може бути корисним для швидкої перевірки, але його складніше пояснити, відтворити чи оцінити. Техніки на основі досвіду найефективніші, коли їхня місія (charter), оракул і докази лишаються прозорими та доповнюють систематичне покриття.",
+      "strongAnswerSignalsUk": [
+        "відрізняє цілеспрямоване дослідження від безсистемного клікання",
+        "пояснює, який саме артефакт знань лежить в основі кожної техніки",
+        "зберігає прозорість місій (charters), оракулів і доказів"
+      ],
+      "example": "A tester who recently fixed three date-parsing bugs in a booking app uses error guessing to immediately try leap-year dates and DST transitions on the new payment date picker, finding a crash within minutes. Later, during a 90-minute exploratory session with the charter 'probe the refund flow for edge cases,' the same tester discovers that canceling a booking twice in quick succession issues two refunds — something no checklist had anticipated.",
+      "exampleUk": "Тестувальник, який нещодавно виправив три баги парсингу дат у застосунку для бронювання, застосовує error guessing і одразу пробує дати високосного року та переходи на літній/зимовий час у новому пікері дати оплати — і за кілька хвилин знаходить крах. Пізніше, під час 90-хвилинної дослідницької сесії з місією «перевірити потік повернення коштів на межові випадки», той самий тестувальник виявляє, що скасування бронювання двічі поспіль спричиняє два повернення коштів — те, чого жоден чекліст не передбачав.",
+      "tags": [
+        "experience-based",
+        "error-guessing",
+        "checklist-based",
+        "exploratory-testing"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Common"
     },
     {
@@ -109,8 +209,25 @@
         "includes assumptions, dependencies, reporting and change control",
         "right-sizes formality without omitting decisions"
       ],
-      "tags": ["test-plans", "test-strategy", "test-management", "documentation"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Які рішення та відомості має містити корисний тест-план?",
+      "shortAnswerUk": "Корисний тест-план визначає обсяг та винятки, цілі, продуктові й проєктні ризики, базис тестування, рівні й типи тестування, техніки, середовища, дані, інструменти, відповідальних, залежності, оцінки, розклад, критерії входу й виходу, результати (deliverables), звітність, роботу з дефектами та ескалацію залишкового ризику. Також варто фіксувати припущення та порядок контролю змін. Документ може бути формальним регульованим артефактом або стислим «живим» планом, але кожен розділ має підтримувати координацію, докази чи ухвалення рішень. Просте копіювання шаблону без відповідальних, пріоритетів чи вимірних критеріїв завершення не створює придатний до використання план.",
+      "strongAnswerSignalsUk": [
+        "охоплює обсяг, ризики, підхід, ресурси, розклад і критерії завершення",
+        "включає припущення, залежності, звітність і контроль змін",
+        "підбирає рівень формальності відповідно до потреб, не втрачаючи важливих рішень"
+      ],
+      "example": "A startup's test plan for its MVP fits on two pages: scope excludes admin tooling for v1, entry criteria require all P1 bugs closed, and exit criteria specify crash-free sessions above 99.5%. Six months later, the same team wins an enterprise client requiring SOC 2 evidence, so they expand the plan to include formal traceability to requirements, a defect-severity matrix and sign-off records — the extra formality earns its place because auditors now need it.",
+      "exampleUk": "Тест-план стартапу для MVP вміщується на двох сторінках: обсяг виключає інструменти адміністрування для v1, критерії входу вимагають закриття всіх P1-багів, а критерії виходу визначають частку сесій без крашів вище 99,5%. Через півроку та сама команда отримує корпоративного клієнта, якому потрібні докази відповідності SOC 2, тож вони розширюють план, додаючи формальне трасування до вимог, матрицю критичності дефектів і записи про погодження — додаткова формальність тепер виправдана, бо її вимагають аудитори.",
+      "tags": [
+        "test-plans",
+        "test-strategy",
+        "test-management",
+        "documentation"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -125,8 +242,25 @@
         "balances repeatability, independence and maintainability with context",
         "rejects formatting or case count as the definition of quality"
       ],
-      "tags": ["test-cases", "testware", "maintainability", "test-oracle"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Які характеристики роблять тест-кейс цінним і легким у підтримці?",
+      "shortAnswerUk": "Цінний тест-кейс має чітку мету, пов'язану з вимогою чи ризиком, контрольовані передумови й дані, зрозумілі кроки та спостережуваний очікуваний результат, здатний виявити збій. Він має бути точним, достатньо відтворюваним для свого контексту, за можливості незалежним, зосередженим на одній цілісній поведінці та без дубльованих деталей, які швидко застаріють. Назви й структура мають допомагати людям знаходити тест і діагностувати проблему. Повторне використання та стислість — це переваги лише тоді, коли вони зберігають початковий намір; короткий неоднозначний кейс чи легко перевикористовуваний кейс зі слабким оракулом якісним не є.",
+      "strongAnswerSignalsUk": [
+        "пов'язує тест-кейс з ризиком і чітким оракулом",
+        "балансує відтворюваність, незалежність і підтримуваність з урахуванням контексту",
+        "не вважає оформлення чи кількість кейсів визначенням якості"
+      ],
+      "example": "A regression suite has 40 test cases for the login form, many copy-pasted with minor tweaks and no clear link to why each exists. During a cleanup, the team discovers 12 of them test the exact same password-length boundary with different cosmetic wording and no real oracle beyond 'page loads.' They collapse those into 3 well-documented cases tied to specific requirements, cutting maintenance time in half without losing any actual coverage.",
+      "exampleUk": "У регресійному наборі 40 тест-кейсів для форми логіна, багато з яких скопійовані з незначними змінами й без чіткого зв'язку з тим, навіщо вони існують. Під час чистки команда виявляє, що 12 з них перевіряють одну й ту саму межу довжини пароля з різним косметичним формулюванням і без реального оракула, окрім «сторінка завантажилась». Їх об'єднують у 3 добре задокументованих кейси, прив'язаних до конкретних вимог, скоротивши час на підтримку вдвічі без втрати реального покриття.",
+      "tags": [
+        "test-cases",
+        "testware",
+        "maintainability",
+        "test-oracle"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -141,8 +275,25 @@
         "distinguishes cases, procedures, suites, data, logs and reports",
         "applies purpose, ownership and risk-based formality"
       ],
-      "tags": ["testware", "documentation", "test-reports", "traceability"],
-      "sourceIds": ["istqb-ctfl-v4", "istqb-glossary"],
+      "questionUk": "Які робочі продукти тестування можуть виникати від планування до завершення тестування?",
+      "shortAnswerUk": "Планування може давати політику, стратегію, план, реєстр ризиків, оцінки та розклад. Аналіз і проєктування дають тестові умови, місії (charters), кейси, процедури, набори (suites), трасування вимог та вимоги до даних; реалізація додає виконувані тести, дані та налаштування середовища. Виконання дає логи, результати, докази, інциденти та звіти про дефекти. Моніторинг і завершення дають звіти про прогрес, підсумкові звіти чи звіти про завершення, констатацію залишкового ризику та архівовані повторно використовувані тестові артефакти (testware). Команді варто зберігати лише ті артефакти, які служать комунікації, виконанню, трасуванню, навчанню, аудиту чи ухваленню рішень щодо релізу, з відповідальністю та версіюванням, пропорційними ризику.",
+      "strongAnswerSignalsUk": [
+        "організовує артефакти за етапами тестування, а не перелічує документи довільно",
+        "розрізняє кейси, процедури, набори (suites), дані, логи та звіти",
+        "застосовує формальність відповідно до призначення, відповідальності й ризику"
+      ],
+      "example": "A QA lead onboarding a new hire walks through the project's artifact trail: a risk register from planning, a traceability matrix linking test cases to requirements, execution logs from the CI pipeline, and a summary report from the last release showing three deferred low-severity defects. The new hire immediately understands not just what was tested, but why certain older test suites were archived rather than deleted — they're kept for a compliance audit due next quarter.",
+      "exampleUk": "Тімлід QA, який онбордить нового співробітника, проходить артефактний слід проєкту: реєстр ризиків з планування, матрицю трасування, що пов'язує тест-кейси з вимогами, логи виконання з CI-пайплайну та підсумковий звіт з останнього релізу з трьома відкладеними дефектами низької критичності. Новий співробітник одразу розуміє не лише що було протестовано, а й чому деякі старі набори тестів заархівовані, а не видалені — їх зберігають для аудиту відповідності, запланованого на наступний квартал.",
+      "tags": [
+        "testware",
+        "documentation",
+        "test-reports",
+        "traceability"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ],
       "prevalence": "Common"
     },
     {
@@ -157,8 +308,25 @@
         "includes necessity, feasibility, clarity, singularity and verifiability",
         "connects requirements to stakeholder need, assumptions and traceability"
       ],
-      "tags": ["requirements-quality", "testability", "requirements-review", "core-foundations"],
-      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "questionUk": "Які характеристики якості має мати добра вимога?",
+      "shortAnswerUk": "Окремо взята вимога має бути необхідною, коректною, чіткою, стислою, реалізовною, за потреби незалежною від реалізації, єдиною (singular), однозначною, вимірюваною та верифіковною. Їй потрібен стабільний ідентифікатор, обґрунтування чи припущення там, де вони впливають на тлумачення, а також трасування до потреби стейкхолдера та подальших доказів. Як набір, вимоги мають бути повними, узгодженими, без дублювання, пріоритизованими, змінюваними та охоплювати відповідну функціональну, інтерфейсну поведінку, поведінку даних, якості, безпеки, експлуатації та відмов. Гарно сформульоване речення недостатнє, якщо вимога вирішує не ту проблему або не має практичного способу перевірки.",
+      "strongAnswerSignalsUk": [
+        "розділяє якості окремої вимоги та якості повного набору вимог",
+        "включає необхідність, реалізовність, чіткість, єдиність та верифіковність",
+        "пов'язує вимоги з потребою стейкхолдера, припущеннями та трасуванням"
+      ],
+      "example": "A requirement reads 'the system should be fast and user-friendly.' A reviewer rejects it during requirements analysis because it fails the measurable and verifiable criteria — nobody can write a test for 'fast.' It gets rewritten as 'the search results page must render within 1.5 seconds for 95% of requests under expected peak load,' which is now something a performance test can actually confirm or fail.",
+      "exampleUk": "Вимога звучить так: «система має бути швидкою та зручною для користувача». Рецензент відхиляє її під час аналізу вимог, бо вона не проходить критерії вимірюваності та верифіковності — ніхто не може написати тест на «швидкість». Її переформульовують так: «сторінка результатів пошуку має завантажуватися за 1,5 секунди для 95% запитів за очікуваного пікового навантаження» — і це вже можна підтвердити або спростувати тестом продуктивності.",
+      "tags": [
+        "requirements-quality",
+        "testability",
+        "requirements-review",
+        "core-foundations"
+      ],
+      "sourceIds": [
+        "nasa-requirements-handbook",
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -173,8 +341,26 @@
         "separates acceptance conditions from reusable domain rules",
         "explains how constraints and linked artifacts affect coverage"
       ],
-      "tags": ["requirements", "acceptance-criteria", "user-stories", "business-rules"],
-      "sourceIds": ["istqb-ctfl-v4", "scrum-guide", "nasa-requirements-handbook"],
+      "questionUk": "Чим відрізняються вимога, user story, критерій приймання, бізнес-правило та обмеження?",
+      "shortAnswerUk": "Вимога описує потрібну можливість, властивість якості чи умову. User story — це легковаговий привід для розмови, що виражає цінність з погляду користувача, а не повна специфікація. Критерії приймання явно визначають межі та спостережувані умови для прийняття цього елемента. Бізнес-правило застосовує доменну політику чи логіку, яка може стосуватися багатьох сторі, тоді як обмеження (constraint) окреслює межі рішення чи його роботи — наприклад, юридичні, платформні, продуктивнісні чи сумісності. Зв'язок між цими артефактами не дає командам дублювати глобальні правила в кожній сторі чи сплутувати кілька прикладів з повною специфікацією вимог.",
+      "strongAnswerSignalsUk": [
+        "не вважає user story повною специфікацією вимог",
+        "відділяє умови приймання від повторно застосовних доменних правил",
+        "пояснює, як обмеження та пов'язані артефакти впливають на покриття"
+      ],
+      "example": "A user story says 'As a customer, I want to apply a discount code so I get a lower price.' Its acceptance criteria specify that an expired code shows a specific error message. But nobody wrote down the business rule that discount codes cannot be combined with clearance items — that rule lives separately and applies to a dozen other stories. When a tester finds a clearance item accepting a discount code, it's a business-rule violation the story's acceptance criteria never covered, not a bug in the story itself.",
+      "exampleUk": "User story звучить так: «Як клієнт, я хочу застосувати промокод, щоб отримати нижчу ціну». Її критерії приймання визначають, що прострочений код показує конкретне повідомлення про помилку. Але ніде не зафіксовано бізнес-правило, що промокоди не можна поєднувати з товарами з розпродажу — це правило існує окремо й стосується десятка інших сторі. Коли тестувальник виявляє, що товар з розпродажу приймає промокод, це порушення бізнес-правила, яке критерії приймання цієї сторі ніколи не охоплювали, а не баг у самій сторі.",
+      "tags": [
+        "requirements",
+        "acceptance-criteria",
+        "user-stories",
+        "business-rules"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "scrum-guide",
+        "nasa-requirements-handbook"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -189,8 +375,25 @@
         "checks functional, quality, interface, data and failure requirements",
         "makes assumptions and unresolved decisions visible to stakeholders"
       ],
-      "tags": ["requirements-review", "ambiguity", "static-testing", "shift-left"],
-      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "questionUk": "Як ви перевірятимете вимоги на неоднозначність, прогалини та суперечності до початку розробки?",
+      "shortAnswerUk": "Визначте акторів, цілі, вхідні дані, стани, рішення, вихідні дані, інтерфейси та шляхи відмов, а потім перетворіть текстовий опис на приклади, межові значення, таблиці рішень, моделі станів або прості прототипи. Шукайте розпливчасті прикметники, приховані припущення, складені твердження, невизначені терміни, суперечливі правила, відсутні одиниці виміру чи допуски, відсутні дозволи, необроблені помилки та нефункціональні потреби. Простежте кожне твердження до цілі стейкхолдера та можливого способу верифікації, а отримані питання обговоріть із продуктом, розробкою, експлуатацією та причетними фахівцями. Фіксуйте невирішені питання з відповідальним і дедлайном, замість того щоб мовчки вигадувати поведінку під час написання тестів.",
+      "strongAnswerSignalsUk": [
+        "використовує приклади та тестові моделі для виявлення неоднозначності",
+        "перевіряє функціональні вимоги, вимоги до якості, інтерфейсів, даних та відмов",
+        "робить припущення та невирішені питання видимими для стейкхолдерів"
+      ],
+      "example": "Reviewing a requirement that says 'the export should support large files,' a tester converts the vague adjective into a concrete question: what's the size threshold, and what happens above it — a timeout, a queued job, or an error? Raising this in a three-amigos session reveals the business analyst meant 500MB with a background job, but the developer had assumed a 50MB in-memory limit — a contradiction caught weeks before it would have surfaced as a production incident.",
+      "exampleUk": "Переглядаючи вимогу «експорт має підтримувати великі файли», тестувальник перетворює розпливчастий прикметник на конкретне питання: який поріг розміру і що відбувається вище нього — таймаут, черга завдань чи помилка? Піднявши це на сесії «трьох амігос», з'ясовується, що бізнес-аналітик мав на увазі 500 МБ з фоновим завданням, а розробник виходив із припущення про ліміт 50 МБ в пам'яті — суперечність, виявлену за тижні до того, як вона стала б інцидентом на продакшені.",
+      "tags": [
+        "requirements-review",
+        "ambiguity",
+        "static-testing",
+        "shift-left"
+      ],
+      "sourceIds": [
+        "nasa-requirements-handbook",
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -205,8 +408,25 @@
         "requires measurable success criteria and objective evidence",
         "feeds verification difficulty back into requirement refinement"
       ],
-      "tags": ["requirements-verification", "testability", "verification-method", "acceptance-criteria"],
-      "sourceIds": ["nasa-requirements-handbook", "istqb-ctfl-v4"],
+      "questionUk": "Як ви вирішуєте, яким методом верифікувати вимогу — тестом, демонстрацією, інспекцією чи аналізом?",
+      "shortAnswerUk": "Обирайте метод, здатний дати об'єктивні докази на тому рівні, на якому сформульована вимога. Використовуйте тест, коли контрольовані вхідні дані та вимірювані вихідні дані можуть підтвердити поведінку чи продуктивність; демонстрацію — коли достатньо спостережуваної роботи без формального вимірювання; інспекцію — для прямого огляду артефакту чи властивості; а аналіз — коли докази потрібно розрахувати, змоделювати або вивести з інших верифікованих даних. Визначте критерії успіху, середовище, дані, допуски та докази заздалегідь. Якщо жоден можливий метод не здатен відрізнити відповідність від невідповідності, вимога ще недостатньо верифіковна.",
+      "strongAnswerSignalsUk": [
+        "розрізняє тест, демонстрацію, інспекцію та аналіз",
+        "вимагає вимірюваних критеріїв успіху та об'єктивних доказів",
+        "враховує складність верифікації як сигнал для доопрацювання вимоги"
+      ],
+      "example": "A requirement states the system must 'survive a data-center failover.' Instead of writing a functional test, the team decides this is verified by demonstration: they schedule a controlled failover drill, observe that traffic reroutes within the agreed window, and record the observed timing as evidence. A separate requirement about maximum theoretical throughput under a specific hardware configuration is verified by analysis using a queuing model, since actually provisioning that hardware isn't feasible for every release.",
+      "exampleUk": "Вимога стверджує, що система має «пережити відмову дата-центру». Замість функціонального тесту команда вирішує верифікувати це демонстрацією: планують контрольовані навчання з переключення (failover drill), спостерігають, що трафік перенаправляється в узгоджене вікно часу, і фіксують зафіксований час як доказ. Окрему вимогу про максимальну теоретичну пропускну здатність за конкретної конфігурації обладнання верифікують аналізом через модель черг, оскільки реально розгортати таке обладнання для кожного релізу нереалістично.",
+      "tags": [
+        "requirements-verification",
+        "testability",
+        "verification-method",
+        "acceptance-criteria"
+      ],
+      "sourceIds": [
+        "nasa-requirements-handbook",
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Common"
     },
     {
@@ -221,8 +441,24 @@
         "explains three-point estimates and calibrated sizing inputs",
         "communicates assumptions and ranges rather than one unsupported number"
       ],
-      "tags": ["test-estimation", "wideband-delphi", "planning-poker", "historical-data"],
-      "sourceIds": ["istqb-ctfl-v4"],
+      "questionUk": "Які техніки оцінки тестування має знати тестувальник і коли кожна з них корисна?",
+      "shortAnswerUk": "Декомпозиція, або ієрархічна структура робіт (work breakdown structure), оцінює окремі, чітко визначені активності тестування та виявляє упущену роботу. Оцінка за аналогією та історичними співвідношеннями спирається на порівнянну виконану роботу, тоді як екстраполяція оновлює прогноз на основі поточних даних виконання. Експертні техніки, такі як Wideband Delphi чи Planning Poker, поєднують незалежні судження з обговоренням; трипараметрична оцінка (three-point estimation) виражає оптимістичний, найімовірніший і песимістичний варіанти. Розмірні метрики — функціональні точки, точки прецедентів (use-case points) чи тестові точки — можуть живити модель, якщо в організації є відкалібровані дані, але це не універсальна формула переведення в трудовитрати на тестування. Комбінуйте методи, явно фіксуйте припущення і давайте діапазон замість оманливо точного числа.",
+      "strongAnswerSignalsUk": [
+        "охоплює декомпозицію, історичні дані, екстраполяцію та експертні техніки",
+        "пояснює трипараметричні оцінки та відкалібровані розмірні метрики",
+        "повідомляє припущення та діапазони замість одного нічим не підтвердженого числа"
+      ],
+      "example": "For a new project with no history, a lead uses decomposition to break testing into requirement analysis, test design, environment setup and execution, then cross-checks the total against Planning Poker estimates from three senior testers. On a mature product with two years of release data, the same lead instead uses historical ratios — 'regression testing has averaged 3 person-days per 100 story points' — which turns out far more accurate than decomposition would have been for that stable codebase.",
+      "exampleUk": "Для нового проєкту без історії даних лід використовує декомпозицію, розбиваючи тестування на аналіз вимог, проєктування тестів, налаштування середовища та виконання, а потім звіряє загальну суму з оцінками Planning Poker від трьох досвідчених тестувальників. На зрілому продукті з дворічною історією релізів той самий лід натомість використовує історичні співвідношення — «регресійне тестування в середньому займало 3 людино-дні на 100 стори-поінтів» — що виявляється значно точнішим за декомпозицію для цього стабільного коду.",
+      "tags": [
+        "test-estimation",
+        "wideband-delphi",
+        "planning-poker",
+        "historical-data"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -237,8 +473,24 @@
         "ties the estimate range to explicit uncertainty drivers",
         "uses the calculation as decision support rather than a guarantee"
       ],
-      "tags": ["three-point-estimation", "pert", "uncertainty", "test-estimation"],
-      "sourceIds": ["istqb-ctfl-v4"],
+      "questionUk": "Як ви застосуєте трипараметричну оцінку (three-point estimation) для ризикованого завдання з тестування?",
+      "shortAnswerUk": "Оцініть оптимістичні трудовитрати за умови, що сприятливі припущення справдяться, найімовірніші трудовитрати для очікуваного сценарію та песимістичні трудовитрати для реалістичних ускладнень. Обговоріть, що створює цей розкид, наприклад нестабільні середовища, незнайому технологію, підготовку даних, розслідування дефектів чи затримки через залежності. Поширена PERT-подібна формула — (оптимістична + 4 × найімовірніша + песимістична) ÷ 6, але вхідні дані та джерела невизначеності важливіші за саму формулу. Повідомляйте діапазон, припущення та рівень впевненості, окремо виділяйте час зовнішнього очікування і переоцінюйте, коли виявлені ризики або зникають, або справджуються.",
+      "strongAnswerSignalsUk": [
+        "визначає оптимістичний, найімовірніший та песимістичний сценарії",
+        "прив'язує діапазон оцінки до явних джерел невизначеності",
+        "використовує розрахунок як підтримку рішення, а не як гарантію"
+      ],
+      "example": "For testing a third-party payment gateway integration, a tester estimates 3 days optimistic (if the sandbox works first try), 6 days most likely, and 15 days pessimistic (if the sandbox is flaky and support response is slow, which happened on the last integration). The PERT calculation gives about 7 days, which the tester reports alongside the explicit risk driver — sandbox reliability — so the project manager can decide whether to pad the schedule or push vendor support to prioritize a stable test environment.",
+      "exampleUk": "Для тестування інтеграції зі стороннім платіжним шлюзом тестувальник оцінює 3 дні оптимістично (якщо sandbox запрацює з першого разу), 6 днів найімовірніше, і 15 днів песимістично (якщо sandbox нестабільний, а підтримка повільно відповідає — саме так було в минулій інтеграції). Розрахунок за PERT дає приблизно 7 днів, і тестувальник повідомляє це разом з явним джерелом ризику — надійністю sandbox, — щоб менеджер проєкту міг вирішити, чи закладати запас у розклад, чи домагатися від вендора пріоритетного налаштування стабільного тестового середовища.",
+      "tags": [
+        "three-point-estimation",
+        "pert",
+        "uncertainty",
+        "test-estimation"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Common"
     },
     {
@@ -253,8 +505,24 @@
         "accounts for capacity, dependencies and limited parallelism",
         "rejects mechanically dividing effort by headcount"
       ],
-      "tags": ["test-estimation", "effort", "duration", "capacity-planning"],
-      "sourceIds": ["istqb-ctfl-v4"],
+      "questionUk": "Чому трудовитрати на тестування (test effort) і календарна тривалість (duration) — це не одна й та сама оцінка?",
+      "shortAnswerUk": "Трудовитрати — це обсяг робочого часу, необхідний для завдання, наприклад людино-години чи людино-дні; тривалість — це календарний час від початку до завершення. Тривалість також залежить від наявних навичок, можливості розпаралелити роботу, передачі завдань між людьми, готовності середовища й даних, частоти збірок, черг на рев'ю, зовнішніх залежностей та очікування виправлень. Десять людино-днів не можна автоматично виконати десятьма людьми за один день, бо налаштування, комунікація, спільні ресурси та послідовні активності обмежують паралелізм. Вказуйте обидва значення, припущену доступність людей і залежності, та розрізняйте продуктивні трудовитрати й неминуче очікування в календарному часі.",
+      "strongAnswerSignalsUk": [
+        "визначає трудовитрати окремо від календарної тривалості",
+        "враховує доступність ресурсів, залежності та обмежений паралелізм",
+        "відкидає механічний поділ трудовитрат на кількість людей"
+      ],
+      "example": "A manager estimates 20 person-days of regression testing and assumes assigning 4 testers means it finishes in 5 calendar days. In practice it takes 9 days, because the test environment is shared with another team and available only in the afternoons, two testers need onboarding time on an unfamiliar module, and a critical defect fix takes two days to arrive from the development team — all duration factors the original effort estimate never captured.",
+      "exampleUk": "Менеджер оцінює регресійне тестування у 20 людино-днів і припускає, що якщо призначити 4 тестувальників, воно завершиться за 5 календарних днів. На практиці це займає 9 днів, бо тестове середовище спільне з іншою командою і доступне лише в другій половині дня, двом тестувальникам потрібен час на ознайомлення з незнайомим модулем, а виправлення критичного дефекту від команди розробки надходить лише через два дні — усе це фактори тривалості, які початкова оцінка трудовитрат не враховувала.",
+      "tags": [
+        "test-estimation",
+        "effort",
+        "duration",
+        "capacity-planning"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -269,8 +537,24 @@
         "separates one-time, repeated, waiting and externally owned work",
         "uses decomposition to expose uncertainty and dependencies"
       ],
-      "tags": ["work-breakdown-structure", "test-estimation", "test-data", "environment"],
-      "sourceIds": ["istqb-ctfl-v4"],
+      "questionUk": "Яку роботу найчастіше забувають, коли декомпонують оцінку тестування?",
+      "shortAnswerUk": "Враховуйте аналіз вимог і ризиків, уточнення, моделювання й рев'ю тестів, проєктування автоматизації чи ручних процедур, створення даних, налаштування облікових записів і прав доступу, середовища, інструменти, віртуалізацію сервісів, виконання, моніторинг та збір доказів. Також оцінюйте розслідування й оформлення дефектів, повторні прогони, підтверджувальне та засноване на впливі регресійне тестування, зустрічі й передачі між командами, залучення фахівців з доступності чи безпеки, прибирання, підсумкову звітність і резерв на визначені ризики. Відокремлюйте одноразове налаштування від роботи, що повторюється в кожному циклі, і визначайте активності, за які відповідають інші команди. Декомпозиція має розкривати припущення й залежності, а не створювати оманливо точну суму з прихованої невизначеності.",
+      "strongAnswerSignalsUk": [
+        "включає підготовку, середовища, дані, розслідування, повторне тестування та звітність",
+        "відокремлює одноразову, повторювану роботу, очікування та роботу, за яку відповідають інші команди",
+        "використовує декомпозицію для розкриття невизначеності та залежностей"
+      ],
+      "example": "A test estimate for a new feature covers writing and executing test cases but forgets to account for setting up 15 test accounts with different permission tiers, which takes a full day, and for the two days typically lost waiting on a shared staging environment that's also used by another team. When the actual work overruns by 30%, the retrospective traces most of the gap to exactly these omitted setup and waiting activities, not to the core testing work itself.",
+      "exampleUk": "Оцінка тестування для нової функції охоплює написання й виконання тест-кейсів, але не враховує налаштування 15 тестових акаунтів з різними рівнями прав доступу, що займає цілий день, і двох днів, які зазвичай втрачаються через очікування на спільне staging-середовище, яке також використовує інша команда. Коли фактична робота перевищує план на 30%, ретроспектива показує, що більшість розриву пояснюється саме цими пропущеними активностями з налаштування й очікування, а не самою суттю тестування.",
+      "tags": [
+        "work-breakdown-structure",
+        "test-estimation",
+        "test-data",
+        "environment"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -285,8 +569,24 @@
         "preserves an audit trail between original and revised estimates",
         "uses actuals for calibration rather than individual performance scoring"
       ],
-      "tags": ["reestimation", "forecasting", "historical-data", "continuous-improvement"],
-      "sourceIds": ["istqb-ctfl-v4"],
+      "questionUk": "Коли варто переглядати оцінку тестування і як фактичні дані мають покращувати майбутні оцінки?",
+      "shortAnswerUk": "Переоцінюйте, коли обсяг, ризики, укомплектованість, середовища, залежності, темп надходження дефектів чи фактична швидкість виконання суттєво відрізняються від припущень, на яких базувався прогноз. Зберігайте початкову оцінку й припущення, поясніть нові докази та покажіть їхній вплив на трудовитрати, тривалість, покриття й залишковий ризик, замість того щоб мовчки переносити дату. Після завершення порівнюйте оцінені й фактичні трудовитрати за активностями та джерелами невизначеності, щоб покращити декомпозицію, референтні класи й діапазони. Використовуйте це порівняння для прогнозування й вдосконалення процесу, а не для покарання людей за те, що вони сигналізують про ризик, або для штучного завищення майбутніх оцінок «про запас».",
+      "strongAnswerSignalsUk": [
+        "оновлює прогнози, коли змінюються припущення чи докази",
+        "зберігає простежуваний зв'язок між початковою та переглянутою оцінкою",
+        "використовує фактичні дані для калібрування, а не для оцінки продуктивності окремих людей"
+      ],
+      "example": "Midway through a sprint, a tester discovers the API under test is far less stable than assumed, generating three times the expected number of defects. Instead of quietly working overtime, the tester flags this to the lead, who revises the estimate, documents the new defect-rate evidence, and pushes the release date by two days. In the retrospective, the team adds 'API stability unknown' as a standard risk checklist item for future estimates on new integrations, rather than blaming the tester for the original number being wrong.",
+      "exampleUk": "У середині спринту тестувальник виявляє, що API, який тестується, значно менш стабільний, ніж передбачалося, і генерує втричі більше дефектів, ніж очікувалось. Замість того щоб мовчки працювати понаднормово, тестувальник повідомляє про це ліду, який переглядає оцінку, документує нові докази щодо частоти дефектів і переносить дату релізу на два дні. На ретроспективі команда додає «невідома стабільність API» як стандартний пункт чекліста ризиків для майбутніх оцінок нових інтеграцій, замість того щоб звинувачувати тестувальника в тому, що початкова цифра була неправильною.",
+      "tags": [
+        "reestimation",
+        "forecasting",
+        "historical-data",
+        "continuous-improvement"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Common"
     }
   ]
