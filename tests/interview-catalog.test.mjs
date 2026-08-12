@@ -178,6 +178,31 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   }
 });
 
+test("every question has a Ukrainian translation and a practical example", async () => {
+  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded] = await Promise.all([
+    readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/observability-production-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/restored-coverage-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/testing-foundations-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/embedded-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/modern-sdet-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/core-foundations-qa.json"), "utf8").then(JSON.parse),
+    readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
+  ]);
+  const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...coreFoundations.questions, ...expanded.questions];
+
+  for (const question of questions) {
+    assert.ok(question.questionUk?.trim(), `${question.id} is missing questionUk`);
+    assert.ok(question.shortAnswerUk?.trim(), `${question.id} is missing shortAnswerUk`);
+    assert.ok(question.shortAnswerUk.trim().length >= 100, `${question.id} has a too-short shortAnswerUk`);
+    assert.equal(question.strongAnswerSignalsUk?.length, question.strongAnswerSignals.length, `${question.id} strongAnswerSignalsUk must match strongAnswerSignals length`);
+    assert.ok(question.example?.trim(), `${question.id} is missing example`);
+    assert.ok(question.exampleUk?.trim(), `${question.id} is missing exampleUk`);
+  }
+});
+
 test("preserves existing generated questions when authored coverage grows", async () => {
   const generatorSource = await readFile(projectFile("scripts/generate-interview-expansion.mjs"), "utf8");
 

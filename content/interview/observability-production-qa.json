@@ -12,6 +12,15 @@
         "connects observability to purposeful instrumentation",
         "keeps user outcomes central"
       ],
+      "questionUk": "Чим моніторинг відрізняється від observability (спостережуваності)?",
+      "shortAnswerUk": "Моніторинг перевіряє відомі умови за допомогою заздалегідь обраних метрик, дашбордів та алертів. Observability — це ширша здатність робити висновки про внутрішній стан системи на основі її вихідних даних і досліджувати питання, які не були передбачені на момент додавання інструментації. Для продакшену потрібне і те, і інше: моніторити критичні для користувача результати й очікувані сценарії відмов, водночас зберігаючи достатньо контекстної телеметрії, щоб діагностувати незнайому поведінку без негайного додавання нової інструментації.",
+      "strongAnswerSignalsUk": [
+        "розрізняє перевірку відомих умов і відкрите дослідження",
+        "пов'язує observability з цілеспрямованою інструментацією",
+        "ставить результати для користувача в центр уваги"
+      ],
+      "example": "During an incident, dashboards show error rate is fine and CPU is normal, but users report a specific checkout flow silently failing for one payment provider. Because the team had rich structured logs and traces (not just pre-built dashboards), an engineer queries by payment provider and payment status to find the correlated failure, something no existing alert was built to catch. That ability to ask a new question after the fact is observability; the pre-built dashboards that missed it were monitoring.",
+      "exampleUk": "Під час інциденту дашборди показують нормальний рівень помилок і нормальне навантаження CPU, але користувачі повідомляють, що конкретний сценарій оформлення замовлення тихо ламається для одного платіжного провайдера. Оскільки команда мала багаті структуровані логи й трейси (а не лише готові дашборди), інженер робить запит за провайдером і статусом платежу і знаходить пов'язану відмову — те, що жоден наявний алерт не був створений відловлювати. Ця здатність поставити нове запитання постфактум і є observability; готові дашборди, які пропустили проблему, — це моніторинг.",
       "tags": [
         "observability",
         "monitoring",
@@ -36,6 +45,15 @@
         "correlates signals with shared context",
         "avoids indiscriminate telemetry collection"
       ],
+      "questionUk": "Коли варто використовувати метрики, логи чи трейси для дослідження поведінки системи в продакшені?",
+      "shortAnswerUk": "Метрики використовують для агрегованих швидкостей, розподілів і трендів; логи — для окремих подій із детальним контекстом; трейси — для шляху та часових характеристик одного запиту через компоненти. Відштовхуйтесь від конкретного рішення чи сценарію відмови, а не від збору всіх можливих полів підряд. Корелюйте сигнали через узгоджені service, environment, version та контекст запиту, щоб тестувальник міг перейти від аномальної метрики до репрезентативного трейсу, а потім — до відповідних подій у логах.",
+      "strongAnswerSignalsUk": [
+        "обирає сигнал під конкретне питання",
+        "корелює сигнали через спільний контекст",
+        "уникає безсистемного збору телеметрії"
+      ],
+      "example": "A user reports that checkout is slow. The engineer first checks the p95 latency metric for the checkout service to confirm the trend, then pulls a representative slow trace to see which downstream span (the inventory service call) dominates the duration, and finally reads the structured logs for that request ID to see the exact retry and error details. Metrics located the problem, the trace pinpointed the component, and logs explained the cause.",
+      "exampleUk": "Користувач повідомляє, що оформлення замовлення працює повільно. Інженер спочатку перевіряє метрику p95 latency для сервісу checkout, щоб підтвердити тренд, потім бере репрезентативний повільний трейс, щоб побачити, який downstream-спан (виклик сервісу інвентарю) домінує в тривалості, і нарешті читає структуровані логи для цього request ID, щоб побачити точні деталі ретраїв і помилок. Метрики локалізували проблему, трейс вказав на конкретний компонент, а логи пояснили причину.",
       "tags": [
         "metrics",
         "logs",
@@ -60,6 +78,15 @@
         "relates signals to user-visible outcomes",
         "adapts the model for queued or batch work"
       ],
+      "questionUk": "Що таке чотири золоті сигнали (four golden signals) і як вони скеровують тестування в продакшені?",
+      "shortAnswerUk": "Чотири золоті сигнали — це latency (затримка), traffic (навантаження), errors (помилки) та saturation (насиченість ресурсів). Разом вони показують, скільки роботи надходить, скільки часу вона займає, чи завершується вона успішно і наскільки обмежені ресурси близькі до своєї межі. Тест у продакшені має пов'язувати ці сигнали з конкретним user journey та версією деплою, відокремлювати latency успішних запитів від невдалих, а для асинхронних систем — адаптувати модель, перевіряючи такі показники, як вік бэклогу, пропускна здатність і час до завершення обробки.",
+      "strongAnswerSignalsUk": [
+        "називає latency, traffic, errors і saturation",
+        "пов'язує сигнали з результатами, помітними користувачу",
+        "адаптує модель для чергової або пакетної обробки"
+      ],
+      "example": "For an order-processing API, the team tracks requests-per-second (traffic), p50/p95/p99 response time (latency), the ratio of 5xx to total responses (errors), and CPU or connection-pool usage (saturation). During a flash sale, traffic triples, saturation on the database connection pool climbs to 95%, and p99 latency spikes even though the error rate stays low, so the golden signals flag the coming problem before customers start seeing failures.",
+      "exampleUk": "Для API обробки замовлень команда відстежує кількість запитів за секунду (traffic), час відповіді p50/p95/p99 (latency), частку 5xx серед усіх відповідей (errors) та завантаженість CPU чи пулу з'єднань (saturation). Під час флеш-розпродажу трафік потроюється, насиченість пулу з'єднань до бази даних зростає до 95%, а p99 latency різко підскакує, хоча рівень помилок ще залишається низьким — золоті сигнали сигналізують про проблему, що насувається, ще до того, як клієнти почнуть бачити реальні відмови.",
       "tags": [
         "golden-signals",
         "metrics",
@@ -84,6 +111,15 @@
         "recognizes rates and process resets",
         "checks units, buckets and labels"
       ],
+      "questionUk": "Коли в продакшн-телеметрії варто використовувати counter, gauge чи histogram?",
+      "shortAnswerUk": "Counter — це монотонно зростаюче значення, що накопичується, наприклад кількість завершених запитів чи помилок; у запитах з нього зазвичай обчислюють швидкість зміни (rate). Gauge — це значення, яке може як зростати, так і спадати, наприклад глибина черги чи поточна кількість одночасних з'єднань. Histogram групує спостереження, наприклад тривалість запиту, у розподіл, що підтримує підрахунки, порогові значення та оцінку перцентилів. Перед тим як довіряти дашборду чи алерту, побудованому на цих метриках, перевірте скидання лічильників (resets), пропущені інтервали, межі бакетів (bucket boundaries), одиниці виміру та лейбли.",
+      "strongAnswerSignalsUk": [
+        "зіставляє форму метрики з її поведінкою",
+        "враховує rate та скидання лічильника при перезапуску процесу",
+        "перевіряє одиниці виміру, бакети та лейбли"
+      ],
+      "example": "A service exposes http_requests_total as a counter, active_connections as a gauge, and http_request_duration_seconds as a histogram with buckets at 0.1s, 0.5s, 1s and 5s. After a pod restart, http_requests_total resets to zero, and a naive dashboard that plots the raw counter value shows a misleading drop instead of using rate(); a QA engineer catches this by restarting the service during a test and verifying the dashboard still shows a sensible trend rather than a false cliff.",
+      "exampleUk": "Сервіс експонує http_requests_total як counter, active_connections як gauge та http_request_duration_seconds як histogram із бакетами 0.1с, 0.5с, 1с і 5с. Після перезапуску пода http_requests_total скидається до нуля, і наївний дашборд, що малює сире значення лічильника замість rate(), показує оманливе падіння до нуля. QA-інженер виявляє це, перезапускаючи сервіс під час тесту і перевіряючи, що дашборд усе одно показує розумний тренд, а не хибний обрив.",
       "tags": [
         "metrics",
         "counter",
@@ -108,6 +144,15 @@
         "defines population and time window",
         "correlates latency with volume, errors and resources"
       ],
+      "questionUk": "Чому перцентилі затримки зазвичай корисніші за середнє значення в продакшені?",
+      "shortAnswerUk": "Середнє значення може приховувати повільну меншість запитів за великою кількістю швидких, тоді як перцентиль показує межу для обраної частки спостережень: p95 — це значення, нижче або на рівні якого лежить приблизно 95 відсотків спостережень. Тестувальник все одно має чітко визначити популяцію, часове вікно, операцію та статус успішності, бо змішування різних ендпоінтів або швидкі невдалі запити спотворюють результат. Порівнюйте кілька перцентилів одночасно з обсягом запитів, помилками та ресурсами, і за можливості зберігайте сирі дані розподілу.",
+      "strongAnswerSignalsUk": [
+        "пояснює хвіст розподілу, прихований середнім значенням",
+        "визначає популяцію та часове вікно",
+        "корелює latency з обсягом запитів, помилками та ресурсами"
+      ],
+      "example": "An API serves 10,000 requests where 9,500 finish in 50ms and 500 finish in 5 seconds due to a slow database index. The average latency looks like a reasonable 288ms, masking the problem entirely, while p95 correctly reports around 5 seconds and immediately flags that 5% of users are having a terrible experience. A QA engineer who only checks the average would sign off on a release that is actually broken for one in twenty users.",
+      "exampleUk": "API обробляє 10 000 запитів, з яких 9 500 завершуються за 50 мс, а 500 — за 5 секунд через повільний індекс бази даних. Середня затримка виглядає прийнятною — близько 288 мс, повністю приховуючи проблему, тоді як p95 коректно показує близько 5 секунд і одразу сигналізує, що 5% користувачів мають жахливий досвід. QA-інженер, який перевіряє лише середнє значення, схвалить реліз, що насправді зламаний для кожного двадцятого користувача.",
       "tags": [
         "latency",
         "percentiles",
@@ -132,6 +177,15 @@
         "includes correlation and deployment context",
         "excludes sensitive data"
       ],
+      "questionUk": "Що робить продакшн-лог корисним для розслідування?",
+      "shortAnswerUk": "Корисний лог фіксує стабільну назву події, часову мітку, рівень серйозності, сервіс та середовище, версію деплою, результат і достатньо предметного контексту, щоб пояснити, що сталося. Структуровані поля роблять фільтрацію та агрегацію надійнішими, ніж парсинг довільного тексту, а trace- чи request-ідентифікатори пов'язують між собою частини однієї роботи. Перевіряйте обробку часу (clock handling), типи полів і покриття шляхів відмов, а також не допускайте потрапляння секретів, credentials та зайвих персональних даних ні в саме повідомлення, ні в метадані.",
+      "strongAnswerSignalsUk": [
+        "використовує стабільні структуровані поля",
+        "включає кореляційний контекст та контекст деплою",
+        "виключає чутливі дані"
+      ],
+      "example": "A payment-processing log line includes event=\"payment.charge.failed\", timestamp, severity=\"error\", service=\"payments-api\", version=\"v2.4.1\", trace_id, order_id and reason=\"card_declined\" as structured JSON fields, with no card number or CVV anywhere in the payload. When a spike of failures appears, an engineer filters by event and reason across thousands of log lines in seconds, then jumps straight to the matching trace using trace_id instead of grepping through free-text messages.",
+      "exampleUk": "Рядок логу обробки платежу містить структуровані JSON-поля event=\"payment.charge.failed\", timestamp, severity=\"error\", service=\"payments-api\", version=\"v2.4.1\", trace_id, order_id та reason=\"card_declined\", і ніде в payload немає номера картки чи CVV. Коли з'являється сплеск відмов, інженер фільтрує тисячі рядків логів за event і reason за секунди, а потім одразу переходить до відповідного трейсу через trace_id, замість того щоб грепати вільний текст повідомлень.",
       "tags": [
         "logs",
         "structured-logging",
@@ -156,6 +210,15 @@
         "verifies logs contain active trace context",
         "tests trust boundaries and malformed context"
       ],
+      "questionUk": "Як би ви тестували trace-context та кореляцію логів між сервісами?",
+      "shortAnswerUk": "Ініціюйте відомий запит і перевірте, що валідний trace- та span-контекст поширюється через синхронні виклики, черги, ретраї та fan-out, не породжуючи сторонніх кореневих трейсів. Логи, згенеровані під час цієї роботи, мають містити активні ідентифікатори, щоб дослідник міг переходити від трейсу до відповідних подій і назад. Також перевірте некоректний або недовірений вхідний контекст, межі із зовнішніми системами, поведінку семплінгу (sampling) та асинхронне продовження — щоб кореляція не перетворилася на витік даних безпеки або хибний причинно-наслідковий зв'язок.",
+      "strongAnswerSignalsUk": [
+        "охоплює синхронне та асинхронне поширення контексту",
+        "перевіряє, що логи містять активний trace-контекст",
+        "тестує довірчі межі та некоректний контекст"
+      ],
+      "example": "A test sends one request that flows through an API gateway, a synchronous auth-service call, and then a message published to a queue consumed by an async worker. The engineer confirms all three services log the same trace_id, that the worker's log entry links back via a valid parent span rather than starting a brand-new trace, and then sends a request with a forged, malformed traceparent header from an external caller to confirm the system does not blindly trust or propagate it internally.",
+      "exampleUk": "Тест надсилає один запит, який проходить через API gateway, синхронний виклик auth-сервісу, а потім повідомлення в чергу, яке споживає асинхронний воркер. Інженер підтверджує, що всі три сервіси логують той самий trace_id, що запис воркера в логах пов'язаний через валідний батьківський спан, а не починає новий трейс, а потім надсилає запит із підробленим, некоректним заголовком traceparent від зовнішнього викликача, щоб переконатися, що система сліпо не довіряє йому і не поширює його всередині.",
       "tags": [
         "trace-context",
         "logs",
@@ -179,6 +242,15 @@
         "separates the critical path from total work",
         "correlates a trace with aggregate evidence"
       ],
+      "questionUk": "Як за допомогою розподіленого трейсу знайти критичний шлях повільного запиту?",
+      "shortAnswerUk": "Аналізуйте зв'язки батько-нащадок (parent-child) між спанами та їхній час, а не просто підсумовуйте тривалість усіх спанів, бо робота нащадків може виконуватися паралельно. Визначте ланцюжок, який визначає загальний час завершення запиту, а потім розгляньте довгі чи помилкові спани, розриви, ретраї, fan-out та час у черзі саме на цьому шляху. Перевірте, що назви сервісів, назви операцій, статуси й атрибути коректні, і зіставте трейс з метриками та логами; один семпльований запит — це доказ для конкретного випадку, а не доведення для всієї популяції запитів.",
+      "strongAnswerSignalsUk": [
+        "враховує паралельні (конкурентні) спани",
+        "відокремлює критичний шлях від сумарної роботи",
+        "зіставляє трейс з агрегованими даними"
+      ],
+      "example": "A checkout request trace shows the parent span lasting 2 seconds, with three child spans: an inventory check (200ms), a pricing call (1.8 seconds), and a fraud check (150ms) running in parallel. Naively summing spans would suggest 2.15 seconds of work, but the critical path is actually the pricing call at 1.8 seconds, since the other two finish well before it, so the engineer investigates the pricing service and confirms with its own latency dashboard that this is a persistent pattern, not a one-off.",
+      "exampleUk": "Трейс запиту оформлення замовлення показує, що батьківський спан триває 2 секунди, з трьома дочірніми спанами: перевірка наявності товару (200 мс), запит ціни (1,8 секунди) та перевірка на шахрайство (150 мс), які виконуються паралельно. Наївне підсумовування спанів дало б 2,15 секунди роботи, але критичний шлях насправді — це запит ціни в 1,8 секунди, оскільки решта завершуються задовго до нього. Інженер досліджує саме сервіс ціноутворення і підтверджує на його власному дашборді latency, що це стійка закономірність, а не разовий випадок.",
       "tags": [
         "distributed-tracing",
         "spans",
@@ -203,6 +275,15 @@
         "tests rare failures and high-volume behaviour",
         "recognizes sampling bias"
       ],
+      "questionUk": "Як би ви тестували стратегію семплінгу (sampling) розподілених трейсів?",
+      "shortAnswerUk": "Відштовхуйтесь від потреб розслідування, обсягу трафіку, вартості зберігання та обмежень приватності. Перевірте, що обрані правила head- чи tail-семплінгу приймають узгоджені рішення в межах одного трейсу і зберігають достатньо помилок, повільних запитів та репрезентативного звичайного трафіку, щоб відповідати на операційні питання. Прогоніть сплески навантаження, рідкісні маршрути, ретраї, backpressure у колекторі та зміни конфігурації; порівняйте кількість збережених і фактично отриманих запитів і задокументуйте, які висновки небезпечно робити, бо семплінг може викривляти збережену популяцію даних.",
+      "strongAnswerSignalsUk": [
+        "розрізняє компроміси head- та tail-семплінгу",
+        "тестує рідкісні відмови та поведінку при високому навантаженні",
+        "враховує упередженість (bias), яку вносить семплінг"
+      ],
+      "example": "The team switches from a flat 1% head-sampling rate to tail-based sampling that always keeps traces with errors or latency above 1 second. During testing, the QA engineer injects a burst of 10,000 requests with a 2% synthetic error rate and confirms nearly all erroring traces are retained, checks that the collector doesn't drop data or crash under the burst, and then verifies that a dashboard built purely from sampled traces no longer accurately estimates overall request volume, flagging that volume conclusions must come from metrics, not the sampled trace store.",
+      "exampleUk": "Команда переходить із фіксованого head-семплінгу 1% на tail-based семплінг, який завжди зберігає трейси з помилками чи latency понад 1 секунду. Під час тестування QA-інженер генерує сплеск із 10 000 запитів із синтетичним рівнем помилок 2% і підтверджує, що майже всі трейси з помилками збережено, перевіряє, що колектор не втрачає дані й не падає під час сплеску, а потім переконується, що дашборд, побудований виключно на семпльованих трейсах, більше не дає точної оцінки загального обсягу трафіку — і фіксує, що висновки про обсяг мають ґрунтуватися на метриках, а не на сховищі семпльованих трейсів.",
       "tags": [
         "tracing",
         "sampling",
@@ -226,6 +307,15 @@
         "measures growth rather than checking a single request",
         "chooses a more suitable signal for detailed context"
       ],
+      "questionUk": "Чому кардинальність телеметрії є ризиком для продакшену і як би ви це тестували?",
+      "shortAnswerUk": "Кардинальність — це кількість унікальних комбінацій атрибутів чи лейблів. Необмежені значення, такі як user ID, сирі URL, часові мітки чи request ID, можуть спричинити вибухове зростання стану метрик, кількості лог-потоків, вартості зберігання й уповільнення запитів. Перегляньте кожен вимір на предмет обмеженості значень, згенеруйте багато реалістичних значень, виміряйте зростання кількості серій чи потоків і перевірте налаштовані ліміти та сигнали переповнення. Дані з високою кардинальністю, потрібні для розслідувань, тримайте в логах, трейсах чи структурованих метаданих, а не перетворюйте на індексовані лейбли метрик.",
+      "strongAnswerSignalsUk": [
+        "виявляє необмежені значення лейблів",
+        "вимірює зростання, а не перевіряє лише один запит",
+        "обирає більш придатний сигнал для деталізованого контексту"
+      ],
+      "example": "A developer adds a user_id label directly to a Prometheus request-count metric to make per-user debugging easier. Within a day, the metric explodes from a few hundred time series to several million, because every distinct user creates a new series, and the monitoring backend starts running out of memory and dropping scrapes. A QA engineer catches this before release by generating traffic from 50,000 synthetic user IDs in a load test and watching the series count climb without bound, then recommends moving user_id to structured logs instead.",
+      "exampleUk": "Розробник додає лейбл user_id безпосередньо до метрики Prometheus, що рахує кількість запитів, щоб спростити дебаг по користувачах. За день метрика вибухає з кількох сотень рядів даних до кількох мільйонів, бо кожен окремий користувач створює новий ряд, і бекенд моніторингу починає вичерпувати пам'ять і втрачати scrape'и. QA-інженер виявляє це до релізу, генеруючи трафік від 50 000 синтетичних user ID в навантажувальному тесті та спостерігаючи за необмеженим зростанням кількості рядів, після чого рекомендує перенести user_id у структуровані логи.",
       "tags": [
         "cardinality",
         "metrics",
@@ -250,6 +340,15 @@
         "covers exceptional as well as successful paths",
         "checks access and retention in addition to redaction"
       ],
+      "questionUk": "Як запобігти витоку чутливих даних через телеметрію та як це тестувати?",
+      "shortAnswerUk": "Визначте allowlist операційних полів і класифікуйте дані ще до того, як вони потраплять у логи, метрики, спани чи propagated baggage. Прогоніть credentials, токени, персональні дані, платіжну інформацію та конфіденційні payload'и через успішні сценарії, валідацію, винятки та ретраї, а потім перевірте кожен колектор і бекенд на наявність цих даних у сирому та закодованому вигляді. Перевірте маскування (redaction) на найранішому безпечному етапі, контроль доступу, зберігання й видалення даних, і переконайтеся, що діагностична цінність телеметрії зберігається без копіювання повних запитів чи секретів.",
+      "strongAnswerSignalsUk": [
+        "тестує всі сигнали телеметрії та поля поширення контексту",
+        "охоплює як винятки, так і успішні сценарії",
+        "перевіряє доступ і зберігання даних, а не лише маскування"
+      ],
+      "example": "During a security-focused test pass, an engineer submits a payment request with a real-looking card number and an invalid CVV to trigger a validation error, then searches every log line, span attribute, metric label and exception stack trace produced by that request for the card number in plain text, base64-encoded form, and partially masked form. They find the raw card number leaking into an exception message logged by a third-party payment SDK on the failure path only, something that would have been missed if only the success path had been tested.",
+      "exampleUk": "Під час тестового заходу, зосередженого на безпеці, інженер надсилає платіжний запит із реалістичним номером картки та невалідним CVV, щоб спричинити помилку валідації, а потім шукає цей номер картки в усіх рядках логів, атрибутах спанів, лейблах метрик і стек-трейсах виключень, породжених цим запитом, — у відкритому вигляді, у base64-кодуванні та в частково замаскованому вигляді. Виявляється, що сирий номер картки протікає в повідомлення виключення, залоговане сторонньою SDK платіжної системи, — і лише на шляху відмови, що було б пропущено, якби тестувався тільки успішний сценарій.",
       "tags": [
         "telemetry",
         "privacy",
@@ -274,6 +373,15 @@
         "explains startup-probe protection",
         "tests each probe independently"
       ],
+      "questionUk": "Чим відрізняються liveness, readiness та startup probes у Kubernetes?",
+      "shortAnswerUk": "Liveness probe перевіряє, чи не завис контейнер і чи потрібно його перезапустити. Readiness probe перевіряє, чи повинен контейнер отримувати трафік, і цей стан може змінюватися впродовж усього життєвого циклу. Startup probe захищає повільну ініціалізацію, відкладаючи liveness- та readiness-перевірки, доки старт не завершиться успішно. Тестуйте кожен вид відмови окремо: відмова readiness має прибирати трафік без зайвого перезапуску, відмова liveness має відновлювати контейнер, а таймінги startup мають покривати найповільніший реалістичний сценарій ініціалізації.",
+      "strongAnswerSignalsUk": [
+        "розрізняє перезапуск і право отримувати трафік",
+        "пояснює, як startup probe захищає повільний старт",
+        "тестує кожен probe окремо"
+      ],
+      "example": "A Java service takes up to 90 seconds to warm up its cache on startup. Without a startup probe, the default liveness probe kills the pod repeatedly during warm-up because it hasn't responded yet, creating a crash loop. The team adds a startup probe with a 120-second budget, then tests it by artificially slowing startup to 100 seconds in staging and confirming the pod survives, while a separate test that makes the readiness endpoint fail confirms the pod stays alive but is pulled from the service's endpoint list until it recovers.",
+      "exampleUk": "Java-сервіс може прогрівати свій кеш на старті до 90 секунд. Без startup probe стандартний liveness probe регулярно вбиває под під час прогріву, бо той ще не встиг відповісти, створюючи crash loop. Команда додає startup probe з бюджетом у 120 секунд, а потім тестує його, штучно уповільнюючи старт до 100 секунд у staging-середовищі та підтверджуючи, що под виживає, тоді як окремий тест, який робить readiness-ендпоінт непрацездатним, підтверджує, що под лишається живим, але прибирається зі списку endpoint'ів сервісу, доки не відновиться.",
       "tags": [
         "kubernetes",
         "liveness",
@@ -297,6 +405,15 @@
         "separates required from optional dependencies",
         "covers degraded and overloaded states"
       ],
+      "questionUk": "Що має перевіряти корисний health check у продакшені?",
+      "shortAnswerUk": "Health check має бути швидким, детермінованим, обмеженим коротким таймаутом і узгодженим з дією, яку викликає його результат. Liveness має підтверджувати лише те, що локальний прогрес не потребує перезапуску; readiness може перевіряти мінімальні умови, необхідні для обслуговування трафіку, але не повинен падати через кожну опціональну залежність. Тестуйте застарілий кеш, деградовані залежності, перевантаження, часткову ініціалізацію та межі автентифікації, а також не допускайте потрапляння чутливої діагностики у публічні відповіді, надаючи глибші деталі лише авторизованим операторам.",
+      "strongAnswerSignalsUk": [
+        "проєктує перевірку відповідно до дії, яку вона запускає",
+        "розрізняє обов'язкові та опціональні залежності",
+        "охоплює деградовані стани та стан перевантаження"
+      ],
+      "example": "A service's readiness check originally pinged every downstream dependency, including an optional recommendations service. When the recommendations service had a brief outage, every instance of the main service was pulled from rotation even though it could still serve core functionality. A QA engineer redesigns the test to distinguish required dependencies (the primary database) from optional ones (recommendations), so readiness now only fails for the database, while a separate internal-only endpoint still reports the recommendations service as degraded for operators.",
+      "exampleUk": "Readiness-перевірка сервісу спочатку опитувала кожну downstream-залежність, включно з опціональним сервісом рекомендацій. Коли сервіс рекомендацій зазнав короткого збою, усі екземпляри основного сервісу було прибрано з обслуговування, хоча вони могли й далі виконувати основний функціонал. QA-інженер перепроєктовує тест так, щоб розрізняти обов'язкові залежності (основна база даних) та опціональні (рекомендації): тепер readiness падає лише через базу даних, тоді як окремий внутрішній ендпоінт продовжує показувати операторам, що сервіс рекомендацій деградований.",
       "tags": [
         "health-checks",
         "kubernetes",
@@ -321,6 +438,15 @@
         "checks fleet-level traffic effects",
         "validates degraded operation under load"
       ],
+      "questionUk": "Як погано спроєктований health probe може перетворити деградацію на каскадну відмову?",
+      "shortAnswerUk": "Liveness-перевірка, що залежить від повільного downstream-сервісу, може перезапускати екземпляри, які насправді могли б відновитися самостійно, додаючи навантаження холодного старту (cold start) саме тоді, коли решта екземплярів і так отримують більше трафіку. Занадто широка readiness-перевірка може одномоментно прибрати з обслуговування всі репліки одразу, а пороги, коротші за звичайний час старту чи паузи garbage collection, можуть спричиняти повторюваний churn (постійні перезапуски). Відтворіть затримку залежностей і високе навантаження, перевірте членство в endpoint'ах та кількість перезапусків, налаштуйте таймаути й пороги відмов, і переконайтеся, що система зберігає безпечний деградований режим.",
+      "strongAnswerSignalsUk": [
+        "пов'язує хибні відмови liveness з посиленням перезапусків",
+        "перевіряє вплив на трафік у масштабі всього флоту",
+        "перевіряє роботу в деградованому режимі під навантаженням"
+      ],
+      "example": "A team configures a liveness probe that calls a downstream database and fails if the query takes longer than 2 seconds. During a database slowdown, every pod's liveness probe starts failing simultaneously, so Kubernetes restarts the entire fleet at once; the restarted pods then hit the still-struggling database during their own startup checks, extending the outage. In a chaos test, the engineer reproduces this by throttling the database's response time, observes the fleet enter a restart loop, then fixes it by moving the database check out of liveness and into a more tolerant readiness check.",
+      "exampleUk": "Команда налаштовує liveness probe, який звертається до downstream бази даних і падає, якщо запит триває довше 2 секунд. Під час уповільнення бази даних liveness-перевірка всіх подів починає падати одночасно, тому Kubernetes перезапускає весь флот одразу; перезапущені поди знову звертаються до все ще перевантаженої бази даних під час власних стартових перевірок, що подовжує аварію. У chaos-тесті інженер відтворює це, штучно уповільнюючи відповідь бази даних, спостерігає, як флот входить у цикл перезапусків, а потім виправляє проблему, переносячи перевірку бази даних із liveness у більш толерантну readiness-перевірку.",
       "tags": [
         "kubernetes",
         "health-checks",
@@ -345,6 +471,15 @@
         "uses safe identifiable synthetic data",
         "connects results to rollback criteria"
       ],
+      "questionUk": "Що мають перевіряти smoke-тести в продакшені після деплою, окрім відповіді 200 від health-ендпоінта?",
+      "shortAnswerUk": "Перевіряйте очікувану версію та конфігурацію, невеликий набір критичних користувацьких сценаріїв, автентифікацію й авторизацію, авторитетне читання та, де це можливо, безпечний запис даних, зв'язність із залежностями і наявність телеметрії, потрібної для діагностики збоїв. Використовуйте ідентифіковані синтетичні акаунти або ідемпотентні дані з очищенням і жорсткими лімітами частоти. Порівнюйте ключові сигнали з базовим рівнем до деплою, підтверджуйте роботу алармів і критеріїв відкату (rollback), і уникайте тестів, що спричиняють реальні сповіщення, платежі чи інші шкідливі побічні ефекти.",
+      "strongAnswerSignalsUk": [
+        "перевіряє версію, конфігурацію та критичні результати",
+        "використовує безпечні ідентифіковані синтетичні дані",
+        "пов'язує результати з критеріями відкату"
+      ],
+      "example": "After deploying a new version of an e-commerce API, the smoke suite checks the /version endpoint matches the deployed build, logs in as a dedicated synthetic test user tagged is_synthetic=true, adds a real item to the cart, and completes checkout using a test payment method the provider treats as non-charging, then deletes the resulting test order. It also compares the error rate for the five minutes after deploy against the five minutes before, and if it rises past a threshold, the pipeline automatically triggers a rollback instead of waiting for a human to notice.",
+      "exampleUk": "Після розгортання нової версії API інтернет-магазину smoke-набір перевіряє, що ендпоінт /version відповідає задеплоєній збірці, логіниться під виділеним синтетичним тестовим користувачем із тегом is_synthetic=true, додає реальний товар у кошик і завершує оформлення замовлення тестовим методом оплати, який провайдер не списує по-справжньому, а потім видаляє отримане тестове замовлення. Він також порівнює рівень помилок за п'ять хвилин після деплою з п'ятьма хвилинами до нього, і якщо він перевищує поріг, пайплайн автоматично запускає відкат, не чекаючи, поки це помітить людина.",
       "tags": [
         "deployment",
         "smoke-testing",
@@ -369,6 +504,15 @@
         "keeps synthetic traffic identifiable",
         "states the coverage limits of both approaches"
       ],
+      "questionUk": "Як synthetic monitoring та real-user monitoring доповнюють одне одного?",
+      "shortAnswerUk": "Synthetic monitoring запускає контрольовані сценарії за розкладом чи з обраних локацій, тому може виявляти збої ще до того, як прийде реальний трафік, і забезпечує стабільну базу для порівняння. Real-user monitoring спостерігає за реальними пристроями, мережами, регіонами та поведінкою користувачів, виявляючи варіативність, яку скрипти можуть пропустити. Перевіряйте, що обидва підходи вимірюють ті самі результати для користувача, відокремлюйте тестовий трафік від клієнтської аналітики, захищайте персональні дані та порівнюйте їхнє покриття; жоден з підходів не доводить справність для тих сценаріїв, популяцій чи періодів часу, які він не спостерігає.",
+      "strongAnswerSignalsUk": [
+        "протиставляє контрольовані перевірки реальним даним популяції",
+        "тримає синтетичний трафік ідентифікованим",
+        "визначає межі покриття обох підходів"
+      ],
+      "example": "A synthetic monitor runs a login-and-search journey every five minutes from three regions and pages the on-call engineer the moment it fails, catching an outage at 3 a.m. before any customer complains. Real-user monitoring later reveals that mobile users on a specific Android browser version experience a much slower search render than the synthetic check ever measures, because the synthetic script runs from a fast, dedicated network and doesn't emulate that device profile, showing synthetic checks caught availability while RUM caught real-world performance variance.",
+      "exampleUk": "Synthetic-монітор кожні п'ять хвилин запускає сценарій логіну й пошуку з трьох регіонів і сповіщає чергового інженера в момент відмови, виявляючи збій о третій ночі ще до того, як хтось зі скарг клієнтів помітить проблему. Real-user monitoring пізніше виявляє, що мобільні користувачі на конкретній версії браузера Android відчувають набагато повільніший рендеринг пошуку, ніж будь-коли вимірює synthetic-перевірка, бо синтетичний скрипт працює з швидкої виділеної мережі й не емулює цей профіль пристрою — synthetic-перевірки виявили доступність, а RUM виявив реальну варіативність продуктивності.",
       "tags": [
         "synthetic-monitoring",
         "real-user-monitoring",
@@ -393,6 +537,15 @@
         "tests outages, backpressure and malformed data",
         "makes drops and delay observable"
       ],
+      "questionUk": "Як перевірити, що пайплайн телеметрії не втрачає і не пошкоджує дані непомітно?",
+      "shortAnswerUk": "Згенеруйте відомий набір унікально ідентифікованих метрик, логів і трейсів, а потім звірте (reconcile), що саме кожен застосунок, колектор, черга, експортер і бекенд прийняли, повторно надіслали, відкинули та зберегли. Перевірте часові мітки, одиниці виміру, resource-атрибути, зв'язки між спанами трейсу, трансформації даних і наскрізну затримку (end-to-end delay). Прогоніть відмови бекенду, ліміти частоти запитів, некоректні записи, перезапуски та backpressure, і моніторте сам шлях моніторингу, щоб втрачені дані, відхилені батчі, насичення черг і рішення семплінгу були видимі.",
+      "strongAnswerSignalsUk": [
+        "звіряє відомі вхідні дані на кожному етапі пайплайну",
+        "тестує відмови, backpressure та некоректні дані",
+        "робить втрати та затримки видимими"
+      ],
+      "example": "A QA engineer emits exactly 10,000 uniquely tagged log lines and 500 tagged traces from a test service, then queries the final backend an hour later and finds only 9,940 log lines and 480 traces arrived. Checking each hop, the application, the OTel collector, the Kafka queue, and the backend exporter, they find the collector was silently dropping records during a brief backpressure spike without incrementing any dropped-data counter, and flag that the pipeline had no metric exposing its own data loss.",
+      "exampleUk": "QA-інженер генерує рівно 10 000 унікально помічених рядків логів і 500 помічених трейсів із тестового сервісу, а через годину робить запит до кінцевого бекенду і виявляє, що дійшло лише 9 940 рядків логів і 480 трейсів. Перевіряючи кожен вузол — застосунок, OTel-колектор, чергу Kafka та експортер бекенду — вони знаходять, що колектор тихо відкидав записи під час короткого сплеску backpressure, не інкрементуючи жодного лічильника втрачених даних, і фіксують це як прогалину: пайплайн не мав жодної метрики, що показувала б власну втрату даних.",
       "tags": [
         "telemetry-pipeline",
         "opentelemetry",
@@ -417,6 +570,15 @@
         "separates notification from diagnosis",
         "allows justified proactive exceptions"
       ],
+      "questionUk": "Чому page-алерти зазвичай мають фокусуватися на симптомах, а не на можливих причинах?",
+      "shortAnswerUk": "Page-сповіщення має відображати терміновий вплив на користувача чи бізнес, що вимагає дій людини. Алертинг на кожну низькорівневу причину створює дублікати та шум, бо багато аномалій окремих компонентів є прийнятними або й так вже відображені одним алертом вищого рівня. Page'ити варто на такі результати, як стійке підвищення рівня помилок, latency чи затримки обробки, а причини шукати вже через дашборди та діагностичні алерти. Низькорівневий page варто додавати лише тоді, коли він самостійно вимагає дій ще до того, як з'явиться вплив на користувача, або захищає критичні дані чи витрати.",
+      "strongAnswerSignalsUk": [
+        "пов'язує page із терміновим впливом, що вимагає дій",
+        "розділяє сповіщення та діагностику",
+        "допускає обґрунтовані проактивні винятки"
+      ],
+      "example": "A team originally pages on-call whenever any individual database replica falls behind on replication, generating three or four pages a week even though the load balancer automatically routes around lagging replicas with no user impact. They redesign alerting to page only on the symptom, elevated error rate or latency actually seen by users, while replication lag becomes a low-severity dashboard warning, cutting pages by 80% without missing any real incident, since true replication problems eventually surface as user-facing errors and still page through that path.",
+      "exampleUk": "Спочатку команда page'ить чергового щоразу, коли будь-яка окрема репліка бази даних відстає в реплікації, генеруючи три-чотири page на тиждень, хоча балансувальник навантаження автоматично обходить відстаючі репліки без жодного впливу на користувачів. Вони перебудовують алертинг так, щоб page спрацьовував лише на симптом — реально відчутне користувачами підвищення рівня помилок чи latency, — тоді як затримка реплікації стає попередженням низької серйозності на дашборді. Це скорочує кількість page на 80% без пропуску жодного реального інциденту, бо справжні проблеми реплікації з часом все одно проявляються як помилки для користувачів і page спрацьовує через цей шлях.",
       "tags": [
         "alerting",
         "symptoms",
@@ -441,6 +603,15 @@
         "requires decision-focused context",
         "validates the runbook with a realistic responder"
       ],
+      "questionUk": "Що робить алерт дієвим (actionable), і як би ви тестували його runbook?",
+      "shortAnswerUk": "Дієвий алерт вказує постраждалий сервіс та симптом для користувача, рівень серйозності, час початку, поточні докази й чіткого власника; він містить посилання на цільові дашборди та версіонований runbook. Запустіть правило на контрольованих даних і перевірте маршрутизацію, дедублікацію, ескалацію та сповіщення про відновлення. Відповідальний черговий, незнайомий із сервісом, має бути здатен оцінити вплив, виконати безпечні діагностичні кроки, обрати мітигацію чи ескалацію та знайти інструкції з відкату — не покладаючись на приховані знання команди.",
+      "strongAnswerSignalsUk": [
+        "тестує повний маршрут сповіщення",
+        "вимагає контексту, орієнтованого на прийняття рішень",
+        "перевіряє runbook на реалістичному черговому"
+      ],
+      "example": "An alert for checkout error rate above 5% links directly to a runbook that lists the three most likely causes (payment provider outage, database saturation, bad deploy), the exact dashboard queries to check each, and the command to trigger a rollback. During a game day, the team hands the alert and runbook to an engineer from a different team who has never touched checkout, and times how long it takes them to diagnose an injected payment-provider failure, revealing that one runbook step referenced a dashboard link that had since moved.",
+      "exampleUk": "Алерт про перевищення рівня помилок оформлення замовлень понад 5% містить пряме посилання на runbook, де перелічено три найімовірніші причини (збій платіжного провайдера, насичення бази даних, невдалий деплой), точні запити до дашбордів для перевірки кожної з них та команду для запуску відкату. Під час game day команда передає алерт і runbook інженеру з іншої команди, який ніколи не працював із checkout, і засікає, скільки часу йому знадобиться, щоб діагностувати штучно створену відмову платіжного провайдера, — виявляючи, що одне посилання в runbook вело на дашборд, який відтоді змінив адресу.",
       "tags": [
         "alerting",
         "runbooks",
@@ -465,6 +636,15 @@
         "tests against historical and injected incidents",
         "measures both missed and noisy alerts"
       ],
+      "questionUk": "Як зменшити шум від алертів, не приховуючи при цьому реальні інциденти?",
+      "shortAnswerUk": "Прибирайте алерти, які не вимагають жодних дій, групуйте сповіщення, що стосуються одного інциденту, і пригнічуйте (inhibit) залежні симптоми, коли спрацьовує авторитетна коренева умова. Для обслуговування використовуйте вузько сфокусовані silence'и з обмеженим терміном дії, а не вимкнення правил повністю. Відтворюйте історичні інциденти й контрольовані відмови, щоб перевірити ключі групування, пороги, затримки, ескалацію та сповіщення про відновлення; відстежуйте кількість page на інцидент, хибнопозитивні та хибнонегативні спрацьовування й відгуки чергових, зберігаючи при цьому окремі алерти для різних видів впливу на користувачів.",
+      "strongAnswerSignalsUk": [
+        "використовує групування, пригнічення й silence'и для різних цілей",
+        "тестує на історичних та штучно створених інцидентах",
+        "вимірює як пропущені, так і надлишкові алерти"
+      ],
+      "example": "During a datacenter network outage, 40 separate services all start alerting on elevated error rates simultaneously, flooding on-call with 40 pages for one root cause. The team configures Alertmanager to group these by a shared incident label and to inhibit the downstream service alerts whenever the upstream network alert is firing, then replays a recorded copy of that exact incident's metrics in a test environment to confirm it now produces a single grouped page with links to the affected services, instead of 40 separate ones.",
+      "exampleUk": "Під час мережевого збою в датацентрі 40 окремих сервісів одночасно починають алертити про підвищений рівень помилок, заваливши чергового 40 page для однієї кореневої причини. Команда налаштовує Alertmanager групувати ці сповіщення за спільним лейблом інциденту й пригнічувати алерти залежних сервісів, коли спрацьовує алерт верхньорівневої мережі, а потім відтворює записану копію метрик саме цього інциденту в тестовому середовищі, щоб підтвердити, що тепер генерується один згрупований page з посиланнями на постраждалі сервіси замість 40 окремих.",
       "tags": [
         "alertmanager",
         "alert-fatigue",
@@ -489,6 +669,15 @@
         "uses independent black-box evidence",
         "covers collection, rule and delivery failures"
       ],
+      "questionUk": "Як моніторити саму систему моніторингу?",
+      "shortAnswerUk": "Використовуйте незалежні докази, що проходять реальним шляхом: генеруйте відомий сигнал, перевіряйте його збір і збереження, оцінку правила та доставку до контрольованого місця призначення. Моніторте стан скраперів і колекторів, глибину черг, відхилені чи втрачені дані, помилки оцінки правил, помилки доставки сповіщень і доступність системи запитів. За можливості тримайте окрему зовнішню black-box-перевірку та окремий шлях сповіщення про відмову, бо дашборд, розміщений лише всередині зламаної системи, не може довести, що моніторинг досі працює.",
+      "strongAnswerSignalsUk": [
+        "тестує шлях спостережуваності наскрізно",
+        "використовує незалежні black-box докази",
+        "охоплює відмови збору, оцінки правил та доставки"
+      ],
+      "example": "The team runs a small external service, hosted on a completely separate cloud account, that pushes a heartbeat metric into Prometheus every minute and separately checks, via the Alertmanager API, that a canary alert configured to always fire is actually reaching PagerDuty. When the main Prometheus instance goes down during a cluster-wide outage, this external check is what pages the team, because every dashboard that would normally show the problem was hosted inside the same cluster that just went dark.",
+      "exampleUk": "Команда тримає невеликий зовнішній сервіс, розміщений у зовсім окремому хмарному акаунті, який щохвилини надсилає heartbeat-метрику в Prometheus і окремо перевіряє через API Alertmanager, що канарковий алерт, налаштований завжди спрацьовувати, дійсно доходить до PagerDuty. Коли основний інстанс Prometheus падає під час аварії всього кластера, саме ця зовнішня перевірка сповіщає команду, бо кожен дашборд, який зазвичай показав би проблему, розміщувався всередині того самого кластера, що щойно відмовив.",
       "tags": [
         "metamonitoring",
         "alerting",
@@ -513,6 +702,15 @@
         "uses an agreed policy to balance change and reliability",
         "validates the underlying SLI and exclusions"
       ],
+      "questionUk": "Як error budget має впливати на рішення щодо релізів і надійності?",
+      "shortAnswerUk": "Error budget — це допустимий рівень ненадійності, який випливає зі SLO протягом визначеного вікна вимірювання. Здоровий бюджет дозволяє звичайний темп змін, тоді як швидке чи повторюване його вичерпання є сигналом зменшити кількість ризикованих релізів і пріоритизувати роботу над надійністю згідно з узгодженою політикою. Перевірте, що розрахунок використовує правильну популяцію SLI, виключення та вікно вимірювання, покажіть, які саме інциденти чи зміни його витратили, і не ставтеся до цієї політики як до покарання чи заміни власного судження про безпечність і незворотність впливу.",
+      "strongAnswerSignalsUk": [
+        "математично пов'язує бюджет зі SLO",
+        "використовує узгоджену політику для балансу змін і надійності",
+        "перевіряє базовий SLI та виключення"
+      ],
+      "example": "A team has a 99.9% availability SLO over a rolling 30-day window, giving them roughly 43 minutes of allowed downtime per month. After a bad deploy causes a 25-minute outage, the team checks the budget dashboard and sees they've consumed 60% of the month's budget with three weeks still to go, so under their agreed policy they freeze non-critical feature releases and prioritize a fix for the underlying instability, while still shipping a critical security patch because the policy explicitly allows it.",
+      "exampleUk": "Команда має SLO доступності 99,9% на ковзному 30-денному вікні, що дає їй приблизно 43 хвилини дозволеного простою на місяць. Після невдалого деплою, що спричинив 25-хвилинну аварію, команда перевіряє дашборд бюджету і бачить, що витратила 60% місячного бюджету, тоді як попереду ще три тижні. Тож згідно з узгодженою політикою вони заморожують некритичні реліз-фічі й пріоритизують виправлення базової нестабільності, але все одно випускають критичний патч безпеки, бо політика це прямо дозволяє.",
       "tags": [
         "error-budget",
         "slo",
@@ -537,6 +735,15 @@
         "tests traffic and time-window edge cases",
         "balances fast detection with sustained evidence"
       ],
+      "questionUk": "Про що сигналізує черговому інженеру алерт на burn rate SLO?",
+      "shortAnswerUk": "Burn rate порівнює поточну швидкість появи «поганих» подій зі швидкістю, яка витратила б весь error budget рівно за час вікна SLO. Високий burn rate означає, що сервіс вичерпає свій бюджет швидко, якщо поточна ситуація триватиме. Тестуйте правило на відомих кількостях хороших і поганих подій, за відсутності чи низького трафіку, на межах вікна та при затриманих даних. Поєднуйте швидке й повільне вікна, щоб серйозні інциденти page'или швидко, а стійкі дрібніші відмови все одно виявлялися — без шуму від короткочасних сплесків.",
+      "strongAnswerSignalsUk": [
+        "пов'язує burn rate зі швидкістю вичерпання бюджету",
+        "тестує граничні випадки трафіку й часових вікон",
+        "балансує швидке виявлення зі стійкістю доказів"
+      ],
+      "example": "With a 99.9% monthly SLO, a burn rate of 1x would exhaust the entire month's budget in exactly 30 days if sustained, while a burn rate of 14.4x would exhaust it in about 2 days, severe enough to page immediately. The team implements a fast 1-hour window paired with a slow 6-hour window, both requiring a 14.4x burn rate to fire, and tests it by injecting a short 5-minute error spike that resolves on its own, confirming it does NOT page, versus a sustained error condition lasting over an hour, confirming it DOES page.",
+      "exampleUk": "При місячному SLO 99,9% burn rate 1x вичерпав би весь місячний бюджет рівно за 30 днів у разі стійкого тренду, тоді як burn rate 14,4x вичерпав би його приблизно за 2 дні — достатньо серйозно, щоб сповіщати негайно. Команда впроваджує швидке вікно на 1 годину в парі з повільним вікном на 6 годин, обидва з порогом спрацювання 14,4x, і тестує це, штучно створюючи короткий 5-хвилинний сплеск помилок, що зникає сам собою (підтверджуючи, що page НЕ спрацьовує), на противагу стійкій ситуації з помилками, що триває понад годину (підтверджуючи, що page СПРАЦЬОВУЄ).",
       "tags": [
         "slo",
         "burn-rate",
@@ -561,6 +768,15 @@
         "links telemetry and change evidence",
         "records uncertainty and time consistency"
       ],
+      "questionUk": "Які докази слід зберігати в таймлайні продакшн-інциденту?",
+      "shortAnswerUk": "Фіксуйте часові мітки в узгодженому часовому поясі для моменту виявлення, оголошення інциденту, впливу на користувачів, ключових спостережень, рішень, заходів мітигації, відновлення та подальших дій. Пов'язуйте алерти, дашборди, запити, трейси, деплої, зміни feature-flag'ів чи конфігурації та комунікаційні оновлення, зберігаючи саме ті докази, що були доступні на той момент часу, а не заднім числом. Відзначайте невизначеність джерела та розбіжність годинників (clock skew), захищайте чутливі дані, і фіксуйте, хто відповідав за кожне рішення, щоб інша людина могла реконструювати як поведінку системи, так і затримку реагування.",
+      "strongAnswerSignalsUk": [
+        "розділяє спостереження, рішення та дію",
+        "пов'язує телеметрію та докази змін",
+        "фіксує невизначеність та узгодженість часу"
+      ],
+      "example": "During a checkout outage, the incident channel timeline notes 14:02 UTC alert fired (link to Alertmanager), 14:05 UTC incident declared SEV2 by Maria, 14:07 UTC dashboard shows error rate at 40% (screenshot linked), 14:09 UTC team notices a deploy at 13:58 UTC correlates with onset, 14:12 UTC rollback initiated, 14:15 UTC error rate back to baseline. When the postmortem author reviews it a week later, the linked evidence lets them verify the 14-minute detection-to-mitigation time precisely instead of relying on people's memory.",
+      "exampleUk": "Під час аварії оформлення замовлень таймлайн в інцидент-каналі фіксує: 14:02 UTC — спрацював алерт (посилання на Alertmanager), 14:05 UTC — Марія оголосила інцидент SEV2, 14:07 UTC — дашборд показує рівень помилок 40% (додано скріншот), 14:09 UTC — команда помічає, що деплой о 13:58 UTC збігається з початком проблеми, 14:12 UTC — запущено відкат, 14:15 UTC — рівень помилок повернувся до норми. Коли автор постмортему переглядає це через тиждень, пов'язані докази дозволяють точно перевірити 14-хвилинний час від виявлення до мітигації, замість того щоб покладатися на пам'ять учасників.",
       "tags": [
         "incident",
         "timeline",
@@ -585,6 +801,15 @@
         "separates evidence from inference",
         "requires owned, prioritized and verified actions"
       ],
+      "questionUk": "Що робить продакшн-постмортем корисним, а не суто формальним (performative)?",
+      "shortAnswerUk": "Корисний постмортем пояснює вплив, виявлення, технічні та організаційні умови, що сприяли інциденту, реагування та відновлення — без зведення події до помилки однієї людини. Він розрізняє факти та припущення й запитує, чому саме ці запобіжники й припущення робили дію обґрунтованою в той момент часу. Пункти подальших дій мають усувати значущий ризик повторення чи невиявлення, мати власників і дедлайни, а також бути пріоритизованими й перевіреними; публікація довгого документа без виконання найцінніших дій не покращує надійність системи.",
+      "strongAnswerSignalsUk": [
+        "аналізує системні умови без персонального звинувачення",
+        "розділяє факти та припущення",
+        "вимагає дій із власниками, пріоритетом і перевіркою"
+      ],
+      "example": "After an engineer's config change caused a two-hour outage, the postmortem avoids framing it as the engineer made a typo and instead asks why the deployment pipeline allowed an unvalidated config change to reach production without a canary stage or automated rollback. The action items include adding config schema validation (owner: platform team, due in two weeks) and a canary deploy gate (owner: SRE lead, due in one month); six weeks later, someone checks back and confirms both were actually shipped rather than just written down and forgotten.",
+      "exampleUk": "Після того як зміна конфігурації від одного інженера спричинила двогодинну аварію, постмортем уникає формулювання «інженер зробив описку» і натомість запитує, чому пайплайн деплою дозволив невалідованій зміні конфігурації дійти до продакшену без канаркового етапу чи автоматичного відкату. Пункти подальших дій включають додавання валідації схеми конфігурації (власник: команда платформи, дедлайн — два тижні) та канарковий gate для деплою (власник: лід SRE, дедлайн — місяць); через шість тижнів хтось перевіряє й підтверджує, що обидва пункти справді реалізовано, а не лише записано й забуто.",
       "tags": [
         "postmortem",
         "incident",

@@ -26,7 +26,7 @@ The public site contains only production-ready content. Drafts exist in Git bran
 
 ## Question model
 
-Every question has a stable ID, level, prevalence band, category, original question wording, concise answer, strong-answer signals, source IDs and optional tags or media.
+Every question has a stable ID, level, prevalence band, category, original question wording, concise answer, strong-answer signals, source IDs and optional tags or media. Every question also carries a Ukrainian translation (`questionUk`, `shortAnswerUk`, `strongAnswerSignalsUk`) and a practical example in both languages (`example`, `exampleUk`).
 
 ```json
 {
@@ -37,6 +37,11 @@ Every question has a stable ID, level, prevalence band, category, original quest
   "question": "If you cannot run every test, how do you select the most valuable subset?",
   "shortAnswer": "...",
   "strongAnswerSignals": ["impact and likelihood", "residual risk"],
+  "questionUk": "...",
+  "shortAnswerUk": "...",
+  "strongAnswerSignalsUk": ["...", "..."],
+  "example": "A concrete, practical worked scenario that answers the question.",
+  "exampleUk": "...",
   "tags": ["risk", "planning"],
   "media": [{
     "src": "/content/interview/risk-based-selection/risk-matrix.svg",
@@ -49,6 +54,8 @@ Every question has a stable ID, level, prevalence band, category, original quest
 ```
 
 Images require an accessible alternative, caption and credit. Original diagrams use SVG; raster screenshots should use WebP or AVIF. Large or user-uploaded media can move to R2 later without moving the public text to a database.
+
+The Ukrainian fields and the practical example are plain prose, matching the rest of the catalog's content model — no markdown or code-block rendering exists in the UI. The per-question EN/UA toggle and the "Practical example" panel are rendered in `InterviewKnowledgeBase` (`app/public-site.tsx`) and gracefully hide themselves for any question that is missing the fields, so a partially translated catalog still renders correctly. `strongAnswerSignalsUk` must be translated 1:1 with `strongAnswerSignals` (same length and order).
 
 ## Editorial approach
 

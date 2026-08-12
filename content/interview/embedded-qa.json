@@ -13,6 +13,15 @@
         "uses several execution layers rather than only device end-to-end tests",
         "includes configuration and board-revision risk"
       ],
+      "questionUk": "Чим стратегія тестування embedded-програмного забезпечення відрізняється від стратегії для веб- чи десктопних застосунків?",
+      "shortAnswerUk": "Якість embedded-систем залежить від прошивки, електроніки, таймінгів, пам'яті, живлення, фізичних входів і часто ненадійного з'єднання. Використовуйте швидкі тести на рівні хоста для логіки, симуляцію чи емуляцію для відтворюваної інтеграції та реальне обладнання для електричних, часових і середовищних доказів. Відстежуйте покриття для різних ревізій плати, варіантів збірки та версій завантажувача, прошивки й бекенду.",
+      "strongAnswerSignalsUk": [
+        "охоплює межу між програмним і апаратним забезпеченням",
+        "використовує кілька рівнів виконання, а не лише наскрізні тести на пристрої",
+        "враховує ризики конфігурації та ревізій плати"
+      ],
+      "example": "A team validates a firmware update purely with end-to-end tests on one dev board and ships it. In the field, a slightly different board revision has a different flash-write timing, and the update bricks a batch of devices. A layered strategy — unit tests for the update logic on the host, an emulator run for the write sequence, and a hardware-in-the-loop pass across the actual board revisions in the fleet — would have caught the timing gap before release.",
+      "exampleUk": "Команда перевіряє оновлення прошивки лише наскрізними тестами на одній платі розробника й випускає його. У полі трохи інша ревізія плати має інший таймінг запису у флеш-пам'ять, і оновлення виводить з ладу партію пристроїв. Багаторівнева стратегія — юніт-тести логіки оновлення на хості, прогін в емуляторі для послідовності запису та hardware-in-the-loop тестування на реальних ревізіях плат з парку пристроїв — виявила б цю різницю в таймінгу до релізу.",
       "tags": [
         "embedded",
         "firmware",
@@ -37,6 +46,15 @@
         "states what simulation cannot prove",
         "keeps a small repeatable real-hardware gate"
       ],
+      "questionUk": "Як би ви розподілили embedded-тести між виконанням на хості, симуляцією та фізичним обладнанням?",
+      "shortAnswerUk": "Детерміновані алгоритми та обробку помилок запускайте на хості з контрольованими залежностями; нативну симуляцію чи емуляцію використовуйте для сервісів ОС, драйверів і шляхів інтеграції; плати залишайте для електричної поведінки, периферії, таймінгів, живлення та припущень, які модель не здатна відтворити. Підтримуйте невеликий трасований набір smoke-тестів на реальному обладнанні та порівнюйте обмеження симулятора з дефектами, що просочилися у продакшн.",
+      "strongAnswerSignalsUk": [
+        "розміщує перевірки на найнижчому достатньо достовірному рівні",
+        "явно визначає, чого симуляція довести не може",
+        "підтримує невеликий відтворюваний gate на реальному обладнанні"
+      ],
+      "example": "A device driver for a new I2C sensor passes 200 host-level unit tests against a mocked bus, but the team also runs a five-minute hardware smoke test on the actual board before every merge. That smoke test catches a case where the real sensor needs an extra 2ms settling delay after power-up that the mock never modeled, saving a field escape.",
+      "exampleUk": "Драйвер для нового I2C-сенсора проходить 200 юніт-тестів на хості з мок-шиною, але команда також запускає п'ятихвилинний smoke-тест на реальній платі перед кожним мержем. Цей smoke-тест виявляє, що реальний сенсор потребує додаткової затримки стабілізації 2 мс після подачі живлення, яку мок ніколи не моделював — це рятує від дефекту в полі.",
       "tags": [
         "embedded",
         "simulation",
@@ -61,6 +79,15 @@
         "controls and calibrates the test rig",
         "distinguishes fixture health from device health"
       ],
+      "questionUk": "Коли hardware-in-the-loop (HIL) тестування виправдовує свою вартість?",
+      "shortAnswerUk": "HIL корисний тоді, коли поведінка ПЗ залежить від реалістичних електричних сигналів, таймінгів, навантажень чи замкнутих фізичних відгуків, які моки не можуть безпечно відтворити. Використовуйте програмовані прилади для подачі вхідних сигналів і вимірювання виходів, але тримайте сценарії детермінованими, калібруйте стенд, версіонуйте його конфігурацію та відокремлюйте відмови продукту від відмов оснастки, проводки чи вимірювальних приладів.",
+      "strongAnswerSignalsUk": [
+        "обґрунтовує застосування HIL обмеженнями моделі та ризиком",
+        "контролює й калібрує тестовий стенд",
+        "відрізняє справність оснастки від справності пристрою"
+      ],
+      "example": "A motor-control firmware team relies on HIL to test closed-loop PID response to a simulated load, since a pure software mock cannot reproduce the actual torque feedback delay. During one session the rig itself reports an out-of-range reading; the calibration log shows the current-sense clamp drifted, not the firmware, so the team fixes the fixture instead of chasing a false failure in the code.",
+      "exampleUk": "Команда прошивки керування двигуном покладається на HIL для тестування замкнутого PID-відгуку на симульоване навантаження, оскільки чистий програмний мок не може відтворити реальну затримку зворотного зв'язку по крутному моменту. Під час однієї сесії сам стенд видає показання поза діапазоном; журнал калібрування показує, що дрейфнув затискач вимірювання струму, а не прошивка, тож команда лагодить оснастку замість того, щоб шукати неіснуючий баг у коді.",
       "tags": [
         "embedded",
         "hardware-in-loop",
@@ -84,6 +111,15 @@
         "captures traceable hardware identity",
         "avoids testing only the newest engineering sample"
       ],
+      "questionUk": "Як би ви обрали матрицю пристроїв для тестування різних ревізій плати та варіантів компонентів?",
+      "shortAnswerUk": "Складіть карту відмінностей, які можуть змінити поведінку: степінг MCU, обсяг пам'яті, постачальник сенсора, радіомодуль, схема живлення, завантажувач, виробничі опції та регуляторний регіон. Обирайте представників за використанням, змінами та впливом можливих відмов, а потім додайте цільові перевірки для унікальних компонентів. Фіксуйте точну апаратну ідентичність у результатах, щоб успішний прогін ніколи не був відірваний від пристрою, який реально тестувався.",
+      "strongAnswerSignalsUk": [
+        "обирає варіанти за технічними відмінностями та ризиком",
+        "фіксує трасовану апаратну ідентичність",
+        "уникає тестування лише на найновішому інженерному зразку"
+      ],
+      "example": "A team ships firmware validated only on the latest engineering-sample boards with a newer MCU stepping. Customers receive units built from an older stepping still in inventory, and a timing-sensitive peripheral init routine fails intermittently on those units because the older silicon has slightly different reset timing that was never in the test matrix.",
+      "exampleUk": "Команда випускає прошивку, перевірену лише на найновіших інженерних зразках плат з новішим степінгом MCU. Клієнти отримують пристрої, зібрані зі старішого степінга, що ще лишався на складі, і чутлива до таймінгів процедура ініціалізації периферії періодично падає саме на цих пристроях, бо старіший кристал має трохи інший таймінг скидання, якого ніколи не було в тестовій матриці.",
       "tags": [
         "embedded",
         "device-matrix",
@@ -107,6 +143,15 @@
         "covers invalid as well as supported combinations",
         "uses a justified combinatorial strategy"
       ],
+      "questionUk": "Як QA має покривати опції часу компіляції та крос-компільовані конфігурації прошивки?",
+      "shortAnswerUk": "Розглядайте опції збірки, цільову архітектуру, розкладку лінкера та feature-флаги як вхідні дані продукту. Перевіряйте підтримувані комбінації, якомога раніше відхиляйте некоректні, архівуйте точний тулчейн і конфігурацію та запускайте smoke-тести на кожному випущеному бінарнику. Коли повний простір конфігурацій завеликий, застосовуйте попарне (pairwise) або ризик-орієнтоване вибіркове тестування, з окремим покриттям для опцій безпеки та захисту.",
+      "strongAnswerSignalsUk": [
+        "розглядає бінарник і тулчейн як трасовані артефакти",
+        "покриває як некоректні, так і підтримувані комбінації",
+        "використовує обґрунтовану комбінаторну стратегію"
+      ],
+      "example": "A firmware image built with a debug-logging flag accidentally enabled ships to production because the release pipeline never ran a smoke test on the exact binary that got signed and flashed — only on a nightly build with different flags. The debug UART output later floods a safety-relevant timing loop and causes missed deadlines in the field.",
+      "exampleUk": "Образ прошивки, зібраний з випадково увімкненим флагом debug-логування, потрапляє у продакшн, бо релізний пайплайн жодного разу не запускав smoke-тест саме на тому бінарнику, який підписали й прошили — лише на нічній збірці з іншими флагами. Пізніше debug-вивід через UART заповнює критичний за таймінгом цикл і призводить до пропущених дедлайнів у полі.",
       "tags": [
         "embedded",
         "cross-compilation",
@@ -130,6 +175,15 @@
         "injects stuck and noisy inputs",
         "checks safe defaults during lifecycle transitions"
       ],
+      "questionUk": "Що мають перевіряти тести GPIO та інших цифрових інтерфейсів окрім сценарію справної роботи (happy path)?",
+      "shortAnswerUk": "Перевіряйте напрямок, стани за замовчуванням і підтяжки (pull-up/pull-down), активну полярність, дебаунс, обробку фронтів, таймінги, некоректну переконфігурацію та безпечну поведінку під час завантаження, скидання й режиму низького споживання. Перевіряйте застрягання у високому чи низькому рівні, шумні та відсутні сигнали з реальними вимірами електричних рівнів, і переконайтеся, що діагностика відрізняє зовнішню проблему проводки від внутрішньої програмної несправності.",
+      "strongAnswerSignalsUk": [
+        "охоплює електричний стан і трактування прошивкою",
+        "інжектує застряглі та шумні сигнали",
+        "перевіряє безпечні значення за замовчуванням під час переходів життєвого циклу"
+      ],
+      "example": "A button-input GPIO is tested only by pressing the button in the lab. In the field, a corroded connector causes the pin to float instead of reading a clean high or low, and the firmware interprets the resulting noise as dozens of rapid presses. A test that injected a floating or noisy signal with a bench signal generator would have exposed the missing debounce logic before shipping.",
+      "exampleUk": "Вхідний GPIO для кнопки перевіряють лише натисканням кнопки в лабораторії. У полі корозія на роз'ємі призводить до того, що пін «висить» замість чіткого високого чи низького рівня, і прошивка трактує цей шум як десятки швидких натискань. Тест з інжекцією плаваючого чи шумного сигналу через лабораторний генератор виявив би відсутню логіку дебаунсу ще до випуску.",
       "tags": [
         "embedded",
         "gpio",
@@ -152,6 +206,15 @@
         "injects protocol-specific failures",
         "verifies bounded recovery rather than infinite retry"
       ],
+      "questionUk": "Як би ви надійно тестували обмін даними через UART, I²C або SPI?",
+      "shortAnswerUk": "Почніть із перевірки кадрування, адресації, порядку байтів, таймінгів та коректних транзакцій, а потім інжектуйте обрізання пакетів, пошкодження даних, несподівані пристрої на шині, стани зайнятості шини, відсутність підтверджень (ACK), варіації тактової частоти та скидання посеред передачі. Перевірте таймаути, повторні спроби, обмежені буфери, відновлення без перезавантаження там, де це потрібно, а також діагностичні дані як з боку пристрою, так і з незалежного захоплення протоколу.",
+      "strongAnswerSignalsUk": [
+        "використовує незалежний захват шини чи послідовного порту",
+        "інжектує специфічні для протоколу відмови",
+        "перевіряє обмежене відновлення, а не нескінченні повтори"
+      ],
+      "example": "During SPI integration testing, an engineer connects a logic analyzer independent of the device firmware and discovers that under bus contention the device occasionally misses the chip-select deassertion by a few microseconds, corrupting the next transaction. The firmware's own debug log looked clean because it only reported what the driver believed happened, not the actual bus signals.",
+      "exampleUk": "Під час інтеграційного тестування SPI інженер підключає логічний аналізатор, незалежний від прошивки пристрою, і виявляє, що за конкуренції на шині пристрій іноді пропускає зняття сигналу chip-select на кілька мікросекунд, що псує наступну транзакцію. Власний debug-лог прошивки виглядав чисто, бо показував лише те, що драйвер вважав таким, що сталося, а не реальні сигнали на шині.",
       "tags": [
         "embedded",
         "uart",
@@ -175,6 +238,15 @@
         "checks signal-database compatibility",
         "defines safe handling of stale or invalid data"
       ],
+      "questionUk": "Які ризики має охоплювати план тестування CAN-шини?",
+      "shortAnswerUk": "Охопіть пріоритет ідентифікаторів, кодування корисного навантаження, таймінги, завантаженість шини, дубльовані чи втрачені кадри, лічильники, контрольні суми, стани помилок і відновлення після відключення. Перевірте поведінку під час тиску арбітражу та за наявності некоректного трафіку, а також сумісність між вузлами й версіями бази сигналів (DBC). Для сигналів, пов'язаних з безпекою, потрібні явні очікування щодо застарілих даних, таймаутів і безпечного стану.",
+      "strongAnswerSignalsUk": [
+        "охоплює навантаження, арбітраж і відновлення після помилок",
+        "перевіряє сумісність версій бази сигналів",
+        "визначає безпечну обробку застарілих чи некоректних даних"
+      ],
+      "example": "A vehicle ECU is updated with a new CAN database (DBC) that renumbers one signal's scaling factor, but a downstream node still uses the old database. The test plan catches this only because it explicitly checks cross-node database version compatibility; without that check, the two nodes would have silently disagreed on a torque value in the field.",
+      "exampleUk": "ECU автомобіля оновлюють з новою базою сигналів CAN (DBC), де змінено коефіцієнт масштабування одного сигналу, але низхідний вузол досі використовує стару базу. План тестування виявляє це лише тому, що явно перевіряє сумісність версій бази сигналів між вузлами; без такої перевірки два вузли мовчки розійшлися б у значенні крутного моменту вже в полі.",
       "tags": [
         "embedded",
         "can-bus",
@@ -198,6 +270,15 @@
         "separates raw, converted and filtered values",
         "tests fault detection and safe fallback"
       ],
+      "questionUk": "Як би ви тестували конвеєр обробки сенсора, включно з калібруванням та обробкою несправностей?",
+      "shortAnswerUk": "Використовуйте трасовані еталонні вхідні сигнали в усьому робочому діапазоні, на межах, за наявності шуму та в різних умовах середовища. Перевірте перетворення сирих даних, одиниці виміру, фільтрацію, коефіцієнти калібрування, насичення та дрейф, а потім інжектуйте обрив, коротке замикання, застрягання, неправдоподібні та переривчасті показання. Підтвердіть діагностику, поведінку резервного режиму (fallback) та збереження калібрування після скидання й оновлення прошивки.",
+      "strongAnswerSignalsUk": [
+        "використовує незалежний трасований еталон",
+        "розділяє сирі, перетворені та відфільтровані значення",
+        "тестує виявлення несправностей і безпечний резервний режим"
+      ],
+      "example": "A temperature sensor pipeline is validated only against its own converted output on a bench. After a firmware update, a calibration-coefficient migration bug silently resets one channel's offset to zero, and readings drift by 8 degrees. Because no test compared the sensor against an independent traceable reference thermometer after the update, the regression reaches production.",
+      "exampleUk": "Конвеєр обробки датчика температури перевіряють лише за його власним перетвореним виходом на стенді. Після оновлення прошивки баг у міграції коефіцієнтів калібрування мовчки скидає зміщення одного каналу в нуль, і показання відхиляються на 8 градусів. Оскільки жоден тест не порівнював датчик з незалежним трасованим еталонним термометром після оновлення, регресія потрапляє у продакшн.",
       "tags": [
         "embedded",
         "sensors",
@@ -222,6 +303,15 @@
         "measures safe-state timing",
         "does not use the product software as the only protection"
       ],
+      "questionUk": "Як тести мають захищати людей та обладнання, коли прошивка керує актуатором?",
+      "shortAnswerUk": "Починайте з аналізу небезпек, дозволених робочих діапазонів і фізично безпечного тестового стенду з незалежними обмежувачами та аварійною зупинкою. Перевіряйте штатні команди, блокування (interlocks), розбіжність зворотного зв'язку, втрату команди, несправності сенсорів, скидання за watchdog і переходи живлення. Очікуваний безпечний стан і максимальний час реакції мають бути вимірюваними незалежно від програмного забезпечення, що тестується.",
+      "strongAnswerSignalsUk": [
+        "починає з небезпек та незалежних запобіжників",
+        "вимірює час переходу в безпечний стан",
+        "не покладається лише на ПЗ продукту як єдиний захист"
+      ],
+      "example": "A robotic arm's test rig relies solely on the firmware's own limit-switch software check to stop motion during testing. A bug in that same firmware causes it to ignore the switch, and the arm crashes into a fixture because there was no independent hardware-level emergency stop wired outside the software under test. After the incident, the lab adds a physical relay-based cutoff that trips regardless of firmware state.",
+      "exampleUk": "Тестовий стенд для роботизованої руки покладається лише на власну програмну перевірку кінцевого вимикача в прошивці для зупинки руху під час тестування. Баг у тій самій прошивці змушує її ігнорувати вимикач, і рука врізається в оснастку, бо не було незалежного апаратного аварійного стопу, підключеного поза межами тестованого ПЗ. Після інциденту лабораторія додає фізичне реле відключення, яке спрацьовує незалежно від стану прошивки.",
       "tags": [
         "embedded",
         "actuator",
@@ -245,6 +335,15 @@
         "balances stress with deterministic reproduction",
         "recognizes that instrumentation can change timing"
       ],
+      "questionUk": "Як би ви виявляли race conditions за участю переривань, задач і спільної периферії?",
+      "shortAnswerUk": "Визначте спільний стан і точки витіснення (pre-emption), а потім варіюйте таймінги переривань, пріоритети, навантаження й планування задач, перевіряючи інваріанти атомарності та порядку. Використовуйте стрес-повторення з відтворюваними seed-значеннями, інструментацію, що мінімально впливає на таймінги, та цільові юніт-тести навколо критичних секцій. Фіксуйте послідовність подій, потрібну для відтворення відмови, а не лише кінцевий симптом.",
+      "strongAnswerSignalsUk": [
+        "моделює спільний стан і точки витіснення",
+        "балансує стрес-тестування з детермінованим відтворенням",
+        "враховує, що інструментація може змінювати таймінги"
+      ],
+      "example": "A shared circular buffer between an ISR and the main task corrupts data roughly once every few thousand hours of runtime. Adding a debug print to catch the bug makes it disappear entirely, because the print call shifts timing enough to avoid the race. The team eventually reproduces it reliably by adding a fixed-delay hook only inside the critical section and sweeping the delay value, which pinpoints the missing atomic guard on the buffer index.",
+      "exampleUk": "Спільний кільцевий буфер між ISR та основною задачею псує дані приблизно раз на кілька тисяч годин роботи. Додавання debug-виводу для відлову бага змушує його повністю зникнути, бо виклик print зсуває таймінги достатньо, щоб уникнути гонки. Врешті команда надійно відтворює проблему, додаючи хук з фіксованою затримкою лише всередині критичної секції та перебираючи значення затримки, що вказує на відсутній атомарний захист індексу буфера.",
       "tags": [
         "embedded",
         "interrupts",
@@ -269,6 +368,15 @@
         "loads competing resources and interrupts",
         "distinguishes a hard deadline from an average target"
       ],
+      "questionUk": "Як тестувати дотримання дедлайну реального часу, а не лише середню продуктивність?",
+      "shortAnswerUk": "Визначте подію-тригер, точку завершення, максимальний дедлайн і допустимий джитер, а потім вимірюйте поведінку в найгіршому випадку за репрезентативного паралельного навантаження, активності переривань, тиску на пам'ять і трафіку периферії. Використовуйте апаратні мітки часу або відповідне трасування, звітуйте про розподіли та найгірші випадки, і фіксуйте помилку при пропущеному дедлайні, навіть якщо середнє значення залишається відмінним.",
+      "strongAnswerSignalsUk": [
+        "вимірює наскрізну затримку в найгіршому випадку",
+        "навантажує конкуруючі ресурси та переривання",
+        "відрізняє жорсткий дедлайн від середнього цільового показника"
+      ],
+      "example": "A control loop averages 2ms response time against a 5ms hard deadline, so it looks fine on a dashboard. Under a stress test with simultaneous CAN traffic bursts and a competing lower-priority task, the worst-case latency spikes to 7ms once every few thousand cycles, which a pure average-based test would never have caught but a worst-case latency histogram immediately flags.",
+      "exampleUk": "Керуючий цикл в середньому відповідає за 2 мс проти жорсткого дедлайну в 5 мс, тож на дашборді все виглядає добре. Під стрес-тестом з одночасними сплесками трафіку CAN і конкуруючою задачею нижчого пріоритету найгірша затримка раз на кілька тисяч циклів підскакує до 7 мс — тест на основі лише середнього значення такого б ніколи не виявив, а гістограма найгіршого випадку одразу показує проблему.",
       "tags": [
         "embedded",
         "real-time",
@@ -293,6 +401,15 @@
         "verifies reset cause and persistent data",
         "covers repeated-reset containment"
       ],
+      "questionUk": "Що має довести тестування watchdog?",
+      "shortAnswerUk": "Доведіть, що watchdog виявляє передбачені зависання за потрібний час, не може бути випадково «погодований» нездоровою задачею, і переводить пристрій на контрольований шлях відновлення. Інжектуйте заблоковані цикли, дедлоки та голодування планувальника; перевірте причину скидання, цілісність постійного стану, обмеження частоти циклів перезавантаження, діагностику та будь-яку ескалацію в безпечний режим.",
+      "strongAnswerSignalsUk": [
+        "інжектує реалістичні зависання, а не просто очікує",
+        "перевіряє причину скидання та збережені дані",
+        "охоплює стримування повторюваних перезавантажень"
+      ],
+      "example": "A watchdog test suite only verifies that the device resets after the main loop is stopped with a debugger breakpoint. It misses a real bug where a task deadlocks on a mutex but a lower-priority interrupt still services the watchdog periodically, keeping the device alive in a hung state indefinitely. A better test would deadlock the actual mutex used in production code and confirm no other path can service the watchdog while that task is stuck.",
+      "exampleUk": "Набір тестів watchdog перевіряє лише, що пристрій перезавантажується після зупинки основного циклу брейкпоінтом у дебагері. Він пропускає реальний баг, де задача потрапляє в дедлок на м'ютексі, але переривання нижчого пріоритету все ще періодично «годує» watchdog, тримаючи пристрій живим у зависшому стані нескінченно довго. Кращий тест створював би дедлок саме на тому м'ютексі, що використовується в продакшн-коді, і перевіряв би, що жоден інший шлях не може годувати watchdog, поки ця задача застрягла.",
       "tags": [
         "embedded",
         "watchdog",
@@ -316,6 +433,15 @@
         "forces allocation and buffer failures",
         "combines static analysis with runtime stress"
       ],
+      "questionUk": "Як би ви тестували прошивку в умовах обмеженого стека, купи (heap) та ємності буферів?",
+      "shortAnswerUk": "Встановіть статичні та рантайм-бюджети, інструментуйте пікові позначки використання (high-water marks) і перевіряйте найгірший випадок глибини викликів, паралелізму, сплесків повідомлень і некоректного вводу. Перевіряйте відмови виділення пам'яті, фрагментацію, виявлення переповнення стека та межі буферів, а потім запускайте достатньо довго, щоб виявити витоки. Збірка має падати або сигналізувати ще до зникнення запасу безпеки, а не лише після краху пристрою.",
+      "strongAnswerSignalsUk": [
+        "вимірює пікові позначки використання та запас безпеки",
+        "примусово викликає відмови виділення пам'яті та переповнення буферів",
+        "поєднує статичний аналіз з рантайм-стрес-тестуванням"
+      ],
+      "example": "A device passes all functional tests with 40% of its stack free on average. Nobody instruments the actual high-water mark, so nobody notices that a rare error-handling branch with deep nested calls uses 95% of the stack. Months later, a malformed network packet triggers exactly that branch in the field and causes a stack overflow crash that a worst-case stack analysis in CI would have caught in minutes.",
+      "exampleUk": "Пристрій проходить усі функціональні тести, маючи в середньому 40% вільного стека. Ніхто не інструментує реальну пікову позначку використання, тож ніхто не помічає, що рідкісна гілка обробки помилок з глибокою вкладеністю викликів використовує 95% стека. Через кілька місяців некоректний мережевий пакет запускає саме цю гілку в полі й спричиняє крах через переповнення стека — аналіз найгіршого випадку стека в CI виявив би це за кілька хвилин.",
       "tags": [
         "embedded",
         "memory",
@@ -340,6 +466,15 @@
         "injects partial writes and corruption",
         "tests versioned migration and recovery"
       ],
+      "questionUk": "Які ризики має охоплювати тестування збереження даних у flash чи EEPROM?",
+      "shortAnswerUk": "Перевірте значення після стирання, розкладку та версіонування, граничні розміри, контрольні суми, атомарні оновлення, вирівнювання зносу (wear levelling) та відновлення після перерваних записів. Де можливо, перевіряйте умови, близькі до межі витривалості (endurance), пошкоджуйте окремі записи та метадані, і переконайтеся, що значення за замовчуванням чи міграція не знищують мовчки дані користувача, які можна було б відновити. Відстежуйте сумісність між версіями завантажувача та прошивки.",
+      "strongAnswerSignalsUk": [
+        "охоплює фізичну витривалість і логічний формат",
+        "інжектує часткові записи та пошкодження",
+        "тестує версіоновану міграцію та відновлення"
+      ],
+      "example": "A configuration-storage layer is tested only with clean writes and reads. A field unit loses power mid-write during a routine settings update, and the recovery logic — never tested against a truly interrupted write — reads a half-updated record as valid, silently applying a corrupted configuration that disables a safety feature until the next factory reset.",
+      "exampleUk": "Шар збереження конфігурації тестують лише на чистих записах і читаннях. Пристрій у полі втрачає живлення посеред запису під час звичайного оновлення налаштувань, і логіка відновлення — яку ніколи не перевіряли на справді перерваному записі — читає наполовину оновлений запис як валідний, мовчки застосовуючи пошкоджену конфігурацію, що вимикає функцію безпеки аж до наступного скидання до заводських налаштувань.",
       "tags": [
         "embedded",
         "flash",
@@ -364,6 +499,15 @@
         "asserts atomic state invariants",
         "repeats across hardware and storage conditions"
       ],
+      "questionUk": "Як би ви тестували відновлення після втрати живлення під час критичного запису?",
+      "shortAnswerUk": "Автоматизуйте переривання живлення в багатьох контрольованих точках до, під час та після операцій стирання чи запису, а потім перезавантажуйте пристрій і перевіряйте інваріанти, а не одну очікувану послідовність байтів. Пристрій має обрати або старий, або новий валідний стан, виявляти пошкодження, уникати циклів перезавантаження (boot loop) і зберігати достатньо доказів для діагностики. Повторюйте це для різних напруг, ступенів зносу накопичувача та відповідних апаратних варіантів.",
+      "strongAnswerSignalsUk": [
+        "систематично перебирає точки переривання",
+        "перевіряє інваріанти атомарного стану",
+        "повторює тести для різних апаратних умов і станів накопичувача"
+      ],
+      "example": "A test rig cuts power to a device at 200 evenly spaced points during a firmware-settings write, then reboots and checks that the settings always equal either the pre-write or post-write value, never a mixture. At interruption point 143, the device boots with a partially-written checksum-valid-looking record that turns out to be neither old nor new state, exposing a bug where the checksum was written before the data instead of after.",
+      "exampleUk": "Тестовий стенд перериває живлення пристрою у 200 рівномірно розподілених точках під час запису налаштувань прошивки, а потім перезавантажує пристрій і перевіряє, що налаштування завжди дорівнюють або значенню до запису, або значенню після запису, але ніколи не суміші. У точці переривання №143 пристрій завантажується із частково записаним записом, який на вигляд має валідну контрольну суму, але насправді не є ні старим, ні новим станом — це виявляє баг, коли контрольна сума записувалася до даних, а не після.",
       "tags": [
         "embedded",
         "power-loss",
@@ -388,6 +532,15 @@
         "checks unsafe output and storage behaviour",
         "covers marginal and repeated power transitions"
       ],
+      "questionUk": "Яку поведінку слід перевіряти навколо просідання живлення (brownout), повільних наростань напруги та швидких циклів скидання?",
+      "shortAnswerUk": "Варіюйте напругу живлення та швидкість наростання навколо заданих порогів, водночас відстежуючи скидання, тактові сигнали, виходи та звернення до накопичувача. Переконайтеся, що пристрій ніколи не видає небезпечні сигнали на виходах, не записує пошкоджений стан і не потрапляє у невідновлюваний цикл перезавантаження. Тестуйте швидке вимкнення-вмикання, граничні (майже розряджені) батареї та послідовність подачі живлення на периферію за допомогою приладів, що записують напругу й події пристрою на одній часовій шкалі.",
+      "strongAnswerSignalsUk": [
+        "вимірює електричні та програмні події разом",
+        "перевіряє небезпечну поведінку виходів і накопичувача",
+        "охоплює граничні та повторювані переходи живлення"
+      ],
+      "example": "A device with a relay output is tested for brownout only by pulling power fully and watching it restart cleanly. During field testing with a programmable power supply that ramps voltage slowly through the brownout threshold, the relay briefly chatters and closes for 40ms at an undefined logic level before the reset circuit engages — a hazard that a hard on/off power test would never reveal.",
+      "exampleUk": "Пристрій з релейним виходом тестують на brownout лише повним відключенням живлення й спостереженням за чистим перезапуском. Під час польового тестування з програмованим блоком живлення, який повільно проводить напругу через поріг brownout, реле на 40 мс коротко «тремтить» і замикається за невизначеного логічного рівня, перш ніж спрацює схема скидання — небезпеку, яку жорсткий тест «увімкнути/вимкнути» ніколи б не виявив.",
       "tags": [
         "embedded",
         "brownout",
@@ -412,6 +565,15 @@
         "requires a bootable recovery path",
         "includes integrity, capacity and dependency failures"
       ],
+      "questionUk": "Що має включати матриця тестів для переривання оновлення прошивки?",
+      "shortAnswerUk": "Переривайте завантаження, валідацію, стирання, копіювання, підміну (swap), перше завантаження та підтвердження за допомогою втрати живлення, скидання, втрати мережі та пошкоджених даних. Перевірте, що старий образ залишається завантажуваним, доки новий не пройде валідацію, повторні спроби обмежені, метадані прогресу узгоджені, а пристрій або безпечно продовжує, або відкочується назад. Включіть сценарії низького обсягу сховища, низького заряду батареї та залежностей між кількома образами.",
+      "strongAnswerSignalsUk": [
+        "охоплює кожну фазу оновлення",
+        "вимагає завантажуваного шляху відновлення",
+        "включає відмови цілісності, ємності та залежностей"
+      ],
+      "example": "An OTA update test suite covers download interruption and power loss, but nobody tests what happens when the battery drops below the safe-write threshold exactly during the image-swap phase. In the field, that exact scenario leaves a device with a half-swapped bootloader pointer, bricking it — a gap the test matrix closes after the incident by adding a battery-level fault injection at each update phase.",
+      "exampleUk": "Набір тестів OTA-оновлення охоплює переривання завантаження та втрату живлення, але ніхто не тестує, що станеться, якщо заряд батареї впаде нижче безпечного порогу запису саме під час фази підміни образу (swap). У полі саме цей сценарій залишає пристрій з наполовину заміненим вказівником завантажувача, виводячи його з ладу — прогалину, яку матриця тестів закриває вже після інциденту, додавши інжекцію відмови за рівнем заряду на кожній фазі оновлення.",
       "tags": [
         "embedded",
         "firmware-update",
@@ -436,6 +598,15 @@
         "covers key and target identity",
         "verifies no path executes an unverified image"
       ],
+      "questionUk": "Як би ви тестували secure boot та валідацію образу прошивки?",
+      "shortAnswerUk": "Перевірте прийняті алгоритми, ключі, структуру образу та валідні підписи, а потім переконайтеся, що відхиляються змінені корисні дані, метадані, підписи, розміри та несумісні цілі. Тестуйте відкликані чи неправильні ключі, пошкоджені основний та кандидатний слоти, захищені лічильники безпеки та образи відновлення. Переконайтеся, що відмова є безпечною, спостережуваною і жодним шляхом не призводить до виконання неперевіреного коду.",
+      "strongAnswerSignalsUk": [
+        "тестує на підробку як корисне навантаження, так і метадані",
+        "охоплює ідентичність ключа та цілі",
+        "перевіряє відсутність шляху виконання неперевіреного образу"
+      ],
+      "example": "A secure-boot test suite verifies that a signature-altered image is rejected, but never tests an image with a valid signature computed over the wrong metadata (like a swapped target-device field). The team finds during a security audit that the bootloader validates the signature over the payload only, not the header, so a correctly-signed image built for a different product variant boots successfully and bricks a device with incompatible hardware.",
+      "exampleUk": "Набір тестів secure boot перевіряє, що образ зі зміненим підписом відхиляється, але ніколи не тестує образ з валідним підписом, обчисленим над неправильними метаданими (наприклад, підміненим полем цільового пристрою). Під час аудиту безпеки команда виявляє, що завантажувач перевіряє підпис лише над корисним навантаженням, а не над заголовком, тож коректно підписаний образ, зібраний для іншого варіанту продукту, успішно завантажується й виводить з ладу пристрій із несумісним обладнанням.",
       "tags": [
         "embedded",
         "secure-boot",
@@ -460,6 +631,15 @@
         "tests persistent-data compatibility",
         "requires an explicit supported-version policy"
       ],
+      "questionUk": "Як відкат (rollback), захист від пониження версії (downgrade protection) та сумісність даних взаємодіють у тестуванні прошивки?",
+      "shortAnswerUk": "Невдалий кандидат-образ має відкочуватися до відомого справного образу, але політика безпеки може забороняти вразливі версії, а мігровані дані можуть бути вже нечитабельними старою прошивкою. Тестуйте лічильники версій і безпеки, підтвердження образу, прямі та зворотні схеми даних, заводське відновлення й аварійну політику. Визначте, які шляхи відкату підтримуються, перш ніж їх тестувати.",
+      "strongAnswerSignalsUk": [
+        "відрізняє відкат заради надійності від пониження версії заради безпеки",
+        "тестує сумісність постійних даних",
+        "вимагає явної політики підтримуваних версій"
+      ],
+      "example": "A device rolls back to its previous firmware after a failed update, exactly as designed. But that previous version stored calibration data in a schema the new firmware had already migrated to a different format, so after rollback the old firmware reads garbage calibration values and the device operates out of spec until someone notices — the reliability rollback worked, but nobody had tested backward data-schema compatibility.",
+      "exampleUk": "Пристрій відкочується до попередньої прошивки після невдалого оновлення — саме так, як і було задумано. Але та попередня версія зберігала калібрувальні дані у форматі, який нова прошивка вже мігрувала в інший формат, тож після відкату стара прошивка читає сміттєві калібрувальні значення, і пристрій працює поза межами специфікації, доки хтось це не помітить — відкат заради надійності спрацював, але сумісність зворотної схеми даних ніхто не тестував.",
       "tags": [
         "embedded",
         "rollback",
@@ -484,6 +664,15 @@
         "tests version combinations in both directions",
         "protects an independent recovery mechanism"
       ],
+      "questionUk": "Що має входити в контракт між завантажувачем (bootloader) та образом застосунку?",
+      "shortAnswerUk": "Тестуйте розкладку пам'яті, вектори переривань і точки входу, метадані образу, підписання, правила версіонування, спільні дані, причини скидання, команди підтвердження та відновлення. Явно перевіряйте сумісні та несумісні комбінації, включно зі старішим завантажувачем разом з новішим застосунком. Реліз має явно вказувати підтримувану матрицю та зберігати незалежно доступний шлях відновлення.",
+      "strongAnswerSignalsUk": [
+        "охоплює пам'ять, метадані та передавання управління у життєвому циклі",
+        "тестує комбінації версій в обох напрямках",
+        "захищає незалежний механізм відновлення"
+      ],
+      "example": "A team tests a newer bootloader against a newer application and an older bootloader against an older application, both pass. Nobody tests an old bootloader still deployed in the field paired with a newly released application image, which uses a shared-data structure field the old bootloader never learned to parse — the application silently reads garbage configuration on boot until the mismatch is found weeks after release.",
+      "exampleUk": "Команда тестує новіший завантажувач з новішим застосунком і старіший завантажувач зі старішим застосунком — обидва проходять. Ніхто не тестує старий завантажувач, що досі розгорнутий у полі, разом з щойно випущеним образом застосунку, який використовує поле структури спільних даних, яке старий завантажувач ніколи не вмів розпізнавати — застосунок мовчки читає сміттєву конфігурацію при завантаженні, доки невідповідність не знаходять через кілька тижнів після релізу.",
       "tags": [
         "embedded",
         "bootloader",
@@ -507,6 +696,15 @@
         "tests duplicate, replay and interrupted provisioning",
         "reconciles device and backend ownership state"
       ],
+      "questionUk": "Як би ви тестували ідентичність та провіжинінг (provisioning) IoT-пристрою?",
+      "shortAnswerUk": "Перевірте, що кожен пристрій отримує унікальну, трасовану ідентичність та захищені облікові дані через авторизований виробничий процес чи процес підключення (onboarding). Тестуйте дублювання ідентичності, повторне відтворення (replay), частковий провіжинінг, ротацію облікових даних, передачу власності, скидання до заводських налаштувань і виведення з експлуатації. Секрети не повинні з'являтися в логах чи незахищених інтерфейсах, а стан бекенду має узгоджуватися з фізичним пристроєм.",
+      "strongAnswerSignalsUk": [
+        "охоплює повний життєвий цикл ідентичності",
+        "тестує дублювання, replay та переривання провіжинінгу",
+        "узгоджує стан власності пристрою та бекенду"
+      ],
+      "example": "A manufacturing line provisions unique device certificates for each unit, but a test lab discovers that if the provisioning process is interrupted right after certificate generation but before the backend registration call completes, the device ends up with valid credentials that the backend has never heard of. Such a device can authenticate to services but appears to no owner, becoming an orphaned identity that nobody can decommission remotely.",
+      "exampleUk": "Виробнича лінія видає унікальні сертифікати кожному пристрою, але тестова лабораторія виявляє, що якщо процес провіжинінгу перервати одразу після генерації сертифіката, але до завершення виклику реєстрації в бекенді, пристрій отримує валідні облікові дані, про які бекенд нічого не знає. Такий пристрій може автентифікуватися в сервісах, але не належить жодному власнику, стаючи «осиротілою» ідентичністю, яку ніхто не може віддалено вивести з експлуатації.",
       "tags": [
         "iot",
         "device-identity",
@@ -530,6 +728,15 @@
         "tests authorization as well as authentication",
         "compares development and production configuration"
       ],
+      "questionUk": "Що слід тестувати щодо логічного доступу до інтерфейсів IoT-пристрою?",
+      "shortAnswerUk": "Складіть інвентар локальних, мережевих, радіо-, debug- та сервісних інтерфейсів, включно з тими, що вимкнені за нормальної роботи. Перевірте автентифікацію, авторизацію, обмеження частоти запитів, керування сесіями та принцип найменших привілеїв; відхиляйте недокументовані команди та некоректний ввід. Переконайтеся, що продакшн-збірки вимикають чи захищають debug-доступ, і що доступ для відновлення не може обійти політику власності чи оновлення.",
+      "strongAnswerSignalsUk": [
+        "включає фізичні debug- та сервісні інтерфейси",
+        "тестує авторизацію так само, як і автентифікацію",
+        "порівнює конфігурацію розробки та продакшну"
+      ],
+      "example": "A security review finds that a device's UART debug console, disabled by a firmware flag in production, still fully responds to commands if an attacker triggers a specific reset sequence that the flag check doesn't run early enough to block. The functional test suite only ever tested the console through the officially documented enable path and never tried to reach it in a production-configured build through the reset-sequence bypass.",
+      "exampleUk": "Перевірка безпеки виявляє, що debug-консоль UART пристрою, вимкнена флагом прошивки у продакшні, все ще повністю відповідає на команди, якщо зловмисник ініціює специфічну послідовність скидання, яку перевірка флага не встигає заблокувати достатньо рано. Набір функціональних тестів перевіряв консоль лише через офіційно задокументований шлях увімкнення й ніколи не намагався дістатися до неї в продакшн-конфігурації через обхід через послідовність скидання.",
       "tags": [
         "iot",
         "interfaces",
@@ -553,6 +760,15 @@
         "tests key and certificate lifecycle failures",
         "rejects insecure fallback behaviour"
       ],
+      "questionUk": "Як QA має перевіряти захист даних на підключеному пристрої з обмеженими ресурсами?",
+      "shortAnswerUk": "Класифікуйте облікові дані, дані користувача, телеметрію та конфігурацію, а потім перевіряйте захист у стані спокою, під час передачі та через локальні інтерфейси в межах обмежень пристрою. Тестуйте зберігання ключів, валідацію сертифікатів, ротацію, помилки годинника, редагування (маскування) даних і скидання до заводських налаштувань. Переконайтеся, що збої не призводять до мовчазного відкату на незашифрований текст і не розкривають секрети через логи крашів і діагностику.",
+      "strongAnswerSignalsUk": [
+        "охоплює локальне сховище, транспорт і діагностику",
+        "тестує відмови життєвого циклу ключів і сертифікатів",
+        "відхиляє небезпечну резервну поведінку (fallback)"
+      ],
+      "example": "A device's TLS stack is tested extensively for successful connections, but nobody tests what happens when the device's real-time clock is wrong after a battery replacement and the server certificate appears expired. The firmware falls back to an unencrypted connection rather than refusing to connect, silently sending telemetry in plaintext for days until someone notices the anomaly in network captures.",
+      "exampleUk": "Стек TLS пристрою докладно тестується на успішні з'єднання, але ніхто не перевіряє, що станеться, коли годинник реального часу пристрою збився після заміни батареї, і сертифікат сервера здається протермінованим. Прошивка відкочується на незашифроване з'єднання замість відмови в підключенні, мовчки надсилаючи телеметрію відкритим текстом протягом кількох днів, доки хтось не помітить аномалію в мережевих захопленнях.",
       "tags": [
         "iot",
         "data-protection",
@@ -576,6 +792,15 @@
         "checks queue bounds, ordering and duplicates",
         "includes power impact of retry behaviour"
       ],
+      "questionUk": "Як би ви тестували IoT-пристрій під час періодів офлайну та повторних перепідключень?",
+      "shortAnswerUk": "Варіюйте тривалість відключення, втрату пакетів, проблеми DNS, дійсність часу та зміни мережі, генеруючи при цьому локальні події. Перевірте обмежені повторні спроби та backoff, локальну роботу, ємність черги, порядок, обробку дублікатів і узгодження після перепідключення. Пристрій не повинен вичерпувати батарею чи сховище, а бекенд має розрізняти затримані дані та поточний стан.",
+      "strongAnswerSignalsUk": [
+        "охоплює локальну поведінку та узгодження з бекендом",
+        "перевіряє межі черги, порядок і дублікати",
+        "враховує вплив поведінки повторних спроб на споживання енергії"
+      ],
+      "example": "A sensor node stores readings locally during a three-day network outage and successfully reconnects, but the reconnect test only checked that the data arrived, not that it arrived in order. The backend timestamps events by receipt time rather than device time, so the three days of backlog appear to happen in the wrong order on a dashboard, temporarily showing an impossible sequence of alarm states.",
+      "exampleUk": "Сенсорний вузол локально зберігає показання під час триденного відключення мережі й успішно перепідключається, але тест перепідключення перевіряв лише те, що дані прийшли, а не те, що вони прийшли в правильному порядку. Бекенд проставляє мітки часу подіям за часом отримання, а не за часом на пристрої, тож три дні накопичених даних відображаються на дашборді в неправильному порядку, тимчасово показуючи неможливу послідовність станів тривоги.",
       "tags": [
         "iot",
         "offline",
@@ -600,6 +825,15 @@
         "works under intermittent connectivity",
         "balances diagnostic value with privacy and resource limits"
       ],
+      "questionUk": "Які виробничі докази потрібні для діагностики відмов у парку IoT-пристроїв?",
+      "shortAnswerUk": "Збирайте ідентичність пристрою та обладнання, версії прошивки й конфігурації, причину скидання, стан оновлення, стан ресурсів, зв'язність та обмежений набір діагностичних подій з надійними мітками часу. Перевірте вивантаження за поганого зв'язку, засоби контролю приватності та політику зберігання, а потім доведіть, що оператори можуть відрізнити дефект пристрою від відмови бекенду, мережі, батареї чи середовища, не збираючи зайвих чутливих сирих даних.",
+      "strongAnswerSignalsUk": [
+        "корелює докази з пристрою, версій і бекенду",
+        "працює за нестабільного зв'язку",
+        "балансує діагностичну цінність з приватністю та обмеженнями ресурсів"
+      ],
+      "example": "A fleet of ten thousand devices reports a spike in crashes, but the diagnostic payload only records the crash reason code, not the firmware version or reset history. Engineers spend two weeks manually correlating crash timestamps with a separate deployment log before confirming the crashes are isolated to a specific firmware version rolled out to a specific region, a link that a properly tagged diagnostic event would have shown immediately.",
+      "exampleUk": "У парку з десяти тисяч пристроїв фіксують сплеск крашів, але діагностичне повідомлення записує лише код причини краху, а не версію прошивки чи історію скидань. Інженери два тижні вручну зіставляють мітки часу крашів з окремим логом розгортань, перш ніж підтвердити, що краші стосуються лише конкретної версії прошивки, розкоченої в конкретному регіоні — зв'язок, який правильно розмічена діагностична подія показала б одразу.",
       "tags": [
         "iot",
         "fleet",
@@ -624,6 +858,15 @@
         "combines workload with environmental conditions",
         "defines thresholds and recovery events before execution"
       ],
+      "questionUk": "Що має вимірювати тривалий тест надійності embedded-пристрою?",
+      "shortAnswerUk": "Запускайте репрезентативні навантаження в актуальних умовах температури, живлення та зв'язності, водночас відстежуючи пам'ять, дескриптори, черги, таймінги, записи в сховище, поведінку радіомодуля, скидання й коректність вихідних даних. Включайте періодичні події несправностей і відновлення. Визначте пороги тренду та відмов до початку прогону, зберігайте точну апаратну ідентичність і аналізуйте деградацію, а не просто звітуйте, що пристрій вижив.",
+      "strongAnswerSignalsUk": [
+        "вимірює тренди й коректність з часом",
+        "поєднує навантаження з умовами середовища",
+        "визначає пороги та події відновлення до початку виконання"
+      ],
+      "example": "A 30-day soak test reports success because the device is still running and responding at the end. Nobody plotted memory usage over time, so a slow 200-byte-per-day heap leak went unnoticed — it would have taken about 14 months to crash the device, well past any test window, but a fleet of thousands hitting the same leak at different rates causes a wave of field resets within a year.",
+      "exampleUk": "30-денний soak-тест звітує про успіх, бо пристрій наприкінці все ще працює й відповідає. Ніхто не побудував графік використання пам'яті в часі, тож повільний витік купи в 200 байт на день лишився непоміченим — знадобилося б близько 14 місяців, щоб пристрій впав, що значно перевищує будь-яке тестове вікно, але парк з тисяч пристроїв, що стикаються з тим самим витоком з різною швидкістю, спричиняє хвилю перезавантажень у полі протягом року.",
       "tags": [
         "embedded",
         "soak",
@@ -648,6 +891,15 @@
         "controls fixture health and measurement uncertainty",
         "links results to device identity and provisioning"
       ],
+      "questionUk": "Чим виробниче тестування відрізняється від верифікації на етапі розробки для embedded-пристрою?",
+      "shortAnswerUk": "Виробниче тестування має швидко виявляти дефекти складання, компонентів, програмування та калібрування на кожному екземплярі за допомогою контрольованої оснастки й трасованих меж допуску. Верифікація на етапі розробки глибше доводить коректність поведінки конструкції. Перевіряйте самотестування оснастки, еталонні («золоті») зразки, невизначеність вимірювань, зв'язок із серійним номером, процес переробки браку (rework) та безпечний провіжинінг, щоб швидкий прохід тесту залишався змістовним і аудитованим.",
+      "strongAnswerSignalsUk": [
+        "розрізняє докази коректності конструкції та поодиничний скринінг кожного екземпляра",
+        "контролює справність оснастки та невизначеність вимірювань",
+        "пов'язує результати з ідентичністю пристрою та провіжинінгом"
+      ],
+      "example": "A factory test fixture passes every unit for six weeks because its own reference resistor drifted out of calibration and started reading all units as within spec. Nobody had scheduled periodic fixture self-tests against a golden unit with known-bad characteristics, so an entire batch of out-of-tolerance boards ships before a customer complaint traces the problem back to the fixture itself, not the product.",
+      "exampleUk": "Виробнича тестова оснастка пропускає кожен екземпляр протягом шести тижнів, бо її власний еталонний резистор вийшов з калібрування й почав показувати всі пристрої як такі, що відповідають специфікації. Ніхто не запланував періодичне самотестування оснастки на еталонному зразку з відомо поганими характеристиками, тож ціла партія плат поза допуском відвантажується, перш ніж скарга клієнта не приведе до виявлення проблеми саме в оснастці, а не в продукті.",
       "tags": [
         "embedded",
         "manufacturing",
@@ -672,6 +924,15 @@
         "runs fixture health checks and automated recovery",
         "classifies lab failures separately from product failures"
       ],
+      "questionUk": "Як би ви спроєктували надійну автоматизацію для спільної лабораторії embedded-пристроїв?",
+      "shortAnswerUk": "Надайте кожній платі, приладу, реле й артефакту прошивки трасовану ідентичність; резервуйте ресурси атомарно й запускайте перевірки справності оснастки перед тестами продукту. Підтримуйте віддалене керування живленням і відновлення, збирайте докази з послідовного порту та приладів, ізолюйте небезпечні операції та карантинуйте несправні стенди. Результати мають відокремлювати відмову інфраструктури від відмови продукту й залишатися відтворюваними на іменованій конфігурації.",
+      "strongAnswerSignalsUk": [
+        "керує платами та приладами як версіонованими ресурсами",
+        "запускає перевірки справності оснастки та автоматичне відновлення",
+        "класифікує відмови лабораторії окремо від відмов продукту"
+      ],
+      "example": "Two engineers unknowingly grab the same test board through separate scripts because the lab automation had no resource-reservation lock, and their conflicting relay commands corrupt both test runs' results. The team adds an atomic reservation system with a fixture health check that runs before every job, and a month later that same health check quarantines a board whose USB-to-serial adapter had started dropping characters, preventing a wave of false product failures.",
+      "exampleUk": "Два інженери, не знаючи один про одного, захоплюють одну й ту саму тестову плату через окремі скрипти, бо автоматизація лабораторії не мала блокування резервування ресурсів, і їхні конфліктуючі команди реле псують результати обох прогонів. Команда додає систему атомарного резервування з перевіркою справності оснастки перед кожним завданням, і за місяць та сама перевірка карантинує плату, чий USB-to-serial адаптер почав губити символи, запобігаючи хвилі хибних відмов продукту.",
       "tags": [
         "embedded",
         "test-lab",

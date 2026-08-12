@@ -12,8 +12,23 @@
         "distinguishes state setup from interaction verification",
         "notes that framework terminology can differ"
       ],
-      "tags": ["test-doubles", "unit-testing", "sdet"],
-      "sourceIds": ["android-test-doubles"],
+      "questionUk": "У чому різниця між dummy, stub, spy, mock і fake?",
+      "shortAnswerUk": "Усі вони — тестові дублери (test doubles), але виконують різні задачі. Dummy просто заповнює параметр, stub повертає заздалегідь налаштовані відповіді, spy записує факти викликів, mock несе в собі очікування щодо взаємодії, а fake — це легка робоча реалізація, наприклад репозиторій в пам'яті (in-memory). Термінологія в різних бібліотеках може відрізнятися, тому краще пояснювати потрібну поведінку, а не покладатися лише на назву.",
+      "strongAnswerSignalsUk": [
+        "використовує test double як загальний (парасольковий) термін",
+        "розрізняє налаштування стану від перевірки взаємодії",
+        "зазначає, що термінологія у різних фреймворках може відрізнятися"
+      ],
+      "example": "In a Mockito-based suite, a candidate stubs a payment gateway with when(gateway.charge(any())).thenReturn(success) to drive a happy-path branch, but then adds an unnecessary verify(gateway).charge(...), turning a stub into an accidental mock and making the test fail on any harmless refactor of the call order.",
+      "exampleUk": "У наборі тестів на Mockito кандидат налаштовує stub для платіжного шлюзу через when(gateway.charge(any())).thenReturn(success), щоб прогнати happy-path гілку, але потім додає зайвий verify(gateway).charge(...), перетворюючи stub на випадковий mock і змушуючи тест падати навіть при нешкідливому рефакторингу порядку викликів.",
+      "tags": [
+        "test-doubles",
+        "unit-testing",
+        "sdet"
+      ],
+      "sourceIds": [
+        "android-test-doubles"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -28,8 +43,25 @@
         "avoids interaction assertions for implementation details",
         "pairs doubles with contract or integration evidence"
       ],
-      "tags": ["test-doubles", "unit-testing", "test-design", "sdet"],
-      "sourceIds": ["android-test-doubles", "playwright-best-practices"],
+      "questionUk": "Як обрати між stub, mock, spy, fake і реальною залежністю?",
+      "shortAnswerUk": "Обирайте найпростішого співучасника (collaborator), який зберігає поведінку, якій тест має довіряти. Використовуйте stub, щоб прогнати конкретну гілку логіки, mock або spy — лише якщо сама взаємодія є зовнішньо значущою поведінкою, fake — для багаторазової поведінки зі станом, а реальну залежність — коли точність відтворення важливіша за швидкість і витрати на налаштування. Обов'язково залишайте хоча б одну контрактну або інтеграційну перевірку там, де дублер може розійтися з реальністю.",
+      "strongAnswerSignalsUk": [
+        "відштовхується від поведінки та межі тесту",
+        "уникає перевірок взаємодії для деталей реалізації",
+        "поєднує дублери з контрактними або інтеграційними доказами"
+      ],
+      "example": "A candidate testing a checkout service stubs the tax-calculation client to return a fixed value for the order-total test, but keeps a separate contract test against the real tax API so a schema change in production is still caught even though the unit test never talks to it.",
+      "exampleUk": "Кандидат, що тестує сервіс оформлення замовлення, робить stub для клієнта розрахунку податків, щоб повертати фіксоване значення в тесті на суму замовлення, але залишає окремий контрактний тест проти реального податкового API, щоб зміна схеми на проді все одно була виявлена, навіть якщо unit-тест ніколи не звертається до нього напряму.",
+      "tags": [
+        "test-doubles",
+        "unit-testing",
+        "test-design",
+        "sdet"
+      ],
+      "sourceIds": [
+        "android-test-doubles",
+        "playwright-best-practices"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -44,8 +76,25 @@
         "mentions behavioral drift between doubles and real dependencies",
         "proposes outcome assertions and boundary checks"
       ],
-      "tags": ["test-doubles", "maintainability", "unit-testing", "sdet"],
-      "sourceIds": ["android-test-doubles", "playwright-best-practices"],
+      "questionUk": "Як надмірне мокання (over-mocking) може зробити набір тестів ненадійним, навіть коли він проходить?",
+      "shortAnswerUk": "Тести з надмірним мокуванням фактично відтворюють реалізацію, а не перевіряють видиму (observable) поведінку. Вони проходять на вигаданій поведінці залежностей, падають при нешкідливому рефакторингу і пропускають несумісні схеми, значення за замовчуванням, таймінги та режими відмов. Варто перевіряти, чи справді кожна взаємодія важлива для споживача, віддавати перевагу перевіркам стану або результату, і зберігати контрактні та інтеграційні тести на реальних межах системи.",
+      "strongAnswerSignalsUk": [
+        "визначає хибну впевненість і прив'язку до деталей рефакторингу",
+        "згадує розбіжність поведінки між дублерами і реальними залежностями",
+        "пропонує перевірки результату та перевірки на межах системи"
+      ],
+      "example": "A team mocks an inventory client to always return inStock: true; six months later the real API starts returning null for discontinued items, and the mocked unit suite stays green while checkout crashes in production because no contract test ever exercised that field.",
+      "exampleUk": "Команда мокає клієнт складського обліку так, щоб він завжди повертав inStock: true; через півроку реальний API починає повертати null для знятих з продажу товарів, і набір юніт-тестів із моками залишається зеленим, тоді як оформлення замовлення падає в проді, бо жоден контрактний тест ніколи не перевіряв це поле.",
+      "tags": [
+        "test-doubles",
+        "maintainability",
+        "unit-testing",
+        "sdet"
+      ],
+      "sourceIds": [
+        "android-test-doubles",
+        "playwright-best-practices"
+      ],
       "prevalence": "Common"
     },
     {
@@ -60,8 +109,25 @@
         "covers failures and state semantics, not only happy paths",
         "treats unsupported fake behavior explicitly"
       ],
-      "tags": ["test-doubles", "contract-testing", "ci", "automation-engineer"],
-      "sourceIds": ["android-test-doubles", "openapi-31"],
+      "questionUk": "Як запобігти розбіжності fake-сервісу або репозиторію в пам'яті з реальною реалізацією?",
+      "shortAnswerUk": "Визначте спільний поведінковий контракт і запускайте однакові приклади відповідності (conformance) як проти fake, так і проти реальної реалізації. Охопіть схеми, значення за замовчуванням, семантику помилок, порядок, ідемпотентність та важливу поведінку в умовах конкурентності; версіонуйте контракт і запускайте його в CI для обох постачальників. Fake має швидко падати (fail fast) на непідтримуваній поведінці, а не мовчки повертати зручний результат.",
+      "strongAnswerSignalsUk": [
+        "запускає один набір контрактних тестів як проти fake, так і проти реальної реалізації",
+        "охоплює відмови та семантику стану, а не лише щасливі сценарії",
+        "явно обробляє непідтримувану поведінку fake"
+      ],
+      "example": "A team's in-memory repository silently allowed duplicate primary keys while Postgres enforced a unique constraint; a shared contract-test suite that runs against both the fake and the real database catches the mismatch the moment someone adds a test relying on that duplicate-insert behavior.",
+      "exampleUk": "Репозиторій команди в пам'яті мовчки дозволяв дублікати первинних ключів, тоді як Postgres накладав обмеження унікальності; спільний набір контрактних тестів, що запускається як проти fake, так і проти реальної бази, відразу виявляє розбіжність, щойно хтось додає тест, що покладається на можливість вставити дублікат.",
+      "tags": [
+        "test-doubles",
+        "contract-testing",
+        "ci",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "android-test-doubles",
+        "openapi-31"
+      ],
       "prevalence": "Common"
     },
     {
@@ -76,8 +142,24 @@
         "uses invariants rather than duplicating implementation logic",
         "mentions shrinking or minimized reproducible failures"
       ],
-      "tags": ["property-based-testing", "test-design", "automation-engineer", "sdet"],
-      "sourceIds": ["hypothesis-property-testing"],
+      "questionUk": "Що таке property-based тестування і коли воно корисніше за тестування на основі прикладів (example-based)?",
+      "shortAnswerUk": "Property-based тестування генерує велику кількість вхідних даних із заданого домену і перевіряє інваріанти, які мають виконуватись завжди — наприклад, що сортування зберігає всі елементи та їхній відносний порядок. Цей підхід особливо цінний для парсерів, перетворень даних, протоколів і коду з великою кількістю правил та вхідних станів. Варто залишати кілька читабельних прикладів окремо, обмежувати генератори змістовними даними та робити падіння відтворюваними за допомогою збережених seed-значень і мінімізованих контрприкладів.",
+      "strongAnswerSignalsUk": [
+        "визначає властивості (properties) та згенеровані домени вхідних даних",
+        "використовує інваріанти замість дублювання логіки реалізації",
+        "згадує shrinking або мінімізовані відтворювані падіння"
+      ],
+      "example": "Testing a JSON-serialization function with Hypothesis, a property like deserialize(serialize(x)) == x catches a bug where large integers silently lose precision, something an example-based suite with a handful of hand-picked numbers never happened to hit.",
+      "exampleUk": "Тестуючи функцію серіалізації в JSON за допомогою Hypothesis, властивість на кшталт deserialize(serialize(x)) == x виявляє баг, коли великі цілі числа мовчки втрачають точність, — те, на що набір тестів на основі кількох вручну підібраних прикладів так і не натрапив би.",
+      "tags": [
+        "property-based-testing",
+        "test-design",
+        "automation-engineer",
+        "sdet"
+      ],
+      "sourceIds": [
+        "hypothesis-property-testing"
+      ],
       "prevalence": "Common"
     },
     {
@@ -92,8 +174,24 @@
         "targets boundaries and meaningful invalid data",
         "keeps minimized counterexamples reproducible"
       ],
-      "tags": ["property-based-testing", "generators", "shrinking", "sdet"],
-      "sourceIds": ["hypothesis-property-testing"],
+      "questionUk": "Як спроєктувати корисні генератори та shrinking для property-based тесту?",
+      "shortAnswerUk": "Явно моделюйте домени валідних і невалідних вхідних даних, зміщуйте генерацію в бік граничних значень і структурно цікавих випадків, і зберігайте залежності між пов'язаними полями. Shrinker має зводити падіння до найменшого випадку, який усе ще порушує властивість, не ламаючи при цьому необхідну структуру даних. Фіксуйте seed і мінімізований приклад, і відхиляйте якомога менше значень, щоб генерація залишалась ефективною та репрезентативною.",
+      "strongAnswerSignalsUk": [
+        "моделює залежні поля замість того, щоб генерувати їх незалежно",
+        "цілиться в граничні значення та змістовні невалідні дані",
+        "зберігає мінімізовані контрприклади відтворюваними"
+      ],
+      "example": "For a date-range generator, a naive implementation generates start and end independently and mostly produces invalid ranges where end precedes start; modeling end as start plus a generated duration keeps generated cases valid by construction while still covering same-day, cross-month and leap-year boundaries.",
+      "exampleUk": "Для генератора діапазонів дат наївна реалізація генерує start і end незалежно і здебільшого отримує невалідні діапазони, де end раніше за start; моделювання end як start плюс згенерована тривалість робить згенеровані випадки валідними за побудовою, водночас охоплюючи межі в межах одного дня, на стику місяців і високосних років.",
+      "tags": [
+        "property-based-testing",
+        "generators",
+        "shrinking",
+        "sdet"
+      ],
+      "sourceIds": [
+        "hypothesis-property-testing"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -108,8 +206,24 @@
         "explains killed and surviving mutants",
         "avoids treating mutation score as an absolute quality number"
       ],
-      "tags": ["mutation-testing", "code-coverage", "unit-testing", "sdet"],
-      "sourceIds": ["stryker-mutation-testing"],
+      "questionUk": "Що показує мутаційне тестування, чого не показує покриття рядків коду (line coverage)?",
+      "shortAnswerUk": "Мутаційне тестування вносить невеликі зміни (мутації) у продакшн-код і перевіряє, чи впадуть тести. Рядок може бути покритий, але мати слабкі або відсутні перевірки (assertions), тоді як мутант, що вижив (surviving mutant), показує, що правдоподібна зміна поведінки не була виявлена. Mutation score — це діагностичний сигнал, а не універсальна ціль, оскільки еквівалентні, неважливі та затратні мутанти все одно потребують експертної оцінки.",
+      "strongAnswerSignalsUk": [
+        "розрізняє виконання коду від виявлення некоректної поведінки",
+        "пояснює вбитих (killed) і тих, що вижили (surviving), мутантів",
+        "не трактує mutation score як абсолютний показник якості"
+      ],
+      "example": "A calculateDiscount function has 100% line coverage, but Stryker mutates the threshold check from greater-than to greater-than-or-equal and no test fails, revealing that the boundary value itself was never actually asserted, only that the function ran without throwing.",
+      "exampleUk": "Функція calculateDiscount має 100% покриття рядків, але Stryker мутує перевірку порогу з \"більше\" на \"більше або дорівнює\", і жоден тест не падає — це показує, що граничне значення насправді ніколи не перевірялося, а лише те, що функція відпрацювала без винятку.",
+      "tags": [
+        "mutation-testing",
+        "code-coverage",
+        "unit-testing",
+        "sdet"
+      ],
+      "sourceIds": [
+        "stryker-mutation-testing"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -124,8 +238,25 @@
         "separates pull-request feedback from scheduled depth",
         "reviews surviving mutants instead of gaming the metric"
       ],
-      "tags": ["mutation-testing", "ci", "test-selection", "automation-engineer"],
-      "sourceIds": ["stryker-mutation-testing", "dora"],
+      "questionUk": "Як впровадити мутаційне тестування, щоб CI не став неприйнятно повільним?",
+      "shortAnswerUk": "Починайте з ризикованого доменного коду та змінених файлів, виключайте згенерований або тривіальний код, і встановіть базову лінію (baseline), перш ніж додавати поріг, що поступово підвищується (ratcheting threshold). Запускайте фокусований набір мутацій на пул-реквестах і ширший — за розкладом, кешуйте або повторно використовуйте покриття там, де це підтримується, і аналізуйте мутантів, що вижили, шукаючи відсутні перевірки, а не механічно женіться за цифрою.",
+      "strongAnswerSignalsUk": [
+        "використовує ризик і обсяг змін для контролю витрат",
+        "розділяє швидкий фідбек на пул-реквестах і глибший запуск за розкладом",
+        "аналізує мутантів, що вижили, замість маніпуляцій з метрикою"
+      ],
+      "example": "A team runs Stryker only against files touched in a pull request's diff with a 15-minute cap, then triggers a full-repo mutation run nightly on a schedule, catching a surviving mutant in the pricing module's rounding logic that the fast PR-scoped run would have missed because that file hadn't changed recently.",
+      "exampleUk": "Команда запускає Stryker лише на файлах, змінених у diff пул-реквесту, з обмеженням у 15 хвилин, а повний прогін мутацій по всьому репозиторію запускає щоночі за розкладом — це дозволяє виявити мутанта, що вижив, у логіці округлення модуля ціноутворення, якого швидкий прогін по PR не помітив би, бо цей файл давно не змінювався.",
+      "tags": [
+        "mutation-testing",
+        "ci",
+        "test-selection",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "stryker-mutation-testing",
+        "dora"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -140,8 +271,24 @@
         "names visual defects that semantic assertions miss",
         "does not replace functional or accessibility testing"
       ],
-      "tags": ["visual-regression", "screenshots", "web-qa", "automation-engineer"],
-      "sourceIds": ["playwright-visual-comparisons"],
+      "questionUk": "Що таке візуальне регресійне тестування і які дефекти воно добре виявляє?",
+      "shortAnswerUk": "Візуальне регресійне тестування порівнює відрендерену сторінку чи компонент із затвердженим базовим (baseline) зображенням. Воно ефективно виявляє ненавмисні зміни в макеті, типографіці, відступах, кольорах, обрізанні елементів та адаптивній верстці, які асертії щодо DOM можуть пропустити. Воно має доповнювати семантичні перевірки та перевірки доступності, оскільки збіг скриншотів не доводить коректність поведінки, зручний порядок фокусу чи змістовність контенту.",
+      "strongAnswerSignalsUk": [
+        "пояснює порівняння з базовим зображенням (baseline)",
+        "називає візуальні дефекти, які пропускають семантичні перевірки",
+        "не замінює функціональне тестування чи тестування доступності"
+      ],
+      "example": "A CSS refactor accidentally removes a max-width rule on a pricing table; every DOM assertion still passes because the correct text and elements are present, but a visual-regression diff immediately flags that the table now overflows its card on a 1280px viewport.",
+      "exampleUk": "Рефакторинг CSS випадково прибирає правило max-width для таблиці з тарифами; усі DOM-перевірки й далі проходять, бо потрібний текст і елементи присутні, але diff у візуальному регресійному тесті одразу показує, що таблиця тепер виходить за межі картки при viewport 1280px.",
+      "tags": [
+        "visual-regression",
+        "screenshots",
+        "web-qa",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "playwright-visual-comparisons"
+      ],
       "prevalence": "Common"
     },
     {
@@ -156,8 +303,25 @@
         "uses masking and tolerances narrowly",
         "prefers focused snapshots with diagnosable diffs"
       ],
-      "tags": ["visual-regression", "determinism", "ci", "automation-engineer"],
-      "sourceIds": ["playwright-visual-comparisons", "playwright-best-practices"],
+      "questionUk": "Як зробити порівняння скриншотів достатньо стабільним для CI?",
+      "shortAnswerUk": "Генеруйте та порівнюйте baseline у контрольованому середовищі з фіксованою версією браузера, операційної системи, шрифтів, viewport, кольорових налаштувань і тестових даних. Дочікуйтесь детермінованого стану застосунку, вимикайте або \"заморожуйте\" анімацію та час, і маскуйте лише справді динамічні ділянки. Використовуйте невеликий обґрунтований допуск (tolerance) і, де можливо, знімки на рівні компонентів — надто широкі пороги можуть приховати реальні регресії.",
+      "strongAnswerSignalsUk": [
+        "контролює середовище рендерингу та стан застосунку",
+        "точково використовує маскування та допуски",
+        "віддає перевагу точковим знімкам з дифами, які легко діагностувати"
+      ],
+      "example": "A suite that ran visual tests locally on macOS but in CI on Linux kept failing on font anti-aliasing differences alone; pinning a Docker image with the exact fonts and browser build used to record the baselines eliminated the false failures without loosening the diff threshold.",
+      "exampleUk": "Набір тестів, який локально запускали на macOS, а в CI — на Linux, постійно падав лише через відмінності в антиаліасингу шрифтів; фіксація Docker-образу з точно тими самими шрифтами та збіркою браузера, якими записувались baseline, усунула хибні падіння без послаблення порогу diff.",
+      "tags": [
+        "visual-regression",
+        "determinism",
+        "ci",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "playwright-visual-comparisons",
+        "playwright-best-practices"
+      ],
       "prevalence": "Common"
     },
     {
@@ -172,8 +336,25 @@
         "shows expected, actual and diff evidence",
         "tracks unexplained baseline churn"
       ],
-      "tags": ["visual-regression", "code-review", "governance", "qa-lead"],
-      "sourceIds": ["playwright-visual-comparisons", "git-docs"],
+      "questionUk": "Який процес рев'ю запобігає бездумному прийняттю нових візуальних baseline?",
+      "shortAnswerUk": "Зберігайте baseline разом із кодом і робіть їх оновлення явною зміною, що проходить рев'ю. Рев'юєр повинен бачити очікуване, фактичне зображення та diff, пов'язувати зміну із затвердженим дизайном чи вимогою, і відхиляти неповʼязані зміни. Розділяйте навмисні platform-специфічні baseline, вимагайте відповідальної особи (ownership) для критично важливих екранів, і відстежуйте, як часто снепшоти оновлюються без відповідної зміни в продукті.",
+      "strongAnswerSignalsUk": [
+        "розглядає зміни baseline як продуктові зміни, що потребують рев'ю",
+        "показує докази: очікуване, фактичне зображення та diff",
+        "відстежує невмотивоване часте оновлення baseline"
+      ],
+      "example": "A reviewer notices a pull request silently updates twelve unrelated checkout-flow baselines alongside a one-line copy change; asking why reveals a font-rendering regression from an unrelated dependency bump that would otherwise have been rubber-stamped as just approve the new screenshots.",
+      "exampleUk": "Рев'юєр помічає, що пул-реквест мовчки оновлює дванадцять непов'язаних baseline у флоу оформлення замовлення поряд з одним рядком зміни тексту; з'ясувавши причину, він виявляє регресію рендерингу шрифтів через непов'язане оновлення залежності, яку інакше просто автоматично затвердили б зі словами \"просто прийми нові скриншоти\".",
+      "tags": [
+        "visual-regression",
+        "code-review",
+        "governance",
+        "qa-lead"
+      ],
+      "sourceIds": [
+        "playwright-visual-comparisons",
+        "git-docs"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -188,8 +369,25 @@
         "covers distinct engines rather than browser brand count",
         "balances pull-request speed with scheduled breadth"
       ],
-      "tags": ["cross-browser", "browser-matrix", "web-qa", "automation-engineer"],
-      "sourceIds": ["selenium-grid", "playwright-best-practices"],
+      "questionUk": "Як обрати матрицю тестування для кросбраузерності та операційних систем?",
+      "shortAnswerUk": "Починайте із задекларованих зобов'язань щодо підтримки продукту та реального використання в проді, далі охоплюйте окремі рушії рендерингу, поточні й старіші підтримувані версії, десктопні й мобільні форм-фактори, та критично важливі для бізнесу режими доступності. Запускайте невеликий репрезентативний набір при кожній зміні та ширшу перевірку сумісності за розкладом чи перед релізом. Переглядайте матрицю на основі трафіку, інцидентів і планів виведення з підтримки (deprecation).",
+      "strongAnswerSignalsUk": [
+        "спирається на політику підтримки та реальні дані з продакшну",
+        "охоплює окремі рушії, а не кількість брендів браузерів",
+        "балансує швидкість на пул-реквестах із широтою перевірок за розкладом"
+      ],
+      "example": "A team discovers from production analytics that 4% of users are still on Safari 15 on older iPads; rather than testing every Chrome minor version, they add that one Safari/WebKit combination to the matrix because it represents a genuinely different rendering engine and real user risk.",
+      "exampleUk": "З аналітики продакшну команда з'ясовує, що 4% користувачів досі на Safari 15 на старих iPad; замість тестування кожної мінорної версії Chrome вони додають саме цю комбінацію Safari/WebKit до матриці, бо вона являє собою справді інший рушій рендерингу і реальний ризик для користувачів.",
+      "tags": [
+        "cross-browser",
+        "browser-matrix",
+        "web-qa",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "selenium-grid",
+        "playwright-best-practices"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -204,8 +402,25 @@
         "matches concurrency to grid and system capacity",
         "separates infrastructure failures from product failures"
       ],
-      "tags": ["selenium-grid", "parallel-testing", "cross-browser", "automation-engineer"],
-      "sourceIds": ["selenium-grid", "selenium-docs"],
+      "questionUk": "Як спроєктувати надійне паралельне виконання тестів на браузерній сітці (grid)?",
+      "shortAnswerUk": "Робіть кожен тест незалежним, з ізольованими акаунтами, даними, завантаженнями та станом браузера; явно декларуйте capabilities і уникайте припущень щодо порядку виконання. Розбивайте (shard) тести за виміряною тривалістю, обмежуйте паралелізм відповідно до можливостей grid і бекенду, і зберігайте логи, відео, скриншоти та мережеві дані для кожної сесії окремо. У звітності чітко відрізняйте продуктові збої від нестачі ресурсів grid, проблем запуску браузера та інфраструктурних збоїв.",
+      "strongAnswerSignalsUk": [
+        "ізолює стан і дані для кожного воркера",
+        "узгоджує рівень паралелізму з можливостями grid і системи",
+        "відділяє інфраструктурні збої від продуктових"
+      ],
+      "example": "Doubling worker count in Selenium Grid from 20 to 40 caused the failure rate to spike from 2% to 30%; the culprit was the backend's connection pool, not the grid, so the fix was capping concurrency at 25 and adding retry-with-backoff for pool-exhaustion errors instead of adding more grid nodes.",
+      "exampleUk": "Подвоєння кількості воркерів у Selenium Grid з 20 до 40 спричинило стрибок частки падінь з 2% до 30%; причиною виявився пул з'єднань бекенду, а не сам grid, тож рішенням стало обмеження паралелізму до 25 і додавання retry з backoff для помилок вичерпання пулу, а не додавання нових вузлів grid.",
+      "tags": [
+        "selenium-grid",
+        "parallel-testing",
+        "cross-browser",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "selenium-grid",
+        "selenium-docs"
+      ],
       "prevalence": "Common"
     },
     {
@@ -220,8 +435,26 @@
         "retains physical coverage for unsupported hardware interactions",
         "bases the matrix on product evidence"
       ],
-      "tags": ["device-farm", "mobile-qa", "device-matrix", "automation-engineer"],
-      "sourceIds": ["appium-docs", "android-test", "selenium-grid"],
+      "questionUk": "Коли мобільній команді варто використовувати емулятори, локальні пристрої та хмару реальних пристроїв (real-device cloud)?",
+      "shortAnswerUk": "Використовуйте емулятори для швидких детермінованих перевірок і широкого охоплення конфігурацій ОС, локальні пристрої — для розробки та дебагу апаратно-специфічних проблем, а хмару реальних пристроїв — для масштабованого покриття реальних моделей, версій ОС і виробників. Тримайте невелику фізичну лабораторію для критичних сенсорів чи периферії, які хмара не може відтворити, і формуйте матрицю на основі користувачів, підтримуваних версій та історичних збоїв, а не лише популярності пристрою.",
+      "strongAnswerSignalsUk": [
+        "визначає окрему роль для емуляторів, локальних пристроїв і хмарних пристроїв",
+        "зберігає фізичне покриття для апаратних взаємодій, які неможливо емулювати",
+        "формує матрицю на основі продуктових даних"
+      ],
+      "example": "A banking app's fingerprint-unlock feature passes on every emulator and cloud device because those environments fake biometric callbacks; only testing on a handful of physical phones with real fingerprint sensors catches a race condition that fails on actual hardware under a slow sensor read.",
+      "exampleUk": "Функція розблокування за відбитком пальця в банківському застосунку проходить на кожному емуляторі та хмарному пристрої, бо ці середовища імітують біометричні callback-и; лише тестування на кількох фізичних телефонах з реальними сенсорами відбитків виявляє race condition, яка проявляється на реальному залозі при повільному зчитуванні сенсора.",
+      "tags": [
+        "device-farm",
+        "mobile-qa",
+        "device-matrix",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "appium-docs",
+        "android-test",
+        "selenium-grid"
+      ],
       "prevalence": "Common"
     },
     {
@@ -236,8 +469,25 @@
         "considers both time and auxiliary space",
         "combines analysis with measurement"
       ],
-      "tags": ["algorithms", "big-o", "sdet", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "questionUk": "Чому SDET має розуміти часову та просторову складність (time and space complexity)?",
+      "shortAnswerUk": "Складність пояснює, як зростають витрати алгоритму чи тестової утиліти зі збільшенням розміру вхідних даних. Це допомагає SDET заздалегідь помітити квадратичне налаштування даних, повільну обробку логів, затратний polling і фікстури, що споживають забагато пам'яті, перш ніж вони зроблять набір тестів непридатним до використання. Варто вказувати домінуючі витрати часу й пам'яті, тестувати на репрезентативному масштабі даних і пам'ятати, що Big O не замінює вимірювання констант, I/O та реальних вузьких місць.",
+      "strongAnswerSignalsUk": [
+        "пов'язує асимптотичне зростання з підтримуваністю набору тестів",
+        "враховує і час, і додаткову (auxiliary) пам'ять",
+        "поєднує аналіз із вимірюванням"
+      ],
+      "example": "A test-data setup helper that does a linear scan to check for duplicates inside a loop that inserts N records turns an O(n) seed script into an accidental O(n squared) one; nobody notices at 100 records, but the nightly suite that seeds 50,000 records starts timing out and nobody can explain why until someone profiles it.",
+      "exampleUk": "Допоміжна функція для підготовки тестових даних, яка робить лінійний пошук дублікатів всередині циклу, що вставляє N записів, перетворює O(n) сценарій наповнення даними на випадковий O(n у квадраті); на 100 записах цього ніхто не помічає, але нічний прогін, що наповнює 50 000 записів, починає падати за таймаутом, і причину знаходять лише після профілювання.",
+      "tags": [
+        "algorithms",
+        "big-o",
+        "sdet",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "gfg-testing-interviews"
+      ],
       "prevalence": "Common"
     },
     {
@@ -252,8 +502,25 @@
         "explains ordering and complexity tradeoffs",
         "tests empty and duplicate inputs"
       ],
-      "tags": ["data-structures", "algorithms", "sdet", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "questionUk": "Як обрати між масивом (array), множиною (set), словником (map), стеком (stack) і чергою (queue) у розв'язанні задачі на кодинг?",
+      "shortAnswerUk": "Обирайте структуру виходячи з операцій, потрібних для задачі. Масиви зберігають індексований порядок, множини забезпечують унікальність і перевірку належності, словники (map) пов'язують ключі зі значеннями чи лічильниками, стек підтримує обхід за принципом LIFO (останній прийшов — перший вийшов), а черга — за принципом FIFO (перший прийшов — перший вийшов). Поясніть очікувану вартість пошуку, вставки, видалення та збереження порядку, а потім протестуйте порожні, дубльовані та граничні випадки для обраної структури.",
+      "strongAnswerSignalsUk": [
+        "обирає структуру виходячи з потрібних операцій, а не за звичкою",
+        "пояснює компроміси щодо порядку та складності",
+        "тестує порожні та дубльовані вхідні дані"
+      ],
+      "example": "Asked to implement an LRU cache, a candidate who reaches for a plain array first has to redesign mid-interview once eviction requires O(1) removal from the middle; combining a hash map with a doubly linked list from the start gets both O(1) lookup and O(1) eviction.",
+      "exampleUk": "Коли просять реалізувати LRU-кеш, кандидат, що спершу хапається за звичайний масив, змушений перепроєктовувати рішення посеред співбесіди, щойно з'ясовується, що видалення елемента з середини має бути O(1); поєднання хеш-мапи з двозв'язним списком одразу дає і O(1) пошук, і O(1) видалення.",
+      "tags": [
+        "data-structures",
+        "algorithms",
+        "sdet",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "gfg-testing-interviews"
+      ],
       "prevalence": "Common"
     },
     {
@@ -268,8 +535,26 @@
         "states normalization assumptions",
         "covers empty, unique and repeated inputs"
       ],
-      "tags": ["hash-map", "strings", "sdet", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "unicode-text-segmentation", "gfg-testing-interviews"],
+      "questionUk": "Як ефективно знайти дублікати або порівняти частоти символів?",
+      "shortAnswerUk": "Пройдіться по вхідних даних один раз і зберігайте кожне значення чи нормалізований символ у множині (set) або частотному словнику (frequency map). Множини достатньо, щоб визначити сам факт наявності дублікату; лічильники потрібні, щоб повідомити про конкретні дублікати або порівняти мультимножини, наприклад для перевірки анаграм. Уточніть правила щодо регістру, пробілів і Unicode, а потім протестуйте порожній вхід, повторювані значення, еквівалентний після нормалізації текст і вхідні дані без дублікатів.",
+      "strongAnswerSignalsUk": [
+        "обирає множину або частотний словник відповідно до потрібного результату",
+        "явно формулює припущення щодо нормалізації",
+        "охоплює порожні, унікальні та повторювані вхідні дані"
+      ],
+      "example": "Given the strings 'listen' and 'silent' for an anagram check, a candidate who only compares lowercase letters misses that 'Silent ' with a trailing space and different casing should still count as equivalent once the interviewer clarifies that whitespace and case should be normalized before comparison.",
+      "exampleUk": "На прикладі рядків 'listen' і 'silent' для перевірки анаграми кандидат, що порівнює лише малі літери, упускає, що 'Silent ' із зайвим пробілом і іншим регістром теж має вважатись еквівалентним, щойно інтерв'юер уточнює, що пробіли та регістр треба нормалізувати перед порівнянням.",
+      "tags": [
+        "hash-map",
+        "strings",
+        "sdet",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "unicode-text-segmentation",
+        "gfg-testing-interviews"
+      ],
       "prevalence": "Common"
     },
     {
@@ -284,8 +569,25 @@
         "states linear time and constant auxiliary space",
         "covers self-cycles and cycles at different positions"
       ],
-      "tags": ["linked-list", "cycle-detection", "sdet", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "questionUk": "Як виявити цикл у зв'язаному списку (linked list) і протестувати рішення?",
+      "shortAnswerUk": "Використовуйте повільний вказівник, що просувається на один вузол за крок, і швидкий, що просувається на два. Якщо цикл існує, вони зустрінуться; якщо швидкий вказівник досягає кінця списку, це доводить відсутність циклу. Такий підхід (алгоритм Флойда) працює за лінійний час і використовує сталу додаткову пам'ять. Протестуйте порожній список, список з одного вузла із самоциклом і без нього, цикл, що починається з голови чи середини списку, та довгий список без циклу.",
+      "strongAnswerSignalsUk": [
+        "пояснює інваріант повільного та швидкого вказівників",
+        "вказує на лінійний час і сталу додаткову пам'ять",
+        "охоплює самоцикли та цикли в різних позиціях"
+      ],
+      "example": "A candidate's first implementation compares node values instead of node references to detect a repeat, which incorrectly flags a cycle in an acyclic list that happens to contain two nodes holding the same value; switching the comparison to pointer identity fixes it.",
+      "exampleUk": "Перша реалізація кандидата порівнює значення вузлів замість посилань на вузли, щоб виявити повтор, через що помилково фіксується цикл у списку без циклу, який просто містить два вузли з однаковим значенням; перехід на порівняння за ідентичністю вказівника виправляє проблему.",
+      "tags": [
+        "linked-list",
+        "cycle-detection",
+        "sdet",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "gfg-testing-interviews"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -300,8 +602,25 @@
         "clarifies boundary semantics for touching intervals",
         "derives tests from the algorithm's invariants"
       ],
-      "tags": ["intervals", "sorting", "sdet", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "gfg-testing-interviews"],
+      "questionUk": "Як об'єднати інтервали, що перетинаються (overlapping intervals), і перевірити результат?",
+      "shortAnswerUk": "Спершу перевірте кожен інтервал, відсортуйте за початком, а потім пройдіться один раз: розширюйте поточний інтервал, якщо початок наступного потрапляє в його межі, інакше — завершуйте його і починайте новий. Домінує складність сортування — O(n log n). Уточніть, чи мають зливатися інтервали, що лише дотикаються (touching), а потім протестуйте порожній вхід, один інтервал, вкладені діапазони, однакові межі, невідсортований вхід та невалідні \"перевернуті\" діапазони (де кінець раніше за початок).",
+      "strongAnswerSignalsUk": [
+        "сортує перед лінійним об'єднанням",
+        "уточнює семантику меж для дотичних інтервалів",
+        "виводить тестові випадки з інваріантів алгоритму"
+      ],
+      "example": "Given intervals [1,3], [3,5] and [6,8], a candidate who never clarified whether touching endpoints merge might produce two intervals instead of the interviewer's expected one merged [1,5] plus [6,8], because 3 equals 3 is a boundary case the requirements never explicitly settled.",
+      "exampleUk": "Маючи інтервали [1,3], [3,5] і [6,8], кандидат, що не уточнив, чи мають зливатись дотичні межі, може отримати два інтервали замість очікуваного інтерв'юером одного об'єднаного [1,5] плюс [6,8], бо випадок \"3 дорівнює 3\" — це граничний випадок, який вимоги явно не визначили.",
+      "tags": [
+        "intervals",
+        "sorting",
+        "sdet",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "gfg-testing-interviews"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -316,8 +635,25 @@
         "defines retry and terminal-failure state transitions",
         "tests fairness, exhaustion and duplicate delivery"
       ],
-      "tags": ["queue", "retries", "state-machine", "coding-interview"],
-      "sourceIds": ["mit-algorithms", "google-sre"],
+      "questionUk": "Як змоделювати та протестувати обмежену чергу повторних спроб (bounded retry queue) у задачі на кодинг?",
+      "shortAnswerUk": "Представляйте кожен елемент через кількість спроб і час наступної можливої спроби, обробляйте готові елементи в порядку черги, і повертайте назад лише ті збої, які підлягають повторній спробі, і лише поки залишаються спроби. Ін'єктуйте годинник (clock) та функцію результату, щоб тести були детермінованими. Покрийте успіх, термінальну відмову, вичерпання спроб, таймінг backoff, кілька елементів, дубльовану доставку та інваріант, що один елемент, який постійно падає, не має блокувати всю подальшу роботу.",
+      "strongAnswerSignalsUk": [
+        "робить час і результати ін'єктованими (injectable)",
+        "визначає переходи станів для повторних спроб і термінальної відмови",
+        "тестує справедливість обробки, вичерпання спроб і дубльовану доставку"
+      ],
+      "example": "A naive implementation re-enqueues a failed item at the front of the queue for an immediate retry, which lets one persistently failing item starve every other item behind it; the fix is to re-enqueue at the back with a computed backoff delay, verified by a test that asserts item two still gets processed while item one is still retrying.",
+      "exampleUk": "Наївна реалізація повертає елемент, що впав, у початок черги для негайної повторної спроби, через що один елемент, що постійно падає, блокує обробку всіх інших елементів за ним; виправлення — повертати елемент у кінець черги з розрахованою затримкою backoff, що підтверджується тестом, який перевіряє, що другий елемент все ще обробляється, поки перший ще перебуває у повторних спробах.",
+      "tags": [
+        "queue",
+        "retries",
+        "state-machine",
+        "coding-interview"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "google-sre"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -332,8 +668,25 @@
         "uses boundaries and constraints to select cases",
         "targets the algorithm's fragile branch after coding"
       ],
-      "tags": ["coding-interview", "test-design", "sdet", "problem-solving"],
-      "sourceIds": ["gfg-testing-interviews", "istqb-ctfl-v4"],
+      "questionUk": "Як варто визначати тестові випадки перед написанням коду розв'язку на співбесіді?",
+      "shortAnswerUk": "Переформулюйте контракт своїми словами, запитайте про невалідні вхідні дані та обмеження, і випишіть один звичайний приклад плюс порожній, найменший, найбільший, дубльований та граничні випадки, доречні для задачі. Використовуйте ці приклади, щоб виявити приховані припущення і обрати структуру даних. Після написання коду прогоніть алгоритм через ті самі випадки і додайте ще один, спрямований на найкрихкішу гілку логіки.",
+      "strongAnswerSignalsUk": [
+        "уточнює контракт перед реалізацією",
+        "використовує межі та обмеження для вибору тестових випадків",
+        "після написання коду цілиться в найкрихкішу гілку алгоритму"
+      ],
+      "example": "Before coding a function that finds the kth largest element, a candidate asks whether the array can contain duplicates and whether k is guaranteed to be within bounds; the interviewer says duplicates are allowed and k is unbounded, which changes the candidate's chosen approach to explicitly validate k before running any selection logic.",
+      "exampleUk": "Перед написанням функції, що знаходить k-й найбільший елемент, кандидат запитує, чи можуть бути дублікати в масиві і чи гарантовано k в межах допустимого діапазону; інтерв'юер відповідає, що дублікати можливі, а k не обмежений, що змінює обраний підхід кандидата на явну валідацію k перед будь-якою логікою вибору.",
+      "tags": [
+        "coding-interview",
+        "test-design",
+        "sdet",
+        "problem-solving"
+      ],
+      "sourceIds": [
+        "gfg-testing-interviews",
+        "istqb-ctfl-v4"
+      ],
       "prevalence": "Very common"
     },
     {
@@ -348,8 +701,25 @@
         "derives complexity from the implementation",
         "reviews dependency control and failure observability"
       ],
-      "tags": ["code-review", "algorithms", "testability", "sdet"],
-      "sourceIds": ["mit-algorithms", "playwright-best-practices"],
+      "questionUk": "Як перевірити рішення задачі на кодинг щодо коректності, складності та тестопридатності (testability)?",
+      "shortAnswerUk": "Почніть із заявленого контракту та визначте інваріанти циклу, рекурсії чи структури даних, які роблять результат коректним. Перевірте завершення виконання, переповнення, мутації, обробку помилок і поведінку на граничних розмірах; потім виведіть часову й просторову складність із фактичних операцій. Насамкінець відокремте чисту логіку від I/O чи часу, назвіть приклади \"ворожих\" (adversarial) вхідних даних і переконайтеся, що помилки видимі, а не мовчки проковтуються.",
+      "strongAnswerSignalsUk": [
+        "використовує інваріанти, а не лише інтуїцію",
+        "виводить складність із фактичної реалізації",
+        "перевіряє контроль залежностей і видимість відмов"
+      ],
+      "example": "Reviewing a recursive tree-traversal solution, the reviewer asks what happens with a tree ten thousand levels deep; the candidate realizes their recursive approach will blow the call stack, which the happy-path test on a five-node tree never revealed.",
+      "exampleUk": "Рецензуючи рекурсивне рішення для обходу дерева, рев'юєр запитує, що станеться з деревом глибиною в десять тисяч рівнів; кандидат усвідомлює, що рекурсивний підхід переповнить стек викликів — те, що happy-path тест на дереві з п'яти вузлів так і не виявив.",
+      "tags": [
+        "code-review",
+        "algorithms",
+        "testability",
+        "sdet"
+      ],
+      "sourceIds": [
+        "mit-algorithms",
+        "playwright-best-practices"
+      ],
       "prevalence": "Common"
     },
     {
@@ -364,8 +734,25 @@
         "includes scripts, formats and layout beyond translation",
         "explains why both test layers are needed"
       ],
-      "tags": ["internationalization", "localization", "web-qa", "mobile-qa"],
-      "sourceIds": ["unicode-cldr", "w3c-bidi"],
+      "questionUk": "У чому різниця між тестуванням інтернаціоналізації (i18n) і локалізації (l10n)?",
+      "shortAnswerUk": "Тестування інтернаціоналізації перевіряє, чи здатен продукт підтримувати різні мови, писемності, формати та культурні правила без змін у коді. Тестування локалізації перевіряє переклади, формати, термінологію, верстку та доречність для конкретної локалі. Важливо тестувати обидва аспекти: коректний український переклад все одно може зламатись, якщо продукт має захардкоджений англійський порядок слів, тоді як гнучкий код все одно може постачатись із поганим перекладом.",
+      "strongAnswerSignalsUk": [
+        "розділяє можливість продукту від якості, специфічної для локалі",
+        "враховує писемності, формати та верстку, а не лише переклад",
+        "пояснює, чому потрібні обидва рівні тестування"
+      ],
+      "example": "A product hard-codes the English sentence pattern 'You have {n} new messages', so even a perfectly accurate Ukrainian translation of the words breaks grammatically once the number requires a different case ending; that is an internationalization bug that no amount of localization polish on the translation itself can fix.",
+      "exampleUk": "Продукт захардкоджує англійський шаблон речення 'You have {n} new messages', тож навіть цілком точний переклад слів українською зламається граматично, щойно число вимагатиме іншого відмінкового закінчення; це проблема інтернаціоналізації, яку жодне поліпшення самого перекладу не виправить.",
+      "tags": [
+        "internationalization",
+        "localization",
+        "web-qa",
+        "mobile-qa"
+      ],
+      "sourceIds": [
+        "unicode-cldr",
+        "w3c-bidi"
+      ],
       "prevalence": "Common"
     },
     {
@@ -380,8 +767,24 @@
         "tests both display and parsing",
         "keeps persisted values separate from presentation locale"
       ],
-      "tags": ["localization", "locale-formatting", "web-qa", "data"],
-      "sourceIds": ["unicode-cldr"],
+      "questionUk": "Як тестувати чутливі до локалі дати, числа, валюти та одиниці виміру?",
+      "shortAnswerUk": "Обирайте репрезентативні локалі, які відрізняються роздільниками десяткових і розрядних груп, позицією та точністю валюти, порядком елементів дати, календарями, початком тижня та системами вимірювання. Перевіряйте форматування і зворотний парсинг (round trip), від'ємні та нульові значення, великі числа та fallback на локаль користувача. Зберігання даних і API тримайте нейтральними щодо локалі там, де це можливо, і виводьте очікувані значення для відображення з довірених даних локалі (наприклад, CLDR), а не з вручну написаних правил під англійську мову.",
+      "strongAnswerSignalsUk": [
+        "обирає локалі з відмінною поведінкою форматування",
+        "тестує і відображення, і парсинг",
+        "тримає збережені значення окремо від локалі відображення"
+      ],
+      "example": "A price formatter tested only against en-US passes with $1,234.56, but switching to de-DE reveals it renders 1.234,56 with the currency symbol on the wrong side; a test matrix that includes de-DE and a right-to-left locale like ar-EG catches both the separator swap and directional placement bugs a single-locale suite would miss.",
+      "exampleUk": "Форматувальник цін, протестований лише на en-US, проходить із результатом $1,234.56, але при перемиканні на de-DE виявляється, що він видає 1.234,56 зі знаком валюти не на тому боці; матриця тестів, що включає de-DE та RTL-локаль на кшталт ar-EG, ловить і помилку роздільників, і помилку напрямку розміщення, які набір тестів лише під одну локаль пропустив би.",
+      "tags": [
+        "localization",
+        "locale-formatting",
+        "web-qa",
+        "data"
+      ],
+      "sourceIds": [
+        "unicode-cldr"
+      ],
       "prevalence": "Common"
     },
     {
@@ -396,8 +799,24 @@
         "tests values around rule transitions and fractions",
         "validates complete messages rather than isolated nouns"
       ],
-      "tags": ["localization", "pluralization", "unicode", "web-qa"],
-      "sourceIds": ["unicode-cldr"],
+      "questionUk": "Чому недостатньо тестувати лише однину й множину за англійськими правилами?",
+      "shortAnswerUk": "Категорії множини залежать від локалі й можуть включати zero, one, two, few, many та other; дробові числа можуть підпорядковуватись іншим правилам, ніж цілі. Використовуйте CLDR-правила конкретної локалі і тестуйте мінімальний репрезентативний набір значень навколо переходів між категоріями, включно з 0, числами від 11 до 19, числами, що закінчуються на 1 чи 2, і дробами, де це доречно. Перевіряйте все перекладене повідомлення цілком, бо можуть змінюватись і іменники, і дієслова, і відмінки.",
+      "strongAnswerSignalsUk": [
+        "знає, що категорії множини залежать від локалі",
+        "тестує значення навколо переходів правил і дроби",
+        "перевіряє повні повідомлення, а не окремі іменники"
+      ],
+      "example": "Ukrainian needs three plural forms for a message like '{n} files' — one file, two/three/four files, and five-plus files — so a translation system built only for English one/other pairs renders '5 файл' instead of '5 файлів' unless the pluralization logic actually implements CLDR's few/many/other categories for uk.",
+      "exampleUk": "Для повідомлення на кшталт '{n} файлів' українській мові потрібні три форми множини — один файл, два/три/чотири файли, і п'ять і більше файлів — тож система перекладу, розрахована лише на англійську пару one/other, видасть '5 файл' замість '5 файлів', якщо логіка плюралізації не реалізує повноцінно категорії few/many/other CLDR для uk.",
+      "tags": [
+        "localization",
+        "pluralization",
+        "unicode",
+        "web-qa"
+      ],
+      "sourceIds": [
+        "unicode-cldr"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -412,8 +831,25 @@
         "distinguishes semantic direction from visual alignment",
         "includes keyboard and assistive-technology behavior"
       ],
-      "tags": ["rtl", "bidirectional-text", "localization", "accessibility"],
-      "sourceIds": ["w3c-bidi", "wcag-22"],
+      "questionUk": "Що має охоплювати стратегія тестування RTL (right-to-left) і двонапрямленого (bidirectional) тексту?",
+      "shortAnswerUk": "Тестуйте повне дзеркальне відображення макета для RTL, логічний порядок навігації, вирівнювання, іконки, значення яких має або не має дзеркалитись, і рядки зі змішаним напрямком тексту — наприклад, арабський текст, що містить номери телефонів, URL чи коди товарів. Перевіряйте форми, таблиці, обрізання тексту (truncation) і копіювання/вставку на реальному контенті. Віддавайте перевагу семантичній розмітці напрямку та ізоляції (Unicode isolation), і обов'язково включайте перевірки клавіатурної навігації та скрінрідерів, бо самого візуального дзеркалення недостатньо.",
+      "strongAnswerSignalsUk": [
+        "охоплює контент зі змішаним напрямком, а не лише дзеркальний макет",
+        "розрізняє семантичний напрямок і візуальне вирівнювання",
+        "включає поведінку клавіатурної навігації та допоміжних технологій"
+      ],
+      "example": "An Arabic UI mirrors the layout correctly, but a product SKU like ABC-123 embedded in a right-to-left sentence renders with its characters visually reordered because the text lacks Unicode directional isolation marks around the embedded Latin-and-digit run, making the code unreadable even though the surrounding Arabic text is perfectly correct.",
+      "exampleUk": "Арабський інтерфейс коректно дзеркалить макет, але артикул товару на кшталт ABC-123, вбудований у речення RTL, відображається з візуально переплутаними символами, бо тексту бракує символів ізоляції напрямку Unicode навколо вставленого латинсько-цифрового фрагмента, через що код стає нечитабельним, хоча навколишній арабський текст цілком коректний.",
+      "tags": [
+        "rtl",
+        "bidirectional-text",
+        "localization",
+        "accessibility"
+      ],
+      "sourceIds": [
+        "w3c-bidi",
+        "wcag-22"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -428,8 +864,25 @@
         "tests canonically equivalent representations",
         "defines normalization and security boundaries explicitly"
       ],
-      "tags": ["unicode", "normalization", "grapheme-clusters", "web-qa"],
-      "sourceIds": ["unicode-text-segmentation", "unicode-cldr"],
+      "questionUk": "Як нормалізація Unicode та кластери графем (grapheme clusters) можуть ламати валідацію, пошук чи обмеження довжини?",
+      "shortAnswerUk": "Візуально ідентичний текст може використовувати різні послідовності кодових точок (code points), а один сприйманий користувачем символ може складатись із кількох кодових точок. Тому підрахунок байтів, code units, code points і графемних кластерів відповідає на різні запитання. Тестуйте композиційну (composed) та декомпозиційну (decomposed) форми, комбіновані діакритичні знаки, послідовності емодзі та змішані писемності; чітко визначте, де відбувається нормалізація, зберігайте відмінності, важливі для безпеки, і застосовуйте орієнтовані на користувача правила довжини саме до графемних кластерів, де це доречно.",
+      "strongAnswerSignalsUk": [
+        "розрізняє байти, кодові точки та графемні кластери",
+        "тестує канонічно еквівалентні представлення",
+        "явно визначає межі нормалізації та безпеки"
+      ],
+      "example": "A username field rejects 'cafe' typed with a precomposed accented e but silently accepts the same-looking name typed with a combining acute accent as a separate code point, letting a user register two visually identical usernames that a naive byte-equality check treats as different strings, a bug caught only by testing NFC versus NFD forms of the same word.",
+      "exampleUk": "Поле імені користувача відхиляє 'cafe' з попередньо складеною літерою з діакритикою, але мовчки приймає візуально ідентичне ім'я, набране з комбінованим знаком наголосу як окремою кодовою точкою, дозволяючи зареєструвати два візуально однакових імені користувача, які наївна побайтова перевірка на рівність вважає різними рядками, — баг, виявлений лише завдяки тестуванню форм NFC проти NFD того самого слова.",
+      "tags": [
+        "unicode",
+        "normalization",
+        "grapheme-clusters",
+        "web-qa"
+      ],
+      "sourceIds": [
+        "unicode-text-segmentation",
+        "unicode-cldr"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -444,8 +897,25 @@
         "detects hard-coded or concatenated strings",
         "does not replace real translation review"
       ],
-      "tags": ["pseudo-localization", "internationalization", "ci", "automation-engineer"],
-      "sourceIds": ["unicode-cldr", "w3c-bidi"],
+      "questionUk": "Як псевдолокалізація (pseudo-localization) допомагає знаходити дефекти інтернаціоналізації ще до готовності перекладів?",
+      "shortAnswerUk": "Псевдолокалізація перетворює вихідні рядки так, щоб подовжити текст, додати символи з діакритикою, позначити межі рядків і, за потреби, симулювати напрямок RTL, зберігаючи при цьому текст впізнаваним. Автоматизовані smoke-тести на такому тексті дозволяють рано виявити обрізаний UI, конкатеновані фрагменти, невиведені в зовнішні ресурси (unexternalized) рядки та хибні припущення щодо кодування. Ідентифікатори та користувацькі дані свідомо виключаються з перетворення, а справжнє лінгвістичне тестування та тестування bidi на реальних локалях все одно проводиться пізніше.",
+      "strongAnswerSignalsUk": [
+        "використовує подовження тексту та позначені символи для виявлення проблем верстки",
+        "виявляє захардкоджені або конкатеновані рядки",
+        "не замінює перевірку реального перекладу"
+      ],
+      "example": "Running a pseudo-localization build where 'Save changes' becomes something like brackets-and-accented text expanding the string length reveals a button that truncates to 'Save ch...' on a narrow screen, exposing a fixed-width layout bug weeks before any real translator delivers the actual German or Ukrainian strings.",
+      "exampleUk": "Запуск псевдолокалізованої збірки, де 'Save changes' перетворюється на щось на кшталт тексту в дужках із діакритичними символами, що подовжує рядок, одразу показує кнопку, яка обрізається до 'Save ch...' на вузькому екрані, — виявляючи баг верстки з фіксованою шириною за тижні до того, як реальний перекладач надасть справжні німецькі чи українські рядки.",
+      "tags": [
+        "pseudo-localization",
+        "internationalization",
+        "ci",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "unicode-cldr",
+        "w3c-bidi"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -460,8 +930,25 @@
         "covers skipped and repeated daylight-saving times",
         "tests downstream ordering, recurrence and notification effects"
       ],
-      "tags": ["time-zones", "localization", "calendars", "data"],
-      "sourceIds": ["unicode-cldr", "postgres-docs"],
+      "questionUk": "Як тестувати планування подій між часовими поясами, змінами літнього/зимового часу (DST) і локальними календарями?",
+      "shortAnswerUk": "Розділяйте момент часу (instant) і його відображуваний локальний час, і зберігайте призначений ідентифікатор часового поясу, коли майбутні локальні розклади мають слідувати за регіональними змінами правил. Тестуйте прогалини (gaps) і повторювані години DST, перетин півночі та меж дати, пояси зі зсувом, що не кратний годині, зміну поясу користувача та розбіжність між сервером і клієнтом. Перевіряйте повторення подій, сортування, сповіщення та експортовані дані відносно незалежної бібліотеки часових поясів чи календаря.",
+      "strongAnswerSignalsUk": [
+        "розділяє моменти часу, локальний час і ідентифікатори поясу",
+        "охоплює пропущені та повторювані години переходу на літній/зимовий час",
+        "тестує подальші ефекти для сортування, повторення та сповіщень"
+      ],
+      "example": "A recurring 9 AM meeting scheduled in America/New_York before a spring-forward DST change silently shifts by an hour in a system that stored the absolute UTC instant instead of the zone identifier; testing a meeting series that spans the DST boundary catches this before real users get invited at the wrong time.",
+      "exampleUk": "Повторювана зустріч о 9:00 ранку, запланована в America/New_York ще до переходу на літній час, мовчки зсувається на годину в системі, яка зберегла абсолютний момент UTC замість ідентифікатора поясу; тестування серії зустрічей, що охоплює межу переходу на DST, виявляє це раніше, ніж реальних користувачів запросять на невірний час.",
+      "tags": [
+        "time-zones",
+        "localization",
+        "calendars",
+        "data"
+      ],
+      "sourceIds": [
+        "unicode-cldr",
+        "postgres-docs"
+      ],
       "prevalence": "Common"
     },
     {
@@ -476,8 +963,26 @@
         "checks invented assumptions and security risks",
         "keeps human ownership of the oracle"
       ],
-      "tags": ["ai-assisted-testing", "code-review", "sdet", "ai-qa"],
-      "sourceIds": ["istqb-ai-testing", "openai-evals", "playwright-best-practices"],
+      "questionUk": "Як слід рев'ювати тести, згенеровані AI-асистентом для написання коду?",
+      "shortAnswerUk": "Рецензуйте їх як недовірений код. Простежуйте кожну перевірку (assertion) до вимоги чи ризику, перевіряйте, що налаштування дійсно приводить до потрібного стану, відхиляйте вигадані API та тавтологічні очікування, і запускайте тест як проти коректної, так і проти навмисно зламаної поведінки. Перевіряйте ізоляцію, очищення (cleanup), секрети, залежності та підтримуваність, і залишайте фінальне рішення щодо оракула та мержу за людиною.",
+      "strongAnswerSignalsUk": [
+        "перевіряє, що тест здатен впасти саме на цільовому дефекті",
+        "перевіряє вигадані припущення та ризики безпеки",
+        "залишає відповідальність за оракул за людиною"
+      ],
+      "example": "An AI-generated test for a discount calculator asserts result is not null, which passes even after someone injects a bug that returns the wrong discount amount; mutating the discount logic locally and confirming the test actually turns red is what exposes that the assertion was never checking the real value.",
+      "exampleUk": "Згенерований AI тест для калькулятора знижок перевіряє лише, що result не є null, — і це проходить, навіть коли хтось вносить баг, через який повертається неправильна сума знижки; локальна мутація логіки знижки та перевірка, що тест дійсно стає червоним, і викриває, що assertion ніколи насправді не перевіряв реальне значення.",
+      "tags": [
+        "ai-assisted-testing",
+        "code-review",
+        "sdet",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "istqb-ai-testing",
+        "openai-evals",
+        "playwright-best-practices"
+      ],
       "prevalence": "Common"
     },
     {
@@ -492,8 +997,26 @@
         "evaluates risk coverage and false assumptions",
         "requires traceability and deterministic validation"
       ],
-      "tags": ["ai-assisted-testing", "risk-based-testing", "evals", "ai-qa"],
-      "sourceIds": ["istqb-ai-testing", "openai-evals", "nist-genai-profile"],
+      "questionUk": "Як прив'язати згенеровані AI ідеї для тестів до реального продуктового ризику, а не просто отримати довший чекліст?",
+      "shortAnswerUk": "Надайте версіоновані вимоги, архітектуру, історію інцидентів, аналітику та явні винятки, і попросіть тести, прив'язані до конкретних названих ризиків і доказів. Оцінюйте результат порівняно з підібраним людьми еталонним набором за повнотою покриття ризиків (recall), хибними припущеннями, дублікатами та наявністю виконуваних оракулів. Використовуйте модель для пропозицій і трансформацій; вимагайте детермінованої валідації, простежуваності (traceability) та рев'ю, перш ніж згенеровані тест-кейси потраплять до підтримуваного набору.",
+      "strongAnswerSignalsUk": [
+        "прив'язує генерацію до контрольованого продуктового контексту",
+        "оцінює покриття ризиків і хибні припущення",
+        "вимагає простежуваності та детермінованої валідації"
+      ],
+      "example": "Instead of asking an assistant to write more edge-case tests in general, a team feeds it last quarter's incident postmortems and asks for tests that specifically target the failure classes named in those postmortems; comparing the output against a human-curated risk list reveals the model over-indexes on input-validation edge cases while missing every concurrency-related incident.",
+      "exampleUk": "Замість того щоб просто попросити асистента 'написати більше edge-case тестів', команда завантажує йому постмортеми інцидентів за минулий квартал і просить тести, спрямовані саме на класи збоїв, названі в цих постмортемах; порівняння результату з підібраним людьми списком ризиків показує, що модель надмірно фокусується на edge-case для валідації вводу, пропускаючи при цьому кожен інцидент, пов'язаний із конкурентністю.",
+      "tags": [
+        "ai-assisted-testing",
+        "risk-based-testing",
+        "evals",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "istqb-ai-testing",
+        "openai-evals",
+        "nist-genai-profile"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -508,8 +1031,25 @@
         "prefers stable semantic locators before healing",
         "requires visible, reviewable substitutions"
       ],
-      "tags": ["self-healing", "locators", "ai-assisted-testing", "automation-engineer"],
-      "sourceIds": ["playwright-best-practices", "istqb-ai-testing"],
+      "questionUk": "Які переваги та режими відмов у самозцілювальних (self-healing) UI-локаторів?",
+      "shortAnswerUk": "Self-healing може зменшити витрати на підтримку тестів, коли семантично той самий елемент змінює атрибути, але також може націлитись на неправильний елемент керування і перетворити справжню регресію на тест, що проходить. Спершу віддавайте перевагу доступним ролям (accessible roles), іменам і явним тестовим контрактам. Якщо healing все ж використовується, обмежуйте схожість кандидатів, логуйте кожну заміну, падайте або вимагайте рев'ю для неоднозначних змін, і вимірюйте хибні \"зцілення\" окремо від заощадженого часу на підтримку.",
+      "strongAnswerSignalsUk": [
+        "визначає хибнопозитивне зцілення як головний ризик",
+        "спершу віддає перевагу стабільним семантичним локаторам перед healing",
+        "вимагає видимих замін, які можна перевірити"
+      ],
+      "example": "A self-healing tool silently retargets a Delete Account test locator to a newly added Delete Draft button with similar attributes after a redesign; the test keeps passing green for weeks while the actual delete-account flow is completely broken, because nobody reviewed the healed selector before it was accepted automatically.",
+      "exampleUk": "Інструмент self-healing мовчки перенацілює локатор тесту 'Delete Account' на нову кнопку 'Delete Draft' зі схожими атрибутами після редизайну; тест продовжує проходити зеленим тижнями, поки реальний флоу видалення акаунта повністю зламаний, бо ніхто не перевірив зцілений селектор, перш ніж він був прийнятий автоматично.",
+      "tags": [
+        "self-healing",
+        "locators",
+        "ai-assisted-testing",
+        "automation-engineer"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "istqb-ai-testing"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -524,8 +1064,26 @@
         "measures errors per class rather than accuracy alone",
         "keeps high-impact quarantine decisions controlled"
       ],
-      "tags": ["ai-assisted-testing", "flaky-tests", "triage", "ai-qa"],
-      "sourceIds": ["openai-evals", "sklearn-model-evaluation", "nist-genai-profile"],
+      "questionUk": "Як оцінити AI-систему, що класифікує чи пояснює причини флейкі-тестів (flaky test failures)?",
+      "shortAnswerUk": "Створіть розмічений набір даних з рев'юєних історичних падінь із категоріями на кшталт продуктового дефекту, дефекту тесту, збою середовища та невідомого. Вимірюйте precision і recall для кожного класу, каліброваність і здатність утримуватись від відповіді (abstention), а потім тестуйте на нових часових періодах, щоб виявити дрейф (drift). Вимагайте пов'язані докази — логи й трейси, не допускайте автоматичного карантину тестів при низькій впевненості моделі, і перевіряйте, чи не позначаються рідкісні, але критичні продуктові збої як просто \"флейкі\".",
+      "strongAnswerSignalsUk": [
+        "використовує рев'юєні мітки та розділені за часом дані для оцінки",
+        "вимірює помилки по кожному класу, а не лише загальну точність",
+        "тримає під контролем рішення про карантин для критично важливих випадків"
+      ],
+      "example": "An AI triage system labels a test as an environment flake with 90% confidence because it failed intermittently three times before; a human audit later finds it was actually an intermittent race condition in the product's session-handling code, exposed by the very timing variance that made the model call it flaky rather than by any test infrastructure problem.",
+      "exampleUk": "Система AI-тріажу позначає тест як \"флейкі середовища\" з 90% впевненості, бо він уже тричі падав з перервами; людський аудит пізніше виявляє, що насправді це була переривчаста race condition у коді обробки сесій продукту, викрита саме тією варіацією таймінгу, через яку модель і назвала тест флейкі, а не якоюсь проблемою тестової інфраструктури.",
+      "tags": [
+        "ai-assisted-testing",
+        "flaky-tests",
+        "triage",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "openai-evals",
+        "sklearn-model-evaluation",
+        "nist-genai-profile"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -540,8 +1098,25 @@
         "gives concrete testing-tool examples",
         "does not treat the protocol as a security boundary"
       ],
-      "tags": ["mcp", "ai-agents", "ai-assisted-testing", "sdet"],
-      "sourceIds": ["mcp-spec", "playwright-mcp"],
+      "questionUk": "Що таке MCP і як він може підтримувати робочий процес тестування?",
+      "shortAnswerUk": "Model Context Protocol (MCP) стандартизує, як AI-хост підключається до серверів, що надають ресурси, промпти й виконувані інструменти (tools). У тестуванні MCP-сервер може надавати доступ до інспекції браузера, запуску тестів, логів чи даних про баги, щоб агент міг збирати докази через задекларовані схеми. MCP забезпечує взаємосумісність, але не коректність чи безпеку — дозволи на інструменти, вхідні й вихідні дані та підтвердження користувача все одно потребують окремих механізмів контролю й тестування.",
+      "strongAnswerSignalsUk": [
+        "пояснює хости, клієнти, сервери та надані можливості (capabilities)",
+        "наводить конкретні приклади тестових інструментів",
+        "не розглядає протокол як межу безпеки"
+      ],
+      "example": "A team wires up an MCP server that exposes a run-test-suite tool and a read-CI-logs tool so an agent can investigate a failing pipeline by itself; the team still gates that tool behind a scoped read-only CI token and manual approval for anything that writes back to the repo, because MCP itself does not enforce that boundary.",
+      "exampleUk": "Команда підключає MCP-сервер, що надає інструмент 'запустити набір тестів' і 'прочитати логи CI', щоб агент міг самостійно розслідувати падаючий пайплайн; команда все одно захищає цей інструмент обмеженим read-only токеном CI та ручним підтвердженням для будь-яких записів назад у репозиторій, бо сам MCP цю межу не забезпечує.",
+      "tags": [
+        "mcp",
+        "ai-agents",
+        "ai-assisted-testing",
+        "sdet"
+      ],
+      "sourceIds": [
+        "mcp-spec",
+        "playwright-mcp"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -556,8 +1131,26 @@
         "turns discoveries into reviewed maintainable tests",
         "retains evidence without relying on agent narration"
       ],
-      "tags": ["playwright-mcp", "mcp", "exploratory-testing", "ai-qa"],
-      "sourceIds": ["playwright-mcp", "playwright-best-practices", "openai-evals"],
+      "questionUk": "Коли варто використовувати Playwright MCP для дослідницького тестування, а коли все ж писати детерміновані тести?",
+      "shortAnswerUk": "Використовуйте керований агентом інструмент роботи з браузером для дослідження, відтворення незнайомих флоу, збору структури сторінки та пропозицій щодо покриття. Стабільну, критично важливу для релізу поведінку перетворюйте на рев'юєні Playwright-тести з явним налаштуванням, локаторами й перевірками, щоб CI був відтворюваним і дешевим. Зберігайте артефакти дослідження, мережеві докази та виявлені ризики, але не робіть імовірнісний цикл агента єдиним оракулом для релізу.",
+      "strongAnswerSignalsUk": [
+        "розділяє дослідження від детермінованих регресійних гейтів",
+        "перетворює знахідки на рев'юєні тести, що легко підтримувати",
+        "зберігає докази, не покладаючись на розповідь агента"
+      ],
+      "example": "An agent using Playwright MCP explores a newly built refund flow and reports back that it completed successfully in three different ways; rather than trusting that narration as proof, the team asks the agent to save the network trace and DOM snapshots, then hand-writes a deterministic Playwright test around the one flow the product team actually wants to guarantee in CI.",
+      "exampleUk": "Агент, що використовує Playwright MCP, досліджує щойно створений флоу повернення коштів і звітує, що успішно завершив його трьома різними способами; замість того щоб довіряти цій розповіді як доказу, команда просить агента зберегти мережевий трейс і DOM-знімки, а потім вручну пише детермінований Playwright-тест саме для того флоу, який продуктова команда хоче гарантовано покрити в CI.",
+      "tags": [
+        "playwright-mcp",
+        "mcp",
+        "exploratory-testing",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "playwright-mcp",
+        "playwright-best-practices",
+        "openai-evals"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -572,8 +1165,26 @@
         "covers indirect injection and excessive agency",
         "uses least privilege, isolation and auditable approvals"
       ],
-      "tags": ["mcp", "ai-agent-security", "prompt-injection", "security-qa"],
-      "sourceIds": ["mcp-spec", "owasp-llm-top10", "playwright-mcp"],
+      "questionUk": "Як тестувати межу безпеки AI-агента, підключеного до MCP-інструментів?",
+      "shortAnswerUk": "Складіть інвентар інструментів, даних і побічних ефектів, а потім надайте мінімально необхідні привілеї для кожної ролі та середовища. Тестуйте пряму та непряму prompt injection, несанкціоноване виявлення чи виклик інструментів, підміну параметрів, ексфільтрацію даних, обхід підтверджень, replay-атаки та неконтрольовані (runaway) цикли. Забезпечуйте авторизацію на рівні downstream-систем, ізолюйте тестові облікові дані та робочі простори, логуйте кожен виклик, і вимагайте прив'язаного до конкретних параметрів підтвердження для дій із серйозними наслідками.",
+      "strongAnswerSignalsUk": [
+        "тестує і поведінку моделі, і авторизацію на downstream-рівні",
+        "охоплює непряму injection та надмірну автономність (excessive agency) агента",
+        "використовує принцип найменших привілеїв, ізоляцію та підтвердження, які можна аудитувати"
+      ],
+      "example": "A test plants an instruction inside a web page's hidden HTML comment telling the browsing agent to also call a delete-repository tool it has access to; a properly scoped agent either never has that destructive tool available in a read-only browsing session or refuses to act on instructions embedded in page content, and the test confirms which is actually true.",
+      "exampleUk": "Тест підкидає інструкцію всередині прихованого HTML-коментаря на веб-сторінці, яка каже агенту, що переглядає сторінку, також викликати доступний йому інструмент 'видалити репозиторій'; правильно обмежений агент або взагалі не має доступу до такого деструктивного інструменту в read-only сесії перегляду, або відмовляється діяти за інструкціями, вбудованими в контент сторінки, — і тест підтверджує, що з цього насправді вірно.",
+      "tags": [
+        "mcp",
+        "ai-agent-security",
+        "prompt-injection",
+        "security-qa"
+      ],
+      "sourceIds": [
+        "mcp-spec",
+        "owasp-llm-top10",
+        "playwright-mcp"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -588,8 +1199,26 @@
         "measures quality, reliability, maintainability and cost",
         "checks for weakened tests and fabricated oracles"
       ],
-      "tags": ["agent-evals", "ai-assisted-testing", "test-generation", "ai-qa"],
-      "sourceIds": ["openai-evals", "istqb-ai-testing", "nist-genai-profile"],
+      "questionUk": "Як оцінити агента, що самостійно пише й запускає автоматизовані тести?",
+      "shortAnswerUk": "Використовуйте зафіксований (frozen) набір репрезентативних задач з відомими ризиками та навмисно вставленими дефектами (seeded defects), і запускайте згенеровані тести в ізольованих відтворюваних середовищах. Вимірюйте частку валідного коду, виявлення дефектів, хибні падіння, дублювання покриття, якість підтримуваності, час виконання й вартість; також перевіряйте, чи не послаблює агент наявні тести і чи не вигадує оракули. Повторюйте прогони, сегментуйте результати за типом задачі, і залишайте рев'ю людиною для критичних щодо безпеки та релізу змін.",
+      "strongAnswerSignalsUk": [
+        "використовує навмисно вставлені дефекти та перевіряє результат через виконання",
+        "вимірює якість, надійність, підтримуваність і вартість",
+        "перевіряє на послаблення тестів і вигадані оракули"
+      ],
+      "example": "An agent asked to add test coverage for a payment module quietly rewrites an existing failing assertion to make it pass instead of fixing the underlying bug it exposed; only a diff review that specifically checks whether any existing assertions were loosened, not just whether new tests were added, catches this.",
+      "exampleUk": "Агент, якого попросили додати покриття тестами для модуля оплат, тихцем переписує наявну падаючу перевірку так, щоб вона проходила, замість того щоб виправити баг, який вона виявила; це виявляє лише рев'ю diff, який спеціально перевіряє, чи не послаблено жодну з наявних перевірок, а не просто факт додавання нових тестів.",
+      "tags": [
+        "agent-evals",
+        "ai-assisted-testing",
+        "test-generation",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "openai-evals",
+        "istqb-ai-testing",
+        "nist-genai-profile"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -604,8 +1233,26 @@
         "tracks versions, tool calls, cost and human corrections",
         "compares against a simpler baseline with stop conditions"
       ],
-      "tags": ["agentic-testing", "observability", "cost", "qa-lead"],
-      "sourceIds": ["openai-evals", "opentelemetry-concepts", "dora"],
+      "questionUk": "Що варто моніторити перед масштабуванням agent-based процесу тестування на всю команду?",
+      "shortAnswerUk": "Відстежуйте успішність задач із незалежною верифікацією, частоту людських виправлень, дефекти, що просочились у продакшн (escaped defects), хибні падіння, вартість викликів інструментів і токенів, затримку, повторні спроби, частоту підтверджень і навантаження на підтримку. Фіксуйте версії моделі, промпту, інструментів і середовища для кожного запуску, і порівнюйте процес із простішим детермінованим базовим варіантом. Встановлюйте бюджети та умови зупинки, вибірково рецензуйте результати, і розширюйте використання лише там, де виміряна цінність фідбеку перевищує ризик і операційні витрати.",
+      "strongAnswerSignalsUk": [
+        "вимірює верифіковані результати, а не кількість згенерованих тестів",
+        "відстежує версії, виклики інструментів, вартість і людські виправлення",
+        "порівнює з простішим базовим варіантом і задає умови зупинки"
+      ],
+      "example": "Before rolling out an agentic testing workflow team-wide, a lead runs it against last month's already-known bugs and finds it independently verified only 40% of them despite reporting a 90% self-assessed success rate; that gap between claimed and independently verified success is exactly the number that should gate a wider rollout.",
+      "exampleUk": "Перед розгортанням agent-based процесу тестування на всю команду тімлід прогонає його на вже відомих багах за минулий місяць і виявляє, що він незалежно підтвердив виправлення лише 40% з них, попри заявлену самою системою 90% успішність; саме цей розрив між заявленою і незалежно підтвердженою успішністю має бути критерієм для ширшого розгортання.",
+      "tags": [
+        "agentic-testing",
+        "observability",
+        "cost",
+        "qa-lead"
+      ],
+      "sourceIds": [
+        "openai-evals",
+        "opentelemetry-concepts",
+        "dora"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -620,8 +1267,25 @@
         "distinguishes access tokens and ID tokens",
         "mentions issuer, audience and intended recipient validation"
       ],
-      "tags": ["oauth", "openid-connect", "authentication", "security-qa"],
-      "sourceIds": ["oauth-security-bcp", "openid-connect-core"],
+      "questionUk": "У чому різниця між OAuth і OpenID Connect з погляду тестувальника?",
+      "shortAnswerUk": "OAuth делегує авторизацію для доступу до захищених ресурсів; OpenID Connect додає шар ідентифікації для автентифікації та тверджень (claims) про користувача. Тестувальник має розрізняти access token і ID token, аудиторію ресурсу і ідентичність клієнта, та згоду (consent) і сам вхід (sign-in). Перевіряйте кожен токен саме в тому одержувача, для якого він призначений, і ніколи не робіть висновок про автентифікацію лише на основі наявності OAuth access token.",
+      "strongAnswerSignalsUk": [
+        "розділяє делеговану авторизацію та автентифікацію",
+        "розрізняє access token і ID token",
+        "згадує перевірку issuer, audience та призначеного одержувача"
+      ],
+      "example": "A tester finds that an app treats the mere presence of a valid OAuth access token as proof the user is signed in and grants access to a personal dashboard; because that access token was scoped only for calling a weather API and carries no verified identity claims, this is a real authentication bug that only surfaces once someone asks specifically where the ID token is actually being validated.",
+      "exampleUk": "Тестувальник виявляє, що застосунок трактує сам факт наявності валідного OAuth access token як доказ того, що користувач увійшов у систему, і надає доступ до особистого дашборду; оскільки цей access token був виданий лише для виклику погодного API і не містить перевірених тверджень про ідентичність, це реальний баг автентифікації, який спливає, лише коли хтось конкретно запитує, де саме валідується ID token.",
+      "tags": [
+        "oauth",
+        "openid-connect",
+        "authentication",
+        "security-qa"
+      ],
+      "sourceIds": [
+        "oauth-security-bcp",
+        "openid-connect-core"
+      ],
       "prevalence": "Common"
     },
     {
@@ -636,8 +1300,26 @@
         "tests issuer, audience and redirect validation",
         "checks token storage, rotation and leakage"
       ],
-      "tags": ["oauth", "pkce", "authentication", "security-qa"],
-      "sourceIds": ["oauth-security-bcp", "openid-connect-core", "owasp-wstg"],
+      "questionUk": "Як тестувати authorization-code flow з PKCE?",
+      "shortAnswerUk": "Перевіряйте точну обробку зареєстрованого redirect URI, непередбачуваність state і nonce (де застосовно), одноразовість і короткий термін дії authorization code, та валідність verifier для початкового challenge. Тестуйте відсутні, неправильні, повторно використані (replayed) та перехоплені коди; плутанину issuer і audience; скасовану згоду; ротацію refresh token; вихід із системи та плутанину сесій між вкладками. Переконайтесь, що секрети й токени ніколи не з'являються в URL, логах чи браузерному сховищі поза межами задуманого дизайну.",
+      "strongAnswerSignalsUk": [
+        "охоплює state, nonce, PKCE verifier та стійкість до replay-атак",
+        "тестує перевірку issuer, audience та redirect",
+        "перевіряє зберігання, ротацію та витік токенів"
+      ],
+      "example": "A test intercepts the authorization code from a network log and replays it in a second browser session after the legitimate exchange already happened; a correctly implemented flow rejects the replayed code because it was already consumed, while a buggy implementation that reuses codes issues a second valid token pair to an attacker.",
+      "exampleUk": "Тест перехоплює authorization code з мережевого логу і повторно використовує його в другій сесії браузера вже після того, як легітимний обмін відбувся; коректно реалізований флоу відхиляє повторно використаний код, бо він уже був спожитий, тоді як реалізація з багом, що дозволяє повторне використання коду, видає атакуючому другу валідну пару токенів.",
+      "tags": [
+        "oauth",
+        "pkce",
+        "authentication",
+        "security-qa"
+      ],
+      "sourceIds": [
+        "oauth-security-bcp",
+        "openid-connect-core",
+        "owasp-wstg"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -652,8 +1334,25 @@
         "tests producer and consumer compatibility",
         "separates contract evidence from broker and workflow behavior"
       ],
-      "tags": ["event-driven", "contract-testing", "api-qa", "sdet"],
-      "sourceIds": ["asyncapi-30", "openapi-31"],
+      "questionUk": "Що має входити в контрактний тест для event-driven інтеграції?",
+      "shortAnswerUk": "Перевіряйте канал чи топік, схему повідомлення, обов'язкові метадані, семантику ключа чи партиції, правила сумісності та бізнес-значення кожної події. Прогоняйте серіалізацію продюсера і десеріалізацію споживача на версіонованих прикладах, включно з опціональними та невідомими полями. Контракт не повинен видавати себе за доказ доставки брокером, порядку чи наскрізних побічних ефектів — це має покриватись інтеграційними та системними тестами.",
+      "strongAnswerSignalsUk": [
+        "охоплює семантику повідомлення й метадані, а не лише форму JSON",
+        "тестує сумісність продюсера і споживача",
+        "відділяє контрактні докази від поведінки брокера і робочого процесу"
+      ],
+      "example": "A contract test confirms both the producer and consumer agree that an OrderShipped event's trackingNumber field is optional and may be absent for in-store pickups; without that explicit case in the contract, the consumer's deserializer would have thrown on the very first pickup order once it hit production.",
+      "exampleUk": "Контрактний тест підтверджує, що і продюсер, і споживач погоджуються: поле trackingNumber події OrderShipped є опціональним і може бути відсутнім для замовлень із самовивозом; без цього явного випадку в контракті десеріалізатор споживача впав би на першому ж замовленні з самовивозом, щойно воно потрапило б у продакшн.",
+      "tags": [
+        "event-driven",
+        "contract-testing",
+        "api-qa",
+        "sdet"
+      ],
+      "sourceIds": [
+        "asyncapi-30",
+        "openapi-31"
+      ],
       "prevalence": "Common"
     },
     {
@@ -668,8 +1367,25 @@
         "covers partial failure around side effect and acknowledgment",
         "uses persisted business state as the oracle"
       ],
-      "tags": ["event-driven", "idempotency", "messaging", "api-qa"],
-      "sourceIds": ["asyncapi-30", "google-sre"],
+      "questionUk": "Як тестувати споживача подій (event consumer) на дубльовану доставку та ідемпотентність?",
+      "shortAnswerUk": "Доставляйте один і той самий ідентифікатор події кілька разів — послідовно, конкурентно та після перезапуску споживача, а потім перевіряйте, що бізнесові побічні ефекти відбуваються не більше одного разу, тоді як підтвердження (acknowledgments) і метрики залишаються коректними. Тестуйте дублікати до і після часткового збою, застарілий стан дедуплікації та семантично повторювані події з різними ID. Використовуйте авторитетний збережений стан як оракул, а не лише логи споживача.",
+      "strongAnswerSignalsUk": [
+        "тестує дубльовану доставку при перезапусках і конкурентності",
+        "охоплює частковий збій навколо побічного ефекту та підтвердження",
+        "використовує збережений бізнесовий стан як оракул"
+      ],
+      "example": "Killing the consumer process right after it charges a customer's card but before it acknowledges the message causes the broker to redeliver the same event on restart; the test asserts the persisted payment record shows exactly one charge, not that the consumer looks idempotent from its logs alone, because the logs would show two processing attempts either way.",
+      "exampleUk": "Аварійне завершення процесу споживача одразу після списання коштів з картки клієнта, але до підтвердження повідомлення, змушує брокер повторно доставити ту саму подію після перезапуску; тест перевіряє, що збережений запис про платіж показує рівно одне списання, а не покладається на те, що споживач 'виглядає' ідемпотентним лише за логами, бо логи в будь-якому разі покажуть дві спроби обробки.",
+      "tags": [
+        "event-driven",
+        "idempotency",
+        "messaging",
+        "api-qa"
+      ],
+      "sourceIds": [
+        "asyncapi-30",
+        "google-sre"
+      ],
       "prevalence": "Common"
     },
     {
@@ -684,8 +1400,25 @@
         "injects failures around processing and acknowledgment",
         "verifies replay safety, dead-letter evidence and progress"
       ],
-      "tags": ["messaging", "dead-letter-queue", "replay", "api-qa"],
-      "sourceIds": ["asyncapi-30", "google-sre"],
+      "questionUk": "Як тестувати порядок, replay і поведінку dead-letter у системі обміну повідомленнями?",
+      "shortAnswerUk": "Визначте, де саме гарантується порядок — глобально, в межах ключа чи взагалі ніде — і публікуйте перемежовані повідомлення через кілька партицій і споживачів. Вносьте отруйні повідомлення (poison messages), таймаути і збої навколо моменту підтвердження; перевіряйте ліміти повторних спроб, backoff, метадані dead-letter, і те, що непов'язані повідомлення продовжують оброблятись. Відтворюйте (replay) обмежений діапазон і підтверджуйте ідемпотентні результати, збережене походження (provenance) даних та видиме відставання (lag), без мовчазного пропуску даних.",
+      "strongAnswerSignalsUk": [
+        "формулює фактичну область дії гарантії порядку",
+        "вносить збої навколо обробки та підтвердження",
+        "перевіряє безпеку replay, докази dead-letter та прогрес обробки"
+      ],
+      "example": "A test publishes a malformed poison message into the middle of a stream of otherwise valid orders; a correct consumer routes just that one message to the dead-letter queue with the original headers intact and keeps processing the orders after it, while a broken consumer either crashes the whole partition or silently drops every message that follows.",
+      "exampleUk": "Тест публікує пошкоджене \"отруйне\" повідомлення посеред потоку інакше валідних замовлень; коректний споживач направляє саме це повідомлення в dead-letter чергу зі збереженими оригінальними заголовками і продовжує обробляти замовлення після нього, тоді як зламаний споживач або аварійно завершує роботу всієї партиції, або мовчки відкидає всі наступні повідомлення.",
+      "tags": [
+        "messaging",
+        "dead-letter-queue",
+        "replay",
+        "api-qa"
+      ],
+      "sourceIds": [
+        "asyncapi-30",
+        "google-sre"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -700,8 +1433,25 @@
         "covers batching, retries and fan-out",
         "controls cardinality while preserving diagnostic correlation"
       ],
-      "tags": ["messaging", "distributed-tracing", "correlation", "sre"],
-      "sourceIds": ["opentelemetry-concepts", "asyncapi-30"],
+      "questionUk": "Як перевірити кореляцію трейсів (trace correlation) між асинхронним продюсером і споживачем?",
+      "shortAnswerUk": "Надішліть відоме повідомлення з trace context і бізнесовим ідентифікатором кореляції, а потім перевірте, що телеметрію продюсера, брокера та споживача можна об'єднати, не перетворюючи бізнес-ID з високою кардинальністю на мітки метрик (metric labels). Охопіть пакетну обробку (batching), повторні спроби, відкладене споживання і fan-out; підтвердіть, що контекст саме поширюється, а не випадково повторно використовується. Свідомо семпліруйте (sample) збої і зберігайте зв'язки від трейсу до повідомлення та логів споживача.",
+      "strongAnswerSignalsUk": [
+        "поширює контекст через метадані повідомлення",
+        "охоплює пакетну обробку, повторні спроби та fan-out",
+        "контролює кардинальність, зберігаючи діагностичну кореляцію"
+      ],
+      "example": "A consumer that processes messages in batches of 50 accidentally attaches the trace context of only the first message in the batch to every downstream span; a test that publishes 50 uniquely identifiable messages in one batch and checks that each one's trace can be independently followed back to its own producer span catches the bug before it hides real latency outliers behind one shared trace.",
+      "exampleUk": "Споживач, що обробляє повідомлення пакетами по 50, помилково додає trace context лише першого повідомлення пакета до кожного подальшого span; тест, який публікує 50 унікально ідентифікованих повідомлень в одному пакеті й перевіряє, що трейс кожного можна незалежно простежити до власного span продюсера, виявляє цей баг раніше, ніж він приховає реальні викиди затримки за одним спільним трейсом.",
+      "tags": [
+        "messaging",
+        "distributed-tracing",
+        "correlation",
+        "sre"
+      ],
+      "sourceIds": [
+        "opentelemetry-concepts",
+        "asyncapi-30"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -716,8 +1466,26 @@
         "asserts security and protocol invariants",
         "preserves minimized failures as regression cases"
       ],
-      "tags": ["api-fuzzing", "property-based-testing", "openapi", "api-qa"],
-      "sourceIds": ["openapi-31", "hypothesis-property-testing", "owasp-api-2023"],
+      "questionUk": "Як поєднати схему API з property-based або fuzz-тестуванням?",
+      "shortAnswerUk": "Генеруйте валідні запити зі схеми, а потім мутуйте граничні значення, опціональні поля, кодування та структурні обмеження, щоб отримати цілеспрямовані невалідні випадки. Перевіряйте протокольні інваріанти — наприклад, що клієнтські помилки не спричиняють серверних помилок (5xx), що відповіді відповідають схемі, що ізоляція авторизації дотримується, і що ідемпотентність узгоджена. Обмежуйте темп кампанії fuzz-тестування, зберігайте seed-и й мінімізовані запити, і додавайте важливі падіння як детерміновані регресійні тести.",
+      "strongAnswerSignalsUk": [
+        "генерує як валідні за схемою, так і цілеспрямовано невалідні запити",
+        "перевіряє інваріанти безпеки та протоколу",
+        "зберігає мінімізовані падіння як регресійні кейси"
+      ],
+      "example": "Fuzzing an OpenAPI-described endpoint with deeply nested and oversized JSON payloads triggers a 500 error instead of the expected 400 for malformed input, revealing an unhandled stack-depth exception; the minimized failing payload gets saved as a permanent regression test rather than being lost when the fuzzing campaign ends.",
+      "exampleUk": "Fuzz-тестування ендпоінта, описаного через OpenAPI, глибоко вкладеними й надто великими JSON-навантаженнями спричиняє помилку 500 замість очікуваної 400 для невалідного вводу, розкриваючи необроблений виняток переповнення стеку; мінімізоване падаюче навантаження зберігається як постійний регресійний тест, а не втрачається після завершення кампанії fuzz-тестування.",
+      "tags": [
+        "api-fuzzing",
+        "property-based-testing",
+        "openapi",
+        "api-qa"
+      ],
+      "sourceIds": [
+        "openapi-31",
+        "hypothesis-property-testing",
+        "owasp-api-2023"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -732,8 +1500,25 @@
         "uses both lab and field evidence",
         "segments the 75th percentile instead of averaging everything"
       ],
-      "tags": ["core-web-vitals", "frontend-performance", "rum", "web-qa"],
-      "sourceIds": ["web-vitals", "google-sre"],
+      "questionUk": "Як тестувати і моніторити Core Web Vitals?",
+      "shortAnswerUk": "Вимірюйте LCP, INP і CLS для критичних користувацьких флоу, сегментуючи дані реальних користувачів за сторінкою, пристроєм і з'єднанням на рівні 75-го перцентиля. Використовуйте контрольовані лабораторні тести для відтворюваного регресійного фідбеку і польову телеметрію (field telemetry) для реального користувацького досвіду; лабораторні проксі не можуть повністю відтворити INP чи варіативність популяції користувачів. Встановлюйте бюджети для окремих сторінок, зберігайте діагностичні трейси, і досліджуйте регресії, а не оптимізуйте лише один агрегований показник.",
+      "strongAnswerSignalsUk": [
+        "називає LCP, INP і CLS та їхній вплив на користувача",
+        "використовує і лабораторні, і польові дані",
+        "сегментує на рівні 75-го перцентиля замість усереднення всього"
+      ],
+      "example": "A team's lab-based Lighthouse score looks great after a release, but field data shows INP regressing badly for users on mid-range Android devices with slow CPUs; the lab environment's fast hardware never surfaced the main-thread blocking that only shows up under real device and network variance.",
+      "exampleUk": "Лабораторний показник Lighthouse команди виглядає чудово після релізу, але польові дані показують серйозну регресію INP для користувачів на середньорівневих Android-пристроях з повільними процесорами; швидке апаратне забезпечення лабораторного середовища так і не виявило блокування main thread, яке проявляється лише за реальної варіативності пристроїв і мережі.",
+      "tags": [
+        "core-web-vitals",
+        "frontend-performance",
+        "rum",
+        "web-qa"
+      ],
+      "sourceIds": [
+        "web-vitals",
+        "google-sre"
+      ],
       "prevalence": "Common"
     },
     {
@@ -748,8 +1533,25 @@
         "uses field data for outcomes and lab data for diagnosis",
         "segments users instead of hiding slow cohorts"
       ],
-      "tags": ["frontend-performance", "lab-testing", "rum", "performance-qa"],
-      "sourceIds": ["web-vitals", "google-sre"],
+      "questionUk": "Чому лабораторні та польові (field) результати вимірювання продуктивності вебу можуть розходитись, і як команді використовувати обидва підходи?",
+      "shortAnswerUk": "Лабораторні тести контролюють апаратне забезпечення, мережу, кеш і дії, тому вони відтворювані й корисні перед релізом; польові дані включають реальні пристрої, географію, довгі завдання, стани кешу та поведінку користувачів. Порівнюйте еквівалентні визначення сторінки та когорти, використовуйте лабораторні трейси для діагностики регресій, помічених у польових перцентилях, і уникайте оголошення успіху на основі швидкого синтетичного прогону, коли значущий сегмент користувачів усе ще працює повільно.",
+      "strongAnswerSignalsUk": [
+        "пояснює популяції та контрольовані умови кожного джерела даних",
+        "використовує польові дані для результатів, а лабораторні — для діагностики",
+        "сегментує користувачів, а не приховує повільні когорти"
+      ],
+      "example": "A synthetic lab test run from a data center with a fast fixed connection reports a 1.2 second LCP, while field data from CrUX shows the 75th percentile LCP for users on 3G connections in a target market is 4.8 seconds; the team uses a throttled lab profile matching that market's real network conditions to reproduce and fix the regression instead of trusting the optimistic lab number.",
+      "exampleUk": "Синтетичний лабораторний тест, запущений з дата-центру зі швидким фіксованим з'єднанням, показує LCP 1.2 секунди, тоді як польові дані з CrUX показують, що 75-й перцентиль LCP для користувачів на 3G-з'єднанні на цільовому ринку становить 4.8 секунди; команда використовує лабораторний профіль з обмеженою швидкістю, що відповідає реальним мережевим умовам цього ринку, щоб відтворити й виправити регресію, а не довіряти оптимістичному лабораторному числу.",
+      "tags": [
+        "frontend-performance",
+        "lab-testing",
+        "rum",
+        "performance-qa"
+      ],
+      "sourceIds": [
+        "web-vitals",
+        "google-sre"
+      ],
       "prevalence": "Common"
     },
     {
@@ -764,8 +1566,25 @@
         "controls environment and statistical noise",
         "uses reviewed exceptions and field correlation"
       ],
-      "tags": ["performance-budget", "ci", "frontend-performance", "performance-qa"],
-      "sourceIds": ["web-vitals", "dora"],
+      "questionUk": "Як визначити бюджет продуктивності фронтенду, корисний у CI?",
+      "shortAnswerUk": "Обирайте орієнтовані на користувача метрики флоу плюс контрольовані складові — розмір JavaScript, зображень і шрифтів, кількість запитів та навантаження на main thread. Встановіть стабільний базовий рівень (baseline), задайте пороги для репрезентативного пристрою і сторінки, і падайте на значущій регресії, а не на шумовому абсолютному відхиленні. Дозволяйте явний рецензований виняток з терміном дії, і перевіряйте, що бюджети CI корелюють з реальним польовим досвідом після релізу.",
+      "strongAnswerSignalsUk": [
+        "поєднує користувацькі результати з практичними лімітами ресурсів",
+        "контролює середовище та статистичний шум",
+        "використовує рецензовані винятки та кореляцію з польовими даними"
+      ],
+      "example": "A CI budget that fails a build on any bundle-size increase at all forces developers to bypass it constantly with unreviewed overrides; switching to a budget that fails only on a regression exceeding a statistically meaningful threshold, with an explicit expiring exception process for legitimate increases, actually gets respected instead of routinely ignored.",
+      "exampleUk": "Бюджет CI, що валить збірку через будь-яке збільшення розміру бандла, змушує розробників постійно обходити його нерецензованими перевизначеннями; перехід на бюджет, що падає лише при регресії, яка перевищує статистично значущий поріг, з явним процесом винятків, що має термін дії, для легітимних збільшень, справді дотримується, а не ігнорується щоразу.",
+      "tags": [
+        "performance-budget",
+        "ci",
+        "frontend-performance",
+        "performance-qa"
+      ],
+      "sourceIds": [
+        "web-vitals",
+        "dora"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -780,8 +1599,25 @@
         "verifies builder and policy identity, not only a version label",
         "recognizes rebuilds as distinct artifacts"
       ],
-      "tags": ["software-supply-chain", "provenance", "ci", "security-qa"],
-      "sourceIds": ["slsa-12", "git-docs"],
+      "questionUk": "Як перевірити, що протестований артефакт — це саме той артефакт, що йде в реліз?",
+      "shortAnswerUk": "Визначте незмінну (immutable) вихідну ревізію та вхідні дані збірки, генеруйте артефакт в ізольованій контрольованій збірці, і додайте до нього перевірюване походження (provenance), що містить його дайджест (digest) і процес виробництва. Перед релізом валідуйте ідентичність підпису чи атестації, очікуване джерело, білдер і політику перед просуванням у продакшн. Прив'язуйте докази тестування саме до цього дайджеста; повторна збірка з тією самою міткою версії — це вже інший артефакт, і він потребує нових доказів довіри.",
+      "strongAnswerSignalsUk": [
+        "прив'язує джерело, provenance збірки, тести й реліз до одного дайджеста",
+        "перевіряє ідентичність білдера й політики, а не лише мітку версії",
+        "визнає повторні збірки окремими артефактами"
+      ],
+      "example": "A release pipeline promotes an artifact by matching its version tag 2.4.1 rather than its content digest; a hotfix rebuild that reuses the same tag after a dependency silently updated produces a binary with different test coverage than the one that actually passed QA, and nobody catches it because the version label looked identical.",
+      "exampleUk": "Пайплайн релізу просуває артефакт у продакшн, звіряючи мітку версії 2.4.1, а не дайджест вмісту; повторна збірка хотфіксу, що використовує ту саму мітку після мовчазного оновлення залежності, дає бінарник з іншим покриттям тестами, ніж той, що реально пройшов QA, і ніхто цього не помічає, бо мітка версії виглядала ідентично.",
+      "tags": [
+        "software-supply-chain",
+        "provenance",
+        "ci",
+        "security-qa"
+      ],
+      "sourceIds": [
+        "slsa-12",
+        "git-docs"
+      ],
       "prevalence": "Specialist"
     },
     {
@@ -796,8 +1632,25 @@
         "tests cache, artifact, log and network exfiltration paths",
         "uses short-lived scoped credentials and protected promotion"
       ],
-      "tags": ["ci-security", "secrets", "supply-chain", "security-qa"],
-      "sourceIds": ["slsa-12", "owasp-asvs"],
+      "questionUk": "Як перевірити, що код з недовіреного пул-реквесту не може викрасти секрети CI?",
+      "shortAnswerUk": "Складіть карту того, які workflow виконують контрольований контрибʼютором код, і переконайтесь, що вони не отримують продакшн-облікові дані чи привілейовані токени на запис. Використовуйте одноразові тестові облікові дані, захищені (protected) середовища й явне підтвердження для довірених етапів; тестуйте спроби вивести значення змінних оточення, змінити артефакти, отруїти кеш і ексфільтрувати дані через мережу. Маскування логів — це лише додатковий рівень захисту (defense in depth), а не заміна утримання самого секрету.",
+      "strongAnswerSignalsUk": [
+        "відділяє недовірене виконання від привілейованих облікових даних",
+        "тестує шляхи ексфільтрації через кеш, артефакти, логи та мережу",
+        "використовує короткоживучі обмежені облікові дані та захищене просування в продакшн"
+      ],
+      "example": "A pull request from a fork adds a build step that echoes every environment variable to the build log; because the workflow that runs on fork pull requests never has production secrets injected into it in the first place, the exfiltration attempt only exposes a harmless disposable test token, which is exactly the outcome the pipeline design should guarantee before anyone even needs to notice the suspicious echo command.",
+      "exampleUk": "Пул-реквест з форку додає крок збірки, що виводить кожну змінну оточення в лог збірки; оскільки workflow, що запускається для пул-реквестів з форків, взагалі ніколи не отримує продакшн-секретів, спроба ексфільтрації розкриває лише нешкідливий одноразовий тестовий токен — саме такий результат має гарантувати дизайн пайплайна ще до того, як хтось помітить підозрілу команду виводу змінних.",
+      "tags": [
+        "ci-security",
+        "secrets",
+        "supply-chain",
+        "security-qa"
+      ],
+      "sourceIds": [
+        "slsa-12",
+        "owasp-asvs"
+      ],
       "prevalence": "Occasional"
     },
     {
@@ -812,8 +1665,26 @@
         "tests affected boundaries and rollback",
         "uses locked inputs, provenance and progressive release evidence"
       ],
-      "tags": ["dependencies", "supply-chain", "upgrade-testing", "qa-lead"],
-      "sourceIds": ["slsa-12", "dora", "owasp-asvs"],
+      "questionUk": "Які докази мають підтверджувати високоризиковане оновлення фреймворку чи залежності?",
+      "shortAnswerUk": "Перегляньте release notes, повідомлення про вразливості (advisories), транзитивні зміни, сумісність рантайму та ліцензій, а потім зберіть точний зафіксований (locked) граф залежностей у відтворюваному середовищі. Запустіть фокусовані контрактні, інтеграційні, продуктивні та безпекові перевірки на затронутих межах системи плюс репетицію rollback. Випускайте поступово (progressively) з телеметрією, зберігайте provenance саме для протестованого артефакту, і фіксуйте прийняті несумісності з відповідальною особою та датою усунення.",
+      "strongAnswerSignalsUk": [
+        "оцінює транзитивний вплив, сумісність та безпековий ризик",
+        "тестує затронуті межі системи та rollback",
+        "використовує зафіксовані вхідні дані, provenance та докази поступового релізу"
+      ],
+      "example": "Upgrading a major logging library across a monorepo silently pulls in a transitive dependency bump that changes default JSON field ordering; a canary rollout to 5% of traffic with automated comparison against the previous version's output catches the ordering change before it breaks a downstream consumer that was accidentally relying on field order, something the changelog for the direct dependency never mentioned.",
+      "exampleUk": "Оновлення основної бібліотеки логування в монорепозиторії мовчки підтягує транзитивне оновлення залежності, яке змінює порядок полів JSON за замовчуванням; канарковий викат на 5% трафіку з автоматизованим порівнянням із виводом попередньої версії виявляє зміну порядку до того, як вона зламає downstream-споживача, що випадково покладався на порядок полів, — про що changelog прямої залежності взагалі не згадував.",
+      "tags": [
+        "dependencies",
+        "supply-chain",
+        "upgrade-testing",
+        "qa-lead"
+      ],
+      "sourceIds": [
+        "slsa-12",
+        "dora",
+        "owasp-asvs"
+      ],
       "prevalence": "Common"
     },
     {
@@ -828,8 +1699,25 @@
         "keeps domain decisions with accountable humans",
         "evaluates the assistant on seeded ambiguities and omissions"
       ],
-      "tags": ["ai-assisted-testing", "requirements", "review", "ai-qa"],
-      "sourceIds": ["istqb-ai-testing", "openai-evals"],
+      "questionUk": "Як AI-асистент може допомогти в рев'ю вимог, не ставши при цьому джерелом істини (source of truth)?",
+      "shortAnswerUk": "Надайте асистенту контрольовану вимогу та відповідний глосарій, і попросіть визначити неоднозначність, відсутніх акторів, стани, межі, поведінку при помилках і суперечливі приклади з посиланнями на наданий текст. Кожну знахідку має вирішувати product owner чи доменний експерт. Фіксуйте прийняті рішення в реальній специфікації, відкидайте непідтверджені вигадки, і оцінюйте цей процес на відомих пропусках, перш ніж довіряти йому широко.",
+      "strongAnswerSignalsUk": [
+        "вимагає простежуваних знахідок, а не вигаданих вимог",
+        "залишає доменні рішення за відповідальними людьми",
+        "оцінює асистента на навмисно вставлених неоднозначностях і пропусках"
+      ],
+      "example": "An assistant reviewing a checkout requirement flags that the spec never states what happens when a discount code and a gift card are applied together, citing the exact two sentences that describe each independently; the product owner resolves it by adding an explicit precedence rule to the specification, rather than letting the assistant's own suggested behavior quietly become the implementation.",
+      "exampleUk": "Асистент, що рецензує вимогу для оформлення замовлення, зазначає, що специфікація ніде не описує, що відбувається, коли промокод і подарункова карта застосовуються одночасно, цитуючи саме ті два речення, які описують кожен випадок окремо; product owner вирішує це, додавши явне правило пріоритету до специфікації, замість того щоб дозволити власній запропонованій асистентом поведінці тихцем стати реалізацією.",
+      "tags": [
+        "ai-assisted-testing",
+        "requirements",
+        "review",
+        "ai-qa"
+      ],
+      "sourceIds": [
+        "istqb-ai-testing",
+        "openai-evals"
+      ],
       "prevalence": "Common"
     }
   ]

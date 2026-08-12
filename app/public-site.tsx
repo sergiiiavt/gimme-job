@@ -47,6 +47,11 @@ interface InterviewQuestion {
   question: string;
   shortAnswer: string;
   strongAnswerSignals: string[];
+  questionUk?: string;
+  shortAnswerUk?: string;
+  strongAnswerSignalsUk?: string[];
+  example?: string;
+  exampleUk?: string;
   sourceIds: string[];
   editorialStar?: boolean;
   tags?: string[];
@@ -751,6 +756,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [openFilter, setOpenFilter] = useState<"prevalence" | "sort" | "tags" | "levels" | null>(null);
   const [page, setPage] = useState(0);
+  const [lang, setLang] = useState<Record<string, "en" | "uk">>({});
   const [progress, setProgress] = useState<Record<string, QuestionProgressStatus>>({});
   const [progressBusy, setProgressBusy] = useState<string | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
@@ -950,13 +956,19 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
       <div className="iq-list">
         {visibleQuestions.map((item, index) => {
           const tags = tagsFor(item);
+          const activeLang = lang[item.id] ?? "en";
+          const showUk = activeLang === "uk" && Boolean(item.questionUk);
+          const displayQuestion = showUk && item.questionUk ? item.questionUk : item.question;
+          const displayShortAnswer = showUk && item.shortAnswerUk ? item.shortAnswerUk : item.shortAnswer;
+          const displaySignals = showUk && item.strongAnswerSignalsUk ? item.strongAnswerSignalsUk : item.strongAnswerSignals;
+          const displayExample = showUk && item.exampleUk ? item.exampleUk : item.example;
           return (
             <details className="iq-question" key={item.id}>
               <summary>
                 <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
                 <div>
                   <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(pageStart + index + 1).padStart(3, "0")}</small>
-                  <h2>{item.editorialStar && <span className="iq-star-marker" aria-label="Starred fundamental" role="img">★</span>}{item.question}</h2>
+                  <h2>{item.editorialStar && <span className="iq-star-marker" aria-label="Starred fundamental" role="img">★</span>}{displayQuestion}</h2>
                   <span className="iq-question-tags">
                     <em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>
                     {mode === "personal" && progress[item.id] && <em className={`iq-progress-badge iq-progress-${progress[item.id].toLowerCase()}`}>{progressOptions.find((option) => option.value === progress[item.id])?.label}</em>}
@@ -965,15 +977,27 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                 </div>
               </summary>
               <div className="iq-answer">
+                {item.questionUk && (
+                  <div className="iq-lang-toggle" role="group" aria-label="Answer language">
+                    <button className={activeLang === "en" ? "active" : ""} onClick={() => setLang((current) => ({ ...current, [item.id]: "en" }))} type="button">EN</button>
+                    <button className={activeLang === "uk" ? "active" : ""} onClick={() => setLang((current) => ({ ...current, [item.id]: "uk" }))} type="button">UA</button>
+                  </div>
+                )}
                 <section>
                   <h3>Answer</h3>
-                  <StructuredAnswer value={item.shortAnswer}/>
+                  <StructuredAnswer value={displayShortAnswer}/>
                 </section>
                 <section>
                   <h3>Strong answer includes</h3>
-                  <ul>{item.strongAnswerSignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
+                  <ul>{displaySignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
                   <div className="iq-answer-tags">{tags.map((questionTag) => <button className={selectedTags.includes(questionTag) ? "active" : ""} key={questionTag} onClick={() => toggleQuestionTag(questionTag)}>#{questionTag}</button>)}</div>
                 </section>
+                {item.example && (
+                  <details className="iq-example">
+                    <summary>Practical example</summary>
+                    <StructuredAnswer value={displayExample ?? item.example}/>
+                  </details>
+                )}
                 {mode === "personal" && (
                   <section className="iq-progress-control">
                     <div><h3>Personal progress</h3><small>Saved privately</small></div>

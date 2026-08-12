@@ -12,6 +12,15 @@
         "testing and debugging are separate activities",
         "connects the activities in a real workflow"
       ],
+      "questionUk": "Чим відрізняються забезпечення якості (QA), тестування та дебагінг?",
+      "shortAnswerUk": "Забезпечення якості (QA) вдосконалює процеси створення якісного продукту і націлене на запобігання дефектам. Тестування оцінює робочі продукти та програмне забезпечення, щоб виявити дефекти, збої (failures) і ризики. Дебагінг починається після того, як збій чи дефект уже виявлено: він локалізує причину, змінює код і перевіряє виправлення.",
+      "strongAnswerSignalsUk": [
+        "запобігання проти оцінювання",
+        "тестування і дебагінг — окремі види діяльності",
+        "пов'язує ці види діяльності в реальному робочому процесі"
+      ],
+      "example": "A QA lead sees the same class of null-reference bugs recurring in payment forms, so she adds an input-validation checklist item to code review — that is QA, preventing defects before they're written. A tester then runs boundary tests on the checkout amount field and finds it accepts negative values — that is testing, revealing a defect. A developer reproduces the failure, steps through the discount-calculation function in a debugger, finds the missing check, fixes it, and reruns the failing test to confirm — that is debugging.",
+      "exampleUk": "Лід QA-команди помічає, що в платіжних формах постійно повторюється один тип багів з null-посиланнями, тож додає пункт про валідацію вхідних даних у чекліст код-рев'ю — це QA, запобігання дефектам ще до того, як вони з'являться в коді. Тестувальник потім прогонає граничні значення на полі суми в чекауті й виявляє, що воно приймає від'ємні числа — це тестування, виявлення дефекту. Розробник відтворює збій, проходить дебагером функцію розрахунку знижки, знаходить відсутню перевірку, виправляє її і перезапускає тест, щоб підтвердити фікс — це дебагінг.",
       "tags": [
         "quality-assurance",
         "testing",
@@ -37,6 +46,15 @@
         "distinguishes a defect from an observed failure",
         "recognizes dormant defects"
       ],
+      "questionUk": "Який зв'язок між кореневою причиною (root cause), людською помилкою, дефектом і збоєм (failure)?",
+      "shortAnswerUk": "Коренева причина створює умови, за яких людина може припуститися помилки. Ця помилка може внести дефект у робочий продукт. Коли виконуваний код доходить до ураженої ділянки за відповідних умов, дефект може спричинити видимий збій (failure); водночас дефект може лишатися прихованим і жодного разу не проявитися в конкретному запуску.",
+      "strongAnswerSignalsUk": [
+        "описує причинно-наслідковий ланцюжок",
+        "розрізняє дефект і зафіксований збій",
+        "враховує приховані (dormant) дефекти"
+      ],
+      "example": "A developer under deadline pressure (root cause) copy-pastes a date-parsing snippet without adjusting the time zone offset (human error), leaving a defect in the invoice-generation module. For most customers in UTC the code path never triggers a visible problem, so the defect stays dormant for months. Then a customer in UTC+13 runs a report at midnight and gets invoices dated a day off — the same defect finally surfaces as an observable failure.",
+      "exampleUk": "Розробник, що поспішає через дедлайн (коренева причина), копіює фрагмент коду для парсингу дат, не скоригувавши зсув часового поясу (людська помилка) — у модулі генерації інвойсів з'являється дефект. Для більшості клієнтів у UTC ця ділянка коду ніколи не спрацьовує проблемно, тож дефект місяцями лишається прихованим. Але клієнт із часовим поясом UTC+13 формує звіт опівночі й отримує інвойси з датою, зсунутою на день — той самий дефект нарешті проявляється як видимий збій.",
       "tags": [
         "error",
         "defects",
@@ -61,6 +79,15 @@
         "distinguishes analysis from design and implementation",
         "includes monitoring, control and completion"
       ],
+      "questionUk": "Які основні активності тест-процесу і що є результатом кожної з них?",
+      "shortAnswerUk": "Процес включає планування, моніторинг і контроль, аналіз, дизайн, реалізацію, виконання та завершення. Аналіз визначає, що саме тестувати; дизайн перетворює умови тестування на тест-кейси і покриття; реалізація готує процедури, дані та середовища; виконання фіксує результати; завершення підсумовує докази, відкриті ризики та testware, придатний для повторного використання.",
+      "strongAnswerSignalsUk": [
+        "називає активності в корисній послідовності",
+        "розрізняє аналіз, дизайн і реалізацію",
+        "включає моніторинг, контроль і завершення"
+      ],
+      "example": "On a new checkout feature, the team first analyzes the acceptance criteria to identify test conditions (analysis), then writes test cases covering valid cards, expired cards and declined payments with expected results (design). They prepare test data and a staging environment with a mock payment gateway (implementation), run the suite and log two failures (execution), then write a completion report noting one defect fixed, one deferred as low risk, and reusable API test scripts checked into the repo (completion).",
+      "exampleUk": "Для нової фічі оформлення замовлення команда спочатку аналізує критерії приймання, щоб визначити умови тестування (аналіз), потім пише тест-кейси для валідних карток, прострочених карток і відхилених платежів з очікуваними результатами (дизайн). Далі готують тестові дані й стейджинг-середовище з мок-платіжним шлюзом (реалізація), прогонюють набір тестів і фіксують два фейли (виконання), а потім пишуть звіт про завершення: один дефект виправлено, один відкладено як низькоризиковий, а скрипти API-тестів, придатні для повторного використання, закомічені в репозиторій (завершення).",
       "tags": [
         "test-process",
         "testware",
@@ -85,6 +112,15 @@
         "recognizes handoff and ownership risks",
         "adapts independence to context"
       ],
+      "questionUk": "Які переваги та недоліки незалежного тестування?",
+      "shortAnswerUk": "Людина, яка не створювала роботу, може привнести інші припущення, навички та іншу оптику для виявлення дефектів. Водночас надмірна незалежність може сповільнювати зворотний зв'язок, створювати зайві передачі роботи (handoffs) і заохочувати розробників перекладати відповідальність за якість на когось іншого. Рівень незалежності варто підбирати під ризик, зберігаючи якість спільною відповідальністю всієї команди.",
+      "strongAnswerSignalsUk": [
+        "пояснює когнітивне різноманіття",
+        "враховує ризики передачі роботи та розмивання відповідальності",
+        "адаптує рівень незалежності під контекст"
+      ],
+      "example": "On a healthcare billing system, the team assigns an independent tester (not the feature author) to review the claims-calculation module because the author's assumptions about edge cases had already caused two production incidents. The independent tester finds a rounding error the author missed, but the extra handoff adds a day to the release cycle — so for a low-risk internal admin panel the same team lets developers self-test and skips the separate review.",
+      "exampleUk": "У системі білінгу для медичної установи команда призначає незалежного тестувальника (не автора фічі) перевіряти модуль розрахунку страхових виплат, бо припущення автора про edge-кейси вже спричинили два інциденти в проді. Незалежний тестувальник знаходить помилку округлення, яку пропустив автор, але додаткова передача роботи додає день до циклу релізу — тож для низькоризикової внутрішньої адмін-панелі та сама команда дозволяє розробникам самостійно тестувати свій код і пропускає окремий рев'ю.",
       "tags": [
         "test-independence",
         "whole-team",
@@ -109,6 +145,15 @@
         "gives a technique example for each family",
         "treats the families as complementary"
       ],
+      "questionUk": "Чим відрізняються тест-техніки типу «чорна скринька» (black-box), «біла скринька» (white-box) та техніки на основі досвіду (experience-based)?",
+      "shortAnswerUk": "Техніки «чорної скриньки» будують тести на основі заданої поведінки, не використовуючи структуру реалізації. Техніки «білої скриньки» будують покриття на основі коду, архітектури чи потоку керування. Техніки на основі досвіду використовують знання тестувальника, евристики та історію дефектів. Це взаємодоповнювальні підходи, а не конкуруючі назви для того самого тесту.",
+      "strongAnswerSignalsUk": [
+        "основа — специфікація, структура або досвід",
+        "наводить приклад техніки для кожної групи",
+        "розглядає групи як взаємодоповнювальні, а не взаємовиключні"
+      ],
+      "example": "For a discount-code field, a tester uses equivalence partitioning and boundary-value analysis from the spec to check valid, empty and max-length codes (black-box). Then they check branch coverage of the discount-calculation function and notice one conditional branch for stacked coupons is never exercised, so they add a case for it (white-box). Finally, drawing on past bugs in similar systems, they try applying the same code twice in one session, suspecting a re-entrancy issue — and it turns out the discount doubles (experience-based, exploratory).",
+      "exampleUk": "Для поля промокоду тестувальник використовує розбиття на класи еквівалентності та аналіз граничних значень зі специфікації, щоб перевірити валідні, порожні й максимально довгі коди (black-box). Потім перевіряє покриття гілок функції розрахунку знижки і помічає, що одна гілка для комбінування кількох купонів жодного разу не виконується, тож додає для неї кейс (white-box). Нарешті, спираючись на баги з минулих подібних систем, пробує застосувати той самий код двічі в одній сесії, підозрюючи проблему повторного входу — і виявляється, що знижка застосовується подвійно (experience-based, дослідницьке тестування).",
       "tags": [
         "black-box",
         "white-box",
@@ -133,6 +178,15 @@
         "checks safe failure and state preservation",
         "derives negative cases from risks"
       ],
+      "questionUk": "У чому різниця між позитивним і негативним тестуванням?",
+      "shortAnswerUk": "Позитивні тести показують, що валідні вхідні дані та очікувані користувацькі сценарії дають очікуваний результат. Негативні тести перевіряють поведінку системи при невалідних вхідних даних, заборонених діях, недоступних залежностях і неправильній послідовності кроків, а потім перевіряють безпечне відхилення, корисний фідбек і збереження стану. Негативне тестування — це не випадкові невалідні дані, а кейси, виведені з ризиків і бізнес-правил.",
+      "strongAnswerSignalsUk": [
+        "валідний шлях проти контрольованого зловживання",
+        "перевіряє безпечний відказ і збереження стану",
+        "виводить негативні кейси з ризиків"
+      ],
+      "example": "For a fund-transfer form, positive tests confirm that transferring 100 dollars between two valid accounts with sufficient balance succeeds and updates both balances correctly. Negative tests try transferring a negative amount, transferring more than the available balance, and submitting the form twice quickly to check for a double-charge race condition — each should be rejected with a clear error and leave both account balances unchanged.",
+      "exampleUk": "Для форми переказу коштів позитивні тести перевіряють, що переказ 100 доларів між двома валідними рахунками з достатнім балансом проходить успішно й коректно оновлює обидва баланси. Негативні тести пробують переказати від'ємну суму, переказати більше, ніж є на балансі, і швидко відправити форму двічі, щоб перевірити race condition з подвійним списанням — кожен із цих кейсів має відхилятися з чітким повідомленням про помилку і не змінювати баланси рахунків.",
       "tags": [
         "positive-testing",
         "negative-testing",
@@ -157,6 +211,15 @@
         "distinguishes procedure from case",
         "explains why suites group tests"
       ],
+      "questionUk": "Чим відрізняються умова тестування (test condition), тестовий сценарій, тест-кейс, тестова процедура і тест-сюїта?",
+      "shortAnswerUk": "Умова тестування визначає щось, що можна протестувати. Сценарій описує користувацький або системний потік на високому рівні. Тест-кейс визначає передумови, дані, дії та очікувані результати. Процедура впорядковує кейси й операційні кроки для виконання, а сюїта групує пов'язані тести для певної мети, наприклад smoke- чи регресійного тестування.",
+      "strongAnswerSignalsUk": [
+        "переходить від тестової ідеї до виконуваної деталізації",
+        "розрізняє процедуру і кейс",
+        "пояснює, навіщо групувати тести в сюїти"
+      ],
+      "example": "For a login feature, 'account lockout after failed attempts' is a test condition. 'A user forgets their password and gets locked out, then recovers access' is a scenario. A test case spells out the exact steps: enter valid username, wrong password five times, verify the account locks and an email is sent. A procedure orders that case with setup and teardown steps for execution, and it's bundled with other auth tests into a 'security regression' suite that runs on every release.",
+      "exampleUk": "Для фічі логіну «блокування акаунту після невдалих спроб» — це умова тестування. «Користувач забуває пароль, акаунт блокується, а потім доступ відновлюється» — це сценарій. Тест-кейс прописує точні кроки: ввести валідний логін, п'ять разів невірний пароль, перевірити блокування акаунту й відправку листа. Процедура впорядковує цей кейс із кроками підготовки та очищення для виконання, а сам кейс об'єднується з іншими тестами автентифікації в сюїту «security regression», яка запускається при кожному релізі.",
       "tags": [
         "test-conditions",
         "test-scenario",
@@ -182,6 +245,15 @@
         "tailors reporting to its audience",
         "includes residual risk and deviations"
       ],
+      "questionUk": "Чим звіт про хід тестування (test progress report) відрізняється від звіту про завершення тестування (test completion report)?",
+      "shortAnswerUk": "Звіт про хід тестування підтримує контроль, поки тестування триває: він показує статус, відхилення, перешкоди, зміни ризиків, метрики та подальші кроки. Звіт про завершення оцінює виконаний обсяг роботи відносно цілей і критеріїв виходу, фіксує залишкові ризики та невирішені дефекти, пояснює відхилення й фіксує висновки для майбутньої роботи.",
+      "strongAnswerSignalsUk": [
+        "поточний контроль проти фінальної оцінки",
+        "адаптує звітність під аудиторію",
+        "включає залишкові ризики та відхилення"
+      ],
+      "example": "Mid-sprint, the QA lead sends a daily progress report to the team: 60 percent of planned test cases executed, one blocker on the staging environment delaying API tests, risk of missing the code-freeze date is now medium. After the sprint, the completion report tells a different story to a different audience — stakeholders: 95 percent of planned coverage achieved, three low-severity defects deferred with sign-off, and a note that mocked payment tests should be replaced with real sandbox calls next cycle.",
+      "exampleUk": "У середині спринту лід QA щодня надсилає команді звіт про хід тестування: виконано 60 відсотків запланованих тест-кейсів, один блокер на стейджинг-середовищі затримує API-тести, ризик не встигнути до code freeze тепер оцінюється як середній. Після завершення спринту звіт про завершення розповідає іншу історію іншій аудиторії — стейкхолдерам: досягнуто 95 відсотків запланованого покриття, три дефекти низької критичності відкладено із затвердженням, і зазначено, що наступного циклу мокові платіжні тести варто замінити реальними викликами в sandbox.",
       "tags": [
         "test-reporting",
         "test-progress",
@@ -205,6 +277,15 @@
         "checks side effects as well as the body",
         "includes server-side authorization"
       ],
+      "questionUk": "Які частини API-запиту варто варіювати тестувальнику і що потрібно перевіряти у відповіді?",
+      "shortAnswerUk": "Варіюйте метод, шлях і параметри шляху, query-параметри, заголовки, облікові дані, тип контенту, тіло запиту та умови передачі даних. Перевіряйте статус і заголовки, схему та значення, контракт помилок, час відповіді, збереження даних і побічні ефекти в інших системах. Також перевіряйте, що авторизація та валідація забезпечуються на боці сервера, а не лише на клієнті.",
+      "strongAnswerSignalsUk": [
+        "охоплює кожне місце в запиті",
+        "перевіряє побічні ефекти, а не лише тіло відповіді",
+        "включає серверну авторизацію"
+      ],
+      "example": "Testing a POST /orders endpoint, a tester varies the Content-Type header between JSON and an unsupported form-encoded value, sends a valid and an oversized request body, and swaps the auth token for another user's token. Beyond checking the 200 response schema, they verify the order actually appears in the database, a confirmation email fires, and — critically — that swapping the token returns 403 instead of leaking another user's order, proving authorization is enforced server-side.",
+      "exampleUk": "Тестуючи ендпоінт POST /orders, тестувальник варіює заголовок Content-Type між JSON і непідтримуваним form-encoded значенням, надсилає валідне й надто велике тіло запиту, а також підміняє токен авторизації на токен іншого користувача. Окрім перевірки схеми відповіді 200, він перевіряє, що замовлення справді з'явилося в базі даних, спрацював лист-підтвердження, і — що критично — що підміна токена повертає 403, а не показує замовлення іншого користувача, підтверджуючи, що авторизація забезпечується саме на сервері.",
       "tags": [
         "api",
         "http",
@@ -230,6 +311,15 @@
         "names hardware behaviors requiring real devices",
         "uses a risk-based device matrix"
       ],
+      "questionUk": "Коли для мобільного тестування варто використовувати емулятор, симулятор чи реальний пристрій?",
+      "shortAnswerUk": "Емулятори та симулятори швидкі, відтворювані й корисні для широкого покриття різних версій ОС, розмірів екрана та раннього функціонального тестування. Реальні пристрої потрібні для достовірних даних про сенсори, радіомодулі, нотифікації, біометрію, перегрів, нестачу пам'яті, поведінку конкретних вендорів і реальні перемикання мереж. Використовуйте віртуальне покриття широко, а набір реальних пристроїв — вибірково, на основі ризиків.",
+      "strongAnswerSignalsUk": [
+        "пояснює швидкість і покриття віртуальних пристроїв",
+        "називає апаратну поведінку, яка вимагає реальних пристроїв",
+        "використовує матрицю пристроїв на основі ризиків"
+      ],
+      "example": "The team runs their full regression suite on 20 emulator configurations in CI every night, covering various Android versions and screen sizes cheaply. But before release they still test on three physical devices — a low-end Android phone to check thermal throttling during video upload, an older iPhone to verify Face ID fallback, and a phone with a flaky carrier to confirm the app recovers gracefully from a real 4G-to-Wi-Fi handoff, none of which the emulators reproduce faithfully.",
+      "exampleUk": "Команда щоночі прогонює повний регресійний набір на 20 конфігураціях емуляторів у CI, дешево покриваючи різні версії Android і розміри екранів. Але перед релізом вони все одно тестують на трьох фізичних пристроях — бюджетному Android-телефоні, щоб перевірити троттлінг через перегрів під час завантаження відео, старому iPhone, щоб перевірити fallback Face ID, і телефоні з нестабільним оператором, щоб підтвердити, що застосунок коректно відновлюється після реального перемикання з 4G на Wi-Fi — жодну з цих ситуацій емулятори достовірно не відтворюють.",
       "tags": [
         "emulator",
         "simulator",
@@ -254,6 +344,15 @@
         "includes diagnostics and lifecycle control",
         "treats CI and ownership as framework concerns"
       ],
+      "questionUk": "Які компоненти мають входити в підтримуваний фреймворк автоматизації тестування?",
+      "shortAnswerUk": "Фреймворк зазвичай відокремлює намір тесту від конфігурації, драйверів браузера чи API, доменних дій, тестових даних, асертів, синхронізації, налаштування й очищення оточення, репортингу та діагностики. Він також визначає відповідальність, конвенції коду та виконання в CI. Додавайте абстракції лише там, де вони зменшують повторювані зміни або спрощують розуміння падінь тестів.",
+      "strongAnswerSignalsUk": [
+        "розділяє відповідальності без надмірного інжинірингу",
+        "включає діагностику та контроль життєвого циклу",
+        "розглядає CI та відповідальність за код як частину фреймворку"
+      ],
+      "example": "A team's Playwright framework separates page-object action methods (domain actions) from raw locators (drivers), keeps test data in fixtures loaded per environment, and wraps every assertion with a custom matcher that attaches a screenshot and network log on failure (diagnostics). When a login selector changes, only one page-object file needs updating instead of forty test files — that's the payoff of the separation, and CI fails the build with a linked trace viewer link instead of a bare red X.",
+      "exampleUk": "У Playwright-фреймворку команди методи дій (доменні дії) відокремлені від сирих локаторів (драйвери), тестові дані лежать у фікстурах, що завантажуються окремо для кожного середовища, а кожен асерт обгорнутий кастомним матчером, який при падінні прикріплює скриншот і мережевий лог (діагностика). Коли змінюється селектор поля логіну, потрібно оновити лише один файл page-object, а не сорок тестових файлів — саме в цьому користь такого розділення, а CI при падінні білда показує посилання на trace viewer, а не просто червоний хрестик.",
       "tags": [
         "automation-framework",
         "architecture",
@@ -279,6 +378,15 @@
         "mentions false confidence and flakiness",
         "selects automation by value"
       ],
+      "questionUk": "Які основні переваги та ризики автоматизації тестування?",
+      "shortAnswerUk": "Автоматизація забезпечує відтворюваний, швидкий зворотний зв'язок, виконує перевірки в масштабі та зберігає докази регресії. Водночас вона створює код та інфраструктуру, які потребують проєктування, підтримки, контролю даних і діагностики. Погано підібрані перевірки можуть бути флейкі, повільними або хибно заспокійливими, тому варто автоматизувати стабільні спостереження з чіткою цінністю, а не гнатися за відсотком покриття.",
+      "strongAnswerSignalsUk": [
+        "балансує переваги зворотного зв'язку з витратами на підтримку",
+        "згадує хибну впевненість і флейкі-тести",
+        "обирає, що автоматизувати, на основі цінності"
+      ],
+      "example": "A team automates the checkout regression suite and cuts release verification from two days of manual clicking to a 20-minute CI run — a clear win. But six months later, a third of the suite is flaky due to unmanaged test data collisions between parallel runs, so engineers start ignoring red builds, which is worse than not having the tests at all until the team invests a sprint in fixing test isolation.",
+      "exampleUk": "Команда автоматизує регресійний набір для чекауту й скорочує перевірку релізу з двох днів ручного клікання до 20-хвилинного прогону в CI — очевидна перемога. Але через півроку третина набору стає флейкі через неконтрольовані колізії тестових даних між паралельними запусками, тож інженери починають ігнорувати червоні білди, що гірше, ніж взагалі не мати цих тестів — доки команда не витрачає спринт на виправлення ізоляції тестів.",
       "tags": [
         "automation",
         "benefits",
@@ -303,6 +411,15 @@
         "tests rejection, timeout and ordering",
         "controls asynchronous dependencies"
       ],
+      "questionUk": "Як асинхронний код змінює підхід до написання автотестів?",
+      "shortAnswerUk": "Синхронний код завершується до виконання наступного оператора, тоді як асинхронна робота може завершитися пізніше або впасти через проміс, колбек, подію чи чергу. Тести мають очікувати спостережувану умову завершення, перевіряти таймаути й помилки, за потреби керувати годинником і залежностями та уникати фіксованих sleep, які створюють гонки станів (race conditions) і витрачають час даремно.",
+      "strongAnswerSignalsUk": [
+        "очікує умови, а не фіксований час",
+        "тестує відхилення, таймаут і порядок виконання",
+        "керує асинхронними залежностями"
+      ],
+      "example": "A flaky UI test uses a hardcoded sleep(3000) after clicking 'Submit' to wait for a toast notification, which fails intermittently when the API is slow and wastes three seconds when it's fast. The fix replaces it with an explicit wait for the toast element to appear, adds a separate test that mocks a delayed API response to assert the loading spinner and timeout error, and controls the system clock in a unit test that checks a 30-second session-expiry callback fires exactly once.",
+      "exampleUk": "Флейкі UI-тест використовує жорстко закодований sleep(3000) після кліку на «Відправити», щоб дочекатися тост-повідомлення — це нестабільно падає, коли API повільний, і марно витрачає три секунди, коли API швидкий. Виправлення замінює це на явне очікування появи елемента тосту, додає окремий тест, що мокає затриману відповідь API для перевірки спінера завантаження й помилки таймауту, а також керує системним годинником у юніт-тесті, який перевіряє, що колбек закінчення 30-секундної сесії спрацьовує рівно один раз.",
       "tags": [
         "asynchronous",
         "promises",
@@ -327,6 +444,15 @@
         "connects CI to frequent integration",
         "includes artifact traceability and rollback"
       ],
+      "questionUk": "Чим відрізняються безперервна інтеграція (CI), безперервна доставка (continuous delivery) і безперервний деплой (continuous deployment)?",
+      "shortAnswerUk": "Безперервна інтеграція часто об'єднує невеликі зміни й перевіряє їх автоматизованим зворотним зв'язком. Безперервна доставка підтримує перевірену збірку готовою до релізу через автоматизований пайплайн, але може лишати рішення про викладення в прод за людиною. Безперервний деплой автоматично викладає кожну зміну, що пройшла всі перевірки. На кожному етапі потрібні швидкі перевірки, простежувані артефакти та безпечний шлях відкату (rollback).",
+      "strongAnswerSignalsUk": [
+        "розрізняє delivery і deployment",
+        "пов'язує CI з частою інтеграцією",
+        "включає простежуваність артефактів і rollback"
+      ],
+      "example": "A team merges to main a dozen times a day, and every merge triggers a build and test suite within 5 minutes — that's CI. Every green build automatically produces a versioned, deployable artifact sitting in a staging environment, but a product manager still clicks 'promote to production' — that's continuous delivery. Six months later, once confidence is high enough, they remove that manual click and every passing build on main goes straight to production within the hour — that's continuous deployment.",
+      "exampleUk": "Команда мерджить у main до десятка разів на день, і кожен мердж запускає збірку й набір тестів протягом 5 хвилин — це CI. Кожна успішна збірка автоматично створює версійований, готовий до розгортання артефакт у стейджинг-середовищі, але продакт-менеджер все ще натискає «promote to production» вручну — це continuous delivery. Через півроку, коли впевненості стає достатньо, вони прибирають цей ручний крок, і кожна успішна збірка з main іде прямо в прод протягом години — це continuous deployment.",
       "tags": [
         "ci",
         "continuous-delivery",
@@ -351,6 +477,15 @@
         "requires controlled conditions",
         "uses service objectives rather than vague speed"
       ],
+      "questionUk": "Чим відрізняються базова лінія продуктивності (baseline), бенчмарк і навантажувальний тест (load test)?",
+      "shortAnswerUk": "Базова лінія фіксує поточний стан системи за визначених умов, щоб пізніше порівнювати з нею результати. Бенчмарк порівнює систему, версію чи конфігурацію за допомогою стандартизованого навантаження й метрики. Навантажувальний тест оцінює поведінку системи під репрезентативним навантаженням відносно явних цілей рівня сервісу. Жоден з них не має сенсу без контрольованих даних, середовища та припущень щодо навантаження.",
+      "strongAnswerSignalsUk": [
+        "точка для порівняння проти порівняльного тесту проти перевірки під навантаженням",
+        "вимагає контрольованих умов",
+        "використовує цілі рівня сервісу, а не розмиті поняття швидкості"
+      ],
+      "example": "Before a database migration, the team records response times for the top 20 API endpoints under normal traffic as a baseline. After migrating, they run the same traffic pattern again and compare against the baseline to catch a regression: the search endpoint got 40 percent slower. Separately, they benchmark two candidate database configurations against each other using a fixed synthetic workload to pick the faster one, and later run a load test simulating Black Friday traffic to verify p99 latency stays under 500ms at 10x normal volume.",
+      "exampleUk": "Перед міграцією бази даних команда фіксує час відповіді для 20 найпопулярніших API-ендпоінтів за звичайного навантаження як базову лінію. Після міграції вони знову прогонюють той самий трафік і порівнюють із базовою лінією, щоб виявити регресію: ендпоінт пошуку став на 40 відсотків повільнішим. Окремо вони порівнюють два варіанти конфігурації бази даних між собою за допомогою фіксованого синтетичного навантаження (бенчмарк), щоб обрати швидший, а пізніше проводять навантажувальний тест, що симулює трафік Чорної п'ятниці, аби переконатися, що p99-затримка лишається нижче 500 мс при десятикратному звичайному обсязі.",
       "tags": [
         "baseline",
         "benchmark",
@@ -375,6 +510,15 @@
         "combines automation with manual checks",
         "tests complete user tasks"
       ],
+      "questionUk": "Що має включати практичний базовий тест доступності (accessibility) вебсторінки?",
+      "shortAnswerUk": "Почніть із навігації клавіатурою, видимого фокусу, логічного порядку, доступних імен елементів, заголовків і landmarks, підписів та інструкцій, контрасту, масштабування й реflow, зворотного зв'язку про помилки та динамічних статусних повідомлень. Використовуйте автоматизовані перевірки, щоб знайти виявні порушення правил, а потім вручну перевірте виконання завдань за допомогою клавіатури та репрезентативної допоміжної технології (assistive technology).",
+      "strongAnswerSignalsUk": [
+        "охоплює клавіатуру та семантичну структуру",
+        "поєднує автоматизацію з ручними перевірками",
+        "тестує завершені користувацькі завдання"
+      ],
+      "example": "Running axe-core on a checkout page automatically flags three missing form labels and insufficient color contrast on the 'Place order' button. But automation misses that pressing Tab skips straight from the email field to the footer, bypassing the payment section entirely — the tester only catches that by unplugging the mouse and trying to complete a real purchase using only the keyboard and a screen reader.",
+      "exampleUk": "Прогін axe-core на сторінці чекауту автоматично виявляє три відсутні підписи форм і недостатній контраст кольору на кнопці «Оформити замовлення». Але автоматизація не помічає, що Tab перестрибує з поля email прямо у футер, повністю оминаючи секцію оплати — тестувальник виявляє це лише відключивши мишу й спробувавши завершити реальну покупку, використовуючи тільки клавіатуру та скрінрідер.",
       "tags": [
         "accessibility",
         "wcag",
@@ -398,6 +542,15 @@
         "does not invent a separate QA role in Scrum",
         "connects testing to the Definition of Done"
       ],
+      "questionUk": "Які в Scrum є ролі відповідальності (accountabilities), події та артефакти, і де в цьому місце тестування?",
+      "shortAnswerUk": "Scrum визначає Product Owner, Scrum Master і Developers; Спринт з його плануванням, Daily Scrum, оглядом (review) і ретроспективою; а також Product Backlog, Sprint Backlog і Increment з їхніми зобов'язаннями (commitments). Тестування не є окремою фазою чи окремою роллю: уся Scrum-команда разом створює Done, придатний до використання Increment кожен спринт.",
+      "strongAnswerSignalsUk": [
+        "називає ключові елементи Scrum",
+        "не вигадує окрему роль QA у Scrum",
+        "пов'язує тестування з Definition of Done"
+      ],
+      "example": "A team's Definition of Done requires that every backlog item has passing automated tests, a manual exploratory pass and no open critical defects before it counts as Done. During Sprint Planning, testers estimate test effort alongside developers, not as a separate downstream step; by the Sprint Review, the Increment demoed to stakeholders has already been tested by the whole team, not signed off afterward by a lone QA gatekeeper.",
+      "exampleUk": "Definition of Done команди вимагає, щоб кожен бекложний елемент мав пройдені автотести, ручний дослідницький прогін і жодного відкритого критичного дефекта, перш ніж вважатися Done. Під час Sprint Planning тестувальники оцінюють обсяг тестування разом із розробниками, а не як окремий подальший крок; до Sprint Review Increment, який демонструють стейкхолдерам, уже протестований усією командою, а не підписаний постфактум одним QA-гейткіпером.",
       "tags": [
         "scrum",
         "roles",
@@ -422,6 +575,15 @@
         "explains BDD as collaboration and examples",
         "recognizes all three as test-first approaches"
       ],
+      "questionUk": "Чим відрізняються TDD, BDD і ATDD і як вони пов'язані між собою?",
+      "shortAnswerUk": "TDD веде розробку коду короткими циклами «тест-код-рефакторинг», зазвичай через компонентні тести, орієнтовані на розробника. ATDD спільно виводить приймальні приклади ще до реалізації. BDD використовує приклади та спільну доменну мову, часто у форматі Given/When/Then, щоб описати поведінку. Усі три — це test-first підходи, але їхня аудиторія, обсяг і основна розмова про дизайн відрізняються.",
+      "strongAnswerSignalsUk": [
+        "розрізняє дизайн коду й дизайн приймання",
+        "пояснює BDD як співпрацю та приклади",
+        "визнає всі три підходи test-first"
+      ],
+      "example": "A developer practicing TDD writes a failing unit test for a discount-calculation function, implements just enough code to pass it, then refactors — repeated dozens of times a day, invisible to anyone outside the team. Before that, the whole team — PO, dev and tester — sat down in a three-amigos session and wrote an ATDD example: 'given a cart of 100 dollars and a 10-percent coupon, the total should be 90 dollars.' That same example gets expressed as a BDD scenario in Gherkin and becomes an automated acceptance test that also serves as living documentation for stakeholders.",
+      "exampleUk": "Розробник, що практикує TDD, пише падаючий юніт-тест для функції розрахунку знижки, реалізує рівно стільки коду, щоб тест пройшов, а потім рефакторить — і так десятки разів на день, непомітно для будь-кого поза командою. Перед цим уся команда — PO, розробник і тестувальник — зустрілися на сесії «трьох амігос» і написали ATDD-приклад: «якщо в кошику товарів на 100 доларів і купон на 10 відсотків, сума має бути 90 доларів». Той самий приклад виражається як BDD-сценарій у форматі Gherkin і стає автоматизованим приймальним тестом, який водночас слугує живою документацією для стейкхолдерів.",
       "tags": [
         "tdd",
         "bdd",
@@ -445,6 +607,15 @@
         "uses objective, measurable examples",
         "explains exception handling"
       ],
+      "questionUk": "У чому різниця між критеріями входу (entry criteria) і критеріями виходу (exit criteria)?",
+      "shortAnswerUk": "Критерії входу описують передумови для ефективного початку активності, наприклад доступну збірку, середовище, тестову базу та дані. Критерії виходу визначають, що має бути досягнуто, аби вважати активність завершеною, наприклад необхідне покриття, прийнятний залишковий ризик і вирішені критичні дефекти. Невиконані критерії мають запускати явне рішення щодо ризику, а не мовчазне ігнорування.",
+      "strongAnswerSignalsUk": [
+        "передумови проти доказів завершення",
+        "використовує об'єктивні, вимірювані приклади",
+        "пояснює обробку винятків"
+      ],
+      "example": "Before starting system testing, the entry criteria require a deployed build on staging, a stable test environment, and completed unit tests with 80 percent coverage — testing that starts before this just wastes time chasing environment bugs. The exit criteria for release require zero open critical defects and 95 percent of planned test cases executed; when the team hits 93 percent with two medium defects open at the deadline, the release manager makes an explicit go/no-go risk decision rather than silently shipping.",
+      "exampleUk": "Перед початком системного тестування критерії входу вимагають розгорнутої збірки на стейджингу, стабільного тестового середовища та завершених юніт-тестів із покриттям 80 відсотків — тестування, що почалося раніше, лише марнує час на баги середовища. Критерії виходу для релізу вимагають нуля відкритих критичних дефектів і виконання 95 відсотків запланованих тест-кейсів; коли команда доходить до 93 відсотків із двома відкритими дефектами середньої критичності на дедлайні, релізменеджер приймає явне рішення go/no-go щодо ризику, а не тихо випускає реліз.",
       "tags": [
         "entry-criteria",
         "exit-criteria",
@@ -469,6 +640,15 @@
         "names practical plan contents",
         "allows right-sized documentation"
       ],
+      "questionUk": "Чим тестова стратегія відрізняється від тестового плану?",
+      "shortAnswerUk": "Тестова стратегія задає стійкі принципи та підходи: ставлення до ризику, рівні, типи тестування, автоматизацію, середовища, докази й управління (governance). Тестовий план застосовує ці рішення до конкретного обсягу роботи, розкладу, людей, залежностей, критеріїв входу й виходу та результатів. Команди можуть об'єднувати їх у легкий документ, але мають зберігати і рішення, і деталі виконання.",
+      "strongAnswerSignalsUk": [
+        "організаційний чи продуктовий підхід проти конкретного плану виконання",
+        "називає практичний зміст плану",
+        "допускає документацію розумного розміру"
+      ],
+      "example": "The company-wide test strategy states that all customer-facing APIs require contract tests, all payment flows require independent security review, and automation should cover at least 70 percent of regression scenarios. For the Q3 checkout redesign, the test plan applies that strategy concretely: John owns API contract tests due by August 20, staging environment needs a PCI-compliant sandbox, and exit criteria require zero critical defects plus sign-off from the independent security reviewer named in the strategy.",
+      "exampleUk": "Загальнокорпоративна тестова стратегія визначає, що всі публічні API вимагають контрактних тестів, усі платіжні потоки — незалежного рев'ю безпеки, а автоматизація має покривати щонайменше 70 відсотків регресійних сценаріїв. Для редизайну чекауту в Q3 тестовий план застосовує цю стратегію конкретно: Джон відповідає за контрактні тести API з дедлайном 20 серпня, стейджинг-середовище потребує PCI-сумісного sandbox, а критерії виходу вимагають нуля критичних дефектів і затвердження від незалежного рев'юера безпеки, визначеного стратегією.",
       "tags": [
         "test-strategy",
         "test-plans",
@@ -492,6 +672,15 @@
         "places controls near the work",
         "avoids gatekeeper behavior"
       ],
+      "questionUk": "Як QA Lead формує спільну відповідальність за якість, не роблячи роль QA непотрібною?",
+      "shortAnswerUk": "Робіть продуктові ризики, очікування щодо якості та докази видимими для всієї команди, а потім розміщуйте превентивні й детективні контролі якнайближче до людей, які виконують роботу. QA все одно робить свій внесок: спеціалізоване тестування, коучинг, стратегію та незалежний виклик припущенням. Вимірюйте результати й навчання, а не централізуйте кожну перевірку і не грайте роль фінального «воротаря» якості.",
+      "strongAnswerSignalsUk": [
+        "спільна відповідальність команди при збереженні цінності спеціаліста QA",
+        "розміщує контролі якнайближче до роботи",
+        "уникає поведінки «воротаря»"
+      ],
+      "example": "Instead of being the last sign-off before every release, a QA Lead sets up a shared dashboard showing flaky-test rates and defect escape rates per team, then coaches developers to write their own component tests with QA reviewing test design rather than execution. Six months in, developers catch 80 percent of regressions themselves before code review, and the QA Lead's team shifts to deep exploratory testing and building shared tooling — more valuable work than rubber-stamping every PR.",
+      "exampleUk": "Замість того щоб бути останньою інстанцією затвердження перед кожним релізом, QA Lead налаштовує спільний дашборд із частотою флейкі-тестів і рівнем дефектів, що просочилися в прод, для кожної команди, а потім навчає розробників писати власні компонентні тести, при цьому QA рев'ює дизайн тестів, а не саме виконання. Через півроку розробники самостійно ловлять 80 відсотків регресій ще до код-рев'ю, а команда QA Lead переходить до глибокого дослідницького тестування й побудови спільного тулінгу — цінніша робота, ніж штампувати підпис на кожному PR.",
       "tags": [
         "quality-ownership",
         "leadership",
@@ -516,6 +705,15 @@
         "models states and safety invariants",
         "covers failure and recovery"
       ],
+      "questionUk": "Як би ви тестували ліфт за неповних вимог?",
+      "shortAnswerUk": "Уточніть будівлю, користувачів, вантажопідйомність, доступність та вимоги безпеки, а потім змоделюйте поверхи, двері, рух і сервісні стани. Покрийте звичайні поїздки, порядок обробки викликів, вантажопідйомність і граничні значення, перешкоди, аварійне керування, відмови живлення чи сенсорів та відновлення. Спершу пріоритезуйте інваріанти безпеки і зазначте, які докази спеціалізованої сертифікації виходять за межі цієї вправи на співбесіді.",
+      "strongAnswerSignalsUk": [
+        "ставить уточнювальні питання перед перерахуванням кейсів",
+        "моделює стани та інваріанти безпеки",
+        "покриває відмови та відновлення"
+      ],
+      "example": "Asked to test an elevator, a candidate first clarifies: how many floors, what's the max capacity, is there a freight mode, does it need wheelchair accessibility? They then sketch states — doors open/closed/obstructed, idle/moving/emergency-stop — and walk through cases like two people calling the elevator from opposite directions on the same floor, a weight sensor detecting overload, and a power failure mid-transit triggering backup power and a phone line to the fire department, explicitly noting that full compliance certification testing is out of scope for this exercise.",
+      "exampleUk": "Отримавши завдання протестувати ліфт, кандидат спершу уточнює: скільки поверхів, яка максимальна вантажопідйомність, чи є вантажний режим, чи потрібна доступність для інвалідних візків? Потім він накидає стани — двері відкриті/закриті/заблоковані, простій/рух/аварійна зупинка — і проходить кейси на кшталт: дві людини викликають ліфт із протилежних напрямків на одному поверсі, сенсор ваги фіксує перевантаження, а відмова живлення посеред поїздки запускає резервне живлення і телефонну лінію до пожежної служби, явно зазначаючи, що повне тестування на відповідність сертифікації безпеки виходить за межі цієї вправи.",
       "tags": [
         "elevator",
         "practical",
@@ -541,6 +739,15 @@
         "separates model behavior from system invariants",
         "segments failures instead of relying on averages"
       ],
+      "questionUk": "Чим тестування AI-системи відрізняється від тестування детермінованого програмного забезпечення?",
+      "shortAnswerUk": "Детерміновані правила часто дають змогу точно визначити очікуваний результат для заданого вхідного значення. Поведінка AI також залежить від даних, моделі, промпту, retrieval та семплінгу, тому оцінювання спирається на репрезентативні датасети, рубрики завдань, статистичні пороги й перевірені зрізи відмов. Детерміновані системні інваріанти, такі як авторизація, приватність і обмеження інструментів, усе одно потребують точних тестів.",
+      "strongAnswerSignalsUk": [
+        "використовує датасети та статистичні докази",
+        "розділяє поведінку моделі та системні інваріанти",
+        "сегментує відмови замість опори на середні показники"
+      ],
+      "example": "For a support chatbot, the team can't write a single exact-match test for 'how do I reset my password' because the model phrases answers differently each run. Instead they run 200 representative user questions against a rubric scored by a judge model, requiring 95 percent to mention the correct reset URL, and they track accuracy separately for non-English speakers after noticing it dropped to 80 percent for Spanish queries. Meanwhile a completely deterministic test still checks that the bot never calls the refund-processing tool without an authenticated session, regardless of what the model says.",
+      "exampleUk": "Для чат-бота підтримки команда не може написати один точний тест на збіг рядка для «як скинути пароль», бо модель щоразу формулює відповідь по-різному. Натомість вони прогонюють 200 репрезентативних питань користувачів проти рубрики, яку оцінює модель-суддя, вимагаючи, щоб 95 відсотків відповідей містили правильне посилання на скидання пароля, і окремо відстежують точність для не-англомовних користувачів, помітивши, що вона впала до 80 відсотків для запитів іспанською. Водночас цілком детермінований тест все одно перевіряє, що бот ніколи не викликає інструмент обробки повернень без автентифікованої сесії, незалежно від того, що каже модель.",
       "tags": [
         "ai-testing",
         "non-determinism",
@@ -566,6 +773,15 @@
         "connects thresholds to error cost",
         "checks segmented performance"
       ],
+      "questionUk": "Як precision, recall, F1-міра та матриця помилок (confusion matrix) допомагають у тестуванні класифікації?",
+      "shortAnswerUk": "Матриця помилок розділяє справжні та хибні позитивні й негативні результати. Precision показує, скільки з передбачених позитивних результатів були правильними; recall показує, скільки реальних позитивних випадків було знайдено; F1 балансує обидві метрики через їхнє середнє гармонійне. Поріг рішення та метрику варто обирати за вартістю кожного типу помилки, а потім перевіряти результати за значущими сегментами користувачів і даних.",
+      "strongAnswerSignalsUk": [
+        "виводить метрики з матриці помилок",
+        "пов'язує пороги з вартістю помилки",
+        "перевіряє продуктивність за сегментами"
+      ],
+      "example": "For a fraud-detection model, the team sets a low decision threshold to maximize recall — catching 98 percent of actual fraud — because missing fraud (false negative) is far costlier than a false alarm. That tanks precision to 40 percent, meaning six out of ten flagged transactions are legitimate, so they add a human review step for flagged cases instead of auto-blocking. Segmented testing then reveals precision is only 20 percent for transactions under 10 dollars, a group the aggregate F1 score had been hiding.",
+      "exampleUk": "Для моделі виявлення шахрайства команда встановлює низький поріг рішення, щоб максимізувати recall — виловлюючи 98 відсотків реального шахрайства — бо пропущене шахрайство (хибнонегативний результат) коштує набагато дорожче, ніж хибна тривога. Це знижує precision до 40 відсотків, тобто шість із десяти позначених транзакцій виявляються легітимними, тож команда додає крок ручної перевірки замість автоблокування. Сегментоване тестування потім виявляє, що precision становить лише 20 відсотків для транзакцій до 10 доларів — групу, яку приховувала агрегована F1-міра.",
       "tags": [
         "precision",
         "recall",
@@ -590,6 +806,15 @@
         "uses reconciliation and adversarial records",
         "tests reruns, recovery and data protection"
       ],
+      "questionUk": "Що має покривати наскрізне тестування ETL- або ELT-пайплайна?",
+      "shortAnswerUk": "Перевіряйте вилучення даних із джерела, обробку схеми й типів, правила трансформації, джойни та фільтри, завантаження в цільове сховище та ідемпотентні повторні запуски. Звіряйте кількості та контрольні суми на межах етапів, тестуйте запізнілі, дубльовані, відсутні й пошкоджені записи, а також перевіряйте lineage (простежуваність походження даних), свіжість даних, спостережуваність і відновлення. Захищайте чутливі дані на всьому шляху тестування.",
+      "strongAnswerSignalsUk": [
+        "покриває межі extract, transform і load",
+        "використовує звірку та «ворожі» (adversarial) записи",
+        "тестує повторні запуски, відновлення та захист даних"
+      ],
+      "example": "Testing a nightly ETL job that loads orders into a data warehouse, the team reconciles source and target row counts and dollar totals at each stage, then deliberately feeds it a duplicate order ID, a record missing a required customer_id, and a late-arriving row from yesterday's batch. They confirm the pipeline dedupes correctly, quarantines the malformed record instead of crashing, and rerunning the same batch twice produces identical output — while a separate check confirms customer emails are masked in the non-production test environment.",
+      "exampleUk": "Тестуючи нічну ETL-задачу, що завантажує замовлення у сховище даних, команда звіряє кількість рядків і суми в доларах між джерелом і ціллю на кожному етапі, а потім навмисно подає дубльований ID замовлення, запис без обов'язкового customer_id і рядок, що запізнився з учорашнього батчу. Вони підтверджують, що пайплайн коректно дедуплікує дані, поміщає пошкоджений запис у карантин замість падіння, а повторний запуск того самого батчу двічі дає ідентичний результат — тоді як окрема перевірка підтверджує, що email-адреси клієнтів замасковані в непродакшн тестовому середовищі.",
       "tags": [
         "etl",
         "elt",
@@ -615,6 +840,15 @@
         "turns dimensions into measurable business rules",
         "identifies authoritative data and thresholds"
       ],
+      "questionUk": "Які виміри якості даних (data-quality dimensions) має оцінювати тестувальник?",
+      "shortAnswerUk": "Поширені виміри включають повноту, валідність, точність, узгодженість, унікальність, своєчасність чи свіжість та референтну цілісність. Визначайте кожен вимір як вимірюване правило, прив'язане до бізнес-рішення, знаходьте авторитетне джерело даних і прийнятний поріг, а потім моніторте результати за джерелом і часом, а не звітуйте однією змішаною оцінкою якості.",
+      "strongAnswerSignalsUk": [
+        "називає кілька окремих вимірів",
+        "перетворює виміри на вимірювані бізнес-правила",
+        "визначає авторитетне джерело даних і пороги"
+      ],
+      "example": "For a customer database feeding email marketing, the team defines completeness as 'email field must be non-null for 98 percent of active accounts,' validity as 'email matches RFC 5322 format,' and freshness as 'address updated within the last 12 months for at least 90 percent of records.' They discover the CRM is the authoritative source for email but the billing system lags behind by up to a week, so freshness checks are scoped per source instead of blended into one company-wide quality score that would have hidden the billing lag.",
+      "exampleUk": "Для бази клієнтів, що живить email-маркетинг, команда визначає повноту як «поле email має бути заповнене для 98 відсотків активних акаунтів», валідність як «email відповідає формату RFC 5322», а свіжість як «адреса оновлювалася за останні 12 місяців щонайменше для 90 відсотків записів». Вони виявляють, що CRM є авторитетним джерелом для email, але білінгова система відстає до тижня, тож перевірки свіжості робляться окремо за джерелом, а не змішуються в одну загальнокорпоративну оцінку якості, яка приховала б це відставання білінгу.",
       "tags": [
         "data-quality",
         "completeness",
@@ -639,6 +873,15 @@
         "uses correlation and shared context",
         "selects signals by diagnostic question"
       ],
+      "questionUk": "Як логи, метрики та розподілені трейси доповнюють одне одного?",
+      "shortAnswerUk": "Метрики ефективно показують числові тренди та симптоми, придатні для алертів, у часі. Логи надають детальні дискретні події та локальний контекст. Трейси з'єднують спани вздовж шляху запиту, показуючи час виконання і залежності. Ідентифікатори кореляції та узгоджені атрибути дають змогу відповідальним переходити між усіма трьома сигналами замість дослідження ізольованих джерел даних.",
+      "strongAnswerSignalsUk": [
+        "тренд проти деталей події проти шляху запиту",
+        "використовує кореляцію та спільний контекст",
+        "обирає сигнали за діагностичним питанням"
+      ],
+      "example": "An alert fires because the p99 latency metric for checkout jumped to 4 seconds. The on-call engineer opens a trace for one of the slow requests and sees the delay is entirely inside a call to the inventory service, not the payment gateway. They then pull logs for that specific inventory-service instance filtered by the trace ID from the span, and find repeated 'connection pool exhausted' log lines — the metric said something was wrong, the trace said where, and the log said why.",
+      "exampleUk": "Спрацьовує алерт, бо метрика p99-затримки для чекауту підскочила до 4 секунд. Черговий інженер відкриває трейс одного з повільних запитів і бачить, що затримка повністю всередині виклику до сервісу інвентаризації, а не платіжного шлюзу. Потім він витягує логи саме цього інстансу сервісу інвентаризації, відфільтровані за trace ID зі спана, і знаходить повторювані рядки «connection pool exhausted» — метрика сказала, що щось не так, трейс сказав де, а лог сказав чому.",
       "tags": [
         "logs",
         "metrics",
@@ -663,6 +906,15 @@
         "uses a user-centered example",
         "tests the telemetry definition"
       ],
+      "questionUk": "У чому різниця між SLI, SLO та SLA?",
+      "shortAnswerUk": "SLI (service level indicator) — це виміряний показник поведінки сервісу, наприклад частка успішних запитів нижче порогу затримки. SLO (service level objective) — внутрішня ціль для цього показника за певний період. SLA (service level agreement) — зовнішня угода, яка може передбачати наслідки за недосягнення зобов'язань. Тести мають перевіряти семантику вимірювання, а не лише значення на дашборді.",
+      "strongAnswerSignalsUk": [
+        "вимірювання проти цілі проти угоди",
+        "використовує приклад, орієнтований на користувача",
+        "тестує визначення телеметрії"
+      ],
+      "example": "The SLI for a checkout service is 'percentage of checkout requests completing in under 500ms.' The internal SLO sets a target of 99.5 percent over a rolling 30-day window, giving the team an error budget to spend on risky deploys. The SLA promised to enterprise customers is looser — 99 percent — with a service credit if breached. During testing, someone discovers the SLI query actually excludes requests that time out entirely, silently inflating the number, so the team fixes the metric definition before trusting the dashboard again.",
+      "exampleUk": "SLI для сервісу чекауту — «частка запитів чекауту, що завершуються менш ніж за 500 мс». Внутрішній SLO встановлює ціль 99,5 відсотка за плаваюче 30-денне вікно, даючи команді бюджет помилок (error budget) на ризиковані деплої. SLA, обіцяний корпоративним клієнтам, м'якіший — 99 відсотків — із компенсацією у разі порушення. Під час тестування хтось виявляє, що запит для SLI насправді виключає запити, які повністю обірвалися за таймаутом, приховано завищуючи показник, тож команда виправляє визначення метрики, перш ніж знову довіряти дашборду.",
       "tags": [
         "sli",
         "slo",
@@ -687,6 +939,15 @@
         "connects risk controls to verification",
         "uses traceability for change impact"
       ],
+      "questionUk": "Чому двонаправлена простежуваність вимог (bidirectional requirements traceability) важлива для регульованого програмного забезпечення?",
+      "shortAnswerUk": "Пряма простежуваність показує, що кожна затверджена вимога та контроль ризику мають докази дизайну, реалізації та верифікації. Зворотна простежуваність показує, що кожна реалізація й тест існують заради санкціонованої потреби. Разом вони виявляють прогалини, ненавмисний обсяг роботи та вплив змін, водночас зберігаючи аудитований шлях від передбаченого використання й небезпек до об'єктивних доказів.",
+      "strongAnswerSignalsUk": [
+        "пояснює обидва напрямки простежуваності",
+        "пов'язує контролі ризику з верифікацією",
+        "використовує простежуваність для оцінки впливу змін"
+      ],
+      "example": "In a medical-device project, forward traceability confirms that the risk control 'infusion pump must alarm if flow rate deviates more than 5 percent' has a corresponding design element, code module and passing verification test. Backward traceability then reveals a rate-limiting feature in the code with no requirement behind it at all — an auditor flags it as undocumented scope that must either be justified or removed. When a requirement changes, the same trace matrix instantly shows which three test cases and one hazard analysis need to be revisited.",
+      "exampleUk": "У проєкті медичного пристрою пряма простежуваність підтверджує, що контроль ризику «інфузійний насос повинен подавати сигнал тривоги, якщо швидкість потоку відхиляється більш ніж на 5 відсотків» має відповідний елемент дизайну, модуль коду й пройдений верифікаційний тест. Зворотна простежуваність натомість виявляє в коді функцію обмеження швидкості, за якою взагалі немає жодної вимоги — аудитор позначає це як недокументований обсяг роботи, який треба або обґрунтувати, або прибрати. Коли вимога змінюється, та сама матриця простежуваності миттєво показує, які три тест-кейси й один аналіз небезпек потрібно переглянути.",
       "tags": [
         "traceability",
         "requirements",
@@ -712,6 +973,15 @@
         "protects original records and history",
         "covers access, retention and review"
       ],
+      "questionUk": "Як би ви тестували журнал аудиту (audit trail) для електронних записів і підписів?",
+      "shortAnswerUk": "Перевіряйте, що події створення, зміни, видалення та підпису фіксують, хто що зробив, коли, з яким записом і, за потреби, чому. Записи мають бути захищеними, узгодженими в часі, атрибутованими та пов'язаними з початковим значенням, без можливості для звичайних користувачів змінювати історію. Тестуйте доступ, пошук, експорт, зберігання, роботу з годинником, невдалі дії та процеси перегляду.",
+      "strongAnswerSignalsUk": [
+        "фіксує учасника, дію, час, об'єкт і причину",
+        "захищає оригінальні записи та історію",
+        "покриває доступ, зберігання та перегляд"
+      ],
+      "example": "Testing an e-signature workflow for lab results, the QA engineer changes a result value and confirms the audit trail logs the old value, new value, user ID, timestamp and a mandatory reason-for-change comment — then tries editing the record directly in the database to confirm the application layer, not just the UI, blocks unauthorized history tampering. They also set the server clock back an hour and verify the system rejects the invalid timestamp instead of silently logging an out-of-order event.",
+      "exampleUk": "Тестуючи процес електронного підпису для результатів лабораторних досліджень, QA-інженер змінює значення результату й перевіряє, що журнал аудиту фіксує старе значення, нове значення, ID користувача, часову мітку та обов'язковий коментар із причиною зміни — а потім намагається відредагувати запис напряму в базі даних, щоб переконатися, що саме рівень застосунку, а не тільки UI, блокує несанкціоноване втручання в історію. Вони також переводять годинник сервера на годину назад і перевіряють, що система відхиляє некоректну часову мітку, а не мовчки записує подію не за порядком.",
       "tags": [
         "audit-trails",
         "data-integrity",

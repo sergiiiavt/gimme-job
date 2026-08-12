@@ -12,6 +12,15 @@
         "evidence rather than certainty",
         "quality is shared by the team"
       ],
+      "questionUk": "Яку інформацію має надавати тестування і чого воно ніколи не може гарантувати?",
+      "shortAnswerUk": "Тестування дає команді докази про якість і ризики, на основі яких приймають рішення про реліз. Воно може виявляти дефекти й знижувати невизначеність, але не може довести, що нетривіальний продукт зовсім не містить дефектів.",
+      "strongAnswerSignalsUk": [
+        "ризики та підтримка рішень",
+        "докази, а не абсолютна впевненість",
+        "якість — відповідальність усієї команди"
+      ],
+      "example": "A payment team ships a checkout flow after the full regression suite passes with zero failures. Two weeks later a currency-rounding bug surfaces for Japanese yen, a case the suite never covered. The clean run was real evidence that the tested paths worked, not proof the feature was defect-free — the team had accepted that residual risk when it signed off with the coverage it had.",
+      "exampleUk": "Команда платежів випускає процес оформлення замовлення після проходження повного регресійного набору без жодного падіння. Через два тижні виявляється баг округлення валюти для японської єни — випадок, який набір тестів не покривав. Чистий прогін був реальним доказом, що перевірені сценарії працюють, а не доказом відсутності дефектів у фічі — команда прийняла цей залишковий ризик, погодивши реліз із наявним покриттям.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -30,6 +39,15 @@
         "user need",
         "practical example of each"
       ],
+      "questionUk": "Чим відрізняються верифікація та валідація в повсякденній роботі QA?",
+      "shortAnswerUk": "Верифікація перевіряє, чи відповідають робочі артефакти заданим вимогам; валідація перевіряє, чи вирішує готовий продукт реальну потребу користувача. Верифікації часто допомагають рев'ю та інспекції документації, а валідації — виконання тестів і оцінка з погляду користувача.",
+      "strongAnswerSignalsUk": [
+        "задані вимоги",
+        "потреба користувача",
+        "практичний приклад для кожного"
+      ],
+      "example": "A team builds a password-reset form that matches the signed-off requirements document exactly — field validation, error messages, and email format all pass verification. During usability testing, real users still can't complete the flow because the spec never accounted for corporate SSO accounts that have no password to reset. The feature passed verification but failed validation, so the team had to revisit the requirement itself, not just the implementation.",
+      "exampleUk": "Команда розробляє форму скидання пароля, яка точно відповідає затвердженому документу з вимогами — валідація полів, повідомлення про помилки та формат email успішно проходять верифікацію. Під час юзабіліті-тестування реальні користувачі все одно не можуть завершити сценарій, бо вимоги ніколи не враховували корпоративні SSO-акаунти, у яких немає пароля для скидання. Фіча пройшла верифікацію, але провалила валідацію, тож команді довелося переглянути саму вимогу, а не лише реалізацію.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -48,6 +66,15 @@
         "business context",
         "credible contrasting example"
       ],
+      "questionUk": "Чим відрізняються severity (серйозність) і priority (пріоритет) і чи можуть вони вказувати в протилежних напрямках?",
+      "shortAnswerUk": "Severity описує вплив дефекта на систему, priority — порядок, у якому бізнес хоче цей дефект виправити. Тому контекст може зробити дефект з низькою severity терміновим за пріоритетом, а дуже рідкісний, але критичний за severity дефект — менш пріоритетним після задокументованого аналізу ризиків.",
+      "strongAnswerSignalsUk": [
+        "вплив проти терміновості",
+        "бізнес-контекст",
+        "переконливий приклад-контраст"
+      ],
+      "example": "A typo in the company logo's tagline on the homepage has low severity — nothing breaks — but the marketing team flags it as high priority because it's visible to every visitor and damages brand trust. Meanwhile a crash in a rarely used data-export feature used by one internal team has high severity but gets deprioritized for a week after the team agrees the workaround (manual export) is acceptable.",
+      "exampleUk": "Одруківка в слогані логотипу компанії на головній сторінці має низьку severity — нічого не ламається — але маркетингова команда позначає її як high priority, бо її бачить кожен відвідувач і вона шкодить довірі до бренду. Тим часом падіння рідко використовуваної функції експорту даних, якою користується лише одна внутрішня команда, має високу severity, але його пріоритет знижують на тиждень, бо команда погодилася, що обхідний шлях (ручний експорт) прийнятний.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -66,6 +93,15 @@
         "impact analysis",
         "risk-based scope"
       ],
+      "questionUk": "У чому різниця між confirmation-тестуванням (тестуванням підтвердження) і регресійним тестуванням?",
+      "shortAnswerUk": "Confirmation-тестування перевіряє, що конкретний заявлений дефект дійсно виправлено. Регресійне тестування перевіряє, що зміна не зашкодила суміжній або раніше робочій функціональності; його обсяг має визначатися аналізом впливу зміни та ризиками продукту.",
+      "strongAnswerSignalsUk": [
+        "конкретний фікс проти побічних ефектів",
+        "аналіз впливу",
+        "обсяг на основі ризиків"
+      ],
+      "example": "After a developer fixes a bug where the 'Apply coupon' button ignored expired codes, the tester first re-runs the exact steps from the bug report to confirm the fix works — that's confirmation testing. Then, because the coupon logic touches the checkout total calculation, the tester also reruns checkout and pricing regression tests to make sure the fix didn't break discount stacking for other coupon types.",
+      "exampleUk": "Після того як розробник виправляє баг, через який кнопка «Застосувати промокод» ігнорувала прострочені коди, тестувальник спочатку повторює точні кроки з баг-репорту, щоб підтвердити фікс — це confirmation-тестування. Потім, оскільки логіка промокодів впливає на розрахунок суми в кошику, тестувальник також перезапускає регресійні тести оформлення замовлення та ціноутворення, щоб переконатися, що фікс не зламав комбінування знижок для інших типів промокодів.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -84,6 +120,15 @@
         "different purpose per level",
         "avoids a UI-only strategy"
       ],
+      "questionUk": "Які основні рівні тестування існують і які різні ризики покриває кожен з них?",
+      "shortAnswerUk": "Компонентне тестування ізолює окремі модулі. Компонентне інтеграційне тестування перевіряє інтерфейси між модулями, тоді як системне інтеграційне тестування перевіряє зв'язки продукту з іншими системами та сервісами. Системне тестування оцінює продукт цілком, а приймальне тестування підтверджує готовність для користувачів, експлуатації, контрактних або регуляторних вимог. Хороший план дає кожному рівню окрему мету, а не повторює всі сценарії через UI.",
+      "strongAnswerSignalsUk": [
+        "компонентне, компонентне інтеграційне, системне, системне інтеграційне та приймальне",
+        "окрема мета для кожного рівня",
+        "уникає стратегії лише через UI"
+      ],
+      "example": "For a food-delivery app, component tests check that the delivery-fee calculator returns the right number for given distance and weight. Component integration tests confirm the order service correctly calls that calculator. System integration tests verify the whole backend correctly talks to the third-party payment gateway and mapping API. System tests run a full order end-to-end in a test environment, and acceptance testing has real restaurant partners confirm the order-status flow matches how they actually work in their kitchen.",
+      "exampleUk": "Для застосунку доставки їжі компонентні тести перевіряють, що калькулятор вартості доставки повертає правильне число для заданих відстані та ваги. Компонентні інтеграційні тести підтверджують, що сервіс замовлень коректно викликає цей калькулятор. Системні інтеграційні тести перевіряють, що весь бекенд коректно взаємодіє зі сторонніми платіжним шлюзом і картографічним API. Системні тести виконують повне замовлення наскрізно в тестовому середовищі, а приймальне тестування дозволяє реальним партнерам-ресторанам підтвердити, що процес статусів замовлення відповідає тому, як вони насправді працюють на кухні.",
       "tags": [
         "test-levels",
         "component-testing",
@@ -110,6 +155,15 @@
         "values around both limits",
         "does not brute-force every number"
       ],
+      "questionUk": "Як би ви поєднали еквівалентне розбиття (equivalence partitioning) та аналіз граничних значень (boundary-value analysis) для поля, що приймає цілі числа від 18 до 99?",
+      "shortAnswerUk": "Створіть валідні та невалідні класи еквівалентності, а потім візьміть значення безпосередньо навколо обох меж. Компактний набір включає 17, 18, 19, 98, 99 і 100, а також репрезентативні значення і невалідні типи даних, якщо інтерфейс це дозволяє.",
+      "strongAnswerSignalsUk": [
+        "валідні та невалідні класи",
+        "значення навколо обох меж",
+        "не перебирає кожне число"
+      ],
+      "example": "Testing an age field for insurance eligibility (18 through 99), a tester picks 17 and 100 as invalid boundary values, 18 and 99 as valid boundary values, 19 and 98 as one step inside each boundary, plus one mid-range value like 45. They also try 'abc', an empty field, and a decimal like 18.5 to check the invalid-partition handling, instead of looping through all 82 valid integers.",
+      "exampleUk": "Тестуючи поле віку для страхового полісу (від 18 до 99), тестувальник обирає 17 і 100 як невалідні граничні значення, 18 і 99 — як валідні граничні значення, 19 і 98 — як значення на крок усередину від кожної межі, плюс одне серединне значення на кшталт 45. Також перевіряються 'abc', порожнє поле та дробове число 18.5, щоб протестувати обробку невалідного класу, замість перебору всіх 82 валідних цілих чисел.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -128,6 +182,15 @@
         "business-rule coverage",
         "detects gaps or contradictions"
       ],
+      "questionUk": "Коли таблиця рішень (decision table) корисніша за простий чекліст?",
+      "shortAnswerUk": "Використовуйте її, коли результат залежить від комбінацій незалежних умов або бізнес-правил. Таблиця виявляє відсутні, суперечливі та надлишкові правила і допомагає вибрати по одному тесту для кожної значущої комбінації.",
+      "strongAnswerSignalsUk": [
+        "комбінації умов",
+        "покриття бізнес-правил",
+        "виявляє прогалини або суперечності"
+      ],
+      "example": "For a loan-approval feature with rules depending on credit score, income level, and existing debt, a checklist would miss combinations like 'high income but low credit score with high debt.' Building a decision table with all three conditions reveals the team never defined what happens when income is high but credit score is very low, exposing a genuine gap in the business rules before it reaches production.",
+      "exampleUk": "Для функції схвалення кредиту з правилами, що залежать від кредитного рейтингу, рівня доходу та наявного боргу, чекліст пропустив би комбінації на кшталт «високий дохід, але низький кредитний рейтинг і великий борг». Побудова таблиці рішень з усіма трьома умовами показує, що команда так і не визначила, що відбувається, коли дохід високий, а кредитний рейтинг дуже низький — це реальна прогалина в бізнес-правилах, виявлена ще до продакшену.",
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
@@ -145,6 +208,15 @@
         "invalid transitions",
         "recovery and terminal states"
       ],
+      "questionUk": "Як би ви тестували воркфлоу, поведінка якого залежить від його поточного стану?",
+      "shortAnswerUk": "Змоделюйте стани, дозволені події, результуючі переходи та заборонені переходи. Покрийте валідні шляхи, невалідні події з кожного релевантного стану, термінальні стани та поведінку відновлення чи таймауту.",
+      "strongAnswerSignalsUk": [
+        "стани, події та переходи",
+        "невалідні переходи",
+        "відновлення та термінальні стани"
+      ],
+      "example": "For an order that moves through New, Paid, Shipped, Delivered and Cancelled states, a tester builds a state diagram and checks valid paths like New to Paid to Shipped, but also tries invalid transitions such as shipping a Cancelled order or paying twice for the same order. They also verify that a payment timeout in the Paid-pending state correctly reverts the order to New instead of leaving it stuck.",
+      "exampleUk": "Для замовлення, яке проходить стани New, Paid, Shipped, Delivered і Cancelled, тестувальник будує діаграму станів і перевіряє валідні шляхи на кшталт New → Paid → Shipped, а також пробує невалідні переходи, такі як відправка скасованого замовлення або повторна оплата того самого замовлення. Також перевіряється, що таймаут оплати в стані «Paid-pending» коректно повертає замовлення в стан New, а не залишає його «завислим».",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -163,6 +235,15 @@
         "notes and evidence",
         "debrief or follow-up"
       ],
+      "questionUk": "Як зробити дослідницьке тестування (exploratory testing) фокусованим і відтворюваним?",
+      "shortAnswerUk": "Визначте таймбоксовану хартію (charter) з обсягом і ризиками, фіксуйте важливі спостереження та дані, а завершіть сесію висновками та подальшими діями. Дослідження адаптивне за своєю природою, але все одно має залишати корисні докази.",
+      "strongAnswerSignalsUk": [
+        "хартія та таймбокс",
+        "нотатки та докази",
+        "дебриф або подальші дії"
+      ],
+      "example": "A tester runs a 90-minute exploratory session chartered as 'explore the new bulk-edit feature for data-loss risks,' using session-based test management. They keep a running log of actions and observations, capture a screen recording, and log two bugs plus one open question about undo behavior. The debrief with the team turns the open question into a follow-up spike instead of getting lost after the session ends.",
+      "exampleUk": "Тестувальник проводить 90-хвилинну дослідницьку сесію з хартією «дослідити нову функцію масового редагування на предмет ризиків втрати даних», використовуючи session-based test management. Він веде журнал дій і спостережень, записує відео екрана та фіксує два баги й одне відкрите питання щодо поведінки undo. Дебриф із командою перетворює це відкрите питання на подальше дослідження (spike), замість того щоб воно загубилося після завершення сесії.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -181,6 +262,15 @@
         "change and usage signals",
         "communicates residual risk"
       ],
+      "questionUk": "Якщо ви не можете запустити всі тести, як вибрати найцінніший їх набір?",
+      "shortAnswerUk": "Розставте пріоритети за впливом і ймовірністю, а потім врахуйте нещодавні зміни, охоплення залежностей, інтенсивність використання, історію дефектів і здатність тестів виявляти дефекти. У першу чергу захищайте критичні користувацькі сценарії та явно проговорюйте залишковий ризик.",
+      "strongAnswerSignalsUk": [
+        "вплив і ймовірність",
+        "сигнали про зміни та використання",
+        "повідомляє про залишковий ризик"
+      ],
+      "example": "With only 2 hours before a release and a 6-hour regression suite, a tester ranks test cases by combining defect history (checkout has failed before), recent code changes (payment module was refactored this sprint), and business impact (checkout is the top revenue path). They run the checkout and payment tests in full, smoke-test everything else, and explicitly tell the release manager that the reporting module wasn't regression tested this cycle.",
+      "exampleUk": "Маючи лише 2 години до релізу та 6-годинний регресійний набір, тестувальник ранжує тест-кейси, комбінуючи історію дефектів (checkout раніше вже падав), нещодавні зміни коду (платіжний модуль рефакторили цього спринту) та бізнес-вплив (checkout — головний шлях до виручки). Він повністю прогонить тести checkout і оплати, робить smoke-тест решти і явно повідомляє реліз-менеджеру, що модуль звітності цього циклу регресійно не тестувався.",
       "media": [
         {
           "src": "/content/interview/risk-based-selection/risk-matrix.svg",
@@ -207,6 +297,15 @@
         "repeat-request behaviour",
         "tests observable side effects"
       ],
+      "questionUk": "Які властивості HTTP-методів важливі при проєктуванні API-тестів?",
+      "shortAnswerUk": "Перевіряйте призначену семантику операції, її безпечність (safety) та ідемпотентність, а не лише назву методу. Повторні PUT- або DELETE-запити повинні мати передбачувані наслідки, тоді як POST зазвичай створює ресурс або запускає роботу і може бути неідемпотентним без явного ключа ідемпотентності.",
+      "strongAnswerSignalsUk": [
+        "безпечність та ідемпотентність",
+        "поведінка при повторних запитах",
+        "тестує спостережувані побічні ефекти"
+      ],
+      "example": "Testing a payment API, a tester sends the same POST /payments request twice without an idempotency key and confirms the customer gets charged twice — a real bug. After the team adds an Idempotency-Key header requirement, the tester retests by sending the identical request twice with the same key and verifies only one charge occurs, while a PUT /orders/123/address update is confirmed to produce the same end state no matter how many times it's repeated.",
+      "exampleUk": "Тестуючи платіжне API, тестувальник двічі надсилає той самий запит POST /payments без ключа ідемпотентності і підтверджує, що з клієнта списують кошти двічі — це реальний баг. Після того як команда додає обов'язковий заголовок Idempotency-Key, тестувальник повторює перевірку, надсилаючи ідентичний запит двічі з тим самим ключем, і підтверджує, що списання відбувається лише одне, тоді як оновлення PUT /orders/123/address, за перевіркою, завжди дає той самий кінцевий результат, скільки б разів його не повторювали.",
       "sourceIds": [
         "dou-qa-2022"
       ],
@@ -224,6 +323,15 @@
         "security and concurrency",
         "database and downstream verification"
       ],
+      "questionUk": "Що б ви тестували для ендпоінта, який створює нового користувача?",
+      "shortAnswerUk": "Перевірте схему та правила полів, автентифікацію й авторизацію, дублікати та конкурентні запити, коди відповідей і заголовки, збереження даних, вплив на суміжні системи, ліміти запитів (rate limits), обробку чутливих даних та спостережуваність (observability).",
+      "strongAnswerSignalsUk": [
+        "не лише перевірка коду статусу",
+        "безпека та конкурентність",
+        "перевірка бази даних та суміжних систем"
+      ],
+      "example": "For POST /users, a tester checks that a duplicate email returns 409 rather than creating a second account, sends two identical signup requests concurrently to confirm no race condition creates duplicate records, verifies the password never appears in the response body or logs, checks that the created user actually appears in the database with correctly hashed password, and confirms a welcome email gets triggered downstream.",
+      "exampleUk": "Для POST /users тестувальник перевіряє, що дублікат email повертає 409, а не створює другий акаунт, надсилає два ідентичні запити реєстрації одночасно, щоб переконатися, що жодна умова гонки (race condition) не створює дублікатів записів, перевіряє, що пароль ніколи не з'являється в тілі відповіді чи в логах, підтверджує, що створений користувач справді з'являється в базі даних з коректно захешованим паролем, і перевіряє, що вітальний лист коректно тригериться далі по системі.",
       "sourceIds": [
         "dou-qa-2022",
         "owasp-wstg"
@@ -242,6 +350,15 @@
         "negative cases",
         "object-level access control"
       ],
+      "questionUk": "Як би ви розрізняли помилки автентифікації та авторизації під час тестування?",
+      "shortAnswerUk": "Автентифікація підтверджує особу; авторизація вирішує, до чого ця особа має доступ. Тестуйте відсутні, прострочені та некоректні облікові дані окремо від випадків, коли валідний користувач намагається виконати заборонену дію, включно з доступом до чужих даних на рівні об'єкта.",
+      "strongAnswerSignalsUk": [
+        "особа проти прав доступу",
+        "негативні сценарії",
+        "контроль доступу на рівні об'єкта"
+      ],
+      "example": "Testing a banking API, a request with no token or an expired token should return 401 Unauthorized — that's an authentication failure. A request from a logged-in regular user trying to access GET /accounts/9999/statement, where 9999 belongs to a different customer, should return 403 Forbidden — that's an authorization failure, specifically a broken object-level access control (BOLA) issue if the API returns the data instead.",
+      "exampleUk": "У банківському API запит без токена або з простроченим токеном має повертати 401 Unauthorized — це помилка автентифікації. Запит від авторизованого звичайного користувача, який намагається виконати GET /accounts/9999/statement, де рахунок 9999 належить іншому клієнту, має повертати 403 Forbidden — це помилка авторизації, а саме проблема зламаного контролю доступу на рівні об'єкта (BOLA), якщо API натомість повертає ці дані.",
       "sourceIds": [
         "owasp-wstg"
       ],
@@ -259,6 +376,15 @@
         "expiry and invalidation",
         "cross-user isolation"
       ],
+      "questionUk": "Як куки, серверні сесії, браузерне сховище та кеш впливають на веб-тестування?",
+      "shortAnswerUk": "Вони зберігають різні види стану на клієнті або пов'язаного з сервером і можуть впливати на автентифікацію, персоналізацію та актуальність даних. Тестуйте чисті та повторні сесії, закінчення терміну дії, відкликання доступу, поведінку в кількох вкладках, інвалідацію кешу та ізоляцію між користувачами.",
+      "strongAnswerSignalsUk": [
+        "розуміє, де зберігається стан",
+        "закінчення терміну дії та інвалідація",
+        "ізоляція між користувачами"
+      ],
+      "example": "A tester logs in as User A in one tab, then opens a second tab and logs in as User B, and confirms the app doesn't leak User A's cached dashboard data into User B's session due to a shared browser-storage key. They also test that revoking a session server-side (e.g., admin force-logout) actually invalidates the client's cookie on the next request rather than relying only on client-side expiry.",
+      "exampleUk": "Тестувальник заходить у систему як User A в одній вкладці, потім відкриває другу вкладку і заходить як User B, перевіряючи, що застосунок не «протікає» кешованими даними дашборду User A в сесію User B через спільний ключ у браузерному сховищі. Також перевіряється, що відкликання сесії на сервері (наприклад, примусовий логаут адміністратором) справді інвалідує куку клієнта при наступному запиті, а не покладається лише на клієнтське закінчення терміну дії.",
       "sourceIds": [
         "dou-qa-2022",
         "owasp-wstg"
@@ -277,6 +403,15 @@
         "fast feedback",
         "clear limits of contract tests"
       ],
+      "questionUk": "Яку проблему вирішує контрактне тестування (contract testing) і чого воно не замінює?",
+      "shortAnswerUk": "Контрактні тести раніше й дешевше за повноцінні середовища виявляють несумісні очікування між споживачем сервісу та постачальником. Вони не замінюють тестування бізнес-логіки постачальника, реалістичні наскрізні (end-to-end) сценарії, перевірки продуктивності чи спостережуваність у продакшені.",
+      "strongAnswerSignalsUk": [
+        "сумісність споживача та постачальника",
+        "швидкий зворотний зв'язок",
+        "чіткі межі контрактних тестів"
+      ],
+      "example": "A frontend team consumes an /orders API and writes a Pact contract expecting a totalAmount field as a number. When the backend team later changes it to a formatted string like '$45.00' during a refactor, the contract test fails in their CI pipeline before the change even reaches a shared staging environment. The team still runs full end-to-end tests before release, because the contract test alone wouldn't have caught a case where the total was calculated incorrectly but correctly typed.",
+      "exampleUk": "Команда фронтенду споживає API /orders і пише Pact-контракт, що очікує поле totalAmount як число. Коли команда бекенду пізніше під час рефакторингу змінює його на форматований рядок на кшталт '$45.00', контрактний тест падає в їхньому CI-пайплайні ще до того, як зміна потрапляє в спільне staging-середовище. Команда все одно прогонить повні наскрізні тести перед релізом, бо самого контрактного тесту було б недостатньо, якби сума рахувалася неправильно, але мала коректний тип.",
       "sourceIds": [
         "dou-qa-2022"
       ],
@@ -294,6 +429,15 @@
         "risk and repetition",
         "rejects a 100-percent automation goal"
       ],
+      "questionUk": "Як ви вирішуєте, чи варто автоматизувати тест?",
+      "shortAnswerUk": "Автоматизуйте, коли перевірку можна повторювати, вона цінна, достатньо стабільна і дешевша в підтримці, ніж повторне ручне виконання. Враховуйте частоту запуску, ризик, контроль над даними та середовищем, швидкість зворотного зв'язку і те, чи здатна автоматизація зробити надійне твердження (assertion).",
+      "strongAnswerSignalsUk": [
+        "цінність і підтримуваність",
+        "ризик і повторюваність",
+        "відкидає ціль 100-відсоткової автоматизації"
+      ],
+      "example": "A login flow that runs in every regression cycle and rarely changes is an easy automation candidate — high frequency, high value, stable. A one-off visual check of a marketing landing page redesigned every month is a poor candidate, because the maintenance cost of updating the automated check would exceed the cost of just looking at it manually twice.",
+      "exampleUk": "Флоу логіну, який запускається в кожному регресійному циклі й рідко змінюється, — легкий кандидат на автоматизацію: висока частота, висока цінність, стабільність. Разова візуальна перевірка маркетингової лендінг-сторінки, яку редизайнять щомісяця, — поганий кандидат, бо витрати на підтримку автоматизованої перевірки перевищать вартість того, щоб просто подивитися на неї вручну двічі.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -312,6 +456,15 @@
         "isolation and deterministic waits",
         "quarantine is temporary"
       ],
+      "questionUk": "Як би ви розслідували та зменшували нестабільні (flaky) автоматизовані тести?",
+      "shortAnswerUk": "Класифікуйте падіння за трейсами, логами та повторними запусками, а потім усувайте спільний стан, неконтрольовані дані, довільні очікування (waits) і крихкі локатори. Виправляйте причину, відстежуйте відсоток флейкі-тестів і поміщайте тест у карантин лише тимчасово, з призначеним відповідальним.",
+      "strongAnswerSignalsUk": [
+        "діагностика на основі доказів",
+        "ізоляція та детерміновані очікування",
+        "карантин є тимчасовим"
+      ],
+      "example": "A checkout test fails intermittently in CI. By pulling the trace and video from three failed runs, the tester finds the test clicks 'Place order' before the cart total finishes an async recalculation. Replacing the arbitrary sleep(2000) with a web-first assertion that waits for the specific total text fixes it permanently, rather than just retrying the test or quarantining it indefinitely.",
+      "exampleUk": "Тест оформлення замовлення періодично падає в CI. Витягнувши трейс і відео з трьох невдалих прогонів, тестувальник виявляє, що тест клікає «Оформити замовлення» до того, як завершиться асинхронний перерахунок суми в кошику. Заміна довільного sleep(2000) на web-first твердження, яке очікує саме на конкретний текст суми, вирішує проблему остаточно, замість того щоб просто повторно запускати тест або тримати його в карантині нескінченно.",
       "sourceIds": [
         "playwright-best-practices"
       ],
@@ -329,6 +482,15 @@
         "layer chosen by risk",
         "avoids duplicated UI suites"
       ],
+      "questionUk": "Як би ви розподілили автоматизовані перевірки між рівнями unit, service та UI?",
+      "shortAnswerUk": "Розміщуйте кожне твердження (assertion) на найнижчому рівні, який може дати надійний зворотний зв'язок. Використовуйте багато сфокусованих компонентних і сервісних перевірок, залишайте UI-тести для критичної інтегрованої поведінки і зберігайте невелику кількість наскрізних (end-to-end) сценаріїв.",
+      "strongAnswerSignalsUk": [
+        "швидкий зворотний зв'язок",
+        "рівень обирається за ризиком",
+        "уникає дублювання UI-наборів"
+      ],
+      "example": "For a discount-calculation feature, the team writes 20 unit tests covering every pricing rule combination (fast, milliseconds each), 5 service-level tests confirming the pricing service integrates correctly with the product catalog API, and just 2 UI tests confirming a discount actually displays correctly on the checkout page — instead of testing all 20 pricing rules through slow, brittle browser automation.",
+      "exampleUk": "Для функції розрахунку знижок команда пише 20 unit-тестів, що покривають кожну комбінацію правил ціноутворення (швидко, мілісекунди на тест), 5 сервісних тестів, що підтверджують коректну інтеграцію сервісу ціноутворення з API каталогу товарів, і лише 2 UI-тести, що підтверджують коректне відображення знижки на сторінці оформлення замовлення — замість того щоб тестувати всі 20 правил ціноутворення через повільну й крихку браузерну автоматизацію.",
       "sourceIds": [
         "dou-qa-2022",
         "playwright-best-practices"
@@ -347,6 +509,15 @@
         "isolation",
         "useful diagnostics without over-abstraction"
       ],
+      "questionUk": "Які проєктні рішення роблять браузерну автоматизацію підтримуваною?",
+      "shortAnswerUk": "Тестуйте поведінку, видиму користувачу, ізолюйте тести, контролюйте дані, надавайте перевагу доступним (accessible) локаторам, орієнтованим на користувача, та web-first твердженням, а також фіксуйте корисні трейси при падінні. Абстрагуйте бізнес-дії, не ховаючи кожну взаємодію за громіздким фреймворком.",
+      "strongAnswerSignalsUk": [
+        "локатори, орієнтовані на користувача",
+        "ізоляція",
+        "корисна діагностика без надмірної абстракції"
+      ],
+      "example": "Instead of locating a button with a brittle CSS selector like div.MuiButton-root:nth-child(3), a maintainable test uses getByRole('button', { name: 'Submit order' }), which survives a styling refactor. Each test creates its own test user via API rather than relying on a shared seeded account, so tests can run in parallel without one test's cleanup breaking another's setup, and Playwright's trace viewer is enabled so a CI failure can be diagnosed without reproducing it locally.",
+      "exampleUk": "Замість того щоб знаходити кнопку через крихкий CSS-селектор на кшталт div.MuiButton-root:nth-child(3), підтримуваний тест використовує getByRole('button', { name: 'Submit order' }), що переживає рефакторинг стилів. Кожен тест створює власного тестового користувача через API, а не покладається на спільний засіяний акаунт, тож тести можуть виконуватися паралельно без того, щоб очищення одного тесту ламало налаштування іншого, а Playwright trace viewer увімкнено, щоб падіння в CI можна було діагностувати без локального відтворення.",
       "sourceIds": [
         "playwright-best-practices"
       ],
@@ -364,6 +535,15 @@
         "reliability before blocking",
         "explicit override and ownership"
       ],
+      "questionUk": "Як би ви спроєктували етапи тестування та якісні ворота (quality gates) у CI/CD?",
+      "shortAnswerUk": "Запускайте швидкі детерміновані перевірки на ранніх етапах, ширші інтеграційні перевірки — після появи артефактів, придатних до розгортання, а таргетовані наскрізні або нефункціональні набори — там, де це дозволяє середовище. Кожен gate потребує відповідального, надійний сигнал, політику дій при падінні та аудитований механізм екстреного обходу (override).",
+      "strongAnswerSignalsUk": [
+        "впорядковані рівні зворотного зв'язку",
+        "надійність перед блокуванням",
+        "явний механізм обходу та відповідальність"
+      ],
+      "example": "A pipeline runs unit tests and linting on every commit in under 3 minutes, blocking the merge on failure. After merge to main, a broader integration suite runs against a deployed staging build and gates the promotion to production. A performance suite runs nightly rather than per-commit because it's too slow and slightly flaky to block merges, and a documented emergency-override process lets a director bypass the integration gate for a critical hotfix, with the bypass logged and reviewed the next day.",
+      "exampleUk": "Пайплайн запускає unit-тести та лінтинг на кожен коміт менш ніж за 3 хвилини, блокуючи мердж при падінні. Після мерджу в main запускається ширший інтеграційний набір проти розгорнутої staging-збірки, і саме він визначає, чи просувати збірку в продакшн. Перформанс-набір запускається щоночі, а не на кожен коміт, бо він занадто повільний і трохи флейкі, щоб блокувати мерджі, а задокументований процес екстреного обходу дозволяє директору обійти інтеграційний gate для критичного хотфіксу, з логуванням і рев'ю обходу наступного дня.",
       "sourceIds": [
         "dou-qa-2022"
       ],
@@ -381,6 +561,15 @@
         "risk register",
         "incremental improvement"
       ],
+      "questionUk": "Як би ви побудували тест-стратегію для наявного продукту з невеликою кількістю документації?",
+      "shortAnswerUk": "Складіть карту користувачів, критичних сценаріїв, архітектури, даних і залежностей; проведіть інтерв'ю зі стейкхолдерами; вивчіть інциденти й аналітику; побудуйте реєстр ризиків. Додавайте легковагову документацію та покриття тестами поступово, не зупиняючи поставку.",
+      "strongAnswerSignalsUk": [
+        "дослідження продукту та архітектури",
+        "реєстр ризиків",
+        "поступове покращення"
+      ],
+      "example": "Joining a five-year-old e-commerce platform with no test documentation, a QA lead spends the first two weeks interviewing the three longest-tenured engineers, pulling the last six months of production incidents, and reviewing analytics to find the top five user journeys by traffic. This produces a one-page risk register showing checkout and inventory sync as the highest-risk, least-tested areas, which becomes the starting point for the first round of regression automation instead of trying to document everything up front.",
+      "exampleUk": "Приєднавшись до п'ятирічної e-commerce платформи без жодної тест-документації, QA lead перші два тижні проводить інтерв'ю з трьома найдосвідченішими інженерами, піднімає інциденти в продакшені за останні шість місяців і вивчає аналітику, щоб знайти топ-5 користувацьких сценаріїв за трафіком. Це дає односторінковий реєстр ризиків, який показує, що checkout і синхронізація складу — найризикованіші й найменш покриті тестами зони, і саме він стає відправною точкою для першого раунду регресійної автоматизації, замість спроби задокументувати все наперед.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -399,6 +588,15 @@
         "mitigation and rollback",
         "clear decision ownership"
       ],
+      "questionUk": "Наближається критичний дедлайн, а серйозний дефект залишається відкритим. Як ви допомагаєте прийняти рішення щодо релізу?",
+      "shortAnswerUk": "Опишіть вплив, постраждалих користувачів, ймовірність, здатність виявити проблему та можливості стримування (containment); представте докази й варіанти, такі як звуження обсягу, feature-флаги, відкат (rollback) або перенесення релізу. Рішення ухвалює відповідальний власник бізнесу, а QA робить залишковий ризик видимим.",
+      "strongAnswerSignalsUk": [
+        "варіанти замість бінарного вето",
+        "пом'якшення та відкат",
+        "чітка відповідальність за рішення"
+      ],
+      "example": "Two days before a major release, testers find a bug where refunds fail silently for orders paid with a specific regional payment provider, affecting roughly 3 percent of transactions. Instead of just saying 'don't ship,' the tester presents the product owner with three options: delay two days for a proper fix, ship with that payment method temporarily disabled behind a feature flag, or ship and monitor refund failures closely with a fast-follow patch ready. The product owner picks the feature-flag option, and QA documents the residual risk and monitoring plan.",
+      "exampleUk": "За два дні до великого релізу тестувальники знаходять баг, через який повернення коштів мовчки не проходять для замовлень, оплачених через певного регіонального платіжного провайдера, що зачіпає приблизно 3% транзакцій. Замість того щоб просто сказати «не випускати», тестувальник пропонує продакт-оунеру три варіанти: відкласти реліз на два дні для повноцінного фіксу, випустити реліз, тимчасово вимкнувши цей спосіб оплати через feature-флаг, або випустити реліз і уважно моніторити збої повернень з готовим швидким патчем напоготові. Продакт-оунер обирає варіант із feature-флагом, а QA документує залишковий ризик і план моніторингу.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -417,6 +615,15 @@
         "systemic and blameless",
         "owned measurable actions"
       ],
+      "questionUk": "Як би ви провели корисний аналіз першопричин (root-cause analysis) після дефекту в продакшені?",
+      "shortAnswerUk": "Розділіть технічну причину, причину, чому дефект не був виявлений раніше, та умови, що посилили вплив. Використовуйте докази з системи поставки, уникайте звинувачення конкретних людей і сформулюйте невелику кількість превентивних і виявляючих дій з призначеними відповідальними.",
+      "strongAnswerSignalsUk": [
+        "причина проти точки, де дефект прослизнув",
+        "системний і безоцінний (blameless) підхід",
+        "виміри дій з відповідальними"
+      ],
+      "example": "After a null-pointer crash takes down checkout for 20 minutes, the RCA separates three things: the technical cause (a new optional field wasn't null-checked), why it escaped testing (the test data set never included users without that field populated), and why impact was high (no circuit breaker meant one failing dependency crashed the whole service). The actions are concrete and owned: add null-field test data to the regression suite by Friday, and the platform team adds a circuit breaker within the sprint — no individual is named in the writeup.",
+      "exampleUk": "Після того як помилка null-pointer кладе checkout на 20 хвилин, RCA розділяє три речі: технічну причину (нове опціональне поле не перевірялося на null), причину, чому це не спіймали на тестуванні (набір тестових даних ніколи не включав користувачів без заповненого цього поля), і причину високого впливу (відсутність circuit breaker означала, що один збійний залежний сервіс обвалював увесь сервіс). Дії конкретні й мають відповідальних: додати тестові дані з порожнім полем у регресійний набір до п'ятниці, а платформна команда додає circuit breaker протягом спринту — жодна конкретна людина в звіті не названа.",
       "sourceIds": [
         "dou-qa-2022"
       ],
@@ -434,6 +641,15 @@
         "trend and context",
         "recognizes gaming risk"
       ],
+      "questionUk": "Які метрики якості корисні і як запобігти тому, щоб вони стали оманливими цілями?",
+      "shortAnswerUk": "Обирайте збалансований набір, прив'язаний до рішень: вплив дефектів, що прослизнули в продакшн, частота та швидкість відновлення після збоїв (change failure and recovery), покриття ризиків, час циклу, відсоток флейкі-тестів і сигнали від клієнтів. Використовуйте тренди й контекст, уникайте ранжування людей за кількісними показниками і відмовляйтеся від метрик, які більше не впливають на рішення.",
+      "strongAnswerSignalsUk": [
+        "результати плюс випереджальні індикатори",
+        "тренд і контекст",
+        "враховує ризик маніпуляції показниками"
+      ],
+      "example": "A team tracks escaped-defect severity trend and change-failure rate as outcome metrics, plus flake rate and cycle time as leading indicators, reviewed monthly with context rather than as a scoreboard. When a manager once proposed ranking testers by 'number of bugs found per week,' the lead pushed back because it would reward filing trivial bugs and discourage testers from doing deep exploratory work on harder, high-risk areas — the metric was dropped before it caused that exact behavior.",
+      "exampleUk": "Команда відстежує тренд серйозності дефектів, що прослизнули в продакшн, і change failure rate як результатні метрики, а також відсоток флейкі-тестів і час циклу як випереджальні індикатори, які переглядають щомісяця з контекстом, а не як турнірну таблицю. Коли один менеджер якось запропонував ранжувати тестувальників за «кількістю знайдених багів на тиждень», лід відхилив цю ідею, бо вона заохочувала б заведення дрібних багів і відбивала б бажання тестувальників глибоко досліджувати складніші, ризикованіші ділянки — метрику зняли ще до того, як вона спричинила саме таку поведінку.",
       "sourceIds": [
         "dou-qa-2022"
       ],
@@ -451,6 +667,15 @@
         "parallel and automated feedback",
         "explicit residual coverage"
       ],
+      "questionUk": "У вас є два дні на регресійний набір, який зазвичай займає значно більше часу. Що ви робите?",
+      "shortAnswerUk": "Використайте аналіз впливу змін та ризиків продукту, щоб створити рівні пріоритету, спочатку запустіть стабільну автоматизацію та критичні користувацькі сценарії, паралелізуйте виконання там, де дозволяють дані, і додайте цілеспрямоване дослідницьке тестування навколо змінених ділянок. Повідомте, що не було протестовано, і який ризик залишається.",
+      "strongAnswerSignalsUk": [
+        "рівні на основі ризику",
+        "паралельний та автоматизований зворотний зв'язок",
+        "явно озвучене залишкове покриття"
+      ],
+      "example": "With a regression suite that normally takes five days compressed into two, a tester runs the full automated smoke suite in parallel across four CI workers (2 hours), prioritizes manual exploration on the two modules that changed this sprint (payment and shipping), and skips deep testing on the reporting module, which hasn't changed in three months. The release notes explicitly state that reporting was only smoke-tested, not fully regressed, so stakeholders can decide if that risk is acceptable.",
+      "exampleUk": "Маючи регресійний набір, який зазвичай займає п'ять днів, стиснутий до двох, тестувальник запускає повний автоматизований smoke-набір паралельно на чотирьох CI-воркерах (2 години), пріоритизує ручне дослідницьке тестування на двох модулях, які змінилися цього спринту (оплата й доставка), і пропускає глибоке тестування модуля звітності, який не змінювався три місяці. У реліз-нотатках прямо вказано, що звітність пройшла лише smoke-тестування, а не повну регресію, щоб стейкхолдери могли самі оцінити прийнятність цього ризику.",
       "sourceIds": [
         "dou-qa-2022",
         "istqb-ctfl-v4"
@@ -469,6 +694,15 @@
         "prioritized roadmap",
         "measurable early outcomes"
       ],
+      "questionUk": "Як би виглядали ваші перші 90 днів на посаді QA Lead?",
+      "shortAnswerUk": "Спочатку зрозумійте продукт, людей, ризики та поточні сигнали; потім узгодьте невеликий набір пріоритетів і зон відповідальності; і нарешті реалізуйте одне або два вимірювані покращення. Уникайте заміни інструментів до того, як зрозумієте, навіщо вони існують.",
+      "strongAnswerSignalsUk": [
+        "спершу слухати й зібрати базові дані",
+        "пріоритизована дорожня карта",
+        "вимірювані ранні результати"
+      ],
+      "example": "In the first 30 days, a new QA Lead shadows releases, reads the last quarter's incident reports, and talks one-on-one with every tester and two product managers rather than proposing changes. By day 60, they've agreed with engineering leadership on three priorities: reducing flaky tests, adding contract tests between two chatty services, and clarifying who owns the release-gate decision. By day 90, the flake rate is visibly down and one measurable win, like cutting regression cycle time by a third, is shared with the wider team.",
+      "exampleUk": "Перші 30 днів новий QA Lead спостерігає за релізами, читає звіти про інциденти за минулий квартал і проводить особисті розмови з кожним тестувальником і двома продакт-менеджерами, замість того щоб одразу пропонувати зміни. До 60-го дня разом з керівництвом розробки узгоджено три пріоритети: зменшення кількості флейкі-тестів, додавання контрактних тестів між двома тісно пов'язаними сервісами і прояснення, хто ухвалює рішення на release-gate. До 90-го дня відсоток флейкі-тестів помітно знижується, а один вимірюваний результат, наприклад скорочення циклу регресії на третину, презентують усій команді.",
       "sourceIds": [
         "google-structured-interviews"
       ],
@@ -486,6 +720,15 @@
         "user and business impact",
         "prevents repeat conflict"
       ],
+      "questionUk": "Як ви вирішуєте розбіжність між QA та розробкою щодо того, чи є щось дефектом?",
+      "shortAnswerUk": "Перенесіть дискусію з ярликів на очікувану поведінку, вплив на користувача, докази та ризик для продукту. Проясніть, хто ухвалює рішення, задокументуйте результат і запобігайте повторній неоднозначності через приклади, критерії приймання або спільне уточнення вимог (refinement).",
+      "strongAnswerSignalsUk": [
+        "докази важливіші за авторитет",
+        "вплив на користувача та бізнес",
+        "запобігає повторному конфлікту"
+      ],
+      "example": "A developer insists a search field returning results in a different sort order than before is 'working as coded, not a bug,' while QA calls it a defect. Instead of arguing labels, QA pulls up the original acceptance criteria showing results should sort by relevance, then by date, and shows evidence that the new build sorts only by date. The product owner confirms the original intent, the item gets fixed, and the team adds an explicit sort-order test case to acceptance criteria going forward so the same ambiguity doesn't resurface for the next sort-related change.",
+      "exampleUk": "Розробник наполягає, що поле пошуку, яке тепер повертає результати в іншому порядку сортування, ніж раніше, «працює так, як написано, це не баг», тоді як QA називає це дефектом. Замість суперечки про ярлики QA піднімає оригінальні критерії приймання, де вказано, що результати мають сортуватися спочатку за релевантністю, потім за датою, і показує докази, що нова збірка сортує лише за датою. Продакт-оунер підтверджує початковий намір, дефект виправляють, і команда додає явний тест-кейс на порядок сортування до критеріїв приймання, щоб та сама неоднозначність не виникала при наступних змінах сортування.",
       "sourceIds": [
         "dou-qa-2022",
         "google-structured-interviews"
@@ -504,6 +747,15 @@
         "delegated ownership",
         "regular evidence-based feedback"
       ],
+      "questionUk": "Як ви допомагаєте тестувальнику розвиватися, не стаючи постійним рішенням кожної проблеми?",
+      "shortAnswerUk": "Узгодьте конкретну мету розвитку навички та критерії прогресу, поєднуйте коучинг з поступово складнішою відповідальністю і регулярно переглядайте результати. Надавайте контекст і зворотний зв'язок, дозволяючи людині ухвалювати обмежені за масштабом рішення самостійно.",
+      "strongAnswerSignalsUk": [
+        "конкретний результат розвитку",
+        "делегована відповідальність",
+        "регулярний зворотний зв'язок на основі доказів"
+      ],
+      "example": "A mid-level tester struggles to design test strategies independently and keeps asking the lead to review every plan from scratch. The lead agrees on a specific goal — independently owning the test strategy for the next two features — pairs on the first one, then lets the tester run the second one solo with only a final review instead of step-by-step guidance. After three features, the tester's strategies need noticeably fewer corrections, and the lead documents that progress in the next skip-level conversation.",
+      "exampleUk": "Тестувальник середнього рівня не може самостійно розробляти тест-стратегії й постійно просить ліда переглядати кожен план з нуля. Лід узгоджує конкретну мету — самостійно володіти тест-стратегією для наступних двох фіч — працює в парі над першою, а потім дозволяє тестувальнику самостійно провести другу, лише з фінальним рев'ю замість покрокового супроводу. Після трьох фіч стратегії тестувальника потребують помітно менше правок, і лід фіксує цей прогрес у наступній розмові skip-level.",
       "sourceIds": [
         "google-structured-interviews"
       ],
@@ -521,6 +773,15 @@
         "uncertainty and options",
         "clear recommendation"
       ],
+      "questionUk": "Як би ви пояснили якість релізу керівнику, який не хоче деталей тест-кейсів?",
+      "shortAnswerUk": "Підсумуйте бізнес-ризик, постраждалі користувацькі сценарії, докази, тренд і доступні варіанти рішень. Чітко скажіть, що відомо, що залишається невизначеним, яка рекомендована дія та які в неї компроміси, використовуючи мову продукту, а не кількість QA-активностей.",
+      "strongAnswerSignalsUk": [
+        "бізнес-мова",
+        "невизначеність і варіанти",
+        "чітка рекомендація"
+      ],
+      "example": "Instead of telling a VP 'we ran 450 test cases with a 96 percent pass rate,' a QA lead says: 'Checkout and payment are solid and heavily tested — low risk. The new loyalty-points feature is riskier because we only had three days to test it, and there's one known edge case with points expiring mid-checkout that affects maybe 200 users a month. My recommendation is to ship with that feature behind a flag we can disable quickly if support tickets spike.' The VP gets a decision-ready picture without needing to know what a test case is.",
+      "exampleUk": "Замість того щоб казати віцепрезиденту «ми прогнали 450 тест-кейсів із відсотком проходження 96%», QA lead каже: «Checkout і оплата надійні й ретельно протестовані — низький ризик. Нова функція бонусних балів ризикованіша, бо в нас було лише три дні на її тестування, і є один відомий крайовий випадок із згорянням балів під час оформлення замовлення, який стосується приблизно 200 користувачів на місяць. Моя рекомендація — випустити реліз із цією функцією за feature-флагом, який можна швидко вимкнути, якщо кількість звернень у підтримку зросте». Віцепрезидент отримує картину, готову для прийняття рішення, без потреби розуміти, що таке тест-кейс.",
       "sourceIds": [
         "google-structured-interviews"
       ],
@@ -538,6 +799,15 @@
         "shared quality ownership",
         "addresses the system rather than pushing overtime"
       ],
+      "questionUk": "Як ви плануєте потужність (capacity) QA-команди, коли попит стабільно перевищує доступність команди?",
+      "shortAnswerUk": "Зробіть попит і обмеження видимими, розставте пріоритети за ризиком для продукту, перенесіть частину перевірок раніше — на розробників, скоротіть низькоцінну роботу і домовтеся про обсяг або терміни. Відстежуйте черги та переривання роботи, а не нормалізуйте постійні понаднормові години.",
+      "strongAnswerSignalsUk": [
+        "портфельний погляд на основі ризику",
+        "спільна відповідальність за якість",
+        "вирішує проблему системи, а не тисне на понаднормові"
+      ],
+      "example": "A QA team of four is asked to fully test twelve feature branches a sprint when they can realistically cover six thoroughly. The lead builds a simple dashboard showing incoming work versus capacity, negotiates with product to reduce scope on two lower-priority features this sprint, and works with engineering to have developers write and own unit tests for straightforward CRUD changes so QA can focus on integration-heavy and risky features. Within two sprints, the visible backlog stabilizes instead of the team quietly working weekends to keep up.",
+      "exampleUk": "Команду QA з чотирьох людей просять повністю протестувати дванадцять фіча-гілок за спринт, тоді як реалістично вони можуть ретельно покрити лише шість. Лід будує простий дашборд, що показує співвідношення вхідної роботи й потужності команди, домовляється з продуктом про скорочення обсягу двох менш пріоритетних фіч цього спринту і працює з розробкою, щоб розробники самі писали й підтримували unit-тести для простих CRUD-змін, а QA могла зосередитися на інтеграційно складних і ризикованих фічах. За два спринти видима черга стабілізується, замість того щоб команда мовчки працювала у вихідні, аби встигати.",
       "sourceIds": [
         "dou-qa-2022",
         "google-structured-interviews"
