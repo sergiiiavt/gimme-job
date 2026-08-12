@@ -14,7 +14,7 @@ const CANVAS_WIDTH = COLS * TILE;
 const CANVAS_HEIGHT = ROWS * TILE;
 
 const SPRITE_FILES: Record<string, string> = {
-  "tile-grass": "/rewild/tile-grass.png", "tile-forest": "/rewild/tile-forest.png", "tile-pond": "/rewild/tile-pond.png",
+  "tile-forest": "/rewild/tile-forest.png", "tile-pond": "/rewild/tile-pond.png",
   "tile-rock": "/rewild/tile-rock.png", "tile-flowers": "/rewild/tile-flowers.png", "tile-corrupt": "/rewild/tile-corrupt.png",
   "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
@@ -569,18 +569,23 @@ function tileSpriteKey(tile: TileKind) {
   if (tile === "pond") return "tile-pond";
   if (tile === "rock") return "tile-rock";
   if (tile === "flowers") return "tile-flowers";
-  return "tile-grass";
+  return null;
 }
 
 function drawTile(ctx: CanvasRenderingContext2D, tile: TileKind, col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-  const img = getSprite(tileSpriteKey(tile));
+  const key = tileSpriteKey(tile);
+  const img = key ? getSprite(key) : null;
   if (img) {
     ctx.drawImage(img, x, y, TILE, TILE);
   } else {
-    ctx.fillStyle = tile === "corrupt" ? "#5d666a" : "#88ad56";
+    const grass = (col + row) % 2 === 0 ? "#88ad56" : "#82a951";
+    ctx.fillStyle = grass;
     ctx.fillRect(x, y, TILE, TILE);
+    ctx.fillStyle = "rgba(49,91,45,.22)";
+    ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
+    ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
   }
   if (tile === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
     ctx.fillStyle = "rgba(200,243,72,.35)";
