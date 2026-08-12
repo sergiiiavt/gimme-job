@@ -19,7 +19,7 @@ The failure had four causes:
 
 Validation now requires:
 
-- at least the current 654-question baseline, exactly 19 topics and at least 66 sources;
+- at least the current 672-question baseline, exactly 19 topics and at least 67 sources;
 - exactly 30 canonical-baseline questions covering every topic;
 - stable explicit IDs for canonical questions;
 - explicit presence of critical foundational questions;
@@ -55,9 +55,15 @@ The catalog keeps broad interview wording explicit as well as detailed scenarios
 
 `content/interview/modern-sdet-qa.json` adds 52 stable, hand-authored questions without removing or renaming any existing entry. It covers test doubles, property-based and mutation testing, visual regression, browser grids and real-device clouds, coding complexity and data-structure exercises, internationalization and localization, AI-assisted test review, self-healing locators, MCP and agent evaluation, OAuth and OpenID Connect, event-driven systems, Core Web Vitals and software-supply-chain assurance.
 
-The expansion is role-aware through reusable tags such as `sdet`, `automation-engineer`, `web-qa`, `mobile-qa`, `ai-qa`, `security-qa`, `performance-qa` and `qa-lead`. Emerging agentic topics are marked Occasional or Specialist rather than being presented as universal QA requirements. Sixteen new primary or authoritative references support the added material, bringing the catalog to 654 questions and 66 sources.
+The expansion is role-aware through reusable tags such as `sdet`, `automation-engineer`, `web-qa`, `mobile-qa`, `ai-qa`, `security-qa`, `performance-qa` and `qa-lead`. Emerging agentic topics are marked Occasional or Specialist rather than being presented as universal QA requirements. That pass added 52 questions and sixteen primary or authoritative references; the later core-foundation pass advances the current totals documented below.
 
 The previously generic practical cluster remains intact for stable IDs, but all 22 existing login, elevator, payment and upload scenarios now include product-specific failure modes and adapt their evidence to the stated constraint. This preserves additive history while removing the weakest boilerplate from the candidate experience.
+
+## Core foundations and editorial stars
+
+`content/interview/core-foundations-qa.json` adds 18 direct questions for acceptance and integration testing, static and dynamic techniques, experience-based and cause-effect design, structural coverage, test plans, test-case quality, testing work products, requirement quality and review, verification methods, and test-estimation techniques. NASA's requirements guidance adds a primary reference for clarity, completeness, consistency, feasibility, singularity, traceability and verifiability.
+
+`content/interview/editorial-starred-question-ids.json` curates the essential preparation path across both existing and new questions. The Starred option appears in the Prevalence filter for discoverability, but it is an independent editorial flag: every question keeps its real frequency band. No personal state is written yet, leaving future user-specific stars free to remain private.
 
 ## Readability and media policy
 

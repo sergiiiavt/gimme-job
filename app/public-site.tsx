@@ -35,6 +35,7 @@ interface PublicJob {
 
 type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
 type InterviewPrevalence = "Very common" | "Common" | "Occasional" | "Specialist";
+type InterviewPrevalenceFilter = InterviewPrevalence | "Starred";
 type InterviewSort = "prevalence" | "learning" | "level" | "alphabetical";
 
 interface InterviewQuestion {
@@ -47,6 +48,7 @@ interface InterviewQuestion {
   shortAnswer: string;
   strongAnswerSignals: string[];
   sourceIds: string[];
+  editorialStar?: boolean;
   tags?: string[];
   media?: Array<{ src: string; alt: string; caption: string; credit: string }>;
 }
@@ -85,6 +87,10 @@ interface InterviewCatalog {
 const INTERVIEW_PAGE_SIZE = 60;
 const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"];
 const interviewPrevalence: InterviewPrevalence[] = ["Very common", "Common", "Occasional", "Specialist"];
+const interviewPrevalenceFilters: Array<{ label: string; value: InterviewPrevalenceFilter }> = [
+  { label: "★ Starred", value: "Starred" },
+  ...interviewPrevalence.map((value) => ({ label: value, value })),
+];
 const prevalenceOrder: Record<InterviewPrevalence, number> = { "Very common": 0, Common: 1, Occasional: 2, Specialist: 3 };
 const levelOrder: Record<InterviewLevel, number> = { Junior: 0, Middle: 1, Senior: 2, Lead: 3 };
 const progressOptions: Array<{ value: QuestionProgressStatus; label: string }> = [
@@ -740,7 +746,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
 function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; mode: SiteMode; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<InterviewLevel[]>([]);
-  const [prevalences, setPrevalences] = useState<InterviewPrevalence[]>([]);
+  const [prevalences, setPrevalences] = useState<InterviewPrevalenceFilter[]>([]);
   const [sort, setSort] = useState<InterviewSort>("prevalence");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [openFilter, setOpenFilter] = useState<"prevalence" | "sort" | "tags" | "levels" | null>(null);
@@ -807,10 +813,10 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
       .filter((item) => {
         const tags = tagsFor(item);
         const matchesLevel = levels.length === 0 || levels.includes(item.level);
-        const matchesPrevalence = prevalences.length === 0 || prevalences.includes(item.prevalence);
+        const matchesPrevalence = prevalences.length === 0 || prevalences.some((prevalence) => prevalence === "Starred" ? item.editorialStar === true : prevalence === item.prevalence);
         const matchesCategory = !activeCategory || item.category === activeCategory;
         const matchesTag = selectedTags.length === 0 || tags.some((tag) => selectedTags.includes(tag));
-        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, ...tags, ...item.strongAnswerSignals]);
+        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, item.editorialStar ? "star starred fundamental core" : "", ...tags, ...item.strongAnswerSignals]);
         return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && matchesSearch;
       })
       .sort((left, right) => {
@@ -853,7 +859,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     setLevels(nextLevels);
     setPage(0);
   };
-  const setQuestionPrevalences = (nextPrevalences: InterviewPrevalence[]) => {
+  const setQuestionPrevalences = (nextPrevalences: InterviewPrevalenceFilter[]) => {
     setPrevalences(nextPrevalences);
     setPage(0);
   };
@@ -934,7 +940,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         </div>
         <div className="iq-filter-grid">
           <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
-          <InterviewFilter emptyLabel="All prevalence" helpText="Matches any selected prevalence." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalence.map((item) => ({ label: item, value: item }))} selected={prevalences}/>
+          <InterviewFilter emptyLabel="All prevalence" helpText="Starred is the editorial core set; frequency bands remain unchanged." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
           <InterviewFilter emptyLabel="All tags" helpText="Matches any selected tag." label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setFilterOpen("tags", nextOpen)} open={openFilter === "tags"} options={interviewTags.map((tag) => ({ label: tag, value: tag }))} searchable selected={selectedTags}/>
           <InterviewFilter emptyLabel="All levels" helpText="Matches any selected seniority level." label="Seniority" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setFilterOpen("levels", nextOpen)} open={openFilter === "levels"} options={interviewLevels.map((level) => ({ label: level, value: level }))} selected={levels}/>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
@@ -950,7 +956,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                 <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
                 <div>
                   <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(pageStart + index + 1).padStart(3, "0")}</small>
-                  <h2>{item.question}</h2>
+                  <h2>{item.editorialStar && <span className="iq-star-marker" aria-label="Starred fundamental" role="img">★</span>}{item.question}</h2>
                   <span className="iq-question-tags">
                     <em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>
                     {mode === "personal" && progress[item.id] && <em className={`iq-progress-badge iq-progress-${progress[item.id].toLowerCase()}`}>{progressOptions.find((option) => option.value === progress[item.id])?.label}</em>}

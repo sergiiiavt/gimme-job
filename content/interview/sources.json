@@ -526,5 +526,13 @@
     "publisher": "OpenSSF",
     "kind": "Supply-chain specification",
     "role": "Build and source provenance, artifact integrity and software supply-chain assurance"
+  },
+  {
+    "id": "nasa-requirements-handbook",
+    "title": "NASA Systems Engineering Handbook — How to Write a Good Requirement",
+    "url": "https://www.nasa.gov/reference/system-engineering-handbook-appendix/",
+    "publisher": "NASA",
+    "kind": "Government engineering guidance",
+    "role": "Requirement clarity, correctness, feasibility, singularity, completeness, consistency, traceability and verifiability"
   }
 ]
