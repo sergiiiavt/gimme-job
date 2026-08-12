@@ -39,10 +39,35 @@ function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: numb
 const SPRITE_FILES: Record<string, string> = {
   "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
-  "obj-elderoak": "/rewild/obj-elderoak.png", "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
+  "obj-elderoak-p1": "/rewild/obj-elderoak-p1.png", "obj-elderoak-p2": "/rewild/obj-elderoak-p2.png",
+  "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
   "obj-swarm": "/rewild/obj-swarm.png", "obj-sludge": "/rewild/obj-sludge.png", "obj-popup": "/rewild/obj-popup.png", "obj-fragment": "/rewild/obj-fragment.png",
   "decal-tuft": "/rewild/decal-tuft.png", "decal-flower": "/rewild/decal-flower.png", "decal-pebble": "/rewild/decal-pebble.png",
   "decal-leaf": "/rewild/decal-leaf.png", "decal-mushroom": "/rewild/decal-mushroom.png",
+};
+
+// Production art has real proportions (tall vines, wide server racks) instead of the
+// old square placeholders, so every sprite needs its own render height (in tile units)
+// and a vertical pivot (fraction down the image that sits on the ground/tile anchor)
+// rather than being stretched into a uniform square. See PRODUCTION_ASSET_SPEC.md's
+// anchor conventions (pivot Y ~.88 rooted plants, ~.82 mobile blobs, ~.92 server/rack).
+interface SpriteMeta { pivotY: number; footprint: number }
+const DEFAULT_SPRITE_META: SpriteMeta = { pivotY: .88, footprint: 1 };
+const SPRITE_META: Record<string, SpriteMeta> = {
+  "obj-house": { pivotY: .86, footprint: 2.15 },
+  "obj-sunbloom": { pivotY: .92, footprint: 1.3 },
+  "obj-thornbramble": { pivotY: .88, footprint: 1.05 },
+  "obj-sporecap": { pivotY: .90, footprint: 1.15 },
+  "obj-vinewhip": { pivotY: .88, footprint: 1.25 },
+  "obj-rootreclaimer": { pivotY: .90, footprint: .95 },
+  "obj-elderoak-p1": { pivotY: .90, footprint: 1.4 },
+  "obj-elderoak-p2": { pivotY: .92, footprint: 2.3 },
+  "obj-server": { pivotY: .92, footprint: 1.3 },
+  "obj-mainframe": { pivotY: .92, footprint: 1.75 },
+  "obj-swarm": { pivotY: .84, footprint: .95 },
+  "obj-sludge": { pivotY: .84, footprint: 1.05 },
+  "obj-popup": { pivotY: .90, footprint: 1.3 },
+  "obj-fragment": { pivotY: .82, footprint: .55 },
 };
 const DECAL_KINDS = ["tuft", "flower", "pebble", "leaf", "mushroom"] as const;
 function hashInt(a: number, b: number, salt: number) {
@@ -613,6 +638,11 @@ function toUi(state: GameState): UiSnapshot {
   };
 }
 
+function plantSpriteKey(kind: PlantKind, mature = true) {
+  if (kind === "elderoak") return mature ? "obj-elderoak-p2" : "obj-elderoak-p1";
+  return `obj-${kind}`;
+}
+
 function enemySpriteKey(kind: EnemyKind) {
   if (kind === "clickbait") return "obj-swarm";
   if (kind === "deepfake") return "obj-sludge";
@@ -620,17 +650,32 @@ function enemySpriteKey(kind: EnemyKind) {
   return "obj-fragment";
 }
 
-function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, cy: number, size: number) {
+function spriteFootprint(key: string, scale: number) {
   const img = getSprite(key);
-  if (!img) return;
-  ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+  const meta = SPRITE_META[key] ?? DEFAULT_SPRITE_META;
+  const height = TILE * meta.footprint * scale;
+  const aspect = img && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
+  return { img, meta, height, width: height * aspect };
 }
 
-function drawGroundShadow(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+function drawGroundShadow(ctx: CanvasRenderingContext2D, cx: number, groundY: number, width: number) {
   ctx.fillStyle = "rgba(20,26,16,.28)";
   ctx.beginPath();
-  ctx.ellipse(cx, cy + size * .34, size * .34, size * .13, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, groundY + width * .06, width * .40, width * .15, 0, 0, Math.PI * 2);
   ctx.fill();
+}
+
+// Draws a sprite at its native aspect ratio (never stretched) anchored so that its
+// pivot point sits at (cx, groundY), and drops a contact shadow sized to its footprint
+// width. Returns the sprite's on-screen box so callers can place health bars, glitch
+// offsets, etc. relative to it.
+function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, groundY: number, scale = 1) {
+  const { img, meta, width, height } = spriteFootprint(key, scale);
+  drawGroundShadow(ctx, cx, groundY, width);
+  const top = groundY - height * meta.pivotY;
+  const left = cx - width / 2;
+  if (img) ctx.drawImage(img, left, top, width, height);
+  return { width, height, top, left };
 }
 
 function isKindAt(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
@@ -644,10 +689,12 @@ function cellCornerKey(tiles: TileKind[][], col: number, row: number, kind: Tile
   return corner(col, row) + corner(col + 1, row) + corner(col, row + 1) + corner(col + 1, row + 1);
 }
 
+const GRASS_VARIANTS = ["#85ac53", "#8fac5d", "#79a94c", "#88ae4c", "#88ae61", "#86a34d", "#82a95b", "#83a84d"];
+
 function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-  const grass = (col + row) % 2 === 0 ? "#88ad56" : "#82a951";
+  const grass = GRASS_VARIANTS[hashInt(col, row, 5) % GRASS_VARIANTS.length];
   ctx.fillStyle = grass;
   ctx.fillRect(x, y, TILE, TILE);
   ctx.fillStyle = "rgba(49,91,45,.22)";
@@ -688,56 +735,51 @@ function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: 
 
 function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
   const x = (HOUSE_COL + 1) * TILE;
-  const y = (HOUSE_ROW + 1) * TILE;
-  const size = TILE * 2.15;
+  const groundY = (HOUSE_ROW + 1) * TILE;
+  const clearing = TILE * SPRITE_META["obj-house"].footprint;
   ctx.fillStyle = "rgba(154,122,74,.28)";
   ctx.beginPath();
-  ctx.ellipse(x, y + size * .3, size * .48, size * .19, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, groundY + clearing * .12, clearing * .5, clearing * .2, 0, 0, Math.PI * 2);
   ctx.fill();
-  drawGroundShadow(ctx, x, y, size);
-  drawSprite(ctx, "obj-house", x, y, size);
-  const barW = size * .55;
+  const box = drawSprite(ctx, "obj-house", x, groundY);
+  const barW = box.width * .55;
   const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
-  drawHealth(ctx, x - barW / 2, y - size / 2 - 10, barW, hp / 100, color);
+  drawHealth(ctx, x - barW / 2, box.top - 10, barW, hp / 100, color);
 }
 
 function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: GameState) {
   const x = plant.col * TILE + TILE / 2;
-  const y = plant.row * TILE + TILE / 2;
+  const groundY = plant.row * TILE + TILE / 2;
   const disabled = plant.disabledUntil > state.elapsed;
   const mature = plant.kind !== "elderoak" || plant.age >= 15;
-  const growth = plant.kind === "elderoak" && !mature ? .58 + .42 * (plant.age / 15) : 1;
-  const size = TILE * .96 * growth;
-  drawGroundShadow(ctx, x, y, size);
+  const scale = plant.kind === "elderoak" && !mature ? .6 + .4 * (plant.age / 15) : 1;
+  const spriteKey = plantSpriteKey(plant.kind, mature);
   ctx.save();
   if (disabled) ctx.globalAlpha = .55;
-  drawSprite(ctx, `obj-${plant.kind}`, x, y, size);
+  const box = drawSprite(ctx, spriteKey, x, groundY, scale);
   ctx.restore();
   if (disabled) {
-    ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(x, y - size * .15, size * .3, size * .3, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ee78b9"; ctx.fillRect(x - size * .18, y - size * .2, size * .36, 3);
+    const midY = box.top + box.height * .4;
+    ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(x, midY, box.width * .32, box.width * .32, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ee78b9"; ctx.fillRect(x - box.width * .18, midY - 1.5, box.width * .36, 3);
   }
-  drawHealth(ctx, x - 14, y - size / 2 - 8, 28, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
+  drawHealth(ctx, x - 14, box.top - 8, 28, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
 }
 
 function drawNode(ctx: CanvasRenderingContext2D, node: DataNode, time: number) {
   const x = node.col * TILE + TILE / 2;
-  const y = node.row * TILE + TILE / 2;
+  const groundY = node.row * TILE + TILE / 2;
   const glitch = Math.floor(time * 11 + node.id) % 5 === 0 ? 3 : 0;
-  const size = TILE * (node.boss ? 1.35 : 1);
-  drawGroundShadow(ctx, x, y, size);
-  drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, y, size);
-  drawHealth(ctx, x - 18, y - size / 2 - 8, 36, node.hp / node.maxHp);
+  const box = drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, groundY);
+  drawHealth(ctx, x - 18, box.top - 8, 36, node.hp / node.maxHp);
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: number) {
   const x = enemy.x * TILE;
-  const y = enemy.y * TILE;
+  const groundY = enemy.y * TILE;
   const glitch = Math.floor(time * 13 + enemy.id) % 7 === 0 ? 3 : 0;
-  const size = TILE * (enemy.kind === "deepfake" ? .85 : enemy.kind === "fragment" ? .5 : .68);
-  drawGroundShadow(ctx, x, y, size);
-  drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, y, size);
-  drawHealth(ctx, x - 14, y - size / 2 - 8, 28, enemy.hp / enemy.maxHp);
+  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, groundY);
+  drawHealth(ctx, x - 14, box.top - 8, 28, enemy.hp / enemy.maxHp);
 }
 
 function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Camera) {
@@ -791,7 +833,7 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
       </section>
       <section className="rw-field-guide">
         <div><span>DEFENDERS</span><h2>Weapons that grow</h2></div>
-        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><SpriteIcon spriteKey={`obj-${kind}`}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
+        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><SpriteIcon spriteKey={plantSpriteKey(kind)}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
       </section>
       <section className="rw-field-guide rw-enemy-guide">
         <div><span>AI SLOP</span><h2>Targets to destroy</h2></div>
