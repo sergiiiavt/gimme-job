@@ -4,13 +4,36 @@ import { useEffect, useRef, useState } from "react";
 
 const COLS = 30;
 const ROWS = 14;
-const TILE = 40;
-const CANVAS_WIDTH = COLS * TILE;
-const CANVAS_HEIGHT = ROWS * TILE;
 const HOUSE_COL = 14;
 const HOUSE_ROW = 6;
 const HOUSE_TILES = new Set(["14,6", "15,6", "14,7", "15,7"]);
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
+
+const TILE = 40;
+const CANVAS_WIDTH = COLS * TILE;
+const CANVAS_HEIGHT = ROWS * TILE;
+
+const SPRITE_FILES: Record<string, string> = {
+  "tile-grass": "/rewild/tile-grass.png", "tile-forest": "/rewild/tile-forest.png", "tile-pond": "/rewild/tile-pond.png",
+  "tile-rock": "/rewild/tile-rock.png", "tile-flowers": "/rewild/tile-flowers.png", "tile-corrupt": "/rewild/tile-corrupt.png",
+  "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
+  "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
+  "obj-elderoak": "/rewild/obj-elderoak.png", "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
+  "obj-swarm": "/rewild/obj-swarm.png", "obj-sludge": "/rewild/obj-sludge.png", "obj-popup": "/rewild/obj-popup.png", "obj-fragment": "/rewild/obj-fragment.png",
+};
+const spriteCache = new Map<string, HTMLImageElement>();
+function getSprite(key: string): HTMLImageElement | null {
+  let img = spriteCache.get(key);
+  if (!img) {
+    img = new window.Image();
+    img.src = SPRITE_FILES[key];
+    spriteCache.set(key, img);
+  }
+  return img.complete && img.naturalWidth > 0 ? img : null;
+}
+function preloadSprites() {
+  for (const key of Object.keys(SPRITE_FILES)) getSprite(key);
+}
 
 type TileKind = "grass" | "corrupt" | "forest" | "pond" | "rock" | "flowers" | "house";
 type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | "rootreclaimer" | "elderoak";
@@ -527,53 +550,45 @@ function toUi(state: GameState): UiSnapshot {
   };
 }
 
+function enemySpriteKey(kind: EnemyKind) {
+  if (kind === "clickbait") return "obj-swarm";
+  if (kind === "deepfake") return "obj-sludge";
+  if (kind === "popup") return "obj-popup";
+  return "obj-fragment";
+}
+
+function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, cy: number, size: number) {
+  const img = getSprite(key);
+  if (!img) return;
+  ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+}
+
+function tileSpriteKey(tile: TileKind) {
+  if (tile === "corrupt") return "tile-corrupt";
+  if (tile === "forest") return "tile-forest";
+  if (tile === "pond") return "tile-pond";
+  if (tile === "rock") return "tile-rock";
+  if (tile === "flowers") return "tile-flowers";
+  return "tile-grass";
+}
+
 function drawTile(ctx: CanvasRenderingContext2D, tile: TileKind, col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-  const grass = (col + row) % 2 === 0 ? "#88ad56" : "#82a951";
-  ctx.fillStyle = tile === "corrupt" ? "#5d666a" : tile === "house" ? "#8aac57" : grass;
-  ctx.fillRect(x, y, TILE, TILE);
-  if (tile === "grass" || tile === "house") {
-    ctx.fillStyle = "rgba(49,91,45,.22)";
-    ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
-    ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
+  const img = getSprite(tileSpriteKey(tile));
+  if (img) {
+    ctx.drawImage(img, x, y, TILE, TILE);
+  } else {
+    ctx.fillStyle = tile === "corrupt" ? "#5d666a" : "#88ad56";
+    ctx.fillRect(x, y, TILE, TILE);
   }
-  if (tile === "corrupt") {
-    ctx.fillStyle = "#6c777b";
-    ctx.fillRect(x + 2, y + 2, 17, 16);
-    ctx.fillRect(x + 22, y + 20, 16, 18);
-    ctx.fillStyle = Math.floor(time * 8 + col + row) % 3 === 0 ? "#c8f348" : "#798487";
-    ctx.fillRect(x + 5, y + 10, 10, 2);
-    ctx.fillRect(x + 24, y + 28, 11, 2);
-  }
-  if (tile === "forest") {
-    ctx.fillStyle = "#4c6b38"; ctx.fillRect(x + 6, y + 14, 28, 22);
-    ctx.fillStyle = "#2f5132"; ctx.fillRect(x + 10, y + 5, 20, 23);
-    ctx.fillStyle = "#6f4f30"; ctx.fillRect(x + 18, y + 28, 5, 10);
-  } else if (tile === "pond") {
-    ctx.fillStyle = "#6aa6a2"; ctx.fillRect(x + 3, y + 8, 34, 28);
-    ctx.fillStyle = "#9dc7b4"; ctx.fillRect(x + 8, y + 13, 12, 3); ctx.fillRect(x + 23, y + 25, 9, 3);
-  } else if (tile === "rock") {
-    ctx.fillStyle = "#7b8175"; ctx.fillRect(x + 8, y + 15, 25, 19);
-    ctx.fillStyle = "#a5a897"; ctx.fillRect(x + 12, y + 11, 14, 6);
-  } else if (tile === "flowers") {
-    ctx.fillStyle = "#f2d86f"; ctx.fillRect(x + 8, y + 10, 6, 6); ctx.fillRect(x + 25, y + 17, 6, 6);
-    ctx.fillStyle = "#f2a6a0"; ctx.fillRect(x + 17, y + 27, 6, 6); ctx.fillStyle = "#4f793d"; ctx.fillRect(x + 10, y + 16, 2, 14); ctx.fillRect(x + 27, y + 23, 2, 10);
+  if (tile === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
+    ctx.fillStyle = "rgba(200,243,72,.35)";
+    ctx.fillRect(x + 6, y + 14, 10, 2);
+    ctx.fillRect(x + 22, y + 24, 9, 2);
   }
   ctx.strokeStyle = "rgba(34,58,37,.08)";
   ctx.strokeRect(x, y, TILE, TILE);
-}
-
-function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
-  const x = HOUSE_COL * TILE;
-  const y = HOUSE_ROW * TILE;
-  ctx.fillStyle = "rgba(45,61,39,.18)"; ctx.fillRect(x + 7, y + 18, 70, 60);
-  ctx.fillStyle = "#ead7a0"; ctx.fillRect(x + 10, y + 29, 60, 43);
-  ctx.fillStyle = "#9b553d"; ctx.fillRect(x + 5, y + 20, 70, 16); ctx.fillRect(x + 15, y + 12, 50, 9);
-  ctx.fillStyle = "#68452e"; ctx.fillRect(x + 32, y + 48, 15, 24);
-  ctx.fillStyle = "#8bc4c0"; ctx.fillRect(x + 17, y + 45, 10, 10); ctx.fillRect(x + 53, y + 45, 10, 10);
-  ctx.fillStyle = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69"; ctx.fillRect(x + 8, y + 4, Math.max(0, 64 * (hp / 100)), 4);
-  ctx.strokeStyle = "#273b2d"; ctx.strokeRect(x + 8, y + 3, 64, 6);
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, ratio: number, color = "#de6e70") {
@@ -581,68 +596,50 @@ function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: 
   ctx.fillStyle = color; ctx.fillRect(x + 1, y + 1, Math.max(0, (width - 2) * ratio), 2);
 }
 
+function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
+  const x = (HOUSE_COL + 1) * TILE;
+  const y = (HOUSE_ROW + 1) * TILE;
+  const size = TILE * 2.15;
+  drawSprite(ctx, "obj-house", x, y, size);
+  const barW = size * .55;
+  const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
+  drawHealth(ctx, x - barW / 2, y - size / 2 - 10, barW, hp / 100, color);
+}
+
 function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: GameState) {
-  const x = plant.col * TILE;
-  const y = plant.row * TILE;
+  const x = plant.col * TILE + TILE / 2;
+  const y = plant.row * TILE + TILE / 2;
   const disabled = plant.disabledUntil > state.elapsed;
+  const mature = plant.kind !== "elderoak" || plant.age >= 15;
+  const growth = plant.kind === "elderoak" && !mature ? .58 + .42 * (plant.age / 15) : 1;
+  const size = TILE * .96 * growth;
   ctx.save();
-  if (disabled) ctx.globalAlpha = .52;
-  if (plant.kind === "sunbloom") {
-    ctx.fillStyle = "#4f793d"; ctx.fillRect(x + 19, y + 19, 4, 17);
-    ctx.fillStyle = "#f5d85a"; ctx.fillRect(x + 12, y + 9, 18, 18); ctx.fillStyle = "#a66b35"; ctx.fillRect(x + 17, y + 14, 8, 8);
-  } else if (plant.kind === "thornbramble") {
-    ctx.fillStyle = "#3e6035"; ctx.fillRect(x + 6, y + 14, 28, 22); ctx.fillStyle = "#a6cf62";
-    ctx.fillRect(x + 5, y + 12, 7, 4); ctx.fillRect(x + 27, y + 9, 5, 8); ctx.fillRect(x + 30, y + 29, 7, 4);
-  } else if (plant.kind === "sporecap") {
-    ctx.fillStyle = "#e1b5e9"; ctx.fillRect(x + 8, y + 10, 25, 13); ctx.fillStyle = "#8b5a9a"; ctx.fillRect(x + 12, y + 8, 17, 5);
-    ctx.fillStyle = "#e8d5b6"; ctx.fillRect(x + 17, y + 22, 8, 14);
-  } else if (plant.kind === "vinewhip") {
-    ctx.fillStyle = "#416f36"; ctx.fillRect(x + 17, y + 15, 6, 21); ctx.fillRect(x + 20, y + 10, 14, 5); ctx.fillRect(x + 29, y + 7, 5, 9);
-    ctx.fillStyle = "#9bd052"; ctx.fillRect(x + 8, y + 18, 12, 7); ctx.fillRect(x + 19, y + 26, 13, 7);
-  } else if (plant.kind === "rootreclaimer") {
-    ctx.fillStyle = "#d0c28b"; ctx.fillRect(x + 16, y + 7, 9, 13); ctx.fillStyle = "#5c913f"; ctx.fillRect(x + 9, y + 17, 23, 13);
-    ctx.fillStyle = "#b6e377"; ctx.fillRect(x + 6, y + 25, 9, 5); ctx.fillRect(x + 27, y + 27, 9, 5);
-  } else {
-    const mature = plant.age >= 15;
-    ctx.fillStyle = "#765035"; ctx.fillRect(x + 17, y + 18, 8, 19);
-    ctx.fillStyle = mature ? "#345b32" : "#638849"; ctx.fillRect(x + (mature ? 4 : 9), y + (mature ? 3 : 9), mature ? 33 : 23, mature ? 24 : 18);
-    if (!mature) { ctx.fillStyle = "#f1d36a"; ctx.fillRect(x + 7, y + 4, Math.min(26, (plant.age / 15) * 26), 3); }
-  }
-  if (disabled) {
-    ctx.globalAlpha = .95; ctx.fillStyle = "#fafafa"; ctx.fillRect(x + 5, y + 4, 31, 13); ctx.fillStyle = "#ee78b9"; ctx.fillRect(x + 9, y + 8, 21, 2);
-  }
+  if (disabled) ctx.globalAlpha = .55;
+  drawSprite(ctx, `obj-${plant.kind}`, x, y, size);
   ctx.restore();
-  drawHealth(ctx, x + 7, y + 36, 26, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
+  if (disabled) {
+    ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(x, y - size * .15, size * .3, size * .3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ee78b9"; ctx.fillRect(x - size * .18, y - size * .2, size * .36, 3);
+  }
+  drawHealth(ctx, x - 14, y - size / 2 - 8, 28, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
 }
 
 function drawNode(ctx: CanvasRenderingContext2D, node: DataNode, time: number) {
-  const x = node.col * TILE;
-  const y = node.row * TILE;
+  const x = node.col * TILE + TILE / 2;
+  const y = node.row * TILE + TILE / 2;
   const glitch = Math.floor(time * 11 + node.id) % 5 === 0 ? 3 : 0;
-  ctx.fillStyle = node.boss ? "#333b42" : "#4c555b"; ctx.fillRect(x + 5 - glitch, y + 4, node.boss ? 34 : 30, 33);
-  ctx.fillStyle = "#919ba0"; ctx.fillRect(x + 9, y + 8, 22, 5); ctx.fillRect(x + 9, y + 18, 22, 5); ctx.fillRect(x + 9, y + 28, 22, 5);
-  ctx.fillStyle = Math.floor(time * 7) % 2 ? "#d9f54f" : "#ff6fb4"; ctx.fillRect(x + 12, y + 10, 4, 2); ctx.fillRect(x + 23, y + 20, 5, 2); ctx.fillRect(x + 14, y + 30, 9, 2);
-  if (node.boss) { ctx.fillStyle = "#d9f54f"; ctx.fillRect(x + 2, y + 12, 5, 5); ctx.fillRect(x + 33, y + 19, 5, 5); }
-  drawHealth(ctx, x + 4, y + 1, 32, node.hp / node.maxHp);
+  const size = TILE * (node.boss ? 1.35 : 1);
+  drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, y, size);
+  drawHealth(ctx, x - 18, y - size / 2 - 8, 36, node.hp / node.maxHp);
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: number) {
-  const config = ENEMIES[enemy.kind];
-  const x = Math.round(enemy.x * TILE);
-  const y = Math.round(enemy.y * TILE);
+  const x = enemy.x * TILE;
+  const y = enemy.y * TILE;
   const glitch = Math.floor(time * 13 + enemy.id) % 7 === 0 ? 3 : 0;
-  ctx.fillStyle = config.color;
-  if (enemy.kind === "clickbait") {
-    ctx.fillRect(x - 10 + glitch, y - 7, 20, 15); ctx.fillRect(x - 14, y - 3, 5, 4); ctx.fillRect(x + 9, y + 2, 7, 4);
-    ctx.fillStyle = "#24312f"; ctx.fillRect(x - 5, y - 3, 3, 3); ctx.fillRect(x + 4, y - 4, 4, 4);
-  } else if (enemy.kind === "deepfake" || enemy.kind === "fragment") {
-    const size = enemy.kind === "fragment" ? 12 : 22;
-    ctx.fillRect(x - size / 2 + glitch, y - size / 2, size, size); ctx.fillRect(x - size / 2 - 4, y + 2, 5, 9); ctx.fillRect(x + size / 2 - 1, y - 1, 7, 5);
-    ctx.fillStyle = "#eef3df"; ctx.fillRect(x - 6, y - 5, 5, 5); ctx.fillRect(x + 3, y - 2, 3, 7); ctx.fillStyle = "#2c3333"; ctx.fillRect(x - 4, y - 3, 2, 2); ctx.fillRect(x + 4, y, 2, 2);
-  } else {
-    ctx.fillRect(x - 11 + glitch, y - 9, 22, 18); ctx.fillStyle = "#fff"; ctx.fillRect(x - 8, y - 5, 16, 9); ctx.fillStyle = "#ef5aa6"; ctx.fillRect(x - 5, y - 2, 10, 2); ctx.fillRect(x + 7, y - 13, 6, 6);
-  }
-  drawHealth(ctx, x - 12, y - 15, 24, enemy.hp / enemy.maxHp);
+  const size = TILE * (enemy.kind === "deepfake" ? .85 : enemy.kind === "fragment" ? .5 : .68);
+  drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, y, size);
+  drawHealth(ctx, x - 14, y - size / 2 - 8, 28, enemy.hp / enemy.maxHp);
 }
 
 function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
@@ -670,38 +667,8 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
-function TutorialIcon({ paint }: { paint: (ctx: CanvasRenderingContext2D) => void }) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const ctx = ref.current?.getContext("2d");
-    if (!ctx) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, TILE, TILE);
-    paint(ctx);
-  }, [paint]);
-  return <canvas ref={ref} width={TILE} height={TILE} aria-hidden="true"/>;
-}
-
-function plantIconPaint(kind: PlantKind) {
-  return (ctx: CanvasRenderingContext2D) => {
-    const plant: PlantEntity = { id: 0, kind, col: 0, row: 0, hp: PLANTS[kind].maxHp, cooldown: 0, age: kind === "elderoak" ? 20 : 0, reclaimTimer: 0, disabledUntil: 0 };
-    drawPlant(ctx, plant, { elapsed: 0 } as GameState);
-  };
-}
-
-function enemyIconPaint(kind: EnemyKind) {
-  return (ctx: CanvasRenderingContext2D) => {
-    const config = ENEMIES[kind];
-    const enemy: EnemyEntity = { id: 0, kind, x: .5, y: .5, hp: config.hp, maxHp: config.hp, cooldown: 0, pathTimer: 0, path: [], slowUntil: 0 };
-    drawEnemy(ctx, enemy, 0);
-  };
-}
-
-function nodeIconPaint() {
-  return (ctx: CanvasRenderingContext2D) => {
-    const node: DataNode = { id: 0, col: 0, row: 0, hp: 150, maxHp: 150, spreadTimer: 0, spawnTimer: 0, boss: false };
-    drawNode(ctx, node, 0);
-  };
+function SpriteIcon({ spriteKey }: { spriteKey: string }) {
+  return <img src={SPRITE_FILES[spriteKey]} alt="" aria-hidden="true"/>;
 }
 
 function formatTime(seconds: number) {
@@ -722,13 +689,13 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
       </section>
       <section className="rw-field-guide">
         <div><span>DEFENDERS</span><h2>Weapons that grow</h2></div>
-        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><TutorialIcon paint={plantIconPaint(kind)}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
+        <div className="rw-guide-list">{PLANT_ORDER.map((kind) => <article key={kind}><SpriteIcon spriteKey={`obj-${kind}`}/><div><strong>{PLANTS[kind].name}</strong><span>{PLANTS[kind].role} · {PLANTS[kind].cost} sun · wave {PLANTS[kind].unlockWave}</span><p>{PLANTS[kind].detail}</p></div></article>)}</div>
       </section>
       <section className="rw-field-guide rw-enemy-guide">
         <div><span>AI SLOP</span><h2>Targets to destroy</h2></div>
         <div className="rw-guide-list">
-          {(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><TutorialIcon paint={enemyIconPaint(kind)}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, disposable, and engineered to steal attention." : kind === "deepfake" ? "Slow synthetic sludge. Splits into two more problems when destroyed." : "A hostile popup that disables defenders with junk nobody requested."}</p></div></article>)}
-          <article><TutorialIcon paint={nodeIconPaint()}/><div><strong>AI Slop Server</strong><span>150 HP · spreads corruption</span><p>Spawns enemies and slowly corrupts nearby tiles. Destroy it to stop the spread.</p></div></article>
+          {(["clickbait", "deepfake", "popup"] as EnemyKind[]).map((kind) => <article key={kind}><SpriteIcon spriteKey={enemySpriteKey(kind)}/><div><strong>{ENEMIES[kind].name}</strong><span>{ENEMIES[kind].hp} HP · speed {ENEMIES[kind].speed}</span><p>{kind === "clickbait" ? "Fast, disposable, and engineered to steal attention." : kind === "deepfake" ? "Slow synthetic sludge. Splits into two more problems when destroyed." : "A hostile popup that disables defenders with junk nobody requested."}</p></div></article>)}
+          <article><SpriteIcon spriteKey="obj-server"/><div><strong>AI Slop Server</strong><span>150 HP · spreads corruption</span><p>Spawns enemies and slowly corrupts nearby tiles. Destroy it to stop the spread.</p></div></article>
         </div>
       </section>
     </div>
@@ -744,6 +711,7 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
   const [ui, setUi] = useState<UiSnapshot>(() => toUi(createGameState(0, "menu")));
 
   useEffect(() => {
+    preloadSprites();
     let best = 0;
     try { best = Number(window.localStorage.getItem(STORAGE_KEY) ?? 0) || 0; } catch { /* local persistence is optional */ }
     stateRef.current = createGameState(best, "menu");
