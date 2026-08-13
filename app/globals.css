@@ -109,6 +109,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .chips span { background: #f0f2f0; border-radius: 4px; color: #68726d; font-size: 7px; font-weight: 700; padding: 3px 5px; }
 .chips span.good { background: var(--green-soft); color: var(--green); }
 .chips span.bad { background: var(--red-soft); color: var(--red); }
+.chips span.reservation, .job-summary-tags span.reservation { background: var(--amber-soft); color: var(--amber); }
 .status { border-radius: 6px; font-size: 8px; font-weight: 750; padding: 6px 8px; white-space: nowrap; }
 .status-new { background: var(--blue-soft); color: var(--blue); }
 .status-interested, .status-interview { background: var(--amber-soft); color: var(--amber); }
