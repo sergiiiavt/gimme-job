@@ -40,6 +40,7 @@ for (const lesson of lessons) {
 
   assert.ok(moduleIds.has(lesson.moduleId), `Unknown module ${lesson.moduleId} in ${lesson.id}`);
   assert.ok(levels.has(lesson.level), `Invalid level for ${lesson.id}`);
+  assert.ok(Number.isInteger(lesson.order) && lesson.order >= 1, `Invalid learning order for ${lesson.id}`);
 
   assert.ok(lesson.title?.trim(), `Missing title for ${lesson.id}`);
   assert.ok(lesson.titleUk?.trim(), `Missing Ukrainian title for ${lesson.id}`);
@@ -79,6 +80,10 @@ for (const curriculumModule of modules) {
   const count = lessons.filter((lesson) => lesson.moduleId === curriculumModule.id).length;
   assert.ok(count >= 3, `Module ${curriculumModule.id} must contain at least 3 lessons, found ${count}.`);
 }
+
+const orders = lessons.map((lesson) => lesson.order).sort((a, b) => a - b);
+assert.equal(new Set(orders).size, orders.length, "Every lesson's learning order must be unique.");
+assert.deepEqual(orders, lessons.map((_, index) => index + 1), "Learning order values must form a contiguous 1..N sequence.");
 
 for (const level of levels) {
   assert.ok(lessons.some((lesson) => lesson.level === level), `No lessons use level ${level}`);

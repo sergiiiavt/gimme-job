@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
-import { navigationItems, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
+import { hiddenDeepLinkSections, navigationItems, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
 const RewildGame = lazy(() => import("./rewild-game"));
 
@@ -95,6 +95,7 @@ interface PythonLesson {
   id: string;
   moduleId: string;
   level: PythonLessonLevel;
+  order: number;
   title: string;
   titleUk: string;
   summary: string;
@@ -135,6 +136,12 @@ const PYTHON_LESSON_PAGE_SIZE = 60;
 const pythonLessonLevels: PythonLessonLevel[] = ["Beginner", "Intermediate", "Advanced", "Expert"];
 const pythonLessonLevelOrder: Record<PythonLessonLevel, number> = { Beginner: 0, Intermediate: 1, Advanced: 2, Expert: 3 };
 const pythonLevelFilters: Array<{ label: string; value: PythonLessonLevel }> = pythonLessonLevels.map((value) => ({ label: value, value }));
+type PythonLessonSort = "order" | "level" | "alphabetical";
+const pythonLessonSortOptions: Array<{ value: PythonLessonSort; label: string }> = [
+  { value: "order", label: "Learning order" },
+  { value: "level", label: "Beginner → Expert" },
+  { value: "alphabetical", label: "Title A–Z" },
+];
 const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"];
 const interviewPrevalence: InterviewPrevalence[] = ["Very common", "Common", "Occasional", "Specialist"];
 const interviewPrevalenceFilters: Array<{ label: string; value: InterviewPrevalenceFilter }> = [
@@ -285,7 +292,7 @@ function StructuredAnswer({ value }: { value: string }) {
   );
 }
 
-const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "python" | "python-interview">, {
+const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "programming" | "python-interview">, {
   title: string;
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
@@ -321,17 +328,6 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
       { title: "Release decisions", copy: "Communicate evidence, uncertainty, residual risk, ownership, and rollback options without false confidence.", tags: ["Release", "Evidence"] },
       { title: "Useful metrics", copy: "Measure feedback speed, escaped risk, reliability, and outcomes while avoiding activity-count targets.", tags: ["Metrics"] },
       { title: "Coaching and leadership", copy: "Grow judgement, ownership, collaboration, and technical depth across a quality-focused team.", tags: ["People", "Lead"] },
-    ],
-  },
-  programming: {
-    title: "Programming for QA",
-    description: "The coding and debugging foundation needed for maintainable automation and deeper technical investigation.",
-    items: [
-      { title: "Code reading", copy: "Follow control flow, data flow, error paths, and dependencies well enough to identify meaningful checks.", tags: ["Code"] },
-      { title: "Data structures", copy: "Choose and manipulate collections, maps, queues, trees, and structured data safely in test code.", tags: ["CS"] },
-      { title: "Asynchronous systems", copy: "Reason about promises, threads, race conditions, retries, timeouts, and eventual completion.", tags: ["Async"] },
-      { title: "Debugging", copy: "Reduce failures with logs, breakpoints, stack traces, minimal reproductions, and hypothesis-driven diagnosis.", tags: ["Debug"] },
-      { title: "Git and review", copy: "Work with branches, focused commits, pull requests, conflict resolution, and constructive code review.", tags: ["Git"] },
     ],
   },
   automation: {
@@ -535,7 +531,7 @@ function currentSectionFromLocation(mode: SiteMode): PublicSection {
   const candidate = (mode === "personal"
     ? new URLSearchParams(window.location.search).get("section")
     : window.location.hash.replace("#", "")) as PublicSection | null;
-  return candidate && navigationItems.some((item) => item.id === candidate) ? candidate : mode === "personal" ? "interview" : "about";
+  return candidate && (navigationItems.some((item) => item.id === candidate) || hiddenDeepLinkSections.includes(candidate)) ? candidate : mode === "personal" ? "interview" : "about";
 }
 
 function topicId(value: string) {
@@ -570,7 +566,7 @@ function secondaryNavigation(section: PublicSection, jobs: PublicJob[], intervie
     }));
   }
 
-  if (section === "python") {
+  if (section === "programming") {
     if (!pythonCurriculum) return [{ id: "all", label: "Loading curriculum…" }];
     return pythonCurriculum.taxonomy.map((item) => ({
       id: item.id,
@@ -651,7 +647,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [pythonInterviewCatalog, section]);
 
   useEffect(() => {
-    if (section !== "python" || pythonCurriculum) return;
+    if (section !== "programming" || pythonCurriculum) return;
     let active = true;
     import("@/content/python-learning/catalog")
       .then((module) => {
@@ -776,6 +772,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
             mode={mode}
+            onOpenSection={openSection}
             onTopicChange={setSubsection}
             pythonCurriculum={pythonCurriculum}
             pythonCurriculumError={pythonCurriculumError}
@@ -791,11 +788,12 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   );
 }
 
-function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onOpenSection, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
   mode: SiteMode;
+  onOpenSection: (next: PublicSection) => void;
   onTopicChange: (topic: string) => void;
   pythonCurriculum: PythonCurriculum | null;
   pythonCurriculumError: boolean;
@@ -817,7 +815,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} catalogKind="qa" mode={mode} onSwitchCatalog={onOpenSection} onTopicChange={onTopicChange}/>;
   }
 
   if (section === "python-interview") {
@@ -831,10 +829,10 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} catalogKind="python" mode={mode} onSwitchCatalog={onOpenSection} onTopicChange={onTopicChange}/>;
   }
 
-  if (section === "python") {
+  if (section === "programming") {
     if (!pythonCurriculum) {
       return (
         <div className="kb-content iq-page">
@@ -877,7 +875,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
   );
 }
 
-function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; mode: SiteMode; onTopicChange: (topic: string) => void }) {
+function InterviewKnowledgeBase({ activeTopic, catalog, catalogKind, mode, onSwitchCatalog, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; catalogKind: "qa" | "python"; mode: SiteMode; onSwitchCatalog: (target: "interview" | "python-interview") => void; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<InterviewLevel[]>([]);
   const [prevalences, setPrevalences] = useState<InterviewPrevalenceFilter[]>([]);
@@ -1055,6 +1053,11 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         </div>
       </header>
 
+      <div className="iq-catalog-switch" role="group" aria-label="Question catalog">
+        <button className={catalogKind === "qa" ? "active" : ""} onClick={() => onSwitchCatalog("interview")} type="button">QA</button>
+        <button className={catalogKind === "python" ? "active" : ""} onClick={() => onSwitchCatalog("python-interview")} type="button">Python</button>
+      </div>
+
       {mode === "personal" && (
         <section className="iq-progress-summary" aria-live="polite">
           <div><span>Personal learning</span><strong>{progressCounts.LEARNED} learned</strong><strong>{progressCounts.LEARNING} learning</strong><strong>{progressCounts.PLANNED} planned</strong></div>
@@ -1206,7 +1209,8 @@ function MethodologyPage({ backLabel, methodology: method, onBack, sources: inte
 function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { activeTopic: string; curriculum: PythonCurriculum; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<PythonLessonLevel[]>([]);
-  const [openFilter, setOpenFilter] = useState<"levels" | null>(null);
+  const [sort, setSort] = useState<PythonLessonSort>("order");
+  const [openFilter, setOpenFilter] = useState<"levels" | "sort" | null>(null);
   const [page, setPage] = useState(0);
   const [lang, setLang] = useState<Record<string, "en" | "uk">>({});
 
@@ -1214,7 +1218,6 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
   const moduleTaxonomy = curriculum.taxonomy;
   const sourcesList = curriculum.sources;
   const sourcesById = useMemo(() => new Map(sourcesList.map((source) => [source.id, source])), [sourcesList]);
-  const moduleOrder = useMemo(() => new Map(moduleTaxonomy.filter((item) => item.level).map((item, index) => [item.id, index])), [moduleTaxonomy]);
   const moduleLabels = useMemo(() => new Map(moduleTaxonomy.filter((item) => item.level).map((item) => [item.id, item.label])), [moduleTaxonomy]);
   const activeTaxonomy = moduleTaxonomy.find((item) => item.id === activeTopic);
   const activeModuleId = activeTaxonomy?.level ? activeTaxonomy.id : undefined;
@@ -1242,8 +1245,12 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
         const matchesSearch = matchesAllSearchTerms(query, [lesson.title, lesson.summary, lesson.concept, moduleLabels.get(lesson.moduleId) ?? "", lesson.level, ...(lesson.tags ?? []), ...lesson.keyPoints]);
         return matchesLevel && matchesModule && matchesSearch;
       })
-      .sort((left, right) => (moduleOrder.get(left.moduleId) ?? 0) - (moduleOrder.get(right.moduleId) ?? 0) || pythonLessonLevelOrder[left.level] - pythonLessonLevelOrder[right.level]);
-  }, [activeModuleId, lessons, levels, moduleLabels, moduleOrder, query]);
+      .sort((left, right) => {
+        if (sort === "alphabetical") return left.title.localeCompare(right.title) || left.order - right.order;
+        if (sort === "level") return pythonLessonLevelOrder[left.level] - pythonLessonLevelOrder[right.level] || left.order - right.order;
+        return left.order - right.order;
+      });
+  }, [activeModuleId, lessons, levels, moduleLabels, query, sort]);
 
   const pageCount = Math.max(1, Math.ceil(matchingLessons.length / PYTHON_LESSON_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -1259,11 +1266,12 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
   const clearFilters = () => {
     setQuery("");
     setLevels([]);
+    setSort("order");
     setOpenFilter(null);
     setPage(0);
     onTopicChange("all");
   };
-  const hasActiveFilters = Boolean(activeModuleId || query || levels.length);
+  const hasActiveFilters = Boolean(activeModuleId || query || levels.length || sort !== "order");
 
   return (
     <div className="kb-content iq-page py-page">
@@ -1288,6 +1296,7 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
           </div>
         </div>
         <div className="iq-filter-grid py-filter-grid">
+          <InterviewFilter emptyLabel="Learning order" helpText="Choose the order used for the lesson list." label="Sort" onChange={(next) => { setSort(next[0] ?? "order"); setPage(0); }} onOpenChange={(nextOpen) => setOpenFilter(nextOpen ? "sort" : null)} open={openFilter === "sort"} options={pythonLessonSortOptions} selected={[sort]} selectionMode="single"/>
           <InterviewFilter emptyLabel="All levels" helpText="Matches any selected level." label="Level" onChange={setLessonLevels} onOpenChange={(nextOpen) => setOpenFilter(nextOpen ? "levels" : null)} open={openFilter === "levels"} options={pythonLevelFilters} selected={levels}/>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
         </div>
