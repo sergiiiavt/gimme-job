@@ -3,11 +3,27 @@
     {
       "name": "dou-qa",
       "url": "https://jobs.dou.ua/vacancies/feeds/?search=QA"
+    },
+    {
+      "name": "djinni-qa",
+      "url": "https://djinni.co/jobs/rss/?primary_keyword=QA"
     }
   ],
   "greenhouse": [],
   "lever": [],
   "ashby": [],
+  "workUa": [
+    {
+      "name": "workua-qa",
+      "query": "QA"
+    }
+  ],
+  "lobbyX": [
+    {
+      "name": "lobbyx-qa",
+      "query": "QA"
+    }
+  ],
   "gmail": {
     "enabled": false,
     "query": "label:JobAlerts newer_than:14d",

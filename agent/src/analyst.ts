@@ -264,7 +264,14 @@ export async function analyzeJob(
     null,
     2,
   );
-  const result = await run(agent, input);
-  if (!result.finalOutput) throw new Error(`Agent returned no structured output for ${job.id}.`);
-  return { pkg: JobPackageSchema.parse(result.finalOutput), mode: "agent" };
+  try {
+    const result = await run(agent, input);
+    if (!result.finalOutput) throw new Error(`Agent returned no structured output for ${job.id}.`);
+    return { pkg: JobPackageSchema.parse(result.finalOutput), mode: "agent" };
+  } catch (error) {
+    console.error(
+      `OpenAI analysis failed for ${job.id}, falling back to deterministic scoring: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return { pkg: deterministicPackage(job, profile), mode: "deterministic" };
+  }
 }

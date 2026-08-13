@@ -41,11 +41,18 @@ export const BoardSourceSchema = z.object({
   board: z.string(),
 });
 
+export const QuerySourceSchema = z.object({
+  name: z.string(),
+  query: z.string(),
+});
+
 export const SourcesConfigSchema = z.object({
   rss: z.array(RssSourceSchema).default([]),
   greenhouse: z.array(BoardSourceSchema).default([]),
   lever: z.array(BoardSourceSchema).default([]),
   ashby: z.array(BoardSourceSchema).default([]),
+  workUa: z.array(QuerySourceSchema).default([]),
+  lobbyX: z.array(QuerySourceSchema).default([]),
   gmail: z.object({
     enabled: z.boolean().default(false),
     query: z.string().default("label:JobAlerts newer_than:14d"),

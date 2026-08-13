@@ -127,15 +127,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .job-facts div:last-child { border: 0; }
 .job-facts dt { color: var(--faint); font-size: 7px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
 .job-facts dd { font-size: 9px; font-weight: 650; margin: 5px 0 0; }
-.skills, .description { border-bottom: 1px solid var(--line); padding: 20px 0; }
+.skills, .description, .resume-preview, .draft-preview { border-bottom: 1px solid var(--line); padding: 20px 0; }
 .description { border: 0; padding-bottom: 0; }
-.skills h3, .description h3 { font-size: 11px; margin: 0 0 13px; }
+.skills h3, .description h3, .resume-preview h3, .draft-preview h3 { font-size: 11px; margin: 0 0 13px; }
 .skills > div { align-items: flex-start; display: grid; gap: 11px; grid-template-columns: 55px 1fr; margin-top: 9px; }
 .skills > div > span { color: var(--faint); font-size: 8px; padding-top: 4px; }
 .skills p { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; }
 .skills em { background: var(--green-soft); border-radius: 5px; color: var(--green); font-size: 8px; font-style: normal; padding: 4px 6px; }
 .skills em.gap { background: var(--amber-soft); color: var(--amber); }
-.description p { color: #56615c; font-size: 11px; line-height: 1.72; margin: 0; max-height: 330px; overflow: auto; white-space: pre-wrap; }
+.description p, .resume-preview pre, .draft-preview pre { color: #56615c; font-family: inherit; font-size: 11px; line-height: 1.72; margin: 0; max-height: 330px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+.resume-preview .section-head, .draft-preview .section-head { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+.resume-preview .section-head h3, .draft-preview .section-head h3 { margin: 0; }
+.draft-subject { font-size: 10px; font-weight: 700; margin: 0 0 8px; }
+.copy-button { background: #fff; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); cursor: pointer; flex-shrink: 0; font-size: 9px; font-weight: 700; padding: 5px 10px; }
+.copy-button:hover { background: var(--line); }
 .empty { align-items: center; color: var(--muted); display: flex; flex-direction: column; gap: 5px; justify-content: center; min-height: 180px; padding: 24px; text-align: center; }
 .empty.large { min-height: 460px; }
 .empty strong { color: var(--ink); font-size: 12px; }
@@ -566,6 +571,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .private-jobs-page { max-width: 1600px; padding-top: 22px; }
 .private-page-heading { align-items: center; display: flex; gap: 14px; }
+.page-actions { display: flex; gap: 10px; }
 .page-intro { align-items: center; margin-bottom: 16px; }
 .page-intro h1 { font-size: clamp(25px, 3vw, 32px); letter-spacing: -.035em; }
 .stat-line { padding: 6px 4px; }
@@ -591,9 +597,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .feedback-buttons button { font-size: 12px; min-height: 41px; }
 .job-facts dt { font-size: 9px; }
 .job-facts dd { font-size: 12px; }
-.skills h3, .description h3 { font-size: 14px; }
+.skills h3, .description h3, .resume-preview h3, .draft-preview h3 { font-size: 14px; }
 .skills > div > span, .skills em { font-size: 11px; }
-.description p { font-size: 14px; }
+.description p, .resume-preview pre, .draft-preview pre { font-size: 14px; }
+.draft-subject { font-size: 12px; }
+.copy-button { font-size: 11px; padding: 6px 12px; }
 .empty strong { font-size: 15px; }
 .empty span { font-size: 12px; }
 .toast { font-size: 12px; }
