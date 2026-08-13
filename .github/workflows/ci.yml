@@ -40,6 +40,9 @@ jobs:
       - name: Validate interview content
         run: npm run check:content
 
+      - name: Validate Rewild visual assets
+        run: npm run check:rewild-assets
+
       - name: Build production artifact
         run: npm run build
 
