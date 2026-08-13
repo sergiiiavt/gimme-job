@@ -990,3 +990,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .rw-guide-grid, .rw-guide-list { grid-template-columns: 1fr; }
   .rw-field-guide { grid-template-columns: 1fr; }
 }
+
+.py-filter-grid { grid-template-columns: minmax(0, 240px) auto; }
+.py-lesson-body { box-shadow: inset 3px 0 #3672b0; grid-template-columns: 1fr; }
+.py-lesson-summary { color: #2f4038; font-size: 13px; font-weight: 650; line-height: 1.6; margin: 0 0 10px; }
+.py-level-beginner { background: #e4f3df; color: #356727; }
+.py-level-intermediate { background: #e8f0f7; color: #365f7d; }
+.py-level-advanced { background: #f5eee1; color: #7d582e; }
+.py-level-expert { background: #eee9f5; color: #60467d; }
+.py-code { background: #1c2723; border-radius: 8px; color: #e3ede4; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.6; margin: 0; overflow-x: auto; padding: 14px 16px; white-space: pre; }
+.py-code-caption { color: #5f6b64; font-size: 11px; line-height: 1.55; margin: 8px 0 0; }
+.py-pitfalls li::before { color: #a9761f; content: "⚠"; }
+.py-exercise summary { color: #3672b0; }
+
+@media (max-width: 560px) {
+  .py-filter-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,472 @@
+{
+  "lessons": [
+    {
+      "id": "py-lesson-iterator-protocol",
+      "moduleId": "iterators-generators-decorators-functional",
+      "level": "Advanced",
+      "title": "The iterator protocol behind for loops",
+      "titleUk": "Протокол ітератора за циклами for",
+      "summary": "Every for loop is sugar for iter() and repeated next(); understanding this lets you build your own iterables.",
+      "summaryUk": "Кожен цикл for — це цукор для iter() і повторного next(); розуміння цього дозволяє будувати власні ітеровані об'єкти.",
+      "concept": "An *iterable* implements `__iter__`, returning an *iterator*; an iterator implements `__iter__` (usually returning itself) and `__next__`, which returns the next value or raises `StopIteration` once exhausted. A `for item in obj:` loop is exactly equivalent to calling `iter(obj)` once, then calling `next()` on the result repeatedly until `StopIteration` is caught and silently stops the loop. Implementing this protocol on your own class lets instances of it be used directly in `for` loops, `list()`, and anywhere else Python expects an iterable, without any special-casing.",
+      "conceptUk": "*Iterable* реалізує `__iter__`, повертаючи *ітератор*; ітератор реалізує `__iter__` (зазвичай повертаючи себе) і `__next__`, що повертає наступне значення чи викликає `StopIteration`, коли вичерпано. Цикл `for item in obj:` точно еквівалентний одноразовому виклику `iter(obj)`, а потім повторному виклику `next()` на результаті, доки `StopIteration` не буде перехоплено й тихо не зупинить цикл. Реалізація цього протоколу у власному класі дозволяє використовувати його екземпляри напряму в циклах `for`, `list()` і будь-де ще, де Python очікує iterable, без жодного спеціального опрацювання.",
+      "keyPoints": [
+        "Iterable implements __iter__ returning an iterator; iterator implements __iter__ and __next__",
+        "for is sugar for iter() once, then next() repeatedly until StopIteration",
+        "Implementing the protocol lets your own class work in for loops, list(), and comprehensions"
+      ],
+      "keyPointsUk": [
+        "Iterable реалізує __iter__, що повертає ітератор; ітератор реалізує __iter__ і __next__",
+        "for — це цукор для одноразового iter(), потім повторного next() до StopIteration",
+        "Реалізація протоколу дозволяє власному класу працювати в циклах for, list() і comprehension"
+      ],
+      "code": "class Countdown:\n    def __init__(self, start):\n        self.current = start\n    def __iter__(self):\n        return self\n    def __next__(self):\n        if self.current <= 0:\n            raise StopIteration\n        self.current -= 1\n        return self.current + 1\n\nfor n in Countdown(3):\n    print(n)  # 3 2 1",
+      "codeCaption": "A hand-written iterator class that works directly in a for loop by implementing __iter__ and __next__.",
+      "codeCaptionUk": "Написаний вручну клас-ітератор, що напряму працює в циклі for через реалізацію __iter__ і __next__.",
+      "pitfalls": [
+        "Forgetting to raise StopIteration eventually makes the iterator (and any for loop over it) run forever",
+        "An object with only __getitem__ but no __iter__ can still work with for in some cases via a legacy fallback, which surprises people relying on the modern protocol"
+      ],
+      "pitfallsUk": [
+        "Забуття врешті-решт викликати StopIteration змушує ітератор (і будь-який цикл for над ним) працювати вічно",
+        "Об'єкт лише з __getitem__, без __iter__, у деяких випадках все ще працює з for через застарілий резервний механізм, що дивує тих, хто покладається на сучасний протокол"
+      ],
+      "exercise": "Write an iterator class Evens(limit) that yields only even numbers from 0 up to (not including) limit, implementing __iter__ and __next__ by hand.",
+      "exerciseUk": "Напишіть клас-ітератор Evens(limit), що видає лише парні числа від 0 до (не включаючи) limit, реалізуючи __iter__ і __next__ вручну.",
+      "tags": ["iterators", "protocols"],
+      "sourceIds": ["python-docs-datamodel", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-generator-functions",
+      "moduleId": "iterators-generators-decorators-functional",
+      "level": "Advanced",
+      "title": "Generator functions and yield",
+      "titleUk": "Функції-генератори та yield",
+      "summary": "yield turns a function into a lazy value producer, radically simpler to write than a manual iterator class.",
+      "summaryUk": "yield перетворює функцію на лінивого виробника значень, радикально простіше писати, ніж клас ітератора вручну.",
+      "concept": "Any function containing at least one `yield` becomes a generator function: calling it does not run the body, it returns a generator object that already implements the full iterator protocol automatically. Each `next()` call resumes the function from where it last paused, runs until the next `yield`, and returns that value, preserving all local state (variables, loop position) between resumptions. This makes generators dramatically simpler to write than the equivalent hand-rolled iterator class from the previous lesson, while staying just as memory-efficient, since values are produced one at a time instead of all at once.",
+      "conceptUk": "Будь-яка функція, що містить хоча б один `yield`, стає функцією-генератором: її виклик не запускає тіло, а повертає об'єкт-генератор, що вже автоматично реалізує повний протокол ітератора. Кожен виклик `next()` відновлює функцію з місця останньої зупинки, виконує до наступного `yield` і повертає це значення, зберігаючи весь локальний стан (змінні, позицію циклу) між відновленнями. Це робить генератори значно простішими для написання за еквівалентний написаний вручну клас ітератора з попереднього уроку, залишаючись водночас так само ефективними за пам'яттю, бо значення виробляються по одному, а не всі одразу.",
+      "keyPoints": [
+        "Any function with yield becomes a generator function; calling it returns a generator, not a result",
+        "Each next() resumes execution right after the last yield, with all local state preserved",
+        "Generators implement the iterator protocol automatically, far less code than a manual class"
+      ],
+      "keyPointsUk": [
+        "Будь-яка функція з yield стає функцією-генератором; її виклик повертає генератор, не результат",
+        "Кожен next() відновлює виконання одразу після останнього yield, зі збереженим усім локальним станом",
+        "Генератори автоматично реалізують протокол ітератора, значно менше коду за клас вручну"
+      ],
+      "code": "def evens(limit):\n    n = 0\n    while n < limit:\n        yield n\n        n += 2\n\nfor n in evens(10):\n    print(n)  # 0 2 4 6 8",
+      "codeCaption": "The same even-numbers logic as the earlier iterator class, expressed in four lines with yield.",
+      "codeCaptionUk": "Та сама логіка парних чисел, що й у попередньому класі ітератора, виражена в чотирьох рядках через yield.",
+      "pitfalls": [
+        "A generator can only be iterated once — a second for loop over the same exhausted generator yields nothing",
+        "Calling a generator function does not run any code inside it until the first next() or the first iteration"
+      ],
+      "pitfallsUk": [
+        "Генератор можна ітерувати лише один раз — другий цикл for над тим самим вичерпаним генератором нічого не дає",
+        "Виклик функції-генератора не виконує жодного коду всередині, доки не станеться перший next() чи перша ітерація"
+      ],
+      "exercise": "Rewrite the Evens(limit) iterator class from the previous lesson as a generator function using yield, and confirm it produces the same values.",
+      "exerciseUk": "Перепишіть клас-ітератор Evens(limit) з попереднього уроку як функцію-генератор через yield і підтвердьте, що вона дає ті самі значення.",
+      "tags": ["generators", "yield"],
+      "sourceIds": ["python-docs-language-reference", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-decorators",
+      "moduleId": "iterators-generators-decorators-functional",
+      "level": "Advanced",
+      "title": "Writing your own decorators",
+      "titleUk": "Написання власних декораторів",
+      "summary": "@decorator is sugar for func = decorator(func); a decorator wraps a function to add behavior around it.",
+      "summaryUk": "@decorator — цукор для func = decorator(func); декоратор обгортає функцію, щоб додати поведінку навколо неї.",
+      "concept": "A decorator is a function that takes another function as its argument and returns a replacement, typically a `wrapper` that calls the original and adds behavior before or after it. Writing `@timer` directly above `def slow_task():` is exactly equivalent to defining `slow_task` normally and then writing `slow_task = timer(slow_task)` — the `@` syntax is just a readable shorthand for that rebinding. Using `functools.wraps(func)` inside the wrapper preserves the original function's `__name__` and `__doc__`, which matters for debugging, introspection, and tools that display function names.",
+      "conceptUk": "Декоратор — це функція, що приймає іншу функцію як аргумент і повертає заміну, зазвичай `wrapper`, що викликає оригінал і додає поведінку до чи після нього. Написання `@timer` прямо над `def slow_task():` точно еквівалентне звичайному визначенню `slow_task`, а потім написанню `slow_task = timer(slow_task)` — синтаксис `@` просто читабельне скорочення для цього повторного прив'язування. Використання `functools.wraps(func)` усередині обгортки зберігає `__name__` і `__doc__` оригінальної функції, що важливо для налагодження, інтроспекції й інструментів, що показують імена функцій.",
+      "keyPoints": [
+        "@decorator above a function is sugar for func = decorator(func)",
+        "A decorator returns a wrapper function that calls the original and adds behavior",
+        "functools.wraps(func) inside the wrapper preserves __name__ and __doc__"
+      ],
+      "keyPointsUk": [
+        "@decorator над функцією — цукор для func = decorator(func)",
+        "Декоратор повертає функцію-обгортку, що викликає оригінал і додає поведінку",
+        "functools.wraps(func) усередині обгортки зберігає __name__ і __doc__"
+      ],
+      "code": "import functools, time\n\ndef timer(func):\n    @functools.wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        print(f\"{func.__name__} took {time.perf_counter() - start:.4f}s\")\n        return result\n    return wrapper\n\n@timer\ndef slow_task():\n    time.sleep(0.1)\n\nslow_task()",
+      "codeCaption": "A reusable timer decorator that measures and prints any decorated function's execution time.",
+      "codeCaptionUk": "Повторно використовуваний декоратор timer, що вимірює й друкує час виконання будь-якої декорованої функції.",
+      "pitfalls": [
+        "Forgetting *args, **kwargs in the wrapper breaks decorating any function that takes arguments",
+        "Skipping functools.wraps makes decorated_func.__name__ report \"wrapper\" instead of the real function name"
+      ],
+      "pitfallsUk": [
+        "Забуття *args, **kwargs в обгортці ламає декорування будь-якої функції з аргументами",
+        "Пропуск functools.wraps робить так, що decorated_func.__name__ показує «wrapper» замість реальної назви функції"
+      ],
+      "exercise": "Write a @log_calls decorator that prints the function name and its arguments every time the decorated function is called, using functools.wraps correctly.",
+      "exerciseUk": "Напишіть декоратор @log_calls, що друкує назву функції та її аргументи щоразу, коли декоровану функцію викликають, коректно використовуючи functools.wraps.",
+      "tags": ["decorators", "functools"],
+      "sourceIds": ["python-docs-functools", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-closures",
+      "moduleId": "iterators-generators-decorators-functional",
+      "level": "Advanced",
+      "title": "Closures: functions that remember their environment",
+      "titleUk": "Замикання: функції, що пам'ятають своє оточення",
+      "summary": "An inner function can capture and reuse variables from its enclosing function even after that function returns.",
+      "summaryUk": "Внутрішня функція може захопити й повторно використовувати змінні охоплюючої функції навіть після її завершення.",
+      "concept": "When a function defined inside another function references a variable from the outer function's scope, Python keeps that variable alive as part of a *closure* even after the outer function has already returned — the inner function \"closes over\" that variable. This is the mechanism behind decorators and behind factory functions that produce customized functions, like a `make_multiplier(factor)` that returns a function remembering its own `factor`. To modify (not just read) an enclosing variable from inside the inner function, you must declare it `nonlocal` first.",
+      "conceptUk": "Коли функція, визначена всередині іншої функції, посилається на змінну з області видимості зовнішньої функції, Python тримає цю змінну живою як частину *замикання* навіть після того, як зовнішня функція вже повернулася — внутрішня функція «замикається» на цій змінній. Це механізм за декораторами й фабричними функціями, що виробляють кастомізовані функції, як `make_multiplier(factor)`, що повертає функцію, яка пам'ятає власний `factor`. Щоб змінити (не лише прочитати) охоплюючу змінну зсередини внутрішньої функції, потрібно спершу оголосити її `nonlocal`.",
+      "keyPoints": [
+        "An inner function captures variables from its enclosing scope, kept alive after the outer function returns",
+        "Factory functions like make_multiplier(factor) use closures to produce customized functions",
+        "Modifying (not just reading) an enclosing variable requires an explicit nonlocal declaration"
+      ],
+      "keyPointsUk": [
+        "Внутрішня функція захоплює змінні з охоплюючої області, які лишаються живими після повернення зовнішньої функції",
+        "Фабричні функції на кшталт make_multiplier(factor) використовують замикання для вироблення кастомізованих функцій",
+        "Зміна (не лише читання) охоплюючої змінної потребує явного оголошення nonlocal"
+      ],
+      "code": "def make_multiplier(factor):\n    def multiply(value):\n        return value * factor\n    return multiply\n\ndouble = make_multiplier(2)\ntriple = make_multiplier(3)\nprint(double(5), triple(5))  # 10 15",
+      "codeCaption": "Two independent closures, each remembering its own factor from when make_multiplier was called.",
+      "codeCaptionUk": "Два незалежні замикання, кожне пам'ятає власний factor з моменту виклику make_multiplier.",
+      "pitfalls": [
+        "Closures created inside a loop that reference the loop variable directly all share the same final value once called",
+        "Trying to reassign an enclosing variable inside the inner function without nonlocal creates a new local variable instead"
+      ],
+      "pitfallsUk": [
+        "Замикання, створені в циклі, що посилаються напряму на змінну циклу, усі ділять те саме кінцеве значення при виклику",
+        "Спроба повторно присвоїти охоплюючу змінну всередині внутрішньої функції без nonlocal натомість створює нову локальну змінну"
+      ],
+      "exercise": "Write make_counter() that returns a function which increments and returns an internal count each time it's called, using nonlocal to modify the enclosed count variable.",
+      "exerciseUk": "Напишіть make_counter(), що повертає функцію, яка збільшує й повертає внутрішній лічильник щоразу при виклику, використовуючи nonlocal для зміни захопленої змінної count.",
+      "tags": ["closures", "scope"],
+      "sourceIds": ["python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-functional-tools",
+      "moduleId": "iterators-generators-decorators-functional",
+      "level": "Advanced",
+      "title": "First-class functions and functional idioms",
+      "titleUk": "Функції першого класу й функціональні ідіоми",
+      "summary": "Functions are values like any other; this enables passing behavior around, not just data.",
+      "summaryUk": "Функції — значення, як і будь-які інші; це дозволяє передавати поведінку, а не лише дані.",
+      "concept": "Because functions are first-class objects in Python, they can be stored in variables and data structures, passed as arguments, and returned from other functions — this is what makes `sorted(items, key=some_function)`, `map()`, `filter()`, and decorators possible at all. A dict mapping strings to functions (`{\"add\": add, \"sub\": subtract}`) is a common, readable alternative to a long `if/elif` chain when dispatching behavior by name. List comprehensions are generally preferred over `map()`/`filter()` in modern Python for readability, but understanding the functional versions still helps when reading library code or working with tools that expect a plain callable.",
+      "conceptUk": "Оскільки функції в Python — об'єкти першого класу, їх можна зберігати у змінних і структурах даних, передавати як аргументи й повертати з інших функцій — саме це взагалі уможливлює `sorted(items, key=some_function)`, `map()`, `filter()` і декоратори. Словник, що відображає рядки на функції (`{\"add\": add, \"sub\": subtract}`), — поширена, читабельна альтернатива довгому ланцюжку `if/elif` при диспетчеризації поведінки за іменем. List comprehension зазвичай надається перевага над `map()`/`filter()` в сучасному Python для читабельності, але розуміння функціональних версій усе ще допомагає при читанні коду бібліотек чи роботі з інструментами, що очікують звичайну виклику сутність.",
+      "keyPoints": [
+        "Functions can be stored, passed, and returned like any other value",
+        "A dict of name-to-function mappings is a clean alternative to a long if/elif dispatch chain",
+        "Comprehensions are generally preferred over map()/filter() for readability in modern code"
+      ],
+      "keyPointsUk": [
+        "Функції можна зберігати, передавати й повертати, як будь-яке інше значення",
+        "Словник відображень ім'я-на-функцію — чиста альтернатива довгому ланцюжку диспетчеризації if/elif",
+        "Comprehension зазвичай надається перевага над map()/filter() для читабельності в сучасному коді"
+      ],
+      "code": "def add(a, b): return a + b\ndef subtract(a, b): return a - b\n\noperations = {\"+\": add, \"-\": subtract}\n\ndef calculate(a, op, b):\n    return operations[op](a, b)\n\nprint(calculate(5, \"+\", 3))  # 8",
+      "codeCaption": "Dispatching behavior through a dict of functions instead of a chain of if/elif statements.",
+      "codeCaptionUk": "Диспетчеризація поведінки через словник функцій замість ланцюжка операторів if/elif.",
+      "pitfalls": [
+        "operations[\"*\"](5, 3) raises KeyError for an operator not in the dict — validate the key first, or use .get() with a fallback",
+        "Overusing dict-based dispatch for only two or three simple cases can be less readable than a short if/elif"
+      ],
+      "pitfallsUk": [
+        "operations[\"*\"](5, 3) викликає KeyError для оператора, якого немає в словнику — спершу валідуйте ключ чи використовуйте .get() з резервним варіантом",
+        "Надмірне використання диспетчеризації через словник лише для двох-трьох простих випадків може бути менш читабельним за короткий if/elif"
+      ],
+      "exercise": "Extend the calculate() dispatch dict with multiplication and division operators, handling division by zero and an unknown operator with clear error messages.",
+      "exerciseUk": "Розширте словник диспетчеризації calculate() операторами множення й ділення, обробляючи ділення на нуль і невідомий оператор чіткими повідомленнями про помилки.",
+      "tags": ["functional-programming", "first-class-functions"],
+      "sourceIds": ["python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-type-hints",
+      "moduleId": "typing-testing-tooling",
+      "level": "Advanced",
+      "title": "Type hints and static checking with mypy",
+      "titleUk": "Анотації типів і статична перевірка через mypy",
+      "summary": "Type hints document intent and let a separate tool catch mismatches before the code ever runs.",
+      "summaryUk": "Анотації типів документують намір і дозволяють окремому інструменту виявляти невідповідності до запуску коду.",
+      "concept": "Writing `def total(prices: list[float]) -> float:` documents the expected argument and return types, but the interpreter itself never checks or enforces them at runtime — annotations are pure metadata. The value comes from running a separate static type checker like `mypy` over the codebase, which reads the hints and every code path to flag inconsistencies, like passing a `str` where a `float` was declared, before the code is ever executed. `X | None` (Python 3.10+) marks a value as optional, and `list[str]`, `dict[str, int]` express generic container contents directly using the built-in types.",
+      "conceptUk": "Написання `def total(prices: list[float]) -> float:` документує очікувані типи аргументу й значення, що повертається, але сам інтерпретатор ніколи не перевіряє й не примушує їх під час виконання — анотації суто метадані. Цінність йде від запуску окремого статичного перевіряльника типів на кшталт `mypy` над кодовою базою, який читає анотації та кожен шлях коду, щоб позначити невідповідності, наприклад передачу `str` там, де оголошено `float`, ще до виконання коду. `X | None` (Python 3.10+) позначає значення як опційне, а `list[str]`, `dict[str, int]` напряму виражають вміст узагальнених контейнерів, використовуючи вбудовані типи.",
+      "keyPoints": [
+        "Type hints are metadata; the interpreter never enforces them at runtime",
+        "mypy (or pyright) reads hints and reports inconsistencies before code runs",
+        "X | None marks optional values; list[str]/dict[str, int] express generic container contents"
+      ],
+      "keyPointsUk": [
+        "Анотації типів — метадані; інтерпретатор ніколи не примушує їх під час виконання",
+        "mypy (чи pyright) читає анотації й звітує невідповідності до запуску коду",
+        "X | None позначає опційні значення; list[str]/dict[str, int] виражають вміст узагальнених контейнерів"
+      ],
+      "code": "def find_user(user_id: int, users: dict[int, str]) -> str | None:\n    return users.get(user_id)\n\n# mypy app.py would flag this call as an error:\n# find_user(\"5\", {1: \"Ana\"})",
+      "codeCaption": "A fully type-hinted function; a static checker (not the interpreter) would catch a wrong-typed call.",
+      "codeCaptionUk": "Повністю анотована типами функція; статичний перевіряльник (не інтерпретатор) виявив би виклик з неправильним типом.",
+      "pitfalls": [
+        "Believing type hints prevent runtime errors — they only help if a checker is actually run, e.g. in CI",
+        "Forgetting -> None on a function that has no meaningful return value is a common inconsistency mypy flags"
+      ],
+      "pitfallsUk": [
+        "Віра, що анотації типів запобігають помилкам виконання — вони допомагають, лише якщо перевіряльник справді запускається, наприклад у CI",
+        "Забуття -> None для функції без значущого значення, що повертається, — поширена невідповідність, яку позначає mypy"
+      ],
+      "exercise": "Add complete type hints to a small function of your choice, install mypy, and run it against the file to see what, if anything, it flags.",
+      "exerciseUk": "Додайте повні анотації типів до невеликої функції на власний вибір, встановіть mypy й запустіть його на файлі, щоб побачити, що (якщо взагалі щось) він позначить.",
+      "tags": ["typing", "mypy"],
+      "sourceIds": ["python-docs-typing", "pep-484"]
+    },
+    {
+      "id": "py-lesson-pytest-basics",
+      "moduleId": "typing-testing-tooling",
+      "level": "Advanced",
+      "title": "Writing tests with pytest",
+      "titleUk": "Написання тестів через pytest",
+      "summary": "plain assert statements, test discovery by naming convention, and fixtures for shared setup.",
+      "summaryUk": "звичайні оператори assert, виявлення тестів за угодою іменування, і фікстури для спільного налаштування.",
+      "concept": "pytest discovers any function named `test_*` inside a file named `test_*.py` (or `*_test.py`) automatically, with no registration needed, and a plain `assert expression` is enough to make a test fail with a detailed, automatically-generated explanation of what went wrong — no special assertion methods required. `@pytest.fixture` defines reusable setup (and, after a `yield`, teardown) that any test can request simply by naming it as a parameter, and `@pytest.mark.parametrize` runs the same test body once per given set of inputs, reporting each as an independent pass/fail result.",
+      "conceptUk": "pytest автоматично виявляє будь-яку функцію з іменем `test_*` усередині файлу з іменем `test_*.py` (чи `*_test.py`), без потреби реєстрації, а звичайного `assert expression` достатньо, щоб тест провалився з детальним, автоматично згенерованим поясненням, що пішло не так — жодних спеціальних методів перевірки не потрібно. `@pytest.fixture` визначає повторно використовуване налаштування (і, після `yield`, очищення), яке будь-який тест може запросити, просто назвавши його параметром, а `@pytest.mark.parametrize` запускає те саме тіло тесту раз для кожного заданого набору вхідних даних, звітуючи кожен як незалежний результат пройдено/провалено.",
+      "keyPoints": [
+        "test_*.py files with test_* functions are discovered automatically, no registration needed",
+        "Plain assert is enough; pytest generates a detailed failure explanation automatically",
+        "@pytest.fixture provides reusable setup/teardown; @pytest.mark.parametrize runs one test per input set"
+      ],
+      "keyPointsUk": [
+        "Файли test_*.py з функціями test_* виявляються автоматично, без реєстрації",
+        "Звичайного assert достатньо; pytest автоматично генерує детальне пояснення провалу",
+        "@pytest.fixture надає повторно використовуване налаштування/очищення; @pytest.mark.parametrize запускає тест раз на набір вхідних даних"
+      ],
+      "code": "# test_math_utils.py\nimport pytest\nfrom math_utils import divide\n\n@pytest.mark.parametrize(\"a,b,expected\", [(10, 2, 5), (9, 3, 3)])\ndef test_divide(a, b, expected):\n    assert divide(a, b) == expected\n\ndef test_divide_by_zero_raises():\n    with pytest.raises(ZeroDivisionError):\n        divide(1, 0)",
+      "codeCaption": "A parametrized test covering multiple input combinations, plus a test that asserts an exception is raised.",
+      "codeCaptionUk": "Параметризований тест, що охоплює кілька комбінацій вхідних даних, плюс тест, що перевіряє виклик винятку.",
+      "pitfalls": [
+        "Test functions not prefixed with test_ are silently skipped by pytest's discovery",
+        "Forgetting pytest.raises(...) around code expected to fail means the test only passes if it does NOT raise, the opposite of the intent"
+      ],
+      "pitfallsUk": [
+        "Тестові функції без префікса test_ тихо пропускаються виявленням pytest",
+        "Забуття pytest.raises(...) навколо коду, що має провалитись, означає, що тест проходить, лише якщо винятку НЕ сталося — протилежне до наміру"
+      ],
+      "exercise": "Write parametrized pytest tests for the is_palindrome(text) function from an earlier lesson, covering an empty string, a single character, and a mixed-case palindrome.",
+      "exerciseUk": "Напишіть параметризовані тести pytest для функції is_palindrome(text) з попереднього уроку, охоплюючи порожній рядок, один символ і паліндром зі змішаним регістром.",
+      "tags": ["pytest", "testing"],
+      "sourceIds": ["pytest-docs"]
+    },
+    {
+      "id": "py-lesson-linters-and-formatters",
+      "moduleId": "typing-testing-tooling",
+      "level": "Advanced",
+      "title": "Linters and formatters in a normal workflow",
+      "titleUk": "Лінтери й форматери у звичайному робочому процесі",
+      "summary": "A formatter enforces one consistent style automatically; a linter catches likely bugs and style violations.",
+      "summaryUk": "Форматер автоматично забезпечує один послідовний стиль; лінтер виявляє ймовірні баги й порушення стилю.",
+      "concept": "A formatter like `black` or `ruff format` rewrites code into one deterministic style — spacing, line breaks, quote style — removing style debates from code review entirely, since the tool decides and everyone's code ends up looking the same. A linter like `ruff` or `flake8` instead analyzes code for likely bugs (an unused import, a variable that shadows a built-in, a comparison that is always false) and PEP 8 style violations, without changing the code itself. Running both automatically before every commit, via a pre-commit hook or CI check, keeps a codebase consistently clean without relying on manual review to catch every issue.",
+      "conceptUk": "Форматер на кшталт `black` чи `ruff format` переписує код в один детермінований стиль — відступи, розриви рядків, стиль лапок — повністю усуваючи суперечки про стиль з код-рев'ю, бо інструмент вирішує, і код усіх виглядає однаково. Лінтер на кшталт `ruff` чи `flake8` натомість аналізує код на ймовірні баги (невикористаний імпорт, змінна, що затінює вбудовану, порівняння, що завжди хибне) і порушення стилю PEP 8, не змінюючи сам код. Автоматичний запуск обох перед кожним комітом, через pre-commit хук чи перевірку CI, тримає кодову базу послідовно чистою, не покладаючись на ручне рев'ю для виявлення кожної проблеми.",
+      "keyPoints": [
+        "A formatter (black, ruff format) rewrites code into one deterministic style automatically",
+        "A linter (ruff, flake8) flags likely bugs and style violations without changing code",
+        "Running both automatically in CI or a pre-commit hook keeps a codebase consistently clean"
+      ],
+      "keyPointsUk": [
+        "Форматер (black, ruff format) автоматично переписує код в один детермінований стиль",
+        "Лінтер (ruff, flake8) позначає ймовірні баги й порушення стилю, не змінюючи код",
+        "Автоматичний запуск обох у CI чи pre-commit хуці тримає кодову базу послідовно чистою"
+      ],
+      "code": "# pyproject.toml\n[tool.ruff]\nline-length = 100\n\n[tool.ruff.lint]\nselect = [\"E\", \"F\", \"I\"]\n\n# command line\nruff format .\nruff check .",
+      "codeCaption": "Configuring ruff in pyproject.toml, then formatting and linting the whole project from the command line.",
+      "codeCaptionUk": "Налаштування ruff у pyproject.toml, потім форматування й лінтинг усього проєкту з командного рядка.",
+      "pitfalls": [
+        "Ignoring a linter warning by disabling the whole rule project-wide instead of fixing the specific case hides real future bugs",
+        "Running a formatter without a CI check to enforce it means unformatted code can still be committed by mistake"
+      ],
+      "pitfallsUk": [
+        "Ігнорування попередження лінтера вимкненням усього правила для всього проєкту замість виправлення конкретного випадку приховує реальні майбутні баги",
+        "Запуск форматера без перевірки CI, що це забезпечує, означає, що невідформатований код все ще можна помилково закомітити"
+      ],
+      "exercise": "Install ruff, run `ruff check .` on a small existing script of yours, and fix the first three issues it reports.",
+      "exerciseUk": "Встановіть ruff, запустіть `ruff check .` на невеликому наявному вашому скрипті й виправте перші три проблеми, які він повідомить.",
+      "tags": ["tooling", "linting", "formatting"],
+      "sourceIds": ["packaging-guide", "pep-8"]
+    },
+    {
+      "id": "py-lesson-project-structure",
+      "moduleId": "typing-testing-tooling",
+      "level": "Advanced",
+      "title": "Structuring a real Python project",
+      "titleUk": "Структурування реального проєкту Python",
+      "summary": "A conventional layout — src/, tests/, pyproject.toml — makes a project immediately recognizable and installable.",
+      "summaryUk": "Звичайне розташування — src/, tests/, pyproject.toml — робить проєкт одразу впізнаваним і встановлюваним.",
+      "concept": "A common, well-understood layout puts the installable package under `src/package_name/`, tests in a parallel `tests/` directory (mirroring the package's internal structure), and a `pyproject.toml` at the project root declaring metadata, dependencies and tool configuration in one place. The `src/` layout (versus putting the package directly at the project root) specifically prevents accidentally importing the local, possibly-stale source instead of the properly installed package during testing, catching packaging mistakes that a flat layout can hide. This structure is what most tooling — pytest, build backends, IDEs — expects by convention, minimizing custom configuration.",
+      "conceptUk": "Поширене, добре зрозуміле розташування розміщує встановлюваний пакет під `src/package_name/`, тести — у паралельному каталозі `tests/` (що віддзеркалює внутрішню структуру пакета), а `pyproject.toml` — у корені проєкту, оголошуючи метадані, залежності й конфігурацію інструментів в одному місці. Розташування `src/` (проти розміщення пакета прямо в корені проєкту) конкретно запобігає випадковому імпорту локального, можливо застарілого джерела замість належно встановленого пакета під час тестування, виявляючи помилки пакування, які плоске розташування може приховати. Ця структура — те, чого більшість інструментів — pytest, бекенди збирання, IDE — очікують за угодою, мінімізуючи власну конфігурацію.",
+      "keyPoints": [
+        "The src/package_name/ layout, with a parallel tests/ directory, is the conventional shape",
+        "src/ layout prevents accidentally testing against stale local source instead of the installed package",
+        "One pyproject.toml at the root declares metadata, dependencies and tool configuration together"
+      ],
+      "keyPointsUk": [
+        "Розташування src/package_name/ з паралельним каталогом tests/ — звичайна форма",
+        "Розташування src/ запобігає випадковому тестуванню застарілого локального джерела замість встановленого пакета",
+        "Один pyproject.toml у корені разом оголошує метадані, залежності й конфігурацію інструментів"
+      ],
+      "code": "myproject/\n  pyproject.toml\n  src/\n    myproject/\n      __init__.py\n      core.py\n  tests/\n    test_core.py\n  README.md",
+      "codeCaption": "A conventional src-layout project structure that most Python tooling recognizes without extra configuration.",
+      "codeCaptionUk": "Звичайна структура проєкту з розташуванням src, яку розпізнає більшість інструментів Python без додаткової конфігурації.",
+      "pitfalls": [
+        "Putting the package directly at the project root (flat layout) can let tests accidentally import uninstalled local source",
+        "Scattering configuration across setup.cfg, setup.py, and separate tool config files instead of consolidating in pyproject.toml adds unnecessary complexity"
+      ],
+      "pitfallsUk": [
+        "Розміщення пакета прямо в корені проєкту (плоске розташування) може дозволити тестам випадково імпортувати невстановлене локальне джерело",
+        "Розкидання конфігурації по setup.cfg, setup.py й окремих файлах конфігурації інструментів замість консолідації в pyproject.toml додає непотрібну складність"
+      ],
+      "exercise": "Reorganize a flat script-based project of yours into a src-layout package with a pyproject.toml and a tests/ directory, then confirm `pip install -e .` and pytest both still work.",
+      "exerciseUk": "Реорганізуйте свій плаский проєкт на основі скриптів у пакет з розташуванням src, з pyproject.toml і каталогом tests/, потім підтвердьте, що `pip install -e .` і pytest все ще працюють.",
+      "tags": ["project-structure", "tooling"],
+      "sourceIds": ["packaging-guide", "pytest-docs"]
+    },
+    {
+      "id": "py-lesson-threading-basics",
+      "moduleId": "concurrency",
+      "level": "Advanced",
+      "title": "Threading for I/O-bound work",
+      "titleUk": "Threading для роботи, прив'язаної до I/O",
+      "summary": "Threads overlap waiting time for I/O-bound tasks; the GIL means they don't speed up pure computation.",
+      "summaryUk": "Потоки перекривають час очікування для I/O-прив'язаних задач; GIL означає, що вони не пришвидшують чисті обчислення.",
+      "concept": "`threading.Thread(target=func, args=(...)).start()` runs `func` concurrently with the rest of the program; `concurrent.futures.ThreadPoolExecutor` offers a higher-level way to run many such calls and collect their results via `.map()` or `.submit()`. Because CPython's Global Interpreter Lock allows only one thread to execute Python bytecode at a time, threads only provide real speedup for I/O-bound work — network requests, file access — where the GIL is released while waiting; they do not parallelize CPU-bound computation. Shared mutable state accessed from multiple threads needs a `threading.Lock` to avoid race conditions on compound operations.",
+      "conceptUk": "`threading.Thread(target=func, args=(...)).start()` запускає `func` паралельно з рештою програми; `concurrent.futures.ThreadPoolExecutor` пропонує вищий рівень для запуску багатьох таких викликів і збору їхніх результатів через `.map()` чи `.submit()`. Оскільки глобальне блокування інтерпретатора CPython дозволяє лише одному потоку виконувати байткод Python одночасно, потоки дають реальне пришвидшення лише для роботи, прив'язаної до I/O — мережеві запити, доступ до файлів — де GIL звільняється під час очікування; вони не паралелізують обчислення, прив'язані до CPU. Спільний змінюваний стан, доступний з кількох потоків, потребує `threading.Lock`, щоб уникнути станів гонки на складених операціях.",
+      "keyPoints": [
+        "Threads only speed up I/O-bound work, not CPU-bound computation, because of the GIL",
+        "ThreadPoolExecutor.map()/.submit() is the higher-level way to run many concurrent calls",
+        "Shared mutable state across threads needs a Lock to avoid race conditions"
+      ],
+      "keyPointsUk": [
+        "Потоки пришвидшують лише роботу, прив'язану до I/O, не обчислення, прив'язані до CPU, через GIL",
+        "ThreadPoolExecutor.map()/.submit() — вищий рівень для запуску багатьох паралельних викликів",
+        "Спільний змінюваний стан між потоками потребує Lock, щоб уникнути станів гонки"
+      ],
+      "code": "from concurrent.futures import ThreadPoolExecutor\nimport requests\n\nurls = [\"https://example.com\"] * 5\n\nwith ThreadPoolExecutor(max_workers=5) as pool:\n    responses = list(pool.map(requests.get, urls))\n\nprint([r.status_code for r in responses])",
+      "codeCaption": "Fetching five URLs concurrently with a thread pool, overlapping their network wait time.",
+      "codeCaptionUk": "Паралельне отримання п'яти URL через пул потоків, з перекриттям часу мережевого очікування.",
+      "pitfalls": [
+        "Using threads for a CPU-bound loop (like heavy math) gives no real speedup because of the GIL",
+        "Incrementing a shared counter from multiple threads without a Lock can silently lose updates"
+      ],
+      "pitfallsUk": [
+        "Використання потоків для циклу, прив'язаного до CPU (як важка математика), не дає реального пришвидшення через GIL",
+        "Збільшення спільного лічильника з кількох потоків без Lock може тихо втратити оновлення"
+      ],
+      "exercise": "Write a script that downloads 10 URLs sequentially, time it, then rewrite it using ThreadPoolExecutor and compare the time difference.",
+      "exerciseUk": "Напишіть скрипт, що послідовно завантажує 10 URL, виміряйте час, потім перепишіть його через ThreadPoolExecutor і порівняйте різницю часу.",
+      "tags": ["threading", "concurrency"],
+      "sourceIds": ["python-docs-threading", "python-docs-free-threading"]
+    },
+    {
+      "id": "py-lesson-multiprocessing-basics",
+      "moduleId": "concurrency",
+      "level": "Advanced",
+      "title": "Multiprocessing for CPU-bound work",
+      "titleUk": "Multiprocessing для роботи, прив'язаної до CPU",
+      "summary": "Separate processes each get their own interpreter and GIL, giving true parallelism for heavy computation.",
+      "summaryUk": "Окремі процеси кожен отримує власний інтерпретатор і GIL, даючи справжню паралельність для важких обчислень.",
+      "concept": "`concurrent.futures.ProcessPoolExecutor` runs work across multiple separate operating-system processes, each with its own Python interpreter and its own GIL, so CPU-bound work genuinely runs in parallel across cores — unlike threading. The trade-off: since each process has separate memory, arguments, and return values must be pickled to cross the process boundary, so they cannot be a `lambda` or contain unpicklable objects like open file handles, and process startup has real overhead, making this approach worthwhile mainly for substantial, genuinely CPU-heavy chunks of work rather than many tiny tasks.",
+      "conceptUk": "`concurrent.futures.ProcessPoolExecutor` розподіляє роботу між кількома окремими процесами операційної системи, кожен з власним інтерпретатором Python і власним GIL, тож робота, прив'язана до CPU, справді виконується паралельно на кількох ядрах — на відміну від threading. Компроміс: оскільки кожен процес має окрему пам'ять, аргументи й значення, що повертаються, мають бути серіалізовані (pickle) для перетину межі процесу, тож вони не можуть бути `lambda` чи містити непридатні для pickle об'єкти на кшталт відкритих файлових дескрипторів, а запуск процесу має реальні накладні витрати, роблячи цей підхід вартим уваги переважно для суттєвих, справді важких за CPU шматків роботи, а не багатьох крихітних задач.",
+      "keyPoints": [
+        "Each process gets its own interpreter and GIL, giving true parallelism for CPU-bound work",
+        "Arguments and return values must be picklable to cross the process boundary",
+        "Process startup has real overhead — best for substantial, genuinely CPU-heavy work"
+      ],
+      "keyPointsUk": [
+        "Кожен процес отримує власний інтерпретатор і GIL, даючи справжню паралельність для роботи, прив'язаної до CPU",
+        "Аргументи й значення, що повертаються, мають бути придатні для pickle для перетину межі процесу",
+        "Запуск процесу має реальні накладні витрати — найкраще для суттєвої, справді важкої за CPU роботи"
+      ],
+      "code": "from concurrent.futures import ProcessPoolExecutor\n\ndef is_prime(n):\n    return n > 1 and all(n % d for d in range(2, int(n ** 0.5) + 1))\n\nif __name__ == \"__main__\":\n    with ProcessPoolExecutor() as pool:\n        results = list(pool.map(is_prime, range(2, 100000)))\n    print(sum(results), \"primes found\")",
+      "codeCaption": "Checking primality across a large range in parallel across CPU cores using a process pool.",
+      "codeCaptionUk": "Паралельна перевірка простоти на великому діапазоні на кількох ядрах CPU через пул процесів.",
+      "pitfalls": [
+        "pool.map(lambda n: n * 2, data) raises a pickling error — use a module-level function instead of a lambda",
+        "Multiprocessing code on Windows must be guarded by if __name__ == \"__main__\": or it re-imports and re-runs unexpectedly"
+      ],
+      "pitfallsUk": [
+        "pool.map(lambda n: n * 2, data) викликає помилку pickle — використовуйте функцію рівня модуля замість lambda",
+        "Код multiprocessing на Windows має бути захищений через if __name__ == \"__main__\": інакше він несподівано повторно імпортується й виконується"
+      ],
+      "exercise": "Write a CPU-heavy function (like computing the sum of squares up to a large n for many different n values) and compare its total runtime with a plain loop versus ProcessPoolExecutor.map().",
+      "exerciseUk": "Напишіть важку за CPU функцію (як обчислення суми квадратів до великого n для багатьох різних n) і порівняйте загальний час виконання зі звичайним циклом проти ProcessPoolExecutor.map().",
+      "tags": ["multiprocessing", "concurrency"],
+      "sourceIds": ["python-docs-multiprocessing"]
+    },
+    {
+      "id": "py-lesson-asyncio-basics",
+      "moduleId": "concurrency",
+      "level": "Advanced",
+      "title": "asyncio and async/await",
+      "titleUk": "asyncio та async/await",
+      "summary": "Cooperative concurrency on a single thread: coroutines take turns at await points instead of running in parallel.",
+      "summaryUk": "Кооперативна конкурентність в одному потоці: корутини по черзі проходять точки await замість паралельного виконання.",
+      "concept": "`async def` defines a coroutine function; calling it does not run its body, it returns a coroutine object that must be `await`ed or scheduled to actually run. Inside a coroutine, `await other_coroutine()` pauses that coroutine at an I/O wait point, letting the event loop run other ready coroutines in the meantime, then resumes once the awaited operation completes — this is cooperative multitasking on a single thread, not true parallelism. `asyncio.gather(*coroutines)` runs several coroutines concurrently and collects their results in order, which is the standard way to fire off many independent async operations at once.",
+      "conceptUk": "`async def` визначає функцію-корутину; її виклик не запускає тіло, а повертає об'єкт-корутину, який має бути `await`-нутий чи запланований, щоб реально виконатися. Усередині корутини `await other_coroutine()` призупиняє цю корутину в точці очікування I/O, дозволяючи циклу подій тим часом виконувати інші готові корутини, а потім відновлює її, щойно очікувана операція завершиться — це кооперативна багатозадачність в одному потоці, не справжня паралельність. `asyncio.gather(*coroutines)` паралельно запускає кілька корутин і збирає їхні результати по порядку — стандартний спосіб одночасно запустити багато незалежних асинхронних операцій.",
+      "keyPoints": [
+        "async def creates a coroutine function; calling it just returns an object, it doesn't run yet",
+        "await pauses at an I/O wait point, letting other coroutines run — cooperative, not parallel",
+        "asyncio.gather(*coroutines) runs several concurrently and collects ordered results"
+      ],
+      "keyPointsUk": [
+        "async def створює функцію-корутину; її виклик просто повертає об'єкт, ще не виконується",
+        "await призупиняє в точці очікування I/O, дозволяючи виконуватись іншим корутинам — кооперативно, не паралельно",
+        "asyncio.gather(*coroutines) паралельно запускає кілька й збирає впорядковані результати"
+      ],
+      "code": "import asyncio\n\nasync def fetch(name, delay):\n    await asyncio.sleep(delay)\n    return f\"{name} done\"\n\nasync def main():\n    results = await asyncio.gather(fetch(\"a\", 1), fetch(\"b\", 1), fetch(\"c\", 1))\n    print(results)  # all three finish in ~1s total, not 3s\n\nasyncio.run(main())",
+      "codeCaption": "Three coroutines that each \"wait\" one second, but run concurrently and finish in about one second total.",
+      "codeCaptionUk": "Три корутини, кожна з яких «чекає» одну секунду, але виконуються паралельно й завершуються приблизно за одну секунду загалом.",
+      "pitfalls": [
+        "Calling an async function without await (or asyncio.run/gather) just creates a coroutine object and does nothing",
+        "A coroutine that does real CPU work without ever awaiting blocks the entire event loop for every other coroutine"
+      ],
+      "pitfallsUk": [
+        "Виклик асинхронної функції без await (чи asyncio.run/gather) просто створює об'єкт-корутину й нічого не робить",
+        "Корутина, що виконує реальну CPU-роботу, ніколи не роблячи await, блокує весь цикл подій для кожної іншої корутини"
+      ],
+      "exercise": "Rewrite the sequential URL-download exercise from the threading lesson using asyncio and an async HTTP client, and compare its behavior conceptually to the thread-pool version.",
+      "exerciseUk": "Перепишіть вправу з послідовним завантаженням URL з уроку про threading, використовуючи asyncio й асинхронний HTTP-клієнт, і концептуально порівняйте її поведінку з версією на пулі потоків.",
+      "tags": ["asyncio", "concurrency"],
+      "sourceIds": ["python-docs-asyncio", "pep-492"]
+    },
+    {
+      "id": "py-lesson-choosing-concurrency-model",
+      "moduleId": "concurrency",
+      "level": "Advanced",
+      "title": "Choosing between threading, multiprocessing and asyncio",
+      "titleUk": "Вибір між threading, multiprocessing і asyncio",
+      "summary": "A decision guide: classify the workload first, then pick the concurrency model that actually fits it.",
+      "summaryUk": "Посібник з прийняття рішень: спершу класифікуйте навантаження, потім оберіть модель конкурентності, що йому справді підходить.",
+      "concept": "Start by classifying the workload: is it I/O-bound (spends most of its time waiting on the network, disk or another process) or CPU-bound (spends most of its time actually computing)? For I/O-bound work with many concurrent operations and a codebase that can adopt `async`/`await` throughout, `asyncio` typically scales best; for I/O-bound work in a codebase using blocking libraries that were never written for `asyncio`, `threading` (or a `ThreadPoolExecutor`) is the pragmatic choice. For CPU-bound work, only `multiprocessing` provides genuine parallel speedup, because the GIL prevents threads from running Python bytecode in parallel regardless of how many you create.",
+      "conceptUk": "Почніть з класифікації навантаження: воно прив'язане до I/O (більшість часу витрачає на очікування мережі, диска чи іншого процесу) чи до CPU (більшість часу реально обчислює)? Для роботи, прив'язаної до I/O, з багатьма паралельними операціями й кодовою базою, що може повністю прийняти `async`/`await`, `asyncio` зазвичай масштабується найкраще; для роботи, прив'язаної до I/O, у кодовій базі, що використовує блокуючі бібліотеки, ніколи не написані для `asyncio`, `threading` (чи `ThreadPoolExecutor`) — прагматичний вибір. Для роботи, прив'язаної до CPU, лише `multiprocessing` дає справжнє паралельне пришвидшення, бо GIL не дозволяє потокам паралельно виконувати байткод Python незалежно від того, скільки їх створено.",
+      "keyPoints": [
+        "Classify first: I/O-bound (waiting) versus CPU-bound (computing)",
+        "I/O-bound + async-friendly codebase favors asyncio; I/O-bound + blocking libraries favors threading",
+        "CPU-bound work needs multiprocessing — the GIL blocks true parallelism on threads regardless of count"
+      ],
+      "keyPointsUk": [
+        "Спершу класифікуйте: I/O-прив'язане (очікування) проти CPU-прив'язаного (обчислення)",
+        "I/O-прив'язане + кодова база, дружня до async, надає перевагу asyncio; I/O-прив'язане + блокуючі бібліотеки надають перевагу threading",
+        "CPU-прив'язана робота потребує multiprocessing — GIL блокує справжню паралельність на потоках незалежно від їх кількості"
+      ],
+      "code": "# Rule of thumb, not code to run:\n# Many small waits, async-ready libraries -> asyncio\n# Many small waits, blocking libraries      -> threading / ThreadPoolExecutor\n# Heavy computation                          -> multiprocessing / ProcessPoolExecutor",
+      "codeCaption": "A quick decision rule of thumb for picking a concurrency model based on the workload's shape.",
+      "codeCaptionUk": "Швидке практичне правило вибору моделі конкурентності залежно від форми навантаження.",
+      "pitfalls": [
+        "Reaching for multiprocessing on I/O-bound work adds process overhead for no real benefit over threading or asyncio",
+        "Reaching for threading (or asyncio) on genuinely CPU-bound work never delivers real parallel speedup because of the GIL"
+      ],
+      "pitfallsUk": [
+        "Використання multiprocessing для роботи, прив'язаної до I/O, додає накладні витрати процесу без реальної переваги над threading чи asyncio",
+        "Використання threading (чи asyncio) для справді CPU-прив'язаної роботи ніколи не дає реального паралельного пришвидшення через GIL"
+      ],
+      "exercise": "For each of these three tasks, decide and justify in one sentence which concurrency model fits best: (1) resizing 10,000 images, (2) calling 500 independent REST APIs, (3) a chat server handling thousands of open connections.",
+      "exerciseUk": "Для кожної з цих трьох задач визначте й обґрунтуйте одним реченням, яка модель конкурентності підходить найкраще: (1) зміна розміру 10 000 зображень, (2) виклик 500 незалежних REST API, (3) чат-сервер, що обробляє тисячі відкритих з'єднань.",
+      "tags": ["concurrency", "design"],
+      "sourceIds": ["python-docs-asyncio", "python-docs-multiprocessing", "python-docs-threading"]
+    }
+  ]
+}

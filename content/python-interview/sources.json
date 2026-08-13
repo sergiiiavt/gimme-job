@@ -1,0 +1,338 @@
+[
+  {
+    "id": "python-docs-tutorial",
+    "title": "The Python Tutorial",
+    "url": "https://docs.python.org/3/tutorial/index.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Baseline syntax, control flow, functions and module basics"
+  },
+  {
+    "id": "python-docs-language-reference",
+    "title": "The Python Language Reference",
+    "url": "https://docs.python.org/3/reference/index.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Precise scoping, evaluation order and expression semantics"
+  },
+  {
+    "id": "python-docs-datamodel",
+    "title": "Data model",
+    "url": "https://docs.python.org/3/reference/datamodel.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Dunder methods, object identity, attribute lookup and the descriptor and context manager protocols"
+  },
+  {
+    "id": "python-docs-stdlib-index",
+    "title": "The Python Standard Library",
+    "url": "https://docs.python.org/3/library/index.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Authoritative behavior for built-in types and standard library modules"
+  },
+  {
+    "id": "python-docs-whatsnew-314",
+    "title": "What's new in Python 3.14",
+    "url": "https://docs.python.org/3/whatsnew/3.14.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Release notes",
+    "role": "Current-version language and runtime changes, including template strings and free-threading support"
+  },
+  {
+    "id": "python-docs-free-threading",
+    "title": "Python support for free threading",
+    "url": "https://docs.python.org/3/howto/free-threading-python.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official guide",
+    "role": "The GIL, the free-threaded build and its compatibility trade-offs"
+  },
+  {
+    "id": "python-docs-asyncio",
+    "title": "asyncio — Asynchronous I/O",
+    "url": "https://docs.python.org/3/library/asyncio.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Event loop, coroutines, tasks and structured concurrency primitives"
+  },
+  {
+    "id": "python-docs-typing",
+    "title": "typing — Support for type hints",
+    "url": "https://docs.python.org/3/library/typing.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Generics, protocols, overloads and typing-module semantics"
+  },
+  {
+    "id": "python-docs-venv",
+    "title": "venv — Creation of virtual environments",
+    "url": "https://docs.python.org/3/library/venv.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Virtual environment isolation and interpreter/site-packages layout"
+  },
+  {
+    "id": "python-docs-unittest",
+    "title": "unittest — Unit testing framework",
+    "url": "https://docs.python.org/3/library/unittest.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Baseline test-case, mock and assertion semantics shared across Python test tooling"
+  },
+  {
+    "id": "python-docs-gc",
+    "title": "gc — Garbage collector interface",
+    "url": "https://docs.python.org/3/library/gc.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Generational garbage collection and cyclic-reference behavior"
+  },
+  {
+    "id": "python-docs-dis",
+    "title": "dis — Disassembler for Python bytecode",
+    "url": "https://docs.python.org/3/library/dis.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Bytecode execution model used to reason about interpreter performance"
+  },
+  {
+    "id": "python-docs-import-system",
+    "title": "The import system",
+    "url": "https://docs.python.org/3/reference/import.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Module resolution, sys.path, packages and import caching"
+  },
+  {
+    "id": "python-docs-errors-tutorial",
+    "title": "Errors and Exceptions",
+    "url": "https://docs.python.org/3/tutorial/errors.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "try/except/else/finally control flow and exception chaining"
+  },
+  {
+    "id": "python-docs-contextlib",
+    "title": "contextlib — Utilities for with-statement contexts",
+    "url": "https://docs.python.org/3/library/contextlib.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Context manager helpers, including contextmanager and ExitStack"
+  },
+  {
+    "id": "python-docs-collections",
+    "title": "collections — Container datatypes",
+    "url": "https://docs.python.org/3/library/collections.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "deque, defaultdict, Counter, namedtuple and ChainMap semantics"
+  },
+  {
+    "id": "python-docs-itertools",
+    "title": "itertools — Functions creating iterators for efficient looping",
+    "url": "https://docs.python.org/3/library/itertools.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Lazy iterator composition and memory-efficient looping patterns"
+  },
+  {
+    "id": "python-docs-functools",
+    "title": "functools — Higher-order functions and operations on callable objects",
+    "url": "https://docs.python.org/3/library/functools.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "lru_cache, partial, wraps, reduce and singledispatch behavior"
+  },
+  {
+    "id": "python-docs-dataclasses",
+    "title": "dataclasses — Data Classes",
+    "url": "https://docs.python.org/3/library/dataclasses.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Generated dunder methods, field defaults and frozen/eq/order semantics"
+  },
+  {
+    "id": "python-docs-threading",
+    "title": "threading — Thread-based parallelism",
+    "url": "https://docs.python.org/3/library/threading.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Locks, thread safety and thread-local state"
+  },
+  {
+    "id": "python-docs-multiprocessing",
+    "title": "multiprocessing — Process-based parallelism",
+    "url": "https://docs.python.org/3/library/multiprocessing.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Process pools, pickling constraints and inter-process communication"
+  },
+  {
+    "id": "python-docs-pathlib",
+    "title": "pathlib — Object-oriented filesystem paths",
+    "url": "https://docs.python.org/3/library/pathlib.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Cross-platform path handling that replaces most os.path usage"
+  },
+  {
+    "id": "python-docs-logging",
+    "title": "logging — Logging facility for Python",
+    "url": "https://docs.python.org/3/library/logging.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official reference",
+    "role": "Loggers, handlers, levels and structured diagnostic output"
+  },
+  {
+    "id": "pep-8",
+    "title": "PEP 8 — Style Guide for Python Code",
+    "url": "https://peps.python.org/pep-0008/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "Naming, layout and readability conventions"
+  },
+  {
+    "id": "pep-20",
+    "title": "PEP 20 — The Zen of Python",
+    "url": "https://peps.python.org/pep-0020/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "Design philosophy behind idiomatic Python choices"
+  },
+  {
+    "id": "pep-484",
+    "title": "PEP 484 — Type Hints",
+    "url": "https://peps.python.org/pep-0484/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "Foundational type-hint syntax and static-typing intent"
+  },
+  {
+    "id": "pep-572",
+    "title": "PEP 572 — Assignment Expressions",
+    "url": "https://peps.python.org/pep-0572/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "The walrus operator and its scoping rules"
+  },
+  {
+    "id": "pep-634",
+    "title": "PEP 634 — Structural Pattern Matching: Specification",
+    "url": "https://peps.python.org/pep-0634/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "match/case semantics introduced in Python 3.10"
+  },
+  {
+    "id": "pep-703",
+    "title": "PEP 703 — Making the Global Interpreter Lock Optional",
+    "url": "https://peps.python.org/pep-0703/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "The technical proposal behind the free-threaded CPython build"
+  },
+  {
+    "id": "pep-779",
+    "title": "PEP 779 — Criteria for supported status for free-threaded Python",
+    "url": "https://peps.python.org/pep-0779/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "The criteria that made free-threaded Python officially supported starting with 3.14"
+  },
+  {
+    "id": "pep-492",
+    "title": "PEP 492 — Coroutines with async and await syntax",
+    "url": "https://peps.python.org/pep-0492/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "The origin of async/await syntax and native coroutine objects"
+  },
+  {
+    "id": "pep-380",
+    "title": "PEP 380 — Syntax for Delegating to a Subgenerator",
+    "url": "https://peps.python.org/pep-0380/",
+    "publisher": "Python Software Foundation",
+    "kind": "Official specification",
+    "role": "yield from delegation semantics"
+  },
+  {
+    "id": "packaging-guide",
+    "title": "Python Packaging User Guide",
+    "url": "https://packaging.python.org/en/latest/",
+    "publisher": "Python Packaging Authority",
+    "kind": "Official guide",
+    "role": "Project metadata, wheels, dependency and environment management practices"
+  },
+  {
+    "id": "pytest-docs",
+    "title": "pytest documentation",
+    "url": "https://docs.pytest.org/en/stable/",
+    "publisher": "pytest",
+    "kind": "Official documentation",
+    "role": "Fixture scope, parametrization, markers and plugin architecture"
+  },
+  {
+    "id": "real-python",
+    "title": "Real Python tutorials",
+    "url": "https://realpython.com/",
+    "publisher": "Real Python",
+    "kind": "Practitioner tutorials",
+    "role": "Coverage and explanation-style cross-check for intermediate and advanced Python topics"
+  },
+  {
+    "id": "geeksforgeeks-python-interview",
+    "title": "Top Python Interview Questions and Answers",
+    "url": "https://www.geeksforgeeks.org/python/python-interview-questions/",
+    "publisher": "GeeksforGeeks",
+    "kind": "Community question bank",
+    "role": "Coverage signal for frequently asked fundamentals and OOP questions"
+  },
+  {
+    "id": "interviewbit-python",
+    "title": "Top Python Interview Questions and Answers",
+    "url": "https://www.interviewbit.com/python-interview-questions/",
+    "publisher": "InterviewBit",
+    "kind": "Community question bank",
+    "role": "Coverage signal across syntax, decorators, generators and modules"
+  },
+  {
+    "id": "toptal-python",
+    "title": "Python Interview Questions and Answers",
+    "url": "https://www.toptal.com/python/interview-questions",
+    "publisher": "Toptal",
+    "kind": "Practitioner question bank",
+    "role": "Senior-level coverage signal for concurrency, testability and design-quality questions"
+  },
+  {
+    "id": "datacamp-python-interview",
+    "title": "Top Python Interview Questions and Answers",
+    "url": "https://www.datacamp.com/blog/top-python-interview-questions-and-answers",
+    "publisher": "DataCamp",
+    "kind": "Community question bank",
+    "role": "Coverage signal for data-oriented and standard-library questions"
+  },
+  {
+    "id": "flask-docs",
+    "title": "Flask documentation",
+    "url": "https://flask.palletsprojects.com/en/stable/",
+    "publisher": "Pallets Projects",
+    "kind": "Official documentation",
+    "role": "Minimal WSGI web framework request/response and routing model"
+  },
+  {
+    "id": "fastapi-docs",
+    "title": "FastAPI documentation",
+    "url": "https://fastapi.tiangolo.com/",
+    "publisher": "FastAPI",
+    "kind": "Official documentation",
+    "role": "Async web framework request validation and dependency-injection model"
+  },
+  {
+    "id": "selenium-python-docs",
+    "title": "Selenium with Python",
+    "url": "https://www.selenium.dev/documentation/webdriver/",
+    "publisher": "Selenium",
+    "kind": "Official documentation",
+    "role": "WebDriver automation patterns used from Python test code"
+  }
+]

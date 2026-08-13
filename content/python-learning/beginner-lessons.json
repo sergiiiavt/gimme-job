@@ -1,0 +1,940 @@
+{
+  "lessons": [
+    {
+      "id": "py-lesson-running-python-and-repl",
+      "moduleId": "getting-started",
+      "level": "Beginner",
+      "title": "Running Python and using the REPL",
+      "titleUk": "Запуск Python і використання REPL",
+      "summary": "Two ways to run Python code: an interactive REPL for quick experiments, and script files for real programs.",
+      "summaryUk": "Два способи запускати код Python: інтерактивний REPL для швидких експериментів і файли скриптів для справжніх програм.",
+      "concept": "Typing `python` (or `python3`) with no arguments opens the REPL — Read-Eval-Print Loop — where each line you type is immediately evaluated and its result printed, making it ideal for testing a small idea before committing it to a file. Real programs live in `.py` files and are run with `python filename.py`. Modern editors and IDEs also offer a Jupyter-style notebook cell interface, but the REPL and plain scripts are the two forms every Python programmer needs to be comfortable with first.",
+      "conceptUk": "Введення `python` (чи `python3`) без аргументів відкриває REPL — Read-Eval-Print Loop (цикл читання-обчислення-друку), де кожен введений рядок одразу обчислюється, а його результат друкується, що ідеально для перевірки невеликої ідеї перед тим, як зафіксувати її у файлі. Справжні програми живуть у файлах `.py` й запускаються через `python filename.py`. Сучасні редактори та IDE також пропонують інтерфейс комірок у стилі Jupyter-ноутбуків, але REPL і звичайні скрипти — дві форми, з якими має бути зручно кожному програмісту Python спершу.",
+      "keyPoints": [
+        "The REPL evaluates and prints each expression immediately, with no need to save a file",
+        "A .py script is run with `python filename.py` from a terminal",
+        "Exit the REPL with `exit()`, `quit()`, or Ctrl-D (Ctrl-Z then Enter on Windows)"
+      ],
+      "keyPointsUk": [
+        "REPL негайно обчислює й друкує кожен вираз, без потреби зберігати файл",
+        "Скрипт .py запускається через `python filename.py` з термінала",
+        "Вийти з REPL можна через `exit()`, `quit()` чи Ctrl-D (Ctrl-Z, потім Enter на Windows)"
+      ],
+      "code": ">>> 2 + 2\n4\n>>> name = \"Ada\"\n>>> print(f\"Hello, {name}!\")\nHello, Ada!\n>>> exit()",
+      "codeCaption": "A short REPL session: an expression, a variable assignment, and a formatted greeting.",
+      "codeCaptionUk": "Коротка сесія REPL: вираз, присвоєння змінної та відформатоване вітання.",
+      "pitfalls": [
+        "REPL state is lost when you close it — anything worth keeping belongs in a .py file",
+        "The REPL echoes bare expression results automatically, but a script never does unless you call print()"
+      ],
+      "pitfallsUk": [
+        "Стан REPL втрачається при закритті — усе варте збереження має бути у файлі .py",
+        "REPL автоматично відлунює результати голих виразів, а скрипт — ніколи, якщо не викликати print()"
+      ],
+      "exercise": "Open a REPL, compute the area of a circle with radius 4 (use 3.14159 for pi), then save the same calculation as a script called area.py that prints the result.",
+      "exerciseUk": "Відкрийте REPL, обчисліть площу кола з радіусом 4 (використайте 3.14159 для пі), а потім збережіть той самий розрахунок як скрипт area.py, що друкує результат.",
+      "tags": ["repl", "cli", "fundamentals"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-print-and-basic-io",
+      "moduleId": "getting-started",
+      "level": "Beginner",
+      "title": "print() and reading basic input",
+      "titleUk": "print() і читання базового вводу",
+      "summary": "How print() actually works — separators, line endings, multiple values — and how to read a line of user input.",
+      "summaryUk": "Як насправді працює print() — роздільники, закінчення рядків, кілька значень — і як прочитати рядок вводу від користувача.",
+      "concept": "`print()` accepts any number of positional arguments, converts each to a string, joins them with `sep` (a single space by default) and finishes the line with `end` (a newline by default) — both are keyword arguments you can override. `input(\"prompt: \")` displays a prompt, blocks until the user types a line and presses Enter, and always returns that line as a `str`, even if the user typed digits, so numeric input needs an explicit conversion like `int(input(...))`.",
+      "conceptUk": "`print()` приймає будь-яку кількість позиційних аргументів, перетворює кожен на рядок, з'єднує їх через `sep` (пробіл за замовчуванням) і завершує рядок через `end` (символ нового рядка за замовчуванням) — обидва можна перевизначити іменованими аргументами. `input(\"prompt: \")` показує підказку, блокується, доки користувач не введе рядок і не натисне Enter, і завжди повертає цей рядок як `str`, навіть якщо користувач ввів цифри, тож числовий ввід потребує явного перетворення, наприклад `int(input(...))`.",
+      "keyPoints": [
+        "print(a, b, c) joins arguments with sep (default single space)",
+        "print(..., end=\"\") suppresses the trailing newline",
+        "input() always returns a str; convert explicitly for numbers"
+      ],
+      "keyPointsUk": [
+        "print(a, b, c) з'єднує аргументи через sep (за замовчуванням пробіл)",
+        "print(..., end=\"\") прибирає завершальний символ нового рядка",
+        "input() завжди повертає str; для чисел потрібне явне перетворення"
+      ],
+      "code": "name = input(\"Your name: \")\nage = int(input(\"Your age: \"))\nprint(\"Name\", \"Age\", sep=\" | \")\nprint(name, age, sep=\" | \")",
+      "codeCaption": "Reading two pieces of input and printing them as an aligned pair of rows.",
+      "codeCaptionUk": "Читання двох частин вводу й друк їх як вирівняної пари рядків.",
+      "pitfalls": [
+        "Forgetting int()/float() around input() causes '5' + '3' to produce '53', not 8",
+        "input() blocks forever waiting for a line — it never times out on its own"
+      ],
+      "pitfallsUk": [
+        "Забуття int()/float() навколо input() призводить до того, що '5' + '3' дає '53', а не 8",
+        "input() блокується вічно в очікуванні рядка — сам по собі ніколи не має тайм-ауту"
+      ],
+      "exercise": "Write a script that asks for two numbers with input(), converts them to float, and prints their sum, difference and product on three separate lines.",
+      "exerciseUk": "Напишіть скрипт, що запитує два числа через input(), перетворює їх на float і друкує їхню суму, різницю та добуток на трьох окремих рядках.",
+      "tags": ["print", "input", "fundamentals"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-comments-and-style",
+      "moduleId": "getting-started",
+      "level": "Beginner",
+      "title": "Comments, docstrings and readable style",
+      "titleUk": "Коментарі, docstring і читабельний стиль",
+      "summary": "When to write a comment, when to write a docstring, and the naming/spacing conventions from PEP 8.",
+      "summaryUk": "Коли писати коментар, коли — docstring, і угоди іменування/відступів з PEP 8.",
+      "concept": "A `#` comment explains *why* code does something non-obvious; it is stripped before execution and invisible to `help()`. A triple-quoted docstring as the first statement in a module, function or class instead documents *what* that object does and is stored on `__doc__`, discoverable at runtime. PEP 8 is Python's official style guide: 4 spaces per indent level (never tabs), `snake_case` for variables and functions, `PascalCase` for classes, and roughly 79-99 characters per line, followed by nearly the entire Python ecosystem so any codebase reads consistently.",
+      "conceptUk": "Коментар `#` пояснює *чому* код робить щось неочевидне; він видаляється перед виконанням і невидимий для `help()`. Рядок у потрійних лапках як перший оператор модуля, функції чи класу натомість документує *що* робить цей об'єкт і зберігається в `__doc__`, доступний під час виконання. PEP 8 — офіційний посібник зі стилю Python: 4 пробіли на рівень відступу (ніколи табуляція), `snake_case` для змінних і функцій, `PascalCase` для класів, і приблизно 79-99 символів на рядок, якого дотримується майже вся екосистема Python, тож будь-яка кодова база читається послідовно.",
+      "keyPoints": [
+        "# comments explain why; docstrings document what, and are readable via __doc__/help()",
+        "PEP 8: 4-space indents, snake_case names, PascalCase classes",
+        "Consistent style across a codebase matters more than any individual preference"
+      ],
+      "keyPointsUk": [
+        "# коментарі пояснюють чому; docstring документує що, доступний через __doc__/help()",
+        "PEP 8: відступи по 4 пробіли, імена snake_case, класи PascalCase",
+        "Послідовний стиль по всій кодовій базі важливіший за будь-яку особисту перевагу"
+      ],
+      "code": "def celsius_to_fahrenheit(celsius):\n    \"\"\"Convert a Celsius temperature to Fahrenheit.\"\"\"\n    # The 9/5 must be float division, not integer division\n    return celsius * 9 / 5 + 32",
+      "codeCaption": "A docstring documenting the function's purpose, and a comment explaining a non-obvious detail.",
+      "codeCaptionUk": "Docstring, що документує призначення функції, і коментар, що пояснює неочевидну деталь.",
+      "pitfalls": [
+        "A comment that just restates the code (# increment i by one \\n i += 1) adds noise, not value",
+        "Mixing tabs and spaces for indentation raises a TabError in Python 3"
+      ],
+      "pitfallsUk": [
+        "Коментар, що просто повторює код (# збільшити i на одиницю \\n i += 1), додає шум, а не цінність",
+        "Змішування табуляції й пробілів у відступах викликає TabError у Python 3"
+      ],
+      "exercise": "Write a function is_leap_year(year) with a one-line docstring, a comment explaining the century-divisible-by-400 rule, and PEP 8-compliant naming.",
+      "exerciseUk": "Напишіть функцію is_leap_year(year) з однорядковим docstring, коментарем, що пояснює правило «століття, кратне 400», та іменуванням за PEP 8.",
+      "tags": ["style", "pep-8", "docstrings"],
+      "sourceIds": ["pep-8", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-first-script-structure",
+      "moduleId": "getting-started",
+      "level": "Beginner",
+      "title": "The shape of a real Python script",
+      "titleUk": "Форма справжнього скрипта Python",
+      "summary": "Why real scripts put logic inside functions and guard the entry point with if __name__ == \"__main__\":",
+      "summaryUk": "Чому справжні скрипти розміщують логіку всередині функцій і захищають точку входу через if __name__ == \"__main__\":",
+      "concept": "Every `.py` file has a special variable `__name__`, which Python sets to `\"__main__\"` when that file is run directly, but to the module's actual name when it is imported by another file. Wrapping a script's entry logic in `if __name__ == \"__main__\":` means the file can be run directly for its own behavior, but can also be safely imported elsewhere to reuse its functions without that entry logic running unintentionally. This, combined with keeping real logic inside functions rather than loose at module level, is the standard shape of a maintainable Python script.",
+      "conceptUk": "Кожен файл `.py` має спеціальну змінну `__name__`, яку Python встановлює в `\"__main__\"`, коли цей файл запускається напряму, але в справжню назву модуля, коли його імпортує інший файл. Обгортання логіки точки входу скрипта в `if __name__ == \"__main__\":` означає, що файл можна запускати напряму для власної поведінки, але й безпечно імпортувати деінде для повторного використання його функцій без ненавмисного виконання цієї логіки входу. Це, разом зі зберіганням реальної логіки всередині функцій, а не вільно на рівні модуля, — стандартна форма підтримуваного скрипта Python.",
+      "keyPoints": [
+        "__name__ is \"__main__\" only when the file is run directly, not when imported",
+        "if __name__ == \"__main__\": guards code that should not run on import",
+        "Keeping logic inside functions makes it testable and reusable, unlike loose module-level code"
+      ],
+      "keyPointsUk": [
+        "__name__ дорівнює \"__main__\" лише при прямому запуску файлу, не при імпорті",
+        "if __name__ == \"__main__\": захищає код, що не має виконуватись при імпорті",
+        "Логіка всередині функцій тестована й придатна для повторного використання, на відміну від вільного коду рівня модуля"
+      ],
+      "code": "def main():\n    total = sum(range(1, 11))\n    print(f\"Sum 1-10 is {total}\")\n\nif __name__ == \"__main__\":\n    main()",
+      "codeCaption": "A script that can be run directly or imported for its main() function without side effects.",
+      "codeCaptionUk": "Скрипт, який можна запустити напряму чи імпортувати заради функції main() без побічних ефектів.",
+      "pitfalls": [
+        "Loose top-level code without the __main__ guard runs immediately on every import, even in tests",
+        "Forgetting main() entirely and writing everything at module level makes the script hard to test or reuse"
+      ],
+      "pitfallsUk": [
+        "Вільний код верхнього рівня без захисту __main__ виконується негайно при кожному імпорті, навіть у тестах",
+        "Повна відсутність main() і написання всього на рівні модуля робить скрипт важким для тестування чи повторного використання"
+      ],
+      "exercise": "Turn a flat script that prints the first 10 square numbers into one with a square_numbers(n) function and a __main__ guard, then import it from a second file without anything printing automatically.",
+      "exerciseUk": "Перетворіть плаский скрипт, що друкує перші 10 квадратних чисел, на скрипт з функцією square_numbers(n) і захистом __main__, а потім імпортуйте його з другого файлу так, щоб нічого не друкувалося автоматично.",
+      "tags": ["scripts", "entry-point"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-import-system"]
+    },
+    {
+      "id": "py-lesson-variables-and-naming",
+      "moduleId": "variables-data-types-operators",
+      "level": "Beginner",
+      "title": "Variables, assignment and naming rules",
+      "titleUk": "Змінні, присвоєння та правила іменування",
+      "summary": "A variable is a name bound to an object; assignment never copies data, it just points a name at a value.",
+      "summaryUk": "Змінна — це ім'я, прив'язане до об'єкта; присвоєння ніколи не копіює дані, а лише вказує ім'я на значення.",
+      "concept": "`x = 5` does not put the number 5 \"inside\" a box named `x`; it creates the integer object 5 (if it does not already exist) and makes the name `x` point to it. A name must start with a letter or underscore, contain only letters, digits and underscores, and cannot be a reserved keyword like `class` or `for`. Because assignment is just name-binding, `y = x` makes `y` point to the exact same object `x` points to, not a fresh copy — the practical consequences of that show up clearly once mutable objects like lists enter the picture.",
+      "conceptUk": "`x = 5` не кладе число 5 «всередину» коробки з назвою `x`; воно створює об'єкт цілого числа 5 (якщо він ще не існує) і робить так, щоб ім'я `x` вказувало на нього. Ім'я має починатися з літери чи підкреслення, містити лише літери, цифри й підкреслення, і не може бути зарезервованим ключовим словом на кшталт `class` чи `for`. Оскільки присвоєння — це просто прив'язка імені, `y = x` робить так, що `y` вказує на точно той самий об'єкт, на який вказує `x`, а не на свіжу копію — практичні наслідки цього чітко проявляються, щойно в гру вступають змінювані об'єкти на кшталт списків.",
+      "keyPoints": [
+        "Assignment binds a name to an object; it does not copy the object's data",
+        "Valid names: letters, digits, underscores, not starting with a digit, not a keyword",
+        "y = x makes both names refer to the same underlying object"
+      ],
+      "keyPointsUk": [
+        "Присвоєння прив'язує ім'я до об'єкта; воно не копіює дані об'єкта",
+        "Дійсні імена: літери, цифри, підкреслення, не починаються з цифри, не ключове слово",
+        "y = x робить так, що обидва імені посилаються на той самий базовий об'єкт"
+      ],
+      "code": "score = 10\nplayer_two_score = score  # same object, not a copy\nscore = 20                # rebinds score only\nprint(score, player_two_score)  # 20 10, because int is immutable",
+      "codeCaption": "Rebinding score to a new integer object leaves player_two_score pointing at the original one.",
+      "codeCaptionUk": "Повторна прив'язка score до нового об'єкта цілого числа залишає player_two_score вказувати на оригінал.",
+      "pitfalls": [
+        "Using a keyword as a name (class = \"A\") raises a SyntaxError",
+        "Assuming y = x creates an independent copy leads to real bugs once x is a mutable list"
+      ],
+      "pitfallsUk": [
+        "Використання ключового слова як імені (class = \"A\") викликає SyntaxError",
+        "Припущення, що y = x створює незалежну копію, призводить до реальних помилок, щойно x стає змінюваним списком"
+      ],
+      "exercise": "Predict, then verify in a REPL: after a = [1, 2]; b = a; b.append(3), what does a equal? Explain why in one sentence using the word \"object\".",
+      "exerciseUk": "Передбачте, потім перевірте в REPL: після a = [1, 2]; b = a; b.append(3), чому дорівнює a? Поясніть чому одним реченням, використовуючи слово «об'єкт».",
+      "tags": ["variables", "fundamentals"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-numeric-types",
+      "moduleId": "variables-data-types-operators",
+      "level": "Beginner",
+      "title": "Numeric types: int, float and basic arithmetic",
+      "titleUk": "Числові типи: int, float і базова арифметика",
+      "summary": "int has unlimited precision; float is a fixed-precision approximation — and that difference causes real bugs.",
+      "summaryUk": "int має необмежену точність; float — наближення фіксованої точності, і ця різниця спричиняє реальні помилки.",
+      "concept": "Python's `int` type has arbitrary precision, so `2 ** 100` computes an exact, arbitrarily large integer with no overflow. `float` follows the IEEE-754 double-precision standard, which cannot represent most decimal fractions exactly, so `0.1 + 0.2` prints `0.30000000000000004` rather than `0.3`. `/` always produces a `float` (true division), `//` produces a floored quotient, and `%` produces the remainder; `round()` rounds a float, but should never be trusted for exact financial arithmetic, where the `decimal` module is the correct tool instead.",
+      "conceptUk": "Тип `int` у Python має довільну точність, тож `2 ** 100` обчислює точне, як завгодно велике ціле число без переповнення. `float` дотримується стандарту подвійної точності IEEE-754, який не може точно представити більшість десяткових дробів, тож `0.1 + 0.2` друкує `0.30000000000000004`, а не `0.3`. `/` завжди дає `float` (справжнє ділення), `//` дає округлену вниз частку, а `%` дає остачу; `round()` округлює float, але йому ніколи не варто довіряти для точної фінансової арифметики, де правильний інструмент — модуль `decimal`.",
+      "keyPoints": [
+        "int has unlimited precision; float is a fixed-precision IEEE-754 approximation",
+        "/ is true division (always float), // is floor division, % is remainder",
+        "Never compare floats with == directly, and never use float for exact money math"
+      ],
+      "keyPointsUk": [
+        "int має необмежену точність; float — наближення фіксованої точності IEEE-754",
+        "/ — справжнє ділення (завжди float), // — ділення з округленням вниз, % — остача",
+        "Ніколи не порівнюйте float через == напряму, ніколи не використовуйте float для точних грошових розрахунків"
+      ],
+      "code": "print(7 / 2)    # 3.5\nprint(7 // 2)   # 3\nprint(7 % 2)    # 1\nprint(0.1 + 0.2 == 0.3)  # False\nfrom decimal import Decimal\nprint(Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\"))  # True",
+      "codeCaption": "Integer versus float division, and why exact decimal comparisons need the decimal module.",
+      "codeCaptionUk": "Ціле проти дробового ділення, і чому точні порівняння десяткових чисел потребують модуля decimal.",
+      "pitfalls": [
+        "if price == 19.99: often silently fails due to float imprecision",
+        "// with negative numbers floors toward negative infinity, not toward zero: -7 // 2 == -4"
+      ],
+      "pitfallsUk": [
+        "if price == 19.99: часто тихо провалюється через неточність float",
+        "// з від'ємними числами округлює до від'ємної нескінченності, не до нуля: -7 // 2 == -4"
+      ],
+      "exercise": "Write a function that safely compares two floats for \"close enough\" equality using a small tolerance instead of ==, and test it against 0.1 + 0.2 and 0.3.",
+      "exerciseUk": "Напишіть функцію, що безпечно порівнює два float на «достатню близькість» через малий допуск замість ==, і перевірте її на 0.1 + 0.2 та 0.3.",
+      "tags": ["numbers", "arithmetic", "gotchas"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-booleans-and-none",
+      "moduleId": "variables-data-types-operators",
+      "level": "Beginner",
+      "title": "Booleans, None and truthiness",
+      "titleUk": "Булеві значення, None і правдивість",
+      "summary": "bool is a subtype of int, None means \"no value\", and every object has an implicit truth value.",
+      "summaryUk": "bool — підтип int, None означає «немає значення», і кожен об'єкт має неявне значення істинності.",
+      "concept": "`True` and `False` are actually instances of `bool`, which is a subclass of `int` — `True == 1` and `False == 0` are both `True`, and `True + True` evaluates to `2`, though relying on that in real code is poor style. `None` is Python's single \"no value\" object, commonly used as a default for \"nothing provided yet\", and is always tested with `is None`, never `== None`. Every object can be evaluated in a boolean context: `None`, `False`, `0`, `0.0`, and empty containers (`\"\"`, `[]`, `{}`) are falsy, and virtually everything else is truthy.",
+      "conceptUk": "`True` і `False` насправді є екземплярами `bool`, підкласу `int` — `True == 1` і `False == 0` обидва дають `True`, а `True + True` обчислюється в `2`, хоча покладатися на це в реальному коді — поганий стиль. `None` — єдиний об'єкт «немає значення» в Python, часто використовується як значення за замовчуванням для «ще нічого не надано», і завжди перевіряється через `is None`, ніколи `== None`. Кожен об'єкт можна обчислити в булевому контексті: `None`, `False`, `0`, `0.0` та порожні контейнери (`\"\"`, `[]`, `{}`) хибні, а практично все інше — правдиве.",
+      "keyPoints": [
+        "bool is a subclass of int; True == 1 and False == 0",
+        "Test for \"no value\" with `is None`, never `== None`",
+        "None, False, 0, 0.0 and empty containers are falsy; almost everything else is truthy"
+      ],
+      "keyPointsUk": [
+        "bool — підклас int; True == 1 і False == 0",
+        "Перевіряйте «немає значення» через `is None`, ніколи через `== None`",
+        "None, False, 0, 0.0 і порожні контейнери хибні; майже все інше правдиве"
+      ],
+      "code": "def greet(name=None):\n    if name is None:\n        name = \"stranger\"\n    return f\"Hello, {name}\"\n\nprint(greet())        # Hello, stranger\nprint(bool([]), bool([0]))  # False True",
+      "codeCaption": "Using None as a sentinel default, and showing that a list containing 0 is still truthy.",
+      "codeCaptionUk": "Використання None як сентинела за замовчуванням, і демонстрація, що список з 0 усе ще правдивий.",
+      "pitfalls": [
+        "if value == None: works but is non-idiomatic and slower than is None",
+        "if my_list == []: works but if not my_list: is the idiomatic emptiness check"
+      ],
+      "pitfallsUk": [
+        "if value == None: працює, але неідіоматично й повільніше за is None",
+        "if my_list == []: працює, але if not my_list: — ідіоматична перевірка на порожнечу"
+      ],
+      "exercise": "Write is_empty(value) that returns True for None, an empty string, an empty list, or 0, using only truthiness — no explicit type checks.",
+      "exerciseUk": "Напишіть is_empty(value), що повертає True для None, порожнього рядка, порожнього списку чи 0, використовуючи лише правдивість — без явних перевірок типу.",
+      "tags": ["booleans", "none", "truthiness"],
+      "sourceIds": ["python-docs-datamodel", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-operators-arithmetic-comparison",
+      "moduleId": "variables-data-types-operators",
+      "level": "Beginner",
+      "title": "Arithmetic, comparison and boolean operators",
+      "titleUk": "Арифметичні, порівняльні та булеві оператори",
+      "summary": "Operator precedence, chained comparisons, and how and/or actually return one of their operands.",
+      "summaryUk": "Пріоритет операторів, ланцюгові порівняння, і як and/or насправді повертають один зі своїх операндів.",
+      "concept": "Python follows standard mathematical precedence (`**` highest, then `*`/`/`/`//`/`%`, then `+`/`-`, then comparisons, then `not`, `and`, `or`), and parentheses always override it for clarity. Comparisons can be chained (`0 <= x < 10`), which reads naturally and evaluates each part only once. `and` and `or` are not restricted to returning `True`/`False`: `and` returns its first falsy operand or its last operand, and `or` returns its first truthy operand or its last operand, both short-circuiting as soon as the result is determined — this is the basis of the common `value = user_input or \"default\"` idiom.",
+      "conceptUk": "Python дотримується стандартного математичного пріоритету (`**` найвищий, потім `*`/`/`/`//`/`%`, потім `+`/`-`, потім порівняння, потім `not`, `and`, `or`), і дужки завжди перекривають його для ясності. Порівняння можна ланцюжити (`0 <= x < 10`), що читається природно й обчислює кожну частину лише раз. `and` і `or` не обмежені поверненням `True`/`False`: `and` повертає перший хибний операнд чи останній операнд, а `or` повертає перший правдивий операнд чи останній операнд, обидва зі скороченим обчисленням, щойно результат визначено — це основа поширеної ідіоми `value = user_input or \"default\"`.",
+      "keyPoints": [
+        "Precedence: ** then */// /% then +- then comparisons then not/and/or",
+        "Chained comparisons like 0 <= x < 10 evaluate each part once, combined with and",
+        "and/or return one of their actual operands, not necessarily True/False"
+      ],
+      "keyPointsUk": [
+        "Пріоритет: ** потім */// /% потім +- потім порівняння потім not/and/or",
+        "Ланцюгові порівняння на кшталт 0 <= x < 10 обчислюють кожну частину раз, поєднану через and",
+        "and/or повертають один зі своїх реальних операндів, не обов'язково True/False"
+      ],
+      "code": "display_name = user_nickname or \"Guest\"\nis_valid = 0 <= age < 120\nresult = 2 + 3 * 4 ** 2  # 50, not 400",
+      "codeCaption": "The or-default idiom, a chained range check, and precedence determining the arithmetic result.",
+      "codeCaptionUk": "Ідіома or-за-замовчуванням, ланцюгова перевірка діапазону, і пріоритет, що визначає арифметичний результат.",
+      "pitfalls": [
+        "`value or default` silently replaces 0, \"\", or [] too, not just None — use `value if value is not None else default` when 0/empty are valid",
+        "Forgetting ** binds tighter than unary minus: -2 ** 2 is -4, not 4"
+      ],
+      "pitfallsUk": [
+        "`value or default` тихо замінює й 0, \"\", чи [], не лише None — використовуйте `value if value is not None else default`, коли 0/порожнє — дійсні значення",
+        "Забуття, що ** зв'язує сильніше за унарний мінус: -2 ** 2 дорівнює -4, не 4"
+      ],
+      "exercise": "Without running it, predict the result of `10 - 2 * 3 ** 2 // 4`, then verify in a REPL and explain the order of operations that produced it.",
+      "exerciseUk": "Не запускаючи, передбачте результат `10 - 2 * 3 ** 2 // 4`, потім перевірте в REPL і поясніть порядок операцій, що його дав.",
+      "tags": ["operators", "precedence"],
+      "sourceIds": ["python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-type-conversion",
+      "moduleId": "variables-data-types-operators",
+      "level": "Beginner",
+      "title": "Type conversion and checking",
+      "titleUk": "Перетворення й перевірка типів",
+      "summary": "Converting between int, float, str, and bool explicitly, and checking a value's type safely.",
+      "summaryUk": "Явне перетворення між int, float, str і bool, та безпечна перевірка типу значення.",
+      "concept": "`int(x)`, `float(x)`, `str(x)` and `bool(x)` explicitly convert a value to that type where a sensible conversion exists — `int(\"42\")` works, but `int(\"forty-two\")` raises `ValueError`, and `int(\"3.5\")` also raises `ValueError` because it does not parse a float string directly (`int(float(\"3.5\"))` does). `type(x)` returns an object's exact class, while `isinstance(x, SomeType)` checks whether an object is that type or any subclass of it, which is almost always the better choice for validation because it correctly handles inheritance.",
+      "conceptUk": "`int(x)`, `float(x)`, `str(x)` і `bool(x)` явно перетворюють значення на цей тип там, де існує розумне перетворення — `int(\"42\")` працює, але `int(\"forty-two\")` викликає `ValueError`, а `int(\"3.5\")` теж викликає `ValueError`, бо не розбирає рядок з дробовим числом напряму (`int(float(\"3.5\"))` працює). `type(x)` повертає точний клас об'єкта, тоді як `isinstance(x, SomeType)` перевіряє, чи є об'єкт цим типом чи будь-яким його підкласом, що майже завжди кращий вибір для валідації, бо коректно враховує спадковість.",
+      "keyPoints": [
+        "int(), float(), str(), bool() convert explicitly and raise ValueError on nonsense input",
+        "int(\"3.5\") fails directly; convert via float first: int(float(\"3.5\"))",
+        "isinstance() respects inheritance and is generally preferred over type() == for checks"
+      ],
+      "keyPointsUk": [
+        "int(), float(), str(), bool() явно перетворюють і викликають ValueError для безглуздого вводу",
+        "int(\"3.5\") провалюється напряму; спершу конвертуйте через float: int(float(\"3.5\"))",
+        "isinstance() враховує спадковість і зазвичай кращий за type() == для перевірок"
+      ],
+      "code": "raw = input(\"Enter a number: \")\ntry:\n    value = int(raw)\nexcept ValueError:\n    print(\"Not a whole number\")\nelse:\n    print(isinstance(value, int))  # True",
+      "codeCaption": "Safely converting user input with error handling instead of assuming the conversion succeeds.",
+      "codeCaptionUk": "Безпечне перетворення вводу користувача з обробкою помилок замість припущення про успіх перетворення.",
+      "pitfalls": [
+        "int(\"  42 \") works (whitespace is stripped), but int(\"42.0\") does not",
+        "Comparing type(x) == list instead of isinstance(x, list) breaks for legitimate list subclasses"
+      ],
+      "pitfallsUk": [
+        "int(\"  42 \") працює (пробіли обрізаються), але int(\"42.0\") — ні",
+        "Порівняння type(x) == list замість isinstance(x, list) ламається для законних підкласів list"
+      ],
+      "exercise": "Write parse_number(text) that returns an int if the text is a whole number, a float if it has a decimal point, or None if it is not a valid number at all.",
+      "exerciseUk": "Напишіть parse_number(text), що повертає int, якщо текст — ціле число, float, якщо має десяткову крапку, або None, якщо це взагалі не дійсне число.",
+      "tags": ["type-conversion", "isinstance"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-if-elif-else",
+      "moduleId": "control-flow",
+      "level": "Beginner",
+      "title": "if, elif and else",
+      "titleUk": "if, elif та else",
+      "summary": "Branching logic with if/elif/else, and the match/case alternative for shape-based branching.",
+      "summaryUk": "Логіка розгалуження через if/elif/else, і альтернатива match/case для розгалуження за формою.",
+      "concept": "An `if` block runs its body only when its condition is truthy; an optional chain of `elif` blocks is checked in order, and only the first one whose condition is true runs; an optional final `else` runs if none of the above did. Indentation, not braces, defines each block's boundaries, so consistent indentation is not a style preference — it is the syntax. Since Python 3.10, `match`/`case` offers a structural alternative for branching on the *shape* of a value rather than a chain of equality checks, useful once you have more than a few related conditions to compare against one value.",
+      "conceptUk": "Блок `if` виконує своє тіло, лише коли умова правдива; необов'язковий ланцюжок блоків `elif` перевіряється по черзі, і виконується лише перший з правдивою умовою; необов'язковий фінальний `else` виконується, якщо жоден з попередніх не спрацював. Межі кожного блоку визначає відступ, а не фігурні дужки, тож послідовний відступ — не стильова перевага, а синтаксис. З Python 3.10 `match`/`case` пропонує структурну альтернативу для розгалуження за *формою* значення, а не ланцюжком перевірок на рівність, корисну, коли треба порівняти більше кількох пов'язаних умов з одним значенням.",
+      "keyPoints": [
+        "elif branches are checked in order; only the first true one runs",
+        "Indentation defines block boundaries — it is syntax, not style",
+        "match/case (3.10+) suits structural branching better than a long elif chain"
+      ],
+      "keyPointsUk": [
+        "Гілки elif перевіряються по черзі; виконується лише перша правдива",
+        "Відступ визначає межі блоку — це синтаксис, а не стиль",
+        "match/case (3.10+) краще підходить для структурного розгалуження, ніж довгий ланцюжок elif"
+      ],
+      "code": "def grade(score):\n    if score >= 90:\n        return \"A\"\n    elif score >= 80:\n        return \"B\"\n    elif score >= 70:\n        return \"C\"\n    else:\n        return \"F\"",
+      "codeCaption": "A grading function using an elif chain, where order matters: highest threshold first.",
+      "codeCaptionUk": "Функція оцінювання з ланцюжком elif, де порядок важливий: спершу найвищий поріг.",
+      "pitfalls": [
+        "Writing elif score >= 70 before elif score >= 80 would make the 80 branch unreachable",
+        "Using multiple separate if statements instead of elif runs every matching block, not just the first"
+      ],
+      "pitfallsUk": [
+        "Написання elif score >= 70 перед elif score >= 80 зробило б гілку 80 недосяжною",
+        "Використання кількох окремих if замість elif виконує кожен відповідний блок, не лише перший"
+      ],
+      "exercise": "Write classify_bmi(bmi) returning \"underweight\", \"normal\", \"overweight\" or \"obese\" using the standard BMI thresholds 18.5, 25 and 30, with an elif chain in the correct order.",
+      "exerciseUk": "Напишіть classify_bmi(bmi), що повертає «underweight», «normal», «overweight» чи «obese» за стандартними порогами ІМТ 18.5, 25 і 30, з ланцюжком elif у правильному порядку.",
+      "tags": ["control-flow", "conditionals"],
+      "sourceIds": ["python-docs-tutorial", "pep-634"]
+    },
+    {
+      "id": "py-lesson-while-loops",
+      "moduleId": "control-flow",
+      "level": "Beginner",
+      "title": "while loops",
+      "titleUk": "Цикли while",
+      "summary": "Repeating code while a condition holds, and why forgetting to update the condition causes an infinite loop.",
+      "summaryUk": "Повторення коду, доки умова виконується, і чому забуття оновлення умови спричиняє нескінченний цикл.",
+      "concept": "A `while condition:` block repeats its body for as long as `condition` remains truthy, re-checking it before every iteration, including the very first. `while` is the right tool when the number of iterations is not known in advance — waiting for user input to satisfy some rule, or processing a queue until it is empty — whereas `for` is better once you are iterating over a known, finite sequence. Every `while` loop needs something inside its body that eventually makes the condition false, or it becomes an infinite loop that only `Ctrl+C` or a crash will stop.",
+      "conceptUk": "Блок `while condition:` повторює своє тіло, доки `condition` залишається правдивою, перевіряючи її перед кожною ітерацією, включно з першою. `while` — правильний інструмент, коли кількість ітерацій наперед невідома — очікування, доки ввід користувача задовольнить якесь правило, чи обробка черги, доки вона не спорожніє, тоді як `for` кращий, коли ітеруєте по відомій, скінченній послідовності. Кожен цикл `while` потребує чогось у своєму тілі, що врешті зробить умову хибною, інакше він стає нескінченним циклом, який зупинить лише `Ctrl+C` чи аварія.",
+      "keyPoints": [
+        "while re-checks its condition before every iteration, including the first",
+        "Use while when the iteration count is unknown ahead of time",
+        "Something in the loop body must eventually make the condition false"
+      ],
+      "keyPointsUk": [
+        "while перевіряє свою умову перед кожною ітерацією, включно з першою",
+        "Використовуйте while, коли кількість ітерацій наперед невідома",
+        "Щось у тілі циклу має врешті зробити умову хибною"
+      ],
+      "code": "attempts = 0\nwhile attempts < 3:\n    guess = input(\"Guess the number: \")\n    if guess == \"7\":\n        print(\"Correct!\")\n        break\n    attempts += 1\nelse:\n    print(\"Out of attempts\")",
+      "codeCaption": "A bounded while loop that tracks attempts, with break on success and a loop-else for exhaustion.",
+      "codeCaptionUk": "Обмежений цикл while, що відстежує спроби, з break при успіху й loop-else при вичерпанні.",
+      "pitfalls": [
+        "while True: with no break anywhere inside runs forever",
+        "Forgetting attempts += 1 here would make the loop run exactly forever, not three times"
+      ],
+      "pitfallsUk": [
+        "while True: без жодного break усередині виконується вічно",
+        "Забуття attempts += 1 тут зробило б цикл абсолютно нескінченним, а не триразовим"
+      ],
+      "exercise": "Write a while loop that keeps asking the user for a positive number and only stops once they enter one, printing an error message for anything else.",
+      "exerciseUk": "Напишіть цикл while, що продовжує запитувати в користувача додатне число й зупиняється лише коли він його введе, друкуючи повідомлення про помилку для всього іншого.",
+      "tags": ["loops", "while"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-for-loops-and-range",
+      "moduleId": "control-flow",
+      "level": "Beginner",
+      "title": "for loops and range()",
+      "titleUk": "Цикли for і range()",
+      "summary": "for iterates directly over a sequence's values; range() generates a lazy sequence of numbers to loop over.",
+      "summaryUk": "for ітерує напряму по значеннях послідовності; range() генерує лінивий набір чисел для проходження.",
+      "concept": "Python's `for item in sequence:` iterates directly over the *values* of a sequence — a list, string, dict, or any iterable — not over numeric indices, which is why there is rarely a need for a C-style counting loop. `range(stop)`, `range(start, stop)` or `range(start, stop, step)` generates a lazy sequence of integers used when you specifically need index positions or a fixed count of repetitions, and `enumerate(sequence)` gives you both the index and the value together when you need both at once, which is more idiomatic than manually tracking a counter.",
+      "conceptUk": "`for item in sequence:` у Python ітерує напряму по *значеннях* послідовності — списку, рядка, словника чи будь-якого ітерованого об'єкта, а не по числових індексах, тому рідко потрібен цикл підрахунку в стилі C. `range(stop)`, `range(start, stop)` чи `range(start, stop, step)` генерує лінивий набір цілих чисел, що використовується, коли конкретно потрібні позиції індексів чи фіксована кількість повторень, а `enumerate(sequence)` дає одразу і індекс, і значення, коли потрібні обидва — це ідіоматичніше за ручне відстеження лічильника.",
+      "keyPoints": [
+        "for item in sequence iterates values directly, no manual indexing needed",
+        "range(start, stop, step) is lazy and commonly used for a fixed repeat count",
+        "enumerate(sequence) gives (index, value) pairs when both are needed"
+      ],
+      "keyPointsUk": [
+        "for item in sequence ітерує значення напряму, ручна індексація не потрібна",
+        "range(start, stop, step) лінивий і часто використовується для фіксованої кількості повторень",
+        "enumerate(sequence) дає пари (індекс, значення), коли потрібні обидва"
+      ],
+      "code": "fruits = [\"apple\", \"banana\", \"cherry\"]\nfor index, fruit in enumerate(fruits, start=1):\n    print(index, fruit)\n\nfor i in range(3):\n    print(\"repeat\", i)",
+      "codeCaption": "enumerate() for index-and-value pairs, and range() for a fixed number of repeats.",
+      "codeCaptionUk": "enumerate() для пар індекс-значення, і range() для фіксованої кількості повторень.",
+      "pitfalls": [
+        "for i in range(len(fruits)): fruits[i] works but is non-idiomatic — prefer for fruit in fruits:",
+        "range(5) produces 0, 1, 2, 3, 4 — five values, not including 5"
+      ],
+      "pitfallsUk": [
+        "for i in range(len(fruits)): fruits[i] працює, але неідіоматично — надавайте перевагу for fruit in fruits:",
+        "range(5) дає 0, 1, 2, 3, 4 — п'ять значень, без включення 5"
+      ],
+      "exercise": "Given a list of names, print each one preceded by its 1-based position, e.g. \"1: Alice\", using enumerate with start=1 instead of manual index math.",
+      "exerciseUk": "Маючи список імен, надрукуйте кожне з попередньою 1-базованою позицією, наприклад «1: Alice», використовуючи enumerate з start=1 замість ручної математики з індексами.",
+      "tags": ["loops", "for", "range", "enumerate"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-break-continue-loop-else",
+      "moduleId": "control-flow",
+      "level": "Beginner",
+      "title": "break, continue and the loop else clause",
+      "titleUk": "break, continue та блок else циклу",
+      "summary": "Exiting a loop early, skipping to the next iteration, and the rarely-used else that runs only if break never fired.",
+      "summaryUk": "Дострокове завершення циклу, перехід до наступної ітерації, та рідко використовуваний else, що виконується лише якщо break не спрацював.",
+      "concept": "`break` immediately exits the innermost enclosing loop entirely, skipping any remaining iterations. `continue` skips the rest of the current iteration's body and jumps straight to the next one, without exiting the loop. Both `for` and `while` support an optional trailing `else:` block that runs only if the loop completed all its iterations *without* hitting a `break` — a natural fit for \"search and report not-found\" patterns, though many developers find an explicit flag variable clearer and use that instead.",
+      "conceptUk": "`break` негайно повністю виходить з найближчого охоплюючого циклу, пропускаючи будь-які ітерації, що залишилися. `continue` пропускає решту тіла поточної ітерації й переходить прямо до наступної, не виходячи з циклу. І `for`, і `while` підтримують необов'язковий кінцевий блок `else:`, що виконується, лише якщо цикл завершив усі ітерації *без* спрацювання `break` — природно підходить для патернів «пошук і звіт про відсутність», хоча багато розробників вважають явну змінну-прапорець зрозумілішою і використовують натомість її.",
+      "keyPoints": [
+        "break exits the loop entirely; continue skips to the next iteration",
+        "A loop's else clause runs only if the loop finished without a break",
+        "An explicit flag variable is often clearer than loop-else for readers unfamiliar with it"
+      ],
+      "keyPointsUk": [
+        "break повністю виходить з циклу; continue переходить до наступної ітерації",
+        "Блок else циклу виконується, лише якщо цикл завершився без break",
+        "Явна змінна-прапорець часто зрозуміліша за loop-else для читачів, незнайомих з ним"
+      ],
+      "code": "for number in range(2, 50):\n    for divisor in range(2, number):\n        if number % divisor == 0:\n            break\n    else:\n        print(number, \"is prime\")",
+      "codeCaption": "A classic use of for-else: the else only prints when no divisor caused a break, meaning the number is prime.",
+      "codeCaptionUk": "Класичне використання for-else: else друкує лише коли жоден дільник не спричинив break, тобто число просте.",
+      "pitfalls": [
+        "Confusing loop-else with if-else — it runs on non-break completion, not on any specific condition",
+        "continue inside a while loop skips the update step too if that step comes after it, risking an infinite loop"
+      ],
+      "pitfallsUk": [
+        "Плутання loop-else з if-else — він виконується при завершенні без break, а не за якоюсь конкретною умовою",
+        "continue всередині циклу while також пропускає крок оновлення, якщо він йде після нього, ризикуючи нескінченним циклом"
+      ],
+      "exercise": "Write a loop over a list of numbers that skips negative numbers with continue, stops entirely if it finds a number greater than 100 with break, and otherwise sums the valid numbers.",
+      "exerciseUk": "Напишіть цикл над списком чисел, що пропускає від'ємні числа через continue, повністю зупиняється, якщо знаходить число більше за 100, через break, і інакше підсумовує дійсні числа.",
+      "tags": ["loops", "break", "continue"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-defining-functions",
+      "moduleId": "functions-and-scope",
+      "level": "Beginner",
+      "title": "Defining and calling functions",
+      "titleUk": "Визначення та виклик функцій",
+      "summary": "def creates a reusable, named block of code; functions exist to avoid repeating yourself.",
+      "summaryUk": "def створює повторно використовуваний, названий блок коду; функції існують, щоб уникнути повторення.",
+      "concept": "`def name(parameters):` followed by an indented body defines a function; the code inside does not run until the function is *called* with `name(arguments)`. A function without an explicit `return` statement implicitly returns `None`. Functions exist primarily to avoid duplicating the same logic in multiple places — when a calculation or action is needed more than once, wrapping it in a function means a future bug fix or behavior change only needs to happen in one place instead of every copy.",
+      "conceptUk": "`def name(parameters):`, за яким йде тіло з відступом, визначає функцію; код усередині не виконується, доки функцію не *викличуть* через `name(arguments)`. Функція без явного оператора `return` неявно повертає `None`. Функції існують передусім, щоб уникнути дублювання тієї самої логіки в кількох місцях — коли розрахунок чи дія потрібні більше одного разу, обгортання їх у функцію означає, що майбутнє виправлення помилки чи зміна поведінки має статися лише в одному місці замість кожної копії.",
+      "keyPoints": [
+        "def defines a function; the body only runs when the function is called",
+        "A function with no return statement implicitly returns None",
+        "Functions eliminate duplicated logic so fixes only need to happen in one place"
+      ],
+      "keyPointsUk": [
+        "def визначає функцію; тіло виконується лише коли функцію викликають",
+        "Функція без оператора return неявно повертає None",
+        "Функції усувають дубльовану логіку, тож виправлення потрібне лише в одному місці"
+      ],
+      "code": "def rectangle_area(width, height):\n    return width * height\n\ndef rectangle_perimeter(width, height):\n    return 2 * (width + height)\n\nprint(rectangle_area(3, 4), rectangle_perimeter(3, 4))",
+      "codeCaption": "Two small, single-purpose functions instead of repeating the width*height calculation inline everywhere it's needed.",
+      "codeCaptionUk": "Дві маленькі, однопризначені функції замість повторення розрахунку width*height прямо в кожному місці, де він потрібен.",
+      "pitfalls": [
+        "Defining a function does not run it — a common early confusion is expecting output before calling it",
+        "Forgetting return means the function's result is silently None, even if it printed something internally"
+      ],
+      "pitfallsUk": [
+        "Визначення функції не запускає її — часта рання плутанина: очікування виводу до її виклику",
+        "Забуття return означає, що результат функції тихо стає None, навіть якщо вона щось надрукувала всередині"
+      ],
+      "exercise": "Write a function is_palindrome(text) that returns True if text reads the same forwards and backwards, ignoring case, and call it with three different test strings.",
+      "exerciseUk": "Напишіть функцію is_palindrome(text), що повертає True, якщо text читається однаково вперед і назад, ігноруючи регістр, і викличте її з трьома різними тестовими рядками.",
+      "tags": ["functions", "fundamentals"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-parameters-and-return",
+      "moduleId": "functions-and-scope",
+      "level": "Beginner",
+      "title": "Parameters, arguments and returning values",
+      "titleUk": "Параметри, аргументи та повернення значень",
+      "summary": "Parameters are placeholders in the definition; arguments are the actual values passed at call time.",
+      "summaryUk": "Параметри — заповнювачі у визначенні; аргументи — реальні значення, передані під час виклику.",
+      "concept": "A *parameter* is the name listed in a function's `def` line; an *argument* is the actual value supplied when the function is called — the distinction matters when reading error messages that mention one or the other. A function can `return` any single object, including a tuple, which is how a function appears to \"return multiple values\": `return a, b` actually returns one tuple `(a, b)` that the caller typically unpacks immediately with `x, y = func()`. `return` also exits the function immediately, so any code written after a `return` statement in the same block never executes.",
+      "conceptUk": "*Параметр* — це ім'я, перелічене в рядку `def` функції; *аргумент* — реальне значення, надане при виклику функції — ця різниця важлива при читанні повідомлень про помилки, що згадують одне чи інше. Функція може `return` будь-який єдиний об'єкт, включно з кортежем, і саме так функція виглядає такою, що «повертає кілька значень»: `return a, b` насправді повертає один кортеж `(a, b)`, який викликач зазвичай одразу розпаковує через `x, y = func()`. `return` також негайно завершує функцію, тож будь-який код, написаний після оператора `return` у тому самому блоці, ніколи не виконується.",
+      "keyPoints": [
+        "Parameter = name in the def line; argument = actual value passed at call time",
+        "return a, b returns one tuple (a, b), typically unpacked by the caller",
+        "return exits the function immediately; later code in the same block never runs"
+      ],
+      "keyPointsUk": [
+        "Параметр = ім'я в рядку def; аргумент = реальне значення, передане при виклику",
+        "return a, b повертає один кортеж (a, b), зазвичай розпакований викликачем",
+        "return негайно завершує функцію; пізніший код у тому самому блоці ніколи не виконується"
+      ],
+      "code": "def min_max(numbers):\n    return min(numbers), max(numbers)\n\nlowest, highest = min_max([4, 1, 9, 3])\nprint(lowest, highest)  # 1 9",
+      "codeCaption": "Returning a tuple to give the appearance of multiple return values, unpacked at the call site.",
+      "codeCaptionUk": "Повернення кортежу, щоб створити ефект кількох значень, що повертаються, розпакованих у місці виклику.",
+      "pitfalls": [
+        "Code placed after a return statement in the same branch is unreachable dead code",
+        "Calling min_max([4, 1, 9, 3]) but writing `result = min_max(...)` then treating result as two separate variables raises a mistake — you need explicit unpacking"
+      ],
+      "pitfallsUk": [
+        "Код, розміщений після оператора return у тій самій гілці, — недосяжний мертвий код",
+        "Виклик min_max([4, 1, 9, 3]), але написання `result = min_max(...)`, а потім трактування result як двох окремих змінних — помилка, потрібна явна розпаковка"
+      ],
+      "exercise": "Write divide_with_remainder(a, b) that returns both the integer quotient and the remainder as a tuple, and unpack the result into two named variables at the call site.",
+      "exerciseUk": "Напишіть divide_with_remainder(a, b), що повертає і цілу частку, і остачу як кортеж, і розпакуйте результат у дві іменовані змінні в місці виклику.",
+      "tags": ["functions", "return"],
+      "sourceIds": ["python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-default-and-keyword-arguments",
+      "moduleId": "functions-and-scope",
+      "level": "Beginner",
+      "title": "Default values and keyword arguments",
+      "titleUk": "Значення за замовчуванням і іменовані аргументи",
+      "summary": "Making some parameters optional with defaults, and calling functions with explicit argument names for clarity.",
+      "summaryUk": "Робимо деякі параметри необов'язковими через значення за замовчуванням, і викликаємо функції з явними іменами аргументів для ясності.",
+      "concept": "`def greet(name, greeting=\"Hello\"):` gives `greeting` a default value, making it optional at the call site — callers who do not care about it can simply omit it. Arguments can be passed positionally (`greet(\"Ana\")`, matched by order) or by keyword (`greet(name=\"Ana\", greeting=\"Hi\")`, matched by name), and keyword arguments both improve readability at a call site with several similar-looking parameters and let you skip earlier optional arguments to set only a later one. Parameters with defaults must come after parameters without them in the definition.",
+      "conceptUk": "`def greet(name, greeting=\"Hello\"):` дає `greeting` значення за замовчуванням, роблячи його необов'язковим у місці виклику — викликачі, яким воно байдуже, можуть просто його опустити. Аргументи можна передавати позиційно (`greet(\"Ana\")`, зіставлення за порядком) чи іменовано (`greet(name=\"Ana\", greeting=\"Hi\")`, зіставлення за іменем), і іменовані аргументи покращують читабельність у місці виклику з кількома схожими параметрами й дозволяють пропустити попередні необов'язкові аргументи, щоб встановити лише пізніший. Параметри зі значеннями за замовчуванням мають йти після параметрів без них у визначенні.",
+      "keyPoints": [
+        "A default value (name=default) makes a parameter optional at the call site",
+        "Arguments can be matched by position or by explicit keyword name",
+        "Parameters with defaults must come after ones without defaults in the signature"
+      ],
+      "keyPointsUk": [
+        "Значення за замовчуванням (name=default) робить параметр необов'язковим у виклику",
+        "Аргументи можна зіставляти за позицією чи явним іменем",
+        "Параметри зі значеннями за замовчуванням мають йти після параметрів без них у сигнатурі"
+      ],
+      "code": "def create_user(username, is_admin=False, active=True):\n    return {\"username\": username, \"is_admin\": is_admin, \"active\": active}\n\ncreate_user(\"ana\")\ncreate_user(\"bob\", is_admin=True)\ncreate_user(username=\"cleo\", active=False, is_admin=False)",
+      "codeCaption": "Three calls showing positional-only, mixed, and fully-keyword argument styles.",
+      "codeCaptionUk": "Три виклики, що показують стилі лише позиційних, змішаних і повністю іменованих аргументів.",
+      "pitfalls": [
+        "def f(a=1, b):  is a SyntaxError — non-default parameters cannot follow default ones",
+        "As covered separately, a mutable default like items=[] is shared and mutated across calls"
+      ],
+      "pitfallsUk": [
+        "def f(a=1, b):  — SyntaxError; параметри без замовчування не можуть йти після параметрів зі замовчуванням",
+        "Як розглянуто окремо, змінюване значення за замовчуванням на кшталт items=[] спільне й змінюється між викликами"
+      ],
+      "exercise": "Write format_price(amount, currency=\"USD\", show_cents=True) and call it three ways: with just amount, with a different currency by keyword, and with show_cents=False.",
+      "exerciseUk": "Напишіть format_price(amount, currency=\"USD\", show_cents=True) і викличте її трьома способами: лише з amount, з іншою валютою через іменований аргумент, і з show_cents=False.",
+      "tags": ["functions", "default-arguments"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-variable-scope-basics",
+      "moduleId": "functions-and-scope",
+      "level": "Beginner",
+      "title": "Variable scope: local versus global",
+      "titleUk": "Область видимості змінних: локальна проти глобальної",
+      "summary": "A variable created inside a function only exists inside that function, unless declared global.",
+      "summaryUk": "Змінна, створена всередині функції, існує лише всередині цієї функції, якщо не оголошена global.",
+      "concept": "A variable assigned inside a function is *local* to that function by default: it is created fresh on each call and disappears when the function returns, completely invisible outside it. A function can freely *read* a variable defined at module level (global scope) without any special declaration, but assigning to a name inside a function makes Python treat that name as local for the entire function body unless you explicitly write `global name` first — this is exactly the source of the common `UnboundLocalError` beginners hit when they try to modify a global counter from inside a function.",
+      "conceptUk": "Змінна, присвоєна всередині функції, за замовчуванням *локальна* для цієї функції: вона створюється заново при кожному виклику й зникає, коли функція повертається, повністю невидима ззовні. Функція може вільно *читати* змінну, визначену на рівні модуля (глобальна область), без жодного спеціального оголошення, але присвоєння імені всередині функції змушує Python трактувати це ім'я як локальне для всього тіла функції, якщо ви явно спершу не напишете `global name` — це саме джерело поширеної `UnboundLocalError`, з якою стикаються початківці, намагаючись змінити глобальний лічильник зсередини функції.",
+      "keyPoints": [
+        "A variable assigned inside a function is local by default, gone once the function returns",
+        "Reading a global variable from inside a function needs no special syntax",
+        "Assigning to a global variable from inside a function requires an explicit global declaration"
+      ],
+      "keyPointsUk": [
+        "Змінна, присвоєна всередині функції, за замовчуванням локальна, зникає після повернення функції",
+        "Читання глобальної змінної зсередини функції не потребує спеціального синтаксису",
+        "Присвоєння глобальній змінній зсередини функції потребує явного оголошення global"
+      ],
+      "code": "total_calls = 0\n\ndef log_call():\n    global total_calls\n    total_calls += 1\n\nlog_call()\nlog_call()\nprint(total_calls)  # 2",
+      "codeCaption": "Explicitly declaring global to modify a module-level counter from inside a function.",
+      "codeCaptionUk": "Явне оголошення global для зміни лічильника рівня модуля зсередини функції.",
+      "pitfalls": [
+        "Removing `global total_calls` here makes total_calls += 1 raise UnboundLocalError",
+        "Overusing global variables makes functions harder to test and reason about in isolation — prefer passing values as arguments and returning results"
+      ],
+      "pitfallsUk": [
+        "Видалення `global total_calls` тут робить так, що total_calls += 1 викликає UnboundLocalError",
+        "Надмірне використання глобальних змінних ускладнює тестування й розуміння функцій ізольовано — надавайте перевагу передачі значень як аргументів і поверненню результатів"
+      ],
+      "exercise": "Write a function that tries to increment a global counter without declaring global, observe the UnboundLocalError, then fix it, and explain in one sentence why the error happened.",
+      "exerciseUk": "Напишіть функцію, що намагається збільшити глобальний лічильник без оголошення global, спостерігайте UnboundLocalError, потім виправте це й поясніть одним реченням, чому сталася помилка.",
+      "tags": ["scope", "global"],
+      "sourceIds": ["python-docs-language-reference", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-lists",
+      "moduleId": "core-data-structures",
+      "level": "Beginner",
+      "title": "Lists: ordered, mutable collections",
+      "titleUk": "Списки: впорядковані, змінювані колекції",
+      "summary": "The everyday workhorse collection: ordered, indexable, mutable, and allows duplicate values.",
+      "summaryUk": "Повсякденна робоча колекція: впорядкована, індексована, змінювана, дозволяє повторювані значення.",
+      "concept": "A `list`, written `[1, 2, 3]`, keeps its elements in the order they were added, allows duplicates, and can be modified in place with methods like `.append()`, `.insert()`, `.remove()` and `.pop()`. Elements are accessed by zero-based index (`items[0]`) or sliced (`items[1:3]`), and negative indices count from the end (`items[-1]` is the last element). Lists are the right default choice for an ordered, growable collection of related items — reach for a `set` instead only once uniqueness and fast membership testing matter more than order.",
+      "conceptUk": "`list`, записаний як `[1, 2, 3]`, зберігає свої елементи в порядку додавання, дозволяє дублікати й може змінюватися на місці методами на кшталт `.append()`, `.insert()`, `.remove()` та `.pop()`. Елементи доступні за індексом з нуля (`items[0]`) чи через зріз (`items[1:3]`), а від'ємні індекси рахуються з кінця (`items[-1]` — останній елемент). Списки — правильний типовий вибір для впорядкованої, зростаючої колекції пов'язаних елементів — сягайте по `set` натомість, лише коли унікальність і швидка перевірка належності важливіші за порядок.",
+      "keyPoints": [
+        "Lists preserve insertion order, allow duplicates, and are mutable",
+        ".append(x) adds to the end, .insert(i, x) adds at a position, .pop() removes and returns",
+        "Negative indices and slices (items[1:3], items[::-1]) work the same as on strings"
+      ],
+      "keyPointsUk": [
+        "Списки зберігають порядок вставки, дозволяють дублікати, і змінювані",
+        ".append(x) додає в кінець, .insert(i, x) додає на позицію, .pop() видаляє й повертає",
+        "Від'ємні індекси й зрізи (items[1:3], items[::-1]) працюють так само, як для рядків"
+      ],
+      "code": "cart = [\"bread\", \"milk\"]\ncart.append(\"eggs\")\ncart.insert(0, \"coffee\")\ncart.remove(\"milk\")\nprint(cart)          # ['coffee', 'bread', 'eggs']\nprint(cart[-1])      # eggs",
+      "codeCaption": "Building and modifying a shopping cart list with the most common list methods.",
+      "codeCaptionUk": "Побудова й зміна списку кошика покупок найпоширенішими методами списку.",
+      "pitfalls": [
+        ".remove(value) removes only the first matching value and raises ValueError if none exists",
+        "Modifying a list while iterating over it directly (for x in items: items.remove(x)) skips elements unpredictably"
+      ],
+      "pitfallsUk": [
+        ".remove(value) видаляє лише перше відповідне значення й викликає ValueError, якщо жодного немає",
+        "Зміна списку під час прямої ітерації по ньому (for x in items: items.remove(x)) непередбачувано пропускає елементи"
+      ],
+      "exercise": "Given a list of task names, write code that adds a new task, removes a completed one by name, and prints the tasks in reverse order using slicing.",
+      "exerciseUk": "Маючи список назв завдань, напишіть код, що додає нове завдання, видаляє завершене за назвою й друкує завдання у зворотному порядку через зрізи.",
+      "tags": ["lists", "data-structures"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-tuples",
+      "moduleId": "core-data-structures",
+      "level": "Beginner",
+      "title": "Tuples: fixed, immutable records",
+      "titleUk": "Кортежі: фіксовані, незмінювані записи",
+      "summary": "Tuples look like lists but signal \"this shape is fixed\" and can be used as dict keys.",
+      "summaryUk": "Кортежі виглядають як списки, але сигналізують «ця форма фіксована» і можуть бути ключами словника.",
+      "concept": "A `tuple`, written `(1, 2, 3)` (or even without parentheses in many contexts), behaves like a list for reading — indexing, slicing, iterating — but cannot be modified after creation: no `.append()`, no item assignment. This immutability is a feature, not a limitation: it signals to readers that a value's shape will not change, and it makes a tuple hashable (as long as its elements are), so it can be used as a dictionary key or set member, which a list never can. A single-element tuple needs a trailing comma — `(5,)`, not `(5)` — because parentheses alone just group an expression.",
+      "conceptUk": "`tuple`, записаний як `(1, 2, 3)` (чи навіть без дужок у багатьох контекстах), поводиться як список для читання — індексація, зрізи, ітерація — але не може змінюватись після створення: жодного `.append()`, жодного присвоєння елементу. Ця незмінюваність — риса, а не обмеження: вона сигналізує читачам, що форма значення не зміниться, і робить кортеж хешованим (доки хешовані його елементи), тож його можна використати як ключ словника чи елемент множини, чого список ніколи не може. Однoелементний кортеж потребує кінцевої коми — `(5,)`, не `(5)` — бо самі дужки просто групують вираз.",
+      "keyPoints": [
+        "Tuples support reading like lists but cannot be modified after creation",
+        "Immutability makes a tuple hashable, so it can be a dict key or set member",
+        "A one-element tuple needs a trailing comma: (5,) not (5)"
+      ],
+      "keyPointsUk": [
+        "Кортежі підтримують читання як списки, але не можуть змінюватись після створення",
+        "Незмінюваність робить кортеж хешованим, тож він може бути ключем словника чи елементом множини",
+        "Однoелементний кортеж потребує кінцевої коми: (5,), а не (5)"
+      ],
+      "code": "point = (3, 4)\ndistances = {}\ndistances[point] = 5.0   # tuples work as dict keys\nx, y = point              # unpacking\nsingle = (5,)              # one-element tuple",
+      "codeCaption": "Using a tuple as a dict key, unpacking one into named variables, and the trailing-comma one-element form.",
+      "codeCaptionUk": "Використання кортежу як ключа словника, розпаковка в іменовані змінні, і однoелементна форма з кінцевою комою.",
+      "pitfalls": [
+        "(5) is just the integer 5 in parentheses, not a tuple — (5,) is required",
+        "point.append(1) raises AttributeError; tuples have no mutating methods at all"
+      ],
+      "pitfallsUk": [
+        "(5) — просто число 5 в дужках, не кортеж — потрібна (5,)",
+        "point.append(1) викликає AttributeError; кортежі взагалі не мають методів зміни"
+      ],
+      "exercise": "Write a function that takes a list of (name, score) tuples and returns the name from the tuple with the highest score, unpacking each tuple in the loop.",
+      "exerciseUk": "Напишіть функцію, що приймає список кортежів (name, score) і повертає ім'я з кортежу з найвищим рахунком, розпаковуючи кожен кортеж у циклі.",
+      "tags": ["tuples", "data-structures"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-dictionaries",
+      "moduleId": "core-data-structures",
+      "level": "Beginner",
+      "title": "Dictionaries: key-value mappings",
+      "titleUk": "Словники: відображення ключ-значення",
+      "summary": "The primary tool for storing and looking up data by a meaningful name instead of a numeric position.",
+      "summaryUk": "Основний інструмент для зберігання й пошуку даних за значущим іменем замість числової позиції.",
+      "concept": "A `dict`, written `{\"name\": \"Ada\", \"age\": 36}`, maps unique, hashable keys to values, preserves insertion order (guaranteed since Python 3.7), and gives average O(1) lookup, insertion and deletion by key. Access a value with `d[\"key\"]` (raises `KeyError` if missing) or `d.get(\"key\", default)` (returns `default` instead of raising), iterate keys directly with `for key in d:`, and get key-value pairs together with `.items()`. Dictionaries are the natural fit whenever data is more naturally addressed by name than by position.",
+      "conceptUk": "`dict`, записаний як `{\"name\": \"Ada\", \"age\": 36}`, відображає унікальні, хешовані ключі на значення, зберігає порядок вставки (гарантовано з Python 3.7) і дає в середньому O(1) для пошуку, вставки й видалення за ключем. Доступ до значення через `d[\"key\"]` (викликає `KeyError`, якщо відсутній) чи `d.get(\"key\", default)` (повертає `default` замість помилки), ітерація ключів напряму через `for key in d:`, і отримання пар ключ-значення разом через `.items()`. Словники природно підходять, коли до даних природніше звертатися за іменем, ніж за позицією.",
+      "keyPoints": [
+        "d[key] raises KeyError if missing; d.get(key, default) returns default instead",
+        "Dicts preserve insertion order and give average O(1) lookup by key",
+        "for k, v in d.items(): iterates keys and values together"
+      ],
+      "keyPointsUk": [
+        "d[key] викликає KeyError, якщо відсутній; d.get(key, default) повертає default натомість",
+        "Словники зберігають порядок вставки й дають в середньому O(1) для пошуку за ключем",
+        "for k, v in d.items(): ітерує ключі й значення разом"
+      ],
+      "code": "prices = {\"apple\": 1.2, \"banana\": 0.5}\nprices[\"cherry\"] = 3.0\nprint(prices.get(\"kiwi\", 0.0))   # 0.0, no KeyError\nfor item, price in prices.items():\n    print(f\"{item}: ${price:.2f}\")",
+      "codeCaption": "Adding a key, safely looking up a missing one with a default, and iterating key-value pairs.",
+      "codeCaptionUk": "Додавання ключа, безпечний пошук відсутнього з значенням за замовчуванням, і ітерація пар ключ-значення.",
+      "pitfalls": [
+        "prices[\"kiwi\"] raises KeyError if the key is genuinely absent — use .get() or `in` to check safely first",
+        "Dict keys must be hashable — using a list as a key raises TypeError"
+      ],
+      "pitfallsUk": [
+        "prices[\"kiwi\"] викликає KeyError, якщо ключа справді немає — використовуйте .get() чи `in` для безпечної перевірки спершу",
+        "Ключі словника мають бути хешовані — використання списку як ключа викликає TypeError"
+      ],
+      "exercise": "Write word_counts(text) that returns a dict mapping each word in text to how many times it appears, using .get(word, 0) + 1 to accumulate counts.",
+      "exerciseUk": "Напишіть word_counts(text), що повертає словник, який відображає кожне слово в text на кількість його появ, використовуючи .get(word, 0) + 1 для накопичення підрахунків.",
+      "tags": ["dictionaries", "data-structures"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-sets",
+      "moduleId": "core-data-structures",
+      "level": "Beginner",
+      "title": "Sets: unique, unordered collections",
+      "titleUk": "Множини: унікальні, невпорядковані колекції",
+      "summary": "Sets automatically deduplicate and offer fast membership testing plus mathematical set operations.",
+      "summaryUk": "Множини автоматично усувають дублікати й надають швидку перевірку належності та математичні операції над множинами.",
+      "concept": "A `set`, written `{1, 2, 3}` or `set(iterable)`, stores only unique, hashable elements with no guaranteed order, and offers average O(1) membership testing with `in`. Converting a list to a set (`set(my_list)`) is the standard one-line way to deduplicate values, and sets support the mathematical operators `|` (union), `&` (intersection), `-` (difference) and `^` (symmetric difference) directly, which read far more clearly than the equivalent loops. Because order is not preserved, sets are unsuitable whenever the original sequence order matters.",
+      "conceptUk": "`set`, записаний як `{1, 2, 3}` чи `set(iterable)`, зберігає лише унікальні, хешовані елементи без гарантованого порядку і пропонує в середньому O(1) перевірку належності через `in`. Перетворення списку на множину (`set(my_list)`) — стандартний однорядковий спосіб дедуплікації значень, а множини напряму підтримують математичні оператори `|` (об'єднання), `&` (перетин), `-` (різниця) та `^` (симетрична різниця), що читаються набагато ясніше за еквівалентні цикли. Оскільки порядок не зберігається, множини непридатні, коли важливий порядок оригінальної послідовності.",
+      "keyPoints": [
+        "set(list) is the standard one-line way to deduplicate values",
+        "in on a set averages O(1), versus O(n) on a list",
+        "| & - ^ give union, intersection, difference and symmetric difference directly"
+      ],
+      "keyPointsUk": [
+        "set(list) — стандартний однорядковий спосіб дедуплікації значень",
+        "in на множині в середньому O(1), проти O(n) на списку",
+        "| & - ^ напряму дають об'єднання, перетин, різницю й симетричну різницю"
+      ],
+      "code": "visited = {\"paris\", \"tokyo\"}\nwishlist = {\"tokyo\", \"cairo\"}\nprint(visited & wishlist)   # {'tokyo'}\nprint(visited | wishlist)   # union of both\nprint(wishlist - visited)   # {'cairo'}",
+      "codeCaption": "Set operations answering \"visited and wanted\", \"either\", and \"wanted but not yet visited\" in one expression each.",
+      "codeCaptionUk": "Операції множин, що відповідають на «відвідано й бажано», «будь-яке» та «бажано, але ще не відвідано» одним виразом кожна.",
+      "pitfalls": [
+        "{} creates an empty dict, not an empty set — use set() for an empty set",
+        "Sets do not preserve insertion order or support indexing like my_set[0]"
+      ],
+      "pitfallsUk": [
+        "{} створює порожній dict, не порожню множину — використовуйте set() для порожньої множини",
+        "Множини не зберігають порядок вставки й не підтримують індексацію на кшталт my_set[0]"
+      ],
+      "exercise": "Given two lists of email addresses representing this month's and last month's subscribers, use set operations to find who unsubscribed and who is new.",
+      "exerciseUk": "Маючи два списки email-адрес, що представляють підписників цього й минулого місяця, використайте операції множин, щоб знайти, хто відписався, а хто новий.",
+      "tags": ["sets", "data-structures"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-comprehensions",
+      "moduleId": "core-data-structures",
+      "level": "Intermediate",
+      "title": "List, dict and set comprehensions",
+      "titleUk": "List, dict і set comprehension",
+      "summary": "A compact, idiomatic way to build a new collection by transforming and filtering an existing one.",
+      "summaryUk": "Компактний, ідіоматичний спосіб побудувати нову колекцію, трансформуючи й фільтруючи наявну.",
+      "concept": "A list comprehension `[expr for item in iterable if condition]` builds a new list by evaluating `expr` for each `item` that satisfies the optional `if condition`, replacing the equivalent four-line loop-and-append pattern with one readable line. The exact same syntax works for dicts (`{k: v for k, v in pairs}`) and sets (`{expr for item in iterable}`), and comprehensions can be nested for combinations, though nesting more than two levels usually hurts readability enough that a plain loop becomes clearer again.",
+      "conceptUk": "List comprehension `[expr for item in iterable if condition]` будує новий список, обчислюючи `expr` для кожного `item`, що задовольняє необов'язкову `if condition`, замінюючи еквівалентний чотирирядковий патерн циклу з append одним читабельним рядком. Точно той самий синтаксис працює для словників (`{k: v for k, v in pairs}`) і множин (`{expr for item in iterable}`), і comprehension можна вкладати для комбінацій, хоча вкладеність більше двох рівнів зазвичай настільки шкодить читабельності, що звичайний цикл знову стає зрозумілішим.",
+      "keyPoints": [
+        "[expr for item in iterable if condition] replaces a loop-and-append pattern",
+        "The same syntax works for dict and set comprehensions with {}",
+        "Nesting more than two levels usually hurts readability more than it helps"
+      ],
+      "keyPointsUk": [
+        "[expr for item in iterable if condition] замінює патерн циклу з append",
+        "Той самий синтаксис працює для dict і set comprehension з {}",
+        "Вкладеність понад два рівні зазвичай шкодить читабельності більше, ніж допомагає"
+      ],
+      "code": "squares = [n ** 2 for n in range(10) if n % 2 == 0]\nname_lengths = {name: len(name) for name in [\"Ana\", \"Bo\", \"Cleo\"]}\nunique_lengths = {len(word) for word in [\"cat\", \"dog\", \"fox\", \"owl\"]}",
+      "codeCaption": "A list comprehension with a filter, a dict comprehension, and a set comprehension, side by side.",
+      "codeCaptionUk": "List comprehension з фільтром, dict comprehension і set comprehension поряд.",
+      "pitfalls": [
+        "A comprehension with side effects (like calling a function purely for its side effect) is a misuse — use a plain for loop for side effects",
+        "Deeply nested comprehensions become harder to read than the loop they replaced"
+      ],
+      "pitfallsUk": [
+        "Comprehension з побічними ефектами (наприклад, виклик функції суто заради побічного ефекту) — неправильне використання — для побічних ефектів використовуйте звичайний цикл for",
+        "Глибоко вкладені comprehension стають важчими для читання за цикл, який вони замінили"
+      ],
+      "exercise": "Given a list of words, write one dict comprehension that maps each word to True if it has more than 4 letters and False otherwise.",
+      "exerciseUk": "Маючи список слів, напишіть один dict comprehension, що відображає кожне слово на True, якщо воно має більше 4 літер, і False інакше.",
+      "tags": ["comprehensions", "data-structures"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-string-methods",
+      "moduleId": "strings-and-text-formatting",
+      "level": "Beginner",
+      "title": "Common string methods",
+      "titleUk": "Поширені методи рядків",
+      "summary": "Strings are immutable, so every method that transforms text returns a brand-new string.",
+      "summaryUk": "Рядки незмінювані, тож кожен метод, що трансформує текст, повертає новий рядок.",
+      "concept": "Every string method — `.upper()`, `.lower()`, `.strip()`, `.replace(old, new)`, `.startswith(prefix)`, `.endswith(suffix)` — returns a new string rather than modifying the original in place, because strings are immutable. `.strip()` (and `.lstrip()`/`.rstrip()`) removes leading/trailing whitespace by default, or any characters you specify. `in` checks substring containment directly (`\"cat\" in \"concatenate\"` is `True`), and `.find(sub)` returns the index of the first match or `-1` if not found, while `.index(sub)` does the same but raises `ValueError` instead of returning `-1`.",
+      "conceptUk": "Кожен метод рядка — `.upper()`, `.lower()`, `.strip()`, `.replace(old, new)`, `.startswith(prefix)`, `.endswith(suffix)` — повертає новий рядок, а не змінює оригінал на місці, бо рядки незмінювані. `.strip()` (і `.lstrip()`/`.rstrip()`) видаляє пробіли на початку/в кінці за замовчуванням, чи будь-які вказані символи. `in` напряму перевіряє входження підрядка (`\"cat\" in \"concatenate\"` дає `True`), а `.find(sub)` повертає індекс першого збігу чи `-1`, якщо не знайдено, тоді як `.index(sub)` робить те саме, але викликає `ValueError` замість повернення `-1`.",
+      "keyPoints": [
+        "String methods always return a new string; the original is never modified",
+        "in checks substring containment; .find() returns -1 if missing, .index() raises",
+        ".strip()/.lstrip()/.rstrip() remove whitespace or specified characters from the edges"
+      ],
+      "keyPointsUk": [
+        "Методи рядків завжди повертають новий рядок; оригінал ніколи не змінюється",
+        "in перевіряє входження підрядка; .find() повертає -1, якщо відсутній, .index() викликає помилку",
+        ".strip()/.lstrip()/.rstrip() видаляють пробіли чи вказані символи з країв"
+      ],
+      "code": "raw = \"  Hello, World!  \"\nclean = raw.strip()\nprint(clean.lower())          # hello, world!\nprint(clean.replace(\"World\", \"Python\"))\nprint(\"World\" in clean)       # True",
+      "codeCaption": "Cleaning up whitespace, changing case, replacing a substring and checking containment.",
+      "codeCaptionUk": "Очищення пробілів, зміна регістру, заміна підрядка й перевірка входження.",
+      "pitfalls": [
+        "raw.strip() does not change raw itself — you must reassign the result",
+        "\"Hello\".index(\"z\") raises ValueError; use .find() if a missing substring shouldn't crash the program"
+      ],
+      "pitfallsUk": [
+        "raw.strip() не змінює сам raw — потрібно повторно присвоїти результат",
+        "\"Hello\".index(\"z\") викликає ValueError; використовуйте .find(), якщо відсутність підрядка не має ламати програму"
+      ],
+      "exercise": "Write clean_username(text) that strips whitespace, lowercases the result, and replaces any spaces in the middle with underscores.",
+      "exerciseUk": "Напишіть clean_username(text), що обрізає пробіли, переводить результат у нижній регістр і замінює будь-які пробіли всередині на підкреслення.",
+      "tags": ["strings", "string-methods"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-f-strings",
+      "moduleId": "strings-and-text-formatting",
+      "level": "Beginner",
+      "title": "f-strings for readable formatting",
+      "titleUk": "f-рядки для читабельного форматування",
+      "summary": "The modern, preferred way to build strings with embedded values, prefixed with f and using {expression}.",
+      "summaryUk": "Сучасний, кращий спосіб побудови рядків із вбудованими значеннями, з префіксом f і {expression}.",
+      "concept": "An f-string, written `f\"...\"`, evaluates any Python expression placed inside `{}` directly where it appears in the string, converting it to text automatically — including method calls and arithmetic, not just plain variable names. A colon after the expression introduces an optional format spec for controlling decimal places, padding, alignment and thousands separators, such as `f\"{price:.2f}\"` for exactly two decimal places or `f\"{count:,}\"` for a thousands separator. f-strings are evaluated once, at the point they run, so they always reflect the current value of any variable they reference.",
+      "conceptUk": "f-рядок, записаний як `f\"...\"`, обчислює будь-який вираз Python, розміщений усередині `{}`, прямо там, де він з'являється в рядку, автоматично перетворюючи його на текст — включно з викликами методів і арифметикою, не лише простими іменами змінних. Двокрапка після виразу вводить необов'язкову специфікацію формату для контролю кількості десяткових знаків, вирівнювання й роздільників тисяч, наприклад `f\"{price:.2f}\"` для рівно двох десяткових знаків чи `f\"{count:,}\"` для роздільника тисяч. f-рядки обчислюються один раз, у момент виконання, тож завжди відображають поточне значення будь-якої змінної, на яку посилаються.",
+      "keyPoints": [
+        "f\"{expr}\" evaluates any expression, not just a plain variable name",
+        "A format spec after a colon controls decimals, padding and thousands separators",
+        "f-strings are evaluated at the moment they run, always showing the current value"
+      ],
+      "keyPointsUk": [
+        "f\"{expr}\" обчислює будь-який вираз, не лише просте ім'я змінної",
+        "Специфікація формату після двокрапки контролює десяткові знаки, вирівнювання й роздільники тисяч",
+        "f-рядки обчислюються в момент виконання, завжди показуючи поточне значення"
+      ],
+      "code": "name = \"Ana\"\nitems = 3\ntotal = 47.5\nprint(f\"{name} bought {items} items for ${total:.2f}\")\nprint(f\"{name.upper()} — {items * 2} next time\")",
+      "codeCaption": "An f-string with a format spec for currency, and another showing a method call and arithmetic inline.",
+      "codeCaptionUk": "f-рядок зі специфікацією формату для валюти, і ще один, що показує виклик методу й арифметику прямо всередині.",
+      "pitfalls": [
+        "Forgetting the f prefix turns \"{name}\" into a literal, unevaluated string with braces in it",
+        "f\"{value:.2f}\" on a non-numeric value raises a ValueError at runtime"
+      ],
+      "pitfallsUk": [
+        "Забуття префіксу f перетворює \"{name}\" на буквальний, необчислений рядок з фігурними дужками",
+        "f\"{value:.2f}\" на нечисловому значенні викликає ValueError під час виконання"
+      ],
+      "exercise": "Given a list of (product, price, quantity) tuples, print a receipt line for each with the product name, right-aligned price to 2 decimals, and the line total.",
+      "exerciseUk": "Маючи список кортежів (product, price, quantity), надрукуйте рядок чека для кожного з назвою товару, ціною, вирівняною праворуч до 2 знаків, і сумою рядка.",
+      "tags": ["strings", "formatting", "f-strings"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-whatsnew-314"]
+    },
+    {
+      "id": "py-lesson-splitting-and-joining",
+      "moduleId": "strings-and-text-formatting",
+      "level": "Beginner",
+      "title": "Splitting and joining strings",
+      "titleUk": "Розбиття та з'єднання рядків",
+      "summary": "split() turns text into a list; join() turns a list back into text — the two are inverses of each other.",
+      "summaryUk": "split() перетворює текст на список; join() перетворює список назад на текст — обидва обернені одне до одного.",
+      "concept": "`text.split(sep)` breaks a string into a list of pieces at every occurrence of `sep`, or on any run of whitespace if `sep` is omitted entirely. `sep.join(list_of_strings)` does the reverse: it stitches a list of strings together, placing `sep` between each pair, and is called on the separator itself, not on the list — a detail that trips up many beginners the first time. Together, `\",\".join(line.split(\",\"))` round-trips a comma-separated line, and this split/transform/join pattern is one of the most common ways to process line-based text data in Python.",
+      "conceptUk": "`text.split(sep)` розбиває рядок на список частин при кожному входженні `sep`, чи за будь-якою послідовністю пробілів, якщо `sep` взагалі опущено. `sep.join(list_of_strings)` робить обернене: склеює список рядків, розміщуючи `sep` між кожною парою, і викликається саме на роздільнику, а не на списку — деталь, що часто збиває з пантелику початківців уперше. Разом `\",\".join(line.split(\",\"))` циклічно перетворює рядок з комами, і цей патерн split/трансформація/join — один з найпоширеніших способів обробки текстових даних рядок за рядком у Python.",
+      "keyPoints": [
+        "text.split(sep) breaks a string into a list; .split() with no argument splits on any whitespace",
+        "sep.join(list) is called on the separator string, not on the list",
+        "split then transform then join is a common pattern for line-based text processing"
+      ],
+      "keyPointsUk": [
+        "text.split(sep) розбиває рядок на список; .split() без аргументу розбиває за будь-якими пробілами",
+        "sep.join(list) викликається на рядку-роздільнику, не на списку",
+        "split, потім трансформація, потім join — поширений патерн обробки текстових даних рядок за рядком"
+      ],
+      "code": "line = \"ana,25,paris\"\nname, age, city = line.split(\",\")\nnew_line = \"|\".join([name, age, city])\nprint(new_line)  # ana|25|paris",
+      "codeCaption": "Splitting a CSV-style line into named variables, then rejoining with a different separator.",
+      "codeCaptionUk": "Розбиття рядка у стилі CSV на іменовані змінні, потім повторне з'єднання з іншим роздільником.",
+      "pitfalls": [
+        "list.join(sep) is backwards — Python has sep.join(list), called on the separator",
+        "line.split(\",\") on a line with the wrong number of commas raises ValueError when unpacked into a fixed number of names"
+      ],
+      "pitfallsUk": [
+        "list.join(sep) — навпаки, у Python є sep.join(list), викликаний на роздільнику",
+        "line.split(\",\") на рядку з неправильною кількістю ком викликає ValueError при розпаковці у фіксовану кількість імен"
+      ],
+      "exercise": "Write csv_to_dicts(lines, headers) that splits each line on commas and zips it with headers to build a list of dictionaries, one per line.",
+      "exerciseUk": "Напишіть csv_to_dicts(lines, headers), що розбиває кожен рядок за комами й об'єднує його з headers через zip, щоб побудувати список словників, по одному на рядок.",
+      "tags": ["strings", "split", "join"],
+      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-regex-intro",
+      "moduleId": "strings-and-text-formatting",
+      "level": "Intermediate",
+      "title": "An introduction to regular expressions",
+      "titleUk": "Вступ до регулярних виразів",
+      "summary": "Pattern matching for text that's too flexible for plain split()/in checks, using the re module.",
+      "summaryUk": "Зіставлення патернів для тексту, надто гнучкого для звичайних перевірок split()/in, через модуль re.",
+      "concept": "The `re` module matches text against a *pattern* rather than a fixed literal string: `\\d` matches any digit, `\\w` matches any word character, `+` means \"one or more\", `*` means \"zero or more\", and `.` matches any character, among many other pattern elements. `re.search(pattern, text)` finds the first match anywhere in the string and returns a `Match` object (or `None`), while `re.findall(pattern, text)` returns every match as a list, and `re.sub(pattern, replacement, text)` replaces every match. Regular expressions are reached for once plain string methods like `.split()` and `in` cannot express the needed flexibility.",
+      "conceptUk": "Модуль `re` зіставляє текст із *патерном*, а не з фіксованим буквальним рядком: `\\d` відповідає будь-якій цифрі, `\\w` — будь-якому символу слова, `+` означає «один або більше», `*` означає «нуль або більше», а `.` — будь-якому символу, серед багатьох інших елементів патерну. `re.search(pattern, text)` знаходить перший збіг будь-де в рядку й повертає об'єкт `Match` (чи `None`), тоді як `re.findall(pattern, text)` повертає кожен збіг як список, а `re.sub(pattern, replacement, text)` замінює кожен збіг. До регулярних виразів звертаються, коли звичайні методи рядків на кшталт `.split()` та `in` не можуть виразити потрібну гнучкість.",
+      "keyPoints": [
+        "\\d digit, \\w word character, + one-or-more, * zero-or-more, . any character",
+        "re.search finds the first match, re.findall returns all matches as a list",
+        "re.sub replaces every match with a given replacement"
+      ],
+      "keyPointsUk": [
+        "\\d цифра, \\w символ слова, + один-або-більше, * нуль-або-більше, . будь-який символ",
+        "re.search знаходить перший збіг, re.findall повертає всі збіги як список",
+        "re.sub замінює кожен збіг заданою заміною"
+      ],
+      "code": "import re\ntext = \"Call 555-1234 or 555-5678\"\nnumbers = re.findall(r\"\\d{3}-\\d{4}\", text)\nprint(numbers)  # ['555-1234', '555-5678']\nmasked = re.sub(r\"\\d{3}-\\d{4}\", \"[hidden]\", text)",
+      "codeCaption": "Finding every phone number in a string, then masking each one, using the same pattern.",
+      "codeCaptionUk": "Пошук кожного номера телефону в рядку, потім маскування кожного з них тим самим патерном.",
+      "pitfalls": [
+        "Forgetting the r prefix (raw string) on a pattern with backslashes causes confusing double-escaping bugs",
+        "Reaching for regex when a plain .split() or in check would be simpler and faster overcomplicates the code"
+      ],
+      "pitfallsUk": [
+        "Забуття префіксу r (сирий рядок) на патерні з бекслешами спричиняє заплутані помилки подвійного екранування",
+        "Використання regex, коли простіший і швидший .split() чи in вистачив би, зайво ускладнює код"
+      ],
+      "exercise": "Write a function that uses re.findall to extract every email address from a block of text, using the pattern \\w+@\\w+\\.\\w+ as a starting point.",
+      "exerciseUk": "Напишіть функцію, що використовує re.findall для видобування кожної email-адреси з блоку тексту, використовуючи патерн \\w+@\\w+\\.\\w+ як відправну точку.",
+      "tags": ["regex", "strings"],
+      "sourceIds": ["python-docs-stdlib-index"]
+    }
+  ]
+}
