@@ -302,8 +302,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(privateJobsSource, /fetch\(`\$\{base\}\$\{path\}`/);
   assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_PORT/);
   assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_INSTANCE_ID/);
-  assert.match(privateJobsSource, /aria-controls="selected-vacancy-detail"/);
-  assert.match(privateJobsSource, /aria-pressed=\{selected\?\.id === job\.id\}/);
+  assert.match(privateJobsSource, /className="job-card"\s*\n\s*role="button"/);
+  assert.match(privateJobsSource, /className="back-link" onClick=\{\(\) => setSelectedId\(null\)\}/);
   assert.match(privateJobsSource, /id="selected-vacancy-detail" role="region"/);
   assert.match(privateJobsSource, /aria-label="Search vacancies"/);
   assert.match(privateJobsSource, /aria-pressed=\{job\.feedback === "RELEVANT"\}/);
