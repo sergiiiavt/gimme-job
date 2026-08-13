@@ -52,6 +52,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /plant\.reclaimTarget = target\.hex/);
   assert.match(worldSource, /if \(target\.surface === "rubble"\) (?:\{ )?target\.surface = "meadow"/);
   assert.match(worldSource, /export function objectCorruption/);
+  assert.match(worldSource, /export function inspectHex/);
+  assert.match(worldSource, /function updateEcosystem/);
+  assert.match(worldSource, /stepCost = cell\?\.surface === "road" \? \.18 : 1/);
   assert.doesNotMatch(worldSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
 
   assert.match(gameSource, /from "\.\/rewild-hex-world"/);
@@ -80,6 +83,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /Arrows plus Q\/E move through six neighbors/);
   assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
+  assert.match(gameSource, /className=\{`rw-inspector/);
   assert.doesNotMatch(gameSource, /\/api\//);
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) assert.match(worldSource, new RegExp(plant.replace(" ", "\\s")));
