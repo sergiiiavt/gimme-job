@@ -71,7 +71,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /"cable-broken"/);
   assert.match(gameSource, /"drain-clean"/);
   assert.match(gameSource, /requestedReviewState/);
-  assert.match(gameSource, /"shoreline-polluted-outlet"/);
+  assert.match(gameSource, /"pondResponse"/);
+  assert.match(gameSource, /environmentVisualState\(state, object\)/);
+  assert.doesNotMatch(gameSource, /ctx\.fillRect\(box\.left, box\.top, box\.width, box\.height\)/);
   assert.match(gameSource, /"roots-reclaiming"/);
   assert.doesNotMatch(gameSource, /const wallHeight = stage/);
   assert.match(gameSource, /function drawRubble/);
@@ -96,7 +98,8 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
   assert.match(gameOutput, /invisible hex topology/i);
-  assert.match(gameOutput, /obj-tree-deciduous\.png/);
+  assert.match(gameOutput, /tree-response-states-v1\.png/);
+  assert.match(gameOutput, /pond-response-states-v1\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
 });

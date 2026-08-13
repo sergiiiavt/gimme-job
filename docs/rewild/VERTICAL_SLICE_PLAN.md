@@ -102,7 +102,7 @@ Deliverable: `production/world-connections-v1.png`.
 
 ## Review gates
 
-Current status: Gates A through C are complete. Gate D adds the persistent damage → shutdown → rubble → root reclamation lifecycle, restrained event cues, and deterministic desktop/mobile review states in `reviews/gate-d/`.
+Current status: Gates A through E are complete. Expansion Pack 1 replaces tree and pond renderer tints with eighteen physical material states, connects Rootreclaimers to tree networks, and adds restrained cleanup cues. Its deterministic desktop/mobile review states live in `reviews/expansion-1/`.
 
 ### Gate A · Static composition
 

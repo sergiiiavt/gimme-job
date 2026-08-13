@@ -1,8 +1,10 @@
 import datacenterAtlas from "../public/rewild/production/datacenter-modules-v1.json";
 import facilityGroundAtlas from "../public/rewild/production/facility-ground-states-v1.json";
 import worldConnectionAtlas from "../public/rewild/production/world-connections-v1.json";
+import treeResponseAtlas from "../public/rewild/production/tree-response-states-v1.json";
+import pondResponseAtlas from "../public/rewild/production/pond-response-states-v1.json";
 
-export type RewildAtlasId = "datacenter" | "facilityGround" | "worldConnections";
+export type RewildAtlasId = "datacenter" | "facilityGround" | "worldConnections" | "treeResponse" | "pondResponse";
 
 export interface AtlasFrame {
   name: string;
@@ -21,6 +23,8 @@ const atlasSource: Record<RewildAtlasId, { file: string; metadata: typeof datace
   datacenter: { file: "/rewild/production/datacenter-modules-v1.png", metadata: datacenterAtlas },
   facilityGround: { file: "/rewild/production/facility-ground-states-v1.png", metadata: facilityGroundAtlas },
   worldConnections: { file: "/rewild/production/world-connections-v1.png", metadata: worldConnectionAtlas },
+  treeResponse: { file: "/rewild/production/tree-response-states-v1.png", metadata: treeResponseAtlas },
+  pondResponse: { file: "/rewild/production/pond-response-states-v1.png", metadata: pondResponseAtlas },
 };
 
 export const REWILD_ATLASES = Object.fromEntries(Object.entries(atlasSource).map(([id, atlas]) => [id, {
