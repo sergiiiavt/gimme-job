@@ -30,7 +30,13 @@ function clampCamera(camera: Camera) {
 }
 function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: number) {
   const bounds = canvas.getBoundingClientRect();
-  return { x: clientX - bounds.left, y: clientY - bounds.top, renderedWidth: bounds.width, renderedHeight: bounds.height };
+  const sceneRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+  const boxRatio = bounds.width / bounds.height;
+  const renderedWidth = boxRatio > sceneRatio ? bounds.width : bounds.height * sceneRatio;
+  const renderedHeight = boxRatio > sceneRatio ? bounds.width / sceneRatio : bounds.height;
+  const offsetX = (bounds.width - renderedWidth) / 2;
+  const offsetY = (bounds.height - renderedHeight) / 2;
+  return { x: clientX - bounds.left - offsetX, y: clientY - bounds.top - offsetY, renderedWidth, renderedHeight };
 }
 
 const SPRITE_FILES: Record<string, string> = {
@@ -171,6 +177,7 @@ interface Beam {
   y2: number;
   color: string;
   life: number;
+  maxLife: number;
 }
 
 interface GameState {
@@ -325,7 +332,7 @@ function findPath(state: GameState, startCol: number, startRow: number) {
 }
 
 function addBeam(state: GameState, x1: number, y1: number, x2: number, y2: number, color: string) {
-  state.beams.push({ x1, y1, x2, y2, color, life: .18 });
+  state.beams.push({ x1, y1, x2, y2, color, life: .34, maxLife: .34 });
 }
 
 function targetPosition(target: EnemyEntity | DataNode) {
@@ -656,9 +663,9 @@ function drawGroundShadow(ctx: CanvasRenderingContext2D, cx: number, groundY: nu
 // pivot point sits at (cx, groundY), and drops a contact shadow sized to its footprint
 // width. Returns the sprite's on-screen box so callers can place health bars, glitch
 // offsets, etc. relative to it.
-function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, groundY: number, scale = 1) {
+function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, groundY: number, scale = 1, shadow = true) {
   const { img, meta, width, height } = spriteFootprint(key, scale);
-  drawGroundShadow(ctx, cx, groundY, width);
+  if (shadow) drawGroundShadow(ctx, cx, groundY, width);
   const top = groundY - height * meta.pivotY;
   const left = cx - width / 2;
   if (img) ctx.drawImage(img, left, top, width, height);
@@ -719,6 +726,148 @@ function drawMeadow(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
+function drawAmbientWorld(ctx: CanvasRenderingContext2D, state: GameState) {
+  const time = state.elapsed;
+  ctx.save();
+  ctx.globalCompositeOperation = "screen";
+  for (let index = 0; index < 30; index += 1) {
+    const seed = hashInt(index, 11, 73);
+    const x = (seed % CANVAS_WIDTH + time * (5 + seed % 7)) % CANVAS_WIDTH;
+    const y = 88 + ((seed >>> 8) % (CANVAS_HEIGHT - 160)) + Math.sin(time * .65 + index) * 5;
+    const alpha = .08 + (Math.sin(time * 1.1 + index * 2.3) + 1) * .035;
+    ctx.fillStyle = `rgba(244,235,133,${alpha})`;
+    ctx.fillRect(x, y, 2, 2);
+  }
+  ctx.restore();
+
+  const ponds = [{ x: 320, y: 365, rx: 82, ry: 43 }, { x: 820, y: 168, rx: 78, ry: 42 }];
+  for (const pond of ponds) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(pond.x, pond.y, pond.rx, pond.ry, 0, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.strokeStyle = "rgba(189,231,212,.18)";
+    ctx.lineWidth = 1.4;
+    for (let line = -2; line <= 2; line += 1) {
+      const y = pond.y + line * 13 + Math.sin(time * 1.35 + line) * 3;
+      ctx.beginPath();
+      for (let step = 0; step <= 12; step += 1) {
+        const x = pond.x - pond.rx + step * pond.rx / 6;
+        const wave = Math.sin(step * .9 + time * 1.8 + line) * 2.2;
+        if (step === 0) ctx.moveTo(x, y + wave); else ctx.lineTo(x, y + wave);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  const light = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  light.addColorStop(0, "rgba(244,237,155,.08)");
+  light.addColorStop(.5, "rgba(244,237,155,0)");
+  light.addColorStop(1, "rgba(10,32,21,.09)");
+  ctx.fillStyle = light;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+function drawWorldMesh(ctx: CanvasRenderingContext2D, state: GameState) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(232,242,190,.075)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 10]);
+  for (let col = 0; col <= COLS; col += 1) {
+    ctx.beginPath(); ctx.moveTo(col * TILE, 0); ctx.lineTo(col * TILE, FIELD_HEIGHT); ctx.stroke();
+  }
+  for (let row = 0; row <= ROWS; row += 1) {
+    ctx.beginPath(); ctx.moveTo(0, row * TILE); ctx.lineTo(FIELD_WIDTH, row * TILE); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for (let col = 0; col < COLS; col += 1) {
+    for (let row = 0; row < ROWS; row += 1) {
+      if (state.tiles[row][col] !== "grass" || hashInt(col, row, 93) % 5 !== 0) continue;
+      const nearEntity = state.enemies.some((enemy) => distance(enemy.x, enemy.y, col + .5, row + .5) < 1.35)
+        || state.plants.some((plant) => distance(plant.col + .5, plant.row + .5, col + .5, row + .5) < 1.35);
+      const sway = Math.sin(state.elapsed * (nearEntity ? 6 : 1.7) + col * 1.9 + row) * (nearEntity ? 5 : 2);
+      ctx.strokeStyle = nearEntity ? "rgba(207,234,115,.42)" : "rgba(43,91,43,.27)";
+      ctx.beginPath();
+      ctx.moveTo((col + .5) * TILE, (row + .73) * TILE);
+      ctx.quadraticCurveTo((col + .5) * TILE + sway, (row + .52) * TILE, (col + .55) * TILE + sway, (row + .42) * TILE);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawEntityRelations(ctx: CanvasRenderingContext2D, state: GameState) {
+  ctx.save();
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([3, 5]);
+  for (const plant of state.plants) {
+    const neighbors = state.plants.filter((other) => other.id !== plant.id && distance(plant.col, plant.row, other.col, other.row) <= 3.25 && other.id > plant.id);
+    for (const other of neighbors) {
+      const pulse = .12 + (Math.sin(state.elapsed * 2.2 + plant.id) + 1) * .08;
+      ctx.strokeStyle = `rgba(174,221,111,${pulse})`;
+      ctx.beginPath();
+      ctx.moveTo((plant.col + .5) * TILE, (plant.row + .68) * TILE);
+      ctx.quadraticCurveTo((plant.col + other.col + 1) * TILE / 2, (Math.max(plant.row, other.row) + .95) * TILE, (other.col + .5) * TILE, (other.row + .68) * TILE);
+      ctx.stroke();
+    }
+  }
+  ctx.setLineDash([]);
+  for (const node of state.nodes) {
+    const children = state.enemies.filter((enemy) => distance(enemy.x, enemy.y, node.col + .5, node.row + .5) < 4.6).slice(0, 4);
+    for (const enemy of children) {
+      const pulse = (Math.sin(state.elapsed * 4 + enemy.id) + 1) / 2;
+      ctx.strokeStyle = `rgba(180,83,205,${.07 + pulse * .12})`;
+      ctx.beginPath();
+      ctx.moveTo((node.col + .5) * TILE, (node.row + .5) * TILE);
+      ctx.lineTo(enemy.x * TILE, enemy.y * TILE);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawEnemyWake(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: number) {
+  const x = enemy.x * TILE;
+  const y = enemy.y * TILE;
+  ctx.save();
+  for (let ring = 0; ring < 2; ring += 1) {
+    const phase = (time * 1.8 + enemy.id * .17 + ring * .5) % 1;
+    ctx.strokeStyle = `rgba(102,64,119,${(1 - phase) * .18})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 7, 6 + phase * 15, 2 + phase * 5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCombatEffects(ctx: CanvasRenderingContext2D, state: GameState) {
+  for (const beam of state.beams) {
+    const progress = 1 - beam.life / beam.maxLife;
+    const x1 = beam.x1 * TILE;
+    const y1 = beam.y1 * TILE;
+    const x2 = beam.x2 * TILE;
+    const y2 = beam.y2 * TILE;
+    ctx.save();
+    ctx.strokeStyle = beam.color;
+    ctx.globalAlpha = Math.max(0, 1 - progress);
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = beam.color;
+    ctx.shadowBlur = 7;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 - 10, x2, y2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = (1 - progress) * .7;
+    ctx.beginPath();
+    ctx.ellipse(x2, y2, 4 + progress * 17, 2 + progress * 7, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
 function drawCorruptionDetails(ctx: CanvasRenderingContext2D, tiles: TileKind[][]) {
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) {
@@ -749,12 +898,14 @@ function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: 
 function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
   const x = (HOUSE_COL + 1) * TILE;
   const groundY = (HOUSE_ROW + 1) * TILE;
-  const clearing = TILE * SPRITE_META["obj-house"].footprint;
-  ctx.fillStyle = "rgba(154,122,74,.28)";
-  ctx.beginPath();
-  ctx.ellipse(x, groundY + clearing * .12, clearing * .5, clearing * .2, 0, 0, Math.PI * 2);
-  ctx.fill();
-  const box = drawSprite(ctx, "obj-house", x, groundY);
+  const box = drawSprite(ctx, "obj-house", x, groundY, 1, false);
+  ctx.save();
+  const glow = ctx.createRadialGradient(x + 20, groundY - 39, 0, x + 20, groundY - 39, 25);
+  glow.addColorStop(0, "rgba(255,202,78,.38)");
+  glow.addColorStop(1, "rgba(255,202,78,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - 6, groundY - 64, 52, 50);
+  ctx.restore();
   const barW = box.width * .55;
   const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
   drawHealth(ctx, x - barW / 2, box.top + 7, barW, hp / 100, color);
@@ -765,7 +916,9 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   const groundY = plant.row * TILE + TILE / 2;
   const disabled = plant.disabledUntil > state.elapsed;
   const mature = plant.kind !== "elderoak" || plant.age >= 15;
-  const scale = plant.kind === "elderoak" && !mature ? .6 + .4 * (plant.age / 15) : 1;
+  const growth = Math.min(1, plant.age / .32);
+  const breathe = 1 + Math.sin(state.elapsed * 2.4 + plant.id) * .025;
+  const scale = (plant.kind === "elderoak" && !mature ? .6 + .4 * (plant.age / 15) : 1) * growth * breathe;
   const spriteKey = plantSpriteKey(plant.kind, mature);
   ctx.save();
   if (disabled) ctx.globalAlpha = .55;
@@ -776,6 +929,13 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
     ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(x, midY, box.width * .32, box.width * .32, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#ee78b9"; ctx.fillRect(x - box.width * .18, midY - 1.5, box.width * .36, 3);
   }
+  if (plant.kind === "sunbloom") {
+    const pulse = (Math.sin(state.elapsed * 2.8 + plant.id) + 1) / 2;
+    ctx.strokeStyle = `rgba(246,218,86,${.18 + pulse * .22})`;
+    ctx.beginPath();
+    ctx.ellipse(x, groundY, 12 + pulse * 12, 4 + pulse * 3, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   drawHealth(ctx, x - 14, box.top - 8, 28, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
 }
 
@@ -784,6 +944,11 @@ function drawNode(ctx: CanvasRenderingContext2D, node: DataNode, time: number) {
   const groundY = node.row * TILE + TILE / 2;
   const glitch = Math.floor(time * 11 + node.id) % 5 === 0 ? 3 : 0;
   const box = drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, groundY);
+  const pulse = (Math.sin(time * 3.4 + node.id) + 1) / 2;
+  ctx.strokeStyle = `rgba(190,73,220,${.22 + pulse * .22})`;
+  ctx.beginPath();
+  ctx.ellipse(x, groundY + 3, 12 + pulse * 10, 4 + pulse * 3, 0, 0, Math.PI * 2);
+  ctx.stroke();
   drawHealth(ctx, x - 18, box.top - 8, 36, node.hp / node.maxHp);
 }
 
@@ -791,7 +956,9 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: numb
   const x = enemy.x * TILE;
   const groundY = enemy.y * TILE;
   const glitch = Math.floor(time * 13 + enemy.id) % 7 === 0 ? 3 : 0;
-  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, groundY);
+  drawEnemyWake(ctx, enemy, time);
+  const bob = Math.sin(time * 6 + enemy.id) * 1.4;
+  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, groundY + bob);
   drawHealth(ctx, x - 14, box.top - 8, 28, enemy.hp / enemy.maxHp);
 }
 
@@ -802,6 +969,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
   drawMeadow(ctx);
+  drawAmbientWorld(ctx, state);
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, FIELD_TOP, FIELD_WIDTH, FIELD_HEIGHT);
@@ -811,15 +979,29 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
   drawCorruptionDetails(ctx, state.tiles);
+  drawWorldMesh(ctx, state);
+  drawEntityRelations(ctx, state);
   ctx.restore();
   ctx.save();
   ctx.translate(0, FIELD_TOP);
-  drawHouse(ctx, state.houseHp);
-  for (const plant of state.plants) drawPlant(ctx, plant, state);
-  for (const node of state.nodes) drawNode(ctx, node, state.elapsed);
-  for (const enemy of state.enemies) drawEnemy(ctx, enemy, state.elapsed);
-  for (const beam of state.beams) {
-    ctx.strokeStyle = beam.color; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(beam.x1 * TILE, beam.y1 * TILE); ctx.lineTo(beam.x2 * TILE, beam.y2 * TILE); ctx.stroke();
+  const renderables = [
+    { depth: HOUSE_ROW + 1, draw: () => drawHouse(ctx, state.houseHp) },
+    ...state.plants.map((plant) => ({ depth: plant.row + .5, draw: () => drawPlant(ctx, plant, state) })),
+    ...state.nodes.map((node) => ({ depth: node.row + .5, draw: () => drawNode(ctx, node, state.elapsed) })),
+    ...state.enemies.map((enemy) => ({ depth: enemy.y, draw: () => drawEnemy(ctx, enemy, state.elapsed) })),
+  ].sort((left, right) => left.depth - right.depth);
+  for (const renderable of renderables) renderable.draw();
+  drawCombatEffects(ctx, state);
+  if (state.houseHp < 75) {
+    const houseX = (HOUSE_COL + 1) * TILE;
+    const houseY = (HOUSE_ROW + .2) * TILE;
+    for (let puff = 0; puff < 3; puff += 1) {
+      const rise = (state.elapsed * (8 + puff * 2) + puff * 17) % 42;
+      ctx.fillStyle = `rgba(54,49,45,${.16 * (1 - rise / 42)})`;
+      ctx.beginPath();
+      ctx.arc(houseX - 17 + Math.sin(state.elapsed + puff) * 5, houseY - rise, 5 + puff, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   if (state.status === "playing") {
     ctx.strokeStyle = "#f4ef9d";
