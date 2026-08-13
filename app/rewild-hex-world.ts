@@ -1,16 +1,39 @@
+import {
+  hexCenterFor,
+  hexDistanceBetween,
+  hexDirectionBetween,
+  hexHeight,
+  hexLineBetween,
+  hexNeighborFor,
+  hexNeighborsFor,
+  hexPolygonFor,
+  hexWidth,
+  hexXStep,
+  inHexLayout,
+  pixelToHexFor,
+  straightHexLineBetween,
+  type HexCoord,
+  type HexLayout,
+  type PixelPoint,
+} from "./rewild-hex-grid.ts";
+
+export type { HexCoord, PixelPoint } from "./rewild-hex-grid.ts";
+
 export const HEX_COLS = 30;
 export const HEX_ROWS = 14;
 export const HEX_SIZE = 25;
-export const HEX_WIDTH = HEX_SIZE * 2;
-export const HEX_HEIGHT = Math.sqrt(3) * HEX_SIZE;
-export const HEX_X_STEP = HEX_SIZE * 1.5;
 export const FIELD_LEFT = 28;
 export const FIELD_TOP = 17;
+export const REWILD_HEX_LAYOUT: HexLayout = { cols: HEX_COLS, rows: HEX_ROWS, size: HEX_SIZE, origin: { x: FIELD_LEFT, y: FIELD_TOP } };
+export const HEX_WIDTH = hexWidth(REWILD_HEX_LAYOUT);
+export const HEX_HEIGHT = hexHeight(REWILD_HEX_LAYOUT);
+export const HEX_X_STEP = hexXStep(REWILD_HEX_LAYOUT);
 export const CANVAS_WIDTH = 1200;
 export const CANVAS_HEIGHT = 675;
 export const MAP_SEED = 0x5e7a11;
 
 export type SurfaceKind = "meadow" | "road" | "water" | "house" | "foundation" | "rubble";
+export type BiomeKind = "forest" | "water" | "rock" | "flowers";
 export type CorruptionLevel = 0 | 1 | 2 | 3 | 4;
 export type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | "rootreclaimer" | "elderoak";
 export type EnemyKind = "clickbait" | "deepfake" | "popup" | "fragment";
@@ -20,8 +43,6 @@ export type RewildReviewState = "damage" | "collapse" | "reclamation" | "ecosyst
 export type WorldEffectKind = "construction" | "impact" | "shutdown" | "collapse" | "reclaim" | "dilution";
 export type EnvironmentVisualState = "healthy" | "stressed" | "corrupted" | "dead" | "recovering";
 
-export interface HexCoord { q: number; r: number }
-export interface PixelPoint { x: number; y: number }
 export interface HexCell {
   hex: HexCoord;
   surface: SurfaceKind;
@@ -47,11 +68,13 @@ export interface WorldObject {
 }
 
 export interface RoadNetwork { id: string; cells: HexCoord[]; points: HexCoord[] }
+export interface BiomeRegion { id: string; kind: BiomeKind; cells: HexCoord[]; seed: number }
 export interface HexWorld {
   seed: number;
   cells: Map<string, HexCell>;
   objects: WorldObject[];
   road: RoadNetwork;
+  biomes: BiomeRegion[];
 }
 
 export interface PlantConfig { name: string; shortName: string; cost: number; role: string; detail: string; unlockWave: number; color: string; maxHp: number }
@@ -195,12 +218,6 @@ export interface EcosystemInspection {
   score: number | null;
 }
 
-interface CubeCoord { x: number; y: number; z: number }
-const CUBE_DIRECTIONS: CubeCoord[] = [
-  { x: 1, y: -1, z: 0 }, { x: 1, y: 0, z: -1 }, { x: 0, y: 1, z: -1 },
-  { x: -1, y: 1, z: 0 }, { x: -1, y: 0, z: 1 }, { x: 0, y: -1, z: 1 },
-];
-
 export const HOUSE_CENTER: HexCoord = { q: 15, r: 6 };
 export const HOUSE_FOOTPRINT: HexCoord[] = [{ q: 15, r: 6 }, { q: 14, r: 6 }, { q: 15, r: 7 }];
 export const BORDER_SPAWNS: HexCoord[] = [
@@ -211,56 +228,29 @@ export const BORDER_SPAWNS: HexCoord[] = [
 
 export function hexKey(hex: HexCoord) { return `${hex.q},${hex.r}`; }
 export function sameHex(left: HexCoord, right: HexCoord) { return left.q === right.q && left.r === right.r; }
-export function inHexBounds(hex: HexCoord) { return hex.q >= 0 && hex.r >= 0 && hex.q < HEX_COLS && hex.r < HEX_ROWS; }
-
-function offsetToCube(hex: HexCoord): CubeCoord {
-  const x = hex.q;
-  const z = hex.r - (hex.q - (hex.q & 1)) / 2;
-  return { x, z, y: -x - z };
-}
-
-function cubeToOffset(cube: CubeCoord): HexCoord {
-  return { q: cube.x, r: cube.z + (cube.x - (cube.x & 1)) / 2 };
-}
-
+export function inHexBounds(hex: HexCoord) { return inHexLayout(REWILD_HEX_LAYOUT, hex); }
 export function hexNeighbors(hex: HexCoord) {
-  const cube = offsetToCube(hex);
-  return CUBE_DIRECTIONS.map((direction) => cubeToOffset({ x: cube.x + direction.x, y: cube.y + direction.y, z: cube.z + direction.z })).filter(inHexBounds);
+  return hexNeighborsFor(REWILD_HEX_LAYOUT, hex);
 }
 
 export function hexDistance(left: HexCoord, right: HexCoord) {
-  const a = offsetToCube(left);
-  const b = offsetToCube(right);
-  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y), Math.abs(a.z - b.z));
+  return hexDistanceBetween(left, right);
+}
+
+export function hexDirection(start: HexCoord, end: HexCoord) {
+  return hexDirectionBetween(start, end);
 }
 
 export function hexCenter(hex: HexCoord): PixelPoint {
-  return {
-    x: FIELD_LEFT + HEX_SIZE + hex.q * HEX_X_STEP,
-    y: FIELD_TOP + HEX_HEIGHT / 2 + (hex.r + (hex.q & 1) * .5) * HEX_HEIGHT,
-  };
+  return hexCenterFor(REWILD_HEX_LAYOUT, hex);
 }
 
 export function pixelToHex(x: number, y: number) {
-  let closest: HexCoord | null = null;
-  let closestDistance = Number.POSITIVE_INFINITY;
-  for (let q = 0; q < HEX_COLS; q += 1) {
-    for (let r = 0; r < HEX_ROWS; r += 1) {
-      const candidate = { q, r };
-      const center = hexCenter(candidate);
-      const squared = (center.x - x) ** 2 + (center.y - y) ** 2;
-      if (squared < closestDistance) { closestDistance = squared; closest = candidate; }
-    }
-  }
-  return closestDistance <= (HEX_SIZE * 1.15) ** 2 ? closest : null;
+  return pixelToHexFor(REWILD_HEX_LAYOUT, x, y);
 }
 
 export function hexPolygon(hex: HexCoord, scale = 1) {
-  const center = hexCenter(hex);
-  return Array.from({ length: 6 }, (_, index) => {
-    const angle = Math.PI / 3 * index;
-    return { x: center.x + Math.cos(angle) * HEX_SIZE * scale, y: center.y + Math.sin(angle) * HEX_SIZE * scale };
-  });
+  return hexPolygonFor(REWILD_HEX_LAYOUT, hex, scale);
 }
 
 export function hexDisk(center: HexCoord, radius: number) {
@@ -272,32 +262,12 @@ export function hexDisk(center: HexCoord, radius: number) {
   return result;
 }
 
-function cubeRound(cube: CubeCoord) {
-  let x = Math.round(cube.x);
-  let y = Math.round(cube.y);
-  let z = Math.round(cube.z);
-  const xDiff = Math.abs(x - cube.x);
-  const yDiff = Math.abs(y - cube.y);
-  const zDiff = Math.abs(z - cube.z);
-  if (xDiff > yDiff && xDiff > zDiff) x = -y - z;
-  else if (yDiff > zDiff) y = -x - z;
-  else z = -x - y;
-  return { x, y, z };
+export function hexLine(start: HexCoord, end: HexCoord) {
+  return hexLineBetween(REWILD_HEX_LAYOUT, start, end);
 }
 
-export function hexLine(start: HexCoord, end: HexCoord) {
-  const a = offsetToCube(start);
-  const b = offsetToCube(end);
-  const distance = hexDistance(start, end);
-  if (!distance) return [start];
-  const result: HexCoord[] = [];
-  for (let step = 0; step <= distance; step += 1) {
-    const t = step / distance;
-    const cube = cubeRound({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t });
-    const hex = cubeToOffset(cube);
-    if (inHexBounds(hex) && !result.some((entry) => sameHex(entry, hex))) result.push(hex);
-  }
-  return result;
+export function straightHexLine(start: HexCoord, end: HexCoord) {
+  return straightHexLineBetween(REWILD_HEX_LAYOUT, start, end);
 }
 
 export function hashInt(a: number, b: number, salt: number) {
@@ -321,6 +291,12 @@ function valueNoise(x: number, y: number, salt: number) {
 function worldObject(id: string, kind: WorldObjectKind, anchor: HexCoord, sprite: string | undefined, width: number, collision: boolean, shadow: boolean, footprintRadius = 0, rotation?: number): WorldObject {
   const footprint = footprintRadius ? hexDisk(anchor, footprintRadius) : [anchor];
   return { id, kind, anchor, footprint, sprite, width, collision, shadow, rotation };
+}
+
+function mergeHexPatches(...patches: HexCoord[][]) {
+  const cells = new Map<string, HexCoord>();
+  for (const hex of patches.flat()) if (inHexBounds(hex)) cells.set(hexKey(hex), hex);
+  return [...cells.values()];
 }
 
 const ROAD_WAYPOINTS: HexCoord[] = [{ q: 0, r: 8 }, { q: 5, r: 8 }, { q: 10, r: 9 }, { q: 15, r: 8 }, { q: 21, r: 9 }, { q: 25, r: 8 }, { q: 29, r: 9 }];
@@ -347,9 +323,21 @@ export function createHexWorld(seed = MAP_SEED): HexWorld {
     cells.set(hexKey(hex), { hex, surface: roadKeys.has(hexKey(hex)) ? "road" : "meadow", corruption: 0, source: null, seed: hashInt(q, r, seed), moisture, detail, readability });
   }
 
+  const biomes: BiomeRegion[] = [
+    { id: "forest-northwest", kind: "forest", cells: mergeHexPatches(hexDisk({ q: 3, r: 2 }, 2), hexDisk({ q: 6, r: 2 }, 2), hexDisk({ q: 8, r: 3 }, 1)), seed: seed ^ 0x4101 },
+    { id: "lake-west", kind: "water", cells: mergeHexPatches(hexDisk({ q: 7, r: 6 }, 1), [{ q: 6, r: 5 }, { q: 8, r: 7 }]), seed: seed ^ 0x4201 },
+    { id: "lake-east", kind: "water", cells: mergeHexPatches(hexDisk({ q: 19, r: 4 }, 1), [{ q: 20, r: 3 }, { q: 18, r: 5 }]), seed: seed ^ 0x4202 },
+    { id: "rocks-northeast", kind: "rock", cells: mergeHexPatches(hexDisk({ q: 26, r: 3 }, 1), [{ q: 25, r: 2 }]), seed: seed ^ 0x4301 },
+    { id: "rocks-southeast", kind: "rock", cells: mergeHexPatches(hexDisk({ q: 24, r: 11 }, 1), [{ q: 25, r: 10 }]), seed: seed ^ 0x4302 },
+    { id: "flowers-north", kind: "flowers", cells: mergeHexPatches(hexDisk({ q: 11, r: 2 }, 1), [{ q: 12, r: 3 }]), seed: seed ^ 0x4401 },
+    { id: "flowers-south", kind: "flowers", cells: mergeHexPatches(hexDisk({ q: 21, r: 12 }, 1), [{ q: 20, r: 11 }]), seed: seed ^ 0x4402 },
+  ];
+
   const objects: WorldObject[] = [
     worldObject("house", "house", HOUSE_CENTER, "obj-house", 3.2, true, false, 1),
     worldObject("tree-nw", "tree", { q: 3, r: 3 }, "obj-tree-deciduous", 3.7, true, true, 1),
+    worldObject("tree-nw-canopy", "tree", { q: 6, r: 2 }, "obj-tree-deciduous", 2.7, true, true),
+    worldObject("pine-nw-edge", "pine", { q: 8, r: 3 }, "obj-tree-pine", 2.35, true, true),
     worldObject("pine-west", "pine", { q: 4, r: 10 }, "obj-tree-pine", 3.15, true, true, 1),
     worldObject("tree-east", "tree", { q: 26, r: 7 }, "obj-tree-deciduous", 3.55, true, true, 1),
     worldObject("pine-south", "pine", { q: 11, r: 12 }, "obj-tree-pine", 2.9, true, true, 1),
@@ -368,20 +356,25 @@ export function createHexWorld(seed = MAP_SEED): HexWorld {
     worldObject("fence-house", "fence", { q: 13, r: 8 }, undefined, 2.2, false, true),
   ];
 
-  for (const object of objects) {
-    if (object.kind === "pond") for (const hex of object.footprint) {
+  for (const region of biomes) {
+    if (region.kind === "water") for (const hex of region.cells) {
       const cell = cells.get(hexKey(hex));
       if (cell) cell.surface = "water";
     }
+  }
+  for (const object of objects.filter((entry) => entry.kind === "pond")) {
+    const region = biomes.find((entry) => entry.kind === "water" && entry.cells.some((hex) => sameHex(hex, object.anchor)));
+    if (region) object.footprint = region.cells;
   }
   for (const hex of HOUSE_FOOTPRINT) {
     const cell = cells.get(hexKey(hex));
     if (cell) cell.surface = "house";
   }
-  return { seed, cells, objects, road };
+  return { seed, cells, objects, road, biomes };
 }
 
 export function cellAt(world: HexWorld, hex: HexCoord) { return world.cells.get(hexKey(hex)); }
+export function biomeAt(world: HexWorld, hex: HexCoord) { return world.biomes.find((region) => region.cells.some((cell) => sameHex(cell, hex))); }
 export function objectAt(world: HexWorld, hex: HexCoord, collisionOnly = false) {
   return world.objects.find((object) => (!collisionOnly || object.collision) && object.footprint.some((cell) => sameHex(cell, hex)));
 }
@@ -444,6 +437,8 @@ function setMessage(state: GameState, message: string, seconds = 2.6) {
 function isWorldObstacle(state: GameState, hex: HexCoord) {
   const cell = cellAt(state.world, hex);
   if (!cell || cell.surface === "water" || cell.surface === "foundation") return true;
+  const biome = biomeAt(state.world, hex);
+  if (biome?.kind === "forest" || biome?.kind === "rock") return true;
   return Boolean(objectAt(state.world, hex, true)?.kind !== "house" && objectAt(state.world, hex, true));
 }
 
@@ -539,12 +534,14 @@ function updatePlants(state: GameState, dt: number) {
       for (const target of combatTargets(state, plant, 2)) damageTarget(state, plant, target, 15, "#d7a8ec");
       plant.cooldown = 2;
     } else if (plant.kind === "vinewhip") {
-      const target = combatTargets(state, plant, 4)[0];
+      const target = combatTargets(state, plant, 4)
+        .filter((candidate) => hexDirection(plant, targetHex(candidate)) !== null)
+        .sort((left, right) => hexDistance(plant, targetHex(left)) - hexDistance(plant, targetHex(right)))[0];
       if (target) {
-        damageTarget(state, plant, target, 8, "#77bd4a");
+        damageTarget(state, plant, target, 12, "#77bd4a");
         if ("kind" in target) target.slowUntil = state.elapsed + 2;
       }
-      plant.cooldown = .9;
+      plant.cooldown = .75;
     } else if (plant.kind === "elderoak" && plant.age >= 15) {
       for (const target of combatTargets(state, plant, 3)) damageTarget(state, plant, target, 25, "#d8ba68");
       plant.cooldown = 1.5;
@@ -694,6 +691,13 @@ function updateEnemies(state: GameState, dt: number) {
       enemy.position = target;
       enemy.hex = next;
       enemy.path.shift();
+      const occupiedCell = cellAt(state.world, next);
+      if (occupiedCell && occupiedCell.surface !== "water" && occupiedCell.surface !== "house" && occupiedCell.surface !== "foundation") {
+        const origin = state.nodes.filter((node) => facilityOperational(node)).sort((left, right) => hexDistance(left.anchor, next) - hexDistance(right.anchor, next))[0];
+        occupiedCell.source ??= origin?.id ?? -enemy.id;
+        const trailStrength = enemy.kind === "deepfake" ? 2 : 1;
+        occupiedCell.corruption = Math.max(occupiedCell.corruption, trailStrength) as CorruptionLevel;
+      }
       attackPlantOrHouse(state, enemy, next);
     } else {
       enemy.position.x += dx / distance * travel;
@@ -706,7 +710,10 @@ function canBuildFacility(state: GameState, anchor: HexCoord, boss: boolean) {
   const footprint = createFacilityFootprint(anchor, boss);
   return footprint.length >= (boss ? 12 : 6) && footprint.every((hex) => {
     const cell = cellAt(state.world, hex);
-    return cell && (cell.surface === "meadow" || cell.surface === "road" || cell.surface === "rubble") && !objectAt(state.world, hex, true) && !nodeAt(state, hex) && !ruinAt(state, hex) && !plantAt(state, hex);
+    const biome = biomeAt(state.world, hex);
+    return cell && (cell.surface === "meadow" || cell.surface === "road" || cell.surface === "rubble")
+      && biome?.kind !== "forest" && biome?.kind !== "rock"
+      && !objectAt(state.world, hex, true) && !nodeAt(state, hex) && !ruinAt(state, hex) && !plantAt(state, hex);
   });
 }
 
@@ -786,7 +793,8 @@ export function placePlant(state: GameState, hex: HexCoord) {
   if (state.status !== "playing") return false;
   const config = PLANTS[state.selected];
   const cell = cellAt(state.world, hex);
-  if (!cell || plantAt(state, hex) || nodeAt(state, hex) || objectAt(state.world, hex, true)) {
+  const biome = biomeAt(state.world, hex);
+  if (!cell || plantAt(state, hex) || nodeAt(state, hex) || objectAt(state.world, hex, true) || biome?.kind === "forest" || biome?.kind === "rock") {
     setMessage(state, "That hex is physically occupied.");
     return false;
   }
@@ -803,10 +811,8 @@ export function placePlant(state: GameState, hex: HexCoord) {
 }
 
 export function moveCursor(state: GameState, direction: number) {
-  const cube = offsetToCube(state.cursor);
-  const vector = CUBE_DIRECTIONS[((direction % 6) + 6) % 6];
-  const next = cubeToOffset({ x: cube.x + vector.x, y: cube.y + vector.y, z: cube.z + vector.z });
-  if (inHexBounds(next)) state.cursor = next;
+  const next = hexNeighborFor(REWILD_HEX_LAYOUT, state.cursor, direction);
+  if (next) state.cursor = next;
 }
 
 export function objectCorruption(state: GameState, object: WorldObject) {
@@ -818,6 +824,7 @@ const OBJECT_NAMES: Record<WorldObjectKind, string> = { house: "Last human house
 export function inspectHex(state: GameState, hex: HexCoord): EcosystemInspection {
   const cell = cellAt(state.world, hex);
   const object = objectAt(state.world, hex);
+  const biome = biomeAt(state.world, hex);
   const plant = plantAt(state, hex);
   const node = nodeAt(state, hex);
   const ruin = ruinAt(state, hex);
@@ -837,10 +844,18 @@ export function inspectHex(state: GameState, hex: HexCoord): EcosystemInspection
     };
     return { title: OBJECT_NAMES[object.kind], subtitle: visualState === "recovering" ? "Environment recovering" : corruption ? "Environment under stress" : "Freestanding world object", details: relationships[object.kind] ?? [object.collision ? "Occupies and blocks this ground." : "Visual habitat; ground remains traversable."], valid: false, score: null };
   }
+  if (biome?.kind === "forest" || biome?.kind === "rock") {
+    const name = biome.kind === "forest" ? "Merged forest" : "Rock field";
+    return { title: name, subtitle: `${biome.cells.length} connected hexes`, details: [biome.kind === "forest" ? "Dense connected habitat redirects AI slop around its boundary." : "Connected stone ground blocks growth and redirects movement."], valid: false, score: null };
+  }
   const nearbyTree = nearbyObject(state, hex, ["tree", "pine"], 3);
   const nearRoad = state.world.road.cells.some((roadHex) => hexDistance(hex, roadHex) <= 1);
   const nearbyPond = nearbyObject(state, hex, ["pond"], 3);
-  const nearbyTargets = [...state.nodes, ...state.enemies].filter((target) => hexDistance(hex, targetHex(target)) <= (state.selected === "vinewhip" ? 4 : state.selected === "sporecap" ? 2 : 1)).length;
+  const nearbyTargets = [...state.nodes, ...state.enemies].filter((target) => {
+    const targetLocation = targetHex(target);
+    const inRange = hexDistance(hex, targetLocation) <= (state.selected === "vinewhip" ? 4 : state.selected === "sporecap" ? 2 : 1);
+    return inRange && (state.selected !== "vinewhip" || hexDirection(hex, targetLocation) !== null);
+  }).length;
   const canGrow = state.selected === "rootreclaimer" ? cell.corruption > 0 : cell.surface === "meadow" && cell.corruption === 0;
   const details = [cell.surface === "road" ? "Road: enemies move 28% faster and path toward it." : cell.corruption ? `Corruption level ${cell.corruption}: only roots can grow here.` : "Healthy meadow."];
   if (object && !object.collision) details.push(`${OBJECT_NAMES[object.kind]} shares this ground without blocking it.`);
