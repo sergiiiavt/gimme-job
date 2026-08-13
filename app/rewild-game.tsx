@@ -30,6 +30,7 @@ import {
   moveCursor,
   toUi,
   updateGame,
+  type BiomeRegion,
   type DataNode,
   type Difficulty,
   type EnemyEntity,
@@ -193,6 +194,99 @@ function enemySpriteKey(kind: EnemyKind) {
   return kind === "clickbait" ? "obj-swarm" : kind === "deepfake" ? "obj-sludge" : kind === "popup" ? "obj-popup" : "obj-fragment";
 }
 
+function pixelDisc(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color: string) {
+  ctx.fillStyle = color;
+  for (let row = -radius; row <= radius; row += 2) {
+    const half = Math.floor(Math.sqrt(Math.max(0, radius * radius - row * row)));
+    ctx.fillRect(Math.round(x - half), Math.round(y + row), half * 2 + 1, 2);
+  }
+}
+
+function pixelLine(ctx: CanvasRenderingContext2D, from: PixelPoint, to: PixelPoint, color: string, width = 3) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const steps = Math.max(Math.abs(dx), Math.abs(dy));
+  ctx.fillStyle = color;
+  for (let step = 0; step <= steps; step += 2) {
+    const t = steps ? step / steps : 0;
+    ctx.fillRect(Math.round(from.x + dx * t - width / 2), Math.round(from.y + dy * t - width / 2), width, width);
+  }
+}
+
+function drawPlantToken(ctx: CanvasRenderingContext2D, plant: PlantEntity, center: PixelPoint) {
+  const selectedSize = plant.kind === "elderoak" && plant.age >= 15 ? 22 : 15;
+  if (plant.kind === "sunbloom") {
+    for (let petal = 0; petal < 8; petal += 1) {
+      const angle = petal * Math.PI / 4;
+      pixelDisc(ctx, center.x + Math.cos(angle) * 10, center.y + Math.sin(angle) * 8, 5, petal % 2 ? "#e2a93d" : "#f1cf4c");
+    }
+    pixelDisc(ctx, center.x, center.y, 7, "#67452b");
+    ctx.fillStyle = "#b47b30"; ctx.fillRect(Math.round(center.x - 3), Math.round(center.y - 3), 3, 3);
+  } else if (plant.kind === "thornbramble") {
+    pixelDisc(ctx, center.x, center.y, 15, "#183e2b");
+    for (let thorn = 0; thorn < 8; thorn += 1) {
+      const angle = thorn * Math.PI / 4 + .18;
+      pixelLine(ctx, center, { x: center.x + Math.cos(angle) * 15, y: center.y + Math.sin(angle) * 12 }, "#4f772f", 4);
+      pixelDisc(ctx, center.x + Math.cos(angle) * 14, center.y + Math.sin(angle) * 11, 2, "#b44245");
+    }
+    pixelDisc(ctx, center.x, center.y, 6, "#315e30");
+  } else if (plant.kind === "sporecap") {
+    pixelDisc(ctx, center.x - 7, center.y + 4, 8, "#724798");
+    pixelDisc(ctx, center.x + 6, center.y + 3, 9, "#965bc1");
+    pixelDisc(ctx, center.x, center.y - 6, 11, "#6d429b");
+    for (const dot of [[-4, -8], [3, -5], [8, 2], [-10, 4]]) pixelDisc(ctx, center.x + dot[0], center.y + dot[1], 2, "#72c8cf");
+  } else if (plant.kind === "vinewhip") {
+    for (let arm = 0; arm < 6; arm += 1) {
+      const angle = arm * Math.PI / 3;
+      pixelLine(ctx, center, { x: center.x + Math.cos(angle) * 17, y: center.y + Math.sin(angle) * 14 }, arm % 2 ? "#497a31" : "#6ba43b", 4);
+      pixelDisc(ctx, center.x + Math.cos(angle) * 16, center.y + Math.sin(angle) * 13, 3, "#83b84b");
+    }
+    pixelDisc(ctx, center.x, center.y, 7, "#315e2d");
+  } else if (plant.kind === "rootreclaimer") {
+    for (let root = 0; root < 6; root += 1) {
+      const angle = root * Math.PI / 3 + .25;
+      pixelLine(ctx, center, { x: center.x + Math.cos(angle) * 17, y: center.y + Math.sin(angle) * 12 }, "#81623a", 3);
+    }
+    pixelDisc(ctx, center.x, center.y, 8, "#4f7f35");
+    pixelDisc(ctx, center.x - 6, center.y - 7, 6, "#88bd4d");
+    pixelDisc(ctx, center.x + 6, center.y - 5, 5, "#a1cf5c");
+  } else {
+    pixelDisc(ctx, center.x, center.y, selectedSize, "#24502f");
+    pixelDisc(ctx, center.x - selectedSize * .45, center.y - 3, Math.round(selectedSize * .65), "#4e8237");
+    pixelDisc(ctx, center.x + selectedSize * .45, center.y - 2, Math.round(selectedSize * .62), "#64913d");
+    pixelDisc(ctx, center.x, center.y - selectedSize * .45, Math.round(selectedSize * .7), "#5d913e");
+    ctx.fillStyle = "#765438"; ctx.fillRect(Math.round(center.x - 4), Math.round(center.y - 1), 8, 14);
+  }
+  return { left: center.x - selectedSize, top: center.y - selectedSize, width: selectedSize * 2, height: selectedSize * 2 };
+}
+
+function drawEnemyToken(ctx: CanvasRenderingContext2D, enemy: EnemyEntity) {
+  const center = enemy.position;
+  if (enemy.kind === "clickbait") {
+    for (const [x, y] of [[-8, -5], [7, -4], [0, 7]]) {
+      pixelDisc(ctx, center.x + x, center.y + y, 6, "#b7c63f");
+      ctx.fillStyle = "#222d28"; ctx.fillRect(Math.round(center.x + x - 3), Math.round(center.y + y - 2), 2, 2); ctx.fillRect(Math.round(center.x + x + 2), Math.round(center.y + y - 2), 2, 2);
+    }
+  } else if (enemy.kind === "deepfake") {
+    pixelDisc(ctx, center.x - 5, center.y + 2, 14, "#324e88");
+    pixelDisc(ctx, center.x + 8, center.y + 4, 11, "#4a4f9f");
+    pixelDisc(ctx, center.x + 1, center.y - 7, 10, "#5569af");
+    ctx.fillStyle = "#d17cc0"; ctx.fillRect(Math.round(center.x - 4), Math.round(center.y - 5), 3, 3); ctx.fillRect(Math.round(center.x + 4), Math.round(center.y - 4), 3, 3);
+  } else if (enemy.kind === "popup") {
+    ctx.fillStyle = "#1b202a"; ctx.fillRect(Math.round(center.x - 13), Math.round(center.y - 13), 26, 26);
+    ctx.strokeStyle = "#d84da5"; ctx.lineWidth = 3; ctx.strokeRect(Math.round(center.x - 12), Math.round(center.y - 12), 24, 24);
+    ctx.fillStyle = "#f1b34e"; ctx.fillRect(Math.round(center.x - 7), Math.round(center.y - 7), 14, 4);
+    ctx.fillStyle = "#8e3e9d"; ctx.fillRect(Math.round(center.x - 7), Math.round(center.y + 1), 10, 6);
+  } else {
+    for (const [x, y, size] of [[-8, 4, 7], [1, -5, 8], [8, 5, 5]]) {
+      ctx.fillStyle = size > 6 ? "#6b548e" : "#a65a9d";
+      ctx.fillRect(Math.round(center.x + x - size / 2), Math.round(center.y + y - size / 2), size, size);
+      ctx.fillStyle = "#d2b4d4"; ctx.fillRect(Math.round(center.x + x), Math.round(center.y + y - size / 2), 2, Math.max(2, size - 2));
+    }
+  }
+  return { left: center.x - 16, top: center.y - 16, width: 32, height: 32 };
+}
+
 function drawMeadow(ctx: CanvasRenderingContext2D, world: HexWorld) {
   ctx.fillStyle = "#709b3d";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -272,6 +366,84 @@ function drawCorruption(ctx: CanvasRenderingContext2D, state: GameState) {
     });
     if (cell.surface === "road") drawAtlasFrame(ctx, "worldConnections", cell.corruption >= 3 ? "road-crack-branched" : "road-crack", center.x, center.y + 4, { width: 67, pivotY: .52, flip: seeded(cell, 46) > .5 });
   }
+}
+
+function regionSeeded(region: BiomeRegion, hex: HexCoord, salt: number) {
+  let value = (region.seed ^ Math.imul(hex.q + 31, 73856093) ^ Math.imul(hex.r + 17, 19349663) ^ Math.imul(salt + 1, 83492791)) >>> 0;
+  value ^= value >>> 15;
+  value = Math.imul(value, 2246822519) >>> 0;
+  return (value ^ (value >>> 13)) / 0xffffffff;
+}
+
+function regionBoundary(region: BiomeRegion) {
+  const edges = new Map<string, { from: PixelPoint; to: PixelPoint; count: number }>();
+  for (const hex of region.cells) {
+    const polygon = hexPolygon(hex);
+    for (let index = 0; index < polygon.length; index += 1) {
+      const from = polygon[index];
+      const to = polygon[(index + 1) % polygon.length];
+      const a = `${Math.round(from.x * 10)},${Math.round(from.y * 10)}`;
+      const b = `${Math.round(to.x * 10)},${Math.round(to.y * 10)}`;
+      const edgeKey = a < b ? `${a}|${b}` : `${b}|${a}`;
+      const edge = edges.get(edgeKey);
+      if (edge) edge.count += 1;
+      else edges.set(edgeKey, { from, to, count: 1 });
+    }
+  }
+  return [...edges.values()].filter((edge) => edge.count === 1);
+}
+
+function drawBiomeRegions(ctx: CanvasRenderingContext2D, world: HexWorld) {
+  for (const region of world.biomes) {
+    ctx.save();
+    ctx.fillStyle = region.kind === "water" ? "#286778" : region.kind === "forest" ? "#315f2f" : region.kind === "rock" ? "#627152" : "#779d3d";
+    for (const hex of region.cells) { tracePolygon(ctx, hexPolygon(hex, 1.015)); ctx.fill(); }
+    const boundary = regionBoundary(region);
+    ctx.strokeStyle = region.kind === "water" ? "#819b4d" : region.kind === "forest" ? "#244f2b" : region.kind === "rock" ? "#71805c" : "#86aa49";
+    ctx.lineWidth = region.kind === "water" ? 5 : 3;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    for (const edge of boundary) { ctx.moveTo(edge.from.x, edge.from.y); ctx.lineTo(edge.to.x, edge.to.y); }
+    ctx.stroke();
+    for (const hex of region.cells) {
+      const center = hexCenter(hex);
+      if (region.kind === "water") {
+        if (regionSeeded(region, hex, 1) > .38) {
+          ctx.strokeStyle = "rgba(148,205,207,.48)"; ctx.lineWidth = 1;
+          const rippleY = center.y + (regionSeeded(region, hex, 2) - .5) * 12;
+          ctx.beginPath(); ctx.moveTo(center.x - 8, rippleY); ctx.lineTo(center.x + 6, rippleY); ctx.stroke();
+        }
+      } else if (region.kind === "forest") {
+        const count = regionSeeded(region, hex, 3) > .45 ? 3 : 2;
+        for (let leaf = 0; leaf < count; leaf += 1) {
+          const x = Math.round(center.x - 12 + regionSeeded(region, hex, 10 + leaf) * 24);
+          const y = Math.round(center.y - 9 + regionSeeded(region, hex, 20 + leaf) * 18);
+          ctx.fillStyle = leaf % 2 ? "#477b35" : "#214c2c"; ctx.fillRect(x, y, 5, 4);
+        }
+      } else if (region.kind === "rock" && regionSeeded(region, hex, 4) > .42) {
+        ctx.fillStyle = "rgba(173,180,137,.5)"; ctx.fillRect(Math.round(center.x - 5), Math.round(center.y - 3), 9, 6);
+      } else if (region.kind === "flowers") {
+        ctx.fillStyle = regionSeeded(region, hex, 5) > .5 ? "#e2c84e" : "#dfe4b1";
+        ctx.fillRect(Math.round(center.x - 8 + regionSeeded(region, hex, 6) * 16), Math.round(center.y - 6 + regionSeeded(region, hex, 7) * 12), 2, 2);
+      }
+    }
+    ctx.restore();
+  }
+}
+
+function drawHexMesh(ctx: CanvasRenderingContext2D, world: HexWorld) {
+  ctx.save();
+  ctx.lineWidth = 1;
+  for (const cell of world.cells.values()) {
+    tracePolygon(ctx, hexPolygon(cell.hex, .985));
+    ctx.strokeStyle = cell.surface === "water"
+      ? "rgba(142,190,174,.24)"
+      : cell.corruption >= 2
+        ? "rgba(197,117,184,.22)"
+        : "rgba(30,57,37,.24)";
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawGrounding(ctx: CanvasRenderingContext2D, object: WorldObject, state: GameState) {
@@ -467,8 +639,18 @@ function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: 
 function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: GameState) {
   const center = hexCenter(plant);
   const cell = cellAt(state.world, plant)!;
-  ctx.fillStyle = plant.kind === "rootreclaimer" ? "rgba(67,91,57,.55)" : "rgba(63,100,43,.45)";
-  ctx.beginPath(); ctx.ellipse(center.x, center.y + 6, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
+  const groundColors: Record<PlantKind, string> = {
+    sunbloom: "rgba(211,180,60,.26)", thornbramble: "rgba(53,83,39,.5)", sporecap: "rgba(113,73,139,.3)",
+    vinewhip: "rgba(75,116,48,.4)", rootreclaimer: "rgba(85,132,62,.48)", elderoak: "rgba(63,96,43,.52)",
+  };
+  tracePolygon(ctx, hexPolygon(plant, .78));
+  ctx.fillStyle = groundColors[plant.kind]; ctx.fill();
+  ctx.strokeStyle = plant.kind === "rootreclaimer" ? "rgba(154,207,99,.66)" : "rgba(80,119,54,.46)"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = plant.kind === "sporecap" ? "rgba(194,136,220,.42)" : "rgba(91,126,54,.55)"; ctx.lineWidth = 1;
+  for (let root = 0; root < 3; root += 1) {
+    const angle = root * Math.PI * 2 / 3 + plant.id * .37;
+    ctx.beginPath(); ctx.moveTo(center.x, center.y + 5); ctx.lineTo(center.x + Math.cos(angle) * 16, center.y + 5 + Math.sin(angle) * 10); ctx.stroke();
+  }
   if (plant.kind === "rootreclaimer" && (cell.corruption > 0 || plant.reclaimUntil > state.elapsed)) {
     const target = plant.reclaimTarget ? hexCenter(plant.reclaimTarget) : center;
     const route = hexLine(plant, plant.reclaimTarget ?? plant).map(hexCenter);
@@ -490,7 +672,7 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
       }
     }
   }
-  const box = drawSprite(ctx, plantSpriteKey(plant), center.x, center.y + 7);
+  const box = drawPlantToken(ctx, plant, center);
   if (plant.attackTarget && plant.attackUntil > state.elapsed) {
     const target = hexCenter(plant.attackTarget);
     ctx.strokeStyle = "rgba(224,231,145,.8)"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]);
@@ -500,7 +682,14 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity) {
-  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), enemy.position.x, enemy.position.y + 7);
+  const center = hexCenter(enemy.hex);
+  tracePolygon(ctx, hexPolygon(enemy.hex, .7));
+  ctx.fillStyle = enemy.kind === "deepfake" ? "rgba(52,50,105,.42)" : enemy.kind === "popup" ? "rgba(105,35,86,.34)" : "rgba(72,65,55,.32)"; ctx.fill();
+  ctx.strokeStyle = "rgba(182,92,167,.35)"; ctx.lineWidth = 1; ctx.stroke();
+  if (enemy.kind === "deepfake") {
+    ctx.fillStyle = "rgba(47,60,108,.34)"; ctx.beginPath(); ctx.ellipse(center.x, center.y + 6, 18, 7, 0, 0, Math.PI * 2); ctx.fill();
+  }
+  const box = drawEnemyToken(ctx, enemy);
   drawHealth(ctx, enemy.position.x - 14, box.top - 7, 28, enemy.hp / enemy.maxHp);
 }
 
@@ -558,16 +747,18 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
   drawMeadow(ctx, state.world);
+  drawBiomeRegions(ctx, state.world);
   drawRoad(ctx, state.world);
   for (const node of state.nodes) drawFacilityGround(ctx, node);
   drawCorruption(ctx, state);
-  for (const node of state.nodes) drawNodeConnections(ctx, node, state);
-  for (const ruin of state.ruins) drawRuinConnections(ctx, ruin, state);
-  for (const cell of state.world.cells.values()) if (cell.surface === "rubble") drawRubble(ctx, cell);
 
   const underConstruction = (object: WorldObject) => [...state.nodes, ...state.ruins].some((facility) => object.footprint.some((cell) => facility.footprint.some((facilityCell) => facilityCell.q === cell.q && facilityCell.r === cell.r && cellAt(state.world, facilityCell)?.surface !== "meadow")));
   const underlays = state.world.objects.filter((object) => (object.kind === "pond" || object.kind === "flowers") && !underConstruction(object));
   for (const object of underlays) drawWorldObject(ctx, object, state);
+  drawHexMesh(ctx, state.world);
+  for (const node of state.nodes) drawNodeConnections(ctx, node, state);
+  for (const ruin of state.ruins) drawRuinConnections(ctx, ruin, state);
+  for (const cell of state.world.cells.values()) if (cell.surface === "rubble") drawRubble(ctx, cell);
   const renderables = [
     ...state.world.objects.filter((object) => object.kind !== "pond" && object.kind !== "flowers" && !underConstruction(object)).map((object) => ({ depth: hexCenter(object.anchor).y, draw: () => drawWorldObject(ctx, object, state) })),
     ...state.plants.map((plant) => ({ depth: hexCenter(plant).y, draw: () => drawPlant(ctx, plant, state) })),
@@ -586,7 +777,7 @@ function formatTime(seconds: number) { return `${Math.floor(seconds / 60)}:${Str
 function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 02</span><h1>How to fight AI slop</h1><p>The field now runs on an invisible six-direction topology. You see continuous meadow, roads, water, roots, and freestanding objects—not a board. Every action changes relationships in that living hex world.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 02</span><h1>How to fight AI slop</h1><p>The field is a visible six-direction hex world. Terrain merges across cells, but every move, attack, root, and spread still crosses a shared border. Every action changes relationships in that living field.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
       <section className="rw-guide-grid">
         <article><span>01</span><h2>Root</h2><p>Plant on healthy soil. Each defender occupies a real place and can redirect six-direction enemy movement.</p></article>
         <article><span>02</span><h2>Break</h2><p>Datacenters excavate irregular multi-hex compounds, connect cables, manufacture junk, and poison adjacent land.</p></article>
@@ -776,15 +967,15 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     <div className="rw-play-page">
       <section className="rw-game-shell" aria-label="Fight AI slop game">
         <div className="rw-hud" aria-live="polite">
-          <div className="rw-hud-brand"><span>Invisible hex world · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best · {DIFFICULTIES[ui.difficulty].name}</small></div>
+          <div className="rw-hud-brand"><span>Visible hex world · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best · {DIFFICULTIES[ui.difficulty].name}</small></div>
           <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div><div><span>House</span><strong>{ui.houseIntegrity}%</strong></div><div><span>Corruption</span><strong>{ui.corruption}%</strong></div><div><span>Wave</span><strong>{ui.wave} · {ui.nextWave}s</strong></div><div><span>Score</span><strong>{ui.score.toLocaleString()}</strong></div>
         </div>
         <div className="rw-stage">
-          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onPointerMove={onCanvasPointerMove} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label={`A ${HEX_COLS} by ${HEX_ROWS} invisible hex field under attack by AI slop. Select a plant, then click the landscape or use six-direction keys and Enter to plant. Right-drag to pan and scroll to zoom.`}/>
+          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onPointerMove={onCanvasPointerMove} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label={`A ${HEX_COLS} by ${HEX_ROWS} visible hex field under attack by AI slop. Select a plant, then click a hex or use six-direction keys and Enter to plant. Right-drag to pan and scroll to zoom.`}/>
           {overlay && <div className={`rw-overlay rw-overlay-${ui.status}`}>
             <span>{ui.status === "menu" ? "AI INFRASTRUCTURE DETECTED" : ui.status === "won" ? "FEED TERMINATED" : "AI SLOP WON"}</span>
             <h2>{ui.status === "menu" ? "The world is alive." : ui.status === "won" ? "AI slop erased." : "The feed ate everything."}</h2>
-            <p>{ui.status === "menu" ? "Defend a continuous landscape built on an invisible hex topology. Datacenters excavate, connect, manufacture, corrupt, collapse into rubble—and the rest of the world responds." : ui.message}</p>
+            <p>{ui.status === "menu" ? "Defend a large visible hex landscape. Datacenters excavate connected cells, manufacture AI slop, corrupt the ground, collapse into rubble—and the rest of the world responds." : ui.message}</p>
             {ui.status !== "menu" && <div className="rw-result"><span>{ui.wave} waves</span><span>{formatTime(ui.elapsed)}</span><span>{ui.score.toLocaleString()} score</span></div>}
             <div className="rw-difficulty-picker" role="group" aria-label="Difficulty">{DIFFICULTY_ORDER.map((key) => <button type="button" className={difficulty === key ? "active" : ""} aria-pressed={difficulty === key} key={key} onClick={() => setDifficulty(key)}><strong>{DIFFICULTIES[key].name}</strong><small>{DIFFICULTIES[key].description}</small></button>)}</div>
             <div className="rw-overlay-actions"><button onClick={start}>{ui.status === "menu" ? "Enter the living field" : "Fight again"}</button></div>

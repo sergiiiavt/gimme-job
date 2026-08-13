@@ -4,10 +4,13 @@ import test from "node:test";
 import {
   BORDER_SPAWNS,
   PLANTS,
+  biomeAt,
   cellAt,
   createGameState,
+  createHexWorld,
   environmentVisualState,
   findPath,
+  hexDirection,
   hexDistance,
   inspectHex,
   placePlant,
@@ -16,13 +19,31 @@ import {
 
 const sameHex = (left, right) => left.q === right.q && left.r === right.r;
 
+test("generated biome regions are connected and water owns its logical cells", () => {
+  const world = createHexWorld();
+  assert.ok(world.biomes.some((region) => region.kind === "forest" && region.cells.length >= 12));
+  for (const region of world.biomes) {
+    const unseen = new Set(region.cells.map((hex) => `${hex.q},${hex.r}`));
+    const queue = [region.cells[0]];
+    while (queue.length) {
+      const current = queue.shift();
+      const currentKey = `${current.q},${current.r}`;
+      if (!unseen.delete(currentKey)) continue;
+      for (const neighbor of region.cells.filter((hex) => hexDistance(hex, current) === 1)) if (unseen.has(`${neighbor.q},${neighbor.r}`)) queue.push(neighbor);
+    }
+    assert.equal(unseen.size, 0, `${region.id} must be one connected shape`);
+    if (region.kind === "water") assert.ok(region.cells.every((hex) => cellAt(world, hex)?.surface === "water"));
+  }
+});
+
 function validCells(state, kind) {
   state.selected = kind;
   return [...state.world.cells.values()].map((cell) => cell.hex).filter((hex) => {
     const cell = cellAt(state.world, hex);
     const occupied = state.plants.some((plant) => sameHex(plant, hex))
       || state.nodes.some((node) => node.footprint.some((part) => sameHex(part, hex)))
-      || state.world.objects.some((object) => object.collision && object.footprint.some((part) => sameHex(part, hex)));
+      || state.world.objects.some((object) => object.collision && object.footprint.some((part) => sameHex(part, hex)))
+      || ["forest", "rock"].includes(biomeAt(state.world, hex)?.kind);
     if (!cell || occupied) return false;
     return kind === "rootreclaimer" ? cell.corruption > 0 : cell.surface === "meadow" && cell.corruption === 0;
   });
@@ -32,7 +53,7 @@ function ecosystemPlayer(state) {
   if (state.nodes.length && state.sunlight >= PLANTS.vinewhip.cost) {
     const placement = validCells(state, "vinewhip").map((hex) => ({
       hex,
-      score: state.nodes.filter((node) => hexDistance(hex, node.anchor) <= 4).length * 100
+      score: state.nodes.filter((node) => hexDistance(hex, node.anchor) <= 4 && hexDirection(hex, node.anchor) !== null).length * 100
         - Math.min(...state.nodes.map((node) => hexDistance(hex, node.anchor))),
     })).filter(({ score }) => score > 0).sort((left, right) => right.score - left.score)[0];
     if (placement) { state.selected = "vinewhip"; placePlant(state, placement.hex); return; }
@@ -143,6 +164,21 @@ test("enemy pathfinding takes the longer road corridor when its travel cost is l
   const path = findPath(state, start);
   const roadSteps = path.filter((hex) => cellAt(state.world, hex)?.surface === "road").length;
   assert.ok(roadSteps >= 10, `expected a road-led route, received ${roadSteps} road steps`);
+});
+
+test("enemies contaminate the logical cells they traverse", () => {
+  const state = createGameState(0, "normal");
+  const node = state.nodes[0];
+  node.buildProgress = 7;
+  node.spawnTimer = 0;
+  node.spreadTimer = 99;
+  updateGame(state, .05);
+  const enemy = state.enemies[0];
+  assert.ok(enemy);
+  const start = enemy.hex;
+  for (let tick = 0; tick < 400 && sameHex(enemy.hex, start); tick += 1) updateGame(state, .05);
+  assert.equal(sameHex(enemy.hex, start), false);
+  assert.ok(cellAt(state.world, enemy.hex)?.corruption >= 1);
 });
 
 test("all difficulty modes support complete strategic wins and unattended losses", () => {

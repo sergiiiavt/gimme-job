@@ -23,7 +23,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
 
   assert.match(worldSource, /export const HEX_COLS = 30;/);
   assert.match(worldSource, /export const HEX_ROWS = 14;/);
-  assert.match(worldSource, /const CUBE_DIRECTIONS: CubeCoord\[\] = \[/);
+  assert.match(worldSource, /from "\.\/rewild-hex-grid\.ts"/);
   assert.match(worldSource, /export function hexNeighbors/);
   assert.match(worldSource, /export function hexDistance/);
   assert.match(worldSource, /export function pixelToHex/);
@@ -33,6 +33,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /export function createHexWorld\(seed = MAP_SEED\)/);
   assert.match(worldSource, /interface HexCell/);
   assert.match(worldSource, /interface WorldObject/);
+  assert.match(worldSource, /interface BiomeRegion/);
   assert.match(worldSource, /surface: roadKeys\.has\(hexKey\(hex\)\) \? "road" : "meadow"/);
   assert.match(worldSource, /object\.kind === "pond"/);
   assert.match(worldSource, /export function createFacilityFootprint/);
@@ -60,8 +61,13 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /from "\.\/rewild-hex-world"/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(gameSource, /function drawRoad/);
+  assert.match(gameSource, /function drawBiomeRegions/);
+  assert.match(gameSource, /function regionBoundary/);
   assert.match(gameSource, /function drawCorruption/);
+  assert.match(gameSource, /function drawHexMesh/);
   assert.match(gameSource, /function drawGrounding/);
+  assert.match(gameSource, /function drawPlantToken/);
+  assert.match(gameSource, /function drawEnemyToken/);
   assert.match(gameSource, /function drawFacilityGround/);
   assert.match(gameSource, /function drawAtlasFrame/);
   assert.match(gameSource, /facilityModules\(node\)/);
@@ -97,7 +103,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.ok(gameScripts.length >= 1, "The production build must contain a separate Rewild game chunk.");
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
-  assert.match(gameOutput, /invisible hex topology/i);
+  assert.match(gameOutput, /visible hex (?:world|field)/i);
   assert.match(gameOutput, /tree-response-states-v1\.png/);
   assert.match(gameOutput, /pond-response-states-v1\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
