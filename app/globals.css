@@ -897,7 +897,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .rw-hud-brand small { color: #657c70; display: block; font-size: 7px; margin-top: 3px; text-transform: uppercase; }
 .rw-stage { background: #26372d; margin: 0 auto; max-width: 1200px; min-height: 0; position: relative; width: 100%; }
 .rw-play-page .rw-stage { align-self: stretch; height: 100%; justify-self: stretch; max-height: 100%; max-width: none; min-width: 0; overflow: hidden; width: 100%; }
-.rw-stage canvas { cursor: crosshair; display: block; height: 100%; image-rendering: crisp-edges; image-rendering: pixelated; object-fit: fill; touch-action: manipulation; width: 100%; }
+.rw-stage canvas { cursor: crosshair; display: block; height: 100%; image-rendering: crisp-edges; image-rendering: pixelated; object-fit: cover; touch-action: manipulation; width: 100%; }
 .rw-stage canvas:focus-visible { outline: 3px solid #f4ef9d; outline-offset: -3px; }
 .rw-overlay { align-items: center; backdrop-filter: blur(2px); background: rgba(15,27,22,.83); display: flex; flex-direction: column; inset: 0; justify-content: center; padding: 28px; position: absolute; text-align: center; }
 .rw-overlay > span, .rw-pause-card > span { color: #bedb68; font-size: 8px; font-weight: 900; letter-spacing: .15em; }

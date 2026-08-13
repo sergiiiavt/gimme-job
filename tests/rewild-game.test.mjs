@@ -21,7 +21,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /section === "rewild" && subsection === "all" \? " kb-main-game"/);
   assert.match(stylesSource, /\.rw-play-page \.rw-game-shell/);
   assert.match(stylesSource, /\.rw-play-page \.rw-stage \{[^}]*height: 100%;[^}]*max-height: 100%;[^}]*max-width: none;[^}]*width: 100%;/);
-  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: fill;/);
+  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: cover;/);
   assert.match(stylesSource, /\.kb-main-game \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
   assert.match(stylesSource, /\.rw-play-page \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
 
@@ -35,6 +35,11 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(stylesSource, /image-rendering: pixelated/);
   assert.match(gameSource, /"terrain-world": "\/rewild\/terrain-world\.png"/);
   assert.match(gameSource, /function drawCorruptionDetails/);
+  assert.match(gameSource, /function drawAmbientWorld/);
+  assert.match(gameSource, /function drawWorldMesh/);
+  assert.match(gameSource, /function drawEntityRelations/);
+  assert.match(gameSource, /function drawCombatEffects/);
+  assert.match(gameSource, /drawSprite\(ctx, "obj-house", x, groundY, 1, false\)/);
   assert.doesNotMatch(gameSource, /ctx\.strokeRect\(x, y, TILE, TILE\)/);
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) {
@@ -54,7 +59,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /state\.selected === "rootreclaimer" \? tile === "corrupt" : tile === "grass"/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
   assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
-  assert.match(gameSource, /renderedWidth: bounds\.width/);
+  assert.match(gameSource, /const renderedWidth = boxRatio > sceneRatio/);
   assert.match(gameSource, /if \(x < 0 \|\| y < 0 \|\| x >= renderedWidth \|\| y >= renderedHeight\) return/);
   assert.match(gameSource, /event\.key === "Enter"/);
   assert.match(gameSource, /window\.localStorage\.setItem\(STORAGE_KEY/);
