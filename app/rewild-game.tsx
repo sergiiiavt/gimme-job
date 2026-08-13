@@ -37,7 +37,13 @@ function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: numb
 }
 
 const SPRITE_FILES: Record<string, string> = {
-  "obj-house": "/rewild/obj-house.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
+  "terrain-meadow": "/rewild/terrain-meadow.png",
+  "terrain-shrub-1": "/rewild/terrain-shrub-1.png", "terrain-shrub-2": "/rewild/terrain-shrub-2.png",
+  "terrain-flowers-1": "/rewild/terrain-flowers-1.png", "terrain-flowers-2": "/rewild/terrain-flowers-2.png",
+  "terrain-pond-1": "/rewild/terrain-pond-1.png", "terrain-pond-2": "/rewild/terrain-pond-2.png",
+  "terrain-rock-1": "/rewild/terrain-rock-1.png", "terrain-rock-2": "/rewild/terrain-rock-2.png",
+  "terrain-corrupt-1": "/rewild/terrain-corrupt-1.png", "terrain-corrupt-2": "/rewild/terrain-corrupt-2.png",
+  "obj-house": "/rewild/obj-house-v2.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak-p1": "/rewild/obj-elderoak-p1.png", "obj-elderoak-p2": "/rewild/obj-elderoak-p2.png",
   "obj-server": "/rewild/obj-server.png", "obj-mainframe": "/rewild/obj-mainframe.png",
@@ -54,7 +60,7 @@ const SPRITE_FILES: Record<string, string> = {
 interface SpriteMeta { pivotY: number; footprint: number }
 const DEFAULT_SPRITE_META: SpriteMeta = { pivotY: .88, footprint: 1 };
 const SPRITE_META: Record<string, SpriteMeta> = {
-  "obj-house": { pivotY: .86, footprint: 2.15 },
+  "obj-house": { pivotY: .88, footprint: 3.1 },
   "obj-sunbloom": { pivotY: .92, footprint: 1.3 },
   "obj-thornbramble": { pivotY: .88, footprint: 1.05 },
   "obj-sporecap": { pivotY: .90, footprint: 1.15 },
@@ -89,7 +95,7 @@ function getSprite(key: string): HTMLImageElement | null {
   return getSpriteByPath(SPRITE_FILES[key]);
 }
 
-const WANG_KINDS = ["pond", "forest", "rock", "flowers", "corrupt"] as const;
+const WANG_KINDS = ["corrupt"] as const;
 function allWangCornerKeys(): string[] {
   const keys: string[] = [];
   for (const nw of ["l", "u"]) for (const ne of ["l", "u"]) for (const sw of ["l", "u"]) for (const se of ["l", "u"]) keys.push(nw + ne + sw + se);
@@ -239,6 +245,21 @@ const OBSTACLES: Array<[number, number, TileKind]> = [
   [6, 5, "pond"], [6, 6, "pond"], [7, 6, "pond"], [3, 9, "forest"], [4, 9, "forest"], [4, 10, "forest"],
   [25, 6, "forest"], [26, 6, "forest"], [23, 10, "rock"], [24, 10, "rock"], [20, 12, "flowers"], [21, 12, "flowers"],
   [10, 12, "forest"], [11, 12, "forest"],
+];
+
+interface TerrainCluster { key: string; x: number; y: number; width: number }
+const TERRAIN_CLUSTERS: TerrainCluster[] = [
+  { key: "terrain-shrub-1", x: 3.9, y: 3.25, width: 4.2 },
+  { key: "terrain-shrub-2", x: 3.95, y: 10.25, width: 4.0 },
+  { key: "terrain-shrub-1", x: 25.95, y: 6.75, width: 3.8 },
+  { key: "terrain-shrub-2", x: 10.95, y: 12.75, width: 3.4 },
+  { key: "terrain-flowers-1", x: 10.95, y: 1.65, width: 3.7 },
+  { key: "terrain-flowers-2", x: 22.95, y: 2.65, width: 3.35 },
+  { key: "terrain-flowers-1", x: 20.95, y: 12.65, width: 3.4 },
+  { key: "terrain-pond-1", x: 17.95, y: 4.15, width: 4.5 },
+  { key: "terrain-pond-2", x: 6.75, y: 6.15, width: 4.25 },
+  { key: "terrain-rock-2", x: 26.5, y: 3.55, width: 2.45 },
+  { key: "terrain-rock-1", x: 23.95, y: 10.55, width: 3.3 },
 ];
 
 function createTiles() {
@@ -689,25 +710,22 @@ function cellCornerKey(tiles: TileKind[][], col: number, row: number, kind: Tile
   return corner(col, row) + corner(col + 1, row) + corner(col, row + 1) + corner(col + 1, row + 1);
 }
 
-const GRASS_VARIANTS = ["#85ac53", "#8fac5d", "#79a94c", "#88ae4c", "#88ae61", "#86a34d", "#82a95b", "#83a84d"];
-
 function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-  const grass = GRASS_VARIANTS[hashInt(col, row, 5) % GRASS_VARIANTS.length];
-  ctx.fillStyle = grass;
-  ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = "rgba(49,91,45,.22)";
-  ctx.fillRect(x + 7 + ((col * 5 + row * 3) % 17), y + 9, 2, 5);
-  ctx.fillRect(x + 25, y + 26 + ((col + row) % 4), 2, 4);
 
   let nearBiome = false;
-  for (const kind of WANG_KINDS) {
+  for (const kind of ["corrupt"] as const) {
     const key = cellCornerKey(tiles, col, row, kind);
     if (key === "uuuu") continue;
     nearBiome = true;
     const img = getWangSprite(kind, key);
-    if (img) ctx.drawImage(img, x, y, TILE, TILE);
+    if (img) {
+      ctx.save();
+      ctx.globalAlpha = .64;
+      ctx.drawImage(img, x, y, TILE, TILE);
+      ctx.restore();
+    }
   }
 
   if (!nearBiome && tiles[row][col] === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
@@ -724,8 +742,44 @@ function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: numbe
     ctx.fillRect(x + 6, y + 14, 10, 2);
     ctx.fillRect(x + 22, y + 24, 9, 2);
   }
-  ctx.strokeStyle = "rgba(34,58,37,.08)";
-  ctx.strokeRect(x, y, TILE, TILE);
+}
+
+function drawMeadow(ctx: CanvasRenderingContext2D) {
+  const meadow = getSprite("terrain-meadow");
+  if (meadow) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(meadow, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.restore();
+    return;
+  }
+  ctx.fillStyle = "#7f9f43";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+function drawTerrainClusters(ctx: CanvasRenderingContext2D) {
+  for (const cluster of TERRAIN_CLUSTERS) {
+    const img = getSprite(cluster.key);
+    if (!img) continue;
+    const width = cluster.width * TILE;
+    const height = width * (img.naturalHeight / img.naturalWidth);
+    ctx.drawImage(img, cluster.x * TILE - width / 2, cluster.y * TILE - height / 2, width, height);
+  }
+}
+
+function drawCorruptionDetails(ctx: CanvasRenderingContext2D, tiles: TileKind[][]) {
+  for (let row = 0; row < ROWS; row += 1) {
+    for (let col = 0; col < COLS; col += 1) {
+      if (tiles[row][col] !== "corrupt") continue;
+      const img = getSprite(hashInt(col, row, 19) % 2 ? "terrain-corrupt-1" : "terrain-corrupt-2");
+      if (!img) continue;
+      const width = TILE * (1.15 + (hashInt(col, row, 20) % 22) / 100);
+      const height = width * (img.naturalHeight / img.naturalWidth);
+      const x = (col + .5) * TILE - width / 2 + (hashInt(col, row, 21) % 9) - 4;
+      const y = (row + .5) * TILE - height / 2 + (hashInt(col, row, 22) % 7) - 3;
+      ctx.drawImage(img, x, y, width, height);
+    }
+  }
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, ratio: number, color = "#de6e70") {
@@ -744,7 +798,7 @@ function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
   const box = drawSprite(ctx, "obj-house", x, groundY);
   const barW = box.width * .55;
   const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
-  drawHealth(ctx, x - barW / 2, box.top - 10, barW, hp / 100, color);
+  drawHealth(ctx, x - barW / 2, box.top + 7, barW, hp / 100, color);
 }
 
 function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: GameState) {
@@ -788,10 +842,12 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.save();
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
+  drawMeadow(ctx);
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
-  ctx.fillStyle = "rgba(243,217,115,.12)"; ctx.fillRect((HOUSE_COL - 4) * TILE, (HOUSE_ROW - 4) * TILE, 10 * TILE, 10 * TILE);
+  drawCorruptionDetails(ctx, state.tiles);
+  drawTerrainClusters(ctx);
   drawHouse(ctx, state.houseHp);
   for (const plant of state.plants) drawPlant(ctx, plant, state);
   for (const node of state.nodes) drawNode(ctx, node, state.elapsed);
@@ -1046,7 +1102,7 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
           )}
           {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>AI slop is still waiting. It never gets tired.</strong><button onClick={togglePause}>Resume</button></div>}
 
-          <div className="rw-build-menu" aria-label="Build menu">
+          <div className={`rw-build-menu${overlay ? " rw-build-menu-hidden" : ""}`} aria-label="Build menu" aria-hidden={overlay}>
             <div className="rw-build-menu-head"><span>Build</span></div>
             <div className="rw-plant-bar" aria-label="Plants">
               {PLANT_ORDER.map((kind, index) => {

@@ -31,6 +31,10 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /width=\{CANVAS_WIDTH\} height=\{CANVAS_HEIGHT\}/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(stylesSource, /image-rendering: pixelated/);
+  assert.match(gameSource, /"terrain-meadow": "\/rewild\/terrain-meadow\.png"/);
+  assert.match(gameSource, /function drawTerrainClusters/);
+  assert.match(gameSource, /function drawCorruptionDetails/);
+  assert.doesNotMatch(gameSource, /ctx\.strokeRect\(x, y, TILE, TILE\)/);
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) {
     assert.match(gameSource, new RegExp(plant.replace(" ", "\\s")));
@@ -62,6 +66,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
   assert.match(gameOutput, /AI slop erased/);
+  assert.match(gameOutput, /terrain-meadow\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
 });
