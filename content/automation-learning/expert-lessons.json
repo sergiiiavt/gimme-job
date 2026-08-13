@@ -1,0 +1,226 @@
+{
+  "lessons": [
+    {
+      "id": "ta-lesson-contract-testing",
+      "moduleId": "contract-and-property",
+      "level": "Expert",
+      "order": 38,
+      "title": "Contract testing from a schema",
+      "titleUk": "Контрактне тестування на основі схеми",
+      "summary": "Generate one test per operation from the API's own specification, and let it check the promises the service makes.",
+      "summaryUk": "Згенеруйте по тесту на кожну операцію зі специфікації API й перевіряйте обіцянки, які дає сервіс.",
+      "concept": "A schema-driven tool reads an API specification, generates requests that are valid according to it, and checks that the responses are valid according to it too. That covers a category of defect example-based tests systematically miss: undocumented status codes, responses whose shape does not match what was declared, content-type violations and server errors on inputs nobody thought to try. The value is proportional to how honest the specification is, which is the point — a contract test measures the gap between what a service does and what it promises, and closing that gap is worth doing regardless of testing. Load the schema from the application object rather than a running server where the framework allows it, so the generated tests remain collectable without anything running. Keep the generated example count modest in the pull-request pipeline and raise it substantially for a nightly run, because these tests are cheap per example but the count multiplies across every operation in the specification.",
+      "conceptUk": "Інструмент, керований схемою, читає специфікацію API, генерує запити, валідні згідно з нею, і перевіряє, що відповіді теж їй відповідають. Це покриває категорію дефектів, яку тести на прикладах систематично пропускають: недокументовані коди статусу, відповіді, форма яких не збігається із заявленою, порушення типу вмісту та серверні помилки на входах, які нікому не спали на думку. Цінність пропорційна чесності специфікації, і в цьому вся суть — контрактний тест вимірює розрив між тим, що сервіс робить, і тим, що обіцяє, а закривати цей розрив варто незалежно від тестування. Завантажуйте схему з об'єкта застосунку, а не з запущеного сервера, якщо фреймворк це дозволяє, щоб згенеровані тести лишалися придатними до збирання без нічого запущеного. Тримайте кількість згенерованих прикладів помірною в конвеєрі pull request і суттєво піднімайте її для нічного запуску, бо ці тести дешеві на приклад, але їхня кількість множиться на кожну операцію специфікації.",
+      "keyPoints": [
+        "One generated test per operation covers undocumented statuses, wrong response shapes and content-type violations",
+        "The tool measures the gap between what a service does and what its specification promises",
+        "Keep example counts low in the merge gate and raise them substantially for a nightly run"
+      ],
+      "keyPointsUk": [
+        "Один згенерований тест на операцію покриває недокументовані статуси, хибні форми відповідей і порушення типу вмісту",
+        "Інструмент вимірює розрив між тим, що сервіс робить, і тим, що обіцяє його специфікація",
+        "Тримайте кількість прикладів низькою у бар'єрі злиття й суттєво піднімайте для нічного запуску"
+      ],
+      "pitfalls": [
+        "Expecting value from a specification nobody maintains — the tool can only check the promises that were written down",
+        "Running a large example count on every pull request, which multiplies across operations and slows the gate"
+      ],
+      "pitfallsUk": [
+        "Очікувати користі від специфікації, яку ніхто не підтримує — інструмент перевіряє лише записані обіцянки",
+        "Запускати велику кількість прикладів на кожен pull request: вона множиться на операції й уповільнює бар'єр"
+      ],
+      "code": "schema = schemathesis.openapi.from_asgi(\"/openapi.json\", app)\n\n\n@pytest.mark.contract\n@schema.parametrize()\n@hypothesis_settings(max_examples=15, deadline=None)\ndef test_api_conforms_to_its_openapi_spec(case):\n    \"\"\"One generated test per operation in the specification.\"\"\"\n    case.call_and_validate()\n\n\n# Built-in checks: not_a_server_error, status_code_conformance,\n# content_type_conformance, response_schema_conformance, positive_data_acceptance.\n#\n# A failure prints a curl command that reproduces it, which goes straight into\n# the ticket without anybody having to reconstruct the request by hand.",
+      "codeCaption": "Loading the schema from the application object keeps these tests collectable with nothing running.",
+      "codeCaptionUk": "Завантаження схеми з об'єкта застосунку дозволяє збирати ці тести, коли нічого не запущено.",
+      "exercise": "Point a schema-driven tool at an API you work with and run it once. Record every finding, then classify each as a real defect, a specification gap, or an artifact of the tool.",
+      "exerciseUk": "Спрямуйте інструмент, керований схемою, на ваше API й запустіть один раз. Запишіть кожну знахідку, потім класифікуйте її як справжній дефект, прогалину специфікації або артефакт інструмента.",
+      "tags": ["contract-testing", "openapi", "api"],
+      "sourceIds": ["schemathesis-docs", "openapi-spec", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-property-based-testing",
+      "moduleId": "contract-and-property",
+      "level": "Expert",
+      "order": 39,
+      "title": "Property-based testing: invariants, not examples",
+      "titleUk": "Тестування на властивостях: інваріанти, а не приклади",
+      "summary": "State a rule that must always hold; the tool hunts for a counterexample and shrinks it to something readable.",
+      "summaryUk": "Сформулюйте правило, яке має виконуватися завжди; інструмент шукає контрприклад і зводить його до читабельного.",
+      "concept": "Example-based tests check the cases somebody thought of. A property-based test states a rule that must hold for all inputs, and the tool searches for a counterexample and then shrinks it to the smallest input that still fails, which is what makes the output actionable rather than a wall of random data. Good properties are invariants rather than examples: a round trip where reading back what you created returns the same thing, an invariance such as a total always equalling the sum of its parts, idempotence where doing something twice equals doing it once, a robustness property that no input produces a server error, and symmetry where complementary filters partition a collection exactly. Choosing between this and a parametrized table is straightforward. A fixed curated list — boundary values, known injection payloads — belongs in a table, where each row gets its own name and works with ordinary fixtures. Generation belongs where you want inputs you did not think of, and it costs discipline, since a generated test that reuses a fixture must reset its own state.",
+      "conceptUk": "Тести на прикладах перевіряють випадки, які хтось придумав. Тест на властивостях формулює правило, що має виконуватися для всіх входів, а інструмент шукає контрприклад і потім зводить його до найменшого входу, який усе ще падає — саме це робить результат придатним до дії, а не стіною випадкових даних. Хороші властивості є інваріантами, а не прикладами: цикл «створив і прочитав» повертає те саме; інваріантність на кшталт «сума завжди дорівнює сумі частин»; ідемпотентність, де зробити двічі дорівнює зробити раз; властивість стійкості, що жоден вхід не спричиняє серверної помилки; і симетрія, де взаємодоповнювальні фільтри точно розбивають колекцію. Вибір між цим і параметризованою таблицею простий. Фіксований відібраний перелік — межові значення, відомі ін'єкційні рядки — належить таблиці, де кожен рядок має власну назву й працює зі звичайними фікстурами. Генерація належить туди, де потрібні входи, яких ви не придумали, і вона коштує дисципліни, бо згенерований тест, що перевикористовує фікстуру, мусить сам скидати свій стан.",
+      "keyPoints": [
+        "A property states a rule for all inputs; shrinking turns a random failure into a minimal readable one",
+        "Round trip, invariance, idempotence, no-server-errors and symmetry are the properties worth reaching for first",
+        "Use a parametrized table for curated inputs and generation for inputs you did not think of"
+      ],
+      "keyPointsUk": [
+        "Властивість формулює правило для всіх входів; зведення перетворює випадкове падіння на мінімальне й читабельне",
+        "Цикл створення й читання, інваріантність, ідемпотентність, відсутність серверних помилок і симетрія — перші кандидати",
+        "Використовуйте параметризовану таблицю для відібраних входів і генерацію для тих, яких ви не придумали"
+      ],
+      "pitfalls": [
+        "Restating an example as a property, which pays the machinery cost without gaining any search",
+        "Suppressing a fixture health check without then resetting state in the test, so examples contaminate each other"
+      ],
+      "pitfallsUk": [
+        "Переписати приклад як властивість, сплативши вартість механізму без жодного виграшу в пошуку",
+        "Придушити перевірку фікстури й не скинути стан у тесті, через що приклади забруднюють один одного"
+      ],
+      "code": "@given(quantities=st.lists(st.integers(min_value=1, max_value=5), min_size=1, max_size=4))\n@hypothesis_settings(\n    max_examples=20,\n    deadline=None,\n    suppress_health_check=[HealthCheck.function_scoped_fixture],\n)\ndef test_cart_total_always_equals_sum_of_lines(shop_as_user, quantities):\n    \"\"\"The invariant, not the example.\n\n    Suppressing the fixture health check means taking responsibility for\n    isolation yourself - hence the reset on the first line.\n    \"\"\"\n    shop_as_user.cart.clear()\n    products = shop_as_user.products.list(in_stock=True)[: len(quantities)]\n\n    expected = 0.0\n    for product, quantity in zip(products, quantities, strict=False):\n        shop_as_user.cart.add_item(product.id, quantity)\n        expected += product.price * quantity\n\n    cart = shop_as_user.cart.get()\n\n    approx_money(cart.total, expected)\n    approx_money(sum(line.line_total for line in cart.items), cart.total)",
+      "codeCaption": "The reset on the first line is the price of reusing a function-scoped fixture across generated examples.",
+      "codeCaptionUk": "Скидання в першому рядку — це ціна перевикористання фікстури рівня функції між згенерованими прикладами.",
+      "exercise": "Write one property for a feature you know that is not already covered by an example test. Break the implementation deliberately and confirm the tool finds and shrinks a counterexample.",
+      "exerciseUk": "Напишіть одну властивість для знайомої функціональності, ще не покритої тестом на прикладі. Свідомо зламайте реалізацію й переконайтеся, що інструмент знаходить і зводить контрприклад.",
+      "tags": ["property-based", "hypothesis", "invariants"],
+      "sourceIds": ["hypothesis-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-triaging-generated-findings",
+      "moduleId": "contract-and-property",
+      "level": "Expert",
+      "order": 40,
+      "title": "Triaging what generated tools report",
+      "titleUk": "Розбір знахідок від генеративних інструментів",
+      "summary": "Tools produce findings, humans produce verdicts — and every suppression carries its reason in the code.",
+      "summaryUk": "Інструменти дають знахідки, люди дають вердикти — і кожне придушення несе свою причину поруч у коді.",
+      "concept": "Generated testing tools report three kinds of thing, and telling them apart is the skill that decides whether such a job stays useful or becomes permanently yellow and ignored. Some findings are real defects in the system. Some are real gaps in the specification, where the service behaves sensibly but never documented the behaviour; the fix is to document it, and doing so sometimes exposes a second finding when the documentation you just wrote is itself wrong. And some are artifacts of the tool meeting the shape of your interface rather than statements about the system at all — an optional parameter whose schema permits a value the transport cannot express, or a generator running out of distinct inputs for an operation that takes no parameters and reporting that it filtered too many examples. The discipline that makes this sustainable is simple: every exclusion or suppression carries a written reason immediately beside it. An unexplained suppression is indistinguishable from a bug somebody hid, and six months later nobody can tell which it was.",
+      "conceptUk": "Генеративні інструменти повідомляють про три різні речі, і вміння їх розрізняти вирішує, чи залишиться така задача корисною, чи стане назавжди жовтою та ігнорованою. Частина знахідок — справжні дефекти системи. Частина — справжні прогалини специфікації, де сервіс поводиться розумно, але поведінку ніколи не задокументували; виправлення полягає в документуванні, і це іноді відкриває другу знахідку, коли щойно написана документація сама виявляється хибною. А частина — артефакти зустрічі інструмента з формою вашого інтерфейсу, а не твердження про систему взагалі: необов'язковий параметр, чия схема допускає значення, яке транспорт не може виразити, або генератор, у якого закінчилися різні входи для операції без параметрів і який повідомляє, що відфільтрував забагато прикладів. Дисципліна, яка робить це стійким, проста: кожне виключення чи придушення несе письмову причину безпосередньо поруч. Непояснене придушення неможливо відрізнити від захованого бага, і через пів року ніхто не скаже, що це було.",
+      "keyPoints": [
+        "Findings split three ways: a real defect, a specification gap, or an artifact of the tool",
+        "Documenting a gap can create a second finding if the documentation you wrote is itself wrong",
+        "Every exclusion carries its reason beside it, or the job decays into permanent yellow"
+      ],
+      "keyPointsUk": [
+        "Знахідки діляться натроє: справжній дефект, прогалина специфікації або артефакт інструмента",
+        "Документування прогалини може створити другу знахідку, якщо написана документація сама хибна",
+        "Кожне виключення несе причину поруч, інакше задача перетворюється на постійно жовту"
+      ],
+      "pitfalls": [
+        "Suppressing a check to make the job green without recording why, which is indistinguishable from hiding a defect",
+        "Assuming every generated finding is a product bug, which burns credibility with developers on the first false positive"
+      ],
+      "pitfallsUk": [
+        "Придушити перевірку заради зеленої задачі без запису причини — це не відрізнити від приховування дефекту",
+        "Вважати кожну згенеровану знахідку продуктовим багом, спалюючи довіру розробників на першому хибному спрацюванні"
+      ],
+      "code": "# A real triage log from this course's own suite, kept in the test's docstring:\n#\n#   1. Undocumented status 400/401   REAL. The service returns them and the\n#      specification never said so. Fixed by documenting them.\n#   2. Response schema mismatch on 422   REAL, and caused by the fix for (1):\n#      we declared detail as a string while the framework returns a list of\n#      error objects. A wrong contract is worse than a missing one.\n#   3. Rejected ?in_stock=null   NOT a defect. An optional query parameter is\n#      \"boolean or null\" in the schema, but a query string cannot express JSON\n#      null, so the generator sends the text \"null\" and the server correctly\n#      rejects it. A limitation of the specification format, not a bug.\n\ncase.call_and_validate(excluded_checks=[positive_data_acceptance])\n#                      ^ excluded because of finding (3), recorded above",
+      "codeCaption": "Three findings, three different verdicts — and the exclusion is readable next to the code it affects.",
+      "codeCaptionUk": "Три знахідки, три різні вердикти — і виключення читається поруч із кодом, якого стосується.",
+      "exercise": "Run a schema-driven tool against an API you own and triage every finding into the three categories. For anything you suppress, write the reason in the code and have a colleague check the reasoning holds.",
+      "exerciseUk": "Запустіть інструмент, керований схемою, на вашому API й розберіть кожну знахідку за трьома категоріями. Для всього, що придушуєте, запишіть причину в коді й попросіть колегу перевірити її обґрунтованість.",
+      "tags": ["contract-testing", "triage", "process"],
+      "sourceIds": ["schemathesis-docs", "hypothesis-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-risk-based-prioritisation",
+      "moduleId": "quality-strategy",
+      "level": "Expert",
+      "order": 41,
+      "title": "Risk-based prioritisation",
+      "titleUk": "Пріоритезація на основі ризику",
+      "summary": "Score features by probability and impact, assign a layer to each, and be willing to write \"no automation\".",
+      "summaryUk": "Оцініть функціональність за ймовірністю та впливом, призначте рівень кожній і не бійтеся написати «без автоматизації».",
+      "concept": "Coverage decisions are easier to make and far easier to defend when they come from a scored table rather than from intuition. Score each feature for the probability that it breaks and the impact if it does, multiply, and then assign a coverage approach to each row: which layer, how exhaustively, and whether a user-interface journey is justified at all. The output is a single page that converts an unfalsifiable request for more testing into a specific, negotiable plan, and it is the right artifact to bring to a planning conversation because a stakeholder can argue with a score in a way they cannot argue with a feeling. The most important rows are the ones where the answer is no automation. A plan without any such rows has not actually prioritised; it has just listed everything. Being able to say that a feature is not worth automating, and to show the reasoning, is what separates an engineer who owns a strategy from one who processes a backlog.",
+      "conceptUk": "Рішення про покриття ухвалювати легше й обстоювати значно простіше, коли вони походять з оціненої таблиці, а не з інтуїції. Оцініть кожну функціональність за ймовірністю поломки та впливом, якщо вона станеться, перемножте, а потім призначте кожному рядку підхід до покриття: який рівень, наскільки вичерпно й чи взагалі виправданий наскрізний сценарій через інтерфейс. Результатом є одна сторінка, що перетворює нефальсифіковне прохання «більше тестування» на конкретний план, який можна обговорювати; це правильний артефакт для планувальної розмови, бо із оцінкою замовник може сперечатися так, як не може з відчуттям. Найважливіші рядки — ті, де відповідь «без автоматизації». План без жодного такого рядка насправді не пріоритезував, а лише перелічив усе. Здатність сказати, що функціональність не варта автоматизації, і показати обґрунтування, відрізняє інженера, який володіє стратегією, від того, хто обробляє беклог.",
+      "keyPoints": [
+        "Risk equals probability multiplied by impact; score every significant feature and assign a layer",
+        "The table converts \"we need more testing\" into a specific, negotiable plan",
+        "A plan with no \"no automation\" rows has listed everything rather than prioritised anything"
+      ],
+      "keyPointsUk": [
+        "Ризик дорівнює ймовірності, помноженій на вплив; оцініть кожну значущу функціональність і призначте рівень",
+        "Таблиця перетворює «нам потрібно більше тестування» на конкретний план, який можна обговорювати",
+        "План без рядків «без автоматизації» перелічив усе, а не пріоритезував щось"
+      ],
+      "pitfalls": [
+        "Scoring impact only, which over-invests in rare catastrophes and under-invests in frequent moderate failures",
+        "Never revisiting the table, so it reflects the risk profile of a product that no longer exists"
+      ],
+      "pitfallsUk": [
+        "Оцінювати лише вплив, надмірно інвестуючи в рідкісні катастрофи й недоінвестуючи в часті помірні збої",
+        "Ніколи не переглядати таблицю, через що вона відображає профіль ризику продукту, якого вже немає"
+      ],
+      "code": "# Feature            Prob  Impact  Score  Coverage decision\n# -----------------  ----  ------  -----  ---------------------------------------\n# Cart arithmetic       4       4     16  API exhaustive + property-based\n# Checkout/payment      3       5     15  API exhaustive + one UI journey + mobile smoke\n# Authentication        3       5     15  API exhaustive incl. BOLA + one UI test\n# Product search        4       2      8  API + one UI test\n# Footer links          1       1      1  None - manual spot check at release\n#\n# Bring this to refinement. A stakeholder can argue with a score; they cannot\n# argue with \"I feel we need more coverage\", which is why that conversation\n# never converges.",
+      "codeCaption": "One page, defensible, negotiable — and the last row is the one that proves it is a plan.",
+      "codeCaptionUk": "Одна сторінка, обґрунтована й відкрита до обговорення — і останній рядок доводить, що це план.",
+      "exercise": "Build this table for a product you work on, including at least one row where you recommend no automation. Present it to someone who disagrees and see whether the scoring survives the conversation.",
+      "exerciseUk": "Побудуйте цю таблицю для вашого продукту, включно щонайменше з одним рядком, де ви радите не автоматизувати. Покажіть її тому, хто не погоджується, і подивіться, чи витримає оцінювання цю розмову.",
+      "tags": ["strategy", "risk", "planning"],
+      "sourceIds": ["fowler-test-pyramid", "owasp-api-top-10"]
+    },
+    {
+      "id": "ta-lesson-metrics-that-matter",
+      "moduleId": "quality-strategy",
+      "level": "Expert",
+      "order": 42,
+      "title": "Metrics that survive scrutiny",
+      "titleUk": "Показники, що витримують перевірку",
+      "summary": "Escaped defects, flake rate, runtime and time to diagnose; treat coverage as a discovery tool, never a target.",
+      "summaryUk": "Пропущені дефекти, рівень нестабільності, час виконання та час до діагнозу; покриття — інструмент пошуку, а не ціль.",
+      "concept": "A small number of measures genuinely reflect whether an automation effort is working. Escaped defects — problems that reached users — is the only metric that measures the actual goal, and it should trend downwards. Flake rate determines trust, and above a few percent the suite is decorative. Suite runtime for the merge gate determines whether people wait for the result. Time to diagnose a failure measures your reporting, which is a real deliverable rather than a nicety. And the distribution of defects by layer is a useful diagnostic in itself: if the interface layer finds most of your bugs, the service layer is too thin. Coverage percentage deserves particular care. It is genuinely useful for discovery, since noticing that nothing exercises the refund path is worth knowing, and it is actively harmful as a target, because it measures execution rather than verification and a test with no assertions raises it. Test count and automation percentage are worse still, since both improve when you do the wrong thing.",
+      "conceptUk": "Невелика кількість показників справді відображає, чи працює автоматизація. Пропущені дефекти — проблеми, що дійшли до користувачів — єдиний показник, який вимірює саму мету, і він має спадати. Рівень нестабільності визначає довіру, і понад кілька відсотків набір стає декоративним. Час виконання бар'єра злиття визначає, чи люди чекатимуть на результат. Час до діагнозу падіння вимірює вашу звітність, яка є справжнім результатом роботи, а не приємним доповненням. А розподіл дефектів за рівнями сам по собі є корисною діагностикою: якщо більшість багів знаходить рівень інтерфейсу, рівень сервісів надто тонкий. Відсоток покриття потребує окремої обережності. Він справді корисний для пошуку прогалин, бо помітити, що жоден тест не зачіпає шлях повернення коштів, варто, і він активно шкідливий як ціль, бо вимірює виконання, а не перевірку, і тест без тверджень його підвищує. Кількість тестів і відсоток автоматизації ще гірші, бо обидва зростають, коли ви робите неправильні речі.",
+      "keyPoints": [
+        "Escaped defects is the only metric that measures the goal; flake rate determines whether anyone trusts the suite",
+        "Coverage is a discovery tool and a harmful target — it measures execution, not verification",
+        "If the interface layer finds most of your defects, the service layer is too thin"
+      ],
+      "keyPointsUk": [
+        "Пропущені дефекти — єдиний показник, що вимірює мету; рівень нестабільності визначає довіру до набору",
+        "Покриття — інструмент пошуку й шкідлива ціль: воно вимірює виконання, а не перевірку",
+        "Якщо більшість дефектів знаходить рівень інтерфейсу, рівень сервісів надто тонкий"
+      ],
+      "pitfalls": [
+        "Reporting test counts and coverage to management, which invites pressure toward numbers that do not reduce risk",
+        "Setting a coverage target, after which people write assertion-free tests that execute code and verify nothing"
+      ],
+      "pitfallsUk": [
+        "Звітувати керівництву кількість тестів і покриття, запрошуючи тиск заради чисел, що не зменшують ризик",
+        "Встановити ціль за покриттям, після чого пишуть тести без тверджень, що виконують код і нічого не перевіряють"
+      ],
+      "code": "# Say this:\n#\n#   \"Regression testing for a release took 3 engineer-days. It now takes\n#    40 minutes and runs on every commit. Last quarter the suite caught 14\n#    defects before merge, including an authorization bug that exposed other\n#    users' orders. Escaped defects went from 9 to 3 per release.\"\n#\n# Not this:\n#\n#   \"We have 500 automated tests and 80% coverage.\"\n#\n# The first is in the units the business already uses: time, risk, defects\n# reaching customers. The second invites a request for 90% coverage, which\n# is achievable without reducing risk at all.",
+      "codeCaption": "Report in the units the business already uses, and the conversation stops being about test counts.",
+      "codeCaptionUk": "Звітуйте в одиницях, якими бізнес уже користується, і розмова перестане бути про кількість тестів.",
+      "exercise": "Draft the monthly report you would send about a suite you work with. Include no test counts and no coverage percentage, and check whether you can still make the case convincingly.",
+      "exerciseUk": "Складіть щомісячний звіт про ваш набір тестів. Не включайте кількість тестів і відсоток покриття й перевірте, чи зможете ви й далі переконливо обґрунтувати цінність.",
+      "tags": ["strategy", "metrics", "communication"],
+      "sourceIds": ["google-flaky-tests", "fowler-test-pyramid"]
+    },
+    {
+      "id": "ta-lesson-building-a-programme",
+      "moduleId": "quality-strategy",
+      "level": "Expert",
+      "order": 43,
+      "title": "Building an automation programme from zero",
+      "titleUk": "Побудова програми автоматизації з нуля",
+      "summary": "Foundations and CI first, then the cheap layer, then the expensive one, then hardening — in that order.",
+      "summaryUk": "Спершу фундамент і CI, потім дешевий рівень, потім дорогий, потім зміцнення — саме в такому порядку.",
+      "concept": "The order in which a programme is built matters more than any individual tool choice. Start with foundations and get one trivial test running end to end in the pipeline before writing fifty more, because everything after that inherits whatever the foundation got wrong. Then build the service layer against the highest-risk flows, applying a systematic test-design checklist rather than intuition. Only then add the interface layer, and add far fewer tests than instinct suggests — five to ten genuine journeys, not fifty. Emulated mobile web comes almost free at that point. Real devices and native applications come next, at a nightly cadence. Finish with hardening: parallel execution, a flake hunt, reporting history and a quarantine process. Most failed efforts invert this, writing hundreds of interface tests first, then discovering that nothing runs in parallel and no failure explains itself. Alongside the technical work, the highest-leverage requests to make of other teams are a test-data creation endpoint, stable test identifiers, and accessibility identifiers on mobile.",
+      "conceptUk": "Порядок побудови програми важить більше за будь-який окремий вибір інструмента. Почніть із фундаменту й доведіть один тривіальний тест до кінця в конвеєрі, перш ніж писати ще п'ятдесят, бо все подальше успадкує хиби фундаменту. Далі будуйте рівень сервісів для потоків із найвищим ризиком, застосовуючи систематичний чекліст проєктування тестів, а не інтуїцію. Лише потім додавайте рівень інтерфейсу — і додавайте значно менше тестів, ніж підказує інстинкт: п'ять-десять справжніх сценаріїв, а не п'ятдесят. Емульований мобільний веб на цьому етапі дістається майже безкоштовно. Далі йдуть реальні пристрої та нативні застосунки з нічною періодичністю. Завершіть зміцненням: паралельне виконання, полювання на нестабільність, історія звітів і процес карантину. Більшість невдалих спроб роблять навпаки: спершу пишуть сотні інтерфейсних тестів, а потім виявляють, що ніщо не працює паралельно й жодне падіння себе не пояснює. Поруч із технічною роботою найцінніші прохання до інших команд — ендпоінт створення тестових даних, стабільні тестові ідентифікатори та ідентифікатори доступності на мобільних.",
+      "keyPoints": [
+        "Get one test running end to end in CI before writing fifty more — everything inherits the foundation",
+        "Service layer before interface layer, and far fewer interface tests than instinct suggests",
+        "Ask other teams for a test-data endpoint, stable test identifiers and mobile accessibility identifiers"
+      ],
+      "keyPointsUk": [
+        "Доведіть один тест до кінця в CI, перш ніж писати ще п'ятдесят — усе успадкує фундамент",
+        "Рівень сервісів перед рівнем інтерфейсу, і значно менше інтерфейсних тестів, ніж підказує інстинкт",
+        "Просіть в інших команд ендпоінт тестових даних, стабільні тестові ідентифікатори та ідентифікатори доступності"
+      ],
+      "pitfalls": [
+        "Writing hundreds of interface tests before the pipeline exists, then discovering nothing runs in parallel",
+        "Treating requests to other teams as out of scope, when they are usually the cheapest improvements available"
+      ],
+      "pitfallsUk": [
+        "Написати сотні інтерфейсних тестів до появи конвеєра й потім виявити, що ніщо не працює паралельно",
+        "Вважати прохання до інших команд поза зоною відповідальності, коли це зазвичай найдешевші доступні покращення"
+      ],
+      "code": "# Weeks 1-2   Foundations: repository, typed config, HTTP client, CI skeleton.\n#             One green smoke test end to end in the pipeline. Ship this first.\n# Weeks 3-5   Service layer for the two highest-risk flows, full test-design\n#             checklist applied, contract testing wired up.\n# Weeks 6-8   Interface layer: page objects, shared signed-in state, API seeding.\n#             FIVE to TEN journeys, not fifty. Emulated mobile web comes free.\n# Weeks 9-10  Mobile: emulated web in the merge gate, native smoke nightly.\n# Weeks 11-12 Hardening: parallelism, flake hunt, report history, quarantine.\n#\n# The three requests to make of other teams, in the first month:\n#   1. A test-data creation endpoint      unblocks parallelism permanently\n#   2. Stable test identifiers in the UI  kills a whole class of locator churn\n#   3. Accessibility ids on mobile        one locator for both platforms",
+      "codeCaption": "Foundations, cheap layer, expensive layer, hardening — inverting this order is the common failure mode.",
+      "codeCaptionUk": "Фундамент, дешевий рівень, дорогий рівень, зміцнення — інверсія цього порядку є типовою причиною провалу.",
+      "exercise": "Write a one-page proposal for automating a real project: current cost, proposed layers, a twelve-week plan, the metrics you will report, and what you will deliberately not automate.",
+      "exerciseUk": "Напишіть односторінкову пропозицію щодо автоматизації реального проєкту: поточна вартість, запропоновані рівні, дванадцятитижневий план, показники для звітності та те, що ви свідомо не автоматизуватимете.",
+      "tags": ["strategy", "planning", "leadership"],
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests", "qa-automation-python-repo"]
+    }
+  ]
+}
