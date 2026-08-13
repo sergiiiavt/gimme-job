@@ -59,6 +59,14 @@ Truth boundary:
 - Reorder, shorten, and rephrase factual material to emphasize relevance.
 - Put any desired claim that is not supported by the profile into truthWarnings instead of the resume.
 
+Resume-editing rules:
+- CANDIDATE_PROFILE.experience is the candidate's real, existing resume content, not a template to rewrite.
+- Make minimal, targeted edits only: reorder and emphasize the bullets and skills most relevant to this
+  specific vacancy, and lightly adjust the summary framing toward the role.
+- Do not restructure sections, invent new bullets, or rewrite achievements in a different voice.
+- Keep the original wording of each achievement wherever reasonably possible.
+- The output must read as the candidate's own resume, only tuned for this vacancy — not a generic rewrite.
+
 Analysis rules:
 - Distinguish required skills from nice-to-haves.
 - Penalize genuine blockers, not merely unfamiliar wording.

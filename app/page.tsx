@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import PublicSite from "./public-site";
 import { SiteSidebar } from "./site-navigation";
@@ -217,6 +217,10 @@ export function WorkspaceApp() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [analyzeProgress, setAnalyzeProgress] = useState<{ done: number; total: number } | null>(null);
+  const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
+  const analyzeCancelRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -276,17 +280,61 @@ export function WorkspaceApp() {
     } finally { setBusy(null); }
   };
 
-  const analyze = async () => {
-    setBusy("analyze");
-    try {
-      const result = await api<{ dashboard: DashboardData; result: unknown[] }>("/analyze", "POST", {});
-      setJobs(result.dashboard.jobs);
-      setOnline(true);
-      setNotice(`Scored ${result.result.length} job(s). Nothing was sent.`);
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : String(error));
-    } finally { setBusy(null); }
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
+  const selectAllVisible = () => setSelectedIds(new Set(visibleJobs.map((job) => job.id)));
+  const clearSelected = () => setSelectedIds(new Set());
+
+  const analyze = async () => {
+    const targetIds = selectedIds.size > 0
+      ? [...selectedIds]
+      : jobs.filter((job) => !job.analysis).slice(0, 25).map((job) => job.id);
+    if (targetIds.length === 0) {
+      setNotice("No vacancies to analyze — everything visible is already scored.");
+      return;
+    }
+
+    setBusy("analyze");
+    analyzeCancelRef.current = false;
+    setAnalyzeLog([]);
+    setAnalyzeProgress({ done: 0, total: targetIds.length });
+
+    let completed = 0;
+    for (const jobId of targetIds) {
+      if (analyzeCancelRef.current) break;
+      const job = jobs.find((item) => item.id === jobId);
+      const label = job ? `${displayText(job.title)} at ${displayText(job.company)}` : jobId;
+      setAnalyzeLog((log) => [...log, `Analyzing "${label}"…`]);
+      try {
+        const result = await api<{ dashboard: DashboardData; result: Array<{ score: number; verdict: string; mode: string }> }>(
+          "/analyze", "POST", { jobId },
+        );
+        setJobs(result.dashboard.jobs);
+        setOnline(true);
+        const outcome = result.result[0];
+        setAnalyzeLog((log) => [...log, outcome
+          ? `  ✓ ${label} — score ${outcome.score} (${outcome.verdict}, ${outcome.mode})`
+          : `  ✓ ${label} — done`]);
+      } catch (error) {
+        setAnalyzeLog((log) => [...log, `  ✗ ${label} — ${error instanceof Error ? error.message : String(error)}`]);
+      }
+      completed += 1;
+      setAnalyzeProgress({ done: completed, total: targetIds.length });
+    }
+
+    setNotice(analyzeCancelRef.current
+      ? `Stopped after ${completed} of ${targetIds.length}. Nothing was sent.`
+      : `Scored ${completed} job(s). Nothing was sent.`);
+    setSelectedIds(new Set());
+    setBusy(null);
+  };
+
+  const stopAnalyze = () => { analyzeCancelRef.current = true; };
 
   const updateTracking = async (job: Job, change: { status?: JobStatus; feedback?: JobFeedback }) => {
     if (!online) return setNotice("Cloud API is unavailable; demo changes are not saved.");
@@ -325,8 +373,20 @@ export function WorkspaceApp() {
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div className="private-page-heading"><h1>Vacancies</h1><div className="page-actions"><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button><button className="sync-button" onClick={() => void analyze()} disabled={busy !== null}><Icon name="llm"/><span>{busy === "analyze" ? "Analyzing…" : "Analyze"}</span></button></div></div>
+            <div className="private-page-heading">
+              <h1>Vacancies</h1>
+              <div className="page-actions">
+                <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
+                {busy === "analyze"
+                  ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
+                  : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null}><Icon name="llm"/><span>{selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
+              </div>
+            </div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
+            {(busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
+              {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
+              <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
+            </div>}
           </section>
 
           <section className="job-workbench">
@@ -338,12 +398,30 @@ export function WorkspaceApp() {
                   {STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
                 </select>
               </div>
-              <div className="feed-meta"><span>{visibleJobs.length} jobs</span><span>Newest first</span></div>
+              <div className="feed-meta">
+                <span>{visibleJobs.length} jobs</span>
+                <span className="feed-meta-select">
+                  {selectedIds.size > 0 ? `${selectedIds.size} selected · ` : ""}
+                  <button type="button" className="link-button" onClick={selectAllVisible}>Select all</button>
+                  {selectedIds.size > 0 && <button type="button" className="link-button" onClick={clearSelected}>Clear</button>}
+                </span>
+                <span>Newest first</span>
+              </div>
               <div className="job-feed">
-                {visibleJobs.map((job) => <button key={job.id} aria-controls="selected-vacancy-detail" aria-pressed={selected?.id === job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"} onClick={() => setSelectedId(job.id)}>
-                  <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
-                  <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
-                </button>)}
+                {visibleJobs.map((job) => <div key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"}>
+                  <input
+                    type="checkbox"
+                    className="job-card-check"
+                    aria-label={`Select ${displayText(job.title)} for analysis`}
+                    checked={selectedIds.has(job.id)}
+                    onChange={() => toggleSelected(job.id)}
+                    onClick={(event) => event.stopPropagation()}
+                  />
+                  <button aria-controls="selected-vacancy-detail" aria-pressed={selected?.id === job.id} className="job-card-body" onClick={() => setSelectedId(job.id)}>
+                    <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
+                    <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
+                  </button>
+                </div>)}
                 {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or status filter." : online === null ? "Connecting to the job database…" : "The first sync runs automatically. You can also press Sync jobs."}</span></div>}
               </div>
             </div>
