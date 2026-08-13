@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "referenceCanvas": { "width": 1200, "height": 675 },
+  "sourceDirectory": "public/rewild",
+  "references": [
+    "docs/rewild/references/approved-world-direction.png",
+    "docs/rewild/references/baseline-before-vertical-slice.png",
+    "docs/rewild/references/vertical-slice-target-v1.png"
+  ],
+  "runtimeAssets": [
+    "terrain-shrub-1.png", "terrain-shrub-2.png",
+    "terrain-flowers-1.png", "terrain-flowers-2.png",
+    "terrain-pond-1.png", "terrain-pond-2.png",
+    "terrain-rock-1.png", "terrain-rock-2.png",
+    "obj-tree-deciduous.png", "obj-tree-pine.png",
+    "obj-house-v2.png",
+    "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png",
+    "obj-elderoak-p1.png", "obj-elderoak-p2.png",
+    "obj-server.png", "obj-mainframe.png",
+    "obj-swarm.png", "obj-sludge.png", "obj-popup.png", "obj-fragment.png",
+    "decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png"
+  ],
+  "assetFamilies": {
+    "environment": ["terrain-shrub-1.png", "terrain-shrub-2.png", "terrain-flowers-1.png", "terrain-flowers-2.png", "terrain-pond-1.png", "terrain-pond-2.png", "terrain-rock-1.png", "terrain-rock-2.png", "obj-tree-deciduous.png", "obj-tree-pine.png"],
+    "houseAndDefenders": ["obj-house-v2.png", "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png", "obj-elderoak-p1.png", "obj-elderoak-p2.png"],
+    "hostileAndInfrastructure": ["obj-server.png", "obj-mainframe.png", "obj-swarm.png", "obj-sludge.png", "obj-popup.png", "obj-fragment.png"],
+    "groundDecals": ["decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png"]
+  },
+  "constraints": {
+    "extension": ".png",
+    "maximumSourceEdge": 2048,
+    "runtimeRequiresAlpha": true,
+    "microDecalSize": { "width": 32, "height": 32 },
+    "forbiddenRuntimeAssets": ["obj-house.png", "terrain-meadow.png"]
+  },
+  "verticalSliceProductionQueue": [
+    "datacenter-compound-module-sheet",
+    "facility-ground-state-sheet",
+    "house-grounding-kit",
+    "deciduous-tree-corruption-states",
+    "pond-pollution-states",
+    "defender-and-enemy-action-states",
+    "cable-drain-road-root-connections"
+  ]
+}

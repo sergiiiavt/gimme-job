@@ -53,6 +53,7 @@ Run all of these before publishing a completed change:
 
 ```text
 npm run check:content
+npm run check:rewild-assets
 npm run lint
 npm run check:agent
 npm run build
