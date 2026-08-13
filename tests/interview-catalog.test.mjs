@@ -310,10 +310,11 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(privateJobsSource, /className="toast" role="status" aria-live="polite"/);
   assert.match(uiSource, /aria-label="Search public vacancies"/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
-  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "llm"'), "The Career group must come before the Learning path.");
-  assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "llm"'), "Generative AI must follow Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "certifications"'), "The Career group must come before the Learning path.");
+  assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "certifications"'), "Learning path must follow Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "certifications"') < navigationSource.indexOf('id: "llm"'), "Certs & Trainings must lead the Learning path.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
-  assert.ok(navigationSource.indexOf('id: "agentic"') < navigationSource.indexOf('id: "certifications"'), "Both AI topics must appear directly after Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "standards"') < navigationSource.indexOf('id: "strategy"'), "Strategy & leadership must be the final Learning path item.");
   assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Fight AI slop must be the final section above the view switch.");
   assert.match(uiSource, /if \(section === "about"\) return <AboutSite mode=\{mode\}\/>/);
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);

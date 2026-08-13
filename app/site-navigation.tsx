@@ -24,10 +24,9 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
     id: "learning",
     label: "Learning path",
     items: [
+      { id: "certifications", label: "Certs & Trainings" },
       { id: "llm", label: "Generative AI & LLM" },
       { id: "agentic", label: "AI agents & MCP" },
-      { id: "certifications", label: "Certifications" },
-      { id: "strategy", label: "Strategy & leadership" },
       { id: "programming", label: "Programming" },
       { id: "automation", label: "Test automation" },
       { id: "api", label: "API & integration" },
@@ -41,6 +40,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "networking", label: "Networking" },
       { id: "linux", label: "Linux & shell" },
       { id: "standards", label: "Standards & compliance" },
+      { id: "strategy", label: "Strategy & leadership" },
     ],
   },
   {
@@ -120,13 +120,13 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
 
       {!hideSecondary && <aside className="kb-subnav">
         {secondarySwitcher && (
-          <nav className="kb-subnav-switch" aria-label={`${secondaryTitle} catalog`}>
+          <div className="kb-subnav-switch" role="group" aria-label={`${secondaryTitle} catalog`}>
             {secondarySwitcher.options.map((option) => (
               <button className={secondarySwitcher.activeId === option.id ? "active" : ""} key={option.id} onClick={() => secondarySwitcher.onSelect(option.id)} type="button">
                 {option.label}
               </button>
             ))}
-          </nav>
+          </div>
         )}
         <nav aria-label={`${secondaryTitle} subsections`}>
           {secondaryItems.map((item) => (
