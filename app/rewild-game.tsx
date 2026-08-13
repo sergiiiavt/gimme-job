@@ -22,6 +22,7 @@ import {
   hexDistance,
   hexLine,
   hexPolygon,
+  inspectHex,
   objectCorruption,
   pixelToHex,
   placePlant,
@@ -49,7 +50,7 @@ import { REWILD_ATLASES, atlasFrame, type RewildAtlasId } from "./rewild-atlases
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 2.4;
-const REVIEW_STATES = new Set<RewildReviewState>(["damage", "collapse", "reclamation"]);
+const REVIEW_STATES = new Set<RewildReviewState>(["damage", "collapse", "reclamation", "ecosystem"]);
 
 function requestedReviewState() {
   if (typeof window === "undefined") return null;
@@ -346,6 +347,12 @@ function drawWorldObject(ctx: CanvasRenderingContext2D, object: WorldObject, sta
       drawAtlasFrame(ctx, "worldConnections", "shoreline-polluted-outlet", shorelineX, shorelineY, { width: 86, rotation: angle * .3, pivotY: .52 });
     }
   }
+  if (object.kind === "house" && state.houseHp < DIFFICULTIES[state.difficulty].houseHp * .7) {
+    const ratio = Math.max(0, state.houseHp / DIFFICULTIES[state.difficulty].houseHp);
+    ctx.strokeStyle = ratio > .35 ? "#704b36" : "#45383a"; ctx.lineWidth = ratio > .35 ? 2 : 4;
+    ctx.beginPath(); ctx.moveTo(center.x - 19, center.y - 22); ctx.lineTo(center.x - 7, center.y - 7); ctx.lineTo(center.x - 16, center.y + 5); ctx.stroke();
+    if (ratio <= .35) drawAtlasFrame(ctx, "worldConnections", "concrete-damaged-seam", center.x + 7, center.y + 20, { width: 72, pivotY: .55 });
+  }
 }
 
 function footprintBounds(footprint: HexCoord[]) {
@@ -481,6 +488,11 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
     drawAtlasFrame(ctx, "worldConnections", "roots-reclaiming", target.x, target.y + 8, { width: 78, pivotY: .55 });
   }
   const box = drawSprite(ctx, plantSpriteKey(plant), center.x, center.y + 7);
+  if (plant.attackTarget && plant.attackUntil > state.elapsed) {
+    const target = hexCenter(plant.attackTarget);
+    ctx.strokeStyle = "rgba(224,231,145,.8)"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(center.x, center.y - 8); ctx.lineTo(target.x, target.y); ctx.stroke(); ctx.setLineDash([]);
+  }
   drawHealth(ctx, center.x - 16, box.top - 7, 32, plant.hp / PLANTS[plant.kind].maxHp);
 }
 
@@ -523,9 +535,10 @@ function drawEffects(ctx: CanvasRenderingContext2D, state: GameState) {
 function drawCursor(ctx: CanvasRenderingContext2D, state: GameState) {
   const polygon = hexPolygon(state.cursor, .85);
   tracePolygon(ctx, polygon);
-  ctx.fillStyle = "rgba(244,239,157,.07)";
+  const canPlace = inspectHex(state, state.cursor).valid;
+  ctx.fillStyle = canPlace ? "rgba(177,222,116,.12)" : "rgba(220,104,83,.1)";
   ctx.fill();
-  ctx.strokeStyle = "#f4ef9d";
+  ctx.strokeStyle = canPlace ? "#c8e882" : "#dc745f";
   ctx.lineWidth = 3;
   ctx.stroke();
 }
@@ -726,6 +739,19 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     placePlant(state, hex);
     setUi(toUi(state));
   };
+  const onCanvasPointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (event.buttons !== 0) return;
+    const state = stateRef.current;
+    const canvas = canvasRef.current;
+    if (!state || !canvas || state.status !== "playing") return;
+    const { x, y, renderedWidth, renderedHeight } = toCanvasPixel(canvas, event.clientX, event.clientY);
+    if (x < 0 || y < 0 || x >= renderedWidth || y >= renderedHeight) return;
+    const camera = cameraRef.current;
+    const hex = pixelToHex(x / renderedWidth * CANVAS_WIDTH / camera.zoom + camera.x, y / renderedHeight * CANVAS_HEIGHT / camera.zoom + camera.y);
+    if (!hex || (hex.q === state.cursor.q && hex.r === state.cursor.r)) return;
+    state.cursor = hex;
+    setUi(toUi(state));
+  };
   const onCanvasKeyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
     const state = stateRef.current;
     if (!state || state.status !== "playing") return;
@@ -743,10 +769,10 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
       <section className="rw-game-shell" aria-label="Fight AI slop game">
         <div className="rw-hud" aria-live="polite">
           <div className="rw-hud-brand"><span>Invisible hex world · final stand</span><strong>Fight AI slop</strong><small>{ui.best.toLocaleString()} best · {DIFFICULTIES[ui.difficulty].name}</small></div>
-          <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div><div><span>House</span><strong>{ui.houseHp}%</strong></div><div><span>Corruption</span><strong>{ui.corruption}%</strong></div><div><span>Wave</span><strong>{ui.wave} · {ui.nextWave}s</strong></div><div><span>Score</span><strong>{ui.score.toLocaleString()}</strong></div>
+          <div><span>Sunlight</span><strong>{ui.sunlight}</strong></div><div><span>House</span><strong>{ui.houseIntegrity}%</strong></div><div><span>Corruption</span><strong>{ui.corruption}%</strong></div><div><span>Wave</span><strong>{ui.wave} · {ui.nextWave}s</strong></div><div><span>Score</span><strong>{ui.score.toLocaleString()}</strong></div>
         </div>
         <div className="rw-stage">
-          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label={`A ${HEX_COLS} by ${HEX_ROWS} invisible hex field under attack by AI slop. Select a plant, then click the landscape or use six-direction keys and Enter to plant. Right-drag to pan and scroll to zoom.`}/>
+          <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={onCanvasClick} onPointerMove={onCanvasPointerMove} onKeyDown={onCanvasKeyDown} tabIndex={0} aria-label={`A ${HEX_COLS} by ${HEX_ROWS} invisible hex field under attack by AI slop. Select a plant, then click the landscape or use six-direction keys and Enter to plant. Right-drag to pan and scroll to zoom.`}/>
           {overlay && <div className={`rw-overlay rw-overlay-${ui.status}`}>
             <span>{ui.status === "menu" ? "AI INFRASTRUCTURE DETECTED" : ui.status === "won" ? "FEED TERMINATED" : "AI SLOP WON"}</span>
             <h2>{ui.status === "menu" ? "The world is alive." : ui.status === "won" ? "AI slop erased." : "The feed ate everything."}</h2>
@@ -756,6 +782,11 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
             <div className="rw-overlay-actions"><button onClick={start}>{ui.status === "menu" ? "Enter the living field" : "Fight again"}</button></div>
           </div>}
           {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>The landscape is holding its breath.</strong><button onClick={togglePause}>Resume</button></div>}
+          {!overlay && ui.status !== "paused" && <aside className={`rw-inspector${ui.inspection.valid ? " rw-inspector-valid" : ""}`} aria-live="polite">
+            <div><span>{ui.inspection.subtitle}</span>{ui.inspection.score !== null && <b>{ui.inspection.score}</b>}</div>
+            <strong>{ui.inspection.title}</strong>
+            <ul>{ui.inspection.details.slice(0, 3).map((detail) => <li key={detail}>{detail}</li>)}</ul>
+          </aside>}
           <div className={`rw-build-menu${overlay || ui.reviewState ? " rw-build-menu-hidden" : ""}`} aria-label="Build menu" aria-hidden={overlay || Boolean(ui.reviewState)}>
             <div className="rw-build-menu-head"><span>Grow</span></div>
             <div className="rw-plant-bar" aria-label="Plants">{PLANT_ORDER.map((kind, index) => {
