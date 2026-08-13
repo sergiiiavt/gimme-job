@@ -1,0 +1,102 @@
+[
+  {
+    "id": "all",
+    "label": "All lessons",
+    "description": "The complete Python learning path, basics to advanced."
+  },
+  {
+    "id": "getting-started",
+    "label": "Getting started & syntax",
+    "level": "Beginner",
+    "description": "Running Python, the REPL, variables, comments and script structure."
+  },
+  {
+    "id": "variables-data-types-operators",
+    "label": "Variables, data types & operators",
+    "level": "Beginner",
+    "description": "Numbers, strings, booleans, None, arithmetic, comparisons and conversion."
+  },
+  {
+    "id": "control-flow",
+    "label": "Control flow: conditionals & loops",
+    "level": "Beginner",
+    "description": "if/elif/else, while and for loops, range, break, continue and loop else."
+  },
+  {
+    "id": "functions-and-scope",
+    "label": "Functions & scope",
+    "level": "Beginner",
+    "description": "Defining functions, parameters, return values, defaults and basic scope."
+  },
+  {
+    "id": "core-data-structures",
+    "label": "Core data structures & comprehensions",
+    "level": "Beginner",
+    "description": "Lists, tuples, dictionaries, sets and comprehensions."
+  },
+  {
+    "id": "strings-and-text-formatting",
+    "label": "Strings & text formatting",
+    "level": "Beginner",
+    "description": "String methods, f-strings, splitting/joining and an introduction to regular expressions."
+  },
+  {
+    "id": "files-io-context-managers",
+    "label": "Files, I/O & context managers",
+    "level": "Intermediate",
+    "description": "Reading and writing files, the with statement, pathlib, CSV and JSON."
+  },
+  {
+    "id": "object-oriented-programming",
+    "label": "Object-oriented programming",
+    "level": "Intermediate",
+    "description": "Classes, instances, inheritance, dunder methods, properties and dataclasses."
+  },
+  {
+    "id": "errors-exceptions-debugging",
+    "label": "Errors, exceptions & debugging",
+    "level": "Intermediate",
+    "description": "try/except, custom exceptions, interactive debugging and defensive habits."
+  },
+  {
+    "id": "modules-packages-imports",
+    "label": "Modules, packages & the import system",
+    "level": "Intermediate",
+    "description": "Writing modules, building packages, virtual environments and pip."
+  },
+  {
+    "id": "standard-library-tour",
+    "label": "Standard library tour",
+    "level": "Intermediate",
+    "description": "collections, itertools, functools, datetime, os/sys and logging."
+  },
+  {
+    "id": "iterators-generators-decorators-functional",
+    "label": "Iterators, generators, decorators & functional tools",
+    "level": "Advanced",
+    "description": "The iterator protocol, generator functions, decorators, closures and functional idioms."
+  },
+  {
+    "id": "typing-testing-tooling",
+    "label": "Typing, testing & tooling",
+    "level": "Advanced",
+    "description": "Type hints, pytest, linters/formatters and sane project structure."
+  },
+  {
+    "id": "concurrency",
+    "label": "Concurrency: threading, multiprocessing & asyncio",
+    "level": "Advanced",
+    "description": "Choosing and using threading, multiprocessing and asyncio correctly."
+  },
+  {
+    "id": "memory-performance-metaprogramming",
+    "label": "Memory model, performance, the GIL & metaprogramming",
+    "level": "Expert",
+    "description": "CPython memory management, profiling, free-threading and descriptors/metaclasses."
+  },
+  {
+    "id": "methodology",
+    "label": "Sources & methodology",
+    "description": "How lessons are written and validated, and the source catalog behind them."
+  }
+]

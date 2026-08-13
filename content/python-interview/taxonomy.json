@@ -1,0 +1,90 @@
+[
+  {
+    "id": "all",
+    "label": "All questions",
+    "description": "The complete Python interview question collection."
+  },
+  {
+    "id": "core-language",
+    "label": "Core language & syntax",
+    "category": "Core language and syntax",
+    "description": "Interpreter model, variables, scoping, truthiness, operators and execution basics."
+  },
+  {
+    "id": "data-types-structures",
+    "label": "Data types & structures",
+    "category": "Data types and structures",
+    "description": "Lists, tuples, dicts, sets, comprehensions, mutability and copying."
+  },
+  {
+    "id": "strings-text",
+    "label": "Strings & text processing",
+    "category": "Strings and text processing",
+    "description": "String immutability, formatting, encoding and regular expressions."
+  },
+  {
+    "id": "functions-functional",
+    "label": "Functions & functional tools",
+    "category": "Functions and functional tools",
+    "description": "Arguments, closures, lambdas, first-class functions and functional idioms."
+  },
+  {
+    "id": "oop",
+    "label": "Object-oriented Python",
+    "category": "Object-oriented Python",
+    "description": "Classes, inheritance, MRO, dunder methods, dataclasses and composition."
+  },
+  {
+    "id": "iterators-generators-decorators",
+    "label": "Iterators, generators & decorators",
+    "category": "Iterators, generators and decorators",
+    "description": "The iterator protocol, generator functions, corolet-style generators and decorator design."
+  },
+  {
+    "id": "errors-context-managers",
+    "label": "Errors & context managers",
+    "category": "Errors and context managers",
+    "description": "Exception hierarchies, exception groups, context managers and resource safety."
+  },
+  {
+    "id": "concurrency",
+    "label": "Concurrency & parallelism",
+    "category": "Concurrency and parallelism",
+    "description": "The GIL, threading, multiprocessing, asyncio and free-threaded Python."
+  },
+  {
+    "id": "memory-performance",
+    "label": "Memory management & performance",
+    "category": "Memory management and performance",
+    "description": "Reference counting, garbage collection, profiling and optimization strategy."
+  },
+  {
+    "id": "packaging-environments",
+    "label": "Modules, packaging & environments",
+    "category": "Modules, packaging and environments",
+    "description": "The import system, virtual environments, packaging and dependency management."
+  },
+  {
+    "id": "typing-static-analysis",
+    "label": "Typing & static analysis",
+    "category": "Typing and static analysis",
+    "description": "Type hints, generics, protocols and static type checkers."
+  },
+  {
+    "id": "stdlib-tooling",
+    "label": "Standard library & tooling",
+    "category": "Standard library and tooling",
+    "description": "collections, itertools, functools, pathlib, logging, debugging and pytest."
+  },
+  {
+    "id": "web-automation-qa",
+    "label": "Web, automation & QA-relevant Python",
+    "category": "Web, automation and QA-relevant Python",
+    "description": "HTTP clients, minimal web frameworks and the Python patterns used in test automation."
+  },
+  {
+    "id": "methodology",
+    "label": "Sources & methodology",
+    "description": "Source analysis, prevalence model, editorial approach and maintenance rules."
+  }
+]

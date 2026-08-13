@@ -89,7 +89,52 @@ interface InterviewCatalog {
   taxonomy: InterviewTaxonomyItem[];
 }
 
+type PythonLessonLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert";
+
+interface PythonLesson {
+  id: string;
+  moduleId: string;
+  level: PythonLessonLevel;
+  title: string;
+  titleUk: string;
+  summary: string;
+  summaryUk: string;
+  concept: string;
+  conceptUk: string;
+  keyPoints: string[];
+  keyPointsUk: string[];
+  code?: string;
+  codeCaption?: string;
+  codeCaptionUk?: string;
+  pitfalls: string[];
+  pitfallsUk: string[];
+  exercise?: string;
+  exerciseUk?: string;
+  tags?: string[];
+  sourceIds: string[];
+}
+
+interface PythonModule {
+  id: string;
+  label: string;
+  level?: PythonLessonLevel;
+  description: string;
+}
+
+interface PythonCurriculum {
+  title: string;
+  description: string;
+  methodology: InterviewCatalog["methodology"];
+  taxonomy: PythonModule[];
+  sources: InterviewSource[];
+  lessons: PythonLesson[];
+}
+
 const INTERVIEW_PAGE_SIZE = 60;
+const PYTHON_LESSON_PAGE_SIZE = 60;
+const pythonLessonLevels: PythonLessonLevel[] = ["Beginner", "Intermediate", "Advanced", "Expert"];
+const pythonLessonLevelOrder: Record<PythonLessonLevel, number> = { Beginner: 0, Intermediate: 1, Advanced: 2, Expert: 3 };
+const pythonLevelFilters: Array<{ label: string; value: PythonLessonLevel }> = pythonLessonLevels.map((value) => ({ label: value, value }));
 const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"];
 const interviewPrevalence: InterviewPrevalence[] = ["Very common", "Common", "Occasional", "Specialist"];
 const interviewPrevalenceFilters: Array<{ label: string; value: InterviewPrevalenceFilter }> = [
@@ -240,7 +285,7 @@ function StructuredAnswer({ value }: { value: string }) {
   );
 }
 
-const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild">, {
+const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "python" | "python-interview">, {
   title: string;
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
@@ -497,7 +542,7 @@ function topicId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null): SubnavItem[] {
+function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: PythonCurriculum | null): SubnavItem[] {
   if (section === "about" || section === "resume") return [];
 
   if (section === "rewild") {
@@ -513,6 +558,24 @@ function secondaryNavigation(section: PublicSection, jobs: PublicJob[], intervie
       id: item.id,
       label: item.label,
       count: item.category ? interviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewCatalog.questions.length : undefined,
+    }));
+  }
+
+  if (section === "python-interview") {
+    if (!pythonInterviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+    return pythonInterviewCatalog.taxonomy.map((item) => ({
+      id: item.id,
+      label: item.label,
+      count: item.category ? pythonInterviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? pythonInterviewCatalog.questions.length : undefined,
+    }));
+  }
+
+  if (section === "python") {
+    if (!pythonCurriculum) return [{ id: "all", label: "Loading curriculum…" }];
+    return pythonCurriculum.taxonomy.map((item) => ({
+      id: item.id,
+      label: item.label,
+      count: item.level ? pythonCurriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length : item.id === "all" ? pythonCurriculum.lessons.length : undefined,
     }));
   }
 
@@ -541,6 +604,10 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [subsection, setSubsection] = useState("all");
   const [interviewCatalog, setInterviewCatalog] = useState<InterviewCatalog | null>(null);
   const [interviewCatalogError, setInterviewCatalogError] = useState(false);
+  const [pythonInterviewCatalog, setPythonInterviewCatalog] = useState<InterviewCatalog | null>(null);
+  const [pythonInterviewCatalogError, setPythonInterviewCatalogError] = useState(false);
+  const [pythonCurriculum, setPythonCurriculum] = useState<PythonCurriculum | null>(null);
+  const [pythonCurriculumError, setPythonCurriculumError] = useState(false);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -569,6 +636,32 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
       });
     return () => { active = false; };
   }, [interviewCatalog, section]);
+
+  useEffect(() => {
+    if (section !== "python-interview" || pythonInterviewCatalog) return;
+    let active = true;
+    import("@/content/python-interview/catalog")
+      .then((module) => {
+        if (active) setPythonInterviewCatalog(module.default as unknown as InterviewCatalog);
+      })
+      .catch(() => {
+        if (active) setPythonInterviewCatalogError(true);
+      });
+    return () => { active = false; };
+  }, [pythonInterviewCatalog, section]);
+
+  useEffect(() => {
+    if (section !== "python" || pythonCurriculum) return;
+    let active = true;
+    import("@/content/python-learning/catalog")
+      .then((module) => {
+        if (active) setPythonCurriculum(module.default as unknown as PythonCurriculum);
+      })
+      .catch(() => {
+        if (active) setPythonCurriculumError(true);
+      });
+    return () => { active = false; };
+  }, [pythonCurriculum, section]);
 
   useEffect(() => {
     let active = true;
@@ -611,7 +704,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
-  const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog);
+  const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
   const hideSecondary = section === "about" || section === "resume" || section === "rewild";
   const publicHref = section === "about" ? "/" : `/#${section}`;
   const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
@@ -684,6 +777,10 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             interviewCatalogError={interviewCatalogError}
             mode={mode}
             onTopicChange={setSubsection}
+            pythonCurriculum={pythonCurriculum}
+            pythonCurriculumError={pythonCurriculumError}
+            pythonInterviewCatalog={pythonInterviewCatalog}
+            pythonInterviewCatalogError={pythonInterviewCatalogError}
             section={section}
           />
         )}
@@ -694,12 +791,16 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   );
 }
 
-function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, section }: {
+function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
   mode: SiteMode;
   onTopicChange: (topic: string) => void;
+  pythonCurriculum: PythonCurriculum | null;
+  pythonCurriculumError: boolean;
+  pythonInterviewCatalog: InterviewCatalog | null;
+  pythonInterviewCatalogError: boolean;
   section: Exclude<PublicSection, "jobs">;
 }) {
   if (section === "about") return <AboutSite mode={mode}/>;
@@ -717,6 +818,34 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
       );
     }
     return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
+  }
+
+  if (section === "python-interview") {
+    if (!pythonInterviewCatalog) {
+      return (
+        <div className="kb-content iq-page">
+          <div className="kb-empty iq-catalog-state">
+            <strong>{pythonInterviewCatalogError ? "Python interview catalog unavailable" : "Loading Python interview catalog…"}</strong>
+            <span>{pythonInterviewCatalogError ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
+          </div>
+        </div>
+      );
+    }
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
+  }
+
+  if (section === "python") {
+    if (!pythonCurriculum) {
+      return (
+        <div className="kb-content iq-page">
+          <div className="kb-empty iq-catalog-state">
+            <strong>{pythonCurriculumError ? "Python curriculum unavailable" : "Loading Python curriculum…"}</strong>
+            <span>{pythonCurriculumError ? "Reload the page to try the separate curriculum request again." : "The curriculum is loaded only when this section is opened."}</span>
+          </div>
+        </div>
+      );
+    }
+    return <PythonLearningPath activeTopic={activeTopic} curriculum={pythonCurriculum} onTopicChange={onTopicChange}/>;
   }
 
   if (section === "rewild") {
@@ -852,7 +981,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     return counts;
   }, { PLANNED: 0, LEARNING: 0, LEARNED: 0 });
 
-  if (activeTopic === "methodology") return <InterviewMethodology catalog={catalog} onBack={() => onTopicChange("all")}/>;
+  if (activeTopic === "methodology") return <MethodologyPage backLabel="View all questions" methodology={catalog.methodology} onBack={() => onTopicChange("all")} sources={catalog.sources}/>;
 
   const setQuestionTags = (nextTags: string[]) => {
     setSelectedTags(nextTags);
@@ -917,7 +1046,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     <div className="kb-content iq-page">
       <header className="kb-page-head iq-head">
         <div>
-          <h1>{activeTaxonomy?.category ? activeTaxonomy.label : "QA interview knowledge base"}</h1>
+          <h1>{activeTaxonomy?.category ? activeTaxonomy.label : catalog.title}</h1>
         </div>
         <div className="kb-page-stats">
           <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
@@ -1042,14 +1171,12 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   );
 }
 
-function InterviewMethodology({ catalog, onBack }: { catalog: InterviewCatalog; onBack: () => void }) {
-  const method = catalog.methodology;
-  const interviewSourcesList = catalog.sources;
+function MethodologyPage({ backLabel, methodology: method, onBack, sources: interviewSourcesList }: { backLabel: string; methodology: InterviewCatalog["methodology"]; onBack: () => void; sources: InterviewSource[] }) {
   return (
     <div className="kb-content iq-page iq-methodology">
       <header className="kb-page-head iq-head">
         <div><h1>Sources & methodology</h1></div>
-        <button className="iq-back" onClick={onBack}>View all questions</button>
+        <button className="iq-back" onClick={onBack}>{backLabel}</button>
       </header>
 
       <section className="iq-method-grid">
@@ -1072,6 +1199,177 @@ function InterviewMethodology({ catalog, onBack }: { catalog: InterviewCatalog; 
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { activeTopic: string; curriculum: PythonCurriculum; onTopicChange: (topic: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [levels, setLevels] = useState<PythonLessonLevel[]>([]);
+  const [openFilter, setOpenFilter] = useState<"levels" | null>(null);
+  const [page, setPage] = useState(0);
+  const [lang, setLang] = useState<Record<string, "en" | "uk">>({});
+
+  const lessons = curriculum.lessons;
+  const moduleTaxonomy = curriculum.taxonomy;
+  const sourcesList = curriculum.sources;
+  const sourcesById = useMemo(() => new Map(sourcesList.map((source) => [source.id, source])), [sourcesList]);
+  const moduleOrder = useMemo(() => new Map(moduleTaxonomy.filter((item) => item.level).map((item, index) => [item.id, index])), [moduleTaxonomy]);
+  const moduleLabels = useMemo(() => new Map(moduleTaxonomy.filter((item) => item.level).map((item) => [item.id, item.label])), [moduleTaxonomy]);
+  const activeTaxonomy = moduleTaxonomy.find((item) => item.id === activeTopic);
+  const activeModuleId = activeTaxonomy?.level ? activeTaxonomy.id : undefined;
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest(".iq-filter-control")) setOpenFilter(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenFilter(null);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  const matchingLessons = useMemo(() => {
+    return lessons
+      .filter((lesson) => {
+        const matchesLevel = levels.length === 0 || levels.includes(lesson.level);
+        const matchesModule = !activeModuleId || lesson.moduleId === activeModuleId;
+        const matchesSearch = matchesAllSearchTerms(query, [lesson.title, lesson.summary, lesson.concept, moduleLabels.get(lesson.moduleId) ?? "", lesson.level, ...(lesson.tags ?? []), ...lesson.keyPoints]);
+        return matchesLevel && matchesModule && matchesSearch;
+      })
+      .sort((left, right) => (moduleOrder.get(left.moduleId) ?? 0) - (moduleOrder.get(right.moduleId) ?? 0) || pythonLessonLevelOrder[left.level] - pythonLessonLevelOrder[right.level]);
+  }, [activeModuleId, lessons, levels, moduleLabels, moduleOrder, query]);
+
+  const pageCount = Math.max(1, Math.ceil(matchingLessons.length / PYTHON_LESSON_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageStart = safePage * PYTHON_LESSON_PAGE_SIZE;
+  const visibleLessons = matchingLessons.slice(pageStart, pageStart + PYTHON_LESSON_PAGE_SIZE);
+
+  if (activeTopic === "methodology") return <MethodologyPage backLabel="View all lessons" methodology={curriculum.methodology} onBack={() => onTopicChange("all")} sources={sourcesList}/>;
+
+  const setLessonLevels = (nextLevels: PythonLessonLevel[]) => {
+    setLevels(nextLevels);
+    setPage(0);
+  };
+  const clearFilters = () => {
+    setQuery("");
+    setLevels([]);
+    setOpenFilter(null);
+    setPage(0);
+    onTopicChange("all");
+  };
+  const hasActiveFilters = Boolean(activeModuleId || query || levels.length);
+
+  return (
+    <div className="kb-content iq-page py-page">
+      <header className="kb-page-head iq-head">
+        <div><h1>{activeTaxonomy?.level ? activeTaxonomy.label : "Python learning path"}</h1></div>
+        <div className="kb-page-stats">
+          <div><strong>{lessons.length}</strong><span>Lessons</span></div>
+          <div><strong>{moduleTaxonomy.filter((item) => item.level).length}</strong><span>Modules</span></div>
+          <div><strong>{sourcesList.length}</strong><span>Sources</span></div>
+        </div>
+      </header>
+
+      <section className="iq-toolbar" aria-label="Python lesson filters">
+        <div className="iq-toolbar-main">
+          <label className="iq-search">
+            <span>⌕</span>
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Search lessons, concepts, code and key points"/>
+          </label>
+          <div className="iq-filter-status" aria-live="polite">
+            <span><strong>{matchingLessons.length}</strong> matches</span>
+            <span><strong>{visibleLessons.length}</strong> rendered</span>
+          </div>
+        </div>
+        <div className="iq-filter-grid py-filter-grid">
+          <InterviewFilter emptyLabel="All levels" helpText="Matches any selected level." label="Level" onChange={setLessonLevels} onOpenChange={(nextOpen) => setOpenFilter(nextOpen ? "levels" : null)} open={openFilter === "levels"} options={pythonLevelFilters} selected={levels}/>
+          <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
+        </div>
+      </section>
+
+      <div className="iq-list py-lesson-list">
+        {visibleLessons.map((lesson, index) => {
+          const activeLang = lang[lesson.id] ?? "en";
+          const showUk = activeLang === "uk";
+          const displayTitle = showUk ? lesson.titleUk : lesson.title;
+          const displaySummary = showUk ? lesson.summaryUk : lesson.summary;
+          const displayConcept = showUk ? lesson.conceptUk : lesson.concept;
+          const displayKeyPoints = showUk ? lesson.keyPointsUk : lesson.keyPoints;
+          const displayPitfalls = showUk ? lesson.pitfallsUk : lesson.pitfalls;
+          const displayCaption = showUk ? lesson.codeCaptionUk : lesson.codeCaption;
+          const displayExercise = showUk ? lesson.exerciseUk : lesson.exercise;
+          return (
+            <details className="iq-question py-lesson" key={lesson.id}>
+              <summary>
+                <span className={`iq-level py-level py-level-${lesson.level.toLowerCase()}`}>{lesson.level}</span>
+                <div>
+                  <small>{moduleLabels.get(lesson.moduleId) ?? lesson.moduleId} · {String(pageStart + index + 1).padStart(3, "0")}</small>
+                  <h2>{displayTitle}</h2>
+                  <span className="iq-question-tags">
+                    {(lesson.tags ?? []).slice(0, 4).map((tag) => <em key={tag}>{tag}</em>)}
+                  </span>
+                </div>
+              </summary>
+              <div className="iq-answer py-lesson-body">
+                <div className="iq-lang-toggle" role="group" aria-label="Lesson language">
+                  <button className={activeLang === "en" ? "active" : ""} onClick={() => setLang((current) => ({ ...current, [lesson.id]: "en" }))} type="button">EN</button>
+                  <button className={activeLang === "uk" ? "active" : ""} onClick={() => setLang((current) => ({ ...current, [lesson.id]: "uk" }))} type="button">UA</button>
+                </div>
+                <section>
+                  <h3>Concept</h3>
+                  <p className="py-lesson-summary">{displaySummary}</p>
+                  <StructuredAnswer value={displayConcept}/>
+                </section>
+                <section>
+                  <h3>Key points</h3>
+                  <ul>{displayKeyPoints.map((point) => <li key={point}>{point}</li>)}</ul>
+                </section>
+                {lesson.code && (
+                  <section className="py-code-section">
+                    <h3>Code</h3>
+                    <pre className="py-code"><code>{lesson.code}</code></pre>
+                    {displayCaption && <p className="py-code-caption">{displayCaption}</p>}
+                  </section>
+                )}
+                <section>
+                  <h3>Common pitfalls</h3>
+                  <ul className="py-pitfalls">{displayPitfalls.map((pitfall) => <li key={pitfall}>{pitfall}</li>)}</ul>
+                </section>
+                {displayExercise && (
+                  <details className="iq-example py-exercise">
+                    <summary>Practice exercise</summary>
+                    <p>{displayExercise}</p>
+                  </details>
+                )}
+                <footer>
+                  <span>References</span>
+                  {lesson.sourceIds.map((sourceId) => {
+                    const source = sourcesById.get(sourceId);
+                    return source ? <a href={source.url} target="_blank" rel="noreferrer" key={sourceId}>{source.publisher}: {source.title} ↗</a> : null;
+                  })}
+                </footer>
+              </div>
+            </details>
+          );
+        })}
+        {matchingLessons.length === 0 && (
+          <div className="kb-empty iq-empty"><strong>No matching lessons</strong><span>Change the module, level, or search phrase.</span></div>
+        )}
+      </div>
+
+      {matchingLessons.length > PYTHON_LESSON_PAGE_SIZE && (
+        <nav className="iq-pagination" aria-label="Python lesson result pages">
+          <button disabled={safePage === 0} onClick={() => setPage(Math.max(0, safePage - 1))}>← Previous 60</button>
+          <span>Page {safePage + 1} of {pageCount} · results {pageStart + 1}–{pageStart + visibleLessons.length}</span>
+          <button disabled={safePage >= pageCount - 1} onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}>Next 60 →</button>
+        </nav>
+      )}
     </div>
   );
 }

@@ -1,0 +1,760 @@
+{
+  "lessons": [
+    {
+      "id": "py-lesson-reading-writing-files",
+      "moduleId": "files-io-context-managers",
+      "level": "Intermediate",
+      "title": "Reading and writing files",
+      "titleUk": "Читання й запис файлів",
+      "summary": "open() is the entry point for file I/O; the mode string decides read/write/append and text/binary behavior.",
+      "summaryUk": "open() — точка входу для файлового вводу-виводу; рядок режиму визначає читання/запис/додавання і текстову/бінарну поведінку.",
+      "concept": "`open(path, mode)` returns a file object; `mode` combines a base action (`\"r\"` read, `\"w\"` write and truncate, `\"a\"` append, `\"x\"` create-exclusive) with an optional `\"b\"` for binary instead of text. Reading the whole file is `.read()`, reading line by line is `for line in file:` or `.readlines()`, and writing is `.write(text)`. Text mode automatically handles the platform's newline convention and decodes bytes to `str` using an encoding — usually UTF-8 — while binary mode (`\"rb\"`/`\"wb\"`) works with raw `bytes` and does no such conversion, which matters for anything that is not plain text, like images.",
+      "conceptUk": "`open(path, mode)` повертає файловий об'єкт; `mode` поєднує базову дію (`\"r\"` читання, `\"w\"` запис із обрізанням, `\"a\"` додавання, `\"x\"` виключне створення) з необов'язковим `\"b\"` для бінарного режиму замість текстового. Читання всього файлу — `.read()`, читання по рядках — `for line in file:` чи `.readlines()`, а запис — `.write(text)`. Текстовий режим автоматично обробляє платформну угоду про новий рядок і декодує байти в `str`, використовуючи кодування — зазвичай UTF-8, тоді як бінарний режим (`\"rb\"`/`\"wb\"`) працює із сирими `bytes` і не робить такого перетворення, що важливо для всього, що не є простим текстом, як зображення.",
+      "keyPoints": [
+        "Mode combines an action (r/w/a/x) with an optional b for binary",
+        "\"w\" truncates an existing file entirely; \"a\" appends without truncating",
+        "Text mode decodes to str with an encoding; binary mode works with raw bytes"
+      ],
+      "keyPointsUk": [
+        "Режим поєднує дію (r/w/a/x) з необов'язковим b для бінарного режиму",
+        "\"w\" повністю обрізає наявний файл; \"a\" додає без обрізання",
+        "Текстовий режим декодує в str з кодуванням; бінарний режим працює з сирими bytes"
+      ],
+      "code": "with open(\"notes.txt\", \"w\", encoding=\"utf-8\") as f:\n    f.write(\"first line\\n\")\n\nwith open(\"notes.txt\", \"a\", encoding=\"utf-8\") as f:\n    f.write(\"second line\\n\")\n\nwith open(\"notes.txt\", encoding=\"utf-8\") as f:\n    for line in f:\n        print(line.strip())",
+      "codeCaption": "Writing, then appending, then reading a text file line by line — each open() call scoped by a with block.",
+      "codeCaptionUk": "Запис, потім додавання, потім читання текстового файлу по рядках — кожен виклик open() обмежений блоком with.",
+      "pitfalls": [
+        "Opening with \"w\" on an existing file silently destroys its previous contents",
+        "Omitting encoding=\"utf-8\" relies on the OS default encoding, which differs between systems and can misdecode non-ASCII text"
+      ],
+      "pitfallsUk": [
+        "Відкриття з \"w\" на наявному файлі тихо знищує його попередній вміст",
+        "Пропуск encoding=\"utf-8\" покладається на типове кодування ОС, яке відрізняється між системами й може неправильно декодувати не-ASCII текст"
+      ],
+      "exercise": "Write a script that reads a text file line by line, counts how many lines contain the word \"error\" (case-insensitive), and writes that count to a summary file.",
+      "exerciseUk": "Напишіть скрипт, що читає текстовий файл по рядках, підраховує, скільки рядків містять слово «error» (без урахування регістру), і записує цю кількість у файл підсумку.",
+      "tags": ["files", "io"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-with-statement",
+      "moduleId": "files-io-context-managers",
+      "level": "Intermediate",
+      "title": "The with statement and context managers",
+      "titleUk": "Оператор with і менеджери контексту",
+      "summary": "with guarantees cleanup (like closing a file) happens even if an error occurs inside the block.",
+      "summaryUk": "with гарантує, що очищення (як закриття файлу) відбудеться, навіть якщо всередині блоку станеться помилка.",
+      "concept": "`with open(path) as f:` both opens the file and guarantees it is closed when the block ends, whether it ends normally or because an exception was raised inside it — equivalent to a manual `try`/`finally` but far less error-prone to write correctly. This pattern is not limited to files: any object implementing the context manager protocol (`__enter__`/`__exit__`) works with `with`, including database connections, locks, and temporary state changes. Multiple context managers can be opened in one `with` statement, comma-separated, and all are guaranteed to close correctly even if one of them fails partway through.",
+      "conceptUk": "`with open(path) as f:` одночасно відкриває файл і гарантує, що його буде закрито в кінці блоку, незалежно від того, чи він завершився нормально, чи через виняток усередині — еквівалент ручного `try`/`finally`, але набагато менш схильний до помилок у написанні. Цей патерн не обмежений файлами: будь-який об'єкт, що реалізує протокол менеджера контексту (`__enter__`/`__exit__`), працює з `with`, включно з підключеннями до бази даних, блокуваннями й тимчасовими змінами стану. Кілька менеджерів контексту можна відкрити в одному операторі `with`, через кому, і всі гарантовано закриються коректно, навіть якщо один з них провалиться на півдорозі.",
+      "keyPoints": [
+        "with guarantees cleanup runs even if the block raises an exception",
+        "Any object with __enter__/__exit__ works with with, not just files",
+        "Multiple context managers can share one with statement, comma-separated"
+      ],
+      "keyPointsUk": [
+        "with гарантує, що очищення виконається, навіть якщо блок викличе виняток",
+        "Будь-який об'єкт з __enter__/__exit__ працює з with, не лише файли",
+        "Кілька менеджерів контексту можуть ділити один оператор with через кому"
+      ],
+      "code": "with open(\"input.txt\") as src, open(\"output.txt\", \"w\") as dst:\n    for line in src:\n        dst.write(line.upper())\n# both files are guaranteed closed here, even if upper() had failed",
+      "codeCaption": "Two files opened in one with statement, both guaranteed to close even on failure.",
+      "codeCaptionUk": "Два файли, відкриті в одному операторі with, обидва гарантовано закриються навіть при невдачі.",
+      "pitfalls": [
+        "Manually calling f.close() and forgetting it on an early return or exception leaks the file handle",
+        "Code that uses the file object after the with block has exited will find it already closed"
+      ],
+      "pitfallsUk": [
+        "Ручний виклик f.close() і забуття його при ранньому return чи винятку призводить до витоку файлового дескриптора",
+        "Код, що використовує файловий об'єкт після виходу з блоку with, побачить його вже закритим"
+      ],
+      "exercise": "Rewrite a function that opens a file, might raise an exception while processing it, and manually calls close() at the end, to instead use a with statement — and explain why the rewrite is safer.",
+      "exerciseUk": "Перепишіть функцію, що відкриває файл, може викликати виняток під час його обробки й вручну викликає close() в кінці, щоб натомість використати оператор with — і поясніть, чому переписаний варіант безпечніший.",
+      "tags": ["context-managers", "with-statement"],
+      "sourceIds": ["python-docs-datamodel", "python-docs-contextlib"]
+    },
+    {
+      "id": "py-lesson-pathlib",
+      "moduleId": "files-io-context-managers",
+      "level": "Intermediate",
+      "title": "Filesystem paths with pathlib",
+      "titleUk": "Шляхи файлової системи через pathlib",
+      "summary": "Path objects, joined with /, replace error-prone string concatenation for building filesystem paths.",
+      "summaryUk": "Об'єкти Path, з'єднані через /, замінюють схильну до помилок конкатенацію рядків для побудови шляхів файлової системи.",
+      "concept": "`pathlib.Path` represents a filesystem path as an object rather than a plain string, and overloads the `/` operator so `Path(\"data\") / \"reports\" / \"q1.csv\"` builds a correct path on any operating system without manually inserting separators. Common operations live directly on the object: `.exists()`, `.is_file()`, `.mkdir(parents=True, exist_ok=True)`, `.glob(\"*.txt\")` for pattern matching, and `.read_text()`/`.write_text()` for simple whole-file text I/O without a separate `open()` call. `pathlib` is the modern recommendation over manually joining `os.path` strings for nearly all new code.",
+      "conceptUk": "`pathlib.Path` представляє шлях файлової системи як об'єкт, а не звичайний рядок, і перевантажує оператор `/`, тож `Path(\"data\") / \"reports\" / \"q1.csv\"` будує правильний шлях у будь-якій операційній системі без ручного вставляння роздільників. Поширені операції живуть прямо на об'єкті: `.exists()`, `.is_file()`, `.mkdir(parents=True, exist_ok=True)`, `.glob(\"*.txt\")` для зіставлення за патерном, і `.read_text()`/`.write_text()` для простого вводу-виводу цілого текстового файлу без окремого виклику `open()`. `pathlib` — сучасна рекомендація над ручним з'єднанням рядків `os.path` майже для всього нового коду.",
+      "keyPoints": [
+        "The / operator joins path segments correctly on any OS",
+        ".exists(), .is_file(), .mkdir(), .glob() live directly on the Path object",
+        ".read_text()/.write_text() handle simple whole-file text I/O without a separate open()"
+      ],
+      "keyPointsUk": [
+        "Оператор / коректно з'єднує сегменти шляху в будь-якій ОС",
+        ".exists(), .is_file(), .mkdir(), .glob() живуть прямо на об'єкті Path",
+        ".read_text()/.write_text() обробляють простий вводу-вивід цілого текстового файлу без окремого open()"
+      ],
+      "code": "from pathlib import Path\n\nreports_dir = Path(\"data\") / \"reports\"\nreports_dir.mkdir(parents=True, exist_ok=True)\nfor csv_file in reports_dir.glob(\"*.csv\"):\n    print(csv_file.name, csv_file.stat().st_size)",
+      "codeCaption": "Building a nested path, ensuring it exists, and iterating matching files with their sizes.",
+      "codeCaptionUk": "Побудова вкладеного шляху, забезпечення його існування, і ітерація відповідних файлів з їхніми розмірами.",
+      "pitfalls": [
+        "mkdir() without exist_ok=True raises FileExistsError if the directory is already there",
+        "Mixing pathlib.Path objects with raw os.path string functions in the same codebase adds unnecessary inconsistency"
+      ],
+      "pitfallsUk": [
+        "mkdir() без exist_ok=True викликає FileExistsError, якщо каталог уже існує",
+        "Змішування об'єктів pathlib.Path з сирими функціями рядків os.path в одній кодовій базі додає непотрібну неузгодженість"
+      ],
+      "exercise": "Write a function that takes a directory path, uses pathlib to find every .txt file recursively, and returns a dict mapping each file's name to its size in bytes.",
+      "exerciseUk": "Напишіть функцію, що приймає шлях до каталогу, використовує pathlib для рекурсивного пошуку кожного файлу .txt і повертає словник, який відображає ім'я кожного файлу на його розмір у байтах.",
+      "tags": ["pathlib", "files"],
+      "sourceIds": ["python-docs-pathlib"]
+    },
+    {
+      "id": "py-lesson-csv-json",
+      "moduleId": "files-io-context-managers",
+      "level": "Intermediate",
+      "title": "Working with CSV and JSON data",
+      "titleUk": "Робота з даними CSV і JSON",
+      "summary": "The standard library's csv and json modules handle the escaping and structure details so you don't hand-roll a parser.",
+      "summaryUk": "Модулі csv і json стандартної бібліотеки обробляють деталі екранування й структури, тож не потрібно писати парсер вручну.",
+      "concept": "The `csv` module's `csv.reader`/`csv.writer` (and the dict-based `csv.DictReader`/`csv.DictWriter`) correctly handle edge cases like commas or quotes embedded inside a field's value, which a naive `line.split(\",\")` gets wrong. The `json` module's `json.load(file)`/`json.dump(obj, file)` convert between JSON text and native Python `dict`/`list`/`str`/`int`/`float`/`bool`/`None` structures directly, and `json.loads(text)`/`json.dumps(obj)` do the same for in-memory strings instead of files. Both formats are common enough in real-world data exchange that reaching for the standard library module is almost always correct over hand-parsing.",
+      "conceptUk": "`csv.reader`/`csv.writer` модуля `csv` (і словникові `csv.DictReader`/`csv.DictWriter`) коректно обробляють граничні випадки на кшталт ком чи лапок, вбудованих у значення поля, які наївний `line.split(\",\")` обробляє неправильно. `json.load(file)`/`json.dump(obj, file)` модуля `json` конвертують між текстом JSON і нативними структурами Python `dict`/`list`/`str`/`int`/`float`/`bool`/`None` напряму, а `json.loads(text)`/`json.dumps(obj)` роблять те саме для рядків у пам'яті замість файлів. Обидва формати достатньо поширені в реальному обміні даними, тож звернення до модуля стандартної бібліотеки майже завжди правильніше за ручний розбір.",
+      "keyPoints": [
+        "csv.DictReader/DictWriter correctly handle embedded commas and quotes, unlike manual split()",
+        "json.load/dump work with files; json.loads/dumps work with in-memory strings",
+        "JSON maps directly onto dict/list/str/int/float/bool/None, no manual parsing needed"
+      ],
+      "keyPointsUk": [
+        "csv.DictReader/DictWriter коректно обробляють вбудовані коми й лапки, на відміну від ручного split()",
+        "json.load/dump працюють з файлами; json.loads/dumps — з рядками в пам'яті",
+        "JSON напряму відображається на dict/list/str/int/float/bool/None, ручний розбір не потрібен"
+      ],
+      "code": "import csv, json\n\nwith open(\"users.csv\", newline=\"\", encoding=\"utf-8\") as f:\n    rows = list(csv.DictReader(f))\n\nwith open(\"users.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(rows, f, indent=2)",
+      "codeCaption": "Reading a CSV file into a list of dicts, then dumping that same data as formatted JSON.",
+      "codeCaptionUk": "Читання файлу CSV у список словників, потім вивантаження тих самих даних як відформатований JSON.",
+      "pitfalls": [
+        "Opening a CSV file without newline=\"\" can produce extra blank rows on Windows",
+        "json.dump fails with a TypeError on non-JSON-serializable objects like datetime unless you supply a custom default handler"
+      ],
+      "pitfallsUk": [
+        "Відкриття файлу CSV без newline=\"\" може дати зайві порожні рядки на Windows",
+        "json.dump провалюється з TypeError на об'єктах, не серіалізованих у JSON, як datetime, якщо не надати власний обробник default"
+      ],
+      "exercise": "Write a script that reads a CSV of products (name, price, quantity), converts price and quantity to numbers, and writes the result as a JSON array of objects.",
+      "exerciseUk": "Напишіть скрипт, що читає CSV товарів (name, price, quantity), перетворює price і quantity на числа й записує результат як JSON-масив об'єктів.",
+      "tags": ["csv", "json", "files"],
+      "sourceIds": ["python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-classes-and-instances",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "title": "Classes, instances and __init__",
+      "titleUk": "Класи, екземпляри та __init__",
+      "summary": "A class is a blueprint; __init__ sets up each new instance's own data when it is created.",
+      "summaryUk": "Клас — це шаблон; __init__ налаштовує власні дані кожного нового екземпляра при його створенні.",
+      "concept": "`class Dog:` defines a new type, and calling `Dog(\"Rex\", 3)` creates a new *instance* of it, automatically calling `__init__(self, ...)` to set up that instance's own attributes — `self.name = name` stores data specific to this particular dog, not shared with any other `Dog` instance. Every method defined inside the class automatically receives the calling instance as its first parameter, `self`, so it can read and modify that instance's own attributes. Multiple instances of the same class are entirely independent: changing one instance's attribute never affects another instance of the same class.",
+      "conceptUk": "`class Dog:` визначає новий тип, і виклик `Dog(\"Rex\", 3)` створює новий *екземпляр* цього типу, автоматично викликаючи `__init__(self, ...)`, щоб налаштувати власні атрибути цього екземпляра — `self.name = name` зберігає дані, специфічні саме для цього собаки, не спільні з жодним іншим екземпляром `Dog`. Кожен метод, визначений усередині класу, автоматично отримує екземпляр, що викликає, як перший параметр, `self`, тож може читати й змінювати власні атрибути цього екземпляра. Кілька екземплярів того самого класу повністю незалежні: зміна атрибута одного екземпляра ніколи не впливає на інший екземпляр того самого класу.",
+      "keyPoints": [
+        "class defines a type; calling it like a function creates a new instance",
+        "__init__(self, ...) sets up an instance's own attributes when it is created",
+        "Every instance has its own independent copy of the attributes set in __init__"
+      ],
+      "keyPointsUk": [
+        "class визначає тип; виклик його як функції створює новий екземпляр",
+        "__init__(self, ...) налаштовує власні атрибути екземпляра при його створенні",
+        "Кожен екземпляр має власну незалежну копію атрибутів, встановлених в __init__"
+      ],
+      "code": "class Dog:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def bark(self):\n        return f\"{self.name} says Woof!\"\n\nrex = Dog(\"Rex\", 3)\nfido = Dog(\"Fido\", 5)\nprint(rex.bark(), fido.age)",
+      "codeCaption": "Two independent Dog instances, each with its own name and age set by __init__.",
+      "codeCaptionUk": "Два незалежні екземпляри Dog, кожен з власним name і age, встановленими __init__.",
+      "pitfalls": [
+        "Forgetting self as the first parameter of a method raises a TypeError when it is called",
+        "Setting a mutable default like self.items = [] as a class attribute (outside __init__) shares one list across every instance"
+      ],
+      "pitfallsUk": [
+        "Забуття self як першого параметра методу викликає TypeError при виклику",
+        "Встановлення змінюваного значення за замовчуванням, як self.items = [], як атрибута класу (поза __init__) ділить один список між усіма екземплярами"
+      ],
+      "exercise": "Write a BankAccount class with __init__(self, owner, balance=0), a deposit(amount) method and a withdraw(amount) method that refuses to overdraw.",
+      "exerciseUk": "Напишіть клас BankAccount з __init__(self, owner, balance=0), методом deposit(amount) і методом withdraw(amount), що відмовляє в перевищенні балансу.",
+      "tags": ["oop", "classes"],
+      "sourceIds": ["python-docs-tutorial", "python-docs-datamodel"]
+    },
+    {
+      "id": "py-lesson-inheritance",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "title": "Inheritance and super()",
+      "titleUk": "Спадковість і super()",
+      "summary": "A subclass reuses and extends a parent class's behavior instead of duplicating it.",
+      "summaryUk": "Підклас повторно використовує й розширює поведінку батьківського класу замість дублювання.",
+      "concept": "`class Puppy(Dog):` makes `Puppy` a subclass of `Dog`, automatically inheriting all of `Dog`'s methods and attributes; a `Puppy` instance is also considered a `Dog` for `isinstance()` checks. Overriding a method in the subclass replaces the parent's version for instances of the subclass, but `super().method(...)` lets the override call the parent's original implementation first and add to it, rather than fully rewriting it — commonly used inside an overridden `__init__` to let the parent set up shared attributes before the subclass adds its own.",
+      "conceptUk": "`class Puppy(Dog):` робить `Puppy` підкласом `Dog`, автоматично успадковуючи всі методи й атрибути `Dog`; екземпляр `Puppy` також вважається `Dog` для перевірок `isinstance()`. Перевизначення методу в підкласі замінює батьківську версію для екземплярів підкласу, але `super().method(...)` дозволяє перевизначенню спершу викликати оригінальну реалізацію батька й доповнити її, а не повністю переписувати — часто використовується всередині перевизначеного `__init__`, щоб дозволити батьку налаштувати спільні атрибути, перш ніж підклас додасть власні.",
+      "keyPoints": [
+        "class Child(Parent): inherits all of Parent's methods and attributes automatically",
+        "Overriding a method replaces the parent's version for the subclass",
+        "super().method(...) calls the parent's implementation, typically inside an overridden __init__"
+      ],
+      "keyPointsUk": [
+        "class Child(Parent): автоматично успадковує всі методи й атрибути Parent",
+        "Перевизначення методу замінює батьківську версію для підкласу",
+        "super().method(...) викликає батьківську реалізацію, зазвичай усередині перевизначеного __init__"
+      ],
+      "code": "class Dog:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return f\"{self.name} makes a sound\"\n\nclass Puppy(Dog):\n    def __init__(self, name, weeks_old):\n        super().__init__(name)\n        self.weeks_old = weeks_old\n    def speak(self):\n        return super().speak() + \" (a little yip)\"",
+      "codeCaption": "Puppy reuses Dog's __init__ via super() and extends speak() instead of rewriting it from scratch.",
+      "codeCaptionUk": "Puppy повторно використовує __init__ від Dog через super() і розширює speak() замість переписування з нуля.",
+      "pitfalls": [
+        "Overriding __init__ without calling super().__init__() means the parent's setup never runs",
+        "Deep inheritance chains (more than 2-3 levels) usually become harder to reason about than composition"
+      ],
+      "pitfallsUk": [
+        "Перевизначення __init__ без виклику super().__init__() означає, що налаштування батька ніколи не виконається",
+        "Глибокі ланцюжки спадковості (понад 2-3 рівні) зазвичай стає важче осмислити, ніж композицію"
+      ],
+      "exercise": "Given a Shape base class with an area() method returning 0, write Rectangle and Circle subclasses that override area() correctly, and a shared describe() method inherited by both.",
+      "exerciseUk": "Маючи базовий клас Shape з методом area(), що повертає 0, напишіть підкласи Rectangle і Circle, що коректно перевизначають area(), і спільний метод describe(), успадкований обома.",
+      "tags": ["oop", "inheritance"],
+      "sourceIds": ["python-docs-datamodel", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-dunder-methods",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "title": "Dunder methods: __repr__, __eq__ and friends",
+      "titleUk": "Dunder-методи: __repr__, __eq__ та інші",
+      "summary": "Special double-underscore methods let your own classes work with print(), ==, len() and other built-ins.",
+      "summaryUk": "Спеціальні методи з подвійним підкресленням дозволяють власним класам працювати з print(), ==, len() та іншими вбудованими засобами.",
+      "concept": "Defining `__repr__(self)` controls what a debugger, REPL or `repr()` shows for an instance; without it, Python's default is an unhelpful `<Point object at 0x...>`. Defining `__eq__(self, other)` controls what `==` means for two instances — without it, `==` falls back to identity comparison (`is`), so two logically-equal objects would incorrectly compare as unequal. Other common dunders include `__len__` (for `len(obj)`), `__lt__` (for `<`, and sorting), and `__add__` (for `+`); implementing the right ones makes a custom class behave like a natural extension of the language rather than a foreign object.",
+      "conceptUk": "Визначення `__repr__(self)` контролює, що дебагер, REPL чи `repr()` показує для екземпляра; без нього типовим є непридатний `<Point object at 0x...>`. Визначення `__eq__(self, other)` контролює, що означає `==` для двох екземплярів — без нього `==` повертається до порівняння ідентичності (`is`), тож два логічно рівні об'єкти неправильно порівнювалися б як нерівні. Інші поширені dunder-методи: `__len__` (для `len(obj)`), `__lt__` (для `<` і сортування), і `__add__` (для `+`); реалізація правильних робить власний клас поводитись як природне розширення мови, а не чужорідний об'єкт.",
+      "keyPoints": [
+        "__repr__ controls how an instance is displayed in the REPL, debugger and repr()",
+        "__eq__ controls == behavior; without it, == falls back to identity (is)",
+        "__len__, __lt__, __add__ hook a custom class into len(), sorting, and + respectively"
+      ],
+      "keyPointsUk": [
+        "__repr__ контролює, як екземпляр відображається в REPL, дебагері й repr()",
+        "__eq__ контролює поведінку ==; без нього == повертається до ідентичності (is)",
+        "__len__, __lt__, __add__ підключають власний клас до len(), сортування й + відповідно"
+      ],
+      "code": "class Point:\n    def __init__(self, x, y):\n        self.x, self.y = x, y\n    def __repr__(self):\n        return f\"Point(x={self.x}, y={self.y})\"\n    def __eq__(self, other):\n        return isinstance(other, Point) and (self.x, self.y) == (other.x, other.y)\n\nprint(Point(1, 2) == Point(1, 2))  # True",
+      "codeCaption": "A Point class with a useful repr and value-based equality instead of the defaults.",
+      "codeCaptionUk": "Клас Point з корисним repr і рівністю за значенням замість типової поведінки.",
+      "pitfalls": [
+        "Without __eq__, Point(1, 2) == Point(1, 2) is False because it falls back to identity comparison",
+        "Defining __eq__ without also defining __hash__ makes instances unhashable, breaking use as dict keys or set members"
+      ],
+      "pitfallsUk": [
+        "Без __eq__ Point(1, 2) == Point(1, 2) дає False, бо повертається до порівняння ідентичності",
+        "Визначення __eq__ без визначення __hash__ робить екземпляри нехешованими, ламаючи використання як ключів словника чи елементів множини"
+      ],
+      "exercise": "Add __repr__ and __eq__ to a Money class holding amount and currency, so two Money instances with the same amount and currency compare equal and print readably.",
+      "exerciseUk": "Додайте __repr__ і __eq__ до класу Money з amount і currency, щоб два екземпляри Money з однаковими amount і currency порівнювалися рівними й читабельно друкувалися.",
+      "tags": ["oop", "dunder-methods"],
+      "sourceIds": ["python-docs-datamodel"]
+    },
+    {
+      "id": "py-lesson-properties",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "title": "Properties: computed and validated attributes",
+      "titleUk": "Властивості: обчислювані й валідовані атрибути",
+      "summary": "@property lets a method be accessed like a plain attribute, enabling validation without changing the calling code.",
+      "summaryUk": "@property дозволяє звертатися до методу як до звичайного атрибута, вмикаючи валідацію без зміни коду, що викликає.",
+      "concept": "A method decorated with `@property` can be read using plain attribute syntax, `obj.value` instead of `obj.value()`, which lets a class start with a simple public attribute and later evolve it into computed or validated logic without breaking any code that already reads `obj.value`. Pairing it with a `@value.setter`-decorated method lets assignment (`obj.value = 5`) run validation logic too — raising a `ValueError` for an invalid value — while still looking, to the outside world, exactly like ordinary attribute assignment.",
+      "conceptUk": "Метод, декорований `@property`, можна прочитати через звичайний синтаксис атрибута, `obj.value` замість `obj.value()`, що дозволяє класу почати з простого публічного атрибута, а пізніше розвинути його в обчислювану чи валідовану логіку, не ламаючи жодного коду, що вже читає `obj.value`. Поєднання з методом, декорованим `@value.setter`, дозволяє й присвоєнню (`obj.value = 5`) виконувати логіку валідації — викликаючи `ValueError` для недійсного значення — залишаючись при цьому для зовнішнього світу точно як звичайне присвоєння атрибута.",
+      "keyPoints": [
+        "@property makes a method readable with plain attribute syntax, obj.value",
+        "@x.setter lets obj.x = value run validation logic before storing it",
+        "Callers see no difference between a plain attribute and a property"
+      ],
+      "keyPointsUk": [
+        "@property робить метод доступним через синтаксис звичайного атрибута, obj.value",
+        "@x.setter дозволяє obj.x = value виконувати логіку валідації перед збереженням",
+        "Викликачі не бачать різниці між звичайним атрибутом і property"
+      ],
+      "code": "class Temperature:\n    def __init__(self, celsius):\n        self._celsius = celsius\n    @property\n    def fahrenheit(self):\n        return self._celsius * 9 / 5 + 32\n    @property\n    def celsius(self):\n        return self._celsius\n    @celsius.setter\n    def celsius(self, value):\n        if value < -273.15:\n            raise ValueError(\"below absolute zero\")\n        self._celsius = value",
+      "codeCaption": "A computed read-only fahrenheit property, plus a validated celsius property with a setter.",
+      "codeCaptionUk": "Обчислювана властивість fahrenheit лише для читання, плюс валідована властивість celsius із сеттером.",
+      "pitfalls": [
+        "Defining only a getter (no setter) makes the attribute read-only; obj.celsius = 5 then raises AttributeError",
+        "Overusing properties for simple data with no validation or computation adds indirection without benefit"
+      ],
+      "pitfallsUk": [
+        "Визначення лише геттера (без сеттера) робить атрибут доступним лише для читання; obj.celsius = 5 тоді викликає AttributeError",
+        "Надмірне використання властивостей для простих даних без валідації чи обчислення додає непотрібну непрямість"
+      ],
+      "exercise": "Add a validated width property to a Rectangle class that rejects negative values with a ValueError, and a read-only area property computed from width and height.",
+      "exerciseUk": "Додайте валідовану властивість width до класу Rectangle, що відхиляє від'ємні значення через ValueError, і властивість area лише для читання, обчислену з width і height.",
+      "tags": ["oop", "property"],
+      "sourceIds": ["python-docs-datamodel", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-dataclasses",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "title": "@dataclass for data-holding classes",
+      "titleUk": "@dataclass для класів, що зберігають дані",
+      "summary": "@dataclass generates __init__, __repr__ and __eq__ from annotated fields, removing common boilerplate.",
+      "summaryUk": "@dataclass генерує __init__, __repr__ та __eq__ з анотованих полів, усуваючи поширений шаблонний код.",
+      "concept": "Decorating a class with `@dataclass` and listing its fields as type-annotated class attributes automatically generates `__init__` (accepting each field as a parameter), a readable `__repr__`, and a field-by-field `__eq__`, all without writing them by hand. `field(default_factory=list)` handles a mutable default correctly (unlike a plain `= []`, which would be shared across instances the same way a function's mutable default is). `@dataclass(frozen=True)` additionally makes instances immutable and hashable, useful for value objects that should never change after creation.",
+      "conceptUk": "Декорування класу `@dataclass` і перелічування його полів як анотованих типом атрибутів класу автоматично генерує `__init__` (що приймає кожне поле як параметр), читабельний `__repr__` і пофакторний `__eq__`, без написання їх вручну. `field(default_factory=list)` коректно обробляє змінюване значення за замовчуванням (на відміну від простого `= []`, яке було б спільним між екземплярами так само, як змінюване значення за замовчуванням функції). `@dataclass(frozen=True)` додатково робить екземпляри незмінюваними й хешованими, корисно для об'єктів-значень, які ніколи не мають змінюватись після створення.",
+      "keyPoints": [
+        "@dataclass generates __init__, __repr__ and __eq__ from annotated fields",
+        "field(default_factory=list) is the correct way to give a mutable default",
+        "frozen=True makes instances immutable and hashable"
+      ],
+      "keyPointsUk": [
+        "@dataclass генерує __init__, __repr__ та __eq__ з анотованих полів",
+        "field(default_factory=list) — правильний спосіб надати змінюване значення за замовчуванням",
+        "frozen=True робить екземпляри незмінюваними й хешованими"
+      ],
+      "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass Task:\n    title: str\n    done: bool = False\n    tags: list = field(default_factory=list)\n\nt = Task(\"Write report\", tags=[\"work\"])\nprint(t)  # Task(title='Write report', done=False, tags=['work'])",
+      "codeCaption": "A Task dataclass with a required field, a default, and a correctly-handled mutable default list.",
+      "codeCaptionUk": "Dataclass Task з обов'язковим полем, значенням за замовчуванням і коректно обробленим змінюваним списком за замовчуванням.",
+      "pitfalls": [
+        "tags: list = [] (a plain mutable default, not field(default_factory=list)) raises a ValueError in a dataclass",
+        "@dataclass generates useful dunders, but a class with significant custom behavior is often better as a plain class"
+      ],
+      "pitfallsUk": [
+        "tags: list = [] (звичайне змінюване значення за замовчуванням, не field(default_factory=list)) викликає ValueError у dataclass",
+        "@dataclass генерує корисні dunder-методи, але клас зі значною власною поведінкою часто краще написати як звичайний клас"
+      ],
+      "exercise": "Write a @dataclass Product with name, price, and an in_stock bool defaulting to True, then create two Products and confirm they compare equal only when all fields match.",
+      "exerciseUk": "Напишіть @dataclass Product з name, price та булевим in_stock зі значенням за замовчуванням True, потім створіть два Product і підтвердьте, що вони порівнюються рівними, лише коли всі поля збігаються.",
+      "tags": ["oop", "dataclasses"],
+      "sourceIds": ["python-docs-dataclasses"]
+    },
+    {
+      "id": "py-lesson-try-except",
+      "moduleId": "errors-exceptions-debugging",
+      "level": "Intermediate",
+      "title": "try/except: handling errors gracefully",
+      "titleUk": "try/except: витончена обробка помилок",
+      "summary": "Catch a specific exception type where recovery is possible, instead of letting the whole program crash.",
+      "summaryUk": "Перехоплюйте конкретний тип винятку там, де можливе відновлення, замість краху всієї програми.",
+      "concept": "Code that might fail goes inside `try:`; one or more `except SpecificError:` blocks catch and handle a named exception type raised inside that block, and code after the entire `try`/`except` continues normally if the exception was handled. Catching the narrowest exception type that makes sense (`except ValueError:` rather than a bare `except:`) means genuine bugs still surface loudly instead of being silently swallowed alongside the error you actually expected and can recover from, such as bad user input.",
+      "conceptUk": "Код, що може провалитись, іде всередину `try:`; один чи кілька блоків `except SpecificError:` перехоплюють і обробляють названий тип винятку, викликаний усередині цього блоку, а код після всього `try`/`except` продовжується нормально, якщо виняток було оброблено. Перехоплення найвужчого доречного типу винятку (`except ValueError:`, а не голий `except:`) означає, що справжні баги все ще гучно проявляються замість того, щоб тихо поглинутися разом з помилкою, яку ви реально очікували й могли б виправити, як-от неправильний ввід користувача.",
+      "keyPoints": [
+        "try/except catches a specific error type and lets the program continue instead of crashing",
+        "Catch the narrowest exception type that makes sense, never a bare except:",
+        "Code after a handled exception continues running normally"
+      ],
+      "keyPointsUk": [
+        "try/except перехоплює конкретний тип помилки й дозволяє програмі продовжити замість краху",
+        "Перехоплюйте найвужчий доречний тип винятку, ніколи голий except:",
+        "Код після обробленого винятку продовжує виконуватись нормально"
+      ],
+      "code": "def safe_divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        print(\"Cannot divide by zero\")\n        return None\n\nprint(safe_divide(10, 2))\nprint(safe_divide(10, 0))",
+      "codeCaption": "Catching a specific, expected error type instead of letting the program crash on bad input.",
+      "codeCaptionUk": "Перехоплення конкретного, очікуваного типу помилки замість краху програми на неправильному вводі.",
+      "pitfalls": [
+        "A bare except: (or except Exception: pass) hides real bugs like typos and TypeErrors indefinitely",
+        "Wrapping too much code in one try block makes it unclear which line actually raised the exception"
+      ],
+      "pitfallsUk": [
+        "Голий except: (чи except Exception: pass) невизначено приховує справжні баги на кшталт одруківок і TypeError",
+        "Обгортання надто великої кількості коду в один блок try робить незрозумілим, який саме рядок реально викликав виняток"
+      ],
+      "exercise": "Write a function that reads a number from input(), catching both ValueError (invalid text) and the case of dividing by it if it's zero, with a distinct message for each.",
+      "exerciseUk": "Напишіть функцію, що читає число з input(), перехоплюючи і ValueError (недійсний текст), і випадок ділення на нього, якщо воно нуль, з окремим повідомленням для кожного.",
+      "tags": ["exceptions", "error-handling"],
+      "sourceIds": ["python-docs-errors-tutorial"]
+    },
+    {
+      "id": "py-lesson-custom-exceptions",
+      "moduleId": "errors-exceptions-debugging",
+      "level": "Intermediate",
+      "title": "Raising and defining custom exceptions",
+      "titleUk": "Виклик і визначення власних винятків",
+      "summary": "raise triggers an exception; a custom exception class communicates a specific, domain-meaningful failure.",
+      "summaryUk": "raise запускає виняток; власний клас винятку повідомляє про конкретну, доменно значущу невдачу.",
+      "concept": "`raise ValueError(\"message\")` immediately stops normal execution and propagates the exception up through calling functions until something catches it with a matching `except`, or the program terminates with a traceback if nothing does. Defining `class InsufficientFundsError(Exception): pass` and raising that instead of a generic `ValueError` lets calling code catch and react to that *specific* domain failure without accidentally also catching unrelated `ValueError`s from elsewhere, and it can carry extra data as constructor arguments beyond a plain message string.",
+      "conceptUk": "`raise ValueError(\"message\")` негайно зупиняє нормальне виконання й поширює виняток вгору через функції, що викликають, доки щось не перехопить його відповідним `except`, чи програма не завершиться з трасуванням, якщо ніхто не перехопив. Визначення `class InsufficientFundsError(Exception): pass` і виклик його замість загального `ValueError` дозволяє коду, що викликає, перехопити й відреагувати саме на цю *конкретну* доменну невдачу, не перехоплюючи випадково й непов'язані `ValueError` деінде, і він може нести додаткові дані як аргументи конструктора понад звичайний рядок повідомлення.",
+      "keyPoints": [
+        "raise ExceptionType(\"message\") immediately stops normal execution and propagates up",
+        "A custom exception class lets callers catch a specific domain failure precisely",
+        "Custom exceptions can carry structured data, not just a message string"
+      ],
+      "keyPointsUk": [
+        "raise ExceptionType(\"message\") негайно зупиняє нормальне виконання й поширюється вгору",
+        "Власний клас винятку дозволяє викликачам точно перехопити конкретну доменну невдачу",
+        "Власні винятки можуть нести структуровані дані, не лише рядок повідомлення"
+      ],
+      "code": "class InsufficientFundsError(Exception):\n    def __init__(self, requested, available):\n        super().__init__(f\"Requested {requested}, only {available} available\")\n        self.requested = requested\n        self.available = available\n\ndef withdraw(balance, amount):\n    if amount > balance:\n        raise InsufficientFundsError(amount, balance)\n    return balance - amount",
+      "codeCaption": "A custom exception carrying structured data (requested/available) alongside its message.",
+      "codeCaptionUk": "Власний виняток, що несе структуровані дані (requested/available) поряд зі своїм повідомленням.",
+      "pitfalls": [
+        "Raising a bare string instead of an exception instance (raise \"error\") is not valid Python — you must raise an exception object",
+        "Overusing generic Exception for custom errors instead of a purpose-built subclass makes selective catching impossible"
+      ],
+      "pitfallsUk": [
+        "Виклик голого рядка замість екземпляра винятку (raise \"error\") — недійсний Python — потрібно викликати об'єкт винятку",
+        "Надмірне використання загального Exception для власних помилок замість спеціалізованого підкласу робить вибіркове перехоплення неможливим"
+      ],
+      "exercise": "Define an OutOfStockError exception carrying the product name and requested quantity, and raise it from a purchase(product, quantity, stock) function when stock is insufficient.",
+      "exerciseUk": "Визначте виняток OutOfStockError, що несе назву товару й запитану кількість, і викликайте його з функції purchase(product, quantity, stock), коли запасів недостатньо.",
+      "tags": ["exceptions", "custom-exceptions"],
+      "sourceIds": ["python-docs-errors-tutorial", "python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-debugging-with-pdb",
+      "moduleId": "errors-exceptions-debugging",
+      "level": "Intermediate",
+      "title": "Debugging interactively with breakpoint() and pdb",
+      "titleUk": "Інтерактивне налагодження через breakpoint() і pdb",
+      "summary": "Instead of scattering print() statements, pause execution and inspect live state with the built-in debugger.",
+      "summaryUk": "Замість розкидання print(), призупиняйте виконання й інспектуйте живий стан через вбудований дебагер.",
+      "concept": "Placing `breakpoint()` at a suspicious line pauses execution there and drops into `pdb`, an interactive prompt where `p variable_name` prints a value, `n` steps to the next line, `s` steps into a function call, `c` continues execution, and `l` lists the surrounding source code — all without editing the source to add and later remove temporary `print()` calls. Reading a traceback from bottom to top identifies exactly which line and which function raised an exception, which is usually the fastest starting point for figuring out where to place a `breakpoint()` in the first place.",
+      "conceptUk": "Розміщення `breakpoint()` на підозрілому рядку призупиняє виконання там і переходить у `pdb`, інтерактивну підказку, де `p variable_name` друкує значення, `n` переходить до наступного рядка, `s` заходить у виклик функції, `c` продовжує виконання, а `l` показує навколишній вихідний код — усе без редагування коду для додавання й пізнішого видалення тимчасових викликів `print()`. Читання трасування знизу вгору точно визначає, який рядок і яка функція викликали виняток, що зазвичай найшвидша відправна точка для визначення, де взагалі розмістити `breakpoint()`.",
+      "keyPoints": [
+        "breakpoint() pauses execution and drops into the interactive pdb debugger",
+        "p, n, s, c, l are pdb's most-used commands: print, next, step-in, continue, list",
+        "Read a traceback bottom-to-top to find exactly which line raised the exception"
+      ],
+      "keyPointsUk": [
+        "breakpoint() призупиняє виконання й переходить в інтерактивний дебагер pdb",
+        "p, n, s, c, l — найуживаніші команди pdb: друк, наступний, зайти всередину, продовжити, список",
+        "Читайте трасування знизу вгору, щоб точно знайти, який рядок викликав виняток"
+      ],
+      "code": "def calculate_discount(price, percent):\n    breakpoint()  # execution pauses here\n    return price * (1 - percent / 100)\n\ncalculate_discount(100, 20)\n# at the (Pdb) prompt: p price, p percent, n, c",
+      "codeCaption": "Pausing execution right before a suspicious calculation to inspect price and percent interactively.",
+      "codeCaptionUk": "Призупинення виконання прямо перед підозрілим обчисленням для інтерактивної інспекції price і percent.",
+      "pitfalls": [
+        "Leaving a breakpoint() call in committed production code accidentally pauses it whenever that line runs",
+        "Debugging by adding and removing print() statements repeatedly is slower than one breakpoint() session with pdb commands"
+      ],
+      "pitfallsUk": [
+        "Залишення виклику breakpoint() у закомміченому продакшн-коді випадково призупиняє його щоразу, коли цей рядок виконується",
+        "Налагодження через повторне додавання й видалення print() повільніше за одну сесію breakpoint() з командами pdb"
+      ],
+      "exercise": "Add a breakpoint() inside a function that computes something incorrectly, use p to inspect the relevant variables at that point, identify the bug, then remove the breakpoint() and fix the code.",
+      "exerciseUk": "Додайте breakpoint() усередині функції, що обчислює щось неправильно, використайте p для інспекції відповідних змінних у цій точці, визначте баг, потім видаліть breakpoint() і виправте код.",
+      "tags": ["debugging", "pdb"],
+      "sourceIds": ["python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-defensive-programming",
+      "moduleId": "errors-exceptions-debugging",
+      "level": "Intermediate",
+      "title": "Defensive habits: assertions and input validation",
+      "titleUk": "Захисні звички: assert і валідація вводу",
+      "summary": "assert catches your own programming mistakes early; explicit validation protects against bad external input.",
+      "summaryUk": "assert рано виявляє власні помилки програмування; явна валідація захищає від поганого зовнішнього вводу.",
+      "concept": "`assert condition, \"message\"` raises `AssertionError` if `condition` is false, and exists to catch violations of assumptions *you* control — an internal invariant that should always hold if the code is correct — not to validate external input, because assertions can be globally disabled with the `-O` interpreter flag, silently removing the check entirely. For anything coming from outside the program's control — user input, a file, a network response — use explicit `if`/`raise` validation instead, since that code always runs regardless of interpreter flags and can give the caller a meaningful, specific exception to catch.",
+      "conceptUk": "`assert condition, \"message\"` викликає `AssertionError`, якщо `condition` хибна, і існує, щоб виявляти порушення припущень, які контролюєте *ви* — внутрішній інваріант, що має завжди виконуватись, якщо код правильний, а не для валідації зовнішнього вводу, бо assert можна глобально вимкнути прапорцем інтерпретатора `-O`, тихо повністю прибравши перевірку. Для всього, що надходить ззовні контролю програми — ввід користувача, файл, мережева відповідь — використовуйте явну валідацію через `if`/`raise` натомість, бо цей код завжди виконується незалежно від прапорців інтерпретатора й може дати викликачу змістовний, конкретний виняток для перехоплення.",
+      "keyPoints": [
+        "assert checks your own internal assumptions, and can be globally disabled with -O",
+        "Never use assert to validate untrusted external input like user data",
+        "Explicit if/raise validation always runs and gives a specific, catchable exception"
+      ],
+      "keyPointsUk": [
+        "assert перевіряє власні внутрішні припущення, і може бути глобально вимкнений через -O",
+        "Ніколи не використовуйте assert для валідації недовіреного зовнішнього вводу, як дані користувача",
+        "Явна валідація через if/raise завжди виконується й дає конкретний, придатний для перехоплення виняток"
+      ],
+      "code": "def apply_discount(price, percent):\n    assert price >= 0, \"internal bug: negative price reached this function\"\n    if not (0 <= percent <= 100):\n        raise ValueError(f\"percent must be 0-100, got {percent}\")\n    return price * (1 - percent / 100)",
+      "codeCaption": "assert for an internal invariant that should never fail if the code is correct; raise for untrusted external input.",
+      "codeCaptionUk": "assert для внутрішнього інваріанта, що ніколи не має провалюватись, якщо код правильний; raise для недовіреного зовнішнього вводу.",
+      "pitfalls": [
+        "Using assert user_input > 0 to validate a form field silently disappears when Python runs with -O",
+        "Assertions with expensive side effects (assert expensive_check()) still run in normal mode, wasting time on every call"
+      ],
+      "pitfallsUk": [
+        "Використання assert user_input > 0 для валідації поля форми тихо зникає, коли Python запускається з -O",
+        "Assert з дорогими побічними ефектами (assert expensive_check()) все ще виконується у звичайному режимі, витрачаючи час на кожен виклик"
+      ],
+      "exercise": "Rewrite a function that uses assert to validate a user-supplied age parameter so it instead raises a proper ValueError, and add an internal assert for a genuinely internal invariant instead.",
+      "exerciseUk": "Перепишіть функцію, що використовує assert для валідації наданого користувачем параметра age, щоб натомість викликати належний ValueError, і додайте внутрішній assert для справді внутрішнього інваріанта.",
+      "tags": ["assertions", "validation", "defensive-programming"],
+      "sourceIds": ["python-docs-language-reference"]
+    },
+    {
+      "id": "py-lesson-writing-modules",
+      "moduleId": "modules-packages-imports",
+      "level": "Intermediate",
+      "title": "Writing and importing your own modules",
+      "titleUk": "Написання й імпорт власних модулів",
+      "summary": "Any .py file is a module; splitting code into modules is how programs grow past a single file.",
+      "summaryUk": "Будь-який файл .py — модуль; розділення коду на модулі — спосіб зростання програм за межі одного файлу.",
+      "concept": "Any `.py` file is automatically a module that other files can `import` by its filename without the extension: a file `helpers.py` is imported as `import helpers` or `from helpers import specific_function`. When a module is imported, its top-level code runs exactly once, and the result — every function, class and variable it defines — becomes accessible through the module's namespace. Splitting a growing single-file script into multiple focused modules (one for data access, one for calculations, one for the command-line interface, for example) keeps each file's purpose clear and makes individual pieces easier to test in isolation.",
+      "conceptUk": "Будь-який файл `.py` автоматично є модулем, який інші файли можуть `import` за назвою файлу без розширення: файл `helpers.py` імпортується як `import helpers` чи `from helpers import specific_function`. Коли модуль імпортується, його код верхнього рівня виконується рівно один раз, і результат — кожна функція, клас і змінна, які він визначає — стає доступним через простір імен модуля. Розділення зростаючого однофайлового скрипта на кілька сфокусованих модулів (наприклад, один для доступу до даних, один для розрахунків, один для інтерфейсу командного рядка) тримає призначення кожного файлу чітким і робить окремі частини легшими для ізольованого тестування.",
+      "keyPoints": [
+        "Any .py file is importable as a module by its filename without .py",
+        "A module's top-level code runs once, the first time it is imported",
+        "Splitting a growing script into focused modules keeps each file's purpose clear"
+      ],
+      "keyPointsUk": [
+        "Будь-який файл .py імпортовний як модуль за назвою файлу без .py",
+        "Код верхнього рівня модуля виконується один раз, при першому імпорті",
+        "Розділення зростаючого скрипта на сфокусовані модулі тримає призначення кожного файлу чітким"
+      ],
+      "code": "# geometry.py\ndef rectangle_area(w, h):\n    return w * h\n\n# main.py\nfrom geometry import rectangle_area\nprint(rectangle_area(3, 4))",
+      "codeCaption": "A small helper function moved into its own module and imported by name from another file.",
+      "codeCaptionUk": "Маленька допоміжна функція, винесена у власний модуль і імпортована за іменем з іншого файлу.",
+      "pitfalls": [
+        "Naming your own file the same as a standard-library module (like random.py) can shadow the real one and break unrelated imports",
+        "Circular imports (module A imports B, which imports A) raise an ImportError and usually signal a design that needs restructuring"
+      ],
+      "pitfallsUk": [
+        "Назва власного файлу так само, як модуль стандартної бібліотеки (як random.py), може затінити справжній і зламати непов'язані імпорти",
+        "Циклічні імпорти (модуль A імпортує B, який імпортує A) викликають ImportError і зазвичай сигналізують про дизайн, що потребує перебудови"
+      ],
+      "exercise": "Split a single script that validates emails and formats phone numbers into two modules, validators.py and formatters.py, then import both from a new main.py.",
+      "exerciseUk": "Розділіть один скрипт, що валідує email і форматує номери телефонів, на два модулі, validators.py і formatters.py, потім імпортуйте обидва з нового main.py.",
+      "tags": ["modules", "imports"],
+      "sourceIds": ["python-docs-import-system", "python-docs-tutorial"]
+    },
+    {
+      "id": "py-lesson-packages-and-init",
+      "moduleId": "modules-packages-imports",
+      "level": "Intermediate",
+      "title": "Packages and __init__.py",
+      "titleUk": "Пакети та __init__.py",
+      "summary": "A package is a directory of modules; __init__.py runs on first import and can define what the package exposes.",
+      "summaryUk": "Пакет — це каталог модулів; __init__.py виконується при першому імпорті й може визначати, що пакет надає.",
+      "concept": "A directory containing an `__init__.py` file (even an empty one) becomes an importable *package*, letting related modules be organized under one dotted name, like `myapp.utils.strings`. `__init__.py` runs automatically the first time anything inside the package is imported, and commonly re-exports a curated set of names from deeper submodules so callers can write the shorter `from myapp import helper_function` instead of the fully-qualified `from myapp.utils.strings import helper_function`. This lets a package's internal file layout change without breaking its public import surface.",
+      "conceptUk": "Каталог, що містить файл `__init__.py` (навіть порожній), стає імпортовним *пакетом*, дозволяючи організувати пов'язані модулі під одним іменем через крапку, як `myapp.utils.strings`. `__init__.py` автоматично виконується при першому імпорті чогось усередині пакета й часто повторно експортує курований набір імен з глибших підмодулів, тож викликачі можуть писати коротше `from myapp import helper_function` замість повністю кваліфікованого `from myapp.utils.strings import helper_function`. Це дозволяє внутрішньому розташуванню файлів пакета змінюватись, не ламаючи його публічну поверхню імпорту.",
+      "keyPoints": [
+        "A directory with __init__.py becomes an importable package with a dotted name",
+        "__init__.py runs once, on the package's first import",
+        "Re-exporting names in __init__.py gives a short, stable public import path"
+      ],
+      "keyPointsUk": [
+        "Каталог з __init__.py стає імпортовним пакетом з іменем через крапку",
+        "__init__.py виконується один раз, при першому імпорті пакета",
+        "Повторний експорт імен у __init__.py дає короткий, стабільний публічний шлях імпорту"
+      ],
+      "code": "# myapp/utils/strings.py\ndef slugify(text):\n    return text.lower().replace(\" \", \"-\")\n\n# myapp/__init__.py\nfrom .utils.strings import slugify\n\n# elsewhere\nfrom myapp import slugify",
+      "codeCaption": "Re-exporting a deeply nested function through __init__.py so callers use a short import path.",
+      "codeCaptionUk": "Повторний експорт глибоко вкладеної функції через __init__.py, тож викликачі використовують короткий шлях імпорту.",
+      "pitfalls": [
+        "Running a module inside a package directly with `python myapp/utils/strings.py` breaks its relative imports",
+        "An __init__.py that re-exports too much can create circular import problems between submodules"
+      ],
+      "pitfallsUk": [
+        "Прямий запуск модуля всередині пакета через `python myapp/utils/strings.py` ламає його відносні імпорти",
+        "__init__.py, що повторно експортує забагато, може створити проблеми циклічного імпорту між підмодулями"
+      ],
+      "exercise": "Turn validators.py and formatters.py from the previous exercise into a package named toolkit with an __init__.py that re-exports validate_email and format_phone directly.",
+      "exerciseUk": "Перетворіть validators.py і formatters.py з попередньої вправи на пакет toolkit з __init__.py, що напряму повторно експортує validate_email і format_phone.",
+      "tags": ["packages", "imports"],
+      "sourceIds": ["python-docs-import-system"]
+    },
+    {
+      "id": "py-lesson-venv-and-pip",
+      "moduleId": "modules-packages-imports",
+      "level": "Intermediate",
+      "title": "Virtual environments and pip",
+      "titleUk": "Віртуальні середовища й pip",
+      "summary": "Every project gets its own isolated set of installed packages, so projects never fight over dependency versions.",
+      "summaryUk": "Кожен проєкт отримує власний ізольований набір встановлених пакетів, тож проєкти ніколи не конфліктують за версії залежностей.",
+      "concept": "`python -m venv .venv` creates an isolated virtual environment in the `.venv` directory, and activating it (`source .venv/bin/activate` on macOS/Linux, `.venv\\Scripts\\activate` on Windows) points `python` and `pip` at that isolated environment instead of the system-wide installation. `pip install package_name` then installs a package only into the active environment, and `pip freeze > requirements.txt` records the exact installed versions so another machine can recreate the same environment with `pip install -r requirements.txt`. Every real project should have its own virtual environment, never sharing one across unrelated projects.",
+      "conceptUk": "`python -m venv .venv` створює ізольоване віртуальне середовище в каталозі `.venv`, а його активація (`source .venv/bin/activate` на macOS/Linux, `.venv\\Scripts\\activate` на Windows) спрямовує `python` і `pip` на це ізольоване середовище замість загальносистемного встановлення. `pip install package_name` тоді встановлює пакет лише в активне середовище, а `pip freeze > requirements.txt` записує точні встановлені версії, тож інша машина може відтворити те саме середовище через `pip install -r requirements.txt`. Кожен реальний проєкт має мати власне віртуальне середовище, ніколи не ділячи одне між непов'язаними проєктами.",
+      "keyPoints": [
+        "python -m venv .venv creates an isolated environment for one project",
+        "Activating the environment points python and pip at it instead of the system installation",
+        "pip freeze > requirements.txt records exact versions for reproducible installs elsewhere"
+      ],
+      "keyPointsUk": [
+        "python -m venv .venv створює ізольоване середовище для одного проєкту",
+        "Активація середовища спрямовує python і pip на нього замість системного встановлення",
+        "pip freeze > requirements.txt записує точні версії для відтворюваних встановлень деінде"
+      ],
+      "code": "python -m venv .venv\nsource .venv/bin/activate     # .venv\\Scripts\\activate on Windows\npip install requests\npip freeze > requirements.txt\n\n# on another machine:\npython -m venv .venv && source .venv/bin/activate\npip install -r requirements.txt",
+      "codeCaption": "Creating a virtual environment, installing a package, freezing the exact version, and reproducing it elsewhere.",
+      "codeCaptionUk": "Створення віртуального середовища, встановлення пакета, фіксація точної версії й відтворення деінде.",
+      "pitfalls": [
+        "Installing packages globally with pip (outside any venv) risks version conflicts between unrelated projects",
+        "Forgetting to activate the venv before pip install puts the package somewhere unexpected"
+      ],
+      "pitfallsUk": [
+        "Встановлення пакетів глобально через pip (поза будь-яким venv) ризикує конфліктами версій між непов'язаними проєктами",
+        "Забуття активувати venv перед pip install встановлює пакет у несподіване місце"
+      ],
+      "exercise": "Create a new virtual environment, install the requests package into it, generate a requirements.txt, and describe the exact commands someone else would run to reproduce your environment.",
+      "exerciseUk": "Створіть нове віртуальне середовище, встановіть у нього пакет requests, згенеруйте requirements.txt і опишіть точні команди, які інша людина виконала б, щоб відтворити ваше середовище.",
+      "tags": ["venv", "pip", "environments"],
+      "sourceIds": ["python-docs-venv", "packaging-guide"]
+    },
+    {
+      "id": "py-lesson-collections-module",
+      "moduleId": "standard-library-tour",
+      "level": "Intermediate",
+      "title": "The collections module: Counter, defaultdict, deque",
+      "titleUk": "Модуль collections: Counter, defaultdict, deque",
+      "summary": "Specialized container types that replace common manual bookkeeping patterns with a single import.",
+      "summaryUk": "Спеціалізовані типи контейнерів, що замінюють поширені патерни ручного обліку одним імпортом.",
+      "concept": "`Counter(iterable)` tallies hashable items and exposes `.most_common(n)` for ranked frequency results, replacing a manual dict-and-increment loop. `defaultdict(factory)` behaves like a normal dict except that reading a missing key first creates it using `factory()` instead of raising `KeyError`, which removes the need for an `if key not in d:` check before every first insertion into a nested structure. `deque` (double-ended queue) supports O(1) appends and pops from *either* end, unlike a plain list, which makes it the right choice for queues, sliding windows, and any \"remove from the front\" pattern.",
+      "conceptUk": "`Counter(iterable)` підраховує хешовані елементи й надає `.most_common(n)` для ранжованих результатів частоти, замінюючи ручний цикл з dict і інкрементом. `defaultdict(factory)` поводиться як звичайний dict, окрім того, що читання відсутнього ключа спершу створює його через `factory()` замість виклику `KeyError`, що усуває потребу в перевірці `if key not in d:` перед кожним першим додаванням у вкладену структуру. `deque` (двостороння черга) підтримує O(1) для додавання й вилучення з *будь-якого* кінця, на відміну від звичайного списку, що робить його правильним вибором для черг, ковзних вікон і будь-якого патерну «видалити з початку».",
+      "keyPoints": [
+        "Counter(iterable).most_common(n) ranks item frequency without a manual loop",
+        "defaultdict(factory) auto-creates missing keys, removing manual existence checks",
+        "deque gives O(1) append/pop from both ends, unlike list's O(n) at the front"
+      ],
+      "keyPointsUk": [
+        "Counter(iterable).most_common(n) ранжує частоту елементів без ручного циклу",
+        "defaultdict(factory) автоматично створює відсутні ключі, усуваючи ручні перевірки наявності",
+        "deque дає O(1) для append/pop з обох кінців, на відміну від O(n) list на початку"
+      ],
+      "code": "from collections import Counter, defaultdict, deque\n\nwords = \"the cat sat on the mat the cat ran\".split()\nprint(Counter(words).most_common(2))\n\ngroups = defaultdict(list)\nfor w in words:\n    groups[len(w)].append(w)\n\nrecent = deque(maxlen=3)\nfor i in range(5):\n    recent.append(i)\nprint(list(recent))  # [2, 3, 4]",
+      "codeCaption": "Ranking word frequency, grouping words by length without existence checks, and a fixed-size recent-history deque.",
+      "codeCaptionUk": "Ранжування частоти слів, групування слів за довжиною без перевірок наявності, і deque фіксованого розміру для недавньої історії.",
+      "pitfalls": [
+        "defaultdict(list)[\"missing_key\"] silently creates the key just by reading it, which can hide typos",
+        "A plain list used as a queue with .pop(0) is O(n) per removal; deque.popleft() is O(1)"
+      ],
+      "pitfallsUk": [
+        "defaultdict(list)[\"missing_key\"] тихо створює ключ просто через читання, що може приховати одруківки",
+        "Звичайний список, використаний як черга з .pop(0), має O(n) на видалення; deque.popleft() — O(1)"
+      ],
+      "exercise": "Given a list of HTTP status codes from a log, use Counter to find the 3 most common ones, and use defaultdict to group the codes by their first digit (2xx, 4xx, 5xx).",
+      "exerciseUk": "Маючи список HTTP статус-кодів з логу, використайте Counter, щоб знайти 3 найпоширеніших, і defaultdict, щоб згрупувати коди за першою цифрою (2xx, 4xx, 5xx).",
+      "tags": ["collections", "stdlib"],
+      "sourceIds": ["python-docs-collections"]
+    },
+    {
+      "id": "py-lesson-itertools-functools",
+      "moduleId": "standard-library-tour",
+      "level": "Intermediate",
+      "title": "itertools and functools essentials",
+      "titleUk": "Основи itertools і functools",
+      "summary": "Lazy iterator composition and function-level tools that remove common loop and caching boilerplate.",
+      "summaryUk": "Ліниве компонування ітераторів та інструменти на рівні функцій, що усувають поширений шаблонний код циклів і кешування.",
+      "concept": "From `itertools`: `chain(a, b)` walks multiple iterables as one lazy sequence, `islice(it, n)` lazily takes the first `n` items from any iterator (even an infinite one), and `product(a, b)` generates every combination pair without a nested loop. From `functools`: `@lru_cache(maxsize=None)` memoizes a pure function's results automatically keyed by its arguments, and `partial(func, fixed_arg)` pre-fills some of a function's arguments to create a simpler, specialized callable. Together these two modules replace a large share of hand-written looping and caching boilerplate with well-tested, efficient building blocks.",
+      "conceptUk": "З `itertools`: `chain(a, b)` проходить кілька ітерованих об'єктів як одну ліниву послідовність, `islice(it, n)` ліниво бере перші `n` елементів з будь-якого ітератора (навіть нескінченного), а `product(a, b)` генерує кожну комбінацію пар без вкладеного циклу. З `functools`: `@lru_cache(maxsize=None)` автоматично мемоізує результати чистої функції за ключем її аргументів, а `partial(func, fixed_arg)` заздалегідь заповнює частину аргументів функції, створюючи простішу, спеціалізовану виклику сутність. Разом ці два модулі замінюють значну частину написаного вручну шаблонного коду циклів і кешування добре протестованими, ефективними будівельними блоками.",
+      "keyPoints": [
+        "chain() and islice() compose and bound iterators lazily, without materializing full lists",
+        "product(a, b) replaces a nested for loop for generating every combination pair",
+        "@lru_cache memoizes results; partial() pre-fills some arguments of a function"
+      ],
+      "keyPointsUk": [
+        "chain() та islice() ліниво компонують і обмежують ітератори, не матеріалізуючи повні списки",
+        "product(a, b) замінює вкладений цикл for для генерування кожної комбінації пар",
+        "@lru_cache мемоізує результати; partial() заздалегідь заповнює частину аргументів функції"
+      ],
+      "code": "from itertools import chain, product\nfrom functools import lru_cache, partial\n\nsizes = [\"S\", \"M\", \"L\"]\ncolors = [\"red\", \"blue\"]\nvariants = list(product(sizes, colors))\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\n\ndouble = partial(lambda a, b: a * b, 2)\nprint(double(21))  # 42",
+      "codeCaption": "Generating combinations with product(), memoizing recursive Fibonacci, and pre-filling an argument with partial().",
+      "codeCaptionUk": "Генерування комбінацій через product(), мемоізація рекурсивного Фібоначчі, заздалегідь заповнений аргумент через partial().",
+      "pitfalls": [
+        "@lru_cache on a function with mutable-argument inputs (like a list) raises TypeError, since arguments must be hashable",
+        "@lru_cache silently returns stale results if the function has side effects or depends on external state"
+      ],
+      "pitfallsUk": [
+        "@lru_cache на функції зі змінюваними аргументами (як список) викликає TypeError, бо аргументи мають бути хешовані",
+        "@lru_cache тихо повертає застарілі результати, якщо функція має побічні ефекти чи залежить від зовнішнього стану"
+      ],
+      "exercise": "Use itertools.product to generate every possible 4-digit PIN combination lazily (do not materialize the full list), and use @lru_cache to speed up a slow recursive function of your choice.",
+      "exerciseUk": "Використайте itertools.product, щоб ліниво генерувати кожну можливу комбінацію 4-значного PIN (не матеріалізуйте повний список), і @lru_cache, щоб пришвидшити повільну рекурсивну функцію на власний вибір.",
+      "tags": ["itertools", "functools", "stdlib"],
+      "sourceIds": ["python-docs-itertools", "python-docs-functools"]
+    },
+    {
+      "id": "py-lesson-datetime",
+      "moduleId": "standard-library-tour",
+      "level": "Intermediate",
+      "title": "Working with dates and times",
+      "titleUk": "Робота з датами й часом",
+      "summary": "datetime objects, formatting with strftime, parsing with strptime, and the naive-versus-aware distinction.",
+      "summaryUk": "Об'єкти datetime, форматування через strftime, розбір через strptime, і різниця наївний-проти-обізнаний.",
+      "concept": "`datetime.now()` returns the current local time as a naive `datetime` (no timezone attached); `datetime.now(timezone.utc)` returns an aware one anchored to UTC. `.strftime(\"%Y-%m-%d\")` formats a `datetime` into a string using format codes, while `datetime.strptime(text, \"%Y-%m-%d\")` does the reverse, parsing a string into a `datetime` according to the same code system. Subtracting two `datetime` objects produces a `timedelta`, representing a duration, which itself supports arithmetic like adding days to a date. Mixing a naive and an aware `datetime` in a comparison or subtraction raises a `TypeError` rather than silently guessing a timezone.",
+      "conceptUk": "`datetime.now()` повертає поточний локальний час як наївний `datetime` (без прикріпленого часового поясу); `datetime.now(timezone.utc)` повертає обізнаний, прив'язаний до UTC. `.strftime(\"%Y-%m-%d\")` форматує `datetime` у рядок, використовуючи коди формату, тоді як `datetime.strptime(text, \"%Y-%m-%d\")` робить обернене, розбираючи рядок у `datetime` за тією самою системою кодів. Віднімання двох об'єктів `datetime` дає `timedelta`, що представляє тривалість і сам підтримує арифметику, як додавання днів до дати. Змішування наївного й обізнаного `datetime` у порівнянні чи відніманні викликає `TypeError`, а не тихе вгадування часового поясу.",
+      "keyPoints": [
+        "datetime.now() is naive; datetime.now(timezone.utc) is aware and anchored to UTC",
+        "strftime formats a datetime to text; strptime parses text into a datetime",
+        "Subtracting two datetimes gives a timedelta; mixing naive and aware raises TypeError"
+      ],
+      "keyPointsUk": [
+        "datetime.now() наївний; datetime.now(timezone.utc) обізнаний і прив'язаний до UTC",
+        "strftime форматує datetime у текст; strptime розбирає текст у datetime",
+        "Віднімання двох datetime дає timedelta; змішування наївного й обізнаного викликає TypeError"
+      ],
+      "code": "from datetime import datetime, timedelta, timezone\n\nnow = datetime.now(timezone.utc)\ndeadline = now + timedelta(days=7)\nprint(deadline.strftime(\"%Y-%m-%d %H:%M UTC\"))\n\nparsed = datetime.strptime(\"2026-03-05\", \"%Y-%m-%d\")",
+      "codeCaption": "Computing a deadline a week from now, formatting it for display, and parsing a date string back into a datetime.",
+      "codeCaptionUk": "Обчислення дедлайну через тиждень від зараз, форматування для показу, і розбір рядка дати назад у datetime.",
+      "pitfalls": [
+        "Comparing a naive datetime.now() with an aware value from an API raises TypeError",
+        "Assuming datetime.now() is UTC is wrong on most systems — it is local time unless you pass timezone.utc"
+      ],
+      "pitfallsUk": [
+        "Порівняння наївного datetime.now() з обізнаним значенням з API викликає TypeError",
+        "Припущення, що datetime.now() — це UTC, неправильне на більшості систем — це локальний час, якщо не передати timezone.utc"
+      ],
+      "exercise": "Write a function that takes a birthdate string in \"YYYY-MM-DD\" format, parses it, and returns the person's age in whole years as of today.",
+      "exerciseUk": "Напишіть функцію, що приймає рядок дати народження у форматі «YYYY-MM-DD», розбирає його й повертає вік людини в повних роках станом на сьогодні.",
+      "tags": ["datetime", "stdlib"],
+      "sourceIds": ["python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-os-and-sys",
+      "moduleId": "standard-library-tour",
+      "level": "Intermediate",
+      "title": "os and sys for environment and runtime info",
+      "titleUk": "os і sys для середовища й інформації про виконання",
+      "summary": "os talks to the operating system (environment variables, processes); sys exposes interpreter-level state.",
+      "summaryUk": "os спілкується з операційною системою (змінні середовища, процеси); sys надає стан на рівні інтерпретатора.",
+      "concept": "`os.environ` is a dict-like mapping of the process's environment variables, commonly read with `os.environ.get(\"API_KEY\")` to configure a program without hardcoding secrets or environment-specific values into source code. `os.getcwd()`, `os.listdir()` and related functions expose filesystem information (though `pathlib` is preferred for path manipulation itself). `sys.argv` is the list of command-line arguments the script was invoked with (`sys.argv[0]` is the script name itself), and `sys.exit(code)` terminates the program immediately with a given exit status, commonly used to signal success (`0`) or failure (non-zero) to a calling shell or CI pipeline.",
+      "conceptUk": "`os.environ` — це подібне до словника відображення змінних середовища процесу, часто читається через `os.environ.get(\"API_KEY\")` для конфігурації програми без жорсткого прописування секретів чи специфічних для середовища значень у вихідному коді. `os.getcwd()`, `os.listdir()` та пов'язані функції надають інформацію файлової системи (хоча для самої маніпуляції шляхами надається перевага `pathlib`). `sys.argv` — список аргументів командного рядка, з якими було викликано скрипт (`sys.argv[0]` — сама назва скрипта), а `sys.exit(code)` негайно завершує програму з заданим статусом виходу, часто використовується для сигналізації успіху (`0`) чи невдачі (не нуль) командній оболонці чи конвеєру CI.",
+      "keyPoints": [
+        "os.environ.get(\"NAME\") reads an environment variable without hardcoding secrets",
+        "sys.argv holds command-line arguments; sys.argv[0] is the script name itself",
+        "sys.exit(code) terminates the program with a status a shell or CI pipeline can check"
+      ],
+      "keyPointsUk": [
+        "os.environ.get(\"NAME\") читає змінну середовища без жорсткого прописування секретів",
+        "sys.argv тримає аргументи командного рядка; sys.argv[0] — сама назва скрипта",
+        "sys.exit(code) завершує програму зі статусом, який може перевірити оболонка чи конвеєр CI"
+      ],
+      "code": "import os, sys\n\napi_key = os.environ.get(\"API_KEY\")\nif not api_key:\n    print(\"Missing API_KEY environment variable\", file=sys.stderr)\n    sys.exit(1)\n\nprint(\"Arguments:\", sys.argv[1:])",
+      "codeCaption": "Reading required configuration from the environment and exiting with an error status if it's missing.",
+      "codeCaptionUk": "Читання обов'язкової конфігурації з середовища й вихід зі статусом помилки, якщо вона відсутня.",
+      "pitfalls": [
+        "os.environ[\"NAME\"] raises KeyError if missing; use .get() with a default or explicit check instead",
+        "Forgetting sys.argv[0] is the script name itself, so real arguments start at index 1"
+      ],
+      "pitfallsUk": [
+        "os.environ[\"NAME\"] викликає KeyError, якщо відсутня; використовуйте .get() зі значенням за замовчуванням чи явну перевірку",
+        "Забуття, що sys.argv[0] — сама назва скрипта, тож реальні аргументи починаються з індексу 1"
+      ],
+      "exercise": "Write a small CLI script that reads a required OUTPUT_DIR environment variable, exits with status 1 and an error message on stderr if it's missing, and otherwise prints the command-line arguments it received.",
+      "exerciseUk": "Напишіть невеликий CLI-скрипт, що читає обов'язкову змінну середовища OUTPUT_DIR, виходить зі статусом 1 і повідомленням про помилку в stderr, якщо вона відсутня, і інакше друкує отримані аргументи командного рядка.",
+      "tags": ["os", "sys", "stdlib"],
+      "sourceIds": ["python-docs-stdlib-index"]
+    },
+    {
+      "id": "py-lesson-logging-basics",
+      "moduleId": "standard-library-tour",
+      "level": "Intermediate",
+      "title": "Structured diagnostic output with logging",
+      "titleUk": "Структурований діагностичний вивід через logging",
+      "summary": "logging replaces print() debugging with leveled, configurable, and production-appropriate diagnostics.",
+      "summaryUk": "logging замінює налагодження через print() рівневою, конфігурованою й придатною для продакшену діагностикою.",
+      "concept": "`logging.getLogger(__name__)` creates a logger scoped to the current module, and calling `.debug()`, `.info()`, `.warning()`, `.error()` or `.critical()` on it records a message at that severity level. `logging.basicConfig(level=logging.INFO)` sets a minimum level for the whole program — messages below that level are silently skipped, so verbosity can be tuned per environment without touching the calls themselves. Unlike `print()`, log messages automatically include useful context like the timestamp and logger name, and can be routed to a file or remote system instead of only the console.",
+      "conceptUk": "`logging.getLogger(__name__)` створює логер, обмежений поточним модулем, і виклик `.debug()`, `.info()`, `.warning()`, `.error()` чи `.critical()` на ньому записує повідомлення на цьому рівні серйозності. `logging.basicConfig(level=logging.INFO)` встановлює мінімальний рівень для всієї програми — повідомлення нижче цього рівня тихо пропускаються, тож детальність можна налаштувати для кожного середовища, не чіпаючи самі виклики. На відміну від `print()`, повідомлення логу автоматично включають корисний контекст на кшталт мітки часу й імені логера, і можуть спрямовуватись у файл чи віддалену систему, а не лише консоль.",
+      "keyPoints": [
+        "getLogger(__name__).info/warning/error() records a message at that severity level",
+        "basicConfig(level=...) sets the minimum level shown, tunable per environment",
+        "Unlike print(), log records automatically carry timestamp and source context"
+      ],
+      "keyPointsUk": [
+        "getLogger(__name__).info/warning/error() записує повідомлення на цьому рівні серйозності",
+        "basicConfig(level=...) встановлює мінімальний показаний рівень, налаштовуваний для середовища",
+        "На відміну від print(), записи логу автоматично несуть мітку часу й контекст джерела"
+      ],
+      "code": "import logging\n\nlogging.basicConfig(level=logging.INFO, format=\"%(asctime)s %(levelname)s %(message)s\")\nlogger = logging.getLogger(__name__)\n\nlogger.info(\"Starting import job\")\nlogger.warning(\"Retrying %s after timeout\", \"fetch_data\")\nlogger.debug(\"This won't show at INFO level\")",
+      "codeCaption": "Configuring a minimum log level and logging structured messages at different severities.",
+      "codeCaptionUk": "Налаштування мінімального рівня логу й логування структурованих повідомлень різної серйозності.",
+      "pitfalls": [
+        "logger.info(\"value: \" + str(x)) always builds the string even if INFO is filtered out; logger.info(\"value: %s\", x) is lazier and cheaper",
+        "Calling basicConfig() more than once in the same process has no effect after the first call"
+      ],
+      "pitfallsUk": [
+        "logger.info(\"value: \" + str(x)) завжди будує рядок, навіть якщо INFO відфільтровано; logger.info(\"value: %s\", x) лінивіший і дешевший",
+        "Виклик basicConfig() більше одного разу в тому самому процесі не має ефекту після першого виклику"
+      ],
+      "exercise": "Replace every print() call in a small script with appropriately-leveled logging calls (info for normal progress, warning for recoverable issues, error for failures), and configure the minimum level.",
+      "exerciseUk": "Замініть кожен виклик print() у невеликому скрипті на виклики logging з відповідним рівнем (info для звичайного прогресу, warning для виправних проблем, error для невдач), і налаштуйте мінімальний рівень.",
+      "tags": ["logging", "stdlib"],
+      "sourceIds": ["python-docs-logging"]
+    }
+  ]
+}

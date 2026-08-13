@@ -30,6 +30,17 @@ The **Interview questions** module contains:
 - 50 research and validation sources;
 - a lazy-loaded catalog with at most 60 question rows rendered at once.
 
+The **Python interview questions** module is functional and separate from the general QA catalog above:
+
+- 133 bilingual (English/Ukrainian) questions across 13 topics and 42 sources, a rolling non-destructive minimum;
+- reuses the QA catalog's search, prevalence, seniority, tag and full-text filters through the same lazy-loaded component;
+- questions are namespaced with a `py-` ID prefix, so personal progress tracking works for both catalogs with no schema change.
+
+The **Python learning path** module is functional:
+
+- 64 bilingual lessons across 15 modules, Beginner through Expert, each with a runnable code sample, key points, common pitfalls, and a practice exercise;
+- level and full-text filters, a "Sources & methodology" tab, and the same lazy-loaded, capped-rendering approach as the interview catalogs.
+
 The navigation also contains planned knowledge modules:
 
 - Interview questions;
