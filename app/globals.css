@@ -80,8 +80,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .stat-line span { color: var(--faint); font-size: 8px; margin-top: 3px; text-transform: uppercase; }
 
 .job-list-view { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: var(--shadow); }
-.job-detail-view { display: flex; flex-direction: column; gap: 16px; }
-.back-link { align-self: flex-start; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 700; padding: 4px 0; }
+.job-detail-view { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.back-link { align-self: flex-start; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 700; grid-column: 1 / -1; padding: 4px 0; }
 .back-link:hover { color: var(--ink); text-decoration: underline; }
 .job-detail, .job-analysis-resume { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: var(--shadow); }
 .job-analysis-resume { display: flex; flex-direction: column; }
@@ -194,6 +194,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .page-intro { align-items: flex-start; flex-direction: column; }
   .stat-line { align-self: stretch; justify-content: space-between; }
   .stat-line > div { flex: 1; }
+  .job-detail-view { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px) {

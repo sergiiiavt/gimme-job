@@ -18,21 +18,6 @@ interface QuestionProgressEntry {
   updatedAt: string;
 }
 
-interface PublicJob {
-  id: string;
-  source: string;
-  title: string;
-  company: string;
-  location: string;
-  remote: boolean;
-  url: string;
-  applyUrl: string;
-  description: string;
-  salaryText: string | null;
-  postedAt: string | null;
-  discoveredAt: string;
-}
-
 type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
 type InterviewPrevalence = "Very common" | "Common" | "Occasional" | "Specialist";
 type InterviewPrevalenceFilter = InterviewPrevalence | "Starred";
@@ -510,22 +495,6 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
   },
 };
 
-function dateLabel(value: string | null) {
-  if (!value) return "Recently found";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Recently found";
-  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date);
-}
-
-function displayText(value: string) {
-  return value.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-}
-
-function shortText(value: string) {
-  const cleaned = displayText(value).replace(/\s+/g, " ").trim();
-  return cleaned.length > 210 ? `${cleaned.slice(0, 207)}…` : cleaned;
-}
-
 function currentSectionFromLocation(mode: SiteMode): PublicSection {
   if (typeof window === "undefined") return mode === "personal" ? "interview" : "about";
   const candidate = (mode === "personal"
@@ -538,8 +507,8 @@ function topicId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function secondaryNavigation(section: PublicSection, jobs: PublicJob[], interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: PythonCurriculum | null): SubnavItem[] {
-  if (section === "about" || section === "resume") return [];
+function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: PythonCurriculum | null): SubnavItem[] {
+  if (section === "about" || section === "resume" || section === "jobs") return [];
 
   if (section === "rewild") {
     return [
@@ -575,15 +544,6 @@ function secondaryNavigation(section: PublicSection, jobs: PublicJob[], intervie
     }));
   }
 
-  if (section === "jobs") {
-    const sources = Array.from(new Set(jobs.map((job) => job.source))).sort();
-    return [
-      { id: "all", label: "All vacancies", count: jobs.length },
-      { id: "remote", label: "Remote", count: jobs.filter((job) => job.remote).length },
-      ...sources.map((source) => ({ id: `source:${source}`, label: source.replace(/^\w+:/, ""), count: jobs.filter((job) => job.source === source).length })),
-    ];
-  }
-
   const items = knowledge[section].items;
   return [
     { id: "all", label: "All topics", count: items.length },
@@ -611,9 +571,6 @@ function secondarySwitcherFor(section: PublicSection, openSection: (next: Public
 
 export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [section, setSection] = useState<PublicSection>(mode === "personal" ? "interview" : "about");
-  const [jobs, setJobs] = useState<PublicJob[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [query, setQuery] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
   const [subsection, setSubsection] = useState("all");
   const [interviewCatalog, setInterviewCatalog] = useState<InterviewCatalog | null>(null);
@@ -678,35 +635,11 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [pythonCurriculum, section]);
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/public/jobs")
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`Public jobs unavailable: ${response.status}`);
-        return response.json() as Promise<{ jobs?: PublicJob[] }>;
-      })
-      .then((result) => {
-        if (active) setJobs(Array.isArray(result.jobs) ? result.jobs : []);
-      })
-      .catch(() => {
-        if (active) setJobs([]);
-      })
-      .finally(() => {
-        if (active) setLoaded(true);
-      });
-    return () => { active = false; };
-  }, []);
-
-  const visibleJobs = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return jobs
-      .filter((job) => !needle || displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(needle))
-      .filter((job) => subsection === "all" || (subsection === "remote" && job.remote) || (subsection.startsWith("source:") && job.source === subsection.slice(7)))
-      .sort((a, b) => new Date(b.postedAt ?? b.discoveredAt).getTime() - new Date(a.postedAt ?? a.discoveredAt).getTime())
-      .slice(0, 50);
-  }, [jobs, query, subsection]);
+    if (section === "jobs") window.location.assign("/workspace");
+  }, [section]);
 
   const openSection = (next: PublicSection) => {
-    if (mode === "personal" && next === "jobs") {
+    if (next === "jobs") {
       window.location.assign("/workspace");
       return;
     }
@@ -718,9 +651,9 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
-  const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
+  const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
   const secondarySwitcher = secondarySwitcherFor(section, openSection);
-  const hideSecondary = section === "about" || section === "resume" || section === "rewild";
+  const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
   const publicHref = section === "about" ? "/" : `/#${section}`;
   const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
 
@@ -745,47 +678,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
 
         {section === "jobs" ? (
-          <div className="kb-content">
-            <header className="kb-page-head">
-              <div><h1>Vacancies</h1></div>
-              <div className="kb-page-stats"><div><strong>{jobs.length}</strong><span>Vacancies</span></div><div><strong>Newest</strong><span>First</span></div><div><strong>Read-only</strong><span>Public view</span></div></div>
-            </header>
-
-            <section className="kb-jobs-panel">
-              <div className="kb-jobs-tools">
-                <label><span>⌕</span><input aria-label="Search public vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search title, company, location, or source"/></label>
-              </div>
-              <div className="kb-jobs-note"><span>{visibleJobs.length} results</span><p>Switch to Personal in the lower-left corner to track applications.</p></div>
-              <div className="kb-job-list">
-                {loaded && visibleJobs.map((job) => {
-                  const summaryTags = [
-                    job.remote ? "Remote" : null,
-                    job.salaryText ? "Salary listed" : null,
-                    job.location && !job.remote ? displayText(job.location) : null,
-                    job.source ? displayText(job.source) : null,
-                  ].filter(Boolean).slice(0, 3);
-
-                  return (
-                    <article className="kb-job-row" key={job.id}>
-                      <div className="kb-job-copy">
-                        <div><span>{job.source}</span><time>{dateLabel(job.postedAt ?? job.discoveredAt)}</time></div>
-                        <h2>{displayText(job.title)}</h2>
-                        <p className="kb-job-company">{displayText(job.company)} · {displayText(job.location)}</p>
-                        <p>{shortText(job.description || "Open the original vacancy for full details.")}</p>
-                        <div className="kb-job-tags">{job.remote && <span>Remote</span>}{job.salaryText && <span>{job.salaryText}</span>}</div>
-                      </div>
-                      <div className="kb-job-action-stack">
-                        <a href={job.url} target="_blank" rel="noreferrer">Open ↗</a>
-                        <div className="kb-job-summary-tags">{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-                      </div>
-                    </article>
-                  );
-                })}
-                {!loaded && <div className="kb-empty"><strong>Loading jobs…</strong><span>Reading the public database.</span></div>}
-                {loaded && visibleJobs.length === 0 && <div className="kb-empty"><strong>{jobs.length ? "No matching jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Try another search." : "A new database syncs automatically. Reload shortly, or use Sync jobs in the private workspace."}</span></div>}
-              </div>
-            </section>
-          </div>
+          <div className="kb-content"><div className="kb-empty"><strong>Opening Vacancies…</strong><span>Vacancies live at the same page for everyone — redirecting.</span></div></div>
         ) : (
           <KnowledgeSection
             activeTopic={subsection}
