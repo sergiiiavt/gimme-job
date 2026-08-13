@@ -1,25 +1,44 @@
-# Rewild overhead hex rebuild plan
+# Rewild overhead hex visual modernization plan
 
-This plan replaces the earlier three-quarter, hidden-grid vertical-slice plan.
-The authoritative target is
+This plan changes Rewild's renderer, map presentation, and visual assets while
+preserving its existing real-time tower-defense game.
+
+The visual target is
 [top-down-hex-allies-enemies-concept-v2-small-hexes.png](./references/top-down-hex-allies-enemies-concept-v2-small-hexes.png).
+It is authoritative for visual direction only. Its turn-based UI and unit-control
+ideas are explicitly out of scope.
 
-The rebuild proceeds through reviewable phases. Each phase must produce a
-deterministic screenshot and a separately reviewable asset pack. Procedural map
-generation and content expansion cannot hide unresolved camera, scale, or
-projection problems.
+The work proceeds through reviewable phases. Each phase produces a deterministic
+screenshot and separately reviewable visual files. No phase may replace or
+silently reinterpret gameplay to make the screenshot easier to reproduce.
 
-## Non-negotiable contract
+## Non-negotiable gameplay contract
+
+The existing mechanics remain authoritative throughout every phase:
+
+- the player spends sunlight to place defenders;
+- placed defenders are stationary and attack automatically;
+- enemies spawn in waves, move automatically, and attack automatically;
+- the house remains the protected objective and retains integrity;
+- corruption, score, sunlight, wave progression, and win/loss behavior remain;
+- the game runs continuously in real time.
+
+The visual rebuild must not add selectable or movable allies, action points,
+turns, player/enemy phases, move/attack/restore commands, or an End Turn control.
+
+## Non-negotiable visual contract
 
 - 1200 x 675 logical game scene.
 - Strict overhead orthographic projection.
-- Visible pointy-top tactical mesh.
+- Visible pointy-top hex mesh.
 - Approximately 37 columns by 15 rows at radius 21-22.
 - Uniform nearest-neighbor scaling with no horizontal stretch.
-- Six-neighbor movement, attacks, restoration, and border networks.
+- Automatic enemy routes and visual border networks respect six-neighbor hex
+  topology.
 - Connected forests, lakes, corruption, and industrial territories.
-- Small one-cell allies and enemies with clear overhead silhouettes.
-- Static scenery and action-only animation.
+- Compact stationary defenders and automatically moving enemies with clear
+  overhead silhouettes.
+- Static scenery; animation is driven by real gameplay events or state changes.
 - No legacy three-quarter sprite in an accepted benchmark screenshot.
 - No portfolio navigation inside the benchmark frame.
 
@@ -29,45 +48,54 @@ Purpose: remove specification ambiguity before renderer work.
 
 Deliverables:
 
-- revised art bible;
-- revised phase plan;
-- authoritative target recorded in the asset manifest;
+- revised art bible that marks the target visual-only;
+- revised phase plan that freezes existing tower-defense mechanics;
+- visual target recorded with visual-only status in the asset manifest;
 - complete legacy asset inventory marked reference-only or candidate;
-- deterministic benchmark requirements;
-- baseline screenshot of the current implementation.
+- deterministic benchmark requirements based on a real tower-defense moment;
+- baseline screenshots and behavior notes for the current implementation.
 
 Exit criteria:
 
-- the small-hex overhead target is the only authoritative visual reference;
-- three-quarter and invisible-grid rules are explicitly superseded;
-- required Phase 1 atlas families are recorded without pretending that missing
-  assets are production-ready.
+- the small-hex overhead image is the only authoritative visual reference;
+- the existing real-time tower-defense rules are explicitly authoritative;
+- no tactical turn, ally movement, AP, action-command, or End Turn requirement
+  remains in the plan or manifest;
+- three-quarter and invisible-grid visual rules are explicitly superseded;
+- required Phase 1 atlas families are recorded without treating missing assets
+  as production-ready.
 
-## Phase 1 - deterministic benchmark foundation
+## Phase 1 - renderer and benchmark foundation
 
-Purpose: prove the new camera, field density, framing, and tactical composition
-before migrating complete gameplay.
+Purpose: prove camera, field density, framing, map composition, and integration
+with the existing runtime before producing the complete art set.
 
-### Phase 1A - game shell and geometry
+This phase is a visual-rendering migration. It must not create a replacement game
+loop, new command system, or alternate unit simulation.
+
+### Phase 1A - game shell and visual geometry
 
 - Render one fixed 1200 x 675 logical scene.
 - Present it through a full-screen game shell.
 - Preserve 16:9 with uniform scale and letterboxing.
-- Use one shared pointy-top hex geometry configuration.
+- Use one shared pointy-top hex geometry configuration for rendering, placement,
+  environmental adjacency, and automatic enemy routing.
 - Show approximately 37 x 15 cells at radius 21-22.
-- Snap grid, camera, pivots, and selection overlays to logical pixels.
-- Confirm pointer-to-cell mapping at all six borders and at scaled sizes.
+- Snap grid, camera, pivots, placement previews, and feedback overlays to logical
+  pixels.
+- Preserve the current timing, resources, waves, attacks, damage, and objective.
 
 Acceptance:
 
 - circles remain circular and hexes retain their intended aspect ratio;
 - no horizontal or vertical distortion is visible;
-- all six neighbor selections agree with pathfinding geometry;
-- a saved screenshot exactly reproduces the same framing on every run.
+- placement hit testing and automatic routes agree with rendered geometry;
+- a saved screenshot reproduces the same framing on every run;
+- the tower-defense loop behaves exactly as it did before the visual migration.
 
-### Phase 1B - authored benchmark state
+### Phase 1B - authored tower-defense benchmark state
 
-Create one fixed review map, not a random map:
+Create one fixed review map and one deterministic gameplay snapshot:
 
 - connected meadow and forest territory on the left;
 - connected industrial territory on the right;
@@ -75,45 +103,55 @@ Create one fixed review map, not a random map:
 - one merged lake;
 - a road or root network crossing explicit shared edges;
 - a cable or drain network connected to industrial modules;
-- one selected ally, at least two additional allies, and several enemies;
-- legal movement cells and one attack or restore relationship;
-- dense edge areas and deliberately quiet traversable cells.
+- the protected house with representative integrity;
+- several stationary defenders in legal placed positions;
+- several enemies at different points of the automatic wave route;
+- representative sunlight, wave number, score, corruption, and attack feedback;
+- deliberately quiet buildable cells among denser environmental edges.
 
-The benchmark state is data, not a painted full-scene image. It must be possible
-to hide units, overlays, or a territory layer independently.
+The benchmark state is data, not a painted full-scene image. Terrain, structures,
+defenders, enemies, feedback, and HUD layers can be hidden independently. It has
+no selected ally, movement command, tactical action bar, phase, AP, or End Turn
+state.
 
 ### Phase 1C - temporary overhead renderer
 
+- Add a renderer adapter that reads the existing gameplay state without owning
+  or replacing it.
 - Replace smooth gradients with palette-stepped pixel materials.
 - Render connected territory masks before the mesh.
 - Remove internal shorelines from merged water.
 - Remove repeated internal silhouettes from merged forest.
-- Render roads, roots, cables, and drains from six-edge metadata.
-- Use compact overhead placeholders only where final Phase 1 atlases are absent.
+- Render roads, roots, cables, drains, and walls from six-edge metadata.
+- Use compact overhead placeholders only where final atlases are absent.
 - Exclude perspective trees, ponds, house, facilities, defenders, and enemies.
-- Render tactical overlays after the world and before the HUD.
+- Render placement, route, targeting, attack, damage, and corruption feedback
+  after the world and before the existing HUD.
 
 Acceptance:
 
-- the world reads as connected even when units are hidden;
+- the world reads as connected when entities are hidden;
 - the mesh remains visible without dominating every cell;
-- the nature/industry split matches the target composition;
+- the nature/industry composition matches the visual target;
 - no pasted perspective object or broad oval shadow remains;
-- no passive animation is running.
+- no passive decorative animation is running;
+- defenders remain stationary, enemies continue their automatic wave movement,
+  and automatic attacks still resolve through the original mechanics.
 
 ### Phase 1D - asset review pack
 
 Required new atlas families:
 
 1. terrain cells and connected-region edge masks;
-2. mesh, selection, movement, range, and target overlays;
+2. mesh, placement, range, route, target, and damage feedback;
 3. overhead forest and nature-object components;
 4. overhead water interiors, shores, and edge attachments;
 5. industrial ground and datacenter modules;
 6. six-edge road, cable, root, drain, and wall networks;
-7. overhead allies with six-direction action states;
-8. overhead enemies with six-direction action states;
-9. corruption, rubble, damage, and reclamation states.
+7. stationary overhead defenders with automatic attack states;
+8. overhead enemies with automatic movement, attack, damage, and death states;
+9. corruption, rubble, construction, and environmental-recovery states;
+10. protected-house integrity and damage states.
 
 Each family ships:
 
@@ -127,58 +165,62 @@ Each family ships:
 
 Phase 1 exit criteria:
 
-- one running scene is recognizably equivalent to the authoritative target;
+- one running tower-defense scene visually matches the target direction;
 - camera, scale, mesh contrast, and composition are approved;
 - every visible primary object uses strict-overhead art or an explicitly marked
   temporary overhead placeholder;
 - screenshot output is deterministic;
-- the full visual pack has been supplied for review.
+- the full visual pack is supplied for review;
+- existing tower-defense behavior has regression coverage and remains unchanged.
 
 ## Phase 2 - connected terrain and map representation
 
 Purpose: replace authored visual placement with authoritative cell and edge state
-without changing the approved benchmark appearance.
+without changing the approved appearance or tower-defense loop.
 
-Cell state includes:
+Cell presentation state includes:
 
 - ground material;
 - habitat;
 - nature, industry, or contested territory;
-- corruption and recovery amount;
-- structure footprint;
-- occupant;
+- corruption and environmental-recovery amount;
+- buildability and automatic-route membership;
+- structure and stationary-defender footprints;
 - deterministic variation seed.
 
-Shared-edge state includes:
+Shared-edge presentation state includes:
 
 - road;
 - cable;
 - root;
 - drain;
 - wall;
-- temporary action crossing.
+- automatic enemy-route connection.
 
 Work:
 
 - connected-component discovery for forest, water, and industrial territory;
 - neighbor-mask selection for exterior edges;
-- multi-cell footprints and occupancy validation;
+- multi-cell footprints and placement validation;
 - deterministic seeded terrain variants;
-- renderer layers driven entirely from world state;
+- automatic route visualization derived from existing route state;
+- renderer layers driven entirely from map and gameplay state;
 - debug toggles for cells, components, edges, footprints, and pivots.
 
 Exit criteria:
 
-- adding or removing a cell updates only relevant external boundaries;
+- adding or removing a terrain cell updates only relevant external boundaries;
 - merged components contain no false internal shores or object seams;
-- all connectors join at stable edge anchors;
+- all visual connectors join at stable edge anchors;
+- defender placement and automatic enemy routing still follow existing rules;
 - benchmark appearance remains approved after model migration.
 
 ## Phase 3 - datacenter construction and environmental response
 
-Purpose: make industry visibly built into the environment.
+Purpose: make existing industry and corruption visibly belong to the environment.
+This is a presentation/state-model phase, not a new construction command system.
 
-Construction sequence:
+Visual construction sequence:
 
 1. vegetation clearing and survey marks;
 2. excavation and removed soil;
@@ -191,98 +233,96 @@ Construction sequence:
 Environmental response:
 
 - corruption replaces ground state rather than tinting an overlay;
-- roads conduct damage through connected edges;
-- drains can pollute a lake at a connected exterior edge;
+- roads can visually conduct existing damage/corruption through connected edges;
+- drains can show lake pollution at a connected exterior edge;
 - forests lose canopy along affected cells;
 - rocks and rubble collect local residue;
-- destroyed structures leave damaged ground until restored.
+- destroyed structures leave damaged ground until existing gameplay recovers it.
 
 Exit criteria:
 
-- the datacenter is a connected system rather than objects over grass;
+- the datacenter reads as a connected system rather than objects over grass;
 - every active compound shows compute, cooling, and power;
-- construction, damage, and destruction alter occupied cells and shared edges;
-- hiding structures still reveals their physical history in the ground.
+- existing construction, damage, corruption, and destruction events alter
+  occupied cells and shared edges visibly;
+- hiding structures still reveals their physical history in the ground;
+- no new player action, resource, timing rule, or victory condition is added.
 
-## Phase 4 - tactical allies, enemies, and turns
+## Phase 4 - integrate the final art with existing tower defense
 
-Purpose: replace continuous tower-defense presentation with six-direction
-tactical actions.
-
-Turn states:
-
-- player phase;
-- enemy phase;
-- resolution phase.
-
-Player commands:
-
-- select;
-- move to one of six neighbors or a legal connected route;
-- attack across a legal border or range pattern;
-- restore a legal neighboring or connected target;
-- end turn.
-
-Rules:
-
-- logical occupancy changes only between cells;
-- optional movement tween travels only between adjacent centers;
-- facing resolves to one of six directions;
-- attacks and restoration expose their edge or range relationship;
-- event animation completes before the next state is committed;
-- idle units remain static.
-
-Exit criteria:
-
-- every movement step can be expressed as a sequence of six-neighbor edges;
-- illegal diagonal or free-angle moves cannot be issued;
-- allies and enemies are distinguishable at 100% logical scale;
-- actions remain readable without decorative particles or constant motion.
-
-## Phase 5 - procedural maps, performance, and release review
-
-Purpose: generalize the approved vertical slice without diluting its composition.
+Purpose: replace temporary visual placeholders while preserving real-time play.
 
 Work:
 
-- deterministic seeded map generation;
-- macro territory composition before local detail;
-- connected-component size and shoreline constraints;
-- authored encounter templates;
-- accessibility and contrast review;
-- desktop and mobile input validation;
-- render-layer caching and performance profiling;
-- deterministic screenshot regression suite.
+- render each placed defender as a stationary overhead entity;
+- map existing automatic targeting and attacks to restrained event animations;
+- render enemies moving automatically along their existing wave routes;
+- map enemy attacks, damage, and death to overhead animation states;
+- preserve sunlight costs and income, house integrity, wave scheduling, score,
+  corruption, target selection, and win/loss behavior;
+- keep all feedback readable without decorative particles or constant motion;
+- remove every temporary turn/phase/action-control implementation if one exists.
 
 Exit criteria:
 
-- generated maps obey the same connected-territory and six-edge rules;
+- defenders cannot be commanded to move; they attack automatically;
+- enemies move and attack automatically during continuous waves;
+- placement spends sunlight according to the existing rules;
+- house integrity, corruption, score, wave progression, and game-over behavior
+  match the pre-redesign game;
+- no selectable/movable ally, action point, turn, phase, move/attack/restore
+  command, or End Turn control exists;
+- all entities remain identifiable at 100% logical scale.
+
+## Phase 5 - procedural maps, performance, and release review
+
+Purpose: generalize the approved visual slice without changing the game design.
+
+Work:
+
+- deterministic seeded visual map generation compatible with existing gameplay;
+- macro territory composition before local detail;
+- connected-component size and shoreline constraints;
+- route validity and defender-placement validation;
+- accessibility and contrast review;
+- desktop and mobile input validation;
+- render-layer caching and performance profiling;
+- deterministic screenshot and gameplay-regression suites.
+
+Exit criteria:
+
+- generated maps obey connected-territory and six-edge presentation rules;
+- every generated enemy route is valid for the existing automatic movement;
 - default framing remains readable on supported aspect ratios;
 - performance meets the agreed frame budget;
-- the final review pack contains no legacy perspective runtime art.
+- the final review pack contains no legacy perspective runtime art;
+- all original tower-defense mechanics pass regression testing.
 
 ## Implementation order inside the renderer
 
-1. geometry and camera;
-2. cell and edge data;
-3. grass and territory materials;
-4. connected external edges;
-5. mesh;
-6. networks and footprint responses;
-7. objects and structures;
-8. units;
-9. tactical overlays;
-10. action effects;
-11. HUD.
+1. read-only adapter for existing gameplay state;
+2. geometry and camera;
+3. cell and edge presentation data;
+4. grass and territory materials;
+5. connected external edges;
+6. mesh;
+7. networks and footprint responses;
+8. house, objects, and structures;
+9. stationary defenders and automatically moving enemies;
+10. placement, target, route, attack, damage, and corruption feedback;
+11. existing HUD.
 
-Do not begin with particles, ambient animation, or random decoration. They cannot
-validate the new world representation.
+Do not begin with particles, ambient animation, or random decoration. Do not
+build a second gameplay loop inside the renderer.
 
 ## Legacy asset policy
 
 Existing perspective assets remain in the repository and manifest so their
 identity, palette, and historical usage are not lost. Their status is
-reference-only. They must not be:
+**transitional runtime legacy** while the restored game still loads them, and
+**reference-only** after an overhead replacement is integrated. They are
+prohibited in the accepted final overhead release, but must not be removed or
+misclassified before replacement assets exist. They must not be:
 
 - resized or cropped to simulate an overhead view;
 - rotated freely to create directional variants;
@@ -298,22 +338,28 @@ Each phase provides:
 
 - exact code and asset manifest;
 - fixed 1200 x 675 benchmark screenshot;
-- target-versus-current comparison;
+- target-versus-current visual comparison;
 - all changed visual PNG files;
 - native and gameplay-scale contact sheets;
 - cell, edge, footprint, and pivot debug screenshot when relevant;
 - asset validator result;
-- behavioral test result;
+- existing-mechanics regression result;
 - explicit remaining gaps.
 
 ## Final vertical-slice acceptance
 
-- strict overhead presentation matches the target;
+- strict overhead presentation matches the visual-only target;
 - approximately 37 x 15 visible hexes retain correct proportions;
 - forests, lakes, and industrial territory merge by adjacency;
-- datacenter construction physically changes the environment;
-- allies and enemies act only through the hex topology;
-- roads, roots, cables, drains, and walls connect through shared edges;
-- tactical feedback is clearer than the mesh;
-- animation happens only because an action or state transition occurs;
+- datacenter growth physically changes the environment;
+- defenders are stationary and attack automatically;
+- enemies move and attack automatically through real-time waves;
+- sunlight, house integrity, corruption, score, waves, and win/loss behavior are
+  preserved;
+- roads, roots, cables, drains, walls, and automatic routes connect through
+  shared edges;
+- gameplay feedback is clearer than the mesh;
+- animation happens only because an existing gameplay event or state transition
+  occurs;
+- no tactical turn system or player-controlled unit movement exists;
 - all accepted visual files are available separately for review.

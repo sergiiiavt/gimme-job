@@ -5,12 +5,9 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("ships Fight AI slop as a lazy, local-only public game", async () => {
-  const [gameSource, worldSource, tacticalGameSource, tacticalRendererSource, tacticalWorldSource, publicSource, navigationSource, stylesSource] = await Promise.all([
+  const [gameSource, worldSource, publicSource, navigationSource, stylesSource] = await Promise.all([
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
-    readFile(projectFile("app/rewild-tactical-game.tsx"), "utf8"),
-    readFile(projectFile("app/rewild-tactical-renderer.ts"), "utf8"),
-    readFile(projectFile("app/rewild-tactical-world.ts"), "utf8"),
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
@@ -26,24 +23,6 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /const isFullScreenGame = section === "rewild" && subsection === "all"/);
   assert.match(publicSource, /!isFullScreenGame && \(/);
   assert.match(publicSource, /Exit game and return to the site/);
-  assert.match(stylesSource, /\.rwt-shell \{[^}]*grid-template-rows:/);
-  assert.match(stylesSource, /\.rwt-stage canvas \{[^}]*object-fit: contain;/);
-
-  assert.match(tacticalWorldSource, /export const TACTICAL_COLS = 37;/);
-  assert.match(tacticalWorldSource, /export const TACTICAL_ROWS = 15;/);
-  assert.match(tacticalWorldSource, /export const TACTICAL_SIZE = 21;/);
-  assert.match(tacticalWorldSource, /interface TacticalCellState/);
-  assert.match(tacticalWorldSource, /interface TacticalEdgeState/);
-  assert.match(tacticalWorldSource, /export function deriveTacticalComponents/);
-  assert.match(tacticalWorldSource, /export function createTacticalBenchmark/);
-  assert.match(tacticalWorldSource, /export function endTacticalTurn/);
-  assert.match(tacticalRendererSource, /export function renderTacticalWorld/);
-  assert.match(tacticalRendererSource, /function drawEdges/);
-  assert.match(tacticalRendererSource, /function drawMesh/);
-  assert.match(tacticalGameSource, /strict overhead \$\{TACTICAL_COLS\} by \$\{TACTICAL_ROWS\}/);
-  assert.match(tacticalGameSource, /End turn/);
-  assert.match(gameSource, /<RewildTacticalGame/);
-
   assert.match(worldSource, /export const HEX_COLS = 30;/);
   assert.match(worldSource, /export const HEX_ROWS = 14;/);
   assert.match(worldSource, /from "\.\/rewild-hex-grid\.ts"/);
@@ -82,6 +61,12 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.doesNotMatch(worldSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
 
   assert.match(gameSource, /from "\.\/rewild-hex-world"/);
+  assert.match(gameSource, /export default function RewildGame/);
+  assert.doesNotMatch(gameSource, /RewildTacticalGame|End turn|PLAYER PHASE/);
+  assert.match(gameSource, /const scale = Math\.min\(bounds\.width \/ CANVAS_WIDTH, bounds\.height \/ CANVAS_HEIGHT\)/);
+  assert.ok((gameSource.match(/\}, \[view\]\);/g) ?? []).length >= 3, "Canvas and keyboard effects must rebind when returning from the field guide.");
+  assert.match(gameSource, /if \(view !== "all"\) return;/);
+  assert.match(gameSource, /Defenders stay planted and attack automatically/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(gameSource, /function drawRoad/);
   assert.match(gameSource, /function drawBiomeRegions/);
@@ -111,7 +96,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /const polygon = hexPolygon\(state\.cursor/);
   assert.doesNotMatch(gameSource, /strokeRect\(state\.cursor/);
   assert.match(gameSource, /const hex = pixelToHex\(worldX, worldY\)/);
-  assert.match(gameSource, /Arrows plus Q\/E move through six neighbors/);
+  assert.match(gameSource, /Arrows plus Q\/E move the placement cursor across six neighboring cells/);
   assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
   assert.match(gameSource, /className=\{`rw-inspector/);
