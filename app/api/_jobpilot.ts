@@ -39,7 +39,7 @@ const DEFAULT_PROFILE = {
   ],
   education: ["Master's Degree, Computer Science - National Technical University of Ukraine, 2008 - 2014", "ISTQB Certified Software Tester - Foundation Level"],
   links: ["https://www.linkedin.com/in/serhii-yavtushkevych/"],
-  contact: { email: "", phone: "", location: "" },
+  contact: { email: "sergii.iavt@gmail.com", phone: "", location: "Kyiv, Ukraine" },
 };
 
 const DEFAULT_SOURCES = {
@@ -576,6 +576,14 @@ Truth boundary:
 - Use only facts explicitly present in CANDIDATE_PROFILE.
 - Never invent employers, dates, responsibilities, achievements, metrics, certifications, skills, or education.
 - Reorder, shorten, and rephrase factual material to emphasize relevance.
+
+Resume-editing rules:
+- CANDIDATE_PROFILE.experience is the candidate's real, existing resume content, not a template to rewrite.
+- Make minimal, targeted edits only: reorder and emphasize the bullets and skills most relevant to this
+  specific vacancy, and lightly adjust the summary framing toward the role.
+- Do not restructure sections, invent new bullets, or rewrite achievements in a different voice.
+- Keep the original wording of each achievement wherever reasonably possible.
+- The output must read as the candidate's own resume, only tuned for this vacancy — not a generic rewrite.
 
 Analysis rules:
 - Distinguish required skills from nice-to-haves.
