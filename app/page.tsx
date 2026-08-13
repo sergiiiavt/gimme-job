@@ -211,6 +211,10 @@ function jobDate(job: Job) {
   return new Date(job.postedAt ?? job.discoveredAt);
 }
 
+function hasReservation(job: Job) {
+  return /бронюванн/i.test(job.description);
+}
+
 function formatDate(value: string | null) {
   if (!value) return "Unknown";
   return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
@@ -486,7 +490,7 @@ export function WorkspaceApp() {
                   onClick={(event) => event.stopPropagation()}
                 />}
                 <div className="job-card-body">
-                  <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
+                  <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{hasReservation(job) && <span className="reservation">Бронювання</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </div>
               </div>)}
@@ -542,7 +546,7 @@ function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; 
       <a href={job.url} target="_blank" rel="noreferrer"><Icon name="external"/>View vacancy</a>
       {job.applyUrl && job.applyUrl !== job.url && <a className="secondary-link" href={job.applyUrl} target="_blank" rel="noreferrer">Apply link</a>}
     </div>
-    <div className="job-summary-tags">{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+    <div className="job-summary-tags">{hasReservation(job) && <span className="reservation">Бронювання</span>}{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
 
     {authenticated && <section className="tracking-box">
       <div><label htmlFor={`status-${job.id}`}>Pipeline status</label><select id={`status-${job.id}`} value={job.status} disabled={disabled} onChange={(event) => onChange({ status: event.target.value as JobStatus })}>{STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></div>
