@@ -5,9 +5,12 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("ships Fight AI slop as a lazy, local-only public game", async () => {
-  const [gameSource, worldSource, publicSource, navigationSource, stylesSource] = await Promise.all([
+  const [gameSource, worldSource, tacticalGameSource, tacticalRendererSource, tacticalWorldSource, publicSource, navigationSource, stylesSource] = await Promise.all([
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
+    readFile(projectFile("app/rewild-tactical-game.tsx"), "utf8"),
+    readFile(projectFile("app/rewild-tactical-renderer.ts"), "utf8"),
+    readFile(projectFile("app/rewild-tactical-world.ts"), "utf8"),
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
@@ -20,6 +23,26 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: contain;/);
   assert.match(stylesSource, /\.kb-main-game \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
   assert.match(stylesSource, /image-rendering: pixelated/);
+  assert.match(publicSource, /const isFullScreenGame = section === "rewild" && subsection === "all"/);
+  assert.match(publicSource, /!isFullScreenGame && \(/);
+  assert.match(publicSource, /Exit game and return to the site/);
+  assert.match(stylesSource, /\.rwt-shell \{[^}]*grid-template-rows:/);
+  assert.match(stylesSource, /\.rwt-stage canvas \{[^}]*object-fit: contain;/);
+
+  assert.match(tacticalWorldSource, /export const TACTICAL_COLS = 37;/);
+  assert.match(tacticalWorldSource, /export const TACTICAL_ROWS = 15;/);
+  assert.match(tacticalWorldSource, /export const TACTICAL_SIZE = 21;/);
+  assert.match(tacticalWorldSource, /interface TacticalCellState/);
+  assert.match(tacticalWorldSource, /interface TacticalEdgeState/);
+  assert.match(tacticalWorldSource, /export function deriveTacticalComponents/);
+  assert.match(tacticalWorldSource, /export function createTacticalBenchmark/);
+  assert.match(tacticalWorldSource, /export function endTacticalTurn/);
+  assert.match(tacticalRendererSource, /export function renderTacticalWorld/);
+  assert.match(tacticalRendererSource, /function drawEdges/);
+  assert.match(tacticalRendererSource, /function drawMesh/);
+  assert.match(tacticalGameSource, /strict overhead \$\{TACTICAL_COLS\} by \$\{TACTICAL_ROWS\}/);
+  assert.match(tacticalGameSource, /End turn/);
+  assert.match(gameSource, /<RewildTacticalGame/);
 
   assert.match(worldSource, /export const HEX_COLS = 30;/);
   assert.match(worldSource, /export const HEX_ROWS = 14;/);

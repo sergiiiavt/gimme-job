@@ -1,41 +1,366 @@
 {
-  "schemaVersion": 1,
-  "referenceCanvas": { "width": 1200, "height": 675 },
-  "sourceDirectory": "public/rewild",
+  "schemaVersion": 2,
+  "referenceCanvas": {
+    "width": 1200,
+    "height": 675,
+    "aspectRatio": "16:9",
+    "scaleMode": "uniform-nearest-neighbor-letterbox",
+    "pixelSnap": true
+  },
+  "authoritativeReference": "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png",
   "references": [
+    "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png",
     "docs/rewild/references/approved-world-direction.png",
     "docs/rewild/references/baseline-before-vertical-slice.png",
     "docs/rewild/references/vertical-slice-target-v1.png"
   ],
+  "referenceStatus": {
+    "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png": "authoritative",
+    "docs/rewild/references/approved-world-direction.png": "superseded-mood-reference",
+    "docs/rewild/references/baseline-before-vertical-slice.png": "historical-baseline",
+    "docs/rewild/references/vertical-slice-target-v1.png": "superseded-composition-reference"
+  },
+  "hexLayout": {
+    "orientation": "pointy-top",
+    "visibility": "always-visible-subordinate-mesh",
+    "reviewColumnsApprox": 37,
+    "reviewRowsApprox": 15,
+    "radiusLogicalPixels": {
+      "minimum": 21,
+      "maximum": 22
+    },
+    "neighborDirections": 6,
+    "freeAngleMovement": false,
+    "edgeAnchoredNetworks": [
+      "road",
+      "cable",
+      "root",
+      "drain",
+      "wall",
+      "action"
+    ]
+  },
+  "visualContract": {
+    "projection": "strict-overhead-orthographic",
+    "gameOnlyBenchmarkFrame": true,
+    "connectedTerritories": true,
+    "connectedTerrainFamilies": [
+      "forest",
+      "water",
+      "industry",
+      "corruption",
+      "reclamation"
+    ],
+    "animationPolicy": "action-and-state-transition-only",
+    "forbiddenPresentation": [
+      "three-quarter-runtime-sprites",
+      "hidden-tactical-grid",
+      "non-uniform-scaling",
+      "smooth-vector-terrain",
+      "large-oval-shadows",
+      "perpetual-idle-motion",
+      "decorative-particle-noise"
+    ]
+  },
+  "benchmarkScene": {
+    "id": "overhead-hex-target-v1",
+    "deterministic": true,
+    "procedural": false,
+    "requiredComposition": [
+      "connected-nature-left",
+      "connected-industry-right",
+      "merged-forest",
+      "merged-lake",
+      "six-edge-natural-network",
+      "six-edge-industrial-network",
+      "selected-ally",
+      "additional-allies",
+      "multiple-enemies",
+      "movement-and-attack-or-restore-overlay",
+      "quiet-traversable-cells"
+    ]
+  },
+  "sourceDirectory": "public/rewild",
   "runtimeAssets": [
-    "terrain-shrub-1.png", "terrain-shrub-2.png",
-    "terrain-flowers-1.png", "terrain-flowers-2.png",
-    "terrain-rock-1.png", "terrain-rock-2.png",
-    "obj-house-v2.png",
-    "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png",
-    "obj-elderoak-p1.png", "obj-elderoak-p2.png",
-    "obj-server.png", "obj-mainframe.png",
-    "obj-swarm.png", "obj-sludge.png", "obj-popup.png", "obj-fragment.png",
-    "decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png",
-    "production/datacenter-modules-v1.png",
-    "production/facility-ground-states-v1.png",
-    "production/world-connections-v1.png",
-    "production/tree-response-states-v1.png",
-    "production/pond-response-states-v1.png"
+    "decal-tuft.png",
+    "decal-flower.png",
+    "decal-pebble.png",
+    "decal-leaf.png",
+    "decal-mushroom.png"
   ],
   "assetFamilies": {
-    "environment": ["terrain-shrub-1.png", "terrain-shrub-2.png", "terrain-flowers-1.png", "terrain-flowers-2.png", "terrain-rock-1.png", "terrain-rock-2.png"],
-    "houseAndDefenders": ["obj-house-v2.png", "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png", "obj-elderoak-p1.png", "obj-elderoak-p2.png"],
-    "hostileAndInfrastructure": ["obj-server.png", "obj-mainframe.png", "obj-swarm.png", "obj-sludge.png", "obj-popup.png", "obj-fragment.png"],
-    "groundDecals": ["decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png"],
-    "productionAtlases": ["production/datacenter-modules-v1.png", "production/facility-ground-states-v1.png", "production/world-connections-v1.png", "production/tree-response-states-v1.png", "production/pond-response-states-v1.png"]
+    "candidateGroundDecals": [
+      "decal-tuft.png",
+      "decal-flower.png",
+      "decal-pebble.png",
+      "decal-leaf.png",
+      "decal-mushroom.png"
+    ]
   },
-  "productionAtlases": [
-    { "image": "production/datacenter-modules-v1.png", "metadata": "production/datacenter-modules-v1.json", "expectedFrames": 16, "columns": 4, "rows": 4 },
-    { "image": "production/facility-ground-states-v1.png", "metadata": "production/facility-ground-states-v1.json", "expectedFrames": 12, "columns": 4, "rows": 3 },
-    { "image": "production/world-connections-v1.png", "metadata": "production/world-connections-v1.json", "expectedFrames": 24, "columns": 6, "rows": 4 },
-    { "image": "production/tree-response-states-v1.png", "metadata": "production/tree-response-states-v1.json", "expectedFrames": 10, "columns": 5, "rows": 2 },
-    { "image": "production/pond-response-states-v1.png", "metadata": "production/pond-response-states-v1.json", "expectedFrames": 8, "columns": 4, "rows": 2 }
+  "assetLifecycle": {
+    "approvedRuntime": [],
+    "candidateRuntime": [
+      "decal-tuft.png",
+      "decal-flower.png",
+      "decal-pebble.png",
+      "decal-leaf.png",
+      "decal-mushroom.png"
+    ],
+    "referenceOnlyLegacy": [
+      "terrain-shrub-1.png",
+      "terrain-shrub-2.png",
+      "terrain-flowers-1.png",
+      "terrain-flowers-2.png",
+      "terrain-rock-1.png",
+      "terrain-rock-2.png",
+      "obj-house-v2.png",
+      "obj-sunbloom.png",
+      "obj-thornbramble.png",
+      "obj-vinewhip.png",
+      "obj-sporecap.png",
+      "obj-rootreclaimer.png",
+      "obj-elderoak-p1.png",
+      "obj-elderoak-p2.png",
+      "obj-server.png",
+      "obj-mainframe.png",
+      "obj-swarm.png",
+      "obj-sludge.png",
+      "obj-popup.png",
+      "obj-fragment.png",
+      "production/datacenter-modules-v1.png",
+      "production/facility-ground-states-v1.png",
+      "production/world-connections-v1.png",
+      "production/tree-response-states-v1.png",
+      "production/pond-response-states-v1.png"
+    ]
+  },
+  "legacyAssetFamilies": {
+    "perspectiveEnvironment": [
+      "terrain-shrub-1.png",
+      "terrain-shrub-2.png",
+      "terrain-flowers-1.png",
+      "terrain-flowers-2.png",
+      "terrain-rock-1.png",
+      "terrain-rock-2.png"
+    ],
+    "perspectiveHouseAndDefenders": [
+      "obj-house-v2.png",
+      "obj-sunbloom.png",
+      "obj-thornbramble.png",
+      "obj-vinewhip.png",
+      "obj-sporecap.png",
+      "obj-rootreclaimer.png",
+      "obj-elderoak-p1.png",
+      "obj-elderoak-p2.png"
+    ],
+    "perspectiveHostileAndInfrastructure": [
+      "obj-server.png",
+      "obj-mainframe.png",
+      "obj-swarm.png",
+      "obj-sludge.png",
+      "obj-popup.png",
+      "obj-fragment.png"
+    ],
+    "perspectiveProductionAtlases": [
+      "production/datacenter-modules-v1.png",
+      "production/facility-ground-states-v1.png",
+      "production/world-connections-v1.png",
+      "production/tree-response-states-v1.png",
+      "production/pond-response-states-v1.png"
+    ]
+  },
+  "requiredPhase1AtlasFamilies": [
+    {
+      "id": "overhead-terrain-connected",
+      "image": "overhead/terrain-connected-v1.png",
+      "metadata": "overhead/terrain-connected-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "grass-variants",
+        "territory-materials",
+        "connected-region-exterior-edges"
+      ]
+    },
+    {
+      "id": "overhead-tactical-overlays",
+      "image": "overhead/tactical-overlays-v1.png",
+      "metadata": "overhead/tactical-overlays-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "visible-mesh",
+        "selection",
+        "legal-move",
+        "attack-range",
+        "restore-range",
+        "target"
+      ]
+    },
+    {
+      "id": "overhead-forest-nature",
+      "image": "overhead/forest-nature-v1.png",
+      "metadata": "overhead/forest-nature-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "single-cell-tree",
+        "merged-canopy-interior",
+        "merged-canopy-exterior",
+        "rocks",
+        "low-nature-objects"
+      ]
+    },
+    {
+      "id": "overhead-water-connected",
+      "image": "overhead/water-connected-v1.png",
+      "metadata": "overhead/water-connected-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "water-interior",
+        "shore-by-edge-mask",
+        "reeds",
+        "rocks",
+        "polluted-inlet"
+      ]
+    },
+    {
+      "id": "overhead-industry-datacenter",
+      "image": "overhead/industry-datacenter-v1.png",
+      "metadata": "overhead/industry-datacenter-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "industrial-ground",
+        "compute",
+        "cooling",
+        "power",
+        "access",
+        "damage",
+        "rubble"
+      ]
+    },
+    {
+      "id": "overhead-edge-networks",
+      "image": "overhead/edge-networks-v1.png",
+      "metadata": "overhead/edge-networks-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "road",
+        "cable",
+        "root",
+        "drain",
+        "wall",
+        "terminators",
+        "junctions",
+        "broken-states"
+      ]
+    },
+    {
+      "id": "overhead-allies",
+      "image": "overhead/allies-v1.png",
+      "metadata": "overhead/allies-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "six-direction-idle",
+        "move",
+        "attack",
+        "restore",
+        "damage"
+      ]
+    },
+    {
+      "id": "overhead-enemies",
+      "image": "overhead/enemies-v1.png",
+      "metadata": "overhead/enemies-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "six-direction-idle",
+        "move",
+        "attack",
+        "damage",
+        "death"
+      ]
+    },
+    {
+      "id": "overhead-world-state-transitions",
+      "image": "overhead/world-state-transitions-v1.png",
+      "metadata": "overhead/world-state-transitions-v1.json",
+      "status": "required-not-produced",
+      "contents": [
+        "construction",
+        "corruption",
+        "rubble",
+        "reclamation"
+      ]
+    }
+  ],
+  "phase1AtlasMetadataContract": {
+    "requiredFrameFields": [
+      "name",
+      "x",
+      "y",
+      "width",
+      "height",
+      "pivotX",
+      "pivotY",
+      "footprint",
+      "facing",
+      "state"
+    ],
+    "allowedFacingValues": [
+      "none",
+      "all-six",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "contactSheetsRequired": [
+      "native-scale",
+      "gameplay-scale"
+    ]
+  },
+  "productionAtlases": [],
+  "legacyProductionAtlases": [
+    {
+      "image": "production/datacenter-modules-v1.png",
+      "metadata": "production/datacenter-modules-v1.json",
+      "expectedFrames": 16,
+      "columns": 4,
+      "rows": 4,
+      "status": "reference-only-three-quarter"
+    },
+    {
+      "image": "production/facility-ground-states-v1.png",
+      "metadata": "production/facility-ground-states-v1.json",
+      "expectedFrames": 12,
+      "columns": 4,
+      "rows": 3,
+      "status": "reference-only-three-quarter"
+    },
+    {
+      "image": "production/world-connections-v1.png",
+      "metadata": "production/world-connections-v1.json",
+      "expectedFrames": 24,
+      "columns": 6,
+      "rows": 4,
+      "status": "reference-only-three-quarter"
+    },
+    {
+      "image": "production/tree-response-states-v1.png",
+      "metadata": "production/tree-response-states-v1.json",
+      "expectedFrames": 10,
+      "columns": 5,
+      "rows": 2,
+      "status": "reference-only-three-quarter"
+    },
+    {
+      "image": "production/pond-response-states-v1.png",
+      "metadata": "production/pond-response-states-v1.json",
+      "expectedFrames": 8,
+      "columns": 4,
+      "rows": 2,
+      "status": "reference-only-three-quarter"
+    }
   ],
   "reviewArtifacts": [
     "docs/rewild/reviews/gate-b/native-contact-sheet.png",
@@ -71,16 +396,57 @@
     "extension": ".png",
     "maximumSourceEdge": 2048,
     "runtimeRequiresAlpha": true,
-    "microDecalSize": { "width": 32, "height": 32 },
-    "forbiddenRuntimeAssets": ["obj-house.png", "terrain-meadow.png"]
+    "microDecalSize": {
+      "width": 32,
+      "height": 32
+    },
+    "strictOverhead": true,
+    "visibleMesh": true,
+    "uniformScale": true,
+    "nearestNeighbor": true,
+    "wholePixelPivots": true,
+    "allowPerspectiveRuntimeAssets": false,
+    "allowFreeAngleRasterRotation": false,
+    "allowPassiveIdleAnimation": false,
+    "forbiddenRuntimeAssets": [
+      "obj-house.png",
+      "terrain-meadow.png",
+      "terrain-shrub-1.png",
+      "terrain-shrub-2.png",
+      "terrain-flowers-1.png",
+      "terrain-flowers-2.png",
+      "terrain-rock-1.png",
+      "terrain-rock-2.png",
+      "obj-house-v2.png",
+      "obj-sunbloom.png",
+      "obj-thornbramble.png",
+      "obj-vinewhip.png",
+      "obj-sporecap.png",
+      "obj-rootreclaimer.png",
+      "obj-elderoak-p1.png",
+      "obj-elderoak-p2.png",
+      "obj-server.png",
+      "obj-mainframe.png",
+      "obj-swarm.png",
+      "obj-sludge.png",
+      "obj-popup.png",
+      "obj-fragment.png",
+      "production/datacenter-modules-v1.png",
+      "production/facility-ground-states-v1.png",
+      "production/world-connections-v1.png",
+      "production/tree-response-states-v1.png",
+      "production/pond-response-states-v1.png"
+    ]
   },
   "verticalSliceProductionQueue": [
-    "datacenter-compound-module-sheet",
-    "facility-ground-state-sheet",
-    "house-grounding-kit",
-    "deciduous-tree-corruption-states",
-    "pond-pollution-states",
-    "defender-and-enemy-action-states",
-    "cable-drain-road-root-connections"
+    "overhead-terrain-connected",
+    "overhead-tactical-overlays",
+    "overhead-forest-nature",
+    "overhead-water-connected",
+    "overhead-industry-datacenter",
+    "overhead-edge-networks",
+    "overhead-allies",
+    "overhead-enemies",
+    "overhead-world-state-transitions"
   ]
 }

@@ -1,178 +1,283 @@
-# Rewild visual production bible
+# Rewild overhead hex visual production bible
 
-This document converts the approved visual direction into production constraints. The reference is [`vertical-slice-target-v1.png`](./references/vertical-slice-target-v1.png). It is an art and composition target, not a bitmap to place behind gameplay.
+This document is the authoritative visual contract for the Rewild rebuild.
+
+The sole composition and style target is
+[top-down-hex-allies-enemies-concept-v2-small-hexes.png](./references/top-down-hex-allies-enemies-concept-v2-small-hexes.png).
+It is a benchmark image to reproduce with a stateful renderer, not a background
+bitmap to ship behind gameplay.
+
+Earlier references remain useful only as historical evidence and asset-identity
+guides. Where an older document, sprite, screenshot, or implementation conflicts
+with this bible, this bible wins.
 
 ## Product objective
 
-The battlefield must read as one stateful physical place. Terrain, structures, units, and props cannot look like isolated pictures placed on a flat green field. Every major object must alter, overlap, connect to, or react to its surroundings.
+Rewild is a strict-overhead, turn-based tactical game on a visible pointy-top
+hex field. Nature and industry must read as connected territories made from
+cells and shared borders. Objects occupy the world instead of appearing as
+perspective illustrations pasted above it.
 
-The invisible hex topology remains authoritative for gameplay. It must not define the visible terrain silhouette.
+Every visible relationship must be backed by world state:
 
-## Camera and pixel language
+- adjacent forest cells join into one forest mass;
+- adjacent water cells join into one lake with a single exterior shoreline;
+- roads, cables, roots, drains, walls, and attacks cross one of six shared edges;
+- construction replaces vegetation with excavation, foundation, and modules;
+- corruption changes ground, nearby objects, and connected systems;
+- destruction leaves cell-aligned rubble;
+- reclamation reverses those material states over time.
 
-- View: three-quarter top-down strategy-game view.
-- Internal reference canvas: `1200 × 675`, presented at integer or pixelated scaling.
-- Logical hex diameter: about `50 px`; this is a simulation scale, not a visible tile size.
-- Authoring density: assets may be authored at four times the final pixel density, but final exports must use nearest-neighbor downsampling and share one apparent pixel size.
-- Light: stable upper-left daylight.
-- Highlights: upper and left-facing surfaces.
-- Contact darkening: immediately below rooted objects, walls, rocks, and machines.
-- Cast shadows: short, quiet, and directional. The house must not have a large oval shadow.
-- Outlines: colored dark edges, not uniform black borders.
-- No blur, vector-smooth curves, painterly texture, antialiased scaling, or mixed-resolution pixels.
+## Authoritative scene contract
+
+- Logical scene: 1200 x 675 pixels, 16:9.
+- Camera: orthographic and strict overhead; no visible side walls or horizon.
+- Hex orientation: pointy top.
+- Review density: approximately 37 columns by 15 rows.
+- Baseline hex radius: 21-22 logical pixels. A final value must be chosen once
+  and shared by geometry, renderer, input, pathfinding, and asset metadata.
+- Navigation: six neighbors only.
+- Default framing: game-only scene. Portfolio or site navigation is not part of
+  the benchmark frame.
+- Scaling: preserve aspect ratio and use uniform nearest-neighbor scaling.
+  Letterbox when necessary; never stretch one axis independently.
+- Camera translation and sprite pivots must land on whole logical pixels.
+
+The visible mesh communicates the tactical board. It is always present but
+subordinate to units, structures, and action overlays. It must not become a set
+of individually shaded honeycomb buttons.
+
+## Pixel language
+
+- All gameplay art uses one apparent pixel density.
+- Final rendering is nearest-neighbor with no antialiased scaling.
+- Terrain edges are pixel-stepped and authored from discrete masks.
+- Do not use canvas blur, smooth radial gradients, wide antialiased Bezier
+  strokes, soft photographic shadows, or mixed-resolution source art.
+- Outlines use palette-derived dark colors rather than uniform black.
+- A one-cell unit must remain readable at 100% benchmark scale.
+- Large connected territories may use broader value fields, but their detail
+  remains aligned to the same pixel grid.
+
+Strict overhead means the viewer primarily sees roofs, canopies, crowns,
+footprints, and ground marks. Legacy three-quarter sprites may communicate
+identity, palette, or material, but cannot be rendered as final gameplay art.
+
+## Lighting and depth
+
+- Light direction is stable from the upper-left.
+- Depth comes from value separation, overlap, contact darkening, and compact
+  one-to-three-pixel accents.
+- Large oval drop shadows are prohibited.
+- Structures use footprint contact darkening rather than floating shadows.
+- Units may use a compact one-pixel grounding mark when required for contrast.
+- The house, if present in a scenario, has no broad cast shadow.
 
 ## Visual hierarchy
 
-1. Active defenders, enemies, and combat feedback.
-2. House and active datacenter compound.
-3. Healthy-to-corrupted terrain structure.
-4. Roads, ponds, forests, and large prop clusters.
-5. Grounding details and transitions.
-6. Micro-detail.
+1. Selected cell, legal route, active ally, target, and current action.
+2. Enemy silhouettes and active industrial modules.
+3. Connected nature and industry territories.
+4. Roads, roots, cables, drains, lake shores, and structure footprints.
+5. Rocks, trees, ruins, and other occupied-cell objects.
+6. Low grass, flowers, pebbles, wear, residue, and quiet variation.
 
-At least 20% of traversable ground remains visually quiet. Density must form clusters and gradients rather than cover every location equally.
+At least 25% of traversable cells remain visually quiet. Ground micro-detail may
+vary a cell, but must never compete with cell ownership or tactical readability.
 
 ## Palette roles
 
-These are role anchors rather than a hard indexed palette. New assets should remain close to them and introduce a new hue only for gameplay meaning.
+These are role anchors, not a mandatory indexed palette.
 
 | Role | Anchor colors |
 | --- | --- |
-| Meadow light | `#8dae48`, `#71973b` |
-| Meadow dark | `#416f31`, `#294c2b` |
-| Living foliage | `#567f28`, `#2f682d`, `#173d2b` |
-| Warm soil | `#a27a45`, `#755136`, `#4c372b` |
-| Natural water | `#276d82`, `#194c68`, `#112f4b` |
-| Natural stone | `#8b8b76`, `#62685f`, `#3d4643` |
-| Concrete/steel | `#8a9294`, `#5c666c`, `#30373d`, `#1c2227` |
-| Warning/utility | `#d69a2e`, `#8f6020` |
-| Corruption soil | `#584b3f`, `#393438`, `#202228` |
-| Severe contamination | `#674b76`, `#3e304c`, `#7f9f36` |
+| Meadow light | #8dae48, #71973b |
+| Meadow dark | #416f31, #294c2b |
+| Living foliage | #567f28, #2f682d, #173d2b |
+| Warm soil | #a27a45, #755136, #4c372b |
+| Natural water | #276d82, #194c68, #112f4b |
+| Natural stone | #8b8b76, #62685f, #3d4643 |
+| Concrete and steel | #8a9294, #5c666c, #30373d, #1c2227 |
+| Warning and utility | #d69a2e, #8f6020 |
+| Corruption soil | #584b3f, #393438, #202228 |
+| Severe contamination | #674b76, #3e304c, #7f9f36 |
+| Selection | #f2e889, #d6c855 |
+| Enemy action | #df594f, #8f252c |
 
-Combat projectiles may be brighter than the environment, but only while an attack is active.
+Nature owns the lighter, warmer half of the value range. Industrial territory
+owns a darker charcoal range. Bright accents are reserved for selection and an
+action currently being resolved.
 
-## Layer contract
+## Authoritative world layers
 
-The renderer composes the world in this order:
+The renderer composes the scene in this order:
 
-1. macro meadow color fields;
-2. continuous road, water, dirt, and corruption masks;
-3. transition decals crossing simulation boundaries;
-4. excavation, foundations, rubble, worn ground, roots, and cable trenches;
-5. freestanding environment objects;
-6. compound modules and connected infrastructure;
-7. defenders and enemies, depth-sorted by ground pivot;
-8. restrained event effects;
-9. foreground overlap and placement overlay.
+1. quiet grass base and low per-cell variation;
+2. connected territory masks;
+3. external region edges and transition bands;
+4. lakes, soil, industrial slabs, and corruption materials;
+5. border networks: roads, roots, cables, drains, and walls;
+6. low decals and footprint responses;
+7. occupied-cell objects and multi-cell structures;
+8. allies and enemies;
+9. selected cell, routes, ranges, targets, and event-only effects;
+10. tactical HUD.
 
-No object may carry a large baked patch of generic meadow. Transparent assets contain only the object and deliberately authored grounding fragments.
+The visible mesh is rendered after terrain materials and before primary objects,
+with action overlays allowed to replace it locally. Internal seams inside a
+merged lake, forest, or compound must not look like shoreline or object edges.
 
-## Scale sheet
+## Connected territory rules
 
-Sizes are final on the `1200 × 675` battlefield. Transparent padding is excluded.
+### Forest
 
-| Family | Visible width | Ground footprint | Notes |
-| --- | ---: | ---: | --- |
-| Micro decal | `3–14 px` | none | tuft, leaf, pebble, small flower |
-| Small defender | `28–48 px` | `18–30 px` | clear silhouette and shared root pivot |
-| Heavy defender | `56–88 px` | `34–52 px` | mature Elder Oak only |
-| Small enemy | `24–44 px` | `18–30 px` | one readable dark mass plus accent |
-| Tree | `90–150 px` | `30–55 px` | canopy can overlap neighbors |
-| Rock/shrub cluster | `55–130 px` | `40–100 px` | asymmetric perimeter |
-| House | `118–155 px` | `90–125 px` | worn entrance, fence/garden assembled separately |
-| Pond | `170–310 px` | logical water region | shoreline and water are separate layers in the final system |
-| Datacenter module | `50–150 px` | multi-hex | modules share concrete, lighting, and connection rules |
-| Full datacenter compound | `300–520 px` | `7–19 hexes` | never a single sprite or rectangular box |
+- A single forest cell reads as a compact overhead tree or young grove.
+- Two or more adjacent forest cells form one canopy component.
+- Interior borders disappear beneath shared canopy.
+- Exterior cells receive irregular crown edges, trunks only where readable, and
+  sparse understory.
+- A merged forest is not a repeated tree sprite stamped once per cell.
 
-## Required physical relationships
+### Water
 
-### House
+- Water connectivity is computed from six-neighbor adjacency.
+- Shore art appears only on edges touching non-water cells.
+- Interior shared edges remain uninterrupted water.
+- Reeds, rocks, lilies, foam, and pollution attach to selected exterior edges.
+- Large lakes receive restrained value variation, not independent pond sprites.
 
-- Worn entrance path connects to the road or local path network.
-- Small garden, fence pieces, stones, weeds, and shrubs make a lived-in perimeter.
-- Tall vegetation is suppressed behind the silhouette.
-- No broad oval shadow. Use contact darkening under walls and small cast shadows from individual details.
+### Industry
 
-### Datacenter
+- Industrial territory replaces the underlying ground material.
+- A datacenter is a connected multi-cell system, never one enormous sprite.
+- Modules occupy explicit footprints and share slabs, access routes, cable
+  trunks, cooling, power, drainage, and perimeter elements.
+- Empty industrial cells still read as prepared, worn, contaminated, or damaged
+  ground belonging to the compound.
 
-- Stage 0: survey stakes, tracks, removed vegetation, irregular excavation, soil piles.
-- Stage 1: compacted substrate, concrete footings, trenches, delivered material.
-- Stage 2: connected wall/server/cooling/power modules, perimeter barriers, construction debris.
-- Stage 3: complete compound, cable bundles, drainage, loading access, vents, utility activity.
-- Destruction: disconnected modules, broken slabs, exposed cabling, equipment debris, reclaimable rubble.
+### Corruption and recovery
 
-Every compound requires at least three visible systems: compute, cooling, and power/distribution.
+The material progression is:
 
-### Corruption
+healthy vegetation -> stressed vegetation -> exposed soil -> cracked dead ground
+-> technological residue.
 
-The visual gradient is continuous:
+Recovery reverses material ownership in visible stages:
 
-`healthy vegetation → stressed/yellow vegetation → exposed soil → cracked dead ground → dark technological sludge`
+residue thins -> rubble or soil appears -> shoots and roots return -> young
+meadow -> mature habitat.
 
-- Roads conduct contamination and gain cracks/cable crossings.
-- Water resists ground spread but can become polluted from a connected drain or shoreline source.
-- Trees lose local foliage, discolor, then expose dead branches.
-- Rocks collect residue and synthetic fragments at their base.
-- Destroyed infrastructure does not instantly restore the land.
+The state is stored per cell. Connected sources may influence neighbors only
+through six-neighbor rules or an explicit border network.
 
-### Reclamation
+## Border-network contract
 
-`sludge thins → rubble/soil exposed → shoots and roots → young meadow → mature healthy ground`
+Each shared edge can independently carry a road, cable, root, drain, wall, or
+temporary action crossing. Network art requires authored edge combinations:
 
-The logical recovery may be immediate, but the rendered transition has state and duration.
+- six single-direction entries;
+- straight pairs;
+- 120-degree bends;
+- 60-degree bends where the system permits them;
+- T junctions, branches, and multi-edge junctions;
+- terminators, structure entries, broken states, and contested states.
 
-## Datacenter production kit
+Free-angle rotation is prohibited for raster connectors. Select an authored
+orientation from edge metadata. A connection must begin and end at stable
+edge-anchor pixels so neighboring cells join without a seam.
 
-The first vertical slice requires the following modular families:
+## Object and unit contract
 
-- 4 wall/corner modules;
-- 3 server-hall roof/body variants;
-- 3 cooling units and fan banks;
-- 2 power/transformer modules;
-- loading bay and access door;
-- fence, barrier, gate, and warning post variants;
-- cable trunk, junction, bend, split, ground entry, and damaged variants;
-- drain/outlet and polluted-outlet variants;
-- crates, barrels, pallets, work lights, bins, vents, and utility cabinets;
-- four excavation/foundation ground stages;
-- three destruction/rubble states.
+- Low objects fit within one cell unless their footprint explicitly spans cells.
+- A normal ally or enemy occupies one cell and stays inside a compact overhead
+  silhouette.
+- Large trees, groves, rocks, ruins, and industrial modules declare multi-cell
+  footprints rather than visually overflowing arbitrary cells.
+- Each asset records its cell footprint, center pivot, six-direction facing
+  availability, animation states, and palette family.
+- Units may face six directions. Directional images are authored variants or
+  pixel-safe mirrored variants explicitly allowed by metadata.
+- A rendered tween may briefly interpolate between adjacent cell centers, but
+  gameplay ownership changes only between neighboring hexes.
 
-These modules are assembled by the renderer. The compound may not be baked as one enormous image.
+## Motion budget
 
-## Animation budget
+Normal scenery is static. Animation exists only for an action or a material state
+transition.
 
-Normal scenery is static. Movement is event-driven.
-
-| Event | Budget |
+| Event | Allowed motion |
 | --- | --- |
-| Water | one subtle ripple cluster every `3–7 s` per pond |
-| Wind | occasional regional foliage response; never all vegetation together |
-| Construction | machinery/worker cue only during a stage transition |
-| Datacenter active | sparse fan, status light, exhaust, or drain activity |
-| Attack | one anticipation cue, projectile/beam, and short impact |
-| Damage | short hit flash, debris, or local shake; never global shaking |
-| Corruption | slow pulse only close to an active source or outlet |
-| Reclamation | brief root growth and material replacement |
+| Selection | restrained pulse or stepped outline |
+| Move | short adjacent-cell translation and arrival cue |
+| Attack | anticipation, delivery, impact, recovery |
+| Restore | short roots or material-replacement sequence |
+| Construction | activity only while advancing a construction stage |
+| Damage | local flash, debris, or one short local shake |
+| Corruption | material replacement near the newly affected cells |
+| Destruction | local collapse followed by a static rubble state |
 
-Idle bobbing, constant jitter, perpetual glowing, and simultaneous ambient motion are prohibited.
+Idle bobbing, constant jitter, perpetual glow, decorative particles, global
+shaking, and simultaneous ambient animation are prohibited.
 
-## Vertical-slice acceptance criteria
+## Phase 1 asset contract
 
-- The terrain remains credible when all units are hidden.
-- The datacenter reads as a constructed compound with connected systems.
-- Healthy and corrupted ground are distinguishable without a hard border.
-- The house reads as part of the site and has no artificial oval shadow.
-- Ponds, trees, rocks, and flower masses have asymmetric grounding transitions.
-- A screenshot contains both dense and quiet regions.
-- The placement hex is the only normally visible hex shape.
-- Assets share apparent pixel density, viewpoint, palette, and lighting.
-- No large region is a flat fill or repeated rectangular texture.
-- No animation exists unless it communicates a world event or state.
+Current three-quarter environment, house, unit, enemy, and infrastructure PNGs
+are legacy reference-only assets. They remain in the repository to preserve
+identity and palette history, but they are not approved for final rendering.
+Existing flat 32 x 32 ground decals may be evaluated as temporary candidates.
 
-## Reference use
+Phase 1 establishes these new overhead atlas families:
 
-- `approved-world-direction.png`: concept and interaction direction.
-- `baseline-before-vertical-slice.png`: evidence of the current density and integration gap.
-- `vertical-slice-target-v1.png`: authoritative first-slice quality and composition target.
+1. overhead terrain cells and connected-region edge masks;
+2. visible mesh and selection/action overlays;
+3. overhead forest components and occupied-cell nature objects;
+4. overhead water interiors, shores, and exterior-edge attachments;
+5. industrial ground, datacenter modules, and damage states;
+6. six-edge road, cable, root, drain, and wall networks;
+7. one-cell ally units with six-direction action states;
+8. one-cell enemy units with six-direction action states;
+9. corruption, rubble, and reclamation material states.
 
-The generated references may guide production but must not be shipped as a gameplay background.
+Generated whole-scene images are never runtime assets. All production atlases
+must be reviewable separately at native and gameplay scale before integration.
+
+## Deterministic benchmark scene
+
+The first implementation target is one authored, deterministic scene matching
+the authoritative reference:
+
+- the full 1200 x 675 game frame;
+- approximately 37 x 15 visible pointy-top hexes;
+- a connected natural territory on the left;
+- a connected industrial territory on the right;
+- at least one merged forest and one merged lake;
+- one road or root system and one cable or drain system following shared edges;
+- one selected ally, additional allies, and several enemies;
+- visible legal movement and attack or restore relationships;
+- no portfolio navigation, three-quarter sprites, or passive animation.
+
+This benchmark is frozen for screenshot review. Procedural generation is added
+only after the authored scene proves camera, scale, asset language, adjacency,
+and tactical readability.
+
+## Acceptance criteria
+
+- The benchmark frame is recognizably equivalent to the authoritative target.
+- The scene is strict overhead at every layer.
+- The grid is visible but not the highest-contrast repeated pattern.
+- The frame is never horizontally or vertically distorted.
+- Forests, lakes, and industry read as connected components.
+- Datacenter construction visibly replaces and damages occupied ground.
+- All routes, networks, movement, and attacks use six shared edges.
+- Units remain identifiable when viewed at 100% logical scale.
+- No final object uses a legacy perspective sprite.
+- No large oval structure shadow is visible.
+- Terrain remains convincing when units and tactical overlays are hidden.
+- No motion occurs without an action or a material state change.
+
+## Reference status
+
+- top-down-hex-allies-enemies-concept-v2-small-hexes.png: authoritative.
+- vertical-slice-target-v1.png: superseded historical composition reference.
+- approved-world-direction.png: superseded historical mood reference.
+- baseline-before-vertical-slice.png: historical baseline only.

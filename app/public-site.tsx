@@ -654,28 +654,39 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
   const secondarySwitcher = secondarySwitcherFor(section, openSection);
   const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
+  const isFullScreenGame = section === "rewild" && subsection === "all";
   const publicHref = section === "about" ? "/" : `/#${section}`;
   const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
 
   return (
-    <main className="kb-shell">
-      <SiteSidebar
-        activeSection={section}
-        activeSubsection={subsection}
-        hideSecondary={hideSecondary}
-        mobileOpen={mobileNav}
-        mode={mode}
-        onSelect={openSection}
-        onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
-        personalHref={personalHref}
-        publicHref={publicHref}
-        secondaryItems={secondaryItems}
-        secondarySwitcher={secondarySwitcher}
-        secondaryTitle={activeLabel}
-      />
+    <main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>
+      {!isFullScreenGame && (
+        <SiteSidebar
+          activeSection={section}
+          activeSubsection={subsection}
+          hideSecondary={hideSecondary}
+          mobileOpen={mobileNav}
+          mode={mode}
+          onSelect={openSection}
+          onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
+          personalHref={personalHref}
+          publicHref={publicHref}
+          secondaryItems={secondaryItems}
+          secondarySwitcher={secondarySwitcher}
+          secondaryTitle={activeLabel}
+        />
+      )}
 
-      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}${section === "rewild" && subsection === "all" ? " kb-main-game" : ""}`}>
-        <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
+      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}${isFullScreenGame ? " kb-main-game" : ""}`}>
+        <button
+          aria-expanded={isFullScreenGame ? undefined : mobileNav}
+          aria-label={isFullScreenGame ? "Exit game and return to the site" : "Toggle navigation"}
+          className="kb-floating-menu"
+          onClick={isFullScreenGame ? () => openSection("about") : () => setMobileNav((value) => !value)}
+          type="button"
+        >
+          {isFullScreenGame ? "Exit game" : "☰"}
+        </button>
 
         {section === "jobs" ? (
           <div className="kb-content"><div className="kb-empty"><strong>Opening Vacancies…</strong><span>Vacancies live at the same page for everyone — redirecting.</span></div></div>
