@@ -40,7 +40,12 @@ function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: numb
 }
 
 const SPRITE_FILES: Record<string, string> = {
-  "terrain-world": "/rewild/terrain-world.png",
+  "terrain-meadow": "/rewild/terrain-meadow.png",
+  "terrain-shrub-1": "/rewild/terrain-shrub-1.png", "terrain-shrub-2": "/rewild/terrain-shrub-2.png",
+  "terrain-flowers-1": "/rewild/terrain-flowers-1.png", "terrain-flowers-2": "/rewild/terrain-flowers-2.png",
+  "terrain-pond-1": "/rewild/terrain-pond-1.png", "terrain-pond-2": "/rewild/terrain-pond-2.png",
+  "terrain-rock-1": "/rewild/terrain-rock-1.png", "terrain-rock-2": "/rewild/terrain-rock-2.png",
+  "obj-tree-deciduous": "/rewild/obj-tree-deciduous.png", "obj-tree-pine": "/rewild/obj-tree-pine.png",
   "obj-house": "/rewild/obj-house-v2.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak-p1": "/rewild/obj-elderoak-p1.png", "obj-elderoak-p2": "/rewild/obj-elderoak-p2.png",
@@ -72,6 +77,8 @@ const SPRITE_META: Record<string, SpriteMeta> = {
   "obj-sludge": { pivotY: .84, footprint: 1.05 },
   "obj-popup": { pivotY: .90, footprint: 1.3 },
   "obj-fragment": { pivotY: .82, footprint: .55 },
+  "obj-tree-deciduous": { pivotY: .85, footprint: 3.5 },
+  "obj-tree-pine": { pivotY: .91, footprint: 3.3 },
 };
 const DECAL_KINDS = ["tuft", "flower", "pebble", "leaf", "mushroom"] as const;
 function hashInt(a: number, b: number, salt: number) {
@@ -227,17 +234,49 @@ const BORDER_SPAWNS: Point[] = [
   { col: 18, row: 13 }, { col: 10, row: 13 }, { col: 4, row: 13 }, { col: 0, row: 10 }, { col: 0, row: 6 }, { col: 0, row: 2 },
 ];
 
-const OBSTACLES: Array<[number, number, TileKind]> = [
-  [3, 2, "forest"], [4, 2, "forest"], [3, 3, "forest"], [10, 1, "flowers"], [11, 1, "flowers"],
-  [22, 2, "flowers"], [23, 2, "flowers"], [26, 3, "rock"], [17, 3, "pond"], [18, 3, "pond"], [18, 4, "pond"],
-  [6, 5, "pond"], [6, 6, "pond"], [7, 6, "pond"], [3, 9, "forest"], [4, 9, "forest"], [4, 10, "forest"],
-  [25, 6, "forest"], [26, 6, "forest"], [23, 10, "rock"], [24, 10, "rock"], [20, 12, "flowers"], [21, 12, "flowers"],
-  [10, 12, "forest"], [11, 12, "forest"],
+type SceneryKind = "tree" | "pine" | "pond" | "rock" | "shrub" | "flowers" | "road" | "log" | "fence" | "sign" | "ruin";
+interface SceneryObject {
+  id: string;
+  kind: SceneryKind;
+  x: number;
+  y: number;
+  width: number;
+  sprite?: string;
+  rotation?: number;
+  shadow?: boolean;
+  cells?: Array<[number, number, TileKind]>;
+  points?: Array<{ x: number; y: number }>;
+}
+const ROAD_POINTS = [
+  { x: -.5, y: 8.2 }, { x: 4.2, y: 8.0 }, { x: 8.5, y: 8.3 }, { x: 12.0, y: 7.7 },
+  { x: 15.0, y: 8.1 }, { x: 18.1, y: 8.7 }, { x: 21.5, y: 8.2 }, { x: 25.2, y: 7.8 }, { x: 30.5, y: 8.2 },
+];
+const SCENERY: SceneryObject[] = [
+  { id: "road-main", kind: "road", x: 15, y: 8.2, width: 31, shadow: false, points: ROAD_POINTS },
+  { id: "tree-nw", kind: "tree", x: 3.7, y: 3.5, width: 4.8, sprite: "obj-tree-deciduous", cells: [[3, 2, "forest"], [4, 2, "forest"], [3, 3, "forest"]] },
+  { id: "pine-sw", kind: "pine", x: 4.5, y: 10.5, width: 3.7, sprite: "obj-tree-pine", cells: [[3, 9, "forest"], [4, 9, "forest"], [4, 10, "forest"]] },
+  { id: "tree-east", kind: "tree", x: 26.2, y: 7.1, width: 4.4, sprite: "obj-tree-deciduous", cells: [[25, 6, "forest"], [26, 6, "forest"]] },
+  { id: "pine-south", kind: "pine", x: 10.8, y: 13.1, width: 3.3, sprite: "obj-tree-pine", cells: [[10, 12, "forest"], [11, 12, "forest"]] },
+  { id: "pond-west", kind: "pond", x: 6.8, y: 6.5, width: 4.5, sprite: "terrain-pond-1", shadow: false, cells: [[6, 5, "pond"], [6, 6, "pond"], [7, 6, "pond"]] },
+  { id: "pond-east", kind: "pond", x: 18.2, y: 4.0, width: 4.1, sprite: "terrain-pond-2", shadow: false, cells: [[17, 3, "pond"], [18, 3, "pond"], [18, 4, "pond"]] },
+  { id: "rocks-ne", kind: "rock", x: 26.5, y: 3.9, width: 2.7, sprite: "terrain-rock-2", cells: [[26, 3, "rock"]] },
+  { id: "rocks-se", kind: "rock", x: 24.0, y: 10.8, width: 3.4, sprite: "terrain-rock-1", cells: [[23, 10, "rock"], [24, 10, "rock"]] },
+  { id: "flowers-n", kind: "flowers", x: 10.8, y: 1.9, width: 3.0, sprite: "terrain-flowers-1", shadow: false, cells: [[10, 1, "flowers"], [11, 1, "flowers"]] },
+  { id: "flowers-ne", kind: "flowers", x: 22.8, y: 2.8, width: 2.7, sprite: "terrain-flowers-2", shadow: false, cells: [[22, 2, "flowers"], [23, 2, "flowers"]] },
+  { id: "flowers-s", kind: "flowers", x: 20.8, y: 12.7, width: 2.8, sprite: "terrain-flowers-1", shadow: false, cells: [[20, 12, "flowers"], [21, 12, "flowers"]] },
+  { id: "shrub-left", kind: "shrub", x: 1.6, y: 7.8, width: 2.2, sprite: "terrain-shrub-2" },
+  { id: "shrub-right", kind: "shrub", x: 28.0, y: 11.2, width: 2.0, sprite: "terrain-shrub-1" },
+  { id: "log-west", kind: "log", x: 7.5, y: 11.2, width: 1.8, rotation: -.18 },
+  { id: "sign-house", kind: "sign", x: 17.2, y: 8.3, width: 1.0 },
+  { id: "ruin-north", kind: "ruin", x: 14.8, y: 1.4, width: 2.0 },
+  { id: "fence-house", kind: "fence", x: 12.7, y: 8.6, width: 2.4 },
 ];
 
 function createTiles() {
   const tiles = Array.from({ length: ROWS }, () => Array<TileKind>(COLS).fill("grass"));
-  for (const [col, row, kind] of OBSTACLES) tiles[row][col] = kind;
+  for (const object of SCENERY) {
+    for (const [col, row, kind] of object.cells ?? []) tiles[row][col] = kind;
+  }
   for (const key of HOUSE_TILES) {
     const [col, row] = key.split(",").map(Number);
     tiles[row][col] = "house";
@@ -714,16 +753,170 @@ function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: numbe
 }
 
 function drawMeadow(ctx: CanvasRenderingContext2D) {
-  const world = getSprite("terrain-world");
-  if (world) {
+  const meadow = getSprite("terrain-meadow");
+  if (meadow) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(world, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const targetRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+    const imageRatio = meadow.naturalWidth / meadow.naturalHeight;
+    if (imageRatio > targetRatio) {
+      const sourceWidth = meadow.naturalHeight * targetRatio;
+      const sourceX = (meadow.naturalWidth - sourceWidth) / 2;
+      ctx.drawImage(meadow, sourceX, 0, sourceWidth, meadow.naturalHeight, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    } else {
+      const sourceHeight = meadow.naturalWidth / targetRatio;
+      const sourceY = (meadow.naturalHeight - sourceHeight) / 2;
+      ctx.drawImage(meadow, 0, sourceY, meadow.naturalWidth, sourceHeight, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
     ctx.restore();
     return;
   }
   ctx.fillStyle = "#7f9f43";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+function traceRoad(ctx: CanvasRenderingContext2D, points: Array<{ x: number; y: number }>) {
+  ctx.beginPath();
+  points.forEach((point, index) => index ? ctx.lineTo(point.x * TILE, point.y * TILE) : ctx.moveTo(point.x * TILE, point.y * TILE));
+}
+
+function drawRoadObject(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
+  const points = object.points ?? [];
+  if (points.length < 2) return;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(71,74,40,.23)";
+  ctx.lineWidth = TILE * 1.18;
+  traceRoad(ctx, points); ctx.stroke();
+  ctx.strokeStyle = "#9b7748";
+  ctx.lineWidth = TILE * .95;
+  traceRoad(ctx, points); ctx.stroke();
+  ctx.strokeStyle = "rgba(205,165,96,.44)";
+  ctx.lineWidth = TILE * .68;
+  traceRoad(ctx, points); ctx.stroke();
+  ctx.strokeStyle = "rgba(92,69,43,.3)";
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 15]);
+  traceRoad(ctx, points); ctx.stroke();
+  ctx.setLineDash([]);
+  for (let index = 0; index < 70; index += 1) {
+    const x = (hashInt(index, 7, 41) % FIELD_WIDTH);
+    const nearest = points.reduce((best, point) => Math.abs(point.x * TILE - x) < Math.abs(best.x * TILE - x) ? point : best);
+    const y = nearest.y * TILE + (hashInt(index, 5, 31) % 28) - 14;
+    ctx.fillStyle = index % 3 ? "rgba(73,57,37,.28)" : "rgba(218,177,104,.34)";
+    ctx.fillRect(x, y, 2 + index % 3, 1 + index % 2);
+  }
+  for (const enemy of state.enemies) {
+    if (Math.abs(enemy.y - 8.2) > 1.05) continue;
+    const pulse = (Math.sin(state.elapsed * 7 + enemy.id) + 1) / 2;
+    ctx.fillStyle = `rgba(196,159,98,${.08 + pulse * .09})`;
+    ctx.beginPath();
+    ctx.ellipse(enemy.x * TILE - 8, enemy.y * TILE + 6, 7 + pulse * 7, 3 + pulse * 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawSceneryShadow(ctx: CanvasRenderingContext2D, object: SceneryObject) {
+  if (object.shadow === false || object.kind === "pond" || object.kind === "flowers") return;
+  const width = object.width * TILE;
+  ctx.fillStyle = "rgba(24,34,19,.21)";
+  ctx.beginPath();
+  ctx.ellipse(object.x * TILE, object.y * TILE + 4, width * .3, width * .095, -.08, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPrimitiveScenery(ctx: CanvasRenderingContext2D, object: SceneryObject) {
+  const x = object.x * TILE;
+  const y = object.y * TILE;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(object.rotation ?? 0);
+  if (object.kind === "log") {
+    ctx.fillStyle = "#4f3323"; ctx.fillRect(-30, -7, 60, 14);
+    ctx.fillStyle = "#765034"; ctx.fillRect(-25, -5, 48, 5);
+    ctx.fillStyle = "#b18a55"; ctx.beginPath(); ctx.arc(29, 0, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#664327"; ctx.beginPath(); ctx.arc(29, 0, 3.5, 0, Math.PI * 2); ctx.stroke();
+  } else if (object.kind === "sign") {
+    ctx.fillStyle = "#644126"; ctx.fillRect(-3, -32, 6, 35);
+    ctx.fillStyle = "#9c7745"; ctx.fillRect(-17, -32, 35, 14);
+    ctx.fillStyle = "#c49b5d"; ctx.fillRect(-13, -29, 25, 3);
+  } else if (object.kind === "fence") {
+    ctx.fillStyle = "#66462d";
+    for (let post = -42; post <= 42; post += 28) ctx.fillRect(post - 3, -22, 6, 26);
+    ctx.fillStyle = "#a07b4c"; ctx.fillRect(-47, -16, 94, 5); ctx.fillRect(-47, -4, 94, 5);
+  } else if (object.kind === "ruin") {
+    ctx.fillStyle = "#545851";
+    ctx.fillRect(-28, -25, 15, 29); ctx.fillRect(12, -36, 16, 40); ctx.fillRect(-28, -6, 56, 10);
+    ctx.fillStyle = "#858879"; ctx.fillRect(-25, -22, 9, 7); ctx.fillRect(15, -32, 10, 8); ctx.fillRect(-7, -5, 13, 5);
+  }
+  ctx.restore();
+}
+
+function drawPondRipples(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
+  const width = object.width * TILE;
+  const centerX = object.x * TILE;
+  const centerY = object.y * TILE;
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, width * .45, width * .19, 0, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.strokeStyle = "rgba(211,241,220,.28)";
+  ctx.lineWidth = 1.4;
+  for (let line = -2; line <= 2; line += 1) {
+    const y = centerY + line * 9 + Math.sin(state.elapsed * 1.35 + line) * 2.5;
+    ctx.beginPath();
+    for (let step = 0; step <= 12; step += 1) {
+      const x = centerX - width * .44 + step * width * .073;
+      const wave = Math.sin(step * .9 + state.elapsed * 1.8 + line) * 1.8;
+      if (step === 0) ctx.moveTo(x, y + wave); else ctx.lineTo(x, y + wave);
+    }
+    ctx.stroke();
+  }
+  for (const enemy of state.enemies) {
+    if (distance(enemy.x, enemy.y, object.x, object.y) > object.width * .6) continue;
+    const phase = (state.elapsed * 1.8 + enemy.id * .23) % 1;
+    ctx.strokeStyle = `rgba(230,247,223,${(1 - phase) * .35})`;
+    ctx.beginPath();
+    ctx.ellipse(enemy.x * TILE, enemy.y * TILE, 5 + phase * 24, 2 + phase * 9, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSceneryObject(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
+  if (object.kind === "road") { drawRoadObject(ctx, object, state); return; }
+  drawSceneryShadow(ctx, object);
+  if (!object.sprite) { drawPrimitiveScenery(ctx, object); return; }
+  const img = getSprite(object.sprite);
+  if (!img) return;
+  const width = object.width * TILE;
+  const height = width * img.naturalHeight / img.naturalWidth;
+  const closestEnemy = state.enemies.reduce((best, enemy) => Math.min(best, distance(enemy.x, enemy.y, object.x, object.y)), Infinity);
+  const proximity = Math.max(0, 1 - closestEnemy / 3.2);
+  const plantPulse = state.beams.some((beam) => distance(beam.x2, beam.y2, object.x, object.y) < 2.4) ? 1 : 0;
+  const isFoliage = object.kind === "tree" || object.kind === "pine" || object.kind === "shrub" || object.kind === "flowers";
+  const sway = isFoliage ? Math.sin(state.elapsed * (1.1 + proximity * 5) + object.x) * (.012 + proximity * .04 + plantPulse * .025) : 0;
+  const tremble = object.kind === "rock" && proximity > .45 ? Math.sin(state.elapsed * 18 + object.x) * proximity * 1.4 : 0;
+  const pivot = object.kind === "pond" ? .5 : object.kind === "flowers" ? .68 : object.kind === "rock" ? .82 : object.kind === "tree" ? .85 : object.kind === "pine" ? .93 : .88;
+  ctx.save();
+  ctx.translate(object.x * TILE + tremble, object.y * TILE);
+  ctx.rotate(sway);
+  ctx.drawImage(img, -width / 2, -height * pivot, width, height);
+  ctx.restore();
+  if (object.kind === "pond") drawPondRipples(ctx, object, state);
+  if ((object.kind === "tree" || object.kind === "pine") && proximity > .2) {
+    ctx.save();
+    for (let leaf = 0; leaf < 5; leaf += 1) {
+      const phase = (state.elapsed * (.25 + leaf * .04) + leaf * .19 + object.x) % 1;
+      const x = object.x * TILE + Math.sin(state.elapsed * 2 + leaf * 2.4) * width * .22;
+      const y = object.y * TILE - height * (.72 - phase * .5);
+      ctx.fillStyle = leaf % 2 ? `rgba(187,186,62,${(1 - phase) * proximity * .5})` : `rgba(69,116,48,${(1 - phase) * proximity * .52})`;
+      ctx.fillRect(x, y, 3, 2);
+    }
+    ctx.restore();
+  }
 }
 
 function drawAmbientWorld(ctx: CanvasRenderingContext2D, state: GameState) {
@@ -739,27 +932,6 @@ function drawAmbientWorld(ctx: CanvasRenderingContext2D, state: GameState) {
     ctx.fillRect(x, y, 2, 2);
   }
   ctx.restore();
-
-  const ponds = [{ x: 320, y: 365, rx: 82, ry: 43 }, { x: 820, y: 168, rx: 78, ry: 42 }];
-  for (const pond of ponds) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(pond.x, pond.y, pond.rx, pond.ry, 0, 0, Math.PI * 2);
-    ctx.clip();
-    ctx.strokeStyle = "rgba(189,231,212,.18)";
-    ctx.lineWidth = 1.4;
-    for (let line = -2; line <= 2; line += 1) {
-      const y = pond.y + line * 13 + Math.sin(time * 1.35 + line) * 3;
-      ctx.beginPath();
-      for (let step = 0; step <= 12; step += 1) {
-        const x = pond.x - pond.rx + step * pond.rx / 6;
-        const wave = Math.sin(step * .9 + time * 1.8 + line) * 2.2;
-        if (step === 0) ctx.moveTo(x, y + wave); else ctx.lineTo(x, y + wave);
-      }
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
 
   const light = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   light.addColorStop(0, "rgba(244,237,155,.08)");
@@ -975,10 +1147,16 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.rect(0, FIELD_TOP, FIELD_WIDTH, FIELD_HEIGHT);
   ctx.clip();
   ctx.translate(0, FIELD_TOP);
+  for (const object of SCENERY) {
+    if (object.kind === "road") drawSceneryObject(ctx, object, state);
+  }
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
   drawCorruptionDetails(ctx, state.tiles);
+  for (const object of SCENERY) {
+    if (object.kind === "pond" || object.kind === "flowers") drawSceneryObject(ctx, object, state);
+  }
   drawWorldMesh(ctx, state);
   drawEntityRelations(ctx, state);
   ctx.restore();
@@ -986,6 +1164,8 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.translate(0, FIELD_TOP);
   const renderables = [
     { depth: HOUSE_ROW + 1, draw: () => drawHouse(ctx, state.houseHp) },
+    ...SCENERY.filter((object) => object.kind !== "road" && object.kind !== "pond" && object.kind !== "flowers")
+      .map((object) => ({ depth: object.y, draw: () => drawSceneryObject(ctx, object, state) })),
     ...state.plants.map((plant) => ({ depth: plant.row + .5, draw: () => drawPlant(ctx, plant, state) })),
     ...state.nodes.map((node) => ({ depth: node.row + .5, draw: () => drawNode(ctx, node, state.elapsed) })),
     ...state.enemies.map((enemy) => ({ depth: enemy.y, draw: () => drawEnemy(ctx, enemy, state.elapsed) })),

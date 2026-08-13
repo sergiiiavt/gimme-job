@@ -33,7 +33,15 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /width=\{CANVAS_WIDTH\} height=\{CANVAS_HEIGHT\}/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(stylesSource, /image-rendering: pixelated/);
-  assert.match(gameSource, /"terrain-world": "\/rewild\/terrain-world\.png"/);
+  assert.match(gameSource, /"terrain-meadow": "\/rewild\/terrain-meadow\.png"/);
+  assert.match(gameSource, /"obj-tree-deciduous": "\/rewild\/obj-tree-deciduous\.png"/);
+  assert.match(gameSource, /"obj-tree-pine": "\/rewild\/obj-tree-pine\.png"/);
+  assert.match(gameSource, /const SCENERY: SceneryObject\[\] = \[/);
+  assert.match(gameSource, /id: "road-main"[^\n]*points: ROAD_POINTS/);
+  assert.match(gameSource, /for \(const \[col, row, kind\] of object\.cells \?\? \[\]\) tiles\[row\]\[col\] = kind/);
+  assert.match(gameSource, /drawPondRipples/);
+  assert.match(gameSource, /closestEnemy/);
+  assert.doesNotMatch(gameSource, /terrain-world/);
   assert.match(gameSource, /function drawCorruptionDetails/);
   assert.match(gameSource, /function drawAmbientWorld/);
   assert.match(gameSource, /function drawWorldMesh/);
@@ -72,7 +80,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
   assert.match(gameOutput, /AI slop erased/);
-  assert.match(gameOutput, /terrain-world\.png/);
+  assert.match(gameOutput, /terrain-meadow\.png/);
+  assert.match(gameOutput, /obj-tree-deciduous\.png/);
+  assert.doesNotMatch(gameOutput, /terrain-world\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
 });
