@@ -1,0 +1,1 @@
+ALTER TABLE `resume_variants` ADD `pdf_base64` text;

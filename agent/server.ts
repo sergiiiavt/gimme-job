@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { existsSync, writeFileSync } from "node:fs";
-import { analyzeJob } from "./src/analyst.js";
+import { adjustResume, analyzeJob } from "./src/analyst.js";
 import {
   initializeConfig,
   loadEnvironment,
@@ -15,6 +15,7 @@ import {
   type JobInput,
   type StoredJob,
 } from "./src/domain.js";
+import { base64ToBytes, buildResumePdf, bytesToBase64 } from "./src/resume-pdf.js";
 import {
   assertAllowedRecipient,
   authorizeGmail,
@@ -88,6 +89,7 @@ function jobView(job: StoredJob) {
     feedbackAt: tracking?.feedbackAt ?? null,
     analysis: db.getAnalysis(job.id),
     resume: db.getResume(job.id),
+    resumePdf: Boolean(db.getResumePdf(job.id)),
     draft: draftForJob(job.id),
   };
 }
@@ -134,6 +136,8 @@ function dashboard() {
     market,
     statuses,
     connections: settingsView().connections,
+    // Local dev is always the owner's machine; there is no password wall to check.
+    authenticated: true,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -167,16 +171,22 @@ async function analyzeJobs(options: { jobId?: string; limit?: number }) {
 
   const completed: Array<{ id: string; score: number; verdict: string; mode: string }> = [];
   for (const job of jobs) {
-    const { pkg, mode } = await analyzeJob(job, profile);
-    db.savePackage(job.id, pkg, mode);
-    completed.push({
-      id: job.id,
-      score: pkg.analysis.score,
-      verdict: pkg.analysis.verdict,
-      mode,
-    });
+    const { analysis, mode } = await analyzeJob(job, profile);
+    db.saveAnalysis(job.id, analysis, mode);
+    completed.push({ id: job.id, score: analysis.score, verdict: analysis.verdict, mode });
   }
   return completed;
+}
+
+async function adjustResumeForJob(jobIdValue: string) {
+  const profile = loadProfile(paths.profile);
+  const job = db.getJob(jobIdValue);
+  if (!job) throw new Error("Job not found.");
+
+  const { pkg, mode } = await adjustResume(job, profile);
+  const pdfBytes = await buildResumePdf(pkg.tailoredResume.markdown);
+  db.saveResumePackage(job.id, pkg, bytesToBase64(pdfBytes));
+  return { id: job.id, mode };
 }
 
 function normalizeImportedJob(value: unknown, index: number): JobInput {
@@ -269,6 +279,13 @@ async function route(request: IncomingMessage, response: ServerResponse) {
     json(response, 200, { ok: true, result, dashboard: dashboard() });
     return;
   }
+  if (request.method === "POST" && routePath === "/api/analyze-resume") {
+    const payload = await body(request);
+    if (typeof payload.jobId !== "string" || !payload.jobId) throw new Error("jobId is required.");
+    const result = await adjustResumeForJob(payload.jobId);
+    json(response, 200, { ok: true, result, dashboard: dashboard() });
+    return;
+  }
   if (request.method === "POST" && routePath === "/api/run") {
     const payload = await body(request);
     const sync = await syncJobs(Boolean(payload.manualOnly));
@@ -294,6 +311,25 @@ async function route(request: IncomingMessage, response: ServerResponse) {
     const payload = await body(request);
     await authorizeGmail(paths.googleCredentials, paths.googleToken, Boolean(payload.force));
     json(response, 200, { ok: true, connections: settingsView().connections });
+    return;
+  }
+
+  const resumePdfMatch = routePath.match(/^\/api\/resumes\/([^/]+)\.pdf$/);
+  if (request.method === "GET" && resumePdfMatch) {
+    const jobIdValue = decodeURIComponent(resumePdfMatch[1] ?? "");
+    const pdfBase64 = db.getResumePdf(jobIdValue);
+    if (!pdfBase64) {
+      json(response, 404, { ok: false, error: "No resume PDF has been generated for this job yet." });
+      return;
+    }
+    response.writeHead(200, {
+      "access-control-allow-headers": "content-type",
+      "access-control-allow-methods": "GET, POST, PUT, PATCH, OPTIONS",
+      "cache-control": "no-store",
+      "content-disposition": `attachment; filename="${jobIdValue}-resume.pdf"`,
+      "content-type": "application/pdf",
+    });
+    response.end(Buffer.from(base64ToBytes(pdfBase64)));
     return;
   }
 

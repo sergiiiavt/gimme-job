@@ -166,6 +166,13 @@ export const JobPackageSchema = z.object({
 
 export type JobPackage = z.infer<typeof JobPackageSchema>;
 
+export const ResumePackageSchema = z.object({
+  tailoredResume: TailoredResumeSchema,
+  applicationDraft: ApplicationDraftSchema,
+});
+
+export type ResumePackage = z.infer<typeof ResumePackageSchema>;
+
 export type DraftStatus =
   | "PENDING_APPROVAL"
   | "APPROVED"

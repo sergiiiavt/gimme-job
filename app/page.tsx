@@ -11,8 +11,19 @@ type JobFeedback = "RELEVANT" | "NOT_RELEVANT" | null;
 interface JobAnalysis {
   score?: number;
   verdict?: string;
+  roleFit?: string;
   matchingSkills?: string[];
   missingSkills?: string[];
+  hardBlockers?: string[];
+  recommendation?: string;
+  marketSignals?: {
+    seniority: string;
+    employmentType: string;
+    remotePolicy: string;
+    salary: string;
+    reservation: string;
+    language: string;
+  };
 }
 
 interface JobDraft {
@@ -42,11 +53,13 @@ interface Job {
   statusUpdatedAt?: string | null;
   analysis: JobAnalysis | null;
   resume: string | null;
+  resumePdf: boolean;
   draft: JobDraft | null;
 }
 
 interface DashboardData {
   jobs: Job[];
+  authenticated?: boolean;
 }
 
 const STATUS_OPTIONS: Array<{ value: JobStatus; label: string }> = [
@@ -78,6 +91,7 @@ const DEMO_JOBS: Job[] = [
     feedback: null,
     analysis: { score: 91, verdict: "strong", matchingSkills: ["Playwright", "TypeScript", "API testing"], missingSkills: ["AWS"] },
     resume: "# Your Name\nQA Automation Lead\n\n## Summary\nQA leader with hands-on Playwright and TypeScript automation experience.\n\n## Relevant skills\n- Playwright\n- TypeScript\n- API testing",
+    resumePdf: false,
     draft: { id: "demo-draft-1", recipient: null, subject: "Application — QA Automation Lead", body: "Hello,\n\nI am applying for the QA Automation Lead role at Northstar Labs. My relevant experience includes Playwright, TypeScript, API testing.\n\nBest regards,\nYour Name", status: "PENDING_APPROVAL" },
   },
   {
@@ -97,6 +111,7 @@ const DEMO_JOBS: Job[] = [
     feedback: "RELEVANT",
     analysis: { score: 84, verdict: "strong", matchingSkills: ["QA leadership", "Python", "API testing"], missingSkills: [] },
     resume: null,
+    resumePdf: false,
     draft: null,
   },
   {
@@ -116,6 +131,7 @@ const DEMO_JOBS: Job[] = [
     feedback: "RELEVANT",
     analysis: { score: 76, verdict: "strong", matchingSkills: ["API testing", "Test strategy"], missingSkills: ["IEC 62304"] },
     resume: null,
+    resumePdf: false,
     draft: null,
   },
 ];
@@ -220,6 +236,7 @@ export function WorkspaceApp() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [analyzeProgress, setAnalyzeProgress] = useState<{ done: number; total: number } | null>(null);
   const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
+  const [authenticated, setAuthenticated] = useState(false);
   const analyzeCancelRef = useRef(false);
 
   useEffect(() => {
@@ -231,6 +248,7 @@ export function WorkspaceApp() {
         const orderedJobs = [...result.jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
         setJobs(orderedJobs);
         setOnline(true);
+        setAuthenticated(Boolean(result.authenticated));
         setSelectedId(orderedJobs[0]?.id ?? null);
       })
       .catch(() => {
@@ -241,6 +259,7 @@ export function WorkspaceApp() {
         }
         setJobs(DEMO_JOBS);
         setOnline(false);
+        setAuthenticated(true);
         setSelectedId(DEMO_JOBS[0].id);
       });
     void loadDashboard();
@@ -274,6 +293,7 @@ export function WorkspaceApp() {
       const result = await api<{ dashboard: DashboardData }>("/sync", "POST", {});
       setJobs(result.dashboard.jobs);
       setOnline(true);
+      setAuthenticated(Boolean(result.dashboard.authenticated));
       setNotice("Job sources synced. Nothing was sent.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error));
@@ -316,6 +336,7 @@ export function WorkspaceApp() {
         );
         setJobs(result.dashboard.jobs);
         setOnline(true);
+        setAuthenticated(Boolean(result.dashboard.authenticated));
         const outcome = result.result[0];
         setAnalyzeLog((log) => [...log, outcome
           ? `  ✓ ${label} — score ${outcome.score} (${outcome.verdict}, ${outcome.mode})`
@@ -335,6 +356,38 @@ export function WorkspaceApp() {
   };
 
   const stopAnalyze = () => { analyzeCancelRef.current = true; };
+
+  const adjustResume = async (job: Job) => {
+    setBusy(`resume-${job.id}`);
+    try {
+      const result = await api<{ dashboard: DashboardData; result: { mode: string } }>(
+        "/analyze-resume", "POST", { jobId: job.id },
+      );
+      setJobs(result.dashboard.jobs);
+      setOnline(true);
+      setAuthenticated(Boolean(result.dashboard.authenticated));
+      setNotice(`Resume adjusted (${result.result.mode}). Nothing was sent.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : String(error));
+    } finally { setBusy(null); }
+  };
+
+  const downloadResumePdf = async (job: Job) => {
+    try {
+      const base = await apiBase();
+      const response = await fetch(`${base}/resumes/${encodeURIComponent(job.id)}.pdf`);
+      if (!response.ok) throw new Error(`Could not download the PDF: ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${job.id}-resume.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : String(error));
+    }
+  };
 
   const updateTracking = async (job: Job, change: { status?: JobStatus; feedback?: JobFeedback }) => {
     if (!online) return setNotice("Cloud API is unavailable; demo changes are not saved.");
@@ -356,31 +409,29 @@ export function WorkspaceApp() {
       <SiteSidebar
         activeSection="jobs"
         activeSubsection={statusFilter}
+        hideSecondary
         mobileOpen={mobileNav}
         mode="personal"
         onSelectSubsection={(next) => { setStatusFilter(next as JobStatus | "ALL"); setMobileNav(false); }}
         personalHref="/workspace"
         publicHref="/"
-        secondaryItems={[
-          { id: "ALL", label: "All statuses", count: jobs.length },
-          ...STATUS_OPTIONS.map((status) => ({ id: status.value, label: status.label, count: jobs.filter((job) => job.status === status.value).length })),
-        ]}
+        secondaryItems={[]}
         secondaryTitle="Vacancies"
       />
 
-      <section className="kb-main">
+      <section className="kb-main kb-main-compact-nav">
         <button className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} aria-label="Toggle navigation">☰</button>
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
             <div className="private-page-heading">
               <h1>Vacancies</h1>
-              <div className="page-actions">
+              {authenticated ? <div className="page-actions">
                 <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
                 {busy === "analyze"
                   ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
                   : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null}><Icon name="llm"/><span>{selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
-              </div>
+              </div> : <a className="signin-link" href="/workspace/login">Sign in for full access →</a>}
             </div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
             {(busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
@@ -400,23 +451,23 @@ export function WorkspaceApp() {
               </div>
               <div className="feed-meta">
                 <span>{visibleJobs.length} jobs</span>
-                <span className="feed-meta-select">
+                {authenticated && <span className="feed-meta-select">
                   {selectedIds.size > 0 ? `${selectedIds.size} selected · ` : ""}
                   <button type="button" className="link-button" onClick={selectAllVisible}>Select all</button>
                   {selectedIds.size > 0 && <button type="button" className="link-button" onClick={clearSelected}>Clear</button>}
-                </span>
+                </span>}
                 <span>Newest first</span>
               </div>
               <div className="job-feed">
                 {visibleJobs.map((job) => <div key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"}>
-                  <input
+                  {authenticated && <input
                     type="checkbox"
                     className="job-card-check"
                     aria-label={`Select ${displayText(job.title)} for analysis`}
                     checked={selectedIds.has(job.id)}
                     onChange={() => toggleSelected(job.id)}
                     onClick={(event) => event.stopPropagation()}
-                  />
+                  />}
                   <button aria-controls="selected-vacancy-detail" aria-pressed={selected?.id === job.id} className="job-card-body" onClick={() => setSelectedId(job.id)}>
                     <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
                     <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
@@ -427,7 +478,20 @@ export function WorkspaceApp() {
             </div>
 
             <div className="detail-panel" id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
-              {selected ? <JobDetail job={selected} disabled={busy === `job-${selected.id}`} onChange={(change) => void updateTracking(selected, change)}/> : <div className="empty large"><strong>Select a job</strong><span>The vacancy details and tracking controls will appear here.</span></div>}
+              {selected ? <JobDetailPanel job={selected} disabled={busy === `job-${selected.id}`} authenticated={authenticated} onChange={(change) => void updateTracking(selected, change)}/> : <div className="empty large"><strong>Select a job</strong><span>The vacancy details and tracking controls will appear here.</span></div>}
+            </div>
+
+            <div className="side-panel">
+              {selected ? <>
+                <JobAnalysisPanel job={selected}/>
+                <JobResumePanel
+                  job={selected}
+                  authenticated={authenticated}
+                  busy={busy === `resume-${selected.id}`}
+                  onAdjust={() => void adjustResume(selected)}
+                  onDownload={() => void downloadResumePdf(selected)}
+                />
+              </> : <div className="empty large"><strong>No vacancy selected</strong><span>Analysis and resume tools will appear here.</span></div>}
             </div>
           </section>
         </div>
@@ -461,7 +525,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
   >{copied ? "Copied" : label}</button>;
 }
 
-function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
+function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; disabled: boolean; authenticated: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
   const summaryTags = [
     job.remote ? "Remote" : null,
     job.salaryText ? "Salary listed" : null,
@@ -481,29 +545,61 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
     </div>
     <div className="job-summary-tags">{summaryTags.map((tag) => <span key={tag}>{tag}</span>)}</div>
 
-    <section className="tracking-box">
+    {authenticated && <section className="tracking-box">
       <div><label htmlFor={`status-${job.id}`}>Pipeline status</label><select id={`status-${job.id}`} value={job.status} disabled={disabled} onChange={(event) => onChange({ status: event.target.value as JobStatus })}>{STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></div>
       <div><label>Feedback for the agent</label><div className="feedback-buttons">
         <button aria-pressed={job.feedback === "RELEVANT"} className={job.feedback === "RELEVANT" ? "active positive" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "RELEVANT" ? null : "RELEVANT" })}><Icon name="check"/>Relevant</button>
         <button aria-pressed={job.feedback === "NOT_RELEVANT"} className={job.feedback === "NOT_RELEVANT" ? "active negative" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "NOT_RELEVANT" ? null : "NOT_RELEVANT" })}><Icon name="x"/>Not relevant</button>
       </div></div>
-    </section>
+    </section>}
 
     <dl className="job-facts"><div><dt>Source</dt><dd>{sourceLabel(job.source)}</dd></div><div><dt>Posted</dt><dd>{formatDate(job.postedAt)}</dd></div><div><dt>Found</dt><dd>{formatDate(job.discoveredAt)}</dd></div><div><dt>Remote</dt><dd>{job.remote ? "Yes" : "Not specified"}</dd></div></dl>
 
-    {(job.analysis?.matchingSkills?.length || job.analysis?.missingSkills?.length) && <section className="skills"><h3>Quick match</h3>{Boolean(job.analysis?.matchingSkills?.length) && <div><span>Matches</span><p>{job.analysis?.matchingSkills?.map((skill) => <em key={skill}>{skill}</em>)}</p></div>}{Boolean(job.analysis?.missingSkills?.length) && <div><span>Gaps</span><p>{job.analysis?.missingSkills?.map((skill) => <em key={skill} className="gap">{skill}</em>)}</p></div>}</section>}
+    <section className="description"><h3>Vacancy description</h3><p>{displayText(job.description || "No description was collected for this vacancy.")}</p></section>
+  </article>;
+}
 
-    {job.resume && <section className="resume-preview">
-      <div className="section-head"><h3>Tailored resume</h3><CopyButton text={job.resume}/></div>
-      <pre>{job.resume}</pre>
-    </section>}
+function JobAnalysisPanel({ job }: { job: Job }) {
+  if (!job.analysis) return <article className="job-analysis empty-panel"><strong>Not analyzed yet</strong><span>Press Analyze to score this vacancy against the candidate profile.</span></article>;
+  const analysis = job.analysis;
+  return <article className="job-analysis">
+    <div className="section-head"><h3>Analysis</h3>{typeof analysis.score === "number" && <span className={`verdict verdict-${analysis.verdict ?? "weak"}`}>{analysis.verdict} · {analysis.score}</span>}</div>
+    {analysis.recommendation && <p className="analysis-recommendation">{analysis.recommendation}</p>}
+    {(analysis.matchingSkills?.length || analysis.missingSkills?.length) ? <div className="skills">
+      {Boolean(analysis.matchingSkills?.length) && <div><span>Matches</span><p>{analysis.matchingSkills?.map((skill) => <em key={skill}>{skill}</em>)}</p></div>}
+      {Boolean(analysis.missingSkills?.length) && <div><span>Gaps</span><p>{analysis.missingSkills?.map((skill) => <em key={skill} className="gap">{skill}</em>)}</p></div>}
+    </div> : null}
+    {analysis.hardBlockers?.length ? <div className="analysis-blockers"><span>Blockers</span><p>{analysis.hardBlockers.join(" · ")}</p></div> : null}
+    {analysis.marketSignals && <dl className="job-facts market-signals">
+      <div><dt>Seniority</dt><dd>{analysis.marketSignals.seniority}</dd></div>
+      <div><dt>Employment</dt><dd>{analysis.marketSignals.employmentType}</dd></div>
+      <div><dt>Remote</dt><dd>{analysis.marketSignals.remotePolicy}</dd></div>
+      <div><dt>Language</dt><dd>{analysis.marketSignals.language}</dd></div>
+    </dl>}
+  </article>;
+}
+
+function JobResumePanel({ job, authenticated, busy, onAdjust, onDownload }: { job: Job; authenticated: boolean; busy: boolean; onAdjust: () => void; onDownload: () => void }) {
+  return <article className="job-resume">
+    <div className="section-head">
+      <h3>Tailored resume</h3>
+      {authenticated && <button type="button" className="sync-button small" onClick={onAdjust} disabled={busy}>
+        <Icon name="llm" size={14}/><span>{busy ? "Adjusting…" : job.resume ? "Re-adjust for this vacancy" : "Adjust resume for this vacancy"}</span>
+      </button>}
+    </div>
+
+    {job.resume ? <>
+      <div className="section-head"><span className="eyebrow">Resume preview</span><div className="resume-actions">
+        <CopyButton text={job.resume}/>
+        {job.resumePdf && <button type="button" className="copy-button" onClick={onDownload}>Download PDF</button>}
+      </div></div>
+      <pre className="resume-preview-text">{job.resume}</pre>
+    </> : <p className="empty-hint">No tailored resume yet for this vacancy.</p>}
 
     {job.draft && <section className="draft-preview">
       <div className="section-head"><h3>Application draft</h3><CopyButton text={`Subject: ${job.draft.subject}\n\n${job.draft.body}`}/></div>
       <p className="draft-subject">{job.draft.subject}</p>
       <pre>{job.draft.body}</pre>
     </section>}
-
-    <section className="description"><h3>Vacancy description</h3><p>{displayText(job.description || "No description was collected for this vacancy.")}</p></section>
   </article>;
 }
