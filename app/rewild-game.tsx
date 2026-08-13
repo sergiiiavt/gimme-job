@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import RewildTacticalGame from "./rewild-tactical-game";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -799,7 +800,7 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
   );
 }
 
-export default function RewildGame({ onViewChange = () => {}, view = "all" }: { onViewChange?: (view: string) => void; view?: string }) {
+function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewChange?: (view: string) => void; view?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -999,4 +1000,9 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
       </section>
     </div>
   );
+}
+
+export default function RewildGame(props: { onViewChange?: (view: string) => void; view?: string }) {
+  if ((props.view ?? "all") === "all") return <RewildTacticalGame onViewChange={props.onViewChange ?? (() => {})}/>;
+  return <LegacyRewildGame {...props}/>;
 }
