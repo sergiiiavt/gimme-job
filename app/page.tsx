@@ -249,7 +249,6 @@ export function WorkspaceApp() {
         setJobs(orderedJobs);
         setOnline(true);
         setAuthenticated(Boolean(result.authenticated));
-        setSelectedId(orderedJobs[0]?.id ?? null);
       })
       .catch(() => {
         if (!active) return;
@@ -260,7 +259,6 @@ export function WorkspaceApp() {
         setJobs(DEMO_JOBS);
         setOnline(false);
         setAuthenticated(true);
-        setSelectedId(DEMO_JOBS[0].id);
       });
     void loadDashboard();
     return () => {
@@ -279,7 +277,7 @@ export function WorkspaceApp() {
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source}`).toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [jobs, query, statusFilter]);
 
-  const selected = visibleJobs.find((job) => job.id === selectedId) ?? visibleJobs[0] ?? null;
+  const selected = visibleJobs.find((job) => job.id === selectedId) ?? null;
   const counts = {
     total: jobs.length,
     new: jobs.filter((job) => job.status === "NEW").length,
@@ -440,60 +438,61 @@ export function WorkspaceApp() {
             </div>}
           </section>
 
-          <section className="job-workbench">
-            <div className="feed-panel">
-              <div className="feed-tools">
-                <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
-                  <option value="ALL">All statuses</option>
-                  {STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
-                </select>
-              </div>
-              <div className="feed-meta">
-                <span>{visibleJobs.length} jobs</span>
-                {authenticated && <span className="feed-meta-select">
-                  {selectedIds.size > 0 ? `${selectedIds.size} selected · ` : ""}
-                  <button type="button" className="link-button" onClick={selectAllVisible}>Select all</button>
-                  {selectedIds.size > 0 && <button type="button" className="link-button" onClick={clearSelected}>Clear</button>}
-                </span>}
-                <span>Newest first</span>
-              </div>
-              <div className="job-feed">
-                {visibleJobs.map((job) => <div key={job.id} className={selected?.id === job.id ? "job-card selected" : "job-card"}>
-                  {authenticated && <input
-                    type="checkbox"
-                    className="job-card-check"
-                    aria-label={`Select ${displayText(job.title)} for analysis`}
-                    checked={selectedIds.has(job.id)}
-                    onChange={() => toggleSelected(job.id)}
-                    onClick={(event) => event.stopPropagation()}
-                  />}
-                  <button aria-controls="selected-vacancy-detail" aria-pressed={selected?.id === job.id} className="job-card-body" onClick={() => setSelectedId(job.id)}>
-                    <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
-                    <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
-                  </button>
-                </div>)}
-                {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or status filter." : online === null ? "Connecting to the job database…" : "The first sync runs automatically. You can also press Sync jobs."}</span></div>}
-              </div>
+          {selected ? <section className="job-detail-view" id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
+            <button type="button" className="back-link" onClick={() => setSelectedId(null)}>← Back to vacancies</button>
+            <JobDetailPanel job={selected} disabled={busy === `job-${selected.id}`} authenticated={authenticated} onChange={(change) => void updateTracking(selected, change)}/>
+            <article className="job-analysis-resume">
+              <JobAnalysisPanel job={selected}/>
+              <JobResumePanel
+                job={selected}
+                authenticated={authenticated}
+                busy={busy === `resume-${selected.id}`}
+                onAdjust={() => void adjustResume(selected)}
+                onDownload={() => void downloadResumePdf(selected)}
+              />
+            </article>
+          </section> : <section className="job-list-view">
+            <div className="feed-tools">
+              <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
+                <option value="ALL">All statuses</option>
+                {STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
+              </select>
             </div>
-
-            <div className="detail-panel" id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
-              {selected ? <JobDetailPanel job={selected} disabled={busy === `job-${selected.id}`} authenticated={authenticated} onChange={(change) => void updateTracking(selected, change)}/> : <div className="empty large"><strong>Select a job</strong><span>The vacancy details and tracking controls will appear here.</span></div>}
+            <div className="feed-meta">
+              <span>{visibleJobs.length} jobs</span>
+              {authenticated && <span className="feed-meta-select">
+                {selectedIds.size > 0 ? `${selectedIds.size} selected · ` : ""}
+                <button type="button" className="link-button" onClick={selectAllVisible}>Select all</button>
+                {selectedIds.size > 0 && <button type="button" className="link-button" onClick={clearSelected}>Clear</button>}
+              </span>}
+              <span>Newest first</span>
             </div>
-
-            <div className="side-panel">
-              {selected ? <>
-                <JobAnalysisPanel job={selected}/>
-                <JobResumePanel
-                  job={selected}
-                  authenticated={authenticated}
-                  busy={busy === `resume-${selected.id}`}
-                  onAdjust={() => void adjustResume(selected)}
-                  onDownload={() => void downloadResumePdf(selected)}
-                />
-              </> : <div className="empty large"><strong>No vacancy selected</strong><span>Analysis and resume tools will appear here.</span></div>}
+            <div className="job-feed">
+              {visibleJobs.map((job) => <div
+                key={job.id}
+                className="job-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedId(job.id)}
+                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedId(job.id); } }}
+              >
+                {authenticated && <input
+                  type="checkbox"
+                  className="job-card-check"
+                  aria-label={`Select ${displayText(job.title)} for analysis`}
+                  checked={selectedIds.has(job.id)}
+                  onChange={() => toggleSelected(job.id)}
+                  onClick={(event) => event.stopPropagation()}
+                />}
+                <div className="job-card-body">
+                  <div className="job-copy"><div><strong>{displayText(job.title)}</strong><time>{formatDate(job.postedAt ?? job.discoveredAt)}</time></div><p>{displayText(job.company)} · {displayText(job.location)}</p><div className="chips"><span>{sourceLabel(job.source)}</span>{job.remote && <span>Remote</span>}{job.feedback === "RELEVANT" && <span className="good">Relevant</span>}{job.feedback === "NOT_RELEVANT" && <span className="bad">Not relevant</span>}</div></div>
+                  <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
+                </div>
+              </div>)}
+              {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or status filter." : online === null ? "Connecting to the job database…" : "The first sync runs automatically. You can also press Sync jobs."}</span></div>}
             </div>
-          </section>
+          </section>}
         </div>
       </section>
 
