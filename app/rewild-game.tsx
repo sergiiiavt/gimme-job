@@ -40,7 +40,6 @@ function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: numb
 }
 
 const SPRITE_FILES: Record<string, string> = {
-  "terrain-meadow": "/rewild/terrain-meadow.png",
   "terrain-shrub-1": "/rewild/terrain-shrub-1.png", "terrain-shrub-2": "/rewild/terrain-shrub-2.png",
   "terrain-flowers-1": "/rewild/terrain-flowers-1.png", "terrain-flowers-2": "/rewild/terrain-flowers-2.png",
   "terrain-pond-1": "/rewild/terrain-pond-1.png", "terrain-pond-2": "/rewild/terrain-pond-2.png",
@@ -104,7 +103,9 @@ function preloadSprites() {
   for (const key of Object.keys(SPRITE_FILES)) getSprite(key);
 }
 
-type TileKind = "grass" | "corrupt" | "forest" | "pond" | "rock" | "flowers" | "house";
+type SurfaceKind = "grass" | "road" | "forest" | "pond" | "rock" | "flowers" | "house" | "foundation" | "rubble";
+type CorruptionLevel = 0 | 1 | 2 | 3 | 4;
+interface TerrainCell { surface: SurfaceKind; corruption: CorruptionLevel; seed: number; source: number | null }
 type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | "rootreclaimer" | "elderoak";
 type EnemyKind = "clickbait" | "deepfake" | "popup" | "fragment";
 type GameStatus = "menu" | "playing" | "paused" | "won" | "lost";
@@ -175,6 +176,9 @@ interface DataNode {
   spreadTimer: number;
   spawnTimer: number;
   boss: boolean;
+  buildProgress: number;
+  footprint: Point[];
+  outlet: Point;
 }
 
 interface Beam {
@@ -189,7 +193,7 @@ interface Beam {
 
 interface GameState {
   status: GameStatus;
-  tiles: TileKind[][];
+  tiles: TerrainCell[][];
   plants: PlantEntity[];
   enemies: EnemyEntity[];
   nodes: DataNode[];
@@ -244,7 +248,7 @@ interface SceneryObject {
   sprite?: string;
   rotation?: number;
   shadow?: boolean;
-  cells?: Array<[number, number, TileKind]>;
+  cells?: Array<[number, number, SurfaceKind]>;
   points?: Array<{ x: number; y: number }>;
 }
 const ROAD_POINTS = [
@@ -272,14 +276,39 @@ const SCENERY: SceneryObject[] = [
   { id: "fence-house", kind: "fence", x: 12.7, y: 8.6, width: 2.4 },
 ];
 
+function roadYAt(col: number, points: Array<{ x: number; y: number }>) {
+  for (let index = 1; index < points.length; index += 1) {
+    const left = points[index - 1];
+    const right = points[index];
+    if (col >= left.x && col <= right.x) {
+      const progress = (col - left.x) / Math.max(.001, right.x - left.x);
+      return left.y + (right.y - left.y) * progress;
+    }
+  }
+  return points.at(-1)?.y ?? 8;
+}
+
 function createTiles() {
-  const tiles = Array.from({ length: ROWS }, () => Array<TileKind>(COLS).fill("grass"));
+  const tiles = Array.from({ length: ROWS }, (_, row) => Array.from({ length: COLS }, (_, col): TerrainCell => ({
+    surface: "grass", corruption: 0, seed: hashInt(col, row, 17),
+    source: null,
+  })));
+  const road = SCENERY.find((object) => object.kind === "road");
+  if (road?.points) {
+    let previousRow = Math.floor(roadYAt(.5, road.points));
+    for (let col = 0; col < COLS; col += 1) {
+      const row = Math.max(0, Math.min(ROWS - 1, Math.floor(roadYAt(col + .5, road.points))));
+      tiles[row][col].surface = "road";
+      if (row !== previousRow) tiles[previousRow][col].surface = "road";
+      previousRow = row;
+    }
+  }
   for (const object of SCENERY) {
-    for (const [col, row, kind] of object.cells ?? []) tiles[row][col] = kind;
+    for (const [col, row, surface] of object.cells ?? []) tiles[row][col].surface = surface;
   }
   for (const key of HOUSE_TILES) {
     const [col, row] = key.split(",").map(Number);
-    tiles[row][col] = "house";
+    tiles[row][col].surface = "house";
   }
   return tiles;
 }
@@ -290,14 +319,44 @@ function nextId(state: GameState) {
   return id;
 }
 
+function createFacilityFootprint(point: Point, boss: boolean) {
+  const across = boss ? 4 : 3;
+  const depth = boss ? 3 : 2;
+  const cells: Point[] = [];
+  if (point.row === 0 || point.row === ROWS - 1) {
+    const startCol = Math.max(0, Math.min(COLS - across, point.col - Math.floor(across / 2)));
+    const startRow = point.row === 0 ? 0 : ROWS - depth;
+    for (let row = startRow; row < startRow + depth; row += 1) for (let col = startCol; col < startCol + across; col += 1) cells.push({ col, row });
+  } else {
+    const startCol = point.col === 0 ? 1 : COLS - depth - 1;
+    const startRow = Math.max(0, Math.min(ROWS - across, point.row - Math.floor(across / 2)));
+    for (let row = startRow; row < startRow + across; row += 1) for (let col = startCol; col < startCol + depth; col += 1) cells.push({ col, row });
+  }
+  return cells;
+}
+
+function facilityOutlet(point: Point, footprint: Point[]) {
+  if (point.row === 0) return { col: point.col, row: Math.min(ROWS - 1, Math.max(...footprint.map((cell) => cell.row)) + 1) };
+  if (point.row === ROWS - 1) return { col: point.col, row: Math.max(0, Math.min(...footprint.map((cell) => cell.row)) - 1) };
+  if (point.col === 0) return { col: Math.min(COLS - 1, Math.max(...footprint.map((cell) => cell.col)) + 1), row: point.row };
+  return { col: Math.max(0, Math.min(...footprint.map((cell) => cell.col)) - 1), row: point.row };
+}
+
+function facilityStage(node: DataNode) { return Math.min(3, Math.floor(node.buildProgress / (node.boss ? 3 : 2))); }
+
 function createNode(state: GameState, point: Point, boss = false) {
-  state.tiles[point.row][point.col] = "corrupt";
+  const id = nextId(state);
+  const footprint = createFacilityFootprint(point, boss);
+  for (const cell of footprint) {
+    state.tiles[cell.row][cell.col].surface = "foundation";
+    state.tiles[cell.row][cell.col].corruption = 0;
+    state.tiles[cell.row][cell.col].source = id;
+  }
   state.nodes.push({
-    id: nextId(state), col: point.col, row: point.row,
+    id, col: point.col, row: point.row,
     hp: boss ? 800 : 150, maxHp: boss ? 800 : 150,
-    spreadTimer: boss ? 5 : 13 + Math.random() * 3,
-    spawnTimer: boss ? 3 : 11 + Math.random() * 3,
-    boss,
+    spreadTimer: 1.4, spawnTimer: boss ? 3 : 5,
+    boss, buildProgress: 0, footprint, outlet: facilityOutlet(point, footprint),
   });
 }
 
@@ -316,18 +375,18 @@ function createGameState(best: number, difficulty: Difficulty, status: GameStatu
 
 function tileKey(col: number, row: number) { return `${col},${row}`; }
 function inBounds(col: number, row: number) { return col >= 0 && row >= 0 && col < COLS && row < ROWS; }
-function isObstacle(tile: TileKind) { return tile === "forest" || tile === "pond" || tile === "rock" || tile === "flowers"; }
+function isObstacle(cell: TerrainCell) { return cell.surface === "forest" || cell.surface === "pond" || cell.surface === "rock" || cell.surface === "flowers" || cell.surface === "foundation"; }
 function plantAt(state: GameState, col: number, row: number) { return state.plants.find((plant) => plant.col === col && plant.row === row); }
-function nodeAt(state: GameState, col: number, row: number) { return state.nodes.find((node) => node.col === col && node.row === row); }
+function nodeAt(state: GameState, col: number, row: number) { return state.nodes.find((node) => node.footprint.some((cell) => cell.col === col && cell.row === row)); }
 function distance(aCol: number, aRow: number, bCol: number, bRow: number) { return Math.hypot(aCol - bCol, aRow - bRow); }
 
 function corruptionPercent(state: GameState) {
   let field = 0;
   let corrupted = 0;
   for (const row of state.tiles) {
-    for (const tile of row) {
-      if (tile === "grass" || tile === "corrupt") field += 1;
-      if (tile === "corrupt") corrupted += 1;
+    for (const cell of row) {
+      if (cell.surface === "grass" || cell.surface === "road" || cell.surface === "rubble") field += 1;
+      if (cell.corruption >= 3) corrupted += 1;
     }
   }
   return field ? Math.round((corrupted / field) * 100) : 0;
@@ -375,7 +434,11 @@ function addBeam(state: GameState, x1: number, y1: number, x2: number, y2: numbe
 }
 
 function targetPosition(target: EnemyEntity | DataNode) {
-  return "kind" in target ? { x: target.x, y: target.y } : { x: target.col + .5, y: target.row + .5 };
+  if ("kind" in target) return { x: target.x, y: target.y };
+  return {
+    x: target.footprint.reduce((sum, cell) => sum + cell.col + .5, 0) / target.footprint.length,
+    y: target.footprint.reduce((sum, cell) => sum + cell.row + .5, 0) / target.footprint.length,
+  };
 }
 
 function damageTarget(state: GameState, plant: PlantEntity, target: EnemyEntity | DataNode, damage: number, color: string) {
@@ -398,14 +461,17 @@ function reclaimNear(state: GameState, plant: PlantEntity) {
   for (let radius = 0; radius <= 3; radius += 1) {
     for (let row = plant.row - radius; row <= plant.row + radius; row += 1) {
       for (let col = plant.col - radius; col <= plant.col + radius; col += 1) {
-        if (inBounds(col, row) && state.tiles[row][col] === "corrupt" && distance(col, row, plant.col, plant.row) <= radius + .2) candidates.push({ col, row });
+        if (inBounds(col, row) && state.tiles[row][col].corruption > 0 && distance(col, row, plant.col, plant.row) <= radius + .2) candidates.push({ col, row });
       }
     }
     if (candidates.length) break;
   }
   const target = candidates.sort((left, right) => distance(left.col, left.row, plant.col, plant.row) - distance(right.col, right.row, plant.col, plant.row))[0];
   if (!target || nodeAt(state, target.col, target.row)) return;
-  state.tiles[target.row][target.col] = "grass";
+  const cell = state.tiles[target.row][target.col];
+  cell.corruption = Math.max(0, cell.corruption - 1) as CorruptionLevel;
+  if (cell.corruption === 0) cell.source = null;
+  if (cell.surface === "rubble" && cell.corruption === 0) cell.surface = "grass";
   state.score += 6;
   addBeam(state, plant.col + .5, plant.row + .5, target.col + .5, target.row + .5, "#a9e37d");
 }
@@ -448,9 +514,9 @@ function updatePlants(state: GameState, dt: number) {
 function spawnEnemy(state: GameState, node: DataNode, kind: EnemyKind, offset = 0) {
   if (state.enemies.length >= 70) return;
   const neighbors = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-    .map(([dc, dr]) => ({ col: node.col + dc, row: node.row + dr }))
+    .map(([dc, dr]) => ({ col: node.outlet.col + dc, row: node.outlet.row + dr }))
     .filter((point) => inBounds(point.col, point.row) && !isObstacle(state.tiles[point.row][point.col]) && !HOUSE_TILES.has(tileKey(point.col, point.row)));
-  const spawn = neighbors[offset % Math.max(1, neighbors.length)] ?? { col: node.col, row: node.row };
+  const spawn = neighbors[offset % Math.max(1, neighbors.length)] ?? node.outlet;
   const config = ENEMIES[kind];
   const mult = DIFFICULTIES[state.difficulty];
   const hp = Math.round(config.hp * mult.enemyHp);
@@ -475,31 +541,43 @@ function spawnFromNode(state: GameState, node: DataNode) {
   for (let index = 0; index < count; index += 1) spawnEnemy(state, node, kind, index);
 }
 
-function spreadCorruption(state: GameState) {
-  const frontier: Point[] = [];
+function spreadCorruption(state: GameState, node: DataNode) {
+  const frontier: Array<Point & { nextLevel: CorruptionLevel; score: number }> = [];
   const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) {
-      if (state.tiles[row][col] !== "corrupt") continue;
+      const sourceLevel = state.tiles[row][col].corruption;
+      if (sourceLevel === 0 || state.tiles[row][col].source !== node.id) continue;
       for (const [dc, dr] of directions) {
         const next = { col: col + dc, row: row + dr };
         if (!inBounds(next.col, next.row)) continue;
-        const tile = state.tiles[next.row][next.col];
-        if (tile === "grass" || tile === "house") frontier.push(next);
+        const cell = state.tiles[next.row][next.col];
+        if (cell.surface === "foundation" || cell.surface === "rock" || cell.corruption >= 4) continue;
+        if (cell.surface === "house") {
+          if (sourceLevel >= 3) finishGame(state, "lost", "AI slop breached the garden perimeter.");
+          continue;
+        }
+        const sameCellStage = sourceLevel < 4 && hashInt(col, row, Math.floor(state.elapsed) + node.id) % 3 === 0;
+        const nextLevel = sameCellStage ? Math.min(4, sourceLevel + 1) as CorruptionLevel : 1;
+        if (cell.corruption >= nextLevel) continue;
+        const conduit = cell.surface === "road" || cell.surface === "pond" ? 6 : 0;
+        const connected = distance(col, row, node.outlet.col, node.outlet.row) < 2 ? 4 : 0;
+        const towardHouse = 10 - distance(next.col, next.row, HOUSE_COL + 1, HOUSE_ROW + 1);
+        frontier.push({ ...next, nextLevel, score: conduit + connected + towardHouse + (hashInt(next.col, next.row, node.id) % 5) });
       }
+      if (sourceLevel < 4) frontier.push({ col, row, nextLevel: Math.min(4, sourceLevel + 1) as CorruptionLevel, score: 20 + sourceLevel * 4 });
     }
   }
   if (!frontier.length) return;
-  const target = frontier[Math.floor(Math.random() * frontier.length)];
-  if (HOUSE_TILES.has(tileKey(target.col, target.row))) {
-    finishGame(state, "lost", "AI slop breached the garden perimeter.");
-    return;
+  const target = frontier.sort((left, right) => right.score - left.score)[0];
+  if (!plantAt(state, target.col, target.row)) {
+    state.tiles[target.row][target.col].corruption = target.nextLevel;
+    state.tiles[target.row][target.col].source = node.id;
   }
-  if (!plantAt(state, target.col, target.row)) state.tiles[target.row][target.col] = "corrupt";
 }
 
 function addWaveNode(state: GameState, boss = false) {
-  const available = BORDER_SPAWNS.filter((point) => !nodeAt(state, point.col, point.row) && !plantAt(state, point.col, point.row));
+  const available = BORDER_SPAWNS.filter((point) => createFacilityFootprint(point, boss).every((cell) => !nodeAt(state, cell.col, cell.row) && !plantAt(state, cell.col, cell.row) && !HOUSE_TILES.has(tileKey(cell.col, cell.row))));
   if (!available.length) return;
   const point = available[Math.floor(Math.random() * available.length)];
   createNode(state, point, boss);
@@ -508,13 +586,17 @@ function addWaveNode(state: GameState, boss = false) {
 
 function updateNodes(state: GameState, dt: number) {
   for (const node of state.nodes) {
+    node.buildProgress += dt;
     node.spreadTimer -= dt;
     node.spawnTimer -= dt;
-    if (node.spreadTimer <= 0) {
-      spreadCorruption(state);
-      node.spreadTimer = node.boss ? 5.5 : Math.max(8, 14 - state.wave * .45);
+    if (facilityStage(node) >= 2 && node.spreadTimer <= 0) {
+      const outlet = state.tiles[node.outlet.row][node.outlet.col];
+      outlet.corruption = Math.max(outlet.corruption, facilityStage(node) === 2 ? 1 : 2) as CorruptionLevel;
+      outlet.source = node.id;
+      spreadCorruption(state, node);
+      node.spreadTimer = node.boss ? 1.7 : Math.max(2.2, 3.6 - state.wave * .08);
     }
-    if (node.spawnTimer <= 0) {
+    if (facilityStage(node) === 3 && node.spawnTimer <= 0) {
       spawnFromNode(state, node);
       node.spawnTimer = node.boss ? 3.4 : Math.max(8, 13 - state.wave * .4);
     }
@@ -606,6 +688,11 @@ function cleanupDefeated(state: GameState) {
 
   const deadNodes = state.nodes.filter((node) => node.hp <= 0);
   for (const node of deadNodes) {
+    for (const cell of node.footprint) {
+      state.tiles[cell.row][cell.col].surface = "rubble";
+      state.tiles[cell.row][cell.col].corruption = Math.max(2, state.tiles[cell.row][cell.col].corruption) as CorruptionLevel;
+      state.tiles[cell.row][cell.col].source = null;
+    }
     state.score += node.boss ? 800 : 180;
     setMessage(state, node.boss ? "The AI Slop Mainframe is dead. Good." : "AI slop server destroyed. Keep pushing.", 4);
   }
@@ -649,10 +736,10 @@ function placePlant(state: GameState, col: number, row: number) {
   const config = PLANTS[state.selected];
   if (state.wave < config.unlockWave) { setMessage(state, `${config.name} unlocks at wave ${config.unlockWave}.`); return; }
   if (state.sunlight < config.cost) { setMessage(state, `Not enough sunlight for ${config.name}.`); return; }
-  const tile = state.tiles[row][col];
-  const valid = state.selected === "rootreclaimer" ? tile === "corrupt" : tile === "grass";
+  const cell = state.tiles[row][col];
+  const valid = state.selected === "rootreclaimer" ? cell.corruption > 0 : cell.surface === "grass" && cell.corruption === 0;
   if (!valid) {
-    const tileLabel = tile === "house" ? "the house" : tile === "corrupt" ? "corrupted ground" : tile;
+    const tileLabel = cell.surface === "house" ? "the house" : cell.corruption > 0 ? "corrupted ground" : cell.surface;
     setMessage(state, state.selected === "rootreclaimer" ? "Rootreclaimers need corrupted ground." : `Can't plant ${config.name} on ${tileLabel}.`);
     return;
   }
@@ -711,32 +798,78 @@ function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, grou
   return { width, height, top, left };
 }
 
-function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: number, row: number, time: number) {
+function edgeMask(tiles: TerrainCell[][], col: number, row: number, minimum: CorruptionLevel) {
+  let mask = 0;
+  if (row > 0 && tiles[row - 1][col].corruption >= minimum) mask |= 1;
+  if (col + 1 < COLS && tiles[row][col + 1].corruption >= minimum) mask |= 2;
+  if (row + 1 < ROWS && tiles[row + 1][col].corruption >= minimum) mask |= 4;
+  if (col > 0 && tiles[row][col - 1].corruption >= minimum) mask |= 8;
+  return mask;
+}
+
+function drawPixelCracks(ctx: CanvasRenderingContext2D, x: number, y: number, seed: number, color: string) {
+  ctx.fillStyle = color;
+  const startX = x + 9 + seed % 18;
+  const startY = y + 8 + (seed >>> 4) % 16;
+  ctx.fillRect(startX, startY, 9, 2);
+  ctx.fillRect(startX + 7, startY, 2, 8);
+  ctx.fillRect(startX + 7, startY + 6, 7, 2);
+}
+
+function drawTile(ctx: CanvasRenderingContext2D, state: GameState, col: number, row: number) {
+  const tiles = state.tiles;
   const x = col * TILE;
   const y = row * TILE;
-  const corrupt = tiles[row][col] === "corrupt";
-  if (corrupt) {
-    const left = col > 0 && tiles[row][col - 1] === "corrupt";
-    const right = col + 1 < COLS && tiles[row][col + 1] === "corrupt";
-    const top = row > 0 && tiles[row - 1][col] === "corrupt";
-    const bottom = row + 1 < ROWS && tiles[row + 1][col] === "corrupt";
-    const wobble = (hashInt(col, row, 18) % 7) - 3;
-    ctx.fillStyle = "rgba(42,30,55,.78)";
-    ctx.beginPath();
-    ctx.moveTo(x + (left ? 0 : 6 + wobble), y + (top ? 0 : 8));
-    ctx.quadraticCurveTo(x + TILE / 2, y + (top ? 0 : 2), x + (right ? TILE : TILE - 7 + wobble), y + (top ? 0 : 7));
-    ctx.lineTo(x + (right ? TILE : TILE - 4), y + (bottom ? TILE : TILE - 8));
-    ctx.quadraticCurveTo(x + TILE / 2, y + (bottom ? TILE : TILE - 2), x + (left ? 0 : 6), y + (bottom ? TILE : TILE - 6));
-    ctx.closePath();
-    ctx.fill();
-    const glow = ctx.createRadialGradient(x + TILE / 2, y + TILE / 2, 2, x + TILE / 2, y + TILE / 2, TILE * .52);
-    glow.addColorStop(0, "rgba(117,58,136,.34)");
-    glow.addColorStop(1, "rgba(42,30,55,0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(x - 4, y - 4, TILE + 8, TILE + 8);
+  const cell = tiles[row][col];
+  if (cell.surface === "road") {
+    ctx.fillStyle = "#9a7447"; ctx.fillRect(x, y, TILE, TILE);
+    ctx.fillStyle = "#b18a54"; ctx.fillRect(x, y + 4, TILE, TILE - 9);
+    ctx.fillStyle = "#735738";
+    if (row === 0 || tiles[row - 1][col].surface !== "road") ctx.fillRect(x, y, TILE, 4);
+    if (row + 1 === ROWS || tiles[row + 1][col].surface !== "road") ctx.fillRect(x, y + TILE - 5, TILE, 5);
+    ctx.fillStyle = "#d0aa68";
+    ctx.fillRect(x + 6 + cell.seed % 15, y + 12, 3, 2);
+    ctx.fillRect(x + 22, y + 27 + (cell.seed >>> 6) % 5, 4, 2);
+  } else if (cell.surface === "foundation") {
+    const node = cell.source === null ? null : state.nodes.find((candidate) => candidate.id === cell.source);
+    const stage = node ? facilityStage(node) : 1;
+    if (stage === 0) {
+      ctx.fillStyle = "#76573b"; ctx.fillRect(x, y, TILE, TILE);
+      ctx.fillStyle = "#96704a"; ctx.fillRect(x + 4, y + 4, TILE - 8, 5);
+      ctx.fillStyle = "#4e3d31"; ctx.fillRect(x + 7, y + 23, 22, 4);
+    } else {
+      ctx.fillStyle = "#5f625d"; ctx.fillRect(x, y, TILE, TILE);
+      ctx.fillStyle = "#777a72"; ctx.fillRect(x + 2, y + 2, TILE - 4, 4);
+      ctx.fillStyle = "#3d403e"; ctx.fillRect(x + 2, y + TILE - 5, TILE - 4, 3);
+      ctx.fillStyle = "#9b8a55"; ctx.fillRect(x + 7, y + 9, 3, 3); ctx.fillRect(x + 29, y + 27, 3, 3);
+    }
+  } else if (cell.surface === "rubble") {
+    ctx.fillStyle = "#514d46"; ctx.fillRect(x, y, TILE, TILE);
+    ctx.fillStyle = "#79766d";
+    ctx.fillRect(x + 4, y + 7, 12, 7); ctx.fillRect(x + 23, y + 5, 9, 12); ctx.fillRect(x + 11, y + 25, 17, 8);
   }
 
-  if (!corrupt && tiles[row][col] === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
+  if (cell.corruption > 0) {
+    const palette = ["", "#a79a4e", "#7b663e", "#493d35", "#29242d"];
+    ctx.fillStyle = palette[cell.corruption];
+    ctx.globalAlpha = cell.surface === "pond" ? .62 : cell.surface === "road" ? .74 : .9;
+    ctx.fillRect(x, y, TILE, TILE);
+    ctx.globalAlpha = 1;
+    const mask = edgeMask(tiles, col, row, cell.corruption);
+    ctx.fillStyle = cell.corruption < 3 ? "#c0b15e" : "#17171d";
+    if (!(mask & 1)) ctx.fillRect(x, y, TILE, 3);
+    if (!(mask & 2)) ctx.fillRect(x + TILE - 3, y, 3, TILE);
+    if (!(mask & 4)) ctx.fillRect(x, y + TILE - 3, TILE, 3);
+    if (!(mask & 8)) ctx.fillRect(x, y, 3, TILE);
+    if (cell.corruption >= 2) drawPixelCracks(ctx, x, y, cell.seed, cell.corruption === 4 ? "#72547a" : "#302a27");
+    if (cell.corruption === 1) {
+      ctx.fillStyle = "#726f32";
+      ctx.fillRect(x + 6 + cell.seed % 21, y + 11, 3, 9);
+      ctx.fillRect(x + 25, y + 21 + (cell.seed >>> 8) % 8, 2, 6);
+    }
+  }
+
+  if (cell.corruption === 0 && cell.surface === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
     const kind = DECAL_KINDS[hashInt(col, row, 2) % DECAL_KINDS.length];
     const offX = (hashInt(col, row, 3) % 16) - 8;
     const offY = (hashInt(col, row, 4) % 16) - 8;
@@ -745,77 +878,19 @@ function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: numbe
     if (img) ctx.drawImage(img, x + TILE / 2 - size / 2 + offX, y + TILE / 2 - size / 2 + offY, size, size);
   }
 
-  if (tiles[row][col] === "corrupt" && Math.floor(time * 8 + col + row) % 3 === 0) {
-    ctx.fillStyle = "rgba(200,243,72,.35)";
-    ctx.fillRect(x + 6, y + 14, 10, 2);
-    ctx.fillRect(x + 22, y + 24, 9, 2);
-  }
 }
 
 function drawMeadow(ctx: CanvasRenderingContext2D) {
-  const meadow = getSprite("terrain-meadow");
-  if (meadow) {
-    ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    const targetRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-    const imageRatio = meadow.naturalWidth / meadow.naturalHeight;
-    if (imageRatio > targetRatio) {
-      const sourceWidth = meadow.naturalHeight * targetRatio;
-      const sourceX = (meadow.naturalWidth - sourceWidth) / 2;
-      ctx.drawImage(meadow, sourceX, 0, sourceWidth, meadow.naturalHeight, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    } else {
-      const sourceHeight = meadow.naturalWidth / targetRatio;
-      const sourceY = (meadow.naturalHeight - sourceHeight) / 2;
-      ctx.drawImage(meadow, 0, sourceY, meadow.naturalWidth, sourceHeight, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    }
-    ctx.restore();
-    return;
-  }
-  ctx.fillStyle = "#7f9f43";
+  ctx.fillStyle = "#78963f";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-}
-
-function traceRoad(ctx: CanvasRenderingContext2D, points: Array<{ x: number; y: number }>) {
-  ctx.beginPath();
-  points.forEach((point, index) => index ? ctx.lineTo(point.x * TILE, point.y * TILE) : ctx.moveTo(point.x * TILE, point.y * TILE));
-}
-
-function drawRoadObject(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
-  const points = object.points ?? [];
-  if (points.length < 2) return;
-  ctx.save();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "rgba(71,74,40,.23)";
-  ctx.lineWidth = TILE * 1.18;
-  traceRoad(ctx, points); ctx.stroke();
-  ctx.strokeStyle = "#9b7748";
-  ctx.lineWidth = TILE * .95;
-  traceRoad(ctx, points); ctx.stroke();
-  ctx.strokeStyle = "rgba(205,165,96,.44)";
-  ctx.lineWidth = TILE * .68;
-  traceRoad(ctx, points); ctx.stroke();
-  ctx.strokeStyle = "rgba(92,69,43,.3)";
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 15]);
-  traceRoad(ctx, points); ctx.stroke();
-  ctx.setLineDash([]);
-  for (let index = 0; index < 70; index += 1) {
-    const x = (hashInt(index, 7, 41) % FIELD_WIDTH);
-    const nearest = points.reduce((best, point) => Math.abs(point.x * TILE - x) < Math.abs(best.x * TILE - x) ? point : best);
-    const y = nearest.y * TILE + (hashInt(index, 5, 31) % 28) - 14;
-    ctx.fillStyle = index % 3 ? "rgba(73,57,37,.28)" : "rgba(218,177,104,.34)";
-    ctx.fillRect(x, y, 2 + index % 3, 1 + index % 2);
+  for (let row = 0; row < Math.ceil(CANVAS_HEIGHT / 8); row += 1) {
+    for (let col = 0; col < Math.ceil(CANVAS_WIDTH / 8); col += 1) {
+      const seed = hashInt(col, row, 211);
+      if (seed % 5) continue;
+      ctx.fillStyle = seed % 3 ? "#6e8c39" : "#88a84a";
+      ctx.fillRect(col * 8 + seed % 5, row * 8 + (seed >>> 6) % 5, 2, 2);
+    }
   }
-  for (const enemy of state.enemies) {
-    if (Math.abs(enemy.y - 8.2) > 1.05) continue;
-    const pulse = (Math.sin(state.elapsed * 7 + enemy.id) + 1) / 2;
-    ctx.fillStyle = `rgba(196,159,98,${.08 + pulse * .09})`;
-    ctx.beginPath();
-    ctx.ellipse(enemy.x * TILE - 8, enemy.y * TILE + 6, 7 + pulse * 7, 3 + pulse * 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
 }
 
 function drawSceneryShadow(ctx: CanvasRenderingContext2D, object: SceneryObject) {
@@ -854,7 +929,7 @@ function drawPrimitiveScenery(ctx: CanvasRenderingContext2D, object: SceneryObje
   ctx.restore();
 }
 
-function drawPondRipples(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
+function drawPondState(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
   const width = object.width * TILE;
   const centerX = object.x * TILE;
   const centerY = object.y * TILE;
@@ -862,154 +937,63 @@ function drawPondRipples(ctx: CanvasRenderingContext2D, object: SceneryObject, s
   ctx.beginPath();
   ctx.ellipse(centerX, centerY, width * .45, width * .19, 0, 0, Math.PI * 2);
   ctx.clip();
+  const polluted = (object.cells ?? []).reduce((level, [col, row]) => Math.max(level, state.tiles[row][col].corruption), 0);
+  if (polluted > 0) {
+    ctx.fillStyle = polluted >= 3 ? "rgba(56,35,65,.65)" : "rgba(109,100,55,.4)";
+    ctx.fillRect(centerX - width / 2, centerY - width * .22, width, width * .44);
+  }
+  const rippleStep = Math.floor(state.elapsed / 4) % 3;
   ctx.strokeStyle = "rgba(211,241,220,.28)";
-  ctx.lineWidth = 1.4;
-  for (let line = -2; line <= 2; line += 1) {
-    const y = centerY + line * 9 + Math.sin(state.elapsed * 1.35 + line) * 2.5;
-    ctx.beginPath();
-    for (let step = 0; step <= 12; step += 1) {
-      const x = centerX - width * .44 + step * width * .073;
-      const wave = Math.sin(step * .9 + state.elapsed * 1.8 + line) * 1.8;
-      if (step === 0) ctx.moveTo(x, y + wave); else ctx.lineTo(x, y + wave);
-    }
-    ctx.stroke();
-  }
-  for (const enemy of state.enemies) {
-    if (distance(enemy.x, enemy.y, object.x, object.y) > object.width * .6) continue;
-    const phase = (state.elapsed * 1.8 + enemy.id * .23) % 1;
-    ctx.strokeStyle = `rgba(230,247,223,${(1 - phase) * .35})`;
-    ctx.beginPath();
-    ctx.ellipse(enemy.x * TILE, enemy.y * TILE, 5 + phase * 24, 2 + phase * 9, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.lineWidth = 1;
+  ctx.strokeRect(centerX - 12 - rippleStep * 4, centerY - 2, 24 + rippleStep * 8, 4 + rippleStep * 2);
   ctx.restore();
 }
 
 function drawSceneryObject(ctx: CanvasRenderingContext2D, object: SceneryObject, state: GameState) {
-  if (object.kind === "road") { drawRoadObject(ctx, object, state); return; }
+  if (object.kind === "road") return;
+  const displaced = (object.cells ?? []).some(([col, row]) => {
+    const surface = state.tiles[row][col].surface;
+    return surface === "foundation" || surface === "rubble";
+  });
+  if (displaced) return;
   drawSceneryShadow(ctx, object);
   if (!object.sprite) { drawPrimitiveScenery(ctx, object); return; }
   const img = getSprite(object.sprite);
   if (!img) return;
   const width = object.width * TILE;
   const height = width * img.naturalHeight / img.naturalWidth;
-  const closestEnemy = state.enemies.reduce((best, enemy) => Math.min(best, distance(enemy.x, enemy.y, object.x, object.y)), Infinity);
-  const proximity = Math.max(0, 1 - closestEnemy / 3.2);
-  const plantPulse = state.beams.some((beam) => distance(beam.x2, beam.y2, object.x, object.y) < 2.4) ? 1 : 0;
-  const isFoliage = object.kind === "tree" || object.kind === "pine" || object.kind === "shrub" || object.kind === "flowers";
-  const sway = isFoliage ? Math.sin(state.elapsed * (1.1 + proximity * 5) + object.x) * (.012 + proximity * .04 + plantPulse * .025) : 0;
-  const tremble = object.kind === "rock" && proximity > .45 ? Math.sin(state.elapsed * 18 + object.x) * proximity * 1.4 : 0;
+  const corruption = (object.cells ?? []).reduce((level, [col, row]) => Math.max(level, state.tiles[row][col].corruption), 0);
   const pivot = object.kind === "pond" ? .5 : object.kind === "flowers" ? .68 : object.kind === "rock" ? .82 : object.kind === "tree" ? .85 : object.kind === "pine" ? .93 : .88;
   ctx.save();
-  ctx.translate(object.x * TILE + tremble, object.y * TILE);
-  ctx.rotate(sway);
+  ctx.translate(object.x * TILE, object.y * TILE);
+  if (corruption >= 2 && (object.kind === "tree" || object.kind === "pine" || object.kind === "flowers" || object.kind === "shrub")) {
+    ctx.filter = corruption >= 4 ? "grayscale(1) brightness(.55) sepia(.25)" : "saturate(.45) sepia(.35) brightness(.8)";
+  }
+  ctx.globalAlpha = object.kind === "flowers" && corruption >= 3 ? .3 : 1;
   ctx.drawImage(img, -width / 2, -height * pivot, width, height);
   ctx.restore();
-  if (object.kind === "pond") drawPondRipples(ctx, object, state);
-  if ((object.kind === "tree" || object.kind === "pine") && proximity > .2) {
-    ctx.save();
-    for (let leaf = 0; leaf < 5; leaf += 1) {
-      const phase = (state.elapsed * (.25 + leaf * .04) + leaf * .19 + object.x) % 1;
-      const x = object.x * TILE + Math.sin(state.elapsed * 2 + leaf * 2.4) * width * .22;
-      const y = object.y * TILE - height * (.72 - phase * .5);
-      ctx.fillStyle = leaf % 2 ? `rgba(187,186,62,${(1 - phase) * proximity * .5})` : `rgba(69,116,48,${(1 - phase) * proximity * .52})`;
-      ctx.fillRect(x, y, 3, 2);
-    }
-    ctx.restore();
-  }
+  if (object.kind === "pond") drawPondState(ctx, object, state);
 }
 
-function drawAmbientWorld(ctx: CanvasRenderingContext2D, state: GameState) {
-  const time = state.elapsed;
-  ctx.save();
-  ctx.globalCompositeOperation = "screen";
-  for (let index = 0; index < 30; index += 1) {
-    const seed = hashInt(index, 11, 73);
-    const x = (seed % CANVAS_WIDTH + time * (5 + seed % 7)) % CANVAS_WIDTH;
-    const y = 88 + ((seed >>> 8) % (CANVAS_HEIGHT - 160)) + Math.sin(time * .65 + index) * 5;
-    const alpha = .08 + (Math.sin(time * 1.1 + index * 2.3) + 1) * .035;
-    ctx.fillStyle = `rgba(244,235,133,${alpha})`;
-    ctx.fillRect(x, y, 2, 2);
-  }
-  ctx.restore();
-
+function drawAmbientWorld(ctx: CanvasRenderingContext2D) {
   const light = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  light.addColorStop(0, "rgba(244,237,155,.08)");
+  light.addColorStop(0, "rgba(244,237,155,.05)");
   light.addColorStop(.5, "rgba(244,237,155,0)");
-  light.addColorStop(1, "rgba(10,32,21,.09)");
+  light.addColorStop(1, "rgba(10,32,21,.06)");
   ctx.fillStyle = light;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
 function drawWorldMesh(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.save();
-  ctx.strokeStyle = "rgba(232,242,190,.075)";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([2, 10]);
-  for (let col = 0; col <= COLS; col += 1) {
-    ctx.beginPath(); ctx.moveTo(col * TILE, 0); ctx.lineTo(col * TILE, FIELD_HEIGHT); ctx.stroke();
-  }
-  for (let row = 0; row <= ROWS; row += 1) {
-    ctx.beginPath(); ctx.moveTo(0, row * TILE); ctx.lineTo(FIELD_WIDTH, row * TILE); ctx.stroke();
-  }
-  ctx.setLineDash([]);
   for (let col = 0; col < COLS; col += 1) {
     for (let row = 0; row < ROWS; row += 1) {
-      if (state.tiles[row][col] !== "grass" || hashInt(col, row, 93) % 5 !== 0) continue;
-      const nearEntity = state.enemies.some((enemy) => distance(enemy.x, enemy.y, col + .5, row + .5) < 1.35)
-        || state.plants.some((plant) => distance(plant.col + .5, plant.row + .5, col + .5, row + .5) < 1.35);
-      const sway = Math.sin(state.elapsed * (nearEntity ? 6 : 1.7) + col * 1.9 + row) * (nearEntity ? 5 : 2);
-      ctx.strokeStyle = nearEntity ? "rgba(207,234,115,.42)" : "rgba(43,91,43,.27)";
-      ctx.beginPath();
-      ctx.moveTo((col + .5) * TILE, (row + .73) * TILE);
-      ctx.quadraticCurveTo((col + .5) * TILE + sway, (row + .52) * TILE, (col + .55) * TILE + sway, (row + .42) * TILE);
-      ctx.stroke();
+      const cell = state.tiles[row][col];
+      if (cell.surface !== "grass" || cell.corruption !== 0 || hashInt(col, row, 93) % 5 !== 0) continue;
+      ctx.fillStyle = "rgba(43,91,43,.34)";
+      ctx.fillRect((col + .45) * TILE, (row + .48) * TILE, 2, 10);
+      ctx.fillRect((col + .34) * TILE, (row + .55) * TILE, 6, 2);
     }
-  }
-  ctx.restore();
-}
-
-function drawEntityRelations(ctx: CanvasRenderingContext2D, state: GameState) {
-  ctx.save();
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([3, 5]);
-  for (const plant of state.plants) {
-    const neighbors = state.plants.filter((other) => other.id !== plant.id && distance(plant.col, plant.row, other.col, other.row) <= 3.25 && other.id > plant.id);
-    for (const other of neighbors) {
-      const pulse = .12 + (Math.sin(state.elapsed * 2.2 + plant.id) + 1) * .08;
-      ctx.strokeStyle = `rgba(174,221,111,${pulse})`;
-      ctx.beginPath();
-      ctx.moveTo((plant.col + .5) * TILE, (plant.row + .68) * TILE);
-      ctx.quadraticCurveTo((plant.col + other.col + 1) * TILE / 2, (Math.max(plant.row, other.row) + .95) * TILE, (other.col + .5) * TILE, (other.row + .68) * TILE);
-      ctx.stroke();
-    }
-  }
-  ctx.setLineDash([]);
-  for (const node of state.nodes) {
-    const children = state.enemies.filter((enemy) => distance(enemy.x, enemy.y, node.col + .5, node.row + .5) < 4.6).slice(0, 4);
-    for (const enemy of children) {
-      const pulse = (Math.sin(state.elapsed * 4 + enemy.id) + 1) / 2;
-      ctx.strokeStyle = `rgba(180,83,205,${.07 + pulse * .12})`;
-      ctx.beginPath();
-      ctx.moveTo((node.col + .5) * TILE, (node.row + .5) * TILE);
-      ctx.lineTo(enemy.x * TILE, enemy.y * TILE);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
-
-function drawEnemyWake(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: number) {
-  const x = enemy.x * TILE;
-  const y = enemy.y * TILE;
-  ctx.save();
-  for (let ring = 0; ring < 2; ring += 1) {
-    const phase = (time * 1.8 + enemy.id * .17 + ring * .5) % 1;
-    ctx.strokeStyle = `rgba(102,64,119,${(1 - phase) * .18})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(x, y + 7, 6 + phase * 15, 2 + phase * 5, 0, 0, Math.PI * 2);
-    ctx.stroke();
   }
   ctx.restore();
 }
@@ -1040,24 +1024,17 @@ function drawCombatEffects(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
-function drawCorruptionDetails(ctx: CanvasRenderingContext2D, tiles: TileKind[][]) {
+function drawCorruptionDetails(ctx: CanvasRenderingContext2D, tiles: TerrainCell[][]) {
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) {
-      if (tiles[row][col] !== "corrupt") continue;
+      if (tiles[row][col].corruption < 3) continue;
       const x = (col + .5) * TILE + (hashInt(col, row, 21) % 9) - 4;
       const y = (row + .5) * TILE + (hashInt(col, row, 22) % 7) - 3;
-      ctx.fillStyle = hashInt(col, row, 19) % 2 ? "rgba(126,64,149,.78)" : "rgba(196,225,60,.66)";
-      ctx.beginPath();
-      ctx.ellipse(x, y, 5 + hashInt(col, row, 20) % 7, 3 + hashInt(col, row, 23) % 5, (hashInt(col, row, 24) % 10) / 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(20,16,28,.7)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x, y - 2);
-      ctx.quadraticCurveTo(x + ((hashInt(col, row, 25) % 9) - 4), y - 10, x + ((hashInt(col, row, 26) % 13) - 6), y - 15);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(16,17,24,.72)";
-      ctx.fillRect(x - 1, y - 10, 2, 9);
+      ctx.fillStyle = tiles[row][col].corruption === 4 ? "#79617f" : "#352f34";
+      ctx.fillRect(x - 5, y - 2, 12, 3);
+      ctx.fillRect(x + 4, y - 8, 3, 8);
+      ctx.fillStyle = "#19181d";
+      ctx.fillRect(x + 5, y - 13, 2, 6);
     }
   }
 }
@@ -1071,13 +1048,6 @@ function drawHouse(ctx: CanvasRenderingContext2D, hp: number) {
   const x = (HOUSE_COL + 1) * TILE;
   const groundY = (HOUSE_ROW + 1) * TILE;
   const box = drawSprite(ctx, "obj-house", x, groundY, 1, false);
-  ctx.save();
-  const glow = ctx.createRadialGradient(x + 20, groundY - 39, 0, x + 20, groundY - 39, 25);
-  glow.addColorStop(0, "rgba(255,202,78,.38)");
-  glow.addColorStop(1, "rgba(255,202,78,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(x - 6, groundY - 64, 52, 50);
-  ctx.restore();
   const barW = box.width * .55;
   const color = hp > 55 ? "#6aa34a" : hp > 25 ? "#e5b44f" : "#e06c69";
   drawHealth(ctx, x - barW / 2, box.top + 7, barW, hp / 100, color);
@@ -1089,8 +1059,7 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   const disabled = plant.disabledUntil > state.elapsed;
   const mature = plant.kind !== "elderoak" || plant.age >= 15;
   const growth = Math.min(1, plant.age / .32);
-  const breathe = 1 + Math.sin(state.elapsed * 2.4 + plant.id) * .025;
-  const scale = (plant.kind === "elderoak" && !mature ? .6 + .4 * (plant.age / 15) : 1) * growth * breathe;
+  const scale = (plant.kind === "elderoak" && !mature ? .6 + .4 * (plant.age / 15) : 1) * growth;
   const spriteKey = plantSpriteKey(plant.kind, mature);
   ctx.save();
   if (disabled) ctx.globalAlpha = .55;
@@ -1101,36 +1070,52 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
     ctx.fillStyle = "rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(x, midY, box.width * .32, box.width * .32, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#ee78b9"; ctx.fillRect(x - box.width * .18, midY - 1.5, box.width * .36, 3);
   }
-  if (plant.kind === "sunbloom") {
-    const pulse = (Math.sin(state.elapsed * 2.8 + plant.id) + 1) / 2;
-    ctx.strokeStyle = `rgba(246,218,86,${.18 + pulse * .22})`;
-    ctx.beginPath();
-    ctx.ellipse(x, groundY, 12 + pulse * 12, 4 + pulse * 3, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
   drawHealth(ctx, x - 14, box.top - 8, 28, plant.hp / PLANTS[plant.kind].maxHp, "#77b956");
 }
 
-function drawNode(ctx: CanvasRenderingContext2D, node: DataNode, time: number) {
-  const x = node.col * TILE + TILE / 2;
-  const groundY = node.row * TILE + TILE / 2;
-  const glitch = Math.floor(time * 11 + node.id) % 5 === 0 ? 3 : 0;
-  const box = drawSprite(ctx, node.boss ? "obj-mainframe" : "obj-server", x + glitch, groundY);
-  const pulse = (Math.sin(time * 3.4 + node.id) + 1) / 2;
-  ctx.strokeStyle = `rgba(190,73,220,${.22 + pulse * .22})`;
-  ctx.beginPath();
-  ctx.ellipse(x, groundY + 3, 12 + pulse * 10, 4 + pulse * 3, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  drawHealth(ctx, x - 18, box.top - 8, 36, node.hp / node.maxHp);
+function drawNode(ctx: CanvasRenderingContext2D, node: DataNode) {
+  const stage = facilityStage(node);
+  const minCol = Math.min(...node.footprint.map((cell) => cell.col));
+  const maxCol = Math.max(...node.footprint.map((cell) => cell.col));
+  const minRow = Math.min(...node.footprint.map((cell) => cell.row));
+  const maxRow = Math.max(...node.footprint.map((cell) => cell.row));
+  const left = minCol * TILE;
+  const right = (maxCol + 1) * TILE;
+  const bottom = (maxRow + 1) * TILE;
+  const centerX = (left + right) / 2;
+  if (stage === 0) {
+    ctx.fillStyle = "#9b7a42";
+    for (const cell of node.footprint) {
+      ctx.fillRect(cell.col * TILE + 5, cell.row * TILE + 5, TILE - 10, 3);
+      ctx.fillRect(cell.col * TILE + 5, cell.row * TILE + TILE - 8, TILE - 10, 3);
+    }
+    ctx.fillStyle = "#d0a943"; ctx.fillRect(centerX - 13, bottom - 26, 26, 14);
+    ctx.fillStyle = "#353b39"; ctx.fillRect(centerX - 18, bottom - 13, 36, 8);
+  } else {
+    const wallHeight = stage === 1 ? 23 : stage === 2 ? 43 : node.boss ? 76 : 58;
+    ctx.fillStyle = "#2d3135"; ctx.fillRect(left + 4, bottom - wallHeight, right - left - 8, wallHeight - 4);
+    ctx.fillStyle = stage === 1 ? "#77766d" : "#687078"; ctx.fillRect(left + 8, bottom - wallHeight + 5, right - left - 16, wallHeight - 13);
+    ctx.fillStyle = "#25282c";
+    for (let x = left + 15; x < right - 12; x += 22) ctx.fillRect(x, bottom - wallHeight + 12, 12, wallHeight - 25);
+    if (stage >= 2) {
+      ctx.fillStyle = "#171b1e"; ctx.fillRect(centerX - 10, bottom - 24, 20, 20);
+      ctx.fillStyle = "#758343"; ctx.fillRect(centerX - 6, bottom - 18, 3, 3); ctx.fillRect(centerX + 3, bottom - 18, 3, 3);
+      ctx.fillStyle = "#40464c"; ctx.fillRect(left + 12, bottom - wallHeight - 9, 22, 9); ctx.fillRect(right - 35, bottom - wallHeight - 9, 22, 9);
+    }
+    if (stage === 3) {
+      ctx.strokeStyle = "#22232a"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(centerX, bottom); ctx.lineTo(node.outlet.col * TILE + TILE / 2, node.outlet.row * TILE + TILE / 2); ctx.stroke();
+      ctx.fillStyle = "#a5613e"; ctx.fillRect(left + 5, bottom - wallHeight + 8, 4, 12);
+    }
+  }
+  drawHealth(ctx, centerX - 26, minRow * TILE - 10, 52, node.hp / node.maxHp);
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, time: number) {
   const x = enemy.x * TILE;
   const groundY = enemy.y * TILE;
-  const glitch = Math.floor(time * 13 + enemy.id) % 7 === 0 ? 3 : 0;
-  drawEnemyWake(ctx, enemy, time);
-  const bob = Math.sin(time * 6 + enemy.id) * 1.4;
-  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), x + glitch, groundY + bob);
+  const hitJitter = Math.floor(time * 20 + enemy.id) % 17 === 0 ? 1 : 0;
+  const box = drawSprite(ctx, enemySpriteKey(enemy.kind), x + hitJitter, groundY);
   drawHealth(ctx, x - 14, box.top - 8, 28, enemy.hp / enemy.maxHp);
 }
 
@@ -1141,24 +1126,20 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
   drawMeadow(ctx);
-  drawAmbientWorld(ctx, state);
+  drawAmbientWorld(ctx);
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, FIELD_TOP, FIELD_WIDTH, FIELD_HEIGHT);
   ctx.clip();
   ctx.translate(0, FIELD_TOP);
-  for (const object of SCENERY) {
-    if (object.kind === "road") drawSceneryObject(ctx, object, state);
-  }
   for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
+    for (let col = 0; col < COLS; col += 1) drawTile(ctx, state, col, row);
   }
   drawCorruptionDetails(ctx, state.tiles);
   for (const object of SCENERY) {
     if (object.kind === "pond" || object.kind === "flowers") drawSceneryObject(ctx, object, state);
   }
   drawWorldMesh(ctx, state);
-  drawEntityRelations(ctx, state);
   ctx.restore();
   ctx.save();
   ctx.translate(0, FIELD_TOP);
@@ -1167,7 +1148,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
     ...SCENERY.filter((object) => object.kind !== "road" && object.kind !== "pond" && object.kind !== "flowers")
       .map((object) => ({ depth: object.y, draw: () => drawSceneryObject(ctx, object, state) })),
     ...state.plants.map((plant) => ({ depth: plant.row + .5, draw: () => drawPlant(ctx, plant, state) })),
-    ...state.nodes.map((node) => ({ depth: node.row + .5, draw: () => drawNode(ctx, node, state.elapsed) })),
+    ...state.nodes.map((node) => ({ depth: Math.max(...node.footprint.map((cell) => cell.row)) + 1, draw: () => drawNode(ctx, node) })),
     ...state.enemies.map((enemy) => ({ depth: enemy.y, draw: () => drawEnemy(ctx, enemy, state.elapsed) })),
   ].sort((left, right) => left.depth - right.depth);
   for (const renderable of renderables) renderable.draw();
@@ -1190,10 +1171,6 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   }
   ctx.restore();
   ctx.restore();
-  if (corruptionPercent(state) > 18) {
-    ctx.fillStyle = `rgba(205,255,65,${Math.min(.08, corruptionPercent(state) / 1200)})`;
-    for (let y = Math.floor(state.elapsed * 25) % 8; y < CANVAS_HEIGHT; y += 8) ctx.fillRect(0, y, CANVAS_WIDTH, 1);
-  }
 }
 
 function SpriteIcon({ spriteKey }: { spriteKey: string }) {
