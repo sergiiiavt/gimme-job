@@ -42,7 +42,11 @@
     "docs/rewild/reviews/gate-c/construction-state.png",
     "docs/rewild/reviews/gate-c/integrated-running-slice.png",
     "docs/rewild/reviews/gate-c/pollution-state.png",
-    "docs/rewild/reviews/gate-c/mobile-integrated.png"
+    "docs/rewild/reviews/gate-c/mobile-integrated.png",
+    "docs/rewild/reviews/gate-d/damage-state.png",
+    "docs/rewild/reviews/gate-d/collapse-state.png",
+    "docs/rewild/reviews/gate-d/reclamation-state.png",
+    "docs/rewild/reviews/gate-d/mobile-reclamation.png"
   ],
   "productionSourceImages": [
     "docs/rewild/gate-b-sources/datacenter-modules-v1-chroma.png",

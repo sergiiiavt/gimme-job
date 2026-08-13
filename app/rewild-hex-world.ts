@@ -16,6 +16,8 @@ export type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | 
 export type EnemyKind = "clickbait" | "deepfake" | "popup" | "fragment";
 export type GameStatus = "menu" | "playing" | "paused" | "won" | "lost";
 export type Difficulty = "easy" | "normal" | "hard";
+export type RewildReviewState = "damage" | "collapse" | "reclamation";
+export type WorldEffectKind = "construction" | "impact" | "shutdown" | "collapse" | "reclaim";
 
 export interface HexCoord { q: number; r: number }
 export interface PixelPoint { x: number; y: number }
@@ -87,6 +89,8 @@ export interface PlantEntity extends HexCoord {
   age: number;
   reclaimTimer: number;
   disabledUntil: number;
+  reclaimTarget: HexCoord | null;
+  reclaimUntil: number;
 }
 
 export interface EnemyEntity {
@@ -117,14 +121,26 @@ export interface DataNode {
   outlet: HexCoord;
 }
 
+export interface FacilityRuin {
+  id: number;
+  anchor: HexCoord;
+  footprint: HexCoord[];
+  outlet: HexCoord;
+  boss: boolean;
+  collapsedAt: number;
+}
+
 export interface Beam { from: PixelPoint; to: PixelPoint; color: string; life: number; maxLife: number }
+export interface WorldEffect { kind: WorldEffectKind; position: PixelPoint; life: number; maxLife: number; seed: number }
 export interface GameState {
   status: GameStatus;
   world: HexWorld;
   plants: PlantEntity[];
   enemies: EnemyEntity[];
   nodes: DataNode[];
+  ruins: FacilityRuin[];
   beams: Beam[];
+  effects: WorldEffect[];
   sunlight: number;
   houseHp: number;
   wave: number;
@@ -139,6 +155,7 @@ export interface GameState {
   nextId: number;
   best: number;
   difficulty: Difficulty;
+  reviewState: RewildReviewState | null;
 }
 
 export interface UiSnapshot {
@@ -157,6 +174,7 @@ export interface UiSnapshot {
   plants: number;
   enemies: number;
   nodes: number;
+  reviewState: RewildReviewState | null;
 }
 
 interface CubeCoord { x: number; y: number; z: number }
@@ -351,9 +369,11 @@ export function objectAt(world: HexWorld, hex: HexCoord, collisionOnly = false) 
 }
 export function plantAt(state: GameState, hex: HexCoord) { return state.plants.find((plant) => plant.q === hex.q && plant.r === hex.r); }
 export function nodeAt(state: GameState, hex: HexCoord) { return state.nodes.find((node) => node.footprint.some((cell) => sameHex(cell, hex))); }
+export function ruinAt(state: GameState, hex: HexCoord) { return state.ruins.find((ruin) => ruin.footprint.some((cell) => sameHex(cell, hex)) && cellAt(state.world, hex)?.surface === "rubble"); }
 
 function nextId(state: GameState) { const id = state.nextId; state.nextId += 1; return id; }
 export function facilityStage(node: DataNode) { return Math.min(3, Math.floor(node.buildProgress / (node.boss ? 3 : 2))); }
+export function facilityOperational(node: DataNode) { return node.hp > node.maxHp * .2; }
 
 export function createFacilityFootprint(anchor: HexCoord, boss: boolean) {
   return hexDisk(anchor, boss ? 2 : 1);
@@ -380,15 +400,16 @@ function createNode(state: GameState, anchor: HexCoord, boss = false) {
     spreadTimer: 1.4, spawnTimer: boss ? 3 : 5, boss, buildProgress: 0,
     footprint, outlet: facilityOutlet(anchor, footprint),
   });
+  if (state.elapsed > 0) state.effects.push({ kind: "construction", position: hexCenter(anchor), life: .8, maxLife: .8, seed: id });
 }
 
 export function createGameState(best: number, difficulty: Difficulty, status: GameStatus = "playing"): GameState {
   const config = DIFFICULTIES[difficulty];
   const state: GameState = {
-    status, world: createHexWorld(), plants: [], enemies: [], nodes: [], beams: [],
+    status, world: createHexWorld(), plants: [], enemies: [], nodes: [], ruins: [], beams: [], effects: [],
     sunlight: config.sunlightStart, houseHp: config.houseHp, wave: 1, nextWave: 24 * config.waveTime, elapsed: 0, score: 0,
     selected: "vinewhip", cursor: { q: 13, r: 5 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
-    bossSpawned: false, nextId: 1, best, difficulty,
+    bossSpawned: false, nextId: 1, best, difficulty, reviewState: null,
   };
   createNode(state, BORDER_SPAWNS[1]);
   createNode(state, { q: 22, r: 5 });
@@ -439,6 +460,7 @@ function addBeam(state: GameState, from: PixelPoint, to: PixelPoint, color: stri
 function damageTarget(state: GameState, plant: PlantEntity, target: EnemyEntity | DataNode, damage: number, color: string) {
   target.hp -= damage;
   addBeam(state, hexCenter(plant), targetPosition(target), color);
+  if (!("kind" in target)) state.effects.push({ kind: "impact", position: targetPosition(target), life: .34, maxLife: .34, seed: plant.id + target.id + Math.round(state.elapsed * 10) });
 }
 
 function combatTargets(state: GameState, plant: PlantEntity, radius: number) {
@@ -450,13 +472,17 @@ function reclaimNear(state: GameState, plant: PlantEntity) {
     .sort((left, right) => hexDistance(plant, left.hex) - hexDistance(plant, right.hex) || left.corruption - right.corruption);
   const target = candidates[0];
   if (!target) return;
+  plant.reclaimTarget = target.hex;
+  plant.reclaimUntil = state.elapsed + .7;
   target.corruption = Math.max(0, target.corruption - 1) as CorruptionLevel;
   if (target.corruption === 0) {
     target.source = null;
     if (target.surface === "rubble") target.surface = "meadow";
+    state.ruins = state.ruins.filter((ruin) => ruin.footprint.some((hex) => cellAt(state.world, hex)?.surface === "rubble"));
   }
   state.score += 6;
   addBeam(state, hexCenter(plant), hexCenter(target.hex), "#a9e37d");
+  state.effects.push({ kind: "reclaim", position: hexCenter(target.hex), life: .7, maxLife: .7, seed: plant.id + target.seed });
 }
 
 function updatePlants(state: GameState, dt: number) {
@@ -530,6 +556,7 @@ function updateNodes(state: GameState, dt: number) {
     node.spreadTimer -= dt;
     node.spawnTimer -= dt;
     const stage = facilityStage(node);
+    if (!facilityOperational(node)) continue;
     if (stage >= 2 && node.spreadTimer <= 0) {
       spreadCorruption(state, node);
       node.spreadTimer = stage === 3 ? 1.05 : 2.1;
@@ -588,7 +615,7 @@ function canBuildFacility(state: GameState, anchor: HexCoord, boss: boolean) {
   const footprint = createFacilityFootprint(anchor, boss);
   return footprint.length >= (boss ? 12 : 6) && footprint.every((hex) => {
     const cell = cellAt(state.world, hex);
-    return cell && (cell.surface === "meadow" || cell.surface === "road" || cell.surface === "rubble") && !objectAt(state.world, hex, true) && !nodeAt(state, hex) && !plantAt(state, hex);
+    return cell && (cell.surface === "meadow" || cell.surface === "road" || cell.surface === "rubble") && !objectAt(state.world, hex, true) && !nodeAt(state, hex) && !ruinAt(state, hex) && !plantAt(state, hex);
   });
 }
 
@@ -620,6 +647,9 @@ function resolveDeaths(state: GameState) {
       const cell = cellAt(state.world, hex);
       if (cell) { cell.surface = "rubble"; cell.corruption = Math.max(2, cell.corruption) as CorruptionLevel; }
     }
+    state.ruins.push({ id: node.id, anchor: node.anchor, footprint: node.footprint, outlet: node.outlet, boss: node.boss, collapsedAt: state.elapsed });
+    state.effects.push({ kind: "shutdown", position: hexCenter(node.anchor), life: .9, maxLife: .9, seed: node.id });
+    state.effects.push({ kind: "collapse", position: hexCenter(node.anchor), life: 1.25, maxLife: 1.25, seed: node.id + 19 });
     state.score += node.boss ? 1600 : 190;
     setMessage(state, node.boss ? "Mainframe demolished. Reclaim the contaminated ground." : "AI slop server destroyed. Roots can now reclaim its rubble.", 4);
   }
@@ -633,7 +663,7 @@ export function corruptionPercent(state: GameState) {
 }
 
 export function updateGame(state: GameState, dt: number) {
-  if (state.status !== "playing" || dt <= 0) return;
+  if (state.status !== "playing" || state.reviewState || dt <= 0) return;
   state.elapsed += dt;
   state.nextWave -= dt;
   state.sunlight += (2 + state.plants.filter((plant) => plant.kind === "sunbloom").length * 2) * dt;
@@ -642,6 +672,8 @@ export function updateGame(state: GameState, dt: number) {
   updateEnemies(state, dt);
   for (const beam of state.beams) beam.life -= dt;
   state.beams = state.beams.filter((beam) => beam.life > 0);
+  for (const effect of state.effects) effect.life -= dt;
+  state.effects = state.effects.filter((effect) => effect.life > 0);
   resolveDeaths(state);
   if (state.nextWave <= 0 && state.wave < 5) {
     beginWave(state);
@@ -651,7 +683,7 @@ export function updateGame(state: GameState, dt: number) {
     state.houseHp = 0;
     state.status = "lost";
     state.message = "The feed consumed the last human house.";
-  } else if (state.bossSpawned && state.nodes.length === 0 && state.enemies.length === 0 && corruptionPercent(state) === 0) {
+  } else if (state.bossSpawned && state.nodes.length === 0 && state.ruins.length === 0 && state.enemies.length === 0 && ![...state.world.cells.values()].some((cell) => cell.corruption > 0)) {
     state.status = "won";
     state.message = "The field is living soil again. AI slop erased.";
   } else if (state.elapsed > state.messageUntil) state.message = "Build through relationships: soil, roots, roads, water, and corruption all affect one another.";
@@ -673,7 +705,7 @@ export function placePlant(state: GameState, hex: HexCoord) {
   }
   if (state.sunlight < config.cost) { setMessage(state, "Not enough sunlight."); return false; }
   state.sunlight -= config.cost;
-  state.plants.push({ id: nextId(state), kind: state.selected, q: hex.q, r: hex.r, hp: config.maxHp, cooldown: .2, age: 0, reclaimTimer: .8, disabledUntil: 0 });
+  state.plants.push({ id: nextId(state), kind: state.selected, q: hex.q, r: hex.r, hp: config.maxHp, cooldown: .2, age: 0, reclaimTimer: .8, disabledUntil: 0, reclaimTarget: null, reclaimUntil: 0 });
   setMessage(state, `${config.name} rooted into the field.`);
   return true;
 }
@@ -689,10 +721,50 @@ export function objectCorruption(state: GameState, object: WorldObject) {
   return object.footprint.reduce<number>((highest, hex) => Math.max(highest, cellAt(state.world, hex)?.corruption ?? 0), 0) as CorruptionLevel;
 }
 
+export function createReviewGameState(best: number, stateName: RewildReviewState): GameState {
+  const state = createGameState(best, "easy");
+  state.reviewState = stateName;
+  state.nextWave = 99;
+  state.enemies = [];
+  for (const node of state.nodes) node.buildProgress = 7;
+  const subject = state.nodes[0];
+  const pollutedCells = hexDisk(subject.outlet, 2).filter((hex) => {
+    const cell = cellAt(state.world, hex);
+    return cell && cell.surface !== "water" && cell.surface !== "house" && cell.surface !== "foundation";
+  });
+  for (let index = 0; index < pollutedCells.length; index += 1) {
+    const cell = cellAt(state.world, pollutedCells[index]);
+    if (cell) { cell.source = subject.id; cell.corruption = (index % 3 ? 3 : 4) as CorruptionLevel; }
+  }
+  if (stateName === "damage") {
+    subject.hp = subject.maxHp * .34;
+    state.message = "Facility systems are failing module by module.";
+    return state;
+  }
+  subject.hp = 0;
+  resolveDeaths(state);
+  state.effects = [];
+  if (stateName === "collapse") {
+    state.message = "The source is offline. Broken cables and contaminated rubble remain.";
+    return state;
+  }
+  for (const cell of state.world.cells.values()) if (cell.source === subject.id && cell.corruption > 0) cell.corruption = Math.min(cell.corruption, 1) as CorruptionLevel;
+  for (const hex of subject.footprint.slice(0, Math.max(1, subject.footprint.length - 2))) {
+    const cell = cellAt(state.world, hex);
+    if (cell) { cell.surface = "meadow"; cell.corruption = 0; cell.source = null; }
+  }
+  const rootHex = pollutedCells.find((hex) => cellAt(state.world, hex)?.surface !== "road") ?? subject.outlet;
+  const remainingRubble = subject.footprint.find((hex) => cellAt(state.world, hex)?.surface === "rubble") ?? subject.anchor;
+  state.plants.push({ id: nextId(state), kind: "rootreclaimer", q: rootHex.q, r: rootHex.r, hp: PLANTS.rootreclaimer.maxHp, cooldown: 0, age: 5, reclaimTimer: 2, disabledUntil: 0, reclaimTarget: remainingRubble, reclaimUntil: 99 });
+  state.message = "Roots reconnect broken ground; regrowth follows the repaired path.";
+  return state;
+}
+
 export function toUi(state: GameState): UiSnapshot {
   return {
     status: state.status, sunlight: Math.floor(state.sunlight), houseHp: Math.max(0, Math.round(state.houseHp)), corruption: corruptionPercent(state),
     wave: state.wave, nextWave: Math.max(0, Math.ceil(state.nextWave)), elapsed: state.elapsed, score: state.score, selected: state.selected,
     message: state.message, best: state.best, difficulty: state.difficulty, plants: state.plants.length, enemies: state.enemies.length, nodes: state.nodes.length,
+    reviewState: state.reviewState,
   };
 }
