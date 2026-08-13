@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const configPath = path.join(root, "config", "rewild", "visual-assets.json");
@@ -55,6 +56,64 @@ for (const reference of config.references) {
   }
 }
 
+for (const sourceImage of config.productionSourceImages ?? []) {
+  try {
+    const source = await readFile(path.join(root, sourceImage));
+    const info = pngInfo(source);
+    assert.ok(info.width > 0 && info.height > 0, `${sourceImage}: invalid source dimensions`);
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+}
+
+for (const atlas of config.productionAtlases ?? []) {
+  try {
+    assert.ok(runtimeSet.has(atlas.image), `${atlas.image}: production atlas is not a runtime asset`);
+    const imagePath = path.join(sourceDirectory, atlas.image);
+    const metadataPath = path.join(sourceDirectory, atlas.metadata);
+    const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
+    assert.equal(metadata.image, path.basename(atlas.image), `${atlas.metadata}: image name mismatch`);
+    assert.equal(metadata.grid.columns, atlas.columns, `${atlas.metadata}: column count mismatch`);
+    assert.equal(metadata.grid.rows, atlas.rows, `${atlas.metadata}: row count mismatch`);
+    assert.equal(metadata.frames.length, atlas.expectedFrames, `${atlas.metadata}: frame count mismatch`);
+    assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, atlas.expectedFrames, `${atlas.metadata}: frame names must be unique`);
+
+    const { data, info } = await sharp(imagePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const corners = [0, info.width - 1, (info.height - 1) * info.width, info.height * info.width - 1];
+    for (const pixel of corners) assert.equal(data[pixel * info.channels + 3], 0, `${atlas.image}: canvas corners must be transparent`);
+    let visiblePixels = 0;
+    let magentaPixels = 0;
+    for (let offset = 0; offset < data.length; offset += info.channels) {
+      const [red, green, blue, alpha] = data.subarray(offset, offset + 4);
+      if (alpha > 8) {
+        visiblePixels += 1;
+        if (red > 220 && green < 90 && blue > 220) magentaPixels += 1;
+      }
+    }
+    const coverage = visiblePixels / (info.width * info.height);
+    assert.ok(coverage > 0.03 && coverage < 0.8, `${atlas.image}: implausible visible-pixel coverage`);
+    assert.equal(magentaPixels, 0, `${atlas.image}: chroma-key pixels remain visible`);
+
+    for (const frame of metadata.frames) {
+      assert.ok(frame.frame.x >= 0 && frame.frame.y >= 0, `${atlas.metadata}: ${frame.name} starts outside the atlas`);
+      assert.ok(frame.frame.x + frame.frame.width <= info.width, `${atlas.metadata}: ${frame.name} exceeds atlas width`);
+      assert.ok(frame.frame.y + frame.frame.height <= info.height, `${atlas.metadata}: ${frame.name} exceeds atlas height`);
+      assert.ok(frame.pivot.x >= 0 && frame.pivot.x <= 1 && frame.pivot.y >= 0 && frame.pivot.y <= 1, `${atlas.metadata}: ${frame.name} pivot is invalid`);
+    }
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+}
+
+for (const artifact of config.reviewArtifacts ?? []) {
+  try {
+    const artifactStat = await stat(path.join(root, artifact));
+    assert.ok(artifactStat.size > 1000, `${artifact}: review artifact is unexpectedly small`);
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+}
+
 const duplicateAssets = config.runtimeAssets.filter((asset, index) => config.runtimeAssets.indexOf(asset) !== index);
 for (const duplicate of new Set(duplicateAssets)) failures.push(`${duplicate}: duplicated runtime asset`);
 
@@ -64,6 +123,6 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   const totalBytes = rows.reduce((sum, row) => sum + row.bytes, 0);
-  console.log(`Rewild visual assets validated: ${rows.length} runtime PNGs, ${config.references.length} references, ${(totalBytes / 1024 / 1024).toFixed(2)} MiB.`);
+  console.log(`Rewild visual assets validated: ${rows.length} runtime PNGs, ${config.references.length} references, ${config.productionAtlases?.length ?? 0} production atlases, ${(totalBytes / 1024 / 1024).toFixed(2)} MiB.`);
   for (const family of Object.keys(config.assetFamilies)) console.log(`- ${family}: ${config.assetFamilies[family].length}`);
 }

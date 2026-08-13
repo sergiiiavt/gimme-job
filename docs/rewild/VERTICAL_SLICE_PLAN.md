@@ -102,6 +102,8 @@ Deliverable: `production/world-connections-v1.png`.
 
 ## Review gates
 
+Current status: Gate A is complete. Gate B assets are produced and packaged for review; renderer integration remains intentionally deferred until Gate C.
+
 ### Gate A · Static composition
 
 - Target art, art bible, asset audit, manifest, and validator approved.

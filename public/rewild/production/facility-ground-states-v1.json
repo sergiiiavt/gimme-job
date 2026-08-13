@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "image": "facility-ground-states-v1.png",
+  "sourceMaster": "docs/rewild/gate-b-sources/facility-ground-states-v1-alpha-master.png",
+  "scaleFromMaster": 0.5,
+  "size": {
+    "width": 768,
+    "height": 512
+  },
+  "grid": {
+    "columns": 4,
+    "rows": 3
+  },
+  "frames": [
+    {
+      "name": "survey-stakes",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "excavation",
+      "frame": {
+        "x": 192,
+        "y": 0,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "compacted-substrate",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "concrete-footings",
+      "frame": {
+        "x": 576,
+        "y": 0,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "concrete-apron",
+      "frame": {
+        "x": 0,
+        "y": 171,
+        "width": 192,
+        "height": 170
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "active-cable-trench",
+      "frame": {
+        "x": 192,
+        "y": 171,
+        "width": 192,
+        "height": 170
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "healthy-stressed-transition",
+      "frame": {
+        "x": 384,
+        "y": 171,
+        "width": 192,
+        "height": 170
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "stressed-exposed-transition",
+      "frame": {
+        "x": 576,
+        "y": 171,
+        "width": 192,
+        "height": 170
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "exposed-cracked-transition",
+      "frame": {
+        "x": 0,
+        "y": 341,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cracked-sludge-transition",
+      "frame": {
+        "x": 192,
+        "y": 341,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "damaged-slab-sludge",
+      "frame": {
+        "x": 384,
+        "y": 341,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "early-reclamation",
+      "frame": {
+        "x": 576,
+        "y": 341,
+        "width": 192,
+        "height": 171
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ]
+}

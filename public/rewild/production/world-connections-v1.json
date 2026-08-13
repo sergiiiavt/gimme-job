@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "image": "world-connections-v1.png",
+  "sourceMaster": "docs/rewild/gate-b-sources/world-connections-v1-alpha-master.png",
+  "scaleFromMaster": 0.5,
+  "size": {
+    "width": 836,
+    "height": 471
+  },
+  "grid": {
+    "columns": 6,
+    "rows": 4
+  },
+  "frames": [
+    {
+      "name": "cable-straight",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-diagonal",
+      "frame": {
+        "x": 139,
+        "y": 0,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-bend",
+      "frame": {
+        "x": 279,
+        "y": 0,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-reverse-bend",
+      "frame": {
+        "x": 418,
+        "y": 0,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-split",
+      "frame": {
+        "x": 557,
+        "y": 0,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-junction",
+      "frame": {
+        "x": 697,
+        "y": 0,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-ground-entry",
+      "frame": {
+        "x": 0,
+        "y": 118,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "cable-broken",
+      "frame": {
+        "x": 139,
+        "y": 118,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "drain-clean",
+      "frame": {
+        "x": 279,
+        "y": 118,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "drain-polluting",
+      "frame": {
+        "x": 418,
+        "y": 118,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "road-cable-crossing",
+      "frame": {
+        "x": 557,
+        "y": 118,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "road-utility-trench",
+      "frame": {
+        "x": 697,
+        "y": 118,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "road-crack",
+      "frame": {
+        "x": 0,
+        "y": 236,
+        "width": 139,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "road-crack-branched",
+      "frame": {
+        "x": 139,
+        "y": 236,
+        "width": 140,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "asphalt-broken-edge",
+      "frame": {
+        "x": 279,
+        "y": 236,
+        "width": 139,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "rubble-seam",
+      "frame": {
+        "x": 418,
+        "y": 236,
+        "width": 139,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "concrete-damaged-seam",
+      "frame": {
+        "x": 557,
+        "y": 236,
+        "width": 140,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "rebar-seam",
+      "frame": {
+        "x": 697,
+        "y": 236,
+        "width": 139,
+        "height": 117
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "roots-straight",
+      "frame": {
+        "x": 0,
+        "y": 353,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "roots-bend",
+      "frame": {
+        "x": 139,
+        "y": 353,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "roots-reclaiming",
+      "frame": {
+        "x": 279,
+        "y": 353,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "roots-severed",
+      "frame": {
+        "x": 418,
+        "y": 353,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "shoreline-inlet",
+      "frame": {
+        "x": 557,
+        "y": 353,
+        "width": 140,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "name": "shoreline-polluted-outlet",
+      "frame": {
+        "x": 697,
+        "y": 353,
+        "width": 139,
+        "height": 118
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ]
+}
