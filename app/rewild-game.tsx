@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import RewildTacticalGame from "./rewild-tactical-game";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -74,10 +73,9 @@ function clampCamera(camera: Camera) {
 
 function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: number) {
   const bounds = canvas.getBoundingClientRect();
-  const sceneRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-  const boxRatio = bounds.width / bounds.height;
-  const renderedWidth = boxRatio > sceneRatio ? bounds.width : bounds.height * sceneRatio;
-  const renderedHeight = boxRatio > sceneRatio ? bounds.width / sceneRatio : bounds.height;
+  const scale = Math.min(bounds.width / CANVAS_WIDTH, bounds.height / CANVAS_HEIGHT);
+  const renderedWidth = CANVAS_WIDTH * scale;
+  const renderedHeight = CANVAS_HEIGHT * scale;
   const offsetX = (bounds.width - renderedWidth) / 2;
   const offsetY = (bounds.height - renderedHeight) / 2;
   return { x: clientX - bounds.left - offsetX, y: clientY - bounds.top - offsetY, renderedWidth, renderedHeight };
@@ -778,9 +776,9 @@ function formatTime(seconds: number) { return `${Math.floor(seconds / 60)}:${Str
 function RewildGuide({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="kb-content rw-page">
-      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 02</span><h1>How to fight AI slop</h1><p>The field is a visible six-direction hex world. Terrain merges across cells, but every move, attack, root, and spread still crosses a shared border. Every action changes relationships in that living field.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
+      <header className="rw-guide-head"><span>ANTI-SLOP FIELD MANUAL / 02</span><h1>How to fight AI slop</h1><p>The field is a visible six-direction hex world. Enemies move automatically along connected routes, while attacks, roots, and corruption spread across shared borders. Place defenders, then let their relationships reshape the living field.</p><button className="rw-guide-play" onClick={onPlay}>Open the battlefield</button></header>
       <section className="rw-guide-grid">
-        <article><span>01</span><h2>Root</h2><p>Plant on healthy soil. Each defender occupies a real place and can redirect six-direction enemy movement.</p></article>
+        <article><span>01</span><h2>Root</h2><p>Plant on healthy soil. Each defender stays where it is planted and attacks automatically.</p></article>
         <article><span>02</span><h2>Break</h2><p>Datacenters excavate irregular multi-hex compounds, connect cables, manufacture junk, and poison adjacent land.</p></article>
         <article><span>03</span><h2>Relate</h2><p>Roads conduct corruption quickly, water resists it, objects become contaminated, and roots reconnect damaged soil.</p></article>
         <article><span>04</span><h2>Reclaim</h2><p>Destroyed infrastructure remains as rubble. Rootreclaimers must heal it before the landscape becomes whole again.</p></article>
@@ -800,7 +798,7 @@ function RewildGuide({ onPlay }: { onPlay: () => void }) {
   );
 }
 
-function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewChange?: (view: string) => void; view?: string }) {
+export default function RewildGame({ onViewChange = () => {}, view = "all" }: { onViewChange?: (view: string) => void; view?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -825,6 +823,7 @@ function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewCha
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
     context.imageSmoothingEnabled = false;
+    lastFrameRef.current = 0;
     const frame = (time: number) => {
       const state = stateRef.current;
       if (state) {
@@ -837,8 +836,12 @@ function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewCha
       animationRef.current = window.requestAnimationFrame(frame);
     };
     animationRef.current = window.requestAnimationFrame(frame);
-    return () => { if (animationRef.current !== null) window.cancelAnimationFrame(animationRef.current); };
-  }, []);
+    return () => {
+      if (animationRef.current !== null) window.cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+      lastFrameRef.current = 0;
+    };
+  }, [view]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -883,9 +886,10 @@ function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewCha
       canvas.removeEventListener("contextmenu", onContextMenu); canvas.removeEventListener("mousedown", onMouseDown); canvas.removeEventListener("wheel", onWheel);
       window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp);
     };
-  }, []);
+  }, [view]);
 
   useEffect(() => {
+    if (view !== "all") return;
     const onKeyDown = (event: KeyboardEvent) => {
       const state = stateRef.current;
       if (!state) return;
@@ -900,7 +904,7 @@ function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewCha
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [view]);
 
   if (view === "guide") return <RewildGuide onPlay={() => onViewChange("all")}/>;
 
@@ -996,13 +1000,8 @@ function LegacyRewildGame({ onViewChange = () => {}, view = "all" }: { onViewCha
           </div>
         </div>
         <div className="rw-status-line"><span>{ui.message}</span><small>{ui.enemies} AI slop · {ui.nodes} datacenters · {ui.plants} defenders</small></div>
-        <footer className="rw-controls"><p><strong>Grow:</strong> choose 1–6, then click the landscape. Arrows plus Q/E move through six neighbors; Enter plants. Water resists corruption, roads conduct it, and roots reclaim rubble.</p><div><button onClick={() => onViewChange("guide")}>Field guide</button><button onClick={togglePause} disabled={ui.status === "menu" || ui.status === "won" || ui.status === "lost"}>{ui.status === "paused" ? "Resume" : "Pause"}</button><button onClick={start}>Restart</button></div></footer>
+        <footer className="rw-controls"><p><strong>Grow:</strong> choose 1-6, then click the landscape. Arrows plus Q/E move the placement cursor across six neighboring cells; Enter plants. Defenders stay planted and attack automatically.</p><div><button onClick={() => onViewChange("guide")}>Field guide</button><button onClick={togglePause} disabled={ui.status === "menu" || ui.status === "won" || ui.status === "lost"}>{ui.status === "paused" ? "Resume" : "Pause"}</button><button onClick={start}>Restart</button></div></footer>
       </section>
     </div>
   );
-}
-
-export default function RewildGame(props: { onViewChange?: (view: string) => void; view?: string }) {
-  if ((props.view ?? "all") === "all") return <RewildTacticalGame onViewChange={props.onViewChange ?? (() => {})}/>;
-  return <LegacyRewildGame {...props}/>;
 }
