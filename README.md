@@ -17,8 +17,8 @@ The **Jobs** module is functional:
 - source, original link, dates, location, salary, and description;
 - pipeline statuses from `NEW` to `OFFER`, `REJECTED`, or `ARCHIVED`;
 - separate `RELEVANT` / `NOT_RELEVANT` feedback for relevance tracking;
-- RSS, Greenhouse, and Lever source sync;
-- deterministic matching without a paid AI API.
+- source sync from RSS (Dou, Djinni), Greenhouse, Lever, Ashby, Work.ua, Lobby X, and Gmail (LinkedIn/other job-alert emails);
+- deterministic matching without a paid AI API, or OpenAI Agents-based matching when `OPENAI_API_KEY` is set.
 
 The **Interview questions** module contains:
 
@@ -100,9 +100,33 @@ Required GitHub repository secrets:
 - `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit, D1 Edit, and Cloudflare Images Edit permissions;
 - `APP_PASSWORD`, at least 16 characters.
 
+Optional GitHub repository secrets:
+
+- `OPENAI_API_KEY` — switches the deployed `/workspace` "Analyze" action from deterministic scoring to real OpenAI-based scoring and resume/application-draft tailoring (`app/api/_jobpilot.ts`). Without it, analysis stays deterministic, same as before.
+- `OPENAI_MODEL` — overrides the model used when `OPENAI_API_KEY` is set (defaults to `gpt-5.6`).
+
 Open `/workspace` and enter the `APP_PASSWORD` value on the login page. The public homepage does not ask for a password. Basic authentication remains available for deployment scripts. Secrets are never written into source or the build artifact.
 
 The Cloudflare deployment creates and migrates its named D1 database from the workflow. The production deployment script intentionally refuses to run outside GitHub Actions.
+
+## Vacancy sources
+
+`config/sources.json` (copy of `config/sources.example.json`, gitignored) configures where `npm run agent:sync` pulls vacancies from:
+
+- **Dou, Djinni** — RSS feeds, filterable by keyword (`?search=` / `?primary_keyword=`), configured under `rss`.
+- **Work.ua** — no keyword-filterable RSS exists, so `workUa` entries (`{ "name", "query" }`) scrape the public search-results page at `work.ua/en/jobs/?search=<query>`.
+- **Lobby X** — `lobbyX` entries (`{ "name", "query" }`) use `thelobbyx.com`'s public WordPress REST API (`/wp-json/wp/v2/tors`) for open (non-closed) postings, then fetch each posting's page for its description.
+- **LinkedIn** — no public search API/RSS exists, and scraping LinkedIn directly isn't supported. Instead, the existing `gmail` source already recognizes `linkedin.com` links inside forwarded/alert emails and tags them `gmail:linkedin`. To use it:
+  1. In Gmail, create a filter/label (e.g. `LinkedInJobs`) for LinkedIn job-alert emails.
+  2. Create your own Google Cloud OAuth Desktop client and save its JSON as `data/google-credentials.json` (gitignored).
+  3. Run `npm run gmail:connect` once to complete the OAuth flow.
+  4. Set `gmail.enabled: true` and an appropriate `gmail.query` (e.g. `label:LinkedInJobs newer_than:14d`) in `config/sources.json`.
+
+Work.ua and Lobby X are scraped from public, unauthenticated pages rather than an official API, so their parsing is more likely to break if either site changes its markup.
+
+## Enable AI evaluation
+
+By default, vacancy matching is deterministic (keyword/rule-based, no external calls). Setting `OPENAI_API_KEY` (and optionally `OPENAI_MODEL`, see `.env.example`) switches `agent/src/analyst.ts` to score and draft applications through the OpenAI Agents SDK instead.
 
 ## Database changes
 

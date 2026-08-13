@@ -15,6 +15,14 @@ interface JobAnalysis {
   missingSkills?: string[];
 }
 
+interface JobDraft {
+  id: string;
+  recipient: string | null;
+  subject: string;
+  body: string;
+  status: string;
+}
+
 interface Job {
   id: string;
   source: string;
@@ -33,6 +41,8 @@ interface Job {
   feedbackAt?: string | null;
   statusUpdatedAt?: string | null;
   analysis: JobAnalysis | null;
+  resume: string | null;
+  draft: JobDraft | null;
 }
 
 interface DashboardData {
@@ -67,6 +77,8 @@ const DEMO_JOBS: Job[] = [
     status: "NEW",
     feedback: null,
     analysis: { score: 91, verdict: "strong", matchingSkills: ["Playwright", "TypeScript", "API testing"], missingSkills: ["AWS"] },
+    resume: "# Your Name\nQA Automation Lead\n\n## Summary\nQA leader with hands-on Playwright and TypeScript automation experience.\n\n## Relevant skills\n- Playwright\n- TypeScript\n- API testing",
+    draft: { id: "demo-draft-1", recipient: null, subject: "Application — QA Automation Lead", body: "Hello,\n\nI am applying for the QA Automation Lead role at Northstar Labs. My relevant experience includes Playwright, TypeScript, API testing.\n\nBest regards,\nYour Name", status: "PENDING_APPROVAL" },
   },
   {
     id: "demo-2",
@@ -84,6 +96,8 @@ const DEMO_JOBS: Job[] = [
     status: "INTERESTED",
     feedback: "RELEVANT",
     analysis: { score: 84, verdict: "strong", matchingSkills: ["QA leadership", "Python", "API testing"], missingSkills: [] },
+    resume: null,
+    draft: null,
   },
   {
     id: "demo-3",
@@ -101,6 +115,8 @@ const DEMO_JOBS: Job[] = [
     status: "APPLIED",
     feedback: "RELEVANT",
     analysis: { score: 76, verdict: "strong", matchingSkills: ["API testing", "Test strategy"], missingSkills: ["IEC 62304"] },
+    resume: null,
+    draft: null,
   },
 ];
 
@@ -168,6 +184,7 @@ function sourceLabel(source: string) {
   if (source.includes("dou")) return "DOU";
   if (source.includes("djinni")) return "Djinni";
   if (source.includes("workua")) return "Work.ua";
+  if (source.includes("lobbyx") || source.includes("lobby")) return "Lobby X";
   if (source.includes("greenhouse")) return "Greenhouse";
   if (source.includes("lever")) return "Lever";
   if (source.includes("ashby")) return "Ashby";
@@ -259,6 +276,18 @@ export function WorkspaceApp() {
     } finally { setBusy(null); }
   };
 
+  const analyze = async () => {
+    setBusy("analyze");
+    try {
+      const result = await api<{ dashboard: DashboardData; result: unknown[] }>("/analyze", "POST", {});
+      setJobs(result.dashboard.jobs);
+      setOnline(true);
+      setNotice(`Scored ${result.result.length} job(s). Nothing was sent.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : String(error));
+    } finally { setBusy(null); }
+  };
+
   const updateTracking = async (job: Job, change: { status?: JobStatus; feedback?: JobFeedback }) => {
     if (!online) return setNotice("Cloud API is unavailable; demo changes are not saved.");
     setBusy(`job-${job.id}`);
@@ -296,7 +325,7 @@ export function WorkspaceApp() {
 
         <div className="jobs-page private-jobs-page">
           <section className="page-intro">
-            <div className="private-page-heading"><h1>Vacancies</h1><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button></div>
+            <div className="private-page-heading"><h1>Vacancies</h1><div className="page-actions"><button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button><button className="sync-button" onClick={() => void analyze()} disabled={busy !== null}><Icon name="llm"/><span>{busy === "analyze" ? "Analyzing…" : "Analyze"}</span></button></div></div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
           </section>
 
@@ -340,6 +369,20 @@ function Stat({ value, label }: { value: number; label: string }) {
   return <div><strong>{value}</strong><span>{label}</span></div>;
 }
 
+function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return <button
+    type="button"
+    className="copy-button"
+    onClick={() => {
+      void navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      });
+    }}
+  >{copied ? "Copied" : label}</button>;
+}
+
 function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
   const summaryTags = [
     job.remote ? "Remote" : null,
@@ -371,6 +414,17 @@ function JobDetail({ job, disabled, onChange }: { job: Job; disabled: boolean; o
     <dl className="job-facts"><div><dt>Source</dt><dd>{sourceLabel(job.source)}</dd></div><div><dt>Posted</dt><dd>{formatDate(job.postedAt)}</dd></div><div><dt>Found</dt><dd>{formatDate(job.discoveredAt)}</dd></div><div><dt>Remote</dt><dd>{job.remote ? "Yes" : "Not specified"}</dd></div></dl>
 
     {(job.analysis?.matchingSkills?.length || job.analysis?.missingSkills?.length) && <section className="skills"><h3>Quick match</h3>{Boolean(job.analysis?.matchingSkills?.length) && <div><span>Matches</span><p>{job.analysis?.matchingSkills?.map((skill) => <em key={skill}>{skill}</em>)}</p></div>}{Boolean(job.analysis?.missingSkills?.length) && <div><span>Gaps</span><p>{job.analysis?.missingSkills?.map((skill) => <em key={skill} className="gap">{skill}</em>)}</p></div>}</section>}
+
+    {job.resume && <section className="resume-preview">
+      <div className="section-head"><h3>Tailored resume</h3><CopyButton text={job.resume}/></div>
+      <pre>{job.resume}</pre>
+    </section>}
+
+    {job.draft && <section className="draft-preview">
+      <div className="section-head"><h3>Application draft</h3><CopyButton text={`Subject: ${job.draft.subject}\n\n${job.draft.body}`}/></div>
+      <p className="draft-subject">{job.draft.subject}</p>
+      <pre>{job.draft.body}</pre>
+    </section>}
 
     <section className="description"><h3>Vacancy description</h3><p>{displayText(job.description || "No description was collected for this vacancy.")}</p></section>
   </article>;

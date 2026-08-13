@@ -195,6 +195,20 @@ async function main() {
       { input: `${appPassword}\n` },
     );
 
+    if (process.env.OPENAI_API_KEY) {
+      console.log("Updating the OpenAI API key...");
+      runWrangler(
+        ["secret", "put", "OPENAI_API_KEY", "--config", generatedConfigPath],
+        { input: `${process.env.OPENAI_API_KEY}\n` },
+      );
+      if (process.env.OPENAI_MODEL) {
+        runWrangler(
+          ["secret", "put", "OPENAI_MODEL", "--config", generatedConfigPath],
+          { input: `${process.env.OPENAI_MODEL}\n` },
+        );
+      }
+    }
+
     console.log("Importing the current DOU job feed...");
     await importCurrentJobs(appPassword);
 
