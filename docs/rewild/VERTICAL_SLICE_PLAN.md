@@ -102,7 +102,7 @@ Deliverable: `production/world-connections-v1.png`.
 
 ## Review gates
 
-Current status: Gate A is complete. Gate B assets are produced and packaged for review; renderer integration remains intentionally deferred until Gate C.
+Current status: Gates A and B are complete. Gate C integrates the reviewed atlases into the running renderer and includes construction, contamination, responsive-layout, and relationship screenshots in `reviews/gate-c/`.
 
 ### Gate A · Static composition
 

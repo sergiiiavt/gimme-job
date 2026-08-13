@@ -17,7 +17,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /lazy\(\(\) => import\("\.\/rewild-game"\)\)/);
   assert.match(publicSource, /<RewildGame onViewChange=\{onTopicChange\} view=\{activeTopic\}\/>/);
   assert.match(stylesSource, /\.rw-play-page \.rw-game-shell/);
-  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: cover;/);
+  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: contain;/);
   assert.match(stylesSource, /\.kb-main-game \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
   assert.match(stylesSource, /image-rendering: pixelated/);
 
@@ -46,7 +46,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /cell\.surface !== "water"/);
   assert.match(worldSource, /cell\.surface = "rubble"/);
   assert.match(worldSource, /function reclaimNear/);
-  assert.match(worldSource, /if \(target\.surface === "rubble"\) target\.surface = "meadow"/);
+  assert.match(worldSource, /if \(target\.surface === "rubble"\) (?:\{ )?target\.surface = "meadow"/);
   assert.match(worldSource, /export function objectCorruption/);
   assert.doesNotMatch(worldSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
 
@@ -56,6 +56,12 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /function drawCorruption/);
   assert.match(gameSource, /function drawGrounding/);
   assert.match(gameSource, /function drawFacilityGround/);
+  assert.match(gameSource, /function drawAtlasFrame/);
+  assert.match(gameSource, /facilityModules\(node\)/);
+  assert.match(gameSource, /drawNodeConnections\(ctx, node, state\)/);
+  assert.match(gameSource, /"shoreline-polluted-outlet"/);
+  assert.match(gameSource, /"roots-reclaiming"/);
+  assert.doesNotMatch(gameSource, /const wallHeight = stage/);
   assert.match(gameSource, /function drawRubble/);
   assert.match(gameSource, /drawSprite\(ctx, object\.sprite/);
   assert.match(gameSource, /object\.kind !== "house"/);
