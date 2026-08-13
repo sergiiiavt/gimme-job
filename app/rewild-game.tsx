@@ -10,9 +10,12 @@ const HOUSE_TILES = new Set(["14,6", "15,6", "14,7", "15,7"]);
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 
 const TILE = 40;
-const CANVAS_WIDTH = COLS * TILE;
-const CANVAS_HEIGHT = ROWS * TILE;
-const MIN_ZOOM = 0.6;
+const FIELD_WIDTH = COLS * TILE;
+const FIELD_HEIGHT = ROWS * TILE;
+const FIELD_TOP = 58;
+const CANVAS_WIDTH = 1200;
+const CANVAS_HEIGHT = 675;
+const MIN_ZOOM = 1;
 const MAX_ZOOM = 2.4;
 
 interface Camera { x: number; y: number; zoom: number }
@@ -27,22 +30,11 @@ function clampCamera(camera: Camera) {
 }
 function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: number) {
   const bounds = canvas.getBoundingClientRect();
-  const boardRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-  const boxRatio = bounds.width / bounds.height;
-  const renderedWidth = boxRatio > boardRatio ? bounds.height * boardRatio : bounds.width;
-  const renderedHeight = boxRatio > boardRatio ? bounds.height : bounds.width / boardRatio;
-  const offsetX = (bounds.width - renderedWidth) / 2;
-  const offsetY = (bounds.height - renderedHeight) / 2;
-  return { x: clientX - bounds.left - offsetX, y: clientY - bounds.top - offsetY, renderedWidth, renderedHeight };
+  return { x: clientX - bounds.left, y: clientY - bounds.top, renderedWidth: bounds.width, renderedHeight: bounds.height };
 }
 
 const SPRITE_FILES: Record<string, string> = {
-  "terrain-meadow": "/rewild/terrain-meadow.png",
-  "terrain-shrub-1": "/rewild/terrain-shrub-1.png", "terrain-shrub-2": "/rewild/terrain-shrub-2.png",
-  "terrain-flowers-1": "/rewild/terrain-flowers-1.png", "terrain-flowers-2": "/rewild/terrain-flowers-2.png",
-  "terrain-pond-1": "/rewild/terrain-pond-1.png", "terrain-pond-2": "/rewild/terrain-pond-2.png",
-  "terrain-rock-1": "/rewild/terrain-rock-1.png", "terrain-rock-2": "/rewild/terrain-rock-2.png",
-  "terrain-corrupt-1": "/rewild/terrain-corrupt-1.png", "terrain-corrupt-2": "/rewild/terrain-corrupt-2.png",
+  "terrain-world": "/rewild/terrain-world.png",
   "obj-house": "/rewild/obj-house-v2.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak-p1": "/rewild/obj-elderoak-p1.png", "obj-elderoak-p2": "/rewild/obj-elderoak-p2.png",
@@ -95,19 +87,8 @@ function getSprite(key: string): HTMLImageElement | null {
   return getSpriteByPath(SPRITE_FILES[key]);
 }
 
-const WANG_KINDS = ["corrupt"] as const;
-function allWangCornerKeys(): string[] {
-  const keys: string[] = [];
-  for (const nw of ["l", "u"]) for (const ne of ["l", "u"]) for (const sw of ["l", "u"]) for (const se of ["l", "u"]) keys.push(nw + ne + sw + se);
-  return keys;
-}
-function getWangSprite(kind: string, cornerKey: string): HTMLImageElement | null {
-  return getSpriteByPath(`/rewild/wang-${kind}-${cornerKey}.png`);
-}
-
 function preloadSprites() {
   for (const key of Object.keys(SPRITE_FILES)) getSprite(key);
-  for (const kind of WANG_KINDS) for (const key of allWangCornerKeys()) getWangSprite(kind, key);
 }
 
 type TileKind = "grass" | "corrupt" | "forest" | "pond" | "rock" | "flowers" | "house";
@@ -245,21 +226,6 @@ const OBSTACLES: Array<[number, number, TileKind]> = [
   [6, 5, "pond"], [6, 6, "pond"], [7, 6, "pond"], [3, 9, "forest"], [4, 9, "forest"], [4, 10, "forest"],
   [25, 6, "forest"], [26, 6, "forest"], [23, 10, "rock"], [24, 10, "rock"], [20, 12, "flowers"], [21, 12, "flowers"],
   [10, 12, "forest"], [11, 12, "forest"],
-];
-
-interface TerrainCluster { key: string; x: number; y: number; width: number }
-const TERRAIN_CLUSTERS: TerrainCluster[] = [
-  { key: "terrain-shrub-1", x: 3.9, y: 3.25, width: 4.2 },
-  { key: "terrain-shrub-2", x: 3.95, y: 10.25, width: 4.0 },
-  { key: "terrain-shrub-1", x: 25.95, y: 6.75, width: 3.8 },
-  { key: "terrain-shrub-2", x: 10.95, y: 12.75, width: 3.4 },
-  { key: "terrain-flowers-1", x: 10.95, y: 1.65, width: 3.7 },
-  { key: "terrain-flowers-2", x: 22.95, y: 2.65, width: 3.35 },
-  { key: "terrain-flowers-1", x: 20.95, y: 12.65, width: 3.4 },
-  { key: "terrain-pond-1", x: 17.95, y: 4.15, width: 4.5 },
-  { key: "terrain-pond-2", x: 6.75, y: 6.15, width: 4.25 },
-  { key: "terrain-rock-2", x: 26.5, y: 3.55, width: 2.45 },
-  { key: "terrain-rock-1", x: 23.95, y: 10.55, width: 3.3 },
 ];
 
 function createTiles() {
@@ -699,36 +665,32 @@ function drawSprite(ctx: CanvasRenderingContext2D, key: string, cx: number, grou
   return { width, height, top, left };
 }
 
-function isKindAt(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
-  return col >= 0 && row >= 0 && col < COLS && row < ROWS && tiles[row][col] === kind;
-}
-function vertexTouchesKind(tiles: TileKind[][], vx: number, vy: number, kind: TileKind) {
-  return isKindAt(tiles, vx - 1, vy - 1, kind) || isKindAt(tiles, vx, vy - 1, kind) || isKindAt(tiles, vx - 1, vy, kind) || isKindAt(tiles, vx, vy, kind);
-}
-function cellCornerKey(tiles: TileKind[][], col: number, row: number, kind: TileKind) {
-  const corner = (vx: number, vy: number) => (vertexTouchesKind(tiles, vx, vy, kind) ? "l" : "u");
-  return corner(col, row) + corner(col + 1, row) + corner(col, row + 1) + corner(col + 1, row + 1);
-}
-
 function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: number, row: number, time: number) {
   const x = col * TILE;
   const y = row * TILE;
-
-  let nearBiome = false;
-  for (const kind of ["corrupt"] as const) {
-    const key = cellCornerKey(tiles, col, row, kind);
-    if (key === "uuuu") continue;
-    nearBiome = true;
-    const img = getWangSprite(kind, key);
-    if (img) {
-      ctx.save();
-      ctx.globalAlpha = .64;
-      ctx.drawImage(img, x, y, TILE, TILE);
-      ctx.restore();
-    }
+  const corrupt = tiles[row][col] === "corrupt";
+  if (corrupt) {
+    const left = col > 0 && tiles[row][col - 1] === "corrupt";
+    const right = col + 1 < COLS && tiles[row][col + 1] === "corrupt";
+    const top = row > 0 && tiles[row - 1][col] === "corrupt";
+    const bottom = row + 1 < ROWS && tiles[row + 1][col] === "corrupt";
+    const wobble = (hashInt(col, row, 18) % 7) - 3;
+    ctx.fillStyle = "rgba(42,30,55,.78)";
+    ctx.beginPath();
+    ctx.moveTo(x + (left ? 0 : 6 + wobble), y + (top ? 0 : 8));
+    ctx.quadraticCurveTo(x + TILE / 2, y + (top ? 0 : 2), x + (right ? TILE : TILE - 7 + wobble), y + (top ? 0 : 7));
+    ctx.lineTo(x + (right ? TILE : TILE - 4), y + (bottom ? TILE : TILE - 8));
+    ctx.quadraticCurveTo(x + TILE / 2, y + (bottom ? TILE : TILE - 2), x + (left ? 0 : 6), y + (bottom ? TILE : TILE - 6));
+    ctx.closePath();
+    ctx.fill();
+    const glow = ctx.createRadialGradient(x + TILE / 2, y + TILE / 2, 2, x + TILE / 2, y + TILE / 2, TILE * .52);
+    glow.addColorStop(0, "rgba(117,58,136,.34)");
+    glow.addColorStop(1, "rgba(42,30,55,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - 4, y - 4, TILE + 8, TILE + 8);
   }
 
-  if (!nearBiome && tiles[row][col] === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
+  if (!corrupt && tiles[row][col] === "grass" && !HOUSE_TILES.has(tileKey(col, row)) && hashInt(col, row, 1) % 11 === 0) {
     const kind = DECAL_KINDS[hashInt(col, row, 2) % DECAL_KINDS.length];
     const offX = (hashInt(col, row, 3) % 16) - 8;
     const offY = (hashInt(col, row, 4) % 16) - 8;
@@ -745,11 +707,11 @@ function drawTile(ctx: CanvasRenderingContext2D, tiles: TileKind[][], col: numbe
 }
 
 function drawMeadow(ctx: CanvasRenderingContext2D) {
-  const meadow = getSprite("terrain-meadow");
-  if (meadow) {
+  const world = getSprite("terrain-world");
+  if (world) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(meadow, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.drawImage(world, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     ctx.restore();
     return;
   }
@@ -757,27 +719,24 @@ function drawMeadow(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
-function drawTerrainClusters(ctx: CanvasRenderingContext2D) {
-  for (const cluster of TERRAIN_CLUSTERS) {
-    const img = getSprite(cluster.key);
-    if (!img) continue;
-    const width = cluster.width * TILE;
-    const height = width * (img.naturalHeight / img.naturalWidth);
-    ctx.drawImage(img, cluster.x * TILE - width / 2, cluster.y * TILE - height / 2, width, height);
-  }
-}
-
 function drawCorruptionDetails(ctx: CanvasRenderingContext2D, tiles: TileKind[][]) {
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) {
       if (tiles[row][col] !== "corrupt") continue;
-      const img = getSprite(hashInt(col, row, 19) % 2 ? "terrain-corrupt-1" : "terrain-corrupt-2");
-      if (!img) continue;
-      const width = TILE * (1.15 + (hashInt(col, row, 20) % 22) / 100);
-      const height = width * (img.naturalHeight / img.naturalWidth);
-      const x = (col + .5) * TILE - width / 2 + (hashInt(col, row, 21) % 9) - 4;
-      const y = (row + .5) * TILE - height / 2 + (hashInt(col, row, 22) % 7) - 3;
-      ctx.drawImage(img, x, y, width, height);
+      const x = (col + .5) * TILE + (hashInt(col, row, 21) % 9) - 4;
+      const y = (row + .5) * TILE + (hashInt(col, row, 22) % 7) - 3;
+      ctx.fillStyle = hashInt(col, row, 19) % 2 ? "rgba(126,64,149,.78)" : "rgba(196,225,60,.66)";
+      ctx.beginPath();
+      ctx.ellipse(x, y, 5 + hashInt(col, row, 20) % 7, 3 + hashInt(col, row, 23) % 5, (hashInt(col, row, 24) % 10) / 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(20,16,28,.7)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 2);
+      ctx.quadraticCurveTo(x + ((hashInt(col, row, 25) % 9) - 4), y - 10, x + ((hashInt(col, row, 26) % 13) - 6), y - 15);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(16,17,24,.72)";
+      ctx.fillRect(x - 1, y - 10, 2, 9);
     }
   }
 }
@@ -843,11 +802,18 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
   drawMeadow(ctx);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, FIELD_TOP, FIELD_WIDTH, FIELD_HEIGHT);
+  ctx.clip();
+  ctx.translate(0, FIELD_TOP);
   for (let row = 0; row < ROWS; row += 1) {
     for (let col = 0; col < COLS; col += 1) drawTile(ctx, state.tiles, col, row, state.elapsed);
   }
   drawCorruptionDetails(ctx, state.tiles);
-  drawTerrainClusters(ctx);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, FIELD_TOP);
   drawHouse(ctx, state.houseHp);
   for (const plant of state.plants) drawPlant(ctx, plant, state);
   for (const node of state.nodes) drawNode(ctx, node, state.elapsed);
@@ -860,6 +826,7 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
     ctx.lineWidth = 3;
     ctx.strokeRect(state.cursor.col * TILE + 3, state.cursor.row * TILE + 3, TILE - 6, TILE - 6);
   }
+  ctx.restore();
   ctx.restore();
   if (corruptionPercent(state) > 18) {
     ctx.fillStyle = `rgba(205,255,65,${Math.min(.08, corruptionPercent(state) / 1200)})`;
@@ -1045,7 +1012,8 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     const canvasX = (x / renderedWidth) * CANVAS_WIDTH;
     const canvasY = (y / renderedHeight) * CANVAS_HEIGHT;
     const col = Math.floor((canvasX / camera.zoom + camera.x) / TILE);
-    const row = Math.floor((canvasY / camera.zoom + camera.y) / TILE);
+    const row = Math.floor((canvasY / camera.zoom + camera.y - FIELD_TOP) / TILE);
+    if (!inBounds(col, row)) return;
     state.cursor = { col, row };
     placePlant(state, col, row);
     setUi(toUi(state));

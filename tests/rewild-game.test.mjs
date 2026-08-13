@@ -21,18 +21,19 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /section === "rewild" && subsection === "all" \? " kb-main-game"/);
   assert.match(stylesSource, /\.rw-play-page \.rw-game-shell/);
   assert.match(stylesSource, /\.rw-play-page \.rw-stage \{[^}]*height: 100%;[^}]*max-height: 100%;[^}]*max-width: none;[^}]*width: 100%;/);
-  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: contain;/);
+  assert.match(stylesSource, /\.rw-stage canvas \{[^}]*object-fit: fill;/);
   assert.match(stylesSource, /\.kb-main-game \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
   assert.match(stylesSource, /\.rw-play-page \{[^}]*height: 100dvh;[^}]*overflow: hidden;/);
 
   assert.match(gameSource, /const COLS = 30;/);
   assert.match(gameSource, /const ROWS = 14;/);
   assert.match(gameSource, /const TILE = 40;/);
+  assert.match(gameSource, /const FIELD_TOP = 58;/);
+  assert.match(gameSource, /const CANVAS_HEIGHT = 675;/);
   assert.match(gameSource, /width=\{CANVAS_WIDTH\} height=\{CANVAS_HEIGHT\}/);
   assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(stylesSource, /image-rendering: pixelated/);
-  assert.match(gameSource, /"terrain-meadow": "\/rewild\/terrain-meadow\.png"/);
-  assert.match(gameSource, /function drawTerrainClusters/);
+  assert.match(gameSource, /"terrain-world": "\/rewild\/terrain-world\.png"/);
   assert.match(gameSource, /function drawCorruptionDetails/);
   assert.doesNotMatch(gameSource, /ctx\.strokeRect\(x, y, TILE, TILE\)/);
 
@@ -53,7 +54,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /state\.selected === "rootreclaimer" \? tile === "corrupt" : tile === "grass"/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
   assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
-  assert.match(gameSource, /const renderedWidth = boxRatio > boardRatio/);
+  assert.match(gameSource, /renderedWidth: bounds\.width/);
   assert.match(gameSource, /if \(x < 0 \|\| y < 0 \|\| x >= renderedWidth \|\| y >= renderedHeight\) return/);
   assert.match(gameSource, /event\.key === "Enter"/);
   assert.match(gameSource, /window\.localStorage\.setItem\(STORAGE_KEY/);
@@ -66,7 +67,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
   assert.match(gameOutput, /AI slop erased/);
-  assert.match(gameOutput, /terrain-meadow\.png/);
+  assert.match(gameOutput, /terrain-world\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
 });
