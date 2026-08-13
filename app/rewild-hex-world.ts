@@ -16,8 +16,9 @@ export type PlantKind = "sunbloom" | "thornbramble" | "sporecap" | "vinewhip" | 
 export type EnemyKind = "clickbait" | "deepfake" | "popup" | "fragment";
 export type GameStatus = "menu" | "playing" | "paused" | "won" | "lost";
 export type Difficulty = "easy" | "normal" | "hard";
-export type RewildReviewState = "damage" | "collapse" | "reclamation" | "ecosystem";
-export type WorldEffectKind = "construction" | "impact" | "shutdown" | "collapse" | "reclaim";
+export type RewildReviewState = "damage" | "collapse" | "reclamation" | "ecosystem" | "response";
+export type WorldEffectKind = "construction" | "impact" | "shutdown" | "collapse" | "reclaim" | "dilution";
+export type EnvironmentVisualState = "healthy" | "stressed" | "corrupted" | "dead" | "recovering";
 
 export interface HexCoord { q: number; r: number }
 export interface PixelPoint { x: number; y: number }
@@ -135,6 +136,7 @@ export interface FacilityRuin {
 
 export interface Beam { from: PixelPoint; to: PixelPoint; color: string; life: number; maxLife: number }
 export interface WorldEffect { kind: WorldEffectKind; position: PixelPoint; life: number; maxLife: number; seed: number }
+export interface EnvironmentResponse { stress: CorruptionLevel; recoveringUntil: number }
 export interface GameState {
   status: GameStatus;
   world: HexWorld;
@@ -145,6 +147,8 @@ export interface GameState {
   beams: Beam[];
   effects: WorldEffect[];
   ecosystemTimer: number;
+  pondCueTimer: number;
+  environmentResponses: Map<string, EnvironmentResponse>;
   sunlight: number;
   houseHp: number;
   wave: number;
@@ -420,13 +424,15 @@ function createNode(state: GameState, anchor: HexCoord, boss = false) {
 export function createGameState(best: number, difficulty: Difficulty, status: GameStatus = "playing"): GameState {
   const config = DIFFICULTIES[difficulty];
   const state: GameState = {
-    status, world: createHexWorld(), plants: [], enemies: [], nodes: [], ruins: [], beams: [], effects: [], ecosystemTimer: 1.2,
+    status, world: createHexWorld(), plants: [], enemies: [], nodes: [], ruins: [], beams: [], effects: [], ecosystemTimer: 1.2, pondCueTimer: 0,
+    environmentResponses: new Map(),
     sunlight: config.sunlightStart, houseHp: config.houseHp, wave: 1, nextWave: 24 * config.waveTime, elapsed: 0, score: 0,
     selected: "vinewhip", cursor: { q: 13, r: 5 }, message: "AI slop detected. Grow weapons.", messageUntil: 3,
     bossSpawned: false, nextId: 1, best, difficulty, reviewState: null,
   };
   createNode(state, BORDER_SPAWNS[1]);
   createNode(state, { q: 22, r: 5 });
+  updateEnvironmentResponses(state);
   return state;
 }
 
@@ -546,8 +552,37 @@ function updatePlants(state: GameState, dt: number) {
   }
 }
 
+export function environmentStress(state: GameState, object: WorldObject) {
+  if (object.kind === "pond") return [...state.world.cells.values()]
+    .filter((cell) => object.footprint.some((pondCell) => hexDistance(pondCell, cell.hex) <= 2))
+    .reduce<CorruptionLevel>((highest, cell) => Math.max(highest, cell.corruption) as CorruptionLevel, 0);
+  return objectCorruption(state, object);
+}
+
+function updateEnvironmentResponses(state: GameState) {
+  for (const object of state.world.objects.filter((entry) => entry.kind === "tree" || entry.kind === "pine" || entry.kind === "pond")) {
+    const stress = environmentStress(state, object);
+    const previous = state.environmentResponses.get(object.id);
+    state.environmentResponses.set(object.id, {
+      stress,
+      recoveringUntil: previous && previous.stress > stress && stress <= 1 ? state.elapsed + 6 : previous?.recoveringUntil ?? 0,
+    });
+  }
+}
+
+export function environmentVisualState(state: GameState, object: WorldObject): EnvironmentVisualState {
+  const stress = environmentStress(state, object);
+  const response = state.environmentResponses.get(object.id);
+  if (response && response.recoveringUntil > state.elapsed && stress <= 1) return "recovering";
+  if (stress === 0) return "healthy";
+  if (stress === 1) return "stressed";
+  if (stress >= 4) return "dead";
+  return "corrupted";
+}
+
 function updateEcosystem(state: GameState, dt: number) {
   state.ecosystemTimer -= dt;
+  state.pondCueTimer -= dt;
   if (state.ecosystemTimer > 0) return;
   state.ecosystemTimer = 1.2;
   for (const pond of state.world.objects.filter((object) => object.kind === "pond")) {
@@ -557,8 +592,13 @@ function updateEcosystem(state: GameState, dt: number) {
     if (target) {
       target.corruption = Math.max(0, target.corruption - 1) as CorruptionLevel;
       if (target.corruption === 0) target.source = null;
+      if (state.pondCueTimer <= 0) {
+        state.effects.push({ kind: "dilution", position: hexCenter(pond.anchor), life: .9, maxLife: .9, seed: target.seed });
+        state.pondCueTimer = 4.8;
+      }
     }
   }
+  updateEnvironmentResponses(state);
 }
 
 function spawnEnemy(state: GameState, node: DataNode, kind: EnemyKind, offset = 0) {
@@ -786,15 +826,16 @@ export function inspectHex(state: GameState, hex: HexCoord): EcosystemInspection
   if (ruin) return { title: "Collapsed datacenter", subtitle: "Persistent occupied rubble", details: ["Blocks construction and vegetation.", "Rootreclaimers must clear every contaminated cell."], valid: state.selected === "rootreclaimer" && cell.corruption > 0, score: null };
   if (plant) return { title: PLANTS[plant.kind].name, subtitle: PLANTS[plant.kind].role, details: [PLANTS[plant.kind].detail, plant.kind === "rootreclaimer" && nearbyObject(state, plant, ["tree", "pine"], 3) ? "Tree network: +1 range and faster reclamation." : `${Math.max(0, Math.round(plant.hp / PLANTS[plant.kind].maxHp * 100))}% health`], valid: false, score: null };
   if (object?.collision) {
-    const corruption = objectCorruption(state, object);
+    const corruption = environmentStress(state, object);
+    const visualState = object.kind === "tree" || object.kind === "pine" || object.kind === "pond" ? environmentVisualState(state, object) : null;
     const relationships: Partial<Record<WorldObjectKind, string[]>> = {
       house: [state.houseHp / DIFFICULTIES[state.difficulty].houseHp > .7 ? "Secure: exterior and garden intact." : state.houseHp / DIFFICULTIES[state.difficulty].houseHp > .35 ? "Damaged: attacks have reached the structure." : "Critical: the last house is close to collapse."],
-      pond: ["Dilutes one nearby corruption level every 1.2 seconds.", corruption ? `Shoreline contamination level ${corruption}.` : "Water is currently clean."],
-      tree: ["Extends nearby Rootreclaimers to range 4 and shortens their cycle.", corruption ? `Canopy is stressed at level ${corruption}.` : "Healthy root network."],
-      pine: ["Extends nearby Rootreclaimers to range 4 and shortens their cycle.", corruption ? `Needles are stressed at level ${corruption}.` : "Healthy root network."],
+      pond: ["Dilutes one nearby corruption level every 1.2 seconds.", visualState === "recovering" ? "Shoreline is visibly recovering after cleanup." : corruption ? `Shoreline contamination level ${corruption}.` : "Water is currently clean."],
+      tree: ["Extends nearby Rootreclaimers to range 4 and shortens their cycle.", visualState === "recovering" ? "Fresh shoots are returning after cleanup." : corruption ? `Canopy is stressed at level ${corruption}.` : "Healthy root network."],
+      pine: ["Extends nearby Rootreclaimers to range 4 and shortens their cycle.", visualState === "recovering" ? "Fresh needles are returning after cleanup." : corruption ? `Needles are stressed at level ${corruption}.` : "Healthy root network."],
       rock: ["Hard obstacle: redirects AI slop and constrains placement."],
     };
-    return { title: OBJECT_NAMES[object.kind], subtitle: corruption ? "Environment under stress" : "Freestanding world object", details: relationships[object.kind] ?? [object.collision ? "Occupies and blocks this ground." : "Visual habitat; ground remains traversable."], valid: false, score: null };
+    return { title: OBJECT_NAMES[object.kind], subtitle: visualState === "recovering" ? "Environment recovering" : corruption ? "Environment under stress" : "Freestanding world object", details: relationships[object.kind] ?? [object.collision ? "Occupies and blocks this ground." : "Visual habitat; ground remains traversable."], valid: false, score: null };
   }
   const nearbyTree = nearbyObject(state, hex, ["tree", "pine"], 3);
   const nearRoad = state.world.road.cells.some((roadHex) => hexDistance(hex, roadHex) <= 1);
@@ -843,6 +884,37 @@ export function createReviewGameState(best: number, stateName: RewildReviewState
     state.plants.push({ id: nextId(state), kind: "rootreclaimer", q: rootHex.q, r: rootHex.r, hp: PLANTS.rootreclaimer.maxHp, cooldown: 0, age: 5, reclaimTimer: 2, disabledUntil: 0, reclaimTarget: target, reclaimUntil: 99, attackTarget: null, attackUntil: 0 });
     state.cursor = rootHex;
     state.message = "Inspect the field: trees amplify roots, ponds dilute pollution, and roads concentrate fast enemy traffic.";
+    return state;
+  }
+  if (stateName === "response") {
+    for (const cell of state.world.cells.values()) {
+      if (cell.surface === "foundation") cell.surface = "meadow";
+      cell.corruption = 0;
+      cell.source = null;
+    }
+    state.nodes = [];
+    state.selected = "rootreclaimer";
+    const examples: Record<string, CorruptionLevel> = { "tree-nw": 1, "pine-west": 2, "tree-east": 4, "pond-west": 4, "pond-east": 1 };
+    for (const object of state.world.objects) {
+      const stress = examples[object.id];
+      if (stress === undefined) continue;
+      const cells = object.kind === "pond"
+        ? [...state.world.cells.values()].filter((cell) => cell.surface !== "water" && object.footprint.some((part) => hexDistance(part, cell.hex) <= 2))
+        : object.footprint.map((hex) => cellAt(state.world, hex)).filter((cell): cell is HexCell => Boolean(cell));
+      for (const cell of cells.slice(0, object.kind === "pond" ? 5 : cells.length)) { cell.corruption = stress; cell.source = 77; }
+    }
+    const recoveringPine = state.world.objects.find((object) => object.id === "pine-south")!;
+    state.environmentResponses.set(recoveringPine.id, { stress: 0, recoveringUntil: 99 });
+    for (const object of state.world.objects.filter((entry) => entry.kind === "tree" || entry.kind === "pine" || entry.kind === "pond")) {
+      if (!state.environmentResponses.has(object.id)) state.environmentResponses.set(object.id, { stress: environmentStress(state, object), recoveringUntil: 0 });
+    }
+    const rootHex = { q: 9, r: 11 };
+    const rootCell = cellAt(state.world, rootHex);
+    if (rootCell) { rootCell.corruption = 2; rootCell.source = 77; }
+    state.plants.push({ id: nextId(state), kind: "rootreclaimer", q: rootHex.q, r: rootHex.r, hp: PLANTS.rootreclaimer.maxHp, cooldown: 0, age: 5, reclaimTimer: 2, disabledUntil: 0, reclaimTarget: rootHex, reclaimUntil: 99, attackTarget: null, attackUntil: 0 });
+    state.effects.push({ kind: "dilution", position: hexCenter(state.world.objects.find((object) => object.id === "pond-east")!.anchor), life: .55, maxLife: .9, seed: 91 });
+    state.cursor = recoveringPine.anchor;
+    state.message = "Environment response: physical tree and pond states follow contamination, cleanup, and root relationships.";
     return state;
   }
   if (stateName === "damage") {

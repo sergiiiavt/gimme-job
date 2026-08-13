@@ -6,6 +6,7 @@ import {
   PLANTS,
   cellAt,
   createGameState,
+  environmentVisualState,
   findPath,
   hexDistance,
   inspectHex,
@@ -73,6 +74,31 @@ test("ponds actively dilute nearby soil without erasing occupied rubble", () => 
   updateGame(state, .05);
 
   assert.equal(target.corruption, 3);
+  assert.equal(state.effects.filter((effect) => effect.kind === "dilution").length, 1);
+  state.ecosystemTimer = 0;
+  updateGame(state, .05);
+  assert.equal(target.corruption, 2);
+  assert.equal(state.effects.filter((effect) => effect.kind === "dilution").length, 1);
+});
+
+test("physical environment frames follow stress and persist through recovery", () => {
+  const state = createGameState(0, "normal");
+  state.nodes = [];
+  const tree = state.world.objects.find((object) => object.kind === "tree");
+  assert.ok(tree);
+  for (const hex of tree.footprint) {
+    const cell = cellAt(state.world, hex);
+    if (cell) cell.corruption = 3;
+  }
+  assert.equal(environmentVisualState(state, tree), "corrupted");
+  state.environmentResponses.set(tree.id, { stress: 3, recoveringUntil: state.elapsed + 6 });
+  for (const hex of tree.footprint) {
+    const cell = cellAt(state.world, hex);
+    if (cell) cell.corruption = 0;
+  }
+  assert.equal(environmentVisualState(state, tree), "recovering");
+  state.elapsed += 7;
+  assert.equal(environmentVisualState(state, tree), "healthy");
 });
 
 test("tree relationships make early root placement stronger and faster", () => {

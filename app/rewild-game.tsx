@@ -16,6 +16,7 @@ import {
   cellAt,
   createGameState,
   createReviewGameState,
+  environmentVisualState,
   facilityOperational,
   facilityStage,
   hexCenter,
@@ -50,7 +51,7 @@ import { REWILD_ATLASES, atlasFrame, type RewildAtlasId } from "./rewild-atlases
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 2.4;
-const REVIEW_STATES = new Set<RewildReviewState>(["damage", "collapse", "reclamation", "ecosystem"]);
+const REVIEW_STATES = new Set<RewildReviewState>(["damage", "collapse", "reclamation", "ecosystem", "response"]);
 
 function requestedReviewState() {
   if (typeof window === "undefined") return null;
@@ -83,9 +84,7 @@ function toCanvasPixel(canvas: HTMLCanvasElement, clientX: number, clientY: numb
 const SPRITE_FILES: Record<string, string> = {
   "terrain-shrub-1": "/rewild/terrain-shrub-1.png", "terrain-shrub-2": "/rewild/terrain-shrub-2.png",
   "terrain-flowers-1": "/rewild/terrain-flowers-1.png", "terrain-flowers-2": "/rewild/terrain-flowers-2.png",
-  "terrain-pond-1": "/rewild/terrain-pond-1.png", "terrain-pond-2": "/rewild/terrain-pond-2.png",
   "terrain-rock-1": "/rewild/terrain-rock-1.png", "terrain-rock-2": "/rewild/terrain-rock-2.png",
-  "obj-tree-deciduous": "/rewild/obj-tree-deciduous.png", "obj-tree-pine": "/rewild/obj-tree-pine.png",
   "obj-house": "/rewild/obj-house-v2.png", "obj-sunbloom": "/rewild/obj-sunbloom.png", "obj-thornbramble": "/rewild/obj-thornbramble.png",
   "obj-vinewhip": "/rewild/obj-vinewhip.png", "obj-sporecap": "/rewild/obj-sporecap.png", "obj-rootreclaimer": "/rewild/obj-rootreclaimer.png",
   "obj-elderoak-p1": "/rewild/obj-elderoak-p1.png", "obj-elderoak-p2": "/rewild/obj-elderoak-p2.png",
@@ -105,7 +104,6 @@ const SPRITE_META: Record<string, SpriteMeta> = {
   "obj-server": { pivotY: .92, footprint: 1.3 }, "obj-mainframe": { pivotY: .92, footprint: 1.75 },
   "obj-swarm": { pivotY: .84, footprint: .95 }, "obj-sludge": { pivotY: .84, footprint: 1.05 },
   "obj-popup": { pivotY: .9, footprint: 1.3 }, "obj-fragment": { pivotY: .82, footprint: .55 },
-  "obj-tree-deciduous": { pivotY: .85, footprint: 3.5 }, "obj-tree-pine": { pivotY: .91, footprint: 3.3 },
 };
 
 const spriteCache = new Map<string, HTMLImageElement>();
@@ -322,31 +320,24 @@ function drawSimpleProp(ctx: CanvasRenderingContext2D, object: WorldObject) {
 function drawWorldObject(ctx: CanvasRenderingContext2D, object: WorldObject, state: GameState) {
   const center = hexCenter(object.anchor);
   drawGrounding(ctx, object, state);
+  if (object.kind === "tree" || object.kind === "pine") {
+    const family = object.kind === "tree" ? "deciduous" : "pine";
+    drawAtlasFrame(ctx, "treeResponse", `${family}-${environmentVisualState(state, object)}`, center.x, center.y + 10, { width: HEX_HEIGHT * object.width, pivotY: .93 });
+    return;
+  }
+  if (object.kind === "pond") {
+    const family = object.id === "pond-west" ? "pond-wide" : "pond-compact";
+    const stateName = environmentVisualState(state, object);
+    const pondState = stateName === "healthy" ? "clean" : stateName === "stressed" ? "contaminated" : stateName === "recovering" ? "recovering" : "polluted";
+    drawAtlasFrame(ctx, "pondResponse", `${family}-${pondState}`, center.x, center.y + 12, { width: HEX_HEIGHT * object.width, pivotY: .72 });
+    return;
+  }
   if (!object.sprite) { drawSimpleProp(ctx, object); return; }
   if (object.shadow && object.kind !== "house") {
     ctx.fillStyle = "rgba(28,48,29,.2)";
     ctx.beginPath(); ctx.ellipse(center.x + 4, center.y + 8, HEX_HEIGHT * object.width * .18, HEX_HEIGHT * object.width * .07, -.08, 0, Math.PI * 2); ctx.fill();
   }
-  const box = drawSprite(ctx, object.sprite, center.x, center.y + 8, object.width / (SPRITE_META[object.sprite]?.footprint ?? 1));
-  const corruption = objectCorruption(state, object);
-  if (corruption >= 2 && (object.kind === "tree" || object.kind === "pine" || object.kind === "shrub" || object.kind === "flowers")) {
-    ctx.fillStyle = corruption >= 4 ? "rgba(38,31,45,.36)" : "rgba(75,62,58,.22)";
-    ctx.fillRect(box.left, box.top, box.width, box.height);
-    ctx.strokeStyle = "#674e72"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(center.x - 5, center.y); ctx.lineTo(center.x - 11, center.y - box.height * .44); ctx.lineTo(center.x - 3, center.y - box.height * .68); ctx.stroke();
-  }
-  if (object.kind === "pond") {
-    const contaminated = [...state.world.cells.values()]
-      .filter((cell) => cell.corruption >= 2 && object.footprint.some((pondCell) => hexDistance(pondCell, cell.hex) <= 2))
-      .sort((left, right) => right.corruption - left.corruption)[0];
-    if (contaminated) {
-      const source = hexCenter(contaminated.hex);
-      const angle = Math.atan2(source.y - center.y, source.x - center.x);
-      const shorelineX = center.x + Math.cos(angle) * 46;
-      const shorelineY = center.y + Math.sin(angle) * 25 + 4;
-      drawAtlasFrame(ctx, "worldConnections", "shoreline-polluted-outlet", shorelineX, shorelineY, { width: 86, rotation: angle * .3, pivotY: .52 });
-    }
-  }
+  drawSprite(ctx, object.sprite, center.x, center.y + 8, object.width / (SPRITE_META[object.sprite]?.footprint ?? 1));
   if (object.kind === "house" && state.houseHp < DIFFICULTIES[state.difficulty].houseHp * .7) {
     const ratio = Math.max(0, state.houseHp / DIFFICULTIES[state.difficulty].houseHp);
     ctx.strokeStyle = ratio > .35 ? "#704b36" : "#45383a"; ctx.lineWidth = ratio > .35 ? 2 : 4;
@@ -487,6 +478,18 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
     }
     drawAtlasFrame(ctx, "worldConnections", "roots-reclaiming", target.x, target.y + 8, { width: 78, pivotY: .55 });
   }
+  if (plant.kind === "rootreclaimer") {
+    const tree = state.world.objects.filter((object) => object.kind === "tree" || object.kind === "pine")
+      .filter((object) => hexDistance(plant, object.anchor) <= 3)
+      .sort((left, right) => hexDistance(plant, left.anchor) - hexDistance(plant, right.anchor))[0];
+    if (tree) {
+      const route = hexLine(plant, tree.anchor).map(hexCenter);
+      for (let index = 1; index < route.length; index += 1) {
+        const from = route[index - 1]; const to = route[index];
+        drawAtlasFrame(ctx, "worldConnections", index % 2 ? "roots-bend" : "roots-straight", (from.x + to.x) / 2, (from.y + to.y) / 2 + 5, { width: 60, rotation: Math.atan2(to.y - from.y, to.x - from.x), pivotY: .5, alpha: .86 });
+      }
+    }
+  }
   const box = drawSprite(ctx, plantSpriteKey(plant), center.x, center.y + 7);
   if (plant.attackTarget && plant.attackUntil > state.elapsed) {
     const target = hexCenter(plant.attackTarget);
@@ -513,7 +516,12 @@ function drawEffects(ctx: CanvasRenderingContext2D, state: GameState) {
     const progress = 1 - effect.life / effect.maxLife;
     const alpha = Math.sin(Math.PI * Math.min(1, progress));
     ctx.save(); ctx.globalAlpha = alpha;
-    if (effect.kind === "impact" || effect.kind === "shutdown") {
+    if (effect.kind === "dilution") {
+      ctx.strokeStyle = "#8ec8d2"; ctx.lineWidth = 2;
+      for (let ripple = 0; ripple < 2; ripple += 1) {
+        ctx.beginPath(); ctx.ellipse(effect.position.x + ripple * 8 - 4, effect.position.y + 5, 12 + progress * 22 + ripple * 8, 4 + progress * 7, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+    } else if (effect.kind === "impact" || effect.kind === "shutdown") {
       ctx.fillStyle = effect.kind === "shutdown" ? "#c8d0ba" : "#e7c368";
       for (let spark = 0; spark < 5; spark += 1) {
         const angle = spark * 1.27 + effect.seed * .17;

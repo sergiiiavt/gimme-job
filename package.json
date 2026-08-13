@@ -12,6 +12,7 @@
     "local": "concurrently -k -n WEB,AGENT -c cyan,green \"npm run local:web\" \"npm run api\"",
     "build": "node scripts/build-verified.mjs",
     "build:rewild-gate-b-assets": "node scripts/build-rewild-gate-b-assets.mjs",
+    "build:rewild-environment-response": "node scripts/build-rewild-environment-response.mjs",
     "check:cloudflare": "node scripts/deploy-cloudflare.mjs --dry-run",
     "start": "vinext start",
     "test": "npm run build && node --test",

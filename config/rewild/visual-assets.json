@@ -10,9 +10,7 @@
   "runtimeAssets": [
     "terrain-shrub-1.png", "terrain-shrub-2.png",
     "terrain-flowers-1.png", "terrain-flowers-2.png",
-    "terrain-pond-1.png", "terrain-pond-2.png",
     "terrain-rock-1.png", "terrain-rock-2.png",
-    "obj-tree-deciduous.png", "obj-tree-pine.png",
     "obj-house-v2.png",
     "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png",
     "obj-elderoak-p1.png", "obj-elderoak-p2.png",
@@ -21,19 +19,23 @@
     "decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png",
     "production/datacenter-modules-v1.png",
     "production/facility-ground-states-v1.png",
-    "production/world-connections-v1.png"
+    "production/world-connections-v1.png",
+    "production/tree-response-states-v1.png",
+    "production/pond-response-states-v1.png"
   ],
   "assetFamilies": {
-    "environment": ["terrain-shrub-1.png", "terrain-shrub-2.png", "terrain-flowers-1.png", "terrain-flowers-2.png", "terrain-pond-1.png", "terrain-pond-2.png", "terrain-rock-1.png", "terrain-rock-2.png", "obj-tree-deciduous.png", "obj-tree-pine.png"],
+    "environment": ["terrain-shrub-1.png", "terrain-shrub-2.png", "terrain-flowers-1.png", "terrain-flowers-2.png", "terrain-rock-1.png", "terrain-rock-2.png"],
     "houseAndDefenders": ["obj-house-v2.png", "obj-sunbloom.png", "obj-thornbramble.png", "obj-vinewhip.png", "obj-sporecap.png", "obj-rootreclaimer.png", "obj-elderoak-p1.png", "obj-elderoak-p2.png"],
     "hostileAndInfrastructure": ["obj-server.png", "obj-mainframe.png", "obj-swarm.png", "obj-sludge.png", "obj-popup.png", "obj-fragment.png"],
     "groundDecals": ["decal-tuft.png", "decal-flower.png", "decal-pebble.png", "decal-leaf.png", "decal-mushroom.png"],
-    "productionAtlases": ["production/datacenter-modules-v1.png", "production/facility-ground-states-v1.png", "production/world-connections-v1.png"]
+    "productionAtlases": ["production/datacenter-modules-v1.png", "production/facility-ground-states-v1.png", "production/world-connections-v1.png", "production/tree-response-states-v1.png", "production/pond-response-states-v1.png"]
   },
   "productionAtlases": [
     { "image": "production/datacenter-modules-v1.png", "metadata": "production/datacenter-modules-v1.json", "expectedFrames": 16, "columns": 4, "rows": 4 },
     { "image": "production/facility-ground-states-v1.png", "metadata": "production/facility-ground-states-v1.json", "expectedFrames": 12, "columns": 4, "rows": 3 },
-    { "image": "production/world-connections-v1.png", "metadata": "production/world-connections-v1.json", "expectedFrames": 24, "columns": 6, "rows": 4 }
+    { "image": "production/world-connections-v1.png", "metadata": "production/world-connections-v1.json", "expectedFrames": 24, "columns": 6, "rows": 4 },
+    { "image": "production/tree-response-states-v1.png", "metadata": "production/tree-response-states-v1.json", "expectedFrames": 10, "columns": 5, "rows": 2 },
+    { "image": "production/pond-response-states-v1.png", "metadata": "production/pond-response-states-v1.json", "expectedFrames": 8, "columns": 4, "rows": 2 }
   ],
   "reviewArtifacts": [
     "docs/rewild/reviews/gate-b/native-contact-sheet.png",
@@ -46,7 +48,12 @@
     "docs/rewild/reviews/gate-d/damage-state.png",
     "docs/rewild/reviews/gate-d/collapse-state.png",
     "docs/rewild/reviews/gate-d/reclamation-state.png",
-    "docs/rewild/reviews/gate-d/mobile-reclamation.png"
+    "docs/rewild/reviews/gate-d/mobile-reclamation.png",
+    "docs/rewild/reviews/expansion-1/tree-response-states-v1-contact-sheet.png",
+    "docs/rewild/reviews/expansion-1/pond-response-states-v1-contact-sheet.png",
+    "docs/rewild/reviews/expansion-1/all-environment-states.png",
+    "docs/rewild/reviews/expansion-1/response-state.png",
+    "docs/rewild/reviews/expansion-1/mobile-response-state.png"
   ],
   "productionSourceImages": [
     "docs/rewild/gate-b-sources/datacenter-modules-v1-chroma.png",
@@ -54,7 +61,11 @@
     "docs/rewild/gate-b-sources/facility-ground-states-v1-chroma.png",
     "docs/rewild/gate-b-sources/facility-ground-states-v1-alpha-master.png",
     "docs/rewild/gate-b-sources/world-connections-v1-chroma.png",
-    "docs/rewild/gate-b-sources/world-connections-v1-alpha-master.png"
+    "docs/rewild/gate-b-sources/world-connections-v1-alpha-master.png",
+    "docs/rewild/expansion-1-sources/tree-response-states-v1-chroma.png",
+    "docs/rewild/expansion-1-sources/tree-response-states-v1-alpha-master.png",
+    "docs/rewild/expansion-1-sources/pond-response-states-v1-chroma.png",
+    "docs/rewild/expansion-1-sources/pond-response-states-v1-alpha-master.png"
   ],
   "constraints": {
     "extension": ".png",
