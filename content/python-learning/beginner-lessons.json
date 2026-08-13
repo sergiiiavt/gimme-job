@@ -4,6 +4,7 @@
       "id": "py-lesson-running-python-and-repl",
       "moduleId": "getting-started",
       "level": "Beginner",
+      "order": 1,
       "title": "Running Python and using the REPL",
       "titleUk": "Запуск Python і використання REPL",
       "summary": "Two ways to run Python code: an interactive REPL for quick experiments, and script files for real programs.",
@@ -33,13 +34,20 @@
       ],
       "exercise": "Open a REPL, compute the area of a circle with radius 4 (use 3.14159 for pi), then save the same calculation as a script called area.py that prints the result.",
       "exerciseUk": "Відкрийте REPL, обчисліть площу кола з радіусом 4 (використайте 3.14159 для пі), а потім збережіть той самий розрахунок як скрипт area.py, що друкує результат.",
-      "tags": ["repl", "cli", "fundamentals"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "repl",
+        "cli",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-print-and-basic-io",
       "moduleId": "getting-started",
       "level": "Beginner",
+      "order": 2,
       "title": "print() and reading basic input",
       "titleUk": "print() і читання базового вводу",
       "summary": "How print() actually works — separators, line endings, multiple values — and how to read a line of user input.",
@@ -69,13 +77,20 @@
       ],
       "exercise": "Write a script that asks for two numbers with input(), converts them to float, and prints their sum, difference and product on three separate lines.",
       "exerciseUk": "Напишіть скрипт, що запитує два числа через input(), перетворює їх на float і друкує їхню суму, різницю та добуток на трьох окремих рядках.",
-      "tags": ["print", "input", "fundamentals"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "print",
+        "input",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-comments-and-style",
       "moduleId": "getting-started",
       "level": "Beginner",
+      "order": 3,
       "title": "Comments, docstrings and readable style",
       "titleUk": "Коментарі, docstring і читабельний стиль",
       "summary": "When to write a comment, when to write a docstring, and the naming/spacing conventions from PEP 8.",
@@ -105,13 +120,21 @@
       ],
       "exercise": "Write a function is_leap_year(year) with a one-line docstring, a comment explaining the century-divisible-by-400 rule, and PEP 8-compliant naming.",
       "exerciseUk": "Напишіть функцію is_leap_year(year) з однорядковим docstring, коментарем, що пояснює правило «століття, кратне 400», та іменуванням за PEP 8.",
-      "tags": ["style", "pep-8", "docstrings"],
-      "sourceIds": ["pep-8", "python-docs-tutorial"]
+      "tags": [
+        "style",
+        "pep-8",
+        "docstrings"
+      ],
+      "sourceIds": [
+        "pep-8",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-first-script-structure",
       "moduleId": "getting-started",
       "level": "Beginner",
+      "order": 4,
       "title": "The shape of a real Python script",
       "titleUk": "Форма справжнього скрипта Python",
       "summary": "Why real scripts put logic inside functions and guard the entry point with if __name__ == \"__main__\":",
@@ -141,13 +164,20 @@
       ],
       "exercise": "Turn a flat script that prints the first 10 square numbers into one with a square_numbers(n) function and a __main__ guard, then import it from a second file without anything printing automatically.",
       "exerciseUk": "Перетворіть плаский скрипт, що друкує перші 10 квадратних чисел, на скрипт з функцією square_numbers(n) і захистом __main__, а потім імпортуйте його з другого файлу так, щоб нічого не друкувалося автоматично.",
-      "tags": ["scripts", "entry-point"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-import-system"]
+      "tags": [
+        "scripts",
+        "entry-point"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-import-system"
+      ]
     },
     {
       "id": "py-lesson-variables-and-naming",
       "moduleId": "variables-data-types-operators",
       "level": "Beginner",
+      "order": 5,
       "title": "Variables, assignment and naming rules",
       "titleUk": "Змінні, присвоєння та правила іменування",
       "summary": "A variable is a name bound to an object; assignment never copies data, it just points a name at a value.",
@@ -177,13 +207,20 @@
       ],
       "exercise": "Predict, then verify in a REPL: after a = [1, 2]; b = a; b.append(3), what does a equal? Explain why in one sentence using the word \"object\".",
       "exerciseUk": "Передбачте, потім перевірте в REPL: після a = [1, 2]; b = a; b.append(3), чому дорівнює a? Поясніть чому одним реченням, використовуючи слово «об'єкт».",
-      "tags": ["variables", "fundamentals"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
+      "tags": [
+        "variables",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-numeric-types",
       "moduleId": "variables-data-types-operators",
       "level": "Beginner",
+      "order": 6,
       "title": "Numeric types: int, float and basic arithmetic",
       "titleUk": "Числові типи: int, float і базова арифметика",
       "summary": "int has unlimited precision; float is a fixed-precision approximation — and that difference causes real bugs.",
@@ -213,13 +250,21 @@
       ],
       "exercise": "Write a function that safely compares two floats for \"close enough\" equality using a small tolerance instead of ==, and test it against 0.1 + 0.2 and 0.3.",
       "exerciseUk": "Напишіть функцію, що безпечно порівнює два float на «достатню близькість» через малий допуск замість ==, і перевірте її на 0.1 + 0.2 та 0.3.",
-      "tags": ["numbers", "arithmetic", "gotchas"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "numbers",
+        "arithmetic",
+        "gotchas"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-booleans-and-none",
       "moduleId": "variables-data-types-operators",
       "level": "Beginner",
+      "order": 7,
       "title": "Booleans, None and truthiness",
       "titleUk": "Булеві значення, None і правдивість",
       "summary": "bool is a subtype of int, None means \"no value\", and every object has an implicit truth value.",
@@ -249,13 +294,21 @@
       ],
       "exercise": "Write is_empty(value) that returns True for None, an empty string, an empty list, or 0, using only truthiness — no explicit type checks.",
       "exerciseUk": "Напишіть is_empty(value), що повертає True для None, порожнього рядка, порожнього списку чи 0, використовуючи лише правдивість — без явних перевірок типу.",
-      "tags": ["booleans", "none", "truthiness"],
-      "sourceIds": ["python-docs-datamodel", "python-docs-tutorial"]
+      "tags": [
+        "booleans",
+        "none",
+        "truthiness"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-operators-arithmetic-comparison",
       "moduleId": "variables-data-types-operators",
       "level": "Beginner",
+      "order": 8,
       "title": "Arithmetic, comparison and boolean operators",
       "titleUk": "Арифметичні, порівняльні та булеві оператори",
       "summary": "Operator precedence, chained comparisons, and how and/or actually return one of their operands.",
@@ -285,13 +338,19 @@
       ],
       "exercise": "Without running it, predict the result of `10 - 2 * 3 ** 2 // 4`, then verify in a REPL and explain the order of operations that produced it.",
       "exerciseUk": "Не запускаючи, передбачте результат `10 - 2 * 3 ** 2 // 4`, потім перевірте в REPL і поясніть порядок операцій, що його дав.",
-      "tags": ["operators", "precedence"],
-      "sourceIds": ["python-docs-language-reference"]
+      "tags": [
+        "operators",
+        "precedence"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-type-conversion",
       "moduleId": "variables-data-types-operators",
       "level": "Beginner",
+      "order": 9,
       "title": "Type conversion and checking",
       "titleUk": "Перетворення й перевірка типів",
       "summary": "Converting between int, float, str, and bool explicitly, and checking a value's type safely.",
@@ -321,13 +380,20 @@
       ],
       "exercise": "Write parse_number(text) that returns an int if the text is a whole number, a float if it has a decimal point, or None if it is not a valid number at all.",
       "exerciseUk": "Напишіть parse_number(text), що повертає int, якщо текст — ціле число, float, якщо має десяткову крапку, або None, якщо це взагалі не дійсне число.",
-      "tags": ["type-conversion", "isinstance"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "type-conversion",
+        "isinstance"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-if-elif-else",
       "moduleId": "control-flow",
       "level": "Beginner",
+      "order": 10,
       "title": "if, elif and else",
       "titleUk": "if, elif та else",
       "summary": "Branching logic with if/elif/else, and the match/case alternative for shape-based branching.",
@@ -357,13 +423,20 @@
       ],
       "exercise": "Write classify_bmi(bmi) returning \"underweight\", \"normal\", \"overweight\" or \"obese\" using the standard BMI thresholds 18.5, 25 and 30, with an elif chain in the correct order.",
       "exerciseUk": "Напишіть classify_bmi(bmi), що повертає «underweight», «normal», «overweight» чи «obese» за стандартними порогами ІМТ 18.5, 25 і 30, з ланцюжком elif у правильному порядку.",
-      "tags": ["control-flow", "conditionals"],
-      "sourceIds": ["python-docs-tutorial", "pep-634"]
+      "tags": [
+        "control-flow",
+        "conditionals"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "pep-634"
+      ]
     },
     {
       "id": "py-lesson-while-loops",
       "moduleId": "control-flow",
       "level": "Beginner",
+      "order": 11,
       "title": "while loops",
       "titleUk": "Цикли while",
       "summary": "Repeating code while a condition holds, and why forgetting to update the condition causes an infinite loop.",
@@ -393,13 +466,19 @@
       ],
       "exercise": "Write a while loop that keeps asking the user for a positive number and only stops once they enter one, printing an error message for anything else.",
       "exerciseUk": "Напишіть цикл while, що продовжує запитувати в користувача додатне число й зупиняється лише коли він його введе, друкуючи повідомлення про помилку для всього іншого.",
-      "tags": ["loops", "while"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "loops",
+        "while"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-for-loops-and-range",
       "moduleId": "control-flow",
       "level": "Beginner",
+      "order": 12,
       "title": "for loops and range()",
       "titleUk": "Цикли for і range()",
       "summary": "for iterates directly over a sequence's values; range() generates a lazy sequence of numbers to loop over.",
@@ -429,13 +508,22 @@
       ],
       "exercise": "Given a list of names, print each one preceded by its 1-based position, e.g. \"1: Alice\", using enumerate with start=1 instead of manual index math.",
       "exerciseUk": "Маючи список імен, надрукуйте кожне з попередньою 1-базованою позицією, наприклад «1: Alice», використовуючи enumerate з start=1 замість ручної математики з індексами.",
-      "tags": ["loops", "for", "range", "enumerate"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+      "tags": [
+        "loops",
+        "for",
+        "range",
+        "enumerate"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-break-continue-loop-else",
       "moduleId": "control-flow",
       "level": "Beginner",
+      "order": 13,
       "title": "break, continue and the loop else clause",
       "titleUk": "break, continue та блок else циклу",
       "summary": "Exiting a loop early, skipping to the next iteration, and the rarely-used else that runs only if break never fired.",
@@ -465,13 +553,20 @@
       ],
       "exercise": "Write a loop over a list of numbers that skips negative numbers with continue, stops entirely if it finds a number greater than 100 with break, and otherwise sums the valid numbers.",
       "exerciseUk": "Напишіть цикл над списком чисел, що пропускає від'ємні числа через continue, повністю зупиняється, якщо знаходить число більше за 100, через break, і інакше підсумовує дійсні числа.",
-      "tags": ["loops", "break", "continue"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "loops",
+        "break",
+        "continue"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-defining-functions",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
+      "order": 14,
       "title": "Defining and calling functions",
       "titleUk": "Визначення та виклик функцій",
       "summary": "def creates a reusable, named block of code; functions exist to avoid repeating yourself.",
@@ -501,13 +596,19 @@
       ],
       "exercise": "Write a function is_palindrome(text) that returns True if text reads the same forwards and backwards, ignoring case, and call it with three different test strings.",
       "exerciseUk": "Напишіть функцію is_palindrome(text), що повертає True, якщо text читається однаково вперед і назад, ігноруючи регістр, і викличте її з трьома різними тестовими рядками.",
-      "tags": ["functions", "fundamentals"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "functions",
+        "fundamentals"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-parameters-and-return",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
+      "order": 15,
       "title": "Parameters, arguments and returning values",
       "titleUk": "Параметри, аргументи та повернення значень",
       "summary": "Parameters are placeholders in the definition; arguments are the actual values passed at call time.",
@@ -537,13 +638,19 @@
       ],
       "exercise": "Write divide_with_remainder(a, b) that returns both the integer quotient and the remainder as a tuple, and unpack the result into two named variables at the call site.",
       "exerciseUk": "Напишіть divide_with_remainder(a, b), що повертає і цілу частку, і остачу як кортеж, і розпакуйте результат у дві іменовані змінні в місці виклику.",
-      "tags": ["functions", "return"],
-      "sourceIds": ["python-docs-tutorial"]
+      "tags": [
+        "functions",
+        "return"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-default-and-keyword-arguments",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
+      "order": 16,
       "title": "Default values and keyword arguments",
       "titleUk": "Значення за замовчуванням і іменовані аргументи",
       "summary": "Making some parameters optional with defaults, and calling functions with explicit argument names for clarity.",
@@ -573,13 +680,20 @@
       ],
       "exercise": "Write format_price(amount, currency=\"USD\", show_cents=True) and call it three ways: with just amount, with a different currency by keyword, and with show_cents=False.",
       "exerciseUk": "Напишіть format_price(amount, currency=\"USD\", show_cents=True) і викличте її трьома способами: лише з amount, з іншою валютою через іменований аргумент, і з show_cents=False.",
-      "tags": ["functions", "default-arguments"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
+      "tags": [
+        "functions",
+        "default-arguments"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-variable-scope-basics",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
+      "order": 17,
       "title": "Variable scope: local versus global",
       "titleUk": "Область видимості змінних: локальна проти глобальної",
       "summary": "A variable created inside a function only exists inside that function, unless declared global.",
@@ -609,13 +723,20 @@
       ],
       "exercise": "Write a function that tries to increment a global counter without declaring global, observe the UnboundLocalError, then fix it, and explain in one sentence why the error happened.",
       "exerciseUk": "Напишіть функцію, що намагається збільшити глобальний лічильник без оголошення global, спостерігайте UnboundLocalError, потім виправте це й поясніть одним реченням, чому сталася помилка.",
-      "tags": ["scope", "global"],
-      "sourceIds": ["python-docs-language-reference", "python-docs-tutorial"]
+      "tags": [
+        "scope",
+        "global"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-lists",
       "moduleId": "core-data-structures",
       "level": "Beginner",
+      "order": 18,
       "title": "Lists: ordered, mutable collections",
       "titleUk": "Списки: впорядковані, змінювані колекції",
       "summary": "The everyday workhorse collection: ordered, indexable, mutable, and allows duplicate values.",
@@ -645,13 +766,20 @@
       ],
       "exercise": "Given a list of task names, write code that adds a new task, removes a completed one by name, and prints the tasks in reverse order using slicing.",
       "exerciseUk": "Маючи список назв завдань, напишіть код, що додає нове завдання, видаляє завершене за назвою й друкує завдання у зворотному порядку через зрізи.",
-      "tags": ["lists", "data-structures"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "lists",
+        "data-structures"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-tuples",
       "moduleId": "core-data-structures",
       "level": "Beginner",
+      "order": 19,
       "title": "Tuples: fixed, immutable records",
       "titleUk": "Кортежі: фіксовані, незмінювані записи",
       "summary": "Tuples look like lists but signal \"this shape is fixed\" and can be used as dict keys.",
@@ -681,13 +809,20 @@
       ],
       "exercise": "Write a function that takes a list of (name, score) tuples and returns the name from the tuple with the highest score, unpacking each tuple in the loop.",
       "exerciseUk": "Напишіть функцію, що приймає список кортежів (name, score) і повертає ім'я з кортежу з найвищим рахунком, розпаковуючи кожен кортеж у циклі.",
-      "tags": ["tuples", "data-structures"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "tuples",
+        "data-structures"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-dictionaries",
       "moduleId": "core-data-structures",
       "level": "Beginner",
+      "order": 20,
       "title": "Dictionaries: key-value mappings",
       "titleUk": "Словники: відображення ключ-значення",
       "summary": "The primary tool for storing and looking up data by a meaningful name instead of a numeric position.",
@@ -717,13 +852,20 @@
       ],
       "exercise": "Write word_counts(text) that returns a dict mapping each word in text to how many times it appears, using .get(word, 0) + 1 to accumulate counts.",
       "exerciseUk": "Напишіть word_counts(text), що повертає словник, який відображає кожне слово в text на кількість його появ, використовуючи .get(word, 0) + 1 для накопичення підрахунків.",
-      "tags": ["dictionaries", "data-structures"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "dictionaries",
+        "data-structures"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-sets",
       "moduleId": "core-data-structures",
       "level": "Beginner",
+      "order": 21,
       "title": "Sets: unique, unordered collections",
       "titleUk": "Множини: унікальні, невпорядковані колекції",
       "summary": "Sets automatically deduplicate and offer fast membership testing plus mathematical set operations.",
@@ -753,13 +895,20 @@
       ],
       "exercise": "Given two lists of email addresses representing this month's and last month's subscribers, use set operations to find who unsubscribed and who is new.",
       "exerciseUk": "Маючи два списки email-адрес, що представляють підписників цього й минулого місяця, використайте операції множин, щоб знайти, хто відписався, а хто новий.",
-      "tags": ["sets", "data-structures"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "sets",
+        "data-structures"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-comprehensions",
       "moduleId": "core-data-structures",
       "level": "Intermediate",
+      "order": 22,
       "title": "List, dict and set comprehensions",
       "titleUk": "List, dict і set comprehension",
       "summary": "A compact, idiomatic way to build a new collection by transforming and filtering an existing one.",
@@ -789,13 +938,20 @@
       ],
       "exercise": "Given a list of words, write one dict comprehension that maps each word to True if it has more than 4 letters and False otherwise.",
       "exerciseUk": "Маючи список слів, напишіть один dict comprehension, що відображає кожне слово на True, якщо воно має більше 4 літер, і False інакше.",
-      "tags": ["comprehensions", "data-structures"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+      "tags": [
+        "comprehensions",
+        "data-structures"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-string-methods",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
+      "order": 23,
       "title": "Common string methods",
       "titleUk": "Поширені методи рядків",
       "summary": "Strings are immutable, so every method that transforms text returns a brand-new string.",
@@ -825,13 +981,20 @@
       ],
       "exercise": "Write clean_username(text) that strips whitespace, lowercases the result, and replaces any spaces in the middle with underscores.",
       "exerciseUk": "Напишіть clean_username(text), що обрізає пробіли, переводить результат у нижній регістр і замінює будь-які пробіли всередині на підкреслення.",
-      "tags": ["strings", "string-methods"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "strings",
+        "string-methods"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-f-strings",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
+      "order": 24,
       "title": "f-strings for readable formatting",
       "titleUk": "f-рядки для читабельного форматування",
       "summary": "The modern, preferred way to build strings with embedded values, prefixed with f and using {expression}.",
@@ -861,13 +1024,21 @@
       ],
       "exercise": "Given a list of (product, price, quantity) tuples, print a receipt line for each with the product name, right-aligned price to 2 decimals, and the line total.",
       "exerciseUk": "Маючи список кортежів (product, price, quantity), надрукуйте рядок чека для кожного з назвою товару, ціною, вирівняною праворуч до 2 знаків, і сумою рядка.",
-      "tags": ["strings", "formatting", "f-strings"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-whatsnew-314"]
+      "tags": [
+        "strings",
+        "formatting",
+        "f-strings"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-whatsnew-314"
+      ]
     },
     {
       "id": "py-lesson-splitting-and-joining",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
+      "order": 25,
       "title": "Splitting and joining strings",
       "titleUk": "Розбиття та з'єднання рядків",
       "summary": "split() turns text into a list; join() turns a list back into text — the two are inverses of each other.",
@@ -897,13 +1068,21 @@
       ],
       "exercise": "Write csv_to_dicts(lines, headers) that splits each line on commas and zips it with headers to build a list of dictionaries, one per line.",
       "exerciseUk": "Напишіть csv_to_dicts(lines, headers), що розбиває кожен рядок за комами й об'єднує його з headers через zip, щоб побудувати список словників, по одному на рядок.",
-      "tags": ["strings", "split", "join"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-tutorial"]
+      "tags": [
+        "strings",
+        "split",
+        "join"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-regex-intro",
       "moduleId": "strings-and-text-formatting",
       "level": "Intermediate",
+      "order": 26,
       "title": "An introduction to regular expressions",
       "titleUk": "Вступ до регулярних виразів",
       "summary": "Pattern matching for text that's too flexible for plain split()/in checks, using the re module.",
@@ -933,8 +1112,13 @@
       ],
       "exercise": "Write a function that uses re.findall to extract every email address from a block of text, using the pattern \\w+@\\w+\\.\\w+ as a starting point.",
       "exerciseUk": "Напишіть функцію, що використовує re.findall для видобування кожної email-адреси з блоку тексту, використовуючи патерн \\w+@\\w+\\.\\w+ як відправну точку.",
-      "tags": ["regex", "strings"],
-      "sourceIds": ["python-docs-stdlib-index"]
+      "tags": [
+        "regex",
+        "strings"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index"
+      ]
     }
   ]
 }

@@ -26,6 +26,8 @@ content/python-learning/
 
 `InterviewKnowledgeBase` (`app/public-site.tsx`) already takes a generic `catalog: InterviewCatalog` prop, so `content/python-interview/catalog.ts` is composed into that exact same shape (`title`, `description`, `methodology`, `taxonomy`, `sources`, `questions`) and rendered through the identical component under the `python-interview` section. Question IDs are namespaced with a `py-` prefix so they cannot collide with the QA catalog's IDs; personal progress tracking (`interview_progress` in D1, keyed by an arbitrary `questionId` string) works for both catalogs with no schema or API change.
 
+`python-interview` has no button of its own in the sidebar nav; it is reached from the **Interview questions** nav item via a small "QA" / "Python" catalog-switch toggle rendered inside `InterviewKnowledgeBase` (`.iq-catalog-switch`), which calls the same `openSection` navigator the sidebar uses. The section remains directly deep-linkable (`#python-interview`) via `hiddenDeepLinkSections` in `app/site-navigation.tsx`, so reload and bookmarking still work even though it is not a top-level nav button.
+
 ## Question model (Python interview catalog)
 
 Identical to the QA catalog's model: stable ID, level, prevalence band, category, question, concise answer, strong-answer signals, source IDs, tags, and an English/Ukrainian pair for every text field, plus a bilingual practical example. See [`interview-knowledge-base.md`](interview-knowledge-base.md#question-model) for the full field reference — nothing is different here except the `py-` ID prefix and a smaller, Python-specific `kind` vocabulary (`Theory`, `Practical`, `Troubleshooting`, `Performance`, `Design`, `Security`, `Tooling`).
@@ -39,6 +41,7 @@ The curriculum has no direct precedent in this codebase; it is modeled on the sa
   "id": "py-lesson-generator-functions",
   "moduleId": "iterators-generators-decorators-functional",
   "level": "Advanced",
+  "order": 49,
   "title": "Generator functions and yield",
   "titleUk": "...",
   "summary": "...",
@@ -59,7 +62,9 @@ The curriculum has no direct precedent in this codebase; it is modeled on the sa
 }
 ```
 
-`code` is plain text, not translated (code is language-agnostic); every prose field is bilingual. Lessons are rendered by `PythonLearningPath` (`app/public-site.tsx`), a dedicated component modeled on `InterviewKnowledgeBase`'s card layout, but simpler: no personal-progress tracking in v1, and a single-column body instead of the QA catalog's two-column answer/signals split, since a lesson has more sequential sections (concept, key points, code, pitfalls, exercise) than a Q&A pair does.
+`code` is plain text, not translated (code is language-agnostic); every prose field is bilingual. `order` is a contiguous 1..N sequence across the whole curriculum (not per-module), reflecting the recommended path through the material; `PythonLearningPath`'s Sort control defaults to it and also offers sorting by level or title. Lessons are rendered by `PythonLearningPath` (`app/public-site.tsx`), a dedicated component modeled on `InterviewKnowledgeBase`'s card layout, but simpler: no personal-progress tracking in v1, and a single-column body instead of the QA catalog's two-column answer/signals split, since a lesson has more sequential sections (concept, key points, code, pitfalls, exercise) than a Q&A pair does.
+
+The curriculum is reached via the **Programming** nav item (renamed from "Programming for QA"), which now renders the full Python curriculum directly rather than a generic placeholder roadmap.
 
 `content/python-learning/catalog.ts` reuses `content/python-interview/sources.json` directly rather than duplicating the source list, since both modules cite the same official Python documentation and PEPs.
 

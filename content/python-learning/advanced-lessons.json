@@ -4,6 +4,7 @@
       "id": "py-lesson-iterator-protocol",
       "moduleId": "iterators-generators-decorators-functional",
       "level": "Advanced",
+      "order": 48,
       "title": "The iterator protocol behind for loops",
       "titleUk": "Протокол ітератора за циклами for",
       "summary": "Every for loop is sugar for iter() and repeated next(); understanding this lets you build your own iterables.",
@@ -33,13 +34,20 @@
       ],
       "exercise": "Write an iterator class Evens(limit) that yields only even numbers from 0 up to (not including) limit, implementing __iter__ and __next__ by hand.",
       "exerciseUk": "Напишіть клас-ітератор Evens(limit), що видає лише парні числа від 0 до (не включаючи) limit, реалізуючи __iter__ і __next__ вручну.",
-      "tags": ["iterators", "protocols"],
-      "sourceIds": ["python-docs-datamodel", "python-docs-tutorial"]
+      "tags": [
+        "iterators",
+        "protocols"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-generator-functions",
       "moduleId": "iterators-generators-decorators-functional",
       "level": "Advanced",
+      "order": 49,
       "title": "Generator functions and yield",
       "titleUk": "Функції-генератори та yield",
       "summary": "yield turns a function into a lazy value producer, radically simpler to write than a manual iterator class.",
@@ -69,13 +77,20 @@
       ],
       "exercise": "Rewrite the Evens(limit) iterator class from the previous lesson as a generator function using yield, and confirm it produces the same values.",
       "exerciseUk": "Перепишіть клас-ітератор Evens(limit) з попереднього уроку як функцію-генератор через yield і підтвердьте, що вона дає ті самі значення.",
-      "tags": ["generators", "yield"],
-      "sourceIds": ["python-docs-language-reference", "python-docs-tutorial"]
+      "tags": [
+        "generators",
+        "yield"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-decorators",
       "moduleId": "iterators-generators-decorators-functional",
       "level": "Advanced",
+      "order": 50,
       "title": "Writing your own decorators",
       "titleUk": "Написання власних декораторів",
       "summary": "@decorator is sugar for func = decorator(func); a decorator wraps a function to add behavior around it.",
@@ -105,13 +120,20 @@
       ],
       "exercise": "Write a @log_calls decorator that prints the function name and its arguments every time the decorated function is called, using functools.wraps correctly.",
       "exerciseUk": "Напишіть декоратор @log_calls, що друкує назву функції та її аргументи щоразу, коли декоровану функцію викликають, коректно використовуючи functools.wraps.",
-      "tags": ["decorators", "functools"],
-      "sourceIds": ["python-docs-functools", "python-docs-language-reference"]
+      "tags": [
+        "decorators",
+        "functools"
+      ],
+      "sourceIds": [
+        "python-docs-functools",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-closures",
       "moduleId": "iterators-generators-decorators-functional",
       "level": "Advanced",
+      "order": 51,
       "title": "Closures: functions that remember their environment",
       "titleUk": "Замикання: функції, що пам'ятають своє оточення",
       "summary": "An inner function can capture and reuse variables from its enclosing function even after that function returns.",
@@ -141,13 +163,19 @@
       ],
       "exercise": "Write make_counter() that returns a function which increments and returns an internal count each time it's called, using nonlocal to modify the enclosed count variable.",
       "exerciseUk": "Напишіть make_counter(), що повертає функцію, яка збільшує й повертає внутрішній лічильник щоразу при виклику, використовуючи nonlocal для зміни захопленої змінної count.",
-      "tags": ["closures", "scope"],
-      "sourceIds": ["python-docs-language-reference"]
+      "tags": [
+        "closures",
+        "scope"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-functional-tools",
       "moduleId": "iterators-generators-decorators-functional",
       "level": "Advanced",
+      "order": 52,
       "title": "First-class functions and functional idioms",
       "titleUk": "Функції першого класу й функціональні ідіоми",
       "summary": "Functions are values like any other; this enables passing behavior around, not just data.",
@@ -177,13 +205,19 @@
       ],
       "exercise": "Extend the calculate() dispatch dict with multiplication and division operators, handling division by zero and an unknown operator with clear error messages.",
       "exerciseUk": "Розширте словник диспетчеризації calculate() операторами множення й ділення, обробляючи ділення на нуль і невідомий оператор чіткими повідомленнями про помилки.",
-      "tags": ["functional-programming", "first-class-functions"],
-      "sourceIds": ["python-docs-language-reference"]
+      "tags": [
+        "functional-programming",
+        "first-class-functions"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-type-hints",
       "moduleId": "typing-testing-tooling",
       "level": "Advanced",
+      "order": 53,
       "title": "Type hints and static checking with mypy",
       "titleUk": "Анотації типів і статична перевірка через mypy",
       "summary": "Type hints document intent and let a separate tool catch mismatches before the code ever runs.",
@@ -213,13 +247,20 @@
       ],
       "exercise": "Add complete type hints to a small function of your choice, install mypy, and run it against the file to see what, if anything, it flags.",
       "exerciseUk": "Додайте повні анотації типів до невеликої функції на власний вибір, встановіть mypy й запустіть його на файлі, щоб побачити, що (якщо взагалі щось) він позначить.",
-      "tags": ["typing", "mypy"],
-      "sourceIds": ["python-docs-typing", "pep-484"]
+      "tags": [
+        "typing",
+        "mypy"
+      ],
+      "sourceIds": [
+        "python-docs-typing",
+        "pep-484"
+      ]
     },
     {
       "id": "py-lesson-pytest-basics",
       "moduleId": "typing-testing-tooling",
       "level": "Advanced",
+      "order": 54,
       "title": "Writing tests with pytest",
       "titleUk": "Написання тестів через pytest",
       "summary": "plain assert statements, test discovery by naming convention, and fixtures for shared setup.",
@@ -249,13 +290,19 @@
       ],
       "exercise": "Write parametrized pytest tests for the is_palindrome(text) function from an earlier lesson, covering an empty string, a single character, and a mixed-case palindrome.",
       "exerciseUk": "Напишіть параметризовані тести pytest для функції is_palindrome(text) з попереднього уроку, охоплюючи порожній рядок, один символ і паліндром зі змішаним регістром.",
-      "tags": ["pytest", "testing"],
-      "sourceIds": ["pytest-docs"]
+      "tags": [
+        "pytest",
+        "testing"
+      ],
+      "sourceIds": [
+        "pytest-docs"
+      ]
     },
     {
       "id": "py-lesson-linters-and-formatters",
       "moduleId": "typing-testing-tooling",
       "level": "Advanced",
+      "order": 55,
       "title": "Linters and formatters in a normal workflow",
       "titleUk": "Лінтери й форматери у звичайному робочому процесі",
       "summary": "A formatter enforces one consistent style automatically; a linter catches likely bugs and style violations.",
@@ -285,13 +332,21 @@
       ],
       "exercise": "Install ruff, run `ruff check .` on a small existing script of yours, and fix the first three issues it reports.",
       "exerciseUk": "Встановіть ruff, запустіть `ruff check .` на невеликому наявному вашому скрипті й виправте перші три проблеми, які він повідомить.",
-      "tags": ["tooling", "linting", "formatting"],
-      "sourceIds": ["packaging-guide", "pep-8"]
+      "tags": [
+        "tooling",
+        "linting",
+        "formatting"
+      ],
+      "sourceIds": [
+        "packaging-guide",
+        "pep-8"
+      ]
     },
     {
       "id": "py-lesson-project-structure",
       "moduleId": "typing-testing-tooling",
       "level": "Advanced",
+      "order": 56,
       "title": "Structuring a real Python project",
       "titleUk": "Структурування реального проєкту Python",
       "summary": "A conventional layout — src/, tests/, pyproject.toml — makes a project immediately recognizable and installable.",
@@ -321,13 +376,20 @@
       ],
       "exercise": "Reorganize a flat script-based project of yours into a src-layout package with a pyproject.toml and a tests/ directory, then confirm `pip install -e .` and pytest both still work.",
       "exerciseUk": "Реорганізуйте свій плаский проєкт на основі скриптів у пакет з розташуванням src, з pyproject.toml і каталогом tests/, потім підтвердьте, що `pip install -e .` і pytest все ще працюють.",
-      "tags": ["project-structure", "tooling"],
-      "sourceIds": ["packaging-guide", "pytest-docs"]
+      "tags": [
+        "project-structure",
+        "tooling"
+      ],
+      "sourceIds": [
+        "packaging-guide",
+        "pytest-docs"
+      ]
     },
     {
       "id": "py-lesson-threading-basics",
       "moduleId": "concurrency",
       "level": "Advanced",
+      "order": 57,
       "title": "Threading for I/O-bound work",
       "titleUk": "Threading для роботи, прив'язаної до I/O",
       "summary": "Threads overlap waiting time for I/O-bound tasks; the GIL means they don't speed up pure computation.",
@@ -357,13 +419,20 @@
       ],
       "exercise": "Write a script that downloads 10 URLs sequentially, time it, then rewrite it using ThreadPoolExecutor and compare the time difference.",
       "exerciseUk": "Напишіть скрипт, що послідовно завантажує 10 URL, виміряйте час, потім перепишіть його через ThreadPoolExecutor і порівняйте різницю часу.",
-      "tags": ["threading", "concurrency"],
-      "sourceIds": ["python-docs-threading", "python-docs-free-threading"]
+      "tags": [
+        "threading",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "python-docs-threading",
+        "python-docs-free-threading"
+      ]
     },
     {
       "id": "py-lesson-multiprocessing-basics",
       "moduleId": "concurrency",
       "level": "Advanced",
+      "order": 58,
       "title": "Multiprocessing for CPU-bound work",
       "titleUk": "Multiprocessing для роботи, прив'язаної до CPU",
       "summary": "Separate processes each get their own interpreter and GIL, giving true parallelism for heavy computation.",
@@ -393,13 +462,19 @@
       ],
       "exercise": "Write a CPU-heavy function (like computing the sum of squares up to a large n for many different n values) and compare its total runtime with a plain loop versus ProcessPoolExecutor.map().",
       "exerciseUk": "Напишіть важку за CPU функцію (як обчислення суми квадратів до великого n для багатьох різних n) і порівняйте загальний час виконання зі звичайним циклом проти ProcessPoolExecutor.map().",
-      "tags": ["multiprocessing", "concurrency"],
-      "sourceIds": ["python-docs-multiprocessing"]
+      "tags": [
+        "multiprocessing",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "python-docs-multiprocessing"
+      ]
     },
     {
       "id": "py-lesson-asyncio-basics",
       "moduleId": "concurrency",
       "level": "Advanced",
+      "order": 59,
       "title": "asyncio and async/await",
       "titleUk": "asyncio та async/await",
       "summary": "Cooperative concurrency on a single thread: coroutines take turns at await points instead of running in parallel.",
@@ -429,13 +504,20 @@
       ],
       "exercise": "Rewrite the sequential URL-download exercise from the threading lesson using asyncio and an async HTTP client, and compare its behavior conceptually to the thread-pool version.",
       "exerciseUk": "Перепишіть вправу з послідовним завантаженням URL з уроку про threading, використовуючи asyncio й асинхронний HTTP-клієнт, і концептуально порівняйте її поведінку з версією на пулі потоків.",
-      "tags": ["asyncio", "concurrency"],
-      "sourceIds": ["python-docs-asyncio", "pep-492"]
+      "tags": [
+        "asyncio",
+        "concurrency"
+      ],
+      "sourceIds": [
+        "python-docs-asyncio",
+        "pep-492"
+      ]
     },
     {
       "id": "py-lesson-choosing-concurrency-model",
       "moduleId": "concurrency",
       "level": "Advanced",
+      "order": 60,
       "title": "Choosing between threading, multiprocessing and asyncio",
       "titleUk": "Вибір між threading, multiprocessing і asyncio",
       "summary": "A decision guide: classify the workload first, then pick the concurrency model that actually fits it.",
@@ -465,8 +547,15 @@
       ],
       "exercise": "For each of these three tasks, decide and justify in one sentence which concurrency model fits best: (1) resizing 10,000 images, (2) calling 500 independent REST APIs, (3) a chat server handling thousands of open connections.",
       "exerciseUk": "Для кожної з цих трьох задач визначте й обґрунтуйте одним реченням, яка модель конкурентності підходить найкраще: (1) зміна розміру 10 000 зображень, (2) виклик 500 незалежних REST API, (3) чат-сервер, що обробляє тисячі відкритих з'єднань.",
-      "tags": ["concurrency", "design"],
-      "sourceIds": ["python-docs-asyncio", "python-docs-multiprocessing", "python-docs-threading"]
+      "tags": [
+        "concurrency",
+        "design"
+      ],
+      "sourceIds": [
+        "python-docs-asyncio",
+        "python-docs-multiprocessing",
+        "python-docs-threading"
+      ]
     }
   ]
 }

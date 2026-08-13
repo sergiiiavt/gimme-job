@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | Jobs | Functional | Vacancy inbox, relevance feedback, application pipeline |
 | Interview questions | Functional | Growing public QA catalog with research references and bounded rendering |
-| Python interview questions | Functional | Deeply-researched, bilingual Python Q&A, reusing the QA catalog's component and schema under its own content and ID namespace |
-| Python learning path | Functional | Bilingual, code-sample-driven curriculum from first script to language internals |
+| Python interview questions | Functional | Deeply-researched, bilingual Python Q&A, reachable via a catalog toggle inside Interview questions; reuses that module's component and schema under its own content and ID namespace |
+| Programming (Python learning path) | Functional | Bilingual, code-sample-driven curriculum from first script to language internals |
 | Certifications | Planned | Certification roadmap and progress |
 | Trends | Planned | Market, vacancy, skill, and resume analysis |
 | Agentic lab | Planned | Agent patterns and portfolio projects |

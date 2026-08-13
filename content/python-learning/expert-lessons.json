@@ -4,6 +4,7 @@
       "id": "py-lesson-memory-model-and-gc",
       "moduleId": "memory-performance-metaprogramming",
       "level": "Expert",
+      "order": 61,
       "title": "CPython's memory model: reference counting and the cyclic GC",
       "titleUk": "Модель пам'яті CPython: підрахунок посилань і циклічний GC",
       "summary": "Most objects are freed instantly by reference counting; a separate generational collector only handles cycles.",
@@ -33,13 +34,19 @@
       ],
       "exercise": "Create a small parent-child pair of objects that reference each other, delete both external references, and use the gc module to confirm they are only collected after gc.collect() runs (or observe gc.garbage in older setups).",
       "exerciseUk": "Створіть невелику пару об'єктів батько-дитина, що посилаються одне на одного, видаліть обидва зовнішні посилання й використайте модуль gc, щоб підтвердити, що їх зібрано лише після виконання gc.collect().",
-      "tags": ["memory-management", "garbage-collection"],
-      "sourceIds": ["python-docs-gc"]
+      "tags": [
+        "memory-management",
+        "garbage-collection"
+      ],
+      "sourceIds": [
+        "python-docs-gc"
+      ]
     },
     {
       "id": "py-lesson-profiling-and-optimization",
       "moduleId": "memory-performance-metaprogramming",
       "level": "Expert",
+      "order": 62,
       "title": "Profiling before optimizing",
       "titleUk": "Профілювання перед оптимізацією",
       "summary": "Measure first with cProfile; intuition about where a program is slow is frequently wrong.",
@@ -69,13 +76,20 @@
       ],
       "exercise": "Profile a script of yours (or a deliberately slow one you write) with cProfile, identify the actual hottest function, and apply one targeted optimization, then re-profile to confirm it helped.",
       "exerciseUk": "Профілюйте свій скрипт (чи навмисно повільний, який ви напишете) через cProfile, визначте реально найгарячішу функцію й застосуйте одну цілеспрямовану оптимізацію, потім повторно профілюйте, щоб підтвердити користь.",
-      "tags": ["profiling", "performance"],
-      "sourceIds": ["python-docs-stdlib-index", "python-docs-dis"]
+      "tags": [
+        "profiling",
+        "performance"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index",
+        "python-docs-dis"
+      ]
     },
     {
       "id": "py-lesson-gil-and-free-threading",
       "moduleId": "memory-performance-metaprogramming",
       "level": "Expert",
+      "order": 63,
       "title": "The GIL and the free-threaded build",
       "titleUk": "GIL і безблокувальна (free-threaded) збірка",
       "summary": "Why the GIL exists, what it costs, and how the officially-supported free-threaded build in 3.14 changes the picture.",
@@ -105,13 +119,22 @@
       ],
       "exercise": "Read Python's official free-threading documentation and write two sentences summarizing when you would consider trying the free-threaded build for a real project versus sticking with multiprocessing.",
       "exerciseUk": "Прочитайте офіційну документацію Python про free-threading і напишіть два речення, що підсумовують, коли ви розглянули б спробу безблокувальної збірки для реального проєкту, а коли залишилися б з multiprocessing.",
-      "tags": ["gil", "free-threading", "python-3-14"],
-      "sourceIds": ["pep-703", "pep-779", "python-docs-free-threading"]
+      "tags": [
+        "gil",
+        "free-threading",
+        "python-3-14"
+      ],
+      "sourceIds": [
+        "pep-703",
+        "pep-779",
+        "python-docs-free-threading"
+      ]
     },
     {
       "id": "py-lesson-metaprogramming-descriptors-metaclasses",
       "moduleId": "memory-performance-metaprogramming",
       "level": "Expert",
+      "order": 64,
       "title": "Descriptors and metaclasses: how @property and ORMs work under the hood",
       "titleUk": "Дескриптори й метакласи: як @property та ORM працюють під капотом",
       "summary": "The mechanisms behind @property, ORM model fields, and framework \"magic\" — used rarely, but worth understanding.",
@@ -141,8 +164,14 @@
       ],
       "exercise": "Write a reusable descriptor class ValidatedString(min_length) that can be attached to any class attribute and raises ValueError if an assigned string is shorter than min_length.",
       "exerciseUk": "Напишіть повторно використовуваний клас-дескриптор ValidatedString(min_length), який можна прикріпити до будь-якого атрибута класу й який викликає ValueError, якщо присвоєний рядок коротший за min_length.",
-      "tags": ["metaprogramming", "descriptors", "metaclasses"],
-      "sourceIds": ["python-docs-datamodel"]
+      "tags": [
+        "metaprogramming",
+        "descriptors",
+        "metaclasses"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel"
+      ]
     }
   ]
 }

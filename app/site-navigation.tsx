@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 
-export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "python" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
 
 export const navigationIntroItem: { id: SiteSection; label: string } = { id: "about", label: "About this site" };
+
+/** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
+export const hiddenDeepLinkSections: SiteSection[] = ["python-interview"];
 
 export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: Array<{ id: SiteSection; label: string }> }> = [
   {
@@ -14,7 +17,6 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "jobs", label: "Vacancies" },
       { id: "resume", label: "My Resume" },
       { id: "interview", label: "Interview questions" },
-      { id: "python-interview", label: "Python interview questions" },
       { id: "trends", label: "Trends" },
     ],
   },
@@ -26,8 +28,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "agentic", label: "AI agents & MCP" },
       { id: "certifications", label: "Certifications" },
       { id: "strategy", label: "Strategy & leadership" },
-      { id: "programming", label: "Programming for QA" },
-      { id: "python", label: "Python" },
+      { id: "programming", label: "Programming" },
       { id: "automation", label: "Test automation" },
       { id: "api", label: "API & integration" },
       { id: "data", label: "Databases, SQL & BI" },

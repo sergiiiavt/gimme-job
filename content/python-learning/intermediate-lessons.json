@@ -4,6 +4,7 @@
       "id": "py-lesson-reading-writing-files",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
+      "order": 27,
       "title": "Reading and writing files",
       "titleUk": "Читання й запис файлів",
       "summary": "open() is the entry point for file I/O; the mode string decides read/write/append and text/binary behavior.",
@@ -33,13 +34,20 @@
       ],
       "exercise": "Write a script that reads a text file line by line, counts how many lines contain the word \"error\" (case-insensitive), and writes that count to a summary file.",
       "exerciseUk": "Напишіть скрипт, що читає текстовий файл по рядках, підраховує, скільки рядків містять слово «error» (без урахування регістру), і записує цю кількість у файл підсумку.",
-      "tags": ["files", "io"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-stdlib-index"]
+      "tags": [
+        "files",
+        "io"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-with-statement",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
+      "order": 28,
       "title": "The with statement and context managers",
       "titleUk": "Оператор with і менеджери контексту",
       "summary": "with guarantees cleanup (like closing a file) happens even if an error occurs inside the block.",
@@ -69,13 +77,20 @@
       ],
       "exercise": "Rewrite a function that opens a file, might raise an exception while processing it, and manually calls close() at the end, to instead use a with statement — and explain why the rewrite is safer.",
       "exerciseUk": "Перепишіть функцію, що відкриває файл, може викликати виняток під час його обробки й вручну викликає close() в кінці, щоб натомість використати оператор with — і поясніть, чому переписаний варіант безпечніший.",
-      "tags": ["context-managers", "with-statement"],
-      "sourceIds": ["python-docs-datamodel", "python-docs-contextlib"]
+      "tags": [
+        "context-managers",
+        "with-statement"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel",
+        "python-docs-contextlib"
+      ]
     },
     {
       "id": "py-lesson-pathlib",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
+      "order": 29,
       "title": "Filesystem paths with pathlib",
       "titleUk": "Шляхи файлової системи через pathlib",
       "summary": "Path objects, joined with /, replace error-prone string concatenation for building filesystem paths.",
@@ -105,13 +120,19 @@
       ],
       "exercise": "Write a function that takes a directory path, uses pathlib to find every .txt file recursively, and returns a dict mapping each file's name to its size in bytes.",
       "exerciseUk": "Напишіть функцію, що приймає шлях до каталогу, використовує pathlib для рекурсивного пошуку кожного файлу .txt і повертає словник, який відображає ім'я кожного файлу на його розмір у байтах.",
-      "tags": ["pathlib", "files"],
-      "sourceIds": ["python-docs-pathlib"]
+      "tags": [
+        "pathlib",
+        "files"
+      ],
+      "sourceIds": [
+        "python-docs-pathlib"
+      ]
     },
     {
       "id": "py-lesson-csv-json",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
+      "order": 30,
       "title": "Working with CSV and JSON data",
       "titleUk": "Робота з даними CSV і JSON",
       "summary": "The standard library's csv and json modules handle the escaping and structure details so you don't hand-roll a parser.",
@@ -141,13 +162,20 @@
       ],
       "exercise": "Write a script that reads a CSV of products (name, price, quantity), converts price and quantity to numbers, and writes the result as a JSON array of objects.",
       "exerciseUk": "Напишіть скрипт, що читає CSV товарів (name, price, quantity), перетворює price і quantity на числа й записує результат як JSON-масив об'єктів.",
-      "tags": ["csv", "json", "files"],
-      "sourceIds": ["python-docs-stdlib-index"]
+      "tags": [
+        "csv",
+        "json",
+        "files"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-classes-and-instances",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
+      "order": 31,
       "title": "Classes, instances and __init__",
       "titleUk": "Класи, екземпляри та __init__",
       "summary": "A class is a blueprint; __init__ sets up each new instance's own data when it is created.",
@@ -177,13 +205,20 @@
       ],
       "exercise": "Write a BankAccount class with __init__(self, owner, balance=0), a deposit(amount) method and a withdraw(amount) method that refuses to overdraw.",
       "exerciseUk": "Напишіть клас BankAccount з __init__(self, owner, balance=0), методом deposit(amount) і методом withdraw(amount), що відмовляє в перевищенні балансу.",
-      "tags": ["oop", "classes"],
-      "sourceIds": ["python-docs-tutorial", "python-docs-datamodel"]
+      "tags": [
+        "oop",
+        "classes"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "python-docs-datamodel"
+      ]
     },
     {
       "id": "py-lesson-inheritance",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
+      "order": 32,
       "title": "Inheritance and super()",
       "titleUk": "Спадковість і super()",
       "summary": "A subclass reuses and extends a parent class's behavior instead of duplicating it.",
@@ -213,13 +248,20 @@
       ],
       "exercise": "Given a Shape base class with an area() method returning 0, write Rectangle and Circle subclasses that override area() correctly, and a shared describe() method inherited by both.",
       "exerciseUk": "Маючи базовий клас Shape з методом area(), що повертає 0, напишіть підкласи Rectangle і Circle, що коректно перевизначають area(), і спільний метод describe(), успадкований обома.",
-      "tags": ["oop", "inheritance"],
-      "sourceIds": ["python-docs-datamodel", "python-docs-language-reference"]
+      "tags": [
+        "oop",
+        "inheritance"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-dunder-methods",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
+      "order": 33,
       "title": "Dunder methods: __repr__, __eq__ and friends",
       "titleUk": "Dunder-методи: __repr__, __eq__ та інші",
       "summary": "Special double-underscore methods let your own classes work with print(), ==, len() and other built-ins.",
@@ -249,13 +291,19 @@
       ],
       "exercise": "Add __repr__ and __eq__ to a Money class holding amount and currency, so two Money instances with the same amount and currency compare equal and print readably.",
       "exerciseUk": "Додайте __repr__ і __eq__ до класу Money з amount і currency, щоб два екземпляри Money з однаковими amount і currency порівнювалися рівними й читабельно друкувалися.",
-      "tags": ["oop", "dunder-methods"],
-      "sourceIds": ["python-docs-datamodel"]
+      "tags": [
+        "oop",
+        "dunder-methods"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel"
+      ]
     },
     {
       "id": "py-lesson-properties",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
+      "order": 34,
       "title": "Properties: computed and validated attributes",
       "titleUk": "Властивості: обчислювані й валідовані атрибути",
       "summary": "@property lets a method be accessed like a plain attribute, enabling validation without changing the calling code.",
@@ -285,13 +333,20 @@
       ],
       "exercise": "Add a validated width property to a Rectangle class that rejects negative values with a ValueError, and a read-only area property computed from width and height.",
       "exerciseUk": "Додайте валідовану властивість width до класу Rectangle, що відхиляє від'ємні значення через ValueError, і властивість area лише для читання, обчислену з width і height.",
-      "tags": ["oop", "property"],
-      "sourceIds": ["python-docs-datamodel", "python-docs-language-reference"]
+      "tags": [
+        "oop",
+        "property"
+      ],
+      "sourceIds": [
+        "python-docs-datamodel",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-dataclasses",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
+      "order": 35,
       "title": "@dataclass for data-holding classes",
       "titleUk": "@dataclass для класів, що зберігають дані",
       "summary": "@dataclass generates __init__, __repr__ and __eq__ from annotated fields, removing common boilerplate.",
@@ -321,13 +376,19 @@
       ],
       "exercise": "Write a @dataclass Product with name, price, and an in_stock bool defaulting to True, then create two Products and confirm they compare equal only when all fields match.",
       "exerciseUk": "Напишіть @dataclass Product з name, price та булевим in_stock зі значенням за замовчуванням True, потім створіть два Product і підтвердьте, що вони порівнюються рівними, лише коли всі поля збігаються.",
-      "tags": ["oop", "dataclasses"],
-      "sourceIds": ["python-docs-dataclasses"]
+      "tags": [
+        "oop",
+        "dataclasses"
+      ],
+      "sourceIds": [
+        "python-docs-dataclasses"
+      ]
     },
     {
       "id": "py-lesson-try-except",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
+      "order": 36,
       "title": "try/except: handling errors gracefully",
       "titleUk": "try/except: витончена обробка помилок",
       "summary": "Catch a specific exception type where recovery is possible, instead of letting the whole program crash.",
@@ -357,13 +418,19 @@
       ],
       "exercise": "Write a function that reads a number from input(), catching both ValueError (invalid text) and the case of dividing by it if it's zero, with a distinct message for each.",
       "exerciseUk": "Напишіть функцію, що читає число з input(), перехоплюючи і ValueError (недійсний текст), і випадок ділення на нього, якщо воно нуль, з окремим повідомленням для кожного.",
-      "tags": ["exceptions", "error-handling"],
-      "sourceIds": ["python-docs-errors-tutorial"]
+      "tags": [
+        "exceptions",
+        "error-handling"
+      ],
+      "sourceIds": [
+        "python-docs-errors-tutorial"
+      ]
     },
     {
       "id": "py-lesson-custom-exceptions",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
+      "order": 37,
       "title": "Raising and defining custom exceptions",
       "titleUk": "Виклик і визначення власних винятків",
       "summary": "raise triggers an exception; a custom exception class communicates a specific, domain-meaningful failure.",
@@ -393,13 +460,20 @@
       ],
       "exercise": "Define an OutOfStockError exception carrying the product name and requested quantity, and raise it from a purchase(product, quantity, stock) function when stock is insufficient.",
       "exerciseUk": "Визначте виняток OutOfStockError, що несе назву товару й запитану кількість, і викликайте його з функції purchase(product, quantity, stock), коли запасів недостатньо.",
-      "tags": ["exceptions", "custom-exceptions"],
-      "sourceIds": ["python-docs-errors-tutorial", "python-docs-language-reference"]
+      "tags": [
+        "exceptions",
+        "custom-exceptions"
+      ],
+      "sourceIds": [
+        "python-docs-errors-tutorial",
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-debugging-with-pdb",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
+      "order": 38,
       "title": "Debugging interactively with breakpoint() and pdb",
       "titleUk": "Інтерактивне налагодження через breakpoint() і pdb",
       "summary": "Instead of scattering print() statements, pause execution and inspect live state with the built-in debugger.",
@@ -429,13 +503,19 @@
       ],
       "exercise": "Add a breakpoint() inside a function that computes something incorrectly, use p to inspect the relevant variables at that point, identify the bug, then remove the breakpoint() and fix the code.",
       "exerciseUk": "Додайте breakpoint() усередині функції, що обчислює щось неправильно, використайте p для інспекції відповідних змінних у цій точці, визначте баг, потім видаліть breakpoint() і виправте код.",
-      "tags": ["debugging", "pdb"],
-      "sourceIds": ["python-docs-stdlib-index"]
+      "tags": [
+        "debugging",
+        "pdb"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-defensive-programming",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
+      "order": 39,
       "title": "Defensive habits: assertions and input validation",
       "titleUk": "Захисні звички: assert і валідація вводу",
       "summary": "assert catches your own programming mistakes early; explicit validation protects against bad external input.",
@@ -465,13 +545,20 @@
       ],
       "exercise": "Rewrite a function that uses assert to validate a user-supplied age parameter so it instead raises a proper ValueError, and add an internal assert for a genuinely internal invariant instead.",
       "exerciseUk": "Перепишіть функцію, що використовує assert для валідації наданого користувачем параметра age, щоб натомість викликати належний ValueError, і додайте внутрішній assert для справді внутрішнього інваріанта.",
-      "tags": ["assertions", "validation", "defensive-programming"],
-      "sourceIds": ["python-docs-language-reference"]
+      "tags": [
+        "assertions",
+        "validation",
+        "defensive-programming"
+      ],
+      "sourceIds": [
+        "python-docs-language-reference"
+      ]
     },
     {
       "id": "py-lesson-writing-modules",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
+      "order": 40,
       "title": "Writing and importing your own modules",
       "titleUk": "Написання й імпорт власних модулів",
       "summary": "Any .py file is a module; splitting code into modules is how programs grow past a single file.",
@@ -501,13 +588,20 @@
       ],
       "exercise": "Split a single script that validates emails and formats phone numbers into two modules, validators.py and formatters.py, then import both from a new main.py.",
       "exerciseUk": "Розділіть один скрипт, що валідує email і форматує номери телефонів, на два модулі, validators.py і formatters.py, потім імпортуйте обидва з нового main.py.",
-      "tags": ["modules", "imports"],
-      "sourceIds": ["python-docs-import-system", "python-docs-tutorial"]
+      "tags": [
+        "modules",
+        "imports"
+      ],
+      "sourceIds": [
+        "python-docs-import-system",
+        "python-docs-tutorial"
+      ]
     },
     {
       "id": "py-lesson-packages-and-init",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
+      "order": 41,
       "title": "Packages and __init__.py",
       "titleUk": "Пакети та __init__.py",
       "summary": "A package is a directory of modules; __init__.py runs on first import and can define what the package exposes.",
@@ -537,13 +631,19 @@
       ],
       "exercise": "Turn validators.py and formatters.py from the previous exercise into a package named toolkit with an __init__.py that re-exports validate_email and format_phone directly.",
       "exerciseUk": "Перетворіть validators.py і formatters.py з попередньої вправи на пакет toolkit з __init__.py, що напряму повторно експортує validate_email і format_phone.",
-      "tags": ["packages", "imports"],
-      "sourceIds": ["python-docs-import-system"]
+      "tags": [
+        "packages",
+        "imports"
+      ],
+      "sourceIds": [
+        "python-docs-import-system"
+      ]
     },
     {
       "id": "py-lesson-venv-and-pip",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
+      "order": 42,
       "title": "Virtual environments and pip",
       "titleUk": "Віртуальні середовища й pip",
       "summary": "Every project gets its own isolated set of installed packages, so projects never fight over dependency versions.",
@@ -573,13 +673,21 @@
       ],
       "exercise": "Create a new virtual environment, install the requests package into it, generate a requirements.txt, and describe the exact commands someone else would run to reproduce your environment.",
       "exerciseUk": "Створіть нове віртуальне середовище, встановіть у нього пакет requests, згенеруйте requirements.txt і опишіть точні команди, які інша людина виконала б, щоб відтворити ваше середовище.",
-      "tags": ["venv", "pip", "environments"],
-      "sourceIds": ["python-docs-venv", "packaging-guide"]
+      "tags": [
+        "venv",
+        "pip",
+        "environments"
+      ],
+      "sourceIds": [
+        "python-docs-venv",
+        "packaging-guide"
+      ]
     },
     {
       "id": "py-lesson-collections-module",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
+      "order": 43,
       "title": "The collections module: Counter, defaultdict, deque",
       "titleUk": "Модуль collections: Counter, defaultdict, deque",
       "summary": "Specialized container types that replace common manual bookkeeping patterns with a single import.",
@@ -609,13 +717,19 @@
       ],
       "exercise": "Given a list of HTTP status codes from a log, use Counter to find the 3 most common ones, and use defaultdict to group the codes by their first digit (2xx, 4xx, 5xx).",
       "exerciseUk": "Маючи список HTTP статус-кодів з логу, використайте Counter, щоб знайти 3 найпоширеніших, і defaultdict, щоб згрупувати коди за першою цифрою (2xx, 4xx, 5xx).",
-      "tags": ["collections", "stdlib"],
-      "sourceIds": ["python-docs-collections"]
+      "tags": [
+        "collections",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-collections"
+      ]
     },
     {
       "id": "py-lesson-itertools-functools",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
+      "order": 44,
       "title": "itertools and functools essentials",
       "titleUk": "Основи itertools і functools",
       "summary": "Lazy iterator composition and function-level tools that remove common loop and caching boilerplate.",
@@ -645,13 +759,21 @@
       ],
       "exercise": "Use itertools.product to generate every possible 4-digit PIN combination lazily (do not materialize the full list), and use @lru_cache to speed up a slow recursive function of your choice.",
       "exerciseUk": "Використайте itertools.product, щоб ліниво генерувати кожну можливу комбінацію 4-значного PIN (не матеріалізуйте повний список), і @lru_cache, щоб пришвидшити повільну рекурсивну функцію на власний вибір.",
-      "tags": ["itertools", "functools", "stdlib"],
-      "sourceIds": ["python-docs-itertools", "python-docs-functools"]
+      "tags": [
+        "itertools",
+        "functools",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-itertools",
+        "python-docs-functools"
+      ]
     },
     {
       "id": "py-lesson-datetime",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
+      "order": 45,
       "title": "Working with dates and times",
       "titleUk": "Робота з датами й часом",
       "summary": "datetime objects, formatting with strftime, parsing with strptime, and the naive-versus-aware distinction.",
@@ -681,13 +803,19 @@
       ],
       "exercise": "Write a function that takes a birthdate string in \"YYYY-MM-DD\" format, parses it, and returns the person's age in whole years as of today.",
       "exerciseUk": "Напишіть функцію, що приймає рядок дати народження у форматі «YYYY-MM-DD», розбирає його й повертає вік людини в повних роках станом на сьогодні.",
-      "tags": ["datetime", "stdlib"],
-      "sourceIds": ["python-docs-stdlib-index"]
+      "tags": [
+        "datetime",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-os-and-sys",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
+      "order": 46,
       "title": "os and sys for environment and runtime info",
       "titleUk": "os і sys для середовища й інформації про виконання",
       "summary": "os talks to the operating system (environment variables, processes); sys exposes interpreter-level state.",
@@ -717,13 +845,20 @@
       ],
       "exercise": "Write a small CLI script that reads a required OUTPUT_DIR environment variable, exits with status 1 and an error message on stderr if it's missing, and otherwise prints the command-line arguments it received.",
       "exerciseUk": "Напишіть невеликий CLI-скрипт, що читає обов'язкову змінну середовища OUTPUT_DIR, виходить зі статусом 1 і повідомленням про помилку в stderr, якщо вона відсутня, і інакше друкує отримані аргументи командного рядка.",
-      "tags": ["os", "sys", "stdlib"],
-      "sourceIds": ["python-docs-stdlib-index"]
+      "tags": [
+        "os",
+        "sys",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-stdlib-index"
+      ]
     },
     {
       "id": "py-lesson-logging-basics",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
+      "order": 47,
       "title": "Structured diagnostic output with logging",
       "titleUk": "Структурований діагностичний вивід через logging",
       "summary": "logging replaces print() debugging with leveled, configurable, and production-appropriate diagnostics.",
@@ -753,8 +888,13 @@
       ],
       "exercise": "Replace every print() call in a small script with appropriately-leveled logging calls (info for normal progress, warning for recoverable issues, error for failures), and configure the minimum level.",
       "exerciseUk": "Замініть кожен виклик print() у невеликому скрипті на виклики logging з відповідним рівнем (info для звичайного прогресу, warning для виправних проблем, error для невдач), і налаштуйте мінімальний рівень.",
-      "tags": ["logging", "stdlib"],
-      "sourceIds": ["python-docs-logging"]
+      "tags": [
+        "logging",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-logging"
+      ]
     }
   ]
 }
