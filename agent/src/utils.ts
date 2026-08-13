@@ -24,6 +24,15 @@ export function decodeHtmlEntities(input: string): string {
     lt: "<",
     nbsp: " ",
     quot: '"',
+    hellip: "…",
+    mdash: "—",
+    ndash: "–",
+    laquo: "«",
+    raquo: "»",
+    lsquo: "‘",
+    rsquo: "’",
+    ldquo: "“",
+    rdquo: "”",
   };
 
   return input

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { analyzeJob } from "./analyst.js";
+import { adjustResume, analyzeJob } from "./analyst.js";
 import {
   getPaths,
   initializeConfig,
@@ -18,6 +18,7 @@ import {
   sendGmailMessage,
 } from "./gmail.js";
 import { buildMarketReport } from "./market.js";
+import { buildResumePdf, bytesToBase64 } from "./resume-pdf.js";
 import { buildSources } from "./sources/index.js";
 import { collectAllSources } from "./sources/types.js";
 
@@ -28,7 +29,8 @@ Commands:
   init                              Create config files and SQLite database
   doctor                            Check local configuration
   sync [--manual-only]              Collect and deduplicate jobs
-  analyze [--limit 25]              Score jobs and create tailored resume drafts
+  analyze [--limit 25]              Score jobs (no resume/draft generated)
+  adjust-resume <job-id>            Generate a tailored resume, draft, and PDF for one job
   market                            Aggregate requirements and market signals
   run [--limit 25]                  Run sync, analyze, and market (never sends)
   jobs [--limit 50]                 List collected jobs
@@ -107,13 +109,24 @@ async function analyzeJobs(db: JobDatabase, paths: AppPaths, args: string[]): Pr
 
   let completed = 0;
   for (const job of jobs) {
-    const { pkg, mode } = await analyzeJob(job, profile);
-    db.savePackage(job.id, pkg, mode);
+    const { analysis, mode } = await analyzeJob(job, profile);
+    db.saveAnalysis(job.id, analysis, mode);
     completed += 1;
-    console.log(`${job.id} | ${pkg.analysis.score} | ${pkg.analysis.verdict} | ${job.title}`);
+    console.log(`${job.id} | ${analysis.score} | ${analysis.verdict} | ${job.title}`);
   }
   console.log(`Analysis complete: ${completed} jobs (${process.env.OPENAI_API_KEY ? "agent" : "deterministic fallback"}).`);
   return completed;
+}
+
+async function adjustResumeJob(db: JobDatabase, paths: AppPaths, jobIdValue: string): Promise<void> {
+  const profile = loadProfile(paths.profile);
+  const job = db.getJob(jobIdValue);
+  if (!job) throw new Error(`Job not found: ${jobIdValue}`);
+
+  const { pkg, mode } = await adjustResume(job, profile);
+  const pdfBytes = await buildResumePdf(pkg.tailoredResume.markdown);
+  db.saveResumePackage(job.id, pkg, bytesToBase64(pdfBytes));
+  console.log(`${jobIdValue}: tailored resume and application draft generated (${mode}).`);
 }
 
 function marketReport(db: JobDatabase, paths: AppPaths): MarketReport {
@@ -224,6 +237,10 @@ async function main(): Promise<void> {
         break;
       case "analyze":
         await analyzeJobs(db, paths, args);
+        break;
+      case "adjust-resume":
+        if (!args[0]) throw new Error("Usage: adjust-resume <job-id>");
+        await adjustResumeJob(db, paths, args[0]);
         break;
       case "market":
         marketReport(db, paths);

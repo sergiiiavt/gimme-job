@@ -50,6 +50,7 @@ export const resumeVariants = sqliteTable("resume_variants", {
   id: text("id").primaryKey(),
   jobId: text("job_id").notNull().unique(),
   markdown: text("markdown").notNull(),
+  pdfBase64: text("pdf_base64"),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

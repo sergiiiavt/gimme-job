@@ -234,12 +234,24 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 }
 
 function isPrivateRequest(request: Request, url: URL): boolean {
-  if (url.pathname === "/workspace" || url.pathname.startsWith("/workspace/")) return true;
+  // The vacancy workspace itself is viewable without a password (analysis/resume results are
+  // public); only status tracking and every write action stay password-gated below it and via
+  // the private-API allowlist. Deeper paths (e.g. /workspace/learn, personal study progress)
+  // remain fully private.
+  if (url.pathname === "/workspace") return false;
+  if (url.pathname.startsWith("/workspace/")) return true;
   if (!url.pathname.startsWith("/api/")) return false;
 
   const isRead = request.method === "GET" || request.method === "HEAD";
-  const isPublicApi = url.pathname === "/api/health" || url.pathname === "/api/public/jobs";
+  const isPublicApi = url.pathname === "/api/health" || url.pathname === "/api/public/jobs" || url.pathname === "/api/dashboard";
   return !(isRead && isPublicApi);
+}
+
+// /workspace is viewable by anyone (see isPrivateRequest above) but is still a personal app
+// surface, never meant for search engines or shared caches — so it keeps the no-store/noindex
+// treatment regardless of whether the visitor is authenticated.
+function isWorkspaceSurface(url: URL): boolean {
+  return url.pathname === "/workspace" || url.pathname.startsWith("/workspace/");
 }
 
 function robotsResponse(url: URL): Response {
@@ -294,7 +306,11 @@ const worker = {
     }
 
     const privateRequest = isPrivateRequest(request, url);
-    if (privateRequest && !(await hasPrivateAccess(request, env))) {
+    // Computed unconditionally (not just when the route itself requires it) so the app can tell
+    // an authenticated owner from an anonymous visitor on routes that are public to view but
+    // still gate write/cost actions (sync, analyze, status edits) behind the password.
+    const authenticated = await hasPrivateAccess(request, env);
+    if (privateRequest && !authenticated) {
       if (url.pathname === "/workspace" || url.pathname.startsWith("/workspace/")) {
         const next = `${url.pathname}${url.search}`;
         const location = next === "/workspace" ? "/workspace/login" : `/workspace/login?next=${encodeURIComponent(next)}`;
@@ -320,8 +336,12 @@ const worker = {
       }, allowedWidths);
     }
 
-    const response = await handler.fetch(request, env, ctx);
-    if (!privateRequest) return response;
+    const forwardedHeaders = new Headers(request.headers);
+    forwardedHeaders.set("x-gimmejob-authenticated", authenticated ? "1" : "0");
+    const forwardedRequest = new Request(request, { headers: forwardedHeaders });
+
+    const response = await handler.fetch(forwardedRequest, env, ctx);
+    if (!privateRequest && !isWorkspaceSurface(url)) return response;
 
     const privateResponse = new Response(response.body, response);
     privateResponse.headers.set("cache-control", "no-store");

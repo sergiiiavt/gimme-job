@@ -5,14 +5,15 @@ import {
   JobAnalysisSchema,
   type ApplicationDraftRecord,
   type DraftStatus,
+  type JobAnalysis,
   type JobFeedback,
   type JobInput,
-  type JobPackage,
   type JobPipelineStatus,
   type JobTrackingRecord,
   type JobTrackingUpdate,
   type MarketReport,
   type MarketRow,
+  type ResumePackage,
   type StoredJob,
 } from "./domain.js";
 import { canonicalizeUrl, jobFingerprint, jobId } from "./utils.js";
@@ -148,6 +149,7 @@ export class JobDatabase {
         markdown TEXT NOT NULL,
         changes_json TEXT NOT NULL,
         truth_warnings_json TEXT NOT NULL,
+        pdf_base64 TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -175,6 +177,13 @@ export class JobDatabase {
         payload_json TEXT NOT NULL
       );
     `);
+    this.addColumnIfMissing("resume_variants", "pdf_base64", "TEXT");
+  }
+
+  private addColumnIfMissing(table: string, column: string, definition: string): void {
+    const columns = this.db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+    if (columns.some((entry) => entry.name === column)) return;
+    this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
 
   upsertJob(input: JobInput): { id: string; inserted: boolean } {
@@ -331,11 +340,8 @@ export class JobDatabase {
     return rows.map(mapJob);
   }
 
-  savePackage(jobIdValue: string, pkg: JobPackage, mode: "agent" | "deterministic"): void {
+  saveAnalysis(jobIdValue: string, analysis: JobAnalysis, mode: "agent" | "deterministic"): void {
     const now = new Date().toISOString();
-    const resumeId = `resume_${jobIdValue.slice(4)}`;
-    const draftId = `draft_${jobIdValue.slice(4)}`;
-
     this.db.exec("BEGIN IMMEDIATE");
     try {
       this.db
@@ -350,25 +356,39 @@ export class JobDatabase {
             payload_json = excluded.payload_json,
             updated_at = excluded.updated_at
         `)
-        .run(
-          jobIdValue,
-          mode,
-          pkg.analysis.score,
-          pkg.analysis.verdict,
-          jsonStringify(pkg.analysis),
-          now,
-          now,
-        );
+        .run(jobIdValue, mode, analysis.score, analysis.verdict, jsonStringify(analysis), now, now);
 
+      this.db
+        .prepare("UPDATE jobs SET status = 'REVIEWED', updated_at = ? WHERE id = ?")
+        .run(now, jobIdValue);
+      this.db.exec("COMMIT");
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+
+  saveResumePackage(
+    jobIdValue: string,
+    pkg: ResumePackage,
+    pdfBase64: string | null,
+  ): void {
+    const now = new Date().toISOString();
+    const resumeId = `resume_${jobIdValue.slice(4)}`;
+    const draftId = `draft_${jobIdValue.slice(4)}`;
+
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
       this.db
         .prepare(`
           INSERT INTO resume_variants (
-            id, job_id, markdown, changes_json, truth_warnings_json, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            id, job_id, markdown, changes_json, truth_warnings_json, pdf_base64, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(job_id) DO UPDATE SET
             markdown = excluded.markdown,
             changes_json = excluded.changes_json,
             truth_warnings_json = excluded.truth_warnings_json,
+            pdf_base64 = excluded.pdf_base64,
             updated_at = excluded.updated_at
         `)
         .run(
@@ -377,6 +397,7 @@ export class JobDatabase {
           pkg.tailoredResume.markdown,
           jsonStringify(pkg.tailoredResume.changes),
           jsonStringify(pkg.tailoredResume.truthWarnings),
+          pdfBase64,
           now,
           now,
         );
@@ -414,9 +435,6 @@ export class JobDatabase {
           now,
         );
 
-      this.db
-        .prepare("UPDATE jobs SET status = 'REVIEWED', updated_at = ? WHERE id = ?")
-        .run(now, jobIdValue);
       this.db.exec("COMMIT");
     } catch (error) {
       this.db.exec("ROLLBACK");
@@ -438,6 +456,13 @@ export class JobDatabase {
       .prepare("SELECT markdown FROM resume_variants WHERE job_id = ?")
       .get(jobIdValue) as DbRow | undefined;
     return row ? String(row.markdown) : null;
+  }
+
+  getResumePdf(jobIdValue: string): string | null {
+    const row = this.db
+      .prepare("SELECT pdf_base64 FROM resume_variants WHERE job_id = ?")
+      .get(jobIdValue) as DbRow | undefined;
+    return row?.pdf_base64 ? String(row.pdf_base64) : null;
   }
 
   getDraft(id: string): ApplicationDraftRecord | null {

@@ -10,6 +10,25 @@ import { fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const BASE_URL = "https://www.work.ua";
+const MAX_DETAIL_FETCHES = 30;
+
+// The search-results page only ever shows a truncated teaser paragraph (ending "…").
+// The full description lives on the job's own page, inside <div id="job-description">.
+// Nested <div>s rule out a flat regex, hence the depth-aware scan.
+function extractDivById(html: string, id: string): string {
+  const openMatch = new RegExp(`<div[^>]*\\bid="${id}"[^>]*>`).exec(html);
+  if (!openMatch) return "";
+  let depth = 1;
+  const cursor = openMatch.index + openMatch[0].length;
+  const tagPattern = /<div\b[^>]*>|<\/div>/g;
+  tagPattern.lastIndex = cursor;
+  let match: RegExpExecArray | null;
+  while ((match = tagPattern.exec(html))) {
+    depth += match[0].startsWith("</") ? -1 : 1;
+    if (depth === 0) return html.slice(cursor, match.index);
+  }
+  return html.slice(cursor);
+}
 
 // work.ua job cards vary in structure (salary badges, verified-company markers,
 // work-format tags), so company/location are recovered independently from every
@@ -74,9 +93,19 @@ export class WorkUaSource implements JobSource {
   async collect(): Promise<JobInput[]> {
     const url = `${BASE_URL}/en/jobs/?search=${encodeURIComponent(this.query)}`;
     const html = await fetchText(url);
+    const listings = parseWorkUaListing(html);
 
-    return parseWorkUaListing(html).map((listing): JobInput => {
-      const combined = `${listing.title}\n${listing.description}\n${listing.location}`;
+    return Promise.all(listings.map(async (listing, index): Promise<JobInput> => {
+      let description = listing.description;
+      if (index < MAX_DETAIL_FETCHES) {
+        try {
+          const detailHtml = await fetchText(listing.url);
+          const full = stripHtml(extractDivById(detailHtml, "job-description"));
+          if (full) description = full;
+        } catch { /* keep the search-snippet description if the detail page fetch fails */ }
+      }
+
+      const combined = `${listing.title}\n${description}\n${listing.location}`;
       return {
         source: this.name,
         externalId: listing.url,
@@ -86,12 +115,12 @@ export class WorkUaSource implements JobSource {
         remote: isRemoteText(combined),
         url: listing.url,
         applyUrl: listing.url,
-        description: listing.description,
+        description,
         salaryText: null,
         postedAt: null,
         contactEmail: null,
         raw: listing,
       };
-    });
+    }));
   }
 }
