@@ -46,6 +46,10 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /cell\.surface !== "water"/);
   assert.match(worldSource, /cell\.surface = "rubble"/);
   assert.match(worldSource, /function reclaimNear/);
+  assert.match(worldSource, /export function facilityOperational/);
+  assert.match(worldSource, /state\.ruins\.push/);
+  assert.match(worldSource, /export function createReviewGameState/);
+  assert.match(worldSource, /plant\.reclaimTarget = target\.hex/);
   assert.match(worldSource, /if \(target\.surface === "rubble"\) (?:\{ )?target\.surface = "meadow"/);
   assert.match(worldSource, /export function objectCorruption/);
   assert.doesNotMatch(worldSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
@@ -58,7 +62,12 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameSource, /function drawFacilityGround/);
   assert.match(gameSource, /function drawAtlasFrame/);
   assert.match(gameSource, /facilityModules\(node\)/);
+  assert.match(gameSource, /damagedFacilityModules\(node\)/);
   assert.match(gameSource, /drawNodeConnections\(ctx, node, state\)/);
+  assert.match(gameSource, /drawRuinConnections\(ctx, ruin, state\)/);
+  assert.match(gameSource, /"cable-broken"/);
+  assert.match(gameSource, /"drain-clean"/);
+  assert.match(gameSource, /requestedReviewState/);
   assert.match(gameSource, /"shoreline-polluted-outlet"/);
   assert.match(gameSource, /"roots-reclaiming"/);
   assert.doesNotMatch(gameSource, /const wallHeight = stage/);

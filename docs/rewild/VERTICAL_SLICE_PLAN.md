@@ -102,7 +102,7 @@ Deliverable: `production/world-connections-v1.png`.
 
 ## Review gates
 
-Current status: Gates A and B are complete. Gate C integrates the reviewed atlases into the running renderer and includes construction, contamination, responsive-layout, and relationship screenshots in `reviews/gate-c/`.
+Current status: Gates A through C are complete. Gate D adds the persistent damage → shutdown → rubble → root reclamation lifecycle, restrained event cues, and deterministic desktop/mobile review states in `reviews/gate-d/`.
 
 ### Gate A · Static composition
 

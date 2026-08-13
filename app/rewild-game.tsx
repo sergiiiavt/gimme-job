@@ -15,6 +15,8 @@ import {
   PLANT_ORDER,
   cellAt,
   createGameState,
+  createReviewGameState,
+  facilityOperational,
   facilityStage,
   hexCenter,
   hexDistance,
@@ -31,12 +33,14 @@ import {
   type EnemyEntity,
   type EnemyKind,
   type GameState,
+  type FacilityRuin,
   type HexCell,
   type HexCoord,
   type HexWorld,
   type PixelPoint,
   type PlantEntity,
   type PlantKind,
+  type RewildReviewState,
   type UiSnapshot,
   type WorldObject,
 } from "./rewild-hex-world";
@@ -45,6 +49,13 @@ import { REWILD_ATLASES, atlasFrame, type RewildAtlasId } from "./rewild-atlases
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 2.4;
+const REVIEW_STATES = new Set<RewildReviewState>(["damage", "collapse", "reclamation"]);
+
+function requestedReviewState() {
+  if (typeof window === "undefined") return null;
+  const requested = new URLSearchParams(window.location.search).get("rewildReview") as RewildReviewState | null;
+  return requested && REVIEW_STATES.has(requested) ? requested : null;
+}
 
 interface Camera { x: number; y: number; zoom: number }
 function createCamera(): Camera { return { x: 0, y: 0, zoom: 1 }; }
@@ -387,6 +398,16 @@ function facilityModules(node: DataNode): FacilityModule[] {
   return modules;
 }
 
+function damagedFacilityModules(node: DataNode) {
+  const modules = facilityModules(node);
+  const ratio = Math.max(0, node.hp / node.maxHp);
+  if (ratio > .72) return modules;
+  const disabledFrames = new Set(ratio <= .2 ? ["cooling-fan-bank", "transformer-power", "cable-entry-cabinet", "utility-crates"] : ratio <= .45 ? ["cooling-fan-bank", "transformer-power"] : ["utility-crates"]);
+  return modules.map((facilityModule, index) => disabledFrames.has(facilityModule.frame)
+    ? { ...facilityModule, frame: index % 2 ? "damaged-wall-rubble" : "concrete-barriers", y: facilityModule.y + 7, width: facilityModule.width * .9 }
+    : facilityModule);
+}
+
 function drawNodeConnections(ctx: CanvasRenderingContext2D, node: DataNode, state: GameState) {
   const stage = facilityStage(node);
   if (stage < 2) return;
@@ -395,29 +416,49 @@ function drawNodeConnections(ctx: CanvasRenderingContext2D, node: DataNode, stat
   const roadCell = state.world.road.cells.reduce((closest, roadHex) => hexDistance(roadHex, node.outlet) < hexDistance(closest, node.outlet) ? roadHex : closest);
   const routeTarget = stage === 3 && hexDistance(roadCell, node.outlet) <= 4 ? roadCell : node.outlet;
   const cableCells = hexLine(node.anchor, routeTarget).map(hexCenter);
+  const operational = facilityOperational(node);
   for (let index = 1; index < cableCells.length; index += 1) {
     const from = cableCells[index - 1];
     const to = cableCells[index];
     const angle = Math.atan2(to.y - from.y, to.x - from.x);
-    drawAtlasFrame(ctx, "worldConnections", Math.abs(angle) < .3 ? "cable-straight" : "cable-diagonal", (from.x + to.x) / 2, (from.y + to.y) / 2, { width: 62, rotation: angle, pivotY: .5 });
+    const broken = !operational && index === cableCells.length - 1;
+    drawAtlasFrame(ctx, "worldConnections", broken ? "cable-broken" : Math.abs(angle) < .3 ? "cable-straight" : "cable-diagonal", (from.x + to.x) / 2, (from.y + to.y) / 2, { width: 62, rotation: angle, pivotY: .5 });
   }
-  drawAtlasFrame(ctx, "worldConnections", stage === 3 ? "drain-polluting" : "drain-clean", outlet.x, outlet.y + 7, { width: 61, pivotY: .55 });
+  drawAtlasFrame(ctx, "worldConnections", operational && stage === 3 ? "drain-polluting" : "drain-clean", outlet.x, outlet.y + 7, { width: 61, pivotY: .55 });
   if (hexDistance(roadCell, node.outlet) <= 3) { const crossing = hexCenter(roadCell); drawAtlasFrame(ctx, "worldConnections", "road-cable-crossing", crossing.x, crossing.y + 3, { width: 72, pivotY: .52 }); }
-  if (stage === 3) drawAtlasFrame(ctx, "datacenter", "polluted-drain-outlet", start.x + 92, start.y + 75, { width: 57 });
+  if (operational && stage === 3) drawAtlasFrame(ctx, "datacenter", "polluted-drain-outlet", start.x + 92, start.y + 75, { width: 57 });
 }
 
 function drawNode(ctx: CanvasRenderingContext2D, node: DataNode) {
   const bounds = footprintBounds(node.footprint);
   const center = hexCenter(node.anchor);
-  for (const facilityModule of facilityModules(node).sort((left, right) => left.depth - right.depth)) drawAtlasFrame(ctx, "datacenter", facilityModule.frame, facilityModule.x, facilityModule.y, { width: facilityModule.width, flip: facilityModule.flip });
+  for (const facilityModule of damagedFacilityModules(node).sort((left, right) => left.depth - right.depth)) drawAtlasFrame(ctx, "datacenter", facilityModule.frame, facilityModule.x, facilityModule.y, { width: facilityModule.width, flip: facilityModule.flip });
+  if (node.hp / node.maxHp <= .45) {
+    drawAtlasFrame(ctx, "worldConnections", "concrete-damaged-seam", center.x - 15, center.y + 49, { width: 89, pivotY: .55, flip: node.anchor.q % 2 === 0 });
+    if (!facilityOperational(node)) drawAtlasFrame(ctx, "worldConnections", "rebar-seam", center.x + 38, center.y + 55, { width: 72, pivotY: .55 });
+  }
   if (node.hp < node.maxHp) drawHealth(ctx, center.x - 34, bounds.top - 23, 68, node.hp / node.maxHp);
+}
+
+function drawRuinConnections(ctx: CanvasRenderingContext2D, ruin: FacilityRuin, state: GameState) {
+  const remainingCells = ruin.footprint.filter((hex) => cellAt(state.world, hex)?.surface === "rubble").map(hexCenter);
+  const start = remainingCells.length ? { x: remainingCells.reduce((total, point) => total + point.x, 0) / remainingCells.length, y: remainingCells.reduce((total, point) => total + point.y, 0) / remainingCells.length } : hexCenter(ruin.anchor);
+  const outlet = hexCenter(ruin.outlet);
+  const route = hexLine(ruin.anchor, ruin.outlet).map(hexCenter);
+  for (let index = 1; index < route.length; index += 1) {
+    const from = route[index - 1]; const to = route[index];
+    drawAtlasFrame(ctx, "worldConnections", index === route.length - 1 ? "cable-broken" : "cable-straight", (from.x + to.x) / 2, (from.y + to.y) / 2, { width: 62, rotation: Math.atan2(to.y - from.y, to.x - from.x), pivotY: .5 });
+  }
+  drawAtlasFrame(ctx, "worldConnections", "drain-clean", outlet.x, outlet.y + 7, { width: 61, pivotY: .55 });
+  drawAtlasFrame(ctx, "datacenter", "damaged-wall-rubble", start.x, start.y + 49, { width: ruin.boss ? 150 : 105 });
+  if (remainingCells.length > 1) drawAtlasFrame(ctx, "worldConnections", "rebar-seam", start.x + 46, start.y + 58, { width: 75, pivotY: .55 });
 }
 
 function drawRubble(ctx: CanvasRenderingContext2D, cell: HexCell) {
   const center = hexCenter(cell.hex);
   const recovering = cell.corruption <= 1;
-  drawAtlasFrame(ctx, "facilityGround", recovering ? "early-reclamation" : "damaged-slab-sludge", center.x, center.y + 5, { width: 92, pivotY: .52, flip: seeded(cell, 77) > .5 });
-  if (!recovering) drawAtlasFrame(ctx, "worldConnections", "rubble-seam", center.x + 7, center.y + 11, { width: 57, pivotY: .55, alpha: .92 });
+  drawAtlasFrame(ctx, "facilityGround", recovering ? "early-reclamation" : "damaged-slab-sludge", center.x, center.y + 5, { width: 70, pivotY: .52, flip: seeded(cell, 77) > .5 });
+  if (!recovering) drawAtlasFrame(ctx, "worldConnections", "rubble-seam", center.x + 7, center.y + 11, { width: 46, pivotY: .55, alpha: .92 });
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, ratio: number) {
@@ -430,8 +471,14 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   const cell = cellAt(state.world, plant)!;
   ctx.fillStyle = plant.kind === "rootreclaimer" ? "rgba(67,91,57,.55)" : "rgba(63,100,43,.45)";
   ctx.beginPath(); ctx.ellipse(center.x, center.y + 6, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
-  if (plant.kind === "rootreclaimer" && cell.corruption > 0) {
-    drawAtlasFrame(ctx, "worldConnections", "roots-reclaiming", center.x, center.y + 8, { width: 78, pivotY: .55 });
+  if (plant.kind === "rootreclaimer" && (cell.corruption > 0 || plant.reclaimUntil > state.elapsed)) {
+    const target = plant.reclaimTarget ? hexCenter(plant.reclaimTarget) : center;
+    const route = hexLine(plant, plant.reclaimTarget ?? plant).map(hexCenter);
+    for (let index = 1; index < route.length; index += 1) {
+      const from = route[index - 1]; const to = route[index];
+      drawAtlasFrame(ctx, "worldConnections", index % 2 ? "roots-bend" : "roots-straight", (from.x + to.x) / 2, (from.y + to.y) / 2, { width: 68, rotation: Math.atan2(to.y - from.y, to.x - from.x), pivotY: .5 });
+    }
+    drawAtlasFrame(ctx, "worldConnections", "roots-reclaiming", target.x, target.y + 8, { width: 78, pivotY: .55 });
   }
   const box = drawSprite(ctx, plantSpriteKey(plant), center.x, center.y + 7);
   drawHealth(ctx, center.x - 16, box.top - 7, 32, plant.hp / PLANTS[plant.kind].maxHp);
@@ -449,6 +496,27 @@ function drawEffects(ctx: CanvasRenderingContext2D, state: GameState) {
     ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(beam.from.x, beam.from.y); ctx.lineTo(beam.to.x, beam.to.y); ctx.stroke();
     ctx.globalAlpha = 1;
+  }
+  for (const effect of state.effects) {
+    const progress = 1 - effect.life / effect.maxLife;
+    const alpha = Math.sin(Math.PI * Math.min(1, progress));
+    ctx.save(); ctx.globalAlpha = alpha;
+    if (effect.kind === "impact" || effect.kind === "shutdown") {
+      ctx.fillStyle = effect.kind === "shutdown" ? "#c8d0ba" : "#e7c368";
+      for (let spark = 0; spark < 5; spark += 1) {
+        const angle = spark * 1.27 + effect.seed * .17;
+        const distance = 8 + progress * 25;
+        ctx.fillRect(Math.round(effect.position.x + Math.cos(angle) * distance), Math.round(effect.position.y + Math.sin(angle) * distance), 3, 2);
+      }
+    } else {
+      ctx.fillStyle = effect.kind === "reclaim" ? "#9bc875" : "#8a7458";
+      const radius = 10 + progress * (effect.kind === "collapse" ? 58 : 34);
+      for (let mote = 0; mote < 7; mote += 1) {
+        const angle = mote * .9 + effect.seed * .13;
+        ctx.fillRect(Math.round(effect.position.x + Math.cos(angle) * radius), Math.round(effect.position.y + Math.sin(angle) * radius * .45), 4, 3);
+      }
+    }
+    ctx.restore();
   }
 }
 
@@ -473,9 +541,10 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   for (const node of state.nodes) drawFacilityGround(ctx, node);
   drawCorruption(ctx, state);
   for (const node of state.nodes) drawNodeConnections(ctx, node, state);
+  for (const ruin of state.ruins) drawRuinConnections(ctx, ruin, state);
   for (const cell of state.world.cells.values()) if (cell.surface === "rubble") drawRubble(ctx, cell);
 
-  const underConstruction = (object: WorldObject) => state.nodes.some((node) => object.footprint.some((cell) => node.footprint.some((facilityCell) => facilityCell.q === cell.q && facilityCell.r === cell.r)));
+  const underConstruction = (object: WorldObject) => [...state.nodes, ...state.ruins].some((facility) => object.footprint.some((cell) => facility.footprint.some((facilityCell) => facilityCell.q === cell.q && facilityCell.r === cell.r && cellAt(state.world, facilityCell)?.surface !== "meadow")));
   const underlays = state.world.objects.filter((object) => (object.kind === "pond" || object.kind === "flowers") && !underConstruction(object));
   for (const object of underlays) drawWorldObject(ctx, object, state);
   const renderables = [
@@ -533,7 +602,8 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
     preloadSprites();
     let best = 0;
     try { best = Number(window.localStorage.getItem(STORAGE_KEY) ?? 0) || 0; } catch { /* optional local persistence */ }
-    stateRef.current = createGameState(best, "normal", "menu");
+    const reviewState = requestedReviewState();
+    stateRef.current = reviewState ? createReviewGameState(best, reviewState) : createGameState(best, "normal", "menu");
     setUi(toUi(stateRef.current));
   }, []);
 
@@ -623,7 +693,8 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
 
   const start = () => {
     const best = stateRef.current?.best ?? 0;
-    stateRef.current = createGameState(best, difficulty);
+    const reviewState = requestedReviewState();
+    stateRef.current = reviewState ? createReviewGameState(best, reviewState) : createGameState(best, difficulty);
     lastFrameRef.current = 0;
     cameraRef.current = createCamera();
     setUi(toUi(stateRef.current));
@@ -685,7 +756,7 @@ export default function RewildGame({ onViewChange = () => {}, view = "all" }: { 
             <div className="rw-overlay-actions"><button onClick={start}>{ui.status === "menu" ? "Enter the living field" : "Fight again"}</button></div>
           </div>}
           {ui.status === "paused" && <div className="rw-pause-card"><span>PAUSED</span><strong>The landscape is holding its breath.</strong><button onClick={togglePause}>Resume</button></div>}
-          <div className={`rw-build-menu${overlay ? " rw-build-menu-hidden" : ""}`} aria-label="Build menu" aria-hidden={overlay}>
+          <div className={`rw-build-menu${overlay || ui.reviewState ? " rw-build-menu-hidden" : ""}`} aria-label="Build menu" aria-hidden={overlay || Boolean(ui.reviewState)}>
             <div className="rw-build-menu-head"><span>Grow</span></div>
             <div className="rw-plant-bar" aria-label="Plants">{PLANT_ORDER.map((kind, index) => {
               const config = PLANTS[kind]; const locked = ui.wave < config.unlockWave;
