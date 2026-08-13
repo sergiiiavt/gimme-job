@@ -643,7 +643,7 @@
       "id": "regulated-change-control-migration",
       "level": "Lead",
       "category": "Regulated domains",
-      "prevalence": "Very common",
+      "prevalence": "Specialist",
       "kind": "Scenario",
       "question": "What should regulated change control require for a validated data migration after a safety-impacting defect?",
       "shortAnswer": "Open a controlled change linked to the defect, affected requirements, risk assessment and intended migration, with independent review appropriate to the product's safety impact. Approve versioned transformation rules and reconciliation criteria before execution, qualify tools where required and preserve source, exceptions, approvals and results in an audit trail. Test rollback, partial failure, data integrity and representative safety workflows, then complete impact-based regression and formal release authorization before closing the change.",

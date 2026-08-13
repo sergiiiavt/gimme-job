@@ -2126,17 +2126,17 @@
       "category": "Agile and delivery",
       "kind": "Theory",
       "question": "How do Scrum and Kanban shape planning and quality work differently?",
-      "shortAnswer": "Scrum uses a defined framework of accountabilities, events and sprint commitments; Kanban manages flow through visualization, work-in-progress limits and explicit policies. Either can support quality, and teams may combine practices if responsibilities remain clear.",
+      "shortAnswer": "Scrum uses a defined framework of accountabilities, timeboxed Sprints and Scrum events organized around a Sprint Goal; Kanban manages flow through visualization, work-in-progress limits and explicit policies. In current Scrum, the team's real commitment is the Sprint Goal (and the Product Goal and Definition of Done) — the specific set of Sprint Backlog items selected is a forecast that can evolve as the team learns more during the Sprint, not a fixed promise to deliver every planned item. Either framework can support quality, and teams may combine practices if responsibilities remain clear.",
       "strongAnswerSignals": [
         "framework versus flow method",
-        "WIP and commitments",
+        "WIP limits, and the real Scrum commitment is the Sprint Goal, not every forecast backlog item",
         "quality is not method-specific"
       ],
       "questionUk": "Як Scrum і Kanban по-різному формують планування та роботу над якістю?",
-      "shortAnswerUk": "Scrum спирається на визначений фреймворк з ролями (accountabilities), подіями та зобов'язаннями на спринт; Kanban керує потоком через візуалізацію, ліміти незавершеної роботи (WIP) та явні політики. Обидва підходи можуть підтримувати якість, і команди можуть поєднувати практики, якщо відповідальність залишається чіткою.",
+      "shortAnswerUk": "Scrum спирається на визначений фреймворк з ролями (accountabilities), таймбоксованими спринтами та подіями Scrum, організованими навколо мети спринту (Sprint Goal); Kanban керує потоком через візуалізацію, ліміти незавершеної роботи (WIP) та явні політики. У чинному Scrum справжнім зобов'язанням команди є мета спринту (а також мета продукту й Definition of Done) — конкретний набір елементів Sprint Backlog, обраний на спринт, є прогнозом, який може змінюватися в міру того, як команда дізнається більше під час спринту, а не фіксованою обіцянкою доставити кожен запланований елемент. Обидва фреймворки можуть підтримувати якість, і команди можуть поєднувати практики, якщо відповідальність залишається чіткою.",
       "strongAnswerSignalsUk": [
         "фреймворк проти методу керування потоком",
-        "ліміти WIP і зобов'язання",
+        "ліміти WIP, і справжнє зобов'язання Scrum — це мета спринту, а не кожен запланований елемент",
         "якість не прив'язана до конкретного методу"
       ],
       "example": "A team switched from two-week Scrum sprints to Kanban for a support-heavy backend service, replacing sprint testing commitments with a WIP limit of two tickets per QA engineer, which reduced context switching and cut average defect turnaround time by half.",
@@ -2990,7 +2990,7 @@
     },
     {
       "id": "expanded-fundamentals-testing-objectives-after-a-high-impact-production-defect",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Fundamentals",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in testing objectives after a high-impact production defect?",
@@ -3196,7 +3196,7 @@
     },
     {
       "id": "expanded-fundamentals-verification-and-validation-when-stakeholders-disagree-about-acceptable-quality",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Fundamentals",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in verification and validation when stakeholders disagree about acceptable quality?",
@@ -3539,7 +3539,7 @@
     },
     {
       "id": "expanded-test-design-boundary-values-for-a-rule-heavy-pricing-flow",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Test design",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about boundary values for a rule-heavy pricing flow?",
@@ -3744,7 +3744,7 @@
     },
     {
       "id": "expanded-test-design-decision-tables-with-many-interacting-inputs",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Test design",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about decision tables with many interacting inputs?",
@@ -3988,15 +3988,15 @@
       "category": "Documentation and defects",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for test plans for a defect that cannot be reproduced reliably?",
-      "shortAnswer": "Build the smallest useful model of the behavior by identifying who will use the artifact and which decision or handoff it must enable. Focus on test plans for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures. Release only when another person can reproduce the result and understand the remaining risk without private context.",
+      "shortAnswer": "Build the smallest useful model of the behavior by identifying who will use the artifact and which decision or handoff it must enable. Focus on test plans for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures when possible, but do not require stable reproduction itself as the release gate for a defect like this: capture environment, timing, log and trace evidence, an estimated reproduction rate, and the suspected triggering conditions instead, and release only once that evidence lets someone else understand the remaining risk without private context.",
       "strongAnswerSignals": [
         "explicit risk and test oracle for test plans",
         "keeps documentation decision-focused",
-        "preserves traceability and reproducibility",
+        "does not require stable reproduction itself as a gate; captures rate, conditions and evidence instead",
         "measurable evidence and residual-risk statement"
       ],
       "questionUk": "Як би ви спроєктували цілеспрямовану тестову стратегію для тест-планів для дефекту, який не вдається стабільно відтворити?",
-      "shortAnswerUk": "Побудуйте найменшу корисну модель поведінки, визначивши, хто використовуватиме артефакт і яке рішення чи передачу роботи він має уможливити. Зосередьтеся на тест-планах для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версіоновані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Покривайте відповідальність за артефакт, простежуваність, докази, винятки та критерії закриття. Тримайте дані й залежності під контролем настільки, щоб відтворювати збої. Випускайте лише тоді, коли інша людина може відтворити результат і зрозуміти залишковий ризик без приватного контексту.",
+      "shortAnswerUk": "Побудуйте найменшу корисну модель поведінки, визначивши, хто використовуватиме артефакт і яке рішення чи передачу роботи він має уможливити. Зосередьтеся на тест-планах для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версіоновані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Покривайте відповідальність за артефакт, простежуваність, докази, винятки та критерії закриття. Тримайте дані й залежності під контролем настільки, щоб за можливості відтворювати збої, але для такого дефекту не вимагайте самого стабільного відтворення як умови релізу: натомість фіксуйте докази середовища, часу, логів і трасування, оцінену частоту відтворення та підозрювані умови виникнення, і випускайте реліз лише тоді, коли ці докази дозволяють іншій людині зрозуміти залишковий ризик без приватного контексту.",
       "strongAnswerSignalsUk": [
         "явний ризик і тестовий оракул для тест-планів",
         "тримає документацію орієнтованою на рішення",
@@ -4052,7 +4052,7 @@
     },
     {
       "id": "expanded-documentation-defects-test-plans-with-remote-stakeholders-who-need-concise-decisions",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Documentation and defects",
       "kind": "Automation",
       "question": "What would you automate for test plans with remote stakeholders who need concise decisions, and what would you leave manual?",
@@ -4159,15 +4159,15 @@
       "category": "Documentation and defects",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for test cases and checklists for a defect that cannot be reproduced reliably?",
-      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before identifying who will use the artifact and which decision or handoff it must enable. Focus on test cases and checklists for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures. Release only when another person can reproduce the result and understand the remaining risk without private context.",
+      "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before identifying who will use the artifact and which decision or handoff it must enable. Focus on test cases and checklists for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures when possible, but do not require stable reproduction itself as the release gate for a defect like this: capture environment, timing, log and trace evidence, an estimated reproduction rate, and the suspected triggering conditions instead, and release only once that evidence lets someone else understand the remaining risk without private context.",
       "strongAnswerSignals": [
         "explicit risk and test oracle for test cases and checklists",
         "keeps documentation decision-focused",
-        "preserves traceability and reproducibility",
+        "does not require stable reproduction itself as a gate; captures rate, conditions and evidence instead",
         "measurable evidence and residual-risk statement"
       ],
       "questionUk": "Які ризики та тестові оракули найважливіші для тестових кейсів і чек-листів для дефекту, який не вдається стабільно відтворити?",
-      "shortAnswerUk": "Визначте пріоритетність ризиків, здатних звести нанівець результат для користувача чи бізнесу, ще до з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — тестові кейси та чек-листи для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб можна було відтворити збій. Випускайте реліз лише тоді, коли інша людина може відтворити результат і зрозуміти залишковий ризик без доступу до вашого приватного контексту.",
+      "shortAnswerUk": "Визначте пріоритетність ризиків, здатних звести нанівець результат для користувача чи бізнесу, ще до з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — тестові кейси та чек-листи для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб за можливості можна було відтворити збій, але для такого дефекту не вимагайте самого стабільного відтворення як умови релізу: натомість фіксуйте докази середовища, часу, логів і трасування, оцінену частоту відтворення та підозрювані умови виникнення, і випускайте реліз лише тоді, коли ці докази дозволяють іншій людині зрозуміти залишковий ризик без приватного контексту.",
       "strongAnswerSignalsUk": [
         "явний ризик і тестовий оракул для тестових кейсів і чек-листів",
         "документація залишається орієнтованою на ухвалення рішень",
@@ -4258,7 +4258,7 @@
     },
     {
       "id": "expanded-documentation-defects-requirements-traceability-across-several-teams-and-releases",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Documentation and defects",
       "kind": "Automation",
       "question": "What would you automate for requirements traceability across several teams and releases, and what would you leave manual?",
@@ -4330,15 +4330,15 @@
       "category": "Documentation and defects",
       "kind": "Scenario",
       "question": "How would you approach requirements traceability for a defect that cannot be reproduced reliably?",
-      "shortAnswer": "Start by identifying who will use the artifact and which decision or handoff it must enable. Focus on requirements traceability for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures. Release only when another person can reproduce the result and understand the remaining risk without private context.",
+      "shortAnswer": "Start by identifying who will use the artifact and which decision or handoff it must enable. Focus on requirements traceability for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures when possible, but do not require stable reproduction itself as the release gate for a defect like this: capture environment, timing, log and trace evidence, an estimated reproduction rate, and the suspected triggering conditions instead, and release only once that evidence lets someone else understand the remaining risk without private context.",
       "strongAnswerSignals": [
         "explicit risk and test oracle for requirements traceability",
         "keeps documentation decision-focused",
-        "preserves traceability and reproducibility",
+        "does not require stable reproduction itself as a gate; captures rate, conditions and evidence instead",
         "measurable evidence and residual-risk statement"
       ],
       "questionUk": "Як би ви підійшли до трасованості вимог для дефекту, який не вдається стабільно відтворити?",
-      "shortAnswerUk": "Почніть із з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — трасованість вимог для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб можна було відтворити збій. Випускайте реліз лише тоді, коли інша людина може відтворити результат і зрозуміти залишковий ризик без доступу до вашого приватного контексту.",
+      "shortAnswerUk": "Почніть із з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — трасованість вимог для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб за можливості можна було відтворити збій, але для такого дефекту не вимагайте самого стабільного відтворення як умови релізу: натомість фіксуйте докази середовища, часу, логів і трасування, оцінену частоту відтворення та підозрювані умови виникнення, і випускайте реліз лише тоді, коли ці докази дозволяють іншій людині зрозуміти залишковий ризик без приватного контексту.",
       "strongAnswerSignalsUk": [
         "явний ризик і тестовий оракул для трасованості вимог",
         "документація залишається орієнтованою на ухвалення рішень",
@@ -4463,7 +4463,7 @@
     },
     {
       "id": "expanded-documentation-defects-defect-reports-when-evidence-must-survive-an-audit",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Documentation and defects",
       "kind": "Automation",
       "question": "What would you automate for defect reports when evidence must survive an audit, and what would you leave manual?",
@@ -4502,15 +4502,15 @@
       "category": "Documentation and defects",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about defect reports for a defect that cannot be reproduced reliably?",
-      "shortAnswer": "Frame the release decision by identifying who will use the artifact and which decision or handoff it must enable. Focus on defect reports for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures. Release only when another person can reproduce the result and understand the remaining risk without private context.",
+      "shortAnswer": "Frame the release decision by identifying who will use the artifact and which decision or handoff it must enable. Focus on defect reports for a defect that cannot be reproduced reliably. Use versioned requirements, reproducible observations and agreed workflow states as the oracle. Cover ownership, traceability, evidence, exceptions and closure criteria. Keep data and dependencies controlled enough to reproduce failures when possible, but do not require stable reproduction itself as the release gate for a defect like this: capture environment, timing, log and trace evidence, an estimated reproduction rate, and the suspected triggering conditions instead, and release only once that evidence lets someone else understand the remaining risk without private context.",
       "strongAnswerSignals": [
         "explicit risk and test oracle for defect reports",
         "keeps documentation decision-focused",
-        "preserves traceability and reproducibility",
+        "does not require stable reproduction itself as a gate; captures rate, conditions and evidence instead",
         "measurable evidence and residual-risk statement"
       ],
       "questionUk": "Які докази ви вимагали б для ухвалення рішення про реліз щодо звітів про дефекти для дефекту, який не вдається стабільно відтворити?",
-      "shortAnswerUk": "Сформулюйте рішення про реліз, почавши із з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — звіти про дефекти для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб можна було відтворити збій. Випускайте реліз лише тоді, коли інша людина може відтворити результат і зрозуміти залишковий ризик без доступу до вашого приватного контексту.",
+      "shortAnswerUk": "Сформулюйте рішення про реліз, почавши із з'ясування того, хто користуватиметься артефактом і яке рішення або передавання роботи він має забезпечити. У фокусі — звіти про дефекти для дефекту, який не вдається стабільно відтворити. Як оракул використовуйте версійовані вимоги, відтворювані спостереження та узгоджені стани робочого процесу. Охопіть відповідальність за артефакт, трасованість, докази, винятки та критерії закриття. Тримайте дані та залежності під контролем настільки, щоб за можливості можна було відтворити збій, але для такого дефекту не вимагайте самого стабільного відтворення як умови релізу: натомість фіксуйте докази середовища, часу, логів і трасування, оцінену частоту відтворення та підозрювані умови виникнення, і випускайте реліз лише тоді, коли ці докази дозволяють іншій людині зрозуміти залишковий ризик без приватного контексту.",
       "strongAnswerSignalsUk": [
         "явний ризик і тестовий оракул для звітів про дефекти",
         "документація залишається орієнтованою на ухвалення рішень",
@@ -4706,7 +4706,7 @@
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-during-concurrent-updates",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for HTTP caching and conditional requests during concurrent updates?",
@@ -4917,7 +4917,7 @@
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-when-a-downstream-dependency-degrades",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Web, API and data",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for REST resource contracts when a downstream dependency degrades?",
@@ -5266,7 +5266,7 @@
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-while-the-network-switches-between-wi-fi-and-cellular",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Mobile",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about device and OS fragmentation while the network switches between Wi-Fi and cellular?",
@@ -5471,7 +5471,7 @@
     },
     {
       "id": "expanded-mobile-permissions-and-privacy-under-low-memory-and-low-battery",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Mobile",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about permissions and privacy under low memory and low battery?",
@@ -5677,7 +5677,7 @@
     },
     {
       "id": "expanded-mobile-offline-synchronization-after-the-app-is-killed-in-the-background",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Mobile",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about offline synchronization after the app is killed in the background?",
@@ -6020,7 +6020,7 @@
     },
     {
       "id": "expanded-automation-ci-stable-locators-for-a-rapidly-changing-user-interface",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Automation and CI",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about stable locators for a rapidly changing user interface?",
@@ -6225,7 +6225,7 @@
     },
     {
       "id": "expanded-automation-ci-test-isolation-across-pull-requests-and-nightly-suites",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Automation and CI",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about test isolation across pull requests and nightly suites?",
@@ -6568,7 +6568,7 @@
     },
     {
       "id": "expanded-programming-object-composition-inside-a-shared-test-library",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Programming",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about object composition inside a shared test library?",
@@ -6773,7 +6773,7 @@
     },
     {
       "id": "expanded-programming-error-handling-when-operations-can-fail-or-time-out",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Programming",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about error handling when operations can fail or time out?",
@@ -6979,7 +6979,7 @@
     },
     {
       "id": "expanded-programming-asynchronous-code-under-parallel-execution",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Programming",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about asynchronous code under parallel execution?",
@@ -7322,7 +7322,7 @@
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-across-development-staging-and-production",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Infrastructure",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about service discovery and DNS across development, staging and production?",
@@ -7527,7 +7527,7 @@
     },
     {
       "id": "expanded-infrastructure-environment-configuration-during-a-rolling-deployment",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Infrastructure",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about environment configuration during a rolling deployment?",
@@ -7733,7 +7733,7 @@
     },
     {
       "id": "expanded-infrastructure-secrets-and-identity-when-a-dependency-is-reachable-only-intermittently",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Infrastructure",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about secrets and identity when a dependency is reachable only intermittently?",
@@ -8076,7 +8076,7 @@
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-at-normal-and-peak-traffic",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Performance and resilience",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about latency percentiles at normal and peak traffic?",
@@ -8281,7 +8281,7 @@
     },
     {
       "id": "expanded-performance-resilience-capacity-limits-during-a-downstream-slowdown",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Performance and resilience",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about capacity limits during a downstream slowdown?",
@@ -8487,7 +8487,7 @@
     },
     {
       "id": "expanded-performance-resilience-timeouts-and-retries-with-bursty-arrivals",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Performance and resilience",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about timeouts and retries with bursty arrivals?",
@@ -8830,7 +8830,7 @@
     },
     {
       "id": "expanded-security-accessibility-session-management-across-user-roles-and-tenants",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Security and accessibility",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about session management across user roles and tenants?",
@@ -9035,7 +9035,7 @@
     },
     {
       "id": "expanded-security-accessibility-input-handling-after-authentication-state-changes",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Security and accessibility",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about input handling after authentication state changes?",
@@ -9241,7 +9241,7 @@
     },
     {
       "id": "expanded-security-accessibility-sensitive-data-exposure-with-malicious-and-malformed-input",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Security and accessibility",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about sensitive-data exposure with malicious and malformed input?",
@@ -9549,7 +9549,7 @@
     },
     {
       "id": "expanded-agile-delivery-refinement-after-escaped-defects-increase",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Agile and delivery",
       "kind": "Automation",
       "question": "What would you automate for refinement after escaped defects increase, and what would you leave manual?",
@@ -9755,7 +9755,7 @@
     },
     {
       "id": "expanded-agile-delivery-small-batch-delivery-when-scope-changes-mid-iteration",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Agile and delivery",
       "kind": "Automation",
       "question": "What would you automate for small-batch delivery when scope changes mid-iteration, and what would you leave manual?",
@@ -9960,7 +9960,7 @@
     },
     {
       "id": "expanded-agile-delivery-work-in-progress-limits-with-several-teams-sharing-one-service",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Agile and delivery",
       "kind": "Automation",
       "question": "What would you automate for work-in-progress limits with several teams sharing one service, and what would you leave manual?",
@@ -10304,7 +10304,7 @@
     },
     {
       "id": "expanded-strategy-risk-test-estimation-for-a-new-product-with-little-historical-data",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Strategy and risk",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about test estimation for a new product with little historical data?",
@@ -10509,7 +10509,7 @@
     },
     {
       "id": "expanded-strategy-risk-coverage-strategy-when-time-is-cut-in-half",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Strategy and risk",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about coverage strategy when time is cut in half?",
@@ -10680,7 +10680,7 @@
     },
     {
       "id": "expanded-leadership-quality-ownership-when-delivery-and-quality-goals-appear-to-conflict",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Leadership",
       "kind": "Scenario",
       "question": "How would you approach quality ownership when delivery and quality goals appear to conflict?",
@@ -10751,19 +10751,19 @@
       "id": "expanded-leadership-quality-ownership-after-trust-has-been-damaged",
       "level": "Middle",
       "category": "Leadership",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for quality ownership after trust has been damaged?",
-      "shortAnswer": "Build the smallest useful model of the behavior by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on quality ownership after trust has been damaged. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "How would you rebuild the team's ownership of quality after trust in QA sign-off has been damaged?",
+      "shortAnswer": "Rebuild the behavior deliberately by framing the shared outcome, listening for the constraints that led to the trust break, and making the decision process transparent going forward. Focus on making quality ownership visible again after trust has been damaged. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep evidence and next steps concrete enough that progress can be checked, not just asserted. Move on only when people understand the decision, risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for quality ownership",
+        "explicit shared outcome and evidence bar for rebuilding quality ownership",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Як би ви розробили сфокусовану тест-стратегію для відповідальності за якість, після того, як довіру підірвано?",
-      "shortAnswerUk": "Побудуйте найменшу корисну модель поведінки, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на відповідальності за якість, після того, як довіру підірвано. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Як би ви відновили відповідальність команди за якість після того, як довіру до підпису QA підірвано?",
+      "shortAnswerUk": "Відновлюйте поведінку навмисно, спираючись на формулювання спільного результату, вислуховування обмежень, що призвели до підриву довіри, та забезпечення прозорості процесу ухвалення рішень надалі. Зосередьтеся на тому, щоб зробити відповідальність за якість знову видимою після того, як довіру підірвано. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте докази й наступні кроки достатньо конкретними, щоб прогрес можна було перевірити, а не лише задекларувати. Рухайтеся далі лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для відповідальності за якість",
+        "явний спільний результат і планка доказів для відновлення відповідальності за якість",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -10854,19 +10854,19 @@
       "id": "expanded-leadership-coaching-when-delivery-and-quality-goals-appear-to-conflict",
       "level": "Lead",
       "category": "Leadership",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about coaching when delivery and quality goals appear to conflict?",
-      "shortAnswer": "Frame the release decision by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on coaching when delivery and quality goals appear to conflict. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "How would you coach a team member through defending a quality call while a release decision is due and delivery pressure is high?",
+      "shortAnswer": "Coach through the tension deliberately by framing the shared outcome, listening for the constraints on both sides, and making the decision process transparent. Focus on coaching the person through a release decision when delivery and quality goals appear to conflict. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep the coaching evidence-based and concrete enough that the person's growth is checkable, not just asserted. Move on only when people understand the decision, risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for coaching",
+        "explicit shared outcome and evidence bar for coaching through the conflict",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Які докази вам знадобилися б, щоб ухвалити рішення про реліз щодо коучингу, коли цілі щодо термінів постачання та якості, здається, конфліктують?",
-      "shortAnswerUk": "Сформулюйте рішення про реліз, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на коучингу, коли цілі щодо термінів постачання та якості, здається, конфліктують. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Як би ви коучили члена команди, допомагаючи відстояти рішення щодо якості, коли рішення про реліз уже треба ухвалити, а тиск термінів постачання високий?",
+      "shortAnswerUk": "Коучте крізь це напруження навмисно, спираючись на формулювання спільного результату, вислуховування обмежень з обох боків та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на коучингу людини через рішення про реліз, коли цілі щодо термінів постачання та якості, здається, конфліктують. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте коучинг заснованим на доказах і достатньо конкретним, щоб зростання людини можна було перевірити, а не лише задекларувати. Рухайтеся далі лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для коучингу",
+        "явний спільний результат і планка доказів для коучингу крізь конфлікт",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -10886,7 +10886,7 @@
     },
     {
       "id": "expanded-leadership-coaching-with-a-distributed-cross-functional-team",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Leadership",
       "kind": "Scenario",
       "question": "How would you approach coaching with a distributed cross-functional team?",
@@ -10956,19 +10956,19 @@
       "id": "expanded-leadership-coaching-while-introducing-a-major-practice-change",
       "level": "Middle",
       "category": "Leadership",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for coaching while introducing a major practice change?",
-      "shortAnswer": "Build the smallest useful model of the behavior by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on coaching while introducing a major practice change. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "How would you coach a team through adopting a major practice change, one small step at a time?",
+      "shortAnswer": "Coach the change through in small, verifiable steps by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on coaching the team through adopting a major practice change. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep each step's evidence concrete enough that the team can decide whether it actually helped. Move on only when people understand the decision, risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for coaching",
+        "explicit shared outcome and evidence bar for coaching through the change",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Як би ви розробили сфокусовану тест-стратегію для коучингу під час впровадження суттєвої зміни в практиках?",
-      "shortAnswerUk": "Побудуйте найменшу корисну модель поведінки, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на коучингу під час впровадження суттєвої зміни в практиках. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Як би ви коучили команду через впровадження суттєвої зміни в практиках, крок за кроком?",
+      "shortAnswerUk": "Проводьте зміну через малі, перевірювані кроки, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на коучингу команди через впровадження суттєвої зміни в практиках. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте докази кожного кроку достатньо конкретними, щоб команда могла вирішити, чи справді він допоміг. Рухайтеся далі лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для коучингу",
+        "явний спільний результат і планка доказів для коучингу крізь зміну",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -11059,19 +11059,19 @@
       "id": "expanded-leadership-stakeholder-alignment-with-a-distributed-cross-functional-team",
       "level": "Lead",
       "category": "Leadership",
-      "kind": "Release decision",
-      "question": "What evidence would you require to make a release decision about stakeholder alignment with a distributed cross-functional team?",
-      "shortAnswer": "Frame the release decision by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on stakeholder alignment with a distributed cross-functional team. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "What alignment and evidence would you seek from a distributed cross-functional team of stakeholders before a release decision is due?",
+      "shortAnswer": "Seek alignment deliberately by framing the shared outcome, listening for constraints across time zones and functions, and making the decision process transparent. Focus on building stakeholder alignment across a distributed cross-functional team ahead of the release decision. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep evidence concrete and asynchronous-friendly enough that every stakeholder can actually weigh in. Move on to the release decision only when people understand it, its risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for stakeholder alignment",
+        "explicit shared outcome and evidence bar for stakeholder alignment",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Які докази вам знадобилися б, щоб ухвалити рішення про реліз щодо узгодження зі стейкхолдерами із розподіленою міжфункціональною командою?",
-      "shortAnswerUk": "Сформулюйте рішення про реліз, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на узгодженні зі стейкхолдерами із розподіленою міжфункціональною командою. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Якого узгодження й доказів ви шукали б від розподіленої міжфункціональної команди стейкхолдерів перед тим, як ухвалити рішення про реліз?",
+      "shortAnswerUk": "Шукайте узгодження навмисно, спираючись на формулювання спільного результату, вислуховування обмежень крізь часові пояси та функції, та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на побудові узгодженості стейкхолдерів у розподіленій міжфункціональній команді перед рішенням про реліз. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте докази достатньо конкретними й зручними для асинхронної роботи, щоб кожен стейкхолдер міг реально висловитися. Переходьте до рішення про реліз лише тоді, коли люди розуміють його, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для узгодження зі стейкхолдерами",
+        "явний спільний результат і планка доказів для узгодження зі стейкхолдерами",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -11091,7 +11091,7 @@
     },
     {
       "id": "expanded-leadership-stakeholder-alignment-after-trust-has-been-damaged",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Leadership",
       "kind": "Scenario",
       "question": "How would you approach stakeholder alignment after trust has been damaged?",
@@ -11162,19 +11162,19 @@
       "id": "expanded-leadership-stakeholder-alignment-when-evidence-is-incomplete-but-a-decision-is-due",
       "level": "Middle",
       "category": "Leadership",
-      "kind": "Test design",
-      "question": "How would you design a focused test strategy for stakeholder alignment when evidence is incomplete but a decision is due?",
-      "shortAnswer": "Build the smallest useful model of the behavior by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on stakeholder alignment when evidence is incomplete but a decision is due. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "How would you align stakeholders around a decision when the supporting evidence is still incomplete but the decision is due?",
+      "shortAnswer": "Align people around the smallest honest picture of the evidence by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on aligning stakeholders when evidence is incomplete but a decision is due. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep what is known, what is missing and the residual risk concrete enough to check, not just asserted. Move on only when people understand the decision, risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for stakeholder alignment",
+        "explicit shared outcome and evidence bar for aligning stakeholders on incomplete evidence",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Як би ви розробили сфокусовану тест-стратегію для узгодження зі стейкхолдерами, коли доказів недостатньо, а рішення вже треба ухвалити?",
-      "shortAnswerUk": "Побудуйте найменшу корисну модель поведінки, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на узгодженні зі стейкхолдерами, коли доказів недостатньо, а рішення вже треба ухвалити. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Як би ви узгодили стейкхолдерів навколо рішення, коли підтверджувальних доказів ще недостатньо, а рішення вже треба ухвалити?",
+      "shortAnswerUk": "Узгоджуйте людей навколо найменшої чесної картини наявних доказів, спираючись на формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на узгодженні стейкхолдерів, коли доказів недостатньо, а рішення вже треба ухвалити. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте те, що відомо, чого бракує, та залишковий ризик достатньо конкретними, щоб їх можна було перевірити, а не лише задекларувати. Рухайтеся далі лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для узгодження зі стейкхолдерами",
+        "явний спільний результат і планка доказів для узгодження стейкхолдерів на неповних даних",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -11230,19 +11230,19 @@
       "id": "expanded-leadership-conflict-resolution-with-a-distributed-cross-functional-team",
       "level": "Senior",
       "category": "Leadership",
-      "kind": "Automation",
-      "question": "What would you automate for conflict resolution with a distributed cross-functional team, and what would you leave manual?",
-      "shortAnswer": "Before automating, begin by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on conflict resolution with a distributed cross-functional team. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep data and dependencies controlled enough to reproduce failures. Release only when people understand the decision, risks, next actions and how success will be measured.",
+      "kind": "Leadership",
+      "question": "Which supporting signals or workflows would you automate around conflict resolution in a distributed cross-functional team, while keeping the resolution itself a human, synchronous process?",
+      "shortAnswer": "Before automating anything, begin by framing the shared outcome, listening for constraints and making the decision process transparent. Focus on automating the supporting visibility around conflict resolution in a distributed cross-functional team, while deliberately keeping the actual conflict conversations manual and synchronous. Use observable team and product outcomes rather than activity or personal preference as the oracle. Cover alignment, ownership, capability, feedback and follow-through. Keep the automated signals concrete enough that people can act on them, not just watch a dashboard. Move on only when people understand the decision, risks, next actions and how success will be measured.",
       "strongAnswerSignals": [
-        "explicit risk and test oracle for conflict resolution",
+        "explicit shared outcome and evidence bar for what stays human in conflict resolution",
         "uses a concrete evidence-based example",
         "balances empathy, clarity and accountability",
         "measurable evidence and residual-risk statement"
       ],
-      "questionUk": "Що б ви автоматизували для вирішення конфліктів із розподіленою міжфункціональною командою, а що залишили б ручним?",
-      "shortAnswerUk": "Перш ніж автоматизувати, почніть із формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на вирішенні конфліктів із розподіленою міжфункціональною командою. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте дані та залежності під достатнім контролем, щоб мати змогу відтворити збої. Завершуйте лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
+      "questionUk": "Які допоміжні сигнали чи робочі процеси ви автоматизували б навколо вирішення конфліктів у розподіленій міжфункціональній команді, залишаючи саме вирішення людським, синхронним процесом?",
+      "shortAnswerUk": "Перш ніж щось автоматизувати, почніть із формулювання спільного результату, вислуховування обмежень та забезпечення прозорості процесу ухвалення рішень. Зосередьтеся на автоматизації допоміжної видимості навколо вирішення конфліктів у розподіленій міжфункціональній команді, свідомо залишаючи самі розмови про конфлікт ручними й синхронними. Як оракул використовуйте спостережувані результати команди та продукту, а не активність чи особисті вподобання. Охопіть узгодженість, відповідальність, спроможність, зворотний зв'язок та доведення справи до кінця. Тримайте автоматизовані сигнали достатньо конкретними, щоб люди могли на них діяти, а не просто дивитися на дашборд. Рухайтеся далі лише тоді, коли люди розуміють рішення, ризики, наступні кроки та те, як вимірюватиметься успіх.",
       "strongAnswerSignalsUk": [
-        "явний ризик і тестовий оракул для вирішення конфліктів",
+        "явний спільний результат і планка доказів для того, що залишається людським у вирішенні конфліктів",
         "використовує конкретний приклад, підкріплений фактами",
         "балансує емпатію, чіткість та відповідальність",
         "вимірювані докази та констатація залишкового ризику"
@@ -11445,7 +11445,7 @@
     },
     {
       "id": "expanded-practical-an-elevator-with-no-written-requirements",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about an elevator with no written requirements?",
@@ -11662,7 +11662,7 @@
     },
     {
       "id": "expanded-practical-a-payment-checkout-during-a-thirty-minute-interview-exercise",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about a payment checkout during a thirty-minute interview exercise?",
@@ -11880,7 +11880,7 @@
     },
     {
       "id": "expanded-practical-a-file-upload-after-one-vague-customer-complaint",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Practical tasks",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about a file upload after one vague customer complaint?",
@@ -12202,7 +12202,7 @@
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-with-untrusted-retrieved-content-and-external-tools",
-      "level": "Junior",
+      "level": "Senior",
       "category": "AI, ML and LLM",
       "kind": "Automation",
       "question": "What would you automate for training and evaluation data with untrusted retrieved content and external tools, and what would you leave manual?",
@@ -12414,7 +12414,7 @@
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-with-imbalanced-or-sparse-examples",
-      "level": "Junior",
+      "level": "Middle",
       "category": "AI, ML and LLM",
       "kind": "Automation",
       "question": "What would you automate for model drift with imbalanced or sparse examples, and what would you leave manual?",
@@ -12625,7 +12625,7 @@
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-after-a-model-or-prompt-change",
-      "level": "Junior",
+      "level": "Senior",
       "category": "AI, ML and LLM",
       "kind": "Automation",
       "question": "What would you automate for LLM answer quality after a model or prompt change, and what would you leave manual?",
@@ -12837,7 +12837,7 @@
     },
     {
       "id": "expanded-ai-ml-llm-retrieval-augmented-generation-for-a-high-stakes-user-decision",
-      "level": "Junior",
+      "level": "Senior",
       "category": "AI, ML and LLM",
       "kind": "Automation",
       "question": "What would you automate for retrieval-augmented generation for a high-stakes user decision, and what would you leave manual?",
@@ -13154,7 +13154,7 @@
     },
     {
       "id": "expanded-observability-production-structured-logs-after-telemetry-volume-or-cardinality-suddenly-grows",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Observability and production",
       "kind": "Automation",
       "question": "What would you automate for structured logs after telemetry volume or cardinality suddenly grows, and what would you leave manual?",
@@ -13366,7 +13366,7 @@
     },
     {
       "id": "expanded-observability-production-distributed-traces-across-a-distributed-request-path",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Observability and production",
       "kind": "Automation",
       "question": "What would you automate for distributed traces across a distributed request path, and what would you leave manual?",
@@ -13577,7 +13577,7 @@
     },
     {
       "id": "expanded-observability-production-health-probes-during-a-canary-rollout",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Observability and production",
       "kind": "Automation",
       "question": "What would you automate for health probes during a canary rollout, and what would you leave manual?",
@@ -13789,7 +13789,7 @@
     },
     {
       "id": "expanded-observability-production-alerts-and-dashboards-when-failures-are-intermittent",
-      "level": "Junior",
+      "level": "Middle",
       "category": "Observability and production",
       "kind": "Automation",
       "question": "What would you automate for alerts and dashboards when failures are intermittent, and what would you leave manual?",
@@ -14071,7 +14071,7 @@
     },
     {
       "id": "expanded-regulated-domains-risk-classification-during-an-inspection-or-independent-assessment",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Regulated domains",
       "kind": "Automation",
       "question": "What would you automate for risk classification during an inspection or independent assessment, and what would you leave manual?",
@@ -14283,7 +14283,7 @@
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-for-medical-or-safety-related-software",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Regulated domains",
       "kind": "Automation",
       "question": "What would you automate for electronic records and signatures for medical or safety-related software, and what would you leave manual?",
@@ -14494,7 +14494,7 @@
     },
     {
       "id": "expanded-regulated-domains-audit-trails-when-migrating-validated-data",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Regulated domains",
       "kind": "Automation",
       "question": "What would you automate for audit trails when migrating validated data, and what would you leave manual?",
@@ -14706,7 +14706,7 @@
     },
     {
       "id": "expanded-regulated-domains-software-lifecycle-evidence-after-a-safety-impacting-defect",
-      "level": "Junior",
+      "level": "Senior",
       "category": "Regulated domains",
       "kind": "Automation",
       "question": "What would you automate for software lifecycle evidence after a safety-impacting defect, and what would you leave manual?",

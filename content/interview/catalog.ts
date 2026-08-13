@@ -17,10 +17,10 @@ const questions = [...common.questions, ...canonical.questions, ...databaseSql.q
   .map((question) => editorialStarredIds.has(question.id) ? { ...question, editorialStar: true } : question);
 
 export const interviewCatalog = {
-  version: 10,
+  version: 11,
   title: "QA interview knowledge base",
   description: "Canonical interview questions with original answers, practical signals, tags and traceable technical sources.",
-  lastReviewedAt: "2026-08-12",
+  lastReviewedAt: "2026-08-14",
   methodology: {
     coverage: "DOU, Katalon, Indeed and GeeksforGeeks are cross-checked for recurring interview themes. Explicit audited collections cover every topic and are validated so foundational concepts cannot be hidden inside generated scenarios, answers or tags.",
     answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available.",

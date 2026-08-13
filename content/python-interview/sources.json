@@ -312,6 +312,14 @@
     "role": "Coverage signal for data-oriented and standard-library questions"
   },
   {
+    "id": "requests-docs",
+    "title": "Requests: HTTP for Humans",
+    "url": "https://requests.readthedocs.io/en/latest/",
+    "publisher": "Python Software Foundation (Requests project)",
+    "kind": "Official documentation",
+    "role": "Third-party HTTP client API, including Session-based connection pooling and configuration reuse"
+  },
+  {
     "id": "flask-docs",
     "title": "Flask documentation",
     "url": "https://flask.palletsprojects.com/en/stable/",

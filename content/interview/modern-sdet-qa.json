@@ -136,14 +136,14 @@
       "category": "Test design",
       "kind": "Theory",
       "question": "What is property-based testing, and when is it more useful than example-based testing?",
-      "shortAnswer": "Property-based testing generates many inputs from a defined domain and checks invariants that should always hold, such as sorting preserving elements and order. It is valuable for parsers, transformations, protocols and rule-heavy code with large input spaces. Keep a few readable examples, constrain generators to meaningful data, and make failures reproducible with saved seeds and minimized counterexamples.",
+      "shortAnswer": "Property-based testing generates many inputs from a defined domain and checks invariants that should always hold — for sorting, that means the result contains the same multiset of elements as the input, is ordered according to the comparator, and sorting an already-sorted result is idempotent, not that sorting \"preserves order,\" since reordering is exactly what a correct sort is supposed to do. It is valuable for parsers, transformations, protocols and rule-heavy code with large input spaces. Keep a few readable examples, constrain generators to meaningful data, and make failures reproducible with saved seeds and minimized counterexamples.",
       "strongAnswerSignals": [
         "defines properties and generated input domains",
-        "uses invariants rather than duplicating implementation logic",
+        "sorting properties are multiset preservation, comparator-ordering and idempotence — not preserving input order",
         "mentions shrinking or minimized reproducible failures"
       ],
       "questionUk": "Що таке property-based тестування і коли воно корисніше за тестування на основі прикладів (example-based)?",
-      "shortAnswerUk": "Property-based тестування генерує велику кількість вхідних даних із заданого домену і перевіряє інваріанти, які мають виконуватись завжди — наприклад, що сортування зберігає всі елементи та їхній відносний порядок. Цей підхід особливо цінний для парсерів, перетворень даних, протоколів і коду з великою кількістю правил та вхідних станів. Варто залишати кілька читабельних прикладів окремо, обмежувати генератори змістовними даними та робити падіння відтворюваними за допомогою збережених seed-значень і мінімізованих контрприкладів.",
+      "shortAnswerUk": "Property-based тестування генерує велику кількість вхідних даних із заданого домену і перевіряє інваріанти, які мають виконуватись завжди — для сортування це означає, що результат містить той самий мультимножину елементів, що й вхід, впорядкований згідно з компаратором, і що сортування вже відсортованого результату ідемпотентне, а не що сортування «зберігає порядок», бо саме зміна порядку — це те, для чого потрібне коректне сортування. Цей підхід особливо цінний для парсерів, перетворень даних, протоколів і коду з великою кількістю правил та вхідних станів. Варто залишати кілька читабельних прикладів окремо, обмежувати генератори змістовними даними та робити падіння відтворюваними за допомогою збережених seed-значень і мінімізованих контрприкладів.",
       "strongAnswerSignalsUk": [
         "визначає властивості (properties) та згенеровані домени вхідних даних",
         "використовує інваріанти замість дублювання логіки реалізації",

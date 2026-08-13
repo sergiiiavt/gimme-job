@@ -31,10 +31,10 @@ const questions = [
 ];
 
 export const pythonInterviewCatalog = {
-  version: 1,
+  version: 2,
   title: "Python interview knowledge base",
   description: "Canonical Python interview questions with original answers, practical examples, tags and traceable technical sources.",
-  lastReviewedAt: "2026-08-13",
+  lastReviewedAt: "2026-08-14",
   methodology: {
     coverage: "Real Python, GeeksforGeeks, InterviewBit, Toptal and DataCamp are cross-checked for recurring interview themes across fundamentals, data structures, OOP, concurrency, typing and tooling. This is a deliberately smaller, expandable starting collection rather than an exhaustive one.",
     answers: "Every answer is written for this knowledge base and checked against the official Python documentation and the relevant PEP where one exists.",

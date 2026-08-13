@@ -33,16 +33,16 @@
   },
   {
     "id": "openapi-31",
-    "title": "OpenAPI Specification 3.1",
-    "url": "https://spec.openapis.org/oas/v3.1.1.html",
+    "title": "OpenAPI Specification 3.2.0",
+    "url": "https://spec.openapis.org/oas/v3.2.0.html",
     "publisher": "OpenAPI Initiative",
     "kind": "Specification",
     "role": "API contracts, schemas and operation descriptions"
   },
   {
     "id": "graphql-spec",
-    "title": "GraphQL specification",
-    "url": "https://spec.graphql.org/October2021/",
+    "title": "GraphQL specification (September 2025)",
+    "url": "https://spec.graphql.org/September2025/",
     "publisher": "GraphQL Foundation",
     "kind": "Specification",
     "role": "GraphQL schema, execution and validation concepts"
@@ -162,10 +162,10 @@
   {
     "id": "dora",
     "title": "DORA research program",
-    "url": "https://dora.dev/",
+    "url": "https://dora.dev/guides/dora-metrics/",
     "publisher": "Google Cloud",
     "kind": "Research program",
-    "role": "Software delivery performance and organizational capabilities"
+    "role": "Software delivery performance (current five-metric model) and organizational capabilities"
   },
   {
     "id": "google-structured-interviews",
@@ -305,7 +305,7 @@
   },
   {
     "id": "fda-csa",
-    "title": "Computer Software Assurance for Production and Quality Management System Software",
+    "title": "Computer Software Assurance for Production and Quality Management System Software (final guidance, February 2026)",
     "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/computer-software-assurance-production-and-quality-management-system-software",
     "publisher": "US FDA",
     "kind": "Regulatory guidance",
@@ -334,6 +334,14 @@
     "publisher": "European Commission",
     "kind": "Regulatory guidance",
     "role": "GMP computerized-system validation, data integrity, change and continuity controls"
+  },
+  {
+    "id": "iso-17025",
+    "title": "ISO/IEC 17025 — General requirements for the competence of testing and calibration laboratories",
+    "url": "https://www.iso.org/standard/66912.html",
+    "publisher": "ISO/IEC",
+    "kind": "International standard",
+    "role": "Measurement uncertainty, calibration traceability and fixture/equipment competence for production test"
   },
   {
     "id": "iso-26262",

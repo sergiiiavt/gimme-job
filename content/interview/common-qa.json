@@ -344,20 +344,20 @@
       "level": "Middle",
       "category": "Web, API and data",
       "question": "How would you distinguish authentication failures from authorization failures in testing?",
-      "shortAnswer": "Authentication proves identity; authorization decides what that identity may access. Test absent, expired and malformed credentials separately from valid users attempting forbidden actions, including object-level access to another user's data.",
+      "shortAnswer": "Authentication proves identity; authorization decides what that identity may access. Test absent, expired and malformed credentials separately from valid users attempting forbidden actions, including object-level access to another user's data. A missing or invalid credential should draw a 401 challenge per the API's contract; a valid, authenticated identity attempting a forbidden action must still be denied — commonly with 403 Forbidden, or with 404 Not Found when the API deliberately conceals whether the resource even exists to that identity, which RFC 9110 explicitly permits. The security invariant to test is denial without inappropriate leakage, not one universally mandated status code.",
       "strongAnswerSignals": [
         "identity versus permission",
         "negative cases",
-        "object-level access control"
+        "denial without leakage is the invariant — 403 or a concealing 404 both satisfy it, not one mandated code"
       ],
       "questionUk": "Як би ви розрізняли помилки автентифікації та авторизації під час тестування?",
-      "shortAnswerUk": "Автентифікація підтверджує особу; авторизація вирішує, до чого ця особа має доступ. Тестуйте відсутні, прострочені та некоректні облікові дані окремо від випадків, коли валідний користувач намагається виконати заборонену дію, включно з доступом до чужих даних на рівні об'єкта.",
+      "shortAnswerUk": "Автентифікація підтверджує особу; авторизація вирішує, до чого ця особа має доступ. Тестуйте відсутні, прострочені та некоректні облікові дані окремо від випадків, коли валідний користувач намагається виконати заборонену дію, включно з доступом до чужих даних на рівні об'єкта. Відсутній чи недійсний обліковий запис має викликати виклик 401 згідно з контрактом API; валідна, автентифікована особа, що намагається виконати заборонену дію, все одно має отримати відмову — зазвичай через 403 Forbidden, або через 404 Not Found, коли API навмисно приховує саме існування ресурсу для цієї особи, що прямо дозволяє RFC 9110. Інваріант безпеки, який слід тестувати, — це відмова без недоречного витоку інформації, а не один універсально обов'язковий код статусу.",
       "strongAnswerSignalsUk": [
         "особа проти прав доступу",
         "негативні сценарії",
-        "контроль доступу на рівні об'єкта"
+        "інваріант — відмова без витоку інформації; і 403, і приховувальний 404 задовольняють це, не один обов'язковий код"
       ],
-      "example": "Testing a banking API, a request with no token or an expired token should return 401 Unauthorized — that's an authentication failure. A request from a logged-in regular user trying to access GET /accounts/9999/statement, where 9999 belongs to a different customer, should return 403 Forbidden — that's an authorization failure, specifically a broken object-level access control (BOLA) issue if the API returns the data instead.",
+      "example": "Testing a banking API, a request with no token or an expired token should return 401 Unauthorized — that's an authentication failure. A request from a logged-in regular user trying to access GET /accounts/9999/statement, where 9999 belongs to a different customer, should be denied per the API's contract — typically 403 Forbidden, or 404 Not Found if the API is designed to hide that the resource exists at all — and it's a broken object-level access control (BOLA) issue if the API returns the data instead.",
       "exampleUk": "У банківському API запит без токена або з простроченим токеном має повертати 401 Unauthorized — це помилка автентифікації. Запит від авторизованого звичайного користувача, який намагається виконати GET /accounts/9999/statement, де рахунок 9999 належить іншому клієнту, має повертати 403 Forbidden — це помилка авторизації, а саме проблема зламаного контролю доступу на рівні об'єкта (BOLA), якщо API натомість повертає ці дані.",
       "sourceIds": [
         "owasp-wstg"
