@@ -391,7 +391,7 @@ export function createGameState(best: number, difficulty: Difficulty, status: Ga
     bossSpawned: false, nextId: 1, best, difficulty,
   };
   createNode(state, BORDER_SPAWNS[1]);
-  createNode(state, BORDER_SPAWNS[5]);
+  createNode(state, { q: 22, r: 5 });
   return state;
 }
 
@@ -514,14 +514,14 @@ function spreadCorruption(state: GameState, node: DataNode) {
     .filter((cell) => cell.surface !== "foundation" && cell.surface !== "house" && cell.surface !== "water")
     .filter((cell, index, list) => list.findIndex((entry) => sameHex(entry.hex, cell.hex)) === index)
     .sort((left, right) => {
-      const leftScore = (left.source === node.id ? left.corruption * 4 : 0) + (left.surface === "road" ? 6 : 0) + (hashInt(left.hex.q, left.hex.r, state.wave + node.id) % 7);
-      const rightScore = (right.source === node.id ? right.corruption * 4 : 0) + (right.surface === "road" ? 6 : 0) + (hashInt(right.hex.q, right.hex.r, state.wave + node.id) % 7);
+      const leftScore = (left.corruption === 0 ? 18 : -left.corruption * 3) + (left.surface === "road" ? 6 : 0) + (hashInt(left.hex.q, left.hex.r, state.wave + node.id) % 7);
+      const rightScore = (right.corruption === 0 ? 18 : -right.corruption * 3) + (right.surface === "road" ? 6 : 0) + (hashInt(right.hex.q, right.hex.r, state.wave + node.id) % 7);
       return rightScore - leftScore;
     });
   const target = candidates[0];
   if (!target) return;
   target.source = node.id;
-  target.corruption = Math.min(4, target.corruption + (facilityStage(node) === 3 ? 2 : 1)) as CorruptionLevel;
+  target.corruption = Math.min(4, target.corruption + (facilityStage(node) === 3 ? 3 : 1)) as CorruptionLevel;
 }
 
 function updateNodes(state: GameState, dt: number) {
@@ -532,7 +532,7 @@ function updateNodes(state: GameState, dt: number) {
     const stage = facilityStage(node);
     if (stage >= 2 && node.spreadTimer <= 0) {
       spreadCorruption(state, node);
-      node.spreadTimer = stage === 3 ? 2.5 : 3.8;
+      node.spreadTimer = stage === 3 ? 1.05 : 2.1;
     }
     if (stage === 3 && node.spawnTimer <= 0) {
       spawnEnemy(state, node, node.boss ? "deepfake" : state.wave >= 3 ? "popup" : "clickbait");

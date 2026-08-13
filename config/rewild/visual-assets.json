@@ -38,7 +38,11 @@
   "reviewArtifacts": [
     "docs/rewild/reviews/gate-b/native-contact-sheet.png",
     "docs/rewild/reviews/gate-b/gameplay-contact-sheet.png",
-    "docs/rewild/reviews/gate-b/assembly-proof.png"
+    "docs/rewild/reviews/gate-b/assembly-proof.png",
+    "docs/rewild/reviews/gate-c/construction-state.png",
+    "docs/rewild/reviews/gate-c/integrated-running-slice.png",
+    "docs/rewild/reviews/gate-c/pollution-state.png",
+    "docs/rewild/reviews/gate-c/mobile-integrated.png"
   ],
   "productionSourceImages": [
     "docs/rewild/gate-b-sources/datacenter-modules-v1-chroma.png",

@@ -17,6 +17,7 @@ import {
   createGameState,
   facilityStage,
   hexCenter,
+  hexDistance,
   hexLine,
   hexPolygon,
   objectCorruption,
@@ -39,6 +40,7 @@ import {
   type UiSnapshot,
   type WorldObject,
 } from "./rewild-hex-world";
+import { REWILD_ATLASES, atlasFrame, type RewildAtlasId } from "./rewild-atlases";
 
 const STORAGE_KEY = "gimmejob.rewild.best.v1";
 const MIN_ZOOM = 1;
@@ -105,7 +107,39 @@ function getSprite(key: string) {
   }
   return image.complete && image.naturalWidth > 0 ? image : null;
 }
-function preloadSprites() { for (const key of Object.keys(SPRITE_FILES)) getSprite(key); }
+function getImage(path: string) {
+  let image = spriteCache.get(path);
+  if (!image) {
+    image = new window.Image();
+    image.src = path;
+    spriteCache.set(path, image);
+  }
+  return image.complete && image.naturalWidth > 0 ? image : null;
+}
+function preloadSprites() {
+  for (const key of Object.keys(SPRITE_FILES)) getSprite(key);
+  for (const atlas of Object.values(REWILD_ATLASES)) getImage(atlas.image);
+}
+
+interface AtlasDrawOptions { width: number; rotation?: number; alpha?: number; flip?: boolean; pivotX?: number; pivotY?: number }
+function drawAtlasFrame(ctx: CanvasRenderingContext2D, atlasId: RewildAtlasId, name: string, x: number, y: number, options: AtlasDrawOptions) {
+  const atlas = REWILD_ATLASES[atlasId];
+  const source = atlasFrame(atlasId, name);
+  const image = getImage(atlas.image);
+  const width = options.width;
+  const height = width * source.frame.height / source.frame.width;
+  const pivotX = options.pivotX ?? source.pivot.x;
+  const pivotY = options.pivotY ?? source.pivot.y;
+  ctx.save();
+  ctx.globalAlpha = options.alpha ?? 1;
+  ctx.translate(Math.round(x), Math.round(y));
+  if (options.rotation) ctx.rotate(options.rotation);
+  if (options.flip) ctx.scale(-1, 1);
+  if (image) ctx.drawImage(image, source.frame.x, source.frame.y, source.frame.width, source.frame.height, -width * pivotX, -height * pivotY, width, height);
+  else { ctx.fillStyle = "#3f484d"; ctx.fillRect(-width * pivotX, -height * pivotY, width, height); }
+  ctx.restore();
+  return { left: x - width * pivotX, top: y - height * pivotY, width, height };
+}
 
 function tracePolygon(ctx: CanvasRenderingContext2D, points: PixelPoint[]) {
   ctx.beginPath();
@@ -218,28 +252,15 @@ function drawCorruption(ctx: CanvasRenderingContext2D, state: GameState) {
   const corrupted = [...state.world.cells.values()].filter((cell) => cell.corruption > 0);
   for (const cell of corrupted) {
     const center = hexCenter(cell.hex);
-    const radius = HEX_SIZE * (.55 + cell.corruption * .11);
-    ctx.fillStyle = cell.corruption === 1 ? "rgba(117,106,56,.42)" : cell.corruption === 2 ? "rgba(83,74,49,.58)" : cell.corruption === 3 ? "rgba(55,55,46,.75)" : "rgba(35,36,38,.86)";
-    ctx.beginPath();
-    ctx.ellipse(center.x, center.y + 3, radius * 1.18, radius * .82, seeded(cell, 41) * .5, 0, Math.PI * 2);
-    ctx.fill();
-    const source = cell.source === null ? null : state.nodes.find((node) => node.id === cell.source);
-    if (source) {
-      const sourceCenter = hexCenter(source.outlet);
-      ctx.strokeStyle = cell.corruption >= 3 ? "#6c4f79" : "#66553f";
-      ctx.lineWidth = cell.corruption >= 3 ? 3 : 2;
-      ctx.beginPath();
-      ctx.moveTo(center.x, center.y);
-      ctx.lineTo((center.x + sourceCenter.x) / 2 + (seeded(cell, 44) - .5) * 15, (center.y + sourceCenter.y) / 2);
-      ctx.lineTo(sourceCenter.x, sourceCenter.y);
-      ctx.stroke();
-    }
-    for (let fragment = 0; fragment < cell.corruption; fragment += 1) {
-      const x = Math.round(center.x - 17 + seeded(cell, 50 + fragment) * 34);
-      const y = Math.round(center.y - 12 + seeded(cell, 60 + fragment) * 24);
-      ctx.fillStyle = fragment % 2 ? "#66517a" : "#252a2a";
-      ctx.fillRect(x, y, 3 + fragment % 2, 2);
-    }
+    const stateFrame = ["", "healthy-stressed-transition", "stressed-exposed-transition", "exposed-cracked-transition", "cracked-sludge-transition"][cell.corruption];
+    const width = 82 + cell.corruption * 5;
+    drawAtlasFrame(ctx, "facilityGround", stateFrame, center.x + (seeded(cell, 41) - .5) * 8, center.y + 4 + (seeded(cell, 42) - .5) * 5, {
+      width,
+      flip: seeded(cell, 43) > .5,
+      alpha: cell.corruption === 1 ? .84 : .96,
+      pivotY: .52,
+    });
+    if (cell.surface === "road") drawAtlasFrame(ctx, "worldConnections", cell.corruption >= 3 ? "road-crack-branched" : "road-crack", center.x, center.y + 4, { width: 67, pivotY: .52, flip: seeded(cell, 46) > .5 });
   }
 }
 
@@ -247,14 +268,16 @@ function drawGrounding(ctx: CanvasRenderingContext2D, object: WorldObject, state
   const center = hexCenter(object.anchor);
   const corruption = objectCorruption(state, object);
   if (object.kind === "house") {
-    ctx.fillStyle = "rgba(164,126,65,.32)";
+    ctx.fillStyle = "rgba(121,91,54,.74)";
     ctx.beginPath();
-    ctx.ellipse(center.x, center.y + 8, 57, 28, -.08, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(181,142,76,.48)";
-    ctx.fillRect(center.x + 28, center.y + 6, 34, 12);
-    ctx.fillStyle = "rgba(105,112,75,.72)";
-    ctx.fillRect(center.x - 43, center.y + 14, 5, 3); ctx.fillRect(center.x + 43, center.y - 3, 4, 3);
+    ctx.moveTo(center.x - 47, center.y - 9); ctx.lineTo(center.x + 37, center.y - 12); ctx.lineTo(center.x + 51, center.y + 11);
+    ctx.lineTo(center.x + 26, center.y + 25); ctx.lineTo(center.x - 35, center.y + 22); ctx.lineTo(center.x - 53, center.y + 7); ctx.closePath(); ctx.fill();
+    const roadPoint = state.world.road.cells.reduce((closest, roadCell) => hexDistance(roadCell, object.anchor) < hexDistance(closest, object.anchor) ? roadCell : closest);
+    const roadCenter = hexCenter(roadPoint);
+    ctx.strokeStyle = "rgba(168,129,70,.84)"; ctx.lineCap = "round"; ctx.lineWidth = 15;
+    ctx.beginPath(); ctx.moveTo(center.x + 30, center.y + 12); ctx.quadraticCurveTo(center.x + 62, center.y + 22, roadCenter.x, roadCenter.y); ctx.stroke();
+    ctx.fillStyle = "#8b6a3d";
+    for (let plot = 0; plot < 3; plot += 1) ctx.fillRect(center.x - 45 + plot * 15, center.y + 17, 10, 5);
     return;
   }
   if (object.kind === "tree" || object.kind === "pine") {
@@ -300,6 +323,18 @@ function drawWorldObject(ctx: CanvasRenderingContext2D, object: WorldObject, sta
     ctx.strokeStyle = "#674e72"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(center.x - 5, center.y); ctx.lineTo(center.x - 11, center.y - box.height * .44); ctx.lineTo(center.x - 3, center.y - box.height * .68); ctx.stroke();
   }
+  if (object.kind === "pond") {
+    const contaminated = [...state.world.cells.values()]
+      .filter((cell) => cell.corruption >= 2 && object.footprint.some((pondCell) => hexDistance(pondCell, cell.hex) <= 2))
+      .sort((left, right) => right.corruption - left.corruption)[0];
+    if (contaminated) {
+      const source = hexCenter(contaminated.hex);
+      const angle = Math.atan2(source.y - center.y, source.x - center.x);
+      const shorelineX = center.x + Math.cos(angle) * 46;
+      const shorelineY = center.y + Math.sin(angle) * 25 + 4;
+      drawAtlasFrame(ctx, "worldConnections", "shoreline-polluted-outlet", shorelineX, shorelineY, { width: 86, rotation: angle * .3, pivotY: .52 });
+    }
+  }
 }
 
 function footprintBounds(footprint: HexCoord[]) {
@@ -316,61 +351,73 @@ function drawFacilityGround(ctx: CanvasRenderingContext2D, node: DataNode) {
   const stage = facilityStage(node);
   const bounds = footprintBounds(node.footprint);
   const centerX = (bounds.left + bounds.right) / 2;
-  const bottom = bounds.bottom - 5;
-  ctx.fillStyle = stage === 0 ? "rgba(127,91,52,.9)" : stage === 1 ? "rgba(91,91,82,.9)" : "rgba(69,75,73,.82)";
-  ctx.beginPath();
-  ctx.ellipse(centerX, bottom - 13, (bounds.right - bounds.left) * .48, node.boss ? 34 : 25, -.035, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = stage === 0 ? "rgba(177,137,77,.9)" : "rgba(51,58,57,.82)";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.ellipse(centerX, bottom - 13, (bounds.right - bounds.left) * .46, node.boss ? 30 : 22, -.035, Math.PI * .08, Math.PI * .92);
-  ctx.stroke();
-  if (stage === 0) {
-    ctx.fillStyle = "#5d4933";
-    for (let trench = -1; trench <= 1; trench += 1) ctx.fillRect(Math.round(centerX - 38), Math.round(bottom - 21 + trench * 9), 76 - Math.abs(trench) * 10, 3);
+  const centerY = (bounds.top + bounds.bottom) / 2 + 9;
+  const frames = ["survey-stakes", "excavation", "concrete-footings", "concrete-apron"];
+  drawAtlasFrame(ctx, "facilityGround", frames[stage], centerX, centerY, { width: node.boss ? 310 : 182, pivotY: .52 });
+  if (stage >= 1 && stage < 3) drawAtlasFrame(ctx, "facilityGround", stage === 1 ? "compacted-substrate" : "active-cable-trench", centerX + (node.boss ? 78 : 44), centerY + 7, { width: node.boss ? 155 : 90, alpha: .93, pivotY: .52 });
+}
+
+interface FacilityModule { frame: string; x: number; y: number; width: number; depth: number; flip?: boolean }
+
+function facilityModules(node: DataNode): FacilityModule[] {
+  const center = hexCenter(node.anchor);
+  const stage = facilityStage(node);
+  const inward = node.anchor.q > HEX_COLS / 2 ? -1 : 1;
+  const at = (offset: number) => center.x + offset * inward;
+  if (stage === 0) return [];
+  if (stage === 1) return [
+    { frame: "wall-straight", x: at(-28), y: center.y + 4, width: node.boss ? 92 : 72, depth: center.y + 4, flip: inward < 0 },
+    { frame: "utility-crates", x: at(38), y: center.y + 17, width: 58, depth: center.y + 17, flip: inward < 0 },
+  ];
+  const size = node.boss ? 1.24 : 1;
+  const modules: FacilityModule[] = [
+    { frame: "wall-corner", x: at(-65 * size), y: center.y - 20 * size, width: 80 * size, depth: center.y - 20 * size, flip: inward < 0 },
+    { frame: "server-hall-body", x: at(-17 * size), y: center.y + 5 * size, width: 88 * size, depth: center.y + 5 * size, flip: inward < 0 },
+    { frame: "cooling-fan-bank", x: at(51 * size), y: center.y + 2 * size, width: 84 * size, depth: center.y + 2 * size, flip: inward < 0 },
+    { frame: "loading-bay", x: at(-59 * size), y: center.y + 39 * size, width: 76 * size, depth: center.y + 39 * size, flip: inward < 0 },
+    { frame: "access-door", x: at(10 * size), y: center.y + 48 * size, width: 68 * size, depth: center.y + 48 * size, flip: inward < 0 },
+    { frame: "transformer-power", x: at(72 * size), y: center.y + 43 * size, width: 72 * size, depth: center.y + 43 * size, flip: inward < 0 },
+    { frame: "utility-crates", x: at(-12 * size), y: center.y + 66 * size, width: 52 * size, depth: center.y + 66 * size, flip: inward < 0 },
+  ];
+  if (stage === 3) modules.push(
+    { frame: "fence-straight", x: at(-90 * size), y: center.y + 62 * size, width: 70 * size, depth: center.y + 62 * size, flip: inward < 0 },
+    { frame: "security-gate", x: at(58 * size), y: center.y + 77 * size, width: 75 * size, depth: center.y + 77 * size, flip: inward < 0 },
+    { frame: "cable-entry-cabinet", x: at(102 * size), y: center.y + 69 * size, width: 56 * size, depth: center.y + 69 * size, flip: inward < 0 },
+  );
+  return modules;
+}
+
+function drawNodeConnections(ctx: CanvasRenderingContext2D, node: DataNode, state: GameState) {
+  const stage = facilityStage(node);
+  if (stage < 2) return;
+  const start = hexCenter(node.anchor);
+  const outlet = hexCenter(node.outlet);
+  const roadCell = state.world.road.cells.reduce((closest, roadHex) => hexDistance(roadHex, node.outlet) < hexDistance(closest, node.outlet) ? roadHex : closest);
+  const routeTarget = stage === 3 && hexDistance(roadCell, node.outlet) <= 4 ? roadCell : node.outlet;
+  const cableCells = hexLine(node.anchor, routeTarget).map(hexCenter);
+  for (let index = 1; index < cableCells.length; index += 1) {
+    const from = cableCells[index - 1];
+    const to = cableCells[index];
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    drawAtlasFrame(ctx, "worldConnections", Math.abs(angle) < .3 ? "cable-straight" : "cable-diagonal", (from.x + to.x) / 2, (from.y + to.y) / 2, { width: 62, rotation: angle, pivotY: .5 });
   }
+  drawAtlasFrame(ctx, "worldConnections", stage === 3 ? "drain-polluting" : "drain-clean", outlet.x, outlet.y + 7, { width: 61, pivotY: .55 });
+  if (hexDistance(roadCell, node.outlet) <= 3) { const crossing = hexCenter(roadCell); drawAtlasFrame(ctx, "worldConnections", "road-cable-crossing", crossing.x, crossing.y + 3, { width: 72, pivotY: .52 }); }
+  if (stage === 3) drawAtlasFrame(ctx, "datacenter", "polluted-drain-outlet", start.x + 92, start.y + 75, { width: 57 });
 }
 
 function drawNode(ctx: CanvasRenderingContext2D, node: DataNode) {
-  const stage = facilityStage(node);
   const bounds = footprintBounds(node.footprint);
   const center = hexCenter(node.anchor);
-  drawFacilityGround(ctx, node);
-  if (stage === 0) {
-    ctx.fillStyle = "#d0a943"; ctx.fillRect(center.x - 14, center.y - 8, 28, 14);
-    ctx.fillStyle = "#353b39"; ctx.fillRect(center.x - 18, center.y + 5, 36, 8);
-  } else {
-    const wallHeight = stage === 1 ? 24 : stage === 2 ? 48 : node.boss ? 88 : 66;
-    const left = bounds.left + 10;
-    const right = bounds.right - 10;
-    const bottom = bounds.bottom - 5;
-    ctx.fillStyle = "#282d30"; ctx.fillRect(left, bottom - wallHeight, right - left, wallHeight);
-    ctx.fillStyle = stage === 1 ? "#77766d" : "#636c70"; ctx.fillRect(left + 6, bottom - wallHeight + 5, right - left - 12, wallHeight - 12);
-    ctx.fillStyle = "#24282b";
-    for (let x = left + 14; x < right - 10; x += 22) ctx.fillRect(x, bottom - wallHeight + 13, 11, wallHeight - 26);
-    if (stage >= 2) {
-      ctx.fillStyle = "#15191c"; ctx.fillRect(center.x - 11, bottom - 25, 22, 21);
-      ctx.fillStyle = "#8da24d"; ctx.fillRect(center.x - 6, bottom - 18, 3, 3); ctx.fillRect(center.x + 3, bottom - 18, 3, 3);
-      ctx.fillStyle = "#3f484d"; ctx.fillRect(left + 12, bottom - wallHeight - 9, 24, 9); ctx.fillRect(right - 36, bottom - wallHeight - 9, 24, 9);
-    }
-    if (stage === 3) {
-      const outlet = hexCenter(node.outlet);
-      const cableCells = hexLine(node.anchor, node.outlet);
-      ctx.strokeStyle = "#24262c"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(center.x, bottom); for (const cell of cableCells) { const point = hexCenter(cell); ctx.lineTo(point.x, point.y); } ctx.lineTo(outlet.x, outlet.y); ctx.stroke();
-      ctx.fillStyle = "#4a3a4d"; ctx.fillRect(outlet.x - 12, outlet.y - 9, 24, 18);
-      ctx.fillStyle = "#83638a"; ctx.fillRect(outlet.x - 6, outlet.y - 5, 4, 4);
-    }
-  }
-  drawHealth(ctx, center.x - 27, bounds.top - 13, 54, node.hp / node.maxHp);
+  for (const facilityModule of facilityModules(node).sort((left, right) => left.depth - right.depth)) drawAtlasFrame(ctx, "datacenter", facilityModule.frame, facilityModule.x, facilityModule.y, { width: facilityModule.width, flip: facilityModule.flip });
+  if (node.hp < node.maxHp) drawHealth(ctx, center.x - 34, bounds.top - 23, 68, node.hp / node.maxHp);
 }
 
 function drawRubble(ctx: CanvasRenderingContext2D, cell: HexCell) {
   const center = hexCenter(cell.hex);
-  ctx.fillStyle = "rgba(107,85,55,.68)"; ctx.beginPath(); ctx.ellipse(center.x, center.y + 4, 23, 15, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#50565a";
-  ctx.fillRect(center.x - 15, center.y - 4, 10, 7); ctx.fillRect(center.x + 4, center.y - 9, 13, 9); ctx.fillRect(center.x - 2, center.y + 7, 8, 5);
-  ctx.fillStyle = "#292c2e"; ctx.fillRect(center.x + 10, center.y - 7, 5, 3); ctx.fillRect(center.x - 12, center.y - 2, 4, 2);
+  const recovering = cell.corruption <= 1;
+  drawAtlasFrame(ctx, "facilityGround", recovering ? "early-reclamation" : "damaged-slab-sludge", center.x, center.y + 5, { width: 92, pivotY: .52, flip: seeded(cell, 77) > .5 });
+  if (!recovering) drawAtlasFrame(ctx, "worldConnections", "rubble-seam", center.x + 7, center.y + 11, { width: 57, pivotY: .55, alpha: .92 });
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, ratio: number) {
@@ -384,8 +431,7 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   ctx.fillStyle = plant.kind === "rootreclaimer" ? "rgba(67,91,57,.55)" : "rgba(63,100,43,.45)";
   ctx.beginPath(); ctx.ellipse(center.x, center.y + 6, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
   if (plant.kind === "rootreclaimer" && cell.corruption > 0) {
-    ctx.strokeStyle = "#86b873"; ctx.lineWidth = 2;
-    for (let branch = -1; branch <= 1; branch += 1) { ctx.beginPath(); ctx.moveTo(center.x, center.y + 4); ctx.lineTo(center.x + branch * 21, center.y + 13); ctx.stroke(); }
+    drawAtlasFrame(ctx, "worldConnections", "roots-reclaiming", center.x, center.y + 8, { width: 78, pivotY: .55 });
   }
   const box = drawSprite(ctx, plantSpriteKey(plant), center.x, center.y + 7);
   drawHealth(ctx, center.x - 16, box.top - 7, 32, plant.hp / PLANTS[plant.kind].maxHp);
@@ -424,13 +470,16 @@ function renderGame(ctx: CanvasRenderingContext2D, state: GameState, camera: Cam
   ctx.translate(-camera.x, -camera.y);
   drawMeadow(ctx, state.world);
   drawRoad(ctx, state.world);
+  for (const node of state.nodes) drawFacilityGround(ctx, node);
   drawCorruption(ctx, state);
+  for (const node of state.nodes) drawNodeConnections(ctx, node, state);
   for (const cell of state.world.cells.values()) if (cell.surface === "rubble") drawRubble(ctx, cell);
 
-  const underlays = state.world.objects.filter((object) => object.kind === "pond" || object.kind === "flowers");
+  const underConstruction = (object: WorldObject) => state.nodes.some((node) => object.footprint.some((cell) => node.footprint.some((facilityCell) => facilityCell.q === cell.q && facilityCell.r === cell.r)));
+  const underlays = state.world.objects.filter((object) => (object.kind === "pond" || object.kind === "flowers") && !underConstruction(object));
   for (const object of underlays) drawWorldObject(ctx, object, state);
   const renderables = [
-    ...state.world.objects.filter((object) => object.kind !== "pond" && object.kind !== "flowers").map((object) => ({ depth: hexCenter(object.anchor).y, draw: () => drawWorldObject(ctx, object, state) })),
+    ...state.world.objects.filter((object) => object.kind !== "pond" && object.kind !== "flowers" && !underConstruction(object)).map((object) => ({ depth: hexCenter(object.anchor).y, draw: () => drawWorldObject(ctx, object, state) })),
     ...state.plants.map((plant) => ({ depth: hexCenter(plant).y, draw: () => drawPlant(ctx, plant, state) })),
     ...state.nodes.map((node) => ({ depth: footprintBounds(node.footprint).bottom, draw: () => drawNode(ctx, node) })),
     ...state.enemies.map((enemy) => ({ depth: enemy.position.y, draw: () => drawEnemy(ctx, enemy) })),
