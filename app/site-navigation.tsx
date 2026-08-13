@@ -61,6 +61,12 @@ export interface SubnavItem {
   count?: number;
 }
 
+export interface SecondarySwitcher {
+  activeId: string;
+  onSelect: (id: string) => void;
+  options: Array<{ id: string; label: string }>;
+}
+
 interface SidebarProps {
   activeSection: SiteSection;
   mobileOpen: boolean;
@@ -70,12 +76,13 @@ interface SidebarProps {
   publicHref?: string;
   secondaryTitle: string;
   secondaryItems: SubnavItem[];
+  secondarySwitcher?: SecondarySwitcher;
   activeSubsection: string;
   hideSecondary?: boolean;
   onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
       {item.label}
@@ -112,6 +119,15 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
       </aside>
 
       {!hideSecondary && <aside className="kb-subnav">
+        {secondarySwitcher && (
+          <nav className="kb-subnav-switch" aria-label={`${secondaryTitle} catalog`}>
+            {secondarySwitcher.options.map((option) => (
+              <button className={secondarySwitcher.activeId === option.id ? "active" : ""} key={option.id} onClick={() => secondarySwitcher.onSelect(option.id)} type="button">
+                {option.label}
+              </button>
+            ))}
+          </nav>
+        )}
         <nav aria-label={`${secondaryTitle} subsections`}>
           {secondaryItems.map((item) => (
             <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>

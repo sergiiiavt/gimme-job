@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
-import { hiddenDeepLinkSections, navigationItems, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
+import { hiddenDeepLinkSections, navigationItems, type SecondarySwitcher, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
 const RewildGame = lazy(() => import("./rewild-game"));
 
@@ -591,6 +591,24 @@ function secondaryNavigation(section: PublicSection, jobs: PublicJob[], intervie
   ];
 }
 
+function secondarySwitcherFor(section: PublicSection, openSection: (next: PublicSection) => void): SecondarySwitcher | undefined {
+  if (section === "interview" || section === "python-interview") {
+    return {
+      activeId: section,
+      onSelect: (id) => openSection(id as PublicSection),
+      options: [{ id: "interview", label: "QA" }, { id: "python-interview", label: "Python" }],
+    };
+  }
+  if (section === "programming") {
+    return {
+      activeId: "python",
+      onSelect: () => {},
+      options: [{ id: "python", label: "Python" }],
+    };
+  }
+  return undefined;
+}
+
 export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [section, setSection] = useState<PublicSection>(mode === "personal" ? "interview" : "about");
   const [jobs, setJobs] = useState<PublicJob[]>([]);
@@ -701,6 +719,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
   const secondaryItems = secondaryNavigation(section, jobs, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
+  const secondarySwitcher = secondarySwitcherFor(section, openSection);
   const hideSecondary = section === "about" || section === "resume" || section === "rewild";
   const publicHref = section === "about" ? "/" : `/#${section}`;
   const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
@@ -718,6 +737,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         personalHref={personalHref}
         publicHref={publicHref}
         secondaryItems={secondaryItems}
+        secondarySwitcher={secondarySwitcher}
         secondaryTitle={activeLabel}
       />
 
@@ -772,7 +792,6 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
             mode={mode}
-            onOpenSection={openSection}
             onTopicChange={setSubsection}
             pythonCurriculum={pythonCurriculum}
             pythonCurriculumError={pythonCurriculumError}
@@ -788,12 +807,11 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   );
 }
 
-function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onOpenSection, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
   mode: SiteMode;
-  onOpenSection: (next: PublicSection) => void;
   onTopicChange: (topic: string) => void;
   pythonCurriculum: PythonCurriculum | null;
   pythonCurriculumError: boolean;
@@ -815,7 +833,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} catalogKind="qa" mode={mode} onSwitchCatalog={onOpenSection} onTopicChange={onTopicChange}/>;
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
   }
 
   if (section === "python-interview") {
@@ -829,7 +847,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} catalogKind="python" mode={mode} onSwitchCatalog={onOpenSection} onTopicChange={onTopicChange}/>;
+    return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
   }
 
   if (section === "programming") {
@@ -875,7 +893,7 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
   );
 }
 
-function InterviewKnowledgeBase({ activeTopic, catalog, catalogKind, mode, onSwitchCatalog, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; catalogKind: "qa" | "python"; mode: SiteMode; onSwitchCatalog: (target: "interview" | "python-interview") => void; onTopicChange: (topic: string) => void }) {
+function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: { activeTopic: string; catalog: InterviewCatalog; mode: SiteMode; onTopicChange: (topic: string) => void }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<InterviewLevel[]>([]);
   const [prevalences, setPrevalences] = useState<InterviewPrevalenceFilter[]>([]);
@@ -1052,11 +1070,6 @@ function InterviewKnowledgeBase({ activeTopic, catalog, catalogKind, mode, onSwi
           <div><strong>{interviewSourcesList.length}</strong><span>Sources</span></div>
         </div>
       </header>
-
-      <div className="iq-catalog-switch" role="group" aria-label="Question catalog">
-        <button className={catalogKind === "qa" ? "active" : ""} onClick={() => onSwitchCatalog("interview")} type="button">QA</button>
-        <button className={catalogKind === "python" ? "active" : ""} onClick={() => onSwitchCatalog("python-interview")} type="button">Python</button>
-      </div>
 
       {mode === "personal" && (
         <section className="iq-progress-summary" aria-live="polite">
