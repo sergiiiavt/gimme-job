@@ -1,0 +1,258 @@
+[
+  {
+    "id": "pytest-docs",
+    "title": "pytest documentation",
+    "url": "https://docs.pytest.org/en/stable/",
+    "publisher": "pytest-dev",
+    "kind": "Official documentation",
+    "role": "Test discovery, assertions, configuration and the plugin model"
+  },
+  {
+    "id": "pytest-fixtures",
+    "title": "pytest fixtures reference",
+    "url": "https://docs.pytest.org/en/stable/reference/fixtures.html",
+    "publisher": "pytest-dev",
+    "kind": "Official reference",
+    "role": "Fixture scope, autouse, finalisation and the dependency graph"
+  },
+  {
+    "id": "pytest-parametrize",
+    "title": "Parametrizing tests",
+    "url": "https://docs.pytest.org/en/stable/how-to/parametrize.html",
+    "publisher": "pytest-dev",
+    "kind": "Official how-to",
+    "role": "Data-driven tests, test ids and parametrized fixtures"
+  },
+  {
+    "id": "pytest-markers",
+    "title": "Marking test functions",
+    "url": "https://docs.pytest.org/en/stable/how-to/mark.html",
+    "publisher": "pytest-dev",
+    "kind": "Official how-to",
+    "role": "Custom markers, strict marker validation and selection expressions"
+  },
+  {
+    "id": "pytest-skipping",
+    "title": "Skip and xfail",
+    "url": "https://docs.pytest.org/en/stable/how-to/skipping.html",
+    "publisher": "pytest-dev",
+    "kind": "Official how-to",
+    "role": "The difference between skipping a test and recording a known failure"
+  },
+  {
+    "id": "pytest-hooks",
+    "title": "pytest hook reference",
+    "url": "https://docs.pytest.org/en/stable/reference/reference.html#hooks",
+    "publisher": "pytest-dev",
+    "kind": "Official reference",
+    "role": "Collection, reporting and configuration hooks used to extend a framework"
+  },
+  {
+    "id": "pytest-xdist",
+    "title": "pytest-xdist documentation",
+    "url": "https://pytest-xdist.readthedocs.io/en/stable/",
+    "publisher": "pytest-dev",
+    "kind": "Official documentation",
+    "role": "Parallel execution, worker identity and test distribution modes"
+  },
+  {
+    "id": "playwright-python",
+    "title": "Playwright for Python",
+    "url": "https://playwright.dev/python/docs/intro",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Browser automation, contexts, auto-waiting and the pytest plugin"
+  },
+  {
+    "id": "playwright-locators",
+    "title": "Playwright locators",
+    "url": "https://playwright.dev/python/docs/locators",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Locator strategies, role-based queries and test ids"
+  },
+  {
+    "id": "playwright-assertions",
+    "title": "Playwright assertions",
+    "url": "https://playwright.dev/python/docs/test-assertions",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Auto-retrying expect() assertions and their timeouts"
+  },
+  {
+    "id": "playwright-auth",
+    "title": "Playwright authentication",
+    "url": "https://playwright.dev/python/docs/auth",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Reusing signed-in state across tests with storage state"
+  },
+  {
+    "id": "playwright-emulation",
+    "title": "Playwright device emulation",
+    "url": "https://playwright.dev/python/docs/emulation",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Device descriptors, viewport, touch, colour scheme and locale emulation"
+  },
+  {
+    "id": "playwright-network",
+    "title": "Playwright network interception",
+    "url": "https://playwright.dev/python/docs/network",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Routing, mocking and fault injection at the network layer"
+  },
+  {
+    "id": "appium-docs",
+    "title": "Appium documentation",
+    "url": "https://appium.io/docs/en/latest/",
+    "publisher": "Appium contributors / OpenJS Foundation",
+    "kind": "Official documentation",
+    "role": "Server architecture, driver installation and session capabilities"
+  },
+  {
+    "id": "appium-uiautomator2",
+    "title": "Appium UiAutomator2 driver",
+    "url": "https://github.com/appium/appium-uiautomator2-driver",
+    "publisher": "Appium contributors",
+    "kind": "Official driver documentation",
+    "role": "Android capabilities, mobile: gesture commands and locator strategies"
+  },
+  {
+    "id": "appium-xcuitest",
+    "title": "Appium XCUITest driver",
+    "url": "https://appium.github.io/appium-xcuitest-driver/latest/",
+    "publisher": "Appium contributors",
+    "kind": "Official driver documentation",
+    "role": "iOS capabilities, predicate and class-chain locators"
+  },
+  {
+    "id": "appium-python-client",
+    "title": "Appium Python Client",
+    "url": "https://github.com/appium/python-client",
+    "publisher": "Appium contributors",
+    "kind": "Official client library",
+    "role": "Typed options objects and the Python binding for the WebDriver protocol"
+  },
+  {
+    "id": "w3c-webdriver",
+    "title": "WebDriver W3C specification",
+    "url": "https://www.w3.org/TR/webdriver2/",
+    "publisher": "W3C",
+    "kind": "Standard",
+    "role": "The protocol shared by Selenium and Appium, including capability negotiation"
+  },
+  {
+    "id": "schemathesis-docs",
+    "title": "Schemathesis documentation",
+    "url": "https://schemathesis.readthedocs.io/en/stable/",
+    "publisher": "Schemathesis contributors",
+    "kind": "Official documentation",
+    "role": "Schema-driven API testing, built-in conformance checks and pytest integration"
+  },
+  {
+    "id": "hypothesis-docs",
+    "title": "Hypothesis documentation",
+    "url": "https://hypothesis.readthedocs.io/en/latest/",
+    "publisher": "Hypothesis contributors",
+    "kind": "Official documentation",
+    "role": "Property-based testing, strategies, shrinking and health checks"
+  },
+  {
+    "id": "httpx-docs",
+    "title": "HTTPX documentation",
+    "url": "https://www.python-httpx.org/",
+    "publisher": "Encode",
+    "kind": "Official documentation",
+    "role": "HTTP client behaviour, timeouts, event hooks and transports"
+  },
+  {
+    "id": "pydantic-docs",
+    "title": "Pydantic documentation",
+    "url": "https://docs.pydantic.dev/latest/",
+    "publisher": "Pydantic Services",
+    "kind": "Official documentation",
+    "role": "Model validation, strict configuration and settings management"
+  },
+  {
+    "id": "openapi-spec",
+    "title": "OpenAPI Specification",
+    "url": "https://spec.openapis.org/oas/latest.html",
+    "publisher": "OpenAPI Initiative",
+    "kind": "Standard",
+    "role": "How an HTTP contract is described, and what a contract test verifies against"
+  },
+  {
+    "id": "owasp-api-top-10",
+    "title": "OWASP API Security Top 10",
+    "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/",
+    "publisher": "OWASP Foundation",
+    "kind": "Industry standard",
+    "role": "Broken object-level authorization and the other risks worth an automated check"
+  },
+  {
+    "id": "wcag-22",
+    "title": "Web Content Accessibility Guidelines 2.2",
+    "url": "https://www.w3.org/TR/WCAG22/",
+    "publisher": "W3C",
+    "kind": "Standard",
+    "role": "Success criteria that automated accessibility checks can and cannot verify"
+  },
+  {
+    "id": "deque-axe-core",
+    "title": "axe-core rule descriptions",
+    "url": "https://github.com/dequelabs/axe-core/blob/develop/doc/rule-descriptions.md",
+    "publisher": "Deque Systems",
+    "kind": "Official documentation",
+    "role": "Which accessibility rules are automatable, and their impact levels"
+  },
+  {
+    "id": "allure-report",
+    "title": "Allure Report documentation",
+    "url": "https://allurereport.org/docs/",
+    "publisher": "Qameta Software",
+    "kind": "Official documentation",
+    "role": "Steps, attachments, environment metadata and historical trends"
+  },
+  {
+    "id": "github-actions-docs",
+    "title": "GitHub Actions documentation",
+    "url": "https://docs.github.com/en/actions",
+    "publisher": "GitHub",
+    "kind": "Official documentation",
+    "role": "Job dependencies, matrices, concurrency control and artifacts"
+  },
+  {
+    "id": "fowler-test-pyramid",
+    "title": "The Practical Test Pyramid",
+    "url": "https://martinfowler.com/articles/practical-test-pyramid.html",
+    "publisher": "martinfowler.com",
+    "kind": "Industry article",
+    "role": "Choosing the layer at which a given risk is cheapest to cover"
+  },
+  {
+    "id": "fowler-eradicating-flaky",
+    "title": "Eradicating Non-Determinism in Tests",
+    "url": "https://martinfowler.com/articles/nonDeterminism.html",
+    "publisher": "martinfowler.com",
+    "kind": "Industry article",
+    "role": "Root causes of non-deterministic tests and how to remove rather than mask them"
+  },
+  {
+    "id": "google-flaky-tests",
+    "title": "Flaky Tests at Google and How We Mitigate Them",
+    "url": "https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html",
+    "publisher": "Google Testing Blog",
+    "kind": "Industry article",
+    "role": "Measured flake rates at scale and the cost of an untrusted suite"
+  },
+  {
+    "id": "qa-automation-python-repo",
+    "title": "qa-automation-python reference framework",
+    "url": "https://github.com/sergiiiavt/qa-automation-python",
+    "publisher": "sergiiiavt",
+    "kind": "Reference implementation",
+    "role": "The runnable framework and demo application every lesson in this path is drawn from"
+  }
+]

@@ -107,7 +107,7 @@ interface PythonModule {
   description: string;
 }
 
-interface PythonCurriculum {
+interface LearningCurriculum {
   title: string;
   description: string;
   methodology: InterviewCatalog["methodology"];
@@ -277,7 +277,7 @@ function StructuredAnswer({ value }: { value: string }) {
   );
 }
 
-const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "programming" | "python-interview">, {
+const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "programming" | "python-interview" | "automation">, {
   title: string;
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
@@ -313,17 +313,6 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
       { title: "Release decisions", copy: "Communicate evidence, uncertainty, residual risk, ownership, and rollback options without false confidence.", tags: ["Release", "Evidence"] },
       { title: "Useful metrics", copy: "Measure feedback speed, escaped risk, reliability, and outcomes while avoiding activity-count targets.", tags: ["Metrics"] },
       { title: "Coaching and leadership", copy: "Grow judgement, ownership, collaboration, and technical depth across a quality-focused team.", tags: ["People", "Lead"] },
-    ],
-  },
-  automation: {
-    title: "Test automation",
-    description: "Design fast, reliable feedback systems across code, services, interfaces, and delivery pipelines.",
-    items: [
-      { title: "Automation strategy", copy: "Select checks by feedback value, repeatability, risk, execution layer, and maintenance cost.", tags: ["Strategy"] },
-      { title: "Framework architecture", copy: "Build clear fixtures, drivers, assertions, reporting, configuration, and ownership boundaries.", tags: ["Architecture"] },
-      { title: "Service and contract tests", copy: "Validate APIs, schemas, compatibility, side effects, and integration assumptions below the UI.", tags: ["API", "Contracts"] },
-      { title: "Browser and mobile", copy: "Use stable locators, controlled state, deterministic waits, device coverage, and useful diagnostics.", tags: ["UI", "Mobile"] },
-      { title: "CI reliability", copy: "Parallelize safely, investigate flakiness, manage quarantine, and keep failures actionable.", tags: ["CI", "Flakiness"] },
     ],
   },
   api: {
@@ -507,7 +496,16 @@ function topicId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: PythonCurriculum | null): SubnavItem[] {
+function curriculumSubnav(curriculum: LearningCurriculum | null): SubnavItem[] {
+  if (!curriculum) return [{ id: "all", label: "Loading curriculum…" }];
+  return curriculum.taxonomy.map((item) => ({
+    id: item.id,
+    label: item.label,
+    count: item.level ? curriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length : item.id === "all" ? curriculum.lessons.length : undefined,
+  }));
+}
+
+function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null): SubnavItem[] {
   if (section === "about" || section === "resume" || section === "jobs") return [];
 
   if (section === "rewild") {
@@ -535,14 +533,9 @@ function secondaryNavigation(section: PublicSection, interviewCatalog: Interview
     }));
   }
 
-  if (section === "programming") {
-    if (!pythonCurriculum) return [{ id: "all", label: "Loading curriculum…" }];
-    return pythonCurriculum.taxonomy.map((item) => ({
-      id: item.id,
-      label: item.label,
-      count: item.level ? pythonCurriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length : item.id === "all" ? pythonCurriculum.lessons.length : undefined,
-    }));
-  }
+  if (section === "programming") return curriculumSubnav(pythonCurriculum);
+
+  if (section === "automation") return curriculumSubnav(automationCurriculum);
 
   const items = knowledge[section].items;
   return [
@@ -577,8 +570,10 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [interviewCatalogError, setInterviewCatalogError] = useState(false);
   const [pythonInterviewCatalog, setPythonInterviewCatalog] = useState<InterviewCatalog | null>(null);
   const [pythonInterviewCatalogError, setPythonInterviewCatalogError] = useState(false);
-  const [pythonCurriculum, setPythonCurriculum] = useState<PythonCurriculum | null>(null);
+  const [pythonCurriculum, setPythonCurriculum] = useState<LearningCurriculum | null>(null);
   const [pythonCurriculumError, setPythonCurriculumError] = useState(false);
+  const [automationCurriculum, setAutomationCurriculum] = useState<LearningCurriculum | null>(null);
+  const [automationCurriculumError, setAutomationCurriculumError] = useState(false);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -626,13 +621,26 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
     let active = true;
     import("@/content/python-learning/catalog")
       .then((module) => {
-        if (active) setPythonCurriculum(module.default as unknown as PythonCurriculum);
+        if (active) setPythonCurriculum(module.default as unknown as LearningCurriculum);
       })
       .catch(() => {
         if (active) setPythonCurriculumError(true);
       });
     return () => { active = false; };
   }, [pythonCurriculum, section]);
+
+  useEffect(() => {
+    if (section !== "automation" || automationCurriculum) return;
+    let active = true;
+    import("@/content/automation-learning/catalog")
+      .then((module) => {
+        if (active) setAutomationCurriculum(module.default as unknown as LearningCurriculum);
+      })
+      .catch(() => {
+        if (active) setAutomationCurriculumError(true);
+      });
+    return () => { active = false; };
+  }, [automationCurriculum, section]);
 
   useEffect(() => {
     if (section === "jobs") window.location.assign("/workspace");
@@ -651,7 +659,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
-  const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum);
+  const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum, automationCurriculum);
   const secondarySwitcher = secondarySwitcherFor(section, openSection);
   const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
   const isFullScreenGame = section === "rewild" && subsection === "all";
@@ -693,6 +701,8 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         ) : (
           <KnowledgeSection
             activeTopic={subsection}
+            automationCurriculum={automationCurriculum}
+            automationCurriculumError={automationCurriculumError}
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
             mode={mode}
@@ -711,13 +721,15 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   );
 }
 
-function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
+  automationCurriculum: LearningCurriculum | null;
+  automationCurriculumError: boolean;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
   mode: SiteMode;
   onTopicChange: (topic: string) => void;
-  pythonCurriculum: PythonCurriculum | null;
+  pythonCurriculum: LearningCurriculum | null;
   pythonCurriculumError: boolean;
   pythonInterviewCatalog: InterviewCatalog | null;
   pythonInterviewCatalogError: boolean;
@@ -765,7 +777,21 @@ function KnowledgeSection({ activeTopic, interviewCatalog, interviewCatalogError
         </div>
       );
     }
-    return <PythonLearningPath activeTopic={activeTopic} curriculum={pythonCurriculum} onTopicChange={onTopicChange}/>;
+    return <LearningPath activeTopic={activeTopic} curriculum={pythonCurriculum} onTopicChange={onTopicChange} title="Python learning path"/>;
+  }
+
+  if (section === "automation") {
+    if (!automationCurriculum) {
+      return (
+        <div className="kb-content iq-page">
+          <div className="kb-empty iq-catalog-state">
+            <strong>{automationCurriculumError ? "Test automation path unavailable" : "Loading test automation path…"}</strong>
+            <span>{automationCurriculumError ? "Reload the page to try the separate curriculum request again." : "The curriculum is loaded only when this section is opened."}</span>
+          </div>
+        </div>
+      );
+    }
+    return <LearningPath activeTopic={activeTopic} curriculum={automationCurriculum} onTopicChange={onTopicChange} title="Test automation learning path"/>;
   }
 
   if (section === "rewild") {
@@ -1123,7 +1149,7 @@ function MethodologyPage({ backLabel, methodology: method, onBack, sources: inte
   );
 }
 
-function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { activeTopic: string; curriculum: PythonCurriculum; onTopicChange: (topic: string) => void }) {
+function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activeTopic: string; curriculum: LearningCurriculum; onTopicChange: (topic: string) => void; title: string }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<PythonLessonLevel[]>([]);
   const [sort, setSort] = useState<PythonLessonSort>("order");
@@ -1193,7 +1219,7 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
   return (
     <div className="kb-content iq-page py-page">
       <header className="kb-page-head iq-head">
-        <div><h1>{activeTaxonomy?.level ? activeTaxonomy.label : "Python learning path"}</h1></div>
+        <div><h1>{activeTaxonomy?.level ? activeTaxonomy.label : title}</h1></div>
         <div className="kb-page-stats">
           <div><strong>{lessons.length}</strong><span>Lessons</span></div>
           <div><strong>{moduleTaxonomy.filter((item) => item.level).length}</strong><span>Modules</span></div>
@@ -1201,7 +1227,7 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
         </div>
       </header>
 
-      <section className="iq-toolbar" aria-label="Python lesson filters">
+      <section className="iq-toolbar" aria-label="Lesson filters">
         <div className="iq-toolbar-main">
           <label className="iq-search">
             <span>⌕</span>
@@ -1290,7 +1316,7 @@ function PythonLearningPath({ activeTopic, curriculum, onTopicChange }: { active
       </div>
 
       {matchingLessons.length > PYTHON_LESSON_PAGE_SIZE && (
-        <nav className="iq-pagination" aria-label="Python lesson result pages">
+        <nav className="iq-pagination" aria-label="Lesson result pages">
           <button disabled={safePage === 0} onClick={() => setPage(Math.max(0, safePage - 1))}>← Previous 60</button>
           <span>Page {safePage + 1} of {pageCount} · results {pageStart + 1}–{pageStart + visibleLessons.length}</span>
           <button disabled={safePage >= pageCount - 1} onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}>Next 60 →</button>

@@ -1,0 +1,84 @@
+[
+  {
+    "id": "all",
+    "label": "All lessons",
+    "description": "The complete test automation path: first fixture to automation strategy."
+  },
+  {
+    "id": "automation-foundations",
+    "label": "Foundations & choosing a layer",
+    "level": "Beginner",
+    "description": "What automation is for, the layers available, and deciding what to automate at all."
+  },
+  {
+    "id": "pytest-core",
+    "label": "pytest core: fixtures, scope & markers",
+    "level": "Beginner",
+    "description": "Fixtures, scope, parametrize, markers, skip versus xfail, and the flags worth knowing."
+  },
+  {
+    "id": "project-setup",
+    "label": "Project setup & configuration",
+    "level": "Beginner",
+    "description": "Layout, typed settings, environment layering and a run configuration the whole team shares."
+  },
+  {
+    "id": "framework-architecture",
+    "label": "Framework architecture",
+    "level": "Intermediate",
+    "description": "Layer boundaries, page and service objects, components, naming and the Arrange-Act-Assert shape."
+  },
+  {
+    "id": "api-testing",
+    "label": "Service & API testing",
+    "level": "Intermediate",
+    "description": "An instrumented HTTP client, service objects, response validation and a repeatable test-design checklist."
+  },
+  {
+    "id": "web-ui-testing",
+    "label": "Web UI with Playwright",
+    "level": "Intermediate",
+    "description": "Auto-waiting, locator strategy, page objects, reusing signed-in state and network fault injection."
+  },
+  {
+    "id": "mobile-testing",
+    "label": "Mobile: emulated & real devices",
+    "level": "Advanced",
+    "description": "Mobile web versus native, Appium sessions and locators, gestures and device-only scenarios."
+  },
+  {
+    "id": "test-data",
+    "label": "Test data & isolation",
+    "level": "Advanced",
+    "description": "Building data per test, uniqueness under parallel runs, factories, personas and cleanup."
+  },
+  {
+    "id": "flakiness",
+    "label": "Flakiness: diagnosis & cure",
+    "level": "Advanced",
+    "description": "The root causes of non-deterministic tests, how to diagnose each, and how to run a quarantine."
+  },
+  {
+    "id": "ci-and-reporting",
+    "label": "CI, parallelism & reporting",
+    "level": "Advanced",
+    "description": "Pipeline shape, parallel execution, artifacts that explain failures, and gates people trust."
+  },
+  {
+    "id": "contract-and-property",
+    "label": "Contract & property-based testing",
+    "level": "Expert",
+    "description": "Generating tests from a schema, stating invariants, and triaging what generated tools report."
+  },
+  {
+    "id": "quality-strategy",
+    "label": "Strategy, metrics & influence",
+    "level": "Expert",
+    "description": "Risk-based prioritisation, metrics that survive scrutiny, and building a programme from zero."
+  },
+  {
+    "id": "methodology",
+    "label": "Sources & methodology",
+    "description": "How these lessons are written and validated, and the source catalog behind them."
+  }
+]

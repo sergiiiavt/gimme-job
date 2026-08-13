@@ -1,0 +1,374 @@
+{
+  "lessons": [
+    {
+      "id": "ta-lesson-why-automate",
+      "moduleId": "automation-foundations",
+      "level": "Beginner",
+      "order": 1,
+      "title": "What test automation is actually for",
+      "titleUk": "Для чого насправді потрібна автоматизація тестування",
+      "summary": "Automation buys fast, repeatable feedback — not thoroughness, and not a replacement for testers.",
+      "summaryUk": "Автоматизація дає швидкий і повторюваний зворотний зв'язок — а не ретельність і не заміну тестувальників.",
+      "concept": "An automated test is a check: it compares the system against an expectation somebody already had. That makes automation excellent at one specific job — telling you quickly and repeatedly whether behaviour that used to work still works. It is structurally incapable of noticing anything nobody predicted, because an assertion can only fail against an expectation that was written down. Teams that treat a suite as proof of quality end up with hundreds of green tests and users reporting problems nobody thought to assert on. The honest framing is narrower and more useful: automation protects known behaviour so that humans have time to investigate the unknown. Every test therefore needs an answer to one question — what risk does this cover? If the answer is \"none, but it adds coverage\", the test is pure maintenance cost.",
+      "conceptUk": "Автоматизований тест — це перевірка: він порівнює систему з очікуванням, яке хтось уже сформулював. Саме тому автоматизація чудово виконує одну конкретну роботу — швидко й повторювано повідомляє, чи працює й досі та поведінка, що працювала раніше. Вона структурно нездатна помітити те, чого ніхто не передбачив, бо твердження може впасти лише щодо очікування, яке було записане. Команди, які вважають набір тестів доказом якості, зрештою мають сотні зелених тестів і користувачів, що повідомляють про проблеми, про які ніхто не здогадався написати перевірку. Чесніше формулювання вужче й корисніше: автоматизація захищає відому поведінку, щоб у людей був час досліджувати невідоме. Тому кожен тест потребує відповіді на одне питання — який ризик він покриває? Якщо відповідь «жодного, але це додає покриття», такий тест є чистою вартістю підтримки.",
+      "keyPoints": [
+        "Automation checks known expectations; it cannot be surprised by something nobody wrote down",
+        "Its real product is fast, repeatable feedback, which is what makes frequent releases safe",
+        "Every test should name the risk it covers, or it is maintenance cost without a benefit"
+      ],
+      "keyPointsUk": [
+        "Автоматизація перевіряє відомі очікування; вона не може здивуватися тому, чого ніхто не записав",
+        "Її справжній продукт — швидкий повторюваний зворотний зв'язок, який робить часті релізи безпечними",
+        "Кожен тест має називати ризик, який він покриває, інакше це витрати на підтримку без вигоди"
+      ],
+      "pitfalls": [
+        "Treating a green suite as evidence of quality rather than evidence that known behaviour is intact",
+        "Automating test cases one-for-one from a manual regression sheet without asking which risks still matter"
+      ],
+      "pitfallsUk": [
+        "Сприймати зелений набір тестів як доказ якості, а не як доказ того, що відома поведінка не зламалася",
+        "Автоматизувати тест-кейси один в один із ручного регресійного списку, не запитавши, які ризики досі актуальні"
+      ],
+      "code": "# Two tests, same endpoint. Only one of them earns its maintenance cost.\n\ndef test_cart_total_is_sum_of_line_totals(shop_as_user):\n    \"\"\"Risk: wrong money shown to a customer. Worth automating forever.\"\"\"\n    products = shop_as_user.products.list(in_stock=True)[:3]\n    for index, product in enumerate(products, start=1):\n        shop_as_user.cart.add_item(product.id, index)\n\n    cart = shop_as_user.cart.get()\n\n    expected = sum(p.price * i for i, p in enumerate(products, start=1))\n    assert cart.total == pytest.approx(expected, abs=0.01)\n\n\ndef test_cart_response_contains_a_currency_field(shop_as_user):\n    \"\"\"Risk: none anybody can name. Deleting this test loses nothing.\"\"\"\n    assert \"currency\" in shop_as_user.cart.get().model_dump()",
+      "codeCaption": "The first test protects a real risk; the second exists only to raise a coverage number.",
+      "codeCaptionUk": "Перший тест захищає реальний ризик; другий існує лише щоб підняти показник покриття.",
+      "exercise": "Take any five tests from a suite you know and write down, in one sentence each, the risk they cover. Any test where you cannot name a risk is a candidate for deletion — decide honestly whether you would still write it today.",
+      "exerciseUk": "Візьміть будь-які п'ять тестів із відомого вам набору й запишіть одним реченням ризик, який покриває кожен. Будь-який тест, для якого ви не можете назвати ризик, є кандидатом на видалення — чесно вирішіть, чи написали б ви його сьогодні.",
+      "tags": ["fundamentals", "strategy", "risk"],
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"]
+    },
+    {
+      "id": "ta-lesson-choosing-the-layer",
+      "moduleId": "automation-foundations",
+      "level": "Beginner",
+      "order": 2,
+      "title": "Choosing the layer: services, UI, or neither",
+      "titleUk": "Вибір рівня: сервіси, інтерфейс чи жоден із них",
+      "summary": "Push every test down until it can no longer prove what you need — the cost difference between layers is enormous.",
+      "summaryUk": "Опускайте кожен тест на рівень нижче, доки він ще здатний довести потрібне — різниця у вартості між рівнями величезна.",
+      "concept": "The same business rule can usually be checked at several levels, and the cost difference is not marginal. An API test that verifies a cart total runs in about a hundred milliseconds, has no rendering to go wrong, and fails with the exact request and response attached. The equivalent browser test takes seconds, depends on layout, timing and network, and fails with a screenshot you still have to interpret. Neither is better in the abstract; what matters is asking which is the cheapest layer that can still prove the thing you care about. Business rules, validation, authorization and error handling belong at the service layer. The user interface layer should be reserved for what only it can prove: that the interface sends what the backend expects, renders what it receives, and remains usable. Teams that invert this end up with a ninety-minute pipeline and dozens of flaky failures a week, and every one of those tests had a cheaper equivalent one layer down.",
+      "conceptUk": "Одне й те саме бізнес-правило зазвичай можна перевірити на кількох рівнях, і різниця у вартості не є незначною. API-тест, що перевіряє суму кошика, виконується приблизно за сто мілісекунд, не має рендерингу, який може зламатися, і падає з точним запитом та відповіддю у звіті. Аналогічний браузерний тест триває секунди, залежить від верстки, таймінгів і мережі, а падає зі скриншотом, який ще треба інтерпретувати. Жоден не є кращим абстрактно; важливо запитати, який рівень є найдешевшим із тих, що досі здатні довести потрібне. Бізнес-правила, валідація, авторизація та обробка помилок належать рівню сервісів. Рівень інтерфейсу варто залишити для того, що може довести лише він: що інтерфейс надсилає те, чого очікує бекенд, показує те, що отримав, і залишається придатним до використання. Команди, які роблять навпаки, отримують дев'яностохвилинний конвеєр і десятки нестабільних падінь щотижня — і кожен із тих тестів мав дешевший відповідник рівнем нижче.",
+      "keyPoints": [
+        "Ask of every test: what is the cheapest layer that can still prove this?",
+        "Business rules, boundaries and authorization belong to the service layer",
+        "Reserve UI tests for wiring, rendering and usability — what only the interface can prove"
+      ],
+      "keyPointsUk": [
+        "Питайте про кожен тест: який найдешевший рівень усе ще здатний це довести?",
+        "Бізнес-правила, межові значення й авторизація належать рівню сервісів",
+        "Залишайте UI-тести для зв'язності, відображення та зручності — того, що може довести лише інтерфейс"
+      ],
+      "pitfalls": [
+        "Automating at the UI layer because it maps neatly onto an existing manual test case",
+        "Adding a second end-to-end journey when the first already covers the wiring, so the new one only adds runtime and flake"
+      ],
+      "pitfallsUk": [
+        "Автоматизувати на рівні UI лише тому, що це добре лягає на наявний ручний тест-кейс",
+        "Додавати другий наскрізний сценарій, коли перший уже покриває зв'язність, — новий додасть лише час виконання та нестабільність"
+      ],
+      "code": "# The rule (a quantity above 99 is rejected) belongs here — 100 ms, no browser.\n@pytest.mark.parametrize(\n    (\"quantity\", \"expected_status\"),\n    [(1, 201), (99, 201), (0, 422), (100, 422), (1.5, 422)],\n)\ndef test_quantity_boundaries(shop_as_user, quantity, expected_status):\n    product = shop_as_user.products.first_in_stock()\n    response = shop_as_user.cart.add_item_raw(product.id, quantity)\n    assert response.status_code == expected_status\n\n\n# The UI test that remains proves only what the API test cannot: that the\n# interface actually shows the rejection to a human being.\ndef test_rejected_quantity_is_shown_to_the_user(app_as_user):\n    products = app_as_user.products.open()\n    products.cards[0].add_to_cart()\n    expect(products.status).to_contain_text(\"added to cart\")",
+      "codeCaption": "Five boundary cases at the API layer, one wiring check in the browser — not five browser tests.",
+      "codeCaptionUk": "П'ять межових випадків на рівні API та одна перевірка зв'язності в браузері — а не п'ять браузерних тестів.",
+      "exercise": "Find a UI test in a suite you work with that asserts a calculation or a validation rule. Rewrite it as an API test, then decide what — if anything — the UI test should still assert once the rule is covered below.",
+      "exerciseUk": "Знайдіть у вашому наборі UI-тест, який перевіряє обчислення або правило валідації. Перепишіть його як API-тест, а потім вирішіть, що саме — якщо взагалі щось — має перевіряти UI-тест після того, як правило покрите нижче.",
+      "tags": ["strategy", "test-pyramid", "api", "ui"],
+      "sourceIds": ["fowler-test-pyramid", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-what-not-to-automate",
+      "moduleId": "automation-foundations",
+      "level": "Beginner",
+      "order": 3,
+      "title": "Deciding what to automate — and what to leave alone",
+      "titleUk": "Що автоматизувати — і що краще залишити вручну",
+      "summary": "Score candidates on risk, frequency, repetition, determinism and stability; be willing to say no.",
+      "summaryUk": "Оцінюйте кандидатів за ризиком, частотою, повторюваністю, детермінованістю та стабільністю; будьте готові відмовити.",
+      "concept": "A candidate for automation scores well when the risk is high, the check runs often, the steps repeat with different data, the outcome is deterministic, and the feature has stopped changing shape every sprint. It scores badly when any one of those is missing, and a low score on stability alone is usually enough to wait — automating an interface that is still being designed means writing the test three times. Some things should never be automated: judgement calls such as whether a layout looks right or whether error copy is clear; one-off migrations; and exploratory testing, which depends precisely on a human being able to be surprised. Saying \"we should not automate that\" is a senior skill, and it is easier to defend when you can point at the scoring. The cost people forget is not writing the test — it is every future engineer who has to read, debug and update it.",
+      "conceptUk": "Кандидат на автоматизацію отримує високу оцінку, коли ризик великий, перевірка виконується часто, кроки повторюються з різними даними, результат детермінований, а функціональність перестала змінювати форму щоспринту. Оцінка низька, якщо бракує хоча б одного з цих пунктів, і самої лише низької стабільності зазвичай достатньо, щоб зачекати: автоматизувати інтерфейс, який ще проєктують, означає написати тест тричі. Дещо не варто автоматизувати ніколи: оцінювальні судження на кшталт того, чи гарно виглядає верстка або чи зрозумілий текст помилки; одноразові міграції; а також дослідницьке тестування, яке саме й тримається на здатності людини здивуватися. Сказати «це не варто автоматизувати» — навичка рівня senior, і її легше обстояти, коли можна показати оцінювання. Витрати, про які забувають, — це не написання тесту, а кожен майбутній інженер, який мусить його читати, налагоджувати й оновлювати.",
+      "keyPoints": [
+        "Score candidates on risk, frequency, repetition, determinism, manual cost and stability",
+        "Do not automate an interface that is still being redesigned — wait for the second iteration",
+        "Exploratory testing cannot be automated, because automation cannot be surprised"
+      ],
+      "keyPointsUk": [
+        "Оцінюйте кандидатів за ризиком, частотою, повторюваністю, детермінованістю, вартістю ручної перевірки та стабільністю",
+        "Не автоматизуйте інтерфейс, який ще перепроєктовують — дочекайтеся другої ітерації",
+        "Дослідницьке тестування неможливо автоматизувати, бо автоматизація не вміє дивуватися"
+      ],
+      "pitfalls": [
+        "Chasing an automation percentage target, which says nothing about whether the uncovered part holds the risk",
+        "Automating a brand-new screen during the sprint it is being built, then rewriting the test twice"
+      ],
+      "pitfallsUk": [
+        "Гнатися за цільовим відсотком автоматизації, який нічого не каже про те, чи не залишився ризик саме в непокритій частині",
+        "Автоматизувати новий екран у той самий спринт, коли його будують, і потім переписувати тест двічі"
+      ],
+      "code": "# A scoring table is a planning artifact, not paperwork. Bring it to refinement.\n#\n# Feature            Prob  Impact  Score  Coverage decision\n# -----------------  ----  ------  -----  ----------------------------------\n# Checkout/payment      3       5     15  API exhaustive + 1 UI journey\n# Authentication        3       5     15  API exhaustive incl. BOLA + 1 UI\n# Cart arithmetic       4       4     16  API exhaustive + property-based\n# Product search        4       2      8  API + one UI test\n# Footer links          1       1      1  None - manual spot check\n#\n# The last row is the important one: writing \"None\" is a decision, and a\n# defensible one. A plan with no \"None\" rows has not actually prioritised.",
+      "codeCaption": "Risk equals probability multiplied by impact; the row that says \"None\" is the one that proves you prioritised.",
+      "codeCaptionUk": "Ризик — це ймовірність, помножена на вплив; рядок зі значенням «None» доводить, що пріоритезація справді відбулася.",
+      "exercise": "Build this table for a product you know: every significant feature, scored for probability and impact, with the layer you would cover it at. Include at least one row where the answer is deliberately no automation, and be ready to defend it.",
+      "exerciseUk": "Побудуйте таку таблицю для знайомого вам продукту: кожна значуща функціональність, оцінена за ймовірністю та впливом, із зазначенням рівня покриття. Додайте щонайменше один рядок, де відповідь — свідома відмова від автоматизації, і будьте готові її обстояти.",
+      "tags": ["strategy", "risk", "planning"],
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"]
+    },
+    {
+      "id": "ta-lesson-pytest-fixtures",
+      "moduleId": "pytest-core",
+      "level": "Beginner",
+      "order": 4,
+      "title": "Fixtures: setup, teardown and dependency injection",
+      "titleUk": "Фікстури: підготовка, прибирання та впровадження залежностей",
+      "summary": "A fixture is named setup that pytest injects by parameter name, and fixtures compose into a dependency graph.",
+      "summaryUk": "Фікстура — це іменована підготовка, яку pytest впроваджує за іменем параметра, і фікстури складаються у граф залежностей.",
+      "concept": "A pytest fixture is a function whose return value is injected into any test that names it as a parameter. Using yield instead of return splits the function into setup and teardown around a single suspension point, which puts both halves next to each other where a reviewer can see them together. The property that makes fixtures more than a helper function is composition: a fixture may request other fixtures, so asking for one causes pytest to build the entire chain in order and tear it down in reverse. That turns preconditions into a declarative graph rather than a pile of setup calls copied between tests. One rule catches everybody eventually — code after yield does not run if the code before yield raised. If setup can fail halfway, clean up defensively at the start of the fixture as well as at the end, because the previous run may have crashed and left state behind.",
+      "conceptUk": "Фікстура pytest — це функція, значення якої впроваджується у будь-який тест, що називає її як параметр. Використання yield замість return розділяє функцію на підготовку та прибирання навколо однієї точки зупинки, завдяки чому обидві половини стоять поруч і рецензент бачить їх разом. Властивість, яка робить фікстури чимось більшим за допоміжну функцію, — це композиція: фікстура може запитувати інші фікстури, тож звернення до однієї змушує pytest побудувати весь ланцюг по порядку й розібрати його у зворотному порядку. Це перетворює передумови на декларативний граф замість купи викликів підготовки, скопійованих між тестами. Одне правило рано чи пізно ловить усіх — код після yield не виконається, якщо код до yield кинув виняток. Якщо підготовка може впасти посередині, прибирайте захисно й на початку фікстури, а не лише в кінці, бо попередній запуск міг аварійно завершитися й залишити стан.",
+      "keyPoints": [
+        "Fixtures are injected by parameter name, so a test declares its preconditions in its signature",
+        "yield puts setup and teardown in one readable function; teardown runs in reverse dependency order",
+        "Teardown after yield is skipped if setup raised — clean defensively at the start as well"
+      ],
+      "keyPointsUk": [
+        "Фікстури впроваджуються за іменем параметра, тож тест оголошує свої передумови у власній сигнатурі",
+        "yield розміщує підготовку та прибирання в одній читабельній функції; прибирання йде у зворотному порядку залежностей",
+        "Прибирання після yield пропускається, якщо підготовка кинула виняток — прибирайте захисно й на початку"
+      ],
+      "pitfalls": [
+        "Assuming teardown always runs; a failure before yield skips it entirely and leaves state behind",
+        "Building deep fixture chains nobody can follow — if you cannot explain the graph, neither can the next reader"
+      ],
+      "pitfallsUk": [
+        "Вважати, що прибирання виконується завжди; збій до yield повністю його пропускає й залишає стан",
+        "Будувати глибокі ланцюги фікстур, за якими ніхто не встежить — якщо ви не можете пояснити граф, наступний читач теж не зможе"
+      ],
+      "code": "@pytest.fixture\ndef shop_as_user(shop, worker_account):\n    \"\"\"A logged-in API facade with a guaranteed-empty cart.\"\"\"\n    username, password = worker_account\n    shop.login_as(username, password)\n\n    shop.cart.clear()   # BEFORE, because the previous run may have crashed\n    yield shop\n    shop.cart.clear()   # and after\n\n\n@pytest.fixture\ndef cart_with_item(shop_as_user):\n    \"\"\"Composition: five tests need this precondition, so write it once.\"\"\"\n    product = shop_as_user.products.first_in_stock()\n    shop_as_user.cart.add_item(product.id, 1)\n    return shop_as_user, product\n\n\ndef test_remove_item_updates_total(cart_with_item):\n    shop, product = cart_with_item          # Arrange came from the graph\n    cart = shop.cart.remove_item(product.id)\n    assert cart.line_for(product.id) is None",
+      "codeCaption": "Requesting cart_with_item builds shop_as_user, which builds shop and worker_account, in that order.",
+      "codeCaptionUk": "Запит cart_with_item будує shop_as_user, який будує shop і worker_account — саме в такому порядку.",
+      "exercise": "Add a print statement to three chained fixtures and run pytest with --setup-show. Draw the construction and teardown order for two tests in a row, and explain why the shared fixture is not rebuilt between them.",
+      "exerciseUk": "Додайте print до трьох пов'язаних фікстур і запустіть pytest із --setup-show. Намалюйте порядок створення та прибирання для двох тестів поспіль і поясніть, чому спільна фікстура не перебудовується між ними.",
+      "tags": ["pytest", "fixtures", "setup"],
+      "sourceIds": ["pytest-fixtures", "pytest-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-fixture-scope",
+      "moduleId": "pytest-core",
+      "level": "Beginner",
+      "order": 5,
+      "title": "Fixture scope, and what it means under parallel runs",
+      "titleUk": "Область видимості фікстур і що вона означає під час паралельних запусків",
+      "summary": "Scope decides how often setup runs; with xdist, session scope means once per worker, which changes everything.",
+      "summaryUk": "Область видимості визначає, як часто виконується підготовка; з xdist session означає один раз на воркер, і це змінює все.",
+      "concept": "A fixture's scope controls how often it is created: function scope rebuilds it for every test, while class, module and session scopes reuse one instance across a wider group. The temptation is to widen scope for speed, and the correct question is not how expensive setup is but whether any test can modify the result. Anything mutable should stay function-scoped even when creation is cheap, because a shared mutable object turns test order into a hidden dependency that only appears when somebody reorders a file. The detail that catches experienced engineers is what session scope means under pytest-xdist: workers are separate processes, so a session-scoped fixture runs once per worker, not once per run. Four workers means four copies. If that fixture owns something shared — a server, a database reset, a single user account — the copies fight, and the failures move between tests from run to run.",
+      "conceptUk": "Область видимості фікстури визначає, як часто її створюють: function перебудовує її для кожного тесту, тоді як class, module і session перевикористовують один екземпляр для ширшої групи. Спокуса — розширити область заради швидкості, але правильне питання не в тому, наскільки дорога підготовка, а в тому, чи може якийсь тест змінити результат. Усе змінне має залишатися у function-області навіть тоді, коли створення дешеве, бо спільний змінний об'єкт перетворює порядок тестів на приховану залежність, яка проявляється лише тоді, коли хтось переставить місцями частини файлу. Деталь, яка ловить навіть досвідчених інженерів, — що означає session під pytest-xdist: воркери є окремими процесами, тож фікстура з областю session виконується один раз на воркер, а не один раз на запуск. Чотири воркери — чотири копії. Якщо така фікстура володіє чимось спільним — сервером, скиданням бази, єдиним обліковим записом — копії конфліктують, і падіння переміщуються між тестами від запуску до запуску.",
+      "keyPoints": [
+        "Choose scope by mutability first and cost second: anything a test can dirty stays function-scoped",
+        "Under xdist, session scope runs once per worker — four workers create four instances",
+        "A session-scoped fixture that owns a shared resource is a parallel-execution bug waiting to happen"
+      ],
+      "keyPointsUk": [
+        "Обирайте область насамперед за змінністю, а вже потім за вартістю: усе, що тест може забруднити, лишається function",
+        "Під xdist область session виконується один раз на воркер — чотири воркери створюють чотири екземпляри",
+        "Фікстура session, яка володіє спільним ресурсом, — це майбутня помилка паралельного виконання"
+      ],
+      "pitfalls": [
+        "Widening scope to session to speed the suite up, and silently introducing order-dependent failures",
+        "Putting a global state reset in a session-scoped autouse fixture — each worker then wipes the other workers' state mid-run"
+      ],
+      "pitfallsUk": [
+        "Розширювати область до session заради швидкості й непомітно вносити падіння, залежні від порядку",
+        "Ставити глобальне скидання стану в autouse-фікстуру з областю session — тоді кожен воркер стирає стан інших воркерів під час запуску"
+      ],
+      "code": "# WRONG under `pytest -n 4`: \"session\" means once per WORKER, so each of the\n# four workers wipes the other three workers' live sessions mid-run.\n@pytest.fixture(autouse=True, scope=\"session\")\ndef _reset_everything(base_url):\n    httpx.post(f\"{base_url}/api/testing/reset\")\n\n\n# RIGHT: give each worker its own data instead of resetting shared state.\n@pytest.fixture(scope=\"session\")\ndef worker_account(base_url, worker_id):\n    username = f\"qa_{worker_id}_{uuid.uuid4().hex[:8]}\"\n    httpx.post(\n        f\"{base_url}/api/auth/register\",\n        json={\"username\": username, \"password\": \"Str0ng!Passw0rd\"},\n    ).raise_for_status()\n    return username, \"Str0ng!Passw0rd\"",
+      "codeCaption": "The worker_id fixture comes from pytest-xdist and is the key to per-worker isolation.",
+      "codeCaptionUk": "Фікстура worker_id надається pytest-xdist і є ключем до ізоляції на рівні воркера.",
+      "exercise": "Take a suite that passes sequentially and run it with -n 4 several times. If nothing fails, deliberately move a mutable fixture to session scope and run again until you reproduce a failure that moves between tests.",
+      "exerciseUk": "Візьміть набір, який проходить послідовно, і запустіть його з -n 4 кілька разів. Якщо нічого не падає, свідомо переведіть змінну фікстуру в область session і запускайте, доки не відтворите падіння, що переміщується між тестами.",
+      "tags": ["pytest", "fixtures", "scope", "parallel"],
+      "sourceIds": ["pytest-fixtures", "pytest-xdist", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-parametrize",
+      "moduleId": "pytest-core",
+      "level": "Beginner",
+      "order": 6,
+      "title": "Parametrize: one test, many cases",
+      "titleUk": "Parametrize: один тест, багато випадків",
+      "summary": "Turn copy-pasted variants into a readable table, and label the rows so failures diagnose themselves.",
+      "summaryUk": "Перетворіть скопійовані варіанти на читабельну таблицю й підпишіть рядки, щоб падіння самі себе пояснювали.",
+      "concept": "The parametrize marker runs one test body against many input sets, producing a separate reported test per row. Its value is not saving keystrokes but making the coverage visible: a table of boundary values shows at a glance what is checked and what is missing, where five near-identical copied functions hide the gaps. Two habits make the difference between a table that helps and one that hurts. First, carry a human-readable label in each row, or set ids explicitly, so a failure reads as the case name rather than a mangled list of values. Second, choose rows using boundary-value analysis — minimum, one below minimum, maximum, one above maximum, and the type boundary — because the middle of a valid range almost never finds a defect. Stop parametrizing the moment the bodies diverge: if a row needs an if statement, it is a different test wearing a disguise.",
+      "conceptUk": "Маркер parametrize виконує одне тіло тесту з багатьма наборами вхідних даних, створюючи окремий тест у звіті для кожного рядка. Його цінність не в економії натискань, а в тому, що покриття стає видимим: таблиця межових значень одразу показує, що перевіряється, а чого бракує, тоді як п'ять майже однакових скопійованих функцій приховують прогалини. Дві звички відрізняють корисну таблицю від шкідливої. По-перше, несіть у кожному рядку зрозумілу людині мітку або задавайте ids явно, щоб падіння читалося як назва випадку, а не як спотворений перелік значень. По-друге, обирайте рядки методом аналізу межових значень — мінімум, на одиницю менше мінімуму, максимум, на одиницю більше максимуму та межа типу — бо середина допустимого діапазону майже ніколи не знаходить дефектів. Припиняйте параметризацію тієї миті, коли тіла розходяться: якщо рядку потрібен if, це переодягнений інший тест.",
+      "keyPoints": [
+        "Each row becomes its own reported test, so coverage is visible instead of buried in copies",
+        "Label rows or set ids: a failure should read [below minimum], not [0-422]",
+        "Pick rows by boundary analysis; stacking two parametrize decorators gives the cartesian product"
+      ],
+      "keyPointsUk": [
+        "Кожен рядок стає окремим тестом у звіті, тож покриття видно, а не поховано в копіях",
+        "Підписуйте рядки або задавайте ids: падіння має читатися як [below minimum], а не [0-422]",
+        "Обирайте рядки за межовим аналізом; два накладені декоратори parametrize дають декартів добуток"
+      ],
+      "pitfalls": [
+        "Unlabelled rows, which turn a failure report into a puzzle of raw values",
+        "Keeping a row in the table once its body needs a branch — that is a separate test, not a case"
+      ],
+      "pitfallsUk": [
+        "Непідписані рядки, які перетворюють звіт про падіння на головоломку з сирих значень",
+        "Залишати рядок у таблиці, коли його тілу потрібне розгалуження — це окремий тест, а не випадок"
+      ],
+      "code": "@pytest.mark.parametrize(\n    (\"quantity\", \"expected_status\", \"case\"),\n    [\n        (1,   201, \"minimum valid\"),\n        (99,  201, \"maximum valid\"),\n        (0,   422, \"below minimum\"),\n        (-1,  422, \"negative\"),\n        (100, 422, \"above maximum\"),\n        (1.5, 422, \"non-integer\"),\n        (\"2\", 201, \"numeric string, coerced by the API\"),\n    ],\n)\ndef test_quantity_boundaries(shop_as_user, quantity, expected_status, case):\n    product = shop_as_user.products.first_in_stock()\n\n    response = shop_as_user.cart.add_item_raw(product.id, quantity)\n\n    assert response.status_code == expected_status, f\"[{case}] {response.text[:300]}\"",
+      "codeCaption": "Seven cases, one body. Triage starts from the test name before anyone opens a log.",
+      "codeCaptionUk": "Сім випадків, одне тіло. Розбір падіння починається з назви тесту, ще до відкриття логів.",
+      "exercise": "Find three near-identical tests in a suite and merge them into one parametrized table. Then add the boundary rows that were missing, and check whether any of the new rows fail.",
+      "exerciseUk": "Знайдіть три майже однакові тести й об'єднайте їх в одну параметризовану таблицю. Потім додайте межові рядки, яких бракувало, і перевірте, чи не падає якийсь із нових рядків.",
+      "tags": ["pytest", "parametrize", "boundary-values"],
+      "sourceIds": ["pytest-parametrize", "pytest-docs"]
+    },
+    {
+      "id": "ta-lesson-markers-skip-xfail",
+      "moduleId": "pytest-core",
+      "level": "Beginner",
+      "order": 7,
+      "title": "Markers, skip and xfail",
+      "titleUk": "Маркери, skip та xfail",
+      "summary": "Markers select what runs; xfail with strict mode is how a known bug stays visible instead of rotting.",
+      "summaryUk": "Маркери обирають, що запускати; xfail у суворому режимі тримає відомий баг видимим, а не забутим.",
+      "concept": "Markers are labels that let you select subsets of a suite — a smoke gate, everything except the slow tests, a single layer. Declaring every marker in configuration and enabling strict marker validation converts a typo from a silent selection of zero tests into an immediate error, which matters because a command that quietly runs nothing looks exactly like a command that passes. Skip and xfail look interchangeable and are not. Skip says this test does not apply here, and is right for a missing device or the wrong operating system; nothing happens when the situation changes, so a skip can rot for years. Xfail says this is a known defect, and with strict mode enabled an unexpected pass turns the build red. That inversion is the whole point: the day somebody fixes the bug, the build forces the marker to be removed, so the known-issues list cannot quietly become permanent.",
+      "conceptUk": "Маркери — це мітки, які дозволяють обирати підмножини набору: димовий бар'єр, усе окрім повільних тестів, окремий рівень. Оголошення кожного маркера в конфігурації та ввімкнення суворої перевірки маркерів перетворює друкарську помилку з тихого вибору нуля тестів на негайну помилку, і це важливо, бо команда, яка мовчки нічого не запускає, виглядає точнісінько як команда, що пройшла успішно. Skip та xfail здаються взаємозамінними, але ними не є. Skip каже, що цей тест тут не застосовний, і підходить для відсутнього пристрою чи іншої операційної системи; коли ситуація змінюється, не відбувається нічого, тож skip може гнити роками. Xfail каже, що це відомий дефект, і в суворому режимі несподіваний успіх робить збірку червоною. Саме ця інверсія і є суттю: того дня, коли хтось виправить баг, збірка змусить прибрати маркер, тож перелік відомих проблем не зможе тихо стати постійним.",
+      "keyPoints": [
+        "Declare markers in configuration and enable strict validation so a typo fails instead of selecting nothing",
+        "skip means \"not applicable here\"; xfail means \"known defect, with a ticket\"",
+        "xfail_strict makes an unexpected pass fail the build, forcing the marker to be cleaned up"
+      ],
+      "keyPointsUk": [
+        "Оголошуйте маркери в конфігурації та вмикайте сувору перевірку, щоб друкарська помилка падала, а не обирала нічого",
+        "skip означає «тут не застосовно»; xfail означає «відомий дефект із задачею в трекері»",
+        "xfail_strict робить несподіваний успіх падінням збірки, змушуючи прибрати маркер"
+      ],
+      "pitfalls": [
+        "Commenting out a failing test instead of marking it xfail — the coverage and the signal are both lost",
+        "Using skip for a known bug, which hides it permanently because nothing ever forces a review"
+      ],
+      "pitfallsUk": [
+        "Закоментувати тест, що падає, замість позначити його xfail — втрачається і покриття, і сигнал",
+        "Використовувати skip для відомого бага: він ховається назавжди, бо ніщо не змушує до перегляду"
+      ],
+      "code": "# pyproject.toml\n# [tool.pytest.ini_options]\n# addopts = [\"--strict-markers\"]\n# xfail_strict = true\n# markers = [\"smoke: minimal always-green set\", \"slow: takes over 30s\"]\n\n@pytest.mark.xfail(\n    reason=\"KNOWN DEFECT SHOP-114: GET /api/orders/{id} does not check ownership\",\n    strict=True,\n)\ndef test_order_belongs_to_its_owner(cart_with_item, shop_as_second_user):\n    shop, _ = cart_with_item\n    order = shop.orders.create()\n\n    response = shop_as_second_user.client.get(f\"/api/orders/{order.id}\")\n\n    assert response.status_code in (403, 404)\n\n# The build is green today. The day SHOP-114 is fixed this test passes\n# unexpectedly, strict mode turns the build red, and somebody deletes the marker.",
+      "codeCaption": "A known defect that stays visible, carries a ticket number, and cleans itself up when fixed.",
+      "codeCaptionUk": "Відомий дефект, який лишається видимим, несе номер задачі й самоприбирається після виправлення.",
+      "exercise": "Add a marker to your configuration, apply it, then deliberately misspell it on the command line and confirm the run fails rather than silently selecting zero tests. Then convert one commented-out test into a strict xfail with a ticket reference.",
+      "exerciseUk": "Додайте маркер до конфігурації, застосуйте його, потім свідомо зробіть у ньому помилку в командному рядку й переконайтеся, що запуск падає, а не мовчки обирає нуль тестів. Далі перетворіть один закоментований тест на суворий xfail із посиланням на задачу.",
+      "tags": ["pytest", "markers", "xfail"],
+      "sourceIds": ["pytest-markers", "pytest-skipping"]
+    },
+    {
+      "id": "ta-lesson-project-layout-conftest",
+      "moduleId": "project-setup",
+      "level": "Beginner",
+      "order": 8,
+      "title": "Project layout and the conftest hierarchy",
+      "titleUk": "Структура проєкту та ієрархія conftest",
+      "summary": "Separate reusable library code from tests, and let each layer's conftest own only its own fixtures.",
+      "summaryUk": "Відокремте бібліотечний код від тестів і дозвольте conftest кожного рівня володіти лише власними фікстурами.",
+      "concept": "A maintainable suite separates two kinds of code: a framework package containing reusable machinery, and a tests tree containing only intent. The framework holds configuration, an HTTP client, page and screen objects, data factories and reporting helpers; the tests hold assertions and business flow and nothing else. Fixtures are then layered with the directory structure. A root conftest owns everything shared — application lifecycle, command-line options, reporting hooks — and each layer's own conftest owns only what that layer needs. Fixtures are inherited downwards and never sideways, which produces a concrete benefit: running only the service tests takes seconds on a machine with no browsers and no mobile tooling installed, because nothing on that path imports them. To keep that true, put imports for optional layers inside the fixture function rather than at module top level, so collection succeeds even when the dependency is absent.",
+      "conceptUk": "Придатний до підтримки набір розділяє два види коду: пакет фреймворку з повторно використовуваним механізмом і дерево тестів, що містить лише намір. Фреймворк тримає конфігурацію, HTTP-клієнт, об'єкти сторінок та екранів, фабрики даних і помічники звітності; тести тримають твердження та бізнес-потік і більше нічого. Далі фікстури шаруються разом зі структурою каталогів. Кореневий conftest володіє всім спільним — життєвим циклом застосунку, опціями командного рядка, хуками звітності — а conftest кожного рівня володіє лише тим, що потрібно цьому рівню. Фікстури успадковуються вниз і ніколи вбік, і це дає конкретну вигоду: запуск лише сервісних тестів триває секунди на машині без браузерів і без мобільного інструментарію, бо ніщо на цьому шляху їх не імпортує. Щоб це залишалося правдою, розміщуйте імпорти опційних рівнів усередині функції фікстури, а не на рівні модуля, аби збирання тестів проходило навіть за відсутності залежності.",
+      "keyPoints": [
+        "Framework code and test code are different things and belong in different trees",
+        "Root conftest owns shared lifecycle and hooks; each layer's conftest owns only its own fixtures",
+        "Import optional dependencies inside fixtures so collection works without browsers or devices installed"
+      ],
+      "keyPointsUk": [
+        "Код фреймворку і код тестів — різні речі, і вони належать різним деревам",
+        "Кореневий conftest володіє спільним життєвим циклом і хуками; conftest рівня — лише власними фікстурами",
+        "Імпортуйте опційні залежності всередині фікстур, щоб збирання працювало без браузерів і пристроїв"
+      ],
+      "pitfalls": [
+        "One giant conftest at the root that every layer must load, which couples unrelated layers together",
+        "Importing an optional driver at module level, so a developer without it cannot even collect the suite"
+      ],
+      "pitfallsUk": [
+        "Один величезний conftest у корені, який мусить завантажувати кожен рівень, що зв'язує непов'язані рівні",
+        "Імпортувати опційний драйвер на рівні модуля, через що розробник без нього не може навіть зібрати набір"
+      ],
+      "code": "# conftest.py                  root: app lifecycle, CLI options, report hooks\n# tests/services/conftest.py   ApiClient, service facade, personas\n# tests/web/conftest.py        browser context tuning, storage state, page objects\n# tests/mobile/conftest.py     Appium driver, screen objects\n\n# tests/mobile/conftest.py\n@pytest.fixture\ndef driver(request):\n    # Imported inside the fixture, not at module top level: a laptop without\n    # Appium installed can still collect and run every other layer.\n    from framework.mobile.driver_factory import create_driver\n\n    session = create_driver()\n    try:\n        yield session\n    finally:\n        session.quit()",
+      "codeCaption": "Layered conftests keep the fast layers fast and independent of the slow ones.",
+      "codeCaptionUk": "Шарові conftest тримають швидкі рівні швидкими й незалежними від повільних.",
+      "exercise": "In a suite you work with, try running only the API tests on a machine or container with no browser installed. If it fails to collect, find the import that caused it and move it inside the fixture that needs it.",
+      "exerciseUk": "У вашому наборі спробуйте запустити лише API-тести на машині чи в контейнері без браузера. Якщо збирання падає, знайдіть імпорт, що це спричинив, і перенесіть його всередину фікстури, якій він потрібен.",
+      "tags": ["structure", "conftest", "pytest"],
+      "sourceIds": ["pytest-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-typed-configuration",
+      "moduleId": "project-setup",
+      "level": "Beginner",
+      "order": 9,
+      "title": "Typed, layered configuration",
+      "titleUk": "Типізована багатошарова конфігурація",
+      "summary": "No test reads the environment directly; every setting is a typed field with one obvious place to change it.",
+      "summaryUk": "Жоден тест не читає змінні середовища напряму; кожне налаштування — типізоване поле з одним очевидним місцем для зміни.",
+      "concept": "Reading configuration straight from environment variables scatters string parsing and default values across a whole suite, and turns a typo into a None that surfaces hours later as an unrelated failure. A typed settings object fixes all three problems at once. Values are validated when the process starts, so a mistake is an immediate startup error with the field name in it; types are real, so a timeout is a float and a flag is a boolean rather than the string \"false\" which is truthy; and every option is discoverable by reading one class instead of grepping for os.environ. Layer the sources so that a single variable switches environments: real environment variables win, then a local dotenv file, then a per-environment configuration file committed to the repository, then the field defaults. Credentials never belong in the repository — commit an example file that documents the shape, and keep the real values in a secret store.",
+      "conceptUk": "Читання конфігурації напряму зі змінних середовища розсіює розбір рядків і значення за замовчуванням по всьому набору й перетворює друкарську помилку на None, який проявиться через години як непов'язане падіння. Типізований об'єкт налаштувань вирішує всі три проблеми одразу. Значення перевіряються під час старту процесу, тож помилка стає негайною помилкою запуску з назвою поля; типи справжні, тож таймаут є float, а прапорець — boolean, а не рядком \"false\", який є істинним; і кожну опцію можна знайти, прочитавши один клас, замість пошуку os.environ по репозиторію. Нашаруйте джерела так, щоб одна змінна перемикала середовища: справжні змінні середовища перемагають, далі локальний файл dotenv, далі файл конфігурації для середовища, закомічений у репозиторій, і нарешті значення полів за замовчуванням. Обліковим даним не місце в репозиторії — комітьте приклад, що документує формат, а справжні значення тримайте у сховищі секретів.",
+      "keyPoints": [
+        "A typo becomes a startup error naming the field instead of a None discovered hours later",
+        "Types are real: a timeout is a float, a flag is a boolean, not the truthy string \"false\"",
+        "Layer sources so one variable switches environments; keep real credentials out of the repository"
+      ],
+      "keyPointsUk": [
+        "Друкарська помилка стає помилкою запуску з назвою поля, а не None, знайденим через години",
+        "Типи справжні: таймаут — float, прапорець — boolean, а не істинний рядок \"false\"",
+        "Нашаруйте джерела так, щоб одна змінна перемикала середовища; справжні облікові дані тримайте поза репозиторієм"
+      ],
+      "pitfalls": [
+        "Reading os.environ inside tests, which scatters defaults and parsing across the whole suite",
+        "Treating an environment variable as a boolean without converting it — the string \"false\" is truthy in Python"
+      ],
+      "pitfallsUk": [
+        "Читати os.environ усередині тестів, розсіюючи значення за замовчуванням і розбір по всьому набору",
+        "Вважати змінну середовища булевою без перетворення — рядок \"false\" у Python є істинним"
+      ],
+      "code": "class ApiSettings(BaseModel):\n    base_url: str = \"http://127.0.0.1:8000\"\n    timeout: float = 10.0\n    retries: int = Field(default=2, ge=0, le=5)\n\n\nclass Settings(BaseSettings):\n    model_config = SettingsConfigDict(env_prefix=\"QA_\", env_nested_delimiter=\"__\")\n\n    env: Env = Env.LOCAL\n    api: ApiSettings = ApiSettings()\n\n\nsettings = Settings()\n\n# In a test or a page object:\n#   settings.api.timeout       -> 10.0, a real float, autocompleted, validated\n# Not:\n#   float(os.getenv(\"API_TIMEOUT\", \"10\"))   scattered in forty places",
+      "codeCaption": "Precedence runs environment variables, then dotenv, then per-environment YAML, then these defaults.",
+      "codeCaptionUk": "Пріоритет: змінні середовища, потім dotenv, потім YAML для середовища, потім ці значення за замовчуванням.",
+      "exercise": "Search a suite you work with for direct environment reads. Replace them with a single typed settings object, then set an invalid value on purpose and confirm the run fails immediately with a message naming the field.",
+      "exerciseUk": "Знайдіть у вашому наборі прямі звернення до змінних середовища. Замініть їх єдиним типізованим об'єктом налаштувань, потім свідомо задайте некоректне значення й переконайтеся, що запуск одразу падає з повідомленням, яке називає поле.",
+      "tags": ["configuration", "pydantic", "environments"],
+      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-reproducible-run-settings",
+      "moduleId": "project-setup",
+      "level": "Beginner",
+      "order": 10,
+      "title": "Making the run reproducible and strict",
+      "titleUk": "Робимо запуск відтворюваним і суворим",
+      "summary": "Put shared flags in configuration, promote warnings to errors, and keep environment-specific flags in CI.",
+      "summaryUk": "Тримайте спільні прапорці в конфігурації, підвищуйте попередження до помилок, а специфічні для середовища прапорці — у CI.",
+      "concept": "A run should behave the same for every engineer and for the pipeline, which means the shared flags live in committed configuration rather than in a command somebody remembers. Useful defaults are a summary of all non-passing outcomes so skips are visible rather than invisible, strict marker and configuration validation, and a modern import mode. The setting with the largest long-term payoff is promoting warnings to errors: a deprecation warning today is a broken build in a year, and catching it while the fix is small is far cheaper than discovering it during an urgent upgrade. Keep the exemption list short and require a written reason beside each entry, because a blanket ignore is the same as having no policy. What should not go into shared configuration is anything environment-specific — parallel workers, rerun counts, report directories — since those differ between a laptop and a pipeline and belong in the command that runs there.",
+      "conceptUk": "Запуск має поводитися однаково для кожного інженера й для конвеєра, а це означає, що спільні прапорці живуть у закоміченій конфігурації, а не в команді, яку хтось пам'ятає. Корисні значення за замовчуванням — це підсумок усіх результатів, окрім успішних, щоб пропуски були видимими, сувора перевірка маркерів і конфігурації та сучасний режим імпорту. Налаштування з найбільшою довгостроковою віддачею — підвищення попереджень до помилок: попередження про застарілість сьогодні є зламаною збіркою через рік, і виловити його, поки виправлення мале, значно дешевше, ніж виявити під час термінового оновлення. Тримайте перелік винятків коротким і вимагайте письмової причини біля кожного запису, бо суцільне ігнорування дорівнює відсутності політики. До спільної конфігурації не має потрапляти нічого специфічного для середовища — кількість паралельних воркерів, повтори, каталоги звітів — бо це різниться між ноутбуком і конвеєром і належить команді, яка там виконується.",
+      "keyPoints": [
+        "Shared flags belong in committed configuration so every engineer and the pipeline behave identically",
+        "Promoting warnings to errors turns next year's breakage into today's small fix",
+        "Keep environment-specific flags such as parallelism and report directories in the CI command"
+      ],
+      "keyPointsUk": [
+        "Спільні прапорці належать закоміченій конфігурації, щоб кожен інженер і конвеєр поводилися однаково",
+        "Підвищення попереджень до помилок перетворює майбутню поломку на невелике сьогоднішнє виправлення",
+        "Специфічні для середовища прапорці, як-от паралельність і каталоги звітів, тримайте в команді CI"
+      ],
+      "pitfalls": [
+        "Adding a blanket warnings filter, which silently restores the problem the setting was meant to catch",
+        "Putting rerun flags in shared configuration, which quietly hides flaky tests from everyone on the team"
+      ],
+      "pitfallsUk": [
+        "Додавати суцільний фільтр попереджень, що тихо повертає проблему, яку налаштування мало ловити",
+        "Ставити прапорці повторів у спільну конфігурацію, тихо приховуючи нестабільні тести від усієї команди"
+      ],
+      "code": "# pyproject.toml\n[tool.pytest.ini_options]\naddopts = [\n    \"-ra\",                      # summarise every non-passing outcome, including skips\n    \"--strict-markers\",         # a marker typo is an error, not a silent no-op\n    \"--strict-config\",\n    \"--import-mode=importlib\",\n    \"--durations=10\",\n]\nxfail_strict = true\n\n# Warnings are bugs until proven otherwise. Each exemption names its reason.\nfilterwarnings = [\n    \"error\",\n    \"ignore::DeprecationWarning:selenium.*\",\n]\n\n# NOT here: -n auto, --reruns, --alluredir. Those differ per environment\n# and belong in the CI command, where the choice is visible.",
+      "codeCaption": "Shared and strict in configuration; environment-specific and negotiable on the command line.",
+      "codeCaptionUk": "Спільне й суворе — у конфігурації; специфічне для середовища та узгоджуване — у командному рядку.",
+      "exercise": "Turn on warnings-as-errors in a suite you work with and run it. Fix or explicitly exempt each warning that appears, writing the reason next to the exemption, and note how many were real future breakages.",
+      "exerciseUk": "Увімкніть режим «попередження як помилки» у вашому наборі й запустіть його. Виправте або явно додайте виняток для кожного попередження, записавши причину поруч, і зауважте, скільки з них були реальними майбутніми поломками.",
+      "tags": ["configuration", "pytest", "ci"],
+      "sourceIds": ["pytest-docs", "pytest-markers", "qa-automation-python-repo"]
+    }
+  ]
+}

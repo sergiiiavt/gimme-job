@@ -1,0 +1,559 @@
+{
+  "lessons": [
+    {
+      "id": "ta-lesson-mobile-three-problems",
+      "moduleId": "mobile-testing",
+      "level": "Advanced",
+      "order": 23,
+      "title": "Mobile testing is three different problems",
+      "titleUk": "Мобільне тестування — це три різні задачі",
+      "summary": "Emulated mobile web, real-device mobile web and native apps have different costs, tools and findings.",
+      "summaryUk": "Емульований мобільний веб, реальні пристрої та нативні застосунки мають різні вартість, інструменти й знахідки.",
+      "concept": "Three distinct activities get called mobile testing, and conflating them is the most common mistake in this area. Emulated mobile web runs your responsive site at a phone viewport with a mobile user agent and touch enabled; it costs about a second per test and finds layout, touch-target, overflow and breakpoint defects, which is the majority of mobile web problems. Real-device mobile web drives an actual browser on actual hardware through a device automation server; it costs tens of seconds per test and finds what emulation structurally cannot, because emulation is desktop rendering wearing a phone-shaped viewport. Native app testing drives an installed application through a platform driver and is the only way to reach anything that is genuinely part of the app. The strategy that works runs emulation on every commit, real devices nightly, and native smoke tests nightly or at release. Most teams invert this, build an expensive device suite first, and end up with a slow flaky job nobody runs.",
+      "conceptUk": "Три різні активності називають мобільним тестуванням, і їх змішування — найпоширеніша помилка в цій темі. Емульований мобільний веб запускає ваш адаптивний сайт у вікні розміром із телефон, із мобільним user agent і ввімкненим дотиком; він коштує близько секунди на тест і знаходить дефекти верстки, розмірів зон дотику, горизонтального переповнення та точок перемикання макета — тобто більшість проблем мобільного вебу. Мобільний веб на реальному пристрої керує справжнім браузером на справжньому залізі через сервер автоматизації; він коштує десятки секунд на тест і знаходить те, чого емуляція не може структурно, бо емуляція — це десктопний рендеринг у вікні у формі телефона. Тестування нативного застосунку керує встановленою програмою через платформний драйвер і є єдиним способом дістатися того, що справді є частиною застосунку. Стратегія, яка працює: емуляція на кожен коміт, реальні пристрої щоночі, димові нативні тести щоночі або на релізі. Більшість команд роблять навпаки, спершу будують дорогий набір для пристроїв і отримують повільну нестабільну задачу, яку ніхто не запускає.",
+      "keyPoints": [
+        "Emulation is fast and finds layout, touch-target, overflow and breakpoint defects",
+        "Real devices find engine bugs, real keyboard and viewport behaviour, and true performance",
+        "Run emulation every commit and real devices nightly, not the other way round"
+      ],
+      "keyPointsUk": [
+        "Емуляція швидка й знаходить дефекти верстки, зон дотику, переповнення та точок перемикання макета",
+        "Реальні пристрої знаходять баги рушія, справжню поведінку клавіатури й вікна та реальну продуктивність",
+        "Запускайте емуляцію на кожен коміт, а реальні пристрої щоночі, а не навпаки"
+      ],
+      "pitfalls": [
+        "Claiming iOS coverage from emulation — emulated mobile web is desktop Chromium, not WebKit",
+        "Building the device suite first, so the pipeline is slow and flaky before it has found anything"
+      ],
+      "pitfallsUk": [
+        "Заявляти про покриття iOS на основі емуляції — емульований мобільний веб є десктопним Chromium, а не WebKit",
+        "Будувати набір для пристроїв першим: конвеєр стає повільним і нестабільним ще до перших знахідок"
+      ],
+      "code": "# every commit      emulated mobile web        2-3 min     ~80% of mobile web defects\n# nightly           real-device mobile web     15-30 min   engine and hardware reality\n# nightly/release   native app smoke           20-45 min   what only a device can prove\n#\n# What emulation structurally CANNOT find, and must be said out loud in a plan:\n#   - iOS WebKit behaviour (every iOS browser is Safari underneath)\n#   - real scroll momentum, pinch-zoom, soft-keyboard viewport resizing\n#   - real font fallback, GPU behaviour and mid-range device performance",
+      "codeCaption": "Write the limitations into the test plan; a stakeholder who reads \"mobile covered\" will assume more than is true.",
+      "codeCaptionUk": "Впишіть обмеження в тест-план; замовник, прочитавши «мобільні покриті», припустить більше, ніж є насправді.",
+      "exercise": "For a product you know, write a one-page mobile plan that states which of the three activities you would run, at what cadence, and — explicitly — what each cannot find.",
+      "exerciseUk": "Для знайомого продукту напишіть односторінковий мобільний план: які з трьох активностей ви запускаєте, з якою періодичністю і — явно — чого кожна з них не може знайти.",
+      "tags": ["mobile", "strategy", "emulation"],
+      "sourceIds": ["playwright-emulation", "appium-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-emulated-mobile-web",
+      "moduleId": "mobile-testing",
+      "level": "Advanced",
+      "order": 24,
+      "title": "Emulated mobile web: the checks worth writing first",
+      "titleUk": "Емульований мобільний веб: перевірки, які варто написати першими",
+      "summary": "Breakpoints, horizontal overflow, touch-target size, readable text and one full journey per device.",
+      "summaryUk": "Точки перемикання макета, горизонтальне переповнення, розмір зон дотику, читабельний текст і один повний сценарій на пристрій.",
+      "concept": "Device descriptors set viewport, device pixel ratio, user agent and touch support together, which is far more reliable than guessing viewport numbers by hand. Parametrising the fixture rather than each test means adding a device to the matrix is a one-line change that immediately covers the whole file. Five checks give most of the value. First, that the responsive breakpoint actually fires at real device widths. Second, that the page does not scroll horizontally, which is the signature mobile defect, usually caused by one element wider than the viewport and completely invisible on a desktop screen. Third, that interactive controls meet a minimum touch-target size — the platform guidelines ask for around forty-four pixels, and a control that sets a minimum height but no minimum width will quietly fail it. Fourth, that text is large enough to read without zooming. Fifth, one complete journey, using the same page objects as the desktop suite.",
+      "conceptUk": "Дескриптори пристроїв задають розмір вікна, щільність пікселів, user agent і підтримку дотику разом, і це значно надійніше, ніж вручну вгадувати числа. Параметризація фікстури, а не кожного тесту, означає, що додавання пристрою до матриці — це зміна в один рядок, яка одразу покриває цілий файл. П'ять перевірок дають більшу частину цінності. Перша — що точка перемикання макета справді спрацьовує на реальних ширинах пристроїв. Друга — що сторінка не прокручується горизонтально; це фірмовий мобільний дефект, зазвичай спричинений одним елементом, ширшим за вікно, і повністю невидимий на десктопі. Третя — що інтерактивні елементи мають мінімальний розмір зони дотику: рекомендації платформ просять близько сорока чотирьох пікселів, і елемент, якому задано мінімальну висоту без мінімальної ширини, тихо цю вимогу порушить. Четверта — що текст достатньо великий, щоб читати без масштабування. П'ята — один повний сценарій із тими самими об'єктами сторінок, що й у десктопному наборі.",
+      "keyPoints": [
+        "Use device descriptors instead of hand-picked viewport numbers, and parametrise the fixture not the tests",
+        "Horizontal overflow is the signature mobile defect and is invisible on a desktop screen",
+        "Touch targets need a minimum width as well as a minimum height — that asymmetry hides real failures"
+      ],
+      "keyPointsUk": [
+        "Використовуйте дескриптори пристроїв замість вручну підібраних розмірів і параметризуйте фікстуру, а не тести",
+        "Горизонтальне переповнення — фірмовий мобільний дефект, невидимий на десктопному екрані",
+        "Зонам дотику потрібна мінімальна ширина, а не лише висота — саме ця асиметрія ховає реальні збої"
+      ],
+      "pitfalls": [
+        "Duplicating the desktop page objects for mobile when only one collapsed menu actually differs",
+        "Including a tablet in the matrix and then asserting mobile-only behaviour, so the test fails on layout rather than on a defect"
+      ],
+      "pitfallsUk": [
+        "Дублювати десктопні об'єкти сторінок для мобільних, коли реально різниться лише одне згорнуте меню",
+        "Додати планшет до матриці й перевіряти суто мобільну поведінку — тест падає через макет, а не через дефект"
+      ],
+      "code": "@pytest.fixture(params=[\"iPhone 15\", \"Pixel 7\", \"Galaxy S9+\", \"iPad (gen 7)\"], ids=lambda d: d)\ndef mobile_page(request, playwright, browser, base_url, storage_state):\n    descriptor = playwright.devices[request.param]\n    context = browser.new_context(**descriptor, base_url=base_url, storage_state=storage_state)\n    page = context.new_page()\n    yield page\n    context.close()\n\n\ndef test_no_horizontal_scrolling(mobile_page):\n    App(mobile_page).products.open()\n\n    overflow = mobile_page.evaluate(\n        \"() => document.documentElement.scrollWidth - document.documentElement.clientWidth\"\n    )\n\n    assert overflow <= 1, f\"Page scrolls horizontally by {overflow}px on this device\"\n\n\ndef test_touch_targets_meet_the_minimum_size(mobile_page):\n    products = App(mobile_page).products.open()\n    if mobile_page.viewport_size[\"width\"] > 640:\n        pytest.skip(\"Desktop-width layout - touch sizing does not apply\")\n\n    box = products.page.locator(\"[data-testid=menu-toggle]\").bounding_box()\n\n    assert box[\"width\"] >= 44 and box[\"height\"] >= 44, f\"Touch target is {box}\"",
+      "codeCaption": "This exact test found a real 40x46 pixel hamburger button — min-height was set, min-width was not.",
+      "codeCaptionUk": "Саме цей тест знайшов справжню кнопку меню 40x46 пікселів — мінімальну висоту задали, ширину ні.",
+      "exercise": "Add the overflow check to a responsive site you work with and run it across four device descriptors. If it passes, add a wide table or a long unbroken string and confirm the check catches it.",
+      "exerciseUk": "Додайте перевірку переповнення до адаптивного сайту й запустіть її на чотирьох дескрипторах пристроїв. Якщо вона проходить, додайте широку таблицю чи довгий нерозривний рядок і переконайтеся, що перевірка це ловить.",
+      "tags": ["mobile", "responsive", "playwright", "accessibility"],
+      "sourceIds": ["playwright-emulation", "wcag-22", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-appium-sessions",
+      "moduleId": "mobile-testing",
+      "level": "Advanced",
+      "order": 25,
+      "title": "Appium sessions, capabilities and driver factories",
+      "titleUk": "Сесії Appium, capabilities та фабрики драйверів",
+      "summary": "Typed options objects replaced capability dictionaries; a factory hides whether you run locally or on a farm.",
+      "summaryUk": "Типізовані об'єкти опцій замінили словники capabilities; фабрика приховує, чи ви запускаєтеся локально, чи на фермі пристроїв.",
+      "concept": "Most Appium material online describes a version that is several major releases out of date, so it is worth knowing what changed. Capability dictionaries have been replaced by typed options objects per platform, which serialise to the standard protocol format and catch a misspelt capability at construction rather than at session start. Vendor-specific capabilities need an explicit namespace prefix, and in the current major version the prefixes for server security features are mandatory rather than optional. Drivers are installed separately from the server, which still surprises people. The old touch-action API is gone, replaced by platform gesture commands executed as scripts, and those run natively on the device and are far more reliable than hand-assembled pointer sequences. Wrap all of this in a driver factory so a test never knows whether it is running against a local emulator or a device cloud — that indifference is the entire reason the factory exists.",
+      "conceptUk": "Більшість матеріалів про Appium в інтернеті описують версію, що відстала на кілька мажорних релізів, тож варто знати, що змінилося. Словники capabilities замінені типізованими об'єктами опцій для кожної платформи, які серіалізуються у стандартний формат протоколу й ловлять помилку в назві capability під час створення об'єкта, а не під час старту сесії. Специфічні для вендора capabilities потребують явного префікса простору імен, а в поточній мажорній версії префікси для функцій безпеки сервера є обов'язковими, а не опційними. Драйвери встановлюються окремо від сервера, і це досі дивує людей. Стара API дотиків зникла, її замінили платформні жестові команди, що виконуються як скрипти; вони працюють нативно на пристрої й значно надійніші за вручну зібрані послідовності вказівника. Загорніть усе це у фабрику драйверів, щоб тест ніколи не знав, чи він виконується на локальному емуляторі, чи у хмарі пристроїв — саме заради цієї байдужості фабрика й існує.",
+      "keyPoints": [
+        "Typed options objects replaced capability dictionaries and catch typos at construction time",
+        "Drivers install separately from the server; vendor capabilities need an explicit namespace prefix",
+        "Use platform gesture commands rather than the removed touch-action API"
+      ],
+      "keyPointsUk": [
+        "Типізовані об'єкти опцій замінили словники capabilities й ловлять помилки під час створення об'єкта",
+        "Драйвери встановлюються окремо від сервера; вендорські capabilities потребують явного префікса",
+        "Використовуйте платформні жестові команди замість видаленої API дотиків"
+      ],
+      "pitfalls": [
+        "Following a tutorial written for an old major version, then debugging capability errors for an afternoon",
+        "Hardcoding cloud credentials in the test rather than the factory, which couples every test to where it runs"
+      ],
+      "pitfallsUk": [
+        "Слідувати навчальному матеріалу для старої мажорної версії й потім півдня налагоджувати помилки capabilities",
+        "Прописувати облікові дані хмари в тесті, а не у фабриці, прив'язуючи кожен тест до місця запуску"
+      ],
+      "code": "from appium.options.android import UiAutomator2Options\n\n\ndef create_driver(*, platform=Platform.ANDROID, browser=None, app=None, build=\"local\"):\n    opts = UiAutomator2Options()\n    opts.platform_name = \"Android\"\n    opts.device_name = settings.mobile.device_name\n    opts.automation_name = \"UiAutomator2\"\n\n    if browser:                                   # mobile web on a real device\n        opts.set_capability(\"browserName\", \"Chrome\")\n        opts.set_capability(\"appium:chromedriverAutodownload\", True)\n    else:                                         # native app\n        opts.app = app\n\n    opts.set_capability(\"appium:autoGrantPermissions\", True)\n    opts.set_capability(\"appium:disableWindowAnimation\", True)\n\n    if settings.mobile.cloud_user:                # device farm, same call site\n        opts.set_capability(\"bstack:options\", {\"buildName\": build, ...})\n\n    driver = webdriver.Remote(settings.mobile.appium_url, options=opts)\n    driver.implicitly_wait(0)   # explicit waits only; never mix the two\n    return driver",
+      "codeCaption": "One factory, three session shapes: native app, real-device mobile web, and local or cloud execution.",
+      "codeCaptionUk": "Одна фабрика, три види сесій: нативний застосунок, мобільний веб на пристрої, локальний або хмарний запуск.",
+      "exercise": "Install the current Appium server and one platform driver, then start a session against an emulator using a typed options object. Deliberately misspell a capability and observe when the error appears.",
+      "exerciseUk": "Встановіть поточну версію сервера Appium і один платформний драйвер, потім відкрийте сесію на емуляторі, використовуючи типізований об'єкт опцій. Свідомо зробіть помилку в назві capability й подивіться, коли з'явиться помилка.",
+      "tags": ["mobile", "appium", "configuration"],
+      "sourceIds": ["appium-docs", "appium-python-client", "appium-uiautomator2", "w3c-webdriver"]
+    },
+    {
+      "id": "ta-lesson-mobile-locators-and-device-scenarios",
+      "moduleId": "mobile-testing",
+      "level": "Advanced",
+      "order": 26,
+      "title": "Mobile locators, waits and device-only scenarios",
+      "titleUk": "Мобільні локатори, очікування та сценарії, можливі лише на пристрої",
+      "summary": "Accessibility ids first, XPath never; one driver per test; automate what only a device can prove.",
+      "summaryUk": "Спершу accessibility id, XPath ніколи; один драйвер на тест; автоматизуйте те, що може довести лише пристрій.",
+      "concept": "Locator choice matters more on mobile than on the web because every query serialises the view hierarchy across a network connection, so a structural path is not merely brittle but genuinely slow. Accessibility identifiers come first: they map to a platform attribute on both systems, giving one locator that works everywhere, and asking developers to add them is the highest-return request a mobile tester can make. Platform-specific identifiers come next, then the native selector engines, and structural paths never. On waiting, set the implicit wait to zero and never touch it again — mixing implicit and explicit waiting produces compounding timeouts that are documented nowhere. Give each test its own session: a mobile session is the least stable resource in the stack, and one crash or system dialog poisons every later test that shares it. Finally, spend device time on what only a device can prove — permissions, backgrounding, rotation, hardware navigation, connectivity loss — and push business rules down to the service layer.",
+      "conceptUk": "Вибір локатора на мобільних важить більше, ніж у вебі, бо кожен запит серіалізує ієрархію представлень через мережеве з'єднання, тож структурний шлях не просто крихкий, а й справді повільний. Ідентифікатори доступності йдуть першими: вони відображаються на платформний атрибут в обох системах, даючи один локатор, що працює скрізь, і прохання до розробників додати їх — запит із найбільшою віддачею, який може зробити мобільний тестувальник. Далі йдуть платформні ідентифікатори, потім нативні механізми селекторів, а структурні шляхи — ніколи. Щодо очікувань: встановіть неявне очікування в нуль і більше його не чіпайте — змішування неявних і явних очікувань дає накопичувальні таймаути, які ніде не задокументовані. Давайте кожному тесту власну сесію: мобільна сесія — найменш стабільний ресурс у стеку, і один збій чи системний діалог отруює всі наступні тести, що її поділяють. Нарешті, витрачайте час на пристрої на те, що лише пристрій може довести — дозволи, згортання, поворот, апаратну навігацію, втрату зв'язку — а бізнес-правила опускайте на рівень сервісів.",
+      "keyPoints": [
+        "Accessibility identifiers give one locator for both platforms; XPath is slow as well as brittle here",
+        "Set implicit wait to zero and use explicit waits only — mixing the two compounds unpredictably",
+        "One driver session per test, and capture diagnostics before quitting, not after"
+      ],
+      "keyPointsUk": [
+        "Ідентифікатори доступності дають один локатор для обох платформ; XPath тут не лише крихкий, а й повільний",
+        "Встановіть неявне очікування в нуль і використовуйте лише явні — змішування дає непередбачувані таймаути",
+        "Одна сесія драйвера на тест, і збирайте діагностику до завершення сесії, а не після"
+      ],
+      "pitfalls": [
+        "Calling quit before capturing a screenshot and page source, which is why mobile failures so often arrive with no evidence",
+        "Automating validation tables on a device, where they take minutes instead of the milliseconds they cost at the API layer"
+      ],
+      "pitfallsUk": [
+        "Завершити сесію до збереження скриншота й джерела сторінки — саме тому мобільні падіння так часто приходять без доказів",
+        "Автоматизувати таблиці валідації на пристрої, де вони тривають хвилини замість мілісекунд на рівні API"
+      ],
+      "code": "@pytest.fixture\ndef driver(request):\n    session = create_driver()\n    try:\n        yield session\n    finally:\n        # Capture BEFORE quitting: a closed session cannot produce a screenshot.\n        report = getattr(request.node, \"rep_call\", None)\n        if report is not None and report.failed:\n            attach_png(\"failure-screenshot\", session.get_screenshot_as_png())\n            attach_text(\"page-source\", session.page_source[:200_000])\n        session.quit()\n\n\ndef test_cart_survives_backgrounding(products_screen):\n    \"\"\"A device-only scenario: this is where mobile apps lose state and crash.\"\"\"\n    products_screen.add_to_cart(products_screen.product_names[0])\n\n    products_screen.driver.background_app(5)\n\n    assert products_screen.cart_count == 1, \"Cart was lost when the app was backgrounded\"",
+      "codeCaption": "Backgrounding, rotation, permissions and the hardware back button have no web equivalent — automate those.",
+      "codeCaptionUk": "Згортання, поворот, дозволи та апаратна кнопка назад не мають вебаналогів — автоматизуйте саме їх.",
+      "exercise": "List every mobile test in a suite you know and mark each as device-only or pushable to the API layer. Move one of the pushable ones down and compare the runtimes.",
+      "exerciseUk": "Випишіть кожен мобільний тест із відомого вам набору й позначте, чи він можливий лише на пристрої, чи його можна опустити на рівень API. Опустіть один такий тест і порівняйте час виконання.",
+      "tags": ["mobile", "appium", "locators", "waiting"],
+      "sourceIds": ["appium-uiautomator2", "appium-xcuitest", "appium-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-data-isolation-parallel",
+      "moduleId": "test-data",
+      "level": "Advanced",
+      "order": 27,
+      "title": "Data isolation under parallel execution",
+      "titleUk": "Ізоляція даних під час паралельного виконання",
+      "summary": "Green sequentially and red in parallel almost always means shared data — isolate it, never retry it.",
+      "summaryUk": "Зелено послідовно й червоно паралельно майже завжди означає спільні дані — ізолюйте їх, а не повторюйте тест.",
+      "concept": "A suite that passes sequentially and fails under parallel execution, with the failures moving between tests from run to run, has a data problem rather than a timing one. The usual cause is that several workers act as the same user and mutate the same server-side state. There are three fixes, in order of preference. Isolating the data by giving each worker its own account keeps full parallelism and is the right answer whenever the backend can create accounts on demand — which makes a self-service test-data endpoint one of the highest-leverage things to ask a backend team for. Isolating the state through a per-test tenant or namespace is often better still for multi-tenant products. Serialising related tests onto one worker is correct but caps throughput, so it is a last resort rather than a first response. What is never a fix is a retry: the data was wrong, not late, and a retry converts a visible defect into an invisible one while making the pipeline slower.",
+      "conceptUk": "Набір, що проходить послідовно й падає під час паралельного виконання, причому падіння переміщуються між тестами від запуску до запуску, має проблему з даними, а не з таймінгами. Звична причина в тому, що кілька воркерів діють як той самий користувач і змінюють той самий стан на сервері. Є три способи виправлення за спаданням переваги. Ізоляція даних через власний обліковий запис для кожного воркера зберігає повну паралельність і є правильною відповіддю, коли бекенд уміє створювати облікові записи на вимогу — саме тому ендпоінт самообслуговування для тестових даних є одним із найцінніших прохань до команди бекенду. Ізоляція стану через окремого тенанта чи простір імен на тест часто ще краща для мультитенантних продуктів. Виконання пов'язаних тестів на одному воркері коректне, але обмежує пропускну здатність, тож це крайній засіб, а не перша реакція. Чим точно не є виправленням — повтор тесту: дані були неправильні, а не запізнілі, і повтор перетворює видимий дефект на невидимий, водночас уповільнюючи конвеєр.",
+      "keyPoints": [
+        "Failures that move between tests under parallel execution are the signature of shared data",
+        "Prefer per-worker or per-test data isolation; serialising related tests caps your throughput",
+        "A retry is never the fix — the data was wrong, not late"
+      ],
+      "keyPointsUk": [
+        "Падіння, що переміщуються між тестами під час паралельного виконання, — ознака спільних даних",
+        "Надавайте перевагу ізоляції даних на воркер або на тест; серіалізація обмежує пропускну здатність",
+        "Повтор ніколи не є виправленням — дані були неправильні, а не запізнілі"
+      ],
+      "pitfalls": [
+        "Adding a retry flag to make the pipeline green, which hides a genuine isolation defect indefinitely",
+        "Assuming a shared demo account is fine because it works today — it works until the second worker appears"
+      ],
+      "pitfallsUk": [
+        "Додати прапорець повторів, щоб конвеєр позеленів, — це приховує справжній дефект ізоляції надовго",
+        "Вважати спільний демообліковий запис прийнятним, бо сьогодні працює — він працює, доки не з'явиться другий воркер"
+      ],
+      "code": "# The failure this fixture exists to prevent:\n#\n#   $ pytest tests -n 4\n#   FAILED tests/services/test_cart_flow.py::test_add_item_to_empty_cart\n#   FAILED tests/services/test_cart_flow.py::test_cart_total_is_sum_of_line_totals\n#   3 failed, 148 passed        # sequentially: all green\n#\n# Four workers, one shared account, one shared server-side cart.\n\n@pytest.fixture(scope=\"session\")\ndef worker_account(base_url, worker_id) -> tuple[str, str]:\n    \"\"\"A dedicated account per xdist worker. Keeps full parallelism.\"\"\"\n    username = f\"qa_{worker_id}_{uuid.uuid4().hex[:8]}\"\n    password = \"Str0ng!Passw0rd\"\n    response = httpx.post(\n        f\"{base_url}/api/auth/register\",\n        json={\"username\": username, \"password\": password},\n    )\n    assert response.status_code == 201, f\"Could not provision an account: {response.text}\"\n    return username, password",
+      "codeCaption": "The registration endpoint was added to the demo app specifically so the suite could parallelise safely.",
+      "codeCaptionUk": "Ендпоінт реєстрації додали до демозастосунку саме для того, щоб набір міг безпечно розпаралелюватися.",
+      "exercise": "Run a suite you work with under four workers, ten times. If nothing fails, deliberately share one account between tests and reproduce the failure, then fix it three ways and rank them.",
+      "exerciseUk": "Запустіть ваш набір на чотирьох воркерах десять разів. Якщо нічого не падає, свідомо зробіть один обліковий запис спільним і відтворіть падіння, потім виправте його трьома способами й проранжуйте їх.",
+      "tags": ["test-data", "parallel", "isolation", "flakiness"],
+      "sourceIds": ["pytest-xdist", "qa-automation-python-repo", "fowler-eradicating-flaky"]
+    },
+    {
+      "id": "ta-lesson-uniqueness-by-construction",
+      "moduleId": "test-data",
+      "level": "Advanced",
+      "order": 28,
+      "title": "Uniqueness by construction",
+      "titleUk": "Унікальність за побудовою",
+      "summary": "Every constrained field gets a worker-aware unique value; timestamps alone are not enough.",
+      "summaryUk": "Кожне поле з обмеженням унікальності отримує значення, що враховує воркер; самих лише міток часу недостатньо.",
+      "concept": "Any field with a uniqueness constraint needs a value that cannot collide, and the naive approach of appending a timestamp fails in exactly the situation you care about, because two workers can generate the same millisecond. A suffix that combines the worker identifier with a random component is collision-proof both across workers in one run and across repeated runs of the same worker, which matters when a previous run crashed and left records behind. Beyond mechanics there is a discipline about which values a test states explicitly. A test should specify only the fields the assertion actually depends on and let everything else be generated, because when a test names a value, a future reader has to check whether that value is load-bearing. One practical detail is worth internalising: always generate email addresses on domains reserved for testing, because using a real domain means your suite eventually sends mail to a stranger, and that is a mistake that only has to happen once.",
+      "conceptUk": "Будь-яке поле з обмеженням унікальності потребує значення, що не може зіткнутися, а наївний підхід із додаванням мітки часу підводить саме в тій ситуації, яка вас турбує, бо два воркери можуть згенерувати ту саму мілісекунду. Суфікс, що поєднує ідентифікатор воркера з випадковою складовою, є стійким до колізій і між воркерами в одному запуску, і між повторними запусками того самого воркера — а це важливо, коли попередній запуск аварійно завершився й залишив записи. Крім механіки, є дисципліна щодо того, які значення тест зазначає явно. Тест має задавати лише ті поля, від яких залежить твердження, а решту генерувати, бо коли тест називає значення, майбутній читач мусить перевіряти, чи воно щось означає. Одну практичну деталь варто засвоїти: завжди генеруйте адреси електронної пошти на доменах, зарезервованих для тестування, бо використання справжнього домену означає, що ваш набір рано чи пізно надішле листа незнайомцю, і цю помилку достатньо зробити один раз.",
+      "keyPoints": [
+        "Combine the worker identifier with a random component; timestamps alone can collide",
+        "Specify only the fields the assertion depends on and generate the rest",
+        "Generate email addresses on domains reserved for testing, never on a real one"
+      ],
+      "keyPointsUk": [
+        "Поєднуйте ідентифікатор воркера з випадковою складовою; самі лише мітки часу можуть збігтися",
+        "Задавайте лише поля, від яких залежить твердження, а решту генеруйте",
+        "Генеруйте адреси пошти на доменах, зарезервованих для тестування, а не на справжніх"
+      ],
+      "pitfalls": [
+        "A timestamp-only suffix, which collides precisely when two workers run in step",
+        "Seeding the random generator globally for reproducibility, which reintroduces collisions across parallel workers"
+      ],
+      "pitfallsUk": [
+        "Суфікс лише з мітки часу, який збігається саме тоді, коли два воркери йдуть у ногу",
+        "Глобально фіксувати зерно генератора заради відтворюваності, що повертає колізії між паралельними воркерами"
+      ],
+      "code": "def unique_suffix() -> str:\n    \"\"\"Unique across xdist workers AND across reruns of the same worker.\"\"\"\n    worker = os.getenv(\"PYTEST_XDIST_WORKER\", \"gw0\")\n    return f\"{worker}-{uuid.uuid4().hex[:8]}\"\n\n\ndef unique_email(prefix: str = \"qa\") -> str:\n    # .test is reserved by RFC 2606. Never generate on a real domain.\n    return f\"{prefix}+{unique_suffix()}@example.test\"\n\n\n# Specify only what the test is about; everything else is generated.\nuser = UserBuilder().with_email(\"boundary@example.test\").build()\n\n# Faker stays unseeded by default so variety keeps finding bugs, and is seeded\n# only when reproducing a specific failure:\n#   QA_FAKER_SEED=42 pytest -k the_failing_test",
+      "codeCaption": "Worker identity plus randomness; a reserved domain; and a seed used only for reproduction.",
+      "codeCaptionUk": "Ідентичність воркера плюс випадковість; зарезервований домен; і зерно лише для відтворення.",
+      "exercise": "Audit a suite for hardcoded usernames, emails and reference numbers. Replace each with a generated unique value and confirm the suite still passes under four workers.",
+      "exerciseUk": "Перевірте набір на жорстко прописані імена користувачів, адреси пошти та номери. Замініть кожен згенерованим унікальним значенням і переконайтеся, що набір досі проходить на чотирьох воркерах.",
+      "tags": ["test-data", "parallel", "faker"],
+      "sourceIds": ["pytest-xdist", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-builders-factories-personas",
+      "moduleId": "test-data",
+      "level": "Advanced",
+      "order": 29,
+      "title": "Builders, factories and personas",
+      "titleUk": "Білдери, фабрики та персони",
+      "summary": "Builders for readable overrides, model factories for valid instances, and a deliberately short persona list.",
+      "summaryUk": "Білдери для читабельних перевизначень, фабрики моделей для валідних екземплярів і свідомо короткий перелік персон.",
+      "concept": "Three patterns cover almost all test data needs, and choosing between them is about what the test cares about. A builder is right when a test wants to override specific fields and read clearly while doing it; a fluent interface producing an immutable result keeps a test from mutating shared state accidentally. A factory derived from a model is right when the test needs a valid instance and genuinely does not care about the values, and because it is generated from the schema it cannot drift away from it. Personas are the third pattern and the one to use most sparingly: they are for the small number of accounts that genuinely must pre-exist, such as single-sign-on users or accounts with a verified payment method. Every persona is shared mutable state waiting to cause a parallel-execution failure, so keep the list short and restrict personas to read-only scenarios while any test that changes data uses a generated account.",
+      "conceptUk": "Три патерни покривають майже всі потреби в тестових даних, і вибір між ними залежить від того, що саме важливо тесту. Білдер доречний, коли тест хоче перевизначити конкретні поля й водночас читатися зрозуміло; плинний інтерфейс, що повертає незмінний результат, не дає тесту випадково змінити спільний стан. Фабрика, похідна від моделі, доречна, коли тесту потрібен валідний екземпляр і значення справді не мають значення; оскільки вона породжена зі схеми, вона не може від неї відхилитися. Персони — третій патерн, і його варто вживати найощадливіше: вони для невеликої кількості облікових записів, які справді мають існувати заздалегідь, як-от користувачі єдиного входу чи записи з підтвердженим способом оплати. Кожна персона є спільним змінним станом, що очікує нагоди спричинити падіння при паралельному виконанні, тож тримайте перелік коротким і обмежуйте персони сценаріями лише для читання, а будь-який тест, що змінює дані, хай використовує згенерований обліковий запис.",
+      "keyPoints": [
+        "Builders for readable, specific overrides; model factories for a valid instance you do not care about",
+        "Personas are for accounts that genuinely cannot be created per test — keep the list short",
+        "Use personas for read-only scenarios; anything that mutates data uses a generated account"
+      ],
+      "keyPointsUk": [
+        "Білдери для читабельних конкретних перевизначень; фабрики моделей — для валідного екземпляра, який не важливий",
+        "Персони — для облікових записів, які справді неможливо створити на кожен тест; тримайте перелік коротким",
+        "Використовуйте персони для сценаріїв лише читання; усе, що змінює дані, працює зі згенерованим записом"
+      ],
+      "pitfalls": [
+        "A growing persona list, which slowly recreates the shared-state problem the generated data solved",
+        "A builder returning a mutable object, so one test's change leaks into another through a shared default"
+      ],
+      "pitfallsUk": [
+        "Перелік персон, що росте, поволі відтворюючи проблему спільного стану, яку розв'язали згенеровані дані",
+        "Білдер, що повертає змінний об'єкт, через що зміна одного тесту протікає в інший через спільне значення"
+      ],
+      "code": "@dataclass\nclass UserBuilder:\n    _username: str = field(default_factory=unique_username)\n    _password: str = \"Str0ng!Passw0rd\"\n    _email: str = field(default_factory=unique_email)\n\n    def with_email(self, value: str) -> Self:\n        self._email = value\n        return self\n\n    def build(self) -> UserData:          # frozen result, cannot be mutated\n        return UserData(self._username, self._password, self._email)\n\n\nclass ProductFactory(ModelFactory[Product]):\n    \"\"\"Derived from the model, so it can never drift from the schema.\"\"\"\n\n    __model__ = Product\n\n\nPERSONAS = {\n    \"standard\": Persona(\"alice\", \"wonderland\", \"Ordinary shopper, read-only scenarios\"),\n}",
+      "codeCaption": "Builder for specifics, factory for anything valid, persona only where pre-existing state is unavoidable.",
+      "codeCaptionUk": "Білдер для конкретики, фабрика для будь-чого валідного, персона лише там, де попередній стан неминучий.",
+      "exercise": "Count the shared accounts in a suite you work with. For each, decide whether it is genuinely unable to be created per test, and convert the ones that can be to generated data.",
+      "exerciseUk": "Порахуйте спільні облікові записи у вашому наборі. Для кожного вирішіть, чи справді його неможливо створити на кожен тест, і переведіть ті, що можна, на згенеровані дані.",
+      "tags": ["test-data", "factories", "builders"],
+      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-cleanup-strategies",
+      "moduleId": "test-data",
+      "level": "Advanced",
+      "order": 30,
+      "title": "Cleanup strategies and their trade-offs",
+      "titleUk": "Стратегії прибирання та їхні компроміси",
+      "summary": "Clean before as well as after, keep cleanup idempotent, and never let a global reset near a parallel run.",
+      "summaryUk": "Прибирайте і до, і після, робіть прибирання ідемпотентним і не пускайте глобальне скидання в паралельний запуск.",
+      "concept": "Fixture teardown is the default cleanup mechanism and it has one important gap: it does not run when setup failed before the suspension point, so a crash mid-setup leaves state behind for the next run to inherit. Cleaning defensively at the start of a fixture as well as at the end makes a suite recoverable rather than merely tidy. Other strategies suit other situations. Generating uniquely named data and never cleaning it works well when data is cheap and namespaced, at the cost of a database that grows forever and eventually needs a scheduled sweeper that matches your naming prefix. Transaction rollback is elegant but only available when the tests share a database session with the application. A global reset endpoint is the one to be careful with, because it is fundamentally incompatible with parallel execution — each worker's reset destroys the other workers' live state. Whatever you choose, cleanup must be idempotent and must never fail the test it belongs to; the result already happened.",
+      "conceptUk": "Прибирання у фікстурі — типовий механізм, і він має одну важливу прогалину: воно не виконується, якщо підготовка впала до точки зупинки, тож збій посеред підготовки залишає стан, який успадкує наступний запуск. Захисне прибирання і на початку фікстури, і в кінці робить набір відновлюваним, а не просто охайним. Інші стратегії підходять іншим ситуаціям. Генерувати унікально названі дані й ніколи їх не прибирати добре працює, коли дані дешеві й мають простір імен, ціною бази, що росте вічно й зрештою потребує планового прибиральника, який знає ваш префікс іменування. Відкат транзакції елегантний, але доступний лише тоді, коли тести поділяють сесію бази даних із застосунком. З глобальним ендпоінтом скидання треба бути обережним, бо він принципово несумісний із паралельним виконанням: скидання кожного воркера руйнує живий стан інших. Що б ви не обрали, прибирання має бути ідемпотентним і не має валити тест, якому належить: результат уже стався.",
+      "keyPoints": [
+        "Teardown after the suspension point does not run if setup raised — clean defensively at the start too",
+        "Cleanup must be idempotent and must never turn a passing test into a failing one",
+        "A global reset endpoint cannot coexist with parallel execution; keep it as a manual pre-run step"
+      ],
+      "keyPointsUk": [
+        "Прибирання після точки зупинки не виконується, якщо підготовка впала — прибирайте захисно й на початку",
+        "Прибирання має бути ідемпотентним і ніколи не перетворювати успішний тест на невдалий",
+        "Глобальний ендпоінт скидання не може співіснувати з паралельним виконанням; лишіть його ручним кроком перед запуском"
+      ],
+      "pitfalls": [
+        "Cleanup that raises and fails an otherwise passing test, which trains people to distrust results",
+        "Relying on teardown alone, so one crashed run poisons every run after it until somebody cleans up by hand"
+      ],
+      "pitfallsUk": [
+        "Прибирання, що кидає виняток і валить успішний тест, привчаючи людей не довіряти результатам",
+        "Покладатися лише на прибирання в кінці, через що один аварійний запуск отруює всі наступні, доки хтось не прибере вручну"
+      ],
+      "code": "@pytest.fixture\ndef shop_as_user(shop, worker_account):\n    username, password = worker_account\n    shop.login_as(username, password)\n\n    shop.cart.clear()   # BEFORE: the previous run may have crashed mid-test\n    yield shop\n    shop.cart.clear()   # after\n\n\n# What was REMOVED from this suite, and why the comment stayed behind:\n#\n#   @pytest.fixture(autouse=True, scope=\"session\")\n#   def _reset_sut(base_url):\n#       httpx.post(f\"{base_url}/api/testing/reset\")\n#\n# \"session\" means once per WORKER. Under -n 4 each worker's reset wiped the\n# other three workers' live sessions mid-run. Keep a global reset as a manual\n# pre-run step only:  curl -X POST http://127.0.0.1:8000/api/testing/reset",
+      "codeCaption": "Leaving the explanation next to the deleted code stops somebody re-adding it in six months.",
+      "codeCaptionUk": "Пояснення поруч із видаленим кодом не дає комусь повернути його через пів року.",
+      "exercise": "Find a fixture that only cleans up on teardown. Make its setup fail deliberately, observe the state left behind, then add defensive cleanup at the start and confirm the next run recovers.",
+      "exerciseUk": "Знайдіть фікстуру, що прибирає лише в кінці. Свідомо зробіть її підготовку невдалою, подивіться на залишений стан, потім додайте захисне прибирання на початку й переконайтеся, що наступний запуск відновлюється.",
+      "tags": ["test-data", "cleanup", "fixtures"],
+      "sourceIds": ["pytest-fixtures", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-flakiness-root-causes",
+      "moduleId": "flakiness",
+      "level": "Advanced",
+      "order": 31,
+      "title": "The root causes of flaky tests",
+      "titleUk": "Кореневі причини нестабільних тестів",
+      "summary": "Timing, interdependence, shared state, environment, data drift, real bugs and infrastructure — diagnose before acting.",
+      "summaryUk": "Таймінги, взаємозалежність, спільний стан, середовище, дрейф даних, справжні баги та інфраструктура — спершу діагноз.",
+      "concept": "A flaky test passes and fails without the code changing, and flakiness rather than slowness is what kills automation programmes, because it destroys trust and an untrusted suite gets ignored and then deleted. Nearly every flake belongs to one of seven categories. Timing and race conditions are the largest group by far and come from waiting for a duration instead of a state. Test interdependence shows up as passing alone and failing in a suite. Shared mutable state under parallel execution produces failures that move between tests. Environment differences cover timezone, locale, fonts and browser version. Data drift is a suite that worked for months until a record was deleted or a coupon expired. Genuine product bugs are the most valuable category and the most often discarded — an intermittent failure can be an intermittent bug, and before quarantining anything the question to ask is whether a user could hit this. Infrastructure is the smallest group and the only one where a bounded transport-level retry is legitimate.",
+      "conceptUk": "Нестабільний тест проходить і падає без змін у коді, і саме нестабільність, а не повільність, вбиває програми автоматизації, бо руйнує довіру, а набір без довіри спершу ігнорують, а потім видаляють. Майже кожна нестабільність належить до однієї з семи категорій. Таймінги та стани гонки — найбільша група, і вони виникають від очікування тривалості замість стану. Взаємозалежність тестів проявляється як «проходить окремо, падає в наборі». Спільний змінний стан при паралельному виконанні дає падіння, що переміщуються між тестами. Відмінності середовища охоплюють часовий пояс, локаль, шрифти й версію браузера. Дрейф даних — це набір, що працював місяцями, доки не видалили запис чи не минув термін промокоду. Справжні продуктові баги — найцінніша категорія і найчастіше відкинута: періодичне падіння може бути періодичним багом, і перед тим як щось карантинити, слід запитати, чи може на це натрапити користувач. Інфраструктура — найменша група і єдина, де обмежений повтор на рівні транспорту є виправданим.",
+      "keyPoints": [
+        "Timing is the largest category and comes from waiting for a duration instead of a state",
+        "Failures that move between tests under parallel execution point at shared mutable state",
+        "An intermittent failure can be an intermittent bug — ask whether a user could hit it before quarantining"
+      ],
+      "keyPointsUk": [
+        "Таймінги — найбільша категорія, і вони походять від очікування тривалості замість стану",
+        "Падіння, що переміщуються між тестами при паралельному виконанні, вказують на спільний змінний стан",
+        "Періодичне падіння може бути періодичним багом — запитайте, чи натрапить на це користувач, перш ніж карантинити"
+      ],
+      "pitfalls": [
+        "Treating every flake as noise, and discarding the small number that are genuine race conditions in the product",
+        "Raising every timeout, which makes the suite slower without addressing the missing wait condition"
+      ],
+      "pitfallsUk": [
+        "Вважати кожну нестабільність шумом і відкидати ту меншість, що є справжніми станами гонки в продукті",
+        "Піднімати всі таймаути, що робить набір повільнішим, не усуваючи відсутньої умови очікування"
+      ],
+      "code": "# A worked example of category three, from a real suite.\n#\n# Symptom: intermittent ConnectionRefusedError, roughly one run in four,\n# in whichever tests happened to be running at the time.\n#\n# Cause: the demo application was started by a session-scoped autouse fixture.\n# \"Session\" means once per WORKER, so the first worker to finish killed the\n# server the other three were still using.\n#\n# Fix: a resource shared by all workers belongs to the controller process.\n\ndef pytest_configure(config):\n    if not hasattr(config, \"workerinput\"):    # controller, not a worker\n        _start_sut(config)\n\n\ndef pytest_unconfigure(config):               # after every worker has finished\n    _stop_sut(config)\n\n# Generalise it: for every session-scoped fixture, ask what breaks if four\n# copies exist and any one of them tears down first.",
+      "codeCaption": "This looked like a network blip and was a lifecycle bug; a retry would have hidden it permanently.",
+      "codeCaptionUk": "Це виглядало як мережевий збій, а було помилкою життєвого циклу; повтор приховав би її назавжди.",
+      "exercise": "Take the last five flaky failures in a pipeline you have access to and assign each to one of the seven categories. Count how many were genuinely infrastructure — usually far fewer than people assume.",
+      "exerciseUk": "Візьміть останні п'ять нестабільних падінь у доступному вам конвеєрі й віднесіть кожне до однієї з семи категорій. Порахуйте, скільки з них справді були інфраструктурними — зазвичай значно менше, ніж вважають.",
+      "tags": ["flakiness", "diagnosis", "parallel"],
+      "sourceIds": ["fowler-eradicating-flaky", "google-flaky-tests", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-diagnosing-a-flake",
+      "moduleId": "flakiness",
+      "level": "Advanced",
+      "order": 32,
+      "title": "Diagnosing a flake methodically",
+      "titleUk": "Методична діагностика нестабільного тесту",
+      "summary": "Repeat it, run it alone, shuffle the order, vary the parallelism, change the environment — then read the artifacts.",
+      "summaryUk": "Повторіть, запустіть окремо, перемішайте порядок, змініть паралельність, змініть середовище — потім читайте артефакти.",
+      "concept": "Diagnosis is a short sequence of experiments, each of which eliminates categories, and following it is much faster than guessing. Begin by establishing that the test is actually flaky rather than simply failing, by repeating it many times in isolation. If it always passes alone, run the full suite and then run it again with the order shuffled; a failure that appears only in a suite points at interdependence, and one that appears only in a particular order confirms it. Next compare a single worker against several: failures that appear only in parallel, and that move between tests from run to run, point at shared state or a shared resource. Then vary the environment by running in a container, which isolates timezone, locale, fonts and browser version. Finally slow things down deliberately, because many races only appear under load. Once the category is known, read the evidence the framework already collects — screenshot, page snapshot, console output and the request log usually make the cause obvious in under a minute.",
+      "conceptUk": "Діагностика — це коротка послідовність експериментів, кожен з яких відкидає категорії, і слідувати їй значно швидше, ніж вгадувати. Почніть із підтвердження, що тест справді нестабільний, а не просто падає, повторивши його багато разів ізольовано. Якщо окремо він завжди проходить, запустіть повний набір, а потім ще раз із перемішаним порядком; падіння, яке з'являється лише в наборі, вказує на взаємозалежність, а те, що з'являється лише за певного порядку, це підтверджує. Далі порівняйте один воркер із кількома: падіння, що виникають лише при паралельному виконанні й переміщуються між тестами від запуску до запуску, вказують на спільний стан або спільний ресурс. Потім змініть середовище, запустивши все в контейнері, що ізолює часовий пояс, локаль, шрифти й версію браузера. Насамкінець свідомо все сповільніть, бо багато станів гонки проявляються лише під навантаженням. Коли категорію визначено, читайте докази, які фреймворк уже зібрав: скриншот, знімок сторінки, вивід консолі та журнал запитів зазвичай роблять причину очевидною менш ніж за хвилину.",
+      "keyPoints": [
+        "Establish flakiness first by repeating the test in isolation many times",
+        "Alone versus in a suite isolates interdependence; one worker versus several isolates shared state",
+        "Once the category is known, the artifacts you already collect usually show the cause immediately"
+      ],
+      "keyPointsUk": [
+        "Спершу підтвердьте нестабільність, повторивши тест ізольовано багато разів",
+        "«Окремо чи в наборі» відокремлює взаємозалежність; «один воркер чи кілька» — спільний стан",
+        "Коли категорію визначено, вже зібрані артефакти зазвичай одразу показують причину"
+      ],
+      "pitfalls": [
+        "Fixing before diagnosing, which usually means raising a timeout and moving the symptom rather than removing it",
+        "Not capturing artifacts on failure, so every diagnosis starts by trying to reproduce the problem from nothing"
+      ],
+      "pitfallsUk": [
+        "Виправляти до діагностики: зазвичай це означає підняти таймаут і перемістити симптом, а не усунути його",
+        "Не зберігати артефакти при падінні, через що кожна діагностика починається зі спроби відтворити проблему з нуля"
+      ],
+      "code": "# 1. Is it actually flaky, or just failing?\npytest path::test_name --count=20            # pytest-repeat\n\n# 2. Order dependent?\npytest path::test_name                        # alone\npytest tests -p randomly                      # shuffled\n\n# 3. Parallel only?\npytest tests -n 1     vs     pytest tests -n 4\n\n# 4. Environment dependent?\ndocker compose run tests pytest path::test_name\n\n# 5. Load or latency dependent?\npytest path::test_name --slowmo 1000\n\n# Then read what the framework already captured on failure: the screenshot,\n# the page snapshot, the browser console, and the full request/response log.",
+      "codeCaption": "Five experiments, each eliminating categories; guessing is slower than this every time.",
+      "codeCaptionUk": "П'ять експериментів, кожен відкидає категорії; вгадування щоразу повільніше за це.",
+      "exercise": "Plant a deliberate fifty-percent race in an application you test, then diagnose it using only this sequence and the artifacts the framework produces — without looking at the code you changed.",
+      "exerciseUk": "Внесіть свідомий стан гонки з імовірністю п'ятдесят відсотків у застосунок, який ви тестуєте, і продіагностуйте його лише цією послідовністю й артефактами фреймворку — не заглядаючи в код, який ви змінили.",
+      "tags": ["flakiness", "debugging", "diagnosis"],
+      "sourceIds": ["fowler-eradicating-flaky", "pytest-xdist", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-quarantine",
+      "moduleId": "flakiness",
+      "level": "Advanced",
+      "order": 33,
+      "title": "Running a quarantine that actually works",
+      "titleUk": "Карантин, який справді працює",
+      "summary": "A ticket, a non-blocking job, an expiry date and a cap — otherwise quarantine becomes a graveyard.",
+      "summaryUk": "Задача в трекері, неблокувальна задача CI, термін дії та ліміт — інакше карантин стає кладовищем.",
+      "concept": "Quarantine is a legitimate tool for keeping a pipeline usable while a flake is investigated, and it becomes a graveyard the moment its rules are informal. Four rules keep it honest. A ticket number is mandatory, because a quarantined test with no owner is an abandoned test. Quarantined tests must keep running in a non-blocking job, since a quarantined test that stops running is a deleted test with the added harm of a false sense of coverage. There must be an expiry, typically two weeks, after which the test is fixed or removed. And there must be a cap: once more than a small percentage of a suite is quarantined, nobody trusts any result and the right response is to stop feature work until the suite is repaired. Automatic reruns deserve the same discipline. They are a legitimate measurement tool, since a test that passes on rerun is flaky by definition and should be logged, and they are legitimate for keeping a pipeline usable during a fix. Left on permanently, they automate the act of ignoring bugs.",
+      "conceptUk": "Карантин — законний інструмент для підтримання працездатності конвеєра, поки нестабільність досліджують, і він перетворюється на кладовище тієї миті, коли його правила стають неформальними. Чотири правила тримають його чесним. Номер задачі обов'язковий, бо карантинований тест без власника є покинутим тестом. Карантиновані тести мають далі виконуватися в неблокувальній задачі, бо тест, який перестав виконуватися, є видаленим тестом плюс хибне відчуття покриття. Має бути термін дії, зазвичай два тижні, після якого тест або виправляють, або видаляють. І має бути ліміт: щойно в карантині опиняється більше за невеликий відсоток набору, ніхто не довіряє жодному результату, і правильна реакція — зупинити роботу над функціональністю, доки набір не відновлять. Автоматичні повтори заслуговують на ту саму дисципліну. Вони є законним інструментом вимірювання, бо тест, що проходить із повтору, за визначенням нестабільний і має бути зафіксований, і вони законні для підтримання конвеєра під час виправлення. Залишені назавжди, вони автоматизують ігнорування багів.",
+      "keyPoints": [
+        "A quarantined test needs a ticket, keeps running in a non-blocking job, and has an expiry date",
+        "Cap the quarantine list; past a small percentage nobody trusts any result",
+        "A test that passes on rerun is flaky by definition — log it rather than celebrating the green run"
+      ],
+      "keyPointsUk": [
+        "Карантинований тест потребує задачі в трекері, далі виконується в неблокувальній задачі й має термін дії",
+        "Обмежте перелік карантину; після невеликого відсотка ніхто не довіряє жодному результату",
+        "Тест, що проходить із повтору, за визначенням нестабільний — фіксуйте це, а не радійте зеленому запуску"
+      ],
+      "pitfalls": [
+        "Leaving automatic reruns on permanently, which quietly automates ignoring real defects",
+        "Excluding quarantined tests from every run, which loses the coverage while keeping the illusion of it"
+      ],
+      "pitfallsUk": [
+        "Залишати автоматичні повтори назавжди, тихо автоматизуючи ігнорування справжніх дефектів",
+        "Виключати карантиновані тести з усіх запусків, втрачаючи покриття й зберігаючи його ілюзію"
+      ],
+      "code": "@pytest.mark.flaky\n@pytest.mark.xfail(reason=\"FLAKE-231: race in the cart badge update\", strict=False)\ndef test_badge_updates_immediately(app_as_user):\n    ...\n\n# The process around that marker is what makes it work:\n#   1. Flake observed        -> ticket opened the same day\n#   2. Marked                -> still runs, in a NON-BLOCKING job\n#   3. Two-week clock        -> fixed, or deleted\n#   4. Reviewed every sprint -> the list is read out loud\n#   5. Capped at ~2%         -> above that, stop feature work\n\n# Reruns belong in the CI command, never in shared configuration, so the\n# choice stays visible to everyone:\n#   pytest --reruns 1 --reruns-delay 2",
+      "codeCaption": "Reruns in the pipeline command rather than shared config, so nobody hides flakiness by accident.",
+      "codeCaptionUk": "Повтори в команді конвеєра, а не в спільній конфігурації, щоб ніхто випадково не приховав нестабільність.",
+      "exercise": "Write a one-page quarantine policy for a team you work with: entry criteria, where quarantined tests run, the expiry, the cap and who reviews the list. Then check how many current exclusions would survive it.",
+      "exerciseUk": "Напишіть односторінкову політику карантину для вашої команди: критерії потрапляння, де виконуються карантиновані тести, термін дії, ліміт і хто переглядає перелік. Потім перевірте, скільки поточних виключень її пережили б.",
+      "tags": ["flakiness", "process", "ci"],
+      "sourceIds": ["google-flaky-tests", "pytest-skipping", "fowler-eradicating-flaky"]
+    },
+    {
+      "id": "ta-lesson-pipeline-shape",
+      "moduleId": "ci-and-reporting",
+      "level": "Advanced",
+      "order": 34,
+      "title": "Pipeline shape and what should block a merge",
+      "titleUk": "Форма конвеєра і що має блокувати злиття",
+      "summary": "Fast layers gate slow ones, cancel superseded runs, and gate only on things a team can fix today.",
+      "summaryUk": "Швидкі рівні пропускають повільні, скасовуйте застарілі запуски й блокуйте лише те, що команда може виправити сьогодні.",
+      "concept": "A pipeline should run cheapest first: lint, then the service layer, then browsers, then anything requiring a device. Ordering this way means a broken build is usually reported in under a minute instead of after eight minutes of browser time, and it costs nothing to arrange. Three settings matter more than the syntax of any particular CI system. Cancelling superseded runs when a new commit arrives saves machine time and stops stale failures from confusing reviewers. Disabling fail-fast in a browser matrix keeps one engine's failure from cancelling the others, which preserves exactly the information that tells you whether a problem is cross-browser — a matrix caught a real defect in this course's own framework, where a Chromium-only launch flag made every WebKit test fail. And a timeout on every job stops a hung browser from burning hours. On gating, the guiding principle is that a gate people cannot satisfy today gets disabled within a week, so ratchet thresholds down over time instead of starting at maximum strictness.",
+      "conceptUk": "Конвеєр має виконувати найдешевше першим: лінтер, потім рівень сервісів, потім браузери, потім усе, що потребує пристрою. Такий порядок означає, що зламану збірку зазвичай виявляють менш ніж за хвилину, а не після восьми хвилин браузерного часу, і це нічого не коштує організувати. Три налаштування важать більше за синтаксис конкретної системи CI. Скасування застарілих запусків при появі нового коміту економить машинний час і не дає застарілим падінням заплутувати рецензентів. Вимкнення режиму «падати одразу» в матриці браузерів не дає збою одного рушія скасувати інші, зберігаючи саме ту інформацію, яка каже, чи проблема кросбраузерна: матриця знайшла справжній дефект у фреймворку цього курсу, де прапорець запуску лише для Chromium робив кожен тест WebKit невдалим. І таймаут на кожній задачі не дає зависаючому браузеру спалити години. Щодо блокування діє принцип: бар'єр, який команда не може подолати сьогодні, вимикають протягом тижня, тож знижуйте пороги поступово, а не починайте з максимальної суворості.",
+      "keyPoints": [
+        "Order jobs cheapest first so a broken build is reported in seconds, not after browser time",
+        "Cancel superseded runs, disable fail-fast in a matrix, and set a timeout on every job",
+        "A gate people cannot satisfy today gets disabled within a week — ratchet thresholds down over time"
+      ],
+      "keyPointsUk": [
+        "Впорядковуйте задачі від найдешевшої, щоб зламану збірку виявляли за секунди, а не після браузерного часу",
+        "Скасовуйте застарілі запуски, вимикайте «падати одразу» в матриці й ставте таймаут на кожну задачу",
+        "Бар'єр, який сьогодні неможливо подолати, вимкнуть за тиждень — знижуйте пороги поступово"
+      ],
+      "pitfalls": [
+        "Leaving fail-fast enabled in a browser matrix, which cancels the other engines and hides whether the issue is cross-browser",
+        "Gating on a metric that can be gamed, such as a coverage percentage, which changes behaviour without improving quality"
+      ],
+      "pitfallsUk": [
+        "Залишити «падати одразу» в матриці браузерів: інші рушії скасовуються й ховається відповідь, чи проблема кросбраузерна",
+        "Блокувати за показником, який можна обійти, як-от відсоток покриття: поведінка змінюється, якість — ні"
+      ],
+      "code": "concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true          # a new push makes the old run obsolete\n\njobs:\n  services:\n    needs: lint\n    timeout-minutes: 10             # a hung job otherwise burns hours\n\n  web:\n    needs: services                 # do not spend browser minutes on a broken API\n    strategy:\n      fail-fast: false              # one engine failing must not cancel the others\n      matrix:\n        browser: [chromium, firefox, webkit]\n\n  mobile:\n    # Real devices are slow and cost money: nightly and on demand only.\n    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+      "codeCaption": "This exact matrix caught a Chromium-only launch flag that made every WebKit test fail.",
+      "codeCaptionUk": "Саме ця матриця виявила прапорець запуску лише для Chromium, через який падали всі тести WebKit.",
+      "exercise": "Review a pipeline you have access to for the three settings above. Add whichever are missing, then check how long it now takes to learn that a build is broken.",
+      "exerciseUk": "Перевірте доступний вам конвеєр на три налаштування вище. Додайте ті, яких бракує, і перевірте, скільки часу тепер потрібно, щоб дізнатися про зламану збірку.",
+      "tags": ["ci", "pipeline", "matrix"],
+      "sourceIds": ["github-actions-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-parallel-in-ci",
+      "moduleId": "ci-and-reporting",
+      "level": "Advanced",
+      "order": 35,
+      "title": "Making the suite fast",
+      "titleUk": "Як зробити набір швидким",
+      "summary": "Parallelism, caching and API seeding compound; measure first, because setup is usually the real cost.",
+      "summaryUk": "Паралельність, кешування та наповнення через API множаться; спершу вимірюйте, бо справжня вартість зазвичай у підготовці.",
+      "concept": "Speed is a feature of a test suite because it determines whether people wait for the result or merge without it. Once a suite passes ten minutes for the pull-request gate, engineers start treating it as advisory. The levers that actually move the number are parallel execution, which typically gives a three to five times improvement; caching browser binaries and dependencies, which saves a minute or two per job; ordering fast layers before slow ones so most broken builds fail early; and building preconditions through the API rather than the interface, which can be an order of magnitude on the affected tests. Shard by layer rather than by file, because layers have similar per-test costs and balance better. The important discipline is to measure before optimising. Reporting the slowest tests is built into the runner, and nine times out of ten a slow suite is slow because of setup — a login repeated hundreds of times, a fixture with too narrow a scope, a browser launched more often than necessary — rather than because the tests themselves are slow.",
+      "conceptUk": "Швидкість є властивістю набору тестів, бо вона визначає, чи люди чекатимуть на результат, чи зливатимуть без нього. Щойно набір перетинає десять хвилин для бар'єра на pull request, інженери починають сприймати його як рекомендаційний. Важелі, які справді змінюють число, — це паралельне виконання, що зазвичай дає покращення у три-п'ять разів; кешування бінарників браузерів і залежностей, що економить одну-дві хвилини на задачу; впорядкування швидких рівнів перед повільними, щоб більшість зламаних збірок падала рано; і побудова передумов через API, а не через інтерфейс, що може дати покращення на порядок для відповідних тестів. Розділяйте роботу за рівнями, а не за файлами, бо рівні мають подібну вартість на тест і краще балансуються. Важлива дисципліна — вимірювати до оптимізації. Звіт про найповільніші тести вбудований у виконавця, і в дев'яти випадках із десяти набір повільний через підготовку — повторюваний сотні разів вхід, фікстура з надто вузькою областю, браузер, що запускається частіше за потрібне — а не через самі тести.",
+      "keyPoints": [
+        "Parallel execution typically gives three to five times; caching and API seeding compound with it",
+        "Above ten minutes for the pull-request gate, people stop waiting and start merging blind",
+        "Measure before optimising — setup, not the tests themselves, is usually where the time goes"
+      ],
+      "keyPointsUk": [
+        "Паралельне виконання зазвичай дає у три-п'ять разів; кешування й наповнення через API множаться з ним",
+        "Понад десять хвилин для бар'єра на pull request — і люди перестають чекати та зливають наосліп",
+        "Вимірюйте до оптимізації: час зазвичай іде на підготовку, а не на самі тести"
+      ],
+      "pitfalls": [
+        "Turning on parallelism before the data is isolated, which converts a slow suite into a flaky one",
+        "Optimising the tests when the profile shows the cost is in repeated logins and browser launches"
+      ],
+      "pitfallsUk": [
+        "Вмикати паралельність до ізоляції даних, перетворюючи повільний набір на нестабільний",
+        "Оптимізувати тести, коли профіль показує, що час іде на повторні входи та запуски браузера"
+      ],
+      "code": "# Measured on this course's own suite:\n#   sequential                65 s\n#   -n 4                      36 s\n#   services layer alone      11 s   (no browsers installed at all)\n\n- name: Cache Playwright browsers\n  uses: actions/cache@v4\n  with:\n    path: ~/.cache/ms-playwright\n    key: playwright-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}\n\n- run: pytest tests/web --browser=${{ matrix.browser }} -n auto\n\n# Built into the runner, and the first thing to look at:\n#   pytest --durations=10",
+      "codeCaption": "Parallelism only pays once data is isolated; otherwise it converts a slow suite into a flaky one.",
+      "codeCaptionUk": "Паралельність окупається лише після ізоляції даних; інакше вона перетворює повільний набір на нестабільний.",
+      "exercise": "Profile a suite with the slowest-test report. Identify whether the time is in setup or in the tests, then apply the single change with the largest expected effect and measure again.",
+      "exerciseUk": "Профілюйте набір звітом про найповільніші тести. Визначте, де час — у підготовці чи в самих тестах, застосуйте одну зміну з найбільшим очікуваним ефектом і виміряйте знову.",
+      "tags": ["ci", "performance", "parallel"],
+      "sourceIds": ["pytest-xdist", "github-actions-docs", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-failure-artifacts",
+      "moduleId": "ci-and-reporting",
+      "level": "Advanced",
+      "order": 36,
+      "title": "Artifacts that explain a failure",
+      "titleUk": "Артефакти, які пояснюють падіння",
+      "summary": "Capture screenshot, page state, console and request log on failure only — and redact secrets first.",
+      "summaryUk": "Зберігайте скриншот, стан сторінки, консоль і журнал запитів лише при падінні — і спершу приховуйте секрети.",
+      "concept": "The time between a failure appearing and somebody understanding it is a real metric, and it is determined by what the framework captured. Collecting artifacts for every test produces gigabytes of noise that nobody opens, so the policy should be to capture on failure only. Doing that requires knowing, during teardown, whether the test passed — which a fixture cannot tell on its own. The standard solution is a reporting hook that publishes each phase's result onto the test item, after which a fixture can check it in two lines. What to capture depends on the layer: a screenshot, a page snapshot and the browser console for the interface; the full request and response log for services; the page source and platform logs for mobile, captured before the session is closed rather than after. Two things must be true of everything you attach. Secrets must be redacted first, because reports are archived and shared. And the environment must be recorded, since the first question about any old failure is which build and configuration produced it.",
+      "conceptUk": "Час між появою падіння й моментом, коли хтось його зрозумів, є реальним показником, і його визначає те, що зібрав фреймворк. Збирання артефактів для кожного тесту дає гігабайти шуму, який ніхто не відкриває, тож політика має бути такою: збирати лише при падінні. Для цього під час прибирання треба знати, чи тест пройшов, а фікстура сама цього не знає. Стандартне рішення — хук звітності, що публікує результат кожної фази на об'єкті тесту, після чого фікстура перевіряє його двома рядками. Що саме збирати, залежить від рівня: скриншот, знімок сторінки та консоль браузера для інтерфейсу; повний журнал запитів і відповідей для сервісів; джерело сторінки та платформні логи для мобільних, зібрані до закриття сесії, а не після. Дві речі мають бути істинними для всього, що ви додаєте. Секрети слід приховати наперед, бо звіти архівують і поширюють. І середовище має бути зафіксоване, бо перше питання про будь-яке старе падіння — яка збірка й конфігурація його спричинили.",
+      "keyPoints": [
+        "Capture on failure only; artifacts for every test are noise nobody opens",
+        "A reporting hook publishes the phase result so a fixture can tell pass from fail during teardown",
+        "Redact secrets before attaching anything, and record which build and configuration produced the run"
+      ],
+      "keyPointsUk": [
+        "Збирайте лише при падінні; артефакти для кожного тесту — це шум, який ніхто не відкриває",
+        "Хук звітності публікує результат фази, щоб фікстура під час прибирання відрізнила успіх від падіння",
+        "Приховуйте секрети перед додаванням і фіксуйте, яка збірка та конфігурація дали цей запуск"
+      ],
+      "pitfalls": [
+        "Attaching raw request headers, which publishes a bearer token into an archived, shareable artifact",
+        "Recording video and traces for every test, which fills storage and makes the interesting artifact harder to find"
+      ],
+      "pitfallsUk": [
+        "Додавати сирі заголовки запитів, публікуючи токен доступу в архівованому артефакті, яким діляться",
+        "Записувати відео й трасування для кожного тесту, забиваючи сховище й ускладнюючи пошук цікавого артефакту"
+      ],
+      "code": "@pytest.hookimpl(hookwrapper=True, tryfirst=True)\ndef pytest_runtest_makereport(item, call):\n    \"\"\"Publish each phase's result onto the item.\n\n    Without this, a fixture's teardown cannot tell a pass from a failure, and\n    you either capture artifacts for every test or for none.\n    \"\"\"\n    outcome = yield\n    report = outcome.get_result()\n    setattr(item, f\"rep_{report.when}\", report)\n\n\n@pytest.fixture(autouse=True)\ndef _capture_on_failure(request, page):\n    yield\n    report = getattr(request.node, \"rep_call\", None)\n    if report is not None and report.failed:\n        attach_png(\"failure-screenshot\", page.screenshot(full_page=True))\n        attach_text(\"dom-snapshot\", page.content()[:100_000])\n        attach_text(\"page-url\", page.url)",
+      "codeCaption": "Two hooks and one fixture turn \"it failed on CI\" into a report that explains itself.",
+      "codeCaptionUk": "Два хуки й одна фікстура перетворюють «впало на CI» на звіт, який пояснює себе сам.",
+      "exercise": "Break a UI test deliberately and time how long it takes a colleague to diagnose it from the pipeline artifacts alone, without running anything. Add whatever was missing and measure again.",
+      "exerciseUk": "Свідомо зламайте UI-тест і виміряйте, скільки часу колезі потрібно на діагностику лише за артефактами конвеєра, без запуску. Додайте те, чого бракувало, і виміряйте знову.",
+      "tags": ["ci", "reporting", "debugging", "security"],
+      "sourceIds": ["pytest-hooks", "allure-report", "qa-automation-python-repo"]
+    },
+    {
+      "id": "ta-lesson-reports-and-trends",
+      "moduleId": "ci-and-reporting",
+      "level": "Advanced",
+      "order": 37,
+      "title": "Reports, history and trends",
+      "titleUk": "Звіти, історія та тренди",
+      "summary": "Three audiences need three artifacts, and history is what turns a report into something you can manage by.",
+      "summaryUk": "Три аудиторії потребують трьох артефактів, а історія перетворює звіт на інструмент управління.",
+      "concept": "Reporting serves three different audiences and one artifact cannot serve them all. The engineer who broke something needs to know why within about thirty seconds, which means a rich report with steps, attachments and the request log. The reviewer needs to know whether anything broke at all, which is best delivered as machine-readable results turned into annotations on the change itself. The team lead needs to know whether things are improving, which requires history. That last one is the step teams skip and the one that changes the most, because without history every report is an isolated snapshot, whereas with it you get pass-rate trends, automatic detection of unstable tests and visibility of duration drift. Restoring previous results before generating a report is usually a few lines of pipeline configuration. Report steps also deserve attention: wrapping meaningful actions in named steps turns an opaque failure into one that says precisely which stage of the flow failed, which is often enough to skip reproduction entirely.",
+      "conceptUk": "Звітність обслуговує три різні аудиторії, і один артефакт не може задовольнити всіх. Інженер, який щось зламав, має зрозуміти причину приблизно за тридцять секунд, а це означає насичений звіт із кроками, вкладеннями та журналом запитів. Рецензентові треба знати, чи взагалі щось зламалося, і це найкраще подавати як машиночитані результати, перетворені на анотації просто в зміні. Керівникові команди треба знати, чи стає краще, а для цього потрібна історія. Саме цей крок команди пропускають, і саме він змінює найбільше, бо без історії кожен звіт є ізольованим знімком, а з нею ви отримуєте тренди частки успішних запусків, автоматичне виявлення нестабільних тестів і видимість дрейфу тривалості. Відновлення попередніх результатів перед генерацією звіту зазвичай займає кілька рядків конфігурації конвеєра. Кроки у звіті теж заслуговують на увагу: обгортання значущих дій у названі кроки перетворює непрозоре падіння на таке, що точно вказує, який етап потоку впав, і цього часто досить, щоб взагалі не відтворювати проблему.",
+      "keyPoints": [
+        "Three audiences: the engineer who broke it, the reviewer, and the lead tracking the trend",
+        "History turns a report into a dashboard: pass-rate trends, unstable-test detection and duration drift",
+        "Named steps make a failure say which stage of the flow broke, often removing the need to reproduce"
+      ],
+      "keyPointsUk": [
+        "Три аудиторії: інженер, який зламав, рецензент і керівник, що стежить за трендом",
+        "Історія перетворює звіт на панель: тренди успішності, виявлення нестабільних тестів і дрейф тривалості",
+        "Названі кроки змушують падіння вказати, який етап потоку зламався, часто знімаючи потребу у відтворенні"
+      ],
+      "pitfalls": [
+        "Generating a report without restoring history, so you have snapshots instead of trends",
+        "Notifying a chat channel on every successful run, which trains everyone to mute it before the first real failure"
+      ],
+      "pitfallsUk": [
+        "Генерувати звіт без відновлення історії, отримуючи знімки замість трендів",
+        "Сповіщати чат про кожен успішний запуск, привчаючи всіх вимкнути його ще до першого справжнього падіння"
+      ],
+      "code": "# The four lines teams skip. Without them every report is a snapshot.\n- uses: actions/checkout@v4\n  continue-on-error: true\n  with: { ref: gh-pages, path: gh-pages }\n- run: cp -r gh-pages/last-history all-results/history 2>/dev/null || true\n\n\n# Steps turn \"test_checkout failed\" into \"test_checkout failed at: Place order\".\nwith step(f\"API: add product {product_id} x{quantity} to cart\"):\n    response = self.client.post(f\"{self.PATH}/items\", json=payload, expect=201)\n\n\n# Environment metadata, written once at startup. Six months from now the first\n# question about a red run is \"which build and configuration was this?\"\n#   Environment=stage\n#   Browser=chromium\n#   CI=true",
+      "codeCaption": "Restoring history is a few lines and is the difference between a report and a dashboard.",
+      "codeCaptionUk": "Відновлення історії — це кілька рядків і різниця між звітом і панеллю управління.",
+      "exercise": "Run a suite five times with reporting enabled, generate a report with history restored, and identify your three least stable tests from the data rather than from intuition.",
+      "exerciseUk": "Запустіть набір п'ять разів зі звітністю, згенеруйте звіт із відновленою історією й визначте три найменш стабільні тести за даними, а не за інтуїцією.",
+      "tags": ["ci", "reporting", "metrics", "allure"],
+      "sourceIds": ["allure-report", "github-actions-docs", "qa-automation-python-repo"]
+    }
+  ]
+}
