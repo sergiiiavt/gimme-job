@@ -175,6 +175,7 @@ const fallbackTags: Record<string, string[]> = {
   "Performance and resilience": ["performance", "resilience"],
   "Security and accessibility": ["security", "accessibility"],
   "Agile and delivery": ["agile", "delivery"],
+  "Metrics and estimation": ["metrics", "estimation", "forecasting"],
   "Strategy and risk": ["strategy", "risk"],
   Leadership: ["leadership", "people"],
   "Practical tasks": ["practical", "scenario"],

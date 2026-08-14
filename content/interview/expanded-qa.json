@@ -2346,7 +2346,7 @@
     {
       "id": "test-estimation-techniques",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Theory",
       "question": "How do you estimate testing when scope and uncertainty are both changing?",
       "shortAnswer": "Decompose work, use analogous evidence and team estimates, include setup, investigation and retest, and express a range with assumptions and risk. Re-estimate when evidence changes instead of defending an early single number.",
@@ -2378,7 +2378,7 @@
     {
       "id": "meaningful-test-coverage",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Theory",
       "question": "How can a team describe test coverage without using the number of test cases as a proxy for quality?",
       "shortAnswer": "Report coverage across important requirements, risks, user journeys, configurations, data partitions and code where relevant. Show execution results and known gaps. A useful coverage model explains what evidence exists and what uncertainty remains.",
@@ -2410,7 +2410,7 @@
     {
       "id": "quality-metric-system",
       "level": "Lead",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Scenario",
       "question": "How would you design a quality dashboard that does not reward gaming?",
       "shortAnswer": "Start from decisions, combine customer and production outcomes with delivery and test-health signals, show trends and distributions, and attach context. Never rank individuals by defect or test counts; review whether each metric still changes action.",
@@ -2474,7 +2474,7 @@
     {
       "id": "automation-roi-model",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Theory",
       "question": "How would you evaluate automation ROI without claiming every automated run saves the full manual execution time?",
       "shortAnswer": "Compare realistic avoided effort and faster risk feedback with design, implementation, infrastructure, review, triage and maintenance cost. Include reliability and opportunity cost, then revisit the model using actual run and failure data.",
@@ -2884,6 +2884,766 @@
         "istqb-ctfl-v4"
       ],
       "prevalence": "Very common"
+    },
+    {
+      "id": "define-and-track-qa-kpis",
+      "level": "Lead",
+      "category": "Metrics and estimation",
+      "kind": "Strategy",
+      "prevalence": "Very common",
+      "question": "How would you define and track QA KPIs such as defect escape rate, automation coverage, cycle time and MTTD?",
+      "shortAnswer": "For each KPI, write the purpose, the exact numerator and denominator or start/end events, the scope and observation window, and the system that supplies the data. Set a baseline before picking a target, visualize the trend rather than a single number, review it on an agreed cadence, and require an explicit investigation and action when it moves outside the expected range. Escape rate, automation coverage, cycle time and MTTD measure different things — release-quality outcome, capability, flow and production detection — so treat them as a linked set rather than four interchangeable scores, and do not assume every team needs the same targets.",
+      "strongAnswerSignals": [
+        "defines numerator, denominator and observation window before a target",
+        "treats the four KPIs as different measurement types, not one score",
+        "connects baseline and trend to a specific review cadence and action"
+      ],
+      "questionUk": "Як ви б визначили та відстежували QA KPI, такі як defect escape rate, automation coverage, cycle time і MTTD?",
+      "shortAnswerUk": "Для кожного KPI опишіть мету, точний чисельник і знаменник або події початку/кінця, область і період спостереження, а також систему, що постачає дані. Встановіть базове значення перш ніж обирати ціль, візуалізуйте тренд, а не одне число, переглядайте показник за узгодженим графіком і вимагайте явного розслідування та дії, коли значення виходить за очікуваний діапазон. Escape rate, automation coverage, cycle time і MTTD вимірюють різні речі — якість релізу, спроможність автоматизації, потік роботи та виявлення проблем у продакшні — тож розглядайте їх як пов'язаний набір, а не чотири взаємозамінні оцінки, і не вважайте, що кожній команді потрібні однакові цілі.",
+      "strongAnswerSignalsUk": [
+        "визначає чисельник, знаменник і період спостереження перед встановленням цілі",
+        "розглядає чотири KPI як різні типи вимірювань, а не одну оцінку",
+        "пов'язує базове значення й тренд з конкретним графіком перегляду та дією"
+      ],
+      "example": "A QA Lead defines defect escape rate as escaped Sev-1/Sev-2 defects divided by (pre-release + escaped Sev-1/Sev-2 defects) per release train, automation coverage as risk-weighted automated regression divided by risk-weighted eligible regression, cycle time as commit-to-merged-and-tested duration, and MTTD as alert-fired-minus-user-impact-started. Each has a dashboard panel with a trend line and a named owner; when escape rate crossed its guardrail for two consecutive releases, the team paused new automation work to investigate root causes instead of just reporting the number.",
+      "exampleUk": "QA-лід визначає defect escape rate як кількість дефектів Sev-1/Sev-2, що прослизнули в продакшн, поділену на (дефекти до релізу + дефекти, що прослизнули) за реліз-потяг, automation coverage — як зважену за ризиком автоматизовану регресію, поділену на зважену за ризиком регресію, що підлягає автоматизації, cycle time — як тривалість від коміту до змерджених і протестованих змін, а MTTD — як час від спрацювання алерту до моменту, коли користувачі вже відчули вплив. Кожен показник має панель на дашборді з лінією тренду та відповідальною особою; коли escape rate перевищив поріг два релізи поспіль, команда призупинила нову автоматизацію, щоб розслідувати першопричини, а не просто звітувати про число.",
+      "tags": [
+        "kpi",
+        "metrics",
+        "dashboard"
+      ],
+      "sourceIds": [
+        "dora",
+        "google-sre"
+      ]
+    },
+    {
+      "id": "defect-escape-rate-formula",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Very common",
+      "question": "How do you calculate defect escape rate, and what does the denominator hide?",
+      "shortAnswer": "A common form is escaped defects divided by pre-release defects found plus escaped defects, for a defined release and severity scope. The denominator hides several decisions that change the number without changing quality: which severities count, whether duplicate or invalid reports are excluded, how long after release a defect still counts as escaped for that release, and whether the rate is normalized by usage or release volume. Publish those definitions alongside the number, or two teams' 'same' escape rate are not comparable.",
+      "strongAnswerSignals": [
+        "states a concrete numerator/denominator form",
+        "lists severity, window and duplicate-handling as hidden decisions",
+        "flags that undefined denominators break cross-team comparison"
+      ],
+      "questionUk": "Як розрахувати defect escape rate (частку дефектів, що прослизнули в продакшн) і що приховує знаменник цієї формули?",
+      "shortAnswerUk": "Поширена форма: кількість дефектів, що прослизнули в продакшн, поділена на дефекти, знайдені до релізу, плюс дефекти, що прослизнули, для визначеного релізу й діапазону серйозності. Знаменник приховує кілька рішень, які змінюють число, не змінюючи якість: які рівні серйозності враховувати, чи виключати дублікати й недійсні репорти, як довго після релізу дефект ще вважається таким, що прослизнув саме в цьому релізі, і чи нормалізується показник за обсягом використання або релізів. Публікуйте ці визначення разом із числом, інакше «однаковий» escape rate у двох команд буде непорівнюваним.",
+      "strongAnswerSignalsUk": [
+        "наводить конкретну форму чисельника/знаменника",
+        "перелічує серйозність, вікно й обробку дублікатів як приховані рішення",
+        "зазначає, що невизначений знаменник ламає порівняння між командами"
+      ],
+      "example": "Team A counts only Sev-1/Sev-2 defects found within 30 days of release; Team B counts every severity found within 90 days. Both report an '8% escape rate' in the same quarterly review, and a director nearly used it to rank the teams until someone traced the definitions and found they were measuring different things.",
+      "exampleUk": "Команда A рахує лише дефекти Sev-1/Sev-2, знайдені протягом 30 днів після релізу; команда B рахує дефекти будь-якої серйозності, знайдені протягом 90 днів. Обидві звітують про «escape rate 8%» на одному й тому ж квартальному огляді, і директор мало не використав це для рейтингування команд, поки хтось не простежив визначення й не виявив, що вони вимірюють різні речі.",
+      "tags": [
+        "defect-escape-rate",
+        "metrics",
+        "denominator"
+      ],
+      "sourceIds": [
+        "dou-qa-2022",
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "defect-removal-efficiency",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "What is defect removal efficiency, and why is it sensitive to timing?",
+      "shortAnswer": "Defect removal efficiency (DRE) is commonly defects removed before release divided by defects removed before release plus defects discovered after release, expressed as a percentage. It is sensitive to timing because post-release defects keep arriving after the number is first published; a release can look like 96% DRE the week after launch and drift down as more escaped defects surface over the following months, so the metric needs a defined stabilization window before it is treated as final.",
+      "strongAnswerSignals": [
+        "gives the pre-release over pre-release-plus-escaped form",
+        "explains delayed-discovery bias explicitly",
+        "requires a stabilization window before treating the number as final"
+      ],
+      "questionUk": "Що таке defect removal efficiency (DRE) і чому цей показник чутливий до часу вимірювання?",
+      "shortAnswerUk": "Defect removal efficiency (DRE) зазвичай розраховується як дефекти, усунені до релізу, поділені на дефекти, усунені до релізу, плюс дефекти, виявлені після релізу, у відсотках. Показник чутливий до часу, бо дефекти після релізу продовжують надходити вже після першої публікації числа — реліз може виглядати як 96% DRE одразу після запуску й поступово знижуватися протягом наступних місяців у міру виявлення нових дефектів, що прослизнули, тому метриці потрібне визначене вікно стабілізації, перш ніж вважати число фінальним.",
+      "strongAnswerSignalsUk": [
+        "наводить форму «до релізу поділити на (до релізу плюс прослизнуло)»",
+        "явно пояснює упередженість через відкладене виявлення",
+        "вимагає вікна стабілізації перед тим, як вважати число фінальним"
+      ],
+      "example": "A release reports 96% DRE one week after launch. Three months later, after more escaped defects from low-traffic edge cases surface, the recalculated DRE for that same release is 89%; the team now publishes DRE only after a fixed 90-day stabilization window to avoid celebrating a number that was still moving.",
+      "exampleUk": "Реліз показує 96% DRE через тиждень після запуску. Через три місяці, коли виявляється більше дефектів, що прослизнули, з рідкісних крайових випадків, перерахований DRE для того самого релізу становить 89% — тепер команда публікує DRE лише після фіксованого 90-денного вікна стабілізації, щоб не святкувати число, яке ще змінювалося.",
+      "tags": [
+        "dre",
+        "metrics",
+        "defect-removal-efficiency"
+      ],
+      "sourceIds": [
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "defect-density-caveats",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "Why is defect density risky to compare across teams or products?",
+      "shortAnswer": "Defect density normalizes defects found by a size measure such as KLOC, function points or module count, but the denominator is a modeling choice, not an objective fact; two teams can count size differently, and code volume does not equal functional complexity or risk. A team writing dense, well-tested business logic can show higher density than a team padding out boilerplate, without either number saying anything about actual quality. Use density inside one team's own trend over time, paired with severity and change context, rather than as a cross-team league table.",
+      "strongAnswerSignals": [
+        "names at least one size denominator and calls it a modeling choice",
+        "explains that code volume is not the same as complexity or risk",
+        "restricts valid use to within-team trend, not cross-team ranking"
+      ],
+      "questionUk": "Чому небезпечно порівнювати defect density між різними командами чи продуктами?",
+      "shortAnswerUk": "Defect density нормалізує кількість знайдених дефектів за розміром, наприклад KLOC, function points або кількістю модулів, але знаменник є моделюючим вибором, а не об'єктивним фактом: різні команди можуть по-різному рахувати розмір, а обсяг коду не дорівнює функціональній складності чи ризику. Команда, що пише щільну, добре протестовану бізнес-логіку, може показати вищу density, ніж команда, яка додає багато шаблонного коду, і жодне з цих чисел нічого не каже про реальну якість. Використовуйте density у межах тренду однієї команди в часі, у поєднанні з серйозністю та контекстом змін, а не як таблицю рейтингів між командами.",
+      "strongAnswerSignalsUk": [
+        "називає хоча б один знаменник розміру й визначає його як моделюючий вибір",
+        "пояснює, що обсяг коду не дорівнює складності чи ризику",
+        "обмежує коректне використання трендом усередині команди, а не міжкомандним рейтингом"
+      ],
+      "example": "Two teams report defect density per KLOC; the team with the 'better' (lower) density turns out to have three times more boilerplate-generated code inflating its KLOC denominator. Leadership stopped using cross-team density comparisons after the discrepancy was traced, keeping density only as a within-team trend metric.",
+      "exampleUk": "Дві команди звітують defect density на KLOC; команда з «кращим» (нижчим) показником виявляється такою, що має втричі більше згенерованого шаблонного коду, який роздуває знаменник KLOC. Після того як цю розбіжність простежили, керівництво припинило використовувати міжкомандні порівняння density, залишивши її лише як трендову метрику в межах однієї команди.",
+      "tags": [
+        "defect-density",
+        "metrics",
+        "comparability"
+      ],
+      "sourceIds": [
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "defect-reopen-rate",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Occasional",
+      "question": "How do you define and calculate defect reopen rate?",
+      "shortAnswer": "Define the denominator as defects that reached a resolved or closed state and were therefore eligible to reopen, not all defects filed. Count reopened defects as unique defects reopened at least once in the window, or explicitly state you are counting reopen events if a defect can reopen more than once; mixing the two silently inflates or deflates the rate. A rising reopen rate usually points at incomplete fixes, unclear reproduction steps, or verification being skipped rather than at tester quality.",
+      "strongAnswerSignals": [
+        "scopes the denominator to resolved/closed-eligible defects",
+        "distinguishes unique reopened defects from reopen events",
+        "connects a rising rate to fix quality or verification gaps, not blame"
+      ],
+      "questionUk": "Як визначити та розрахувати defect reopen rate (частку повторно відкритих дефектів)?",
+      "shortAnswerUk": "Визначте знаменник як дефекти, що досягли статусу «вирішено» або «закрито» і тому мали право бути повторно відкритими, а не всі заведені дефекти. Рахуйте повторно відкриті дефекти як унікальні дефекти, відкриті повторно хоча б раз у певному вікні, або явно вказуйте, що рахуєте саме події повторного відкриття, якщо дефект може відкриватися кілька разів; змішування цих підходів мовчки спотворює показник в той чи інший бік. Зростання reopen rate зазвичай вказує на неповні виправлення, нечіткі кроки відтворення або пропущену верифікацію, а не на якість роботи тестувальників.",
+      "strongAnswerSignalsUk": [
+        "обмежує знаменник дефектами, придатними для повторного відкриття (вирішені/закриті)",
+        "розрізняє унікальні повторно відкриті дефекти й події повторного відкриття",
+        "пов'язує зростання показника з якістю виправлень чи прогалинами у верифікації, а не зі звинуваченням людей"
+      ],
+      "example": "A reopen rate calculated against all filed defects, including still-open ones, looked artificially low; once the team restricted the denominator to defects that had actually reached 'resolved,' the real reopen rate nearly doubled and revealed a pattern of fixes being merged without re-running the original reproduction steps.",
+      "exampleUk": "Reopen rate, розрахований відносно всіх заведених дефектів (включно з тими, що ще відкриті), виглядав штучно низьким; коли команда обмежила знаменник дефектами, які справді досягли статусу «вирішено», реальний reopen rate майже подвоївся і показав закономірність: виправлення мерджили без повторного прогону початкових кроків відтворення.",
+      "tags": [
+        "defect-reopen-rate",
+        "metrics"
+      ],
+      "sourceIds": [
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "automation-coverage-denominators",
+      "level": "Senior",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Very common",
+      "question": "What does '80% automation coverage' actually mean, and why does the denominator matter?",
+      "shortAnswer": "Automation coverage can mean automated tests divided by total tests, automated regression divided by regression scope, automated eligible regression divided by automation-eligible regression, or risk-weighted automated scope divided by risk-weighted eligible scope. The first ratio is usually the weakest, since it rewards writing many trivial automated tests and says nothing about what matters most being covered. A risk-weighted, eligibility-scoped denominator is far more decision-useful, because it excludes what genuinely cannot or should not be automated and weights coverage toward higher-risk areas.",
+      "strongAnswerSignals": [
+        "names at least three different possible denominators",
+        "explains why raw automated/total-tests is the weakest form",
+        "prefers a risk-weighted, eligibility-scoped denominator"
+      ],
+      "questionUk": "Що насправді означає «80% automation coverage» і чому знаменник тут має значення?",
+      "shortAnswerUk": "Automation coverage може означати автоматизовані тести, поділені на всі тести, автоматизовану регресію, поділену на обсяг регресії, автоматизовану придатну для автоматизації регресію, поділену на всю придатну для автоматизації регресію, або зважений за ризиком автоматизований обсяг, поділений на зважений за ризиком придатний обсяг. Перше співвідношення зазвичай найслабше, бо воно заохочує писати багато тривіальних автоматизованих тестів і нічого не каже про те, чи покрито найважливіше. Знаменник, зважений за ризиком і обмежений придатністю до автоматизації, набагато корисніший для прийняття рішень, бо він виключає те, що дійсно не можна або не варто автоматизувати, і надає більшу вагу ризикованішим ділянкам.",
+      "strongAnswerSignalsUk": [
+        "називає щонайменше три різні можливі знаменники",
+        "пояснює, чому сире співвідношення автоматизовані/усі тести найслабше",
+        "надає перевагу знаменнику, зваженому за ризиком і обмеженому придатністю"
+      ],
+      "example": "A team reported 80% automation coverage using automated-tests-over-total-tests, which looked great until someone recalculated it as risk-weighted automated scope over risk-weighted eligible scope and found the actual payment-flow coverage was 40%; most of the original 80% came from easy, low-risk UI smoke checks.",
+      "exampleUk": "Команда звітувала про 80% automation coverage, використовуючи співвідношення автоматизовані тести до всіх тестів, що виглядало чудово, поки хтось не перерахував його як зважений за ризиком автоматизований обсяг до зваженого за ризиком придатного обсягу і не виявив, що реальне покриття платіжного флоу становить лише 40% — більшість початкових 80% походила з простих UI-смоук-перевірок низького ризику.",
+      "tags": [
+        "automation-coverage",
+        "metrics",
+        "denominator"
+      ],
+      "sourceIds": [
+        "dora",
+        "playwright-best-practices"
+      ]
+    },
+    {
+      "id": "flaky-test-rate-vs-stability",
+      "level": "Senior",
+      "category": "Metrics and estimation",
+      "kind": "Troubleshooting",
+      "prevalence": "Very common",
+      "question": "How is flaky test rate different from automation pass rate, and why does conflating them cause harm?",
+      "shortAnswer": "Pass rate tells you what fraction of runs passed; it cannot tell you whether a failure came from a real product defect, a timing issue, test data collision, or environment noise. A deterministic test that fails every time because of a genuine bug is not flaky, it is doing its job. Flaky test rate specifically measures non-deterministic results for the same code and inputs. Labeling low pass rate as 'instability' hides real defects behind a maintenance narrative, and labeling a flaky suite as 'passing' hides real risk behind a green build.",
+      "strongAnswerSignals": [
+        "distinguishes deterministic failure from non-deterministic flakiness",
+        "states a genuine bug causing a consistent failure is not flaky",
+        "explains the harm of conflating the two in either direction"
+      ],
+      "questionUk": "Чим flaky test rate відрізняється від automation pass rate і чому їх плутанина шкідлива?",
+      "shortAnswerUk": "Pass rate показує, яка частка прогонів пройшла успішно; він не може сказати, чи причина падіння — реальний дефект продукту, проблема з таймінгом, конфлікт тестових даних чи шум середовища. Детермінований тест, що падає щоразу через справжній баг, не є флейкі — він робить свою роботу. Flaky test rate конкретно вимірює недетерміновані результати для того самого коду й вхідних даних. Називати низький pass rate «нестабільністю» приховує реальні дефекти за наративом про обслуговування, а називати флейкі-сьют «проходженням» приховує реальний ризик за зеленим білдом.",
+      "strongAnswerSignalsUk": [
+        "розрізняє детерміноване падіння й недетерміновану флейкі-поведінку",
+        "стверджує, що справжній баг, який спричиняє стабільне падіння, не є флейкі-тестом",
+        "пояснює шкоду від плутанини цих двох понять в обидва боки"
+      ],
+      "example": "A team's 'flaky test rate' dashboard actually counted every failing test as flaky, including a payment test that failed consistently because of a genuine regression; the regression sat unfixed for two weeks because it was auto-quarantined by the flaky-test process instead of being triaged as a defect.",
+      "exampleUk": "Дашборд «flaky test rate» команди насправді рахував флейкі-тестом кожен тест, що падав, включно з платіжним тестом, який стабільно падав через справжню регресію; ця регресія залишалася невиправленою два тижні, бо тест автоматично потрапив у карантин через процес обробки флейкі-тестів замість того, щоб його розібрали як дефект.",
+      "tags": [
+        "flaky-test-rate",
+        "automation-stability",
+        "metrics"
+      ],
+      "sourceIds": [
+        "playwright-best-practices",
+        "dou-qa-2022"
+      ]
+    },
+    {
+      "id": "dora-five-metrics",
+      "level": "Senior",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Very common",
+      "question": "What are the current DORA software delivery metrics, and how do they differ from the older four-key model?",
+      "shortAnswer": "The current model groups five metrics into throughput and instability: change lead time, deployment frequency and failed deployment recovery time measure throughput, while change fail rate and deployment rework rate measure instability. This split explicitly separates 'how fast' from 'how safely,' whereas the older four-keys framing is commonly cited without the rework-rate addition. Treat the metrics as trend signals connected to team and service context, not as a cross-team leaderboard, and confirm the exact current definitions against DORA's own materials before quoting numbers, since the framework has evolved.",
+      "strongAnswerSignals": [
+        "separates throughput metrics from instability metrics",
+        "explicitly flags the older four-key framing as outdated",
+        "warns against using DORA metrics as a team ranking"
+      ],
+      "questionUk": "Які поточні метрики доставки програмного забезпечення DORA і чим вони відрізняються від старішої моделі з чотирьох ключових метрик?",
+      "shortAnswerUk": "Поточна модель групує п'ять метрик у пропускну здатність і нестабільність: change lead time, deployment frequency і failed deployment recovery time вимірюють пропускну здатність, а change fail rate і deployment rework rate вимірюють нестабільність. Такий поділ явно розділяє «наскільки швидко» від «наскільки безпечно», тоді як старіше формулювання з чотирьох ключових метрик часто цитують без доданого показника rework rate. Розглядайте ці метрики як трендові сигнали, пов'язані з контекстом команди й сервісу, а не як рейтинг між командами, і перевіряйте точні поточні визначення за офіційними матеріалами DORA перед тим, як наводити числа, бо фреймворк розвивається.",
+      "strongAnswerSignalsUk": [
+        "розділяє метрики пропускної здатності й нестабільності",
+        "явно позначає стару модель з чотирьох метрик як застарілу",
+        "застерігає проти використання метрик DORA як рейтингу команд"
+      ],
+      "example": "A director asked for 'the four DORA metrics' during a review; the QA lead corrected the framing, presented all five current metrics grouped as throughput versus instability, and showed each team's own trend over the last six quarters instead of ranking teams against each other on a single chart.",
+      "exampleUk": "Директор попросив на огляді «чотири метрики DORA»; QA-лід виправив формулювання, представив усі п'ять поточних метрик, згрупованих як пропускна здатність проти нестабільності, і показав власний тренд кожної команди за останні шість кварталів замість того, щоб ранжувати команди одна проти одної на одному графіку.",
+      "tags": [
+        "dora",
+        "flow-metrics",
+        "metrics"
+      ],
+      "sourceIds": [
+        "dora"
+      ]
+    },
+    {
+      "id": "mttd-mttr-terminology",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "What do MTTD and MTTR mean, and why is generic MTTR risky terminology?",
+      "shortAnswer": "MTTD, mean time to detect, measures the time from when user impact actually begins to when the team becomes aware of it, usually through an alert. Generic MTTR is ambiguous because organizations use it for at least four different things: time to acknowledge, time to begin repair, time to restore service, and time to fully repair the root cause. DORA's failed deployment recovery time specifically means time to restore service after a failed change, which is not automatically the same as a team's internal 'MTTR' number. Always state the exact start and end events before comparing or trending a recovery-time metric.",
+      "strongAnswerSignals": [
+        "defines MTTD as impact-start to detection, not deploy to detection",
+        "lists at least three different things 'MTTR' can mean",
+        "distinguishes generic MTTR from DORA's failed deployment recovery time specifically"
+      ],
+      "questionUk": "Що означають MTTD і MTTR і чому загальний термін MTTR — ризикована термінологія?",
+      "shortAnswerUk": "MTTD (mean time to detect) вимірює час від моменту, коли вплив на користувачів справді почався, до моменту, коли команда про це дізналася, зазвичай через алерт. Загальний термін MTTR неоднозначний, бо організації використовують його щонайменше для чотирьох різних речей: часу підтвердження інциденту, часу початку усунення, часу відновлення сервісу й часу повного усунення першопричини. Метрика DORA «час відновлення після невдалого деплою» (failed deployment recovery time) означає конкретно час відновлення сервісу після невдалої зміни, і це не обов'язково те саме, що внутрішній показник «MTTR» команди. Завжди вказуйте точні події початку й кінця, перш ніж порівнювати чи будувати тренд метрики часу відновлення.",
+      "strongAnswerSignalsUk": [
+        "визначає MTTD як час від початку впливу до виявлення, а не від деплою до виявлення",
+        "перелічує щонайменше три різні значення терміна «MTTR»",
+        "розрізняє загальний MTTR і конкретно DORA-метрику часу відновлення після невдалого деплою"
+      ],
+      "example": "Two teams compared 'MTTR' in a joint review; one measured time-to-acknowledge and the other measured time-to-full-root-cause-fix. The numbers looked wildly different until someone asked each team to state their exact start and end events, at which point the comparison was dropped as meaningless without a shared definition.",
+      "exampleUk": "Дві команди порівнювали «MTTR» на спільному огляді; одна вимірювала час до підтвердження інциденту, інша — час до повного усунення першопричини. Числа виглядали разюче різними, поки хтось не попросив кожну команду назвати точні події початку й кінця — після цього порівняння визнали безглуздим без спільного визначення.",
+      "tags": [
+        "mttd",
+        "mttr",
+        "metrics"
+      ],
+      "sourceIds": [
+        "google-sre",
+        "dora"
+      ]
+    },
+    {
+      "id": "flow-metrics-lead-cycle-throughput",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "How do lead time, cycle time, throughput and WIP relate to each other?",
+      "shortAnswer": "Lead time runs from when work is requested to when it is delivered; cycle time runs from when work actively starts to when it finishes, a narrower window inside lead time. Throughput is how many items finish per period, and WIP, work in progress, is how many items are in flight at once. Little's Law ties them together: average cycle time is roughly average WIP divided by average throughput, so cutting WIP is often a more reliable way to shorten cycle time than asking people to work faster.",
+      "strongAnswerSignals": [
+        "distinguishes lead time's request-to-delivery span from cycle time's active-work span",
+        "defines throughput and WIP precisely",
+        "connects the four through the WIP-to-throughput relationship rather than treating them as unrelated numbers"
+      ],
+      "questionUk": "Як пов'язані між собою lead time, cycle time, throughput і WIP?",
+      "shortAnswerUk": "Lead time відраховується від моменту запиту роботи до моменту її доставки; cycle time відраховується від моменту, коли робота фактично почалася, до моменту завершення — це вужче вікно всередині lead time. Throughput — це кількість завершених елементів за період, а WIP (work in progress) — кількість елементів, що перебувають у роботі одночасно. Закон Літтла пов'язує їх: середній cycle time приблизно дорівнює середньому WIP, поділеному на середній throughput, тому зменшення WIP часто є надійнішим способом скоротити cycle time, ніж просити людей працювати швидше.",
+      "strongAnswerSignalsUk": [
+        "розрізняє проміжок lead time (від запиту до доставки) і cycle time (від початку активної роботи)",
+        "точно визначає throughput і WIP",
+        "пов'язує всі чотири поняття через співвідношення WIP і throughput, а не подає їх як непов'язані числа"
+      ],
+      "example": "A team with rising cycle time assumed testers needed to work faster; plotting WIP alongside cycle time showed WIP had tripled because every engineer was context-switching across parallel stories. Capping WIP per person, not adding pressure, brought cycle time back down within two sprints.",
+      "exampleUk": "Команда зі зростаючим cycle time припустила, що тестувальникам треба працювати швидше; графік WIP поруч із cycle time показав, що WIP потроївся, бо кожен інженер перемикався між паралельними історіями. Обмеження WIP на людину, а не тиск, повернуло cycle time до норми за два спринти.",
+      "tags": [
+        "flow-metrics",
+        "cycle-time",
+        "throughput"
+      ],
+      "sourceIds": [
+        "dora",
+        "scrum-guide"
+      ]
+    },
+    {
+      "id": "pass-rate-is-not-quality",
+      "level": "Junior",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Very common",
+      "question": "Why is a high pass rate not sufficient evidence of release quality?",
+      "shortAnswer": "Pass rate is passed tests divided by executed tests under some status policy, and it says nothing about what those tests actually cover or how important the failures are. A suite where 980 low-risk tests pass and 20 critical payment tests fail can still show a 98% pass rate while the release is unacceptable to ship. Always segment execution results by risk and severity, and pair pass rate with explicit information about what was not executed or was blocked, rather than treating one percentage as a release gate by itself.",
+      "strongAnswerSignals": [
+        "defines pass rate as passed over executed under a status policy",
+        "gives a concrete example where high pass rate hides an unacceptable release",
+        "requires risk/severity segmentation instead of one blended percentage"
+      ],
+      "questionUk": "Чому високий pass rate сам по собі не є достатнім доказом якості релізу?",
+      "shortAnswerUk": "Pass rate — це кількість пройдених тестів, поділена на кількість виконаних, за певною політикою статусів, і він нічого не каже про те, що саме ці тести покривають чи наскільки серйозні падіння. Сьют, де 980 тестів низького ризику пройшли, а 20 критичних платіжних тестів впали, все одно може показати pass rate 98%, хоча реліз неприйнятний для випуску. Завжди сегментуйте результати виконання за ризиком і серйозністю та поєднуйте pass rate з явною інформацією про те, що не було виконано або було заблоковано, замість того, щоб розглядати один відсоток як самостійний реліз-гейт.",
+      "strongAnswerSignalsUk": [
+        "визначає pass rate як пройдені поділені на виконані за політикою статусів",
+        "наводить конкретний приклад, де високий pass rate приховує неприйнятний реліз",
+        "вимагає сегментації за ризиком/серйозністю замість одного змішаного відсотка"
+      ],
+      "example": "A release dashboard showed a green '98% pass rate'; a closer look showed the 2% failures were all in the payment-authorization suite. The release was blocked despite the headline number, and the team added a mandatory 'critical-path status' panel next to the blended pass rate so this could not be missed again.",
+      "exampleUk": "Дашборд релізу показував зелений «pass rate 98%»; при уважнішому розгляді виявилося, що ці 2% падінь — усі в сьюті авторизації платежів. Реліз заблокували попри привабливе число, і команда додала обов'язкову панель «статус критичного шляху» поруч зі змішаним pass rate, щоб таке більше не пропускали.",
+      "tags": [
+        "pass-rate",
+        "metrics",
+        "release-quality"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ]
+    },
+    {
+      "id": "wideband-delphi-planning-poker",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "How do Wideband Delphi and Planning Poker differ as collaborative estimation techniques, and does Scrum require either of them?",
+      "shortAnswer": "Wideband Delphi runs anonymous, independent estimates in rounds, with a facilitator sharing the spread and reasoning between rounds until estimates converge, which reduces anchoring and dominant-voice bias. Planning Poker is a lighter-weight, faster variant using cards to force simultaneous reveal and quick discussion of outliers, usually for near-term backlog items rather than large deliverables. Neither is mandated by Scrum; the Scrum Guide does not require story points or Planning Poker, and teams can use them, another sizing method, or none at all.",
+      "strongAnswerSignals": [
+        "describes Wideband Delphi's multi-round anonymous convergence process",
+        "describes Planning Poker as a lighter, faster simultaneous-reveal variant",
+        "explicitly states Scrum does not require either technique"
+      ],
+      "questionUk": "Чим Wideband Delphi відрізняється від Planning Poker як спільні техніки оцінювання і чи вимагає Scrum хоча б одну з них?",
+      "shortAnswerUk": "Wideband Delphi проводить анонімні незалежні оцінки в кілька раундів, де фасилітатор ділиться розкидом і обґрунтуваннями між раундами, поки оцінки не зійдуться, що зменшує ефект якоря та домінування чиєїсь думки. Planning Poker — легша й швидша варіація з картками, що змушує учасників розкривати оцінки одночасно та швидко обговорювати викиди, зазвичай для найближчих елементів беклогу, а не великих постачань. Жодна з технік не є обов'язковою в Scrum — Scrum Guide не вимагає ні story points, ні Planning Poker, і команди можуть використовувати їх, інший метод оцінювання розміру або взагалі жоден.",
+      "strongAnswerSignalsUk": [
+        "описує багатораундовий анонімний процес зближення оцінок Wideband Delphi",
+        "описує Planning Poker як легшу, швидшу варіацію з одночасним розкриттям",
+        "явно стверджує, що Scrum не вимагає жодної з технік"
+      ],
+      "example": "A new Scrum Master insisted the team 'must' use Planning Poker because 'Scrum requires it.' The team lead pointed to the Scrum Guide showing no such requirement, and the team switched to a lighter T-shirt-sizing pass for small items, reserving a Wideband Delphi-style multi-round estimate only for a handful of genuinely uncertain, high-effort items.",
+      "exampleUk": "Новий Scrum-майстер наполягав, що команда «зобов'язана» використовувати Planning Poker, бо «цього вимагає Scrum». Лід команди показав у Scrum Guide, що такої вимоги немає, і команда перейшла на легше оцінювання за розмірами футболок для дрібних елементів, залишивши багатораундове оцінювання в стилі Wideband Delphi лише для кількох справді невизначених, трудомістких елементів.",
+      "tags": [
+        "estimation",
+        "planning-poker",
+        "wideband-delphi"
+      ],
+      "sourceIds": [
+        "scrum-guide",
+        "istqb-ctfl-v4"
+      ]
+    },
+    {
+      "id": "monte-carlo-forecasting",
+      "level": "Senior",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Occasional",
+      "question": "How would you forecast a testing completion date using throughput data instead of committing to a single estimate?",
+      "shortAnswer": "Collect historical throughput, items completed per week, over a representative recent period, then run a Monte Carlo simulation that repeatedly samples from that historical distribution to project how many weeks it would take to finish the remaining scope, producing a distribution of possible completion dates instead of one number. Report it as a range with confidence levels, such as P50 and P85, communicate the assumptions behind the historical sample, such as team stability and scope stability, and refresh the forecast as new throughput data and scope changes arrive rather than defending the original date.",
+      "strongAnswerSignals": [
+        "explains sampling from historical throughput rather than a formula-only estimate",
+        "reports a distribution or confidence levels such as P50/P85 instead of one date",
+        "requires refreshing the forecast as new data and scope changes arrive"
+      ],
+      "questionUk": "Як би ви спрогнозували дату завершення тестування на основі даних про throughput замість того, щоб називати одну конкретну дату?",
+      "shortAnswerUk": "Зберіть історичні дані throughput — кількість завершених елементів за тиждень — за репрезентативний останній період, а потім запустіть симуляцію Монте-Карло, яка багаторазово семплює з цього історичного розподілу, щоб спрогнозувати, скільки тижнів знадобиться на залишковий обсяг, отримуючи розподіл можливих дат завершення замість одного числа. Подавайте результат як діапазон з рівнями впевненості, наприклад P50 і P85, повідомляйте припущення, на яких ґрунтується історична вибірка, такі як стабільність команди й стабільність обсягу, і оновлюйте прогноз у міру надходження нових даних throughput і змін обсягу, а не захищайте початкову дату.",
+      "strongAnswerSignalsUk": [
+        "пояснює семплування з історичного throughput, а не лише формульну оцінку",
+        "подає розподіл або рівні впевненості на кшталт P50/P85 замість однієї дати",
+        "вимагає оновлення прогнозу в міру надходження нових даних і змін обсягу"
+      ],
+      "example": "Instead of promising 'testing finishes March 15,' a lead ran a Monte Carlo forecast from 12 weeks of throughput data and reported 'P50 is March 12, P85 is March 24, based on stable team size and no major scope additions.' When two testers were pulled onto another project mid-sprint, the forecast was rerun rather than the original date being quietly defended.",
+      "exampleUk": "Замість обіцянки «тестування завершиться 15 березня» лід запустив прогноз методом Монте-Карло на основі 12 тижнів даних throughput і повідомив: «P50 — 12 березня, P85 — 24 березня, за умови стабільного розміру команди й без суттєвих додавань обсягу». Коли двох тестувальників забрали на інший проєкт посеред спринту, прогноз перерахували, а не мовчки захищали початкову дату.",
+      "tags": [
+        "forecasting",
+        "monte-carlo",
+        "estimation"
+      ],
+      "sourceIds": [
+        "dora"
+      ]
+    },
+    {
+      "id": "balanced-qa-scorecard",
+      "level": "Lead",
+      "category": "Metrics and estimation",
+      "kind": "Leadership",
+      "prevalence": "Common",
+      "question": "How would you design a balanced QA Lead scorecard instead of reporting one single quality number?",
+      "shortAnswer": "Group a small set of signals across distinct dimensions, product and customer outcomes, coverage and release risk, QA process health, automation health, and delivery and production quality, chosen for the specific product's risk and maturity rather than copied wholesale from another team. Show trends and context for each, keep the set small enough to stay decision-useful, and periodically ask whether each signal still changes a decision; retire or replace ones that have become passive reporting.",
+      "strongAnswerSignals": [
+        "names distinct dimensions rather than one blended score",
+        "ties dimension selection to the specific product's risk and maturity",
+        "requires periodically checking whether each signal still drives a decision"
+      ],
+      "questionUk": "Як би ви спроєктували збалансований scorecard для QA Lead замість звітування одним єдиним числом якості?",
+      "shortAnswerUk": "Згрупуйте невеликий набір сигналів за окремими вимірами — продуктові та клієнтські результати, покриття й реліз-ризик, здоров'я QA-процесу, здоров'я автоматизації, а також якість доставки й продакшну — обраними під конкретний ризик і зрілість продукту, а не скопійованими цілком в іншої команди. Показуйте тренди й контекст для кожного, тримайте набір достатньо малим, щоб він залишався корисним для рішень, і періодично запитуйте, чи все ще кожен сигнал впливає на якесь рішення; знімайте або замінюйте ті, що перетворилися на пасивну звітність.",
+      "strongAnswerSignalsUk": [
+        "називає окремі виміри замість одного змішаного показника",
+        "прив'язує вибір вимірів до конкретного ризику й зрілості продукту",
+        "вимагає періодично перевіряти, чи кожен сигнал усе ще впливає на рішення"
+      ],
+      "example": "A QA Lead scorecard for a payments product tracked escaped critical defects and production incidents under customer outcomes, risk-weighted regression coverage under release risk, defect aging under process health, flaky-test rate under automation health, and change fail rate under delivery quality, five small panels reviewed monthly, replacing an old single 'quality score' that leadership had stopped trusting.",
+      "exampleUk": "Scorecard QA-ліда для платіжного продукту відстежував критичні дефекти, що прослизнули, та інциденти в продакшні під «клієнтськими результатами», зважену за ризиком регресію під «реліз-ризиком», вік дефектів під «здоров'ям процесу», flaky-test rate під «здоров'ям автоматизації» та change fail rate під «якістю доставки» — п'ять невеликих панелей, що переглядалися щомісяця, замінивши старий єдиний «показник якості», якому керівництво перестало довіряти.",
+      "tags": [
+        "scorecard",
+        "kpi",
+        "leadership"
+      ],
+      "sourceIds": [
+        "dora",
+        "google-sre"
+      ]
+    },
+    {
+      "id": "bad-individual-qa-kpis",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Leadership",
+      "prevalence": "Common",
+      "question": "Why are bugs-found-per-tester and tests-executed poor individual performance KPIs?",
+      "shortAnswer": "Counting bugs filed, test cases written, tests executed or automation scripts created per person rewards activity volume, not outcome quality, and is trivially gamed by filing trivial issues, writing shallow test cases, or padding script counts. It also punishes the tester who takes on deep, slow, high-risk exploratory work in favor of the one who churns through easy checks, which damages collaboration and pulls effort away from the areas that most need it. Measure team and product outcomes instead, and use individual growth conversations, not activity counts, for performance feedback.",
+      "strongAnswerSignals": [
+        "explains the gaming mechanism for at least one named vanity metric",
+        "shows how it penalizes deep or high-risk work relative to easy volume",
+        "redirects performance measurement to outcomes and growth conversations, not counts"
+      ],
+      "questionUk": "Чому «кількість знайдених багів на тестувальника» та «кількість виконаних тестів» є поганими індивідуальними KPI продуктивності?",
+      "shortAnswerUk": "Підрахунок заведених багів, написаних тест-кейсів, виконаних тестів чи створених автоматизованих скриптів на людину заохочує обсяг активності, а не якість результату, і легко піддається маніпуляції через заведення дрібних проблем, написання поверхневих тест-кейсів чи роздування кількості скриптів. Це також карає тестувальника, який береться за глибоку, повільну, ризиковану дослідницьку роботу, на користь того, хто швидко проганяє прості перевірки, що шкодить співпраці й відволікає зусилля від ділянок, де вони найбільш потрібні. Натомість вимірюйте результати команди й продукту, а для зворотного зв'язку щодо продуктивності використовуйте розмови про розвиток, а не підрахунок активності.",
+      "strongAnswerSignalsUk": [
+        "пояснює механізм маніпуляції для щонайменше однієї названої вигаданої метрики",
+        "показує, як вона карає глибоку чи ризиковану роботу порівняно з простим обсягом",
+        "перенаправляє вимірювання продуктивності на результати й розмови про розвиток, а не підрахунок"
+      ],
+      "example": "A manager once proposed ranking testers by weekly bug count; within a sprint, trivial cosmetic issues flooded the tracker while a tester investigating a hard, intermittent data-corruption bug looked 'unproductive' by comparison. The ranking was dropped, and the team replaced it with quarterly growth conversations tied to product outcomes.",
+      "exampleUk": "Менеджер якось запропонував ранжувати тестувальників за тижневою кількістю багів; уже за один спринт трекер затопило дрібними косметичними проблемами, а тестувальник, що розслідував складний, непостійний баг пошкодження даних, на цьому тлі виглядав «непродуктивним». Рейтинг скасували, замінивши його квартальними розмовами про розвиток, пов'язаними з продуктовими результатами.",
+      "tags": [
+        "individual-metrics",
+        "leadership",
+        "gaming"
+      ],
+      "sourceIds": [
+        "dou-qa-2022",
+        "google-structured-interviews"
+      ]
+    },
+    {
+      "id": "risk-register-for-a-release-train",
+      "level": "Lead",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Occasional",
+      "question": "How would you build and maintain a risk register for a complex, multi-service release train?",
+      "shortAnswer": "List candidate risks from architecture, historical incidents, dependency maps and stakeholder input, then score each by impact and likelihood to prioritize. Assign an owner and a mitigation or monitoring action to every risk above the acceptance line, keep the register visible to release decision-makers, and review it on a fixed cadence rather than only right before release, since risk exposure changes as scope, dependencies and staffing change through the release.",
+      "strongAnswerSignals": [
+        "describes sourcing risks from multiple inputs, not just tester intuition",
+        "requires an owner and explicit action per significant risk",
+        "reviews the register on an ongoing cadence, not just pre-release"
+      ],
+      "questionUk": "Як би ви створили та підтримували реєстр ризиків для складного мультисервісного реліз-потяга?",
+      "shortAnswerUk": "Складіть перелік потенційних ризиків на основі архітектури, історичних інцидентів, карт залежностей і думки зацікавлених сторін, а потім оцініть кожен за впливом та ймовірністю для пріоритизації. Призначте відповідального та дію з пом'якшення чи моніторингу для кожного ризику вище межі прийнятності, тримайте реєстр видимим для тих, хто ухвалює реліз-рішення, і переглядайте його за фіксованим графіком, а не лише безпосередньо перед релізом, бо рівень ризику змінюється разом зі змінами обсягу, залежностей та складу команди протягом релізу.",
+      "strongAnswerSignalsUk": [
+        "описує збір ризиків з кількох джерел, а не лише з інтуїції тестувальника",
+        "вимагає відповідального й явної дії для кожного значущого ризику",
+        "переглядає реєстр на постійній основі, а не лише перед релізом"
+      ],
+      "example": "A release train spanning six services kept a shared risk register with 14 entries; three were downgraded after mitigation work landed, two new ones appeared after a dependency team reported a schema change mid-cycle, and the release decision meeting referenced the register directly instead of relying on verbal assurances that 'everything looks fine.'",
+      "exampleUk": "Реліз-потяг, що охоплював шість сервісів, вів спільний реєстр ризиків із 14 пунктами; три знизили пріоритет після завершення пом'якшувальних робіт, два нові з'явилися після того, як команда залежного сервісу повідомила про зміну схеми посеред циклу, а нарада з ухвалення реліз-рішення спиралася безпосередньо на реєстр замість усних запевнень, що «все виглядає нормально».",
+      "tags": [
+        "risk-register",
+        "strategy",
+        "release-train"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dou-qa-2022"
+      ]
+    },
+    {
+      "id": "disagreement-about-release-readiness",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "kind": "Release decision",
+      "prevalence": "Common",
+      "question": "How do you handle a disagreement between engineering and QA about whether a release is ready?",
+      "shortAnswer": "Separate the factual evidence from the opinion: lay out what was tested, what failed, what remains unverified and the known residual risk, without either side asserting a conclusion first. Identify the accountable decision owner, present the evidence and a recommendation rather than a demand, and make sure the disagreement and its resolution are recorded so the reasoning survives even if the decision turns out to be wrong.",
+      "strongAnswerSignals": [
+        "separates factual evidence from opinion before arguing a conclusion",
+        "names an accountable decision owner rather than treating it as QA's unilateral call",
+        "records the disagreement and reasoning, not just the final decision"
+      ],
+      "questionUk": "Як ви дієте, коли інженерія і QA не погоджуються щодо готовності релізу?",
+      "shortAnswerUk": "Відокремте фактичні докази від думки: викладіть, що було протестовано, що впало, що залишається неперевіреним і який відомий залишковий ризик, без того, щоб будь-яка сторона спершу заявляла висновок. Визначте відповідального за рішення, представте докази й рекомендацію, а не вимогу, і подбайте, щоб розбіжність та її вирішення були зафіксовані — так обґрунтування збережеться, навіть якщо рішення згодом виявиться помилковим.",
+      "strongAnswerSignalsUk": [
+        "відокремлює фактичні докази від думки перед обстоюванням висновку",
+        "визначає відповідального за рішення, а не робить це одноосібним рішенням QA",
+        "фіксує розбіжність та обґрунтування, а не лише фінальне рішення"
+      ],
+      "example": "Engineering wanted to ship despite two unresolved medium-severity defects; QA wanted to hold. Instead of arguing positions, the lead documented the defects' user impact, the workaround available, and the rollback plan, handed it to the accountable product owner, and recorded the owner's decision and reasoning in the release notes for future reference.",
+      "exampleUk": "Інженерія хотіла випустити реліз попри два невирішені дефекти середньої серйозності; QA хотіла зачекати. Замість того щоб обстоювати позиції, лід задокументував вплив дефектів на користувачів, доступний обхідний шлях і план відкату, передав це відповідальному продакт-оунеру та зафіксував його рішення й обґрунтування в реліз-нотатках для майбутніх довідок.",
+      "tags": [
+        "release-decision",
+        "strategy",
+        "collaboration"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "google-structured-interviews"
+      ]
+    },
+    {
+      "id": "quality-gates-for-a-deployment-pipeline",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Common",
+      "question": "How would you design quality gates for a multi-stage deployment pipeline without turning them into a bottleneck?",
+      "shortAnswer": "Place fast, high-confidence checks early, unit and contract tests, and reserve slower, broader checks for later stages where a failure is more expensive to have missed. Make each gate's pass criteria explicit and owned, keep gates few enough that a failure is always actionable rather than routinely overridden, and periodically review whether a gate still catches real problems or has become ceremony that people route around.",
+      "strongAnswerSignals": [
+        "orders checks by speed and confidence, cheapest first",
+        "requires explicit, owned pass criteria per gate",
+        "reviews whether each gate still catches real problems over time"
+      ],
+      "questionUk": "Як би ви спроєктували quality gates для багатоетапного пайплайна деплою, щоб вони не перетворилися на вузьке місце?",
+      "shortAnswerUk": "Розміщуйте швидкі перевірки з високою впевненістю на початку — юніт- і контрактні тести, — а повільніші, ширші перевірки залиште для пізніших етапів, де пропущена помилка коштує дорожче. Зробіть критерії проходження кожного gate явними та закріпленими за відповідальним, тримайте кількість gate невеликою, щоб падіння завжди вело до дії, а не рутинно оминалося, і періодично перевіряйте, чи gate досі ловить реальні проблеми, чи вже перетворився на формальність, яку люди обходять.",
+      "strongAnswerSignalsUk": [
+        "упорядковує перевірки за швидкістю й впевненістю, найдешевші спочатку",
+        "вимагає явних критеріїв проходження, закріплених за відповідальним, для кожного gate",
+        "періодично перевіряє, чи gate досі ловить реальні проблеми"
+      ],
+      "example": "A pipeline had seven sequential gates, several of which were routinely overridden with a manual approval because 'they always fail on something unrelated.' The team cut it to three gates with clear, currently-relevant pass criteria, and override requests dropped to near zero because the gates that remained were trusted.",
+      "exampleUk": "Пайплайн мав сім послідовних gate, кілька з яких рутинно оминали ручним підтвердженням, бо «вони завжди падають на чомусь непов'язаному». Команда скоротила їх до трьох gate з чіткими, актуальними критеріями проходження, і кількість запитів на оминання впала майже до нуля, бо тим gate, що залишилися, почали довіряти.",
+      "tags": [
+        "quality-gates",
+        "strategy",
+        "pipeline-design"
+      ],
+      "sourceIds": [
+        "dora",
+        "google-sre"
+      ]
+    },
+    {
+      "id": "testability-advocacy-before-code",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Occasional",
+      "question": "How do you influence a design for testability before code is written, when you have no authority over engineering decisions?",
+      "shortAnswer": "Show up during design review or refinement rather than after implementation, and frame requests as concrete, low-cost changes tied to a specific evidence gap, a way to inject test data, an idempotency key, an observable state transition, rather than abstract appeals to 'quality.' Bring a short list of the riskiest untestable points you would otherwise have to work around expensively later, and offer the design alternative, not just the objection.",
+      "strongAnswerSignals": [
+        "times the influence at design/refinement, before implementation",
+        "frames requests as concrete, low-cost, evidence-tied changes",
+        "brings an alternative design, not just an objection"
+      ],
+      "questionUk": "Як ви впливаєте на дизайн з точки зору тестованості до написання коду, якщо не маєте формальних повноважень над інженерними рішеннями?",
+      "shortAnswerUk": "Долучайтеся під час дизайн-рев'ю чи рефайнменту, а не після реалізації, і формулюйте запити як конкретні, недорогі зміни, пов'язані з конкретною прогалиною в доказах — спосіб ін'єктувати тестові дані, ключ ідемпотентності, спостережуваний перехід стану, — а не абстрактні заклики до «якості». Принесіть короткий список найризикованіших нетестованих місць, які інакше довелося б дорого обходити пізніше, і запропонуйте альтернативу дизайну, а не лише заперечення.",
+      "strongAnswerSignalsUk": [
+        "впливає на етапі дизайну/рефайнменту, до реалізації",
+        "формулює запити як конкретні, недорогі зміни, пов'язані з доказами",
+        "пропонує альтернативний дизайн, а не лише заперечення"
+      ],
+      "example": "During refinement for an async payment flow, a tester flagged that there was no way to observe intermediate state without a database query, and proposed a lightweight status endpoint instead. The two-line addition to the design saved what would have been hours of flaky polling-based tests later.",
+      "exampleUk": "Під час рефайнменту асинхронного платіжного флоу тестувальник зазначив, що немає способу спостерігати проміжний стан без запиту до бази даних, і запропонував легкий статус-ендпойнт натомість. Це дводядкове доповнення до дизайну заощадило години флейкі-тестів на основі полінгу, які інакше знадобилися б пізніше.",
+      "tags": [
+        "testability",
+        "strategy",
+        "design-influence"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4"
+      ]
+    },
+    {
+      "id": "technical-debt-prioritization-in-test-suite",
+      "level": "Senior",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Common",
+      "question": "How do you prioritize paying down test-suite technical debt against pressure to keep adding new feature coverage?",
+      "shortAnswer": "Treat suite debt as risk, not housekeeping: quantify its cost in diagnosis time, false failures and slipped confidence, and compare that against the risk of shipping new features with thin coverage. Fix the highest-cost-of-neglect debt alongside feature work rather than batching it into a separate initiative that competes for prioritization, and make the trade-off visible to whoever owns the roadmap instead of absorbing it silently as unpaid overtime.",
+      "strongAnswerSignals": [
+        "quantifies debt cost in concrete terms rather than a vague 'cleanup' framing",
+        "integrates debt paydown alongside feature work instead of a separate deprioritized initiative",
+        "makes the trade-off visible to roadmap owners rather than absorbing it silently"
+      ],
+      "questionUk": "Як ви пріоритизуєте усунення технічного боргу в тестовому сьюті на тлі тиску постійно додавати покриття нових функцій?",
+      "shortAnswerUk": "Розглядайте борг сьюту як ризик, а не господарську справу: кількісно оцініть його вартість у часі на діагностику, хибних падіннях і втраченій довірі, та порівняйте це з ризиком випуску нових функцій з тонким покриттям. Усувайте борг з найвищою вартістю нехтування паралельно з роботою над функціями, а не збирайте його в окрему ініціативу, яка конкурує за пріоритизацію, і робіть цей компроміс видимим для власника дорожньої карти, а не мовчки покривайте його понаднормовою роботою.",
+      "strongAnswerSignalsUk": [
+        "кількісно оцінює вартість боргу конкретно, а не розпливчастим формулюванням «прибирання»",
+        "інтегрує усунення боргу разом із роботою над функціями замість окремої депріоритизованої ініціативи",
+        "робить компроміс видимим для власників дорожньої карти, а не покриває його мовчки"
+      ],
+      "example": "A suite with a growing pile of skipped and quarantined tests was quietly costing two days per release in manual re-verification. Once that cost was quantified and shown to the roadmap owner alongside feature requests, one sprint per quarter was formally allocated to suite health instead of it being squeezed in unpaid.",
+      "exampleUk": "Сьют із дедалі більшою купою пропущених і карантинних тестів мовчки коштував два дні на реліз ручної повторної перевірки. Коли цю вартість кількісно оцінили й показали власнику дорожньої карти поруч із запитами на функції, на здоров'я сьюту формально виділили один спринт на квартал замість того, щоб втискати цю роботу без оплати.",
+      "tags": [
+        "technical-debt",
+        "strategy",
+        "prioritization"
+      ],
+      "sourceIds": [
+        "dora",
+        "istqb-ctfl-v4"
+      ]
+    },
+    {
+      "id": "risk-based-test-strategy-greenfield",
+      "level": "Middle",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Common",
+      "question": "How would you build a risk-based test strategy from scratch for a greenfield product with no historical defect data?",
+      "shortAnswer": "Without history, source risk from architecture complexity, novel or unproven components, regulatory or financial exposure, reversibility of mistakes, and stakeholder-stated priorities, since likelihood cannot yet be estimated from data. Weight coverage toward the areas where a mistake is expensive or hard to reverse, state explicitly that the risk model is an initial hypothesis, and plan to revise it as soon as real defect and usage data starts arriving.",
+      "strongAnswerSignals": [
+        "sources initial risk from architecture and reversibility rather than absent historical data",
+        "weights coverage toward expensive or hard-to-reverse mistakes",
+        "treats the initial model as a hypothesis to revise once real data arrives"
+      ],
+      "questionUk": "Як би ви побудували стратегію тестування на основі ризиків з нуля для продукту без історичних даних про дефекти?",
+      "shortAnswerUk": "За відсутності історії джерелом ризику стають складність архітектури, нові чи неперевірені компоненти, регуляторна чи фінансова вразливість, оборотність помилок і пріоритети, заявлені зацікавленими сторонами, бо ймовірність поки що неможливо оцінити на основі даних. Надавайте більшу вагу покриттю там, де помилка дорога або важко оборотна, явно позначте, що модель ризику є початковою гіпотезою, і плануйте переглянути її, щойно почнуть надходити реальні дані про дефекти й використання.",
+      "strongAnswerSignalsUk": [
+        "формує початковий ризик на основі архітектури й оборотності, а не відсутніх історичних даних",
+        "надає більшу вагу покриттю там, де помилка дорога або важко оборотна",
+        "розглядає початкову модель як гіпотезу для перегляду після надходження реальних даних"
+      ],
+      "example": "A greenfield fintech product had no defect history, so the team weighted its initial test strategy toward the payment-authorization and ledger-consistency modules based on reversibility and regulatory exposure alone. Three months post-launch, real incident data confirmed those areas as the right bet and reprioritized a lower-risk module that had absorbed disproportionate early effort.",
+      "exampleUk": "Новий фінтех-продукт не мав історії дефектів, тому команда зважила початкову стратегію тестування на користь модулів авторизації платежів і консистентності реєстру, спираючись лише на оборотність і регуляторну вразливість. Через три місяці після запуску реальні дані про інциденти підтвердили правильність цієї ставки й дозволили перепріоритизувати модуль нижчого ризику, який раніше поглинав непропорційно багато зусиль.",
+      "tags": [
+        "risk-based-strategy",
+        "strategy",
+        "greenfield"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "dou-qa-2022"
+      ]
+    },
+    {
+      "id": "residual-risk-communication-to-executives",
+      "level": "Lead",
+      "category": "Strategy and risk",
+      "kind": "Leadership",
+      "prevalence": "Occasional",
+      "question": "How do you communicate residual risk to executives who want a simple 'is it safe to ship' answer?",
+      "shortAnswer": "Give a direct recommendation first, then support it with the smallest set of concrete facts that justify it: what was tested, what was not, the worst plausible impact of the biggest known gap, and the mitigation or rollback plan if it occurs. Avoid false precision and avoid burying the answer in caveats; executives need a clear position plus enough evidence to challenge it, not a hedge that leaves the actual decision on their desk unexplained.",
+      "strongAnswerSignals": [
+        "leads with a direct recommendation before the supporting detail",
+        "names the worst plausible impact of the biggest known gap concretely",
+        "avoids both false precision and an unexplained hedge"
+      ],
+      "questionUk": "Як ви повідомляєте залишковий ризик керівництву, яке хоче простої відповіді «чи безпечно випускати»?",
+      "shortAnswerUk": "Спершу дайте пряму рекомендацію, а потім підкріпіть її найменшим набором конкретних фактів, що її обґрунтовують: що було протестовано, що ні, найгірший правдоподібний вплив найбільшої відомої прогалини та план пом'якшення чи відкату, якщо вона реалізується. Уникайте хибної точності й уникайте того, щоб ховати відповідь за застереженнями; керівництву потрібна чітка позиція та достатньо доказів, щоб її оскаржити, а не ухильна відповідь, що залишає фактичне рішення непоясненим на їхньому столі.",
+      "strongAnswerSignalsUk": [
+        "починає з прямої рекомендації перед деталями, що її підтримують",
+        "конкретно називає найгірший правдоподібний вплив найбільшої відомої прогалини",
+        "уникає і хибної точності, і непоясненого ухиляння від відповіді"
+      ],
+      "example": "Asked 'is it safe to ship,' a QA Lead answered 'yes, with one known gap' first, then explained the gap was in a rarely-used export feature affecting under 1% of accounts, with a same-day rollback available if issues appeared, giving the executive a clear position and just enough evidence to ask a follow-up question if needed.",
+      "exampleUk": "На запитання «чи безпечно випускати» QA-лід спершу відповів «так, з однією відомою прогалиною», а потім пояснив, що прогалина стосується рідко використовуваної функції експорту, яка впливає менш ніж на 1% акаунтів, з можливістю відкату того самого дня в разі проблем — давши керівнику чітку позицію та рівно достатньо доказів, щоб за потреби поставити уточнювальне питання.",
+      "tags": [
+        "risk-communication",
+        "leadership",
+        "executive-reporting"
+      ],
+      "sourceIds": [
+        "google-structured-interviews",
+        "istqb-ctfl-v4"
+      ]
+    },
+    {
+      "id": "entry-criteria-not-met-decision",
+      "level": "Middle",
+      "category": "Strategy and risk",
+      "kind": "Release decision",
+      "prevalence": "Common",
+      "question": "What do you do when a testing phase is scheduled to start but its entry criteria have not been met?",
+      "shortAnswer": "Do not start substantive testing on a moving or broken target, since results become unreliable and rework-prone. State exactly which entry criteria are unmet, the concrete risk of proceeding anyway versus waiting, and offer options: delay the phase, start a narrow smoke pass to confirm basic stability while the gap closes, or proceed with an explicit, owner-approved exception recorded for the record. Silently starting full execution against an unready build just moves the same problem later at a higher cost.",
+      "strongAnswerSignals": [
+        "refuses to silently start full execution against an unready build",
+        "states unmet criteria and the concrete risk of proceeding anyway",
+        "offers explicit options including a recorded, owner-approved exception"
+      ],
+      "questionUk": "Що ви робите, якщо етап тестування має розпочатися за розкладом, але його критерії входу (entry criteria) не виконані?",
+      "shortAnswerUk": "Не починайте змістовне тестування на нестабільній чи зламаній цілі, бо результати стануть ненадійними та вимагатимуть переробки. Чітко вкажіть, які саме критерії входу не виконані, конкретний ризик продовження попри це порівняно з очікуванням, і запропонуйте варіанти: відкласти етап, почати вузький смоук-прогін, щоб підтвердити базову стабільність, поки прогалина закривається, або продовжити з явним, затвердженим відповідальним винятком, зафіксованим для протоколу. Мовчазний початок повного виконання на неготовому білді просто переносить ту саму проблему на пізніший, дорожчий момент.",
+      "strongAnswerSignalsUk": [
+        "відмовляється мовчки починати повне виконання на неготовому білді",
+        "чітко вказує невиконані критерії та конкретний ризик продовження попри це",
+        "пропонує явні варіанти, включно із зафіксованим, затвердженим відповідальним винятком"
+      ],
+      "example": "A test phase was scheduled to start Monday, but the build still failed basic smoke checks over the weekend. Instead of starting full regression anyway, the lead ran a two-hour smoke pass, confirmed the build was still broken, and delayed the phase by one day with the gap and reason recorded, avoiding two days of unreliable results against a moving target.",
+      "exampleUk": "Етап тестування мав розпочатися в понеділок, але білд усе ще не проходив базові смоук-перевірки протягом вихідних. Замість того щоб все одно почати повну регресію, лід провів двогодинний смоук-прогін, підтвердив, що білд досі зламаний, і відклав етап на один день, зафіксувавши прогалину й причину — уникнувши двох днів ненадійних результатів на нестабільній цілі.",
+      "tags": [
+        "entry-criteria",
+        "release-decision",
+        "strategy"
+      ],
+      "sourceIds": [
+        "istqb-ctfl-v4",
+        "istqb-glossary"
+      ]
+    },
+    {
+      "id": "multi-team-release-train-coordination",
+      "level": "Lead",
+      "category": "Strategy and risk",
+      "kind": "Strategy",
+      "prevalence": "Occasional",
+      "question": "How do you coordinate release-readiness evidence across several independent teams shipping on a shared release train?",
+      "shortAnswer": "Standardize what evidence every team must produce, coverage of their critical paths, known-defect list with severity, and an explicit residual-risk statement, so the release decision is comparing like with like instead of six different reporting styles. Assign a single accountable owner to synthesize the cross-team picture, surface cross-team dependencies and shared risk explicitly rather than letting each team report in isolation, and give teams enough lead time to produce evidence rather than demanding it the day of the decision.",
+      "strongAnswerSignals": [
+        "standardizes a common evidence format across teams before the decision meeting",
+        "assigns one accountable owner to synthesize the cross-team picture",
+        "surfaces cross-team dependencies and shared risk explicitly"
+      ],
+      "questionUk": "Як ви координуєте докази готовності до релізу між кількома незалежними командами, що випускають зміни на спільному реліз-потязі?",
+      "shortAnswerUk": "Стандартизуйте, які докази має надати кожна команда — покриття критичних шляхів, перелік відомих дефектів із серйозністю та явну заяву про залишковий ризик, — щоб реліз-рішення порівнювало однакове з однаковим, а не шість різних стилів звітності. Призначте одного відповідального, який синтезує загальну картину між командами, явно виявляйте міжкомандні залежності й спільні ризики, замість того щоб дозволяти кожній команді звітувати ізольовано, і давайте командам достатньо часу на підготовку доказів, а не вимагайте їх у день ухвалення рішення.",
+      "strongAnswerSignalsUk": [
+        "стандартизує спільний формат доказів між командами до наради з ухвалення рішення",
+        "призначає одного відповідального для синтезу загальної картини між командами",
+        "явно виявляє міжкомандні залежності й спільні ризики"
+      ],
+      "example": "Six teams sharing a release train used to submit readiness reports in six different formats, making cross-team risk invisible. A standard one-page template, critical-path coverage, known defects by severity, residual risk statement, let one release manager spot that two teams shared an undocumented dependency risk that neither had flagged alone.",
+      "exampleUk": "Шість команд, що ділили спільний реліз-потяг, раніше подавали звіти про готовність у шести різних форматах, через що міжкомандний ризик залишався непомітним. Стандартний однобічний шаблон — покриття критичних шляхів, відомі дефекти за серйозністю, заява про залишковий ризик — дозволив одному реліз-менеджеру помітити, що дві команди мали спільний незадокументований ризик залежності, який жодна з них не позначила окремо.",
+      "tags": [
+        "release-train",
+        "coordination",
+        "strategy"
+      ],
+      "sourceIds": [
+        "dora",
+        "istqb-ctfl-v4"
+      ]
     },
     {
       "id": "expanded-fundamentals-testing-objectives-on-a-fast-moving-product-with-incomplete-requirements",
@@ -10337,7 +11097,7 @@
     {
       "id": "expanded-strategy-risk-test-estimation-for-a-new-product-with-little-historical-data",
       "level": "Middle",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Release decision",
       "question": "What evidence would you require to make a release decision about test estimation for a new product with little historical data?",
       "shortAnswer": "Frame the release decision by ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties. Focus on test estimation for a new product with little historical data. Use business outcomes, architecture, incident history and measurable acceptance criteria as the oracle. Cover people, process, product, environments and operational controls. Keep data and dependencies controlled enough to reproduce failures. Release only when decision makers can see tested risk, residual risk, confidence and ownership.",
@@ -10371,7 +11131,7 @@
     {
       "id": "expanded-strategy-risk-test-estimation-when-time-is-cut-in-half",
       "level": "Middle",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Scenario",
       "question": "How would you approach test estimation when time is cut in half?",
       "shortAnswer": "Start by ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties. Focus on test estimation when time is cut in half. Use business outcomes, architecture, incident history and measurable acceptance criteria as the oracle. Cover people, process, product, environments and operational controls. Keep data and dependencies controlled enough to reproduce failures. Release only when decision makers can see tested risk, residual risk, confidence and ownership.",
@@ -10405,7 +11165,7 @@
     {
       "id": "expanded-strategy-risk-test-estimation-across-a-portfolio-of-services",
       "level": "Middle",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Risk analysis",
       "question": "Which risks and test oracles matter most for test estimation across a portfolio of services?",
       "shortAnswer": "Prioritize the risks that could invalidate the user or business outcome before ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties. Focus on test estimation across a portfolio of services. Use business outcomes, architecture, incident history and measurable acceptance criteria as the oracle. Cover people, process, product, environments and operational controls. Keep data and dependencies controlled enough to reproduce failures. Release only when decision makers can see tested risk, residual risk, confidence and ownership.",
@@ -10439,7 +11199,7 @@
     {
       "id": "expanded-strategy-risk-test-estimation-before-a-high-visibility-launch",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Test design",
       "question": "How would you design a focused test strategy for test estimation before a high-visibility launch?",
       "shortAnswer": "Build the smallest useful model of the behavior by ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties. Focus on test estimation before a high-visibility launch. Use business outcomes, architecture, incident history and measurable acceptance criteria as the oracle. Cover people, process, product, environments and operational controls. Keep data and dependencies controlled enough to reproduce failures. Release only when decision makers can see tested risk, residual risk, confidence and ownership.",
@@ -10474,7 +11234,7 @@
     {
       "id": "expanded-strategy-risk-test-estimation-when-stakeholders-request-a-single-quality-score",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Troubleshooting",
       "question": "Which failure modes would you investigate first in test estimation when stakeholders request a single quality score?",
       "shortAnswer": "Make the investigation reproducible by ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties. Focus on test estimation when stakeholders request a single quality score. Use business outcomes, architecture, incident history and measurable acceptance criteria as the oracle. Cover people, process, product, environments and operational controls. Keep data and dependencies controlled enough to reproduce failures. Release only when decision makers can see tested risk, residual risk, confidence and ownership.",

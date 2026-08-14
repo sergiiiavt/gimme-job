@@ -23,7 +23,7 @@ const addedSources = [
   { id: "prometheus-alerting", title: "Prometheus alerting practices", url: "https://prometheus.io/docs/practices/alerting/", publisher: "Prometheus", kind: "Official documentation", role: "Symptom-based actionable alerts, metamonitoring and noise reduction" },
   { id: "kubernetes-probes", title: "Configure liveness, readiness and startup probes", url: "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/", publisher: "Kubernetes", kind: "Official documentation", role: "Service health, traffic readiness, recovery and probe failure modes" },
   { id: "grafana-loki", title: "Grafana Loki documentation", url: "https://grafana.com/docs/loki/latest/", publisher: "Grafana Labs", kind: "Official documentation", role: "Production log collection, queries, correlation and alerting" },
-  { id: "fda-csa", title: "Computer Software Assurance for Production and Quality Management System Software", url: "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/computer-software-assurance-production-and-quality-management-system-software", publisher: "US FDA", kind: "Regulatory guidance", role: "Risk-based assurance and objective evidence for quality-system software" },
+  { id: "fda-csa", title: "Computer Software Assurance for Production and Quality Management System Software (final guidance, February 2026)", url: "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/computer-software-assurance-production-and-quality-management-system-software", publisher: "US FDA", kind: "Regulatory guidance", role: "Risk-based assurance and objective evidence for quality-system software" },
   { id: "fda-iec-62304", title: "FDA recognition of IEC 62304", url: "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfStandards/detail.cfm?standard__identification_no=38829", publisher: "US FDA", kind: "Recognized standard", role: "Medical-device software lifecycle processes, safety classification and maintenance" },
   { id: "ecfr-part-11", title: "21 CFR Part 11 — Electronic Records; Electronic Signatures", url: "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-11", publisher: "US eCFR", kind: "Regulation", role: "Electronic records, signatures, access, audit trails and system controls" },
   { id: "eu-gmp-annex-11", title: "EudraLex Volume 4, Annex 11 — Computerised Systems", url: "https://health.ec.europa.eu/medicinal-products/eudralex/eudralex-volume-4_en", publisher: "European Commission", kind: "Regulatory guidance", role: "GMP computerized-system validation, data integrity, change and continuity controls" },
@@ -152,12 +152,20 @@ const topics = [
     start: "making quality work visible in the delivery flow and moving feedback to the earliest useful point", oracle: "shared acceptance criteria, done policies and production outcomes", coverage: "discovery, implementation, integration, deployment and learning loops", evidence: "the team shortens feedback without transferring unowned risk downstream", signals: ["quality remains a team responsibility", "connects process changes to outcomes"],
   },
   {
+    id: "metrics-estimation", label: "Metrics & estimation", category: "Metrics and estimation", target: 31,
+    description: "QA metrics, measurement, test estimation, forecasting and uncertainty.",
+    concepts: ["quality metrics", "test estimation", "effort versus duration", "decomposition and work breakdown", "three-point estimation", "re-estimation", "forecasting and uncertainty"],
+    scenarios: ["for a new product with little historical data", "when time is cut in half", "across a portfolio of services", "before a high-visibility launch", "when stakeholders request a single quality score"],
+    sources: ["istqb-ctfl-v4", "dora", "google-sre", "katalon-qa-interviews"], tags: ["metrics", "estimation"],
+    start: "defining what the number means, its numerator, denominator, scope and observation window, before choosing a target", oracle: "a stated baseline, a defined data source and an explicit decision the number is meant to support", coverage: "definition, data source, trend, review cadence and the action a meaningful change should trigger", evidence: "the metric or estimate still changes a decision and has not quietly become a vanity number or a defended-but-stale date", signals: ["defines the denominator and window before quoting a number", "connects a metric or estimate to a specific decision and owner"],
+  },
+  {
     id: "strategy-risk", label: "Strategy & risk", category: "Strategy and risk", target: 29,
-    description: "Quality strategy, estimation, metrics and release risk.",
-    concepts: ["product quality risks", "test estimation", "coverage strategy", "release criteria", "quality metrics", "test environment strategy", "technical-debt reduction"],
+    description: "Quality strategy, product risk, prioritization and release decisions.",
+    concepts: ["product quality risks", "coverage strategy", "release criteria", "risk-based planning", "release gates", "residual risk", "technical-debt reduction"],
     scenarios: ["for a new product with little historical data", "when time is cut in half", "across a portfolio of services", "before a high-visibility launch", "when stakeholders request a single quality score"],
     sources: ["istqb-ctfl-v4", "dora", "google-sre", "katalon-qa-interviews"], tags: ["strategy", "risk"],
-    start: "ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties", oracle: "business outcomes, architecture, incident history and measurable acceptance criteria", coverage: "people, process, product, environments and operational controls", evidence: "decision makers can see tested risk, residual risk, confidence and ownership", signals: ["prioritizes risk over test count", "uses metrics with context and guardrails"],
+    start: "ranking product risks by impact and likelihood, then allocating feedback mechanisms to the biggest uncertainties", oracle: "business outcomes, architecture, incident history and measurable acceptance criteria", coverage: "people, process, product, environments and operational controls", evidence: "decision makers can see tested risk, residual risk, confidence and ownership", signals: ["prioritizes risk over test count", "communicates residual risk with explicit ownership"],
   },
   {
     id: "leadership", label: "Leadership", category: "Leadership", target: 29,
@@ -396,9 +404,9 @@ expanded.questions = [
 
 const addedSourceIds = new Set(addedSources.map((source) => source.id));
 const originalSources = currentSources.filter((source) => !addedSourceIds.has(source.id));
-assert.equal(originalSources.length, 22, "The generator expects the researched 22-source base from PR #2.");
+assert.equal(originalSources.length, 24, "The generator expects the researched 24-source base (22 from PR #2 plus 2 added by later content-audit fixes).");
 const sources = [...originalSources, ...addedSources];
-assert.equal(sources.length, 67, "The catalog must contain exactly 67 sources.");
+assert.equal(sources.length, 69, "The catalog must contain exactly 69 sources.");
 
 const taxonomy = [
   { id: "all", label: "All questions", description: "The complete canonical interview collection." },

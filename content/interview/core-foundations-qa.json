@@ -432,7 +432,7 @@
     {
       "id": "test-estimation-technique-families",
       "level": "Junior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Theory",
       "question": "Which test-estimation techniques should a tester know, and when is each useful?",
       "shortAnswer": "Decomposition or a work breakdown structure estimates identifiable testing activities and exposes omitted work. Analogy and historical ratios use comparable delivered work, while extrapolation updates a forecast from current execution data. Expert techniques such as Wideband Delphi or Planning Poker combine independent judgments and discussion; three-point estimation expresses optimistic, most-likely and pessimistic outcomes. Size measures such as function, use-case or test points can inform a model when an organization has calibrated evidence, but are not universal conversions to test effort. Combine methods, state assumptions and give a range rather than false precision.",
@@ -464,7 +464,7 @@
     {
       "id": "three-point-test-estimation",
       "level": "Middle",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Practical",
       "question": "How would you use three-point estimation for a risky testing task?",
       "shortAnswer": "Estimate an optimistic effort if the favorable assumptions hold, a most-likely effort for the expected path, and a pessimistic effort for credible complications. Discuss what creates the spread, such as unstable environments, unfamiliar technology, data preparation, defect investigation or dependency delays. A common PERT-style estimate is (optimistic + 4 × most likely + pessimistic) ÷ 6, but the inputs and uncertainty matter more than the formula. Report the range, assumptions and confidence, separate external waiting time, and re-estimate when the identified risks resolve or occur.",
@@ -496,7 +496,7 @@
     {
       "id": "test-effort-versus-duration",
       "level": "Junior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Theory",
       "question": "Why are test effort and calendar duration not the same estimate?",
       "shortAnswer": "Effort is the amount of working time needed, such as person-hours or person-days; duration is elapsed calendar time from start to finish. Duration also depends on available skills, parallelizable work, handoffs, environment and data readiness, build frequency, review queues, external dependencies and waiting for fixes. Ten person-days cannot automatically be completed by ten people in one day because setup, communication, shared resources and sequential activities limit parallelism. State both values, the assumed capacity and dependencies, and distinguish productive effort from unavoidable elapsed waiting time.",
@@ -528,7 +528,7 @@
     {
       "id": "test-estimation-work-breakdown-hidden-work",
       "level": "Middle",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Practical",
       "question": "What work is commonly forgotten when decomposing a testing estimate?",
       "shortAnswer": "Include requirement and risk analysis, clarification, test modeling and review, automation or manual procedure design, data creation, account and permission setup, environments, tools, service virtualization, execution, monitoring and evidence collection. Also estimate defect investigation and reporting, reruns, confirmation and impact-based regression, meetings and handoffs, accessibility or security specialists, cleanup, completion reporting and contingency for named risks. Separate one-time setup from per-cycle work and identify activities owned by other teams. A work breakdown should expose assumptions and dependencies, not create a deceptively precise total from hidden uncertainty.",
@@ -560,7 +560,7 @@
     {
       "id": "test-reestimation-actuals-feedback",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "kind": "Strategy",
       "question": "When should a test estimate be revised, and how should actuals improve future estimates?",
       "shortAnswer": "Re-estimate when scope, risk, staffing, environments, dependencies, defect arrival or observed execution rates materially differ from the assumptions behind the forecast. Preserve the original estimate and assumptions, explain the new evidence and show the effect on effort, duration, coverage and residual risk instead of silently moving the date. After completion, compare estimated and actual work by activity and uncertainty driver to improve decomposition, reference classes and ranges. Use the comparison for forecasting and system improvement, not to punish people for surfacing risk or to make future estimates artificially safe.",

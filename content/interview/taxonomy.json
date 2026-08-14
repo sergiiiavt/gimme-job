@@ -77,10 +77,16 @@
     "description": "Scrum, Kanban, shift-left and continuous delivery."
   },
   {
+    "id": "metrics-estimation",
+    "label": "Metrics & estimation",
+    "category": "Metrics and estimation",
+    "description": "QA metrics, measurement, test estimation, forecasting and uncertainty."
+  },
+  {
     "id": "strategy-risk",
     "label": "Strategy & risk",
     "category": "Strategy and risk",
-    "description": "Quality strategy, estimation, metrics and release risk."
+    "description": "Quality strategy, product risk, prioritization and release decisions."
   },
   {
     "id": "leadership",

@@ -994,6 +994,37 @@
       ],
       "prevalence": "Specialist",
       "kind": "Theory"
+    },
+    {
+      "id": "metric-vs-kpi-vs-target",
+      "level": "Middle",
+      "category": "Metrics and estimation",
+      "kind": "Theory",
+      "prevalence": "Common",
+      "question": "What is the difference between a metric, a KPI, a target and a guardrail?",
+      "shortAnswer": "A metric is any measured value. A KPI is a metric explicitly tied to an objective and a decision, chosen deliberately rather than tracked by default. A target is the specific threshold a KPI is expected to reach or hold, and it needs a baseline, scope and observation window to mean anything. A guardrail is a second metric that limits gaming of the first, for example capping merge-gate runtime while requiring coverage not to drop. Not every metric deserves KPI status, and a target copied from another team without its context is close to meaningless.",
+      "strongAnswerSignals": [
+        "ties KPI status to an objective and a decision, not just visibility",
+        "explains why a target needs baseline, scope and window",
+        "introduces a guardrail as protection against gaming"
+      ],
+      "questionUk": "У чому різниця між метрикою, KPI, ціллю (target) і guardrail-метрикою?",
+      "shortAnswerUk": "Метрика — це будь-яке виміряне значення. KPI — це метрика, свідомо прив'язана до мети та рішення, а не та, що просто відстежується за замовчуванням. Ціль (target) — конкретний поріг, якого KPI має досягти або утримувати, і вона має сенс лише за наявності базового значення, області й періоду спостереження. Guardrail-метрика — це друга метрика, що обмежує маніпуляцію першою, наприклад обмеження часу merge-gate за умови, що покриття не повинно падати. Не кожна метрика заслуговує статусу KPI, а ціль, скопійована в іншої команди без її контексту, майже нічого не означає.",
+      "strongAnswerSignalsUk": [
+        "пов'язує статус KPI з метою та рішенням, а не лише з видимістю",
+        "пояснює, чому ціль потребує базового значення, області й періоду",
+        "вводить guardrail-метрику як захист від маніпуляції"
+      ],
+      "example": "A team measures dozens of metrics in CI but names only three as KPIs: change fail rate, flaky test rate and cycle time. Flaky test rate has a target of staying under its rolling baseline, guarded by a second metric, quarantine backlog age, so nobody hits the target by silently disabling failing tests instead of fixing them.",
+      "exampleUk": "Команда вимірює десятки метрик у CI, але офіційними KPI називає лише три: change fail rate, flaky test rate і cycle time. Ціль для flaky test rate — залишатися нижче ковзного базового значення, і вона захищена другою метрикою — віком черги нестабільних тестів (quarantine backlog age), — щоб ніхто не досягав цілі, просто вимикаючи тести, що падають, замість того, щоб їх полагодити.",
+      "tags": [
+        "kpi",
+        "metrics",
+        "targets"
+      ],
+      "sourceIds": [
+        "dora"
+      ]
     }
   ]
 }

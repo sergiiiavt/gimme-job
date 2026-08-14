@@ -633,7 +633,7 @@
     {
       "id": "quality-metrics",
       "level": "Senior",
-      "category": "Strategy and risk",
+      "category": "Metrics and estimation",
       "question": "Which quality metrics are useful, and how do you prevent them from becoming misleading targets?",
       "shortAnswer": "Choose a balanced set tied to decisions: escaped-defect impact, change failure and recovery, risk coverage, cycle time, flake rate and customer signals. Use trends and context, avoid ranking people by counts, and retire metrics that no longer change decisions.",
       "strongAnswerSignals": [
