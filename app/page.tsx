@@ -436,6 +436,10 @@ export function WorkspaceApp() {
               </div> : <a className="signin-link" href="/workspace/login">Sign in for full access →</a>}
             </div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
+            {busy === "sync" && <div className="analyze-progress">
+              <div className="analyze-progress-bar indeterminate"><div/></div>
+              <div className="analyze-log" role="log" aria-live="polite"><div>Searching job sources…</div></div>
+            </div>}
             {(busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
               {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
               <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
@@ -590,6 +594,7 @@ function JobResumePanel({ job, authenticated, busy, onAdjust, onDownload }: { jo
         <Icon name="llm" size={14}/><span>{busy ? "Adjusting…" : job.resume ? "Re-adjust for this vacancy" : "Adjust resume for this vacancy"}</span>
       </button>}
     </div>
+    {busy && <div className="analyze-progress-bar indeterminate resume-progress-bar"><div/></div>}
 
     {job.resume ? <>
       <div className="section-head"><span className="eyebrow">Resume preview</span><div className="resume-actions">
