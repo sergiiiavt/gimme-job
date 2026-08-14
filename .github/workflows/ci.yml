@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" || -z "$GRAFANA_READ_TOKEN" ]]; then
-            echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN repository secrets are configured."
+            echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and GRAFANA_READ_TOKEN repository secrets are configured."
             exit 0
           fi
           node scripts/deploy-cloudflare.mjs
