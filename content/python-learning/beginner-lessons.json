@@ -9,15 +9,15 @@
       "titleUk": "Запуск Python і використання REPL",
       "summary": "Two ways to run Python code: an interactive REPL for quick experiments, and script files for real programs.",
       "summaryUk": "Два способи запускати код Python: інтерактивний REPL для швидких експериментів і файли скриптів для справжніх програм.",
-      "concept": "Typing `python` (or `python3`) with no arguments opens the REPL — Read-Eval-Print Loop — where each line you type is immediately evaluated and its result printed, making it ideal for testing a small idea before committing it to a file. Real programs live in `.py` files and are run with `python filename.py`. Modern editors and IDEs also offer a Jupyter-style notebook cell interface, but the REPL and plain scripts are the two forms every Python programmer needs to be comfortable with first.",
-      "conceptUk": "Введення `python` (чи `python3`) без аргументів відкриває REPL — Read-Eval-Print Loop (цикл читання-обчислення-друку), де кожен введений рядок одразу обчислюється, а його результат друкується, що ідеально для перевірки невеликої ідеї перед тим, як зафіксувати її у файлі. Справжні програми живуть у файлах `.py` й запускаються через `python filename.py`. Сучасні редактори та IDE також пропонують інтерфейс комірок у стилі Jupyter-ноутбуків, але REPL і звичайні скрипти — дві форми, з якими має бути зручно кожному програмісту Python спершу.",
+      "concept": "Typing `python` (or `python3`) with no arguments opens the REPL — Read-Eval-Print Loop — where each input is executed immediately, and when that input is a bare expression, its value is automatically displayed; statements such as assignments execute without automatically printing anything, which is exactly why `name = \"Ada\"` in the example below produces no visible output on its own line. Real programs live in `.py` files and are run with `python filename.py`. Modern editors and IDEs also offer a Jupyter-style notebook cell interface, but the REPL and plain scripts are the two forms every Python programmer needs to be comfortable with first.",
+      "conceptUk": "Введення `python` (чи `python3`) без аргументів відкриває REPL — Read-Eval-Print Loop (цикл читання-обчислення-друку), де кожен введений вираз виконується негайно, а коли цим вводом є голий вираз, його значення автоматично відображається; оператори на кшталт присвоєнь виконуються без автоматичного друку результату, саме тому `name = \"Ada\"` у прикладі нижче не дає видимого виводу на своєму рядку. Справжні програми живуть у файлах `.py` й запускаються через `python filename.py`. Сучасні редактори та IDE також пропонують інтерфейс комірок у стилі Jupyter-ноутбуків, але REPL і звичайні скрипти — дві форми, з якими має бути зручно кожному програмісту Python спершу.",
       "keyPoints": [
-        "The REPL evaluates and prints each expression immediately, with no need to save a file",
+        "The REPL executes each input immediately, but only a bare expression's value is displayed automatically",
         "A .py script is run with `python filename.py` from a terminal",
         "Exit the REPL with `exit()`, `quit()`, or Ctrl-D (Ctrl-Z then Enter on Windows)"
       ],
       "keyPointsUk": [
-        "REPL негайно обчислює й друкує кожен вираз, без потреби зберігати файл",
+        "REPL негайно виконує кожен ввід, але автоматично відображається лише значення голого виразу",
         "Скрипт .py запускається через `python filename.py` з термінала",
         "Вийти з REPL можна через `exit()`, `quit()` чи Ctrl-D (Ctrl-Z, потім Enter на Windows)"
       ],
@@ -95,8 +95,8 @@
       "titleUk": "Коментарі, docstring і читабельний стиль",
       "summary": "When to write a comment, when to write a docstring, and the naming/spacing conventions from PEP 8.",
       "summaryUk": "Коли писати коментар, коли — docstring, і угоди іменування/відступів з PEP 8.",
-      "concept": "A `#` comment explains *why* code does something non-obvious; it is stripped before execution and invisible to `help()`. A triple-quoted docstring as the first statement in a module, function or class instead documents *what* that object does and is stored on `__doc__`, discoverable at runtime. PEP 8 is Python's official style guide: 4 spaces per indent level (never tabs), `snake_case` for variables and functions, `PascalCase` for classes, and roughly 79-99 characters per line, followed by nearly the entire Python ecosystem so any codebase reads consistently.",
-      "conceptUk": "Коментар `#` пояснює *чому* код робить щось неочевидне; він видаляється перед виконанням і невидимий для `help()`. Рядок у потрійних лапках як перший оператор модуля, функції чи класу натомість документує *що* робить цей об'єкт і зберігається в `__doc__`, доступний під час виконання. PEP 8 — офіційний посібник зі стилю Python: 4 пробіли на рівень відступу (ніколи табуляція), `snake_case` для змінних і функцій, `PascalCase` для класів, і приблизно 79-99 символів на рядок, якого дотримується майже вся екосистема Python, тож будь-яка кодова база читається послідовно.",
+      "concept": "A `#` comment explains *why* code does something non-obvious; it is stripped before execution and invisible to `help()`. A triple-quoted docstring as the first statement in a module, function or class instead documents *what* that object does and is stored on `__doc__`, discoverable at runtime. PEP 8 is Python's official style guide: 4 spaces per indentation level, with spaces preferred over tabs (tabs are mainly for staying consistent within an already tab-indented codebase, and mixing the two for indentation is disallowed); its default maximum line length is 79 characters for code (72 for comments and docstrings), though a team may deliberately agree on a longer limit up to 99 — conventions followed closely enough across the ecosystem that most codebases read consistently.",
+      "conceptUk": "Коментар `#` пояснює *чому* код робить щось неочевидне; він видаляється перед виконанням і невидимий для `help()`. Рядок у потрійних лапках як перший оператор модуля, функції чи класу натомість документує *що* робить цей об'єкт і зберігається в `__doc__`, доступний під час виконання. PEP 8 — офіційний посібник зі стилю Python: 4 пробіли на рівень відступу, пробіли надаються перевазі над табуляцією (табуляція — переважно для узгодженості в уже табульованій кодовій базі, а змішування табуляції й пробілів для відступів заборонене); типовий максимум довжини рядка — 79 символів для коду (72 для коментарів і docstring), хоча команда може навмисно погодити довший ліміт до 99 — угоди, яких досить послідовно дотримується екосистема, тож більшість кодових баз читаються узгоджено.",
       "keyPoints": [
         "# comments explain why; docstrings document what, and are readable via __doc__/help()",
         "PEP 8: 4-space indents, snake_case names, PascalCase classes",
@@ -107,7 +107,7 @@
         "PEP 8: відступи по 4 пробіли, імена snake_case, класи PascalCase",
         "Послідовний стиль по всій кодовій базі важливіший за будь-яку особисту перевагу"
       ],
-      "code": "def celsius_to_fahrenheit(celsius):\n    \"\"\"Convert a Celsius temperature to Fahrenheit.\"\"\"\n    # The 9/5 must be float division, not integer division\n    return celsius * 9 / 5 + 32",
+      "code": "def celsius_to_fahrenheit(celsius):\n    \"\"\"Convert a Celsius temperature to Fahrenheit.\"\"\"\n    # Fahrenheit scales Celsius by 9/5 before adding the offset.\n    return celsius * 9 / 5 + 32",
       "codeCaption": "A docstring documenting the function's purpose, and a comment explaining a non-obvious detail.",
       "codeCaptionUk": "Docstring, що документує призначення функції, і коментар, що пояснює неочевидну деталь.",
       "pitfalls": [
@@ -182,16 +182,16 @@
       "titleUk": "Змінні, присвоєння та правила іменування",
       "summary": "A variable is a name bound to an object; assignment never copies data, it just points a name at a value.",
       "summaryUk": "Змінна — це ім'я, прив'язане до об'єкта; присвоєння ніколи не копіює дані, а лише вказує ім'я на значення.",
-      "concept": "`x = 5` does not put the number 5 \"inside\" a box named `x`; it creates the integer object 5 (if it does not already exist) and makes the name `x` point to it. A name must start with a letter or underscore, contain only letters, digits and underscores, and cannot be a reserved keyword like `class` or `for`. Because assignment is just name-binding, `y = x` makes `y` point to the exact same object `x` points to, not a fresh copy — the practical consequences of that show up clearly once mutable objects like lists enter the picture.",
-      "conceptUk": "`x = 5` не кладе число 5 «всередину» коробки з назвою `x`; воно створює об'єкт цілого числа 5 (якщо він ще не існує) і робить так, щоб ім'я `x` вказувало на нього. Ім'я має починатися з літери чи підкреслення, містити лише літери, цифри й підкреслення, і не може бути зарезервованим ключовим словом на кшталт `class` чи `for`. Оскільки присвоєння — це просто прив'язка імені, `y = x` робить так, що `y` вказує на точно той самий об'єкт, на який вказує `x`, а не на свіжу копію — практичні наслідки цього чітко проявляються, щойно в гру вступають змінювані об'єкти на кшталт списків.",
+      "concept": "`x = 5` does not put the number 5 \"inside\" a box named `x`; Python evaluates the expression on the right, then makes the name `x` point to the resulting integer object. A name must start with a letter (Unicode letters are allowed, not only ASCII) or underscore, may contain letters, digits and underscores, and cannot be a reserved keyword like `class` or `for`. Because assignment is just name-binding, `y = x` makes `y` point to the exact same object `x` points to, not a fresh copy — the practical consequences of that show up clearly once mutable objects like lists enter the picture.",
+      "conceptUk": "`x = 5` не кладе число 5 «всередину» коробки з назвою `x`; Python обчислює вираз праворуч, а потім робить так, щоб ім'я `x` вказувало на отриманий об'єкт цілого числа. Ім'я має починатися з літери (дозволені літери Unicode, не лише ASCII) чи підкреслення, може містити літери, цифри й підкреслення, і не може бути зарезервованим ключовим словом на кшталт `class` чи `for`. Оскільки присвоєння — це просто прив'язка імені, `y = x` робить так, що `y` вказує на точно той самий об'єкт, на який вказує `x`, а не на свіжу копію — практичні наслідки цього чітко проявляються, щойно в гру вступають змінювані об'єкти на кшталт списків.",
       "keyPoints": [
         "Assignment binds a name to an object; it does not copy the object's data",
-        "Valid names: letters, digits, underscores, not starting with a digit, not a keyword",
+        "Valid names: letters (including non-ASCII), digits, underscores, not starting with a digit, not a keyword",
         "y = x makes both names refer to the same underlying object"
       ],
       "keyPointsUk": [
         "Присвоєння прив'язує ім'я до об'єкта; воно не копіює дані об'єкта",
-        "Дійсні імена: літери, цифри, підкреслення, не починаються з цифри, не ключове слово",
+        "Дійсні імена: літери (включно з не-ASCII), цифри, підкреслення, не починаються з цифри, не ключове слово",
         "y = x робить так, що обидва імені посилаються на той самий базовий об'єкт"
       ],
       "code": "score = 10\nplayer_two_score = score  # same object, not a copy\nscore = 20                # rebinds score only\nprint(score, player_two_score)  # 20 10, because int is immutable",
@@ -225,17 +225,17 @@
       "titleUk": "Числові типи: int, float і базова арифметика",
       "summary": "int has unlimited precision; float is a fixed-precision approximation — and that difference causes real bugs.",
       "summaryUk": "int має необмежену точність; float — наближення фіксованої точності, і ця різниця спричиняє реальні помилки.",
-      "concept": "Python's `int` type has arbitrary precision, so `2 ** 100` computes an exact, arbitrarily large integer with no overflow. `float` follows the IEEE-754 double-precision standard, which cannot represent most decimal fractions exactly, so `0.1 + 0.2` prints `0.30000000000000004` rather than `0.3`. `/` always produces a `float` (true division), `//` produces a floored quotient, and `%` produces the remainder; `round()` rounds a float, but should never be trusted for exact financial arithmetic, where the `decimal` module is the correct tool instead.",
-      "conceptUk": "Тип `int` у Python має довільну точність, тож `2 ** 100` обчислює точне, як завгодно велике ціле число без переповнення. `float` дотримується стандарту подвійної точності IEEE-754, який не може точно представити більшість десяткових дробів, тож `0.1 + 0.2` друкує `0.30000000000000004`, а не `0.3`. `/` завжди дає `float` (справжнє ділення), `//` дає округлену вниз частку, а `%` дає остачу; `round()` округлює float, але йому ніколи не варто довіряти для точної фінансової арифметики, де правильний інструмент — модуль `decimal`.",
+      "concept": "Python's `int` type has arbitrary precision — limited only by available memory, not a fixed bit width — so `2 ** 100` computes an exact integer with no overflow. On essentially every mainstream platform, `float` follows the IEEE-754 double-precision standard, which cannot represent most decimal fractions exactly, so `0.1 + 0.2` prints `0.30000000000000004` rather than `0.3`; Python's own documentation describes this as what nearly all platforms use, not a guarantee written into the language itself. `/` always produces a `float` (true division), `//` produces a floored quotient, and `%` produces the remainder. Results of inexact floating-point calculations should generally be compared with `math.isclose()` rather than `==`; exact `==` is still correct when the program genuinely needs exact binary equality. For exact decimal arithmetic — such as money — `decimal.Decimal` is a strong choice, though representing money as integer minor units (cents) is also a common, valid approach.",
+      "conceptUk": "Тип `int` у Python має довільну точність — обмежену лише пам'яттю, а не фіксованою розрядністю, — тож `2 ** 100` обчислює точне ціле число без переповнення. Практично на кожній поширеній платформі `float` дотримується стандарту подвійної точності IEEE-754, який не може точно представити більшість десяткових дробів, тож `0.1 + 0.2` друкує `0.30000000000000004`, а не `0.3`; власна документація Python описує це як те, що використовує майже кожна платформа, а не гарантію, вбудовану в саму мову. `/` завжди дає `float` (справжнє ділення), `//` дає округлену вниз частку, а `%` дає остачу. Результати неточних обчислень з плаваючою комою зазвичай варто порівнювати через `math.isclose()`, а не `==`; точний `==` все ще правильний, коли програмі справді потрібна точна бінарна рівність. Для точної десяткової арифметики — як-от гроші — `decimal.Decimal` хороший вибір, хоча представлення грошей як цілих мінімальних одиниць (центів) також поширений, дійсний підхід.",
       "keyPoints": [
-        "int has unlimited precision; float is a fixed-precision IEEE-754 approximation",
+        "int has arbitrary precision, limited only by memory; float is a fixed-precision binary approximation (IEEE-754 on nearly all platforms)",
         "/ is true division (always float), // is floor division, % is remainder",
-        "Never compare floats with == directly, and never use float for exact money math"
+        "Use math.isclose() for approximate float comparisons; use exact == only when exact equality is truly intended"
       ],
       "keyPointsUk": [
-        "int має необмежену точність; float — наближення фіксованої точності IEEE-754",
+        "int має довільну точність, обмежену лише пам'яттю; float — двійкове наближення фіксованої точності (IEEE-754 майже на всіх платформах)",
         "/ — справжнє ділення (завжди float), // — ділення з округленням вниз, % — остача",
-        "Ніколи не порівнюйте float через == напряму, ніколи не використовуйте float для точних грошових розрахунків"
+        "Використовуйте math.isclose() для наближених порівнянь float; точний == лише коли справді потрібна точна рівність"
       ],
       "code": "print(7 / 2)    # 3.5\nprint(7 // 2)   # 3\nprint(7 % 2)    # 1\nprint(0.1 + 0.2 == 0.3)  # False\nfrom decimal import Decimal\nprint(Decimal(\"0.1\") + Decimal(\"0.2\") == Decimal(\"0.3\"))  # True",
       "codeCaption": "Integer versus float division, and why exact decimal comparisons need the decimal module.",
@@ -248,8 +248,8 @@
         "if price == 19.99: часто тихо провалюється через неточність float",
         "// з від'ємними числами округлює до від'ємної нескінченності, не до нуля: -7 // 2 == -4"
       ],
-      "exercise": "Write a function that safely compares two floats for \"close enough\" equality using a small tolerance instead of ==, and test it against 0.1 + 0.2 and 0.3.",
-      "exerciseUk": "Напишіть функцію, що безпечно порівнює два float на «достатню близькість» через малий допуск замість ==, і перевірте її на 0.1 + 0.2 та 0.3.",
+      "exercise": "Compare 0.1 + 0.2 with 0.3 using math.isclose(). Then experiment with its rel_tol and abs_tol arguments, and explain in one sentence why a single hard-coded absolute tolerance is not always enough.",
+      "exerciseUk": "Порівняйте 0.1 + 0.2 з 0.3 через math.isclose(). Потім поекспериментуйте з її аргументами rel_tol та abs_tol і поясніть одним реченням, чому єдиного жорстко заданого абсолютного допуску не завжди достатньо.",
       "tags": [
         "numbers",
         "arithmetic",
@@ -316,12 +316,12 @@
       "concept": "Python follows standard mathematical precedence (`**` highest, then `*`/`/`/`//`/`%`, then `+`/`-`, then comparisons, then `not`, `and`, `or`), and parentheses always override it for clarity. Comparisons can be chained (`0 <= x < 10`), which reads naturally and evaluates each part only once. `and` and `or` are not restricted to returning `True`/`False`: `and` returns its first falsy operand or its last operand, and `or` returns its first truthy operand or its last operand, both short-circuiting as soon as the result is determined — this is the basis of the common `value = user_input or \"default\"` idiom.",
       "conceptUk": "Python дотримується стандартного математичного пріоритету (`**` найвищий, потім `*`/`/`/`//`/`%`, потім `+`/`-`, потім порівняння, потім `not`, `and`, `or`), і дужки завжди перекривають його для ясності. Порівняння можна ланцюжити (`0 <= x < 10`), що читається природно й обчислює кожну частину лише раз. `and` і `or` не обмежені поверненням `True`/`False`: `and` повертає перший хибний операнд чи останній операнд, а `or` повертає перший правдивий операнд чи останній операнд, обидва зі скороченим обчисленням, щойно результат визначено — це основа поширеної ідіоми `value = user_input or \"default\"`.",
       "keyPoints": [
-        "Precedence: ** then */// /% then +- then comparisons then not/and/or",
+        "Precedence among these operators: ** first, then * / // %, then + -, then comparisons, then not/and/or",
         "Chained comparisons like 0 <= x < 10 evaluate each part once, combined with and",
         "and/or return one of their actual operands, not necessarily True/False"
       ],
       "keyPointsUk": [
-        "Пріоритет: ** потім */// /% потім +- потім порівняння потім not/and/or",
+        "Пріоритет серед цих операторів: спершу **, потім * / // %, потім + -, потім порівняння, потім not/and/or",
         "Ланцюгові порівняння на кшталт 0 <= x < 10 обчислюють кожну частину раз, поєднану через and",
         "and/or повертають один зі своїх реальних операндів, не обов'язково True/False"
       ],
@@ -355,16 +355,16 @@
       "titleUk": "Перетворення й перевірка типів",
       "summary": "Converting between int, float, str, and bool explicitly, and checking a value's type safely.",
       "summaryUk": "Явне перетворення між int, float, str і bool, та безпечна перевірка типу значення.",
-      "concept": "`int(x)`, `float(x)`, `str(x)` and `bool(x)` explicitly convert a value to that type where a sensible conversion exists — `int(\"42\")` works, but `int(\"forty-two\")` raises `ValueError`, and `int(\"3.5\")` also raises `ValueError` because it does not parse a float string directly (`int(float(\"3.5\"))` does). `type(x)` returns an object's exact class, while `isinstance(x, SomeType)` checks whether an object is that type or any subclass of it, which is almost always the better choice for validation because it correctly handles inheritance.",
-      "conceptUk": "`int(x)`, `float(x)`, `str(x)` і `bool(x)` явно перетворюють значення на цей тип там, де існує розумне перетворення — `int(\"42\")` працює, але `int(\"forty-two\")` викликає `ValueError`, а `int(\"3.5\")` теж викликає `ValueError`, бо не розбирає рядок з дробовим числом напряму (`int(float(\"3.5\"))` працює). `type(x)` повертає точний клас об'єкта, тоді як `isinstance(x, SomeType)` перевіряє, чи є об'єкт цим типом чи будь-яким його підкласом, що майже завжди кращий вибір для валідації, бо коректно враховує спадковість.",
+      "concept": "`int(x)`, `float(x)`, `str(x)` and `bool(x)` each convert a value using different rules. `int(x)` and `float(x)` parse or convert supported inputs and can raise `ValueError` for a malformed string like `int(\"forty-two\")`, or `TypeError` for an object that offers no sensible conversion at all. `str(x)` asks for a textual representation and essentially never fails. `bool(x)` applies Python's truth-value rules rather than validating anything, so `bool(\"nonsense\")` is simply `True`. `int(\"3.5\")` raises `ValueError` because it does not parse a float string directly, but `int(float(\"3.5\"))` works — and it is not just a parsing workaround: it genuinely truncates toward zero, so `int(float(\"3.9\"))` is `3`, not a rounded `4`. `type(x)` returns an object's exact class, while `isinstance(x, SomeType)` checks whether an object is that type or any subclass of it, which is almost always the better choice for validation because it correctly handles inheritance.",
+      "conceptUk": "`int(x)`, `float(x)`, `str(x)` і `bool(x)` кожен перетворює значення за власними правилами. `int(x)` і `float(x)` розбирають чи перетворюють підтримувані вхідні дані й можуть викликати `ValueError` для некоректного рядка на кшталт `int(\"forty-two\")`, або `TypeError` для об'єкта, що взагалі не пропонує розумного перетворення. `str(x)` запитує текстове представлення й практично ніколи не провалюється. `bool(x)` застосовує правила правдивості Python замість будь-якої валідації, тож `bool(\"nonsense\")` — просто `True`. `int(\"3.5\")` викликає `ValueError`, бо не розбирає рядок з дробовим числом напряму, але `int(float(\"3.5\"))` працює — і це не просто обхідний шлях для розбору: він справді обрізає в бік нуля, тож `int(float(\"3.9\"))` дорівнює `3`, а не округленим `4`. `type(x)` повертає точний клас об'єкта, тоді як `isinstance(x, SomeType)` перевіряє, чи є об'єкт цим типом чи будь-яким його підкласом, що майже завжди кращий вибір для валідації, бо коректно враховує спадковість.",
       "keyPoints": [
-        "int(), float(), str(), bool() convert explicitly and raise ValueError on nonsense input",
-        "int(\"3.5\") fails directly; convert via float first: int(float(\"3.5\"))",
+        "int() and float() may raise ValueError or TypeError depending on the input; str() rarely fails; bool() applies truth-value rules rather than validating",
+        "int(\"3.5\") fails directly; int(float(\"3.5\")) works and truncates toward zero, e.g. int(float(\"3.9\")) is 3",
         "isinstance() respects inheritance and is generally preferred over type() == for checks"
       ],
       "keyPointsUk": [
-        "int(), float(), str(), bool() явно перетворюють і викликають ValueError для безглуздого вводу",
-        "int(\"3.5\") провалюється напряму; спершу конвертуйте через float: int(float(\"3.5\"))",
+        "int() і float() можуть викликати ValueError чи TypeError залежно від вводу; str() рідко провалюється; bool() застосовує правила правдивості, а не валідує",
+        "int(\"3.5\") провалюється напряму; int(float(\"3.5\")) працює й обрізає в бік нуля, наприклад int(float(\"3.9\")) дорівнює 3",
         "isinstance() враховує спадковість і зазвичай кращий за type() == для перевірок"
       ],
       "code": "raw = input(\"Enter a number: \")\ntry:\n    value = int(raw)\nexcept ValueError:\n    print(\"Not a whole number\")\nelse:\n    print(isinstance(value, int))  # True",
@@ -441,17 +441,17 @@
       "titleUk": "Цикли while",
       "summary": "Repeating code while a condition holds, and why forgetting to update the condition causes an infinite loop.",
       "summaryUk": "Повторення коду, доки умова виконується, і чому забуття оновлення умови спричиняє нескінченний цикл.",
-      "concept": "A `while condition:` block repeats its body for as long as `condition` remains truthy, re-checking it before every iteration, including the very first. `while` is the right tool when the number of iterations is not known in advance — waiting for user input to satisfy some rule, or processing a queue until it is empty — whereas `for` is better once you are iterating over a known, finite sequence. Every `while` loop needs something inside its body that eventually makes the condition false, or it becomes an infinite loop that only `Ctrl+C` or a crash will stop.",
-      "conceptUk": "Блок `while condition:` повторює своє тіло, доки `condition` залишається правдивою, перевіряючи її перед кожною ітерацією, включно з першою. `while` — правильний інструмент, коли кількість ітерацій наперед невідома — очікування, доки ввід користувача задовольнить якесь правило, чи обробка черги, доки вона не спорожніє, тоді як `for` кращий, коли ітеруєте по відомій, скінченній послідовності. Кожен цикл `while` потребує чогось у своєму тілі, що врешті зробить умову хибною, інакше він стає нескінченним циклом, який зупинить лише `Ctrl+C` чи аварія.",
+      "concept": "A `while condition:` block repeats its body for as long as `condition` remains truthy, re-checking it before every iteration, including the very first. `while` is the right tool when the number of iterations is not known in advance — waiting for user input to satisfy some rule, or processing a queue until it is empty — whereas `for` is better once you are iterating over a known, finite sequence. A `while` loop needs a deliberate termination strategy unless it is intentionally long-running: the condition can eventually become false, or execution can leave through `break`, `return`, or an exception — `while True:` itself is a completely standard, intentional pattern for event loops, servers and retry logic, as long as one of those exits is actually reachable.",
+      "conceptUk": "Блок `while condition:` повторює своє тіло, доки `condition` залишається правдивою, перевіряючи її перед кожною ітерацією, включно з першою. `while` — правильний інструмент, коли кількість ітерацій наперед невідома — очікування, доки ввід користувача задовольнить якесь правило, чи обробка черги, доки вона не спорожніє, тоді як `for` кращий, коли ітеруєте по відомій, скінченній послідовності. Цикл `while` потребує навмисної стратегії завершення, якщо він не задуманий як довготривалий: умова може врешті стати хибною, або виконання може вийти через `break`, `return` чи виняток — сам `while True:` є цілком стандартним, навмисним патерном для циклів подій, серверів і логіки повторних спроб, доки один з цих виходів справді досяжний.",
       "keyPoints": [
         "while re-checks its condition before every iteration, including the first",
         "Use while when the iteration count is unknown ahead of time",
-        "Something in the loop body must eventually make the condition false"
+        "The loop needs a deliberate way to end: the condition can turn false, or break/return/an exception can exit it"
       ],
       "keyPointsUk": [
         "while перевіряє свою умову перед кожною ітерацією, включно з першою",
         "Використовуйте while, коли кількість ітерацій наперед невідома",
-        "Щось у тілі циклу має врешті зробити умову хибною"
+        "Циклу потрібен навмисний спосіб завершення: умова може стати хибною, або break/return/виняток можуть його перервати"
       ],
       "code": "attempts = 0\nwhile attempts < 3:\n    guess = input(\"Guess the number: \")\n    if guess == \"7\":\n        print(\"Correct!\")\n        break\n    attempts += 1\nelse:\n    print(\"Out of attempts\")",
       "codeCaption": "A bounded while loop that tracks attempts, with break on success and a loop-else for exhaustion.",
@@ -483,15 +483,15 @@
       "titleUk": "Цикли for і range()",
       "summary": "for iterates directly over a sequence's values; range() generates a lazy sequence of numbers to loop over.",
       "summaryUk": "for ітерує напряму по значеннях послідовності; range() генерує лінивий набір чисел для проходження.",
-      "concept": "Python's `for item in sequence:` iterates directly over the *values* of a sequence — a list, string, dict, or any iterable — not over numeric indices, which is why there is rarely a need for a C-style counting loop. `range(stop)`, `range(start, stop)` or `range(start, stop, step)` generates a lazy sequence of integers used when you specifically need index positions or a fixed count of repetitions, and `enumerate(sequence)` gives you both the index and the value together when you need both at once, which is more idiomatic than manually tracking a counter.",
-      "conceptUk": "`for item in sequence:` у Python ітерує напряму по *значеннях* послідовності — списку, рядка, словника чи будь-якого ітерованого об'єкта, а не по числових індексах, тому рідко потрібен цикл підрахунку в стилі C. `range(stop)`, `range(start, stop)` чи `range(start, stop, step)` генерує лінивий набір цілих чисел, що використовується, коли конкретно потрібні позиції індексів чи фіксована кількість повторень, а `enumerate(sequence)` дає одразу і індекс, і значення, коли потрібні обидва — це ідіоматичніше за ручне відстеження лічильника.",
+      "concept": "Python's `for item in iterable:` asks the iterable for its items one by one — not over numeric indices — which is why there is rarely a need for a C-style counting loop. Lists and strings yield their elements in order; a dictionary is a mapping, not a sequence, and iterating it directly yields its *keys* by default, so reach for `.values()` or `.items()` when you want the values or both together. `range(stop)`, `range(start, stop)` or `range(start, stop, step)` generates a lazy sequence of integers used when you specifically need index positions or a fixed count of repetitions, and `enumerate(sequence)` gives you both the index and the value together when you need both at once, which is more idiomatic than manually tracking a counter.",
+      "conceptUk": "`for item in iterable:` у Python запитує в ітерованого об'єкта елементи один за одним, а не по числових індексах, тому рідко потрібен цикл підрахунку в стилі C. Списки й рядки видають свої елементи по порядку; словник — це відображення, а не послідовність, і пряма ітерація по ньому дає його *ключі* за замовчуванням, тож використовуйте `.values()` чи `.items()`, коли потрібні значення чи обидва разом. `range(stop)`, `range(start, stop)` чи `range(start, stop, step)` генерує лінивий набір цілих чисел, що використовується, коли конкретно потрібні позиції індексів чи фіксована кількість повторень, а `enumerate(sequence)` дає одразу і індекс, і значення, коли потрібні обидва — це ідіоматичніше за ручне відстеження лічильника.",
       "keyPoints": [
-        "for item in sequence iterates values directly, no manual indexing needed",
+        "for item in iterable: asks for items one by one; dicts yield keys by default, not values",
         "range(start, stop, step) is lazy and commonly used for a fixed repeat count",
         "enumerate(sequence) gives (index, value) pairs when both are needed"
       ],
       "keyPointsUk": [
-        "for item in sequence ітерує значення напряму, ручна індексація не потрібна",
+        "for item in iterable: запитує елементи один за одним; словники за замовчуванням дають ключі, не значення",
         "range(start, stop, step) лінивий і часто використовується для фіксованої кількості повторень",
         "enumerate(sequence) дає пари (індекс, значення), коли потрібні обидва"
       ],
@@ -668,8 +668,8 @@
         "Параметри зі значеннями за замовчуванням мають йти після параметрів без них у сигнатурі"
       ],
       "code": "def create_user(username, is_admin=False, active=True):\n    return {\"username\": username, \"is_admin\": is_admin, \"active\": active}\n\ncreate_user(\"ana\")\ncreate_user(\"bob\", is_admin=True)\ncreate_user(username=\"cleo\", active=False, is_admin=False)",
-      "codeCaption": "Three calls showing positional-only, mixed, and fully-keyword argument styles.",
-      "codeCaptionUk": "Три виклики, що показують стилі лише позиційних, змішаних і повністю іменованих аргументів.",
+      "codeCaption": "Three calls showing positional arguments, mixed positional/keyword arguments, and fully keyword arguments.",
+      "codeCaptionUk": "Три виклики, що показують позиційні аргументи, змішані позиційні/іменовані аргументи, і повністю іменовані аргументи.",
       "pitfalls": [
         "def f(a=1, b):  is a SyntaxError — non-default parameters cannot follow default ones",
         "As covered separately, a mutable default like items=[] is shared and mutated across calls"
@@ -698,15 +698,15 @@
       "titleUk": "Область видимості змінних: локальна проти глобальної",
       "summary": "A variable created inside a function only exists inside that function, unless declared global.",
       "summaryUk": "Змінна, створена всередині функції, існує лише всередині цієї функції, якщо не оголошена global.",
-      "concept": "A variable assigned inside a function is *local* to that function by default: it is created fresh on each call and disappears when the function returns, completely invisible outside it. A function can freely *read* a variable defined at module level (global scope) without any special declaration, but assigning to a name inside a function makes Python treat that name as local for the entire function body unless you explicitly write `global name` first — this is exactly the source of the common `UnboundLocalError` beginners hit when they try to modify a global counter from inside a function.",
-      "conceptUk": "Змінна, присвоєна всередині функції, за замовчуванням *локальна* для цієї функції: вона створюється заново при кожному виклику й зникає, коли функція повертається, повністю невидима ззовні. Функція може вільно *читати* змінну, визначену на рівні модуля (глобальна область), без жодного спеціального оголошення, але присвоєння імені всередині функції змушує Python трактувати це ім'я як локальне для всього тіла функції, якщо ви явно спершу не напишете `global name` — це саме джерело поширеної `UnboundLocalError`, з якою стикаються початківці, намагаючись змінити глобальний лічильник зсередини функції.",
+      "concept": "A variable assigned inside a function is *local* to that function by default: it is created fresh on each call, and once the call ends its local name is no longer directly accessible from outside — though objects it referenced can still live on if something else keeps a reference to them (a returned value, or a closure, covered later in this path). A function can freely *read* a variable defined at module level (global scope) without any special declaration, but assigning to a name inside a function makes Python treat that name as local for the entire function body unless you explicitly write `global name` first — this is exactly the source of the common `UnboundLocalError` beginners hit when they try to modify a global counter from inside a function.",
+      "conceptUk": "Змінна, присвоєна всередині функції, за замовчуванням *локальна* для цієї функції: вона створюється заново при кожному виклику, і коли виклик завершується, її локальне ім'я більше не доступне напряму ззовні — хоча об'єкти, на які вона посилалася, можуть жити далі, якщо щось інше тримає на них посилання (повернене значення, чи замикання, розглянуте пізніше в цьому курсі). Функція може вільно *читати* змінну, визначену на рівні модуля (глобальна область), без жодного спеціального оголошення, але присвоєння імені всередині функції змушує Python трактувати це ім'я як локальне для всього тіла функції, якщо ви явно спершу не напишете `global name` — це саме джерело поширеної `UnboundLocalError`, з якою стикаються початківці, намагаючись змінити глобальний лічильник зсередини функції.",
       "keyPoints": [
-        "A variable assigned inside a function is local by default, gone once the function returns",
+        "A variable assigned inside a function is local by default; its name is no longer accessible once the call ends",
         "Reading a global variable from inside a function needs no special syntax",
         "Assigning to a global variable from inside a function requires an explicit global declaration"
       ],
       "keyPointsUk": [
-        "Змінна, присвоєна всередині функції, за замовчуванням локальна, зникає після повернення функції",
+        "Змінна, присвоєна всередині функції, за замовчуванням локальна; її ім'я недоступне після завершення виклику",
         "Читання глобальної змінної зсередини функції не потребує спеціального синтаксису",
         "Присвоєння глобальній змінній зсередини функції потребує явного оголошення global"
       ],
@@ -782,18 +782,18 @@
       "order": 19,
       "title": "Tuples: fixed, immutable records",
       "titleUk": "Кортежі: фіксовані, незмінювані записи",
-      "summary": "Tuples look like lists but signal \"this shape is fixed\" and can be used as dict keys.",
-      "summaryUk": "Кортежі виглядають як списки, але сигналізують «ця форма фіксована» і можуть бути ключами словника.",
+      "summary": "Tuples look like lists but signal \"this shape is fixed\" and, when their elements are hashable, can be used as dict keys.",
+      "summaryUk": "Кортежі виглядають як списки, але сигналізують «ця форма фіксована», і коли їхні елементи хешовані, можуть бути ключами словника.",
       "concept": "A `tuple`, written `(1, 2, 3)` (or even without parentheses in many contexts), behaves like a list for reading — indexing, slicing, iterating — but cannot be modified after creation: no `.append()`, no item assignment. This immutability is a feature, not a limitation: it signals to readers that a value's shape will not change, and it makes a tuple hashable (as long as its elements are), so it can be used as a dictionary key or set member, which a list never can. A single-element tuple needs a trailing comma — `(5,)`, not `(5)` — because parentheses alone just group an expression.",
       "conceptUk": "`tuple`, записаний як `(1, 2, 3)` (чи навіть без дужок у багатьох контекстах), поводиться як список для читання — індексація, зрізи, ітерація — але не може змінюватись після створення: жодного `.append()`, жодного присвоєння елементу. Ця незмінюваність — риса, а не обмеження: вона сигналізує читачам, що форма значення не зміниться, і робить кортеж хешованим (доки хешовані його елементи), тож його можна використати як ключ словника чи елемент множини, чого список ніколи не може. Однoелементний кортеж потребує кінцевої коми — `(5,)`, не `(5)` — бо самі дужки просто групують вираз.",
       "keyPoints": [
         "Tuples support reading like lists but cannot be modified after creation",
-        "Immutability makes a tuple hashable, so it can be a dict key or set member",
+        "A tuple is hashable only when all of its elements are hashable, so it can then be a dict key or set member",
         "A one-element tuple needs a trailing comma: (5,) not (5)"
       ],
       "keyPointsUk": [
         "Кортежі підтримують читання як списки, але не можуть змінюватись після створення",
-        "Незмінюваність робить кортеж хешованим, тож він може бути ключем словника чи елементом множини",
+        "Кортеж хешований, лише якщо хешовані всі його елементи, і лише тоді може бути ключем словника чи елементом множини",
         "Однoелементний кортеж потребує кінцевої коми: (5,), а не (5)"
       ],
       "code": "point = (3, 4)\ndistances = {}\ndistances[point] = 5.0   # tuples work as dict keys\nx, y = point              # unpacking\nsingle = (5,)              # one-element tuple",
@@ -954,17 +954,17 @@
       "order": 23,
       "title": "Common string methods",
       "titleUk": "Поширені методи рядків",
-      "summary": "Strings are immutable, so every method that transforms text returns a brand-new string.",
-      "summaryUk": "Рядки незмінювані, тож кожен метод, що трансформує текст, повертає новий рядок.",
-      "concept": "Every string method — `.upper()`, `.lower()`, `.strip()`, `.replace(old, new)`, `.startswith(prefix)`, `.endswith(suffix)` — returns a new string rather than modifying the original in place, because strings are immutable. `.strip()` (and `.lstrip()`/`.rstrip()`) removes leading/trailing whitespace by default, or any characters you specify. `in` checks substring containment directly (`\"cat\" in \"concatenate\"` is `True`), and `.find(sub)` returns the index of the first match or `-1` if not found, while `.index(sub)` does the same but raises `ValueError` instead of returning `-1`.",
-      "conceptUk": "Кожен метод рядка — `.upper()`, `.lower()`, `.strip()`, `.replace(old, new)`, `.startswith(prefix)`, `.endswith(suffix)` — повертає новий рядок, а не змінює оригінал на місці, бо рядки незмінювані. `.strip()` (і `.lstrip()`/`.rstrip()`) видаляє пробіли на початку/в кінці за замовчуванням, чи будь-які вказані символи. `in` напряму перевіряє входження підрядка (`\"cat\" in \"concatenate\"` дає `True`), а `.find(sub)` повертає індекс першого збігу чи `-1`, якщо не знайдено, тоді як `.index(sub)` робить те саме, але викликає `ValueError` замість повернення `-1`.",
+      "summary": "Strings are immutable, so no string method ever modifies the original in place.",
+      "summaryUk": "Рядки незмінювані, тож жоден метод рядка ніколи не змінює оригінал на місці.",
+      "concept": "Strings are immutable, so no string method ever modifies the original in place — but that does not mean every method returns a new string. Methods that transform text, like `.upper()`, `.lower()`, `.strip()`, and `.replace(old, new)`, return a new string; query methods like `.startswith(prefix)`, `.endswith(suffix)`, `.find(sub)`, or `.count(sub)` instead return a bool or an int, not text at all. `.strip()` (and `.lstrip()`/`.rstrip()`) removes leading/trailing whitespace by default, or any characters you specify. `in` checks substring containment directly (`\"cat\" in \"concatenate\"` is `True`), and `.find(sub)` returns the index of the first match or `-1` if not found, while `.index(sub)` does the same but raises `ValueError` instead of returning `-1`.",
+      "conceptUk": "Рядки незмінювані, тож жоден метод рядка ніколи не змінює оригінал на місці — але це не означає, що кожен метод повертає новий рядок. Методи, що трансформують текст, як `.upper()`, `.lower()`, `.strip()` та `.replace(old, new)`, повертають новий рядок; методи-запити, як `.startswith(prefix)`, `.endswith(suffix)`, `.find(sub)` чи `.count(sub)`, натомість повертають bool чи int, а не текст. `.strip()` (і `.lstrip()`/`.rstrip()`) видаляє пробіли на початку/в кінці за замовчуванням, чи будь-які вказані символи. `in` напряму перевіряє входження підрядка (`\"cat\" in \"concatenate\"` дає `True`), а `.find(sub)` повертає індекс першого збігу чи `-1`, якщо не знайдено, тоді як `.index(sub)` робить те саме, але викликає `ValueError` замість повернення `-1`.",
       "keyPoints": [
-        "String methods always return a new string; the original is never modified",
+        "String methods never modify the original; text-transforming methods return a new string, while query methods like .find() or .startswith() return a bool or int",
         "in checks substring containment; .find() returns -1 if missing, .index() raises",
         ".strip()/.lstrip()/.rstrip() remove whitespace or specified characters from the edges"
       ],
       "keyPointsUk": [
-        "Методи рядків завжди повертають новий рядок; оригінал ніколи не змінюється",
+        "Методи рядків ніколи не змінюють оригінал; методи-трансформатори повертають новий рядок, а методи-запити на кшталт .find() чи .startswith() повертають bool чи int",
         "in перевіряє входження підрядка; .find() повертає -1, якщо відсутній, .index() викликає помилку",
         ".strip()/.lstrip()/.rstrip() видаляють пробіли чи вказані символи з країв"
       ],
@@ -1043,17 +1043,17 @@
       "titleUk": "Розбиття та з'єднання рядків",
       "summary": "split() turns text into a list; join() turns a list back into text — the two are inverses of each other.",
       "summaryUk": "split() перетворює текст на список; join() перетворює список назад на текст — обидва обернені одне до одного.",
-      "concept": "`text.split(sep)` breaks a string into a list of pieces at every occurrence of `sep`, or on any run of whitespace if `sep` is omitted entirely. `sep.join(list_of_strings)` does the reverse: it stitches a list of strings together, placing `sep` between each pair, and is called on the separator itself, not on the list — a detail that trips up many beginners the first time. Together, `\",\".join(line.split(\",\"))` round-trips a comma-separated line, and this split/transform/join pattern is one of the most common ways to process line-based text data in Python.",
-      "conceptUk": "`text.split(sep)` розбиває рядок на список частин при кожному входженні `sep`, чи за будь-якою послідовністю пробілів, якщо `sep` взагалі опущено. `sep.join(list_of_strings)` робить обернене: склеює список рядків, розміщуючи `sep` між кожною парою, і викликається саме на роздільнику, а не на списку — деталь, що часто збиває з пантелику початківців уперше. Разом `\",\".join(line.split(\",\"))` циклічно перетворює рядок з комами, і цей патерн split/трансформація/join — один з найпоширеніших способів обробки текстових даних рядок за рядком у Python.",
+      "concept": "`text.split(sep)` breaks a string into a list of pieces at every occurrence of `sep`, or on any run of whitespace if `sep` is omitted entirely. `sep.join(list_of_strings)` does the reverse: it stitches a list of strings together, placing `sep` between each pair, and is called on the separator itself, not on the list — a detail that trips up many beginners the first time. `split()` and `join()` are close inverses for a simple case like `\",\".join(line.split(\",\"))`, but they are not general inverses: whitespace-splitting with no argument collapses repeated separators, and any change to the number of pieces breaks a clean round-trip. This split/transform/join pattern is one of the most common ways to process simple, well-behaved delimiter-separated text — but real CSV data, where a field can itself contain a comma or a quote, needs the dedicated `csv` module covered later instead.",
+      "conceptUk": "`text.split(sep)` розбиває рядок на список частин при кожному входженні `sep`, чи за будь-якою послідовністю пробілів, якщо `sep` взагалі опущено. `sep.join(list_of_strings)` робить обернене: склеює список рядків, розміщуючи `sep` між кожною парою, і викликається саме на роздільнику, а не на списку — деталь, що часто збиває з пантелику початківців уперше. `split()` і `join()` — близькі обернені операції для простого випадку на кшталт `\",\".join(line.split(\",\"))`, але вони не обернені в загальному сенсі: розбиття за пробілами без аргументу згортає повторювані роздільники, а будь-яка зміна кількості частин ламає чисте циклічне перетворення. Цей патерн split/трансформація/join — один з найпоширеніших способів обробки простого, добре сформованого тексту з роздільниками — але реальні дані CSV, де поле саме може містити кому чи лапку, потребують натомість спеціального модуля `csv`, розглянутого пізніше.",
       "keyPoints": [
         "text.split(sep) breaks a string into a list; .split() with no argument splits on any whitespace",
         "sep.join(list) is called on the separator string, not on the list",
-        "split then transform then join is a common pattern for line-based text processing"
+        "split then transform then join suits simple, well-behaved delimited text — not real CSV parsing"
       ],
       "keyPointsUk": [
         "text.split(sep) розбиває рядок на список; .split() без аргументу розбиває за будь-якими пробілами",
         "sep.join(list) викликається на рядку-роздільнику, не на списку",
-        "split, потім трансформація, потім join — поширений патерн обробки текстових даних рядок за рядком"
+        "split, потім трансформація, потім join підходить для простого, добре сформованого тексту з роздільниками — не для реального парсингу CSV"
       ],
       "code": "line = \"ana,25,paris\"\nname, age, city = line.split(\",\")\nnew_line = \"|\".join([name, age, city])\nprint(new_line)  # ana|25|paris",
       "codeCaption": "Splitting a CSV-style line into named variables, then rejoining with a different separator.",
@@ -1066,8 +1066,8 @@
         "list.join(sep) — навпаки, у Python є sep.join(list), викликаний на роздільнику",
         "line.split(\",\") на рядку з неправильною кількістю ком викликає ValueError при розпаковці у фіксовану кількість імен"
       ],
-      "exercise": "Write csv_to_dicts(lines, headers) that splits each line on commas and zips it with headers to build a list of dictionaries, one per line.",
-      "exerciseUk": "Напишіть csv_to_dicts(lines, headers), що розбиває кожен рядок за комами й об'єднує його з headers через zip, щоб побудувати список словників, по одному на рядок.",
+      "exercise": "Write delimited_rows_to_dicts(lines, headers) for a deliberately simple format where commas are guaranteed not to appear inside a field: split each line on commas and zip it with headers to build a list of dictionaries, one per line.",
+      "exerciseUk": "Напишіть delimited_rows_to_dicts(lines, headers) для навмисно простого формату, де коми гарантовано не з'являються всередині поля: розбийте кожен рядок за комами й об'єднайте його з headers через zip, щоб побудувати список словників, по одному на рядок.",
       "tags": [
         "strings",
         "split",
@@ -1087,15 +1087,15 @@
       "titleUk": "Вступ до регулярних виразів",
       "summary": "Pattern matching for text that's too flexible for plain split()/in checks, using the re module.",
       "summaryUk": "Зіставлення патернів для тексту, надто гнучкого для звичайних перевірок split()/in, через модуль re.",
-      "concept": "The `re` module matches text against a *pattern* rather than a fixed literal string: `\\d` matches any digit, `\\w` matches any word character, `+` means \"one or more\", `*` means \"zero or more\", and `.` matches any character, among many other pattern elements. `re.search(pattern, text)` finds the first match anywhere in the string and returns a `Match` object (or `None`), while `re.findall(pattern, text)` returns every match as a list, and `re.sub(pattern, replacement, text)` replaces every match. Regular expressions are reached for once plain string methods like `.split()` and `in` cannot express the needed flexibility.",
-      "conceptUk": "Модуль `re` зіставляє текст із *патерном*, а не з фіксованим буквальним рядком: `\\d` відповідає будь-якій цифрі, `\\w` — будь-якому символу слова, `+` означає «один або більше», `*` означає «нуль або більше», а `.` — будь-якому символу, серед багатьох інших елементів патерну. `re.search(pattern, text)` знаходить перший збіг будь-де в рядку й повертає об'єкт `Match` (чи `None`), тоді як `re.findall(pattern, text)` повертає кожен збіг як список, а `re.sub(pattern, replacement, text)` замінює кожен збіг. До регулярних виразів звертаються, коли звичайні методи рядків на кшталт `.split()` та `in` не можуть виразити потрібну гнучкість.",
+      "concept": "The `re` module matches text against a *pattern* rather than a fixed literal string: `\\d` matches a digit, `\\w` matches a word character, `+` means \"one or more\", `*` means \"zero or more\", and `.` matches any character except a newline by default (the `re.DOTALL` flag changes that), among many other pattern elements. For a normal Unicode `str` pattern, `\\d` and `\\w` match Unicode digits and word characters, not just the ASCII `0-9`/letters-and-underscore ranges — the `re.ASCII` flag restricts them to ASCII when that is specifically what you need. `re.search(pattern, text)` finds the first match anywhere in the string and returns a `Match` object (or `None`), while `re.findall(pattern, text)` returns every match as a list, and `re.sub(pattern, replacement, text)` replaces every match. Regular expressions are reached for once plain string methods like `.split()` and `in` cannot express the needed flexibility.",
+      "conceptUk": "Модуль `re` зіставляє текст із *патерном*, а не з фіксованим буквальним рядком: `\\d` відповідає цифрі, `\\w` — символу слова, `+` означає «один або більше», `*` означає «нуль або більше», а `.` за замовчуванням відповідає будь-якому символу, крім символу нового рядка (прапор `re.DOTALL` це змінює), серед багатьох інших елементів патерну. Для звичайного Unicode-патерну `str` `\\d` і `\\w` відповідають цифрам і символам слова Unicode, а не лише діапазонам ASCII `0-9`/літер-і-підкреслення — прапор `re.ASCII` обмежує їх до ASCII, коли саме це потрібно. `re.search(pattern, text)` знаходить перший збіг будь-де в рядку й повертає об'єкт `Match` (чи `None`), тоді як `re.findall(pattern, text)` повертає кожен збіг як список, а `re.sub(pattern, replacement, text)` замінює кожен збіг. До регулярних виразів звертаються, коли звичайні методи рядків на кшталт `.split()` та `in` не можуть виразити потрібну гнучкість.",
       "keyPoints": [
-        "\\d digit, \\w word character, + one-or-more, * zero-or-more, . any character",
+        ". matches any character except newline by default; \\d and \\w are Unicode-aware unless re.ASCII is used",
         "re.search finds the first match, re.findall returns all matches as a list",
         "re.sub replaces every match with a given replacement"
       ],
       "keyPointsUk": [
-        "\\d цифра, \\w символ слова, + один-або-більше, * нуль-або-більше, . будь-який символ",
+        ". за замовчуванням відповідає будь-якому символу, крім нового рядка; \\d і \\w Unicode-орієнтовані, якщо не використано re.ASCII",
         "re.search знаходить перший збіг, re.findall повертає всі збіги як список",
         "re.sub замінює кожен збіг заданою заміною"
       ],
@@ -1110,8 +1110,8 @@
         "Забуття префіксу r (сирий рядок) на патерні з бекслешами спричиняє заплутані помилки подвійного екранування",
         "Використання regex, коли простіший і швидший .split() чи in вистачив би, зайво ускладнює код"
       ],
-      "exercise": "Write a function that uses re.findall to extract every email address from a block of text, using the pattern \\w+@\\w+\\.\\w+ as a starting point.",
-      "exerciseUk": "Напишіть функцію, що використовує re.findall для видобування кожної email-адреси з блоку тексту, використовуючи патерн \\w+@\\w+\\.\\w+ як відправну точку.",
+      "exercise": "Use the pattern \\w+@\\w+\\.\\w+ with re.findall to extract email-like strings from a block of text, then identify at least three valid-looking addresses (with a dot, hyphen, or +tag) that it misses, and explain in one sentence why production email validation should not be reduced to this toy regex.",
+      "exerciseUk": "Використайте патерн \\w+@\\w+\\.\\w+ з re.findall, щоб видобути email-подібні рядки з блоку тексту, потім знайдіть щонайменше три валідні на вигляд адреси (з крапкою, дефісом чи +тегом), які він пропускає, і поясніть одним реченням, чому валідацію email у продакшені не варто зводити до цього іграшкового регексу.",
       "tags": [
         "regex",
         "strings"

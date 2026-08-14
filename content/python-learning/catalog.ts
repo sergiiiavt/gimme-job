@@ -13,10 +13,10 @@ const lessons = [
 ];
 
 export const pythonCurriculum = {
-  version: 1,
+  version: 2,
   title: "Python learning path",
   description: "A structured Python curriculum from first script to advanced language internals, with runnable code samples and practice exercises.",
-  lastReviewedAt: "2026-08-13",
+  lastReviewedAt: "2026-08-14",
   methodology: {
     coverage: "Modules progress Beginner to Expert, each grounded in the official Python documentation and, where relevant, the PEP that introduced a feature. This is a deliberately scoped starting curriculum rather than an exhaustive reference.",
     answers: "Every lesson's explanation and code sample is written for this curriculum and checked against the official Python documentation and the relevant PEP where one exists.",

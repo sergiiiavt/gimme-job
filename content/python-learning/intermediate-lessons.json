@@ -9,8 +9,8 @@
       "titleUk": "Читання й запис файлів",
       "summary": "open() is the entry point for file I/O; the mode string decides read/write/append and text/binary behavior.",
       "summaryUk": "open() — точка входу для файлового вводу-виводу; рядок режиму визначає читання/запис/додавання і текстову/бінарну поведінку.",
-      "concept": "`open(path, mode)` returns a file object; `mode` combines a base action (`\"r\"` read, `\"w\"` write and truncate, `\"a\"` append, `\"x\"` create-exclusive) with an optional `\"b\"` for binary instead of text. Reading the whole file is `.read()`, reading line by line is `for line in file:` or `.readlines()`, and writing is `.write(text)`. Text mode automatically handles the platform's newline convention and decodes bytes to `str` using an encoding — usually UTF-8 — while binary mode (`\"rb\"`/`\"wb\"`) works with raw `bytes` and does no such conversion, which matters for anything that is not plain text, like images.",
-      "conceptUk": "`open(path, mode)` повертає файловий об'єкт; `mode` поєднує базову дію (`\"r\"` читання, `\"w\"` запис із обрізанням, `\"a\"` додавання, `\"x\"` виключне створення) з необов'язковим `\"b\"` для бінарного режиму замість текстового. Читання всього файлу — `.read()`, читання по рядках — `for line in file:` чи `.readlines()`, а запис — `.write(text)`. Текстовий режим автоматично обробляє платформну угоду про новий рядок і декодує байти в `str`, використовуючи кодування — зазвичай UTF-8, тоді як бінарний режим (`\"rb\"`/`\"wb\"`) працює із сирими `bytes` і не робить такого перетворення, що важливо для всього, що не є простим текстом, як зображення.",
+      "concept": "`open(path, mode)` returns a file object; `mode` combines a base action (`\"r\"` read, `\"w\"` write and truncate, `\"a\"` append, `\"x\"` create-exclusive) with an optional `\"b\"` for binary instead of text. Reading the whole file is `.read()`, reading line by line is `for line in file:` or `.readlines()`, and writing is `.write(text)`. Text mode automatically handles the platform's newline convention and decodes bytes to `str` using an encoding; if you omit `encoding=`, Python falls back to a platform/locale-dependent default rather than a fixed UTF-8, so portable code should pass `encoding=\"utf-8\"` (or whatever encoding the data actually uses) explicitly. Binary mode (`\"rb\"`/`\"wb\"`) works with raw `bytes` and does no such conversion, which matters for anything that is not plain text, like images.",
+      "conceptUk": "`open(path, mode)` повертає файловий об'єкт; `mode` поєднує базову дію (`\"r\"` читання, `\"w\"` запис із обрізанням, `\"a\"` додавання, `\"x\"` виключне створення) з необов'язковим `\"b\"` для бінарного режиму замість текстового. Читання всього файлу — `.read()`, читання по рядках — `for line in file:` чи `.readlines()`, а запис — `.write(text)`. Текстовий режим автоматично обробляє платформну угоду про новий рядок і декодує байти в `str`, використовуючи кодування; якщо опустити `encoding=`, Python повертається до типового кодування, залежного від платформи/локалі, а не фіксованого UTF-8, тож переносний код має явно передавати `encoding=\"utf-8\"` (чи те кодування, яке справді використовують дані). Бінарний режим (`\"rb\"`/`\"wb\"`) працює із сирими `bytes` і не робить такого перетворення, що важливо для всього, що не є простим текстом, як зображення.",
       "keyPoints": [
         "Mode combines an action (r/w/a/x) with an optional b for binary",
         "\"w\" truncates an existing file entirely; \"a\" appends without truncating",
@@ -180,17 +180,17 @@
       "titleUk": "Класи, екземпляри та __init__",
       "summary": "A class is a blueprint; __init__ sets up each new instance's own data when it is created.",
       "summaryUk": "Клас — це шаблон; __init__ налаштовує власні дані кожного нового екземпляра при його створенні.",
-      "concept": "`class Dog:` defines a new type, and calling `Dog(\"Rex\", 3)` creates a new *instance* of it, automatically calling `__init__(self, ...)` to set up that instance's own attributes — `self.name = name` stores data specific to this particular dog, not shared with any other `Dog` instance. Every method defined inside the class automatically receives the calling instance as its first parameter, `self`, so it can read and modify that instance's own attributes. Multiple instances of the same class are entirely independent: changing one instance's attribute never affects another instance of the same class.",
-      "conceptUk": "`class Dog:` визначає новий тип, і виклик `Dog(\"Rex\", 3)` створює новий *екземпляр* цього типу, автоматично викликаючи `__init__(self, ...)`, щоб налаштувати власні атрибути цього екземпляра — `self.name = name` зберігає дані, специфічні саме для цього собаки, не спільні з жодним іншим екземпляром `Dog`. Кожен метод, визначений усередині класу, автоматично отримує екземпляр, що викликає, як перший параметр, `self`, тож може читати й змінювати власні атрибути цього екземпляра. Кілька екземплярів того самого класу повністю незалежні: зміна атрибута одного екземпляра ніколи не впливає на інший екземпляр того самого класу.",
+      "concept": "`class Dog:` defines a new type, and calling `Dog(\"Rex\", 3)` creates a new *instance* of it, automatically calling `__init__(self, ...)` to set up that instance's own attributes — `self.name = name` stores data specific to this particular dog, not shared with any other `Dog` instance. An ordinary instance method — a plain function defined in the class body — automatically receives the calling instance as its first parameter, `self`, so it can read and modify that instance's own attributes; methods marked `@staticmethod` or `@classmethod`, and properties, behave differently and are covered later. Each instance has its own attribute namespace, so reassigning one instance's attribute never reassigns another instance's — but an attribute's *value* is a reference, so two instances can still end up pointing at the exact same mutable object if that object is passed to both.",
+      "conceptUk": "`class Dog:` визначає новий тип, і виклик `Dog(\"Rex\", 3)` створює новий *екземпляр* цього типу, автоматично викликаючи `__init__(self, ...)`, щоб налаштувати власні атрибути цього екземпляра — `self.name = name` зберігає дані, специфічні саме для цього собаки, не спільні з жодним іншим екземпляром `Dog`. Звичайний метод екземпляра — проста функція, визначена в тілі класу — автоматично отримує екземпляр, що викликає, як перший параметр, `self`, тож може читати й змінювати власні атрибути цього екземпляра; методи, позначені `@staticmethod` чи `@classmethod`, і властивості поводяться інакше й розглядаються пізніше. Кожен екземпляр має власний простір імен атрибутів, тож повторне присвоєння атрибута одного екземпляра ніколи не змінює інший — але *значення* атрибута є посиланням, тож два екземпляри все ще можуть вказувати на точно той самий змінюваний об'єкт, якщо його передали обом.",
       "keyPoints": [
         "class defines a type; calling it like a function creates a new instance",
         "__init__(self, ...) sets up an instance's own attributes when it is created",
-        "Every instance has its own independent copy of the attributes set in __init__"
+        "Each instance has its own attribute namespace, but attribute values are references — two instances can still share the same mutable object"
       ],
       "keyPointsUk": [
         "class визначає тип; виклик його як функції створює новий екземпляр",
         "__init__(self, ...) налаштовує власні атрибути екземпляра при його створенні",
-        "Кожен екземпляр має власну незалежну копію атрибутів, встановлених в __init__"
+        "Кожен екземпляр має власний простір імен атрибутів, але значення атрибутів — посилання; два екземпляри можуть ділити той самий змінюваний об'єкт"
       ],
       "code": "class Dog:\n    def __init__(self, name, age):\n        self.name = name\n        self.age = age\n\n    def bark(self):\n        return f\"{self.name} says Woof!\"\n\nrex = Dog(\"Rex\", 3)\nfido = Dog(\"Fido\", 5)\nprint(rex.bark(), fido.age)",
       "codeCaption": "Two independent Dog instances, each with its own name and age set by __init__.",
@@ -223,17 +223,17 @@
       "titleUk": "Спадковість і super()",
       "summary": "A subclass reuses and extends a parent class's behavior instead of duplicating it.",
       "summaryUk": "Підклас повторно використовує й розширює поведінку батьківського класу замість дублювання.",
-      "concept": "`class Puppy(Dog):` makes `Puppy` a subclass of `Dog`, automatically inheriting all of `Dog`'s methods and attributes; a `Puppy` instance is also considered a `Dog` for `isinstance()` checks. Overriding a method in the subclass replaces the parent's version for instances of the subclass, but `super().method(...)` lets the override call the parent's original implementation first and add to it, rather than fully rewriting it — commonly used inside an overridden `__init__` to let the parent set up shared attributes before the subclass adds its own.",
-      "conceptUk": "`class Puppy(Dog):` робить `Puppy` підкласом `Dog`, автоматично успадковуючи всі методи й атрибути `Dog`; екземпляр `Puppy` також вважається `Dog` для перевірок `isinstance()`. Перевизначення методу в підкласі замінює батьківську версію для екземплярів підкласу, але `super().method(...)` дозволяє перевизначенню спершу викликати оригінальну реалізацію батька й доповнити її, а не повністю переписувати — часто використовується всередині перевизначеного `__init__`, щоб дозволити батьку налаштувати спільні атрибути, перш ніж підклас додасть власні.",
+      "concept": "`class Puppy(Dog):` makes `Puppy` a subclass of `Dog`: an attribute or method not found directly on a `Puppy` instance or the `Puppy` class is looked up on `Dog` next, following Python's method resolution order (MRO) — so a subclass effectively has access to everything its bases define, without any of it being copied. A `Puppy` instance is also considered a `Dog` for `isinstance()` checks. Overriding a method in the subclass replaces the parent's version for instances of the subclass, but `super().method(...)` lets the override call the *next* implementation in the MRO first and add to it, rather than fully rewriting it — in simple single inheritance like this, that next implementation is the direct parent, which is commonly used inside an overridden `__init__` to let it set up shared attributes before the subclass adds its own.",
+      "conceptUk": "`class Puppy(Dog):` робить `Puppy` підкласом `Dog`: атрибут чи метод, не знайдений напряму на екземплярі `Puppy` чи класі `Puppy`, шукається далі на `Dog`, за порядком розв'язання методів Python (MRO) — тож підклас фактично має доступ до всього, що визначають його базові класи, без жодного копіювання. Екземпляр `Puppy` також вважається `Dog` для перевірок `isinstance()`. Перевизначення методу в підкласі замінює батьківську версію для екземплярів підкласу, але `super().method(...)` дозволяє перевизначенню спершу викликати *наступну* реалізацію в MRO й доповнити її, а не повністю переписувати — при простому одиничному спадкуванні, як тут, ця наступна реалізація і є прямим батьком, що часто використовується всередині перевизначеного `__init__`, щоб дозволити йому налаштувати спільні атрибути, перш ніж підклас додасть власні.",
       "keyPoints": [
-        "class Child(Parent): inherits all of Parent's methods and attributes automatically",
+        "class Child(Parent): attribute lookup falls through to Parent via the MRO when not found on Child",
         "Overriding a method replaces the parent's version for the subclass",
-        "super().method(...) calls the parent's implementation, typically inside an overridden __init__"
+        "super().method(...) calls the next implementation in the MRO — the direct parent in simple single inheritance"
       ],
       "keyPointsUk": [
-        "class Child(Parent): автоматично успадковує всі методи й атрибути Parent",
+        "class Child(Parent): пошук атрибута переходить до Parent через MRO, якщо не знайдено на Child",
         "Перевизначення методу замінює батьківську версію для підкласу",
-        "super().method(...) викликає батьківську реалізацію, зазвичай усередині перевизначеного __init__"
+        "super().method(...) викликає наступну реалізацію в MRO — прямого батька при простому одиничному спадкуванні"
       ],
       "code": "class Dog:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return f\"{self.name} makes a sound\"\n\nclass Puppy(Dog):\n    def __init__(self, name, weeks_old):\n        super().__init__(name)\n        self.weeks_old = weeks_old\n    def speak(self):\n        return super().speak() + \" (a little yip)\"",
       "codeCaption": "Puppy reuses Dog's __init__ via super() and extends speak() instead of rewriting it from scratch.",
@@ -351,17 +351,17 @@
       "titleUk": "@dataclass для класів, що зберігають дані",
       "summary": "@dataclass generates __init__, __repr__ and __eq__ from annotated fields, removing common boilerplate.",
       "summaryUk": "@dataclass генерує __init__, __repr__ та __eq__ з анотованих полів, усуваючи поширений шаблонний код.",
-      "concept": "Decorating a class with `@dataclass` and listing its fields as type-annotated class attributes automatically generates `__init__` (accepting each field as a parameter), a readable `__repr__`, and a field-by-field `__eq__`, all without writing them by hand. `field(default_factory=list)` handles a mutable default correctly (unlike a plain `= []`, which would be shared across instances the same way a function's mutable default is). `@dataclass(frozen=True)` additionally makes instances immutable and hashable, useful for value objects that should never change after creation.",
-      "conceptUk": "Декорування класу `@dataclass` і перелічування його полів як анотованих типом атрибутів класу автоматично генерує `__init__` (що приймає кожне поле як параметр), читабельний `__repr__` і пофакторний `__eq__`, без написання їх вручну. `field(default_factory=list)` коректно обробляє змінюване значення за замовчуванням (на відміну від простого `= []`, яке було б спільним між екземплярами так само, як змінюване значення за замовчуванням функції). `@dataclass(frozen=True)` додатково робить екземпляри незмінюваними й хешованими, корисно для об'єктів-значень, які ніколи не мають змінюватись після створення.",
+      "concept": "Decorating a class with `@dataclass` and listing its fields as type-annotated class attributes automatically generates `__init__` (accepting each field as a parameter), a readable `__repr__`, and a field-by-field `__eq__`, all without writing them by hand. `field(default_factory=list)` handles a mutable default correctly (unlike a plain `= []`, which would be shared across instances the same way a function's mutable default is). `@dataclass(frozen=True)` additionally prevents normal field reassignment after `__init__` and, with the default equality settings, normally enables a generated `__hash__` — but it does not create true deep immutability, since a mutable object stored in a field can still be mutated through that object's own methods, and the instance is only actually hashable if every field value participating in the hash is itself hashable.",
+      "conceptUk": "Декорування класу `@dataclass` і перелічування його полів як анотованих типом атрибутів класу автоматично генерує `__init__` (що приймає кожне поле як параметр), читабельний `__repr__` і пофакторний `__eq__`, без написання їх вручну. `field(default_factory=list)` коректно обробляє змінюване значення за замовчуванням (на відміну від простого `= []`, яке було б спільним між екземплярами так само, як змінюване значення за замовчуванням функції). `@dataclass(frozen=True)` додатково забороняє звичайне повторне присвоєння поля після `__init__` і, з типовими налаштуваннями рівності, зазвичай вмикає згенерований `__hash__` — але не створює справжню глибоку незмінюваність, бо змінюваний об'єкт у полі все ще можна змінити через власні методи цього об'єкта, і екземпляр реально хешований, лише якщо кожне значення поля, що бере участь у хеші, само хешоване.",
       "keyPoints": [
         "@dataclass generates __init__, __repr__ and __eq__ from annotated fields",
         "field(default_factory=list) is the correct way to give a mutable default",
-        "frozen=True makes instances immutable and hashable"
+        "frozen=True blocks field reassignment and normally enables hashing, but does not deep-freeze mutable field values"
       ],
       "keyPointsUk": [
         "@dataclass генерує __init__, __repr__ та __eq__ з анотованих полів",
         "field(default_factory=list) — правильний спосіб надати змінюване значення за замовчуванням",
-        "frozen=True робить екземпляри незмінюваними й хешованими"
+        "frozen=True забороняє повторне присвоєння поля й зазвичай вмикає хешування, але не заморожує глибоко змінювані значення полів"
       ],
       "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass Task:\n    title: str\n    done: bool = False\n    tags: list = field(default_factory=list)\n\nt = Task(\"Write report\", tags=[\"work\"])\nprint(t)  # Task(title='Write report', done=False, tags=['work'])",
       "codeCaption": "A Task dataclass with a required field, a default, and a correctly-handled mutable default list.",
@@ -563,15 +563,15 @@
       "titleUk": "Написання й імпорт власних модулів",
       "summary": "Any .py file is a module; splitting code into modules is how programs grow past a single file.",
       "summaryUk": "Будь-який файл .py — модуль; розділення коду на модулі — спосіб зростання програм за межі одного файлу.",
-      "concept": "Any `.py` file is automatically a module that other files can `import` by its filename without the extension: a file `helpers.py` is imported as `import helpers` or `from helpers import specific_function`. When a module is imported, its top-level code runs exactly once, and the result — every function, class and variable it defines — becomes accessible through the module's namespace. Splitting a growing single-file script into multiple focused modules (one for data access, one for calculations, one for the command-line interface, for example) keeps each file's purpose clear and makes individual pieces easier to test in isolation.",
-      "conceptUk": "Будь-який файл `.py` автоматично є модулем, який інші файли можуть `import` за назвою файлу без розширення: файл `helpers.py` імпортується як `import helpers` чи `from helpers import specific_function`. Коли модуль імпортується, його код верхнього рівня виконується рівно один раз, і результат — кожна функція, клас і змінна, які він визначає — стає доступним через простір імен модуля. Розділення зростаючого однофайлового скрипта на кілька сфокусованих модулів (наприклад, один для доступу до даних, один для розрахунків, один для інтерфейсу командного рядка) тримає призначення кожного файлу чітким і робить окремі частини легшими для ізольованого тестування.",
+      "concept": "Any `.py` file can serve as a module that other files `import` by its filename without the extension — as long as Python's import system can actually locate it, through `sys.path`, the enclosing package, or another import finder; a file sitting outside all of those is not importable just by existing. On the normal first import in a running interpreter, a module's top-level code runs once, and the result — every function, class and variable it defines — becomes accessible through the module's namespace and is cached in `sys.modules`, so a later `import` of the same module reuses that cached module object instead of re-running its code. Splitting a growing single-file script into multiple focused modules (one for data access, one for calculations, one for the command-line interface, for example) keeps each file's purpose clear and makes individual pieces easier to test in isolation.",
+      "conceptUk": "Будь-який файл `.py` може слугувати модулем, який інші файли `import` за назвою файлу без розширення — доки система імпорту Python справді може його знайти через `sys.path`, охоплюючий пакет чи інший засіб пошуку імпорту; файл поза всім цим не стає імпортовним просто через своє існування. При звичайному першому імпорті в запущеному інтерпретаторі код верхнього рівня модуля виконується один раз, і результат — кожна функція, клас і змінна, які він визначає — стає доступним через простір імен модуля й кешується в `sys.modules`, тож пізніший `import` того самого модуля повторно використовує закешований об'єкт модуля замість повторного виконання коду. Розділення зростаючого однофайлового скрипта на кілька сфокусованих модулів (наприклад, один для доступу до даних, один для розрахунків, один для інтерфейсу командного рядка) тримає призначення кожного файлу чітким і робить окремі частини легшими для ізольованого тестування.",
       "keyPoints": [
-        "Any .py file is importable as a module by its filename without .py",
+        "A .py file is importable by filename when Python's import system can find it (sys.path, package, etc.)",
         "A module's top-level code runs once, the first time it is imported",
         "Splitting a growing script into focused modules keeps each file's purpose clear"
       ],
       "keyPointsUk": [
-        "Будь-який файл .py імпортовний як модуль за назвою файлу без .py",
+        "Файл .py імпортовний за назвою, коли система імпорту Python може його знайти (sys.path, пакет тощо)",
         "Код верхнього рівня модуля виконується один раз, при першому імпорті",
         "Розділення зростаючого скрипта на сфокусовані модулі тримає призначення кожного файлу чітким"
       ],
@@ -580,11 +580,11 @@
       "codeCaptionUk": "Маленька допоміжна функція, винесена у власний модуль і імпортована за іменем з іншого файлу.",
       "pitfalls": [
         "Naming your own file the same as a standard-library module (like random.py) can shadow the real one and break unrelated imports",
-        "Circular imports (module A imports B, which imports A) raise an ImportError and usually signal a design that needs restructuring"
+        "Circular imports (module A imports B, which imports A) can expose a partially initialized module and cause ImportError, AttributeError, or other confusing failures — some complete successfully, but circular imports are usually a design smell worth restructuring"
       ],
       "pitfallsUk": [
         "Назва власного файлу так само, як модуль стандартної бібліотеки (як random.py), може затінити справжній і зламати непов'язані імпорти",
-        "Циклічні імпорти (модуль A імпортує B, який імпортує A) викликають ImportError і зазвичай сигналізують про дизайн, що потребує перебудови"
+        "Циклічні імпорти (модуль A імпортує B, який імпортує A) можуть проявити частково ініціалізований модуль і спричинити ImportError, AttributeError чи інші заплутані помилки — деякі завершуються успішно, але циклічні імпорти зазвичай ознака дизайну, що потребує перебудови"
       ],
       "exercise": "Split a single script that validates emails and formats phone numbers into two modules, validators.py and formatters.py, then import both from a new main.py.",
       "exerciseUk": "Розділіть один скрипт, що валідує email і форматує номери телефонів, на два модулі, validators.py і formatters.py, потім імпортуйте обидва з нового main.py.",
@@ -606,15 +606,15 @@
       "titleUk": "Пакети та __init__.py",
       "summary": "A package is a directory of modules; __init__.py runs on first import and can define what the package exposes.",
       "summaryUk": "Пакет — це каталог модулів; __init__.py виконується при першому імпорті й може визначати, що пакет надає.",
-      "concept": "A directory containing an `__init__.py` file (even an empty one) becomes an importable *package*, letting related modules be organized under one dotted name, like `myapp.utils.strings`. `__init__.py` runs automatically the first time anything inside the package is imported, and commonly re-exports a curated set of names from deeper submodules so callers can write the shorter `from myapp import helper_function` instead of the fully-qualified `from myapp.utils.strings import helper_function`. This lets a package's internal file layout change without breaking its public import surface.",
-      "conceptUk": "Каталог, що містить файл `__init__.py` (навіть порожній), стає імпортовним *пакетом*, дозволяючи організувати пов'язані модулі під одним іменем через крапку, як `myapp.utils.strings`. `__init__.py` автоматично виконується при першому імпорті чогось усередині пакета й часто повторно експортує курований набір імен з глибших підмодулів, тож викликачі можуть писати коротше `from myapp import helper_function` замість повністю кваліфікованого `from myapp.utils.strings import helper_function`. Це дозволяє внутрішньому розташуванню файлів пакета змінюватись, не ламаючи його публічну поверхню імпорту.",
+      "concept": "A directory containing an `__init__.py` file (even an empty one) is a *regular package*, letting related modules be organized under one dotted name, like `myapp.utils.strings`; Python also supports *namespace packages* with no `__init__.py` at all, useful when one logical package's modules are split across multiple locations, though a regular package with an explicit `__init__.py` remains the normal choice for an ordinary project. `__init__.py` runs automatically the first time anything inside the package is imported, and commonly re-exports a curated set of names from deeper submodules so callers can write the shorter `from myapp import helper_function` instead of the fully-qualified `from myapp.utils.strings import helper_function`. This lets a package's internal file layout change without breaking its public import surface.",
+      "conceptUk": "Каталог, що містить файл `__init__.py` (навіть порожній), — це *звичайний пакет*, що дозволяє організувати пов'язані модулі під одним іменем через крапку, як `myapp.utils.strings`; Python також підтримує *namespace-пакети* (пакети простору імен) взагалі без `__init__.py`, корисні, коли модулі одного логічного пакета розділені між кількома розташуваннями, хоча звичайний пакет з явним `__init__.py` залишається типовим вибором для звичайного проєкту. `__init__.py` автоматично виконується при першому імпорті чогось усередині пакета й часто повторно експортує курований набір імен з глибших підмодулів, тож викликачі можуть писати коротше `from myapp import helper_function` замість повністю кваліфікованого `from myapp.utils.strings import helper_function`. Це дозволяє внутрішньому розташуванню файлів пакета змінюватись, не ламаючи його публічну поверхню імпорту.",
       "keyPoints": [
-        "A directory with __init__.py becomes an importable package with a dotted name",
+        "A directory with __init__.py is a regular package with a dotted name; namespace packages can omit __init__.py",
         "__init__.py runs once, on the package's first import",
         "Re-exporting names in __init__.py gives a short, stable public import path"
       ],
       "keyPointsUk": [
-        "Каталог з __init__.py стає імпортовним пакетом з іменем через крапку",
+        "Каталог з __init__.py — звичайний пакет з іменем через крапку; namespace-пакети можуть обійтися без __init__.py",
         "__init__.py виконується один раз, при першому імпорті пакета",
         "Повторний експорт імен у __init__.py дає короткий, стабільний публічний шлях імпорту"
       ],
@@ -648,17 +648,17 @@
       "titleUk": "Віртуальні середовища й pip",
       "summary": "Every project gets its own isolated set of installed packages, so projects never fight over dependency versions.",
       "summaryUk": "Кожен проєкт отримує власний ізольований набір встановлених пакетів, тож проєкти ніколи не конфліктують за версії залежностей.",
-      "concept": "`python -m venv .venv` creates an isolated virtual environment in the `.venv` directory, and activating it (`source .venv/bin/activate` on macOS/Linux, `.venv\\Scripts\\activate` on Windows) points `python` and `pip` at that isolated environment instead of the system-wide installation. `pip install package_name` then installs a package only into the active environment, and `pip freeze > requirements.txt` records the exact installed versions so another machine can recreate the same environment with `pip install -r requirements.txt`. Every real project should have its own virtual environment, never sharing one across unrelated projects.",
-      "conceptUk": "`python -m venv .venv` створює ізольоване віртуальне середовище в каталозі `.venv`, а його активація (`source .venv/bin/activate` на macOS/Linux, `.venv\\Scripts\\activate` на Windows) спрямовує `python` і `pip` на це ізольоване середовище замість загальносистемного встановлення. `pip install package_name` тоді встановлює пакет лише в активне середовище, а `pip freeze > requirements.txt` записує точні встановлені версії, тож інша машина може відтворити те саме середовище через `pip install -r requirements.txt`. Кожен реальний проєкт має мати власне віртуальне середовище, ніколи не ділячи одне між непов'язаними проєктами.",
+      "concept": "`python -m venv .venv` creates an isolated virtual environment in the `.venv` directory, and activating it (`source .venv/bin/activate` on macOS/Linux, `.venv\\Scripts\\activate` on Windows) points `python` and `pip` at that isolated environment instead of the system-wide installation. `pip install package_name` then installs a package only into the active environment, and `pip freeze > requirements.txt` records the exact installed distribution versions, which meaningfully improves repeatability when another machine installs from that file with `pip install -r requirements.txt` — but it does not by itself guarantee an identical environment, since the target machine's Python version, OS/architecture, and available package artifacts can still differ. Stronger reproducibility comes from hash-checked installs (`pip install --require-hashes`) or a dedicated lock-file format such as the standardized `pylock.toml` (PEP 751). Every real project should still have its own virtual environment, never sharing one across unrelated projects.",
+      "conceptUk": "`python -m venv .venv` створює ізольоване віртуальне середовище в каталозі `.venv`, а його активація (`source .venv/bin/activate` на macOS/Linux, `.venv\\Scripts\\activate` на Windows) спрямовує `python` і `pip` на це ізольоване середовище замість загальносистемного встановлення. `pip install package_name` тоді встановлює пакет лише в активне середовище, а `pip freeze > requirements.txt` записує точні встановлені версії дистрибутивів, що суттєво покращує повторюваність, коли інша машина встановлює з цього файлу через `pip install -r requirements.txt` — але це саме по собі не гарантує ідентичного середовища, бо версія Python, ОС/архітектура й доступні артефакти пакетів на цільовій машині все ще можуть відрізнятися. Сильніша відтворюваність приходить через встановлення з перевіркою хешів (`pip install --require-hashes`) чи спеціальний формат файлу блокування на кшталт стандартизованого `pylock.toml` (PEP 751). Кожен реальний проєкт все ще має мати власне віртуальне середовище, ніколи не ділячи одне між непов'язаними проєктами.",
       "keyPoints": [
         "python -m venv .venv creates an isolated environment for one project",
         "Activating the environment points python and pip at it instead of the system installation",
-        "pip freeze > requirements.txt records exact versions for reproducible installs elsewhere"
+        "pip freeze records exact versions, improving repeatability — but hashes/lock files go further toward true reproducibility"
       ],
       "keyPointsUk": [
         "python -m venv .venv створює ізольоване середовище для одного проєкту",
         "Активація середовища спрямовує python і pip на нього замість системного встановлення",
-        "pip freeze > requirements.txt записує точні версії для відтворюваних встановлень деінде"
+        "pip freeze записує точні версії, покращуючи повторюваність — але хеші/файли блокування йдуть далі до справжньої відтворюваності"
       ],
       "code": "python -m venv .venv\nsource .venv/bin/activate     # .venv\\Scripts\\activate on Windows\npip install requests\npip freeze > requirements.txt\n\n# on another machine:\npython -m venv .venv && source .venv/bin/activate\npip install -r requirements.txt",
       "codeCaption": "Creating a virtual environment, installing a package, freezing the exact version, and reproducing it elsewhere.",
@@ -671,8 +671,8 @@
         "Встановлення пакетів глобально через pip (поза будь-яким venv) ризикує конфліктами версій між непов'язаними проєктами",
         "Забуття активувати venv перед pip install встановлює пакет у несподіване місце"
       ],
-      "exercise": "Create a new virtual environment, install the requests package into it, generate a requirements.txt, and describe the exact commands someone else would run to reproduce your environment.",
-      "exerciseUk": "Створіть нове віртуальне середовище, встановіть у нього пакет requests, згенеруйте requirements.txt і опишіть точні команди, які інша людина виконала б, щоб відтворити ваше середовище.",
+      "exercise": "Create a new virtual environment, install the requests package into it, generate a requirements.txt, and explain in one or two sentences what pip freeze does and does not guarantee about reproducing your exact environment on another machine.",
+      "exerciseUk": "Створіть нове віртуальне середовище, встановіть у нього пакет requests, згенеруйте requirements.txt і поясніть одним-двома реченнями, що pip freeze гарантує, а що ні, щодо відтворення вашого точного середовища на іншій машині.",
       "tags": [
         "venv",
         "pip",
@@ -778,27 +778,27 @@
       "titleUk": "Робота з датами й часом",
       "summary": "datetime objects, formatting with strftime, parsing with strptime, and the naive-versus-aware distinction.",
       "summaryUk": "Об'єкти datetime, форматування через strftime, розбір через strptime, і різниця наївний-проти-обізнаний.",
-      "concept": "`datetime.now()` returns the current local time as a naive `datetime` (no timezone attached); `datetime.now(timezone.utc)` returns an aware one anchored to UTC. `.strftime(\"%Y-%m-%d\")` formats a `datetime` into a string using format codes, while `datetime.strptime(text, \"%Y-%m-%d\")` does the reverse, parsing a string into a `datetime` according to the same code system. Subtracting two `datetime` objects produces a `timedelta`, representing a duration, which itself supports arithmetic like adding days to a date. Mixing a naive and an aware `datetime` in a comparison or subtraction raises a `TypeError` rather than silently guessing a timezone.",
-      "conceptUk": "`datetime.now()` повертає поточний локальний час як наївний `datetime` (без прикріпленого часового поясу); `datetime.now(timezone.utc)` повертає обізнаний, прив'язаний до UTC. `.strftime(\"%Y-%m-%d\")` форматує `datetime` у рядок, використовуючи коди формату, тоді як `datetime.strptime(text, \"%Y-%m-%d\")` робить обернене, розбираючи рядок у `datetime` за тією самою системою кодів. Віднімання двох об'єктів `datetime` дає `timedelta`, що представляє тривалість і сам підтримує арифметику, як додавання днів до дати. Змішування наївного й обізнаного `datetime` у порівнянні чи відніманні викликає `TypeError`, а не тихе вгадування часового поясу.",
+      "concept": "`datetime.now()` returns the current local time as a naive `datetime` (no timezone attached); `datetime.now(timezone.utc)` returns an aware one anchored to UTC. `.strftime(\"%Y-%m-%d\")` formats a `datetime` into a string using format codes, while `datetime.strptime(text, \"%Y-%m-%d\")` does the reverse, parsing a string into a `datetime` according to the same code system. Subtracting two `datetime` objects produces a `timedelta`, representing a duration, which itself supports arithmetic like adding days to a date. Subtracting a naive `datetime` from an aware one, or ordering them with `<`/`>`, raises `TypeError` rather than silently guessing a timezone — but equality is allowed: a naive and an aware datetime simply compare as unequal, since Python has no basis to treat them as the same instant.",
+      "conceptUk": "`datetime.now()` повертає поточний локальний час як наївний `datetime` (без прикріпленого часового поясу); `datetime.now(timezone.utc)` повертає обізнаний, прив'язаний до UTC. `.strftime(\"%Y-%m-%d\")` форматує `datetime` у рядок, використовуючи коди формату, тоді як `datetime.strptime(text, \"%Y-%m-%d\")` робить обернене, розбираючи рядок у `datetime` за тією самою системою кодів. Віднімання двох об'єктів `datetime` дає `timedelta`, що представляє тривалість і сам підтримує арифметику, як додавання днів до дати. Віднімання наївного `datetime` від обізнаного, чи їх упорядкування через `<`/`>`, викликає `TypeError`, а не тихе вгадування часового поясу — але рівність дозволена: наївний і обізнаний datetime просто порівнюються як нерівні, бо Python не має підстав вважати їх тією самою миттю.",
       "keyPoints": [
         "datetime.now() is naive; datetime.now(timezone.utc) is aware and anchored to UTC",
         "strftime formats a datetime to text; strptime parses text into a datetime",
-        "Subtracting two datetimes gives a timedelta; mixing naive and aware raises TypeError"
+        "Subtracting two datetimes gives a timedelta; subtracting or ordering naive vs. aware raises TypeError, but == just compares them unequal"
       ],
       "keyPointsUk": [
         "datetime.now() наївний; datetime.now(timezone.utc) обізнаний і прив'язаний до UTC",
         "strftime форматує datetime у текст; strptime розбирає текст у datetime",
-        "Віднімання двох datetime дає timedelta; змішування наївного й обізнаного викликає TypeError"
+        "Віднімання двох datetime дає timedelta; віднімання чи впорядкування наївного проти обізнаного викликає TypeError, а == просто дає нерівність"
       ],
       "code": "from datetime import datetime, timedelta, timezone\n\nnow = datetime.now(timezone.utc)\ndeadline = now + timedelta(days=7)\nprint(deadline.strftime(\"%Y-%m-%d %H:%M UTC\"))\n\nparsed = datetime.strptime(\"2026-03-05\", \"%Y-%m-%d\")",
       "codeCaption": "Computing a deadline a week from now, formatting it for display, and parsing a date string back into a datetime.",
       "codeCaptionUk": "Обчислення дедлайну через тиждень від зараз, форматування для показу, і розбір рядка дати назад у datetime.",
       "pitfalls": [
-        "Comparing a naive datetime.now() with an aware value from an API raises TypeError",
+        "Ordering or subtracting a naive datetime.now() against an aware value from an API raises TypeError (== would just be False)",
         "Assuming datetime.now() is UTC is wrong on most systems — it is local time unless you pass timezone.utc"
       ],
       "pitfallsUk": [
-        "Порівняння наївного datetime.now() з обізнаним значенням з API викликає TypeError",
+        "Впорядкування чи віднімання наївного datetime.now() проти обізнаного значення з API викликає TypeError (== просто дав би False)",
         "Припущення, що datetime.now() — це UTC, неправильне на більшості систем — це локальний час, якщо не передати timezone.utc"
       ],
       "exercise": "Write a function that takes a birthdate string in \"YYYY-MM-DD\" format, parses it, and returns the person's age in whole years as of today.",
@@ -820,17 +820,17 @@
       "titleUk": "os і sys для середовища й інформації про виконання",
       "summary": "os talks to the operating system (environment variables, processes); sys exposes interpreter-level state.",
       "summaryUk": "os спілкується з операційною системою (змінні середовища, процеси); sys надає стан на рівні інтерпретатора.",
-      "concept": "`os.environ` is a dict-like mapping of the process's environment variables, commonly read with `os.environ.get(\"API_KEY\")` to configure a program without hardcoding secrets or environment-specific values into source code. `os.getcwd()`, `os.listdir()` and related functions expose filesystem information (though `pathlib` is preferred for path manipulation itself). `sys.argv` is the list of command-line arguments the script was invoked with (`sys.argv[0]` is the script name itself), and `sys.exit(code)` terminates the program immediately with a given exit status, commonly used to signal success (`0`) or failure (non-zero) to a calling shell or CI pipeline.",
-      "conceptUk": "`os.environ` — це подібне до словника відображення змінних середовища процесу, часто читається через `os.environ.get(\"API_KEY\")` для конфігурації програми без жорсткого прописування секретів чи специфічних для середовища значень у вихідному коді. `os.getcwd()`, `os.listdir()` та пов'язані функції надають інформацію файлової системи (хоча для самої маніпуляції шляхами надається перевага `pathlib`). `sys.argv` — список аргументів командного рядка, з якими було викликано скрипт (`sys.argv[0]` — сама назва скрипта), а `sys.exit(code)` негайно завершує програму з заданим статусом виходу, часто використовується для сигналізації успіху (`0`) чи невдачі (не нуль) командній оболонці чи конвеєру CI.",
+      "concept": "`os.environ` is a dict-like mapping of the process's environment variables, commonly read with `os.environ.get(\"API_KEY\")` to configure a program without hardcoding secrets or environment-specific values into source code. `os.getcwd()`, `os.listdir()` and related functions expose filesystem information (though `pathlib` is preferred for path manipulation itself). `sys.argv` is the list of command-line arguments the process was invoked with; `sys.argv[0]` commonly holds the script name when a script file is run, but its exact value depends on how Python was invoked — it is `\"-c\"` when using `python -c`, for instance. `sys.exit(code)` raises `SystemExit` rather than halting the process instantly — `finally` blocks still run, and the exception can even be caught — and it terminates the program with the given status once that `SystemExit` reaches the top of the main thread uncaught, commonly used to signal success (`0`) or failure (non-zero) to a calling shell or CI pipeline.",
+      "conceptUk": "`os.environ` — це подібне до словника відображення змінних середовища процесу, часто читається через `os.environ.get(\"API_KEY\")` для конфігурації програми без жорсткого прописування секретів чи специфічних для середовища значень у вихідному коді. `os.getcwd()`, `os.listdir()` та пов'язані функції надають інформацію файлової системи (хоча для самої маніпуляції шляхами надається перевага `pathlib`). `sys.argv` — список аргументів командного рядка, з якими було викликано процес; `sys.argv[0]` зазвичай тримає назву скрипта, коли запускається файл скрипта, але його точне значення залежить від того, як був викликаний Python — наприклад, це `\"-c\"` при використанні `python -c`. `sys.exit(code)` викликає `SystemExit` замість негайної зупинки процесу — блоки `finally` все ще виконуються, і виняток навіть можна перехопити — і завершує програму з заданим статусом, щойно цей `SystemExit` необробленим досягає верхівки головного потоку, часто використовується для сигналізації успіху (`0`) чи невдачі (не нуль) командній оболонці чи конвеєру CI.",
       "keyPoints": [
         "os.environ.get(\"NAME\") reads an environment variable without hardcoding secrets",
-        "sys.argv holds command-line arguments; sys.argv[0] is the script name itself",
-        "sys.exit(code) terminates the program with a status a shell or CI pipeline can check"
+        "sys.argv holds command-line arguments; sys.argv[0]'s exact value depends on how Python was invoked",
+        "sys.exit(code) raises SystemExit, which normally terminates the program with that status once uncaught"
       ],
       "keyPointsUk": [
         "os.environ.get(\"NAME\") читає змінну середовища без жорсткого прописування секретів",
-        "sys.argv тримає аргументи командного рядка; sys.argv[0] — сама назва скрипта",
-        "sys.exit(code) завершує програму зі статусом, який може перевірити оболонка чи конвеєр CI"
+        "sys.argv тримає аргументи командного рядка; точне значення sys.argv[0] залежить від того, як викликано Python",
+        "sys.exit(code) викликає SystemExit, що зазвичай завершує програму з цим статусом, коли необроблений"
       ],
       "code": "import os, sys\n\napi_key = os.environ.get(\"API_KEY\")\nif not api_key:\n    print(\"Missing API_KEY environment variable\", file=sys.stderr)\n    sys.exit(1)\n\nprint(\"Arguments:\", sys.argv[1:])",
       "codeCaption": "Reading required configuration from the environment and exiting with an error status if it's missing.",
@@ -863,28 +863,28 @@
       "titleUk": "Структурований діагностичний вивід через logging",
       "summary": "logging replaces print() debugging with leveled, configurable, and production-appropriate diagnostics.",
       "summaryUk": "logging замінює налагодження через print() рівневою, конфігурованою й придатною для продакшену діагностикою.",
-      "concept": "`logging.getLogger(__name__)` creates a logger scoped to the current module, and calling `.debug()`, `.info()`, `.warning()`, `.error()` or `.critical()` on it records a message at that severity level. `logging.basicConfig(level=logging.INFO)` sets a minimum level for the whole program — messages below that level are silently skipped, so verbosity can be tuned per environment without touching the calls themselves. Unlike `print()`, log messages automatically include useful context like the timestamp and logger name, and can be routed to a file or remote system instead of only the console.",
-      "conceptUk": "`logging.getLogger(__name__)` створює логер, обмежений поточним модулем, і виклик `.debug()`, `.info()`, `.warning()`, `.error()` чи `.critical()` на ньому записує повідомлення на цьому рівні серйозності. `logging.basicConfig(level=logging.INFO)` встановлює мінімальний рівень для всієї програми — повідомлення нижче цього рівня тихо пропускаються, тож детальність можна налаштувати для кожного середовища, не чіпаючи самі виклики. На відміну від `print()`, повідомлення логу автоматично включають корисний контекст на кшталт мітки часу й імені логера, і можуть спрямовуватись у файл чи віддалену систему, а не лише консоль.",
+      "concept": "`logging.getLogger(__name__)` creates a logger scoped to the current module, and calling `.debug()`, `.info()`, `.warning()`, `.error()` or `.critical()` on it records a message at that severity level. `logging.basicConfig(level=logging.INFO)` sets a minimum level for the whole program — messages below that level are silently skipped, so verbosity can be tuned per environment without touching the calls themselves. A log record carries structured metadata such as the logger name, severity and event time internally, but it is the configured *formatter* that decides which fields actually get displayed — the default `basicConfig()` format shows level, logger name and message, with no timestamp unless the format string includes something like `%(asctime)s`. Unlike `print()`, log calls can be routed to a file or remote system instead of only the console, and filtered by severity without touching the calls themselves.",
+      "conceptUk": "`logging.getLogger(__name__)` створює логер, обмежений поточним модулем, і виклик `.debug()`, `.info()`, `.warning()`, `.error()` чи `.critical()` на ньому записує повідомлення на цьому рівні серйозності. `logging.basicConfig(level=logging.INFO)` встановлює мінімальний рівень для всієї програми — повідомлення нижче цього рівня тихо пропускаються, тож детальність можна налаштувати для кожного середовища, не чіпаючи самі виклики. Запис логу внутрішньо несе структуровані метадані на кшталт імені логера, серйозності й часу події, але саме налаштований *форматер* вирішує, які поля реально відображаються — типовий формат `basicConfig()` показує рівень, ім'я логера й повідомлення, без мітки часу, якщо рядок формату не містить щось на кшталт `%(asctime)s`. На відміну від `print()`, виклики логування можна спрямовувати у файл чи віддалену систему замість лише консолі, і фільтрувати за серйозністю, не чіпаючи самі виклики.",
       "keyPoints": [
         "getLogger(__name__).info/warning/error() records a message at that severity level",
         "basicConfig(level=...) sets the minimum level shown, tunable per environment",
-        "Unlike print(), log records automatically carry timestamp and source context"
+        "Log records carry rich metadata, but the formatter decides what's shown — the default format has no timestamp"
       ],
       "keyPointsUk": [
         "getLogger(__name__).info/warning/error() записує повідомлення на цьому рівні серйозності",
         "basicConfig(level=...) встановлює мінімальний показаний рівень, налаштовуваний для середовища",
-        "На відміну від print(), записи логу автоматично несуть мітку часу й контекст джерела"
+        "Записи логу несуть багаті метадані, але форматер вирішує, що показувати — типовий формат без мітки часу"
       ],
       "code": "import logging\n\nlogging.basicConfig(level=logging.INFO, format=\"%(asctime)s %(levelname)s %(message)s\")\nlogger = logging.getLogger(__name__)\n\nlogger.info(\"Starting import job\")\nlogger.warning(\"Retrying %s after timeout\", \"fetch_data\")\nlogger.debug(\"This won't show at INFO level\")",
       "codeCaption": "Configuring a minimum log level and logging structured messages at different severities.",
       "codeCaptionUk": "Налаштування мінімального рівня логу й логування структурованих повідомлень різної серйозності.",
       "pitfalls": [
         "logger.info(\"value: \" + str(x)) always builds the string even if INFO is filtered out; logger.info(\"value: %s\", x) is lazier and cheaper",
-        "Calling basicConfig() more than once in the same process has no effect after the first call"
+        "Calling basicConfig() again after the root logger already has handlers normally does nothing — pass force=True when a deliberate reconfiguration is actually needed"
       ],
       "pitfallsUk": [
         "logger.info(\"value: \" + str(x)) завжди будує рядок, навіть якщо INFO відфільтровано; logger.info(\"value: %s\", x) лінивіший і дешевший",
-        "Виклик basicConfig() більше одного разу в тому самому процесі не має ефекту після першого виклику"
+        "Повторний виклик basicConfig() після того, як кореневий логер уже має обробники, зазвичай нічого не робить — передайте force=True, коли справді потрібне навмисне переналаштування"
       ],
       "exercise": "Replace every print() call in a small script with appropriately-leveled logging calls (info for normal progress, warning for recoverable issues, error for failures), and configure the minimum level.",
       "exerciseUk": "Замініть кожен виклик print() у невеликому скрипті на виклики logging з відповідним рівнем (info для звичайного прогресу, warning для виправних проблем, error для невдач), і налаштуйте мінімальний рівень.",
