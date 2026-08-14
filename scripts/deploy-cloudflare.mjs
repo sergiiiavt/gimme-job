@@ -137,6 +137,7 @@ async function importCurrentJobs(appPassword) {
     if (![401, 503].includes(response.status) || attempt === 4) {
       throw new Error(`Cloud job import returned HTTP ${response.status}.`);
     }
+
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
 }
@@ -156,8 +157,14 @@ async function main() {
   requiredEnvironment("CLOUDFLARE_API_TOKEN");
   requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
   const appPassword = requiredEnvironment("APP_PASSWORD");
+  const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
+
   if (appPassword.length < 16) {
     throw new Error("APP_PASSWORD must contain at least 16 characters.");
+  }
+
+  if (grafanaReadToken.length < 32) {
+    throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
   }
 
   await ensureBuildArtifact();
@@ -195,12 +202,19 @@ async function main() {
       { input: `${appPassword}\n` },
     );
 
+    console.log("Updating the Grafana read token...");
+    runWrangler(
+      ["secret", "put", "GRAFANA_READ_TOKEN", "--config", generatedConfigPath],
+      { input: `${grafanaReadToken}\n` },
+    );
+
     if (process.env.OPENAI_API_KEY) {
       console.log("Updating the OpenAI API key...");
       runWrangler(
         ["secret", "put", "OPENAI_API_KEY", "--config", generatedConfigPath],
         { input: `${process.env.OPENAI_API_KEY}\n` },
       );
+
       if (process.env.OPENAI_MODEL) {
         runWrangler(
           ["secret", "put", "OPENAI_MODEL", "--config", generatedConfigPath],
