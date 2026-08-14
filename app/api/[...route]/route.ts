@@ -71,18 +71,9 @@ export async function POST(request: Request, context: RouteContext) {
     if (route[0] === "import") {
       const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
       const startedAt = Date.now();
+      let result;
       try {
-        const result = await upsertJobs(jobs);
-        await recordObservabilityEvent({
-          event: "job_import",
-          status: "success",
-          durationMs: Date.now() - startedAt,
-          itemsSeen: jobs.length,
-          itemsProcessed: result.accepted,
-          errorCount: 0,
-        });
-        await recordObservabilitySnapshot();
-        return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+        result = await upsertJobs(jobs);
       } catch (error) {
         await recordObservabilityEvent({
           event: "job_import",
@@ -94,6 +85,16 @@ export async function POST(request: Request, context: RouteContext) {
         });
         throw error;
       }
+      await recordObservabilityEvent({
+        event: "job_import",
+        status: "success",
+        durationMs: Date.now() - startedAt,
+        itemsSeen: jobs.length,
+        itemsProcessed: result.accepted,
+        errorCount: 0,
+      });
+      await recordObservabilitySnapshot();
+      return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "sync") {
       const result = await syncSources(); return Response.json({ ok: true, result, dashboard: await dashboard(request) });

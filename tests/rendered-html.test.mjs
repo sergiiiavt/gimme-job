@@ -1,5 +1,19 @@
 import assert from "node:assert/strict";
+import { registerHooks } from "node:module";
 import test from "node:test";
+
+const cloudflareWorkersModule = `data:text/javascript,${encodeURIComponent("export const env = globalThis.__gimmejobCloudflareEnv;")}`;
+const cloudflareEnv = {};
+globalThis.__gimmejobCloudflareEnv = cloudflareEnv;
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "cloudflare:workers") {
+      return { shortCircuit: true, url: cloudflareWorkersModule };
+    }
+    return nextResolve(specifier, context);
+  },
+});
 
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
@@ -405,4 +419,172 @@ test("keeps the public site open and protects the private workspace", async () =
   const robotsResponse = await worker.fetch(new Request("https://gimmejob.example/robots.txt"), env, context);
   assert.equal(robotsResponse.status, 200);
   assert.match(await robotsResponse.text(), /Disallow: \/workspace/);
+});
+
+function fakeImportObservabilityDb({ failUpsert = false, failDashboard = false } = {}) {
+  const state = {
+    dashboardQueries: 0,
+    events: [],
+    jobCount: 0,
+    snapshots: 0,
+  };
+
+  return {
+    db: {
+      prepare(sql) {
+        const text = String(sql);
+        const statement = {
+          params: [],
+          bind(...args) {
+            statement.params = args;
+            return statement;
+          },
+          async run() {
+            if (text.includes("INSERT INTO jobs (")) {
+              if (failUpsert) throw new Error("fake upsert failure");
+              state.jobCount += 1;
+            }
+
+            if (text.includes("INSERT INTO observability_events")) {
+              const [event, status, , , , , itemsSeen, itemsProcessed, errorCount] = statement.params;
+              state.events.push({ event, status, itemsSeen, itemsProcessed, errorCount });
+            }
+
+            if (text.includes("INSERT INTO observability_snapshots")) {
+              state.snapshots += 1;
+            }
+
+            return { success: true };
+          },
+          async first() {
+            if (text.includes("SELECT COUNT(*) AS count FROM jobs")) {
+              return { count: state.jobCount };
+            }
+
+            if (text.includes("AS total_jobs") && text.includes("FROM jobs")) {
+              return {
+                total_jobs: state.jobCount,
+                remote_jobs: 0,
+                reservation_jobs: 0,
+              };
+            }
+
+            if (text.includes("AS analyzed_jobs") && text.includes("FROM analyses")) {
+              return {
+                analyzed_jobs: 0,
+                strong_jobs: 0,
+                possible_jobs: 0,
+                weak_jobs: 0,
+                rejected_jobs: 0,
+              };
+            }
+
+            if (failDashboard && text.includes("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC")) {
+              state.dashboardQueries += 1;
+              throw new Error("fake dashboard failure");
+            }
+
+            return null;
+          },
+          async all() {
+            if (failDashboard && text.includes("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC")) {
+              state.dashboardQueries += 1;
+              throw new Error("fake dashboard failure");
+            }
+
+            return { results: [] };
+          },
+        };
+
+        return statement;
+      },
+    },
+    state,
+  };
+}
+
+test("records only job_import success when dashboard fails after import", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("import-observability-success-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const context = { waitUntil() {}, passThroughOnException() {} };
+  const { db, state } = fakeImportObservabilityDb({ failDashboard: true });
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  const authorization = `Basic ${Buffer.from("gimmejob:0123456789abcdef").toString("base64")}`;
+
+  const response = await worker.fetch(
+    new Request("https://gimmejob.example/api/import", {
+      method: "POST",
+      headers: {
+        authorization,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        jobs: [{ title: "QA Engineer", company: "Acme" }],
+      }),
+    }),
+    {
+      APP_PASSWORD: "0123456789abcdef",
+      DB: db,
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
+    context,
+  );
+
+  assert.equal(response.status, 500);
+  assert.match((await response.json()).error ?? "", /fake dashboard failure/i);
+
+  const importEvents = state.events.filter((entry) => entry.event === "job_import");
+  assert.equal(importEvents.length, 1);
+  assert.equal(importEvents[0].status, "success");
+  assert.equal(importEvents[0].itemsSeen, 1);
+  assert.equal(importEvents[0].itemsProcessed, 1);
+  assert.equal(importEvents[0].errorCount, 0);
+  assert.equal(importEvents.some((entry) => entry.status === "failure"), false);
+  assert.equal(state.snapshots, 1);
+  assert.equal(state.dashboardQueries, 1);
+});
+
+test("records only job_import failure when upsert fails", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("import-observability-failure-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const context = { waitUntil() {}, passThroughOnException() {} };
+  const { db, state } = fakeImportObservabilityDb({ failUpsert: true });
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  const authorization = `Basic ${Buffer.from("gimmejob:0123456789abcdef").toString("base64")}`;
+
+  const response = await worker.fetch(
+    new Request("https://gimmejob.example/api/import", {
+      method: "POST",
+      headers: {
+        authorization,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        jobs: [{ title: "QA Engineer", company: "Acme" }],
+      }),
+    }),
+    {
+      APP_PASSWORD: "0123456789abcdef",
+      DB: db,
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
+    context,
+  );
+
+  assert.equal(response.status, 500);
+  assert.match((await response.json()).error ?? "", /fake upsert failure/i);
+
+  const importEvents = state.events.filter((entry) => entry.event === "job_import");
+  assert.equal(importEvents.length, 1);
+  assert.equal(importEvents[0].status, "failure");
+  assert.equal(importEvents[0].itemsSeen, 1);
+  assert.equal(importEvents[0].itemsProcessed, null);
+  assert.equal(importEvents[0].errorCount, 1);
+  assert.equal(importEvents.some((entry) => entry.status === "success"), false);
+  assert.equal(state.snapshots, 0);
+  assert.equal(state.dashboardQueries, 0);
 });
