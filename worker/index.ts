@@ -5,6 +5,7 @@ import handler from "vinext/server/app-router-entry";
 interface Env {
   ASSETS: Fetcher;
   APP_PASSWORD?: string;
+  GRAFANA_READ_TOKEN?: string;
   DB: D1Database;
   IMAGES: {
     input(stream: ReadableStream): {
@@ -65,6 +66,16 @@ function hasValidBasicCredentials(request: Request, password: string): boolean {
   );
 }
 
+function hasValidGrafanaToken(request: Request, env: Env): boolean {
+  if (!env.GRAFANA_READ_TOKEN) return false;
+
+  const authorization = request.headers.get("authorization");
+  if (!authorization?.startsWith("Bearer ")) return false;
+
+  const token = authorization.slice("Bearer ".length).trim();
+  return constantTimeEqual(token, env.GRAFANA_READ_TOKEN);
+}
+
 function readCookie(request: Request, name: string): string | null {
   const cookieHeader = request.headers.get("cookie");
   if (!cookieHeader) return null;
@@ -118,6 +129,54 @@ async function hasPrivateAccess(request: Request, env: Env): Promise<boolean> {
   if (!env.APP_PASSWORD) return false;
   if (hasValidBasicCredentials(request, env.APP_PASSWORD)) return true;
   return hasValidSession(request, env.APP_PASSWORD);
+}
+
+function handleObservabilityHealth(request: Request, env: Env): Response {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("Method not allowed.", {
+      status: 405,
+      headers: {
+        allow: "GET, HEAD",
+        "cache-control": "no-store",
+      },
+    });
+  }
+
+  if (!env.GRAFANA_READ_TOKEN) {
+    return Response.json(
+      { error: "Grafana access is not configured." },
+      {
+        status: 503,
+        headers: { "cache-control": "no-store" },
+      },
+    );
+  }
+
+  if (!hasValidGrafanaToken(request, env)) {
+    return Response.json(
+      { error: "Authentication required." },
+      {
+        status: 401,
+        headers: {
+          "cache-control": "no-store",
+          "www-authenticate": "Bearer",
+        },
+      },
+    );
+  }
+
+  return Response.json(
+    {
+      status: "ok",
+      service: "gimmejob",
+      environment: "production",
+    },
+    {
+      headers: {
+        "cache-control": "no-store",
+      },
+    },
+  );
 }
 
 function privateCookie(value: string, maxAge: number): string {
@@ -294,6 +353,11 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === "/api/observability/health") {
+      return handleObservabilityHealth(request, env);
+    }
+
     if (url.pathname === "/workspace/login") return handleLogin(request, env);
     if (url.pathname === "/workspace/logout") {
       return new Response(null, {

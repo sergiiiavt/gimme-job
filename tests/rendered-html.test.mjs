@@ -32,6 +32,62 @@ test("renders development preview metadata", async () => {
   assert.match(await response.text(), developmentPreviewMeta);
 });
 
+test("requires Bearer auth for the Grafana health endpoint", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("grafana-health-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const context = { waitUntil() {}, passThroughOnException() {} };
+  const token = "grafana-read-token";
+
+  const okResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/health", {
+      headers: { authorization: `Bearer ${token}` },
+    }),
+    { APP_PASSWORD: "0123456789abcdef", GRAFANA_READ_TOKEN: token, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(okResponse.status, 200);
+  assert.deepEqual(await okResponse.json(), {
+    status: "ok",
+    service: "gimmejob",
+    environment: "production",
+  });
+  assert.equal(okResponse.headers.get("cache-control"), "no-store");
+
+  const missingAuth = await worker.fetch(new Request("https://gimmejob.example/api/observability/health"),
+    { APP_PASSWORD: "0123456789abcdef", GRAFANA_READ_TOKEN: token, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(missingAuth.status, 401);
+  assert.deepEqual(await missingAuth.json(), { error: "Authentication required." });
+  assert.equal(missingAuth.headers.get("www-authenticate"), "Bearer");
+
+  const wrongAuth = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/health", {
+      headers: { authorization: "Bearer wrong-token" },
+    }),
+    { APP_PASSWORD: "0123456789abcdef", GRAFANA_READ_TOKEN: token, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(wrongAuth.status, 401);
+  assert.deepEqual(await wrongAuth.json(), { error: "Authentication required." });
+
+  const missingSecret = await worker.fetch(new Request("https://gimmejob.example/api/observability/health"),
+    { APP_PASSWORD: "0123456789abcdef", ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(missingSecret.status, 503);
+  assert.deepEqual(await missingSecret.json(), { error: "Grafana access is not configured." });
+
+  const methodNotAllowed = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/health", { method: "POST" }),
+    { APP_PASSWORD: "0123456789abcdef", GRAFANA_READ_TOKEN: token, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(methodNotAllowed.status, 405);
+  assert.equal(methodNotAllowed.headers.get("allow"), "GET, HEAD");
+});
+
 test("keeps the public site open and protects the private workspace", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("access-test", `${process.pid}-${Date.now()}`);
