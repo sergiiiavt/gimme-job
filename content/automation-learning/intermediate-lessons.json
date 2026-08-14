@@ -35,7 +35,11 @@
       "exercise": "Grep a suite you work with for direct HTTP calls, raw selectors or environment reads inside test files. Pick the worst offender and push each detail down to the layer where it belongs.",
       "exerciseUk": "Пошукайте у вашому наборі прямі HTTP-виклики, сирі селектори чи звернення до змінних середовища у файлах тестів. Візьміть найгірший випадок і перенесіть кожну деталь на рівень, якому вона належить.",
       "tags": ["architecture", "layers", "design"],
-      "sourceIds": ["qa-automation-python-repo", "fowler-test-pyramid"]
+      "sourceIds": ["qa-automation-python-repo", "fowler-test-pyramid"],
+      "repoRefs": [
+        { "label": "HTTP transport (bottom layer)", "path": "framework/http/client.py", "kind": "implementation" },
+        { "label": "Root fixtures wiring the layers together", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-page-objects",
@@ -72,7 +76,11 @@
       "exercise": "Find a page object in your codebase that resolves an already-found element handle once (Playwright's ElementHandle, Selenium's WebElement) instead of using a live Locator/query. Replace it with a proper Locator — as a property or stored directly, whichever reads better — and confirm the test survives a re-render that would have broken the old version. Then add a readiness locator and remove whatever wait the tests were using to compensate.",
       "exerciseUk": "Знайдіть у вашому коді об'єкт сторінки, який один раз резолвить уже знайдений дескриптор елемента (ElementHandle у Playwright, WebElement у Selenium) замість живого Locator/запиту. Замініть його на нормальний Locator — як властивість або збережений напряму, як зручніше читати — і переконайтеся, що тест переживає перемальовування, яке зламало б стару версію. Потім додайте локатор готовності й приберіть очікування, яким тести це компенсували.",
       "tags": ["page-object", "architecture", "playwright"],
-      "sourceIds": ["playwright-locators", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-locators", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Page object base", "path": "framework/web/base_page.py", "kind": "implementation" },
+        { "label": "Concrete page objects", "path": "framework/web/pages.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-component-objects",
@@ -109,7 +117,11 @@
       "exercise": "Find a page object with a method name containing an ordinal such as first or third. Extract the repeated block into a component class and rewrite the tests to address it by its visible content instead.",
       "exerciseUk": "Знайдіть об'єкт сторінки з методом, у назві якого є порядковий номер на кшталт first чи third. Винесіть повторюваний блок у компонентний клас і перепишіть тести так, щоб звертатися до нього за видимим вмістом.",
       "tags": ["page-object", "components", "responsive"],
-      "sourceIds": ["playwright-locators", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-locators", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Component + page objects", "path": "framework/web/pages.py", "kind": "implementation" },
+        { "label": "Page object base", "path": "framework/web/base_page.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-naming-and-aaa",
@@ -146,7 +158,11 @@
       "exercise": "Take ten test names from a suite you work with and rewrite any that do not state an expected outcome. For each one you cannot rewrite, read the body and decide whether the test actually knows what it is checking.",
       "exerciseUk": "Візьміть десять назв тестів із вашого набору й перепишіть ті, що не вказують очікуваного результату. Для кожної, яку не вдається переписати, прочитайте тіло й вирішіть, чи справді тест знає, що перевіряє.",
       "tags": ["naming", "readability", "design"],
-      "sourceIds": ["pytest-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "AAA-shaped service test", "path": "tests/services/test_cart_flow.py", "kind": "usage" },
+        { "label": "AAA-shaped web test", "path": "tests/web/test_shopping_flow.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-http-client",
@@ -185,7 +201,11 @@
       "exercise": "Add an expected-status parameter to a client you maintain, then deliberately break an endpoint and check that the failure message contains the method, URL, both statuses and the response body.",
       "exerciseUk": "Додайте параметр очікуваного статусу до клієнта, який ви підтримуєте, потім свідомо зламайте ендпоінт і перевірте, що повідомлення про падіння містить метод, URL, обидва статуси й тіло відповіді.",
       "tags": ["api", "http", "retries", "reporting"],
-      "sourceIds": ["httpx-docs", "qa-automation-python-repo"]
+      "sourceIds": ["httpx-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "HTTP client implementation", "path": "framework/http/client.py", "kind": "implementation" },
+        { "label": "Retry-exhaustion regression test", "path": "tests/framework/test_http_client.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-service-objects",
@@ -222,7 +242,11 @@
       "exercise": "Add a service object for one endpoint of an API you work with, including both method styles, then write one happy-path test and one boundary test that each use the appropriate style.",
       "exerciseUk": "Додайте сервісний об'єкт для одного ендпоінта вашого API з обома стилями методів, потім напишіть один позитивний тест і один межовий, кожен у відповідному стилі.",
       "tags": ["api", "service-object", "architecture"],
-      "sourceIds": ["qa-automation-python-repo", "httpx-docs"]
+      "sourceIds": ["qa-automation-python-repo", "httpx-docs"],
+      "repoRefs": [
+        { "label": "Service object implementation", "path": "framework/api/shop.py", "kind": "implementation" },
+        { "label": "Used by", "path": "tests/services/test_cart_flow.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-response-validation",
@@ -259,7 +283,11 @@
       "exercise": "Add a strict model for one API response in a suite you work with, then add a field to the server's response and confirm the test fails. Decide whether forbidding extra fields is right for that API and write down why.",
       "exerciseUk": "Додайте сувору модель для однієї відповіді API у вашому наборі, потім додайте поле до серверної відповіді й переконайтеся, що тест падає. Вирішіть, чи підходить заборона зайвих полів для цього API, і запишіть чому.",
       "tags": ["api", "validation", "pydantic", "json-schema"],
-      "sourceIds": ["pydantic-docs", "openapi-spec", "qa-automation-python-repo"]
+      "sourceIds": ["pydantic-docs", "openapi-spec", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Response models", "path": "framework/api/models.py", "kind": "implementation" },
+        { "label": "Drift/contract tests", "path": "tests/services/test_contract_and_properties.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-api-test-design-checklist",
@@ -296,7 +324,12 @@
       "exercise": "Apply the full checklist to one endpoint you own. Count how many tests you end up with, and how many of them fail — the malformed-input and authorization rows find defects surprisingly often.",
       "exerciseUk": "Застосуйте повний чекліст до одного вашого ендпоінта. Порахуйте, скільки тестів вийшло і скільки з них падає — рядки про некоректні дані та авторизацію напрочуд часто знаходять дефекти.",
       "tags": ["api", "test-design", "security", "boundary-values"],
-      "sourceIds": ["owasp-api-top-10", "openapi-spec", "qa-automation-python-repo"]
+      "sourceIds": ["owasp-api-top-10", "openapi-spec", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Auth test design", "path": "tests/services/test_auth.py", "kind": "usage" },
+        { "label": "Cart flow test design", "path": "tests/services/test_cart_flow.py", "kind": "usage" },
+        { "label": "Product test design", "path": "tests/services/test_products.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-auto-waiting",
@@ -333,7 +366,11 @@
       "exercise": "Search a UI suite for sleep calls. For each one, work out which state it was waiting for and replace it with a retrying assertion on that state. Where no such state exists, write down what you would ask developers to expose.",
       "exerciseUk": "Знайдіть у UI-наборі виклики sleep. Для кожного з'ясуйте, якого стану він чекав, і замініть його твердженням із повторами щодо цього стану. Там, де такого стану немає, запишіть, що ви попросили б у розробників.",
       "tags": ["playwright", "waiting", "flakiness", "ui"],
-      "sourceIds": ["playwright-assertions", "playwright-python", "fowler-eradicating-flaky"]
+      "sourceIds": ["playwright-assertions", "playwright-python", "fowler-eradicating-flaky"],
+      "repoRefs": [
+        { "label": "Wait-until-ready helper", "path": "framework/web/base_page.py", "kind": "implementation" },
+        { "label": "Used by", "path": "tests/web/test_shopping_flow.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-locator-strategy",
@@ -370,7 +407,11 @@
       "exercise": "Rewrite one test using only role-based locators. List the elements you could not reach — each of those is an accessibility finding worth raising, not just a testing inconvenience.",
       "exerciseUk": "Перепишіть один тест, використовуючи лише локатори за роллю. Випишіть елементи, до яких не вдалося дістатися — кожен із них є знахідкою з доступності, вартою обговорення, а не просто незручністю для тестування.",
       "tags": ["playwright", "locators", "accessibility", "ui"],
-      "sourceIds": ["playwright-locators", "deque-axe-core"]
+      "sourceIds": ["playwright-locators", "deque-axe-core"],
+      "repoRefs": [
+        { "label": "Locator helpers (testid/role)", "path": "framework/web/base_page.py", "kind": "implementation" },
+        { "label": "Locators in use", "path": "framework/web/pages.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-storage-state-and-seeding",
@@ -409,7 +450,11 @@
       "exercise": "Convert a UI suite that logs in per test to shared signed-in state, and measure the runtime before and after. Then move one test's setup from clicking to an API call and measure again.",
       "exerciseUk": "Переведіть UI-набір, що входить у кожному тесті, на спільний збережений стан і виміряйте час до і після. Потім перенесіть підготовку одного тесту з кліків на виклик API і виміряйте ще раз.",
       "tags": ["playwright", "authentication", "speed", "test-data"],
-      "sourceIds": ["playwright-auth", "playwright-python", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-auth", "playwright-python", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Per-worker storage-state fixture", "path": "tests/web/conftest.py", "kind": "implementation" },
+        { "label": "Login test", "path": "tests/web/test_login.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-network-interception",
@@ -446,7 +491,11 @@
       "exercise": "Pick a screen you know and write three tests against it: the API returning an empty collection, a server error, and a two-second delay. At least one will probably reveal a genuine gap in the interface.",
       "exerciseUk": "Оберіть знайомий екран і напишіть до нього три тести: API повертає порожню колекцію, серверну помилку та відповідає із затримкою у дві секунди. Щонайменше один, найімовірніше, виявить справжню прогалину в інтерфейсі.",
       "tags": ["playwright", "network", "error-handling", "ui"],
-      "sourceIds": ["playwright-network", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-network", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Fault-injection tests", "path": "tests/web/test_shopping_flow.py", "kind": "usage" },
+        { "label": "Web layer notes", "path": "docs/04-web.md" }
+      ]
     }
   ]
 }

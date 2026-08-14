@@ -85,6 +85,18 @@ for (const lesson of lessons) {
   for (const sourceId of lesson.sourceIds) {
     assert.ok(sourceIds.has(sourceId), `Unknown source ${sourceId} in ${lesson.id}`);
   }
+
+  if (lesson.repoRefs !== undefined) {
+    assert.ok(lesson.repoRefs.length > 0, `repoRefs, if present, must not be an empty array for ${lesson.id}`);
+    for (const ref of lesson.repoRefs) {
+      assert.ok(ref.label?.trim(), `Missing repoRef label in ${lesson.id}`);
+      assert.ok(ref.path?.trim(), `Missing repoRef path in ${lesson.id}`);
+      assert.ok(!ref.path.startsWith("/") && !/^https?:\/\//.test(ref.path), `repoRef path must be a relative repo path, not a URL: ${ref.path} in ${lesson.id}`);
+      if (ref.kind !== undefined) {
+        assert.ok(["implementation", "usage", "ci"].includes(ref.kind), `Invalid repoRef kind ${ref.kind} in ${lesson.id}`);
+      }
+    }
+  }
 }
 
 for (const curriculumModule of modules) {

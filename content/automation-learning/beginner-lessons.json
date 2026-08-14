@@ -35,7 +35,11 @@
       "exercise": "Take any five tests from a suite you know and write down, in one sentence each, the risk they cover. Any test where you cannot name a risk is a candidate for deletion — decide honestly whether you would still write it today.",
       "exerciseUk": "Візьміть будь-які п'ять тестів із відомого вам набору й запишіть одним реченням ризик, який покриває кожен. Будь-який тест, для якого ви не можете назвати ризик, є кандидатом на видалення — чесно вирішіть, чи написали б ви його сьогодні.",
       "tags": ["fundamentals", "strategy", "risk"],
-      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"]
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"],
+      "repoRefs": [
+        { "label": "Project overview", "path": "README.md" },
+        { "label": "Strategy notes", "path": "docs/09-strategy.md" }
+      ]
     },
     {
       "id": "ta-lesson-choosing-the-layer",
@@ -72,7 +76,11 @@
       "exercise": "Find a UI test in a suite you work with that asserts a calculation or a validation rule. Rewrite it as an API test, then decide what — if anything — the UI test should still assert once the rule is covered below.",
       "exerciseUk": "Знайдіть у вашому наборі UI-тест, який перевіряє обчислення або правило валідації. Перепишіть його як API-тест, а потім вирішіть, що саме — якщо взагалі щось — має перевіряти UI-тест після того, як правило покрите нижче.",
       "tags": ["strategy", "test-pyramid", "api", "ui"],
-      "sourceIds": ["fowler-test-pyramid", "qa-automation-python-repo"]
+      "sourceIds": ["fowler-test-pyramid", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Service-layer test", "path": "tests/services/test_cart_flow.py", "kind": "usage" },
+        { "label": "Same flow at the UI layer", "path": "tests/web/test_shopping_flow.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-what-not-to-automate",
@@ -109,7 +117,11 @@
       "exercise": "Build this table for a product you know: every significant feature, scored for probability and impact, with the layer you would cover it at. Include at least one row where the answer is deliberately no automation, and be ready to defend it.",
       "exerciseUk": "Побудуйте таку таблицю для знайомого вам продукту: кожна значуща функціональність, оцінена за ймовірністю та впливом, із зазначенням рівня покриття. Додайте щонайменше один рядок, де відповідь — свідома відмова від автоматизації, і будьте готові її обстояти.",
       "tags": ["strategy", "risk", "planning"],
-      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"]
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests"],
+      "repoRefs": [
+        { "label": "Strategy notes", "path": "docs/09-strategy.md" },
+        { "label": "Visual/accessibility checks", "path": "tests/web/test_accessibility_and_visual.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-pytest-fixtures",
@@ -146,7 +158,11 @@
       "exercise": "Add a print statement to three chained fixtures and run pytest with --setup-show. Draw the construction and teardown order for two tests in a row, and explain why the shared fixture is not rebuilt between them.",
       "exerciseUk": "Додайте print до трьох пов'язаних фікстур і запустіть pytest із --setup-show. Намалюйте порядок створення та прибирання для двох тестів поспіль і поясніть, чому спільна фікстура не перебудовується між ними.",
       "tags": ["pytest", "fixtures", "setup"],
-      "sourceIds": ["pytest-fixtures", "pytest-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-fixtures", "pytest-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "implementation" },
+        { "label": "Service-layer fixtures", "path": "tests/services/conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-fixture-scope",
@@ -183,7 +199,11 @@
       "exercise": "Take a suite that passes sequentially and run it with -n 4 several times. If nothing fails, deliberately move a mutable fixture to session scope and run again until you reproduce a failure that moves between tests.",
       "exerciseUk": "Візьміть набір, який проходить послідовно, і запустіть його з -n 4 кілька разів. Якщо нічого не падає, свідомо переведіть змінну фікстуру в область session і запускайте, доки не відтворите падіння, що переміщується між тестами.",
       "tags": ["pytest", "fixtures", "scope", "parallel"],
-      "sourceIds": ["pytest-fixtures", "pytest-xdist", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-fixtures", "pytest-xdist", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "implementation" },
+        { "label": "Web-layer fixtures", "path": "tests/web/conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-parametrize",
@@ -220,7 +240,11 @@
       "exercise": "Find three near-identical tests in a suite and merge them into one parametrized table. Then add the boundary rows that were missing, and check whether any of the new rows fail.",
       "exerciseUk": "Знайдіть три майже однакові тести й об'єднайте їх в одну параметризовану таблицю. Потім додайте межові рядки, яких бракувало, і перевірте, чи не падає якийсь із нових рядків.",
       "tags": ["pytest", "parametrize", "boundary-values"],
-      "sourceIds": ["pytest-parametrize", "pytest-docs"]
+      "sourceIds": ["pytest-parametrize", "pytest-docs"],
+      "repoRefs": [
+        { "label": "Parametrized product tests", "path": "tests/services/test_products.py", "kind": "usage" },
+        { "label": "Parametrized auth tests", "path": "tests/services/test_auth.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-markers-skip-xfail",
@@ -259,7 +283,11 @@
       "exercise": "Register a marker in your configuration with strict-markers enabled, then deliberately apply an unregistered marker like @pytest.mark.smoek to a test and confirm collection fails immediately. Separately, run pytest -m <a-misspelled-marker> and notice it exits clean having selected zero tests — then add a guard (in the CI step or a conftest hook) that fails the run whenever the selected count is zero. Finally, convert one commented-out test into a strict xfail with a ticket reference.",
       "exerciseUk": "Зареєструйте маркер у конфігурації з увімкненим strict-markers, потім свідомо застосуйте до тесту незареєстрований маркер на кшталт @pytest.mark.smoek і переконайтеся, що збір одразу падає. Окремо запустіть pytest -m <помилковий-маркер> і зауважте, що він завершується чисто, обравши нуль тестів — тоді додайте захист (у кроці CI чи хуку conftest), який провалює запуск, коли обрана кількість дорівнює нулю. Насамкінець перетворіть один закоментований тест на суворий xfail із посиланням на задачу.",
       "tags": ["pytest", "markers", "xfail"],
-      "sourceIds": ["pytest-markers", "pytest-skipping"]
+      "sourceIds": ["pytest-markers", "pytest-skipping"],
+      "repoRefs": [
+        { "label": "Marker declarations", "path": "pyproject.toml", "kind": "implementation" },
+        { "label": "xfail example", "path": "tests/services/test_auth.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-project-layout-conftest",
@@ -296,7 +324,13 @@
       "exercise": "In a suite you work with, try running only the API tests on a machine or container with no browser installed. If it fails to collect, find the import that caused it and move it inside the fixture that needs it.",
       "exerciseUk": "У вашому наборі спробуйте запустити лише API-тести на машині чи в контейнері без браузера. Якщо збирання падає, знайдіть імпорт, що це спричинив, і перенесіть його всередину фікстури, якій він потрібен.",
       "tags": ["structure", "conftest", "pytest"],
-      "sourceIds": ["pytest-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Root conftest", "path": "conftest.py", "kind": "implementation" },
+        { "label": "Services conftest", "path": "tests/services/conftest.py", "kind": "usage" },
+        { "label": "Web conftest", "path": "tests/web/conftest.py", "kind": "usage" },
+        { "label": "Mobile conftest", "path": "tests/mobile/conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-typed-configuration",
@@ -335,7 +369,12 @@
       "exercise": "Search a suite you work with for direct environment reads. Replace them with a single typed settings object, then set an invalid value on purpose and confirm the run fails immediately with a message naming the field. Then prove the precedence itself: set the same setting via an environment variable and via a lower-priority source (a config file merged in as constructor kwargs, for example) at the same time, and assert the environment variable wins — check your settings library's default source order, because it may not be what you assumed.",
       "exerciseUk": "Знайдіть у вашому наборі прямі звернення до змінних середовища. Замініть їх єдиним типізованим об'єктом налаштувань, потім свідомо задайте некоректне значення й переконайтеся, що запуск одразу падає з повідомленням, яке називає поле. Потім доведіть сам пріоритет: задайте те саме налаштування одночасно через змінну середовища і через джерело нижчого пріоритету (наприклад, файл конфігурації, переданий як аргументи конструктора), і переконайтеся, що перемагає змінна середовища — перевірте типовий порядок джерел вашої бібліотеки налаштувань, бо він може відрізнятися від очікуваного.",
       "tags": ["configuration", "pydantic", "environments"],
-      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Settings implementation", "path": "framework/config.py", "kind": "implementation" },
+        { "label": "Per-environment YAML", "path": "config/local.yaml", "kind": "usage" },
+        { "label": "Precedence unit tests", "path": "tests/framework/test_config.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-reproducible-run-settings",
@@ -372,7 +411,12 @@
       "exercise": "Turn on warnings-as-errors in a suite you work with and run it. Fix or explicitly exempt each warning that appears, writing the reason next to the exemption, and note how many were real future breakages.",
       "exerciseUk": "Увімкніть режим «попередження як помилки» у вашому наборі й запустіть його. Виправте або явно додайте виняток для кожного попередження, записавши причину поруч, і зауважте, скільки з них були реальними майбутніми поломками.",
       "tags": ["configuration", "pytest", "ci"],
-      "sourceIds": ["pytest-docs", "pytest-markers", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-docs", "pytest-markers", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "pytest configuration", "path": "pyproject.toml", "kind": "implementation" },
+        { "label": "Env var template", "path": ".env.example", "kind": "usage" },
+        { "label": "CI execution", "path": ".github/workflows/ci.yml", "kind": "ci" }
+      ]
     }
   ]
 }

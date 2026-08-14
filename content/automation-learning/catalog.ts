@@ -24,6 +24,12 @@ export const automationCurriculum = {
     prevalence: "Module level reflects typical learning order rather than difficulty in isolation - later modules assume earlier ones. The Advanced and Expert modules cover the problems that appear once a suite runs in parallel and has to be trusted by a team.",
     media: "This path currently ships as text and code samples only; diagrams can be added later using the same media schema as the interview catalog."
   },
+  referenceImplementation: {
+    repo: "sergiiiavt/qa-automation-python",
+    branch: "main",
+    verifiedCommit: "f9ada16fd8eca02310a1d09d03034bb57895d985",
+    verifiedAt: "2026-08-14",
+  },
   taxonomy,
   sources,
   lessons,

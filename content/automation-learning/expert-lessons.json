@@ -35,7 +35,11 @@
       "exercise": "Point a schema-driven tool at an API you work with and run it once. Record every finding, then classify each as a real defect, a specification gap, or an artifact of the tool.",
       "exerciseUk": "Спрямуйте інструмент, керований схемою, на ваше API й запустіть один раз. Запишіть кожну знахідку, потім класифікуйте її як справжній дефект, прогалину специфікації або артефакт інструмента.",
       "tags": ["contract-testing", "openapi", "api"],
-      "sourceIds": ["schemathesis-docs", "openapi-spec", "qa-automation-python-repo"]
+      "sourceIds": ["schemathesis-docs", "openapi-spec", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Contract tests", "path": "tests/services/test_contract_and_properties.py", "kind": "usage" },
+        { "label": "OpenAPI schema source", "path": "sut/app.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-property-based-testing",
@@ -72,7 +76,10 @@
       "exercise": "Write one property for a feature you know that is not already covered by an example test. Break the implementation deliberately and confirm the tool finds and shrinks a counterexample.",
       "exerciseUk": "Напишіть одну властивість для знайомої функціональності, ще не покритої тестом на прикладі. Свідомо зламайте реалізацію й переконайтеся, що інструмент знаходить і зводить контрприклад.",
       "tags": ["property-based", "hypothesis", "invariants"],
-      "sourceIds": ["hypothesis-docs", "qa-automation-python-repo"]
+      "sourceIds": ["hypothesis-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Property-based tests", "path": "tests/services/test_contract_and_properties.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-triaging-generated-findings",
@@ -109,7 +116,11 @@
       "exercise": "Run a schema-driven tool against an API you own and triage every finding into the three categories. For anything you suppress, write the reason in the code and have a colleague check the reasoning holds.",
       "exerciseUk": "Запустіть інструмент, керований схемою, на вашому API й розберіть кожну знахідку за трьома категоріями. Для всього, що придушуєте, запишіть причину в коді й попросіть колегу перевірити її обґрунтованість.",
       "tags": ["contract-testing", "triage", "process"],
-      "sourceIds": ["schemathesis-docs", "hypothesis-docs", "qa-automation-python-repo"]
+      "sourceIds": ["schemathesis-docs", "hypothesis-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Contract/property tests", "path": "tests/services/test_contract_and_properties.py", "kind": "usage" },
+        { "label": "Services notes", "path": "docs/03-services.md" }
+      ]
     },
     {
       "id": "ta-lesson-risk-based-prioritisation",
@@ -146,7 +157,10 @@
       "exercise": "Build this table for a product you work on, including at least one row where you recommend no automation. Present it to someone who disagrees and see whether the scoring survives the conversation.",
       "exerciseUk": "Побудуйте цю таблицю для вашого продукту, включно щонайменше з одним рядком, де ви радите не автоматизувати. Покажіть її тому, хто не погоджується, і подивіться, чи витримає оцінювання цю розмову.",
       "tags": ["strategy", "risk", "planning"],
-      "sourceIds": ["fowler-test-pyramid", "owasp-api-top-10"]
+      "sourceIds": ["fowler-test-pyramid", "owasp-api-top-10"],
+      "repoRefs": [
+        { "label": "Strategy notes", "path": "docs/09-strategy.md" }
+      ]
     },
     {
       "id": "ta-lesson-metrics-that-matter",
@@ -183,7 +197,12 @@
       "exercise": "Draft the monthly report you would send about a suite you work with. Include no test counts and no coverage percentage, and check whether you can still make the case convincingly.",
       "exerciseUk": "Складіть щомісячний звіт про ваш набір тестів. Не включайте кількість тестів і відсоток покриття й перевірте, чи зможете ви й далі переконливо обґрунтувати цінність.",
       "tags": ["strategy", "metrics", "communication"],
-      "sourceIds": ["google-flaky-tests", "fowler-test-pyramid"]
+      "sourceIds": ["google-flaky-tests", "fowler-test-pyramid"],
+      "repoRefs": [
+        { "label": "Project overview", "path": "README.md" },
+        { "label": "CI pipeline", "path": ".github/workflows/ci.yml", "kind": "ci" },
+        { "label": "Strategy notes", "path": "docs/09-strategy.md" }
+      ]
     },
     {
       "id": "ta-lesson-building-a-programme",
@@ -220,7 +239,12 @@
       "exercise": "Write a one-page proposal for automating a real project: current cost, proposed layers, a twelve-week plan, the metrics you will report, and what you will deliberately not automate.",
       "exerciseUk": "Напишіть односторінкову пропозицію щодо автоматизації реального проєкту: поточна вартість, запропоновані рівні, дванадцятитижневий план, показники для звітності та те, що ви свідомо не автоматизуватимете.",
       "tags": ["strategy", "planning", "leadership"],
-      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests", "qa-automation-python-repo"]
+      "sourceIds": ["fowler-test-pyramid", "google-flaky-tests", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Project overview", "path": "README.md" },
+        { "label": "Framework config (entry point)", "path": "framework/config.py", "kind": "implementation" },
+        { "label": "CI pipeline", "path": ".github/workflows/ci.yml", "kind": "ci" }
+      ]
     }
   ]
 }
