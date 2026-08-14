@@ -22,6 +22,7 @@ function requiredEnvironment(name) {
 function runWrangler(args, options = {}) {
   const capture = options.capture === true;
   const hasInput = typeof options.input === "string";
+
   const result = spawnSync(process.execPath, [wranglerCli, ...args], {
     cwd: projectRoot,
     encoding: "utf8",
@@ -41,6 +42,7 @@ function runWrangler(args, options = {}) {
   });
 
   if (result.error) throw result.error;
+
   if (result.status !== 0) {
     throw new Error(`Wrangler failed: ${args.join(" ")}`);
   }
@@ -51,17 +53,24 @@ function runWrangler(args, options = {}) {
 function parseDatabaseList(output) {
   const firstBracket = output.indexOf("[");
   const lastBracket = output.lastIndexOf("]");
+
   if (firstBracket < 0 || lastBracket < firstBracket) {
     throw new Error("Wrangler did not return a D1 database list as JSON.");
   }
 
   const value = JSON.parse(output.slice(firstBracket, lastBracket + 1));
-  if (!Array.isArray(value)) throw new Error("Unexpected D1 database list response.");
+
+  if (!Array.isArray(value)) {
+    throw new Error("Unexpected D1 database list response.");
+  }
+
   return value;
 }
 
 function listDatabases() {
-  return parseDatabaseList(runWrangler(["d1", "list", "--json"], { capture: true }));
+  return parseDatabaseList(
+    runWrangler(["d1", "list", "--json"], { capture: true }),
+  );
 }
 
 function findDatabase(databases) {
@@ -84,10 +93,14 @@ async function ensureBuildArtifact() {
 }
 
 async function writeDeployConfig(id) {
-  const deployConfig = JSON.parse(await readFile(artifactConfigPath, "utf8"));
+  const deployConfig = JSON.parse(
+    await readFile(artifactConfigPath, "utf8"),
+  );
+
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
+
   deployConfig.d1_databases = [
     {
       binding: "DB",
@@ -97,9 +110,13 @@ async function writeDeployConfig(id) {
     },
   ];
 
-  await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, {
-    mode: 0o600,
-  });
+  await writeFile(
+    generatedConfigPath,
+    `${JSON.stringify(deployConfig, null, 2)}\n`,
+    {
+      mode: 0o600,
+    },
+  );
 }
 
 async function validateConfig() {
@@ -107,7 +124,12 @@ async function validateConfig() {
   await writeDeployConfig(dryRunDatabaseId);
 
   try {
-    runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath]);
+    runWrangler([
+      "deploy",
+      "--dry-run",
+      "--config",
+      generatedConfigPath,
+    ]);
   } finally {
     await rm(generatedConfigPath, { force: true });
   }
@@ -115,7 +137,11 @@ async function validateConfig() {
 
 async function importCurrentJobs(appPassword) {
   const jobs = await fetchDouJobs();
-  const authorization = Buffer.from(`gimmejob:${appPassword}`, "utf8").toString("base64");
+
+  const authorization = Buffer.from(
+    `gimmejob:${appPassword}`,
+    "utf8",
+  ).toString("base64");
 
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     const response = await fetch(`${productionUrl}/api/import`, {
@@ -130,19 +156,29 @@ async function importCurrentJobs(appPassword) {
 
     if (response.ok) {
       const payload = await response.json();
-      console.log(`Imported ${payload.result?.accepted ?? jobs.length} current jobs into D1.`);
+
+      console.log(
+        `Imported ${payload.result?.accepted ?? jobs.length} current jobs into D1.`,
+      );
+
       return;
     }
 
     if (![401, 503].includes(response.status) || attempt === 4) {
-      throw new Error(`Cloud job import returned HTTP ${response.status}.`);
+      throw new Error(
+        `Cloud job import returned HTTP ${response.status}.`,
+      );
     }
+
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
 }
 
 async function main() {
-  await mkdir(path.join(wranglerRuntimePath, "xdg-config"), { recursive: true });
+  await mkdir(
+    path.join(wranglerRuntimePath, "xdg-config"),
+    { recursive: true },
+  );
 
   if (process.argv.includes("--dry-run")) {
     await validateConfig();
@@ -150,32 +186,58 @@ async function main() {
   }
 
   if (process.env.GITHUB_ACTIONS !== "true") {
-    throw new Error("Production deployment is restricted to the GitHub Actions → Cloudflare workflow.");
+    throw new Error(
+      "Production deployment is restricted to the GitHub Actions → Cloudflare workflow.",
+    );
   }
 
   requiredEnvironment("CLOUDFLARE_API_TOKEN");
   requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
+
   const appPassword = requiredEnvironment("APP_PASSWORD");
+  const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
+
   if (appPassword.length < 16) {
-    throw new Error("APP_PASSWORD must contain at least 16 characters.");
+    throw new Error(
+      "APP_PASSWORD must contain at least 16 characters.",
+    );
+  }
+
+  if (grafanaReadToken.length < 32) {
+    throw new Error(
+      "GRAFANA_READ_TOKEN must contain at least 32 characters.",
+    );
   }
 
   await ensureBuildArtifact();
 
   let database = findDatabase(listDatabases());
+
   if (!database) {
     console.log(`Creating D1 database ${databaseName}...`);
-    runWrangler(["d1", "create", databaseName]);
+
+    runWrangler([
+      "d1",
+      "create",
+      databaseName,
+    ]);
+
     database = findDatabase(listDatabases());
   }
 
   const id = databaseId(database);
-  if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
+
+  if (!id) {
+    throw new Error(
+      `Could not resolve the ID of D1 database ${databaseName}.`,
+    );
+  }
 
   await writeDeployConfig(id);
 
   try {
     console.log("Applying D1 migrations...");
+
     runWrangler([
       "d1",
       "migrations",
@@ -187,29 +249,77 @@ async function main() {
     ]);
 
     console.log("Deploying GimmeJob to Cloudflare Workers...");
-    runWrangler(["deploy", "--config", generatedConfigPath]);
+
+    runWrangler([
+      "deploy",
+      "--config",
+      generatedConfigPath,
+    ]);
 
     console.log("Updating the private app password...");
+
     runWrangler(
-      ["secret", "put", "APP_PASSWORD", "--config", generatedConfigPath],
-      { input: `${appPassword}\n` },
+      [
+        "secret",
+        "put",
+        "APP_PASSWORD",
+        "--config",
+        generatedConfigPath,
+      ],
+      {
+        input: `${appPassword}\n`,
+      },
+    );
+
+    console.log("Updating the Grafana read token...");
+
+    runWrangler(
+      [
+        "secret",
+        "put",
+        "GRAFANA_READ_TOKEN",
+        "--config",
+        generatedConfigPath,
+      ],
+      {
+        input: `${grafanaReadToken}\n`,
+      },
     );
 
     if (process.env.OPENAI_API_KEY) {
       console.log("Updating the OpenAI API key...");
+
       runWrangler(
-        ["secret", "put", "OPENAI_API_KEY", "--config", generatedConfigPath],
-        { input: `${process.env.OPENAI_API_KEY}\n` },
+        [
+          "secret",
+          "put",
+          "OPENAI_API_KEY",
+          "--config",
+          generatedConfigPath,
+        ],
+        {
+          input: `${process.env.OPENAI_API_KEY}\n`,
+        },
       );
+
       if (process.env.OPENAI_MODEL) {
         runWrangler(
-          ["secret", "put", "OPENAI_MODEL", "--config", generatedConfigPath],
-          { input: `${process.env.OPENAI_MODEL}\n` },
+          [
+            "secret",
+            "put",
+            "OPENAI_MODEL",
+            "--config",
+            generatedConfigPath,
+          ],
+          {
+            input: `${process.env.OPENAI_MODEL}\n`,
+          },
         );
       }
     }
 
     console.log("Importing the current DOU job feed...");
+
     await importCurrentJobs(appPassword);
 
     console.log("Cloudflare deployment completed.");
@@ -219,6 +329,11 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(
+    error instanceof Error
+      ? error.message
+      : String(error),
+  );
+
   process.exitCode = 1;
 });
