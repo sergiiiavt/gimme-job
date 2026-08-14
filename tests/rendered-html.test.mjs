@@ -88,6 +88,216 @@ test("requires Bearer auth for the Grafana health endpoint", async () => {
   assert.equal(methodNotAllowed.headers.get("allow"), "GET, HEAD");
 });
 
+function fakeObservabilityDb({ fail = false } = {}) {
+  return {
+    prepare(sql) {
+      if (fail) {
+        return {
+          bind() { return this; },
+          async first() { throw new Error("fake summary failure"); },
+          async all() { throw new Error("fake summary failure"); },
+        };
+      }
+
+      const statement = {
+        bind() { return statement; },
+        async first() {
+          if (sql.includes("FROM observability_events")) {
+            return {
+              operations: 5,
+              failures: 1,
+              degraded: 2,
+              errors: 4,
+              avg_duration_ms: 123.5,
+              last_error_at: "2026-08-14T10:00:00.000Z",
+              last_successful_sync_at: "2026-08-15T00:00:00.000Z",
+            };
+          }
+
+          if (sql.includes("FROM observability_snapshots") && sql.includes("ORDER BY occurred_at DESC")) {
+            return {
+              occurred_at: "2026-08-15T00:00:00.000Z",
+              total_jobs: 350,
+              remote_jobs: 240,
+              reservation_jobs: 20,
+              analyzed_jobs: 300,
+              strong_jobs: 80,
+              possible_jobs: 100,
+              weak_jobs: 70,
+              rejected_jobs: 50,
+            };
+          }
+
+          return null;
+        },
+        async all() {
+          if (sql.includes("event <> 'job_source_sync'")) {
+            return {
+              results: [
+                { day: "2026-08-14", event: "job_sync", status: "success", operations: 2, error_count: 0, avg_duration_ms: 1200.5, items_processed: 240 },
+              ],
+            };
+          }
+
+          if (sql.includes("event = 'job_source_sync'")) {
+            return {
+              results: [
+                { day: "2026-08-14", source: "workua:workua-qa", status: "success", operations: 2, error_count: 0, avg_duration_ms: 4100, items_processed: 54 },
+              ],
+            };
+          }
+
+          if (sql.includes("FROM observability_snapshots s")) {
+            return {
+              results: [
+                {
+                  occurred_at: "2026-08-14T20:30:00.000Z",
+                  total_jobs: 349,
+                  remote_jobs: 239,
+                  reservation_jobs: 19,
+                  analyzed_jobs: 299,
+                  strong_jobs: 79,
+                  possible_jobs: 99,
+                  weak_jobs: 71,
+                  rejected_jobs: 50,
+                },
+                {
+                  occurred_at: "2026-08-15T00:00:00.000Z",
+                  total_jobs: 350,
+                  remote_jobs: 240,
+                  reservation_jobs: 20,
+                  analyzed_jobs: 300,
+                  strong_jobs: 80,
+                  possible_jobs: 100,
+                  weak_jobs: 70,
+                  rejected_jobs: 50,
+                },
+              ],
+            };
+          }
+
+          if (sql.includes("FROM jobs")) {
+            return {
+              results: [
+                { source: "rss:dou-qa", count: 120 },
+                { source: "rss:djinni-qa", count: 90 },
+              ],
+            };
+          }
+
+          return { results: [] };
+        },
+      };
+
+      return statement;
+    },
+  };
+}
+
+test("serves the Grafana observability summary endpoint", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("grafana-summary-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const context = { waitUntil() {}, passThroughOnException() {} };
+  const token = "grafana-read-token";
+  const env = { GRAFANA_READ_TOKEN: token, DB: fakeObservabilityDb(), ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+
+  const okResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary?days=30", {
+      headers: { authorization: `Bearer ${token}` },
+    }),
+    env,
+    context,
+  );
+  assert.equal(okResponse.status, 200);
+  assert.equal(okResponse.headers.get("cache-control"), "no-store");
+  const summary = await okResponse.json();
+  assert.equal(summary.service, "gimmejob");
+  assert.equal(summary.environment, "production");
+  assert.equal(summary.rangeDays, 30);
+  assert.ok(summary.overview);
+  assert.ok(summary.current);
+  assert.ok(Array.isArray(summary.operations));
+  assert.ok(Array.isArray(summary.sources));
+  assert.ok(Array.isArray(summary.snapshots));
+  assert.ok(Array.isArray(summary.jobsBySource));
+  assert.equal(summary.overview.lastSuccessfulSyncAt, "2026-08-15T00:00:00.000Z");
+  assert.equal(summary.current.totalJobs, 350);
+  assert.equal(summary.sources[0].source, "workua:workua-qa");
+  assert.equal(summary.jobsBySource[0].source, "rss:dou-qa");
+
+  const missingAuth = await worker.fetch(new Request("https://gimmejob.example/api/observability/summary"), env, context);
+  assert.equal(missingAuth.status, 401);
+  assert.deepEqual(await missingAuth.json(), { error: "Authentication required." });
+  assert.equal(missingAuth.headers.get("www-authenticate"), "Bearer");
+
+  const wrongAuth = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary", {
+      headers: { authorization: "Bearer wrong-token" },
+    }),
+    env,
+    context,
+  );
+  assert.equal(wrongAuth.status, 401);
+  assert.deepEqual(await wrongAuth.json(), { error: "Authentication required." });
+
+  const missingSecret = await worker.fetch(new Request("https://gimmejob.example/api/observability/summary"), { DB: fakeObservabilityDb(), ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } }, context);
+  assert.equal(missingSecret.status, 503);
+  assert.deepEqual(await missingSecret.json(), { error: "Grafana access is not configured." });
+
+  const methodNotAllowed = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary", { method: "POST" }),
+    env,
+    context,
+  );
+  assert.equal(methodNotAllowed.status, 405);
+  assert.equal(methodNotAllowed.headers.get("allow"), "GET, HEAD");
+
+  const headResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary", {
+      method: "HEAD",
+      headers: { authorization: `Bearer ${token}` },
+    }),
+    { GRAFANA_READ_TOKEN: token, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(headResponse.status, 200);
+  assert.equal(await headResponse.text(), "");
+  assert.equal(headResponse.headers.get("cache-control"), "no-store");
+
+  for (const invalidDays of ["0", "abc", "3651"]) {
+    const invalidResponse = await worker.fetch(
+      new Request(`https://gimmejob.example/api/observability/summary?days=${invalidDays}`, {
+        headers: { authorization: `Bearer ${token}` },
+      }),
+      env,
+      context,
+    );
+    assert.equal(invalidResponse.status, 400);
+    assert.deepEqual(await invalidResponse.json(), { error: "days must be an integer between 1 and 3650." });
+  }
+
+  const defaultDaysResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary", {
+      headers: { authorization: `Bearer ${token}` },
+    }),
+    env,
+    context,
+  );
+  assert.equal(defaultDaysResponse.status, 200);
+  assert.equal((await defaultDaysResponse.json()).rangeDays, 30);
+
+  const failingResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/observability/summary", {
+      headers: { authorization: `Bearer ${token}` },
+    }),
+    { GRAFANA_READ_TOKEN: token, DB: fakeObservabilityDb({ fail: true }), ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    context,
+  );
+  assert.equal(failingResponse.status, 500);
+  assert.deepEqual(await failingResponse.json(), { error: "Observability data unavailable." });
+});
+
 test("keeps the public site open and protects the private workspace", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("access-test", `${process.pid}-${Date.now()}`);

@@ -179,6 +179,234 @@ function handleObservabilityHealth(request: Request, env: Env): Response {
   );
 }
 
+async function handleObservabilitySummary(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("Method not allowed.", {
+      status: 405,
+      headers: {
+        allow: "GET, HEAD",
+        "cache-control": "no-store",
+      },
+    });
+  }
+
+  if (!env.GRAFANA_READ_TOKEN) {
+    return Response.json(
+      { error: "Grafana access is not configured." },
+      {
+        status: 503,
+        headers: { "cache-control": "no-store" },
+      },
+    );
+  }
+
+  if (!hasValidGrafanaToken(request, env)) {
+    return Response.json(
+      { error: "Authentication required." },
+      {
+        status: 401,
+        headers: {
+          "cache-control": "no-store",
+          "www-authenticate": "Bearer",
+        },
+      },
+    );
+  }
+
+  const url = new URL(request.url);
+  const daysParam = url.searchParams.get("days");
+  const rangeDays = daysParam === null ? 30 : (() => {
+    if (!/^\d+$/.test(daysParam)) return Number.NaN;
+    const value = Number(daysParam);
+    return Number.isInteger(value) && value >= 1 && value <= 3650 ? value : Number.NaN;
+  })();
+
+  if (!Number.isInteger(rangeDays)) {
+    return Response.json(
+      { error: "days must be an integer between 1 and 3650." },
+      {
+        status: 400,
+        headers: { "cache-control": "no-store" },
+      },
+    );
+  }
+
+  if (request.method === "HEAD") {
+    return new Response(null, { status: 200, headers: { "cache-control": "no-store" } });
+  }
+
+  const from = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
+
+  try {
+    const overviewRow = await env.DB.prepare(`SELECT
+      COUNT(*) AS operations,
+      SUM(CASE WHEN status = 'failure' THEN 1 ELSE 0 END) AS failures,
+      SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) AS degraded,
+      COALESCE(SUM(error_count), 0) AS errors,
+      ROUND(AVG(duration_ms), 1) AS avg_duration_ms,
+      MAX(
+        CASE
+          WHEN error_count > 0 OR status IN ('failure', 'degraded')
+          THEN occurred_at
+          ELSE NULL
+        END
+      ) AS last_error_at,
+      MAX(
+        CASE
+          WHEN event = 'job_sync' AND status <> 'failure'
+          THEN occurred_at
+          ELSE NULL
+        END
+      ) AS last_successful_sync_at
+    FROM observability_events
+    WHERE occurred_at >= ?`).bind(from).first<Record<string, unknown>>();
+
+    const operationsResult = await env.DB.prepare(`SELECT
+      substr(occurred_at, 1, 10) AS day,
+      event,
+      status,
+      COUNT(*) AS operations,
+      COALESCE(SUM(error_count), 0) AS error_count,
+      ROUND(AVG(duration_ms), 1) AS avg_duration_ms,
+      COALESCE(SUM(items_processed), 0) AS items_processed
+    FROM observability_events
+    WHERE occurred_at >= ?
+      AND event <> 'job_source_sync'
+    GROUP BY substr(occurred_at, 1, 10), event, status
+    ORDER BY day ASC, event ASC, status ASC`).bind(from).all<Record<string, unknown>>();
+
+    const sourcesResult = await env.DB.prepare(`SELECT
+      substr(occurred_at, 1, 10) AS day,
+      source,
+      status,
+      COUNT(*) AS operations,
+      COALESCE(SUM(error_count), 0) AS error_count,
+      ROUND(AVG(duration_ms), 1) AS avg_duration_ms,
+      COALESCE(SUM(items_processed), 0) AS items_processed
+    FROM observability_events
+    WHERE occurred_at >= ?
+      AND event = 'job_source_sync'
+    GROUP BY substr(occurred_at, 1, 10), source, status
+    ORDER BY day ASC, source ASC, status ASC`).bind(from).all<Record<string, unknown>>();
+
+    const snapshotsResult = await env.DB.prepare(`WITH latest_per_day AS (
+      SELECT substr(occurred_at, 1, 10) AS day, MAX(occurred_at) AS occurred_at
+      FROM observability_snapshots
+      WHERE occurred_at >= ?
+      GROUP BY substr(occurred_at, 1, 10)
+    )
+    SELECT
+      s.occurred_at,
+      s.total_jobs,
+      s.remote_jobs,
+      s.reservation_jobs,
+      s.analyzed_jobs,
+      s.strong_jobs,
+      s.possible_jobs,
+      s.weak_jobs,
+      s.rejected_jobs
+    FROM observability_snapshots s
+    INNER JOIN latest_per_day l ON l.occurred_at = s.occurred_at
+    ORDER BY s.occurred_at ASC`).bind(from).all<Record<string, unknown>>();
+
+    const currentRow = await env.DB.prepare(`SELECT
+      occurred_at,
+      total_jobs,
+      remote_jobs,
+      reservation_jobs,
+      analyzed_jobs,
+      strong_jobs,
+      possible_jobs,
+      weak_jobs,
+      rejected_jobs
+    FROM observability_snapshots
+    ORDER BY occurred_at DESC
+    LIMIT 1`).first<Record<string, unknown>>();
+
+    const jobsBySourceResult = await env.DB.prepare(`SELECT
+      source,
+      COUNT(*) AS count
+    FROM jobs
+    GROUP BY source
+    ORDER BY count DESC, source ASC`).all<Record<string, unknown>>();
+
+    const overview = {
+      operations: Number(overviewRow?.operations ?? 0),
+      failures: Number(overviewRow?.failures ?? 0),
+      degraded: Number(overviewRow?.degraded ?? 0),
+      errors: Number(overviewRow?.errors ?? 0),
+      avgDurationMs: overviewRow?.avg_duration_ms === null || overviewRow?.avg_duration_ms === undefined ? null : Number(overviewRow.avg_duration_ms),
+      lastErrorAt: overviewRow?.last_error_at ? String(overviewRow.last_error_at) : null,
+      lastSuccessfulSyncAt: overviewRow?.last_successful_sync_at ? String(overviewRow.last_successful_sync_at) : null,
+    };
+
+    return Response.json({
+      service: "gimmejob",
+      environment: "production",
+      generatedAt: new Date().toISOString(),
+      rangeDays,
+      overview,
+      current: currentRow ? {
+        occurredAt: String(currentRow.occurred_at),
+        totalJobs: Number(currentRow.total_jobs ?? 0),
+        remoteJobs: Number(currentRow.remote_jobs ?? 0),
+        reservationJobs: Number(currentRow.reservation_jobs ?? 0),
+        analyzedJobs: Number(currentRow.analyzed_jobs ?? 0),
+        strongJobs: Number(currentRow.strong_jobs ?? 0),
+        possibleJobs: Number(currentRow.possible_jobs ?? 0),
+        weakJobs: Number(currentRow.weak_jobs ?? 0),
+        rejectedJobs: Number(currentRow.rejected_jobs ?? 0),
+      } : null,
+      operations: operationsResult.results.map((row) => ({
+        day: String(row.day),
+        event: String(row.event),
+        status: String(row.status),
+        operations: Number(row.operations ?? 0),
+        errorCount: Number(row.error_count ?? 0),
+        avgDurationMs: row.avg_duration_ms === null || row.avg_duration_ms === undefined ? null : Number(row.avg_duration_ms),
+        itemsProcessed: Number(row.items_processed ?? 0),
+      })),
+      sources: sourcesResult.results.map((row) => ({
+        day: String(row.day),
+        source: row.source ? String(row.source) : "unknown",
+        status: String(row.status),
+        operations: Number(row.operations ?? 0),
+        errorCount: Number(row.error_count ?? 0),
+        avgDurationMs: row.avg_duration_ms === null || row.avg_duration_ms === undefined ? null : Number(row.avg_duration_ms),
+        itemsProcessed: Number(row.items_processed ?? 0),
+      })),
+      snapshots: snapshotsResult.results.map((row) => ({
+        occurredAt: String(row.occurred_at),
+        totalJobs: Number(row.total_jobs ?? 0),
+        remoteJobs: Number(row.remote_jobs ?? 0),
+        reservationJobs: Number(row.reservation_jobs ?? 0),
+        analyzedJobs: Number(row.analyzed_jobs ?? 0),
+        strongJobs: Number(row.strong_jobs ?? 0),
+        possibleJobs: Number(row.possible_jobs ?? 0),
+        weakJobs: Number(row.weak_jobs ?? 0),
+        rejectedJobs: Number(row.rejected_jobs ?? 0),
+      })),
+      jobsBySource: jobsBySourceResult.results.map((row) => ({
+        source: String(row.source),
+        count: Number(row.count ?? 0),
+      })),
+    }, {
+      headers: {
+        "cache-control": "no-store",
+      },
+    });
+  } catch {
+    console.error("Observability summary query failed.");
+    return Response.json(
+      { error: "Observability data unavailable." },
+      {
+        status: 500,
+        headers: { "cache-control": "no-store" },
+      },
+    );
+  }
+}
+
 function privateCookie(value: string, maxAge: number): string {
   return `${PRIVATE_SESSION_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 }
@@ -356,6 +584,10 @@ const worker = {
 
     if (url.pathname === "/api/observability/health") {
       return handleObservabilityHealth(request, env);
+    }
+
+    if (url.pathname === "/api/observability/summary") {
+      return handleObservabilitySummary(request, env);
     }
 
     if (url.pathname === "/workspace/login") return handleLogin(request, env);

@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
@@ -68,3 +68,34 @@ export const applicationDrafts = sqliteTable("application_drafts", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+export const observabilityEvents = sqliteTable("observability_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  event: text("event").notNull(),
+  status: text("status").notNull(),
+  occurredAt: text("occurred_at").notNull(),
+  source: text("source"),
+  mode: text("mode"),
+  durationMs: integer("duration_ms"),
+  itemsSeen: integer("items_seen"),
+  itemsProcessed: integer("items_processed"),
+  errorCount: integer("error_count").notNull().default(0),
+}, (table) => [
+  index("observability_events_occurred_at_idx").on(table.occurredAt),
+  index("observability_events_event_occurred_at_idx").on(table.event, table.occurredAt),
+]);
+
+export const observabilitySnapshots = sqliteTable("observability_snapshots", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  occurredAt: text("occurred_at").notNull(),
+  totalJobs: integer("total_jobs").notNull(),
+  remoteJobs: integer("remote_jobs").notNull(),
+  reservationJobs: integer("reservation_jobs").notNull(),
+  analyzedJobs: integer("analyzed_jobs").notNull(),
+  strongJobs: integer("strong_jobs").notNull(),
+  possibleJobs: integer("possible_jobs").notNull(),
+  weakJobs: integer("weak_jobs").notNull(),
+  rejectedJobs: integer("rejected_jobs").notNull(),
+}, (table) => [
+  index("observability_snapshots_occurred_at_idx").on(table.occurredAt),
+]);

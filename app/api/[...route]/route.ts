@@ -9,6 +9,8 @@ import {
   publicJobs,
   readPayload,
   resumePdf,
+  recordObservabilityEvent,
+  recordObservabilitySnapshot,
   saveSetting,
   settingsView,
   syncSources,
@@ -67,8 +69,31 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const route = await parts(context); const payload = await readPayload(request);
     if (route[0] === "import") {
-      const jobs = Array.isArray(payload.jobs) ? payload.jobs : []; const result = await upsertJobs(jobs);
-      return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+      const startedAt = Date.now();
+      try {
+        const result = await upsertJobs(jobs);
+        await recordObservabilityEvent({
+          event: "job_import",
+          status: "success",
+          durationMs: Date.now() - startedAt,
+          itemsSeen: jobs.length,
+          itemsProcessed: result.accepted,
+          errorCount: 0,
+        });
+        await recordObservabilitySnapshot();
+        return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      } catch (error) {
+        await recordObservabilityEvent({
+          event: "job_import",
+          status: "failure",
+          durationMs: Date.now() - startedAt,
+          itemsSeen: jobs.length,
+          itemsProcessed: null,
+          errorCount: 1,
+        });
+        throw error;
+      }
     }
     if (route[0] === "sync") {
       const result = await syncSources(); return Response.json({ ok: true, result, dashboard: await dashboard(request) });

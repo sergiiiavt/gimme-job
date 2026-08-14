@@ -5,6 +5,19 @@ import { base64ToBytes, buildResumePdf, bytesToBase64 } from "../../agent/src/re
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
+type ObservabilityStatus = "success" | "degraded" | "failure";
+type ObservabilityEventName = "job_sync" | "job_source_sync" | "job_import" | "job_analysis" | "resume_generation";
+type ObservabilityMode = "agent" | "deterministic" | "mixed";
+type ObservabilityEventInput = {
+  event: ObservabilityEventName;
+  status: ObservabilityStatus;
+  source?: string | null;
+  mode?: ObservabilityMode | null;
+  durationMs?: number | null;
+  itemsSeen?: number | null;
+  itemsProcessed?: number | null;
+  errorCount?: number;
+};
 
 const DEFAULT_PROFILE = {
   name: "Serhii Yavtushkevych",
@@ -111,6 +124,24 @@ function cleanText(value: unknown, fallback = "") {
   return typeof value === "string" ? value.trim().slice(0, 60_000) : fallback;
 }
 
+function nonNegativeInteger(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function safeErrorCount(value: number | null | undefined): number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
+}
+
+function observabilitySource(kind: string, source: Json, fallback: string) {
+  const rawName = cleanText(source.name, fallback).toLowerCase();
+  const safeName = rawName
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 50);
+
+  return `${kind}:${safeName || fallback}`;
+}
+
 function safeUrl(value: unknown, fallback = "https://example.com") {
   try {
     const url = new URL(cleanText(value, fallback));
@@ -136,6 +167,85 @@ async function saveSetting(key: string, value: unknown) {
   await (await db()).prepare(`INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)
     ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at`)
     .bind(key, JSON.stringify(value), now()).run();
+}
+
+export async function recordObservabilityEvent(input: ObservabilityEventInput): Promise<void> {
+  try {
+    await (await db()).prepare(`INSERT INTO observability_events (
+      event,
+      status,
+      occurred_at,
+      source,
+      mode,
+      duration_ms,
+      items_seen,
+      items_processed,
+      error_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(
+        input.event,
+        input.status,
+        now(),
+        input.source ?? null,
+        input.mode ?? null,
+        nonNegativeInteger(input.durationMs),
+        nonNegativeInteger(input.itemsSeen),
+        nonNegativeInteger(input.itemsProcessed),
+        safeErrorCount(input.errorCount),
+      )
+      .run();
+  } catch {
+    console.error(`Observability write failed for ${input.event}.`);
+  }
+}
+
+export async function recordObservabilitySnapshot(): Promise<void> {
+  try {
+    const database = await db();
+    const jobCounts = await database.prepare(`SELECT
+      COUNT(*) AS total_jobs,
+      SUM(CASE WHEN remote = 1 THEN 1 ELSE 0 END) AS remote_jobs,
+      SUM(CASE WHEN (
+        instr(COALESCE(title, '') || ' ' || COALESCE(description, ''), 'бронювання') > 0 OR
+        instr(COALESCE(title, '') || ' ' || COALESCE(description, ''), 'Бронювання') > 0 OR
+        instr(COALESCE(title, '') || ' ' || COALESCE(description, ''), 'БРОНЮВАННЯ') > 0 OR
+        lower(COALESCE(title, '') || ' ' || COALESCE(description, '')) LIKE '%reservation from mobilization%'
+      ) THEN 1 ELSE 0 END) AS reservation_jobs
+    FROM jobs`).first<Row>();
+    const analysisCounts = await database.prepare(`SELECT
+      COUNT(*) AS analyzed_jobs,
+      SUM(CASE WHEN verdict = 'strong' THEN 1 ELSE 0 END) AS strong_jobs,
+      SUM(CASE WHEN verdict = 'possible' THEN 1 ELSE 0 END) AS possible_jobs,
+      SUM(CASE WHEN verdict = 'weak' THEN 1 ELSE 0 END) AS weak_jobs,
+      SUM(CASE WHEN verdict = 'reject' THEN 1 ELSE 0 END) AS rejected_jobs
+    FROM analyses`).first<Row>();
+
+    await database.prepare(`INSERT INTO observability_snapshots (
+      occurred_at,
+      total_jobs,
+      remote_jobs,
+      reservation_jobs,
+      analyzed_jobs,
+      strong_jobs,
+      possible_jobs,
+      weak_jobs,
+      rejected_jobs
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(
+        now(),
+        Number(jobCounts?.total_jobs ?? 0),
+        Number(jobCounts?.remote_jobs ?? 0),
+        Number(jobCounts?.reservation_jobs ?? 0),
+        Number(analysisCounts?.analyzed_jobs ?? 0),
+        Number(analysisCounts?.strong_jobs ?? 0),
+        Number(analysisCounts?.possible_jobs ?? 0),
+        Number(analysisCounts?.weak_jobs ?? 0),
+        Number(analysisCounts?.rejected_jobs ?? 0),
+      )
+      .run();
+  } catch {
+    console.error("Observability snapshot write failed.");
+  }
 }
 
 function mapJob(row: Row) {
@@ -546,24 +656,78 @@ async function collectLobbyX(source: Json) {
 }
 
 export async function syncSources() {
-  const sources = await setting<Json>("sources", DEFAULT_SOURCES); const jobs: unknown[] = []; const errors: Array<{ source: string; error: string }> = [];
-  for (const source of Array.isArray(sources.rss) ? sources.rss as Json[] : []) {
-    try { jobs.push(...await collectRss(source)); } catch (error) { errors.push({ source: cleanText(source.name, "rss"), error: error instanceof Error ? error.message : String(error) }); }
+  const startedAt = Date.now();
+  const jobs: unknown[] = [];
+  const errors: Array<{ source: string; error: string }> = [];
+  try {
+    const sources = await setting<Json>("sources", DEFAULT_SOURCES);
+
+    const collectSource = async (kind: string, source: Json, fallback: string, collector: () => Promise<unknown[]>) => {
+      const sourceStartedAt = Date.now();
+      try {
+        const collected = await collector();
+        await recordObservabilityEvent({
+          event: "job_source_sync",
+          status: "success",
+          source: observabilitySource(kind, source, fallback),
+          durationMs: Date.now() - sourceStartedAt,
+          itemsSeen: collected.length,
+          itemsProcessed: collected.length,
+          errorCount: 0,
+        });
+        return collected;
+      } catch (error) {
+        await recordObservabilityEvent({
+          event: "job_source_sync",
+          status: "failure",
+          source: observabilitySource(kind, source, fallback),
+          durationMs: Date.now() - sourceStartedAt,
+          itemsSeen: 0,
+          itemsProcessed: 0,
+          errorCount: 1,
+        });
+        throw error;
+      }
+    };
+
+    for (const source of Array.isArray(sources.rss) ? sources.rss as Json[] : []) {
+      try { jobs.push(...await collectSource("rss", source, "rss", () => collectRss(source))); } catch (error) { errors.push({ source: cleanText(source.name, "rss"), error: error instanceof Error ? error.message : String(error) }); }
+    }
+    for (const source of Array.isArray(sources.greenhouse) ? sources.greenhouse as Json[] : []) {
+      try { jobs.push(...await collectSource("greenhouse", source, "greenhouse", () => collectGreenhouse(source))); } catch (error) { errors.push({ source: cleanText(source.name, "greenhouse"), error: error instanceof Error ? error.message : String(error) }); }
+    }
+    for (const source of Array.isArray(sources.lever) ? sources.lever as Json[] : []) {
+      try { jobs.push(...await collectSource("lever", source, "lever", () => collectLever(source))); } catch (error) { errors.push({ source: cleanText(source.name, "lever"), error: error instanceof Error ? error.message : String(error) }); }
+    }
+    for (const source of Array.isArray(sources.workUa) ? sources.workUa as Json[] : []) {
+      try { jobs.push(...await collectSource("workua", source, "workua", () => collectWorkUa(source))); } catch (error) { errors.push({ source: cleanText(source.name, "workua"), error: error instanceof Error ? error.message : String(error) }); }
+    }
+    for (const source of Array.isArray(sources.lobbyX) ? sources.lobbyX as Json[] : []) {
+      try { jobs.push(...await collectSource("lobbyx", source, "lobbyx", () => collectLobbyX(source))); } catch (error) { errors.push({ source: cleanText(source.name, "lobbyx"), error: error instanceof Error ? error.message : String(error) }); }
+    }
+
+    const result = await upsertJobs(jobs.slice(0, 500));
+    await recordObservabilityEvent({
+      event: "job_sync",
+      status: errors.length === 0 ? "success" : "degraded",
+      durationMs: Date.now() - startedAt,
+      itemsSeen: jobs.length,
+      itemsProcessed: result.accepted,
+      errorCount: errors.length,
+    });
+    await recordObservabilitySnapshot();
+    return { ...result, errors };
+  } catch (error) {
+    await recordObservabilityEvent({
+      event: "job_sync",
+      status: "failure",
+      durationMs: Date.now() - startedAt,
+      itemsSeen: jobs.length,
+      itemsProcessed: null,
+      errorCount: Math.max(1, errors.length + 1),
+    });
+    throw error;
   }
-  for (const source of Array.isArray(sources.greenhouse) ? sources.greenhouse as Json[] : []) {
-    try { jobs.push(...await collectGreenhouse(source)); } catch (error) { errors.push({ source: cleanText(source.name, "greenhouse"), error: error instanceof Error ? error.message : String(error) }); }
-  }
-  for (const source of Array.isArray(sources.lever) ? sources.lever as Json[] : []) {
-    try { jobs.push(...await collectLever(source)); } catch (error) { errors.push({ source: cleanText(source.name, "lever"), error: error instanceof Error ? error.message : String(error) }); }
-  }
-  for (const source of Array.isArray(sources.workUa) ? sources.workUa as Json[] : []) {
-    try { jobs.push(...await collectWorkUa(source)); } catch (error) { errors.push({ source: cleanText(source.name, "workua"), error: error instanceof Error ? error.message : String(error) }); }
-  }
-  for (const source of Array.isArray(sources.lobbyX) ? sources.lobbyX as Json[] : []) {
-    try { jobs.push(...await collectLobbyX(source)); } catch (error) { errors.push({ source: cleanText(source.name, "lobbyx"), error: error instanceof Error ? error.message : String(error) }); }
-  }
-  const result = await upsertJobs(jobs.slice(0, 500));
-  return { ...result, errors };
 }
 
 function profileHas(profile: Json, skill: string) {
@@ -770,62 +934,122 @@ async function openAiConfig() {
 }
 
 export async function analyzeJobs(jobId?: string, limit = 25) {
-  const profile = await setting<Json>("profile", DEFAULT_PROFILE);
-  const { apiKey, model } = await openAiConfig();
-  const jobRows = jobId
-    ? await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).all<Row>()
-    : await (await db()).prepare("SELECT jobs.* FROM jobs LEFT JOIN analyses ON analyses.job_id = jobs.id WHERE analyses.job_id IS NULL AND jobs.status <> 'ARCHIVED' ORDER BY jobs.discovered_at DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
-  if (jobId && !jobRows.results.length) throw new Error("Job not found.");
+  const startedAt = Date.now();
+  let requestedCount = 0;
+  let fallbackCount = 0;
+  let agentCount = 0;
   const completed: Json[] = [];
-  for (const row of jobRows.results) {
-    const job = mapJob(row); const timestamp = now();
-    let analysis: Json = deterministicAnalysis(job, profile);
-    let mode = "deterministic";
-    if (apiKey) {
-      try {
-        analysis = await analyzeWithOpenAI(job, profile, apiKey, model);
-        mode = "agent";
-      } catch { /* fall back to the deterministic analysis computed above */ }
+  try {
+    const profile = await setting<Json>("profile", DEFAULT_PROFILE);
+    const { apiKey, model } = await openAiConfig();
+    const jobRows = jobId
+      ? await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).all<Row>()
+      : await (await db()).prepare("SELECT jobs.* FROM jobs LEFT JOIN analyses ON analyses.job_id = jobs.id WHERE analyses.job_id IS NULL AND jobs.status <> 'ARCHIVED' ORDER BY jobs.discovered_at DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
+    requestedCount = jobRows.results.length;
+    if (jobId && !jobRows.results.length) throw new Error("Job not found.");
+    for (const row of jobRows.results) {
+      const job = mapJob(row); const timestamp = now();
+      let analysis: Json = deterministicAnalysis(job, profile);
+      let mode = "deterministic";
+      if (apiKey) {
+        try {
+          analysis = await analyzeWithOpenAI(job, profile, apiKey, model);
+          mode = "agent";
+          agentCount += 1;
+        } catch {
+          fallbackCount += 1;
+        }
+      }
+      await (await db()).prepare(`INSERT INTO analyses (job_id, mode, score, verdict, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(job_id) DO UPDATE SET mode=excluded.mode, score=excluded.score, verdict=excluded.verdict, payload_json=excluded.payload_json, updated_at=excluded.updated_at`)
+        .bind(job.id, mode, analysis.score, analysis.verdict, JSON.stringify(analysis), timestamp, timestamp).run();
+      await (await db()).prepare("UPDATE jobs SET status='REVIEWED', updated_at=? WHERE id=?").bind(timestamp, job.id).run();
+      completed.push({ id: job.id, score: analysis.score, verdict: analysis.verdict, mode });
     }
-    await (await db()).prepare(`INSERT INTO analyses (job_id, mode, score, verdict, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(job_id) DO UPDATE SET mode=excluded.mode, score=excluded.score, verdict=excluded.verdict, payload_json=excluded.payload_json, updated_at=excluded.updated_at`)
-      .bind(job.id, mode, analysis.score, analysis.verdict, JSON.stringify(analysis), timestamp, timestamp).run();
-    await (await db()).prepare("UPDATE jobs SET status='REVIEWED', updated_at=? WHERE id=?").bind(timestamp, job.id).run();
-    completed.push({ id: job.id, score: analysis.score, verdict: analysis.verdict, mode });
+
+    const mode = !apiKey ? "deterministic" : fallbackCount === 0 ? "agent" : agentCount === 0 ? "deterministic" : "mixed";
+    const status = fallbackCount === 0 ? "success" : "degraded";
+    await recordObservabilityEvent({
+      event: "job_analysis",
+      status,
+      mode,
+      durationMs: Date.now() - startedAt,
+      itemsSeen: requestedCount,
+      itemsProcessed: completed.length,
+      errorCount: fallbackCount,
+    });
+    await recordObservabilitySnapshot();
+    return completed;
+  } catch (error) {
+    await recordObservabilityEvent({
+      event: "job_analysis",
+      status: "failure",
+      durationMs: Date.now() - startedAt,
+      itemsSeen: requestedCount,
+      itemsProcessed: completed.length,
+      errorCount: 1,
+    });
+    throw error;
   }
-  return completed;
 }
 
 export async function adjustResumeForJob(jobId: string) {
-  const profile = await setting<Json>("profile", DEFAULT_PROFILE);
-  const { apiKey, model } = await openAiConfig();
-  const row = await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).first<Row>();
-  if (!row) throw new Error("Job not found.");
-  const job = mapJob(row);
+  const startedAt = Date.now();
+  let openAiFallback = false;
+  try {
+    const profile = await setting<Json>("profile", DEFAULT_PROFILE);
+    const { apiKey, model } = await openAiConfig();
+    const row = await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).first<Row>();
+    if (!row) throw new Error("Job not found.");
+    const job = mapJob(row);
 
-  let pkg: { resume: string; draft: Json } = deterministicResumePackage(job, profile);
-  let mode = "deterministic";
-  if (apiKey) {
-    try {
-      pkg = await adjustResumeWithOpenAI(job, profile, apiKey, model);
-      mode = "agent";
-    } catch { /* fall back to the deterministic package computed above */ }
+    let pkg: { resume: string; draft: Json } = deterministicResumePackage(job, profile);
+    let mode = "deterministic";
+    if (apiKey) {
+      try {
+        pkg = await adjustResumeWithOpenAI(job, profile, apiKey, model);
+        mode = "agent";
+        openAiFallback = false;
+      } catch {
+        openAiFallback = true;
+      }
+    }
+
+    const timestamp = now();
+    const suffix = job.id.replace(/^job_/, "");
+    const pdfBase64 = bytesToBase64(await buildResumePdf(pkg.resume));
+    await (await db()).prepare(`INSERT INTO resume_variants (id, job_id, markdown, pdf_base64, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(job_id) DO UPDATE SET markdown=excluded.markdown, pdf_base64=excluded.pdf_base64, updated_at=excluded.updated_at`)
+      .bind(`resume_${suffix}`, job.id, pkg.resume, pdfBase64, timestamp, timestamp).run();
+
+    const existing = await (await db()).prepare("SELECT status FROM application_drafts WHERE job_id = ?").bind(job.id).first<Row>();
+    if (!existing || ["PENDING_APPROVAL", "REJECTED"].includes(String(existing.status))) {
+      await (await db()).prepare(`INSERT INTO application_drafts (id, job_id, recipient, subject, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
+        ON CONFLICT(job_id) DO UPDATE SET recipient=COALESCE(excluded.recipient, application_drafts.recipient), subject=excluded.subject, body=excluded.body, status='PENDING_APPROVAL', approved_at=NULL, updated_at=excluded.updated_at`)
+        .bind(`draft_${suffix}`, job.id, pkg.draft.recipient, pkg.draft.subject, pkg.draft.body, timestamp, timestamp).run();
+    }
+
+    await recordObservabilityEvent({
+      event: "resume_generation",
+      status: openAiFallback ? "degraded" : "success",
+      mode,
+      durationMs: Date.now() - startedAt,
+      itemsSeen: 1,
+      itemsProcessed: 1,
+      errorCount: openAiFallback ? 1 : 0,
+    });
+    return { id: job.id, mode };
+  } catch (error) {
+    await recordObservabilityEvent({
+      event: "resume_generation",
+      status: "failure",
+      durationMs: Date.now() - startedAt,
+      itemsSeen: 1,
+      itemsProcessed: 0,
+      errorCount: 1,
+    });
+    throw error;
   }
-
-  const timestamp = now();
-  const suffix = job.id.replace(/^job_/, "");
-  const pdfBase64 = bytesToBase64(await buildResumePdf(pkg.resume));
-  await (await db()).prepare(`INSERT INTO resume_variants (id, job_id, markdown, pdf_base64, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(job_id) DO UPDATE SET markdown=excluded.markdown, pdf_base64=excluded.pdf_base64, updated_at=excluded.updated_at`)
-    .bind(`resume_${suffix}`, job.id, pkg.resume, pdfBase64, timestamp, timestamp).run();
-
-  const existing = await (await db()).prepare("SELECT status FROM application_drafts WHERE job_id = ?").bind(job.id).first<Row>();
-  if (!existing || ["PENDING_APPROVAL", "REJECTED"].includes(String(existing.status))) {
-    await (await db()).prepare(`INSERT INTO application_drafts (id, job_id, recipient, subject, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
-      ON CONFLICT(job_id) DO UPDATE SET recipient=COALESCE(excluded.recipient, application_drafts.recipient), subject=excluded.subject, body=excluded.body, status='PENDING_APPROVAL', approved_at=NULL, updated_at=excluded.updated_at`)
-      .bind(`draft_${suffix}`, job.id, pkg.draft.recipient, pkg.draft.subject, pkg.draft.body, timestamp, timestamp).run();
-  }
-  return { id: job.id, mode };
 }
 
 export async function resumePdf(jobId: string): Promise<Uint8Array | null> {
