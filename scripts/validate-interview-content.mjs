@@ -33,8 +33,8 @@ assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
 
 assert.ok(questions.length >= 672, "The public collection must not regress below the current 672-question baseline.");
 assert.ok(sources.length >= 67, "The source catalog must contain at least 67 researched sources.");
-assert.equal(categories.size, 19, "The taxonomy must contain exactly 19 question topics.");
-assert.equal(canonical.questions.length, 30, "The explicit canonical baseline must contain 30 audited questions.");
+assert.equal(categories.size, 20, "The taxonomy must contain exactly 20 question topics.");
+assert.equal(canonical.questions.length, 31, "The explicit canonical baseline must contain 31 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
 assert.equal(observabilityProduction.questions.length, 25, "The explicit observability and production set must contain 25 audited questions.");
 assert.equal(restoredCoverage.questions.length, 21, "The restored coverage set must contain 21 audited questions.");

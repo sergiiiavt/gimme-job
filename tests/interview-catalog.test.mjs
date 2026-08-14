@@ -24,9 +24,9 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
 
   assert.ok(questions.length >= 672);
   assert.equal(new Set(questions.map((question) => question.id)).size, questions.length);
-  assert.equal(taxonomy.filter((item) => item.category).length, 19);
+  assert.equal(taxonomy.filter((item) => item.category).length, 20);
   assert.ok(sources.length >= 67);
-  assert.equal(canonical.questions.length, 30);
+  assert.equal(canonical.questions.length, 31);
   assert.equal(databaseSql.questions.length, 25);
   assert.equal(observabilityProduction.questions.length, 25);
   assert.equal(restoredCoverage.questions.length, 21);
@@ -37,8 +37,8 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   assert.equal(new Set(editorialStars.questionIds).size, editorialStars.questionIds.length);
   assert.ok(editorialStars.questionIds.length >= 40);
   assert.ok(editorialStars.questionIds.every((id) => questions.some((question) => question.id === id)));
-  assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 18);
-  assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 19);
+  assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 19);
+  assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 20);
   assert.deepEqual(
     new Set(questions.map((question) => question.prevalence)),
     new Set(["Very common", "Common", "Occasional", "Specialist"]),

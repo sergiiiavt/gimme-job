@@ -176,6 +176,22 @@
     "role": "Behavioural questions and evidence-based answer rubrics"
   },
   {
+    "id": "iso-17025",
+    "title": "ISO/IEC 17025 — General requirements for the competence of testing and calibration laboratories",
+    "url": "https://www.iso.org/standard/66912.html",
+    "publisher": "ISO/IEC",
+    "kind": "International standard",
+    "role": "Measurement uncertainty, calibration traceability and fixture/equipment competence for production test"
+  },
+  {
+    "id": "mdn-javascript-guide",
+    "title": "MDN JavaScript Guide",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+    "publisher": "Mozilla",
+    "kind": "Technical reference",
+    "role": "Functions, closures, objects, classes, error handling and asynchronous programming (promises, async/await)"
+  },
+  {
     "id": "katalon-qa-interviews",
     "title": "QA Interview Questions: 60+ With Model Answers",
     "url": "https://katalon.com/resources-center/blog/qa-interview-questions",
@@ -334,14 +350,6 @@
     "publisher": "European Commission",
     "kind": "Regulatory guidance",
     "role": "GMP computerized-system validation, data integrity, change and continuity controls"
-  },
-  {
-    "id": "iso-17025",
-    "title": "ISO/IEC 17025 — General requirements for the competence of testing and calibration laboratories",
-    "url": "https://www.iso.org/standard/66912.html",
-    "publisher": "ISO/IEC",
-    "kind": "International standard",
-    "role": "Measurement uncertainty, calibration traceability and fixture/equipment competence for production test"
   },
   {
     "id": "iso-26262",
@@ -542,13 +550,5 @@
     "publisher": "NASA",
     "kind": "Government engineering guidance",
     "role": "Requirement clarity, correctness, feasibility, singularity, completeness, consistency, traceability and verifiability"
-  },
-  {
-    "id": "mdn-javascript-guide",
-    "title": "MDN JavaScript Guide",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
-    "publisher": "Mozilla",
-    "kind": "Technical reference",
-    "role": "Functions, closures, objects, classes, error handling and asynchronous programming (promises, async/await)"
   }
 ]
