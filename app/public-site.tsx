@@ -1164,6 +1164,9 @@ function MethodologyPage({ backLabel, methodology: method, onBack, sources: inte
   );
 }
 
+const repoRefKindLabels: Record<NonNullable<LessonRepoRef["kind"]>, string> = { implementation: "Implementation", usage: "Used by", ci: "CI" };
+const repoBlobUrl = (repo: string, rev: string, path: string) => `https://github.com/${repo}/blob/${rev}/${path}`;
+
 function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activeTopic: string; curriculum: LearningCurriculum; onTopicChange: (topic: string) => void; title: string }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<PythonLessonLevel[]>([]);
@@ -1311,13 +1314,16 @@ function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activ
                     <ul className="py-repo-refs">
                       {lesson.repoRefs.map((ref) => (
                         <li key={ref.path}>
+                          {ref.kind && <span className="py-repo-ref-kind">{repoRefKindLabels[ref.kind]}</span>}
                           <span className="py-repo-ref-label">{ref.label}</span> <code>{ref.path}</code>{" "}
-                          <a href={`https://github.com/${referenceImplementation.repo}/blob/${referenceImplementation.branch}/${ref.path}`} target="_blank" rel="noreferrer">live ↗</a>{" "}
-                          <a href={`https://github.com/${referenceImplementation.repo}/blob/${referenceImplementation.verifiedCommit}/${ref.path}`} target="_blank" rel="noreferrer">reviewed ↗</a>
+                          <a href={repoBlobUrl(referenceImplementation.repo, referenceImplementation.branch, ref.path)} target="_blank" rel="noreferrer">live ↗</a>{" "}
+                          <a href={repoBlobUrl(referenceImplementation.repo, referenceImplementation.verifiedCommit, ref.path)} target="_blank" rel="noreferrer">reviewed ↗</a>
                         </li>
                       ))}
                     </ul>
-                    <p className="py-code-caption">Reviewed against commit {referenceImplementation.verifiedCommit.slice(0, 7)}.</p>
+                    <p className="py-code-caption" title={`Verified ${referenceImplementation.verifiedAt} against commit ${referenceImplementation.verifiedCommit}`}>
+                      Reviewed against commit {referenceImplementation.verifiedCommit.slice(0, 7)}.
+                    </p>
                   </section>
                 )}
                 <section>

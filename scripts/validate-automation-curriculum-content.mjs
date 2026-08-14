@@ -3,14 +3,29 @@ import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [beginner, intermediate, advanced, expert, taxonomy, sources] = await Promise.all([
+const [beginner, intermediate, advanced, expert, taxonomy, sources, catalogSource] = await Promise.all([
   readJson("../content/automation-learning/beginner-lessons.json"),
   readJson("../content/automation-learning/intermediate-lessons.json"),
   readJson("../content/automation-learning/advanced-lessons.json"),
   readJson("../content/automation-learning/expert-lessons.json"),
   readJson("../content/automation-learning/taxonomy.json"),
   readJson("../content/automation-learning/sources.json"),
+  readFile(new URL("../content/automation-learning/catalog.ts", import.meta.url), "utf8"),
 ]);
+
+// catalog.ts isn't JSON, so pull referenceImplementation's string fields out with a
+// targeted regex rather than requiring a TS-aware import in a plain Node script.
+const extractCatalogField = (key) => catalogSource.match(new RegExp(`${key}:\\s*"([^"]*)"`))?.[1];
+const referenceImplementation = {
+  repo: extractCatalogField("repo"),
+  branch: extractCatalogField("branch"),
+  verifiedCommit: extractCatalogField("verifiedCommit"),
+  verifiedAt: extractCatalogField("verifiedAt"),
+};
+assert.match(referenceImplementation.repo ?? "", /^[\w.-]+\/[\w.-]+$/, "catalog.ts referenceImplementation.repo must look like owner/repo");
+assert.ok(referenceImplementation.branch?.trim(), "catalog.ts referenceImplementation.branch must not be empty");
+assert.match(referenceImplementation.verifiedCommit ?? "", /^[0-9a-f]{7,40}$/i, "catalog.ts referenceImplementation.verifiedCommit must be a hex commit SHA");
+assert.match(referenceImplementation.verifiedAt ?? "", /^\d{4}-\d{2}-\d{2}$/, "catalog.ts referenceImplementation.verifiedAt must be an ISO date (YYYY-MM-DD)");
 
 const lessons = [...beginner.lessons, ...intermediate.lessons, ...advanced.lessons, ...expert.lessons];
 const levels = new Set(["Beginner", "Intermediate", "Advanced", "Expert"]);
@@ -86,12 +101,13 @@ for (const lesson of lessons) {
     assert.ok(sourceIds.has(sourceId), `Unknown source ${sourceId} in ${lesson.id}`);
   }
 
-  if (lesson.repoRefs !== undefined) {
+  if (lesson.repoRefs != null) {
     assert.ok(lesson.repoRefs.length > 0, `repoRefs, if present, must not be an empty array for ${lesson.id}`);
     for (const ref of lesson.repoRefs) {
       assert.ok(ref.label?.trim(), `Missing repoRef label in ${lesson.id}`);
       assert.ok(ref.path?.trim(), `Missing repoRef path in ${lesson.id}`);
       assert.ok(!ref.path.startsWith("/") && !/^https?:\/\//.test(ref.path), `repoRef path must be a relative repo path, not a URL: ${ref.path} in ${lesson.id}`);
+      assert.ok(!ref.path.split("/").includes(".."), `repoRef path must not contain '..' segments: ${ref.path} in ${lesson.id}`);
       if (ref.kind !== undefined) {
         assert.ok(["implementation", "usage", "ci"].includes(ref.kind), `Invalid repoRef kind ${ref.kind} in ${lesson.id}`);
       }
