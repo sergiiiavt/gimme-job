@@ -35,7 +35,12 @@
       "exercise": "For a product you know, write a one-page mobile plan that states which of the three activities you would run, at what cadence, and — explicitly — what each cannot find.",
       "exerciseUk": "Для знайомого продукту напишіть односторінковий мобільний план: які з трьох активностей ви запускаєте, з якою періодичністю і — явно — чого кожна з них не може знайти.",
       "tags": ["mobile", "strategy", "emulation"],
-      "sourceIds": ["playwright-emulation", "appium-docs", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-emulation", "appium-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Mobile driver factory", "path": "framework/mobile/driver_factory.py", "kind": "implementation" },
+        { "label": "Mobile web (emulated)", "path": "tests/web/test_mobile_web.py", "kind": "usage" },
+        { "label": "Native mobile", "path": "tests/mobile/test_native_app.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-emulated-mobile-web",
@@ -46,8 +51,8 @@
       "titleUk": "Емульований мобільний веб: перевірки, які варто написати першими",
       "summary": "Breakpoints, horizontal overflow, touch-target size, readable text and one full journey per device.",
       "summaryUk": "Точки перемикання макета, горизонтальне переповнення, розмір зон дотику, читабельний текст і один повний сценарій на пристрій.",
-      "concept": "Device descriptors set viewport, device pixel ratio, user agent and touch support together, which is far more reliable than guessing viewport numbers by hand. Parametrising the fixture rather than each test means adding a device to the matrix is a one-line change that immediately covers the whole file. Five checks give most of the value. First, that the responsive breakpoint actually fires at real device widths. Second, that the page does not scroll horizontally, which is the signature mobile defect, usually caused by one element wider than the viewport and completely invisible on a desktop screen. Third, that interactive controls meet a minimum touch-target size — the platform guidelines ask for around forty-four pixels, and a control that sets a minimum height but no minimum width will quietly fail it. Fourth, that text is large enough to read without zooming. Fifth, one complete journey, using the same page objects as the desktop suite.",
-      "conceptUk": "Дескриптори пристроїв задають розмір вікна, щільність пікселів, user agent і підтримку дотику разом, і це значно надійніше, ніж вручну вгадувати числа. Параметризація фікстури, а не кожного тесту, означає, що додавання пристрою до матриці — це зміна в один рядок, яка одразу покриває цілий файл. П'ять перевірок дають більшу частину цінності. Перша — що точка перемикання макета справді спрацьовує на реальних ширинах пристроїв. Друга — що сторінка не прокручується горизонтально; це фірмовий мобільний дефект, зазвичай спричинений одним елементом, ширшим за вікно, і повністю невидимий на десктопі. Третя — що інтерактивні елементи мають мінімальний розмір зони дотику: рекомендації платформ просять близько сорока чотирьох пікселів, і елемент, якому задано мінімальну висоту без мінімальної ширини, тихо цю вимогу порушить. Четверта — що текст достатньо великий, щоб читати без масштабування. П'ята — один повний сценарій із тими самими об'єктами сторінок, що й у десктопному наборі.",
+      "concept": "Device descriptors set viewport, device pixel ratio, user agent and touch support together, which is far more reliable than guessing viewport numbers by hand. Parametrising the fixture rather than each test means adding a device to the matrix is a one-line change that immediately covers the whole file. Five checks give most of the value. First, that the responsive breakpoint actually fires at real device widths. Second, that the page does not scroll horizontally, which is the signature mobile defect, usually caused by one element wider than the viewport and completely invisible on a desktop screen. Third, that interactive controls meet a minimum touch-target size. Get the number right before you write the assertion: WCAG 2.2's actual Level AA minimum (2.5.8 Target Size Minimum) is 24x24 CSS pixels, with exceptions; 44x44 is the *enhanced* Level AAA target (2.5.5), which is where the widely quoted \"44px\" figure actually comes from, and which platform guidelines (Apple's Human Interface Guidelines, Android's Material Design) commonly adopt as their own baseline. Test against whatever number your product has committed to, and cite it correctly — either way, a control that sets a minimum height but no minimum width will quietly fail it. Fourth, that text is large enough to read without zooming. Fifth, one complete journey, using the same page objects as the desktop suite.",
+      "conceptUk": "Дескриптори пристроїв задають розмір вікна, щільність пікселів, user agent і підтримку дотику разом, і це значно надійніше, ніж вручну вгадувати числа. Параметризація фікстури, а не кожного тесту, означає, що додавання пристрою до матриці — це зміна в один рядок, яка одразу покриває цілий файл. П'ять перевірок дають більшу частину цінності. Перша — що точка перемикання макета справді спрацьовує на реальних ширинах пристроїв. Друга — що сторінка не прокручується горизонтально; це фірмовий мобільний дефект, зазвичай спричинений одним елементом, ширшим за вікно, і повністю невидимий на десктопі. Третя — що інтерактивні елементи мають мінімальний розмір зони дотику. Спершу визначте правильне число: фактичний мінімум WCAG 2.2 рівня AA (2.5.8 Target Size Minimum) — 24x24 CSS-пікселів, із винятками; 44x44 — це *посилена* ціль рівня AAA (2.5.5), звідки й береться поширена цифра «44px», і саме її часто беруть за базову платформні гайдлайни (Apple Human Interface Guidelines, Android Material Design). Перевіряйте те число, на яке орієнтується ваш продукт, і коректно вказуйте джерело — у будь-якому разі елемент, якому задано мінімальну висоту без мінімальної ширини, тихо порушить вимогу. Четверта — що текст достатньо великий, щоб читати без масштабування. П'ята — один повний сценарій із тими самими об'єктами сторінок, що й у десктопному наборі.",
       "keyPoints": [
         "Use device descriptors instead of hand-picked viewport numbers, and parametrise the fixture not the tests",
         "Horizontal overflow is the signature mobile defect and is invisible on a desktop screen",
@@ -66,13 +71,17 @@
         "Дублювати десктопні об'єкти сторінок для мобільних, коли реально різниться лише одне згорнуте меню",
         "Додати планшет до матриці й перевіряти суто мобільну поведінку — тест падає через макет, а не через дефект"
       ],
-      "code": "@pytest.fixture(params=[\"iPhone 15\", \"Pixel 7\", \"Galaxy S9+\", \"iPad (gen 7)\"], ids=lambda d: d)\ndef mobile_page(request, playwright, browser, base_url, storage_state):\n    descriptor = playwright.devices[request.param]\n    context = browser.new_context(**descriptor, base_url=base_url, storage_state=storage_state)\n    page = context.new_page()\n    yield page\n    context.close()\n\n\ndef test_no_horizontal_scrolling(mobile_page):\n    App(mobile_page).products.open()\n\n    overflow = mobile_page.evaluate(\n        \"() => document.documentElement.scrollWidth - document.documentElement.clientWidth\"\n    )\n\n    assert overflow <= 1, f\"Page scrolls horizontally by {overflow}px on this device\"\n\n\ndef test_touch_targets_meet_the_minimum_size(mobile_page):\n    products = App(mobile_page).products.open()\n    if mobile_page.viewport_size[\"width\"] > 640:\n        pytest.skip(\"Desktop-width layout - touch sizing does not apply\")\n\n    box = products.page.locator(\"[data-testid=menu-toggle]\").bounding_box()\n\n    assert box[\"width\"] >= 44 and box[\"height\"] >= 44, f\"Touch target is {box}\"",
+      "code": "@pytest.fixture(params=[\"iPhone 15\", \"Pixel 7\", \"Galaxy S9+\", \"iPad (gen 7)\"], ids=lambda d: d)\ndef mobile_page(request, playwright, browser, base_url, storage_state):\n    descriptor = playwright.devices[request.param]\n    context = browser.new_context(**descriptor, base_url=base_url, storage_state=storage_state)\n    page = context.new_page()\n    yield page\n    context.close()\n\n\ndef test_no_horizontal_scrolling(mobile_page):\n    App(mobile_page).products.open()\n\n    overflow = mobile_page.evaluate(\n        \"() => document.documentElement.scrollWidth - document.documentElement.clientWidth\"\n    )\n\n    assert overflow <= 1, f\"Page scrolls horizontally by {overflow}px on this device\"\n\n\ndef test_touch_targets_meet_the_minimum_size(mobile_page):\n    products = App(mobile_page).products.open()\n    if mobile_page.viewport_size[\"width\"] > 640:\n        pytest.skip(\"Desktop-width layout - touch sizing does not apply\")\n\n    box = products.page.locator(\"[data-testid=menu-toggle]\").bounding_box()\n\n    # 44px is this product's chosen baseline (platform HIG / WCAG 2.5.5 AAA\n    # enhanced target), not the WCAG AA minimum -- that's 24px (2.5.8).\n    assert box[\"width\"] >= 44 and box[\"height\"] >= 44, f\"Touch target is {box}\"",
       "codeCaption": "This exact test found a real 40x46 pixel hamburger button — min-height was set, min-width was not.",
       "codeCaptionUk": "Саме цей тест знайшов справжню кнопку меню 40x46 пікселів — мінімальну висоту задали, ширину ні.",
       "exercise": "Add the overflow check to a responsive site you work with and run it across four device descriptors. If it passes, add a wide table or a long unbroken string and confirm the check catches it.",
       "exerciseUk": "Додайте перевірку переповнення до адаптивного сайту й запустіть її на чотирьох дескрипторах пристроїв. Якщо вона проходить, додайте широку таблицю чи довгий нерозривний рядок і переконайтеся, що перевірка це ловить.",
       "tags": ["mobile", "responsive", "playwright", "accessibility"],
-      "sourceIds": ["playwright-emulation", "wcag-22", "qa-automation-python-repo"]
+      "sourceIds": ["playwright-emulation", "wcag-22", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Mobile web checks", "path": "tests/web/test_mobile_web.py", "kind": "usage" },
+        { "label": "Accessibility/visual checks", "path": "tests/web/test_accessibility_and_visual.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-appium-sessions",
@@ -109,7 +118,11 @@
       "exercise": "Install the current Appium server and one platform driver, then start a session against an emulator using a typed options object. Deliberately misspell a capability and observe when the error appears.",
       "exerciseUk": "Встановіть поточну версію сервера Appium і один платформний драйвер, потім відкрийте сесію на емуляторі, використовуючи типізований об'єкт опцій. Свідомо зробіть помилку в назві capability й подивіться, коли з'явиться помилка.",
       "tags": ["mobile", "appium", "configuration"],
-      "sourceIds": ["appium-docs", "appium-python-client", "appium-uiautomator2", "w3c-webdriver"]
+      "sourceIds": ["appium-docs", "appium-python-client", "appium-uiautomator2", "w3c-webdriver"],
+      "repoRefs": [
+        { "label": "Driver factory", "path": "framework/mobile/driver_factory.py", "kind": "implementation" },
+        { "label": "Mobile conftest", "path": "tests/mobile/conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-mobile-locators-and-device-scenarios",
@@ -118,17 +131,17 @@
       "order": 26,
       "title": "Mobile locators, waits and device-only scenarios",
       "titleUk": "Мобільні локатори, очікування та сценарії, можливі лише на пристрої",
-      "summary": "Accessibility ids first, XPath never; one driver per test; automate what only a device can prove.",
-      "summaryUk": "Спершу accessibility id, XPath ніколи; один драйвер на тест; автоматизуйте те, що може довести лише пристрій.",
-      "concept": "Locator choice matters more on mobile than on the web because every query serialises the view hierarchy across a network connection, so a structural path is not merely brittle but genuinely slow. Accessibility identifiers come first: they map to a platform attribute on both systems, giving one locator that works everywhere, and asking developers to add them is the highest-return request a mobile tester can make. Platform-specific identifiers come next, then the native selector engines, and structural paths never. On waiting, set the implicit wait to zero and never touch it again — mixing implicit and explicit waiting produces compounding timeouts that are documented nowhere. Give each test its own session: a mobile session is the least stable resource in the stack, and one crash or system dialog poisons every later test that shares it. Finally, spend device time on what only a device can prove — permissions, backgrounding, rotation, hardware navigation, connectivity loss — and push business rules down to the service layer.",
-      "conceptUk": "Вибір локатора на мобільних важить більше, ніж у вебі, бо кожен запит серіалізує ієрархію представлень через мережеве з'єднання, тож структурний шлях не просто крихкий, а й справді повільний. Ідентифікатори доступності йдуть першими: вони відображаються на платформний атрибут в обох системах, даючи один локатор, що працює скрізь, і прохання до розробників додати їх — запит із найбільшою віддачею, який може зробити мобільний тестувальник. Далі йдуть платформні ідентифікатори, потім нативні механізми селекторів, а структурні шляхи — ніколи. Щодо очікувань: встановіть неявне очікування в нуль і більше його не чіпайте — змішування неявних і явних очікувань дає накопичувальні таймаути, які ніде не задокументовані. Давайте кожному тесту власну сесію: мобільна сесія — найменш стабільний ресурс у стеку, і один збій чи системний діалог отруює всі наступні тести, що її поділяють. Нарешті, витрачайте час на пристрої на те, що лише пристрій може довести — дозволи, згортання, поворот, апаратну навігацію, втрату зв'язку — а бізнес-правила опускайте на рівень сервісів.",
+      "summary": "Accessibility ids first, XPath as a last resort; one driver per test; automate what a browser can't reach.",
+      "summaryUk": "Спершу accessibility id, XPath — останній варіант; один драйвер на тест; автоматизуйте те, що не дістане браузер.",
+      "concept": "Locator choice matters more on mobile than on the web because every query serialises the view hierarchy across a network connection, so a structural path is not merely brittle but genuinely slow. Accessibility identifiers come first: when an app actually exposes the same identifier on both platforms, they map to a platform attribute on both systems and give one locator that works everywhere — but that cross-platform reuse is a property of how the app was built, not something Appium guarantees for you, so confirm the id is really there on both before assuming it. Asking developers to add them is still the highest-return request a mobile tester can make. Platform-specific identifiers come next, then the native selector engines, and structural paths (XPath) last — they work, and are sometimes the only option on a screen with no other hooks, but every extra hop the driver has to serialise makes them the slowest and most brittle choice, so reach for one only once the cheaper options are unavailable. On waiting, set the implicit wait to zero and never touch it again — mixing implicit and explicit waiting produces compounding timeouts that are documented nowhere. Give each test its own session: a mobile session is the least stable resource in the stack, and one crash or system dialog poisons every later test that shares it. Finally, spend Appium session time on what a browser can't reach at all — permissions, backgrounding, rotation, hardware navigation, connectivity loss — and push business rules down to the service layer; an emulator or simulator can exercise most of these just as well as physical hardware, so \"needs an app session\" and \"needs a physical device\" are different, narrower claims.",
+      "conceptUk": "Вибір локатора на мобільних важить більше, ніж у вебі, бо кожен запит серіалізує ієрархію представлень через мережеве з'єднання, тож структурний шлях не просто крихкий, а й справді повільний. Ідентифікатори доступності йдуть першими: коли застосунок справді має однаковий ідентифікатор на обох платформах, вони відображаються на платформний атрибут в обох системах і дають один локатор, що працює скрізь — але ця міжплатформна повторюваність залежить від того, як побудовано застосунок, а не від того, що Appium гарантує сам по собі, тож перевірте, що ID справді є на обох платформах, перш ніж на це покладатися. Прохання до розробників додати їх усе одно лишається запитом із найбільшою віддачею, який може зробити мобільний тестувальник. Далі йдуть платформні ідентифікатори, потім нативні механізми селекторів, а структурні шляхи (XPath) — востаннє: вони працюють і іноді є єдиним варіантом на екрані без інших зачіпок, але кожен додатковий крок, який драйвер має серіалізувати, робить їх найповільнішим і найкрихкішим вибором, тож тягніться по них лише тоді, коли дешевші варіанти вже недоступні. Щодо очікувань: встановіть неявне очікування в нуль і більше його не чіпайте — змішування неявних і явних очікувань дає накопичувальні таймаути, які ніде не задокументовані. Давайте кожному тесту власну сесію: мобільна сесія — найменш стабільний ресурс у стеку, і один збій чи системний діалог отруює всі наступні тести, що її поділяють. Нарешті, витрачайте час сесії Appium на те, до чого браузер узагалі не дістане — дозволи, згортання, поворот, апаратну навігацію, втрату зв'язку — а бізнес-правила опускайте на рівень сервісів; емулятор чи симулятор здатен відтворити більшість із цього не гірше за фізичне залізо, тож «потребує сесії застосунку» і «потребує фізичного пристрою» — це різні, вужчі твердження.",
       "keyPoints": [
-        "Accessibility identifiers give one locator for both platforms; XPath is slow as well as brittle here",
+        "Accessibility identifiers give one locator for both platforms when the app actually exposes matching ids; XPath still works as a last resort, but every hop is serialised over the wire, making it the slowest and most brittle choice here",
         "Set implicit wait to zero and use explicit waits only — mixing the two compounds unpredictably",
         "One driver session per test, and capture diagnostics before quitting, not after"
       ],
       "keyPointsUk": [
-        "Ідентифікатори доступності дають один локатор для обох платформ; XPath тут не лише крихкий, а й повільний",
+        "Ідентифікатори доступності дають один локатор для обох платформ, коли застосунок справді має однакові ID; XPath усе ще працює як останній варіант, але кожен крок серіалізується мережею, тож тут він найповільніший і найкрихкіший",
         "Встановіть неявне очікування в нуль і використовуйте лише явні — змішування дає непередбачувані таймаути",
         "Одна сесія драйвера на тест, і збирайте діагностику до завершення сесії, а не після"
       ],
@@ -146,7 +159,12 @@
       "exercise": "List every mobile test in a suite you know and mark each as device-only or pushable to the API layer. Move one of the pushable ones down and compare the runtimes.",
       "exerciseUk": "Випишіть кожен мобільний тест із відомого вам набору й позначте, чи він можливий лише на пристрої, чи його можна опустити на рівень API. Опустіть один такий тест і порівняйте час виконання.",
       "tags": ["mobile", "appium", "locators", "waiting"],
-      "sourceIds": ["appium-uiautomator2", "appium-xcuitest", "appium-docs", "qa-automation-python-repo"]
+      "sourceIds": ["appium-uiautomator2", "appium-xcuitest", "appium-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Screen object base", "path": "framework/mobile/base_screen.py", "kind": "implementation" },
+        { "label": "Concrete screen objects", "path": "framework/mobile/screens.py", "kind": "usage" },
+        { "label": "Native app tests", "path": "tests/mobile/test_native_app.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-data-isolation-parallel",
@@ -183,7 +201,11 @@
       "exercise": "Run a suite you work with under four workers, ten times. If nothing fails, deliberately share one account between tests and reproduce the failure, then fix it three ways and rank them.",
       "exerciseUk": "Запустіть ваш набір на чотирьох воркерах десять разів. Якщо нічого не падає, свідомо зробіть один обліковий запис спільним і відтворіть падіння, потім виправте його трьома способами й проранжуйте їх.",
       "tags": ["test-data", "parallel", "isolation", "flakiness"],
-      "sourceIds": ["pytest-xdist", "qa-automation-python-repo", "fowler-eradicating-flaky"]
+      "sourceIds": ["pytest-xdist", "qa-automation-python-repo", "fowler-eradicating-flaky"],
+      "repoRefs": [
+        { "label": "Worker-aware fixtures", "path": "conftest.py", "kind": "implementation" },
+        { "label": "Data factories", "path": "framework/data/factories.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-uniqueness-by-construction",
@@ -220,7 +242,11 @@
       "exercise": "Audit a suite for hardcoded usernames, emails and reference numbers. Replace each with a generated unique value and confirm the suite still passes under four workers.",
       "exerciseUk": "Перевірте набір на жорстко прописані імена користувачів, адреси пошти та номери. Замініть кожен згенерованим унікальним значенням і переконайтеся, що набір досі проходить на чотирьох воркерах.",
       "tags": ["test-data", "parallel", "faker"],
-      "sourceIds": ["pytest-xdist", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-xdist", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Unique-suffix implementation", "path": "framework/data/factories.py", "kind": "implementation" },
+        { "label": "Used by", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-builders-factories-personas",
@@ -257,7 +283,10 @@
       "exercise": "Count the shared accounts in a suite you work with. For each, decide whether it is genuinely unable to be created per test, and convert the ones that can be to generated data.",
       "exerciseUk": "Порахуйте спільні облікові записи у вашому наборі. Для кожного вирішіть, чи справді його неможливо створити на кожен тест, і переведіть ті, що можна, на згенеровані дані.",
       "tags": ["test-data", "factories", "builders"],
-      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pydantic-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Builders and factories", "path": "framework/data/factories.py", "kind": "implementation" }
+      ]
     },
     {
       "id": "ta-lesson-cleanup-strategies",
@@ -268,24 +297,24 @@
       "titleUk": "Стратегії прибирання та їхні компроміси",
       "summary": "Clean before as well as after, keep cleanup idempotent, and never let a global reset near a parallel run.",
       "summaryUk": "Прибирайте і до, і після, робіть прибирання ідемпотентним і не пускайте глобальне скидання в паралельний запуск.",
-      "concept": "Fixture teardown is the default cleanup mechanism and it has one important gap: it does not run when setup failed before the suspension point, so a crash mid-setup leaves state behind for the next run to inherit. Cleaning defensively at the start of a fixture as well as at the end makes a suite recoverable rather than merely tidy. Other strategies suit other situations. Generating uniquely named data and never cleaning it works well when data is cheap and namespaced, at the cost of a database that grows forever and eventually needs a scheduled sweeper that matches your naming prefix. Transaction rollback is elegant but only available when the tests share a database session with the application. A global reset endpoint is the one to be careful with, because it is fundamentally incompatible with parallel execution — each worker's reset destroys the other workers' live state. Whatever you choose, cleanup must be idempotent and must never fail the test it belongs to; the result already happened.",
-      "conceptUk": "Прибирання у фікстурі — типовий механізм, і він має одну важливу прогалину: воно не виконується, якщо підготовка впала до точки зупинки, тож збій посеред підготовки залишає стан, який успадкує наступний запуск. Захисне прибирання і на початку фікстури, і в кінці робить набір відновлюваним, а не просто охайним. Інші стратегії підходять іншим ситуаціям. Генерувати унікально названі дані й ніколи їх не прибирати добре працює, коли дані дешеві й мають простір імен, ціною бази, що росте вічно й зрештою потребує планового прибиральника, який знає ваш префікс іменування. Відкат транзакції елегантний, але доступний лише тоді, коли тести поділяють сесію бази даних із застосунком. З глобальним ендпоінтом скидання треба бути обережним, бо він принципово несумісний із паралельним виконанням: скидання кожного воркера руйнує живий стан інших. Що б ви не обрали, прибирання має бути ідемпотентним і не має валити тест, якому належить: результат уже стався.",
+      "concept": "Fixture teardown is the default cleanup mechanism and it has one important gap: it does not run when setup failed before the suspension point, so a crash mid-setup leaves state behind for the next run to inherit. Cleaning defensively at the start of a fixture as well as at the end makes a suite recoverable rather than merely tidy. Other strategies suit other situations. Generating uniquely named data and never cleaning it works well when data is cheap and namespaced, at the cost of a database that grows forever and eventually needs a scheduled sweeper that matches your naming prefix. Transaction rollback is elegant but only available when the tests share a database session with the application. A global reset endpoint is the one to be careful with, because it is fundamentally incompatible with parallel execution — each worker's reset destroys the other workers' live state. Whatever you choose, cleanup has to be idempotent, and its failure should never replace or hide the test's own result — if the test's assertions already passed or failed, that verdict is what matters, and a teardown exception shouldn't bury it under a confusing traceback. That's different from making cleanup failures invisible, though: pytest already reports a teardown exception as its own outcome, distinct from the test's pass or fail, and that visibility is doing real work — a cleanup step that silently swallows its own exceptions can leave contaminated state for the next test with nothing in the report to explain why. Treat a repeated cleanup failure as a signal about your test infrastructure's health, not noise to suppress.",
+      "conceptUk": "Прибирання у фікстурі — типовий механізм, і він має одну важливу прогалину: воно не виконується, якщо підготовка впала до точки зупинки, тож збій посеред підготовки залишає стан, який успадкує наступний запуск. Захисне прибирання і на початку фікстури, і в кінці робить набір відновлюваним, а не просто охайним. Інші стратегії підходять іншим ситуаціям. Генерувати унікально названі дані й ніколи їх не прибирати добре працює, коли дані дешеві й мають простір імен, ціною бази, що росте вічно й зрештою потребує планового прибиральника, який знає ваш префікс іменування. Відкат транзакції елегантний, але доступний лише тоді, коли тести поділяють сесію бази даних із застосунком. З глобальним ендпоінтом скидання треба бути обережним, бо він принципово несумісний із паралельним виконанням: скидання кожного воркера руйнує живий стан інших. Що б ви не обрали, прибирання має бути ідемпотентним, і його збій ніколи не повинен підміняти чи ховати власний результат тесту — якщо твердження тесту вже пройшли чи впали, саме цей вердикт має значення, і виняток у прибиранні не повинен перекривати його заплутаним трейсбеком. Але це не те саме, що робити збої прибирання невидимими: pytest і так звітує про виняток у teardown як про окремий результат, відмінний від падіння самого тесту, і ця видимість справді корисна — крок прибирання, що мовчки ковтає власні винятки, може лишити забруднений стан для наступного тесту, і в звіті не буде жодного пояснення чому. Ставтеся до повторюваного збою прибирання як до сигналу про стан вашої тестової інфраструктури, а не як до шуму, який треба заглушити.",
       "keyPoints": [
         "Teardown after the suspension point does not run if setup raised — clean defensively at the start too",
-        "Cleanup must be idempotent and must never turn a passing test into a failing one",
+        "Cleanup must be idempotent; a teardown failure should surface (pytest reports it as its own outcome) rather than being silently swallowed and left to contaminate later tests",
         "A global reset endpoint cannot coexist with parallel execution; keep it as a manual pre-run step"
       ],
       "keyPointsUk": [
         "Прибирання після точки зупинки не виконується, якщо підготовка впала — прибирайте захисно й на початку",
-        "Прибирання має бути ідемпотентним і ніколи не перетворювати успішний тест на невдалий",
+        "Прибирання має бути ідемпотентним; збій у teardown має бути видимим (pytest звітує про нього як про окремий результат), а не мовчки поглинутим і залишеним забруднювати наступні тести",
         "Глобальний ендпоінт скидання не може співіснувати з паралельним виконанням; лишіть його ручним кроком перед запуском"
       ],
       "pitfalls": [
-        "Cleanup that raises and fails an otherwise passing test, which trains people to distrust results",
+        "Swallowing a cleanup exception just to keep the test green, which hides the exact contamination that will make some later, unrelated-looking test fail for a reason nobody can trace",
         "Relying on teardown alone, so one crashed run poisons every run after it until somebody cleans up by hand"
       ],
       "pitfallsUk": [
-        "Прибирання, що кидає виняток і валить успішний тест, привчаючи людей не довіряти результатам",
+        "Ковтати виняток прибирання, щоб тест лишався зеленим — це ховає саме те забруднення, через яке згодом незрозуміло чому впаде якийсь інший, на вигляд непов'язаний тест",
         "Покладатися лише на прибирання в кінці, через що один аварійний запуск отруює всі наступні, доки хтось не прибере вручну"
       ],
       "code": "@pytest.fixture\ndef shop_as_user(shop, worker_account):\n    username, password = worker_account\n    shop.login_as(username, password)\n\n    shop.cart.clear()   # BEFORE: the previous run may have crashed mid-test\n    yield shop\n    shop.cart.clear()   # after\n\n\n# What was REMOVED from this suite, and why the comment stayed behind:\n#\n#   @pytest.fixture(autouse=True, scope=\"session\")\n#   def _reset_sut(base_url):\n#       httpx.post(f\"{base_url}/api/testing/reset\")\n#\n# \"session\" means once per WORKER. Under -n 4 each worker's reset wiped the\n# other three workers' live sessions mid-run. Keep a global reset as a manual\n# pre-run step only:  curl -X POST http://127.0.0.1:8000/api/testing/reset",
@@ -294,7 +323,12 @@
       "exercise": "Find a fixture that only cleans up on teardown. Make its setup fail deliberately, observe the state left behind, then add defensive cleanup at the start and confirm the next run recovers.",
       "exerciseUk": "Знайдіть фікстуру, що прибирає лише в кінці. Свідомо зробіть її підготовку невдалою, подивіться на залишений стан, потім додайте захисне прибирання на початку й переконайтеся, що наступний запуск відновлюється.",
       "tags": ["test-data", "cleanup", "fixtures"],
-      "sourceIds": ["pytest-fixtures", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-fixtures", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Before/after cleanup", "path": "tests/services/conftest.py", "kind": "implementation" },
+        { "label": "Web cleanup", "path": "tests/web/conftest.py", "kind": "usage" },
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-flakiness-root-causes",
@@ -331,7 +365,11 @@
       "exercise": "Take the last five flaky failures in a pipeline you have access to and assign each to one of the seven categories. Count how many were genuinely infrastructure — usually far fewer than people assume.",
       "exerciseUk": "Візьміть останні п'ять нестабільних падінь у доступному вам конвеєрі й віднесіть кожне до однієї з семи категорій. Порахуйте, скільки з них справді були інфраструктурними — зазвичай значно менше, ніж вважають.",
       "tags": ["flakiness", "diagnosis", "parallel"],
-      "sourceIds": ["fowler-eradicating-flaky", "google-flaky-tests", "qa-automation-python-repo"]
+      "sourceIds": ["fowler-eradicating-flaky", "google-flaky-tests", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Flakiness notes", "path": "docs/08-flakiness.md" },
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-diagnosing-a-flake",
@@ -368,7 +406,11 @@
       "exercise": "Plant a deliberate fifty-percent race in an application you test, then diagnose it using only this sequence and the artifacts the framework produces — without looking at the code you changed.",
       "exerciseUk": "Внесіть свідомий стан гонки з імовірністю п'ятдесят відсотків у застосунок, який ви тестуєте, і продіагностуйте його лише цією послідовністю й артефактами фреймворку — не заглядаючи в код, який ви змінили.",
       "tags": ["flakiness", "debugging", "diagnosis"],
-      "sourceIds": ["fowler-eradicating-flaky", "pytest-xdist", "qa-automation-python-repo"]
+      "sourceIds": ["fowler-eradicating-flaky", "pytest-xdist", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Flakiness diagnosis playbook", "path": "docs/08-flakiness.md" },
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-quarantine",
@@ -405,7 +447,12 @@
       "exercise": "Write a one-page quarantine policy for a team you work with: entry criteria, where quarantined tests run, the expiry, the cap and who reviews the list. Then check how many current exclusions would survive it.",
       "exerciseUk": "Напишіть односторінкову політику карантину для вашої команди: критерії потрапляння, де виконуються карантиновані тести, термін дії, ліміт і хто переглядає перелік. Потім перевірте, скільки поточних виключень її пережили б.",
       "tags": ["flakiness", "process", "ci"],
-      "sourceIds": ["google-flaky-tests", "pytest-skipping", "fowler-eradicating-flaky"]
+      "sourceIds": ["google-flaky-tests", "pytest-skipping", "fowler-eradicating-flaky"],
+      "repoRefs": [
+        { "label": "Quarantine marker config", "path": "pyproject.toml", "kind": "implementation" },
+        { "label": "CI execution", "path": ".github/workflows/ci.yml", "kind": "ci" },
+        { "label": "Flakiness notes", "path": "docs/08-flakiness.md" }
+      ]
     },
     {
       "id": "ta-lesson-pipeline-shape",
@@ -442,7 +489,10 @@
       "exercise": "Review a pipeline you have access to for the three settings above. Add whichever are missing, then check how long it now takes to learn that a build is broken.",
       "exerciseUk": "Перевірте доступний вам конвеєр на три налаштування вище. Додайте ті, яких бракує, і перевірте, скільки часу тепер потрібно, щоб дізнатися про зламану збірку.",
       "tags": ["ci", "pipeline", "matrix"],
-      "sourceIds": ["github-actions-docs", "qa-automation-python-repo"]
+      "sourceIds": ["github-actions-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "CI pipeline", "path": ".github/workflows/ci.yml", "kind": "ci" }
+      ]
     },
     {
       "id": "ta-lesson-parallel-in-ci",
@@ -479,7 +529,11 @@
       "exercise": "Profile a suite with the slowest-test report. Identify whether the time is in setup or in the tests, then apply the single change with the largest expected effect and measure again.",
       "exerciseUk": "Профілюйте набір звітом про найповільніші тести. Визначте, де час — у підготовці чи в самих тестах, застосуйте одну зміну з найбільшим очікуваним ефектом і виміряйте знову.",
       "tags": ["ci", "performance", "parallel"],
-      "sourceIds": ["pytest-xdist", "github-actions-docs", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-xdist", "github-actions-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "CI pipeline", "path": ".github/workflows/ci.yml", "kind": "ci" },
+        { "label": "Root fixtures", "path": "conftest.py", "kind": "usage" }
+      ]
     },
     {
       "id": "ta-lesson-failure-artifacts",
@@ -516,7 +570,12 @@
       "exercise": "Break a UI test deliberately and time how long it takes a colleague to diagnose it from the pipeline artifacts alone, without running anything. Add whatever was missing and measure again.",
       "exerciseUk": "Свідомо зламайте UI-тест і виміряйте, скільки часу колезі потрібно на діагностику лише за артефактами конвеєра, без запуску. Додайте те, чого бракувало, і виміряйте знову.",
       "tags": ["ci", "reporting", "debugging", "security"],
-      "sourceIds": ["pytest-hooks", "allure-report", "qa-automation-python-repo"]
+      "sourceIds": ["pytest-hooks", "allure-report", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "Root fixtures (screenshot/log capture)", "path": "conftest.py", "kind": "implementation" },
+        { "label": "Web conftest", "path": "tests/web/conftest.py", "kind": "usage" },
+        { "label": "Reporting helpers", "path": "framework/utils/reporting.py", "kind": "implementation" }
+      ]
     },
     {
       "id": "ta-lesson-reports-and-trends",
@@ -553,7 +612,11 @@
       "exercise": "Run a suite five times with reporting enabled, generate a report with history restored, and identify your three least stable tests from the data rather than from intuition.",
       "exerciseUk": "Запустіть набір п'ять разів зі звітністю, згенеруйте звіт із відновленою історією й визначте три найменш стабільні тести за даними, а не за інтуїцією.",
       "tags": ["ci", "reporting", "metrics", "allure"],
-      "sourceIds": ["allure-report", "github-actions-docs", "qa-automation-python-repo"]
+      "sourceIds": ["allure-report", "github-actions-docs", "qa-automation-python-repo"],
+      "repoRefs": [
+        { "label": "CI pipeline (Allure/JUnit)", "path": ".github/workflows/ci.yml", "kind": "ci" },
+        { "label": "Reporting helpers", "path": "framework/utils/reporting.py", "kind": "implementation" }
+      ]
     }
   ]
 }

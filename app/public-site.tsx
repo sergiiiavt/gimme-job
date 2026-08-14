@@ -76,6 +76,12 @@ interface InterviewCatalog {
 
 type PythonLessonLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert";
 
+interface LessonRepoRef {
+  label: string;
+  path: string;
+  kind?: "implementation" | "usage" | "ci";
+}
+
 interface PythonLesson {
   id: string;
   moduleId: string;
@@ -98,6 +104,7 @@ interface PythonLesson {
   exerciseUk?: string;
   tags?: string[];
   sourceIds: string[];
+  repoRefs?: LessonRepoRef[];
 }
 
 interface PythonModule {
@@ -107,6 +114,13 @@ interface PythonModule {
   description: string;
 }
 
+interface ReferenceImplementation {
+  repo: string;
+  branch: string;
+  verifiedCommit: string;
+  verifiedAt: string;
+}
+
 interface LearningCurriculum {
   title: string;
   description: string;
@@ -114,6 +128,7 @@ interface LearningCurriculum {
   taxonomy: PythonModule[];
   sources: InterviewSource[];
   lessons: PythonLesson[];
+  referenceImplementation?: ReferenceImplementation;
 }
 
 const INTERVIEW_PAGE_SIZE = 60;
@@ -1149,6 +1164,9 @@ function MethodologyPage({ backLabel, methodology: method, onBack, sources: inte
   );
 }
 
+const repoRefKindLabels: Record<NonNullable<LessonRepoRef["kind"]>, string> = { implementation: "Implementation", usage: "Used by", ci: "CI" };
+const repoBlobUrl = (repo: string, rev: string, path: string) => `https://github.com/${repo}/blob/${rev}/${path}`;
+
 function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activeTopic: string; curriculum: LearningCurriculum; onTopicChange: (topic: string) => void; title: string }) {
   const [query, setQuery] = useState("");
   const [levels, setLevels] = useState<PythonLessonLevel[]>([]);
@@ -1160,6 +1178,7 @@ function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activ
   const lessons = curriculum.lessons;
   const moduleTaxonomy = curriculum.taxonomy;
   const sourcesList = curriculum.sources;
+  const referenceImplementation = curriculum.referenceImplementation;
   const sourcesById = useMemo(() => new Map(sourcesList.map((source) => [source.id, source])), [sourcesList]);
   const moduleLabels = useMemo(() => new Map(moduleTaxonomy.filter((item) => item.level).map((item) => [item.id, item.label])), [moduleTaxonomy]);
   const activeTaxonomy = moduleTaxonomy.find((item) => item.id === activeTopic);
@@ -1287,6 +1306,24 @@ function LearningPath({ activeTopic, curriculum, onTopicChange, title }: { activ
                     <h3>Code</h3>
                     <pre className="py-code"><code>{lesson.code}</code></pre>
                     {displayCaption && <p className="py-code-caption">{displayCaption}</p>}
+                  </section>
+                )}
+                {lesson.repoRefs && lesson.repoRefs.length > 0 && referenceImplementation && (
+                  <section className="py-code-section">
+                    <h3>See it in the framework</h3>
+                    <ul className="py-repo-refs">
+                      {lesson.repoRefs.map((ref) => (
+                        <li key={ref.path}>
+                          {ref.kind && <span className="py-repo-ref-kind">{repoRefKindLabels[ref.kind]}</span>}
+                          <span className="py-repo-ref-label">{ref.label}</span> <code>{ref.path}</code>{" "}
+                          <a href={repoBlobUrl(referenceImplementation.repo, referenceImplementation.branch, ref.path)} target="_blank" rel="noreferrer">live ↗</a>{" "}
+                          <a href={repoBlobUrl(referenceImplementation.repo, referenceImplementation.verifiedCommit, ref.path)} target="_blank" rel="noreferrer">reviewed ↗</a>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="py-code-caption" title={`Verified ${referenceImplementation.verifiedAt} against commit ${referenceImplementation.verifiedCommit}`}>
+                      Reviewed against commit {referenceImplementation.verifiedCommit.slice(0, 7)}.
+                    </p>
                   </section>
                 )}
                 <section>
