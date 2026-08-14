@@ -542,5 +542,13 @@
     "publisher": "NASA",
     "kind": "Government engineering guidance",
     "role": "Requirement clarity, correctness, feasibility, singularity, completeness, consistency, traceability and verifiability"
+  },
+  {
+    "id": "mdn-javascript-guide",
+    "title": "MDN JavaScript Guide",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+    "publisher": "Mozilla",
+    "kind": "Technical reference",
+    "role": "Functions, closures, objects, classes, error handling and asynchronous programming (promises, async/await)"
   }
 ]
