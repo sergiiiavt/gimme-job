@@ -63,7 +63,7 @@ jobs:
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         shell: bash
         run: |
-          if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" ]]; then
+          if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" || -z "$GRAFANA_READ_TOKEN" ]]; then
             echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN repository secrets are configured."
             exit 0
           fi
