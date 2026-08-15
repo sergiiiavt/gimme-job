@@ -3,6 +3,7 @@ type ForwardedEmailMessage = {
   readonly to: string;
   readonly headers: Headers;
   readonly rawSize: number;
+  readonly raw?: ReadableStream<Uint8Array>;
   setReject(reason: string): void;
 };
 
@@ -12,6 +13,8 @@ const EMAIL_DOMAIN = "gimme-job.com";
 const BASE_LOCAL_PART = "jobs";
 const MAX_SUBJECT_LENGTH = 1000;
 const MAX_MESSAGE_ID_LENGTH = 1000;
+const MAX_VERIFICATION_MESSAGE_SIZE = 256 * 1024;
+const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 function cleanHeader(value: string | null, maxLength: number): string {
   return (value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, maxLength);
@@ -41,6 +44,52 @@ function parsedDate(value: string | null): string {
     if (Number.isFinite(timestamp)) return new Date(timestamp).toISOString();
   }
   return new Date().toISOString();
+}
+
+function decodeQuotedPrintableAscii(value: string): string {
+  return value
+    .replace(/=\r?\n/g, "")
+    .replace(/=([0-9a-f]{2})/gi, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)))
+    .replace(/&amp;/gi, "&");
+}
+
+export function extractGmailForwardingVerification(rawMessage: string): { verificationUrl: string | null; confirmationCode: string | null } {
+  const decoded = decodeQuotedPrintableAscii(rawMessage);
+  const verificationUrl = decoded.match(/https:\/\/(?:isolated\.)?mail\.google\.com\/mail\/(?:ca\/)?vf-[^\s<>"']+/i)?.[0]
+    ?.replace(/[),.;]+$/, "") ?? null;
+  const confirmationCode = decoded.match(/confirmation code:\s*(\d{6,12})/i)?.[1] ?? null;
+  return { verificationUrl, confirmationCode };
+}
+
+async function captureGmailForwardingVerification(
+  message: ForwardedEmailMessage,
+  db: D1Database,
+  userId: string,
+  subject: string,
+  senderEmail: string | null,
+  receivedAt: string,
+): Promise<void> {
+  if (!message.raw || message.rawSize <= 0 || message.rawSize > MAX_VERIFICATION_MESSAGE_SIZE) return;
+  if (!/forwarding confirmation/i.test(subject)) return;
+  if (!senderEmail || !/@google\.com$/i.test(senderEmail)) return;
+
+  const rawMessage = await new Response(message.raw).text();
+  const { verificationUrl, confirmationCode } = extractGmailForwardingVerification(rawMessage);
+  if (!verificationUrl && !confirmationCode) return;
+
+  const now = new Date().toISOString();
+  const expiresAt = new Date(Date.now() + VERIFICATION_TTL_MS).toISOString();
+  await db.prepare(`INSERT INTO email_forwarding_verifications (
+    user_id, verification_url, confirmation_code, received_at, expires_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?)
+  ON CONFLICT(user_id) DO UPDATE SET
+    verification_url = excluded.verification_url,
+    confirmation_code = excluded.confirmation_code,
+    received_at = excluded.received_at,
+    expires_at = excluded.expires_at,
+    updated_at = excluded.updated_at`)
+    .bind(userId, verificationUrl, confirmationCode, receivedAt, expiresAt, now)
+    .run();
 }
 
 export async function handleForwardedEmail(message: ForwardedEmailMessage, env: EmailForwardingEnv): Promise<void> {
@@ -98,6 +147,8 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
       now,
     )
     .run();
+
+  await captureGmailForwardingVerification(message, env.DB, alias.user_id, subject, senderEmail, receivedAt);
 }
 
 export function forwardingAddress(token: string): string {

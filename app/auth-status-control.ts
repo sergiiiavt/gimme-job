@@ -21,11 +21,20 @@ export type AuthSessionResponse = {
   gmail?: { connected: boolean; email?: string };
 };
 
+export type ForwardingSetup = {
+  address: string | null;
+  verificationUrl: string | null;
+  confirmationCode: string | null;
+};
+
 type SessionFetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 const actionStyle = {
   background: "transparent", border: 0, borderRadius: "5px", color: "#526059", cursor: "pointer",
   display: "block", fontSize: "12px", fontWeight: 700, padding: "8px 6px", textAlign: "left", width: "100%",
+} as const;
+const verificationStyle = {
+  ...actionStyle, color: "#315a43", textDecoration: "none",
 } as const;
 const summaryStyle = {
   alignItems: "center", borderRadius: "7px", cursor: "pointer", display: "grid", gap: "9px",
@@ -63,11 +72,19 @@ export async function loadAuthSession(fetcher: SessionFetcher = fetch): Promise<
   return response.json() as Promise<AuthSessionResponse>;
 }
 
-export async function loadForwardingAddress(fetcher: SessionFetcher = fetch): Promise<string | null> {
+export async function loadForwardingSetup(fetcher: SessionFetcher = fetch): Promise<ForwardingSetup | null> {
   const response = await fetcher("/auth/forwarding", { cache: "no-store", headers: { accept: "application/json" } });
   if (!response.ok) return null;
-  const payload = await response.json() as { address?: string };
-  return payload.address?.trim() || null;
+  const payload = await response.json() as { address?: string; verificationUrl?: string | null; confirmationCode?: string | null };
+  return {
+    address: payload.address?.trim() || null,
+    verificationUrl: payload.verificationUrl?.trim() || null,
+    confirmationCode: payload.confirmationCode?.trim() || null,
+  };
+}
+
+export async function loadForwardingAddress(fetcher: SessionFetcher = fetch): Promise<string | null> {
+  return (await loadForwardingSetup(fetcher))?.address ?? null;
 }
 
 export function shouldNormalizeToPersonal(mode: AuthViewMode, authenticated: boolean, personalHref: string, currentHref: string): boolean {
@@ -104,10 +121,11 @@ function AnonymousControl({ personalHref }: { personalHref: string }) {
   );
 }
 
-function AuthenticatedControl({ session, forwarding }: { session: AuthSessionResponse | null; forwarding: string | null }) {
+function AuthenticatedControl({ session, forwarding }: { session: AuthSessionResponse | null; forwarding: ForwardingSetup | null }) {
   const name = session?.user?.name?.trim() || "Signed in";
   const email = session?.user?.email?.trim() || "Personal workspace";
-  const copyAddress = () => { if (forwarding && navigator.clipboard) void navigator.clipboard.writeText(forwarding); };
+  const copyAddress = () => { if (forwarding?.address && navigator.clipboard) void navigator.clipboard.writeText(forwarding.address); };
+  const copyCode = () => { if (forwarding?.confirmationCode && navigator.clipboard) void navigator.clipboard.writeText(forwarding.confirmationCode); };
 
   return createElement("details", { className: "kb-auth-control" },
     createElement("summary", { style: summaryStyle, "aria-label": `Account: ${email}` },
@@ -119,9 +137,18 @@ function AuthenticatedControl({ session, forwarding }: { session: AuthSessionRes
     ),
     createElement("div", { style: menuStyle },
       createElement("span", { style: forwardingStyle },
-        forwarding ? `Forward job emails to ${forwarding}` : "Preparing your forwarding address…",
+        forwarding?.address ? `Forward job emails to ${forwarding.address}` : "Preparing your forwarding address…",
       ),
-      forwarding ? createElement("button", { type: "button", style: actionStyle, onClick: copyAddress }, "Copy forwarding address") : null,
+      forwarding?.address ? createElement("button", { type: "button", style: actionStyle, onClick: copyAddress }, "Copy forwarding address") : null,
+      forwarding?.verificationUrl ? createElement("a", {
+        href: forwarding.verificationUrl,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        style: verificationStyle,
+      }, "Verify Gmail forwarding") : null,
+      !forwarding?.verificationUrl && forwarding?.confirmationCode ? createElement("button", {
+        type: "button", style: verificationStyle, onClick: copyCode,
+      }, `Copy Gmail confirmation code: ${forwarding.confirmationCode}`) : null,
       createElement("form", { action: "/workspace/logout", method: "post" },
         createElement("button", { style: actionStyle, type: "submit" }, "Log out"),
       ),
@@ -132,7 +159,7 @@ function AuthenticatedControl({ session, forwarding }: { session: AuthSessionRes
 export default function AuthStatusControl({ mode, personalHref }: { mode: AuthViewMode; personalHref: string }) {
   const [authenticated, setAuthenticated] = useState(mode === "personal");
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
-  const [forwarding, setForwarding] = useState<string | null>(null);
+  const [forwarding, setForwarding] = useState<ForwardingSetup | null>(null);
 
   useEffect(() => startAuthSync({
     mode, personalHref,
@@ -142,10 +169,10 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   useEffect(() => {
     if (!authenticated) return;
     let active = true;
-    void Promise.all([loadAuthSession(), loadForwardingAddress()]).then(([nextSession, address]) => {
+    void Promise.all([loadAuthSession(), loadForwardingSetup()]).then(([nextSession, setup]) => {
       if (!active) return;
       if (nextSession) setSession(nextSession);
-      setForwarding(address);
+      setForwarding(setup);
     }).catch(() => {});
     return () => { active = false; };
   }, [authenticated]);

@@ -56,7 +56,7 @@ test("forwarding endpoint requires an authenticated session", async () => {
   assert.equal(response.headers.get("cache-control"), "no-store");
 });
 
-test("forwarding endpoint returns only the current user's private address", async () => {
+test("forwarding endpoint returns only the current user's private forwarding state", async () => {
   for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
   cloudflareEnv.DB = fakeDb();
   cloudflareEnv.MULTI_USER_ENABLED = "true";
@@ -64,7 +64,11 @@ test("forwarding endpoint returns only the current user's private address", asyn
     headers: { cookie: "gimmejob_user_session=session-token" },
   }));
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { address: "jobs+abc123def456@gimme-job.com" });
+  assert.deepEqual(await response.json(), {
+    address: "jobs+abc123def456@gimme-job.com",
+    verificationUrl: null,
+    confirmationCode: null,
+  });
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.match(response.headers.get("x-robots-tag") ?? "", /noindex/);
 });
