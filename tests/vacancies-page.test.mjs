@@ -12,8 +12,13 @@ test("workspace uses the dedicated vacancies page", () => {
 });
 
 test("vacancies list has separate public and personal layouts", () => {
-  assert.match(source, /vacancy-column-head-personal/);
-  assert.match(source, /vacancy-column-head-public/);
+  assert.match(source, /const mode = authenticated \? "personal" : "public"/);
+  assert.match(source, /className={`vacancy-column-head vacancy-column-head-\$\{mode\}`}/);
+  assert.match(source, /className={`vacancy-row vacancy-row-\$\{mode\}`}/);
+  assert.match(styles, /\.vacancy-column-head-personal/);
+  assert.match(styles, /\.vacancy-column-head-public/);
+  assert.match(styles, /\.vacancy-row-personal/);
+  assert.match(styles, /\.vacancy-row-public/);
   assert.match(source, /Sign in for personal tools/);
   assert.match(source, /Match/);
   assert.match(source, /Posted/);
