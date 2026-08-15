@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./about-site-layout.css";
-import "./vacancies-page.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
