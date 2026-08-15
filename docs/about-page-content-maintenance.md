@@ -64,18 +64,19 @@ If a sentence does not explain **what technology is used, what it does, or where
 
 ## 3. Current page structure
 
-Keep the page organized as large horizontal sections with a clear split between **purpose** and **technology**.
+Keep the page organized with a clear visual split between **purpose** and **technology**.
 
 The current approved structure is:
 
-- **Why I created this site** — overview/purpose block. It keeps its own green number `1`.
-- **TECH STACK** — visual divider/title before the technology flows.
+- **Why I created this site** — an unnumbered group heading outside the bordered purpose-card area.
+- Four numbered purpose cards (`01`–`04`) below that heading.
+- **TECH STACK** — a second unnumbered group heading using the same visual style and horizontal indentation as `Why I created this site`.
 - **1. Deployment**
 - **2. Database**
 - **3. OpenAI integration**
 - **4. Grafana observability**
 
-The technology numbering deliberately restarts at `1` after the `TECH STACK` divider. Do not continue the overview number into the technology sections.
+Only the four technology sections use the green section-number circles. The overview heading itself is deliberately unnumbered.
 
 Do not add another technology section just because a new library is installed.
 
@@ -113,7 +114,7 @@ This section is purpose-oriented, not a technology diagram.
 
 Keep exactly four purpose cards unless the project purpose itself changes.
 
-The overview header has one global action: `View source on GitHub`. Do not duplicate `Open interview catalog` in the header; the interview catalog remains linked from the QA knowledge-base card.
+The overview heading is outside the bordered purpose-card area and has no green section number or `OVERVIEW` eyebrow. Its only global action is `View source on GitHub`. Do not duplicate `Open interview catalog` in the heading; the interview catalog remains linked from the QA knowledge-base card.
 
 ### Card 1 — Find a job
 
@@ -460,11 +461,18 @@ The About page is a summary. These files are the evidence.
 
 The visual structure is intentionally consistent.
 
-### Horizontal section rule
+### Group heading and horizontal section rule
 
-Each major section is a full-width horizontal band/card inside the About page content area.
+`Why I created this site` and `TECH STACK` are peer-level visual group headings. They must:
 
-The overview is followed by a compact `TECH STACK` divider. Technology sections restart numbering at `1`.
+- use the same typography, color, casing treatment, and horizontal indentation;
+- sit outside the bordered content/technology cards;
+- remain unnumbered;
+- avoid decorative `OVERVIEW` labels or other extra eyebrow text.
+
+The four purpose cards live inside their own bordered area below `Why I created this site`. Their internal `01`–`04` numbers remain.
+
+Technology sections remain full-width horizontal bands/cards and restart green-circle numbering at `1` after the `TECH STACK` heading.
 
 Each technology section has:
 
@@ -478,21 +486,22 @@ Descriptions stay left-aligned but should be vertically centered against the cor
 
 Do not replace this with a long article.
 
-### Spacing and density rule
+### Spacing, density, and intrinsic sizing rule
 
-The page should be compact and consistent rather than filling space for its own sake.
+The page should be compact and consistent. **Do not stretch technology cards merely to fill the available row width.**
 
+- technology flow nodes are content-sized (`fit-content`/intrinsic sizing) within sensible readability limits;
+- a flow row is allowed to end before the right edge of the section; unused space at the end of the row is preferable to artificial blank space inside cards;
+- do not use equal-width grid columns simply to make a flow fill the row;
+- compound nodes may naturally be wider when their content requires it (for example Cloudflare with Workers + Static assets);
 - use the same horizontal section padding throughout the page;
-- use the same small gap family between headings, nodes, arrows, nested cards, and links;
-- minimize unused blank space inside technology nodes;
-- size primary technology nodes close to their content instead of stretching every card to consume the full row;
-- let only genuinely compound nodes, such as the Cloudflare container or output groups, absorb remaining width when useful;
-- keep arrows short and consistent between nodes;
-- keep nested cards aligned to the same internal padding rhythm;
-- do not create large empty areas merely to make cards equal width;
-- preserve readable wrapping rather than forcing oversized cards.
+- use the same compact gap rhythm between description column, nodes, arrows, nested cards, and links;
+- use consistent card padding and internal vertical spacing across Deployment, Database, OpenAI, and Grafana;
+- keep arrows short and consistent;
+- preserve readable wrapping instead of creating oversized cards;
+- on narrower screens, flows may stack vertically rather than squeezing or stretching cards.
 
-When adjusting one technology row, check Deployment, Database, OpenAI, and Grafana together so spacing remains visually consistent across all flows.
+When adjusting one technology row, review all technology rows together. Alignment should come from consistent padding/gaps, **not from forcing all cards to the same width**.
 
 ### Card rule
 
@@ -668,7 +677,11 @@ If an old test explicitly checks text that was intentionally removed, update tha
 
 Before merging an About-page content change, confirm:
 
-- [ ] The page still has the approved horizontal structure.
+- [ ] `Why I created this site` and `TECH STACK` use the same group-heading style and indentation.
+- [ ] The overview heading is outside the bordered purpose-card area and has no green section number or `OVERVIEW` eyebrow.
+- [ ] Technology sections restart green-circle numbering at `1`.
+- [ ] Technology cards are content-sized and are not stretched simply to fill a row.
+- [ ] Spacing/padding is consistent across all technology flows.
 - [ ] The intro contains the four current purpose cards: Find a job, Create a technology playground, Use an AI-assisted development workflow, and Build a QA knowledge base.
 - [ ] Copy is factual and concise.
 - [ ] There is no marketing filler.
