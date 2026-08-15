@@ -71,9 +71,7 @@ const avatarStyle = {
   width: "32px",
 } as const;
 
-const identityStyle = {
-  minWidth: 0,
-} as const;
+const identityStyle = { minWidth: 0 } as const;
 
 const identityPrimaryStyle = {
   color: "#28342e",
@@ -176,7 +174,7 @@ export function startAuthSync({
   };
 }
 
-function AnonymousControl({ personalHref }: { personalHref: string }) {
+function AnonymousControl({ personalHref, session }: { personalHref: string; session: AuthSessionResponse | null }) {
   return createElement(
     "div",
     { className: "kb-auth-control" },
@@ -191,7 +189,7 @@ function AnonymousControl({ personalHref }: { personalHref: string }) {
         createElement("span", null, "Sign in for personal tools"),
       ),
     ),
-    createElement("a", { href: signInHref(personalHref) }, "Sign in with Google"),
+    createElement("a", { href: signInHref(personalHref) }, session?.enabled ? "Sign in with Google" : "Sign in"),
   );
 }
 
@@ -250,16 +248,15 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
     personalHref,
     onAuthenticatedChange: (next) => {
       setAuthenticated(next);
-      if (!next) setSession(null);
+      if (!next) setSession((current) => current?.enabled ? current : null);
     },
   }), [mode, personalHref]);
 
   useEffect(() => {
-    if (!authenticated) return;
     let active = true;
     void loadAuthSession()
       .then((result) => {
-        if (active && result?.authenticated) setSession(result);
+        if (active && result) setSession(result);
       })
       .catch(() => {});
     return () => { active = false; };
@@ -267,5 +264,5 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
 
   return authenticated
     ? createElement(AuthenticatedControl, { personalHref, session })
-    : createElement(AnonymousControl, { personalHref });
+    : createElement(AnonymousControl, { personalHref, session });
 }
