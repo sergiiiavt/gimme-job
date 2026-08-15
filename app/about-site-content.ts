@@ -21,7 +21,8 @@ export type AboutIcon =
   | "grafana"
   | "dashboard"
   | "alert"
-  | "export";
+  | "export"
+  | "n8n";
 
 export type AboutAccent = "green" | "blue" | "purple" | "orange" | "neutral";
 
@@ -60,6 +61,9 @@ export const SONARQUBE_CONFIG_URL = `${REPO_URL}/blob/main/sonar-project.propert
 export const SONARQUBE_PROJECT_URL = "https://sonarcloud.io/summary/overall?id=sergiiiavt_gimme-job&branch=main";
 export const GRAFANA_DASHBOARD_URL = "https://gentlecabbage323.grafana.net/public-dashboards/8c022097cb6544f2a5f9dff1cfab4e7b";
 export const CLOUDFLARE_WORKERS_LOGS_URL = "https://dash.cloudflare.com/4f8e29835b9bb4e2330170ca94ac8f2b/workers/services/view/gimmejob/production/observability/events";
+export const N8N_URL = "https://n8n.gimme-job.com";
+export const N8N_DOC_URL = `${REPO_URL}/blob/main/docs/n8n-gmail-integration.md`;
+export const N8N_WORKFLOW_URL = `${REPO_URL}/blob/main/ops/n8n/workflows/gimmejob-forwarded-email-classifier.json`;
 
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
   label: "Grafana dashboard",
@@ -173,6 +177,59 @@ export const DATABASE = {
     { title: "Analyses", description: "Analysis results", icon: "analysis" as const },
     { title: "Settings", description: "Application settings", icon: "settings" as const },
     { title: "Observability", description: "Events and snapshots", icon: "observability" as const },
+  ] satisfies SectionTile[],
+};
+
+export const N8N = {
+  title: "n8n email automation",
+  description:
+    "n8n is the production orchestration layer for tenant-scoped forwarded job-email metadata; GimmeJob keeps identity, ownership, and application state.",
+  gmail: {
+    title: "Gmail forwarding",
+    description: "User filters forward selected job emails to a per-user GimmeJob token address",
+    icon: "document" as const,
+    accent: "neutral" as const,
+  },
+  routing: {
+    title: "Cloudflare Email Routing",
+    description: "Routes the forwarded message to the GimmeJob Worker email handler",
+    icon: "cloudflare" as const,
+    accent: "orange" as const,
+  },
+  eventStore: {
+    title: "Worker + email events",
+    description: "Resolves the tenant and stores structured metadata in D1",
+    icon: "worker" as const,
+    accent: "blue" as const,
+  },
+  orchestrator: {
+    title: "n8n",
+    description:
+      "Hetzner-hosted workflow automation polls the metadata-only internal API every minute and runs deterministic classification.",
+    icon: "n8n" as const,
+    accent: "purple" as const,
+    links: [
+      { label: "n8n", href: N8N_URL, external: true },
+      { label: "Workflow", href: N8N_WORKFLOW_URL, external: true },
+      { label: "Integration docs", href: N8N_DOC_URL, external: true },
+    ],
+  },
+  outputs: [
+    {
+      title: "Classification",
+      description: "Recruiter, interview, rejection, test task, offer, or other",
+      icon: "analysis" as const,
+    },
+    {
+      title: "Internal API",
+      description: "Writes the tenant-scoped result back through a Bearer-protected route",
+      icon: "worker" as const,
+    },
+    {
+      title: "D1 state",
+      description: "GimmeJob remains the system of record; n8n does not own application state",
+      icon: "database" as const,
+    },
   ] satisfies SectionTile[],
 };
 
