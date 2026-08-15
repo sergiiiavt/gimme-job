@@ -102,14 +102,23 @@ test("requires Bearer auth for the Grafana health endpoint", async () => {
   assert.equal(methodNotAllowed.headers.get("allow"), "GET, HEAD");
 });
 
-function fakeObservabilityDb({ fail = false } = {}) {
+function fakeObservabilityDb({ fail = false, failMessage = "fake summary failure" } = {}) {
+  const state = {
+    overviewSql: "",
+  };
+
   return {
+    state,
     prepare(sql) {
+      if (String(sql).includes("AS errors") && String(sql).includes("FROM observability_events")) {
+        state.overviewSql = String(sql);
+      }
+
       if (fail) {
         return {
           bind() { return this; },
-          async first() { throw new Error("fake summary failure"); },
-          async all() { throw new Error("fake summary failure"); },
+          async first() { throw new Error(failMessage); },
+          async all() { throw new Error(failMessage); },
         };
       }
 
@@ -157,6 +166,21 @@ function fakeObservabilityDb({ fail = false } = {}) {
             return {
               results: [
                 { day: "2026-08-14", source: "workua:workua-qa", status: "success", operations: 2, error_count: 0, avg_duration_ms: 4100, items_processed: 54 },
+              ],
+            };
+          }
+
+          if (sql.includes("reason_code") && sql.includes("occurrences")) {
+            return {
+              results: [
+                {
+                  day: "2026-08-15",
+                  event: "job_source_sync",
+                  source: "rss:dou-qa",
+                  reason_code: "upstream_http_error",
+                  http_status: 403,
+                  occurrences: 1,
+                },
               ],
             };
           }
@@ -214,7 +238,8 @@ test("serves the Grafana observability summary endpoint", async () => {
   const { default: worker } = await import(workerUrl.href);
   const context = { waitUntil() {}, passThroughOnException() {} };
   const token = "grafana-read-token";
-  const env = { GRAFANA_READ_TOKEN: token, DB: fakeObservabilityDb(), ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+  const fakeDb = fakeObservabilityDb();
+  const env = { GRAFANA_READ_TOKEN: token, DB: fakeDb, ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
 
   const okResponse = await worker.fetch(
     new Request("https://gimmejob.example/api/observability/summary?days=30", {
@@ -233,12 +258,23 @@ test("serves the Grafana observability summary endpoint", async () => {
   assert.ok(summary.current);
   assert.ok(Array.isArray(summary.operations));
   assert.ok(Array.isArray(summary.sources));
+  assert.ok(Array.isArray(summary.errorReasons));
   assert.ok(Array.isArray(summary.snapshots));
   assert.ok(Array.isArray(summary.jobsBySource));
   assert.equal(summary.overview.lastSuccessfulSyncAt, "2026-08-15T00:00:00.000Z");
   assert.equal(summary.current.totalJobs, 350);
   assert.equal(summary.sources[0].source, "workua:workua-qa");
   assert.equal(summary.jobsBySource[0].source, "rss:dou-qa");
+  assert.deepEqual(summary.errorReasons[0], {
+    day: "2026-08-15",
+    event: "job_source_sync",
+    source: "rss:dou-qa",
+    reasonCode: "upstream_http_error",
+    httpStatus: 403,
+    occurrences: 1,
+  });
+  assert.match(fakeDb.state.overviewSql, /WHEN event = 'job_sync' AND status = 'degraded' THEN 0/);
+  assert.match(fakeDb.state.overviewSql, /WHEN event = 'job_sync' AND status = 'failure' THEN 1/);
 
   const missingAuth = await worker.fetch(new Request("https://gimmejob.example/api/observability/summary"), env, context);
   assert.equal(missingAuth.status, 401);
@@ -301,15 +337,37 @@ test("serves the Grafana observability summary endpoint", async () => {
   assert.equal(defaultDaysResponse.status, 200);
   assert.equal((await defaultDaysResponse.json()).rangeDays, 30);
 
+  const capturedErrors = [];
+  const originalConsoleError = console.error;
+  console.error = (value) => {
+    capturedErrors.push(value);
+  };
+
   const failingResponse = await worker.fetch(
     new Request("https://gimmejob.example/api/observability/summary", {
       headers: { authorization: `Bearer ${token}` },
     }),
-    { GRAFANA_READ_TOKEN: token, DB: fakeObservabilityDb({ fail: true }), ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+    {
+      GRAFANA_READ_TOKEN: token,
+      DB: fakeObservabilityDb({
+        fail: true,
+        failMessage: "Bearer SHOULD_NOT_APPEAR sergii@example.com https://example.com/path?token=SHOULD_NOT_APPEAR",
+      }),
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
     context,
   );
+  console.error = originalConsoleError;
+
   assert.equal(failingResponse.status, 500);
   assert.deepEqual(await failingResponse.json(), { error: "Observability data unavailable." });
+  assert.equal(capturedErrors.length, 1);
+  assert.equal(capturedErrors[0].event, "observability_summary");
+  assert.equal(capturedErrors[0].phase, "query");
+  assert.equal(capturedErrors[0].outcome, "failure");
+  assert.equal(capturedErrors[0].reasonCode, "database_error");
+  assert.equal(JSON.stringify(capturedErrors[0]).includes("SHOULD_NOT_APPEAR"), false);
+  assert.equal(JSON.stringify(capturedErrors[0]).includes("sergii@example.com"), false);
 });
 
 test("keeps the public site open and protects the private workspace", async () => {
@@ -446,8 +504,8 @@ function fakeImportObservabilityDb({ failUpsert = false, failDashboard = false }
             }
 
             if (text.includes("INSERT INTO observability_events")) {
-              const [event, status, , , , , itemsSeen, itemsProcessed, errorCount] = statement.params;
-              state.events.push({ event, status, itemsSeen, itemsProcessed, errorCount });
+              const [event, status, , , , , itemsSeen, itemsProcessed, errorCount, reasonCode, httpStatus] = statement.params;
+              state.events.push({ event, status, itemsSeen, itemsProcessed, errorCount, reasonCode, httpStatus });
             }
 
             if (text.includes("INSERT INTO observability_snapshots")) {
@@ -509,6 +567,11 @@ test("records only job_import success when dashboard fails after import", async 
   const { default: worker } = await import(workerUrl.href);
   const context = { waitUntil() {}, passThroughOnException() {} };
   const { db, state } = fakeImportObservabilityDb({ failDashboard: true });
+  const infoLogs = [];
+  const originalConsoleLog = console.log;
+  console.log = (value) => {
+    infoLogs.push(value);
+  };
   for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
   cloudflareEnv.DB = db;
   const authorization = `Basic ${Buffer.from("gimmejob:0123456789abcdef").toString("base64")}`;
@@ -531,6 +594,7 @@ test("records only job_import success when dashboard fails after import", async 
     },
     context,
   );
+  console.log = originalConsoleLog;
 
   assert.equal(response.status, 500);
   assert.match((await response.json()).error ?? "", /fake dashboard failure/i);
@@ -544,6 +608,14 @@ test("records only job_import success when dashboard fails after import", async 
   assert.equal(importEvents.some((entry) => entry.status === "failure"), false);
   assert.equal(state.snapshots, 1);
   assert.equal(state.dashboardQueries, 1);
+
+  const startLog = infoLogs.find((entry) => entry.event === "job_import" && entry.phase === "start");
+  const completeLog = infoLogs.find((entry) => entry.event === "job_import" && entry.phase === "complete" && entry.outcome === "success");
+  assert.ok(startLog);
+  assert.ok(completeLog);
+  assert.equal(startLog.operationId, completeLog.operationId);
+  assert.equal(startLog.itemsSeen, 1);
+  assert.equal(completeLog.itemsProcessed, 1);
 });
 
 test("records only job_import failure when upsert fails", async () => {
@@ -552,6 +624,16 @@ test("records only job_import failure when upsert fails", async () => {
   const { default: worker } = await import(workerUrl.href);
   const context = { waitUntil() {}, passThroughOnException() {} };
   const { db, state } = fakeImportObservabilityDb({ failUpsert: true });
+  const infoLogs = [];
+  const errorLogs = [];
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+  console.log = (value) => {
+    infoLogs.push(value);
+  };
+  console.error = (value) => {
+    errorLogs.push(value);
+  };
   for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
   cloudflareEnv.DB = db;
   const authorization = `Basic ${Buffer.from("gimmejob:0123456789abcdef").toString("base64")}`;
@@ -574,6 +656,8 @@ test("records only job_import failure when upsert fails", async () => {
     },
     context,
   );
+  console.log = originalConsoleLog;
+  console.error = originalConsoleError;
 
   assert.equal(response.status, 500);
   assert.match((await response.json()).error ?? "", /fake upsert failure/i);
@@ -584,7 +668,59 @@ test("records only job_import failure when upsert fails", async () => {
   assert.equal(importEvents[0].itemsSeen, 1);
   assert.equal(importEvents[0].itemsProcessed, null);
   assert.equal(importEvents[0].errorCount, 1);
+  assert.equal(importEvents[0].reasonCode, "database_error");
   assert.equal(importEvents.some((entry) => entry.status === "success"), false);
   assert.equal(state.snapshots, 0);
   assert.equal(state.dashboardQueries, 0);
+
+  const startLog = infoLogs.find((entry) => entry.event === "job_import" && entry.phase === "start");
+  const failureLog = errorLogs.find((entry) => entry.event === "job_import" && entry.phase === "complete" && entry.outcome === "failure");
+  assert.ok(startLog);
+  assert.ok(failureLog);
+  assert.equal(startLog.operationId, failureLog.operationId);
+  assert.equal(failureLog.reasonCode, "database_error");
+  assert.equal(String(failureLog.errorSummary).includes("fake upsert failure"), false);
+});
+
+test("classifies operational errors safely", async () => {
+  const helperUrl = new URL("../dist/server/app/api/_operational-log.js", import.meta.url);
+  const { safeErrorDetails } = await import(`${helperUrl.href}?test=${process.pid}-${Date.now()}`);
+
+  const http403 = safeErrorDetails(new Error("upstream failed: HTTP 403"));
+  assert.equal(http403.reasonCode, "upstream_http_error");
+  assert.equal(http403.httpStatus, 403);
+  assert.equal(http403.retryable, false);
+
+  const http429 = safeErrorDetails(new Error("OpenAI request failed: HTTP 429"));
+  assert.equal(http429.reasonCode, "upstream_http_error");
+  assert.equal(http429.httpStatus, 429);
+  assert.equal(http429.retryable, true);
+
+  const http500 = safeErrorDetails(new Error("collector failed: HTTP 500"));
+  assert.equal(http500.reasonCode, "upstream_http_error");
+  assert.equal(http500.httpStatus, 500);
+  assert.equal(http500.retryable, true);
+
+  const timeout = safeErrorDetails(Object.assign(new Error("timed out"), { name: "TimeoutError" }));
+  assert.equal(timeout.reasonCode, "timeout");
+  assert.equal(timeout.retryable, true);
+
+  const parseError = safeErrorDetails(new SyntaxError("Unexpected token < in JSON"));
+  assert.equal(parseError.reasonCode, "response_parse_error");
+
+  const fallback = safeErrorDetails(new Error("totally custom failure"), "database_error");
+  assert.equal(fallback.reasonCode, "database_error");
+  assert.equal(fallback.errorSummary, "Database operation failed.");
+  assert.equal(fallback.errorSummary.includes("totally custom failure"), false);
+});
+
+test("does not leak secrets through safe error classification", async () => {
+  const helperUrl = new URL("../dist/server/app/api/_operational-log.js", import.meta.url);
+  const { safeErrorDetails } = await import(`${helperUrl.href}?secret-test=${process.pid}-${Date.now()}`);
+  const details = safeErrorDetails(new Error("Bearer SHOULD_NOT_APPEAR sergii@example.com https://example.com/path?token=SHOULD_NOT_APPEAR"), "unexpected_error");
+  const serialized = JSON.stringify(details);
+
+  assert.equal(serialized.includes("SHOULD_NOT_APPEAR"), false);
+  assert.equal(serialized.includes("sergii@example.com"), false);
+  assert.equal(serialized.includes("example.com/path?token"), false);
 });

@@ -80,6 +80,8 @@ export const observabilityEvents = sqliteTable("observability_events", {
   itemsSeen: integer("items_seen"),
   itemsProcessed: integer("items_processed"),
   errorCount: integer("error_count").notNull().default(0),
+  reasonCode: text("reason_code"),
+  httpStatus: integer("http_status"),
 }, (table) => [
   index("observability_events_occurred_at_idx").on(table.occurredAt),
   index("observability_events_event_occurred_at_idx").on(table.event, table.occurredAt),

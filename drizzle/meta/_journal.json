@@ -36,6 +36,13 @@
       "when": 1786745192112,
       "tag": "0004_hard_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1786752321103,
+      "tag": "0005_narrow_mauler",
+      "breakpoints": true
     }
   ]
 }

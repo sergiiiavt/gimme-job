@@ -1,6 +1,7 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { operationalError, safeErrorDetails } from "../app/api/_operational-log";
 
 interface Env {
   ASSETS: Fetcher;
@@ -236,13 +237,31 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
   }
 
   const from = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
+  let stage:
+    | "overview"
+    | "operations"
+    | "sources"
+    | "error_reasons"
+    | "snapshots"
+    | "current_snapshot"
+    | "jobs_by_source" = "overview";
 
   try {
+    stage = "overview";
     const overviewRow = await env.DB.prepare(`SELECT
       COUNT(*) AS operations,
       SUM(CASE WHEN status = 'failure' THEN 1 ELSE 0 END) AS failures,
       SUM(CASE WHEN status = 'degraded' THEN 1 ELSE 0 END) AS degraded,
-      COALESCE(SUM(error_count), 0) AS errors,
+      COALESCE(
+        SUM(
+          CASE
+            WHEN event = 'job_sync' AND status = 'degraded' THEN 0
+            WHEN event = 'job_sync' AND status = 'failure' THEN 1
+            ELSE error_count
+          END
+        ),
+        0
+      ) AS errors,
       ROUND(AVG(duration_ms), 1) AS avg_duration_ms,
       MAX(
         CASE
@@ -261,6 +280,7 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
     FROM observability_events
     WHERE occurred_at >= ?`).bind(from).first<Record<string, unknown>>();
 
+    stage = "operations";
     const operationsResult = await env.DB.prepare(`SELECT
       substr(occurred_at, 1, 10) AS day,
       event,
@@ -275,6 +295,7 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
     GROUP BY substr(occurred_at, 1, 10), event, status
     ORDER BY day ASC, event ASC, status ASC`).bind(from).all<Record<string, unknown>>();
 
+    stage = "sources";
     const sourcesResult = await env.DB.prepare(`SELECT
       substr(occurred_at, 1, 10) AS day,
       source,
@@ -289,6 +310,37 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
     GROUP BY substr(occurred_at, 1, 10), source, status
     ORDER BY day ASC, source ASC, status ASC`).bind(from).all<Record<string, unknown>>();
 
+    stage = "error_reasons";
+    const errorReasonsResult = await env.DB.prepare(`SELECT
+      substr(occurred_at, 1, 10) AS day,
+      event,
+      source,
+      reason_code,
+      http_status,
+      SUM(
+        CASE
+          WHEN event = 'job_sync' AND status = 'failure' THEN 1
+          ELSE error_count
+        END
+      ) AS occurrences
+    FROM observability_events
+    WHERE occurred_at >= ?
+      AND reason_code IS NOT NULL
+      AND NOT (event = 'job_sync' AND status = 'degraded')
+    GROUP BY
+      substr(occurred_at, 1, 10),
+      event,
+      source,
+      reason_code,
+      http_status
+    ORDER BY
+      day ASC,
+      event ASC,
+      source ASC,
+      reason_code ASC,
+      http_status ASC`).bind(from).all<Record<string, unknown>>();
+
+    stage = "snapshots";
     const snapshotsResult = await env.DB.prepare(`WITH latest_per_day AS (
       SELECT substr(occurred_at, 1, 10) AS day, MAX(occurred_at) AS occurred_at
       FROM observability_snapshots
@@ -309,6 +361,7 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
     INNER JOIN latest_per_day l ON l.occurred_at = s.occurred_at
     ORDER BY s.occurred_at ASC`).bind(from).all<Record<string, unknown>>();
 
+    stage = "current_snapshot";
     const currentRow = await env.DB.prepare(`SELECT
       occurred_at,
       total_jobs,
@@ -323,6 +376,7 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
     ORDER BY occurred_at DESC
     LIMIT 1`).first<Record<string, unknown>>();
 
+    stage = "jobs_by_source";
     const jobsBySourceResult = await env.DB.prepare(`SELECT
       source,
       COUNT(*) AS count
@@ -375,6 +429,14 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
         avgDurationMs: row.avg_duration_ms === null || row.avg_duration_ms === undefined ? null : Number(row.avg_duration_ms),
         itemsProcessed: Number(row.items_processed ?? 0),
       })),
+      errorReasons: errorReasonsResult.results.map((row) => ({
+        day: String(row.day),
+        event: String(row.event),
+        source: row.source === null || row.source === undefined ? null : String(row.source),
+        reasonCode: String(row.reason_code),
+        httpStatus: row.http_status === null || row.http_status === undefined ? null : Number(row.http_status),
+        occurrences: Number(row.occurrences ?? 0),
+      })),
       snapshots: snapshotsResult.results.map((row) => ({
         occurredAt: String(row.occurred_at),
         totalJobs: Number(row.total_jobs ?? 0),
@@ -395,8 +457,14 @@ async function handleObservabilitySummary(request: Request, env: Env): Promise<R
         "cache-control": "no-store",
       },
     });
-  } catch {
-    console.error("Observability summary query failed.");
+  } catch (error) {
+    const details = safeErrorDetails(error, "database_error");
+    operationalError("observability_summary", {
+      phase: "query",
+      outcome: "failure",
+      stage,
+      ...details,
+    });
     return Response.json(
       { error: "Observability data unavailable." },
       {

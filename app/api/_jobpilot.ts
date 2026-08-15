@@ -2,6 +2,14 @@
 // deterministic-scoring logic below, which is deliberately duplicated per source file in this
 // codebase) is safe to reuse directly in the Worker rather than re-implementing it here.
 import { base64ToBytes, buildResumePdf, bytesToBase64 } from "../../agent/src/resume-pdf.js";
+import {
+  newOperationId,
+  operationalError,
+  operationalInfo,
+  operationalWarn,
+  safeErrorDetails,
+  type OperationalReasonCode,
+} from "./_operational-log";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -17,6 +25,8 @@ type ObservabilityEventInput = {
   itemsSeen?: number | null;
   itemsProcessed?: number | null;
   errorCount?: number;
+  reasonCode?: OperationalReasonCode | null;
+  httpStatus?: number | null;
 };
 
 const DEFAULT_PROFILE = {
@@ -132,6 +142,10 @@ function safeErrorCount(value: number | null | undefined): number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
 }
 
+function safeHttpStatus(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 100 && value <= 599 ? value : null;
+}
+
 function observabilitySource(kind: string, source: Json, fallback: string) {
   const rawName = cleanText(source.name, fallback).toLowerCase();
   const safeName = rawName
@@ -180,8 +194,10 @@ export async function recordObservabilityEvent(input: ObservabilityEventInput): 
       duration_ms,
       items_seen,
       items_processed,
-      error_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      error_count,
+      reason_code,
+      http_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(
         input.event,
         input.status,
@@ -192,10 +208,19 @@ export async function recordObservabilityEvent(input: ObservabilityEventInput): 
         nonNegativeInteger(input.itemsSeen),
         nonNegativeInteger(input.itemsProcessed),
         safeErrorCount(input.errorCount),
+        input.reasonCode ?? null,
+        safeHttpStatus(input.httpStatus),
       )
       .run();
-  } catch {
-    console.error(`Observability write failed for ${input.event}.`);
+  } catch (error) {
+    const details = safeErrorDetails(error, "database_error");
+    operationalError("observability_storage", {
+      phase: "write",
+      outcome: "failure",
+      target: "event",
+      targetEvent: input.event,
+      ...details,
+    });
   }
 }
 
@@ -243,8 +268,14 @@ export async function recordObservabilitySnapshot(): Promise<void> {
         Number(analysisCounts?.rejected_jobs ?? 0),
       )
       .run();
-  } catch {
-    console.error("Observability snapshot write failed.");
+  } catch (error) {
+    const details = safeErrorDetails(error, "database_error");
+    operationalError("observability_storage", {
+      phase: "write",
+      outcome: "failure",
+      target: "snapshot",
+      ...details,
+    });
   }
 }
 
@@ -288,7 +319,7 @@ async function bootstrapJobsIfEmpty() {
 
   const startedAt = now();
   await saveSetting("jobs_bootstrap", { attemptedAt: startedAt, status: "running" });
-  const result = await syncSources();
+  const result = await syncSources({ trigger: "bootstrap" });
   await saveSetting("jobs_bootstrap", { attemptedAt: startedAt, completedAt: now(), status: result.accepted > 0 ? "completed" : "empty", result });
 }
 
@@ -565,7 +596,13 @@ function extractDivById(html: string, id: string) {
 
 const WORK_UA_MAX_DETAIL_FETCHES = 30;
 
-async function collectWorkUa(source: Json) {
+type SourceCollectorLogContext = {
+  operationId: string;
+  source: string;
+  sourceKind: string;
+};
+
+async function collectWorkUa(source: Json, logContext?: SourceCollectorLogContext) {
   const query = cleanText(source.query, "QA");
   const searchUrl = `https://www.work.ua/en/jobs/?search=${encodeURIComponent(query)}`;
   const response = await fetch(searchUrl, { headers: { "user-agent": "JobPilot/1.0" }, signal: AbortSignal.timeout(15_000) });
@@ -586,7 +623,11 @@ async function collectWorkUa(source: Json) {
     listings.push({ jobUrl, title, company, location, snippet: decodeEntities(rawDescription ?? "") });
   }
 
-  return Promise.all(listings.map(async (listing, index) => {
+  let detailFailureCount = 0;
+  let detailHttpFailureCount = 0;
+  let detailNetworkFailureCount = 0;
+
+  const jobs = await Promise.all(listings.map(async (listing, index) => {
     let description = listing.snippet;
     if (index < WORK_UA_MAX_DETAIL_FETCHES) {
       try {
@@ -594,13 +635,38 @@ async function collectWorkUa(source: Json) {
         if (detailResponse.ok) {
           const full = decodeEntities(extractDivById(await detailResponse.text(), "job-description"));
           if (full) description = full;
+        } else {
+          detailFailureCount += 1;
+          if (detailResponse.status >= 100 && detailResponse.status <= 599) detailHttpFailureCount += 1;
         }
-      } catch { /* keep the search-snippet description if the detail page fetch fails */ }
+      } catch (error) {
+        detailFailureCount += 1;
+        const details = safeErrorDetails(error, "partial_detail_fetch_failure");
+        if (details.reasonCode === "upstream_http_error") detailHttpFailureCount += 1;
+        if (details.reasonCode === "network_error") detailNetworkFailureCount += 1;
+      }
     }
     return { source: `workua:${cleanText(source.name, "workua")}`, externalId: listing.jobUrl, title: listing.title, company: listing.company, location: listing.location,
       remote: /remote|віддал/i.test(`${listing.title} ${description} ${listing.location}`), url: listing.jobUrl, applyUrl: listing.jobUrl,
       description, salaryText: null, postedAt: null, contactEmail: null };
   }));
+
+  if (detailFailureCount > 0 && logContext) {
+    operationalWarn("job_source_detail_fetch", {
+      phase: "complete",
+      outcome: "degraded",
+      operationId: logContext.operationId,
+      source: logContext.source,
+      sourceKind: logContext.sourceKind,
+      reasonCode: "partial_detail_fetch_failure",
+      detailFailureCount,
+      detailHttpFailureCount,
+      detailNetworkFailureCount,
+      itemsSeen: jobs.length,
+    });
+  }
+
+  return jobs;
 }
 
 // The custom "tors" post type on Lobby X doesn't expose post_content via the
@@ -626,7 +692,7 @@ function extractDivByClass(html: string, className: string) {
 const LOBBY_X_COMPANY_PATTERN =
   /(?:^|\n)([A-ZА-ЯЁІЇЄ][\p{L}0-9«»'".,-]*(?:\s[A-ZА-ЯЁІЇЄ«][\p{L}0-9«»'".,-]*){0,4})\s*[—-]\s/u;
 
-async function collectLobbyX(source: Json) {
+async function collectLobbyX(source: Json, logContext?: SourceCollectorLogContext) {
   const query = cleanText(source.query, "QA");
   const listUrl = `https://thelobbyx.com/wp-json/wp/v2/tors?search=${encodeURIComponent(query)}&tors-status=84&per_page=50`;
   const response = await fetch(listUrl, { headers: { "user-agent": "JobPilot/1.0" }, signal: AbortSignal.timeout(15_000) });
@@ -641,90 +707,286 @@ async function collectLobbyX(source: Json) {
       postedAt: cleanText(item.date) || null,
     }));
 
-  return Promise.all(listings.map(async (listing) => {
+  let detailFailureCount = 0;
+  let detailHttpFailureCount = 0;
+  let detailNetworkFailureCount = 0;
+
+  const jobs = await Promise.all(listings.map(async (listing) => {
     let description = "";
     try {
       const detailResponse = await fetch(listing.url, { headers: { "user-agent": "JobPilot/1.0" }, signal: AbortSignal.timeout(15_000) });
       if (detailResponse.ok) description = decodeEntities(extractDivByClass(await detailResponse.text(), "vacancy-description"));
-    } catch { /* keep the listing usable even if the detail page fetch fails */ }
+      else {
+        detailFailureCount += 1;
+        if (detailResponse.status >= 100 && detailResponse.status <= 599) detailHttpFailureCount += 1;
+      }
+    } catch (error) {
+      detailFailureCount += 1;
+      const details = safeErrorDetails(error, "partial_detail_fetch_failure");
+      if (details.reasonCode === "upstream_http_error") detailHttpFailureCount += 1;
+      if (details.reasonCode === "network_error") detailNetworkFailureCount += 1;
+    }
     const company = LOBBY_X_COMPANY_PATTERN.exec(description.slice(0, 300))?.[1]?.trim() || "Unknown";
 
     return { source: `lobbyx:${cleanText(source.name, "lobbyx")}`, externalId: String(listing.id), title: listing.title,
       company, location: "Ukraine", remote: /remote|віддал/i.test(`${listing.title} ${description}`),
       url: listing.url, applyUrl: listing.url, description, salaryText: null, postedAt: listing.postedAt, contactEmail: null };
   }));
+
+  if (detailFailureCount > 0 && logContext) {
+    operationalWarn("job_source_detail_fetch", {
+      phase: "complete",
+      outcome: "degraded",
+      operationId: logContext.operationId,
+      source: logContext.source,
+      sourceKind: logContext.sourceKind,
+      reasonCode: "partial_detail_fetch_failure",
+      detailFailureCount,
+      detailHttpFailureCount,
+      detailNetworkFailureCount,
+      itemsSeen: jobs.length,
+    });
+  }
+
+  return jobs;
 }
 
-export async function syncSources() {
+type SyncSourcesOptions = {
+  trigger?: "bootstrap" | "api_sync" | "api_run" | "internal";
+};
+
+export async function syncSources(options: SyncSourcesOptions = {}) {
   const startedAt = Date.now();
+  const operationId = newOperationId("sync");
+  const trigger = options.trigger ?? "internal";
   const jobs: unknown[] = [];
   const errors: Array<{ source: string; error: string }> = [];
+  let sourceCount = 0;
+  let stage: "load_sources" | "collect_sources" | "upsert_jobs" | "complete" = "load_sources";
+
   try {
     const sources = await setting<Json>("sources", DEFAULT_SOURCES);
+    const sourceLists = [
+      Array.isArray(sources.rss) ? (sources.rss as Json[]) : [],
+      Array.isArray(sources.greenhouse) ? (sources.greenhouse as Json[]) : [],
+      Array.isArray(sources.lever) ? (sources.lever as Json[]) : [],
+      Array.isArray(sources.workUa) ? (sources.workUa as Json[]) : [],
+      Array.isArray(sources.lobbyX) ? (sources.lobbyX as Json[]) : [],
+    ];
+    sourceCount = sourceLists.reduce((acc, list) => acc + list.length, 0);
 
-    const collectSource = async (kind: string, source: Json, fallback: string, collector: () => Promise<unknown[]>) => {
+    operationalInfo("job_sync", {
+      phase: "start",
+      operationId,
+      trigger,
+      sourceCount,
+      limit: 500,
+    });
+
+    stage = "collect_sources";
+
+    const collectSource = async (kind: string, source: Json, fallback: string, collector: (context: SourceCollectorLogContext) => Promise<unknown[]>) => {
       const sourceStartedAt = Date.now();
+      const sourceLabel = observabilitySource(kind, source, fallback);
+      const context: SourceCollectorLogContext = {
+        operationId,
+        source: sourceLabel,
+        sourceKind: kind,
+      };
+
       try {
-        const collected = await collector();
+        const collected = await collector(context);
+        const durationMs = Date.now() - sourceStartedAt;
+        const emptyResult = collected.length === 0;
+        const logFields = {
+          phase: "complete" as const,
+          outcome: "success" as const,
+          operationId,
+          source: sourceLabel,
+          sourceKind: kind,
+          durationMs,
+          itemsSeen: collected.length,
+          itemsProcessed: collected.length,
+          emptyResult,
+          slow: durationMs >= 10_000,
+        };
+
+        if (emptyResult) {
+          operationalWarn("job_source_sync", {
+            ...logFields,
+            reasonCode: "empty_result",
+          });
+        } else {
+          operationalInfo("job_source_sync", logFields);
+        }
+
         await recordObservabilityEvent({
           event: "job_source_sync",
           status: "success",
-          source: observabilitySource(kind, source, fallback),
-          durationMs: Date.now() - sourceStartedAt,
+          source: sourceLabel,
+          durationMs,
           itemsSeen: collected.length,
           itemsProcessed: collected.length,
           errorCount: 0,
         });
         return collected;
       } catch (error) {
+        const durationMs = Date.now() - sourceStartedAt;
+        const details = safeErrorDetails(error, "source_failure");
+        operationalError("job_source_sync", {
+          phase: "complete",
+          outcome: "failure",
+          operationId,
+          source: sourceLabel,
+          sourceKind: kind,
+          durationMs,
+          itemsSeen: 0,
+          itemsProcessed: 0,
+          ...details,
+        });
+
         await recordObservabilityEvent({
           event: "job_source_sync",
           status: "failure",
-          source: observabilitySource(kind, source, fallback),
-          durationMs: Date.now() - sourceStartedAt,
+          source: sourceLabel,
+          durationMs,
           itemsSeen: 0,
           itemsProcessed: 0,
           errorCount: 1,
+          reasonCode: details.reasonCode,
+          httpStatus: details.httpStatus,
         });
         throw error;
       }
     };
 
-    for (const source of Array.isArray(sources.rss) ? sources.rss as Json[] : []) {
-      try { jobs.push(...await collectSource("rss", source, "rss", () => collectRss(source))); } catch (error) { errors.push({ source: cleanText(source.name, "rss"), error: error instanceof Error ? error.message : String(error) }); }
+    for (const source of Array.isArray(sources.rss) ? (sources.rss as Json[]) : []) {
+      try {
+        jobs.push(...await collectSource("rss", source, "rss", () => collectRss(source)));
+      } catch (error) {
+        errors.push({ source: cleanText(source.name, "rss"), error: safeErrorDetails(error, "source_failure").errorSummary });
+      }
     }
-    for (const source of Array.isArray(sources.greenhouse) ? sources.greenhouse as Json[] : []) {
-      try { jobs.push(...await collectSource("greenhouse", source, "greenhouse", () => collectGreenhouse(source))); } catch (error) { errors.push({ source: cleanText(source.name, "greenhouse"), error: error instanceof Error ? error.message : String(error) }); }
+
+    for (const source of Array.isArray(sources.greenhouse) ? (sources.greenhouse as Json[]) : []) {
+      try {
+        jobs.push(...await collectSource("greenhouse", source, "greenhouse", () => collectGreenhouse(source)));
+      } catch (error) {
+        errors.push({ source: cleanText(source.name, "greenhouse"), error: safeErrorDetails(error, "source_failure").errorSummary });
+      }
     }
-    for (const source of Array.isArray(sources.lever) ? sources.lever as Json[] : []) {
-      try { jobs.push(...await collectSource("lever", source, "lever", () => collectLever(source))); } catch (error) { errors.push({ source: cleanText(source.name, "lever"), error: error instanceof Error ? error.message : String(error) }); }
+
+    for (const source of Array.isArray(sources.lever) ? (sources.lever as Json[]) : []) {
+      try {
+        jobs.push(...await collectSource("lever", source, "lever", () => collectLever(source)));
+      } catch (error) {
+        errors.push({ source: cleanText(source.name, "lever"), error: safeErrorDetails(error, "source_failure").errorSummary });
+      }
     }
-    for (const source of Array.isArray(sources.workUa) ? sources.workUa as Json[] : []) {
-      try { jobs.push(...await collectSource("workua", source, "workua", () => collectWorkUa(source))); } catch (error) { errors.push({ source: cleanText(source.name, "workua"), error: error instanceof Error ? error.message : String(error) }); }
+
+    for (const source of Array.isArray(sources.workUa) ? (sources.workUa as Json[]) : []) {
+      try {
+        jobs.push(...await collectSource("workua", source, "workua", (context) => collectWorkUa(source, context)));
+      } catch (error) {
+        errors.push({ source: cleanText(source.name, "workua"), error: safeErrorDetails(error, "source_failure").errorSummary });
+      }
     }
-    for (const source of Array.isArray(sources.lobbyX) ? sources.lobbyX as Json[] : []) {
-      try { jobs.push(...await collectSource("lobbyx", source, "lobbyx", () => collectLobbyX(source))); } catch (error) { errors.push({ source: cleanText(source.name, "lobbyx"), error: error instanceof Error ? error.message : String(error) }); }
+
+    for (const source of Array.isArray(sources.lobbyX) ? (sources.lobbyX as Json[]) : []) {
+      try {
+        jobs.push(...await collectSource("lobbyx", source, "lobbyx", (context) => collectLobbyX(source, context)));
+      } catch (error) {
+        errors.push({ source: cleanText(source.name, "lobbyx"), error: safeErrorDetails(error, "source_failure").errorSummary });
+      }
+    }
+
+    stage = "upsert_jobs";
+    const truncated = jobs.length > 500;
+    if (truncated) {
+      operationalWarn("job_sync", {
+        phase: "complete",
+        outcome: "degraded",
+        operationId,
+        trigger,
+        reasonCode: "truncated_result",
+        itemsSeen: jobs.length,
+        limit: 500,
+        truncated: true,
+      });
     }
 
     const result = await upsertJobs(jobs.slice(0, 500));
+    const status = errors.length === 0 ? "success" : "degraded";
+
     await recordObservabilityEvent({
       event: "job_sync",
-      status: errors.length === 0 ? "success" : "degraded",
+      status,
       durationMs: Date.now() - startedAt,
       itemsSeen: jobs.length,
       itemsProcessed: result.accepted,
       errorCount: errors.length,
+      reasonCode: status === "degraded" ? "source_failure" : null,
+      httpStatus: null,
     });
     await recordObservabilitySnapshot();
+
+    stage = "complete";
+    if (status === "success") {
+      operationalInfo("job_sync", {
+        phase: "complete",
+        outcome: "success",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        sourceCount,
+        sourceSuccessCount: sourceCount,
+        sourceFailureCount: 0,
+        itemsSeen: jobs.length,
+        itemsProcessed: result.accepted,
+        truncated,
+      });
+    } else {
+      operationalWarn("job_sync", {
+        phase: "complete",
+        outcome: "degraded",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        sourceCount,
+        sourceSuccessCount: sourceCount - errors.length,
+        sourceFailureCount: errors.length,
+        itemsSeen: jobs.length,
+        itemsProcessed: result.accepted,
+        truncated,
+        reasonCode: "source_failure",
+      });
+    }
+
     return { ...result, errors };
   } catch (error) {
+    const fallbackReason: OperationalReasonCode = stage === "upsert_jobs" ? "database_error" : "unexpected_error";
+    const details = safeErrorDetails(error, fallbackReason);
     await recordObservabilityEvent({
       event: "job_sync",
       status: "failure",
       durationMs: Date.now() - startedAt,
       itemsSeen: jobs.length,
       itemsProcessed: null,
-      errorCount: Math.max(1, errors.length + 1),
+      errorCount: 1,
+      reasonCode: details.reasonCode,
+      httpStatus: details.httpStatus,
+    });
+
+    operationalError("job_sync", {
+      phase: "complete",
+      outcome: "failure",
+      operationId,
+      trigger,
+      stage,
+      durationMs: Date.now() - startedAt,
+      itemsSeen: jobs.length,
+      sourceFailureCount: errors.length,
+      ...details,
     });
     throw error;
   }
@@ -933,42 +1195,99 @@ async function openAiConfig() {
   };
 }
 
-export async function analyzeJobs(jobId?: string, limit = 25) {
+type AnalyzeJobsOptions = {
+  trigger?: "api_analyze" | "api_run" | "internal";
+};
+
+export async function analyzeJobs(jobId?: string, limit = 25, options: AnalyzeJobsOptions = {}) {
   const startedAt = Date.now();
+  const operationId = newOperationId("analysis");
+  const trigger = options.trigger ?? "internal";
   let requestedCount = 0;
   let fallbackCount = 0;
   let agentCount = 0;
   const completed: Json[] = [];
+  let stage:
+    | "load_profile"
+    | "load_openai_config"
+    | "load_jobs"
+    | "process_jobs"
+    | "save_analysis"
+    | "update_job"
+    | "snapshot" = "load_profile";
+  let aiEnabled = false;
+  let model = "gpt-5.6";
+
   try {
     const profile = await setting<Json>("profile", DEFAULT_PROFILE);
-    const { apiKey, model } = await openAiConfig();
+    stage = "load_openai_config";
+    const openAi = await openAiConfig();
+    aiEnabled = Boolean(openAi.apiKey);
+    model = openAi.model;
+
+    stage = "load_jobs";
     const jobRows = jobId
       ? await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).all<Row>()
       : await (await db()).prepare("SELECT jobs.* FROM jobs LEFT JOIN analyses ON analyses.job_id = jobs.id WHERE analyses.job_id IS NULL AND jobs.status <> 'ARCHIVED' ORDER BY jobs.discovered_at DESC LIMIT ?").bind(Math.min(Math.max(limit, 1), 100)).all<Row>();
+
     requestedCount = jobRows.results.length;
     if (jobId && !jobRows.results.length) throw new Error("Job not found.");
-    for (const row of jobRows.results) {
-      const job = mapJob(row); const timestamp = now();
+
+    operationalInfo("job_analysis", {
+      phase: "start",
+      operationId,
+      trigger,
+      itemsSeen: requestedCount,
+      aiEnabled,
+      provider: aiEnabled ? "openai" : undefined,
+      model: aiEnabled ? model : undefined,
+    });
+
+    stage = "process_jobs";
+    for (const [itemIndex, row] of jobRows.results.entries()) {
+      const job = mapJob(row);
+      const timestamp = now();
       let analysis: Json = deterministicAnalysis(job, profile);
       let mode = "deterministic";
-      if (apiKey) {
+      if (aiEnabled) {
+        const aiStartedAt = Date.now();
         try {
-          analysis = await analyzeWithOpenAI(job, profile, apiKey, model);
+          analysis = await analyzeWithOpenAI(job, profile, openAi.apiKey, model);
           mode = "agent";
           agentCount += 1;
-        } catch {
+        } catch (error) {
           fallbackCount += 1;
+          const details = safeErrorDetails(error);
+          operationalWarn("openai_analysis", {
+            phase: "complete",
+            outcome: "degraded",
+            operationId,
+            trigger,
+            provider: "openai",
+            model,
+            itemIndex,
+            durationMs: Date.now() - aiStartedAt,
+            fallback: "deterministic",
+            ...details,
+          });
         }
       }
+
+      stage = "save_analysis";
       await (await db()).prepare(`INSERT INTO analyses (job_id, mode, score, verdict, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET mode=excluded.mode, score=excluded.score, verdict=excluded.verdict, payload_json=excluded.payload_json, updated_at=excluded.updated_at`)
         .bind(job.id, mode, analysis.score, analysis.verdict, JSON.stringify(analysis), timestamp, timestamp).run();
+
+      stage = "update_job";
       await (await db()).prepare("UPDATE jobs SET status='REVIEWED', updated_at=? WHERE id=?").bind(timestamp, job.id).run();
+
+      stage = "process_jobs";
       completed.push({ id: job.id, score: analysis.score, verdict: analysis.verdict, mode });
     }
 
-    const mode = !apiKey ? "deterministic" : fallbackCount === 0 ? "agent" : agentCount === 0 ? "deterministic" : "mixed";
+    const mode = !aiEnabled ? "deterministic" : fallbackCount === 0 ? "agent" : agentCount === 0 ? "deterministic" : "mixed";
     const status = fallbackCount === 0 ? "success" : "degraded";
+
     await recordObservabilityEvent({
       event: "job_analysis",
       status,
@@ -977,10 +1296,51 @@ export async function analyzeJobs(jobId?: string, limit = 25) {
       itemsSeen: requestedCount,
       itemsProcessed: completed.length,
       errorCount: fallbackCount,
+      reasonCode: status === "degraded" ? "openai_fallback" : null,
+      httpStatus: null,
     });
+
+    stage = "snapshot";
     await recordObservabilitySnapshot();
+
+    if (status === "success") {
+      operationalInfo("job_analysis", {
+        phase: "complete",
+        outcome: "success",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        itemsSeen: requestedCount,
+        itemsProcessed: completed.length,
+        aiEnabled,
+        provider: aiEnabled ? "openai" : undefined,
+        model: aiEnabled ? model : undefined,
+        fallbackCount,
+        agentCount,
+      });
+    } else {
+      operationalWarn("job_analysis", {
+        phase: "complete",
+        outcome: "degraded",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        itemsSeen: requestedCount,
+        itemsProcessed: completed.length,
+        aiEnabled,
+        provider: aiEnabled ? "openai" : undefined,
+        model: aiEnabled ? model : undefined,
+        fallbackCount,
+        agentCount,
+        fallback: "deterministic",
+        reasonCode: "openai_fallback",
+      });
+    }
+
     return completed;
   } catch (error) {
+    const databaseStages = new Set(["save_analysis", "update_job", "snapshot"]);
+    const details = safeErrorDetails(error, databaseStages.has(stage) ? "database_error" : "unexpected_error");
     await recordObservabilityEvent({
       event: "job_analysis",
       status: "failure",
@@ -988,58 +1348,175 @@ export async function analyzeJobs(jobId?: string, limit = 25) {
       itemsSeen: requestedCount,
       itemsProcessed: completed.length,
       errorCount: 1,
+      reasonCode: details.reasonCode,
+      httpStatus: details.httpStatus,
     });
+
+    operationalError("job_analysis", {
+      phase: "complete",
+      outcome: "failure",
+      operationId,
+      trigger,
+      stage,
+      durationMs: Date.now() - startedAt,
+      itemsSeen: requestedCount,
+      itemsProcessed: completed.length,
+      ...details,
+    });
+
     throw error;
   }
 }
 
-export async function adjustResumeForJob(jobId: string) {
+type ResumeOptions = {
+  trigger?: "api_analyze_resume" | "internal";
+};
+
+export async function adjustResumeForJob(jobId: string, options: ResumeOptions = {}) {
   const startedAt = Date.now();
+  const operationId = newOperationId("resume");
+  const trigger = options.trigger ?? "internal";
   let openAiFallback = false;
+  let openAiFallbackStatus: number | undefined;
+  let aiDurationMs = 0;
+  let pdfDurationMs = 0;
+  let dbDurationMs = 0;
+  let stage:
+    | "load_profile"
+    | "load_openai_config"
+    | "load_job"
+    | "openai_resume"
+    | "build_pdf"
+    | "save_resume"
+    | "save_draft" = "load_profile";
+
   try {
     const profile = await setting<Json>("profile", DEFAULT_PROFILE);
-    const { apiKey, model } = await openAiConfig();
+
+    stage = "load_openai_config";
+    const openAi = await openAiConfig();
+    const aiEnabled = Boolean(openAi.apiKey);
+
+    operationalInfo("resume_generation", {
+      phase: "start",
+      operationId,
+      trigger,
+      aiEnabled,
+      provider: aiEnabled ? "openai" : undefined,
+      model: aiEnabled ? openAi.model : undefined,
+    });
+
+    stage = "load_job";
     const row = await (await db()).prepare("SELECT * FROM jobs WHERE id = ?").bind(jobId).first<Row>();
     if (!row) throw new Error("Job not found.");
     const job = mapJob(row);
 
     let pkg: { resume: string; draft: Json } = deterministicResumePackage(job, profile);
     let mode = "deterministic";
-    if (apiKey) {
+    if (aiEnabled) {
+      stage = "openai_resume";
+      const aiStartedAt = Date.now();
       try {
-        pkg = await adjustResumeWithOpenAI(job, profile, apiKey, model);
+        pkg = await adjustResumeWithOpenAI(job, profile, openAi.apiKey, openAi.model);
         mode = "agent";
         openAiFallback = false;
-      } catch {
+      } catch (error) {
         openAiFallback = true;
+        aiDurationMs = Date.now() - aiStartedAt;
+        const details = safeErrorDetails(error);
+        openAiFallbackStatus = details.httpStatus;
+        operationalWarn("openai_resume", {
+          phase: "complete",
+          outcome: "degraded",
+          operationId,
+          trigger,
+          provider: "openai",
+          model: openAi.model,
+          durationMs: aiDurationMs,
+          fallback: "deterministic",
+          ...details,
+        });
+      }
+      if (!openAiFallback) {
+        aiDurationMs = Date.now() - aiStartedAt;
       }
     }
 
     const timestamp = now();
     const suffix = job.id.replace(/^job_/, "");
+
+    stage = "build_pdf";
+    const pdfStartedAt = Date.now();
     const pdfBase64 = bytesToBase64(await buildResumePdf(pkg.resume));
+    pdfDurationMs = Date.now() - pdfStartedAt;
+
+    stage = "save_resume";
+    const resumeWriteStartedAt = Date.now();
     await (await db()).prepare(`INSERT INTO resume_variants (id, job_id, markdown, pdf_base64, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(job_id) DO UPDATE SET markdown=excluded.markdown, pdf_base64=excluded.pdf_base64, updated_at=excluded.updated_at`)
       .bind(`resume_${suffix}`, job.id, pkg.resume, pdfBase64, timestamp, timestamp).run();
+    dbDurationMs += Date.now() - resumeWriteStartedAt;
 
+    stage = "save_draft";
+    const draftReadStartedAt = Date.now();
     const existing = await (await db()).prepare("SELECT status FROM application_drafts WHERE job_id = ?").bind(job.id).first<Row>();
+    dbDurationMs += Date.now() - draftReadStartedAt;
+
     if (!existing || ["PENDING_APPROVAL", "REJECTED"].includes(String(existing.status))) {
+      const draftWriteStartedAt = Date.now();
       await (await db()).prepare(`INSERT INTO application_drafts (id, job_id, recipient, subject, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET recipient=COALESCE(excluded.recipient, application_drafts.recipient), subject=excluded.subject, body=excluded.body, status='PENDING_APPROVAL', approved_at=NULL, updated_at=excluded.updated_at`)
         .bind(`draft_${suffix}`, job.id, pkg.draft.recipient, pkg.draft.subject, pkg.draft.body, timestamp, timestamp).run();
+      dbDurationMs += Date.now() - draftWriteStartedAt;
     }
 
+    const status = openAiFallback ? "degraded" : "success";
     await recordObservabilityEvent({
       event: "resume_generation",
-      status: openAiFallback ? "degraded" : "success",
+      status,
       mode,
       durationMs: Date.now() - startedAt,
       itemsSeen: 1,
       itemsProcessed: 1,
       errorCount: openAiFallback ? 1 : 0,
+      reasonCode: openAiFallback ? "openai_fallback" : null,
+      httpStatus: openAiFallback ? openAiFallbackStatus : null,
     });
+
+    if (status === "success") {
+      operationalInfo("resume_generation", {
+        phase: "complete",
+        outcome: "success",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        aiDurationMs,
+        pdfDurationMs,
+        dbDurationMs,
+      });
+    } else {
+      operationalWarn("resume_generation", {
+        phase: "complete",
+        outcome: "degraded",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        aiDurationMs,
+        pdfDurationMs,
+        dbDurationMs,
+        fallback: "deterministic",
+        reasonCode: "openai_fallback",
+      });
+    }
+
     return { id: job.id, mode };
   } catch (error) {
+    const fallbackReason: OperationalReasonCode = stage === "build_pdf"
+      ? "pdf_generation_error"
+      : (stage === "save_resume" || stage === "save_draft")
+        ? "database_error"
+        : "unexpected_error";
+    const details = safeErrorDetails(error, fallbackReason);
     await recordObservabilityEvent({
       event: "resume_generation",
       status: "failure",
@@ -1047,7 +1524,23 @@ export async function adjustResumeForJob(jobId: string) {
       itemsSeen: 1,
       itemsProcessed: 0,
       errorCount: 1,
+      reasonCode: details.reasonCode,
+      httpStatus: details.httpStatus,
     });
+
+    operationalError("resume_generation", {
+      phase: "complete",
+      outcome: "failure",
+      operationId,
+      trigger,
+      stage,
+      durationMs: Date.now() - startedAt,
+      aiDurationMs,
+      pdfDurationMs,
+      dbDurationMs,
+      ...details,
+    });
+
     throw error;
   }
 }

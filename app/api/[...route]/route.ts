@@ -19,6 +19,12 @@ import {
   updateJobTracking,
   upsertJobs,
 } from "../_jobpilot";
+import {
+  newOperationId,
+  operationalError,
+  operationalInfo,
+  safeErrorDetails,
+} from "../_operational-log";
 
 type RouteContext = { params: Promise<{ route?: string[] }> | { route?: string[] } };
 
@@ -71,10 +77,19 @@ export async function POST(request: Request, context: RouteContext) {
     if (route[0] === "import") {
       const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
       const startedAt = Date.now();
+      const operationId = newOperationId("import");
+      const trigger = request.headers.get("x-gimmejob-trigger") === "deployment" ? "deployment" : "api_import";
+      operationalInfo("job_import", {
+        phase: "start",
+        operationId,
+        trigger,
+        itemsSeen: jobs.length,
+      });
       let result;
       try {
         result = await upsertJobs(jobs);
       } catch (error) {
+        const details = safeErrorDetails(error, "database_error");
         await recordObservabilityEvent({
           event: "job_import",
           status: "failure",
@@ -82,6 +97,19 @@ export async function POST(request: Request, context: RouteContext) {
           itemsSeen: jobs.length,
           itemsProcessed: null,
           errorCount: 1,
+          reasonCode: details.reasonCode,
+          httpStatus: details.httpStatus,
+        });
+        operationalError("job_import", {
+          phase: "complete",
+          outcome: "failure",
+          operationId,
+          trigger,
+          stage: "upsert_jobs",
+          durationMs: Date.now() - startedAt,
+          itemsSeen: jobs.length,
+          itemsProcessed: 0,
+          ...details,
         });
         throw error;
       }
@@ -94,22 +122,31 @@ export async function POST(request: Request, context: RouteContext) {
         errorCount: 0,
       });
       await recordObservabilitySnapshot();
+      operationalInfo("job_import", {
+        phase: "complete",
+        outcome: "success",
+        operationId,
+        trigger,
+        durationMs: Date.now() - startedAt,
+        itemsSeen: jobs.length,
+        itemsProcessed: result.accepted,
+      });
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "sync") {
-      const result = await syncSources(); return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      const result = await syncSources({ trigger: "api_sync" }); return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "analyze") {
-      const result = await analyzeJobs(typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25);
+      const result = await analyzeJobs(typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_analyze" });
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "analyze-resume") {
       if (typeof payload.jobId !== "string" || !payload.jobId) throw new Error("jobId is required.");
-      const result = await adjustResumeForJob(payload.jobId);
+      const result = await adjustResumeForJob(payload.jobId, { trigger: "api_analyze_resume" });
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "run") {
-      const sync = await syncSources(); const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25);
+      const sync = await syncSources({ trigger: "api_run" }); const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_run" });
       return Response.json({ ok: true, result: { sync, analysis }, dashboard: await dashboard(request) });
     }
     if (route[0] === "drafts" && route[1] && route[2]) {

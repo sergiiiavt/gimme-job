@@ -88,6 +88,23 @@ async function writeDeployConfig(id) {
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
+  const existingObservability =
+    deployConfig.observability && typeof deployConfig.observability === "object"
+      ? deployConfig.observability
+      : {};
+  const existingLogs =
+    existingObservability.logs && typeof existingObservability.logs === "object"
+      ? existingObservability.logs
+      : {};
+  deployConfig.observability = {
+    ...existingObservability,
+    enabled: true,
+    logs: {
+      ...existingLogs,
+      invocation_logs: true,
+      head_sampling_rate: 1,
+    },
+  };
   deployConfig.d1_databases = [
     {
       binding: "DB",
@@ -123,6 +140,7 @@ async function importCurrentJobs(appPassword) {
       headers: {
         authorization: `Basic ${authorization}`,
         "content-type": "application/json",
+        "x-gimmejob-trigger": "deployment",
       },
       body: JSON.stringify({ jobs }),
       signal: AbortSignal.timeout(30_000),
