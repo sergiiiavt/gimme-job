@@ -23,33 +23,45 @@ The hosted application is a React/Vinext worker with same-origin API routes. Pub
 
 The local agent remains separate so source collection and experimentation can run from VS Code without weakening the hosted application's approval-first behaviour.
 
-## Gmail automation boundary
+## Email automation boundary
 
 n8n is an orchestration layer, not a source of truth and not the owner of GimmeJob business rules.
 
-Phase 1-2 flow:
+The current production email path uses personal forwarding addresses instead of giving n8n Gmail credentials:
 
 ```text
-Gmail -> n8n -> /internal/n8n/email-events -> D1 email_events
+User Gmail filter
+  -> jobs+TOKEN@gimme-job.com
+  -> Cloudflare Email Routing
+  -> GimmeJob Worker email() handler
+  -> tenant-scoped user_email_events in D1
+  -> n8n polls /internal/n8n/email-events
+  -> metadata-only classification
+  -> PATCH /internal/n8n/email-events
+  -> tenant-scoped classification stored in D1
 ```
 
-Gmail OAuth credentials remain in n8n. n8n has no direct D1 access. GimmeJob receives only structured metadata through a dedicated Bearer token and deliberately rejects raw email body fields. Repeated Gmail deliveries are idempotent by provider message ID.
+The Worker resolves the forwarding token to `user_id` and persists only structured metadata. n8n has no direct D1 access and does not receive Gmail credentials or raw message bodies. The n8n processing API is protected by `N8N_INGEST_TOKEN` and exposes only unclassified email metadata needed by the workflow. Classification updates are idempotent and do not overwrite an event that has already been classified by another actor.
 
-Later phases may add classification, job matching, draft generation, and approval-first sending, while status transitions and application rules remain in GimmeJob.
+The old direct-Gmail n8n ingest endpoint remains available for backward compatibility, but it is not the current production ingestion path.
+
+Later phases may add richer classification, job matching, draft generation, and approval-first sending. Status transitions and application rules remain in GimmeJob.
 
 ## Delivery
 
 GitHub Actions validates content, linting, local-agent types, tests and the production build. On `main`, the same workflow can provision a named D1 database, apply versioned migrations, deploy the Worker, and rotate its Basic Auth password and service tokens from repository secrets. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
+
+The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`.
 
 ## Security boundaries
 
 - no secrets in Git;
 - production data remains in the private database;
 - external Workers traffic requires a provider-managed password secret;
-- the n8n Gmail ingest endpoint uses its own scoped `N8N_INGEST_TOKEN`, not the workspace password;
-- Gmail OAuth credentials remain in n8n and are never persisted in D1;
+- the n8n internal email API uses its own `N8N_INGEST_TOKEN`, not the workspace password;
+- the current forwarded-email workflow needs no Gmail OAuth credentials in n8n;
 - n8n receives no D1 credentials;
-- raw Gmail message bodies and attachments are not accepted by the Phase 1-2 ingest endpoint;
+- raw Gmail message bodies and attachments are not exposed by the current n8n processing API;
 - external fetches accept only public HTTPS sources;
 - applications are never sent by vacancy sync or analysis;
 - GitHub Actions has read-only repository permissions;
