@@ -25,6 +25,8 @@ class ApiError extends Error {
   }
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function jsonRequest(url, { method = "GET", headers = {}, body } = {}) {
   const response = await fetch(url, {
     method,
@@ -189,11 +191,30 @@ async function ensureServer(firewall) {
   throw lastError ?? new Error("Could not create the Hetzner server");
 }
 
+async function waitForPublicNetwork(server) {
+  for (let attempt = 1; attempt <= 60; attempt += 1) {
+    const current = (await hcloud(`/servers/${server.id}`)).server;
+    if (current?.public_net?.ipv4?.ip) {
+      if (attempt > 1) console.log(`Public network became ready after ${attempt} checks`);
+      return current;
+    }
+    if (attempt === 1 || attempt % 5 === 0) {
+      console.log(`Waiting for Hetzner public network (${attempt}/60)...`);
+    }
+    await sleep(2000);
+  }
+  throw new Error(`${SERVER_NAME} did not receive a public IPv4 address within 2 minutes`);
+}
+
 async function ensureFirewallApplied(firewall, server) {
-  const applied = firewall.applied_to?.some(
+  const refreshed = (await hcloud(`/firewalls/${firewall.id}`)).firewall;
+  const applied = refreshed.applied_to?.some(
     (entry) => entry.type === "server" && Number(entry.server?.id) === Number(server.id),
   );
-  if (applied) return;
+  if (applied) {
+    console.log(`Firewall ${FIREWALL_NAME} is attached to ${SERVER_NAME}`);
+    return;
+  }
 
   try {
     await hcloud(`/firewalls/${firewall.id}/actions/apply_to_resources`, {
@@ -282,7 +303,8 @@ function addSummary(lines) {
 }
 
 const firewall = await ensureFirewall();
-const server = await ensureServer(firewall);
+const initialServer = await ensureServer(firewall);
+const server = await waitForPublicNetwork(initialServer);
 await ensureFirewallApplied(firewall, server);
 const ipv4 = serverIpv4(server);
 const dnsConfigured = await configureCloudflareDns(ipv4);
