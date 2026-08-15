@@ -5,6 +5,7 @@ import {
   DATABASE,
   DEPLOYMENT,
   GRAFANA,
+  N8N,
   OPENAI,
   PURPOSE_CARDS,
   REPO_URL,
@@ -69,6 +70,8 @@ function AboutIconSvg({ kind, className }: { kind: AboutIcon; className?: string
       return <svg aria-hidden="true" className={className} viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 4a5 5 0 0 1 5 5v3l2 3H5l2-3V9a5 5 0 0 1 5-5z" {...common}/><path d="M10 19a2 2 0 0 0 4 0" {...common}/></svg>;
     case "export":
       return <svg aria-hidden="true" className={className} viewBox="0 0 24 24" width="1em" height="1em"><path d="M12 4v12" {...common}/><path d="m8 8 4-4 4 4" {...common}/><path d="M5 14v5h14v-5" {...common}/></svg>;
+    case "n8n":
+      return <svg aria-hidden="true" className={className} viewBox="0 0 24 24" width="1em" height="1em"><circle cx="5" cy="12" r="2" {...common}/><circle cx="12" cy="6" r="2" {...common}/><circle cx="19" cy="12" r="2" {...common}/><circle cx="12" cy="18" r="2" {...common}/><path d="m6.7 10.8 3.6-3.6M13.7 7.2l3.6 3.6M17.3 13.2l-3.6 3.6M10.3 16.8l-3.6-3.6" {...common}/></svg>;
     default:
       return <svg aria-hidden="true" className={className} viewBox="0 0 24 24" width="1em" height="1em"><circle cx="12" cy="12" r="8" {...common}/></svg>;
   }
@@ -231,30 +234,34 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         </div>
       </section>
 
-      <section className="about-tech-section" aria-labelledby="about-database-title">
+      <section className="about-tech-section" aria-labelledby="about-n8n-title">
         <div className="about-tech-section-heading">
           <SectionNumber>2</SectionNumber>
           <div>
-            <h2 id="about-database-title">{DATABASE.title}</h2>
-            <p>{DATABASE.description}</p>
+            <h2 id="about-n8n-title">{N8N.title}</h2>
+            <p>{N8N.description}</p>
           </div>
         </div>
         <div className="about-tech-section-body">
-          <div className="about-tech-database-flow">
-            <TechNode icon={DATABASE.worker.icon} title={DATABASE.worker.title} description={DATABASE.worker.description} accent={DATABASE.worker.accent}/>
+          <div className="about-tech-observability-flow">
+            <div className="about-tech-observability-sources">
+              <TechNode icon={N8N.gmail.icon} title={N8N.gmail.title} description={N8N.gmail.description} accent={N8N.gmail.accent}/>
+              <TechNode icon={N8N.routing.icon} title={N8N.routing.title} description={N8N.routing.description} accent={N8N.routing.accent}/>
+              <TechNode icon={N8N.eventStore.icon} title={N8N.eventStore.title} description={N8N.eventStore.description} accent={N8N.eventStore.accent}/>
+            </div>
             <FlowArrow/>
-            <TechNode icon={DATABASE.d1.icon} title={DATABASE.d1.title} description={DATABASE.d1.description} accent={DATABASE.d1.accent} links={DATABASE.d1.links}/>
+            <TechNode icon={N8N.orchestrator.icon} title={N8N.orchestrator.title} description={N8N.orchestrator.description} accent={N8N.orchestrator.accent} links={N8N.orchestrator.links}/>
             <FlowArrow/>
-            <div className="about-tech-data-grid" role="group" aria-label="Database data groups">
-              {DATABASE.groups.map((group) => (
-                <article key={group.title} className="about-tech-mini-node">
+            <div className="about-tech-output-grid" role="group" aria-label="n8n automation outputs">
+              {N8N.outputs.map((output) => (
+                <article key={output.title} className="about-tech-mini-node">
                   <header>
                     <span className="about-tech-mini-icon">
-                      <AboutIconSvg kind={group.icon}/>
+                      <AboutIconSvg kind={output.icon}/>
                     </span>
-                    <strong>{group.title}</strong>
+                    <strong>{output.title}</strong>
                   </header>
-                  <p>{group.description}</p>
+                  <p>{output.description}</p>
                 </article>
               ))}
             </div>
@@ -353,6 +360,37 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
                     <strong>{output.title}</strong>
                   </header>
                   <p>{output.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-tech-section" aria-labelledby="about-database-title">
+        <div className="about-tech-section-heading">
+          <SectionNumber>6</SectionNumber>
+          <div>
+            <h2 id="about-database-title">{DATABASE.title}</h2>
+            <p>{DATABASE.description}</p>
+          </div>
+        </div>
+        <div className="about-tech-section-body">
+          <div className="about-tech-database-flow">
+            <TechNode icon={DATABASE.worker.icon} title={DATABASE.worker.title} description={DATABASE.worker.description} accent={DATABASE.worker.accent}/>
+            <FlowArrow/>
+            <TechNode icon={DATABASE.d1.icon} title={DATABASE.d1.title} description={DATABASE.d1.description} accent={DATABASE.d1.accent} links={DATABASE.d1.links}/>
+            <FlowArrow/>
+            <div className="about-tech-data-grid" role="group" aria-label="Database data groups">
+              {DATABASE.groups.map((group) => (
+                <article key={group.title} className="about-tech-mini-node">
+                  <header>
+                    <span className="about-tech-mini-icon">
+                      <AboutIconSvg kind={group.icon}/>
+                    </span>
+                    <strong>{group.title}</strong>
+                  </header>
+                  <p>{group.description}</p>
                 </article>
               ))}
             </div>
