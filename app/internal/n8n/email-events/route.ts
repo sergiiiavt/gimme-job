@@ -81,7 +81,7 @@ export async function POST(request: Request): Promise<Response> {
     return json({ error: "Request body must be valid JSON." }, 400);
   }
 
-  let event;
+  let event: ReturnType<typeof normalizeEmailEvent>;
   try {
     event = normalizeEmailEvent(payload);
   } catch (error) {
@@ -143,7 +143,7 @@ export async function POST(request: Request): Promise<Response> {
         event.jobTitle,
         event.recruiterName,
         event.jobId,
-        existing ? timestamp : timestamp,
+        timestamp,
         timestamp,
       )
       .run();
