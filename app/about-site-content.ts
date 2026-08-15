@@ -56,6 +56,8 @@ export const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
 export const WORKER_SOURCE_URL = `${REPO_URL}/blob/main/worker/index.ts`;
+export const SONARQUBE_CONFIG_URL = `${REPO_URL}/blob/main/sonar-project.properties`;
+export const SONARQUBE_PROJECT_URL = "https://sonarcloud.io/summary/overall?id=sergiiiavt_gimme-job&branch=main";
 export const GRAFANA_DASHBOARD_URL = "https://gentlecabbage323.grafana.net/public-dashboards/8c022097cb6544f2a5f9dff1cfab4e7b";
 export const CLOUDFLARE_WORKERS_LOGS_URL = "https://dash.cloudflare.com/4f8e29835b9bb4e2330170ca94ac8f2b/workers/services/view/gimmejob/production/observability/events";
 
@@ -243,5 +245,35 @@ export const GRAFANA = {
     { title: "Dashboards", description: "System and usage metrics", icon: "dashboard" as const },
     { title: "Alerts", description: "Thresholds and notifications", icon: "alert" as const },
     { title: "Export", description: "Data used for further analysis", icon: "export" as const },
+  ] satisfies SectionTile[],
+};
+
+export const CODE_QUALITY = {
+  title: "Code quality & security",
+  description: "CI generates test coverage and sends static-analysis results to SonarQube Cloud before deployment.",
+  ci: {
+    title: "GitHub Actions",
+    description: "Tests, LCOV coverage, and Sonar scan",
+    icon: "actions" as const,
+    accent: "blue" as const,
+    links: [
+      { label: "Actions", href: ACTIONS_URL, external: true },
+      { label: "Workflow", href: CI_WORKFLOW_URL, external: true },
+    ],
+  },
+  sonar: {
+    title: "SonarQube Cloud",
+    description: "Static analysis, quality gate, and code-quality history",
+    icon: "analysis" as const,
+    accent: "purple" as const,
+    links: [
+      { label: "Live analysis", href: SONARQUBE_PROJECT_URL, external: true },
+      { label: "Sonar config", href: SONARQUBE_CONFIG_URL, external: true },
+    ],
+  },
+  outputs: [
+    { title: "Security & reliability", description: "Security and bug findings", icon: "alert" as const },
+    { title: "Maintainability", description: "Code smells and technical debt", icon: "code" as const },
+    { title: "Coverage & duplication", description: "LCOV coverage and duplicated code", icon: "dashboard" as const },
   ] satisfies SectionTile[],
 };
