@@ -47,8 +47,13 @@ type GmailRow = {
 
 class FakeStatement {
   private bindings: unknown[] = [];
+  private readonly db: FakeDb;
+  private readonly sql: string;
 
-  constructor(private readonly db: FakeDb, private readonly sql: string) {}
+  constructor(db: FakeDb, sql: string) {
+    this.db = db;
+    this.sql = sql;
+  }
 
   bind(...values: unknown[]): FakeStatement {
     this.bindings = values;
