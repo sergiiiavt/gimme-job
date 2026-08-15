@@ -66,12 +66,13 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           GRAFANA_READ_TOKEN: ${{ secrets.GRAFANA_READ_TOKEN }}
+          N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         shell: bash
         run: |
-          if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" || -z "$GRAFANA_READ_TOKEN" ]]; then
-            echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and GRAFANA_READ_TOKEN repository secrets are configured."
+          if [[ -z "$APP_PASSWORD" || -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" || -z "$GRAFANA_READ_TOKEN" || -z "$N8N_INGEST_TOKEN" ]]; then
+            echo "::notice::Cloudflare deployment skipped until APP_PASSWORD, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, GRAFANA_READ_TOKEN, and N8N_INGEST_TOKEN repository secrets are configured."
             exit 0
           fi
           node scripts/deploy-cloudflare.mjs
