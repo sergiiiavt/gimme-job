@@ -304,6 +304,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         <div className="about-tech-section-body">
           <div className="about-tech-observability-flow">
             <div className="about-tech-observability-sources">
+              <TechNode icon={GRAFANA.workersLogs.icon} title={GRAFANA.workersLogs.title} description={GRAFANA.workersLogs.description} accent={GRAFANA.workersLogs.accent} links={GRAFANA.workersLogs.links}/>
               <TechNode icon={GRAFANA.sourceEvents.icon} title={GRAFANA.sourceEvents.title} description={GRAFANA.sourceEvents.description} accent={GRAFANA.sourceEvents.accent}/>
               <TechNode icon={GRAFANA.sourceSummary.icon} title={GRAFANA.sourceSummary.title} description={GRAFANA.sourceSummary.description} accent={GRAFANA.sourceSummary.accent} links={GRAFANA.sourceSummary.links}/>
             </div>
