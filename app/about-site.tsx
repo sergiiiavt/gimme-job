@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import {
   ABOUT_OVERVIEW,
+  CODE_QUALITY,
   DATABASE,
   DEPLOYMENT,
   GRAFANA,
@@ -313,6 +314,37 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
             <FlowArrow/>
             <div className="about-tech-output-grid" role="group" aria-label="Observability outputs">
               {GRAFANA.outputs.map((output) => (
+                <article key={output.title} className="about-tech-mini-node">
+                  <header>
+                    <span className="about-tech-mini-icon">
+                      <AboutIconSvg kind={output.icon}/>
+                    </span>
+                    <strong>{output.title}</strong>
+                  </header>
+                  <p>{output.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-tech-section" aria-labelledby="about-code-quality-title">
+        <div className="about-tech-section-heading">
+          <SectionNumber>5</SectionNumber>
+          <div>
+            <h2 id="about-code-quality-title">{CODE_QUALITY.title}</h2>
+            <p>{CODE_QUALITY.description}</p>
+          </div>
+        </div>
+        <div className="about-tech-section-body">
+          <div className="about-tech-deployment-flow">
+            <TechNode icon={CODE_QUALITY.ci.icon} title={CODE_QUALITY.ci.title} description={CODE_QUALITY.ci.description} accent={CODE_QUALITY.ci.accent} links={CODE_QUALITY.ci.links}/>
+            <FlowArrow/>
+            <TechNode icon={CODE_QUALITY.sonar.icon} title={CODE_QUALITY.sonar.title} description={CODE_QUALITY.sonar.description} accent={CODE_QUALITY.sonar.accent} links={CODE_QUALITY.sonar.links}/>
+            <FlowArrow/>
+            <div className="about-tech-output-grid" role="group" aria-label="Code quality outputs">
+              {CODE_QUALITY.outputs.map((output) => (
                 <article key={output.title} className="about-tech-mini-node">
                   <header>
                     <span className="about-tech-mini-icon">
