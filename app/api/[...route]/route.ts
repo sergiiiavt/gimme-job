@@ -70,7 +70,8 @@ export async function GET(request: Request, context: RouteContext) {
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
     if (route[0] === "public" && route[1] === "jobs") return Response.json(await publicJobs());
     if (route[0] === "dashboard") {
-      return Response.json(tenant.multiUser ? await tenantDashboard(tenant.userId, request) : await dashboard(request));
+      const userId = tenant.authenticated ? tenant.userId : null;
+      return Response.json(tenant.multiUser ? await tenantDashboard(userId, request) : await dashboard(request));
     }
     if (route[0] === "interview-progress") {
       if (!tenant.multiUser) return Response.json(await interviewProgress());
@@ -220,7 +221,7 @@ export async function POST(request: Request, context: RouteContext) {
         if (!tenant.authenticated || !tenant.userId) {
           return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
         }
-        await updateTenantDraft(route[1], route[2], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
+        await updateTenantDraft(tenant.userId, route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
         return Response.json({ ok: true, dashboard: await tenantDashboard(tenant.userId, request) });
       }
       await updateDraft(route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
