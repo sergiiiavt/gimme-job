@@ -29,6 +29,7 @@ export type ForwardingSetup = {
 
 type SessionFetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
+const FORWARDING_POLL_MS = 5000;
 const actionStyle = {
   background: "transparent", border: 0, borderRadius: "5px", color: "#526059", cursor: "pointer",
   display: "block", fontSize: "12px", fontWeight: 700, padding: "8px 6px", textAlign: "left", width: "100%",
@@ -85,6 +86,10 @@ export async function loadForwardingSetup(fetcher: SessionFetcher = fetch): Prom
 
 export async function loadForwardingAddress(fetcher: SessionFetcher = fetch): Promise<string | null> {
   return (await loadForwardingSetup(fetcher))?.address ?? null;
+}
+
+export function shouldPollForwardingVerification(setup: ForwardingSetup | null): boolean {
+  return Boolean(setup?.address && !setup.verificationUrl && !setup.confirmationCode);
 }
 
 export function shouldNormalizeToPersonal(mode: AuthViewMode, authenticated: boolean, personalHref: string, currentHref: string): boolean {
@@ -169,12 +174,27 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   useEffect(() => {
     if (!authenticated) return;
     let active = true;
-    void Promise.all([loadAuthSession(), loadForwardingSetup()]).then(([nextSession, setup]) => {
-      if (!active) return;
-      if (nextSession) setSession(nextSession);
-      setForwarding(setup);
-    }).catch(() => {});
-    return () => { active = false; };
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const refresh = async () => {
+      try {
+        const [nextSession, setup] = await Promise.all([loadAuthSession(), loadForwardingSetup()]);
+        if (!active) return;
+        if (nextSession) setSession(nextSession);
+        setForwarding(setup);
+        if (shouldPollForwardingVerification(setup)) {
+          timer = setTimeout(() => { void refresh(); }, FORWARDING_POLL_MS);
+        }
+      } catch {
+        if (active) timer = setTimeout(() => { void refresh(); }, FORWARDING_POLL_MS);
+      }
+    };
+
+    void refresh();
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+    };
   }, [authenticated]);
 
   return authenticated
