@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AuthStatusControl from "./auth-status-control";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
 
@@ -73,6 +74,7 @@ interface SidebarProps {
   mode: "public" | "personal";
   onSelect?: (section: SiteSection) => void;
   personalHref?: string;
+  /** Retained temporarily for caller compatibility; public/personal is no longer a user-selectable view. */
   publicHref?: string;
   secondaryTitle: string;
   secondaryItems: SubnavItem[];
@@ -82,7 +84,7 @@ interface SidebarProps {
   onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", publicHref = "/", secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
       {item.label}
@@ -111,10 +113,7 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
         </nav>
 
         <div className="kb-sidebar-footer">
-          <nav className="kb-view-switch" aria-label="Site view">
-            <Link className={mode === "public" ? "active" : ""} href={publicHref}>Public</Link>
-            <Link className={mode === "personal" ? "active" : ""} href={personalHref}>Personal</Link>
-          </nav>
+          <AuthStatusControl mode={mode} personalHref={personalHref}/>
         </div>
       </aside>
 
