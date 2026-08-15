@@ -1,0 +1,63 @@
+name: Bootstrap Hetzner n8n
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/hetzner-n8n.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hetzner-n8n-production
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    name: provision
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Validate required secret
+        shell: bash
+        run: |
+          if [[ -z "$HETZNER_TOKEN" ]]; then
+            echo "HETZNER_TOKEN repository secret is missing." >&2
+            exit 1
+          fi
+
+      - name: Provision Hetzner runtime
+        id: hetzner
+        run: node ops/hetzner/provision.mjs
+
+      - name: Wait for n8n HTTPS
+        if: steps.hetzner.outputs.dns_configured == 'true'
+        shell: bash
+        env:
+          N8N_URL: ${{ steps.hetzner.outputs.n8n_url }}
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error --max-time 10 "$N8N_URL/" >/dev/null; then
+              echo "n8n is reachable at $N8N_URL"
+              exit 0
+            fi
+            echo "Waiting for cloud-init, Docker, DNS and TLS ($attempt/60)..."
+            sleep 10
+          done
+          echo "n8n did not become reachable within 10 minutes." >&2
+          exit 1
+
+      - name: DNS permission notice
+        if: steps.hetzner.outputs.dns_configured != 'true'
+        shell: bash
+        run: |
+          echo "::warning::Hetzner was provisioned, but the existing CLOUDFLARE_API_TOKEN could not create/update n8n.gimme-job.com. Add DNS Write permission to that token or create the A record manually."
