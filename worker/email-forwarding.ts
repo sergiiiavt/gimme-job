@@ -1,3 +1,5 @@
+import { extractEmailTextExcerpt } from "./email-text.ts";
+
 type ForwardedEmailMessage = {
   readonly from: string;
   readonly to: string;
@@ -13,7 +15,8 @@ const EMAIL_DOMAIN = "gimme-job.com";
 const BASE_LOCAL_PART = "jobs";
 const MAX_SUBJECT_LENGTH = 1000;
 const MAX_MESSAGE_ID_LENGTH = 1000;
-const MAX_VERIFICATION_MESSAGE_SIZE = 256 * 1024;
+const MAX_RAW_PROCESSING_SIZE = 1024 * 1024;
+const MAX_TEXT_EXCERPT_LENGTH = 4_000;
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 function cleanHeader(value: string | null, maxLength: number): string {
@@ -61,19 +64,20 @@ export function extractGmailForwardingVerification(rawMessage: string): { verifi
   return { verificationUrl, confirmationCode };
 }
 
+function gmailForwardingConfirmation(subject: string, senderEmail: string | null): boolean {
+  return /forwarding confirmation/i.test(subject) && Boolean(senderEmail && /@google\.com$/i.test(senderEmail));
+}
+
 async function captureGmailForwardingVerification(
-  message: ForwardedEmailMessage,
+  rawMessage: string | null,
   db: D1Database,
   userId: string,
   subject: string,
   senderEmail: string | null,
   receivedAt: string,
 ): Promise<void> {
-  if (!message.raw || message.rawSize <= 0 || message.rawSize > MAX_VERIFICATION_MESSAGE_SIZE) return;
-  if (!/forwarding confirmation/i.test(subject)) return;
-  if (!senderEmail || !/@google\.com$/i.test(senderEmail)) return;
+  if (!rawMessage || !gmailForwardingConfirmation(subject, senderEmail)) return;
 
-  const rawMessage = await new Response(message.raw).text();
   const { verificationUrl, confirmationCode } = extractGmailForwardingVerification(rawMessage);
   if (!verificationUrl && !confirmationCode) return;
 
@@ -90,6 +94,15 @@ async function captureGmailForwardingVerification(
     updated_at = excluded.updated_at`)
     .bind(userId, verificationUrl, confirmationCode, receivedAt, expiresAt, now)
     .run();
+}
+
+async function boundedRawMessage(message: ForwardedEmailMessage): Promise<string | null> {
+  if (!message.raw || message.rawSize <= 0 || message.rawSize > MAX_RAW_PROCESSING_SIZE) return null;
+  try {
+    return await new Response(message.raw).text();
+  } catch {
+    return null;
+  }
 }
 
 export async function handleForwardedEmail(message: ForwardedEmailMessage, env: EmailForwardingEnv): Promise<void> {
@@ -124,17 +137,22 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
     receivedAt,
     String(message.rawSize),
   ].join("|"));
+  const rawMessage = await boundedRawMessage(message);
+  const textExcerpt = rawMessage && !gmailForwardingConfirmation(subject, senderEmail)
+    ? extractEmailTextExcerpt(rawMessage, MAX_TEXT_EXCERPT_LENGTH)
+    : null;
   const now = new Date().toISOString();
 
   await env.DB.prepare(`INSERT INTO user_email_events (
     id, user_id, provider, provider_message_id, thread_id, received_at,
-    sender_name, sender_email, subject, classification, summary, company,
+    sender_name, sender_email, subject, text_excerpt, classification, summary, company,
     job_title, recruiter_name, job_id, created_at, updated_at
-  ) VALUES (?, ?, 'email_forwarding', ?, NULL, ?, NULL, ?, ?, 'UNCLASSIFIED', NULL, NULL, NULL, NULL, NULL, ?, ?)
+  ) VALUES (?, ?, 'email_forwarding', ?, NULL, ?, NULL, ?, ?, ?, 'UNCLASSIFIED', NULL, NULL, NULL, NULL, NULL, ?, ?)
   ON CONFLICT(user_id, provider, provider_message_id) DO UPDATE SET
     received_at = excluded.received_at,
     sender_email = excluded.sender_email,
     subject = excluded.subject,
+    text_excerpt = COALESCE(excluded.text_excerpt, user_email_events.text_excerpt),
     updated_at = excluded.updated_at`)
     .bind(
       `evt_${crypto.randomUUID()}`,
@@ -143,12 +161,13 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
       receivedAt,
       senderEmail,
       subject,
+      textExcerpt,
       now,
       now,
     )
     .run();
 
-  await captureGmailForwardingVerification(message, env.DB, alias.user_id, subject, senderEmail, receivedAt);
+  await captureGmailForwardingVerification(rawMessage, env.DB, alias.user_id, subject, senderEmail, receivedAt);
 }
 
 export function forwardingAddress(token: string): string {
