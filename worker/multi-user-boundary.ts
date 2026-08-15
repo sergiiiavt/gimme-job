@@ -115,6 +115,12 @@ async function handleMultiUserLogin(request: Request, env: BoundaryEnv): Promise
 }
 
 async function handleMultiUserLogout(request: Request, env: BoundaryEnv): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("Method not allowed.", {
+      status: 405,
+      headers: { allow: "POST", "cache-control": "no-store" },
+    });
+  }
   await deleteUserSession(request, env);
   return new Response(null, {
     status: 303,

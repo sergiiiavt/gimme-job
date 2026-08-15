@@ -3,6 +3,10 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import AuthStatusControl, {
+  accountInitial,
+  gmailConnectHref,
+  gmailDisconnectHref,
+  loadAuthSession,
   shouldNormalizeToPersonal,
   signInHref,
   startAuthSync,
@@ -16,6 +20,43 @@ test("signInHref preserves the intended private destination", () => {
     signInHref("/workspace/learn?section=interview"),
     "/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
   );
+});
+
+test("Gmail account actions preserve the intended private destination", () => {
+  const destination = "/workspace/learn?section=interview";
+  assert.equal(
+    gmailConnectHref(destination),
+    "/auth/google/start?mode=gmail&next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
+  );
+  assert.equal(
+    gmailDisconnectHref(destination),
+    "/auth/gmail/disconnect?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
+  );
+});
+
+test("account initial prefers the Google profile name then email", () => {
+  assert.equal(accountInitial(null), "G");
+  assert.equal(accountInitial({ enabled: true, authenticated: true, user: { id: "1", email: "user@example.com", name: null, pictureUrl: null } }), "U");
+  assert.equal(accountInitial({ enabled: true, authenticated: true, user: { id: "1", email: "user@example.com", name: "Sergii", pictureUrl: null } }), "S");
+});
+
+test("auth session loader uses the no-store account endpoint", async () => {
+  const requests: Array<{ input: string; init?: RequestInit }> = [];
+  const result = await loadAuthSession(async (input, init) => {
+    requests.push({ input: String(input), init });
+    return Response.json({
+      enabled: true,
+      authenticated: true,
+      user: { id: "usr-1", email: "user@example.com", name: "User", pictureUrl: null },
+      gmail: { connected: false },
+    });
+  });
+  assert.equal(requests[0]?.input, "/auth/session");
+  assert.equal(requests[0]?.init?.cache, "no-store");
+  assert.equal(result?.user?.email, "user@example.com");
+
+  const missing = await loadAuthSession(async () => new Response(null, { status: 401 }));
+  assert.equal(missing, null);
 });
 
 test("public routes normalize to the private equivalent only when authenticated", () => {
@@ -103,11 +144,12 @@ test("auth sync falls back to the route mode on probe failure and supports cance
 test("auth control renders one explicit auth action instead of a view switcher", () => {
   const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/workspace" }));
   assert.match(publicMarkup, /Public view/);
-  assert.match(publicMarkup, /Sign in/);
+  assert.match(publicMarkup, />Sign in<\/a>/);
   assert.doesNotMatch(publicMarkup, /Personal<\/a>/);
 
   const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/workspace" }));
   assert.match(personalMarkup, /Signed in/);
+  assert.match(personalMarkup, /Personal workspace/);
   assert.match(personalMarkup, /Log out/);
   assert.match(personalMarkup, /method="post"/);
 });

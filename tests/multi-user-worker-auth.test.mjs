@@ -170,6 +170,7 @@ test("multi-user logout invalidates the D1 session and clears only the user-sess
 
   const response = await worker.fetch(
     new Request("https://gimmejob.example/workspace/logout", {
+      method: "POST",
       headers: { cookie: "gimmejob_user_session=server-session-token" },
     }),
     env,
