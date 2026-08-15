@@ -144,7 +144,7 @@ test("auth sync falls back to the route mode on probe failure and supports cance
 test("auth control renders one explicit auth action instead of a view switcher", () => {
   const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/workspace" }));
   assert.match(publicMarkup, /Public view/);
-  assert.match(publicMarkup, /Sign in with Google/);
+  assert.match(publicMarkup, />Sign in<\/a>/);
   assert.doesNotMatch(publicMarkup, /Personal<\/a>/);
 
   const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/workspace" }));
