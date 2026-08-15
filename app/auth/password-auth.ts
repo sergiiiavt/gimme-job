@@ -12,7 +12,8 @@ const SESSION_COOKIE = "gimmejob_user_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;
 const MIN_PASSWORD = 12;
 const MAX_PASSWORD = 128;
-const PBKDF2_ITERATIONS = 600_000;
+// Cloudflare Workers Web Crypto rejects PBKDF2 iteration counts above 100,000.
+const PBKDF2_ITERATIONS = 100_000;
 const MAX_FAILURES = 8;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const BLOCK_MS = 15 * 60 * 1000;
@@ -62,7 +63,13 @@ export async function hashPassword(password: string): Promise<string> {
 export async function verifyPassword(password: string, encoded: string): Promise<boolean> {
   const [algorithm, iterationText, saltText, expected] = encoded.split("$");
   const iterations = Number(iterationText);
-  if (algorithm !== "pbkdf2-sha256" || !Number.isInteger(iterations) || iterations < 100_000 || !saltText || !expected) return false;
+  if (
+    algorithm !== "pbkdf2-sha256"
+    || !Number.isInteger(iterations)
+    || iterations !== PBKDF2_ITERATIONS
+    || !saltText
+    || !expected
+  ) return false;
   try {
     return constantTimeEqual(await derivePassword(password, fromBase64Url(saltText), iterations), expected);
   } catch {
