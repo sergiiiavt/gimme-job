@@ -3,7 +3,7 @@ import {
   bearerToken,
   constantTimeEqual,
   normalizeEmailEvent,
-} from "./email-event";
+} from "./email-event.ts";
 
 const MAX_REQUEST_BYTES = 32 * 1024;
 
