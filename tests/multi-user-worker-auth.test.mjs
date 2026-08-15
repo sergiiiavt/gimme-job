@@ -56,6 +56,7 @@ function envFor(db) {
   return {
     MULTI_USER_ENABLED: "true",
     APP_PASSWORD: "legacy-password-must-not-authorize-multi-user-mode",
+    N8N_INGEST_TOKEN: "n8n-service-token",
     DB: db,
     ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
   };
@@ -109,6 +110,36 @@ test("multi-user Worker injects only the user id resolved from the server sessio
   const payload = await response.json();
   assert.equal(payload.progress[0].questionId, "api-testing");
   assert.deepEqual(state.progressUserIds, ["user-a"]);
+});
+
+test("multi-user Worker preserves n8n bearer auth only for the scoped internal service route", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("multi-user-n8n-service-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const { db } = fakeSessionDb();
+  const env = envFor(db);
+
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  cloudflareEnv.MULTI_USER_ENABLED = "true";
+  cloudflareEnv.N8N_INGEST_TOKEN = "n8n-service-token";
+
+  const authorized = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-events?limit=1", {
+    headers: {
+      authorization: "Bearer n8n-service-token",
+      "x-gimmejob-auth-mode": "multi-user",
+      "x-gimmejob-authenticated": "1",
+      "x-gimmejob-user-id": "attacker-controlled-user",
+    },
+  }), env, context);
+  assert.equal(authorized.status, 200);
+  assert.deepEqual(await authorized.json(), { events: [] });
+
+  const rejected = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-events?limit=1", {
+    headers: { authorization: "Bearer wrong-token" },
+  }), env, context);
+  assert.equal(rejected.status, 401);
+  assert.deepEqual(await rejected.json(), { error: "Authentication required." });
 });
 
 test("multi-user logout invalidates the D1 session and clears only the user-session cookie", async () => {
