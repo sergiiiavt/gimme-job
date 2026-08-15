@@ -1,6 +1,3 @@
-import { base64ToBytes } from "../../agent/src/resume-pdf.js";
-import { DEFAULT_PROFILE, DEFAULT_SOURCES, publicJobs } from "./_jobpilot";
-
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
 
@@ -18,6 +15,8 @@ export type TenantRequestContext = {
 type TenantStateDeps = {
   database: D1Database;
   runtime?: Record<string, unknown>;
+  defaultProfile?: Json;
+  defaultSources?: Json;
   loadPublicJobs?: () => Promise<PublicJobsPayload>;
 };
 
@@ -51,6 +50,11 @@ function countBy(values: string[]): Array<{ name: string; count: number }> {
   return [...counts]
     .map(([name, count]) => ({ name, count }))
     .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  const binary = atob(value);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
 function mapDraft(row: Row): Json {
@@ -102,7 +106,9 @@ export function tenantUnavailable(operation: string): Response {
 export function createTenantState(deps: TenantStateDeps) {
   const database = deps.database;
   const runtime = deps.runtime ?? {};
-  const loadPublicJobs = deps.loadPublicJobs ?? publicJobs;
+  const defaultProfile = deps.defaultProfile ?? {};
+  const defaultSources = deps.defaultSources ?? {};
+  const loadPublicJobs = deps.loadPublicJobs ?? (async () => ({ jobs: [] }));
 
   async function setting<T>(userId: string, key: string, fallback: T): Promise<T> {
     const row = await database.prepare("SELECT value_json FROM user_settings WHERE user_id = ? AND key = ?")
@@ -119,7 +125,7 @@ export function createTenantState(deps: TenantStateDeps) {
   }
 
   async function connections(userId: string, sourcesOverride?: Json) {
-    const sources = sourcesOverride ?? await setting<Json>(userId, "sources", DEFAULT_SOURCES);
+    const sources = sourcesOverride ?? await setting<Json>(userId, "sources", defaultSources);
     const gmail = await database.prepare("SELECT email, status FROM gmail_connections WHERE user_id = ? LIMIT 1")
       .bind(userId)
       .first<Row>();
@@ -146,9 +152,9 @@ export function createTenantState(deps: TenantStateDeps) {
   }
 
   async function settingsView(userId: string) {
-    const sources = await setting<Json>(userId, "sources", DEFAULT_SOURCES);
+    const sources = await setting<Json>(userId, "sources", defaultSources);
     return {
-      profile: await setting("profile" in DEFAULT_PROFILE ? userId : userId, "profile", DEFAULT_PROFILE),
+      profile: await setting(userId, "profile", defaultProfile),
       sources,
       connections: await connections(userId, sources),
     };
@@ -398,10 +404,19 @@ export function createTenantState(deps: TenantStateDeps) {
 }
 
 async function runtimeState() {
-  const runtime = await import("cloudflare:workers");
+  const [runtime, jobpilot] = await Promise.all([
+    import("cloudflare:workers"),
+    import("./_jobpilot"),
+  ]);
   const env = runtime.env as unknown as Record<string, unknown> & { DB?: D1Database };
   if (!env.DB) throw new Error("Cloud database is not available.");
-  return createTenantState({ database: env.DB, runtime: env });
+  return createTenantState({
+    database: env.DB,
+    runtime: env,
+    defaultProfile: jobpilot.DEFAULT_PROFILE as Json,
+    defaultSources: jobpilot.DEFAULT_SOURCES as Json,
+    loadPublicJobs: jobpilot.publicJobs,
+  });
 }
 
 export async function tenantDashboard(userId: string | null, request?: Request) {
