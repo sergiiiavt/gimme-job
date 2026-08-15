@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { forwardingAddress, handleForwardedEmail } from "../worker/email-forwarding.ts";
+import {
+  extractGmailForwardingVerification,
+  forwardingAddress,
+  handleForwardedEmail,
+} from "../worker/email-forwarding.ts";
 
 function fakeDb(userId: string | null) {
-  const state = { inserted: [] as unknown[][], aliasLookups: 0 };
+  const state = { inserted: [] as unknown[][], verifications: [] as unknown[][], aliasLookups: 0 };
   const db = {
     prepare(sql: string) {
       const text = sql.replace(/\s+/g, " ").trim();
@@ -19,6 +23,7 @@ function fakeDb(userId: string | null) {
         },
         async run() {
           if (text.startsWith("INSERT INTO user_email_events")) state.inserted.push(statement.values);
+          if (text.startsWith("INSERT INTO email_forwarding_verifications")) state.verifications.push(statement.values);
           return { success: true };
         },
       };
@@ -28,14 +33,15 @@ function fakeDb(userId: string | null) {
   return { db: db as unknown as D1Database, state };
 }
 
-function message(to: string, overrides: { from?: string; headers?: Headers; rawSize?: number } = {}) {
+function message(to: string, overrides: { from?: string; headers?: Headers; rawSize?: number; raw?: string } = {}) {
   const state = { rejected: "" };
   return {
     state,
     value: {
       from: overrides.from ?? "recruiter@example.com",
       to,
-      rawSize: overrides.rawSize ?? 1234,
+      rawSize: overrides.rawSize ?? overrides.raw?.length ?? 1234,
+      raw: overrides.raw === undefined ? undefined : new Response(overrides.raw).body ?? undefined,
       headers: overrides.headers ?? new Headers({
         subject: "QA Engineer interview",
         date: "Sat, 15 Aug 2026 20:00:00 GMT",
@@ -61,6 +67,59 @@ test("forwarded email metadata is written only to the resolved tenant", async ()
   assert.equal(state.inserted[0]![3], "2026-08-15T20:00:00.000Z");
   assert.equal(state.inserted[0]![4], "recruiter@example.com");
   assert.equal(state.inserted[0]![5], "QA Engineer interview");
+  assert.equal(state.verifications.length, 0);
+});
+
+test("Gmail forwarding confirmation is reduced to a temporary link/code without storing the body", async () => {
+  const raw = [
+    "From: Gmail Team <forwarding-noreply@google.com>",
+    "Subject: Gmail Forwarding Confirmation - Receive Mail from user@gmail.com",
+    "Content-Transfer-Encoding: quoted-printable",
+    "",
+    "Confirmation code: 123456789",
+    "https://mail.google.com/mail/vf-token-part=3Dmore",
+    "private body text that must not be stored",
+  ].join("\r\n");
+  const { db, state } = fakeDb("user-a");
+  const incoming = message("jobs+abc123def456@gimme-job.com", {
+    from: "forwarding-noreply@google.com",
+    raw,
+    headers: new Headers({
+      subject: "Gmail Forwarding Confirmation - Receive Mail from user@gmail.com",
+      date: "Sat, 15 Aug 2026 20:00:00 GMT",
+      "message-id": "<verification@google.com>",
+    }),
+  });
+
+  await handleForwardedEmail(incoming.value, { DB: db });
+  assert.equal(state.inserted.length, 1);
+  assert.equal(state.verifications.length, 1);
+  const values = state.verifications[0]!;
+  assert.equal(values[0], "user-a");
+  assert.equal(values[1], "https://mail.google.com/mail/vf-token-part=more");
+  assert.equal(values[2], "123456789");
+  assert.equal(values.some((value) => String(value).includes("private body text")), false);
+});
+
+test("verification parser handles Gmail confirmation link variants", () => {
+  assert.deepEqual(extractGmailForwardingVerification([
+    "Confirmation code: 87654321",
+    "https://mail.google.com/mail/ca/vf-abc%40example.com-token",
+  ].join("\n")), {
+    verificationUrl: "https://mail.google.com/mail/ca/vf-abc%40example.com-token",
+    confirmationCode: "87654321",
+  });
+});
+
+test("non-Google mail never causes raw-message verification capture", async () => {
+  const { db, state } = fakeDb("user-a");
+  const incoming = message("jobs+abc123def456@gimme-job.com", {
+    from: "attacker@example.com",
+    raw: "https://mail.google.com/mail/vf-fake",
+    headers: new Headers({ subject: "Gmail Forwarding Confirmation", "message-id": "<fake@example.com>" }),
+  });
+  await handleForwardedEmail(incoming.value, { DB: db });
+  assert.equal(state.verifications.length, 0);
 });
 
 test("unknown forwarding aliases are rejected before storage", async () => {
