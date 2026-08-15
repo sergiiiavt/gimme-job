@@ -396,7 +396,8 @@ test("keeps the public site open and protects the private workspace", async () =
     "D1 Database",
     "OpenAI integration",
     "OpenAI API",
-    "Grafana observability",
+    "Observability",
+    "Cloudflare Workers Logs",
   ]) {
     assert.match(publicHtml, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
