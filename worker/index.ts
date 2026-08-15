@@ -4,8 +4,9 @@ import { handleForwardedEmail } from "./email-forwarding";
 import { createMultiUserBoundary } from "./multi-user-boundary";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
-
-export default {
+const worker = {
   fetch: httpWorker.fetch,
   email: handleForwardedEmail,
 };
+
+export default worker;
