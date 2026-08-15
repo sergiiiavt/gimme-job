@@ -1,0 +1,50 @@
+/* About page layout refinements */
+.about-tech-section-heading.about-tech-overview-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+}
+
+.about-tech-actions {
+  align-self: start;
+  justify-self: end;
+}
+
+.about-tech-section:not(.about-tech-overview) {
+  gap: 16px;
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.about-tech-deployment-flow {
+  align-items: center;
+}
+
+.about-tech-purpose-card {
+  min-height: 150px;
+  padding: 15px;
+}
+
+.about-tech-purpose-card p {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 1180px) {
+  .about-tech-section:not(.about-tech-overview) {
+    gap: 18px;
+    grid-template-columns: 1fr;
+  }
+
+  .about-tech-section-heading.about-tech-overview-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .about-tech-actions {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .about-tech-purpose-card {
+    min-height: 0;
+  }
+}
