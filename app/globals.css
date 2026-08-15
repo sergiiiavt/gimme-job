@@ -861,9 +861,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 /* About / technology overview */
 .about-page { max-width: 1320px; }
 .about-tech-page { max-width: 1480px; width: 100%; }
-.about-tech-page-header { align-items: start; display: grid; gap: 24px; grid-template-columns: minmax(0,1fr) auto; margin-bottom: 14px; }
-.about-tech-page-header h1 { font-size: clamp(32px,4vw,46px); letter-spacing: -.045em; line-height: 1; margin: 0; }
-.about-tech-page-header p { color: #68756e; font-size: 12px; line-height: 1.6; margin: 9px 0 0; max-width: 760px; }
 .about-tech-eyebrow { color: #397657; display: block; font-size: 9px; font-weight: 850; letter-spacing: .12em; margin-bottom: 7px; text-transform: uppercase; }
 
 .about-tech-actions { display: flex; gap: 8px; }
@@ -875,6 +872,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .about-tech-section + .about-tech-section { margin-top: 10px; }
 .about-tech-overview { display: block; }
 .about-tech-overview .about-tech-section-heading { margin-bottom: 16px; }
+
+.about-tech-overview-heading { align-items: flex-start; display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) auto; }
+.about-tech-overview-title { align-items: flex-start; display: flex; gap: 14px; min-width: 0; }
+.about-tech-overview-heading h1 { font-size: clamp(32px,4vw,46px); letter-spacing: -.045em; line-height: 1; margin: 0; }
+.about-tech-overview-heading p { color: #68756e; font-size: 12px; line-height: 1.6; margin: 9px 0 0; max-width: 760px; }
 
 .about-tech-section-heading { align-items: flex-start; display: flex; gap: 14px; min-width: 0; }
 .about-tech-section-heading h2 { font-size: 19px; letter-spacing: -.025em; line-height: 1.15; margin: 2px 0 0; }
@@ -961,6 +963,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 @media (max-width: 1180px) {
   .about-tech-section { grid-template-columns: 1fr; }
+  .about-tech-overview-heading { grid-template-columns: 1fr; }
   .about-tech-section-heading p { max-width: 720px; }
   .about-tech-purpose-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .about-tech-deployment-flow,
@@ -973,7 +976,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 700px) {
-  .about-tech-page-header { grid-template-columns: 1fr; }
   .about-tech-actions { flex-wrap: wrap; }
   .about-tech-purpose-grid,
   .about-tech-data-grid,

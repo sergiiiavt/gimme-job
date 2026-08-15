@@ -55,8 +55,7 @@ export const DB_SCHEMA_URL = `${REPO_URL}/blob/main/db/schema.ts`;
 export const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
-export const OBSERVABILITY_HEALTH_URL = `${PROJECT_URL}/api/observability/health`;
-export const OBSERVABILITY_SUMMARY_URL = `${PROJECT_URL}/api/observability/summary?days=30`;
+export const WORKER_SOURCE_URL = `${REPO_URL}/blob/main/worker/index.ts`;
 
 // TODO: add the real shareable Grafana dashboard URL when available.
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
@@ -219,7 +218,7 @@ export const GRAFANA = {
     description: "Aggregated observability metrics and statistics",
     icon: "database" as const,
     accent: "blue" as const,
-    links: [{ label: "API summary", href: OBSERVABILITY_SUMMARY_URL, external: true }],
+    links: [{ label: "API implementation", href: WORKER_SOURCE_URL, external: true }],
   },
   grafana: {
     title: "Grafana",
@@ -228,7 +227,7 @@ export const GRAFANA = {
     accent: "orange" as const,
     links: [
       GRAFANA_DASHBOARD_LINK,
-      { label: "Health endpoint", href: OBSERVABILITY_HEALTH_URL, external: true },
+      { label: "Observability API source", href: WORKER_SOURCE_URL, external: true },
     ],
   },
   outputs: [

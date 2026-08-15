@@ -400,8 +400,13 @@ test("keeps the public site open and protects the private workspace", async () =
   ]) {
     assert.match(publicHtml, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
+  const overviewHeadings = [...publicHtml.matchAll(/<h1[^>]*>What this site is<\/h1>/g)];
+  assert.equal(overviewHeadings.length, 1);
+  assert.doesNotMatch(publicHtml, /Technology stack/);
   assert.match(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
   assert.doesNotMatch(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimmejob/);
+  assert.doesNotMatch(publicHtml, /https:\/\/gimme-job\.com\/api\/observability\/health/);
+  assert.doesNotMatch(publicHtml, /https:\/\/gimme-job\.com\/api\/observability\/summary/);
 
   // The vacancy workspace itself is viewable without a password (analysis/resume are public);
   // only status tracking and write actions stay gated. It still keeps noindex/no-store though,

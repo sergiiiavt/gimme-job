@@ -155,30 +155,24 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
   return (
     <div className="kb-content about-page about-tech-page">
-      <header className="about-tech-page-header">
-        <div>
-          <span className="about-tech-eyebrow">{ABOUT_OVERVIEW.eyebrow}</span>
-          <h1>{ABOUT_OVERVIEW.title}</h1>
-          <p>{ABOUT_OVERVIEW.subtitle}</p>
-        </div>
-        <nav className="about-tech-actions" aria-label="About page links">
-          <a className="about-tech-action about-tech-action-primary" href={REPO_URL} target="_blank" rel="noreferrer">
-            <span>View source on GitHub</span>
-          </a>
-          <a className="about-tech-action" href={interviewHref}>
-            <span>Open interview catalog</span>
-          </a>
-        </nav>
-      </header>
-
       <section className="about-tech-section about-tech-overview" aria-labelledby="about-overview-title">
-        <div className="about-tech-section-heading">
-          <SectionNumber>1</SectionNumber>
-          <div>
-            <span className="about-tech-eyebrow">{ABOUT_OVERVIEW.eyebrow}</span>
-            <h2 id="about-overview-title">{ABOUT_OVERVIEW.title}</h2>
-            <p>{ABOUT_OVERVIEW.subtitle}</p>
+        <div className="about-tech-section-heading about-tech-overview-heading">
+          <div className="about-tech-overview-title">
+            <SectionNumber>1</SectionNumber>
+            <div>
+              <span className="about-tech-eyebrow">{ABOUT_OVERVIEW.eyebrow}</span>
+              <h1 id="about-overview-title">{ABOUT_OVERVIEW.title}</h1>
+              <p>{ABOUT_OVERVIEW.subtitle}</p>
+            </div>
           </div>
+          <nav className="about-tech-actions" aria-label="About page links">
+            <a className="about-tech-action about-tech-action-primary" href={REPO_URL} target="_blank" rel="noreferrer">
+              <span>View source on GitHub</span>
+            </a>
+            <a className="about-tech-action" href={interviewHref}>
+              <span>Open interview catalog</span>
+            </a>
+          </nav>
         </div>
 
         <div className="about-tech-purpose-grid">
