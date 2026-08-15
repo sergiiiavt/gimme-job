@@ -10,6 +10,22 @@ Gmail -> n8n -> GimmeJob ingest endpoint -> D1 email_events
 
 This integration does **not** send, reply to, delete, archive, or relabel email. It also does not store the raw email body in GimmeJob.
 
+## Production runtime
+
+The production-ready self-hosted runtime and importable workflow are kept in:
+
+```text
+ops/n8n/
+```
+
+Use:
+
+- `ops/n8n/README.md` for VM, Docker, Cloudflare Tunnel, Gmail OAuth, and activation instructions.
+- `ops/n8n/docker-compose.yml` for the pinned n8n + Postgres + cloudflared stack.
+- `ops/n8n/workflows/gimmejob-gmail-ingest.json` for the credential-free workflow import.
+
+The runtime keeps Postgres and n8n's port 5678 private inside the Docker network. Cloudflare Tunnel is the only public ingress path.
+
 ## Security boundary
 
 - Gmail OAuth credentials stay in n8n.
@@ -17,6 +33,7 @@ This integration does **not** send, reply to, delete, archive, or relabel email.
 - n8n receives no D1 credentials.
 - n8n can call only the dedicated ingest endpoint with `N8N_INGEST_TOKEN`.
 - `N8N_INGEST_TOKEN` is stored as a GitHub repository secret and deployed as a Cloudflare Worker secret.
+- The same token is stored in n8n as a Bearer Auth credential; it is not committed in workflow JSON.
 - Use a randomly generated token of at least 32 characters; 32 random bytes encoded as hex/base64 is preferred.
 - Rotate the token if an n8n credential/workflow export is exposed.
 
@@ -70,44 +87,53 @@ Repeated delivery of the same Gmail message is safe. The ID is derived from the 
 
 ## n8n workflow
 
-Create a workflow named `GimmeJob - Gmail ingest`.
+Import the ready workflow:
+
+```text
+ops/n8n/workflows/gimmejob-gmail-ingest.json
+```
+
+Workflow name:
+
+```text
+GimmeJob - Gmail ingest
+```
+
+It imports inactive and without credentials.
 
 ### 1. Gmail Trigger
 
 Use the built-in **Gmail Trigger** with the Gmail account intended for job-search mail. Poll for new messages. Start without Spam/Trash and without any send/reply operation.
 
-For a safer first test, narrow the Gmail query/filter to a known recruiter, job-alert label, or a test message. Expand the filter only after the ingest path is verified.
+The committed workflow starts with `newer_than:2d` as a deliberately narrow first-test search. Replace it with a recruiter/job-search query after verification, or remove it only if all incoming mail should be ingested.
 
 ### 2. Edit Fields
 
-Add **Edit Fields (Set)** after Gmail Trigger and construct only the metadata accepted by GimmeJob:
+The **Keep GimmeJob metadata only** node constructs only the metadata accepted by GimmeJob:
 
 - `providerMessageId` <- Gmail message ID
 - `threadId` <- Gmail thread ID when available
-- `receivedAt` <- Gmail received/date timestamp
+- `receivedAt` <- Gmail internal received timestamp
 - `senderName` <- parsed From name when available
 - `senderEmail` <- parsed From email when available
 - `subject` <- Subject
 - `classification` <- literal `UNCLASSIFIED`
 
-Do not map message body, HTML, plaintext content, raw MIME, attachments, or snippet.
-
-Field names emitted by Gmail Trigger can vary with the n8n node/version and selected simplification options. Use n8n's expression picker to map the actual trigger output instead of hard-coding guessed property paths.
+All other Gmail Trigger fields are dropped before the HTTP request. Do not add message body, HTML, plaintext content, raw MIME, attachments, or snippet.
 
 ### 3. HTTP Request
 
-Add **HTTP Request**:
+The final **HTTP Request** posts to:
 
 ```text
 Method: POST
 URL: https://gimme-job.com/internal/n8n/email-events
-Send Headers: yes
-Authorization: Bearer <N8N_INGEST_TOKEN>
+Authentication: Bearer Auth credential
 Content-Type: application/json
-Body: JSON from Edit Fields
+Body: JSON from Keep GimmeJob metadata only
 ```
 
-Store the token in an n8n credential/secret mechanism; do not paste it into workflow JSON that will be committed or shared.
+Create/select an n8n Bearer Auth credential whose token equals the production `N8N_INGEST_TOKEN`. Do not paste the token into workflow JSON that will be committed or shared.
 
 Expected first-delivery response:
 
@@ -134,14 +160,17 @@ The deployment workflow passes it to `scripts/deploy-cloudflare.mjs`, which stor
 
 ## Verification
 
-1. Merge/deploy the GimmeJob changes.
-2. Confirm D1 migration `0006_add_email_events.sql` applied.
-3. Send one harmless test email to the connected Gmail account.
-4. Run/activate the n8n workflow.
-5. Confirm HTTP Request returns `201` with `created: true`.
-6. Run the same item again and confirm `200` with `created: false`.
-7. Confirm `email_events` contains metadata but no raw body.
-8. Confirm Cloudflare logs contain `event: email_ingest` without email address, subject, or message content.
+1. Confirm the GimmeJob Worker is deployed and D1 migration `0006_add_email_events.sql` is applied.
+2. Start the n8n production runtime from `ops/n8n/`.
+3. Import the committed workflow and attach Gmail OAuth + GimmeJob Bearer Auth credentials.
+4. Send one harmless test email to the connected Gmail account.
+5. Manually execute the n8n workflow.
+6. Confirm the metadata-only node contains no raw message content.
+7. Confirm HTTP Request returns `201` with `created: true`.
+8. Run the same item again and confirm `200` with `created: false`.
+9. Confirm `email_events` contains metadata but no raw body.
+10. Confirm Cloudflare logs contain `event: email_ingest` without email address, subject, or message content.
+11. Activate the workflow.
 
 ## Next phase
 
