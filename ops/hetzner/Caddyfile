@@ -1,0 +1,4 @@
+n8n.gimme-job.com {
+  encode zstd gzip
+  reverse_proxy n8n:5678
+}
