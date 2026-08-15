@@ -1,14 +1,31 @@
 export const EMAIL_CLASSIFICATIONS = [
   "UNCLASSIFIED",
-  "RECRUITER",
+  "APPLICATION_RECEIVED",
+  "RECRUITER_OUTREACH",
   "INTERVIEW",
-  "REJECTION",
   "TEST_TASK",
   "OFFER",
+  "REJECTION",
+  "JOB_ALERT",
+  "SERVICE_MESSAGE",
   "OTHER",
+  // Legacy direct-Gmail ingest value. New classifiers emit RECRUITER_OUTREACH.
+  "RECRUITER",
+] as const;
+
+export const EMAIL_ACTIONS = [
+  "NO_ACTION",
+  "REVIEW",
+  "RESPOND",
+  "PREPARE_INTERVIEW",
+  "COMPLETE_TEST_TASK",
+  "REVIEW_OFFER",
+  "TRACK_APPLICATION",
+  "REVIEW_JOB_ALERT",
 ] as const;
 
 export type EmailClassification = (typeof EMAIL_CLASSIFICATIONS)[number];
+export type EmailAction = (typeof EMAIL_ACTIONS)[number];
 
 export type NormalizedEmailEvent = {
   id: string;
