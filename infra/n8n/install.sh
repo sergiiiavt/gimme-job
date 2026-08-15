@@ -10,24 +10,29 @@ STACK_DIR="${STACK_DIR:-/opt/gimmejob-n8n}"
 REPO_REF="${GIMMEJOB_INFRA_REF:-main}"
 RAW_BASE="https://raw.githubusercontent.com/sergiiiavt/gimme-job/${REPO_REF}/infra/n8n"
 N8N_DOMAIN="${N8N_DOMAIN:-n8n.gimme-job.com}"
-N8N_VERSION="${N8N_VERSION:-2.32.7}"
+N8N_VERSION="${N8N_VERSION:-2.34.6}"
 
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
 apt-get install -y ca-certificates curl openssl ufw
 
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-chmod a+r /etc/apt/keyrings/docker.asc
-
 # shellcheck disable=SC1091
 . /etc/os-release
+if [[ "${ID:-}" != "ubuntu" ]]; then
+  echo "This bootstrap currently supports Ubuntu only." >&2
+  exit 1
+fi
+
 CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME:-}}"
 if [[ -z "$CODENAME" ]]; then
   echo "Unable to determine Ubuntu codename." >&2
   exit 1
 fi
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
 
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
@@ -46,7 +51,7 @@ curl -fsSL "$RAW_BASE/backup.sh" -o "$STACK_DIR/backup.sh"
 chmod 0750 "$STACK_DIR/backup.sh"
 
 if [[ ! -f "$STACK_DIR/.env" ]]; then
-  POSTGRES_PASSWORD="$(openssl rand -base64 48 | tr -d '\n' | tr '/+' '_-')"
+  POSTGRES_PASSWORD="$(openssl rand -hex 32)"
   N8N_ENCRYPTION_KEY="$(openssl rand -hex 32)"
 
   umask 077
@@ -70,8 +75,8 @@ docker compose --env-file .env -f compose.yaml pull
 docker compose --env-file .env -f compose.yaml up -d
 
 install -d -m 0700 /var/backups/gimmejob-n8n
-cat > /etc/cron.d/gimmejob-n8n-backup <<'EOF'
-17 3 * * * root /opt/gimmejob-n8n/backup.sh >> /var/log/gimmejob-n8n-backup.log 2>&1
+cat > /etc/cron.d/gimmejob-n8n-backup <<EOF
+17 3 * * * root $STACK_DIR/backup.sh >> /var/log/gimmejob-n8n-backup.log 2>&1
 EOF
 chmod 0644 /etc/cron.d/gimmejob-n8n-backup
 
