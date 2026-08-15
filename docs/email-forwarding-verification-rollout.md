@@ -1,0 +1,1 @@
+This file intentionally documents that Gmail forwarding verification is captured as an expiring URL/code only. Raw confirmation message bodies are not persisted.
