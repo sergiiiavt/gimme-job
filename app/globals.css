@@ -858,26 +858,131 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .iq-pagination { align-items: stretch; flex-direction: column; }
 }
 
-/* Project intro */
+/* About / technology overview */
 .about-page { max-width: 1320px; }
-.about-intro { align-items: end; border-bottom: 1px solid #dce2de; display: grid; gap: 42px; grid-template-columns: minmax(0,1fr) auto; padding: 6px 2px 28px; }
-.about-intro > div { max-width: 850px; }
-.about-intro h1 { font-size: clamp(35px,4.8vw,58px); letter-spacing: -.055em; line-height: 1; margin: 0; max-width: 790px; }
-.about-links { display: flex; flex-direction: column; gap: 8px; min-width: 225px; }
-.about-links a { align-items: center; background: #fff; border: 1px solid #d6ded7; border-radius: 8px; color: #31443a; display: flex; font-size: 12px; font-weight: 800; min-height: 42px; padding: 0 13px; }
-.about-links a:first-child { background: #1b2821; border-color: #1b2821; color: #f3f6f1; }
-.about-links a:hover { border-color: #94a294; }
-.about-stack-list-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-.about-stack-list-row > div { align-items: center; background: #fff; border: 1px solid #dfe4df; border-radius: 9px; display: flex; gap: 10px; padding: 13px 16px; }
-.about-stack-list-row strong { color: #38513f; font-size: 11px; text-transform: uppercase; white-space: nowrap; }
-.about-stack-list-row span { color: #56655d; font-size: 12px; line-height: 1.55; }
+.about-tech-page { max-width: 1480px; width: 100%; }
+.about-tech-page-header { align-items: start; display: grid; gap: 24px; grid-template-columns: minmax(0,1fr) auto; margin-bottom: 14px; }
+.about-tech-page-header h1 { font-size: clamp(32px,4vw,46px); letter-spacing: -.045em; line-height: 1; margin: 0; }
+.about-tech-page-header p { color: #68756e; font-size: 12px; line-height: 1.6; margin: 9px 0 0; max-width: 760px; }
+.about-tech-eyebrow { color: #397657; display: block; font-size: 9px; font-weight: 850; letter-spacing: .12em; margin-bottom: 7px; text-transform: uppercase; }
 
-.about-mechanism { border-top: 1px solid #dce2de; margin-top: 30px; max-width: 850px; padding-top: 28px; }
-.about-mechanism h2 { font-size: clamp(20px,2.4vw,26px); letter-spacing: -.03em; margin: 0 0 16px; }
-.about-mechanism ol { color: #445048; display: flex; flex-direction: column; font-size: 13px; gap: 10px; line-height: 1.6; margin: 0 0 18px; padding-left: 20px; }
-.about-mechanism-links { color: #56655d; font-size: 12px; margin: 0 0 10px; }
-.about-mechanism-source { flex-direction: row; flex-wrap: wrap; min-width: 0; }
-.about-mechanism-source a { min-width: 0; }
+.about-tech-actions { display: flex; gap: 8px; }
+.about-tech-action { align-items: center; border: 1px solid #d6ddd7; border-radius: 8px; color: #31443a; display: inline-flex; font-size: 11px; font-weight: 800; gap: 8px; justify-content: center; min-height: 40px; min-width: 0; padding: 0 13px; }
+.about-tech-action-primary { background: #1b2821; border-color: #1b2821; color: #f3f6f1; }
+.about-tech-action:hover { border-color: #94a294; }
+
+.about-tech-section { background: #fff; border: 1px solid #dfe4df; border-radius: 14px; display: grid; gap: 24px; grid-template-columns: minmax(210px,.28fr) minmax(0,1fr); min-width: 0; padding: 20px 22px; }
+.about-tech-section + .about-tech-section { margin-top: 10px; }
+.about-tech-overview { display: block; }
+.about-tech-overview .about-tech-section-heading { margin-bottom: 16px; }
+
+.about-tech-section-heading { align-items: flex-start; display: flex; gap: 14px; min-width: 0; }
+.about-tech-section-heading h2 { font-size: 19px; letter-spacing: -.025em; line-height: 1.15; margin: 2px 0 0; }
+.about-tech-section-heading p { color: #65716b; font-size: 11px; line-height: 1.55; margin: 7px 0 0; max-width: 240px; }
+
+.about-tech-section-number { align-items: center; background: #edf5ef; border: 1px solid #dce8df; border-radius: 999px; color: #2f6e50; display: inline-flex; flex: 0 0 auto; font-size: 13px; font-weight: 850; height: 34px; justify-content: center; width: 34px; }
+
+.about-tech-purpose-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0,1fr)); margin-top: 16px; }
+.about-tech-purpose-card { background: #fff; border: 1px solid #dfe4df; border-radius: 12px; display: flex; flex-direction: column; min-height: 170px; min-width: 0; padding: 17px; }
+.about-tech-purpose-card-top { align-items: center; display: flex; justify-content: space-between; }
+.about-tech-purpose-card .about-tech-node-icon { font-size: 20px; }
+.about-tech-purpose-number { color: #7b887f; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.about-tech-purpose-card h3 { font-size: 14px; letter-spacing: -.015em; line-height: 1.3; margin: 13px 0 0; }
+.about-tech-purpose-card p { color: #66726c; font-size: 11px; line-height: 1.55; margin: 7px 0 14px; }
+.about-tech-purpose-card .about-tech-link { margin-top: auto; }
+
+.about-tech-section-body { min-width: 0; }
+.about-tech-node { background: #fff; border: 1px solid #dfe4df; border-radius: 10px; min-width: 0; padding: 13px; }
+.about-tech-node > header { align-items: center; display: flex; gap: 9px; min-width: 0; }
+.about-tech-node > header strong { font-size: 12px; line-height: 1.25; }
+.about-tech-node p { color: #6a756f; font-size: 10px; line-height: 1.5; margin: 8px 0 0; }
+
+.about-tech-node-icon { align-items: center; border-radius: 8px; display: inline-flex; flex: 0 0 auto; font-size: 20px; height: 34px; justify-content: center; width: 34px; }
+.accent-green .about-tech-node-icon { background: #e8f5ed; color: #21734d; }
+.accent-blue .about-tech-node-icon { background: #edf3ff; color: #356dd7; }
+.accent-purple .about-tech-node-icon { background: #f3edfb; color: #7650b7; }
+.accent-orange .about-tech-node-icon { background: #fff1e6; color: #d56d17; }
+.accent-neutral .about-tech-node-icon { background: #eef2ef; color: #405148; }
+
+.about-tech-node-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.about-tech-link { align-items: center; background: #fbfcfb; border: 1px solid #d8dfda; border-radius: 8px; color: #3e5347; display: inline-flex; font-size: 10px; font-weight: 800; gap: 6px; line-height: 1; min-height: 32px; min-width: 0; overflow-wrap: anywhere; padding: 0 10px; text-decoration: none; }
+.about-tech-link:hover { border-color: #8f9d94; }
+.about-tech-link svg { height: 12px; width: 12px; }
+.about-tech-link path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.about-tech-link-disabled { color: #77847d; }
+
+.about-tech-flow-arrow { align-items: center; color: #88948e; display: flex; justify-content: center; min-width: 34px; }
+.about-tech-flow-arrow svg { height: 16px; overflow: visible; width: 44px; }
+.about-tech-flow-arrow path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+
+.about-tech-deployment-flow {
+  align-items: stretch;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(150px,.8fr) 44px minmax(170px,.9fr) 44px minmax(300px,1.5fr);
+}
+
+.about-tech-node-grid { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 10px; }
+
+.about-tech-database-flow {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(120px,.6fr) 44px minmax(180px,.8fr) 44px minmax(420px,1.8fr);
+}
+
+.about-tech-data-grid { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0,1fr)); min-width: 0; }
+
+.about-tech-ai-flow {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(150px,.7fr) 44px minmax(180px,.8fr) 44px minmax(330px,1.4fr) minmax(150px,.65fr);
+}
+
+.about-tech-output-grid { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0,1fr)); min-width: 0; }
+
+.about-tech-mini-node { background: #fafbf9; border: 1px solid #e4e8e4; border-radius: 8px; min-width: 0; padding: 10px; }
+.about-tech-mini-node > header { align-items: center; display: flex; gap: 7px; min-width: 0; }
+.about-tech-mini-node strong { font-size: 11px; line-height: 1.3; }
+.about-tech-mini-node p { color: #6a756f; font-size: 10px; line-height: 1.45; margin: 6px 0 0; }
+.about-tech-mini-icon { align-items: center; background: #eef2ef; border-radius: 7px; color: #46574d; display: inline-flex; flex: 0 0 auto; font-size: 15px; height: 24px; justify-content: center; width: 24px; }
+
+.about-tech-fallback { background: #fbfcfb; border-style: dashed; }
+
+.about-tech-observability-flow {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(240px,.95fr) 44px minmax(200px,.8fr) 44px minmax(340px,1.45fr);
+}
+
+.about-tech-observability-sources { display: grid; gap: 8px; min-width: 0; }
+
+@media (max-width: 1180px) {
+  .about-tech-section { grid-template-columns: 1fr; }
+  .about-tech-section-heading p { max-width: 720px; }
+  .about-tech-purpose-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .about-tech-deployment-flow,
+  .about-tech-database-flow,
+  .about-tech-ai-flow,
+  .about-tech-observability-flow { grid-template-columns: 1fr; }
+  .about-tech-flow-arrow { min-height: 28px; transform: rotate(90deg); }
+  .about-tech-data-grid,
+  .about-tech-output-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media (max-width: 700px) {
+  .about-tech-page-header { grid-template-columns: 1fr; }
+  .about-tech-actions { flex-wrap: wrap; }
+  .about-tech-purpose-grid,
+  .about-tech-data-grid,
+  .about-tech-output-grid,
+  .about-tech-node-grid { grid-template-columns: 1fr; }
+  .about-tech-section { padding: 16px; }
+}
+
+/* End About / technology overview */
 
 /* One-page resume */
 .resume-page { max-width: 1180px; }
@@ -915,8 +1020,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .resume-additional { grid-template-columns: repeat(2,minmax(0,1fr)); }
 
 @media (max-width: 760px) {
-  .about-intro { align-items: stretch; gap: 20px; grid-template-columns: 1fr; }
-  .about-links { min-width: 0; }
   .resume-header > p i { display: none; }
   .resume-header > p { display: flex; flex-direction: column; gap: 5px; }
   .resume-skill-grid, .resume-additional { grid-template-columns: 1fr; }

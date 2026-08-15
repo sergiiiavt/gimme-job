@@ -220,7 +220,7 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, gameSource, privateJobsSource] = await Promise.all([
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, gameSource, privateJobsSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -228,6 +228,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
     readFile(projectFile("db/schema.ts"), "utf8"),
     readFile(projectFile("app/resume-page.tsx"), "utf8"),
     readFile(projectFile("app/about-site.tsx"), "utf8"),
+    readFile(projectFile("app/about-site-content.ts"), "utf8"),
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/page.tsx"), "utf8"),
   ]);
@@ -287,7 +288,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(stylesSource, /\.kb-area-group-misc/);
   assert.match(stylesSource, /\.kb-nav-intro/);
   assert.match(stylesSource, /\.kb-navigation \.kb-nav-list \.kb-nav-link \{[^}]*font-size: 12px/);
-  assert.match(stylesSource, /\.about-stack-list-row span \{[^}]*font-size: 12px/);
+  assert.match(stylesSource, /\.about-tech-purpose-card p \{[^}]*font-size: 11px/);
   assert.match(stylesSource, /\.rw-controls p \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.rw-guide-grid p \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.rw-guide-list p \{[^}]*font-size: 11px/);
@@ -320,10 +321,18 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
   assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
   assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
-  assert.match(aboutSource, /View the source on GitHub/);
+  assert.match(aboutSource, /View source on GitHub/);
   assert.match(aboutSource, /mode === "personal" \? "\/workspace\/learn\?section=interview" : "#interview"/);
-  assert.match(aboutSource, /about-stack-list-row/);
-  assert.match(aboutSource, /technologyGroups\.map/);
+  assert.match(aboutSource, /ABOUT_OVERVIEW\.title/);
+  assert.match(aboutSource, /DEPLOYMENT\.title/);
+  assert.match(aboutSource, /DATABASE\.title/);
+  assert.match(aboutSource, /OPENAI\.title/);
+  assert.match(aboutSource, /GRAFANA\.title/);
+  assert.match(aboutContentSource, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
+  assert.doesNotMatch(aboutContentSource, /sergiiiavt\/gimmejob/);
+  assert.match(aboutSource, /about-tech-purpose-grid/);
+  assert.match(aboutSource, /FlowArrow/);
+  assert.match(aboutSource, /TechNode/);
   assert.doesNotMatch(aboutSource, /production pet project/i);
   assert.doesNotMatch(aboutSource, /skills showcase/i);
   assert.doesNotMatch(aboutSource, /researched QA questions/);

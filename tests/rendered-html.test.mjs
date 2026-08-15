@@ -382,6 +382,26 @@ test("keeps the public site open and protects the private workspace", async () =
 
   const publicResponse = await worker.fetch(new Request("https://gimmejob.example/"), env, context);
   assert.equal(publicResponse.status, 200);
+  const publicHtml = await publicResponse.text();
+  for (const text of [
+    "What this site is",
+    "Job search tool",
+    "Technology sandbox",
+    "AI-assisted workflows",
+    "Interview knowledge base",
+    "Deployment",
+    "GitHub Actions",
+    "Cloudflare Platform",
+    "Database",
+    "D1 Database",
+    "OpenAI integration",
+    "OpenAI API",
+    "Grafana observability",
+  ]) {
+    assert.match(publicHtml, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
+  assert.doesNotMatch(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimmejob/);
 
   // The vacancy workspace itself is viewable without a password (analysis/resume are public);
   // only status tracking and write actions stay gated. It still keeps noindex/no-store though,
