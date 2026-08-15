@@ -89,6 +89,14 @@
   gap: 14px;
   grid-template-columns: 220px minmax(0, 1fr);
   padding: var(--about-section-pad-y) var(--about-section-pad-x);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-tech-section:not(.about-tech-overview):hover {
+    background: #f6faf7;
+    border-color: #d4dfd7;
+  }
 }
 
 .about-tech-section + .about-tech-section {
