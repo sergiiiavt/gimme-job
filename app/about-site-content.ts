@@ -56,10 +56,12 @@ export const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
 export const WORKER_SOURCE_URL = `${REPO_URL}/blob/main/worker/index.ts`;
+export const GRAFANA_DASHBOARD_URL = "https://gentlecabbage323.grafana.net/public-dashboards/8c022097cb6544f2a5f9dff1cfab4e7b";
 
 // TODO: add the real shareable Grafana dashboard URL when available.
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
   label: "Grafana dashboard",
+  href: GRAFANA_DASHBOARD_URL,
 };
 
 export const ABOUT_OVERVIEW = {
