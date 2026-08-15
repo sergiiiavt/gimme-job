@@ -7,13 +7,13 @@ import {
 
 const MAX_REQUEST_BYTES = 32 * 1024;
 
-type RuntimeEnv = {
+export type EmailIngestEnv = {
   DB?: D1Database;
   N8N_INGEST_TOKEN?: string;
 };
 
-async function runtimeEnv(): Promise<RuntimeEnv> {
-  return (await import("cloudflare:workers")).env as unknown as RuntimeEnv;
+async function runtimeEnv(): Promise<EmailIngestEnv> {
+  return (await import("cloudflare:workers")).env as unknown as EmailIngestEnv;
 }
 
 function json(payload: unknown, status = 200): Response {
@@ -38,9 +38,8 @@ function logEmailIngest(fields: Record<string, unknown>): void {
   });
 }
 
-export async function POST(request: Request): Promise<Response> {
+export async function handleEmailEvent(request: Request, env: EmailIngestEnv): Promise<Response> {
   const startedAt = Date.now();
-  const env = await runtimeEnv();
   const configuredToken = env.N8N_INGEST_TOKEN?.trim() ?? "";
 
   if (!configuredToken) {
@@ -174,4 +173,8 @@ export async function POST(request: Request): Promise<Response> {
     });
     return json({ error: "Failed to store email event." }, 500);
   }
+}
+
+export async function POST(request: Request): Promise<Response> {
+  return handleEmailEvent(request, await runtimeEnv());
 }
