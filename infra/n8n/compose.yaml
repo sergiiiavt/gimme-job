@@ -20,7 +20,7 @@ services:
       - internal
 
   n8n:
-    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.32.7}
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.34.6}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -62,7 +62,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
