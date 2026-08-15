@@ -1,0 +1,147 @@
+name: Repair Hetzner n8n bootstrap
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/hetzner-n8n-repair.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hetzner-n8n-repair
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Validate Hetzner token
+        shell: bash
+        run: |
+          if [[ -z "$HETZNER_TOKEN" ]]; then
+            echo "HETZNER_TOKEN repository secret is missing." >&2
+            exit 1
+          fi
+
+      - name: Boot temporary Hetzner rescue system
+        run: node ops/hetzner/repair-rescue.mjs
+
+      - name: Install rescue SSH client helper
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
+      - name: Wait for rescue SSH
+        shell: bash
+        run: |
+          for attempt in $(seq 1 60); do
+            if timeout 3 bash -c "</dev/tcp/$HETZNER_SERVER_IP/22" 2>/dev/null; then
+              echo "Hetzner rescue SSH is reachable"
+              exit 0
+            fi
+            echo "Waiting for rescue SSH ($attempt/60)..."
+            sleep 5
+          done
+          echo "Rescue SSH did not become reachable." >&2
+          exit 1
+
+      - name: Repair bootstrap from rescue system
+        shell: bash
+        env:
+          SSHPASS: ${{ env.HETZNER_RESCUE_PASSWORD }}
+        run: |
+          sshpass -e ssh \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ConnectTimeout=10 \
+            root@$HETZNER_SERVER_IP 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          ROOT_DEV="$(lsblk -b -rpno NAME,TYPE,FSTYPE,SIZE,MOUNTPOINTS \
+            | awk '$2 == "part" && ($3 == "ext4" || $3 == "xfs") && $5 == "" { print $4, $1 }' \
+            | sort -nr \
+            | head -n1 \
+            | awk '{print $2}')"
+
+          if [[ -z "$ROOT_DEV" ]]; then
+            echo "Could not identify the installed Ubuntu root partition." >&2
+            lsblk -f
+            exit 1
+          fi
+
+          echo "Installed root partition: $ROOT_DEV"
+          mkdir -p /mnt
+          mount "$ROOT_DEV" /mnt
+
+          echo "--- previous bootstrap log (sanitized tail) ---"
+          if [[ -f /mnt/var/log/gimmejob-bootstrap.log ]]; then
+            tail -n 120 /mnt/var/log/gimmejob-bootstrap.log \
+              | sed -E 's/(POSTGRES_PASSWORD|N8N_ENCRYPTION_KEY)=.*/\1=[REDACTED]/g'
+          else
+            echo "No previous gimmejob-bootstrap.log found"
+          fi
+
+          install -d -m 755 /mnt/usr/local/sbin
+          curl --retry 8 --retry-all-errors --retry-delay 3 -fsSL \
+            https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner/bootstrap.sh \
+            -o /mnt/usr/local/sbin/gimmejob-bootstrap.sh
+          chmod 700 /mnt/usr/local/sbin/gimmejob-bootstrap.sh
+
+          cat >/mnt/etc/systemd/system/gimmejob-bootstrap.service <<'UNIT'
+          [Unit]
+          Description=GimmeJob n8n production bootstrap
+          Wants=network-online.target
+          After=network-online.target
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/local/sbin/gimmejob-bootstrap.sh
+          TimeoutStartSec=900
+          RemainAfterExit=yes
+          StandardOutput=append:/var/log/gimmejob-bootstrap.log
+          StandardError=append:/var/log/gimmejob-bootstrap.log
+
+          [Install]
+          WantedBy=multi-user.target
+          UNIT
+
+          install -d -m 755 /mnt/etc/systemd/system/multi-user.target.wants
+          ln -sfn ../gimmejob-bootstrap.service \
+            /mnt/etc/systemd/system/multi-user.target.wants/gimmejob-bootstrap.service
+
+          rm -f /mnt/opt/gimmejob-n8n/.bootstrap-complete
+          sync
+          umount /mnt
+
+          echo "Repair service installed. Rebooting into Ubuntu..."
+          nohup sh -c 'sleep 2; reboot' >/dev/null 2>&1 &
+          REMOTE
+
+      - name: Wait for HTTPS
+        shell: bash
+        run: |
+          sleep 15
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent --show-error --max-time 10 \
+              --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
+              https://n8n.gimme-job.com/ >/dev/null; then
+              echo "n8n HTTPS is healthy: https://n8n.gimme-job.com"
+              exit 0
+            fi
+            echo "Waiting for Ubuntu bootstrap, Docker, n8n, Caddy and ACME TLS ($attempt/90)..."
+            sleep 10
+          done
+          echo "n8n HTTPS did not become healthy within 15 minutes." >&2
+          exit 1
