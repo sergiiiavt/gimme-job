@@ -16,6 +16,7 @@
     "check:cloudflare": "node scripts/deploy-cloudflare.mjs --dry-run",
     "start": "vinext start",
     "test": "npm run build && node --test",
+    "test:coverage": "node scripts/run-test-coverage.mjs",
     "validate:artifact": "node scripts/validate-cloudflare-artifact.mjs",
     "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-automation-curriculum-content.mjs",
     "check:rewild-assets": "node scripts/validate-rewild-assets.mjs",
