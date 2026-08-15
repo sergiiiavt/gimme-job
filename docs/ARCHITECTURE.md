@@ -27,8 +27,6 @@ The local agent remains separate so source collection and experimentation can ru
 
 n8n is an orchestration layer, not a source of truth and not the owner of GimmeJob business rules.
 
-The current production email path uses personal forwarding addresses instead of giving n8n Gmail credentials:
-
 ```text
 User Gmail filter
   -> jobs+TOKEN@gimme-job.com
@@ -36,16 +34,21 @@ User Gmail filter
   -> GimmeJob Worker email() handler
   -> tenant-scoped user_email_events in D1
   -> n8n polls /internal/n8n/email-events
-  -> metadata-only classification
+  -> POST /internal/n8n/email-classify
+       -> rule fast paths
+       -> OpenAI structured classification when configured
+       -> deterministic fallback on provider failure
   -> PATCH /internal/n8n/email-events
-  -> tenant-scoped classification stored in D1
+  -> tenant-scoped structured result in D1
 ```
 
-The Worker resolves the forwarding token to `user_id` and persists only structured metadata. n8n has no direct D1 access and does not receive Gmail credentials or raw message bodies. The n8n processing API is protected by `N8N_INGEST_TOKEN` and exposes only unclassified email metadata needed by the workflow. Classification updates are idempotent and do not overwrite an event that has already been classified by another actor.
+The Worker resolves the forwarding token to `user_id`. For ordinary forwarded email it may store a bounded readable excerpt of up to 4,000 characters from MIME messages no larger than 1 MiB. Raw MIME, original HTML, and attachments are not stored in `user_email_events`; Gmail forwarding-confirmation bodies are excluded from excerpts.
+
+n8n receives no Gmail, D1, or OpenAI credentials. The classifier reloads the tenant event from D1 using `(userId, id)` before model use, so client-supplied subject/body data is not trusted as classifier input. `N8N_INGEST_TOKEN` protects both scoped service routes.
+
+Classification stores the category plus confidence, source, summary, extracted company/job title/recruiter when supported by the email, and a suggested action. Those actions are data only: the classification pipeline does not send mail or mutate application state.
 
 The old direct-Gmail n8n ingest endpoint remains available for backward compatibility, but it is not the current production ingestion path.
-
-Later phases may add richer classification, job matching, draft generation, and approval-first sending. Status transitions and application rules remain in GimmeJob.
 
 ## Delivery
 
@@ -59,9 +62,10 @@ The production n8n runtime is managed separately on the Hetzner VM by the files 
 - production data remains in the private database;
 - external Workers traffic requires a provider-managed password secret;
 - the n8n internal email API uses its own `N8N_INGEST_TOKEN`, not the workspace password;
-- the current forwarded-email workflow needs no Gmail OAuth credentials in n8n;
-- n8n receives no D1 credentials;
-- raw Gmail message bodies and attachments are not exposed by the current n8n processing API;
+- the forwarding workflow needs no Gmail OAuth credentials in n8n;
+- n8n receives no D1 or OpenAI credentials;
+- raw MIME and attachments are not stored or exposed by the current n8n processing API;
+- only a bounded readable excerpt is retained for ordinary email classification;
 - external fetches accept only public HTTPS sources;
 - applications are never sent by vacancy sync or analysis;
 - GitHub Actions has read-only repository permissions;
