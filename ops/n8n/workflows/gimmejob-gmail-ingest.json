@@ -1,0 +1,152 @@
+{
+  "name": "GimmeJob - Gmail ingest",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": true,
+        "maxResults": 10,
+        "filters": {
+          "includeSpamTrash": false,
+          "includeDrafts": false,
+          "q": "newer_than:2d",
+          "readStatus": "both"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -520,
+        0
+      ],
+      "id": "2a0c15c4-90e4-49d8-8c1c-2e1a1e29c2ba",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5be3ca2-e8c9-4ceb-87e9-e2d6a6e904f8",
+              "name": "providerMessageId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "fab09729-8b3b-46fa-aef0-2e41b10b061b",
+              "name": "threadId",
+              "value": "={{ $json.threadId || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "54c465a5-3416-4aae-845c-ed8bc345f107",
+              "name": "receivedAt",
+              "value": "={{ new Date(Number($json.internalDate)).toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "cb0dd42f-f75f-4277-9815-acde4d8b4ec1",
+              "name": "senderName",
+              "value": "={{ (($json.From || '').match(/^(.*?)\\s*<[^>]+>$/)?.[1] || '').replace(/^\"|\"$/g, '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "68af77b0-3449-44fc-bbab-f77dca9f6694",
+              "name": "senderEmail",
+              "value": "={{ (($json.From || '').match(/<([^>]+)>/)?.[1] || ($json.From || '')).trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "116b2746-b23c-4909-a690-f196b8132e50",
+              "name": "subject",
+              "value": "={{ $json.Subject || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "b075223a-fe5a-41d7-bc51-54800614cf0c",
+              "name": "classification",
+              "value": "UNCLASSIFIED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -260,
+        0
+      ],
+      "id": "989c4d49-39d4-4f5b-ad29-fc928d0d441a",
+      "name": "Keep GimmeJob metadata only"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gimme-job.com/internal/n8n/email-events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        0
+      ],
+      "id": "16e9099b-e722-4020-99b5-b56994288257",
+      "name": "Send metadata to GimmeJob",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Keep GimmeJob metadata only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep GimmeJob metadata only": {
+      "main": [
+        [
+          {
+            "node": "Send metadata to GimmeJob",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ffbe3dbf-a1b4-41d2-a540-e17ef0ef6295",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
