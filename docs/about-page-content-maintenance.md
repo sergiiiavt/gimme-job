@@ -64,17 +64,20 @@ If a sentence does not explain **what technology is used, what it does, or where
 
 ## 3. Current page structure
 
-Keep the page organized as large horizontal sections.
+Keep the page organized as large horizontal sections with a clear split between **purpose** and **technology**.
 
 The current approved structure is:
 
-1. **Why I created this site**
-2. **Deployment**
-3. **Database**
-4. **OpenAI integration**
-5. **Grafana observability**
+- **Why I created this site** — overview/purpose block. It keeps its own green number `1`.
+- **TECH STACK** — visual divider/title before the technology flows.
+- **1. Deployment**
+- **2. Database**
+- **3. OpenAI integration**
+- **4. Grafana observability**
 
-Do not add a sixth section just because a new library is installed.
+The technology numbering deliberately restarts at `1` after the `TECH STACK` divider. Do not continue the overview number into the technology sections.
+
+Do not add another technology section just because a new library is installed.
 
 A new section is justified only when a new technology becomes a meaningful production subsystem or integration.
 
@@ -109,6 +112,8 @@ If the answer is no, keep it inside an existing section or do not show it.
 This section is purpose-oriented, not a technology diagram.
 
 Keep exactly four purpose cards unless the project purpose itself changes.
+
+The overview header has one global action: `View source on GitHub`. Do not duplicate `Open interview catalog` in the header; the interview catalog remains linked from the QA knowledge-base card.
 
 ### Card 1 — Find a job
 
@@ -168,7 +173,7 @@ Do not make this sentence longer than two lines on a normal desktop viewport.
 
 ---
 
-## 5. Section 2: Deployment
+## 5. Tech stack section 1: Deployment
 
 ### Purpose
 
@@ -224,7 +229,7 @@ Do not update it for ordinary CI workflow refactoring unless the visible flow ch
 
 ---
 
-## 6. Section 3: Database
+## 6. Tech stack section 2: Database
 
 ### Purpose
 
@@ -279,7 +284,7 @@ Never expose:
 
 ---
 
-## 7. Section 4: OpenAI integration
+## 7. Tech stack section 3: OpenAI integration
 
 ### Purpose
 
@@ -340,7 +345,7 @@ Do not expose prompts containing secrets or personal data. It is acceptable to l
 
 ---
 
-## 8. Section 5: Grafana observability
+## 8. Tech stack section 4: Grafana observability
 
 ### Purpose
 
@@ -444,6 +449,7 @@ Before editing page copy, verify it against the relevant project source.
 | Observability API | `worker/index.ts` |
 | About page content | `app/about-site.tsx` and its content/config module if present |
 | Site navigation | `app/site-navigation.tsx` |
+| About layout refinements | `app/about-site-layout.css` |
 | Global page styles | `app/globals.css` |
 
 The About page is a summary. These files are the evidence.
@@ -458,7 +464,9 @@ The visual structure is intentionally consistent.
 
 Each major section is a full-width horizontal band/card inside the About page content area.
 
-Each section has:
+The overview is followed by a compact `TECH STACK` divider. Technology sections restart numbering at `1`.
+
+Each technology section has:
 
 1. section number;
 2. title;
@@ -466,7 +474,25 @@ Each section has:
 4. diagram/content area;
 5. relevant links.
 
+Descriptions stay left-aligned but should be vertically centered against the corresponding technology flow on desktop.
+
 Do not replace this with a long article.
+
+### Spacing and density rule
+
+The page should be compact and consistent rather than filling space for its own sake.
+
+- use the same horizontal section padding throughout the page;
+- use the same small gap family between headings, nodes, arrows, nested cards, and links;
+- minimize unused blank space inside technology nodes;
+- size primary technology nodes close to their content instead of stretching every card to consume the full row;
+- let only genuinely compound nodes, such as the Cloudflare container or output groups, absorb remaining width when useful;
+- keep arrows short and consistent between nodes;
+- keep nested cards aligned to the same internal padding rhythm;
+- do not create large empty areas merely to make cards equal width;
+- preserve readable wrapping rather than forcing oversized cards.
+
+When adjusting one technology row, check Deployment, Database, OpenAI, and Grafana together so spacing remains visually consistent across all flows.
 
 ### Card rule
 
