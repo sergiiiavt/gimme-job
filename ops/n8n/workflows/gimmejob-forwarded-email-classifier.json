@@ -1,0 +1,131 @@
+{
+  "name": "GimmeJob - Forwarded email classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "4c5e00d2-4601-44f6-a88e-f531538eb47e",
+      "name": "Every minute"
+    },
+    {
+      "parameters": {
+        "url": "https://gimme-job.com/internal/n8n/email-events?limit=25",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "f4727222-b85d-4f06-b555-e29d95b3ac08",
+      "name": "Fetch unclassified email events",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const events = $input.first().json.events;\nif (!Array.isArray(events) || events.length === 0) return [];\n\nconst rules = [\n  ['OFFER', [/\\boffer\\b/i, /\\bemployment agreement\\b/i]],\n  ['TEST_TASK', [/\\btest task\\b/i, /\\btechnical assessment\\b/i, /\\bcoding challenge\\b/i, /\\btake[- ]home\\b/i, /\\bhome assignment\\b/i]],\n  ['INTERVIEW', [/\\binterview\\b/i, /\\bscreening\\b/i, /\\btechnical (?:call|round)\\b/i, /\\bhiring manager\\b/i]],\n  ['REJECTION', [/\\bunfortunately\\b/i, /\\bnot moving forward\\b/i, /\\bother candidates\\b/i, /\\breject(?:ed|ion)?\\b/i, /\\bnot selected\\b/i]],\n  ['RECRUITER', [/\\brecruiter\\b/i, /\\bjob opportunity\\b/i, /\\bvacanc(?:y|ies)\\b/i, /\\bopen position\\b/i, /\\bnew role\\b/i]],\n];\n\nfunction classify(event) {\n  const searchable = [event.subject, event.senderName, event.senderEmail].filter(Boolean).join(' ');\n  for (const [classification, patterns] of rules) {\n    if (patterns.some((pattern) => pattern.test(searchable))) return classification;\n  }\n  return 'OTHER';\n}\n\nreturn events.map((event) => ({\n  json: {\n    userId: event.userId,\n    id: event.id,\n    classification: classify(event),\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        0
+      ],
+      "id": "383c8014-24ba-44fa-a273-402ab14f4ea4",
+      "name": "Classify metadata"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://gimme-job.com/internal/n8n/email-events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "03042d45-5226-44ae-9b9e-41ae5eb79217",
+      "name": "Save classification",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Every minute": {
+      "main": [
+        [
+          {
+            "node": "Fetch unclassified email events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch unclassified email events": {
+      "main": [
+        [
+          {
+            "node": "Classify metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify metadata": {
+      "main": [
+        [
+          {
+            "node": "Save classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Kyiv"
+  },
+  "versionId": "296e22a3-0e15-45be-94a5-dde6f630a595",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
