@@ -683,7 +683,7 @@ test("records only job_import failure when upsert fails", async () => {
 });
 
 test("classifies operational errors safely", async () => {
-  const helperUrl = new URL("../dist/server/app/api/_operational-log.js", import.meta.url);
+  const helperUrl = new URL("../app/api/_operational-log.ts", import.meta.url);
   const { safeErrorDetails } = await import(`${helperUrl.href}?test=${process.pid}-${Date.now()}`);
 
   const http403 = safeErrorDetails(new Error("upstream failed: HTTP 403"));
@@ -715,7 +715,7 @@ test("classifies operational errors safely", async () => {
 });
 
 test("does not leak secrets through safe error classification", async () => {
-  const helperUrl = new URL("../dist/server/app/api/_operational-log.js", import.meta.url);
+  const helperUrl = new URL("../app/api/_operational-log.ts", import.meta.url);
   const { safeErrorDetails } = await import(`${helperUrl.href}?secret-test=${process.pid}-${Date.now()}`);
   const details = safeErrorDetails(new Error("Bearer SHOULD_NOT_APPEAR sergii@example.com https://example.com/path?token=SHOULD_NOT_APPEAR"), "unexpected_error");
   const serialized = JSON.stringify(details);
