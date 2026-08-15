@@ -39,6 +39,12 @@ jobs:
       - name: Type-check local agent
         run: npm run check:agent
 
+      - name: Verify Drizzle schema and migration metadata
+        shell: bash
+        run: |
+          npm run db:generate
+          git diff --exit-code -- db/schema.ts drizzle
+
       - name: Validate interview content
         run: npm run check:content
 
