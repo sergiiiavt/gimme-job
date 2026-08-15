@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
@@ -68,6 +68,29 @@ export const applicationDrafts = sqliteTable("application_drafts", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+export const emailEvents = sqliteTable("email_events", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull().default("gmail"),
+  providerMessageId: text("provider_message_id").notNull(),
+  threadId: text("thread_id"),
+  receivedAt: text("received_at").notNull(),
+  senderName: text("sender_name"),
+  senderEmail: text("sender_email"),
+  subject: text("subject").notNull(),
+  classification: text("classification").notNull().default("UNCLASSIFIED"),
+  summary: text("summary"),
+  company: text("company"),
+  jobTitle: text("job_title"),
+  recruiterName: text("recruiter_name"),
+  jobId: text("job_id"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+}, (table) => [
+  uniqueIndex("email_events_provider_message_id_unique").on(table.provider, table.providerMessageId),
+  index("email_events_received_at_idx").on(table.receivedAt),
+  index("email_events_classification_received_at_idx").on(table.classification, table.receivedAt),
+]);
 
 export const observabilityEvents = sqliteTable("observability_events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
