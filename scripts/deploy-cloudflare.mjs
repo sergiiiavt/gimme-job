@@ -41,28 +41,17 @@ function runWrangler(args, options = {}) {
       WRANGLER_WRITE_LOGS: "false",
     },
     input: options.input,
-    stdio: capture
-      ? ["ignore", "pipe", "inherit"]
-      : hasInput
-        ? ["pipe", "inherit", "inherit"]
-        : "inherit",
+    stdio: capture ? ["ignore", "pipe", "inherit"] : hasInput ? ["pipe", "inherit", "inherit"] : "inherit",
   });
-
   if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`Wrangler failed: ${args.join(" ")}`);
-  }
-
+  if (result.status !== 0) throw new Error(`Wrangler failed: ${args.join(" ")}`);
   return result.stdout ?? "";
 }
 
 function parseDatabaseList(output) {
   const firstBracket = output.indexOf("[");
   const lastBracket = output.lastIndexOf("]");
-  if (firstBracket < 0 || lastBracket < firstBracket) {
-    throw new Error("Wrangler did not return a D1 database list as JSON.");
-  }
-
+  if (firstBracket < 0 || lastBracket < firstBracket) throw new Error("Wrangler did not return a D1 database list as JSON.");
   const value = JSON.parse(output.slice(firstBracket, lastBracket + 1));
   if (!Array.isArray(value)) throw new Error("Unexpected D1 database list response.");
   return value;
@@ -93,14 +82,9 @@ function googleAuthConfiguration() {
   }
   if (values.encryptionKey) {
     const decoded = Buffer.from(values.encryptionKey, "base64");
-    if (decoded.byteLength !== 32) {
-      throw new Error("GMAIL_TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes.");
-    }
+    if (decoded.byteLength !== 32) throw new Error("GMAIL_TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes.");
   }
-  return {
-    ...values,
-    configured: configuredCount === 3,
-  };
+  return { ...values, configured: configuredCount === 3 };
 }
 
 async function ensureBuildArtifact() {
@@ -108,9 +92,7 @@ async function ensureBuildArtifact() {
     access(path.join(projectRoot, "dist", "server", "index.js")),
     access(path.join(projectRoot, "dist", "client")),
     access(artifactConfigPath),
-  ]).catch(() => {
-    throw new Error("Production artifact is missing. Run npm run build first.");
-  });
+  ]).catch(() => { throw new Error("Production artifact is missing. Run npm run build first."); });
 }
 
 async function writeDeployConfig(id, multiUserEnabled = false) {
@@ -118,45 +100,29 @@ async function writeDeployConfig(id, multiUserEnabled = false) {
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
-  const existingObservability =
-    deployConfig.observability && typeof deployConfig.observability === "object"
-      ? deployConfig.observability
-      : {};
-  const existingLogs =
-    existingObservability.logs && typeof existingObservability.logs === "object"
-      ? existingObservability.logs
-      : {};
+  const existingObservability = deployConfig.observability && typeof deployConfig.observability === "object" ? deployConfig.observability : {};
+  const existingLogs = existingObservability.logs && typeof existingObservability.logs === "object" ? existingObservability.logs : {};
   deployConfig.observability = {
     ...existingObservability,
     enabled: true,
-    logs: {
-      ...existingLogs,
-      invocation_logs: true,
-      head_sampling_rate: 1,
-    },
+    logs: { ...existingLogs, invocation_logs: true, head_sampling_rate: 1 },
   };
   deployConfig.vars = {
     ...(deployConfig.vars && typeof deployConfig.vars === "object" ? deployConfig.vars : {}),
     MULTI_USER_ENABLED: multiUserEnabled ? "true" : "false",
   };
-  deployConfig.d1_databases = [
-    {
-      binding: "DB",
-      database_name: databaseName,
-      database_id: id,
-      migrations_dir: "../../drizzle",
-    },
-  ];
-
-  await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, {
-    mode: 0o600,
-  });
+  deployConfig.d1_databases = [{
+    binding: "DB",
+    database_name: databaseName,
+    database_id: id,
+    migrations_dir: "../../drizzle",
+  }];
+  await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, { mode: 0o600 });
 }
 
 async function validateConfig() {
   await ensureBuildArtifact();
   await writeDeployConfig(dryRunDatabaseId, false);
-
   try {
     runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath]);
   } finally {
@@ -167,122 +133,77 @@ async function validateConfig() {
 async function importCurrentJobs(appPassword) {
   const jobs = await fetchDouJobs();
   const authorization = Buffer.from(`gimmejob:${appPassword}`, "utf8").toString("base64");
-
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     const response = await fetch(`${productionUrl}/api/import`, {
       method: "POST",
-      headers: {
-        authorization: `Basic ${authorization}`,
-        "content-type": "application/json",
-        "x-gimmejob-trigger": "deployment",
-      },
+      headers: { authorization: `Basic ${authorization}`, "content-type": "application/json", "x-gimmejob-trigger": "deployment" },
       body: JSON.stringify({ jobs }),
       signal: AbortSignal.timeout(30_000),
     });
-
     if (response.ok) {
       const payload = await response.json();
       console.log(`Imported ${payload.result?.accepted ?? jobs.length} current jobs into D1.`);
       return;
     }
-
-    if (![401, 503].includes(response.status) || attempt === 4) {
-      throw new Error(`Cloud job import returned HTTP ${response.status}.`);
-    }
-
+    if (![401, 503].includes(response.status) || attempt === 4) throw new Error(`Cloud job import returned HTTP ${response.status}.`);
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
 }
 
 function putSecret(name, value) {
   console.log(`Updating ${name}...`);
-  runWrangler(
-    ["secret", "put", name, "--config", generatedConfigPath],
-    { input: `${value}\n` },
-  );
+  runWrangler(["secret", "put", name, "--config", generatedConfigPath], { input: `${value}\n` });
 }
 
 async function main() {
   await mkdir(path.join(wranglerRuntimePath, "xdg-config"), { recursive: true });
-
   if (process.argv.includes("--dry-run")) {
     await validateConfig();
     return;
   }
-
-  if (process.env.GITHUB_ACTIONS !== "true") {
-    throw new Error("Production deployment is restricted to the GitHub Actions → Cloudflare workflow.");
-  }
+  if (process.env.GITHUB_ACTIONS !== "true") throw new Error("Production deployment is restricted to the GitHub Actions → Cloudflare workflow.");
 
   requiredEnvironment("CLOUDFLARE_API_TOKEN");
   requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
   const appPassword = requiredEnvironment("APP_PASSWORD");
   const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
   const n8nIngestToken = requiredEnvironment("N8N_INGEST_TOKEN");
-  const multiUserEnabled = enabledEnvironment("MULTI_USER_ENABLED");
+  const multiUserSetting = optionalEnvironment("MULTI_USER_ENABLED");
+  const multiUserEnabled = multiUserSetting ? enabledEnvironment("MULTI_USER_ENABLED") : true;
   const googleAuth = googleAuthConfiguration();
 
-  if (multiUserEnabled && !googleAuth.configured) {
-    throw new Error("MULTI_USER_ENABLED=true requires the Google OAuth client and Gmail token encryption secrets.");
-  }
-
-  if (appPassword.length < 16) {
-    throw new Error("APP_PASSWORD must contain at least 16 characters.");
-  }
-
-  if (grafanaReadToken.length < 32) {
-    throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
-  }
-
-  if (n8nIngestToken.length < 32) {
-    throw new Error("N8N_INGEST_TOKEN must contain at least 32 characters.");
-  }
+  if (appPassword.length < 16) throw new Error("APP_PASSWORD must contain at least 16 characters.");
+  if (grafanaReadToken.length < 32) throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
+  if (n8nIngestToken.length < 32) throw new Error("N8N_INGEST_TOKEN must contain at least 32 characters.");
 
   await ensureBuildArtifact();
-
   let database = findDatabase(listDatabases());
   if (!database) {
     console.log(`Creating D1 database ${databaseName}...`);
     runWrangler(["d1", "create", databaseName]);
     database = findDatabase(listDatabases());
   }
-
   const id = databaseId(database);
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
-
   await writeDeployConfig(id, multiUserEnabled);
 
   try {
     console.log("Applying D1 migrations...");
-    runWrangler([
-      "d1",
-      "migrations",
-      "apply",
-      "DB",
-      "--remote",
-      "--config",
-      generatedConfigPath,
-    ]);
-
+    runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath]);
 
     putSecret("APP_PASSWORD", appPassword);
     putSecret("GRAFANA_READ_TOKEN", grafanaReadToken);
     putSecret("N8N_INGEST_TOKEN", n8nIngestToken);
-
     if (googleAuth.configured) {
       putSecret("GOOGLE_OAUTH_CLIENT_ID", googleAuth.clientId);
       putSecret("GOOGLE_OAUTH_CLIENT_SECRET", googleAuth.clientSecret);
       putSecret("GMAIL_TOKEN_ENCRYPTION_KEY", googleAuth.encryptionKey);
     }
-
     if (process.env.OPENAI_API_KEY) {
       putSecret("OPENAI_API_KEY", process.env.OPENAI_API_KEY);
-
-      if (process.env.OPENAI_MODEL) {
-        putSecret("OPENAI_MODEL", process.env.OPENAI_MODEL);
-      }
+      if (process.env.OPENAI_MODEL) putSecret("OPENAI_MODEL", process.env.OPENAI_MODEL);
     }
 
     if (multiUserEnabled) {
@@ -291,8 +212,7 @@ async function main() {
       console.log("Importing the current DOU job feed...");
       await importCurrentJobs(appPassword);
     }
-
-    console.log(`Cloudflare deployment completed. Multi-user authentication: ${multiUserEnabled ? "enabled" : "disabled"}.`);
+    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}.`);
   } finally {
     await rm(generatedConfigPath, { force: true });
   }

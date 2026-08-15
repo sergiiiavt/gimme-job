@@ -5,8 +5,13 @@ import {
   readUserSession,
   type MultiUserAuthEnv,
 } from "../app/auth/google-oauth.ts";
+import {
+  handlePasswordLogin,
+  handlePasswordRegister,
+  type PasswordAuthEnv,
+} from "../app/auth/password-auth.ts";
 
-type BoundaryEnv = MultiUserAuthEnv & { APP_PASSWORD?: string };
+type BoundaryEnv = PasswordAuthEnv;
 
 type CoreWorker<Env extends BoundaryEnv, Context> = {
   fetch(request: Request, env: Env, ctx: Context): Promise<Response>;
@@ -36,6 +41,7 @@ export function privateNextPath(url: URL): string {
 
 export function isPrivateRequest(request: Request, url: URL): boolean {
   if (url.pathname === "/workspace") return false;
+  if (url.pathname === "/workspace/login" || url.pathname === "/workspace/register") return false;
   if (url.pathname.startsWith("/workspace/")) return true;
   if (!url.pathname.startsWith("/api/")) return false;
 
@@ -66,11 +72,7 @@ function bridgeAuthorization(password: string): string {
   return `Basic ${btoa(`${BASIC_AUTH_USERNAME}:${password}`)}`;
 }
 
-export function googleLoginLocation(nextPath: string): string {
-  return `/auth/google/start?next=${encodeURIComponent(nextPath)}`;
-}
-
-async function multiUserAccess(request: Request, env: BoundaryEnv, url: URL): Promise<AccessContext> {
+async function multiUserAccess(request: Request, env: MultiUserAuthEnv, url: URL): Promise<AccessContext> {
   const privateRequest = isPrivateRequest(request, url);
   const needsIdentity = privateRequest || isWorkspaceSurface(url) || url.pathname.startsWith("/api/");
   if (!needsIdentity) return { mode: "multi-user", authenticated: false, userId: null };
@@ -92,26 +94,6 @@ function authenticatedForwardRequest(request: Request, access: AccessContext, br
   if (access.userId) headers.set("x-gimmejob-user-id", access.userId);
   if (access.authenticated) headers.set("authorization", bridgeAuthorization(bridgePassword));
   return new Request(request, { headers });
-}
-
-async function handleMultiUserLogin(request: Request, env: BoundaryEnv): Promise<Response> {
-  if (request.method !== "GET" && request.method !== "HEAD" && request.method !== "POST") {
-    return new Response("Method not allowed.", {
-      status: 405,
-      headers: { allow: "GET, HEAD, POST", "cache-control": "no-store" },
-    });
-  }
-
-  const nextPath = privateNextPath(new URL(request.url));
-  const user = await readUserSession(request, env);
-  return new Response(null, {
-    status: 303,
-    headers: {
-      location: user ? nextPath : googleLoginLocation(nextPath),
-      "cache-control": "no-store",
-      "x-robots-tag": "noindex, nofollow, noarchive",
-    },
-  });
 }
 
 async function handleMultiUserLogout(request: Request, env: BoundaryEnv): Promise<Response> {
@@ -138,17 +120,15 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
     async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
       const url = new URL(request.url);
 
-      // Observability owns a separate Bearer credential and does not enter the tenant app router.
       if (url.pathname === "/api/observability/health" || url.pathname === "/api/observability/summary") {
         return coreWorker.fetch(request, env, ctx);
       }
 
       const sanitizedRequest = sanitizeIdentityHeaders(request);
-      if (!multiUserEnabled(env)) {
-        return coreWorker.fetch(sanitizedRequest, env, ctx);
-      }
+      if (!multiUserEnabled(env)) return coreWorker.fetch(sanitizedRequest, env, ctx);
 
-      if (url.pathname === "/workspace/login") return handleMultiUserLogin(sanitizedRequest, env);
+      if (url.pathname === "/workspace/login") return handlePasswordLogin(sanitizedRequest, env);
+      if (url.pathname === "/workspace/register") return handlePasswordRegister(sanitizedRequest, env);
       if (url.pathname === "/workspace/logout") return handleMultiUserLogout(sanitizedRequest, env);
 
       const access = await multiUserAccess(sanitizedRequest, env, url);
@@ -171,8 +151,6 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
         );
       }
 
-      // The legacy core still owns the stable routing/asset/observability behavior. A fresh
-      // per-request credential lets it accept only the session that was authenticated above.
       const bridgePassword = randomBridgePassword();
       const forwardedRequest = authenticatedForwardRequest(sanitizedRequest, access, bridgePassword);
       const coreEnv = { ...env, APP_PASSWORD: bridgePassword } as Env;
