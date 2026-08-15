@@ -68,7 +68,7 @@ Keep the page organized as large horizontal sections.
 
 The current approved structure is:
 
-1. **What this site is**
+1. **Why I created this site**
 2. **Deployment**
 3. **Database**
 4. **OpenAI integration**
@@ -104,65 +104,65 @@ If the answer is no, keep it inside an existing section or do not show it.
 
 ---
 
-## 4. Section 1: What this site is
+## 4. Section 1: Why I created this site
 
 This section is purpose-oriented, not a technology diagram.
 
 Keep exactly four purpose cards unless the project purpose itself changes.
 
-### Card 1 — Job search tool
+### Card 1 — Find a job
 
 Recommended wording:
 
-**Title:** `Job search tool`
+**Title:** `Find a job`
 
 **Description:**  
-`Collects vacancies, stores analysis, and helps review opportunities.`
+`Aggregates vacancies from four data sources into one place for review and analysis.`
 
 This card explains the practical reason the application exists.
 
 Do not expand it into a feature inventory.
 
-### Card 2 — Technology sandbox
+### Card 2 — Create a technology playground
 
 Recommended wording:
 
-**Title:** `Technology sandbox`
+**Title:** `Create a technology playground`
 
 **Description:**  
-`Used to test deployment, integrations, and production-style workflows.`
+`A real production project for trying, integrating, and learning new technologies in practice.`
 
-This card explains that the project is intentionally used to learn and exercise real technologies.
+This card is intentionally broad. It covers current and future technologies without tying the purpose statement to a fixed list of vendors or categories.
 
-Do not list technologies here. The technology sections below do that.
+Do not enumerate specific technologies here. The technology sections below show the technologies that are currently implemented.
 
-### Card 3 — AI-assisted workflows
+### Card 3 — Use an AI-assisted development workflow
 
 Recommended wording:
 
-**Title:** `AI-assisted workflows`
+**Title:** `Use an AI-assisted development workflow`
 
 **Description:**  
-`Uses OpenAI for recognition, analysis, and draft generation where useful.`
+`The project is developed with Codex and Claude Code throughout the development workflow.`
 
-This is a purpose summary only. Detailed OpenAI flow belongs in the OpenAI section.
+This card describes the development approach, not the application-level OpenAI integration. Detailed runtime OpenAI usage belongs in the OpenAI integration section.
 
-### Card 4 — Interview knowledge base & learning path
+### Card 4 — Build a QA knowledge base
 
 Recommended wording:
 
-**Title:** `Interview knowledge base & learning path`
+**Title:** `Build a QA knowledge base`
 
 **Description:**  
-`Stores interview questions and structured learning topics for ongoing study.`
+`A structured knowledge base covering interview questions, learning paths, and different QA-related areas.`
 
-Keep the knowledge base and learning path together in this card because they represent the site's structured learning purpose.
+Keep this card broad enough to cover interview preparation, learning paths, and other QA-related knowledge areas.
 
 ### Intro sentence
 
 Recommended:
 
-`A personal job-search tool, a technical sandbox, AI-assisted workflows, and a structured knowledge base.`
+`Four practical goals: job search, technology experiments, AI-assisted development, and QA learning.`
 
 Do not make this sentence longer than two lines on a normal desktop viewport.
 
@@ -643,7 +643,7 @@ If an old test explicitly checks text that was intentionally removed, update tha
 Before merging an About-page content change, confirm:
 
 - [ ] The page still has the approved horizontal structure.
-- [ ] The intro contains the four current purpose cards.
+- [ ] The intro contains the four current purpose cards: Find a job, Create a technology playground, Use an AI-assisted development workflow, and Build a QA knowledge base.
 - [ ] Copy is factual and concise.
 - [ ] There is no marketing filler.
 - [ ] Every visible technology is actually used by the project.
