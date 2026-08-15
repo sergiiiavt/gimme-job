@@ -1,0 +1,318 @@
+/* About page layout refinements */
+.about-tech-page {
+  --about-section-gap: 10px;
+  --about-inner-gap: 10px;
+  --about-section-pad-x: 18px;
+  --about-section-pad-y: 14px;
+}
+
+/* Why/Tech stack are peer group headings. The overview title is visually
+   outside the bordered purpose-card area and is intentionally unnumbered. */
+.about-tech-overview {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: block;
+  padding: 0;
+}
+
+.about-tech-section-heading.about-tech-overview-heading {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin: 0 0 8px;
+  padding: 0 var(--about-section-pad-x);
+  width: 100%;
+}
+
+.about-tech-overview .about-tech-section-number,
+.about-tech-overview .about-tech-eyebrow {
+  display: none;
+}
+
+.about-tech-overview-title {
+  display: block;
+}
+
+.about-tech-overview-heading h1,
+.about-tech-stack-title {
+  color: #397657;
+  font-size: 14px;
+  font-weight: 850;
+  letter-spacing: .09em;
+  line-height: 1.25;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.about-tech-overview-heading p {
+  margin: 6px 0 0;
+  max-width: 440px;
+}
+
+.about-tech-actions {
+  align-self: start;
+  justify-self: end;
+}
+
+.about-tech-stack-title {
+  margin: 14px 0 8px;
+  padding: 0 var(--about-section-pad-x);
+}
+
+.about-tech-purpose-grid {
+  background: #fff;
+  border: 1px solid #dfe4df;
+  border-radius: 14px;
+  gap: 10px;
+  margin-top: 0;
+  padding: 12px;
+}
+
+.about-tech-purpose-card {
+  min-height: 140px;
+  padding: 13px;
+}
+
+.about-tech-purpose-card h3 {
+  margin-top: 9px;
+}
+
+.about-tech-purpose-card p {
+  margin: 5px 0 9px;
+}
+
+/* Technology rows keep a stable description column, but the flow itself is
+   intrinsic-width. Empty space is allowed at the end of a row; cards are not
+   stretched merely to fill the available width. */
+.about-tech-section:not(.about-tech-overview) {
+  gap: 14px;
+  grid-template-columns: 220px minmax(0, 1fr);
+  padding: var(--about-section-pad-y) var(--about-section-pad-x);
+}
+
+.about-tech-section + .about-tech-section {
+  margin-top: var(--about-section-gap);
+}
+
+.about-tech-section:not(.about-tech-overview) > .about-tech-section-heading,
+.about-tech-section-body {
+  align-self: center;
+}
+
+.about-tech-section-heading {
+  gap: 10px;
+}
+
+.about-tech-section-heading p {
+  margin-top: 5px;
+  max-width: 190px;
+}
+
+.about-tech-section-body {
+  justify-self: start;
+  max-width: 100%;
+  min-width: 0;
+  width: auto;
+}
+
+.about-tech-node {
+  flex: 0 1 auto;
+  max-width: 240px;
+  min-width: 0;
+  padding: 10px;
+  width: fit-content;
+}
+
+.about-tech-node p {
+  margin-top: 5px;
+}
+
+.about-tech-node-links {
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.about-tech-link {
+  min-height: 29px;
+  padding: 0 8px;
+}
+
+.about-tech-mini-node {
+  flex: 0 1 auto;
+  max-width: 155px;
+  min-width: 108px;
+  padding: 8px;
+  width: fit-content;
+}
+
+.about-tech-mini-node p {
+  margin-top: 4px;
+}
+
+.about-tech-node-grid,
+.about-tech-data-grid,
+.about-tech-output-grid,
+.about-tech-observability-sources {
+  gap: 6px;
+}
+
+.about-tech-node-grid {
+  display: flex;
+  margin-top: 7px;
+  width: fit-content;
+}
+
+.about-tech-node-grid > .about-tech-mini-node {
+  max-width: 180px;
+  min-width: 145px;
+}
+
+.about-tech-data-grid,
+.about-tech-output-grid {
+  display: flex;
+  flex: 0 1 auto;
+  width: fit-content;
+}
+
+.about-tech-observability-sources {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  width: fit-content;
+}
+
+.about-tech-observability-sources > .about-tech-node {
+  max-width: 210px;
+}
+
+.about-tech-flow-arrow {
+  flex: 0 0 24px;
+  min-width: 24px;
+}
+
+.about-tech-flow-arrow svg {
+  width: 28px;
+}
+
+.about-tech-deployment-flow,
+.about-tech-database-flow,
+.about-tech-ai-flow,
+.about-tech-observability-flow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  max-width: 100%;
+  width: fit-content;
+}
+
+.about-tech-deployment-flow > .about-tech-node:last-child {
+  max-width: 390px;
+}
+
+.about-tech-database-flow > .about-tech-node,
+.about-tech-ai-flow > .about-tech-node,
+.about-tech-observability-flow > .about-tech-node {
+  max-width: 220px;
+}
+
+.about-tech-ai-flow > .about-tech-fallback {
+  max-width: 165px;
+}
+
+@media (max-width: 1180px) {
+  .about-tech-section:not(.about-tech-overview) {
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+
+  .about-tech-section:not(.about-tech-overview) > .about-tech-section-heading {
+    align-self: start;
+  }
+
+  .about-tech-section-heading p {
+    max-width: 720px;
+  }
+
+  .about-tech-section-heading.about-tech-overview-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .about-tech-actions {
+    justify-self: start;
+  }
+
+  .about-tech-section-body {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .about-tech-deployment-flow,
+  .about-tech-database-flow,
+  .about-tech-ai-flow,
+  .about-tech-observability-flow {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .about-tech-deployment-flow > .about-tech-node,
+  .about-tech-database-flow > .about-tech-node,
+  .about-tech-ai-flow > .about-tech-node,
+  .about-tech-observability-flow > .about-tech-node,
+  .about-tech-observability-sources {
+    max-width: none;
+    width: 100%;
+  }
+
+  .about-tech-node-grid,
+  .about-tech-data-grid,
+  .about-tech-output-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .about-tech-mini-node,
+  .about-tech-node-grid > .about-tech-mini-node {
+    max-width: none;
+    width: 100%;
+  }
+
+  .about-tech-flow-arrow {
+    justify-self: center;
+    min-height: 24px;
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .about-tech-page {
+    --about-section-pad-x: 14px;
+    --about-section-pad-y: 13px;
+  }
+
+  .about-tech-overview-heading h1,
+  .about-tech-stack-title {
+    font-size: 13px;
+  }
+
+  .about-tech-purpose-card {
+    min-height: 0;
+  }
+
+  .about-tech-purpose-grid {
+    padding: 9px;
+  }
+
+  .about-tech-stack-title {
+    margin-top: 10px;
+  }
+
+  .about-tech-node-grid,
+  .about-tech-data-grid,
+  .about-tech-output-grid {
+    grid-template-columns: 1fr;
+  }
+}

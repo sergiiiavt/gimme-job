@@ -169,9 +169,6 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
             <a className="about-tech-action about-tech-action-primary" href={REPO_URL} target="_blank" rel="noreferrer">
               <span>View source on GitHub</span>
             </a>
-            <a className="about-tech-action" href={interviewHref}>
-              <span>Open interview catalog</span>
-            </a>
           </nav>
         </div>
 
@@ -198,9 +195,11 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         </div>
       </section>
 
+      <div className="about-tech-stack-title" role="heading" aria-level={2}>TECH STACK</div>
+
       <section className="about-tech-section" aria-labelledby="about-deployment-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>2</SectionNumber>
+          <SectionNumber>1</SectionNumber>
           <div>
             <h2 id="about-deployment-title">{DEPLOYMENT.title}</h2>
             <p>{DEPLOYMENT.description}</p>
@@ -233,7 +232,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-database-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>3</SectionNumber>
+          <SectionNumber>2</SectionNumber>
           <div>
             <h2 id="about-database-title">{DATABASE.title}</h2>
             <p>{DATABASE.description}</p>
@@ -264,7 +263,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-openai-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>4</SectionNumber>
+          <SectionNumber>3</SectionNumber>
           <div>
             <h2 id="about-openai-title">{OPENAI.title}</h2>
             <p>{OPENAI.description}</p>
@@ -296,7 +295,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-observability-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>5</SectionNumber>
+          <SectionNumber>4</SectionNumber>
           <div>
             <h2 id="about-observability-title">{GRAFANA.title}</h2>
             <p>{GRAFANA.description}</p>

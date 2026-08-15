@@ -1,7 +1,7 @@
 "use client";
 
-import { WorkspaceApp } from "../page";
+import VacanciesPage from "../vacancies-page";
 
 export default function WorkspacePage() {
-  return <WorkspaceApp/>;
+  return <VacanciesPage/>;
 }
