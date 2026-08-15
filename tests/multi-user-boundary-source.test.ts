@@ -202,7 +202,7 @@ test("observability bypasses tenant auth and preserves its Bearer header", async
   assert.equal(calls[0]!.request.headers.get("authorization"), "Bearer grafana-token");
 });
 
-test("valid multi-user login returns directly and logout removes the D1 session", async () => {
+test("valid multi-user login returns directly and logout is POST-only", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);
   const { db, state } = fakeSessionDb();
@@ -213,7 +213,12 @@ test("valid multi-user login returns directly and logout removes the D1 session"
   assert.equal(login.status, 303);
   assert.equal(login.headers.get("location"), "/workspace/learn");
 
-  const logout = await boundary.fetch(new Request("https://example.com/workspace/logout", { headers }), env, undefined);
+  const getLogout = await boundary.fetch(new Request("https://example.com/workspace/logout", { headers }), env, undefined);
+  assert.equal(getLogout.status, 405);
+  assert.equal(getLogout.headers.get("allow"), "POST");
+  assert.equal(state.deletes, 0);
+
+  const logout = await boundary.fetch(new Request("https://example.com/workspace/logout", { method: "POST", headers }), env, undefined);
   assert.equal(logout.status, 303);
   assert.equal(logout.headers.get("location"), "/");
   assert.equal(state.deletes, 1);
