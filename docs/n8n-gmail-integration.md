@@ -1,183 +1,93 @@
-# n8n Gmail integration
+# n8n email integration
 
-## Scope
+## Current production flow
 
-Phase 1-2 only:
+The production integration now uses Gmail forwarding plus Cloudflare Email Routing. n8n no longer needs direct Gmail OAuth for this path.
 
 ```text
-Gmail -> n8n -> GimmeJob ingest endpoint -> D1 email_events
+User Gmail filter
+  -> jobs+TOKEN@gimme-job.com
+  -> Cloudflare Email Routing
+  -> GimmeJob Worker email() handler
+  -> tenant-scoped user_email_events in D1
+  -> n8n polls metadata-only internal API
+  -> classification
+  -> GimmeJob internal API
+  -> D1
 ```
 
-This integration does **not** send, reply to, delete, archive, or relabel email. It also does not store the raw email body in GimmeJob.
+This keeps account identity, forwarding-token resolution, tenant ownership, email-event storage, and business state in GimmeJob. n8n remains an internal orchestration layer.
 
 ## Production runtime
 
-The production-ready self-hosted runtime and importable workflow are kept in:
+The Hetzner production runtime is managed under:
 
 ```text
-ops/n8n/
+ops/hetzner/
 ```
 
-Use:
-
-- `ops/n8n/README.md` for VM, Docker, Cloudflare Tunnel, Gmail OAuth, and activation instructions.
-- `ops/n8n/docker-compose.yml` for the pinned n8n + Postgres + cloudflared stack.
-- `ops/n8n/workflows/gimmejob-gmail-ingest.json` for the credential-free workflow import.
-
-The runtime keeps Postgres and n8n's port 5678 private inside the Docker network. Cloudflare Tunnel is the only public ingress path.
-
-## Security boundary
-
-- Gmail OAuth credentials stay in n8n.
-- GimmeJob never receives the Gmail OAuth access/refresh token.
-- n8n receives no D1 credentials.
-- n8n can call only the dedicated ingest endpoint with `N8N_INGEST_TOKEN`.
-- `N8N_INGEST_TOKEN` is stored as a GitHub repository secret and deployed as a Cloudflare Worker secret.
-- The same token is stored in n8n as a Bearer Auth credential; it is not committed in workflow JSON.
-- Use a randomly generated token of at least 32 characters; 32 random bytes encoded as hex/base64 is preferred.
-- Rotate the token if an n8n credential/workflow export is exposed.
-
-## GimmeJob endpoint
-
-Production endpoint:
+The n8n UI is served at:
 
 ```text
-POST https://gimme-job.com/internal/n8n/email-events
+https://n8n.gimme-job.com
+```
+
+The current workflow definition is:
+
+```text
+ops/n8n/workflows/gimmejob-forwarded-email-classifier.json
+```
+
+See `ops/n8n/README.md` for import, credential, verification, and activation steps.
+
+## Internal API
+
+n8n uses the existing `N8N_INGEST_TOKEN` as a scoped Bearer credential. The token stays in provider-managed secrets / n8n credentials and is never committed in workflow JSON.
+
+Fetch unclassified forwarded-email metadata:
+
+```text
+GET https://gimme-job.com/internal/n8n/email-events?limit=25
+Authorization: Bearer <N8N_INGEST_TOKEN>
+```
+
+Classify one tenant event:
+
+```text
+PATCH https://gimme-job.com/internal/n8n/email-events
 Authorization: Bearer <N8N_INGEST_TOKEN>
 Content-Type: application/json
 ```
 
-The workers.dev domain can also be used if the custom domain is unavailable:
-
-```text
-POST https://gimmejob.gimmejob.workers.dev/internal/n8n/email-events
-```
-
-Example request:
-
 ```json
 {
-  "providerMessageId": "18fabc123",
-  "threadId": "18fabc000",
-  "receivedAt": "2026-08-15T12:30:00Z",
-  "senderName": "Jane Recruiter",
-  "senderEmail": "jane@example.com",
-  "subject": "Senior QA Engineer",
-  "classification": "UNCLASSIFIED"
+  "userId": "...",
+  "id": "evt_...",
+  "classification": "INTERVIEW"
 }
 ```
 
-Allowed classifications:
+The API returns only structured metadata. It does not expose raw MIME, plaintext/HTML bodies, snippets, or attachments to n8n. Classification writes are idempotent and refuse to overwrite a different existing classification.
+
+## First workflow
+
+`GimmeJob - Forwarded email classifier` runs every minute:
 
 ```text
-UNCLASSIFIED
-RECRUITER
-INTERVIEW
-REJECTION
-TEST_TASK
-OFFER
-OTHER
+Schedule Trigger
+  -> Fetch unclassified email events
+  -> Classify metadata
+  -> Save classification
 ```
 
-For Phase 1-2 use `UNCLASSIFIED`. AI classification belongs to Phase 3+.
+The first classifier is deterministic and free: it classifies sender/subject metadata into `RECRUITER`, `INTERVIEW`, `REJECTION`, `TEST_TASK`, `OFFER`, or `OTHER`.
 
-The endpoint intentionally rejects common raw-content fields such as `body`, `text`, `html`, `raw`, and `snippet`.
+No sending, replying, deleting, archiving, relabeling, or application-state mutation occurs in this phase.
 
-Repeated delivery of the same Gmail message is safe. The ID is derived from the Gmail message ID and the endpoint performs an upsert.
+## Legacy direct Gmail OAuth path
 
-## n8n workflow
-
-Import the ready workflow:
-
-```text
-ops/n8n/workflows/gimmejob-gmail-ingest.json
-```
-
-Workflow name:
-
-```text
-GimmeJob - Gmail ingest
-```
-
-It imports inactive and without credentials.
-
-### 1. Gmail Trigger
-
-Use the built-in **Gmail Trigger** with the Gmail account intended for job-search mail. Poll for new messages. Start without Spam/Trash and without any send/reply operation.
-
-The committed workflow starts with `newer_than:2d` as a deliberately narrow first-test search. Replace it with a recruiter/job-search query after verification, or remove it only if all incoming mail should be ingested.
-
-### 2. Edit Fields
-
-The **Keep GimmeJob metadata only** node constructs only the metadata accepted by GimmeJob:
-
-- `providerMessageId` <- Gmail message ID
-- `threadId` <- Gmail thread ID when available
-- `receivedAt` <- Gmail internal received timestamp
-- `senderName` <- parsed From name when available
-- `senderEmail` <- parsed From email when available
-- `subject` <- Subject
-- `classification` <- literal `UNCLASSIFIED`
-
-All other Gmail Trigger fields are dropped before the HTTP request. Do not add message body, HTML, plaintext content, raw MIME, attachments, or snippet.
-
-### 3. HTTP Request
-
-The final **HTTP Request** posts to:
-
-```text
-Method: POST
-URL: https://gimme-job.com/internal/n8n/email-events
-Authentication: Bearer Auth credential
-Content-Type: application/json
-Body: JSON from Keep GimmeJob metadata only
-```
-
-Create/select an n8n Bearer Auth credential whose token equals the production `N8N_INGEST_TOKEN`. Do not paste the token into workflow JSON that will be committed or shared.
-
-Expected first-delivery response:
-
-```json
-{
-  "ok": true,
-  "id": "gmail:18fabc123",
-  "created": true,
-  "classification": "UNCLASSIFIED"
-}
-```
-
-A repeated delivery returns `created: false`.
-
-## Deployment prerequisite
-
-Create the GitHub repository secret:
-
-```text
-N8N_INGEST_TOKEN
-```
-
-The deployment workflow passes it to `scripts/deploy-cloudflare.mjs`, which stores it as a Cloudflare Worker secret. Deployment intentionally does not proceed if the required production secrets are absent.
-
-## Verification
-
-1. Confirm the GimmeJob Worker is deployed and D1 migration `0006_add_email_events.sql` is applied.
-2. Start the n8n production runtime from `ops/n8n/`.
-3. Import the committed workflow and attach Gmail OAuth + GimmeJob Bearer Auth credentials.
-4. Send one harmless test email to the connected Gmail account.
-5. Manually execute the n8n workflow.
-6. Confirm the metadata-only node contains no raw message content.
-7. Confirm HTTP Request returns `201` with `created: true`.
-8. Run the same item again and confirm `200` with `created: false`.
-9. Confirm `email_events` contains metadata but no raw body.
-10. Confirm Cloudflare logs contain `event: email_ingest` without email address, subject, or message content.
-11. Activate the workflow.
+`ops/n8n/workflows/gimmejob-gmail-ingest.json` is the earlier direct Gmail Trigger design. It is retained only for reference/backward compatibility and should not be activated for the current forwarding-based integration.
 
 ## Next phase
 
-After this path is stable, add classification and job matching:
-
-```text
-Gmail -> n8n -> classifier -> GimmeJob -> match email to jobs -> suggested status change
-```
-
-Sending/replying remains out of scope until a separate approval-first phase.
+After the metadata pipeline is stable, n8n can add richer classification and job matching. Any future email sending or application-state change remains approval-first and must be implemented as a separate capability.
