@@ -17,10 +17,12 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out source
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 22.22
         uses: actions/setup-node@v6
@@ -51,6 +53,11 @@ jobs:
 
       - name: Validate Cloudflare deployment artifact
         run: npm run check:cloudflare
+
+      - name: SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Deploy Worker and D1
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
