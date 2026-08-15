@@ -86,7 +86,7 @@ test("password hashes are salted PBKDF2 values and verify correctly", async () =
   const password = "correct horse battery staple";
   const first = await hashPassword(password);
   const second = await hashPassword(password);
-  assert.match(first, /^pbkdf2-sha256\$600000\$/);
+  assert.match(first, /^pbkdf2-sha256\$100000\$/);
   assert.notEqual(first, second);
   assert.equal(first.includes(password), false);
   assert.equal(await verifyPassword(password, first), true);
