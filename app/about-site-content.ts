@@ -64,40 +64,40 @@ export const GRAFANA_DASHBOARD_LINK: AboutLink = {
 
 export const ABOUT_OVERVIEW = {
   eyebrow: "OVERVIEW",
-  title: "What this site is",
+  title: "Why I created this site",
   subtitle:
-    "A personal job-search tool, a technical sandbox, AI-assisted workflows, and a structured knowledge base.",
+    "Four practical goals: job search, technology experiments, AI-assisted development, and QA learning.",
 };
 
 export const PURPOSE_CARDS: PurposeCard[] = [
   {
     number: "01",
-    title: "Job search tool",
-    description: "Collects vacancies, stores analysis, and helps review opportunities.",
+    title: "Find a job",
+    description: "Aggregates vacancies from four data sources into one place for review and analysis.",
     icon: "search",
     accent: "green",
     link: { label: "Production site", href: PROJECT_URL, external: true },
   },
   {
     number: "02",
-    title: "Technology sandbox",
-    description: "Used to test deployment, integrations, and production-style workflows.",
+    title: "Create a technology playground",
+    description: "A real production project for trying, integrating, and learning new technologies in practice.",
     icon: "code",
     accent: "blue",
     link: { label: "GitHub repo", href: REPO_URL, external: true },
   },
   {
     number: "03",
-    title: "AI-assisted workflows",
-    description: "Uses OpenAI for recognition, analysis, and draft generation where useful.",
+    title: "Use an AI-assisted development workflow",
+    description: "The project is developed with Codex and Claude Code throughout the development workflow.",
     icon: "ai",
     accent: "purple",
-    link: { label: "Implementation", href: JOBPILOT_URL, external: true },
+    link: { label: "Source repository", href: REPO_URL, external: true },
   },
   {
     number: "04",
-    title: "Interview knowledge base & learning path",
-    description: "Stores interview questions and structured learning topics for ongoing study.",
+    title: "Build a QA knowledge base",
+    description: "A structured knowledge base covering interview questions, learning paths, and different QA-related areas.",
     icon: "book",
     accent: "orange",
     link: { label: "Interview catalog", external: false },
