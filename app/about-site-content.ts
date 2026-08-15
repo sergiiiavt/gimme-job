@@ -64,6 +64,9 @@ export const CLOUDFLARE_WORKERS_LOGS_URL = "https://dash.cloudflare.com/4f8e2983
 export const N8N_URL = "https://n8n.gimme-job.com";
 export const N8N_DOC_URL = `${REPO_URL}/blob/main/docs/n8n-gmail-integration.md`;
 export const N8N_WORKFLOW_URL = `${REPO_URL}/blob/main/ops/n8n/workflows/gimmejob-forwarded-email-classifier.json`;
+export const HETZNER_INFRA_URL = `${REPO_URL}/tree/main/ops/hetzner`;
+export const HETZNER_PROVISION_URL = `${REPO_URL}/blob/main/ops/hetzner/provision.mjs`;
+export const HETZNER_WORKFLOW_URL = `${REPO_URL}/blob/main/.github/workflows/hetzner-n8n.yml`;
 
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
   label: "Grafana dashboard",
@@ -183,7 +186,7 @@ export const DATABASE = {
 export const N8N = {
   title: "n8n email automation",
   description:
-    "n8n is the production orchestration layer for tenant-scoped forwarded job-email metadata; GimmeJob keeps identity, ownership, and application state.",
+    "n8n is the production orchestration layer for tenant-scoped forwarded job-email metadata; the runtime is self-hosted on Hetzner and provisioned from repository code.",
   gmail: {
     title: "Gmail forwarding",
     description: "User filters forward selected job emails to a per-user GimmeJob token address",
@@ -203,14 +206,17 @@ export const N8N = {
     accent: "blue" as const,
   },
   orchestrator: {
-    title: "n8n",
+    title: "Hetzner CX23 + n8n",
     description:
-      "Hetzner-hosted workflow automation polls the metadata-only internal API every minute and runs deterministic classification.",
+      "Ubuntu 24.04 VM provisioned as code. Docker Compose runs n8n, PostgreSQL, and Caddy; GitHub Actions manages server, firewall, bootstrap, DNS, and HTTPS readiness.",
     icon: "n8n" as const,
     accent: "purple" as const,
     links: [
       { label: "n8n", href: N8N_URL, external: true },
-      { label: "Workflow", href: N8N_WORKFLOW_URL, external: true },
+      { label: "Infrastructure as Code", href: HETZNER_INFRA_URL, external: true },
+      { label: "Provisioner", href: HETZNER_PROVISION_URL, external: true },
+      { label: "Provision workflow", href: HETZNER_WORKFLOW_URL, external: true },
+      { label: "n8n workflow", href: N8N_WORKFLOW_URL, external: true },
       { label: "Integration docs", href: N8N_DOC_URL, external: true },
     ],
   },
