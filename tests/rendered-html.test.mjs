@@ -384,11 +384,11 @@ test("keeps the public site open and protects the private workspace", async () =
   assert.equal(publicResponse.status, 200);
   const publicHtml = await publicResponse.text();
   for (const text of [
-    "What this site is",
-    "Job search tool",
-    "Technology sandbox",
-    "AI-assisted workflows",
-    "Interview knowledge base",
+    "Why I created this site",
+    "Find a job",
+    "Create a technology playground",
+    "Use an AI-assisted development workflow",
+    "Build a QA knowledge base",
     "Deployment",
     "GitHub Actions",
     "Cloudflare Platform",
@@ -400,7 +400,7 @@ test("keeps the public site open and protects the private workspace", async () =
   ]) {
     assert.match(publicHtml, new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
-  const overviewHeadings = [...publicHtml.matchAll(/<h1[^>]*>What this site is<\/h1>/g)];
+  const overviewHeadings = [...publicHtml.matchAll(/<h1[^>]*>Why I created this site<\/h1>/g)];
   assert.equal(overviewHeadings.length, 1);
   assert.doesNotMatch(publicHtml, /Technology stack/);
   assert.match(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
