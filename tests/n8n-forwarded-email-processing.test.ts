@@ -17,6 +17,7 @@ type FakeDbOptions = {
     sender_name: string | null;
     sender_email: string | null;
     subject: string;
+    text_excerpt: string | null;
   }>;
   existingClassification?: string | null;
   fail?: boolean;
@@ -78,7 +79,7 @@ function fakeDb(options: FakeDbOptions = {}) {
   return { db, state };
 }
 
-test("n8n pending-email endpoint returns only structured forwarded-email metadata", async () => {
+test("n8n pending-email endpoint returns bounded structured forwarding data including the text excerpt", async () => {
   const { db, state } = fakeDb({
     rows: [{
       id: "evt_123",
@@ -89,6 +90,7 @@ test("n8n pending-email endpoint returns only structured forwarded-email metadat
       sender_name: null,
       sender_email: "recruiter@example.com",
       subject: "Interview invitation",
+      text_excerpt: "Please join us for a technical interview next Tuesday.",
     }],
   });
 
@@ -108,6 +110,7 @@ test("n8n pending-email endpoint returns only structured forwarded-email metadat
       senderName: null,
       senderEmail: "recruiter@example.com",
       subject: "Interview invitation",
+      textExcerpt: "Please join us for a technical interview next Tuesday.",
     }],
   });
   assert.deepEqual(state.allBindings, [[100]]);
@@ -137,12 +140,23 @@ test("n8n pending-email endpoint fails closed and validates the limit", async ()
   }
 });
 
-test("n8n classification endpoint resolves an unclassified tenant event", async () => {
+test("n8n classification endpoint stores structured AI classification fields", async () => {
   const { db, state } = fakeDb({ existingClassification: "UNCLASSIFIED" });
   const response = await handleEmailClassificationUpdate(
     authorizedRequest(undefined, {
       method: "PATCH",
-      body: { userId: "user_123", id: "evt_123", classification: "interview" },
+      body: {
+        userId: "user_123",
+        id: "evt_123",
+        classification: "interview",
+        confidence: 0.96,
+        source: "OPENAI:gpt-5.6",
+        summary: "Technical interview invitation for Senior QA Engineer.",
+        company: "Example Corp",
+        jobTitle: "Senior QA Engineer",
+        recruiterName: "Anna Smith",
+        action: "PREPARE_INTERVIEW",
+      },
     }),
     { DB: db, N8N_INGEST_TOKEN: TOKEN },
   );
@@ -152,12 +166,24 @@ test("n8n classification endpoint resolves an unclassified tenant event", async 
     ok: true,
     id: "evt_123",
     classification: "INTERVIEW",
+    confidence: 0.96,
+    source: "OPENAI:gpt-5.6",
+    action: "PREPARE_INTERVIEW",
     changed: true,
   });
   assert.equal(state.runBindings.length, 1);
-  assert.equal(state.runBindings[0]?.[0], "INTERVIEW");
-  assert.equal(state.runBindings[0]?.[2], "user_123");
-  assert.equal(state.runBindings[0]?.[3], "evt_123");
+  const values = state.runBindings[0]!;
+  assert.equal(values[0], "INTERVIEW");
+  assert.equal(values[1], 0.96);
+  assert.equal(values[2], "OPENAI:gpt-5.6");
+  assert.equal(values[3], "Technical interview invitation for Senior QA Engineer.");
+  assert.equal(values[4], "Example Corp");
+  assert.equal(values[5], "Senior QA Engineer");
+  assert.equal(values[6], "Anna Smith");
+  assert.equal(values[7], "PREPARE_INTERVIEW");
+  assert.equal(values[9], "user_123");
+  assert.equal(values[10], "evt_123");
+  assert.equal(values[11], "INTERVIEW");
 });
 
 test("n8n classification endpoint is idempotent and never overwrites another classification", async () => {
@@ -165,18 +191,15 @@ test("n8n classification endpoint is idempotent and never overwrites another cla
   const repeated = await handleEmailClassificationUpdate(
     authorizedRequest(undefined, {
       method: "PATCH",
-      body: { userId: "user_123", id: "evt_123", classification: "REJECTION" },
+      body: { userId: "user_123", id: "evt_123", classification: "REJECTION", confidence: 0.9, source: "OPENAI:gpt-5.6", action: "NO_ACTION" },
     }),
     { DB: same.db, N8N_INGEST_TOKEN: TOKEN },
   );
   assert.equal(repeated.status, 200);
-  assert.deepEqual(await repeated.json(), {
-    ok: true,
-    id: "evt_123",
-    classification: "REJECTION",
-    changed: false,
-  });
-  assert.equal(same.state.runBindings.length, 0);
+  const repeatedPayload = await repeated.json();
+  assert.equal(repeatedPayload.changed, false);
+  assert.equal(repeatedPayload.classification, "REJECTION");
+  assert.equal(same.state.runBindings.length, 1);
 
   const conflict = fakeDb({ existingClassification: "REJECTION" });
   const response = await handleEmailClassificationUpdate(
@@ -191,15 +214,17 @@ test("n8n classification endpoint is idempotent and never overwrites another cla
   assert.equal(conflict.state.runBindings.length, 0);
 });
 
-test("n8n classification endpoint rejects unresolved, unsupported, missing and unknown events", async () => {
+test("n8n classification endpoint rejects unresolved, unsupported, malformed and unknown events", async () => {
   const { db, state } = fakeDb({ existingClassification: "UNCLASSIFIED" });
 
-  for (const classification of ["UNCLASSIFIED", "SPAM"] as const) {
+  for (const body of [
+    { userId: "user_123", id: "evt_123", classification: "UNCLASSIFIED" },
+    { userId: "user_123", id: "evt_123", classification: "SPAM" },
+    { userId: "user_123", id: "evt_123", classification: "INTERVIEW", confidence: 2 },
+    { userId: "user_123", id: "evt_123", classification: "INTERVIEW", action: "DELETE_EMAIL" },
+  ]) {
     const response = await handleEmailClassificationUpdate(
-      authorizedRequest(undefined, {
-        method: "PATCH",
-        body: { userId: "user_123", id: "evt_123", classification },
-      }),
+      authorizedRequest(undefined, { method: "PATCH", body }),
       { DB: db, N8N_INGEST_TOKEN: TOKEN },
     );
     assert.equal(response.status, 400);

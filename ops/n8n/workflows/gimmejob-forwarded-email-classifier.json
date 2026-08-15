@@ -45,7 +45,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const events = $input.first().json.events;\nif (!Array.isArray(events) || events.length === 0) return [];\n\nconst rules = [\n  ['OFFER', [/\\boffer\\b/i, /\\bemployment agreement\\b/i]],\n  ['TEST_TASK', [/\\btest task\\b/i, /\\btechnical assessment\\b/i, /\\bcoding challenge\\b/i, /\\btake[- ]home\\b/i, /\\bhome assignment\\b/i]],\n  ['INTERVIEW', [/\\binterview\\b/i, /\\bscreening\\b/i, /\\btechnical (?:call|round)\\b/i, /\\bhiring manager\\b/i]],\n  ['REJECTION', [/\\bunfortunately\\b/i, /\\bnot moving forward\\b/i, /\\bother candidates\\b/i, /\\breject(?:ed|ion)?\\b/i, /\\bnot selected\\b/i]],\n  ['RECRUITER', [/\\brecruiter\\b/i, /\\bjob opportunity\\b/i, /\\bvacanc(?:y|ies)\\b/i, /\\bopen position\\b/i, /\\bnew role\\b/i]],\n];\n\nfunction classify(event) {\n  const searchable = [event.subject, event.senderName, event.senderEmail].filter(Boolean).join(' ');\n  for (const [classification, patterns] of rules) {\n    if (patterns.some((pattern) => pattern.test(searchable))) return classification;\n  }\n  return 'OTHER';\n}\n\nreturn events.map((event) => ({\n  json: {\n    userId: event.userId,\n    id: event.id,\n    classification: classify(event),\n  },\n}));"
+        "jsCode": "const events = $input.first().json.events;\nif (!Array.isArray(events) || events.length === 0) return [];\n\nreturn events.map((event) => ({\n  json: {\n    id: event.id,\n    userId: event.userId,\n  },\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -54,7 +54,32 @@
         0
       ],
       "id": "383c8014-24ba-44fa-a273-402ab14f4ea4",
-      "name": "Classify metadata"
+      "name": "Prepare email events"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gimme-job.com/internal/n8n/email-classify",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        0
+      ],
+      "id": "7c1c9c57-fd47-4a2a-a56a-4daf527f2f9c",
+      "name": "AI classify email",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
@@ -72,7 +97,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        220,
+        460,
         0
       ],
       "id": "03042d45-5226-44ae-9b9e-41ae5eb79217",
@@ -98,14 +123,25 @@
       "main": [
         [
           {
-            "node": "Classify metadata",
+            "node": "Prepare email events",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Classify metadata": {
+    "Prepare email events": {
+      "main": [
+        [
+          {
+            "node": "AI classify email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI classify email": {
       "main": [
         [
           {
@@ -123,7 +159,7 @@
     "executionOrder": "v1",
     "timezone": "Europe/Kyiv"
   },
-  "versionId": "296e22a3-0e15-45be-94a5-dde6f630a595",
+  "versionId": "9f7c2404-a860-4f05-a86a-8912c2358c12",
   "meta": {
     "templateCredsSetupCompleted": false
   },

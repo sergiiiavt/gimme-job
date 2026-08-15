@@ -1,9 +1,11 @@
 import {
+  EMAIL_ACTIONS,
   EMAIL_CLASSIFICATIONS,
   EmailEventValidationError,
   bearerToken,
   constantTimeEqual,
   normalizeEmailEvent,
+  type EmailAction,
   type EmailClassification,
 } from "./email-event.ts";
 
@@ -11,6 +13,9 @@ const MAX_REQUEST_BYTES = 32 * 1024;
 const DEFAULT_PENDING_LIMIT = 25;
 const MAX_PENDING_LIMIT = 100;
 const MAX_EVENT_ID_LENGTH = 512;
+const MAX_SUMMARY_LENGTH = 500;
+const MAX_NAME_LENGTH = 300;
+const MAX_SOURCE_LENGTH = 100;
 
 export type EmailIngestEnv = {
   DB?: D1Database;
@@ -26,12 +31,20 @@ type PendingEmailEventRow = {
   sender_name: string | null;
   sender_email: string | null;
   subject: string;
+  text_excerpt: string | null;
 };
 
 type ClassificationUpdate = {
   id: string;
   userId: string;
   classification: Exclude<EmailClassification, "UNCLASSIFIED">;
+  confidence: number | null;
+  source: string | null;
+  summary: string | null;
+  company: string | null;
+  jobTitle: string | null;
+  recruiterName: string | null;
+  action: EmailAction | null;
 };
 
 async function runtimeEnv(): Promise<EmailIngestEnv> {
@@ -51,9 +64,7 @@ function json(payload: unknown, status = 200): Response {
 
 function authorizationError(request: Request, env: EmailIngestEnv): Response | null {
   const configuredToken = env.N8N_INGEST_TOKEN?.trim() ?? "";
-  if (!configuredToken) {
-    return json({ error: "n8n ingest is not configured." }, 503);
-  }
+  if (!configuredToken) return json({ error: "n8n ingest is not configured." }, 503);
 
   const suppliedToken = bearerToken(request.headers.get("authorization"));
   if (suppliedToken && constantTimeEqual(suppliedToken, configuredToken)) return null;
@@ -72,15 +83,11 @@ function authorizationError(request: Request, env: EmailIngestEnv): Response | n
 
 async function requestJson(request: Request): Promise<unknown | Response> {
   const contentLength = Number(request.headers.get("content-length") ?? "0");
-  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
-    return json({ error: "Request is too large." }, 413);
-  }
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) return json({ error: "Request is too large." }, 413);
 
   try {
     const text = await request.text();
-    if (new TextEncoder().encode(text).byteLength > MAX_REQUEST_BYTES) {
-      return json({ error: "Request is too large." }, 413);
-    }
+    if (new TextEncoder().encode(text).byteLength > MAX_REQUEST_BYTES) return json({ error: "Request is too large." }, 413);
     return JSON.parse(text);
   } catch {
     return json({ error: "Request body must be valid JSON." }, 400);
@@ -109,14 +116,38 @@ function pendingLimit(request: Request): number | null {
 
 function requiredId(payload: Record<string, unknown>, key: "id" | "userId"): string {
   const value = payload[key];
-  if (typeof value !== "string" || !value.trim()) {
-    throw new EmailEventValidationError(`${key} is required.`);
-  }
+  if (typeof value !== "string" || !value.trim()) throw new EmailEventValidationError(`${key} is required.`);
   const clean = value.trim();
-  if (clean.length > MAX_EVENT_ID_LENGTH) {
-    throw new EmailEventValidationError(`${key} is too long.`);
-  }
+  if (clean.length > MAX_EVENT_ID_LENGTH) throw new EmailEventValidationError(`${key} is too long.`);
   return clean;
+}
+
+function optionalText(payload: Record<string, unknown>, key: string, maxLength: number): string | null {
+  const value = payload[key];
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") throw new EmailEventValidationError(`${key} must be a string.`);
+  const clean = value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim();
+  if (!clean) return null;
+  if (clean.length > maxLength) throw new EmailEventValidationError(`${key} is too long.`);
+  return clean;
+}
+
+function optionalConfidence(payload: Record<string, unknown>): number | null {
+  const value = payload.confidence;
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
+    throw new EmailEventValidationError("confidence must be a number from 0 to 1.");
+  }
+  return value;
+}
+
+function optionalAction(payload: Record<string, unknown>): EmailAction | null {
+  const value = payload.action;
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") throw new EmailEventValidationError("action must be a string.");
+  const normalized = value.trim().toUpperCase() as EmailAction;
+  if (!EMAIL_ACTIONS.includes(normalized)) throw new EmailEventValidationError(`Unsupported action: ${value}.`);
+  return normalized;
 }
 
 function classificationUpdate(input: unknown): ClassificationUpdate {
@@ -132,14 +163,19 @@ function classificationUpdate(input: unknown): ClassificationUpdate {
   if (!EMAIL_CLASSIFICATIONS.includes(classification)) {
     throw new EmailEventValidationError(`Unsupported classification: ${rawClassification}.`);
   }
-  if (classification === "UNCLASSIFIED") {
-    throw new EmailEventValidationError("classification must resolve the event.");
-  }
+  if (classification === "UNCLASSIFIED") throw new EmailEventValidationError("classification must resolve the event.");
 
   return {
     id: requiredId(payload, "id"),
     userId: requiredId(payload, "userId"),
     classification,
+    confidence: optionalConfidence(payload),
+    source: optionalText(payload, "source", MAX_SOURCE_LENGTH),
+    summary: optionalText(payload, "summary", MAX_SUMMARY_LENGTH),
+    company: optionalText(payload, "company", MAX_NAME_LENGTH),
+    jobTitle: optionalText(payload, "jobTitle", MAX_NAME_LENGTH),
+    recruiterName: optionalText(payload, "recruiterName", MAX_NAME_LENGTH),
+    action: optionalAction(payload),
   };
 }
 
@@ -160,7 +196,8 @@ export async function handlePendingEmailEvents(request: Request, env: EmailInges
       received_at,
       sender_name,
       sender_email,
-      subject
+      subject,
+      text_excerpt
     FROM user_email_events
     WHERE classification = 'UNCLASSIFIED'
     ORDER BY received_at ASC
@@ -177,6 +214,7 @@ export async function handlePendingEmailEvents(request: Request, env: EmailInges
       senderName: event.sender_name,
       senderEmail: event.sender_email,
       subject: event.subject,
+      textExcerpt: event.text_excerpt,
     }));
 
     return json({ events });
@@ -208,20 +246,48 @@ export async function handleEmailClassificationUpdate(request: Request, env: Ema
       .first<{ classification?: string }>();
 
     if (!existing) return json({ error: "Email event was not found." }, 404);
-    if (existing.classification === update.classification) {
-      return json({ ok: true, id: update.id, classification: update.classification, changed: false });
-    }
-    if (existing.classification !== "UNCLASSIFIED") {
+    if (existing.classification !== "UNCLASSIFIED" && existing.classification !== update.classification) {
       return json({ error: "Email event is already classified." }, 409);
     }
 
+    const changed = existing.classification !== update.classification;
     await env.DB.prepare(`UPDATE user_email_events
-      SET classification = ?, updated_at = ?
-      WHERE user_id = ? AND id = ? AND classification = 'UNCLASSIFIED'`)
-      .bind(update.classification, new Date().toISOString(), update.userId, update.id)
+      SET
+        classification = ?,
+        classification_confidence = COALESCE(?, classification_confidence),
+        classification_source = COALESCE(?, classification_source),
+        summary = COALESCE(?, summary),
+        company = COALESCE(?, company),
+        job_title = COALESCE(?, job_title),
+        recruiter_name = COALESCE(?, recruiter_name),
+        action = COALESCE(?, action),
+        updated_at = ?
+      WHERE user_id = ? AND id = ? AND (classification = 'UNCLASSIFIED' OR classification = ?)`)
+      .bind(
+        update.classification,
+        update.confidence,
+        update.source,
+        update.summary,
+        update.company,
+        update.jobTitle,
+        update.recruiterName,
+        update.action,
+        new Date().toISOString(),
+        update.userId,
+        update.id,
+        update.classification,
+      )
       .run();
 
-    return json({ ok: true, id: update.id, classification: update.classification, changed: true });
+    return json({
+      ok: true,
+      id: update.id,
+      classification: update.classification,
+      confidence: update.confidence,
+      source: update.source,
+      action: update.action,
+      changed,
+    });
   } catch {
     return json({ error: "Failed to update email classification." }, 500);
   }
@@ -232,9 +298,7 @@ export async function handleEmailEvent(request: Request, env: EmailIngestEnv): P
   const authError = authorizationError(request, env);
   if (authError) return authError;
 
-  if (!env.DB) {
-    return json({ error: "Cloud database is not available." }, 503);
-  }
+  if (!env.DB) return json({ error: "Cloud database is not available." }, 503);
 
   const payload = await requestJson(request);
   if (payload instanceof Response) return payload;
@@ -243,9 +307,7 @@ export async function handleEmailEvent(request: Request, env: EmailIngestEnv): P
   try {
     event = normalizeEmailEvent(payload);
   } catch (error) {
-    if (error instanceof EmailEventValidationError) {
-      return json({ error: error.message }, 400);
-    }
+    if (error instanceof EmailEventValidationError) return json({ error: error.message }, 400);
     throw error;
   }
 
@@ -315,12 +377,7 @@ export async function handleEmailEvent(request: Request, env: EmailIngestEnv): P
     });
 
     return json(
-      {
-        ok: true,
-        id: event.id,
-        created: !existing,
-        classification: event.classification,
-      },
+      { ok: true, id: event.id, created: !existing, classification: event.classification },
       existing ? 200 : 201,
     );
   } catch (error) {
