@@ -1,5 +1,11 @@
-/** Cloudflare Worker entry point with a trusted multi-user authentication boundary. */
+/** Cloudflare Worker entry point with tenant auth and per-user email forwarding. */
 import coreWorker from "./core";
+import { handleForwardedEmail } from "./email-forwarding";
 import { createMultiUserBoundary } from "./multi-user-boundary";
 
-export default createMultiUserBoundary(coreWorker);
+const httpWorker = createMultiUserBoundary(coreWorker);
+
+export default {
+  fetch: httpWorker.fetch,
+  email: handleForwardedEmail,
+};
