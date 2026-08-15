@@ -15,6 +15,10 @@
   grid-template-columns: 250px minmax(0, 1fr);
 }
 
+.about-tech-section:not(.about-tech-overview) > .about-tech-section-heading {
+  align-self: center;
+}
+
 .about-tech-deployment-flow {
   align-items: center;
 }
@@ -32,6 +36,10 @@
   .about-tech-section:not(.about-tech-overview) {
     gap: 18px;
     grid-template-columns: 1fr;
+  }
+
+  .about-tech-section:not(.about-tech-overview) > .about-tech-section-heading {
+    align-self: start;
   }
 
   .about-tech-section-heading.about-tech-overview-heading {
