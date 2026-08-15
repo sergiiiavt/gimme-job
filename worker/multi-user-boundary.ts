@@ -24,6 +24,7 @@ type AccessContext = {
 };
 
 const BASIC_AUTH_USERNAME = "gimmejob";
+const N8N_EMAIL_EVENTS_PATH = "/internal/n8n/email-events";
 const TRUSTED_AUTH_HEADERS = [
   "x-gimmejob-auth-mode",
   "x-gimmejob-user-id",
@@ -125,6 +126,14 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
       }
 
       const sanitizedRequest = sanitizeIdentityHeaders(request);
+
+      // Service-to-service n8n requests authenticate themselves with N8N_INGEST_TOKEN.
+      // Preserve their Authorization header instead of replacing it with the internal
+      // Basic-auth bridge used for browser sessions in multi-user mode.
+      if (url.pathname === N8N_EMAIL_EVENTS_PATH) {
+        return coreWorker.fetch(sanitizedRequest, env, ctx);
+      }
+
       if (!multiUserEnabled(env)) return coreWorker.fetch(sanitizedRequest, env, ctx);
 
       if (url.pathname === "/workspace/login") return handlePasswordLogin(sanitizedRequest, env);
