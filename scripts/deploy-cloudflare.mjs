@@ -176,6 +176,7 @@ async function main() {
   requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
   const appPassword = requiredEnvironment("APP_PASSWORD");
   const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
+  const n8nIngestToken = requiredEnvironment("N8N_INGEST_TOKEN");
 
   if (appPassword.length < 16) {
     throw new Error("APP_PASSWORD must contain at least 16 characters.");
@@ -183,6 +184,10 @@ async function main() {
 
   if (grafanaReadToken.length < 32) {
     throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
+  }
+
+  if (n8nIngestToken.length < 32) {
+    throw new Error("N8N_INGEST_TOKEN must contain at least 32 characters.");
   }
 
   await ensureBuildArtifact();
@@ -224,6 +229,12 @@ async function main() {
     runWrangler(
       ["secret", "put", "GRAFANA_READ_TOKEN", "--config", generatedConfigPath],
       { input: `${grafanaReadToken}\n` },
+    );
+
+    console.log("Updating the n8n ingest token...");
+    runWrangler(
+      ["secret", "put", "N8N_INGEST_TOKEN", "--config", generatedConfigPath],
+      { input: `${n8nIngestToken}\n` },
     );
 
     if (process.env.OPENAI_API_KEY) {
