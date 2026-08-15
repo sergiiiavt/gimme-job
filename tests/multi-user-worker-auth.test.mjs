@@ -112,7 +112,7 @@ test("multi-user Worker injects only the user id resolved from the server sessio
   assert.deepEqual(state.progressUserIds, ["user-a"]);
 });
 
-test("multi-user Worker preserves n8n bearer auth only for the scoped internal service route", async () => {
+test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("multi-user-n8n-service-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
@@ -135,11 +135,33 @@ test("multi-user Worker preserves n8n bearer auth only for the scoped internal s
   assert.equal(authorized.status, 200);
   assert.deepEqual(await authorized.json(), { events: [] });
 
+  const classifier = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-classify", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer n8n-service-token",
+      "content-type": "application/json",
+      "x-gimmejob-auth-mode": "multi-user",
+      "x-gimmejob-authenticated": "1",
+      "x-gimmejob-user-id": "attacker-controlled-user",
+    },
+    body: JSON.stringify({ id: "evt-missing", userId: "user-a" }),
+  }), env, context);
+  assert.equal(classifier.status, 404);
+  assert.deepEqual(await classifier.json(), { error: "Email event was not found." });
+
   const rejected = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-events?limit=1", {
     headers: { authorization: "Bearer wrong-token" },
   }), env, context);
   assert.equal(rejected.status, 401);
   assert.deepEqual(await rejected.json(), { error: "Authentication required." });
+
+  const rejectedClassifier = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-classify", {
+    method: "POST",
+    headers: { authorization: "Bearer wrong-token", "content-type": "application/json" },
+    body: JSON.stringify({ id: "evt-missing", userId: "user-a" }),
+  }), env, context);
+  assert.equal(rejectedClassifier.status, 401);
+  assert.deepEqual(await rejectedClassifier.json(), { error: "Authentication required." });
 });
 
 test("multi-user logout invalidates the D1 session and clears only the user-session cookie", async () => {
