@@ -20,6 +20,18 @@ import {
   upsertJobs,
 } from "../_jobpilot";
 import {
+  saveTenantSetting,
+  tenantDashboard,
+  tenantInterviewProgress,
+  tenantRequestContext,
+  tenantResumePdf,
+  tenantSettingsView,
+  tenantUnavailable,
+  updateTenantDraft,
+  updateTenantInterviewProgress,
+  updateTenantJobTracking,
+} from "../_tenant-state";
+import {
   newOperationId,
   operationalError,
   operationalInfo,
@@ -32,17 +44,60 @@ async function parts(context: RouteContext) {
   return (await Promise.resolve(context.params)).route ?? [];
 }
 
+function tenantUser(request: Request): { multiUser: boolean; userId: string | null } | Response {
+  const context = tenantRequestContext(request);
+  if (!context.multiUser) return { multiUser: false, userId: null };
+  if (!context.authenticated || !context.userId) {
+    return Response.json(
+      { ok: false, error: "Authentication required." },
+      { status: 401, headers: { "cache-control": "no-store" } },
+    );
+  }
+  return { multiUser: true, userId: context.userId };
+}
+
+function multiUserAdminBlocked(): Response {
+  return Response.json(
+    { ok: false, error: "This shared-catalog operation is not available to tenant users." },
+    { status: 403, headers: { "cache-control": "no-store" } },
+  );
+}
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const route = await parts(context);
+    const tenant = tenantRequestContext(request);
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
     if (route[0] === "public" && route[1] === "jobs") return Response.json(await publicJobs());
-    if (route[0] === "interview-progress") return Response.json(await interviewProgress());
-    if (route[0] === "dashboard") return Response.json(await dashboard(request));
-    if (route[0] === "settings") return Response.json(await settingsView());
+    if (route[0] === "dashboard") {
+      const userId = tenant.authenticated ? tenant.userId : null;
+      return Response.json(tenant.multiUser ? await tenantDashboard(userId, request) : await dashboard(request));
+    }
+    if (route[0] === "interview-progress") {
+      if (!tenant.multiUser) return Response.json(await interviewProgress());
+      if (!tenant.authenticated || !tenant.userId) {
+        return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+      }
+      return Response.json(await tenantInterviewProgress(tenant.userId));
+    }
+    if (route[0] === "settings") {
+      if (!tenant.multiUser) return Response.json(await settingsView());
+      if (!tenant.authenticated || !tenant.userId) {
+        return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+      }
+      return Response.json(await tenantSettingsView(tenant.userId));
+    }
     const resumeMatch = route[0] === "resumes" && route[1]?.match(/^(.+)\.pdf$/);
     if (resumeMatch) {
-      const pdf = await resumePdf(resumeMatch[1]);
+      let pdf: Uint8Array | null;
+      if (tenant.multiUser) {
+        if (!tenant.authenticated || !tenant.userId) {
+          return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+        }
+        pdf = await tenantResumePdf(tenant.userId, resumeMatch[1]);
+      } else {
+        pdf = await resumePdf(resumeMatch[1]);
+      }
       if (!pdf) return Response.json({ error: "No resume PDF has been generated for this job yet." }, { status: 404 });
       return new Response(pdf, {
         headers: {
@@ -59,12 +114,18 @@ export async function GET(request: Request, context: RouteContext) {
 export async function PUT(request: Request, context: RouteContext) {
   try {
     const route = await parts(context); const payload = await readPayload(request);
+    const tenant = tenantUser(request);
+    if (tenant instanceof Response) return tenant;
     if (route[0] === "profile") {
-      const profile = payload.profile ?? DEFAULT_PROFILE; await saveSetting("profile", profile);
+      const profile = payload.profile ?? DEFAULT_PROFILE;
+      if (tenant.multiUser && tenant.userId) await saveTenantSetting(tenant.userId, "profile", profile);
+      else await saveSetting("profile", profile);
       return Response.json({ ok: true, profile });
     }
     if (route[0] === "sources") {
-      const sources = payload.sources ?? DEFAULT_SOURCES; await saveSetting("sources", sources);
+      const sources = payload.sources ?? DEFAULT_SOURCES;
+      if (tenant.multiUser && tenant.userId) await saveTenantSetting(tenant.userId, "sources", sources);
+      else await saveSetting("sources", sources);
       return Response.json({ ok: true, sources });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
@@ -74,7 +135,9 @@ export async function PUT(request: Request, context: RouteContext) {
 export async function POST(request: Request, context: RouteContext) {
   try {
     const route = await parts(context); const payload = await readPayload(request);
+    const tenant = tenantRequestContext(request);
     if (route[0] === "import") {
+      if (tenant.multiUser) return multiUserAdminBlocked();
       const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
       const startedAt = Date.now();
       const operationId = newOperationId("import");
@@ -134,26 +197,43 @@ export async function POST(request: Request, context: RouteContext) {
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "sync") {
+      if (tenant.multiUser) return multiUserAdminBlocked();
       const result = await syncSources({ trigger: "api_sync" }); return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "analyze") {
+      if (tenant.multiUser) return tenantUnavailable("Job analysis");
       const result = await analyzeJobs(typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_analyze" });
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "analyze-resume") {
+      if (tenant.multiUser) return tenantUnavailable("Resume generation");
       if (typeof payload.jobId !== "string" || !payload.jobId) throw new Error("jobId is required.");
       const result = await adjustResumeForJob(payload.jobId, { trigger: "api_analyze_resume" });
       return Response.json({ ok: true, result, dashboard: await dashboard(request) });
     }
     if (route[0] === "run") {
+      if (tenant.multiUser) return multiUserAdminBlocked();
       const sync = await syncSources({ trigger: "api_run" }); const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_run" });
       return Response.json({ ok: true, result: { sync, analysis }, dashboard: await dashboard(request) });
     }
     if (route[0] === "drafts" && route[1] && route[2]) {
+      if (tenant.multiUser) {
+        if (!tenant.authenticated || !tenant.userId) {
+          return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+        }
+        await updateTenantDraft(tenant.userId, route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
+        return Response.json({ ok: true, dashboard: await tenantDashboard(tenant.userId, request) });
+      }
       await updateDraft(route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
       return Response.json({ ok: true, dashboard: await dashboard(request) });
     }
     if (route[0] === "gmail" && route[1] === "connect") {
+      if (tenant.multiUser) {
+        if (!tenant.authenticated || !tenant.userId) {
+          return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+        }
+        return Response.json({ ok: true, connectUrl: "/auth/google/start?mode=gmail&next=/workspace" });
+      }
       return Response.json({ ok: false, error: "Deploy the cloud app first, then add its URL to a Google Desktop/Web OAuth client. Nothing was changed." }, { status: 409 });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
@@ -163,12 +243,21 @@ export async function POST(request: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const route = await parts(context); const payload = await readPayload(request);
+    const tenant = tenantUser(request);
+    if (tenant instanceof Response) return tenant;
     if (route[0] === "jobs" && route[1]) {
-      const job = await updateJobTracking(route[1], payload);
-      return Response.json({ ok: true, job, dashboard: await dashboard(request) });
+      const job = tenant.multiUser && tenant.userId
+        ? await updateTenantJobTracking(tenant.userId, route[1], payload)
+        : await updateJobTracking(route[1], payload);
+      const currentDashboard = tenant.multiUser && tenant.userId
+        ? await tenantDashboard(tenant.userId, request)
+        : await dashboard(request);
+      return Response.json({ ok: true, job, dashboard: currentDashboard });
     }
     if (route[0] === "interview-progress" && route[1]) {
-      const progress = await updateInterviewProgress(route[1], payload);
+      const progress = tenant.multiUser && tenant.userId
+        ? await updateTenantInterviewProgress(tenant.userId, route[1], payload)
+        : await updateInterviewProgress(route[1], payload);
       return Response.json({ ok: true, progress });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
