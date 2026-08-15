@@ -71,7 +71,11 @@ jobs:
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GMAIL_TOKEN_ENCRYPTION_KEY: ${{ secrets.GMAIL_TOKEN_ENCRYPTION_KEY }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           GRAFANA_READ_TOKEN: ${{ secrets.GRAFANA_READ_TOKEN }}
+          MULTI_USER_ENABLED: ${{ vars.MULTI_USER_ENABLED }}
           N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
