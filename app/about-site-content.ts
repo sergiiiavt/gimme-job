@@ -57,8 +57,8 @@ export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
 export const WORKER_SOURCE_URL = `${REPO_URL}/blob/main/worker/index.ts`;
 export const GRAFANA_DASHBOARD_URL = "https://gentlecabbage323.grafana.net/public-dashboards/8c022097cb6544f2a5f9dff1cfab4e7b";
+export const CLOUDFLARE_WORKERS_LOGS_URL = "https://dash.cloudflare.com/4f8e29835b9bb4e2330170ca94ac8f2b/workers/services/view/gimmejob/production/observability/events";
 
-// TODO: add the real shareable Grafana dashboard URL when available.
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
   label: "Grafana dashboard",
   href: GRAFANA_DASHBOARD_URL,
@@ -206,18 +206,25 @@ export const OPENAI = {
 };
 
 export const GRAFANA = {
-  title: "Grafana observability",
+  title: "Observability",
   description:
-    "Operational events and summary data are exposed to Grafana for dashboards and alerts.",
+    "Short-term production diagnostics and long-term operational monitoring.",
+  workersLogs: {
+    title: "Cloudflare Workers Logs",
+    description: "Recent runtime diagnostics",
+    icon: "document" as const,
+    accent: "blue" as const,
+    links: [{ label: "Open logs", href: CLOUDFLARE_WORKERS_LOGS_URL, external: true }],
+  },
   sourceEvents: {
     title: "App events",
-    description: "Selected runtime events and errors",
+    description: "Selected operational events",
     icon: "observability" as const,
-    accent: "purple" as const,
+    accent: "green" as const,
   },
   sourceSummary: {
     title: "D1 summary API",
-    description: "Aggregated observability metrics and statistics",
+    description: "Aggregated long-term metrics",
     icon: "database" as const,
     accent: "blue" as const,
     links: [{ label: "API implementation", href: WORKER_SOURCE_URL, external: true }],
