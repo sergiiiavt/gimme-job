@@ -19,6 +19,14 @@ function requiredEnvironment(name) {
   return value;
 }
 
+function optionalEnvironment(name) {
+  return process.env[name]?.trim() || "";
+}
+
+function enabledEnvironment(name) {
+  return optionalEnvironment(name).toLowerCase() === "true";
+}
+
 function runWrangler(args, options = {}) {
   const capture = options.capture === true;
   const hasInput = typeof options.input === "string";
@@ -73,6 +81,28 @@ function databaseId(database) {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+function googleAuthConfiguration() {
+  const values = {
+    clientId: optionalEnvironment("GOOGLE_OAUTH_CLIENT_ID"),
+    clientSecret: optionalEnvironment("GOOGLE_OAUTH_CLIENT_SECRET"),
+    encryptionKey: optionalEnvironment("GMAIL_TOKEN_ENCRYPTION_KEY"),
+  };
+  const configuredCount = Object.values(values).filter(Boolean).length;
+  if (configuredCount > 0 && configuredCount < 3) {
+    throw new Error("GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, and GMAIL_TOKEN_ENCRYPTION_KEY must be configured together.");
+  }
+  if (values.encryptionKey) {
+    const decoded = Buffer.from(values.encryptionKey, "base64");
+    if (decoded.byteLength !== 32) {
+      throw new Error("GMAIL_TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes.");
+    }
+  }
+  return {
+    ...values,
+    configured: configuredCount === 3,
+  };
+}
+
 async function ensureBuildArtifact() {
   await Promise.all([
     access(path.join(projectRoot, "dist", "server", "index.js")),
@@ -83,7 +113,7 @@ async function ensureBuildArtifact() {
   });
 }
 
-async function writeDeployConfig(id) {
+async function writeDeployConfig(id, multiUserEnabled = false) {
   const deployConfig = JSON.parse(await readFile(artifactConfigPath, "utf8"));
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
@@ -105,6 +135,10 @@ async function writeDeployConfig(id) {
       head_sampling_rate: 1,
     },
   };
+  deployConfig.vars = {
+    ...(deployConfig.vars && typeof deployConfig.vars === "object" ? deployConfig.vars : {}),
+    MULTI_USER_ENABLED: multiUserEnabled ? "true" : "false",
+  };
   deployConfig.d1_databases = [
     {
       binding: "DB",
@@ -121,7 +155,7 @@ async function writeDeployConfig(id) {
 
 async function validateConfig() {
   await ensureBuildArtifact();
-  await writeDeployConfig(dryRunDatabaseId);
+  await writeDeployConfig(dryRunDatabaseId, false);
 
   try {
     runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath]);
@@ -160,6 +194,14 @@ async function importCurrentJobs(appPassword) {
   }
 }
 
+function putSecret(name, value) {
+  console.log(`Updating ${name}...`);
+  runWrangler(
+    ["secret", "put", name, "--config", generatedConfigPath],
+    { input: `${value}\n` },
+  );
+}
+
 async function main() {
   await mkdir(path.join(wranglerRuntimePath, "xdg-config"), { recursive: true });
 
@@ -177,6 +219,12 @@ async function main() {
   const appPassword = requiredEnvironment("APP_PASSWORD");
   const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
   const n8nIngestToken = requiredEnvironment("N8N_INGEST_TOKEN");
+  const multiUserEnabled = enabledEnvironment("MULTI_USER_ENABLED");
+  const googleAuth = googleAuthConfiguration();
+
+  if (multiUserEnabled && !googleAuth.configured) {
+    throw new Error("MULTI_USER_ENABLED=true requires the Google OAuth client and Gmail token encryption secrets.");
+  }
 
   if (appPassword.length < 16) {
     throw new Error("APP_PASSWORD must contain at least 16 characters.");
@@ -202,7 +250,7 @@ async function main() {
   const id = databaseId(database);
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
 
-  await writeDeployConfig(id);
+  await writeDeployConfig(id, multiUserEnabled);
 
   try {
     console.log("Applying D1 migrations...");
@@ -219,43 +267,32 @@ async function main() {
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath]);
 
-    console.log("Updating the private app password...");
-    runWrangler(
-      ["secret", "put", "APP_PASSWORD", "--config", generatedConfigPath],
-      { input: `${appPassword}\n` },
-    );
+    putSecret("APP_PASSWORD", appPassword);
+    putSecret("GRAFANA_READ_TOKEN", grafanaReadToken);
+    putSecret("N8N_INGEST_TOKEN", n8nIngestToken);
 
-    console.log("Updating the Grafana read token...");
-    runWrangler(
-      ["secret", "put", "GRAFANA_READ_TOKEN", "--config", generatedConfigPath],
-      { input: `${grafanaReadToken}\n` },
-    );
-
-    console.log("Updating the n8n ingest token...");
-    runWrangler(
-      ["secret", "put", "N8N_INGEST_TOKEN", "--config", generatedConfigPath],
-      { input: `${n8nIngestToken}\n` },
-    );
+    if (googleAuth.configured) {
+      putSecret("GOOGLE_OAUTH_CLIENT_ID", googleAuth.clientId);
+      putSecret("GOOGLE_OAUTH_CLIENT_SECRET", googleAuth.clientSecret);
+      putSecret("GMAIL_TOKEN_ENCRYPTION_KEY", googleAuth.encryptionKey);
+    }
 
     if (process.env.OPENAI_API_KEY) {
-      console.log("Updating the OpenAI API key...");
-      runWrangler(
-        ["secret", "put", "OPENAI_API_KEY", "--config", generatedConfigPath],
-        { input: `${process.env.OPENAI_API_KEY}\n` },
-      );
+      putSecret("OPENAI_API_KEY", process.env.OPENAI_API_KEY);
 
       if (process.env.OPENAI_MODEL) {
-        runWrangler(
-          ["secret", "put", "OPENAI_MODEL", "--config", generatedConfigPath],
-          { input: `${process.env.OPENAI_MODEL}\n` },
-        );
+        putSecret("OPENAI_MODEL", process.env.OPENAI_MODEL);
       }
     }
 
-    console.log("Importing the current DOU job feed...");
-    await importCurrentJobs(appPassword);
+    if (multiUserEnabled) {
+      console.log("Skipping password-authenticated deployment job import in multi-user mode; shared-catalog ingestion remains a separate internal operation.");
+    } else {
+      console.log("Importing the current DOU job feed...");
+      await importCurrentJobs(appPassword);
+    }
 
-    console.log("Cloudflare deployment completed.");
+    console.log(`Cloudflare deployment completed. Multi-user authentication: ${multiUserEnabled ? "enabled" : "disabled"}.`);
   } finally {
     await rm(generatedConfigPath, { force: true });
   }
