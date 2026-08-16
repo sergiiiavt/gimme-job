@@ -65,6 +65,39 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Diagnose open Sonar vulnerabilities on main
+        if: always()
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: bash
+        run: |
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer $SONAR_TOKEN" \
+            --get 'https://sonarcloud.io/api/issues/search' \
+            --data-urlencode 'componentKeys=sergiiiavt_gimme-job' \
+            --data-urlencode 'branch=main' \
+            --data-urlencode 'issueStatuses=OPEN,CONFIRMED' \
+            --data-urlencode 'types=VULNERABILITY' \
+            --data-urlencode 'ps=100' \
+            --output /tmp/sonar-vulnerabilities.json
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const payload = JSON.parse(readFileSync('/tmp/sonar-vulnerabilities.json', 'utf8'));
+          const issues = Array.isArray(payload.issues) ? payload.issues : [];
+          console.log(`SONAR_OPEN_VULNERABILITIES=${issues.length}`);
+          for (const issue of issues) {
+            console.log(JSON.stringify({
+              key: issue.key,
+              component: issue.component,
+              line: issue.line ?? null,
+              message: issue.message,
+              rule: issue.rule,
+              severity: issue.severity,
+              impacts: issue.impacts ?? [],
+            }));
+          }
+          NODE
+
       - name: Deploy Worker and D1
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
