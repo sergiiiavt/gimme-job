@@ -1,0 +1,117 @@
+[
+  {
+    "id": "tooling-foundations",
+    "order": 1,
+    "label": "Tooling foundations & evidence",
+    "labelUk": "Основи інструментів та evidence",
+    "description": "Choose tools by the evidence layer you need, capture reproducible artifacts safely, and know when investigation mutates state.",
+    "descriptionUk": "Обирайте інструменти за потрібним evidence layer, безпечно фіксуйте відтворювані artifacts і розумійте, коли investigation змінює state.",
+    "sourceIds": [
+      "mdn-http-reference",
+      "chrome-devtools-docs",
+      "wireshark-guide"
+    ]
+  },
+  {
+    "id": "http-api-tools",
+    "order": 2,
+    "label": "HTTP & API request tools",
+    "labelUk": "HTTP та API request tools",
+    "description": "Build reproducible requests with curl, Postman and Bruno, then share them without coupling tests to one desktop client.",
+    "descriptionUk": "Будуйте reproducible requests через curl, Postman і Bruno та діліться ними без прив’язки test knowledge до одного desktop client.",
+    "sourceIds": [
+      "curl-docs",
+      "postman-docs",
+      "bruno-docs",
+      "mdn-http-reference"
+    ]
+  },
+  {
+    "id": "browser-devtools",
+    "order": 3,
+    "label": "Browser DevTools & debugging",
+    "labelUk": "Browser DevTools та debugging",
+    "description": "Inspect DOM, console, network, storage, sources, performance and security signals using browser developer tools, with Chrome as the primary example.",
+    "descriptionUk": "Inspect DOM, console, network, storage, sources, performance і security signals через browser developer tools, використовуючи Chrome як основний приклад.",
+    "sourceIds": [
+      "chrome-devtools-docs",
+      "firefox-devtools-docs",
+      "web-vitals-docs",
+      "lighthouse-docs"
+    ]
+  },
+  {
+    "id": "interception-proxies",
+    "order": 4,
+    "label": "HTTP interception & proxies",
+    "labelUk": "HTTP interception та proxies",
+    "description": "Capture, inspect, replay and deliberately modify HTTP(S) traffic using Fiddler Everywhere, Charles or mitmproxy while respecting TLS and privacy boundaries.",
+    "descriptionUk": "Capture, inspect, replay і свідомо modify HTTP(S) traffic через Fiddler Everywhere, Charles або mitmproxy з урахуванням TLS та privacy boundaries.",
+    "sourceIds": [
+      "fiddler-everywhere-docs",
+      "charles-docs",
+      "mitmproxy-docs",
+      "mdn-http-reference"
+    ]
+  },
+  {
+    "id": "database-inspection",
+    "order": 5,
+    "label": "Database & data inspection",
+    "labelUk": "Database та data inspection",
+    "description": "Investigate persisted state safely with a SQL client and reconcile database evidence with API and UI behavior.",
+    "descriptionUk": "Безпечно досліджуйте persisted state через SQL client і reconcile database evidence з API та UI behavior.",
+    "sourceIds": [
+      "dbeaver-docs",
+      "postgresql-sql-tutorial",
+      "postgresql-transactions"
+    ]
+  },
+  {
+    "id": "packet-analysis",
+    "order": 6,
+    "label": "Network packet analysis",
+    "labelUk": "Network packet analysis",
+    "description": "Use Wireshark, tshark and tcpdump when the question sits below HTTP: TCP behavior, DNS, TLS visibility and packet timing.",
+    "descriptionUk": "Використовуйте Wireshark, tshark і tcpdump, коли питання нижче HTTP: TCP behavior, DNS, TLS visibility і packet timing.",
+    "sourceIds": [
+      "wireshark-guide",
+      "tshark-docs",
+      "tcpdump-docs"
+    ]
+  },
+  {
+    "id": "mobile-diagnostics",
+    "order": 7,
+    "label": "Mobile & device diagnostics",
+    "labelUk": "Mobile та device diagnostics",
+    "description": "Use adb, Logcat and Apple Simulator/Instruments as device-level evidence bridges without duplicating the full Mobile curriculum.",
+    "descriptionUk": "Використовуйте adb, Logcat і Apple Simulator/Instruments як device-level evidence bridges без дублювання повного Mobile curriculum.",
+    "sourceIds": [
+      "android-adb-docs",
+      "android-logcat-docs",
+      "apple-simulator-docs",
+      "apple-instruments-docs"
+    ]
+  },
+  {
+    "id": "specialist-bridges",
+    "order": 8,
+    "label": "Specialist-tool bridges",
+    "labelUk": "Specialist-tool bridges",
+    "description": "Recognize when to hand off to performance, security, accessibility, automation or integration tooling without duplicating those curricula.",
+    "descriptionUk": "Розпізнавайте момент handoff до performance, security, accessibility, automation або integration tooling без дублювання окремих curricula.",
+    "sourceIds": [
+      "k6-docs",
+      "jmeter-docs",
+      "owasp-zap-docs",
+      "burp-suite-docs",
+      "axe-core-docs",
+      "lighthouse-docs",
+      "appium-inspector-docs",
+      "grpcurl-docs",
+      "mdn-websockets",
+      "kafka-docs"
+    ]
+  }
+]

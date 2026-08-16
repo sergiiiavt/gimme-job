@@ -1,0 +1,302 @@
+[
+  {
+    "id": "curl-docs",
+    "title": "curl documentation",
+    "publisher": "curl",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://curl.se/docs/",
+    "role": "Command-line HTTP requests, headers, auth, redirects and TLS options",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "postman-docs",
+    "title": "Postman Learning Center",
+    "publisher": "Postman",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learning.postman.com/docs/getting-started/overview/",
+    "role": "Collections, environments, variables, scripts, auth and sharing",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "bruno-docs",
+    "title": "Bruno documentation",
+    "publisher": "Bruno",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.usebruno.com/",
+    "role": "Local, Git-friendly API collections and environment handling",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "mdn-http-reference",
+    "title": "MDN HTTP reference",
+    "publisher": "Mozilla",
+    "kind": "Reference",
+    "status": "verified",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+    "role": "HTTP methods, headers, status codes, caching and request/response semantics",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "mdn-websockets",
+    "title": "MDN WebSocket API",
+    "publisher": "Mozilla",
+    "kind": "Reference",
+    "status": "verified",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
+    "role": "WebSocket lifecycle and browser-facing integration concepts",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "chrome-devtools-docs",
+    "title": "Chrome DevTools documentation",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/",
+    "role": "Elements, Console, Network, Application, Sources, Performance and security inspection",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "firefox-devtools-docs",
+    "title": "Firefox Developer Tools user docs",
+    "publisher": "Mozilla",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://firefox-source-docs.mozilla.org/devtools-user/",
+    "role": "Cross-browser comparison for browser debugging workflows",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "web-vitals-docs",
+    "title": "Web Vitals",
+    "publisher": "Google",
+    "kind": "Official guidance",
+    "status": "verified",
+    "url": "https://web.dev/articles/vitals",
+    "role": "User-centric performance signals used by browser tooling",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "fiddler-everywhere-docs",
+    "title": "Fiddler Everywhere documentation",
+    "publisher": "Progress Telerik",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.telerik.com/fiddler/fiddler-everywhere/documentation/introduction",
+    "role": "Cross-platform HTTP(S) interception, capture, replay and rules",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "charles-docs",
+    "title": "Charles Proxy documentation",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/",
+    "role": "Alternative interception proxy and mobile-device setup",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "mitmproxy-docs",
+    "title": "mitmproxy documentation",
+    "publisher": "mitmproxy",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.mitmproxy.org/stable/",
+    "role": "Scriptable interception proxy and command-line workflows",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "wireshark-guide",
+    "title": "Wireshark User’s Guide",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/wsug_html/",
+    "role": "Capture/display filters, protocol inspection and following streams",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "tshark-docs",
+    "title": "TShark manual page",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official reference",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/man-pages/tshark.html",
+    "role": "Scriptable packet capture and analysis",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "tcpdump-docs",
+    "title": "tcpdump manual page",
+    "publisher": "The Tcpdump Group",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.tcpdump.org/manpages/tcpdump.1.html",
+    "role": "Portable command-line packet capture and libpcap filtering",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "android-adb-docs",
+    "title": "Android Debug Bridge (adb)",
+    "publisher": "Google Android",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.android.com/tools/adb",
+    "role": "Device connection, install, shell, file and port-forwarding workflows",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "android-logcat-docs",
+    "title": "Logcat command-line tool",
+    "publisher": "Google Android",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.android.com/tools/logcat",
+    "role": "Android application/system log capture and filtering",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "apple-simulator-docs",
+    "title": "Running your app in Simulator or on a device",
+    "publisher": "Apple",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device",
+    "role": "Simulator versus physical-device workflow and limitations",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "apple-instruments-docs",
+    "title": "Instruments",
+    "publisher": "Apple",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.apple.com/documentation/instruments",
+    "role": "Performance and runtime diagnostics on Apple platforms",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "dbeaver-docs",
+    "title": "DBeaver documentation",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://dbeaver.com/docs/dbeaver/",
+    "role": "Database connections, schema browsing, querying and safe data export",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "k6-docs",
+    "title": "Grafana k6 documentation",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://grafana.com/docs/k6/latest/",
+    "role": "Performance-testing bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "jmeter-docs",
+    "title": "Apache JMeter User’s Manual",
+    "publisher": "Apache Software Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://jmeter.apache.org/usermanual/index.html",
+    "role": "Performance-testing bridge and GUI/CLI workflows",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "owasp-zap-docs",
+    "title": "OWASP ZAP documentation",
+    "publisher": "OWASP",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.zaproxy.org/docs/",
+    "role": "Web security proxy and automated scanning bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "burp-suite-docs",
+    "title": "Burp Suite documentation",
+    "publisher": "PortSwigger",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://portswigger.net/burp/documentation",
+    "role": "Web security testing proxy bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "axe-core-docs",
+    "title": "axe-core API documentation",
+    "publisher": "Deque Systems",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://github.com/dequelabs/axe-core/blob/develop/doc/API.md",
+    "role": "Accessibility rule-engine bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "lighthouse-docs",
+    "title": "Lighthouse overview",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/lighthouse/overview",
+    "role": "Performance, accessibility and best-practice audit bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "appium-inspector-docs",
+    "title": "Appium Inspector documentation",
+    "publisher": "Appium",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://github.com/appium/appium-inspector",
+    "role": "Mobile element-inspection bridge to automation",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "grpcurl-docs",
+    "title": "grpcurl repository documentation",
+    "publisher": "FullStory",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://github.com/fullstorydev/grpcurl",
+    "role": "Command-line gRPC request and introspection bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "kafka-docs",
+    "title": "Apache Kafka documentation",
+    "publisher": "Apache Software Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://kafka.apache.org/documentation/",
+    "role": "Event-streaming investigation bridge",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "postgresql-sql-tutorial",
+    "title": "PostgreSQL 18 SQL tutorial",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.postgresql.org/docs/current/tutorial-sql.html",
+    "role": "Relational querying, joins, updates and SQL investigation fundamentals",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "postgresql-transactions",
+    "title": "PostgreSQL 18 transaction documentation",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+    "role": "Transaction, COMMIT/ROLLBACK and visibility concepts used in safe database investigation",
+    "checkedAt": "2026-08-16"
+  }
+]

@@ -1,0 +1,342 @@
+[
+  {
+    "id": "measure-metric-kpi-target-vocabulary",
+    "topicId": "measurement-foundations",
+    "label": "Measure, metric, KPI, target, threshold and guardrail"
+  },
+  {
+    "id": "leading-lagging-rate-ratio",
+    "topicId": "measurement-foundations",
+    "label": "Leading vs lagging, count vs rate vs ratio"
+  },
+  {
+    "id": "observation-window-population-segmentation",
+    "topicId": "measurement-foundations",
+    "label": "Observation window, population and segmentation"
+  },
+  {
+    "id": "average-median-percentile-baseline",
+    "topicId": "measurement-foundations",
+    "label": "Average vs median vs percentile, baseline and normal variation"
+  },
+  {
+    "id": "goodhart-balanced-sets-correlation",
+    "topicId": "measurement-foundations",
+    "label": "Goodhart’s law, balanced metric sets and correlation vs causation"
+  },
+  {
+    "id": "metric-to-kpi-to-target-chain",
+    "topicId": "qa-product-quality-metrics",
+    "label": "From raw measure to metric to KPI to target to action"
+  },
+  {
+    "id": "define-and-track-qa-kpis-workflow",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Define and track QA KPIs: escape rate, automation coverage, cycle time and MTTD"
+  },
+  {
+    "id": "setting-targets-baseline-window",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Setting a target: baseline, scope and observation window"
+  },
+  {
+    "id": "team-vs-individual-metrics",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Team and product metrics vs individual performance metrics"
+  },
+  {
+    "id": "balanced-qa-lead-scorecard",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Designing a balanced QA Lead scorecard"
+  },
+  {
+    "id": "kpi-worked-exercises",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Worked exercises: raw metric → KPI, missing denominator and vanity KPI"
+  },
+  {
+    "id": "escaped-defects-leakage-rate",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Escaped defects, defect leakage and escape rate"
+  },
+  {
+    "id": "defect-removal-efficiency-dre",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect removal efficiency (DRE)"
+  },
+  {
+    "id": "defect-density-caveats",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect density and its limitations"
+  },
+  {
+    "id": "defect-aging-reopen-rate",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect aging and reopen rate"
+  },
+  {
+    "id": "defect-resolution-time-distribution",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect resolution time as a distribution, not one average"
+  },
+  {
+    "id": "customer-reported-incident-rate",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Customer-reported defects and production incident rate"
+  },
+  {
+    "id": "release-quality-trend",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Root-cause grouping and release-quality trend without a fake single score"
+  },
+  {
+    "id": "execution-status-pass-fail-blocked",
+    "topicId": "test-automation-metrics",
+    "label": "Planned, executed, blocked and pass/fail status"
+  },
+  {
+    "id": "pass-rate-is-not-quality",
+    "topicId": "test-automation-metrics",
+    "label": "Why pass rate is not a standalone quality KPI"
+  },
+  {
+    "id": "requirement-risk-coverage",
+    "topicId": "test-automation-metrics",
+    "label": "Requirement coverage and risk-weighted coverage"
+  },
+  {
+    "id": "code-coverage-mutation-score",
+    "topicId": "test-automation-metrics",
+    "label": "Code coverage and mutation score as specialist signals, not proof"
+  },
+  {
+    "id": "regression-completion-caveats",
+    "topicId": "test-automation-metrics",
+    "label": "Regression completion without a universal percentage target"
+  },
+  {
+    "id": "automation-health-governance-layer",
+    "topicId": "test-automation-metrics",
+    "label": "Automation health: the governance layer above framework metrics"
+  },
+  {
+    "id": "flaky-retry-quarantine",
+    "topicId": "test-automation-metrics",
+    "label": "Flaky-test rate, retry rate and quarantine backlog/age"
+  },
+  {
+    "id": "automation-coverage-denominators-deep",
+    "topicId": "test-automation-metrics",
+    "label": "Automation coverage denominators, in depth"
+  },
+  {
+    "id": "merge-gate-runtime-diagnosis-time",
+    "topicId": "test-automation-metrics",
+    "label": "Merge-gate runtime and time to diagnose"
+  },
+  {
+    "id": "automation-stability-vs-pass-rate",
+    "topicId": "test-automation-metrics",
+    "label": "Automation stability vs pass rate"
+  },
+  {
+    "id": "lead-cycle-throughput-wip",
+    "topicId": "delivery-production-metrics",
+    "label": "Lead time, cycle time, throughput and WIP"
+  },
+  {
+    "id": "work-item-age-queue-blocked-time",
+    "topicId": "delivery-production-metrics",
+    "label": "Work-item age, queue time and blocked time"
+  },
+  {
+    "id": "batch-size-release-frequency",
+    "topicId": "delivery-production-metrics",
+    "label": "Batch size and release frequency"
+  },
+  {
+    "id": "velocity-should-not-compare-teams",
+    "topicId": "delivery-production-metrics",
+    "label": "Why velocity and story points should not compare teams"
+  },
+  {
+    "id": "dora-five-metrics-in-depth",
+    "topicId": "delivery-production-metrics",
+    "label": "The current five DORA metrics, in depth"
+  },
+  {
+    "id": "dora-trend-not-ranking",
+    "topicId": "delivery-production-metrics",
+    "label": "Application context, trend over ranking, metrics as signals not goals"
+  },
+  {
+    "id": "dora-observability-cross-link",
+    "topicId": "delivery-production-metrics",
+    "label": "Where DORA connects to deeper reliability material"
+  },
+  {
+    "id": "availability-latency-crash-free",
+    "topicId": "delivery-production-metrics",
+    "label": "Availability, error/success rate, latency percentiles and crash-free sessions"
+  },
+  {
+    "id": "mttd-generic-mttr-terminology",
+    "topicId": "delivery-production-metrics",
+    "label": "MTTD and generic MTTR terminology"
+  },
+  {
+    "id": "incident-customer-impact-signals",
+    "topicId": "delivery-production-metrics",
+    "label": "Incident and customer-impact signals for QA decisions"
+  },
+  {
+    "id": "sli-slo-error-budget-bridge",
+    "topicId": "delivery-production-metrics",
+    "label": "SLI, SLO and error-budget vocabulary"
+  },
+  {
+    "id": "estimate-vs-commitment",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Estimate vs commitment"
+  },
+  {
+    "id": "effort-vs-duration",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Effort vs duration"
+  },
+  {
+    "id": "point-estimate-vs-range-confidence",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Point estimate vs range and confidence"
+  },
+  {
+    "id": "contingency-vs-padding",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Contingency vs hidden padding"
+  },
+  {
+    "id": "capacity-constraints-reestimation",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Capacity constraints and knowing when to re-estimate"
+  },
+  {
+    "id": "wbs-hidden-testing-work",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Work breakdown structure and hidden testing work"
+  },
+  {
+    "id": "analogy-reference-classes",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Analogy and reference-class estimation"
+  },
+  {
+    "id": "historical-ratios-extrapolation",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "Historical ratios and extrapolation from actuals"
+  },
+  {
+    "id": "onetime-setup-vs-recurring-work",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "One-time setup work vs recurring per-cycle work"
+  },
+  {
+    "id": "expert-judgment-wideband-delphi",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Expert judgment and a worked Wideband Delphi round"
+  },
+  {
+    "id": "planning-poker-tshirt-relative-sizing",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Planning Poker, T-shirt sizing and relative sizing"
+  },
+  {
+    "id": "scrum-does-not-require-story-points",
+    "topicId": "estimation-techniques-sizing",
+    "label": "What Scrum actually requires—and does not require"
+  },
+  {
+    "id": "optimistic-likely-pessimistic",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Optimistic, most-likely and pessimistic estimates"
+  },
+  {
+    "id": "pert-worked-calculation",
+    "topicId": "estimation-techniques-sizing",
+    "label": "A worked PERT-style calculation"
+  },
+  {
+    "id": "when-pert-gives-false-comfort",
+    "topicId": "estimation-techniques-sizing",
+    "label": "When the PERT formula gives false comfort"
+  },
+  {
+    "id": "function-points-use-case-points",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Function points and use-case points"
+  },
+  {
+    "id": "test-points-sizing-model",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Test points as a calibrated sizing model"
+  },
+  {
+    "id": "choosing-a-sizing-model",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Choosing a sizing model: calibration before conversion"
+  },
+  {
+    "id": "allocating-effort-by-impact-likelihood",
+    "topicId": "risk-forecasting",
+    "label": "Allocating test effort by impact and likelihood"
+  },
+  {
+    "id": "critical-path-dependency-constraints",
+    "topicId": "risk-forecasting",
+    "label": "Critical-path and dependency constraints on allocation"
+  },
+  {
+    "id": "deliberate-descoping-communication",
+    "topicId": "risk-forecasting",
+    "label": "Deliberate de-scoping and communicating what remains untested"
+  },
+  {
+    "id": "forecast-vs-estimate",
+    "topicId": "risk-forecasting",
+    "label": "Forecast vs estimate"
+  },
+  {
+    "id": "throughput-based-forecasting",
+    "topicId": "risk-forecasting",
+    "label": "Throughput-based forecasting"
+  },
+  {
+    "id": "monte-carlo-concept-assumptions",
+    "topicId": "risk-forecasting",
+    "label": "The Monte Carlo concept and its assumptions"
+  },
+  {
+    "id": "updating-forecast-as-evidence-changes",
+    "topicId": "risk-forecasting",
+    "label": "Updating a forecast as evidence changes"
+  },
+  {
+    "id": "assumptions-log-range-confidence",
+    "topicId": "calibration-communication",
+    "label": "Assumptions log, range and confidence"
+  },
+  {
+    "id": "actual-vs-estimate-calibration",
+    "topicId": "calibration-communication",
+    "label": "Actual vs estimate and calibration over time"
+  },
+  {
+    "id": "reforecasting-cadence",
+    "topicId": "calibration-communication",
+    "label": "Reforecasting as scope and evidence change"
+  },
+  {
+    "id": "communicating-uncertainty-to-stakeholders",
+    "topicId": "calibration-communication",
+    "label": "Communicating estimates and uncertainty to stakeholders"
+  }
+]
