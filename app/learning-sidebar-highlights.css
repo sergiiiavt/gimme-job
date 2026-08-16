@@ -1,0 +1,53 @@
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-foundation .kb-nav-link.active {
+  background: rgba(205, 224, 184, .88);
+  border-left-color: #789455;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-foundation .kb-nav-link.active .kb-nav-icon {
+  color: #6d8a49;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-ai .kb-nav-link.active {
+  background: rgba(203, 224, 244, .88);
+  border-left-color: #6289af;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-ai .kb-nav-link.active .kb-nav-icon {
+  color: #557fa7;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-build .kb-nav-link.active {
+  background: rgba(245, 225, 177, .9);
+  border-left-color: #ad8432;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-build .kb-nav-link.active .kb-nav-icon {
+  color: #9b752a;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-systems .kb-nav-link.active {
+  background: rgba(225, 209, 240, .88);
+  border-left-color: #8a6aa8;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-systems .kb-nav-link.active .kb-nav-icon {
+  color: #7e609c;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-infra .kb-nav-link.active {
+  background: rgba(205, 232, 217, .9);
+  border-left-color: #5d8e73;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-infra .kb-nav-link.active .kb-nav-icon {
+  color: #527f67;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-governance .kb-nav-link.active {
+  background: rgba(220, 223, 216, .92);
+  border-left-color: #747b73;
+}
+
+.kb-navigation .kb-area-group-learning .kb-learning-cluster-governance .kb-nav-link.active .kb-nav-icon {
+  color: #687068;
+}
