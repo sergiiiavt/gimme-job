@@ -33,9 +33,11 @@ export interface DedupeResult<T extends IntakeJob> {
   duplicateCount: number;
 }
 
-const ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE = /(?:\b(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+qa\b|\bqa\s+(?:engineer|lead|manager|specialist|analyst|tester|automation)\b|\baqa(?:\s+engineer)?\b|\bsdet\b|\bquality\s+assurance\s+(?:engineer|lead|manager|specialist|analyst)\b|\btest\s+automation\s+(?:engineer|specialist|lead)\b|\bautomation\s+test(?:ing)?\s+engineer\b|\bsoftware\s+(?:test(?:ing)?\s+engineer|tester)\b)/iu;
+const ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE = /(?:\b(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+qa\b|\bqa\s+(?:engineer|specialist|analyst|tester|automation)\b|\baqa(?:\s+engineer)?\b|\bsdet\b|\bquality\s+assurance\s+(?:engineer|specialist|analyst)\b|\btest\s+automation\s+(?:engineer|specialist|lead)\b|\bautomation\s+test(?:ing)?\s+engineer\b|\bsoftware\s+(?:test(?:ing)?\s+engineer|tester)\b)/iu;
+const ENGLISH_QA_LEADERSHIP_ROLE = /(?:\b(?:qa|quality\s+assurance)\s+(?:team\s+)?(?:lead|manager|head|director)\b|\b(?:head|director)\s+(?:of\s+)?(?:qa|quality\s+assurance|software\s+testing|testing)\b|\b(?:test|testing)\s+(?:team\s+)?(?:lead|manager|head|director)\b)/iu;
 const CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE = /(?:qa[- ]?інженер|інженер(?:ка)?\s+(?:з|із)\s+тестування\s+(?:пз|програмного\s+забезпечення)|тестувальник(?:ця|ка)?\s+(?:пз|програмного\s+забезпечення)|qa[- ]?инженер|тестировщик\s+(?:по|программного\s+обеспечения|по))/iu;
-const BARE_QA_TITLE = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation)\s+)?qa(?:\s*\/\s*aqa)?$/iu;
+const CYRILLIC_QA_LEADERSHIP_ROLE = /(?:керівник(?:ця)?\s+(?:qa|відділу\s+тестування|команди\s+(?:qa|тестування))|qa\s*[- ]?(?:лід|керівник|менеджер)|руководитель\s+(?:qa|отдела\s+тестирования|команды\s+(?:qa|тестирования))|qa\s*[- ]?(?:лид|руководитель|менеджер))/iu;
+const BARE_QA_TITLE = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|head|director)\s+)?qa(?:\s*\/\s*aqa)?$/iu;
 const ENGLISH_GENERIC_TEST_ROLE = /(?:\btest(?:er|ing)?\s+(?:engineer|specialist|analyst)\b|\btester\b|\btest\s+engineer\b|\bquality\s+engineer\b|\bquality\s+specialist\b)/iu;
 const CYRILLIC_GENERIC_TEST_ROLE = /(?:тестувальник(?:ця|ка)?|тестировщик|інженер(?:ка)?\s+(?:з|із)\s+тестування)/iu;
 
@@ -63,7 +65,9 @@ export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description
   const title = normalizeVacancyText(job.title);
   const body = normalizeVacancyText(`${job.title ?? ""}\n${job.description ?? ""}\n${job.company ?? ""}\n${job.location ?? ""}`);
   const explicitQaRole = ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
+    || ENGLISH_QA_LEADERSHIP_ROLE.test(title)
     || CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
+    || CYRILLIC_QA_LEADERSHIP_ROLE.test(title)
     || BARE_QA_TITLE.test(title);
   const softwareContext = SOFTWARE_CONTEXT.test(body);
 
