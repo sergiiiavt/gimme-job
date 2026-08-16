@@ -125,7 +125,6 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
     };
 
-    setActiveSectionId(headings[0]?.id ?? "source-registry");
     scheduleUpdate();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate);
