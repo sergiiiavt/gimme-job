@@ -7,7 +7,6 @@ import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
 type LearningLanguage = "en" | "uk";
-type LearningLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert";
 
 interface LearningSource {
   id: string;
@@ -22,7 +21,7 @@ interface LearningModule {
   id: string;
   label: string;
   labelUk?: string;
-  level?: LearningLevel;
+  level?: string;
   description: string;
   descriptionUk?: string;
 }
@@ -30,13 +29,13 @@ interface LearningModule {
 interface LessonRepoRef {
   label: string;
   path: string;
-  kind?: "implementation" | "usage" | "ci";
+  kind?: string;
 }
 
 interface LearningLesson {
   id: string;
   moduleId: string;
-  level: LearningLevel;
+  level: string;
   order: number;
   title: string;
   titleUk: string;
@@ -91,7 +90,7 @@ interface LearningDocumentPageProps {
   defaultTrackId: string;
 }
 
-const repoRefKindLabels: Record<NonNullable<LessonRepoRef["kind"]>, string> = {
+const repoRefKindLabels: Record<string, string> = {
   implementation: "Implementation",
   usage: "Used by",
   ci: "CI",
@@ -134,7 +133,8 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   if (lesson.repoRefs?.length && referenceImplementation) {
     lines.push("", `### ${showUk ? "У реальному framework" : "See it in the framework"}`, "");
     for (const ref of lesson.repoRefs) {
-      const kind = ref.kind ? `${repoRefKindLabels[ref.kind]} · ` : "";
+      const kindLabel = ref.kind ? repoRefKindLabels[ref.kind] ?? ref.kind : "";
+      const kind = kindLabel ? `${kindLabel} · ` : "";
       const live = repoBlobUrl(referenceImplementation.repo, referenceImplementation.branch, ref.path);
       const reviewed = repoBlobUrl(referenceImplementation.repo, referenceImplementation.verifiedCommit, ref.path);
       lines.push(`- ${kind}${ref.label}: \`${ref.path}\` — [live](${live}) · [reviewed](${reviewed})`);
@@ -164,7 +164,7 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
   useEffect(() => {
     const syncFromLocation = () => {
       setActiveTrack(trackFromLocation(trackOptions.map((option) => option.id), defaultTrackId));
-      setActiveModule(topicFromLocation(modules.map((module) => module.id), firstModuleId));
+      setActiveModule(topicFromLocation(modules.map((item) => item.id), firstModuleId));
     };
     syncFromLocation();
     window.addEventListener("popstate", syncFromLocation);
@@ -173,11 +173,11 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
 
   const selectedTrack = trackOptions.find((option) => option.id === activeTrack) ?? trackOptions[0];
   const trackAvailable = selectedTrack?.available !== false;
-  const moduleIndex = Math.max(0, modules.findIndex((module) => module.id === activeModule));
-  const module = modules[moduleIndex] ?? modules[0];
+  const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
+  const activeChapter = modules[moduleIndex] ?? modules[0];
   const moduleLessons = useMemo(
-    () => curriculum.lessons.filter((lesson) => lesson.moduleId === module?.id).sort((left, right) => left.order - right.order),
-    [curriculum.lessons, module?.id],
+    () => curriculum.lessons.filter((lesson) => lesson.moduleId === activeChapter?.id).sort((left, right) => left.order - right.order),
+    [activeChapter?.id, curriculum.lessons],
   );
   const sourcesById = useMemo(() => new Map(curriculum.sources.map((source) => [source.id, source])), [curriculum.sources]);
   const moduleSources = useMemo(() => {
@@ -185,9 +185,9 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
     return ids.map((id) => sourcesById.get(id)).filter((source): source is LearningSource => Boolean(source));
   }, [moduleLessons, sourcesById]);
 
-  const localizedModuleLabel = language === "uk" ? module?.labelUk ?? module?.label : module?.label;
-  const localizedModuleDescription = language === "uk" ? module?.descriptionUk ?? module?.description : module?.description;
-  const generatedMarkdown = module ? [
+  const localizedModuleLabel = language === "uk" ? activeChapter?.labelUk ?? activeChapter?.label : activeChapter?.label;
+  const localizedModuleDescription = language === "uk" ? activeChapter?.descriptionUk ?? activeChapter?.description : activeChapter?.description;
+  const generatedMarkdown = activeChapter ? [
     `# ${localizedModuleLabel}`,
     "",
     localizedModuleDescription ?? "",
