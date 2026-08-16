@@ -14,6 +14,7 @@ import {
   type AboutLink,
   type AboutAccent,
 } from "./about-site-content";
+import { sectionNavigationHref } from "./navigation-paths";
 
 const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
   github: "https://cdn.simpleicons.org/github",
@@ -181,7 +182,7 @@ function TechNode({
 }
 
 export default function AboutSite({ mode = "public" }: { mode?: "public" | "personal" }) {
-  const interviewHref = mode === "personal" ? "/workspace/learn?section=interview" : "#interview";
+  const interviewHref = sectionNavigationHref("interview", mode);
 
   return (
     <div className="kb-content about-page about-tech-page">
