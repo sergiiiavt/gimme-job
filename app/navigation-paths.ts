@@ -1,15 +1,57 @@
 export type NavigationMode = "public" | "personal";
 
-const dedicatedSectionPaths: Record<string, { public: string; personal: string }> = {
-  about: { public: "/learn/about", personal: "/learn/about" },
-  programming: { public: "/learn/programming", personal: "/workspace/learn/programming" },
-  automation: { public: "/learn/automation", personal: "/workspace/learn/automation" },
-  devops: { public: "/learn/cloud-devops", personal: "/workspace/learn/cloud-devops" },
+const canonicalSectionPaths: Record<string, string> = {
+  about: "/about",
+  jobs: "/vacancies",
+  resume: "/resume",
+  interview: "/interview",
+  "python-interview": "/interview/python",
+  trends: "/trends",
+  certifications: "/learn/certifications",
+  strategy: "/learn/strategy",
+  programming: "/learn/programming",
+  automation: "/learn/automation",
+  api: "/learn/api",
+  data: "/learn/data",
+  mobile: "/learn/mobile",
+  embedded: "/learn/embedded",
+  performance: "/learn/performance",
+  security: "/learn/security",
+  devops: "/learn/cloud-devops",
+  observability: "/learn/observability",
+  networking: "/learn/networking",
+  linux: "/learn/linux",
+  llm: "/learn/llm",
+  agentic: "/learn/agentic",
+  standards: "/learn/standards",
+  news: "/news",
+  rewild: "/fight-ai-slop",
 };
 
-export function sectionNavigationHref(section: string, mode: NavigationMode): string {
-  const dedicated = dedicatedSectionPaths[section];
-  if (dedicated) return dedicated[mode];
-  if (section === "jobs") return "/workspace";
-  return mode === "public" ? `/learn/${section}` : `/workspace/learn?section=${section}`;
+/**
+ * Public and signed-in users share one canonical URL for each content surface.
+ * Authentication changes available actions/private data, never the content URL.
+ * `mode` is retained for caller compatibility while old personal routes are removed.
+ */
+export function sectionNavigationHref(section: string, _mode: NavigationMode): string {
+  return canonicalSectionPaths[section] ?? `/learn/${section}`;
+}
+
+export function sectionFromPathname(pathname: string): string | null {
+  const normalized = pathname !== "/" ? pathname.replace(/\/+$/, "") : pathname;
+  const topLevel: Record<string, string> = {
+    "/about": "about",
+    "/vacancies": "jobs",
+    "/resume": "resume",
+    "/interview": "interview",
+    "/interview/python": "python-interview",
+    "/trends": "trends",
+    "/news": "news",
+    "/fight-ai-slop": "rewild",
+  };
+  if (topLevel[normalized]) return topLevel[normalized];
+  if (!normalized.startsWith("/learn/")) return null;
+  const slug = normalized.slice("/learn/".length).split("/")[0];
+  if (slug === "cloud-devops") return "devops";
+  return slug || null;
 }
