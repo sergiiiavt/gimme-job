@@ -58,7 +58,7 @@ test("Greenhouse, Lever, and Ashby adapters normalize live-shaped API payloads",
     }
 
     if (url.includes("api.lever.co")) {
-      return jsonResponse([{ 
+      return jsonResponse([{
         id: "lever-7",
         text: "QA Automation Engineer",
         categories: { location: "Ukraine" },
@@ -97,25 +97,33 @@ test("Greenhouse, Lever, and Ashby adapters normalize live-shaped API payloads",
     assert.equal(greenhouse[0].source, "greenhouse:Acme");
     assert.equal(greenhouse[0].externalId, "101");
     assert.equal(greenhouse[0].title, "Senior QA Engineer");
+    assert.equal(greenhouse[0].company, "Acme");
     assert.equal(greenhouse[0].location, "Kyiv / Remote");
     assert.equal(greenhouse[0].remote, true);
     assert.equal(greenhouse[0].url, "https://company.example/jobs/101");
+    assert.equal(greenhouse[0].applyUrl, "https://company.example/jobs/101");
+    assert.equal(greenhouse[0].postedAt, "2026-08-15T10:00:00.000Z");
     assert.match(greenhouse[0].description, /Playwright automation/);
 
     const lever = await new LeverSource("Beta", "beta-board").collect();
     assert.equal(lever.length, 1);
     assert.equal(lever[0].source, "lever:Beta");
     assert.equal(lever[0].externalId, "lever-7");
+    assert.equal(lever[0].company, "Beta");
+    assert.equal(lever[0].location, "Ukraine");
     assert.equal(lever[0].remote, true);
     assert.equal(lever[0].url, "https://jobs.example/lever-7");
     assert.equal(lever[0].applyUrl, "https://jobs.example/lever-7/apply");
     assert.equal(lever[0].salaryText, "$3000-$4000");
+    assert.equal(lever[0].postedAt, "2026-08-14T09:00:00.000Z");
 
     const ashby = await new AshbySource("Gamma", "gamma-board").collect();
     assert.equal(ashby.length, 1);
     assert.equal(ashby[0].source, "ashby:Gamma");
     assert.equal(ashby[0].externalId, "ashby-3");
+    assert.equal(ashby[0].company, "Gamma");
     assert.equal(ashby[0].location, "Kyiv, Lviv");
+    assert.equal(ashby[0].remote, false);
     assert.equal(ashby[0].url, "https://jobs.example/ashby-3");
     assert.equal(ashby[0].applyUrl, "https://jobs.example/ashby-3/apply");
     assert.equal(ashby[0].salaryText, "$2500-$3200");
