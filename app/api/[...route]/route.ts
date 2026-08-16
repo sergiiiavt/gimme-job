@@ -16,6 +16,7 @@ import {
 } from "../_jobpilot";
 import { adjustResumeForUser, analyzeJobsForUser } from "../_job-actions";
 import { upsertImportedVacancies } from "../_vacancy-import";
+import { handleVacancySync } from "../_vacancy-sync-route";
 import {
   ensureVacancyCatalog,
   mergeVacancySourceDefaults,
@@ -171,12 +172,7 @@ export async function POST(request: Request, context: RouteContext) {
       operationalInfo("job_import", { phase: "complete", outcome: "success", operationId, trigger, durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: result.accepted, rejected: result.rejected, duplicates: result.duplicates });
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
-    if (route[0] === "sync") {
-      const syncTenant = tenantUser(request);
-      if (syncTenant instanceof Response) return syncTenant;
-      const result = await syncVacancySources();
-      return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
-    }
+    if (route[0] === "sync") return handleVacancySync(request, tenant, syncVacancySources, currentDashboard);
     if (route[0] === "analyze") {
       if (tenant.multiUser && !userId) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
