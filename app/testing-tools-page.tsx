@@ -35,7 +35,9 @@ const curriculum: StructuredLearningCurriculum = {
   lessons: [],
 };
 
-export default function TestingToolsPage({ mode }: { mode: "public" | "personal" }) {
+type TestingToolsPageProps = Readonly<{ mode: "public" | "personal" }>;
+
+export default function TestingToolsPage({ mode }: TestingToolsPageProps) {
   return (
     <LearningDocumentPage
       activeExternalId="testing-tools"
