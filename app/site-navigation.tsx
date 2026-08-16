@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
@@ -351,13 +351,13 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   const activeLearningCategoryId = learningCategories.find((category) =>
     category.itemIds.some((itemId) => itemId === activeExternalId || itemId === activeSection),
   )?.id ?? null;
-  const [openLearningCategoryId, setOpenLearningCategoryId] = useState<LearningCategoryId | null>(activeLearningCategoryId);
-
-  useEffect(() => {
-    if (activeLearningCategoryId) {
-      setOpenLearningCategoryId(activeLearningCategoryId);
-    }
-  }, [activeLearningCategoryId]);
+  const [learningDisclosure, setLearningDisclosure] = useState<{
+    activeId: LearningCategoryId | null;
+    openId: LearningCategoryId | null;
+  }>(() => ({ activeId: activeLearningCategoryId, openId: activeLearningCategoryId }));
+  const openLearningCategoryId = learningDisclosure.activeId === activeLearningCategoryId
+    ? learningDisclosure.openId
+    : activeLearningCategoryId;
 
   const renderItem = (item: NavigationItem, intro = false) => {
     if (item.external) {
@@ -399,7 +399,10 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
               aria-controls={panelId}
               aria-expanded={open}
               className="kb-learning-category-toggle"
-              onClick={() => setOpenLearningCategoryId(open ? null : category.id)}
+              onClick={() => setLearningDisclosure({
+                activeId: activeLearningCategoryId,
+                openId: open ? null : category.id,
+              })}
               type="button"
             >
               <span className="kb-learning-category-icon"><LearningCategoryIcon id={category.id}/></span>
