@@ -56,7 +56,7 @@ const avatarStyle = {
   color: "#315542",
   display: "flex",
   fontSize: "12px",
-  fontWeight: 850,
+  fontWeight: 750,
   height: "34px",
   justifyContent: "center",
   overflow: "hidden",
@@ -97,7 +97,7 @@ const primaryStyle = {
   color: "#28342e",
   display: "block",
   fontSize: "13px",
-  fontWeight: 800,
+  fontWeight: 700,
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -132,7 +132,7 @@ const sectionTitleStyle = {
   color: "#34443b",
   display: "block",
   fontSize: "11px",
-  fontWeight: 850,
+  fontWeight: 750,
   marginBottom: "8px",
 } as const;
 const mutedStyle = {
@@ -165,7 +165,7 @@ const buttonStyle = {
   color: "#405048",
   cursor: "pointer",
   fontSize: "10px",
-  fontWeight: 800,
+  fontWeight: 700,
   minHeight: "31px",
   padding: "0 10px",
 } as const;
@@ -204,7 +204,7 @@ const logoutStyle = {
   color: "#8b3f46",
   cursor: "pointer",
   fontSize: "11px",
-  fontWeight: 800,
+  fontWeight: 700,
   padding: "8px 6px",
   textAlign: "left",
   width: "100%",
@@ -217,7 +217,7 @@ const anonymousStyle = {
   color: "#315a43",
   display: "inline-flex",
   fontSize: "11px",
-  fontWeight: 800,
+  fontWeight: 700,
   padding: "9px 12px",
 } as const;
 

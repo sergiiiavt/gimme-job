@@ -14,7 +14,7 @@
   color: #397657;
   display: block;
   font-size: 9px;
-  font-weight: 850;
+  font-weight: 750;
   letter-spacing: .13em;
   margin-bottom: 10px;
   text-transform: uppercase;
@@ -120,7 +120,7 @@
   display: inline-block;
   font-family: "Segoe UI", system-ui, sans-serif;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .06em;
   line-height: 1;
   margin-left: 10px;
@@ -229,7 +229,7 @@
   display: block;
   font-family: "Segoe UI", system-ui, sans-serif;
   font-size: 8px;
-  font-weight: 850;
+  font-weight: 750;
   letter-spacing: .14em;
   margin-bottom: 12px;
 }
@@ -261,7 +261,7 @@
   background: #f0f4ef;
   color: #30433a;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .02em;
   text-align: left;
 }
@@ -303,7 +303,7 @@
   color: #77847d;
   display: block;
   font-size: 8px;
-  font-weight: 850;
+  font-weight: 750;
   letter-spacing: .13em;
   margin-bottom: 10px;
   text-transform: uppercase;
@@ -326,7 +326,7 @@
   color: #67736d;
   cursor: pointer;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
   padding: 7px 8px;
 }
 
@@ -372,7 +372,7 @@
   color: #8a958f;
   display: block;
   font-size: 7px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .1em;
   margin-bottom: 3px;
   text-transform: uppercase;
@@ -438,7 +438,7 @@
 .source a {
   color: #397657;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 

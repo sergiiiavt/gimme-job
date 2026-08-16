@@ -168,7 +168,7 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         >
           <summary
             className="qa-md-details-summary"
-            style={{ color: "#2d4036", cursor: "pointer", fontSize: 13, fontWeight: 800, lineHeight: 1.45, padding: "14px 16px" }}
+            style={{ color: "#2d4036", cursor: "pointer", fontSize: 13, fontWeight: 700, lineHeight: 1.45, padding: "14px 16px" }}
           >
             {parseInline(details[1])}
           </summary>
