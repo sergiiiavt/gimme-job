@@ -48,27 +48,39 @@ async function runtimeEnv(): Promise<CloudJobEnv> {
 }
 
 function storageScope(userId: string | null): StorageScope {
-  return userId
-    ? {
-        userId,
-        analysisTable: "user_analyses",
-        resumeTable: "user_resume_variants",
-        draftTable: "user_application_drafts",
-        conflictKey: "user_id, job_id",
-        userColumn: "user_id, ",
-        userPlaceholder: "?, ",
-        userBindings: [userId],
-      }
-    : {
-        userId: null,
-        analysisTable: "analyses",
-        resumeTable: "resume_variants",
-        draftTable: "application_drafts",
-        conflictKey: "job_id",
-        userColumn: "",
-        userPlaceholder: "",
-        userBindings: [],
-      };
+  if (userId) {
+    return {
+      userId,
+      analysisTable: "user_analyses",
+      resumeTable: "user_resume_variants",
+      draftTable: "user_application_drafts",
+      conflictKey: "user_id, job_id",
+      userColumn: "user_id, ",
+      userPlaceholder: "?, ",
+      userBindings: [userId],
+    };
+  }
+  return {
+    userId: null,
+    analysisTable: "analyses",
+    resumeTable: "resume_variants",
+    draftTable: "application_drafts",
+    conflictKey: "job_id",
+    userColumn: "",
+    userPlaceholder: "",
+    userBindings: [],
+  };
+}
+
+function rowText(value: unknown, fallback = ""): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value);
+  return fallback;
+}
+
+function nullableRowText(value: unknown): string | null {
+  const text = rowText(value).trim();
+  return text || null;
 }
 
 function parseJson(value: unknown): unknown {
@@ -80,52 +92,68 @@ function parseJson(value: unknown): unknown {
   }
 }
 
+function jobStatus(value: unknown): StoredJob["status"] {
+  const status = rowText(value, "NEW");
+  if (status === "REVIEWED" || status === "ARCHIVED") return status;
+  return "NEW";
+}
+
 function mapJob(row: Row, timestamp: string): StoredJob {
+  const id = rowText(row.id);
+  const url = rowText(row.url);
   return {
-    id: String(row.id),
-    fingerprint: String(row.fingerprint ?? row.id),
-    source: String(row.source ?? "unknown"),
-    externalId: row.external_id ? String(row.external_id) : null,
-    title: String(row.title ?? ""),
-    company: String(row.company ?? "Unknown"),
-    location: String(row.location ?? "Unknown"),
-    remote: Boolean(row.remote),
-    url: String(row.url ?? ""),
-    applyUrl: String(row.apply_url ?? row.url ?? ""),
-    description: String(row.description ?? ""),
-    salaryText: row.salary_text ? String(row.salary_text) : null,
-    postedAt: row.posted_at ? String(row.posted_at) : null,
-    contactEmail: row.contact_email ? String(row.contact_email) : null,
+    id,
+    fingerprint: rowText(row.fingerprint, id),
+    source: rowText(row.source, "unknown"),
+    externalId: nullableRowText(row.external_id),
+    title: rowText(row.title),
+    company: rowText(row.company, "Unknown"),
+    location: rowText(row.location, "Unknown"),
+    remote: row.remote === 1 || row.remote === true,
+    url,
+    applyUrl: rowText(row.apply_url, url),
+    description: rowText(row.description),
+    salaryText: nullableRowText(row.salary_text),
+    postedAt: nullableRowText(row.posted_at),
+    contactEmail: nullableRowText(row.contact_email),
     raw: parseJson(row.raw_json ?? {}),
-    discoveredAt: String(row.discovered_at ?? timestamp),
-    updatedAt: String(row.updated_at ?? timestamp),
-    status: ["NEW", "REVIEWED", "ARCHIVED"].includes(String(row.status))
-      ? String(row.status) as StoredJob["status"]
-      : "NEW",
+    discoveredAt: rowText(row.discovered_at, timestamp),
+    updatedAt: rowText(row.updated_at, timestamp),
+    status: jobStatus(row.status),
   };
 }
 
 function scopeWhere(scope: StorageScope, column: string): { sql: string; bindings: string[] } {
-  return scope.userId
-    ? { sql: `user_id = ? AND ${column}`, bindings: scope.userBindings }
-    : { sql: column, bindings: [] };
+  if (scope.userId) return { sql: `user_id = ? AND ${column}`, bindings: scope.userBindings };
+  return { sql: column, bindings: [] };
+}
+
+function analysisMode(aiEnabled: boolean, fallbackCount: number, agentCount: number): "agent" | "deterministic" | "mixed" {
+  if (!aiEnabled) return "deterministic";
+  if (fallbackCount === 0) return "agent";
+  if (agentCount === 0) return "deterministic";
+  return "mixed";
 }
 
 export function createJobActions(dependencies: JobActionDependencies) {
   const db = dependencies.database;
   const runtime = dependencies.runtime ?? {};
-  const timestamp = () => (dependencies.now ?? (() => new Date()))().toISOString();
+  const clock = dependencies.now ?? (() => new Date());
+  const timestamp = () => clock().toISOString();
   const recordEvent = dependencies.recordEvent ?? recordObservabilityEvent;
   const recordSnapshot = dependencies.recordSnapshot ?? recordObservabilitySnapshot;
   const renderPdfBase64 = dependencies.renderPdfBase64
     ?? (async (markdown: string) => bytesToBase64(await buildResumePdf(markdown)));
 
   async function candidateProfile(userId: string | null): Promise<CandidateProfile> {
-    const scope = storageScope(userId);
-    const row = scope.userId
-      ? await db.prepare("SELECT value_json FROM user_settings WHERE user_id = ? AND key = 'profile' LIMIT 1")
-          .bind(scope.userId).first<Row>()
-      : await db.prepare("SELECT value_json FROM settings WHERE key = 'profile' LIMIT 1").first<Row>();
+    let row: Row | null;
+    if (userId) {
+      row = await db.prepare("SELECT value_json FROM user_settings WHERE user_id = ? AND key = 'profile' LIMIT 1")
+        .bind(userId)
+        .first<Row>();
+    } else {
+      row = await db.prepare("SELECT value_json FROM settings WHERE key = 'profile' LIMIT 1").first<Row>();
+    }
     return CandidateProfileSchema.parse(row ? parseJson(row.value_json) : DEFAULT_PROFILE);
   }
 
@@ -202,7 +230,8 @@ export function createJobActions(dependencies: JobActionDependencies) {
     const existing = await db.prepare(`SELECT status FROM ${scope.draftTable} WHERE ${draftWhere.sql} LIMIT 1`)
       .bind(...draftWhere.bindings, job.id)
       .first<Row>();
-    if (existing && !["PENDING_APPROVAL", "REJECTED"].includes(String(existing.status))) return;
+    const existingStatus = existing ? rowText(existing.status) : "";
+    if (existingStatus && !["PENDING_APPROVAL", "REJECTED"].includes(existingStatus)) return;
 
     await db.prepare(`INSERT INTO ${scope.draftTable} (${scope.userColumn}job_id, id, recipient, subject, body, status, created_at, updated_at)
       VALUES (${scope.userPlaceholder}?, ?, ?, ?, ?, 'PENDING_APPROVAL', ?, ?)
@@ -243,9 +272,8 @@ export function createJobActions(dependencies: JobActionDependencies) {
       completed.push({ id: job.id, score: analysis.score, verdict: analysis.verdict, mode });
     }
 
-    const aiEnabled = Boolean(config.apiKey);
     const agentCount = completed.filter((item) => item.mode === "agent").length;
-    const mode = !aiEnabled ? "deterministic" : fallbackCount === 0 ? "agent" : agentCount === 0 ? "deterministic" : "mixed";
+    const mode = analysisMode(Boolean(config.apiKey), fallbackCount, agentCount);
     await recordEvent({
       event: "job_analysis",
       status: fallbackCount ? "degraded" : "success",
