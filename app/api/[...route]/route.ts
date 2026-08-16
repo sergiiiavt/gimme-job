@@ -172,7 +172,7 @@ export async function POST(request: Request, context: RouteContext) {
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "sync") {
-      if (tenant.multiUser) return multiUserAdminBlocked();
+      if (tenant.multiUser && !userId) return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
       const result = await syncVacancySources();
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
