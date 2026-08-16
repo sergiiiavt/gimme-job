@@ -31,6 +31,19 @@ export function extractMarkdownHeadings(markdown: string): MarkdownHeading[] {
     .map((match) => ({ level: match[1].length, text: plainText(match[2]), id: markdownSlug(match[2]) }));
 }
 
+export function stripMarkdownSection(markdown: string, sectionId: string) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const start = lines.findIndex((line) => {
+    const match = line.match(/^##\s+(.+)$/);
+    return Boolean(match && markdownSlug(match[1]) === sectionId);
+  });
+  if (start < 0) return markdown;
+
+  let end = start + 1;
+  while (end < lines.length && !/^##\s+/.test(lines[end])) end += 1;
+  return [...lines.slice(0, start), ...lines.slice(end)].join("\n").trimEnd();
+}
+
 function parseInline(value: string): ReactNode[] {
   const pattern = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\((https?:\/\/[^)]+)\)|\*([^*]+)\*/g;
   const output: ReactNode[] = [];
@@ -78,7 +91,7 @@ function isBlockStart(lines: string[], index: number) {
     || /^<!--/.test(line);
 }
 
-export default function MarkdownDocument({ markdown }: { markdown: string }) {
+export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: { headingIdOverrides?: Record<string, string>; markdown: string }) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const nodes: ReactNode[] = [];
   let index = 0;
@@ -118,7 +131,8 @@ export default function MarkdownDocument({ markdown }: { markdown: string }) {
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       const level = heading[1].length;
-      const id = markdownSlug(heading[2]);
+      const text = plainText(heading[2]);
+      const id = headingIdOverrides[text] ?? markdownSlug(heading[2]) || `section-${nodeKey}`;
       const content = parseInline(heading[2]);
       if (level === 1) nodes.push(<h1 id={id} key={`h-${nodeKey++}`}>{content}</h1>);
       else if (level === 2) nodes.push(<h2 id={id} key={`h-${nodeKey++}`}>{content}</h2>);
