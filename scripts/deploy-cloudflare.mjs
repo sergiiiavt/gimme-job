@@ -2,7 +2,6 @@ import { spawnSync } from "node:child_process";
 import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { fetchDouJobs } from "./rss-jobs.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const wranglerCli = path.join(projectRoot, "node_modules", "wrangler", "bin", "wrangler.js");
@@ -133,23 +132,25 @@ async function validateConfig() {
   }
 }
 
-async function importCurrentJobs(appPassword) {
-  const jobs = await fetchDouJobs();
-  const authorization = Buffer.from(`gimmejob:${appPassword}`, "utf8").toString("base64");
+async function syncCurrentVacancies(n8nIngestToken) {
   for (let attempt = 1; attempt <= 4; attempt += 1) {
-    const response = await fetch(`${productionUrl}/api/import`, {
+    const response = await fetch(`${productionUrl}/internal/n8n/vacancies-sync`, {
       method: "POST",
-      headers: { authorization: `Basic ${authorization}`, "content-type": "application/json", "x-gimmejob-trigger": "deployment" },
-      body: JSON.stringify({ jobs }),
-      signal: AbortSignal.timeout(30_000),
+      headers: { authorization: `Bearer ${n8nIngestToken}`, "content-type": "application/json", "x-gimmejob-trigger": "deployment" },
+      body: "{}",
+      signal: AbortSignal.timeout(120_000),
     });
     if (response.ok) {
       const payload = await response.json();
-      console.log(`Imported ${payload.result?.accepted ?? jobs.length} current jobs into D1.`);
+      const result = payload.result ?? {};
+      console.log(`Vacancy sync complete: ${result.seen ?? 0} seen, ${result.relevant ?? 0} relevant, ${result.rejected ?? 0} rejected, ${result.duplicates ?? 0} duplicates, ${result.inserted ?? 0} inserted, ${result.updated ?? 0} updated, ${(result.errors ?? []).length} source errors.`);
       return;
     }
-    if (![401, 503].includes(response.status) || attempt === 4) throw new Error(`Cloud job import returned HTTP ${response.status}.`);
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    if (![401, 500, 502, 503, 504].includes(response.status) || attempt === 4) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Cloud vacancy sync returned HTTP ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}.`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2_000 * attempt));
   }
 }
 
@@ -209,12 +210,8 @@ async function main() {
       if (process.env.OPENAI_MODEL) putSecret("OPENAI_MODEL", process.env.OPENAI_MODEL);
     }
 
-    if (multiUserEnabled) {
-      console.log("Skipping password-authenticated deployment job import in multi-user mode; shared-catalog ingestion remains a separate internal operation.");
-    } else {
-      console.log("Importing the current DOU job feed...");
-      await importCurrentJobs(appPassword);
-    }
+    console.log("Refreshing the shared vacancy catalog through the protected intake endpoint...");
+    await syncCurrentVacancies(n8nIngestToken);
     console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await rm(generatedConfigPath, { force: true });
