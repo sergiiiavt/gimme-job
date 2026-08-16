@@ -15,22 +15,19 @@ import { GET as authState } from "../app/api/auth-state/route.ts";
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 
-test("signInHref preserves the intended private destination", () => {
-  assert.equal(
-    signInHref("/workspace/learn?section=interview"),
-    "/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
-  );
+test("signInHref uses the canonical query-free login route", () => {
+  assert.equal(signInHref("/interview"), "/login");
 });
 
 test("Gmail account actions preserve the intended private destination", () => {
-  const destination = "/workspace/learn?section=interview";
+  const destination = "/interview";
   assert.equal(
     gmailConnectHref(destination),
-    "/auth/google/start?mode=gmail&next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
+    "/auth/google/start?mode=gmail&next=%2Finterview",
   );
   assert.equal(
     gmailDisconnectHref(destination),
-    "/auth/gmail/disconnect?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview",
+    "/auth/gmail/disconnect?next=%2Finterview",
   );
 });
 
@@ -59,68 +56,67 @@ test("auth session loader uses the no-store account endpoint", async () => {
   assert.equal(missing, null);
 });
 
-test("public routes normalize to the private equivalent only when authenticated", () => {
-  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace", "https://gimme-job.com/workspace"), false);
-  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
-  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace/learn?section=interview", "https://gimme-job.com/#interview"), true);
-  assert.equal(shouldNormalizeToPersonal("public", false, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
-  assert.equal(shouldNormalizeToPersonal("personal", true, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
+test("public routes normalize to the personal view only when authenticated", () => {
+  assert.equal(shouldNormalizeToPersonal("public", true, "/vacancies", "https://gimme-job.com/vacancies"), false);
+  assert.equal(shouldNormalizeToPersonal("public", true, "/about", "https://gimme-job.com/about"), true);
+  assert.equal(shouldNormalizeToPersonal("public", false, "/about", "https://gimme-job.com/about"), false);
+  assert.equal(shouldNormalizeToPersonal("personal", true, "/about", "https://gimme-job.com/about"), false);
 });
 
-test("auth sync enables personal view and redirects a logged-in public route", async () => {
+test("auth sync enables personal view without changing an already canonical URL", async () => {
   const states: boolean[] = [];
   const redirects: string[] = [];
   startAuthSync({
     mode: "public",
-    personalHref: "/workspace/learn?section=interview",
+    personalHref: "/interview",
     onAuthenticatedChange: (value) => states.push(value),
     probe: async () => ({ ok: true }),
-    currentHref: () => "https://gimme-job.com/#interview",
+    currentHref: () => "https://gimme-job.com/interview",
     replace: (href) => redirects.push(href),
   });
   await tick();
   assert.deepEqual(states, [true]);
-  assert.deepEqual(redirects, ["/workspace/learn?section=interview"]);
+  assert.deepEqual(redirects, []);
 });
 
 test("auth sync keeps the vacancies URL stable when it is already the personal target", async () => {
   const redirects: string[] = [];
   startAuthSync({
     mode: "public",
-    personalHref: "/workspace",
+    personalHref: "/vacancies",
     onAuthenticatedChange: () => {},
     probe: async () => ({ ok: true }),
-    currentHref: () => "https://gimme-job.com/workspace",
+    currentHref: () => "https://gimme-job.com/vacancies",
     replace: (href) => redirects.push(href),
   });
   await tick();
   assert.deepEqual(redirects, []);
 });
 
-test("expired personal access returns to sign in", async () => {
+test("expired personal access returns to canonical sign in", async () => {
   const states: boolean[] = [];
   const redirects: string[] = [];
   startAuthSync({
     mode: "personal",
-    personalHref: "/workspace/learn?section=interview",
+    personalHref: "/interview",
     onAuthenticatedChange: (value) => states.push(value),
     probe: async () => ({ ok: false }),
-    currentHref: () => "https://gimme-job.com/workspace/learn?section=interview",
+    currentHref: () => "https://gimme-job.com/interview",
     replace: (href) => redirects.push(href),
   });
   await tick();
   assert.deepEqual(states, [false]);
-  assert.deepEqual(redirects, ["/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview"]);
+  assert.deepEqual(redirects, ["/login"]);
 });
 
 test("auth sync falls back to the route mode on probe failure and supports cancellation", async () => {
   const fallbackStates: boolean[] = [];
   startAuthSync({
     mode: "personal",
-    personalHref: "/workspace",
+    personalHref: "/vacancies",
     onAuthenticatedChange: (value) => fallbackStates.push(value),
     probe: async () => { throw new Error("offline"); },
-    currentHref: () => "https://gimme-job.com/workspace",
+    currentHref: () => "https://gimme-job.com/vacancies",
     replace: () => {},
   });
   await tick();
@@ -130,10 +126,10 @@ test("auth sync falls back to the route mode on probe failure and supports cance
   let resolveProbe!: (value: { ok: boolean }) => void;
   const cleanup = startAuthSync({
     mode: "public",
-    personalHref: "/workspace",
+    personalHref: "/vacancies",
     onAuthenticatedChange: (value) => cancelledStates.push(value),
     probe: () => new Promise((resolve) => { resolveProbe = resolve; }),
-    currentHref: () => "https://gimme-job.com/",
+    currentHref: () => "https://gimme-job.com/about",
     replace: () => {},
   });
   cleanup();
@@ -143,12 +139,12 @@ test("auth sync falls back to the route mode on probe failure and supports cance
 });
 
 test("auth control renders a compact sign-in action publicly and the account menu privately", () => {
-  const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/workspace" }));
+  const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/vacancies" }));
   assert.match(publicMarkup, />Sign in<\/a>/);
   assert.doesNotMatch(publicMarkup, /Public view/);
   assert.doesNotMatch(publicMarkup, /Personal<\/a>/);
 
-  const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/workspace" }));
+  const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/vacancies" }));
   assert.match(personalMarkup, /Signed in/);
   assert.match(personalMarkup, /Personal workspace/);
   assert.match(personalMarkup, /Gmail forwarding/);
