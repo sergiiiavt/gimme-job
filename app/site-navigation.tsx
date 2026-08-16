@@ -25,7 +25,7 @@ interface ExternalNavigationItem {
 }
 
 type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
-type LearningCategoryId = "core" | "automation" | "specialized" | "infrastructure" | "ai" | "management";
+type LearningCategoryId = "testing" | "automation" | "infrastructure" | "ai" | "management";
 
 interface LearningCategory {
   id: LearningCategoryId;
@@ -110,19 +110,14 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
 
 const learningCategories: LearningCategory[] = [
   {
-    id: "core",
-    label: "QA Core",
-    itemIds: ["qa-fundamentals", "testing-tools", "metrics-estimation", "standards", "certifications"],
+    id: "testing",
+    label: "QA & Testing",
+    itemIds: ["qa-fundamentals", "testing-tools", "mobile", "embedded", "performance", "security"],
   },
   {
     id: "automation",
     label: "Automation & Development",
     itemIds: ["programming", "automation", "api", "data"],
-  },
-  {
-    id: "specialized",
-    label: "Specialized Testing",
-    itemIds: ["mobile", "embedded", "performance", "security"],
   },
   {
     id: "infrastructure",
@@ -137,7 +132,7 @@ const learningCategories: LearningCategory[] = [
   {
     id: "management",
     label: "QA Management",
-    itemIds: ["strategy"],
+    itemIds: ["strategy", "metrics-estimation", "standards", "certifications"],
   },
 ];
 
@@ -233,54 +228,97 @@ const brandJobStyle = {
 const responsiveAccountStyle = `
 .kb-mobile-brand { display: none; }
 
-.kb-learning-groups { gap: 4px !important; }
-.kb-learning-category { border-radius: 7px; overflow: hidden; }
+/* Keep the primary sidebar visually flat: sections are separated by space/lines, not cards. */
+.kb-navigation .kb-area-group {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 7px 3px;
+}
+.kb-navigation .kb-area-group + .kb-area-group {
+  border-top: 1px solid #edf0ed;
+  padding-top: 11px;
+}
+.kb-navigation .kb-area-group > h2 {
+  color: #858f89;
+  font-weight: 700;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.kb-learning-groups { gap: 1px !important; }
+.kb-learning-category { min-width: 0; }
 .kb-learning-category-toggle {
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 7px;
-  color: #314137;
+  border-radius: 5px;
+  color: #4f5d55;
   cursor: pointer;
   display: grid;
   font-size: 11.5px;
-  font-weight: 780;
-  gap: 7px;
-  grid-template-columns: 18px minmax(0, 1fr) 14px;
-  line-height: 1.22;
-  min-height: 38px;
-  padding: 7px 7px;
+  font-weight: 600;
+  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) 12px;
+  line-height: 1.2;
+  min-height: 32px;
+  padding: 6px 5px 6px 7px;
   text-align: left;
-  transition: background .14s ease, color .14s ease;
   width: 100%;
 }
-.kb-learning-category-toggle:hover { background: #e8f0e4; color: #1d3023; }
-.kb-learning-category.current > .kb-learning-category-toggle,
-.kb-learning-category.open > .kb-learning-category-toggle { background: #e7efe3; }
-.kb-learning-category.current > .kb-learning-category-toggle { color: #294d2e; }
-.kb-learning-category-icon { color: #5f7e35; display: grid; place-items: center; }
-.kb-learning-category-icon svg { display: block; height: 18px; width: 18px; }
-.kb-learning-category-chevron { color: #66736b; display: grid; place-items: center; transition: transform .15s ease; }
-.kb-learning-category-chevron svg { display: block; height: 13px; width: 13px; }
+.kb-learning-category-toggle > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kb-learning-category-toggle:hover { background: #f4f6f3; color: #26342d; }
+.kb-learning-category.current > .kb-learning-category-toggle { color: #263b2e; }
+.kb-learning-category-chevron {
+  color: #8a938e;
+  display: grid;
+  place-items: center;
+  transition: transform .14s ease;
+}
+.kb-learning-category-chevron svg { display: block; height: 12px; width: 12px; }
 .kb-learning-category.open .kb-learning-category-chevron { transform: rotate(90deg); }
-.kb-learning-category-items { display: flex; flex-direction: column; gap: 1px; padding: 3px 2px 5px 24px; }
+.kb-learning-category-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1px 1px 5px 8px;
+}
 .kb-area-group-learning .kb-learning-category-items .kb-nav-link {
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 11.5px;
-  line-height: 1.28;
-  min-height: 32px;
-  padding: 7px 6px 7px 8px;
+  font-weight: 500;
+  line-height: 1.2;
+  min-height: 30px;
+  overflow: hidden;
+  padding: 7px 5px 7px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .kb-area-group-learning .kb-learning-category-items .kb-nav-link.active {
-  box-shadow: inset 3px 0 0 #5f7e35;
-  font-weight: 800;
+  background: #f3f5f2;
+  border-left-color: #789455;
+  box-shadow: none;
+  font-weight: 500;
 }
 
 @media (max-width: 1100px) {
-  .kb-learning-category-toggle { font-size: 10.5px; gap: 5px; grid-template-columns: minmax(0, 1fr) 12px; padding-left: 6px; padding-right: 5px; }
-  .kb-learning-category-icon { display: none; }
-  .kb-learning-category-items { padding-left: 8px; }
-  .kb-area-group-learning .kb-learning-category-items .kb-nav-link { font-size: 10.5px; padding-left: 6px; padding-right: 4px; }
+  .kb-learning-category-toggle {
+    font-size: 10.5px;
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) 11px;
+    padding-left: 5px;
+    padding-right: 4px;
+  }
+  .kb-learning-category-items { padding-left: 5px; }
+  .kb-area-group-learning .kb-learning-category-items .kb-nav-link {
+    font-size: 10.5px;
+    padding-left: 6px;
+    padding-right: 3px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -303,40 +341,6 @@ function GimmeJobMark() {
       <path d="M44.5 7.5v5M53.7 11.8l-3.5 3.5M57 21h-5" fill="none" stroke="#12c7a5" strokeLinecap="round" strokeWidth="4.5"/>
     </svg>
   );
-}
-
-function LearningCategoryIcon({ id }: { id: LearningCategoryId }) {
-  const commonProps = {
-    "aria-hidden": true,
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 1.8,
-    viewBox: "0 0 24 24",
-  };
-
-  if (id === "core") {
-    return <svg {...commonProps}><path d="M12 3 19 6v5c0 4.5-2.8 8-7 10-4.2-2-7-5.5-7-10V6l7-3Z"/><path d="m8.8 12 2 2 4.5-5"/></svg>;
-  }
-
-  if (id === "automation") {
-    return <svg {...commonProps}><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m14 4-4 16"/></svg>;
-  }
-
-  if (id === "specialized") {
-    return <svg {...commonProps}><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>;
-  }
-
-  if (id === "infrastructure") {
-    return <svg {...commonProps}><path d="M7 18h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.2 8.4 4.8 4.8 0 0 0 7 18Z"/><path d="M9 21h6M12 18v3"/></svg>;
-  }
-
-  if (id === "ai") {
-    return <svg {...commonProps}><circle cx="6" cy="12" r="2"/><circle cx="17.5" cy="6" r="2"/><circle cx="17.5" cy="18" r="2"/><path d="M8 12h4M13.5 11l2.5-3M13.5 13l2.5 3M12 8v8"/></svg>;
-  }
-
-  return <svg {...commonProps}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.6-4 2.5-6 5.5-6s5 2 5.5 6M14 15c3.8-.5 6 1.2 6.5 4.5"/></svg>;
 }
 
 function LearningCategoryChevron() {
@@ -405,8 +409,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
               })}
               type="button"
             >
-              <span className="kb-learning-category-icon"><LearningCategoryIcon id={category.id}/></span>
-              <span>{category.label}</span>
+              <span title={category.label}>{category.label}</span>
               <span className="kb-learning-category-chevron"><LearningCategoryChevron/></span>
             </button>
             <div className="kb-learning-category-items" hidden={!open} id={panelId}>
@@ -464,20 +467,20 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
           </div>
         )}
         {secondaryEmptyState ? (
-        <div className="kb-subnav-empty" aria-live="polite">
-          <span className="kb-construction-badge">Under construction</span>
-          <strong>{secondaryEmptyState}</strong>
-        </div>
-      ) : (
-        <nav aria-label={`${secondaryTitle} subsections`}>
-          {secondaryItems.map((item) => (
-            <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
-              <span>{item.label}</span>
-              {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
-            </button>
-          ))}
-        </nav>
-      )}
+          <div className="kb-subnav-empty" aria-live="polite">
+            <span className="kb-construction-badge">Under construction</span>
+            <strong>{secondaryEmptyState}</strong>
+          </div>
+        ) : (
+          <nav aria-label={`${secondaryTitle} subsections`}>
+            {secondaryItems.map((item) => (
+              <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
+                <span>{item.label}</span>
+                {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
+              </button>
+            ))}
+          </nav>
+        )}
       </aside>}
     </div>
 
