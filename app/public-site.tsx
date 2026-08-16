@@ -505,9 +505,8 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
 
 function currentSectionFromLocation(mode: SiteMode): PublicSection {
   if (typeof window === "undefined") return mode === "personal" ? "interview" : "about";
-  const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
-  const publicPathSection = normalizedPath.startsWith("/learn/")
-    ? normalizedPath.slice("/learn/".length).split("/")[0]
+  const publicPathSection = window.location.pathname.startsWith("/learn/")
+    ? window.location.pathname.slice("/learn/".length).split("/")[0]
     : null;
   const legacyHashSection = window.location.hash.replace("#", "") || null;
   const candidate = (mode === "personal"
