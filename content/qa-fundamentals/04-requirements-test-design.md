@@ -6,7 +6,7 @@ Good testing begins before detailed test cases exist. Test design is the discipl
 
 ## Requirement quality and testability
 
-A requirement is easier to test when it is clear enough to determine whether the delivered behaviour satisfies it. Useful qualities include clarity, consistency, feasibility, traceability and verifiability.
+A requirement is easier to test when it is clear enough to determine whether the delivered behaviour satisfies it. Useful qualities include clarity, consistency, feasibility, necessity, traceability and verifiability.
 
 Compare:
 
@@ -18,6 +18,20 @@ Compare:
 The stronger versions do not guarantee that the requirement is correct, but they make the expected evidence much easier to reason about.
 
 > **Key point:** discovering an untestable requirement is itself valuable testing work. You do not need runnable software to find ambiguity.
+
+A practical requirement review asks:
+
+```diagram
+Can I identify the expected behaviour?
+        ↓
+Can I observe whether it happened?
+        ↓
+Can I create the required preconditions and data?
+        ↓
+Are boundaries, exceptions and dependencies defined?
+        ↓
+Can I trace the evidence back to the requirement or risk?
+```
 
 ## Acceptance criteria
 
@@ -89,7 +103,7 @@ The technique is powerful only if the partitions are based on actual behaviour o
 
 Defects frequently occur at edges where behaviour changes. Boundary value analysis focuses on those transition points.
 
-For the valid interval 18–120, useful values include those immediately around the boundaries:
+For the valid integer interval 18–120:
 
 ```diagram
 invalid        valid range                       invalid
@@ -98,13 +112,20 @@ invalid        valid range                       invalid
           lower edge                        upper edge
 ```
 
-The exact set depends on the chosen BVA variant and the data type. The reasoning is more important than memorizing a fixed formula: identify where the rule changes and test around that transition.
+CTFL v4.0.1 distinguishes two common BVA variants:
+
+- **2-value BVA:** exercise the boundary value and the nearest value in the adjacent partition. Around the lower boundary that gives 17 and 18; around the upper boundary, 120 and 121.
+- **3-value BVA:** exercise the boundary plus the nearest value on both sides. Around the lower boundary that gives 17, 18 and 19; around the upper boundary, 119, 120 and 121.
+
+The exact values still depend on the data type and business rule. A continuous measurement, date/time boundary or string-length limit needs a model appropriate to that domain.
+
+> **Common mistake:** memorizing “boundary numbers” without identifying where behaviour actually changes. BVA starts from a rule and its partitions, not from a fixed formula.
 
 ## Decision table testing
 
 Decision tables are useful when outcomes depend on combinations of conditions. They make hidden combinations visible.
 
-Example: free shipping depends on membership and basket value.
+Suppose free shipping is granted when the customer is premium **or** the basket is at least €50:
 
 | Condition / action | Rule 1 | Rule 2 | Rule 3 | Rule 4 |
 | --- | --- | --- | --- | --- |
@@ -112,15 +133,31 @@ Example: free shipping depends on membership and basket value.
 | Basket ≥ €50? | Yes | No | Yes | No |
 | Free shipping | Yes | Yes | Yes | No |
 
-A decision table forces the team to ask whether each combination is defined and whether some conditions are irrelevant under particular rules.
+The table exposes all four combinations. From it we can derive four focused tests instead of writing UI-centric cases first.
+
+```diagram
+Rules first
+   ↓
+Choose one concrete input set for each relevant rule
+   ↓
+Execute through the cheapest useful interface
+   ↓
+Confirm the expected action for that rule
+```
+
+If the business later says “premium customers get free shipping only inside the EU,” the decision table immediately shows that another condition has entered the model and combinations must be reconsidered.
 
 ## State transition testing
 
 Some behaviour depends not only on current input but on **history and state**. State transition models represent allowed states, events and transitions.
 
+Example: an account locks after five consecutive incorrect PIN attempts.
+
 ```diagram
 [Active]
-   │ wrong password ×5
+   │ wrong PIN #1–#4
+   └───────────────↺ [Active]
+   │ wrong PIN #5
    ↓
 [Locked]
    │ successful unlock procedure
@@ -128,7 +165,14 @@ Some behaviour depends not only on current input but on **history and state**. S
 [Active]
 ```
 
-Testing can cover valid transitions, invalid transitions, important event sequences and state-dependent outputs. This is especially useful for authentication flows, orders, subscriptions, devices and workflow engines.
+Useful test conditions include:
+
+- a valid transition: Active → Locked after the fifth consecutive failure;
+- a valid recovery transition: Locked → Active after the approved unlock procedure;
+- an invalid transition: a correct PIN must not authenticate while the account remains Locked;
+- a sequence rule: a successful login before the fifth failure may reset the consecutive-failure counter if the specification says so.
+
+This is why state models are stronger than isolated input/output cases for authentication, orders, subscriptions, devices and workflow engines.
 
 ## Scenario and use-case testing
 
@@ -151,16 +195,28 @@ Two basic measures are:
 
 > **Common mistake:** treating code coverage as a quality score. It is a coverage signal that can reveal untested structure; it cannot prove that the exercised behaviour was tested well.
 
+## Useful techniques beyond the CTFL Foundation core
+
+The uploaded course material also contains techniques worth knowing, but they should not be presented as if they are all part of the current CTFL Foundation technique set.
+
+- **Pairwise / combinatorial testing** reduces configuration combinations by covering selected interactions between parameter values.
+- **Cause-effect modeling** helps turn logical relationships between conditions and outcomes into test conditions, often feeding a decision table.
+- **Use-case/scenario testing** explores meaningful end-to-end interactions.
+- **Mutation testing** evaluates test-suite effectiveness by introducing controlled code changes; it belongs at a more advanced engineering level.
+
+Likewise, **positive testing**, **negative testing** and **exhaustive testing** should not be shown as peer test-design techniques. Positive/negative describe the intent of examples; exhaustive testing is generally impossible except for small finite spaces.
+
 ## Combining techniques
 
 Good test design usually combines multiple lenses. For a discount engine, you might use:
 
 1. equivalence partitions for customer types and coupon states;
-2. boundary values for monetary thresholds;
+2. 2-value or 3-value BVA for monetary thresholds;
 3. decision tables for interacting business rules;
 4. state transitions for coupon activation and expiry;
 5. scenarios for realistic purchase journeys;
-6. structural coverage to find important implementation paths missed by specification-based tests.
+6. structural coverage to find important implementation paths missed by specification-based tests;
+7. pairwise coverage when many environment or configuration parameters interact.
 
 The result is stronger than repeating the same happy path at several layers.
 
@@ -170,9 +226,10 @@ The result is stronger than repeating the same happy path at several layers.
 - Test conditions should be identified before detailed execution steps.
 - Traceability connects requirements and risks to tests and results.
 - Equivalence partitioning reduces large spaces to meaningful representatives.
-- Boundary analysis focuses on points where behaviour changes.
+- CTFL distinguishes 2-value and 3-value boundary value analysis.
 - Decision tables model combinations; state transitions model history-dependent behaviour.
 - Scenario testing and structural coverage add different evidence rather than replacing black-box techniques.
+- Pairwise and cause-effect techniques are useful extensions, while positive/negative labels are not separate formal test-design techniques.
 
 ## Sources
 

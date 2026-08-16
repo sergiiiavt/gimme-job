@@ -84,17 +84,67 @@ Examples of useful criteria include:
 
 Criteria should support a decision, not create false certainty. “100% tests passed” may be meaningless if the wrong tests were selected.
 
-## Estimation basics
+## Test estimation techniques
 
-Test estimation predicts effort, duration or capacity needs under uncertainty. Common inputs include scope size, complexity, risk, test levels, environment setup, data preparation, automation work, retesting, regression, coordination and historical performance.
+Test estimation predicts effort, duration or capacity needs under uncertainty. Useful inputs include scope size, complexity, risk, test levels, environment setup, data preparation, automation work, retesting, regression, coordination and historical performance.
 
-Estimates should expose assumptions. Compare:
+CTFL v4.0.1 introduces several concrete techniques rather than treating estimation as a single activity.
+
+### Extrapolation from historical data
+
+When comparable work exists, a team can estimate upcoming testing from previous iterations, releases or similar features.
+
+```diagram
+Previous comparable work
+      ↓
+Observed effort / throughput
+      ↓
+Adjust for changed scope, complexity and risk
+      ↓
+Forecast for the new work
+```
+
+This is useful only when the comparison is credible. Copying an old number while ignoring a new environment, dependency or risk creates false precision.
+
+### Wideband Delphi and Planning Poker
+
+Wideband Delphi uses independent expert estimates, comparison and discussion, followed by re-estimation until the group converges. Planning Poker is a commonly used Agile variant.
+
+The important mechanism is not the cards. It is that different assumptions become visible before a single estimate is accepted.
+
+### Three-point estimation
+
+Three-point estimation uses:
+
+- **a** — optimistic estimate;
+- **m** — most likely estimate;
+- **b** — pessimistic estimate.
+
+A common weighted estimate is:
+
+```text
+E = (a + 4m + b) / 6
+SD = (b - a) / 6
+```
+
+Example: if `a = 6`, `m = 9` and `b = 18` person-hours:
+
+```text
+E = (6 + 4×9 + 18) / 6 = 10 hours
+SD = (18 - 6) / 6 = 2 hours
+```
+
+So the estimate can be communicated as approximately **10 ± 2 person-hours**, rather than pretending “10 hours” is certain.
+
+### Estimates should expose assumptions
+
+Compare:
 
 > “Testing will take five days.”
 
 with:
 
-> “Five days assumes the staging environment and seed data are available Monday, the payment provider sandbox is stable, and no critical defect requires a full regression rerun.”
+> “Five days assumes the staging environment and seed data are available Monday, the payment-provider sandbox is stable, and no critical defect requires a full regression rerun.”
 
 The second statement is much more useful because it makes uncertainty visible.
 
@@ -145,6 +195,7 @@ Risk changes the order and depth of evidence gathering.
 - Risk-based testing directs depth and priority while preserving broad awareness.
 - Coverage is always coverage of a defined model, not a universal quality percentage.
 - Completion criteria should support decisions rather than create ritual gates.
+- Estimation can use historical extrapolation, Wideband Delphi/Planning Poker and three-point estimation.
 - Estimates should expose assumptions and uncertainty.
 - Residual risk belongs in release communication and must have an explicit decision owner.
 

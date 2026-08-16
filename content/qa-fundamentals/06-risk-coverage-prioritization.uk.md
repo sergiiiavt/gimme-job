@@ -84,11 +84,61 @@ Coverage number має сенс лише тоді, коли зрозумілий
 
 Criteria мають підтримувати рішення, а не створювати хибну впевненість. «100% tests passed» може бути беззмістовним, якщо були обрані неправильні тести.
 
-## Основи оцінювання
+## Техніки оцінювання тестування
 
 Test estimation прогнозує effort, duration або capacity needs в умовах невизначеності. Типові inputs: scope size, complexity, risk, test levels, environment setup, data preparation, automation work, retesting, regression, coordination та historical performance.
 
-Оцінки мають показувати припущення. Порівняйте:
+CTFL v4.0.1 описує кілька конкретних estimation techniques.
+
+### Extrapolation з historical data
+
+Якщо є порівнювана попередня робота, команда може оцінювати майбутнє тестування на основі минулих iterations, releases або схожих features.
+
+```diagram
+Попередня порівнювана робота
+      ↓
+Observed effort / throughput
+      ↓
+Корекція на нові scope, complexity і risk
+      ↓
+Forecast для нової роботи
+```
+
+Це працює лише тоді, коли comparison справді валідний. Копіювання старої цифри без урахування нового environment, dependency або risk створює false precision.
+
+### Wideband Delphi і Planning Poker
+
+Wideband Delphi використовує незалежні expert estimates, їх порівняння та обговорення, після чого експерти оцінюють повторно до наближення до consensus. Planning Poker — поширений Agile-варіант Wideband Delphi.
+
+Головна цінність не в картках, а в тому, що різні assumptions стають видимими до прийняття однієї цифри.
+
+### Three-point estimation
+
+Three-point estimation використовує:
+
+- **a** — optimistic estimate;
+- **m** — most likely estimate;
+- **b** — pessimistic estimate.
+
+Поширена weighted estimate:
+
+```text
+E = (a + 4m + b) / 6
+SD = (b - a) / 6
+```
+
+Наприклад, якщо `a = 6`, `m = 9`, `b = 18` person-hours:
+
+```text
+E = (6 + 4×9 + 18) / 6 = 10 hours
+SD = (18 - 6) / 6 = 2 hours
+```
+
+Тобто оцінку корисніше комунікувати як приблизно **10 ± 2 person-hours**, а не створювати враження, що «10 годин» — точне значення.
+
+### Estimates мають показувати assumptions
+
+Порівняйте:
 
 > «Тестування займе п’ять днів.»
 
@@ -145,5 +195,6 @@ Risk-based response може пріоритизувати:
 - Risk-based testing визначає глибину й пріоритет, зберігаючи широке спостереження.
 - Coverage завжди є coverage визначеної моделі, а не універсальним відсотком якості.
 - Completion criteria мають підтримувати рішення, а не створювати ритуальні gates.
-- Estimates мають показувати припущення і невизначеність.
+- Estimation може використовувати historical extrapolation, Wideband Delphi/Planning Poker та three-point estimation.
+- Estimates мають показувати assumptions і uncertainty.
 - Residual risk має бути частиною release communication і мати явного decision owner.

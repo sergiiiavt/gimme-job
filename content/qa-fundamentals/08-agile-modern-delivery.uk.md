@@ -1,4 +1,4 @@
-<!-- concepts: agile-values, agile-not-scrum, whole-team-quality, definition-of-done, shift-left-right, continuous-testing, automation-boundaries, production-feedback -->
+<!-- concepts: agile-values, agile-not-scrum, whole-team-quality, definition-of-done, shift-left-right, continuous-testing, automation-boundaries, tool-support, production-feedback -->
 
 # QA в Agile та сучасній delivery-моделі
 
@@ -71,7 +71,7 @@ Shift-left — не «змусити developers робити QA». Це змен
 
 Shift-right використовує production або production-like evidence, щоб вчитися на реальній поведінці системи. Приклади: monitoring, synthetic checks, canary releases, feature flags, user telemetry, incident analysis і controlled experiments.
 
-Shift-right не замінює pre-release testing. Production evidence може показати поведінку, яку test environments не відтворюють ідеально, але виявляти запобіжні катастрофічні failures у production — неприйнятна стратегія.
+Shift-right не замінює pre-release testing. Production evidence може показати поведінку, яку test environments не відтворюють ідеально, але виявляти запобіжні catastrophic failures у production — неприйнятна стратегія.
 
 ```diagram
 До релізу                        Під час / після релізу
@@ -95,6 +95,64 @@ Continuous testing означає, що корисні testing activities інт
 | Production telemetry | continuous | спостерігати реальну поведінку та emerging failures |
 
 Швидкий feedback має цінність лише тоді, коли failures надійні й diagnosable.
+
+## Tool support у тестуванні
+
+Tools підтримують testing activities, але не замінюють reasoning, який визначає, які докази справді потрібні. CTFL включає tool support до Foundation-рівня, оскільки testing work значно ширше за UI automation.
+
+Практично інструменти зручно групувати за activity, яку вони підтримують:
+
+```diagram
+Planning / management / traceability
+        ↓
+requirements, test cases, results, defects, reporting
+
+Static testing
+        ↓
+reviews / linters / static analysis / security scanning
+
+Test design і data
+        ↓
+modeling / data generation / combinatorial support
+
+Execution і automation
+        ↓
+component / API / UI / contract / mobile checks
+
+Non-functional evidence
+        ↓
+performance / security / accessibility / compatibility tools
+
+Operations і observability
+        ↓
+logs / metrics / traces / synthetic monitoring / incident evidence
+```
+
+Категорії перетинаються. CI platform може одночасно orchestrate static analysis, automated tests і deployment checks; API client може підтримувати exploratory testing і генерувати automated requests.
+
+### Переваги tools та automation
+
+Інструменти можуть дати:
+
+- швидше й більш repeatable execution;
+- consistent processing великих data sets;
+- earlier feedback у CI/CD;
+- краще збирання logs, traces та evidence;
+- підтримку tedious або практично неможливих manual tasks;
+- кращу reproducibility і visibility.
+
+### Ризики та обмеження
+
+Tool adoption також створює ризики:
+
+- нереалістичне очікування, що купівля tool «вирішить тестування»;
+- високий maintenance cost fragile automation;
+- false confidence через велику кількість passing checks;
+- duplicated або low-value tests, бо automation легко додати;
+- залежність від specialist skills, vendors або infrastructure;
+- noisy failures, які команда поступово починає ігнорувати.
+
+> **Ключова думка:** автоматизуйте цінну activity, якщо automation покращує її economics або feedback. Не створюйте low-value activity лише для виправдання tool.
 
 ## Що автоматизація може і не може довести
 
@@ -151,5 +209,6 @@ Production observation
 - Definition of Done може фіксувати стійкі quality expectations.
 - Shift-left переносить корисний feedback раніше; shift-right вчиться з runtime evidence.
 - Continuous testing поєднує automated і human evidence протягом delivery.
-- Automation захищає known expectations, але не замінює investigation і judgment.
+- Tool support охоплює management, static testing, design/data, execution, non-functional testing та observability.
+- Automation дає speed і repeatability, але може створювати maintenance cost і false confidence.
 - Production evidence має оновлювати майбутні risks, designs і tests.

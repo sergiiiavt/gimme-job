@@ -14,7 +14,7 @@
   {"id":"execution-evaluation-completion","topicId":"testing-process-lifecycle","label":"Execution, evaluation and completion"},
   {"id":"maintenance-testing","topicId":"testing-process-lifecycle","label":"Maintenance and change-impact testing"},
 
-  {"id":"test-levels","topicId":"test-levels-types-approaches","label":"Component, integration, system and acceptance levels"},
+  {"id":"test-levels","topicId":"test-levels-types-approaches","label":"Component, component integration, system, system integration and acceptance levels"},
   {"id":"level-vs-type","topicId":"test-levels-types-approaches","label":"Test level is not test type"},
   {"id":"functional-nonfunctional","topicId":"test-levels-types-approaches","label":"Functional and non-functional testing"},
   {"id":"static-dynamic","topicId":"test-levels-types-approaches","label":"Static and dynamic testing"},
@@ -48,7 +48,7 @@
   {"id":"coverage-meaning","topicId":"risk-coverage-prioritization","label":"Coverage as evidence, not a quality score"},
   {"id":"prioritization","topicId":"risk-coverage-prioritization","label":"Test prioritization"},
   {"id":"completion-criteria","topicId":"risk-coverage-prioritization","label":"Entry, exit and completion criteria"},
-  {"id":"estimation","topicId":"risk-coverage-prioritization","label":"Test estimation basics"},
+  {"id":"estimation","topicId":"risk-coverage-prioritization","label":"Test estimation techniques and uncertainty"},
   {"id":"residual-risk","topicId":"risk-coverage-prioritization","label":"Residual risk and uncertainty"},
 
   {"id":"work-product-reviews","topicId":"static-exploratory-collaborative","label":"Work-product reviews"},
@@ -66,5 +66,6 @@
   {"id":"shift-left-right","topicId":"agile-modern-delivery","label":"Shift-left and shift-right"},
   {"id":"continuous-testing","topicId":"agile-modern-delivery","label":"Continuous testing and CI/CD feedback"},
   {"id":"automation-boundaries","topicId":"agile-modern-delivery","label":"What automation can and cannot prove"},
+  {"id":"tool-support","topicId":"agile-modern-delivery","label":"Tool support, benefits and automation risks"},
   {"id":"production-feedback","topicId":"agile-modern-delivery","label":"Production feedback as part of quality learning"}
 ]

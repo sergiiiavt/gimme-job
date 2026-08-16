@@ -1,4 +1,4 @@
-<!-- concepts: agile-values, agile-not-scrum, whole-team-quality, definition-of-done, shift-left-right, continuous-testing, automation-boundaries, production-feedback -->
+<!-- concepts: agile-values, agile-not-scrum, whole-team-quality, definition-of-done, shift-left-right, continuous-testing, automation-boundaries, tool-support, production-feedback -->
 
 # QA in Agile & Modern Delivery
 
@@ -96,6 +96,64 @@ A sensible feedback stack might be:
 
 Fast feedback is valuable only when failures are trustworthy and diagnosable.
 
+## Tool support in testing
+
+Tools support testing activities; they do not replace the reasoning that decides what evidence is useful. CTFL treats tool support as part of Foundation-level knowledge because testing work spans much more than UI automation.
+
+A practical tool landscape can be organized by the activity being supported:
+
+```diagram
+Planning / management / traceability
+        ↓
+Requirements, test cases, results, defects, reporting
+
+Static testing
+        ↓
+reviews / linters / static analysis / security scanning
+
+Test design and data
+        ↓
+modeling / data generation / combinatorial support
+
+Execution and automation
+        ↓
+component / API / UI / contract / mobile checks
+
+Non-functional evidence
+        ↓
+performance / security / accessibility / compatibility tools
+
+Operations and observability
+        ↓
+logs / metrics / traces / synthetic monitoring / incident evidence
+```
+
+The categories overlap. A CI platform may orchestrate static analysis, automated tests and deployment checks; an API client may support exploratory testing and also generate automated requests.
+
+### Benefits of tools and automation
+
+Tools can provide:
+
+- faster and more repeatable execution;
+- consistent processing of large data sets;
+- earlier feedback in CI/CD;
+- better collection of logs, traces and evidence;
+- support for tasks that are tedious or impractical manually;
+- improved reproducibility and visibility.
+
+### Risks and limitations
+
+Tool adoption also introduces risks:
+
+- unrealistic expectations that buying a tool “solves testing”;
+- high maintenance cost for fragile automation;
+- false confidence from large numbers of passing checks;
+- duplicated or low-value tests because automation is easy to add;
+- dependence on specialist skills, vendors or infrastructure;
+- noisy failures that teams learn to ignore.
+
+> **Key point:** automate a valuable activity because automation improves its economics or feedback. Do not invent low-value activity merely to justify a tool.
+
 ## What automation can and cannot prove
 
 Automation is excellent for repeated checks with explicit expectations. It can protect known behaviour, run large data sets, evaluate contracts and provide fast regression feedback.
@@ -151,7 +209,8 @@ Modern tooling changes **when and how quickly** evidence is obtained. It does no
 - Definition of Done can encode durable quality expectations.
 - Shift-left moves useful feedback earlier; shift-right learns from runtime evidence.
 - Continuous testing combines automated and human evidence throughout delivery.
-- Automation protects known expectations but cannot replace investigation and judgment.
+- Tool support spans management, static testing, design/data, execution, non-functional testing and observability.
+- Automation provides speed and repeatability but can also create maintenance cost and false confidence.
 - Production evidence should update future risks, designs and tests.
 
 ## Sources

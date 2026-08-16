@@ -17,19 +17,40 @@ Organizations use these names differently, so the practical questions matter mor
 - What environments, tools, data and people are required?
 - How will progress and completion be evaluated?
 
-## Test case, checklist and charter
+## Test case, checklist and exploratory charter
 
-Different work products support different kinds of testing.
+Different work products support different kinds of testing. None is universally “better.” The useful question is how much prescription, reproducibility and freedom the work needs.
 
-| Artifact | Best suited to | Typical content |
-| --- | --- | --- |
-| Test case | Repeatable, explicit checks | preconditions, inputs, steps when needed, expected result |
-| Checklist | Known coverage areas with flexible execution | short prompts or conditions to remember |
-| Exploratory charter | Time-boxed investigation with a mission | target, risks, focus, constraints, useful data |
+| Dimension | Detailed test case | Checklist | Exploratory charter |
+| --- | --- | --- | --- |
+| Prescriptiveness | High | Medium to low | Low |
+| Reproducibility | High when maintained | Medium | Depends on session notes |
+| Executor freedom | Low to medium | Medium to high | High |
+| Maintenance cost | Usually high | Usually lower | Usually low |
+| Domain knowledge | Context-dependent | Often important | Usually important |
+| Best fit | repeatable, delegated or regulated checks | recurring coverage areas | investigation and uncertainty |
 
-Detailed test cases are valuable when reproducibility, delegation or regulated evidence matters. They are expensive when every minor UI action is documented even though the real test intent fits in one sentence.
+A detailed test case may contain preconditions, inputs, steps where needed and expected results. A checklist records prompts such as “minimum/maximum value,” “cancel and retry,” or “permission boundary” without prescribing every action. An exploratory charter defines a mission such as “Explore checkout recovery after network interruption, focusing on duplicate orders and stale totals.”
 
 > **Key point:** choose the smallest artifact that preserves the information the team actually needs.
+
+### One feature, three documentation styles
+
+Suppose a formatting dialog lets the user choose a font family, style and size.
+
+```diagram
+Detailed case
+Open dialog → choose Arial → choose Bold → size 12 → Apply
+Expected: selected text is Arial Bold 12
+
+Checklist
+font family / style / size / invalid combination / persistence / reset
+
+Exploratory charter
+Explore formatting changes, focusing on combinations, persistence and recovery after undo/redo
+```
+
+The feature is the same. The documentation changes according to the purpose of the testing.
 
 ## Test suites, data and environments
 
@@ -80,6 +101,49 @@ At minimum it normally needs:
 
 The best report is not necessarily the longest. Remove irrelevant steps and capture the smallest reproducible path.
 
+### From a weak report to an actionable one
+
+Weak report:
+
+> **Title:** Button does not work
+>
+> **Steps:** Open the site, log in, go to checkout, enter data, click the button.
+>
+> **Result:** Nothing happens.
+
+That report forces the reader to rediscover the failure condition. A stronger version captures the observation and the state that matters:
+
+| Field | Example |
+| --- | --- |
+| Title | Checkout remains on Payment step after successful card authorization |
+| Build / environment | staging, build 2026.08.16.3, Chrome 140 |
+| Preconditions | cart contains one in-stock item; test card authorizes successfully |
+| Minimal steps | 1. Open Payment. 2. Enter valid test-card details. 3. Select **Pay**. |
+| Actual | authorization succeeds, spinner disappears, page remains on Payment; no order confirmation appears |
+| Expected | after successful authorization, order is created and Confirmation is displayed |
+| Evidence | payment request/response ID, console trace, screenshot/video |
+| Impact | user may retry payment because the UI gives no confirmation |
+
+```diagram
+Symptom in the title
+      ↓
+Reproducible state and minimal trigger
+      ↓
+Actual vs expected behaviour
+      ↓
+Evidence that helps investigation
+      ↓
+Impact that helps triage
+```
+
+Avoid embedding a guessed technical root cause in the title unless it has been demonstrated. “Payment API race condition” is a hypothesis; “Checkout remains on Payment after successful authorization” is an observation.
+
+## Defect, failure and issue are not synonyms
+
+A defect is not limited to code written by a programmer. Defects can exist in requirements, design, code, configuration, data, infrastructure or other work products. A **failure** is observable incorrect behaviour when relevant conditions activate a defect. An **issue** is commonly a workflow container that may represent a defect, question, task, incident or improvement.
+
+This distinction matters because the first visible symptom is not necessarily where the defect was introduced.
+
 ## Severity and priority
 
 These dimensions answer different questions.
@@ -93,7 +157,7 @@ These dimensions answer different questions.
 | Typo on the homepage during a major campaign | Low | High because millions of users will see it today |
 | Payment charged twice | Critical | Critical |
 
-Priority incorporates timing, exposure, workaround, business commitments and other context. Severity alone cannot determine scheduling.
+Priority incorporates timing, exposure, workaround, business commitments and other context. Severity alone cannot determine scheduling. Neither dimension inherently “belongs to QA” or “belongs to management”; organizations assign responsibility differently and often decide through triage.
 
 ## Defect lifecycle and triage
 
@@ -148,9 +212,11 @@ Documentation quality is therefore not measured by page count. It is measured by
 ## Summary
 
 - Strategy explains the testing approach; plans apply it to a concrete scope.
-- Test cases, checklists and exploratory charters serve different purposes.
+- Test cases, checklists and exploratory charters trade prescription, maintenance and executor freedom differently.
 - Data and environment context are essential for reproducibility.
 - Reporting should communicate evidence, gaps and uncertainty rather than only pass percentages.
+- A strong defect report separates observation, reproduction, expectation, evidence and impact.
+- Defects are not limited to code, and failures are observable consequences rather than “bugs executed by testers.”
 - Severity describes impact; priority describes urgency relative to other work.
 - Defect triage is a shared evidence and prioritization process.
 - Root-cause thinking distinguishes the visible symptom from the underlying technical and systemic causes.
