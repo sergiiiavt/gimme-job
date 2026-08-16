@@ -64,16 +64,25 @@ function envFor(db) {
 
 const context = { waitUntil() {}, passThroughOnException() {} };
 
-test("multi-user Worker serves password login and ignores spoofed identity headers", async () => {
+test("multi-user Worker serves canonical password login and collapses legacy query routes", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("multi-user-spoof-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
   const { db } = fakeSessionDb();
   const env = envFor(db);
 
-  const login = await worker.fetch(new Request("https://gimmejob.example/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview"), env, context);
+  const login = await worker.fetch(new Request("https://gimmejob.example/login", {
+    headers: { referer: "https://gimmejob.example/interview" },
+  }), env, context);
   assert.equal(login.status, 200);
-  assert.match(await login.text(), /Sign in/);
+  const loginHtml = await login.text();
+  assert.match(loginHtml, /Sign in/);
+  assert.match(loginHtml, /action="\/login"/);
+  assert.doesNotMatch(loginHtml, /\?next=/);
+
+  const legacyLogin = await worker.fetch(new Request("https://gimmejob.example/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview"), env, context);
+  assert.equal(legacyLogin.status, 308);
+  assert.equal(legacyLogin.headers.get("location"), "/login");
 
   const spoofedApi = await worker.fetch(new Request("https://gimmejob.example/api/interview-progress", {
     headers: { "x-gimmejob-auth-mode": "multi-user", "x-gimmejob-authenticated": "1", "x-gimmejob-user-id": "victim-user" },
@@ -81,11 +90,11 @@ test("multi-user Worker serves password login and ignores spoofed identity heade
   assert.equal(spoofedApi.status, 401);
   assert.deepEqual(await spoofedApi.json(), { error: "Authentication required." });
 
-  const spoofedWorkspace = await worker.fetch(new Request("https://gimmejob.example/workspace/learn?section=interview", {
+  const legacyWorkspace = await worker.fetch(new Request("https://gimmejob.example/workspace/learn?section=interview", {
     headers: { "x-gimmejob-auth-mode": "multi-user", "x-gimmejob-authenticated": "1", "x-gimmejob-user-id": "victim-user" },
   }), env, context);
-  assert.equal(spoofedWorkspace.status, 303);
-  assert.equal(spoofedWorkspace.headers.get("location"), "/workspace/login?next=%2Fworkspace%2Flearn%3Fsection%3Dinterview");
+  assert.equal(legacyWorkspace.status, 308);
+  assert.equal(legacyWorkspace.headers.get("location"), "/interview");
 });
 
 test("multi-user Worker injects only the user id resolved from the server session", async () => {
@@ -164,18 +173,21 @@ test("multi-user Worker preserves n8n bearer auth only for scoped internal servi
   assert.deepEqual(await rejectedClassifier.json(), { error: "Authentication required." });
 });
 
-test("multi-user logout invalidates the D1 session and clears only the user-session cookie", async () => {
+test("multi-user logout invalidates the D1 session and returns to the same canonical page", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("multi-user-logout-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
   const { db, state } = fakeSessionDb();
   const env = envFor(db);
-  const response = await worker.fetch(new Request("https://gimmejob.example/workspace/logout", {
+  const response = await worker.fetch(new Request("https://gimmejob.example/logout", {
     method: "POST",
-    headers: { cookie: "gimmejob_user_session=server-session-token" },
+    headers: {
+      cookie: "gimmejob_user_session=server-session-token",
+      referer: "https://gimmejob.example/interview",
+    },
   }), env, context);
   assert.equal(response.status, 303);
-  assert.equal(response.headers.get("location"), "/");
+  assert.equal(response.headers.get("location"), "/interview");
   assert.equal(state.deletedSessions, 1);
   assert.match(response.headers.get("set-cookie") ?? "", /^gimmejob_user_session=;/);
   assert.match(response.headers.get("set-cookie") ?? "", /HttpOnly/);
