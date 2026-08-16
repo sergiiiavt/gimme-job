@@ -1,0 +1,968 @@
+{
+  "topicFilters": [
+    "All",
+    "Core",
+    "Filtering",
+    "Aggregation",
+    "Joins",
+    "CTE & subquery",
+    "Windows",
+    "DML",
+    "DDL",
+    "Transactions",
+    "Performance",
+    "Functions",
+    "QA patterns",
+    "Dialect"
+  ],
+  "dialectFilters": [
+    "All",
+    "Portable",
+    "PostgreSQL",
+    "MySQL",
+    "SQLite",
+    "SQL Server"
+  ],
+  "cards": [
+    {
+      "id": "select-skeleton",
+      "title": "SELECT skeleton",
+      "topics": [
+        "Core"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "The clauses you reach for most often, in readable query order.",
+      "entries": [
+        {
+          "term": "SELECT",
+          "meaning": "Choose output columns or expressions.",
+          "detail": "SELECT id, email, created_at"
+        },
+        {
+          "term": "FROM",
+          "meaning": "Choose the input relation.",
+          "detail": "FROM users u"
+        },
+        {
+          "term": "JOIN",
+          "meaning": "Combine related relations before filtering.",
+          "detail": "LEFT JOIN orders o ON o.user_id = u.id"
+        },
+        {
+          "term": "WHERE",
+          "meaning": "Filter individual rows.",
+          "detail": "WHERE u.status = 'active'"
+        },
+        {
+          "term": "GROUP BY",
+          "meaning": "Collapse rows into groups for aggregates.",
+          "detail": "GROUP BY u.id"
+        },
+        {
+          "term": "HAVING",
+          "meaning": "Filter groups after aggregation.",
+          "detail": "HAVING COUNT(o.id) >= 2"
+        }
+      ],
+      "more": [
+        {
+          "term": "ORDER BY",
+          "meaning": "Define deterministic result ordering.",
+          "detail": "ORDER BY created_at DESC, id DESC"
+        },
+        {
+          "term": "DISTINCT",
+          "meaning": "Remove duplicate output rows; do not use it to hide bad joins.",
+          "detail": "SELECT DISTINCT country FROM users"
+        }
+      ]
+    },
+    {
+      "id": "logical-order",
+      "title": "Logical query order",
+      "topics": [
+        "Core",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Useful mental model when aliases, aggregates, windows, or filters behave unexpectedly.",
+      "entries": [
+        {
+          "term": "1 · FROM/JOIN",
+          "meaning": "Build the row source.",
+          "detail": "FROM … JOIN … ON …"
+        },
+        {
+          "term": "2 · WHERE",
+          "meaning": "Remove rows before grouping.",
+          "detail": "WHERE …"
+        },
+        {
+          "term": "3 · GROUP BY",
+          "meaning": "Form groups.",
+          "detail": "GROUP BY …"
+        },
+        {
+          "term": "4 · HAVING",
+          "meaning": "Remove groups.",
+          "detail": "HAVING …"
+        },
+        {
+          "term": "5 · SELECT",
+          "meaning": "Compute projected expressions.",
+          "detail": "SELECT …"
+        },
+        {
+          "term": "6 · DISTINCT",
+          "meaning": "Deduplicate projected rows.",
+          "detail": "DISTINCT"
+        }
+      ],
+      "more": [
+        {
+          "term": "7 · ORDER BY",
+          "meaning": "Sort the result.",
+          "detail": "ORDER BY …"
+        },
+        {
+          "term": "8 · LIMIT/FETCH",
+          "meaning": "Trim the final ordered result; syntax varies by engine.",
+          "detail": "LIMIT / FETCH / TOP"
+        }
+      ]
+    },
+    {
+      "id": "filtering-null",
+      "title": "Filtering & NULL",
+      "topics": [
+        "Filtering",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "SQL uses three-valued logic: NULL is unknown, not an ordinary value.",
+      "entries": [
+        {
+          "term": "Compare",
+          "meaning": "Normal scalar comparisons.",
+          "detail": "price >= 100 AND status <> 'cancelled'"
+        },
+        {
+          "term": "Range",
+          "meaning": "Inclusive lower and upper bounds.",
+          "detail": "score BETWEEN 60 AND 80"
+        },
+        {
+          "term": "Set",
+          "meaning": "Match any listed value.",
+          "detail": "status IN ('new', 'paid', 'shipped')"
+        },
+        {
+          "term": "Pattern",
+          "meaning": "% = any run, _ = one character.",
+          "detail": "email LIKE '%@example.com'"
+        },
+        {
+          "term": "NULL",
+          "meaning": "Use IS NULL / IS NOT NULL, never = NULL.",
+          "detail": "deleted_at IS NULL"
+        },
+        {
+          "term": "Negation",
+          "meaning": "Parenthesize mixed AND/OR expressions.",
+          "detail": "NOT (status = 'x' OR status = 'y')"
+        }
+      ],
+      "more": [
+        {
+          "term": "NOT IN + NULL",
+          "meaning": "A NULL in the subquery/list can make the predicate unknown; NOT EXISTS is usually safer.",
+          "detail": "WHERE NOT EXISTS (SELECT 1 FROM blocked b WHERE b.user_id = u.id)"
+        },
+        {
+          "term": "COALESCE",
+          "meaning": "Replace NULL only when that semantic replacement is intended.",
+          "detail": "COALESCE(phone, 'missing')"
+        }
+      ]
+    },
+    {
+      "id": "aggregation",
+      "title": "Aggregation",
+      "topics": [
+        "Aggregation"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Aggregate functions collapse multiple input rows into one result per group.",
+      "entries": [
+        {
+          "term": "COUNT(*)",
+          "meaning": "Count rows, including rows whose columns contain NULL.",
+          "detail": "COUNT(*)"
+        },
+        {
+          "term": "COUNT(col)",
+          "meaning": "Count non-NULL values in one expression.",
+          "detail": "COUNT(paid_at)"
+        },
+        {
+          "term": "COUNT(DISTINCT)",
+          "meaning": "Count unique non-NULL values.",
+          "detail": "COUNT(DISTINCT user_id)"
+        },
+        {
+          "term": "SUM / AVG",
+          "meaning": "Total or mean of non-NULL numeric values.",
+          "detail": "SUM(total), AVG(total)"
+        },
+        {
+          "term": "MIN / MAX",
+          "meaning": "Smallest or largest non-NULL value.",
+          "detail": "MIN(created_at), MAX(created_at)"
+        },
+        {
+          "term": "HAVING",
+          "meaning": "Filter aggregate groups, not source rows.",
+          "detail": "HAVING SUM(total) > 1000"
+        }
+      ],
+      "more": [
+        {
+          "term": "Conditional count",
+          "meaning": "Turn a condition into a numeric contribution.",
+          "detail": "SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END)"
+        },
+        {
+          "term": "Conditional sum",
+          "meaning": "Aggregate only matching rows.",
+          "detail": "SUM(CASE WHEN status = 'paid' THEN total ELSE 0 END)"
+        }
+      ]
+    },
+    {
+      "id": "joins",
+      "title": "Joins",
+      "topics": [
+        "Joins",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Choose the join from the row-preservation requirement, then verify cardinality.",
+      "entries": [
+        {
+          "term": "INNER",
+          "meaning": "Keep only matching rows from both sides.",
+          "detail": "FROM users u JOIN orders o ON o.user_id = u.id"
+        },
+        {
+          "term": "LEFT",
+          "meaning": "Keep every left row; unmatched right columns become NULL.",
+          "detail": "FROM users u LEFT JOIN orders o ON o.user_id = u.id"
+        },
+        {
+          "term": "CROSS",
+          "meaning": "Cartesian product; useful intentionally, dangerous accidentally.",
+          "detail": "FROM sizes CROSS JOIN colors"
+        },
+        {
+          "term": "Composite key",
+          "meaning": "Join on the complete business/key relationship.",
+          "detail": "ON a.tenant_id = b.tenant_id AND a.id = b.id"
+        },
+        {
+          "term": "1:N effect",
+          "meaning": "A parent repeats once per matching child.",
+          "detail": "COUNT(*) may grow after a join"
+        },
+        {
+          "term": "LEFT + filter",
+          "meaning": "A right-side WHERE condition can effectively turn LEFT JOIN into INNER JOIN.",
+          "detail": "Put match-only condition in ON when left rows must survive"
+        }
+      ],
+      "more": [
+        {
+          "term": "Find missing",
+          "meaning": "Anti-join pattern.",
+          "detail": "LEFT JOIN orders o ON … WHERE o.id IS NULL"
+        },
+        {
+          "term": "Find existing",
+          "meaning": "Often clearer than joining only to test existence.",
+          "detail": "WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)"
+        }
+      ]
+    },
+    {
+      "id": "set-operations",
+      "title": "Set operations",
+      "topics": [
+        "Core"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Combine compatible result sets vertically; column counts and compatible types must align.",
+      "entries": [
+        {
+          "term": "UNION",
+          "meaning": "Combine and remove duplicates.",
+          "detail": "SELECT email FROM leads UNION SELECT email FROM users"
+        },
+        {
+          "term": "UNION ALL",
+          "meaning": "Combine and preserve duplicates; usually cheaper than UNION.",
+          "detail": "SELECT id FROM a UNION ALL SELECT id FROM b"
+        },
+        {
+          "term": "INTERSECT",
+          "meaning": "Rows present in both results where supported.",
+          "detail": "SELECT id FROM a INTERSECT SELECT id FROM b"
+        },
+        {
+          "term": "EXCEPT",
+          "meaning": "Rows in the first result but not the second where supported.",
+          "detail": "SELECT id FROM expected EXCEPT SELECT id FROM actual"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "subqueries-exists",
+      "title": "Subqueries & EXISTS",
+      "topics": [
+        "CTE & subquery",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Use scalar subqueries for one value and EXISTS when the question is whether a related row exists.",
+      "entries": [
+        {
+          "term": "Scalar",
+          "meaning": "Subquery must return at most one row/value.",
+          "detail": "WHERE price > (SELECT AVG(price) FROM products)"
+        },
+        {
+          "term": "IN",
+          "meaning": "Compare against a one-column result set.",
+          "detail": "WHERE user_id IN (SELECT id FROM vip_users)"
+        },
+        {
+          "term": "EXISTS",
+          "meaning": "True as soon as a correlated match exists.",
+          "detail": "WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)"
+        },
+        {
+          "term": "NOT EXISTS",
+          "meaning": "Robust anti-match pattern, including NULL-sensitive cases.",
+          "detail": "WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)"
+        },
+        {
+          "term": "Correlated",
+          "meaning": "Inner query refers to the current outer row.",
+          "detail": "… WHERE o.user_id = u.id"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "cte",
+      "title": "CTEs",
+      "topics": [
+        "CTE & subquery"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Name intermediate result sets to make multi-step SQL easier to reason about and test.",
+      "entries": [
+        {
+          "term": "WITH",
+          "meaning": "Define a named result for the following statement.",
+          "detail": "WITH paid AS (SELECT * FROM orders WHERE status = 'paid') SELECT * FROM paid"
+        },
+        {
+          "term": "Multiple",
+          "meaning": "Chain readable stages separated by commas.",
+          "detail": "WITH a AS (…), b AS (SELECT … FROM a) SELECT … FROM b"
+        },
+        {
+          "term": "Columns",
+          "meaning": "Optionally name CTE output columns explicitly.",
+          "detail": "WITH totals(user_id, amount) AS (…)"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "case-cast-null",
+      "title": "CASE, COALESCE & CAST",
+      "topics": [
+        "Functions"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Small expressions that make reporting and validation queries far more useful.",
+      "entries": [
+        {
+          "term": "CASE",
+          "meaning": "Conditional expression.",
+          "detail": "CASE WHEN score >= 80 THEN 'high' ELSE 'other' END"
+        },
+        {
+          "term": "COALESCE",
+          "meaning": "First non-NULL expression.",
+          "detail": "COALESCE(display_name, email, 'unknown')"
+        },
+        {
+          "term": "NULLIF",
+          "meaning": "Return NULL when two expressions are equal; handy for safe division.",
+          "detail": "revenue / NULLIF(quantity, 0)"
+        },
+        {
+          "term": "CAST",
+          "meaning": "Convert to a target SQL type.",
+          "detail": "CAST(total AS DECIMAL(12,2))"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "window-ranking",
+      "title": "Window ranking",
+      "topics": [
+        "Windows"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Windows calculate across related rows without collapsing them like GROUP BY does.",
+      "entries": [
+        {
+          "term": "ROW_NUMBER",
+          "meaning": "Unique sequence inside each partition; ties still receive different numbers.",
+          "detail": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC)"
+        },
+        {
+          "term": "RANK",
+          "meaning": "Ties share rank and leave gaps.",
+          "detail": "RANK() OVER (ORDER BY total DESC)"
+        },
+        {
+          "term": "DENSE_RANK",
+          "meaning": "Ties share rank without gaps.",
+          "detail": "DENSE_RANK() OVER (ORDER BY total DESC)"
+        },
+        {
+          "term": "Top per group",
+          "meaning": "Rank inside a CTE/subquery, then filter the generated rank outside.",
+          "detail": "WITH x AS (SELECT …, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC, id DESC) rn FROM …) SELECT * FROM x WHERE rn = 1"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "window-analysis",
+      "title": "Window analysis",
+      "topics": [
+        "Windows",
+        "Aggregation"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Running totals, comparisons with adjacent rows, and partition-level statistics.",
+      "entries": [
+        {
+          "term": "Running sum",
+          "meaning": "Accumulate in deterministic order.",
+          "detail": "SUM(total) OVER (PARTITION BY user_id ORDER BY created_at, id ROWS UNBOUNDED PRECEDING)"
+        },
+        {
+          "term": "Partition total",
+          "meaning": "Aggregate per partition while retaining detail rows.",
+          "detail": "SUM(total) OVER (PARTITION BY user_id)"
+        },
+        {
+          "term": "LAG",
+          "meaning": "Read a previous row's value in window order.",
+          "detail": "LAG(total) OVER (PARTITION BY user_id ORDER BY created_at)"
+        },
+        {
+          "term": "LEAD",
+          "meaning": "Read a following row's value.",
+          "detail": "LEAD(created_at) OVER (PARTITION BY user_id ORDER BY created_at)"
+        },
+        {
+          "term": "Moving avg",
+          "meaning": "Explicit ROWS frame avoids surprising peer/range behavior.",
+          "detail": "AVG(total) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "dml",
+      "title": "INSERT, UPDATE, DELETE",
+      "topics": [
+        "DML",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "For destructive statements, prove the target rows with SELECT first and use transactions when appropriate.",
+      "entries": [
+        {
+          "term": "INSERT",
+          "meaning": "Insert explicit columns; avoid relying on table column order.",
+          "detail": "INSERT INTO users (id, email) VALUES (1, 'a@example.com')"
+        },
+        {
+          "term": "INSERT … SELECT",
+          "meaning": "Insert a query result.",
+          "detail": "INSERT INTO archive (id, email) SELECT id, email FROM users WHERE status = 'inactive'"
+        },
+        {
+          "term": "UPDATE",
+          "meaning": "Change matching rows; verify the WHERE predicate first.",
+          "detail": "UPDATE users SET status = 'inactive' WHERE last_login < '2025-01-01'"
+        },
+        {
+          "term": "DELETE",
+          "meaning": "Remove matching rows; missing WHERE means all rows.",
+          "detail": "DELETE FROM sessions WHERE expires_at < CURRENT_TIMESTAMP"
+        }
+      ],
+      "more": [
+        {
+          "term": "Safe check",
+          "meaning": "Run the same predicate as SELECT before a destructive change.",
+          "detail": "SELECT id FROM users WHERE …"
+        },
+        {
+          "term": "Affected rows",
+          "meaning": "Treat row count as evidence: unexpectedly high or zero counts deserve investigation.",
+          "detail": "Compare expected vs actual affected-row count"
+        }
+      ]
+    },
+    {
+      "id": "ddl-constraints",
+      "title": "Tables & constraints",
+      "topics": [
+        "DDL",
+        "QA patterns"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Constraints make invalid states impossible at the database boundary instead of merely unlikely.",
+      "entries": [
+        {
+          "term": "PRIMARY KEY",
+          "meaning": "Unique, non-NULL row identity.",
+          "detail": "id INTEGER PRIMARY KEY"
+        },
+        {
+          "term": "FOREIGN KEY",
+          "meaning": "Require referenced parent data.",
+          "detail": "FOREIGN KEY (user_id) REFERENCES users(id)"
+        },
+        {
+          "term": "UNIQUE",
+          "meaning": "Reject duplicate key combinations under engine NULL semantics.",
+          "detail": "UNIQUE (tenant_id, external_id)"
+        },
+        {
+          "term": "NOT NULL",
+          "meaning": "Reject missing values.",
+          "detail": "email VARCHAR(320) NOT NULL"
+        },
+        {
+          "term": "CHECK",
+          "meaning": "Enforce a row-level predicate where supported/enforced.",
+          "detail": "CHECK (total >= 0)"
+        },
+        {
+          "term": "DEFAULT",
+          "meaning": "Value used when the column is omitted.",
+          "detail": "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        }
+      ],
+      "more": [
+        {
+          "term": "ALTER TABLE",
+          "meaning": "Change schema; supported operations differ substantially by engine/version.",
+          "detail": "ALTER TABLE users ADD COLUMN locale VARCHAR(10)"
+        },
+        {
+          "term": "DROP",
+          "meaning": "Destructive schema change; dependency behavior is engine-specific.",
+          "detail": "DROP TABLE old_table"
+        }
+      ]
+    },
+    {
+      "id": "transactions",
+      "title": "Transactions",
+      "topics": [
+        "Transactions",
+        "QA patterns"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Group dependent writes so they commit together or roll back together; begin syntax varies slightly by engine.",
+      "entries": [
+        {
+          "term": "PostgreSQL",
+          "meaning": "Explicit transaction block.",
+          "detail": "BEGIN; … COMMIT;  -- or ROLLBACK"
+        },
+        {
+          "term": "MySQL",
+          "meaning": "Explicit transaction block for transactional storage engines.",
+          "detail": "START TRANSACTION; … COMMIT;"
+        },
+        {
+          "term": "SQLite",
+          "meaning": "Begin a transaction; locking mode can be qualified.",
+          "detail": "BEGIN; … COMMIT;"
+        },
+        {
+          "term": "SQL Server",
+          "meaning": "T-SQL transaction block.",
+          "detail": "BEGIN TRANSACTION; … COMMIT TRANSACTION;"
+        },
+        {
+          "term": "PG / MySQL / SQLite",
+          "meaning": "Create a partial rollback point inside a transaction.",
+          "detail": "SAVEPOINT before_step; … ROLLBACK TO before_step"
+        },
+        {
+          "term": "SQL Server savepoint",
+          "meaning": "T-SQL uses SAVE TRANSACTION and ROLLBACK TRANSACTION.",
+          "detail": "SAVE TRANSACTION before_step; … ROLLBACK TRANSACTION before_step"
+        }
+      ],
+      "more": [
+        {
+          "term": "Isolation",
+          "meaning": "Test lost updates, non-repeatable reads, phantoms, and serialization behavior according to the configured level.",
+          "detail": "READ COMMITTED / REPEATABLE READ / SERIALIZABLE / engine variants"
+        }
+      ]
+    },
+    {
+      "id": "indexes-explain",
+      "title": "Indexes & EXPLAIN",
+      "topics": [
+        "Performance",
+        "QA patterns"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Indexes are workload-specific. Verify plans and timings instead of assuming an index makes a query faster.",
+      "entries": [
+        {
+          "term": "Index",
+          "meaning": "Common B-tree index for selective lookup/order patterns.",
+          "detail": "CREATE INDEX idx_orders_user_created ON orders (user_id, created_at)"
+        },
+        {
+          "term": "Composite order",
+          "meaning": "Column order matters; align it with real predicates/orderings.",
+          "detail": "(tenant_id, status, created_at)"
+        },
+        {
+          "term": "PostgreSQL",
+          "meaning": "Inspect planner output; ANALYZE executes the statement.",
+          "detail": "EXPLAIN (ANALYZE, BUFFERS) SELECT …"
+        },
+        {
+          "term": "MySQL",
+          "meaning": "Inspect access path/plan.",
+          "detail": "EXPLAIN SELECT …"
+        },
+        {
+          "term": "SQLite",
+          "meaning": "Inspect high-level query plan.",
+          "detail": "EXPLAIN QUERY PLAN SELECT …"
+        },
+        {
+          "term": "SQL Server",
+          "meaning": "Use actual/estimated execution plans in SSMS or SET SHOWPLAN options.",
+          "detail": "Inspect plan operators, estimates, scans/seeks"
+        }
+      ],
+      "more": [
+        {
+          "term": "Sargability",
+          "meaning": "Functions/transforms on indexed columns can prevent efficient seeks in many cases.",
+          "detail": "Prefer created_at >= boundary over DATE(created_at) = … when possible"
+        },
+        {
+          "term": "Measure",
+          "meaning": "Compare realistic data volumes, warm/cold effects, row counts, and plan changes.",
+          "detail": "Plan + latency + rows + I/O evidence"
+        }
+      ]
+    },
+    {
+      "id": "qa-data-checks",
+      "title": "QA data checks",
+      "topics": [
+        "QA patterns",
+        "Aggregation"
+      ],
+      "dialects": [
+        "Portable"
+      ],
+      "summary": "Compact queries for validating uniqueness, completeness, referential integrity, and reconciliation.",
+      "entries": [
+        {
+          "term": "Duplicates",
+          "meaning": "Find keys that occur more than once.",
+          "detail": "SELECT external_id, COUNT(*) c FROM t GROUP BY external_id HAVING COUNT(*) > 1"
+        },
+        {
+          "term": "Missing required",
+          "meaning": "Find unexpected NULLs/blanks.",
+          "detail": "SELECT * FROM t WHERE email IS NULL OR TRIM(email) = ''"
+        },
+        {
+          "term": "Orphans",
+          "meaning": "Find children without a parent.",
+          "detail": "SELECT c.* FROM child c LEFT JOIN parent p ON p.id = c.parent_id WHERE p.id IS NULL"
+        },
+        {
+          "term": "Reconcile totals",
+          "meaning": "Compare independently computed aggregates at the same grain.",
+          "detail": "GROUP BY business_date, currency"
+        },
+        {
+          "term": "Unexpected domain",
+          "meaning": "Surface values outside an allowed set.",
+          "detail": "SELECT status, COUNT(*) FROM t GROUP BY status"
+        },
+        {
+          "term": "Freshness",
+          "meaning": "Check latest expected event/load time.",
+          "detail": "SELECT MAX(loaded_at) FROM warehouse_table"
+        }
+      ],
+      "more": [
+        {
+          "term": "Row-count delta",
+          "meaning": "Compare source/target counts, but pair counts with key/value reconciliation.",
+          "detail": "expected_count - actual_count"
+        },
+        {
+          "term": "Boundary samples",
+          "meaning": "Inspect first/last/min/max values around time and numeric boundaries.",
+          "detail": "MIN(), MAX(), ORDER BY … FETCH/LIMIT"
+        }
+      ]
+    },
+    {
+      "id": "pagination-dialects",
+      "title": "Limit & pagination by dialect",
+      "topics": [
+        "Filtering",
+        "Dialect"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Always pair pagination with deterministic ORDER BY. The row-limiting syntax is not uniform.",
+      "entries": [
+        {
+          "term": "PostgreSQL",
+          "meaning": "LIMIT/OFFSET is common; FETCH is also supported.",
+          "detail": "ORDER BY id LIMIT 20 OFFSET 40"
+        },
+        {
+          "term": "MySQL",
+          "meaning": "LIMIT with OFFSET.",
+          "detail": "ORDER BY id LIMIT 20 OFFSET 40"
+        },
+        {
+          "term": "SQLite",
+          "meaning": "LIMIT with OFFSET.",
+          "detail": "ORDER BY id LIMIT 20 OFFSET 40"
+        },
+        {
+          "term": "SQL Server",
+          "meaning": "TOP for simple limits; OFFSET/FETCH for paging requires ORDER BY.",
+          "detail": "ORDER BY id OFFSET 40 ROWS FETCH NEXT 20 ROWS ONLY"
+        }
+      ],
+      "more": [
+        {
+          "term": "Keyset",
+          "meaning": "For deep/stable paging, compare from the last seen ordered key instead of large OFFSETs.",
+          "detail": "WHERE created_at < :last_created OR (created_at = :last_created AND id < :last_id) ORDER BY created_at DESC, id DESC"
+        }
+      ]
+    },
+    {
+      "id": "upsert-returning",
+      "title": "Upsert & changed rows",
+      "topics": [
+        "DML",
+        "Dialect"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Conflict handling and returning changed rows are vendor-specific—keep them isolated from portable SQL.",
+      "entries": [
+        {
+          "term": "PostgreSQL upsert",
+          "meaning": "Handle a unique/exclusion conflict with ON CONFLICT.",
+          "detail": "INSERT INTO users(id,email) VALUES (1,'a@x') ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email"
+        },
+        {
+          "term": "SQLite upsert",
+          "meaning": "SQLite also supports ON CONFLICT upsert syntax.",
+          "detail": "INSERT INTO users(id,email) VALUES (1,'a@x') ON CONFLICT(id) DO UPDATE SET email = excluded.email"
+        },
+        {
+          "term": "MySQL upsert",
+          "meaning": "Use ON DUPLICATE KEY UPDATE for duplicate unique/primary keys.",
+          "detail": "INSERT INTO users(id,email) VALUES (1,'a@x') ON DUPLICATE KEY UPDATE email = 'a@x'"
+        },
+        {
+          "term": "PostgreSQL rows",
+          "meaning": "RETURNING can return inserted/updated/deleted values.",
+          "detail": "INSERT INTO users(email) VALUES ('a@x') RETURNING id"
+        },
+        {
+          "term": "SQLite rows",
+          "meaning": "Modern SQLite supports RETURNING on top-level DML.",
+          "detail": "UPDATE users SET active = 0 WHERE id = 1 RETURNING id"
+        },
+        {
+          "term": "SQL Server rows",
+          "meaning": "OUTPUT exposes inserted/deleted pseudo-tables.",
+          "detail": "UPDATE users SET active = 0 OUTPUT inserted.id WHERE id = 1"
+        }
+      ],
+      "more": [
+        {
+          "term": "SQL Server upsert",
+          "meaning": "MERGE exists but has complex concurrency/trigger semantics; validate the chosen pattern for the workload.",
+          "detail": "MERGE is T-SQL-specific; test behavior under concurrent writes"
+        }
+      ]
+    },
+    {
+      "id": "date-dialects",
+      "title": "Date/time by dialect",
+      "topics": [
+        "Functions",
+        "Dialect"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Date arithmetic is one of the fastest places for otherwise-portable SQL to diverge.",
+      "entries": [
+        {
+          "term": "PostgreSQL",
+          "meaning": "Interval arithmetic.",
+          "detail": "CURRENT_DATE + INTERVAL '7 days'"
+        },
+        {
+          "term": "MySQL",
+          "meaning": "DATE_ADD / DATE_SUB family.",
+          "detail": "DATE_ADD(CURRENT_DATE, INTERVAL 7 DAY)"
+        },
+        {
+          "term": "SQLite",
+          "meaning": "Date/time functions use modifier strings.",
+          "detail": "date('now', '+7 days')"
+        },
+        {
+          "term": "SQL Server",
+          "meaning": "DATEADD / DATEDIFF family.",
+          "detail": "DATEADD(day, 7, CAST(GETDATE() AS date))"
+        },
+        {
+          "term": "Portable idea",
+          "meaning": "Store/compare timestamps at a clear timezone/precision and test boundary conversions explicitly.",
+          "detail": "UTC instant vs local business date are different concepts"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "string-dialects",
+      "title": "String aggregation by dialect",
+      "topics": [
+        "Functions",
+        "Aggregation",
+        "Dialect"
+      ],
+      "dialects": [
+        "PostgreSQL",
+        "MySQL",
+        "SQLite",
+        "SQL Server"
+      ],
+      "summary": "Basic string functions overlap, but aggregating many rows into one string uses different names.",
+      "entries": [
+        {
+          "term": "PostgreSQL",
+          "meaning": "Aggregate strings with a delimiter.",
+          "detail": "STRING_AGG(name, ', ' ORDER BY name)"
+        },
+        {
+          "term": "MySQL",
+          "meaning": "GROUP_CONCAT supports ordering/separators.",
+          "detail": "GROUP_CONCAT(name ORDER BY name SEPARATOR ', ')"
+        },
+        {
+          "term": "SQLite",
+          "meaning": "group_concat is the native name; current SQLite also documents string_agg as an alias.",
+          "detail": "group_concat(name, ', ')"
+        },
+        {
+          "term": "SQL Server",
+          "meaning": "STRING_AGG combines rows; ordering uses WITHIN GROUP.",
+          "detail": "STRING_AGG(name, ', ') WITHIN GROUP (ORDER BY name)"
+        }
+      ],
+      "more": []
+    }
+  ]
+}

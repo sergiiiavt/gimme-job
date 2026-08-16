@@ -1,0 +1,4 @@
+/* Interview Questions account lane: keeps the fixed auth control out of the stats block. */
+@media (min-width: 1051px) {
+  .iq-page .iq-head { padding-right: 72px; }
+}

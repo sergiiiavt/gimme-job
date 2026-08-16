@@ -8,6 +8,7 @@ import pythonCurriculum from "@/content/python-learning/catalog";
 import pythonQuickReference from "@/content/python-learning/quick-reference.json";
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
 import pythonTaxonomy from "@/content/python-learning/taxonomy.json";
+import sqlQuickReference from "@/content/data-learning/sql-quick-reference.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
 import { navigationGroups, SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
@@ -20,6 +21,8 @@ type ReferenceCard = {
   title: string;
   scope?: string;
   tags?: string[];
+  topics?: string[];
+  dialects?: string[];
   meta?: string;
   summary?: string;
   rows?: ReferenceRow[];
@@ -41,6 +44,20 @@ type PythonReferenceCatalog = {
     more: ReferenceRow[];
   }>;
 };
+type SqlReferenceCatalog = {
+  topicFilters: string[];
+  dialectFilters: string[];
+  cards: Array<{
+    id: string;
+    title: string;
+    topics: string[];
+    dialects: string[];
+    summary: string;
+    entries: ReferenceRow[];
+    more: ReferenceRow[];
+  }>;
+};
+
 type PythonReferenceGuidance = {
   summaries: Record<string, string>;
   explanations: Record<string, Record<string, string>>;
@@ -55,8 +72,9 @@ type PythonReferenceGuidance = {
   }>;
 };
 
-const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops"]);
+const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops", "data"]);
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
+const sqlReferenceCatalog = sqlQuickReference as SqlReferenceCatalog;
 const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
 
 function guidedRows(cardId: string, rows: ReferenceRow[]) {
@@ -90,6 +108,19 @@ const pythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatM
   return [primaryCard, ...theoryCards];
 });
 
+const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) => ({
+  id: `sql-${card.id}`,
+  title: card.title,
+  topics: card.topics,
+  dialects: card.dialects,
+  tags: card.topics,
+  meta: `${card.entries.length + card.more.length} refs`,
+  summary: card.summary,
+  rows: card.entries,
+  moreRows: card.more,
+  searchTerms: [...card.topics, ...card.dialects, "sql", "database", "data"],
+}));
+
 const referenceBlueprints: Record<string, string[]> = {
   "qa-fundamentals": ["Testing levels", "Test design", "Defects & evidence", "Risk & release"],
   automation: ["Locators", "Waits", "Assertions", "Fixtures", "Test architecture"],
@@ -105,7 +136,9 @@ function placeholderCards(referenceId: string): ReferenceCard[] {
 }
 
 function referenceCards(referenceId: string): ReferenceCard[] {
-  return referenceId === "programming" ? pythonReferenceCards : placeholderCards(referenceId);
+  if (referenceId === "programming") return pythonReferenceCards;
+  if (referenceId === "data") return sqlReferenceCards;
+  return placeholderCards(referenceId);
 }
 
 function searchableCardText(card: ReferenceCard) {
@@ -115,6 +148,8 @@ function searchableCardText(card: ReferenceCard) {
     card.meta ?? "",
     card.summary ?? "",
     ...(card.tags ?? []),
+    ...(card.topics ?? []),
+    ...(card.dialects ?? []),
     ...(card.rows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
     ...(card.moreRows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
     ...(card.code ?? []).flatMap((item) => [item.label, item.code]),
@@ -130,7 +165,9 @@ function regularLearningHref(referenceId: string, topicId?: string, trackId?: st
       ? "/learn/programming"
       : referenceId === "automation"
         ? "/learn/automation"
-        : "/learn/cloud-devops";
+        : referenceId === "data"
+          ? "/learn/data"
+          : "/learn/cloud-devops";
   const params = new URLSearchParams();
   if (trackId) params.set("track", trackId);
   if (topicId) params.set("topic", topicId);
@@ -162,6 +199,16 @@ function learningSubnav(referenceId: string): SubnavItem[] {
       label: item.label,
       count: concepts.filter((concept) => concept.topicId === item.id).length || undefined,
     }));
+  }
+  if (referenceId === "data") {
+    return [
+      { id: "all", label: "All topics", count: 5 },
+      { id: "sql-foundations", label: "SQL foundations", status: "under-construction" },
+      { id: "database-integrity", label: "Database integrity", status: "under-construction" },
+      { id: "etl-and-elt", label: "ETL and ELT", status: "under-construction" },
+      { id: "data-quality", label: "Data quality", status: "under-construction" },
+      { id: "bi-semantics-and-lineage", label: "BI semantics and lineage", status: "under-construction" },
+    ];
   }
   const taxonomy = cloudDevopsTaxonomy as TaxonomyItem[];
   return taxonomy.map((item) => ({
@@ -210,16 +257,20 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const cards = referenceCards(referenceId);
   const scopes = useMemo(() => {
     if (referenceId === "programming") return pythonReferenceCatalog.filters;
+    if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
     return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
   }, [cards, referenceId]);
+  const dialects = referenceId === "data" ? sqlReferenceCatalog.dialectFilters : ["All"];
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState("All");
+  const [dialect, setDialect] = useState("All");
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set());
   const [mobileNav, setMobileNav] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCards = cards.filter((card) => {
-    const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope);
-    return scopeMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
+    const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
+    const dialectMatches = referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
+    return scopeMatches && dialectMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
   });
 
   if (!activeItem || !supportedReferenceIds.has(referenceId)) {
@@ -266,8 +317,21 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
           <div className={styles.topbar} aria-label="Quick reference filters">
-            <div className={styles.scopes} aria-label="Reference scope">
-              {scopes.map((item) => <button className={scope === item ? styles.active : ""} key={item} onClick={() => setScope(item)} type="button">{item}</button>)}
+            <div className={styles.filterGroups}>
+              <div className={styles.filterGroup}>
+                {referenceId === "data" ? <span className={styles.filterLabel}>Topic</span> : null}
+                <div className={styles.scopes} aria-label="Reference topic">
+                  {scopes.map((item) => <button className={scope === item ? styles.active : ""} key={item} onClick={() => setScope(item)} type="button">{item}</button>)}
+                </div>
+              </div>
+              {referenceId === "data" ? (
+                <div className={styles.filterGroup}>
+                  <span className={styles.filterLabel}>Dialect</span>
+                  <div className={styles.scopes} aria-label="SQL dialect">
+                    {dialects.map((item) => <button className={dialect === item ? styles.active : ""} key={item} onClick={() => setDialect(item)} type="button">{item}</button>)}
+                  </div>
+                </div>
+              ) : null}
             </div>
             <label className={styles.search}>
               <span aria-hidden="true">⌕</span>
@@ -280,7 +344,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
               const hasContent = Boolean(card.rows?.length || card.code?.length || card.notes?.length);
               const expanded = expandedCards.has(card.id);
               const showMoreRows = expanded || Boolean(normalizedQuery);
-              const cardNumber = referenceId === "programming" ? cards.findIndex((candidate) => candidate.id === card.id) + 1 : null;
+              const cardNumber = referenceId === "programming" || referenceId === "data" ? cards.findIndex((candidate) => candidate.id === card.id) + 1 : null;
               return (
                 <article className={`${styles.card}${hasContent ? "" : ` ${styles.placeholder}`}${expanded ? ` ${styles.expandedCard}` : ""}`} key={card.id}>
                   <header className={styles.cardHeader}>

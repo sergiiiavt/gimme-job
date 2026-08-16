@@ -110,4 +110,6 @@ jobs:
           check_route "https://gimmejob.gimmejob.workers.dev/learn/metrics-estimation" 'QA Metrics (&amp;|&) Estimation'
           check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Mutability (&amp;|&) References'
           check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Bind a name to an object'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Window ranking'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Dialect'
           check_header "https://gimmejob.gimmejob.workers.dev/reference/programming" '^cache-control: .*no-store'
