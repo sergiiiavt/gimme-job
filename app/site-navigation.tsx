@@ -28,8 +28,8 @@ type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
 export const navigationIntroItem: SectionNavigationItem = {
   id: "about",
   label: "About this site",
-  publicHref: "/learn#about",
-  personalHref: "/learn#about",
+  publicHref: "/learn/about",
+  personalHref: "/learn/about",
 };
 
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
@@ -240,8 +240,8 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   };
 
   const brandHref = mode === "public"
-    ? navigationIntroItem.publicHref ?? "/learn#about"
-    : navigationIntroItem.personalHref ?? "/learn#about";
+    ? navigationIntroItem.publicHref ?? "/learn/about"
+    : navigationIntroItem.personalHref ?? "/learn/about";
 
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
