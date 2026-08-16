@@ -6,9 +6,16 @@ export interface VacancySection {
   lines: string[];
 }
 
+export interface JobPostingMetadata {
+  title: string | null;
+  company: string | null;
+  description: string | null;
+  datePosted: string | null;
+}
+
 const SECTION_PATTERNS: Array<{ kind: VacancySectionKind; title: string; pattern: RegExp }> = [
   { kind: "responsibilities", title: "Responsibilities", pattern: /^(?:responsibilities|responsibility|what you(?:'|’)ll do|what you will do|your tasks|tasks|duties|key responsibilities|main responsibilities|обов[’'ʼ]?язки|основні обов[’'ʼ]?язки|задачі|основні задачі|завдання|що робити|чем предстоит заниматься)\s*:?[\s]*$/iu },
-  { kind: "requirements", title: "Requirements", pattern: /^(?:requirements|required skills|what we expect|what we are looking for|must have|qualifications|key qualifications|you have|you are|вимоги|основні вимоги|очікування від кандидата|очікуємо|що потрібно|кого ми шукаємо|обов[’'ʼ]?язково|требования)\s*:?[\s]*$/iu },
+  { kind: "requirements", title: "Requirements", pattern: /^(?:requirements|required skills|required skills experience|what we expect|what we are looking for|must have|qualifications|key qualifications|you have|you are|вимоги|основні вимоги|очікування від кандидата|очікуємо|що потрібно|кого ми шукаємо|обов[’'ʼ]?язково|требования)\s*:?[\s]*$/iu },
   { kind: "nice-to-have", title: "Nice to have", pattern: /^(?:nice to have|would be a plus|will be a plus|as a plus|bonus points|preferred|буде плюсом|плюсом буде|бажано|перевагою буде|желательно|будет плюсом)\s*:?[\s]*$/iu },
   { kind: "benefits", title: "What we offer", pattern: /^(?:what we offer|what we provide|benefits|perks|why you(?:'|’)ll love working here|we offer|ми пропонуємо|що ми пропонуємо|на тебе чекають|ми забезпечуємо|переваги|що пропонуємо|что мы предлагаем)\s*:?[\s]*$/iu },
   { kind: "conditions", title: "Conditions", pattern: /^(?:conditions|working conditions|work conditions|employment conditions|compensation and conditions|умови|умови роботи|формат роботи|условия|условия работы)\s*:?[\s]*$/iu },
@@ -91,9 +98,43 @@ export function parseVacancySections(value: string): VacancySection[] {
 export function normalizeVacancyDescription(value: string): string {
   const sections = parseVacancySections(value);
   if (!sections.length) return "";
-  const shouldShowOverviewHeading = sections.length > 1;
+  const showOverviewHeading = sections.length > 1;
   return sections.map((section) => {
-    const heading = section.kind === "overview" && !shouldShowOverviewHeading ? "" : `## ${section.title}\n`;
+    const heading = section.kind === "overview" && !showOverviewHeading ? "" : `${section.title}\n`;
     return `${heading}${section.lines.join("\n")}`.trim();
   }).filter(Boolean).join("\n\n");
+}
+
+function objects(value: unknown): Record<string, unknown>[] {
+  if (Array.isArray(value)) return value.flatMap(objects);
+  if (!value || typeof value !== "object") return [];
+  const object = value as Record<string, unknown>;
+  const graph = Array.isArray(object["@graph"]) ? object["@graph"] : [];
+  return [object, ...graph.flatMap(objects)];
+}
+
+export function extractJobPostingMetadata(html: string): JobPostingMetadata | null {
+  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const parsed = JSON.parse(decodeEntities(match[1] ?? "")) as unknown;
+      const posting = objects(parsed).find((entry) => {
+        const type = entry["@type"];
+        return type === "JobPosting" || (Array.isArray(type) && type.includes("JobPosting"));
+      });
+      if (!posting) continue;
+      const organization = posting.hiringOrganization && typeof posting.hiringOrganization === "object"
+        ? posting.hiringOrganization as Record<string, unknown>
+        : {};
+      const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
+      return {
+        title: text(posting.title) || null,
+        company: text(organization.name) || null,
+        description: text(posting.description) || null,
+        datePosted: text(posting.datePosted) || null,
+      };
+    } catch {
+      // Ignore malformed JSON-LD and continue to source-specific HTML extraction.
+    }
+  }
+  return null;
 }
