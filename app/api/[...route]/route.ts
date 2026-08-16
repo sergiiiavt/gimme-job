@@ -1,8 +1,6 @@
 import {
   DEFAULT_PROFILE,
   DEFAULT_SOURCES,
-  adjustResumeForJob,
-  analyzeJobs,
   dashboard,
   interviewProgress,
   jsonError,
@@ -16,6 +14,7 @@ import {
   updateInterviewProgress,
   updateJobTracking,
 } from "../_jobpilot";
+import { adjustResumeForUser, analyzeJobsForUser } from "../_job-actions";
 import { upsertImportedVacancies } from "../_vacancy-import";
 import {
   ensureVacancyCatalog,
@@ -31,7 +30,6 @@ import {
   tenantRequestContext,
   tenantResumePdf,
   tenantSettingsView,
-  tenantUnavailable,
   updateTenantDraft,
   updateTenantInterviewProgress,
   updateTenantJobTracking,
@@ -151,6 +149,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const route = await parts(context); const payload = await readPayload(request);
     const tenant = tenantRequestContext(request);
+    const userId = tenant.authenticated ? tenant.userId : null;
     if (route[0] === "import") {
       if (tenant.multiUser) return multiUserAdminBlocked();
       const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
@@ -178,20 +177,24 @@ export async function POST(request: Request, context: RouteContext) {
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "analyze") {
-      if (tenant.multiUser) return tenantUnavailable("Job analysis");
-      const result = await analyzeJobs(typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_analyze" });
+      if (tenant.multiUser && !userId) {
+        return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+      }
+      const result = await analyzeJobsForUser(userId, typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25);
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "analyze-resume") {
-      if (tenant.multiUser) return tenantUnavailable("Resume generation");
+      if (tenant.multiUser && !userId) {
+        return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+      }
       if (typeof payload.jobId !== "string" || !payload.jobId) throw new Error("jobId is required.");
-      const result = await adjustResumeForJob(payload.jobId, { trigger: "api_analyze_resume" });
+      const result = await adjustResumeForUser(userId, payload.jobId);
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "run") {
       if (tenant.multiUser) return multiUserAdminBlocked();
       const sync = await syncVacancySources();
-      const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_run" });
+      const analysis = await analyzeJobsForUser(null, undefined, typeof payload.limit === "number" ? payload.limit : 25);
       return Response.json({ ok: true, result: { sync, analysis }, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "drafts" && route[1] && route[2]) {
