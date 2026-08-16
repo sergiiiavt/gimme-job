@@ -244,15 +244,22 @@
   border-bottom: 0;
 }
 
+.rail {
+  display: grid;
+  gap: 10px;
+  position: sticky;
+  top: 18px;
+}
+
+.language,
 .toc {
   background: #fff;
   border: 1px solid #dfe4df;
   border-radius: 11px;
   padding: 16px;
-  position: sticky;
-  top: 18px;
 }
 
+.language > span,
 .toc > span {
   color: #77847d;
   display: block;
@@ -261,6 +268,38 @@
   letter-spacing: .13em;
   margin-bottom: 10px;
   text-transform: uppercase;
+}
+
+.language div {
+  background: #f2f5f2;
+  border: 1px solid #e1e6e2;
+  border-radius: 8px;
+  display: grid;
+  gap: 3px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
+}
+
+.language button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #67736d;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 850;
+  padding: 7px 8px;
+}
+
+.language button:hover {
+  background: #e7ece8;
+  color: #26362e;
+}
+
+.language .activeLanguage {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(28, 41, 34, .1);
+  color: #2f714e;
 }
 
 .toc nav {
@@ -283,12 +322,30 @@
   color: #24352c;
 }
 
+.toc .sourceLink {
+  border-radius: 0 0 4px 4px;
+  border-top: 1px solid #e3e8e3;
+  margin-top: 8px;
+  padding-top: 11px;
+}
+
+.sourceLink small {
+  color: #8a958f;
+  display: block;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
 .sourcePanel {
   background: #f8faf7;
   border: 1px solid #dfe5dc;
   border-radius: 12px;
   margin-top: 14px;
   padding: 19px;
+  scroll-margin-top: 24px;
 }
 
 .sourcePanel > header {
@@ -414,13 +471,21 @@
     display: block;
   }
 
-  .toc {
+  .rail {
     margin-bottom: 14px;
     position: static;
   }
 
   .toc nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toc .sourceLink {
+    grid-column: 1 / -1;
+  }
+
+  .language {
+    max-width: 210px;
   }
 }
 
@@ -451,6 +516,10 @@
   .toc nav,
   .pager {
     grid-template-columns: 1fr;
+  }
+
+  .toc .sourceLink {
+    grid-column: auto;
   }
 
   .pager button:last-child {

@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import qaFundamentalsCatalog from "@/content/qa-fundamentals/catalog";
-import MarkdownDocument, { extractMarkdownHeadings } from "./qa-markdown";
+import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
+import MarkdownDocument, { extractMarkdownHeadings, stripMarkdownSection } from "./qa-markdown";
 import { SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
@@ -18,6 +19,7 @@ function topicFromLocation() {
 
 export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
   const [activeTopic, setActiveTopic] = useState(firstTopicId);
+  const [language, setLanguage] = useState<LearningLanguage>("en");
   const [mobileNav, setMobileNav] = useState(false);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
 
   const secondaryItems: SubnavItem[] = qaFundamentalsCatalog.taxonomy.map((topic) => ({
     id: topic.id,
-    label: topic.label,
+    label: language === "uk" ? topic.labelUk ?? topic.label : topic.label,
     count: conceptCounts.get(topic.id),
   }));
 
@@ -45,10 +47,26 @@ export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
   const chapterSources = chapter.sourceIds
     .map((sourceId) => qaFundamentalsCatalog.sources.find((source) => source.id === sourceId))
     .filter((source): source is NonNullable<typeof source> => Boolean(source));
-  const headings = extractMarkdownHeadings(chapter.markdown)
-    .filter((heading) => heading.level === 2 && !["summary", "sources"].includes(heading.id));
+
+  const englishMarkdown = stripMarkdownSection(chapter.markdown, "sources");
+  const localizedMarkdown = stripMarkdownSection(language === "uk" ? chapter.markdownUk : chapter.markdown, "sources");
+  const englishHeadings = extractMarkdownHeadings(englishMarkdown).filter((heading) => heading.level === 2);
+  const localizedHeadings = extractMarkdownHeadings(localizedMarkdown).filter((heading) => heading.level === 2);
+  const headings = localizedHeadings.map((heading, index) => ({
+    ...heading,
+    id: englishHeadings[index]?.id || heading.id || `section-${index + 1}`,
+  }));
+  const headingIdOverrides = Object.fromEntries(headings.map((heading) => [heading.text, heading.id]));
+
   const previous = chapterIndex > 0 ? qaFundamentalsCatalog.chapters[chapterIndex - 1] : undefined;
   const next = chapterIndex < qaFundamentalsCatalog.chapters.length - 1 ? qaFundamentalsCatalog.chapters[chapterIndex + 1] : undefined;
+  const chapterDescription = language === "uk" ? chapter.descriptionUk ?? chapter.description : chapter.description;
+  const pageTitle = language === "uk" ? qaFundamentalsCatalog.titleUk : qaFundamentalsCatalog.title;
+
+  const localizedTopicLabel = (topic: typeof chapter | undefined) => {
+    if (!topic) return undefined;
+    return language === "uk" ? topic.labelUk ?? topic.label : topic.label;
+  };
 
   const selectTopic = (topicId: string) => {
     if (!qaFundamentalsCatalog.taxonomy.some((topic) => topic.id === topicId)) return;
@@ -95,60 +113,47 @@ export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
         </button>
 
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero}>
-            <span className={styles.eyebrow}>QA fundamentals · Chapter {String(chapterIndex + 1).padStart(2, "0")} / 08</span>
-            <h1>{qaFundamentalsCatalog.title}</h1>
-            <p>{chapter.description}</p>
-            <div className={styles.meta}>
-              <span>{conceptCounts.get(chapter.id) ?? 0} required concepts</span>
-              <span>{chapterSources.length} primary references</span>
-              <span>Long-form learning material</span>
-            </div>
-          </header>
+          <LearningHero
+            description={chapterDescription}
+            eyebrow={`QA fundamentals · ${language === "uk" ? "Розділ" : "Chapter"} ${String(chapterIndex + 1).padStart(2, "0")} / 08`}
+            meta={[
+              `${conceptCounts.get(chapter.id) ?? 0} ${language === "uk" ? "ключових понять" : "required concepts"}`,
+              `${chapterSources.length} ${language === "uk" ? "основних джерел" : "primary references"}`,
+              language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
+            ]}
+            title={pageTitle}
+          />
 
           <div className={styles.layout}>
             <div className={styles.document}>
               <article className={styles.article}>
-                <MarkdownDocument markdown={chapter.markdown}/>
+                <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={localizedMarkdown}/>
               </article>
 
-              <section className={styles.sourcePanel} aria-labelledby="qa-source-register">
-                <header>
-                  <h2 id="qa-source-register">Source register</h2>
-                  <span>Verified 16 Aug 2026</span>
-                </header>
-                <div className={styles.sources}>
-                  {chapterSources.map((source) => (
-                    <article className={styles.source} key={source.id}>
-                      <div>
-                        <strong>{source.title}</strong>
-                        <p>{source.role}</p>
-                        <span className={styles.sourceStatus}>{source.publisher} · {source.status.replaceAll("-", " ")}</span>
-                      </div>
-                      <a href={source.url} rel="noreferrer" target="_blank">Source ↗</a>
-                    </article>
-                  ))}
-                </div>
-              </section>
+              <LearningSourceRegistry
+                language={language}
+                sources={chapterSources.map((source) => ({
+                  id: source.id,
+                  meta: source.status.replaceAll("-", " "),
+                  publisher: source.publisher,
+                  role: source.role,
+                  title: source.title,
+                  url: source.url,
+                }))}
+                statusLabel={language === "uk" ? "Перевірено 16 серпня 2026" : "Verified 16 Aug 2026"}
+              />
 
-              <nav className={styles.pager} aria-label="QA fundamentals chapters">
-                <button disabled={!previous} onClick={() => previous && selectTopic(previous.id)} type="button">
-                  <small>← Previous chapter</small>
-                  <strong>{previous?.label ?? "Beginning of path"}</strong>
-                </button>
-                <button disabled={!next} onClick={() => next && selectTopic(next.id)} type="button">
-                  <small>Next chapter →</small>
-                  <strong>{next?.label ?? "End of path"}</strong>
-                </button>
-              </nav>
+              <LearningPager
+                ariaLabel="QA fundamentals chapters"
+                labelFor={localizedTopicLabel}
+                language={language}
+                next={next}
+                onSelect={(topic) => selectTopic(topic.id)}
+                previous={previous}
+              />
             </div>
 
-            <aside className={styles.toc} aria-label="On this page">
-              <span>On this page</span>
-              <nav>
-                {headings.map((heading) => <a href={`#${heading.id}`} key={heading.id}>{heading.text}</a>)}
-              </nav>
-            </aside>
+            <LearningRail headings={headings} language={language} onLanguageChange={setLanguage}/>
           </div>
         </div>
       </section>

@@ -3,7 +3,9 @@
     "id": "qa-testing-fundamentals",
     "order": 1,
     "label": "QA & Testing Fundamentals",
+    "labelUk": "Основи QA та тестування",
     "description": "Quality, QA, QC, testing, core vocabulary, verification and validation, why testing exists, and the fundamental testing principles.",
+    "descriptionUk": "Якість, QA, QC, тестування, базова термінологія, верифікація та валідація, навіщо існує тестування і фундаментальні принципи тестування.",
     "file": "01-qa-testing-fundamentals.md",
     "sourceIds": ["iso-9000-2026", "istqb-ctfl-v4", "istqb-glossary", "iso-29119-1-2022", "ieee-1012-2024", "iso-25010-2023", "swebok-v4a"]
   },
@@ -11,7 +13,9 @@
     "id": "testing-process-lifecycle",
     "order": 2,
     "label": "Testing Process & Lifecycle",
+    "labelUk": "Процес і життєвий цикл тестування",
     "description": "How testing fits the software lifecycle and how planning, analysis, design, implementation, execution, monitoring and completion connect.",
+    "descriptionUk": "Як тестування вписується в життєвий цикл ПЗ і як пов’язані планування, аналіз, дизайн, реалізація, виконання, моніторинг та завершення.",
     "file": "02-testing-process-lifecycle.md",
     "sourceIds": ["istqb-ctfl-v4", "iso-29119-1-2022", "iso-29119-2-2021", "swebok-v4a"]
   },
@@ -19,7 +23,9 @@
     "id": "test-levels-types-approaches",
     "order": 3,
     "label": "Test Levels, Types & Approaches",
+    "labelUk": "Рівні, типи та підходи до тестування",
     "description": "Test levels, functional and non-functional testing, static and dynamic testing, regression and confirmation, and manual versus automated execution.",
+    "descriptionUk": "Рівні тестування, функціональне й нефункціональне, статичне й динамічне тестування, regression і confirmation, а також manual та automated execution.",
     "file": "03-test-levels-types-approaches.md",
     "sourceIds": ["istqb-ctfl-v4", "iso-29119-1-2022", "iso-25010-2023", "swebok-v4a"]
   },
@@ -27,7 +33,9 @@
     "id": "requirements-test-design",
     "order": 4,
     "label": "Requirements & Test Design",
+    "labelUk": "Вимоги та дизайн тестів",
     "description": "Testability, acceptance criteria, test conditions and cases, traceability, and the core black-box and white-box test design techniques.",
+    "descriptionUk": "Тестованість, acceptance criteria, test conditions і cases, traceability та основні black-box і white-box техніки test design.",
     "file": "04-requirements-test-design.md",
     "sourceIds": ["iso-29148-2018", "istqb-ctfl-v4", "iso-29119-2-2021", "iso-29119-4-2021", "swebok-v4a"]
   },
@@ -35,7 +43,9 @@
     "id": "documentation-defects",
     "order": 5,
     "label": "Test Documentation & Defects",
+    "labelUk": "Тестова документація та дефекти",
     "description": "Useful test work products, strategies and plans, test cases and checklists, reporting, defect records, severity, priority and defect lifecycle.",
+    "descriptionUk": "Корисні test work products, strategies і plans, test cases і checklists, reporting, defect records, severity, priority та життєвий цикл дефекту.",
     "file": "05-documentation-defects.md",
     "sourceIds": ["iso-29119-2-2021", "iso-29119-3-2021", "istqb-ctfl-v4", "swebok-v4a"]
   },
@@ -43,7 +53,9 @@
     "id": "risk-coverage-prioritization",
     "order": 6,
     "label": "Risk, Coverage & Prioritization",
+    "labelUk": "Ризик, покриття та пріоритизація",
     "description": "Product and project risk, coverage as evidence, prioritization, completion criteria, estimation and communicating residual uncertainty.",
+    "descriptionUk": "Product і project risk, coverage як доказ, пріоритизація, completion criteria, estimation та комунікація залишкової невизначеності.",
     "file": "06-risk-coverage-prioritization.md",
     "sourceIds": ["iso-16085-2021", "istqb-ctfl-v4", "iso-29119-2-2021", "iso-29119-4-2021", "swebok-v4a"]
   },
@@ -51,7 +63,9 @@
     "id": "static-exploratory-collaborative",
     "order": 7,
     "label": "Static, Exploratory & Collaborative Testing",
+    "labelUk": "Статичне, exploratory та collaborative testing",
     "description": "Reviews, static testing, exploratory and experience-based work, feedback, collaboration and testing as an information-seeking activity.",
+    "descriptionUk": "Reviews, static testing, exploratory та experience-based робота, feedback, collaboration і тестування як діяльність із пошуку інформації.",
     "file": "07-static-exploratory-collaborative.md",
     "sourceIds": ["iso-20246-2017", "istqb-ctfl-v4", "iso-29119-4-2021", "swebok-v4a"]
   },
@@ -59,7 +73,9 @@
     "id": "agile-modern-delivery",
     "order": 8,
     "label": "QA in Agile & Modern Delivery",
+    "labelUk": "QA в Agile та сучасній delivery-моделі",
     "description": "Whole-team quality, Agile principles, Scrum context, Definition of Done, continuous feedback, shift-left and shift-right, CI/CD and automation boundaries.",
+    "descriptionUk": "Whole-team quality, принципи Agile, контекст Scrum, Definition of Done, continuous feedback, shift-left і shift-right, CI/CD та межі автоматизації.",
     "file": "08-agile-modern-delivery.md",
     "sourceIds": ["agile-manifesto", "scrum-guide-2020", "iso-29119-6-2021", "istqb-ctfl-v4", "swebok-v4a"]
   }

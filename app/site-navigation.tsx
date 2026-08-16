@@ -10,6 +10,8 @@ interface SectionNavigationItem {
   id: SiteSection;
   label: string;
   external?: false;
+  publicHref?: string;
+  personalHref?: string;
 }
 
 interface ExternalNavigationItem {
@@ -52,8 +54,8 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "certifications", label: "Certs & Trainings" },
       { id: "llm", label: "Generative AI & LLM" },
       { id: "agentic", label: "AI agents & MCP" },
-      { id: "programming", label: "Programming" },
-      { id: "automation", label: "Test automation" },
+      { id: "programming", label: "Programming", publicHref: "/learn/programming", personalHref: "/workspace/learn/programming" },
+      { id: "automation", label: "Test automation", publicHref: "/learn/automation", personalHref: "/workspace/learn/automation" },
       { id: "api", label: "API & integration" },
       { id: "data", label: "Databases, SQL & BI" },
       { id: "mobile", label: "Mobile & accessibility" },
@@ -137,6 +139,18 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
       return (
         <Link
           className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeExternalId === item.id ? " active" : ""}`}
+          href={mode === "public" ? item.publicHref : item.personalHref}
+          key={item.id}
+        >
+          {item.label}
+        </Link>
+      );
+    }
+
+    if (item.publicHref && item.personalHref) {
+      return (
+        <Link
+          className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`}
           href={mode === "public" ? item.publicHref : item.personalHref}
           key={item.id}
         >
