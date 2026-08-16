@@ -9,6 +9,7 @@ const {
   analyzeJobWithOpenAi,
   deterministicAnalysis,
   deterministicResumePackage,
+  untrustedListing,
 } = await import("../agent/src/job-intelligence.ts");
 
 const profile = {
@@ -142,4 +143,121 @@ test("invalid OpenAI resume falls back to deterministic package", async () => {
   const result = await adjustResumeWithOpenAi(job, profile, { apiKey: "test-key", fetcher });
   assert.equal(result.mode, "deterministic");
   assert.deepEqual(result.pkg, deterministicResumePackage(job, profile));
+});
+
+test("deterministic analysis covers seniority, contract and language signals", () => {
+  const cases = [
+    {
+      candidate: { ...job, title: "Head of QA", remote: false, location: "Warsaw", description: "Part-time role. English B2. Salary $5000." },
+      seniority: "Head/Principal",
+      employmentType: "Part-time",
+      language: "English B2",
+      salary: "Mentioned",
+    },
+    {
+      candidate: { ...job, title: "Senior QA Engineer", description: "Contract B2B. English required." },
+      seniority: "Senior",
+      employmentType: "Contract/B2B",
+      language: "English mentioned",
+      salary: "Not disclosed",
+    },
+    {
+      candidate: { ...job, title: "Middle QA Engineer", description: "Full-time web testing." },
+      seniority: "Middle",
+      employmentType: "Full-time",
+      language: "Not specified",
+      salary: "Not disclosed",
+    },
+    {
+      candidate: { ...job, title: "Junior QA Engineer", description: "Entry role for web testing." },
+      seniority: "Junior",
+      employmentType: "Not specified",
+      language: "Not specified",
+      salary: "Not disclosed",
+    },
+  ];
+
+  for (const item of cases) {
+    const result = deterministicAnalysis(item.candidate, profile);
+    assert.equal(result.marketSignals.seniority, item.seniority);
+    assert.equal(result.marketSignals.employmentType, item.employmentType);
+    assert.equal(result.marketSignals.language, item.language);
+    assert.equal(result.marketSignals.salary, item.salary);
+  }
+});
+
+test("deterministic analysis distinguishes missing location, reservation and blockers", () => {
+  const blockedProfile = {
+    ...profile,
+    preferredSignals: [],
+    excludedSignals: ["gambling"],
+    locations: ["Kyiv"],
+  };
+  const candidate = {
+    ...job,
+    title: "Unrelated Tester",
+    remote: false,
+    location: "Warsaw",
+    description: "Gambling product. Cypress and Java are required.",
+    salaryText: "4000 EUR",
+  };
+  const result = deterministicAnalysis(candidate, blockedProfile);
+  assert.equal(result.marketSignals.remotePolicy, "Remote not confirmed");
+  assert.equal(result.marketSignals.reservation, "Not mentioned");
+  assert.equal(result.marketSignals.salary, "4000 EUR");
+  assert.ok(result.missingSkills.includes("Cypress"));
+  assert.ok(result.missingSkills.includes("Java"));
+  assert.deepEqual(result.hardBlockers, ["Excluded signal found: gambling"]);
+  assert.equal(result.recommendation, "Do not apply unless the blocker is resolved.");
+});
+
+test("deterministic resume supports form applications and truth warnings", () => {
+  const formJob = { ...job, contactEmail: null, description: "General QA role without detected tool keywords." };
+  const placeholderProfile = {
+    ...profile,
+    summary: "Replace Example Company details before sending.",
+    facts: [],
+    education: ["QA Academy"],
+    links: ["https://example.com/profile"],
+  };
+  const pkg = deterministicResumePackage(formJob, placeholderProfile);
+  assert.equal(pkg.applicationDraft.channel, "form");
+  assert.equal(pkg.applicationDraft.recipientGuess, null);
+  assert.match(pkg.applicationDraft.body, /Replace Example Company/);
+  assert.equal(pkg.tailoredResume.truthWarnings.length, 1);
+  assert.match(pkg.tailoredResume.markdown, /## Education/);
+  assert.match(pkg.tailoredResume.markdown, /https:\/\/example.com\/profile/);
+});
+
+test("missing OpenAI key uses deterministic resume too", async () => {
+  const result = await adjustResumeWithOpenAi(job, profile, { apiKey: "   " });
+  assert.equal(result.mode, "deterministic");
+  assert.deepEqual(result.pkg, deterministicResumePackage(job, profile));
+});
+
+test("malformed or empty OpenAI structured content falls back safely", async () => {
+  let fallbacks = 0;
+  const malformed: typeof fetch = async () => Response.json({ choices: [{ message: { content: "{not-json" } }] });
+  const malformedResult = await analyzeJobWithOpenAi(job, profile, {
+    apiKey: "test-key",
+    fetcher: malformed,
+    onFallback: () => { fallbacks += 1; },
+  });
+  assert.equal(malformedResult.mode, "deterministic");
+
+  const empty: typeof fetch = async () => Response.json({ choices: [{ message: {} }] });
+  const emptyResult = await analyzeJobWithOpenAi(job, profile, {
+    apiKey: "test-key",
+    fetcher: empty,
+    onFallback: () => { fallbacks += 1; },
+  });
+  assert.equal(emptyResult.mode, "deterministic");
+  assert.equal(fallbacks, 2);
+});
+
+test("untrusted listing truncates oversized descriptions before AI input", () => {
+  const listing = untrustedListing({ ...job, description: "x".repeat(50_000) });
+  assert.equal(listing.description.length, 40_000);
+  assert.equal(listing.id, "job-1");
+  assert.equal(listing.contactEmail, "hr@example.com");
 });
