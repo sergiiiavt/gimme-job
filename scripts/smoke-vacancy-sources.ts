@@ -99,13 +99,15 @@ async function smokeLobbyX(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  const includeLocalWorkUa = process.argv.includes("--include-local-workua");
   const checks: Array<[string, () => Promise<void>]> = [
     ["DOU", () => smokeRss("DOU", "https://jobs.dou.ua/vacancies/feeds/?search=QA")],
     ["Djinni", () => smokeRss("Djinni", "https://djinni.co/jobs/rss/?primary_keyword=QA")],
-    ["Work.ua", smokeWorkUa],
     ["Robota.ua", smokeRobotaUa],
     ["Lobby X", smokeLobbyX],
   ];
+  if (includeLocalWorkUa) checks.splice(2, 0, ["Work.ua (local-only)", smokeWorkUa]);
+  else console.log("Work.ua: SKIPPED in cloud smoke; direct HTML access returned HTTP 403 from a GitHub-hosted runner. Use --include-local-workua from a local network to probe it explicitly.");
 
   const failures: string[] = [];
   for (const [name, check] of checks) {
@@ -118,7 +120,7 @@ async function main(): Promise<void> {
   }
 
   if (failures.length) throw new Error(`Live vacancy smoke test failed:\n${failures.join("\n")}`);
-  console.log("All live vacancy source smoke checks passed.");
+  console.log("All cloud-safe live vacancy source smoke checks passed.");
 }
 
 await main();
