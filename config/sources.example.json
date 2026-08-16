@@ -15,13 +15,19 @@
   "workUa": [
     {
       "name": "workua-qa",
-      "query": "QA"
+      "query": "QA Engineer"
+    }
+  ],
+  "robotaUa": [
+    {
+      "name": "robotaua-qa",
+      "query": "QA Engineer"
     }
   ],
   "lobbyX": [
     {
       "name": "lobbyx-qa",
-      "query": "QA"
+      "query": "QA Engineer"
     }
   ],
   "gmail": {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./about-site-layout.css";
 import "./vacancies-workspace.css";
+import "./vacancy-description.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",

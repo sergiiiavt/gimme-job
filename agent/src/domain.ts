@@ -52,6 +52,7 @@ export const SourcesConfigSchema = z.object({
   lever: z.array(BoardSourceSchema).default([]),
   ashby: z.array(BoardSourceSchema).default([]),
   workUa: z.array(QuerySourceSchema).default([]),
+  robotaUa: z.array(QuerySourceSchema).default([]),
   lobbyX: z.array(QuerySourceSchema).default([]),
   gmail: z.object({
     enabled: z.boolean().default(false),

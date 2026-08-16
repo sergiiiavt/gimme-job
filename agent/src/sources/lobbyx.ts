@@ -1,11 +1,12 @@
 import type { JobInput } from "../domain.js";
-import { canonicalizeUrl, decodeHtmlEntities, isRemoteText, safeIsoDate, stripHtml } from "../utils.js";
+import { htmlToVacancyText, normalizeVacancyDescription } from "../vacancy-content.js";
+import { canonicalizeUrl, decodeHtmlEntities, isRemoteText, safeIsoDate } from "../utils.js";
 import { fetchJson, fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const API_BASE = "https://thelobbyx.com/wp-json/wp/v2/tors";
-const OPEN_STATUS_TERM_ID = 84; // "tors-status" taxonomy term "is-open"
-const MAX_DETAIL_FETCHES = 30;
+const OPEN_STATUS_TERM_ID = 84;
+const MAX_DETAIL_FETCHES = 40;
 
 interface TorListItem {
   id: number;
@@ -14,17 +15,14 @@ interface TorListItem {
   title: { rendered: string };
 }
 
-// The custom "tors" post type doesn't expose post_content via the REST API,
-// so the description has to come from the detail page's own markup. Nested
-// <div>s rule out a flat regex, hence the depth-aware scan.
 function extractDivByClass(html: string, className: string): string {
-  const openTagPattern = new RegExp(`<div[^>]*class="[^"]*${className}[^"]*"[^>]*>`);
+  const openTagPattern = new RegExp(`<div[^>]*class=["'][^"']*${className}[^"']*["'][^>]*>`, "i");
   const openMatch = openTagPattern.exec(html);
   if (!openMatch) return "";
 
   let depth = 1;
   const cursor = openMatch.index + openMatch[0].length;
-  const tagPattern = /<div\b[^>]*>|<\/div>/g;
+  const tagPattern = /<div\b[^>]*>|<\/div>/gi;
   tagPattern.lastIndex = cursor;
   let match: RegExpExecArray | null;
   while ((match = tagPattern.exec(html))) {
@@ -34,14 +32,11 @@ function extractDivByClass(html: string, className: string): string {
   return html.slice(cursor);
 }
 
-// Ukrainian job posts on this site conventionally open with "Company Name — ...",
-// right after a generic "Огляд"/"Overview" heading, so search the opening
-// paragraph rather than anchoring strictly to the first character.
 const COMPANY_PREFIX_PATTERN =
   /(?:^|\n)([A-ZА-ЯЁІЇЄ][\p{L}0-9«»'".,-]*(?:\s[A-ZА-ЯЁІЇЄ«][\p{L}0-9«»'".,-]*){0,4})\s*[—-]\s/u;
 
 export function inferCompanyFromDescription(description: string): string {
-  return COMPANY_PREFIX_PATTERN.exec(description.slice(0, 300))?.[1]?.trim() || "Unknown";
+  return COMPANY_PREFIX_PATTERN.exec(description.slice(0, 400))?.[1]?.trim() || "Unknown";
 }
 
 export interface LobbyXListing {
@@ -63,7 +58,7 @@ export function parseLobbyXListing(items: TorListItem[]): LobbyXListing[] {
 }
 
 export function parseLobbyXDescription(html: string): string {
-  return stripHtml(extractDivByClass(html, "vacancy-description"));
+  return normalizeVacancyDescription(htmlToVacancyText(extractDivByClass(html, "vacancy-description")));
 }
 
 export class LobbyXSource implements JobSource {
