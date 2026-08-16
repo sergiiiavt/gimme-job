@@ -24,12 +24,22 @@ test("software QA leadership variants remain accepted", () => {
 });
 
 test("ambiguous QA management is rejected for pharmaceutical manufacturing", () => {
-  const decision = classifyJobRelevance(vacancy(
-    "Quality Assurance Manager",
-    "Pharmaceutical manufacturing, GMP compliance, batch release and raw materials quality control.",
-  ));
-  assert.equal(decision.accepted, false);
-  assert.equal(decision.reason, "non_software_testing_role");
+  const cases = [
+    vacancy(
+      "Quality Assurance Manager",
+      "Pharmaceutical manufacturing, GMP compliance, batch release and raw materials quality control.",
+    ),
+    vacancy(
+      "QA Manager",
+      "QA manager for pharmaceutical manufacturing, GMP compliance, batch release and laboratory quality control.",
+    ),
+  ];
+
+  for (const candidate of cases) {
+    const decision = classifyJobRelevance(candidate);
+    assert.equal(decision.accepted, false, candidate.title);
+    assert.equal(decision.reason, "non_software_testing_role", candidate.title);
+  }
 });
 
 test("testing leadership is rejected for food production laboratories", () => {
