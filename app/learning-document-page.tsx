@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
 import { SiteSidebar, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
-type LearningLanguage = "en" | "uk";
 
 interface LearningSource {
   id: string;
@@ -274,25 +274,24 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
 
         <div className={`kb-content ${styles.page}`}>
           {!trackAvailable ? (
-            <header className={styles.hero}>
-              <span className={styles.eyebrow}>{secondaryTitle}</span>
-              <h1>{selectedTrack?.label}</h1>
-              <p>{selectedTrack?.emptyState ?? "This learning track is under construction."}</p>
-            </header>
+            <LearningHero
+              description={selectedTrack?.emptyState ?? "This learning track is under construction."}
+              eyebrow={secondaryTitle}
+              meta={[]}
+              title={selectedTrack?.label ?? secondaryTitle}
+            />
           ) : (
             <>
-              <header className={styles.hero}>
-                <span className={styles.eyebrow}>
-                  {secondaryTitle} · {selectedTrack?.label} · {language === "uk" ? "Розділ" : "Chapter"} {String(moduleIndex + 1).padStart(2, "0")} / {String(modules.length).padStart(2, "0")}
-                </span>
-                <h1>{curriculum.title}</h1>
-                <p>{localizedModuleDescription}</p>
-                <div className={styles.meta}>
-                  <span>{moduleLessons.length} {language === "uk" ? "тем" : "lessons"}</span>
-                  <span>{moduleSources.length} {language === "uk" ? "джерел" : "references"}</span>
-                  <span>{language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material"}</span>
-                </div>
-              </header>
+              <LearningHero
+                description={localizedModuleDescription ?? ""}
+                eyebrow={`${secondaryTitle} · ${selectedTrack?.label} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(moduleIndex + 1).padStart(2, "0")} / ${String(modules.length).padStart(2, "0")}`}
+                meta={[
+                  `${moduleLessons.length} ${language === "uk" ? "тем" : "lessons"}`,
+                  `${moduleSources.length} ${language === "uk" ? "джерел" : "references"}`,
+                  language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
+                ]}
+                title={curriculum.title}
+              />
 
               <div className={styles.layout}>
                 <div className={styles.document}>
@@ -300,57 +299,30 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
                     <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={generatedMarkdown}/>
                   </article>
 
-                  <section className={styles.sourcePanel} id="source-registry" aria-labelledby="learning-source-register">
-                    <header>
-                      <h2 id="learning-source-register">{language === "uk" ? "Реєстр джерел" : "Source registry"}</h2>
-                      <span>{moduleSources.length} {language === "uk" ? "джерел цього розділу" : "chapter references"}</span>
-                    </header>
-                    <div className={styles.sources}>
-                      {moduleSources.map((source) => (
-                        <article className={styles.source} key={source.id}>
-                          <div>
-                            <strong>{source.title}</strong>
-                            <p>{source.role}</p>
-                            <span className={styles.sourceStatus}>{source.publisher} · {source.kind.replaceAll("-", " ")}</span>
-                          </div>
-                          <a href={source.url} rel="noreferrer" target="_blank">{language === "uk" ? "Джерело" : "Source"} ↗</a>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
+                  <LearningSourceRegistry
+                    language={language}
+                    sources={moduleSources.map((source) => ({
+                      id: source.id,
+                      meta: source.kind.replaceAll("-", " "),
+                      publisher: source.publisher,
+                      role: source.role,
+                      title: source.title,
+                      url: source.url,
+                    }))}
+                    statusLabel={`${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`}
+                  />
 
-                  <nav className={styles.pager} aria-label={`${secondaryTitle} chapters`}>
-                    <button disabled={!previous} onClick={() => previous && selectModule(previous.id)} type="button">
-                      <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
-                      <strong>{localizedLabel(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
-                    </button>
-                    <button disabled={!next} onClick={() => next && selectModule(next.id)} type="button">
-                      <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
-                      <strong>{localizedLabel(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
-                    </button>
-                  </nav>
+                  <LearningPager
+                    ariaLabel={`${secondaryTitle} chapters`}
+                    labelFor={localizedLabel}
+                    language={language}
+                    next={next}
+                    onSelect={(item) => selectModule(item.id)}
+                    previous={previous}
+                  />
                 </div>
 
-                <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
-                  <section className={styles.language} aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-                    <span>{language === "uk" ? "Мова" : "Language"}</span>
-                    <div role="group" aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-                      <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => setLanguage("en")} type="button">EN</button>
-                      <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => setLanguage("uk")} type="button">UA</button>
-                    </div>
-                  </section>
-
-                  <section className={styles.toc} aria-label={language === "uk" ? "На цій сторінці" : "On this page"}>
-                    <span>{language === "uk" ? "На цій сторінці" : "On this page"}</span>
-                    <nav>
-                      {headings.map((heading) => <a href={`#${heading.id}`} key={heading.id}>{heading.text}</a>)}
-                      <a className={styles.sourceLink} href="#source-registry">
-                        <small>{language === "uk" ? "Джерела" : "References"}</small>
-                        {language === "uk" ? "Реєстр джерел" : "Source registry"}
-                      </a>
-                    </nav>
-                  </section>
-                </aside>
+                <LearningRail headings={headings} language={language} onLanguageChange={setLanguage}/>
               </div>
             </>
           )}
