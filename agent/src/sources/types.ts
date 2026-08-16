@@ -1,5 +1,6 @@
 import type { JobInput } from "../domain.js";
 import { deduplicateVacancies, filterRelevantVacancies } from "../job-intake.js";
+import { normalizeVacancyDescription } from "../vacancy-content.js";
 
 export interface JobSource {
   readonly name: string;
@@ -15,11 +16,21 @@ export interface SourceRunResult {
   duplicates?: number;
 }
 
+function normalizeCollectedJob(job: JobInput): JobInput {
+  return {
+    ...job,
+    title: job.title.trim(),
+    company: job.company.trim() || "Unknown",
+    location: job.location.trim() || "Unknown",
+    description: normalizeVacancyDescription(job.description),
+  };
+}
+
 export async function collectAllSources(sources: JobSource[]): Promise<SourceRunResult[]> {
   const sourceResults = await Promise.all(
     sources.map(async (source): Promise<SourceRunResult> => {
       try {
-        const jobs = await source.collect();
+        const jobs = (await source.collect()).map(normalizeCollectedJob);
         return { source: source.name, jobs, error: null, seen: jobs.length };
       } catch (error) {
         return {
