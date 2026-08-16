@@ -1,0 +1,24 @@
+.kb-brand,
+.kb-mobile-brand {
+  background-image: url("/gimmejob-logo.svg");
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-sizing: border-box;
+  width: 164px;
+}
+
+.kb-brand > svg,
+.kb-brand > strong,
+.kb-mobile-brand > svg,
+.kb-mobile-brand > strong {
+  visibility: hidden !important;
+}
+
+.kb-brand {
+  min-height: 38px !important;
+}
+
+.kb-mobile-brand {
+  min-height: 42px !important;
+}

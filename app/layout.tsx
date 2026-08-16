@@ -5,6 +5,7 @@ import "./vacancies-workspace.css";
 import "./vacancy-description.css";
 import "./learning-sidebar-highlights.css";
 import "./quick-reference-availability.css";
+import "./brand-logo.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
