@@ -424,7 +424,6 @@ test("interview stars migration adds a tenant-scoped table and migrates the curr
     await readFile(new URL("../content/interview/editorial-starred-question-ids.json", import.meta.url), "utf8"),
   ) as { questionIds: string[] };
 
-  assert.match(sql, /CREATE TABLE `interview_stars`/);
   assert.match(sql, /CREATE TABLE `user_interview_stars`/);
   assert.match(sql, /PRIMARY KEY \(`user_id`, `question_id`\)/);
   assert.match(sql, /FOREIGN KEY \(`user_id`\) REFERENCES `users`\(`id`\)[^\n]*ON DELETE cascade/);

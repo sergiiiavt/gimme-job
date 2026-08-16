@@ -3,7 +3,6 @@ import {
   DEFAULT_SOURCES,
   dashboard,
   interviewProgress,
-  interviewStars,
   jsonError,
   readPayload,
   resumePdf,
@@ -13,7 +12,6 @@ import {
   settingsView,
   updateDraft,
   updateInterviewProgress,
-  updateInterviewStar,
   updateJobTracking,
 } from "../_jobpilot";
 import { adjustResumeForUser, analyzeJobsForUser } from "../_job-actions";
@@ -99,7 +97,7 @@ export async function GET(request: Request, context: RouteContext) {
       return Response.json(await tenantInterviewProgress(tenant.userId));
     }
     if (route[0] === "interview-stars") {
-      if (!tenant.multiUser) return Response.json(await interviewStars());
+      if (!tenant.multiUser) return Response.json({ error: "Route not found." }, { status: 404 });
       if (!tenant.authenticated || !tenant.userId) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
       }
@@ -247,9 +245,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       return Response.json({ ok: true, progress });
     }
     if (route[0] === "interview-stars" && route[1]) {
-      const star = tenant.multiUser && tenant.userId
-        ? await updateTenantInterviewStar(tenant.userId, route[1], payload)
-        : await updateInterviewStar(route[1], payload);
+      if (!tenant.multiUser || !tenant.userId) return Response.json({ error: "Route not found." }, { status: 404 });
+      const star = await updateTenantInterviewStar(tenant.userId, route[1], payload);
       return Response.json({ ok: true, star });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });

@@ -347,28 +347,6 @@ export async function updateInterviewProgress(questionId: string, input: Json) {
   return { questionId, status, updatedAt };
 }
 
-export async function interviewStars() {
-  const result = await (await db()).prepare(`SELECT question_id, created_at
-    FROM interview_stars ORDER BY created_at DESC`).all<Row>();
-  return {
-    starredQuestionIds: result.results.map((row) => rowText(row.question_id)),
-  };
-}
-
-export async function updateInterviewStar(questionId: string, input: Json) {
-  if (!validQuestionId(questionId)) throw new Error("Unsupported question identifier.");
-  const database = await db();
-  if (!input.starred) {
-    await database.prepare("DELETE FROM interview_stars WHERE question_id = ?").bind(questionId).run();
-    return { questionId, starred: false };
-  }
-  await database.prepare(`INSERT INTO interview_stars (question_id, created_at) VALUES (?, ?)
-    ON CONFLICT(question_id) DO NOTHING`)
-    .bind(questionId, now())
-    .run();
-  return { questionId, starred: true };
-}
-
 export async function settingsView() {
   return {
     profile: await setting("profile", DEFAULT_PROFILE),
