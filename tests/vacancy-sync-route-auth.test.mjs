@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { POST } from "../app/api/[...route]/route.ts";
+import { register } from "tsx/esm/api";
+
+register();
+const { POST } = await import("../app/api/[...route]/route.ts");
 
 const route = readFileSync(new URL("../app/api/[...route]/route.ts", import.meta.url), "utf8");
 const workspace = readFileSync(new URL("../app/vacancies-workspace.tsx", import.meta.url), "utf8");
