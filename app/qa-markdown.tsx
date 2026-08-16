@@ -88,6 +88,8 @@ function isBlockStart(lines: string[], index: number) {
   return !line.trim()
     || /^#{1,3}\s+/.test(line)
     || /^```/.test(line)
+    || /^:::details\s+/.test(line)
+    || /^:::\s*$/.test(line)
     || /^>\s?/.test(line)
     || /^[-*]\s+/.test(line)
     || /^\d+\.\s+/.test(line)
@@ -129,6 +131,38 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: 
         <pre className={language === "diagram" ? "qa-md-diagram" : "qa-md-code"} key={`pre-${nodeKey++}`}>
           <code>{content.join("\n")}</code>
         </pre>,
+      );
+      continue;
+    }
+
+    const details = line.match(/^:::details\s+(.+?)\s*$/);
+    if (details) {
+      const content: string[] = [];
+      index += 1;
+      while (index < lines.length && !/^:::\s*$/.test(lines[index])) {
+        content.push(lines[index]);
+        index += 1;
+      }
+      if (index < lines.length) index += 1;
+      nodes.push(
+        <details
+          className="qa-md-details"
+          key={`details-${nodeKey++}`}
+          style={{ background: "#f8faf7", border: "1px solid #dfe5dc", borderRadius: 10, margin: "20px 0", overflow: "hidden" }}
+        >
+          <summary
+            className="qa-md-details-summary"
+            style={{ color: "#2d4036", cursor: "pointer", fontSize: 13, fontWeight: 800, lineHeight: 1.45, padding: "14px 16px" }}
+          >
+            {parseInline(details[1])}
+          </summary>
+          <div
+            className="qa-md-details-body"
+            style={{ borderTop: "1px solid #e3e8e3", color: "#4e5d55", fontSize: 14, lineHeight: 1.7, padding: "16px 18px 4px" }}
+          >
+            <MarkdownDocument markdown={content.join("\n")} />
+          </div>
+        </details>,
       );
       continue;
     }
