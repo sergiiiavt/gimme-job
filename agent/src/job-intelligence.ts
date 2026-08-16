@@ -57,6 +57,9 @@ const SKILL_PATTERNS: SkillPattern[] = [
   { name: "English", pattern: /\benglish\b/i },
 ];
 
+const ENGLISH_LEVEL_PATTERN = /\benglish(?: level)?[: ]+(a1|a2|b1|b2|c1|c2|upper-intermediate|advanced|intermediate)\b/i;
+const SALARY_PATTERN = /[$€£₴]\s?\d|\d\s?(?:USD|EUR|UAH)/i;
+
 export const ANALYSIS_INSTRUCTIONS = `
 You are a job-intelligence analyst.
 
@@ -220,7 +223,7 @@ function reservationSignal(text: string): string {
 }
 
 function languageSignal(text: string): string {
-  const level = text.match(/\benglish\s*(?:level)?\s*[:\-]?\s*(a1|a2|b1|b2|c1|c2|upper[- ]intermediate|advanced|intermediate)/i);
+  const level = ENGLISH_LEVEL_PATTERN.exec(text);
   if (level?.[1]) return `English ${level[1]}`;
   return /\benglish\b/i.test(text) ? "English mentioned" : "Not specified";
 }
@@ -230,18 +233,51 @@ function markdownResume(profile: CandidateProfile, prioritizedSkills: string[]):
   const experience = profile.experience
     .map((entry) => {
       const achievements = entry.achievements.map((item) => `- ${item}`).join("\n");
-      return `### ${entry.role} — ${entry.company}\n${entry.period}\n\n${achievements}`;
+      return [`### ${entry.role} — ${entry.company}`, entry.period, "", achievements].join("\n");
     })
     .join("\n\n");
-  const education = profile.education.length
-    ? `\n\n## Education\n${profile.education.map((item) => `- ${item}`).join("\n")}`
-    : "";
-  const links = profile.links.length ? `\n\n${profile.links.join(" · ")}` : "";
-  return `# ${profile.name}\n${profile.headline}\n\n${contact}${links}\n\n## Summary\n${profile.summary}\n\n## Relevant skills\n${prioritizedSkills.map((skill) => `- ${skill}`).join("\n")}\n\n## Experience\n${experience}${education}`;
+  const educationItems = profile.education.map((item) => `- ${item}`).join("\n");
+  const education = educationItems ? `\n\n## Education\n${educationItems}` : "";
+  const joinedLinks = profile.links.join(" · ");
+  const links = joinedLinks ? `\n\n${joinedLinks}` : "";
+  const skillItems = prioritizedSkills.map((skill) => `- ${skill}`).join("\n");
+  return [
+    `# ${profile.name}`,
+    profile.headline,
+    "",
+    `${contact}${links}`,
+    "",
+    "## Summary",
+    profile.summary,
+    "",
+    "## Relevant skills",
+    skillItems,
+    "",
+    "## Experience",
+    `${experience}${education}`,
+  ].join("\n");
 }
 
 function jobText(job: StoredJob): string {
   return `${job.title}\n${job.company}\n${job.location}\n${job.description}`;
+}
+
+function verdictForScore(score: number): JobAnalysis["verdict"] {
+  if (score >= 75) return "strong";
+  if (score >= 55) return "possible";
+  if (score >= 35) return "weak";
+  return "reject";
+}
+
+function recommendation(score: number, hardBlockers: string[]): string {
+  if (hardBlockers.length > 0) return "Do not apply unless the blocker is resolved.";
+  if (score >= 55) return "Generate a tailored resume and application draft, then approve if accurate.";
+  return "Keep for market intelligence; apply only if the role has strategic value.";
+}
+
+function salarySignal(job: StoredJob, text: string): string {
+  if (job.salaryText) return job.salaryText;
+  return SALARY_PATTERN.test(text) ? "Mentioned" : "Not disclosed";
 }
 
 export function deterministicAnalysis(job: StoredJob, profile: CandidateProfile): JobAnalysis {
@@ -252,9 +288,8 @@ export function deterministicAnalysis(job: StoredJob, profile: CandidateProfile)
   const bestRole = Math.max(...profile.targetRoles.map((target) => roleSimilarity(job.title, target)), 0);
   const preferred = signalMatches(text, profile.preferredSignals);
   const excluded = signalMatches(text, profile.excludedSignals);
-  const locationFit = profile.locations.some((location) =>
-    normalizeKey(`${job.location} ${job.remote ? "remote" : ""}`).includes(normalizeKey(location)),
-  );
+  const locationText = `${job.location} ${job.remote ? "remote" : ""}`;
+  const locationFit = profile.locations.some((location) => normalizeKey(locationText).includes(normalizeKey(location)));
 
   let score = 15;
   score += Math.round(bestRole * 30);
@@ -266,11 +301,10 @@ export function deterministicAnalysis(job: StoredJob, profile: CandidateProfile)
   score = clamp(score, 0, 100);
 
   const hardBlockers = excluded.map((signal) => `Excluded signal found: ${signal}`);
-  const verdict: JobAnalysis["verdict"] = score >= 75 ? "strong" : score >= 55 ? "possible" : score >= 35 ? "weak" : "reject";
 
   return JobAnalysisSchema.parse({
     score,
-    verdict,
+    verdict: verdictForScore(score),
     roleFit: bestRole >= 0.5 ? "Title aligns with a target role." : "Title alignment is partial.",
     matchingSkills,
     missingSkills,
@@ -285,15 +319,11 @@ export function deterministicAnalysis(job: StoredJob, profile: CandidateProfile)
       seniority: seniority(text),
       employmentType: employmentType(text),
       remotePolicy: job.remote ? "Remote mentioned" : "Remote not confirmed",
-      salary: job.salaryText ?? (/[$€£₴]\s?\d|\d\s?(?:USD|EUR|UAH)/i.test(text) ? "Mentioned" : "Not disclosed"),
+      salary: salarySignal(job, text),
       reservation: reservationSignal(text),
       language: languageSignal(text),
     },
-    recommendation: hardBlockers.length > 0
-      ? "Do not apply unless the blocker is resolved."
-      : score >= 55
-        ? "Generate a tailored resume and application draft, then approve if accurate."
-        : "Keep for market intelligence; apply only if the role has strategic value.",
+    recommendation: recommendation(score, hardBlockers),
   });
 }
 
@@ -307,6 +337,17 @@ export function deterministicResumePackage(job: StoredJob, profile: CandidatePro
     : [];
   const firstFact = profile.facts[0] ?? profile.summary;
   const matchPhrase = matchingSkills.slice(0, 4).join(", ");
+  const experienceSentence = matchPhrase ? ` My relevant experience includes ${matchPhrase}.` : "";
+  const body = [
+    "Hello,",
+    "",
+    `I am applying for the ${job.title} role at ${job.company}. ${firstFact}${experienceSentence}`,
+    "",
+    "I would be glad to discuss how this experience fits the position.",
+    "",
+    "Best regards,",
+    profile.name,
+  ].join("\n");
 
   return ResumePackageSchema.parse({
     tailoredResume: {
@@ -321,7 +362,7 @@ export function deterministicResumePackage(job: StoredJob, profile: CandidatePro
       channel: job.contactEmail ? "email" : "form",
       recipientGuess: job.contactEmail,
       subject: `Application — ${job.title}`,
-      body: `Hello,\n\nI am applying for the ${job.title} role at ${job.company}. ${firstFact}${matchPhrase ? ` My relevant experience includes ${matchPhrase}.` : ""}\n\nI would be glad to discuss how this experience fits the position.\n\nBest regards,\n${profile.name}`,
+      body,
     },
   });
 }
