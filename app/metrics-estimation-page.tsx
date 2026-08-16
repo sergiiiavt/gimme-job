@@ -35,7 +35,9 @@ const curriculum: StructuredLearningCurriculum = {
   lessons: [],
 };
 
-export default function MetricsEstimationPage({ mode }: { mode: "public" | "personal" }) {
+type MetricsEstimationPageProps = Readonly<{ mode: "public" | "personal" }>;
+
+export default function MetricsEstimationPage({ mode }: MetricsEstimationPageProps) {
   return (
     <LearningDocumentPage
       activeExternalId="metrics-estimation"
