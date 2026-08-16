@@ -224,11 +224,9 @@ async function canonicalizeAuthResponse(response: Response, mode: "login" | "reg
   }
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/html")) return response;
-  let html = await response.text();
-  html = html
+  const html = (await response.text())
     .replaceAll(`/workspace/${mode}`, `/${mode}`)
-    .replace(/\/workspace\/(login|register)\?next=[^\"]+/g, (_match, target: string) => `/${target}`)
-    .replace('name="next" value="/workspace"', `name="next" value="/workspace"`);
+    .replace(/\/workspace\/(login|register)\?next=[^\"]+/g, (_match, target: string) => `/${target}`);
   const canonical = new Response(html, response);
   canonical.headers.append("set-cookie", authReturnCookie(returnPath));
   return canonical;
@@ -274,12 +272,6 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
 
       const sanitizedRequest = sanitizeIdentityHeaders(request);
 
-      // Keep old URLs working, but immediately collapse them to one query-free public URL scheme.
-      if (!["/workspace/login", "/workspace/register", "/workspace/logout"].includes(url.pathname)) {
-        const canonical = legacyCanonicalPath(url);
-        if (canonical) return redirectCanonical(canonical);
-      }
-
       // Scoped service-to-service n8n routes authenticate with N8N_INGEST_TOKEN.
       // Preserve their Authorization header instead of replacing it with the internal
       // Basic-auth bridge used for browser sessions in multi-user mode.
@@ -287,7 +279,15 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
         return coreWorker.fetch(sanitizedRequest, env, ctx);
       }
 
+      // Keep legacy single-user mode untouched. Canonical URL collapsing belongs to
+      // the multi-user browser surface where public and authenticated views share URLs.
       if (!multiUserEnabled(env)) return coreWorker.fetch(sanitizedRequest, env, ctx);
+
+      // Keep old URLs working, but immediately collapse them to one query-free URL scheme.
+      if (!["/workspace/login", "/workspace/register", "/workspace/logout"].includes(url.pathname)) {
+        const canonical = legacyCanonicalPath(url);
+        if (canonical) return redirectCanonical(canonical);
+      }
 
       if (url.pathname === "/login") return handleCanonicalAuth(sanitizedRequest, env, "login");
       if (url.pathname === "/register") return handleCanonicalAuth(sanitizedRequest, env, "register");
