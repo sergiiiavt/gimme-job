@@ -22,6 +22,7 @@ type ReferenceCard = {
   code?: ReferenceCode[];
   notes?: string[];
   searchTerms?: string[];
+  stackedRows?: boolean;
 };
 type TaxonomyItem = { id: string; label: string; level?: string; kind?: string };
 type RequiredConcept = { topicId: string };
@@ -60,6 +61,7 @@ function buildPythonReferenceCards(): ReferenceCard[] {
       title: curriculumModule.label,
       scope: curriculumModule.level,
       meta: `${curriculumModule.level} · ${moduleLessons.length} lessons`,
+      stackedRows: true,
       rows: moduleLessons.map((lesson) => ({
         term: lesson.title,
         detail: lesson.keyPoints?.length ? lesson.keyPoints.join(" · ") : lesson.summary,
@@ -237,7 +239,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
                     <h2>{card.title}</h2>
                     {card.meta || card.scope ? <small>{card.meta ?? card.scope}</small> : null}
                   </header>
-                  {card.rows?.length ? <div className={styles.rows}>{card.rows.map((row, index) => <div className={styles.row} key={`${card.id}-row-${index}`}><code>{row.term}</code><span>{row.detail}</span></div>)}</div> : null}
+                  {card.rows?.length ? <div className={`${styles.rows}${card.stackedRows ? ` ${styles.stackedRows}` : ""}`}>{card.rows.map((row, index) => <div className={styles.row} key={`${card.id}-row-${index}`}><code>{row.term}</code><span>{row.detail}</span></div>)}</div> : null}
                   {card.code?.length ? <div className={styles.codeList}>{card.code.map((item, index) => <div className={styles.codeItem} key={`${card.id}-code-${index}`}><span>{item.label}</span><pre><code>{item.code}</code></pre></div>)}</div> : null}
                   {card.notes?.length ? <ul className={styles.notes}>{card.notes.map((note, index) => <li key={`${card.id}-note-${index}`}>{note}</li>)}</ul> : null}
                   {!hasContent ? <div className={styles.placeholderBody}>Structure only.</div> : null}
