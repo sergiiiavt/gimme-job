@@ -93,6 +93,12 @@ const accountCornerStyle = {
   zIndex: 90,
 } as const;
 
+const responsiveAccountStyle = `
+@media (max-width: 820px) {
+  .kb-account-corner { right: 62px !important; top: 8px !important; }
+}
+`;
+
 export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
@@ -104,7 +110,7 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
     </Link>
   );
 
-  return (
+  return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
         <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
@@ -148,10 +154,11 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
         </nav>
       )}
       </aside>}
-
-      <div className="kb-account-corner" style={accountCornerStyle}>
-        <AuthStatusControl mode={mode} personalHref={personalHref}/>
-      </div>
     </div>
-  );
+
+    <style>{responsiveAccountStyle}</style>
+    <div className="kb-account-corner" style={accountCornerStyle}>
+      <AuthStatusControl mode={mode} personalHref={personalHref}/>
+    </div>
+  </>;
 }
