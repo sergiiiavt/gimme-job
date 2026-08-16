@@ -320,7 +320,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /if \(section === "about"\) return <AboutSite mode=\{mode\}\/>/);
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
   assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
-  assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
+  assert.match(uiSource, /useState<PublicSection>\(\(\) => currentSectionFromLocation\(\)\)/);
   assert.match(aboutSource, /View source on GitHub/);
   assert.match(aboutSource, /const interviewHref = sectionNavigationHref\("interview", mode\)/);
   assert.doesNotMatch(aboutSource, /#interview/);
