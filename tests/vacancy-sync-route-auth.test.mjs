@@ -49,9 +49,10 @@ test("single-user vacancy sync also passes the tenant authorization guard", asyn
   assert.notEqual(response.status, 403);
 });
 
-test("authenticated multi-user sessions are not statically blocked from vacancy sync", () => {
+test("sync reuses the standard tenant authentication guard instead of the admin block", () => {
   const syncRoute = route.match(/if \(route\[0\] === "sync"\) \{([\s\S]*?)\n    \}/)?.[1] ?? "";
-  assert.match(syncRoute, /tenant\.multiUser && !userId/);
+  assert.match(syncRoute, /const syncTenant = tenantUser\(request\)/);
+  assert.match(syncRoute, /if \(syncTenant instanceof Response\) return syncTenant/);
   assert.match(syncRoute, /const result = await syncVacancySources\(\)/);
   assert.doesNotMatch(syncRoute, /multiUserAdminBlocked/);
 });
