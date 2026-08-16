@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
@@ -119,18 +119,6 @@ const repoRefKindLabels: Record<string, string> = {
 
 const repoBlobUrl = (repo: string, rev: string, path: string) => `https://github.com/${repo}/blob/${rev}/${path}`;
 
-function topicFromLocation(validIds: string[], fallback: string) {
-  if (typeof window === "undefined") return fallback;
-  const requested = new URLSearchParams(window.location.search).get("topic");
-  return requested && validIds.includes(requested) ? requested : fallback;
-}
-
-function trackFromLocation(validIds: string[], fallback: string) {
-  if (typeof window === "undefined") return fallback;
-  const requested = new URLSearchParams(window.location.search).get("track");
-  return requested && validIds.includes(requested) ? requested : fallback;
-}
-
 function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, referenceImplementation?: ReferenceImplementation) {
   const showUk = language === "uk";
   const title = showUk ? lesson.titleUk : lesson.title;
@@ -188,16 +176,6 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   const [activeTrack, setActiveTrack] = useState(resolvedDefaultTrackId);
   const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
-
-  useEffect(() => {
-    const syncFromLocation = () => {
-      setActiveTrack(trackFromLocation(resolvedTrackOptions.map((option) => option.id), resolvedDefaultTrackId));
-      setActiveModule(topicFromLocation(modules.map((item) => item.id), firstModuleId));
-    };
-    syncFromLocation();
-    window.addEventListener("popstate", syncFromLocation);
-    return () => window.removeEventListener("popstate", syncFromLocation);
-  }, [firstModuleId, modules, resolvedDefaultTrackId, resolvedTrackOptions]);
 
   const selectedTrack = resolvedTrackOptions.find((option) => option.id === activeTrack) ?? resolvedTrackOptions[0];
   const trackAvailable = selectedTrack?.available !== false;
@@ -259,12 +237,8 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
       const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
       setActiveTrack(trackId);
+      if (option.available) setActiveModule(firstModuleId);
       setMobileNav(false);
-      const url = new URL(window.location.href);
-      url.searchParams.set("track", trackId);
-      if (option.available) url.searchParams.set("topic", firstModuleId);
-      else url.searchParams.delete("topic");
-      window.history.pushState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
   };
@@ -273,11 +247,6 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     if (!modules.some((item) => item.id === moduleId)) return;
     setActiveModule(moduleId);
     setMobileNav(false);
-    const url = new URL(window.location.href);
-    url.searchParams.set("topic", moduleId);
-    if (showTrackSwitcher) url.searchParams.set("track", activeTrack);
-    else url.searchParams.delete("track");
-    window.history.pushState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { startAuthSync } from "../app/auth-status-control.ts";
+import { signInHref, startAuthSync } from "../app/auth-status-control.ts";
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+test("sign in uses one query-free canonical route", () => {
+  assert.equal(signInHref("/interview"), "/login");
+  assert.equal(signInHref("/vacancies"), "/login");
+});
 
 test("transient auth server failures do not redirect personal pages to login", async () => {
   const states: boolean[] = [];
@@ -10,10 +15,10 @@ test("transient auth server failures do not redirect personal pages to login", a
 
   startAuthSync({
     mode: "personal",
-    personalHref: "/workspace/learn?section=interview",
+    personalHref: "/interview",
     onAuthenticatedChange: (value) => states.push(value),
     probe: async () => ({ ok: false, status: 503 }),
-    currentHref: () => "https://gimme-job.com/workspace/learn?section=interview",
+    currentHref: () => "https://gimme-job.com/interview",
     replace: (href) => redirects.push(href),
   });
 

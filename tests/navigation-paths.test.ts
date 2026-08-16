@@ -1,24 +1,40 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { sectionNavigationHref } from "../app/navigation-paths.ts";
+import { sectionFromPathname, sectionNavigationHref } from "../app/navigation-paths.ts";
 
-test("public navigation stays on stable public routes", () => {
-  assert.equal(sectionNavigationHref("about", "public"), "/learn/about");
-  assert.equal(sectionNavigationHref("jobs", "public"), "/workspace");
-  assert.equal(sectionNavigationHref("interview", "public"), "/learn/interview");
-  assert.equal(sectionNavigationHref("trends", "public"), "/learn/trends");
-  assert.equal(sectionNavigationHref("certifications", "public"), "/learn/certifications");
-  assert.equal(sectionNavigationHref("api", "public"), "/learn/api");
-  assert.equal(sectionNavigationHref("programming", "public"), "/learn/programming");
-  assert.equal(sectionNavigationHref("automation", "public"), "/learn/automation");
-  assert.equal(sectionNavigationHref("devops", "public"), "/learn/cloud-devops");
+const expectedRoutes: Record<string, string> = {
+  about: "/about",
+  jobs: "/vacancies",
+  resume: "/resume",
+  interview: "/interview",
+  "python-interview": "/interview/python",
+  trends: "/trends",
+  certifications: "/learn/certifications",
+  api: "/learn/api",
+  programming: "/learn/programming",
+  automation: "/learn/automation",
+  devops: "/learn/cloud-devops",
+  news: "/news",
+  rewild: "/fight-ai-slop",
+};
+
+test("public and authenticated navigation share canonical query-free routes", () => {
+  for (const [section, expected] of Object.entries(expectedRoutes)) {
+    assert.equal(sectionNavigationHref(section, "public"), expected);
+    assert.equal(sectionNavigationHref(section, "personal"), expected);
+    assert.equal(expected.includes("?"), false);
+  }
 });
 
-test("personal navigation keeps private destinations except public About", () => {
-  assert.equal(sectionNavigationHref("about", "personal"), "/learn/about");
-  assert.equal(sectionNavigationHref("jobs", "personal"), "/workspace");
-  assert.equal(sectionNavigationHref("interview", "personal"), "/workspace/learn?section=interview");
-  assert.equal(sectionNavigationHref("programming", "personal"), "/workspace/learn/programming");
-  assert.equal(sectionNavigationHref("automation", "personal"), "/workspace/learn/automation");
-  assert.equal(sectionNavigationHref("devops", "personal"), "/workspace/learn/cloud-devops");
+test("canonical route paths resolve directly to their site sections", () => {
+  assert.equal(sectionFromPathname("/about"), "about");
+  assert.equal(sectionFromPathname("/vacancies"), "jobs");
+  assert.equal(sectionFromPathname("/resume"), "resume");
+  assert.equal(sectionFromPathname("/interview"), "interview");
+  assert.equal(sectionFromPathname("/interview/python"), "python-interview");
+  assert.equal(sectionFromPathname("/learn/api"), "api");
+  assert.equal(sectionFromPathname("/learn/cloud-devops"), "devops");
+  assert.equal(sectionFromPathname("/news"), "news");
+  assert.equal(sectionFromPathname("/fight-ai-slop"), "rewild");
+  assert.equal(sectionFromPathname("/unknown"), null);
 });
