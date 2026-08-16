@@ -6,7 +6,7 @@
 
 ## Якість і тестованість вимог
 
-Вимогу легше тестувати, коли вона сформульована достатньо чітко, щоб визначити, чи задовольняє реалізована поведінка цю вимогу. Корисні властивості включають ясність, узгодженість, здійсненність, traceability та verifiability.
+Вимогу легше тестувати, коли вона сформульована достатньо чітко, щоб визначити, чи задовольняє реалізована поведінка цю вимогу. Корисні властивості включають ясність, узгодженість, здійсненність, необхідність, traceability та verifiability.
 
 Порівняйте:
 
@@ -18,6 +18,20 @@
 Сильніші формулювання не гарантують, що вимога правильна, але значно полегшують розуміння того, які докази очікуються.
 
 > **Ключова думка:** виявлення нетестованої або неоднозначної вимоги саме по собі є цінною тестовою роботою. Для цього не потрібне виконуване програмне забезпечення.
+
+Практичне review вимоги можна провести через такий ланцюг:
+
+```diagram
+Чи можу я визначити очікувану поведінку?
+        ↓
+Чи можу я спостерігати, чи вона відбулася?
+        ↓
+Чи можу я створити потрібні preconditions і data?
+        ↓
+Чи визначені boundaries, exceptions і dependencies?
+        ↓
+Чи можна простежити evidence назад до requirement або risk?
+```
 
 ## Acceptance criteria
 
@@ -81,7 +95,7 @@ Equivalence partitioning ділить великий простір входів
 | Менше 18 | 17 |
 | Валідні 18–120 | 35 |
 | Більше 120 | 121 |
-| Невалідний тип / формат | текст, decimal, empty — залежно від контракту |
+| Невалідний тип / формат | text, decimal, empty — залежно від контракту |
 
 Техніка сильна лише тоді, коли partitions ґрунтуються на реальній поведінці або правилах. Довільне групування — не equivalence partitioning.
 
@@ -89,7 +103,7 @@ Equivalence partitioning ділить великий простір входів
 
 Дефекти часто виникають на межах, де змінюється поведінка. Boundary value analysis фокусується на цих точках переходу.
 
-Для валідного інтервалу 18–120 корисні значення безпосередньо навколо меж:
+Для валідного цілочисельного інтервалу 18–120:
 
 ```diagram
 невалідно       валідний діапазон                 невалідно
@@ -98,37 +112,67 @@ Equivalence partitioning ділить великий простір входів
           нижня межа                        верхня межа
 ```
 
-Точний набір залежить від варіанта BVA та типу даних. Важливіше не запам’ятовувати формулу, а визначити, де змінюється правило, і протестувати навколо цього переходу.
+CTFL v4.0.1 розрізняє два поширені варіанти BVA:
+
+- **2-value BVA:** перевірити boundary value і найближче значення в сусідньому partition. Для нижньої межі це 17 і 18; для верхньої — 120 і 121.
+- **3-value BVA:** перевірити boundary і найближче значення з обох боків. Для нижньої межі це 17, 18 і 19; для верхньої — 119, 120 і 121.
+
+Точні значення все одно залежать від data type і business rule. Continuous measurement, date/time boundary або string-length limit потребують моделі, відповідної конкретному домену.
+
+> **Поширена помилка:** механічно запам’ятовувати «boundary numbers», не визначивши, де реально змінюється поведінка. BVA починається з правила та його partitions, а не з фіксованої формули.
 
 ## Decision table testing
 
 Decision tables корисні, коли результат залежить від комбінацій умов. Вони роблять приховані комбінації видимими.
 
-Приклад: безкоштовна доставка залежить від membership і суми кошика.
+Припустимо, free shipping надається, якщо клієнт premium **або** сума кошика не менше €50:
 
 | Умова / дія | Rule 1 | Rule 2 | Rule 3 | Rule 4 |
 | --- | --- | --- | --- | --- |
 | Premium member? | Так | Так | Ні | Ні |
 | Кошик ≥ €50? | Так | Ні | Так | Ні |
-| Безкоштовна доставка | Так | Так | Так | Ні |
+| Free shipping | Так | Так | Так | Ні |
 
-Decision table змушує команду перевірити, чи визначена кожна комбінація і чи деякі умови стають неважливими для окремих правил.
+Таблиця явно показує всі чотири комбінації. З неї можна вивести чотири сфокусовані тести, не починаючи одразу з UI-кроків.
+
+```diagram
+Спочатку rules
+   ↓
+Для кожного релевантного rule обрати конкретний input set
+   ↓
+Виконати через найдешевший корисний interface
+   ↓
+Перевірити очікувану action для цього rule
+```
+
+Якщо бізнес додасть правило «premium customers отримують free shipping лише в EU», таблиця одразу покаже, що до моделі додалася нова condition і комбінації потрібно переглянути.
 
 ## State transition testing
 
 Деяка поведінка залежить не лише від поточного input, а й від **історії та стану**. State transition models описують дозволені стани, події та переходи.
 
+Приклад: account блокується після п’яти послідовних неправильних PIN attempts.
+
 ```diagram
 [Active]
-   │ неправильний пароль ×5
+   │ wrong PIN #1–#4
+   └───────────────↺ [Active]
+   │ wrong PIN #5
    ↓
 [Locked]
-   │ успішна процедура розблокування
+   │ successful unlock procedure
    ↓
 [Active]
 ```
 
-Тестування може покривати валідні переходи, невалідні переходи, важливі послідовності подій і state-dependent outputs. Це особливо корисно для authentication flows, orders, subscriptions, devices та workflow engines.
+Корисні test conditions:
+
+- валідний transition: Active → Locked після п’ятої послідовної помилки;
+- валідний recovery transition: Locked → Active після дозволеної unlock procedure;
+- невалідний transition: correct PIN не має автентифікувати користувача, поки account залишається Locked;
+- sequence rule: успішний login до п’ятої помилки може скидати consecutive-failure counter, якщо це визначено специфікацією.
+
+Саме тому state models сильніші за ізольовані input/output cases для authentication flows, orders, subscriptions, devices та workflow engines.
 
 ## Scenario та use-case testing
 
@@ -151,16 +195,28 @@ White-box або structure-based techniques виводять тести з вн�
 
 > **Поширена помилка:** використовувати code coverage як оцінку якості. Це сигнал покриття, який може показати неперевірену структуру; він не доводить, що виконувану поведінку протестовано добре.
 
+## Корисні техніки поза CTFL Foundation core
+
+У завантажених навчальних матеріалах є й інші корисні техніки, але їх не слід подавати так, наче всі вони входять до актуального Foundation-набору CTFL.
+
+- **Pairwise / combinatorial testing** зменшує кількість configuration combinations, покриваючи вибрані взаємодії між parameter values.
+- **Cause-effect modeling** допомагає перетворювати логічні зв’язки між conditions та outcomes на test conditions і часто веде до decision table.
+- **Use-case/scenario testing** досліджує змістовні end-to-end interactions.
+- **Mutation testing** оцінює ефективність test suite через контрольовані зміни коду; це вже більш просунутий engineering-рівень.
+
+Водночас **positive testing**, **negative testing** і **exhaustive testing** не варто показувати як рівноправні формальні test-design techniques. Positive/negative описують намір прикладів; exhaustive testing загалом неможливе, окрім малих скінченних просторів.
+
 ## Поєднання технік
 
 Хороший test design зазвичай поєднує кілька способів мислення. Для discount engine можна використати:
 
 1. equivalence partitions для типів клієнтів і станів купона;
-2. boundary values для грошових порогів;
-3. decision tables для взаємодіючих бізнес-правил;
+2. 2-value або 3-value BVA для monetary thresholds;
+3. decision tables для взаємодіючих business rules;
 4. state transitions для активації та завершення дії купона;
 5. scenarios для реалістичних purchase journeys;
-6. structural coverage для пошуку важливих implementation paths, пропущених specification-based tests.
+6. structural coverage для пошуку важливих implementation paths, пропущених specification-based tests;
+7. pairwise coverage, коли взаємодіє багато environment або configuration parameters.
 
 Результат сильніший, ніж повторення одного happy path на кількох рівнях.
 
@@ -170,6 +226,7 @@ White-box або structure-based techniques виводять тести з вн�
 - Test conditions потрібно визначати до детальних кроків виконання.
 - Traceability пов’язує вимоги й ризики з тестами та результатами.
 - Equivalence partitioning зменшує великі простори до змістовних представників.
-- Boundary analysis фокусується на точках, де змінюється поведінка.
+- CTFL розрізняє 2-value і 3-value boundary value analysis.
 - Decision tables моделюють комбінації; state transitions — поведінку, залежну від історії.
 - Scenario testing і structural coverage додають інші типи доказів, а не замінюють black-box techniques.
+- Pairwise і cause-effect є корисними розширеннями, тоді як positive/negative labels не є окремими формальними test-design techniques.
