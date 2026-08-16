@@ -25,6 +25,6 @@ test("account control is mounted in the top-right corner instead of the sidebar 
 
 test("registration UI no longer exposes the legacy private-site password field", () => {
   assert.doesNotMatch(passwordAuthSource, /Existing private-site password/);
-  assert.doesNotMatch(passwordAuthSource, /name=\\"legacyPassword\\"/);
-  assert.match(passwordAuthSource, /name=\\"confirmPassword\\"/);
+  assert.doesNotMatch(passwordAuthSource, /name="legacyPassword"/);
+  assert.match(passwordAuthSource, /name="confirmPassword"/);
 });
