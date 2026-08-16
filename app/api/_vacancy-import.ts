@@ -58,5 +58,6 @@ function normalizeImportedJob(value: unknown, index: number): IntakeJob {
 }
 
 export async function upsertImportedVacancies(values: unknown[]) {
-  return upsertVacancies(values.map(normalizeImportedJob));
+  const jobs = values.map((value, index) => normalizeImportedJob(value, index));
+  return upsertVacancies(jobs);
 }
