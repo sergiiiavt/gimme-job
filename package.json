@@ -15,7 +15,7 @@
     "build:rewild-environment-response": "node scripts/build-rewild-environment-response.mjs",
     "check:cloudflare": "node scripts/deploy-cloudflare.mjs --dry-run",
     "start": "vinext start",
-    "test": "npm run build && node --import tsx --test",
+    "test": "npm run build && node --test",
     "test:coverage": "node scripts/run-test-coverage.mjs",
     "smoke:vacancies": "node --import tsx scripts/smoke-vacancy-sources.ts",
     "validate:artifact": "node scripts/validate-cloudflare-artifact.mjs",
