@@ -9,12 +9,16 @@ test("new learning paths are ordered and route through standalone document pages
   const automation = navigation.indexOf('label: "Test automation"');
   const tools = navigation.indexOf('label: "Testing & diagnostic tools"');
   const api = navigation.indexOf('label: "API & integration"');
-  assert.ok(automation >= 0 && tools > automation && api > tools, "Testing tools must follow Test automation");
+  assert.ok(automation >= 0, "Test automation must be present");
+  assert.ok(tools > automation, "Testing tools must follow Test automation");
+  assert.ok(api > tools, "API & integration must follow Testing tools");
 
   const standards = navigation.indexOf('label: "Standards & compliance"');
   const metrics = navigation.indexOf('label: "QA metrics & estimation"');
   const strategy = navigation.indexOf('label: "Strategy & leadership"');
-  assert.ok(standards >= 0 && metrics > standards && strategy > metrics, "Metrics & estimation must sit between Standards and Strategy");
+  assert.ok(standards >= 0, "Standards & compliance must be present");
+  assert.ok(metrics > standards, "Metrics & estimation must follow Standards");
+  assert.ok(strategy > metrics, "Strategy must follow Metrics & estimation");
 
   for (const [path, component] of [
     ["app/learn/testing-tools/page.tsx", "TestingToolsPage"],
