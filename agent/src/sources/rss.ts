@@ -58,6 +58,10 @@ function extractDivByClass(html: string, className: string): string {
   return html.slice(cursor);
 }
 
+function hostMatches(hostname: string, domain: string): boolean {
+  return hostname === domain || hostname.endsWith(`.${domain}`);
+}
+
 export function parseRssDetailDescription(url: string, html: string): string {
   const metadata = extractJobPostingMetadata(html);
   if (metadata?.description) {
@@ -68,9 +72,9 @@ export function parseRssDetailDescription(url: string, html: string): string {
   let hostname = "";
   try { hostname = new URL(url).hostname.toLowerCase(); } catch { /* use generic fallbacks */ }
 
-  const classCandidates = hostname.endsWith("dou.ua")
+  const classCandidates = hostMatches(hostname, "dou.ua")
     ? ["vacancy-section", "b-typo"]
-    : hostname.endsWith("djinni.co")
+    : hostMatches(hostname, "djinni.co")
       ? ["job-details--about", "job-details__about", "job-description", "job-details"]
       : ["job-description", "vacancy-section"];
 
@@ -118,7 +122,7 @@ export class RssJobSource implements JobSource {
         const descriptionHtml = firstText(item["encoded"], item.content, item.description, item.summary);
         const description = normalizeVacancyDescription(htmlToVacancyText(descriptionHtml));
         const creator = firstText(item.creator, item.author, item.company);
-        const douTitle = feedHost.endsWith("dou.ua")
+        const douTitle = hostMatches(feedHost, "dou.ua")
           ? rawTitle.match(/^(.+?)\s+в\s+(.+?)(?:,\s+(.+))?$/iu)
           : null;
         const title = douTitle?.[1]?.trim() || inferRoleTitle(rawTitle);
