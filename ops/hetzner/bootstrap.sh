@@ -4,6 +4,7 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 RUNTIME_DIR=/opt/gimmejob-n8n
 REPO_RAW=https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner
+HTTPS_ONLY='=https'
 
 log() {
   printf '[gimmejob-bootstrap] %s\n' "$*"
@@ -16,7 +17,8 @@ apt-get install -y ca-certificates curl openssl
 if ! command -v docker >/dev/null 2>&1; then
   log "Installing Docker Engine from Docker's official apt repository"
   install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+    https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
   chmod a+r /etc/apt/keyrings/docker.asc
   . /etc/os-release
   cat >/etc/apt/sources.list.d/docker.sources <<EOF
@@ -43,8 +45,10 @@ if ! swapon --show --noheadings | grep -q .; then
 fi
 
 install -d -m 700 "$RUNTIME_DIR"
-curl -fsSL "$REPO_RAW/docker-compose.yml" -o "$RUNTIME_DIR/docker-compose.yml"
-curl -fsSL "$REPO_RAW/Caddyfile" -o "$RUNTIME_DIR/Caddyfile"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/docker-compose.yml" -o "$RUNTIME_DIR/docker-compose.yml"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/Caddyfile" -o "$RUNTIME_DIR/Caddyfile"
 
 if [[ ! -f "$RUNTIME_DIR/.env" ]]; then
   log "Generating persistent n8n and PostgreSQL secrets"

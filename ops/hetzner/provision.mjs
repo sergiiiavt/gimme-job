@@ -62,7 +62,7 @@ function hcloud(path, options = {}) {
     ...options,
     headers: {
       Authorization: `Bearer ${hetznerToken}`,
-      ...(options.headers ?? {}),
+      ...options.headers,
     },
   });
 }
@@ -82,7 +82,7 @@ write_files:
       PermitRootLogin prohibit-password
 runcmd:
   - systemctl reload ssh
-  - [ bash, -lc, "curl -fsSL https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner/bootstrap.sh -o /root/gimmejob-bootstrap.sh && chmod 700 /root/gimmejob-bootstrap.sh && /root/gimmejob-bootstrap.sh >>/var/log/gimmejob-bootstrap.log 2>&1" ]
+  - [ bash, -lc, "curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner/bootstrap.sh -o /root/gimmejob-bootstrap.sh && chmod 700 /root/gimmejob-bootstrap.sh && /root/gimmejob-bootstrap.sh >>/var/log/gimmejob-bootstrap.log 2>&1" ]
 `;
 }
 
@@ -248,7 +248,7 @@ async function configureCloudflareDns(ipv4) {
       ...options,
       headers: {
         Authorization: `Bearer ${token}`,
-        ...(options.headers ?? {}),
+        ...options.headers,
       },
     });
 
@@ -284,8 +284,8 @@ async function configureCloudflareDns(ipv4) {
       console.log(`Created ${HOSTNAME} -> ${ipv4}`);
     }
     return true;
-  } catch (error) {
-    console.warn(`Cloudflare DNS automation skipped: ${error.message}`);
+  } catch {
+    console.warn("Cloudflare DNS automation skipped; configure DNS manually if needed");
     return false;
   }
 }
