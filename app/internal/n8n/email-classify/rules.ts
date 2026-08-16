@@ -1,6 +1,6 @@
 import type { EmailAction, EmailClassification } from "../email-events/email-event.ts";
 
-export const EMAIL_CLASSIFIER_VERSION = "automation-v2.0";
+export const EMAIL_CLASSIFIER_VERSION = "automation-v2.1";
 
 export type RuleEmail = {
   sender_name: string | null;
@@ -66,6 +66,26 @@ function result(
   };
 }
 
+function isDeveloperNotification(event: RuleEmail): boolean {
+  const from = sender(event);
+  const domain = senderDomain(event);
+  const subject = event.subject.toLowerCase();
+  const searchable = searchText(event);
+
+  const technicalSender =
+    domain === "github.com" ||
+    domain.endsWith(".github.com") ||
+    domain === "sonarcloud.io" ||
+    domain.endsWith(".sonarcloud.io") ||
+    /github|sonarqube|sonarcloud/.test(from);
+
+  const githubSubject = /^\s*(?:re:\s*)?\[[^\]/]+\/[^\]]+\]/i.test(event.subject);
+  const technicalSubject = /pull request|workflow run|github actions|quality gate|code scanning|security alert|repository|sonarqube|sonarcloud/.test(subject);
+  const technicalBody = /github actions|pull request #?\d+|quality gate (?:passed|failed)|sonarqube cloud|sonarcloud|new-code coverage|security hotspots?/.test(searchable);
+
+  return githubSubject || (technicalSender && (technicalSubject || technicalBody)) || (technicalSubject && technicalBody);
+}
+
 export function preAiClassification(event: RuleEmail): RuleClassification | null {
   const from = sender(event);
   const domain = senderDomain(event);
@@ -76,15 +96,10 @@ export function preAiClassification(event: RuleEmail): RuleClassification | null
     return result("SERVICE_MESSAGE", 1, "gmail-forwarding-confirmation", "Gmail forwarding confirmation");
   }
 
-  const technicalSender =
-    domain === "github.com" ||
-    domain.endsWith(".github.com") ||
-    domain === "sonarcloud.io" ||
-    domain.endsWith(".sonarcloud.io") ||
-    /github|sonarqube|sonarcloud/.test(from);
-  const technicalSubject = /pull request|workflow run|github actions|quality gate|code scanning|security alert|repository/.test(subject);
-  if (technicalSender && technicalSubject) {
-    return result("SERVICE_MESSAGE", 0.99, "developer-notification", event.subject);
+  // Developer/service notifications must win before generic job-alert rules. Real GitHub PR
+  // bodies can contain phrases such as "job alert" in code diffs and documentation.
+  if (isDeveloperNotification(event)) {
+    return result("SERVICE_MESSAGE", 0.995, "developer-notification", event.subject);
   }
 
   if (/verification|verify your (?:email|account)|security code|password reset|confirm your account/.test(subject) &&
@@ -93,10 +108,11 @@ export function preAiClassification(event: RuleEmail): RuleClassification | null
   }
 
   const jobPlatform = /(^|\.)(linkedin\.com|robota\.ua|work\.ua|djinni\.co)$/.test(domain);
-  const jobAlertSignal = /job alert|jobs for you|recommended jobs|recommended vacancies|vacancies for you|new jobs matching|vacancy digest|добірк[аи] ваканс|рекомендован[іа] ваканс/.test(searchable);
-  if (jobAlertSignal && (jobPlatform || /automated|digest|alert|recommend/.test(searchable))) {
+  const jobAlertSignal = /job alert|jobs for you|recommended jobs|recommended vacancies|vacancies for you|new jobs matching|vacancy digest|saved search|new qa .*vacanc|добірк[аи] ваканс|рекомендован[іа] ваканс|нов[іа] ваканс/.test(searchable);
+  const jobAlertSender = /job.?alert|vacanc|jobs?|digest|recommend/.test(from);
+  if (jobPlatform && (jobAlertSignal || jobAlertSender)) {
     // The sending platform is not the employer. Keep company null unless an employer is extracted later.
-    return result("JOB_ALERT", 0.98, "job-alert", event.subject);
+    return result("JOB_ALERT", 0.99, "job-alert", event.subject);
   }
 
   const knownConsumerDomain = /(^|\.)(gog\.com|steam(?:powered|community)?\.com|epicgames\.com)$/.test(domain);
@@ -104,6 +120,14 @@ export function preAiClassification(event: RuleEmail): RuleClassification | null
   if (knownConsumerDomain && promotionSignal) {
     return result("NON_JOB", 0.99, "consumer-promotion", event.subject, {
       company: domain.includes("gog.com") ? "GOG.com" : null,
+    });
+  }
+
+  const transactionalDomain = /(^|\.)(prom\.ua|novaposhta\.ua|nova\.global|rozetka\.com\.ua)$/.test(domain);
+  const transactionalSignal = /order|delivery|delivered|shipment|tracking|parcel|payment|purchase|замовлен|доставк|відправлен|посилк|нова пошта|оплат/.test(searchable);
+  if (transactionalDomain && transactionalSignal && !/job|vacanc|career|recruit|interview|application|position|role/.test(searchable)) {
+    return result("NON_JOB", 0.995, "consumer-transaction", event.subject, {
+      company: domain.includes("prom.ua") ? "Prom.ua" : domain.includes("novaposhta.ua") || domain.includes("nova.global") ? "Nova Poshta" : null,
     });
   }
 
