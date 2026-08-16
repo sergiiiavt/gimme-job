@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
+import { sectionNavigationHref } from "./navigation-paths";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection } from "./qa-markdown";
 import { SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
@@ -280,10 +281,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   };
 
   const openSection = (targetSection: SiteSection) => {
-    const target = mode === "personal"
-      ? targetSection === "jobs" ? "/workspace" : `/workspace/learn?section=${targetSection}`
-      : targetSection === "about" ? "/" : targetSection === "jobs" ? "/workspace" : `/#${targetSection}`;
-    window.location.assign(target);
+    window.location.assign(sectionNavigationHref(targetSection, mode));
   };
 
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
