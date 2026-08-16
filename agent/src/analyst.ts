@@ -7,17 +7,19 @@ import type {
 import {
   adjustResumeWithOpenAi,
   analyzeJobWithOpenAi,
-  deterministicAnalysis,
-  deterministicResumePackage,
 } from "./job-intelligence.js";
 
-export { deterministicAnalysis, deterministicResumePackage };
+export { deterministicAnalysis, deterministicResumePackage } from "./job-intelligence.js";
 
 function openAiConfig() {
   return {
     apiKey: process.env.OPENAI_API_KEY ?? "",
     model: process.env.OPENAI_MODEL ?? "gpt-5.6",
   };
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function analyzeJob(
@@ -30,9 +32,7 @@ export async function analyzeJob(
     ...config,
     model,
     onFallback: (error) => {
-      console.error(
-        `OpenAI analysis failed for ${job.id}, falling back to deterministic scoring: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      console.error(`OpenAI analysis failed for ${job.id}, falling back to deterministic scoring: ${errorMessage(error)}`);
     },
   });
 }
@@ -47,9 +47,7 @@ export async function adjustResume(
     ...config,
     model,
     onFallback: (error) => {
-      console.error(
-        `OpenAI resume adjustment failed for ${job.id}, falling back to the deterministic template: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      console.error(`OpenAI resume adjustment failed for ${job.id}, falling back to deterministic template: ${errorMessage(error)}`);
     },
   });
 }
