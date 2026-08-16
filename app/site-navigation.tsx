@@ -4,13 +4,30 @@ import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+export type ExternalNavigationId = "qa-fundamentals";
 
-export const navigationIntroItem: { id: SiteSection; label: string } = { id: "about", label: "About this site" };
+interface SectionNavigationItem {
+  id: SiteSection;
+  label: string;
+  external?: false;
+}
+
+interface ExternalNavigationItem {
+  id: ExternalNavigationId;
+  label: string;
+  external: true;
+  publicHref: string;
+  personalHref: string;
+}
+
+type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
+
+export const navigationIntroItem: SectionNavigationItem = { id: "about", label: "About this site" };
 
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
 export const hiddenDeepLinkSections: SiteSection[] = ["python-interview"];
 
-export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: Array<{ id: SiteSection; label: string }> }> = [
+export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: NavigationItem[] }> = [
   {
     id: "career",
     label: "Career",
@@ -25,6 +42,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
     id: "learning",
     label: "Learning path",
     items: [
+      {
+        id: "qa-fundamentals",
+        label: "QA fundamentals",
+        external: true,
+        publicHref: "/learn/qa-fundamentals",
+        personalHref: "/workspace/learn/qa-fundamentals",
+      },
       { id: "certifications", label: "Certs & Trainings" },
       { id: "llm", label: "Generative AI & LLM" },
       { id: "agentic", label: "AI agents & MCP" },
@@ -54,7 +78,14 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
   },
 ];
 
-export const navigationItems = [navigationIntroItem, ...navigationGroups.flatMap((group) => group.items)];
+function isSectionNavigationItem(item: NavigationItem): item is SectionNavigationItem {
+  return item.external !== true;
+}
+
+export const navigationItems: SectionNavigationItem[] = [
+  navigationIntroItem,
+  ...navigationGroups.flatMap((group) => group.items.filter(isSectionNavigationItem)),
+];
 
 export interface SubnavItem {
   id: string;
@@ -70,7 +101,8 @@ export interface SecondarySwitcher {
 }
 
 interface SidebarProps {
-  activeSection: SiteSection;
+  activeSection: SiteSection | null;
+  activeExternalId?: ExternalNavigationId;
   mobileOpen: boolean;
   mode: "public" | "personal";
   onSelect?: (section: SiteSection) => void;
@@ -99,16 +131,30 @@ const responsiveAccountStyle = `
 }
 `;
 
-export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
-  const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
-    <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
-      {item.label}
-    </button>
-  ) : (
-    <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
-      {item.label}
-    </Link>
-  );
+export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+  const renderItem = (item: NavigationItem, intro = false) => {
+    if (item.external) {
+      return (
+        <Link
+          className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeExternalId === item.id ? " active" : ""}`}
+          href={mode === "public" ? item.publicHref : item.personalHref}
+          key={item.id}
+        >
+          {item.label}
+        </Link>
+      );
+    }
+
+    return onSelect ? (
+      <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
+        {item.label}
+      </button>
+    ) : (
+      <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
+        {item.label}
+      </Link>
+    );
+  };
 
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
