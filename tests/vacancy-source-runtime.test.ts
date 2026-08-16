@@ -6,6 +6,9 @@ register();
 
 const { fetchJson, fetchText } = await import("../agent/src/sources/http.ts");
 const { AshbySource, GreenhouseSource, LeverSource } = await import("../agent/src/sources/ats.ts");
+const { RssJobSource } = await import("../agent/src/sources/rss.ts");
+const { RobotaUaSource } = await import("../agent/src/sources/robotaua.ts");
+const { WorkUaSource } = await import("../agent/src/sources/workua.ts");
 
 function jsonResponse(value: unknown, status = 200): Response {
   return new Response(JSON.stringify(value), {
@@ -128,6 +131,135 @@ test("Greenhouse, Lever, and Ashby adapters normalize live-shaped API payloads",
     assert.equal(ashby[0].applyUrl, "https://jobs.example/ashby-3/apply");
     assert.equal(ashby[0].salaryText, "$2500-$3200");
     assert.equal(ashby[0].postedAt, "2026-08-13T08:00:00.000Z");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("RSS adapter follows DOU detail pages and keeps structured full descriptions", { concurrency: false }, async () => {
+  const originalFetch = globalThis.fetch;
+  const feedUrl = "https://jobs.dou.ua/vacancies/feeds/?category=QA";
+  const detailUrl = "https://jobs.dou.ua/companies/acme/vacancies/123";
+  globalThis.fetch = (async (input) => {
+    const url = String(input);
+    if (url === feedUrl) {
+      return new Response(`<?xml version="1.0" encoding="UTF-8"?>
+        <rss><channel><item>
+          <title>QA Engineer в Acme, Київ</title>
+          <link>${detailUrl}?utm_source=feed</link>
+          <description><![CDATA[<p>Short QA teaser.</p>]]></description>
+          <pubDate>Sat, 15 Aug 2026 10:00:00 GMT</pubDate>
+        </item></channel></rss>`, { status: 200 });
+    }
+    if (url === detailUrl) {
+      return new Response(`<html><body><div class="vacancy-section">
+        <h2>Requirements</h2>
+        <ul><li>Strong API testing, SQL, Playwright, and CI/CD experience.</li><li>Ability to design maintainable automated regression coverage.</li></ul>
+        <h2>Responsibilities</h2>
+        <ul><li>Own test strategy, investigate defects, and maintain release quality across web services.</li></ul>
+      </div></body></html>`, { status: 200 });
+    }
+    return new Response("not found", { status: 404, statusText: "Not Found" });
+  }) as typeof fetch;
+
+  try {
+    const jobs = await new RssJobSource("dou-qa", feedUrl).collect();
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].source, "rss:dou-qa");
+    assert.equal(jobs[0].title, "QA Engineer");
+    assert.equal(jobs[0].company, "Acme");
+    assert.equal(jobs[0].location, "Київ");
+    assert.equal(jobs[0].url, detailUrl);
+    assert.equal(jobs[0].postedAt, "2026-08-15T10:00:00.000Z");
+    assert.match(jobs[0].description, /Requirements/);
+    assert.match(jobs[0].description, /Responsibilities/);
+    assert.match(jobs[0].description, /Playwright/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("Robota.ua adapter enriches search results from vacancy detail pages", { concurrency: false }, async () => {
+  const originalFetch = globalThis.fetch;
+  const detailUrl = "https://robota.ua/company99/vacancy777";
+  globalThis.fetch = (async (input) => {
+    const url = String(input);
+    if (url.startsWith("https://api.rabota.ua/vacancy/search?")) {
+      return jsonResponse({
+        total: 1,
+        documents: [{
+          id: 777,
+          notebookId: 99,
+          name: "Senior QA Engineer",
+          companyName: "Acme Ukraine",
+          cityName: "Kyiv",
+          date: "2026-08-15T12:00:00Z",
+          shortDescription: "Short QA teaser.",
+          salaryFrom: 3000,
+          salaryTo: 4000,
+        }],
+      });
+    }
+    if (url === detailUrl) {
+      return new Response(`<html><head><script type="application/ld+json">${JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "JobPosting",
+        description: "<h2>Requirements</h2><ul><li>API, SQL, Playwright, and test automation experience.</li></ul><h2>Responsibilities</h2><ul><li>Build regression coverage and investigate production defects.</li></ul><h2>Benefits</h2><p>Remote work in Ukraine and a learning budget.</p>",
+      })}</script></head><body></body></html>`, { status: 200 });
+    }
+    return new Response("not found", { status: 404, statusText: "Not Found" });
+  }) as typeof fetch;
+
+  try {
+    const jobs = await new RobotaUaSource("qa", "QA Engineer").collect();
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].source, "robotaua:qa");
+    assert.equal(jobs[0].externalId, "777");
+    assert.equal(jobs[0].company, "Acme Ukraine");
+    assert.equal(jobs[0].location, "Kyiv");
+    assert.equal(jobs[0].salaryText, "3000–4000");
+    assert.equal(jobs[0].postedAt, "2026-08-15T12:00:00.000Z");
+    assert.equal(jobs[0].url, detailUrl);
+    assert.equal(jobs[0].remote, true);
+    assert.match(jobs[0].description, /Requirements/);
+    assert.match(jobs[0].description, /Remote work/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("Work.ua adapter keeps a search result and upgrades it with the detail body", { concurrency: false }, async () => {
+  const originalFetch = globalThis.fetch;
+  const searchUrl = "https://www.work.ua/en/jobs/?search=QA%20Engineer";
+  const detailUrl = "https://www.work.ua/en/jobs/8336058";
+  globalThis.fetch = (async (input) => {
+    const url = String(input);
+    if (url === searchUrl) {
+      return new Response(`
+        <div class="mb-lg"><h2 class="my-0"><a href="/en/jobs/8336058/">QA Engineer</a></h2></div>
+        <div class="mt-sm"><div class="text-indent"><span class="strong-600">Ajax Systems</span><span class="">Kyiv</span></div></div>
+        <p class="ellipsis ellipsis-line ellipsis-line-3 text-default-7 mb-0">Short web QA teaser.</p>
+      `, { status: 200 });
+    }
+    if (url === detailUrl) {
+      return new Response(`<html><body><div id="job-description">
+        <h2>Requirements</h2><ul><li>Web and mobile testing, API validation, SQL, and test design.</li></ul>
+        <h2>Responsibilities</h2><ul><li>Execute release testing and maintain regression suites for customer applications.</li></ul>
+      </div></body></html>`, { status: 200 });
+    }
+    return new Response("not found", { status: 404, statusText: "Not Found" });
+  }) as typeof fetch;
+
+  try {
+    const jobs = await new WorkUaSource("qa", "QA Engineer").collect();
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].source, "workua:qa");
+    assert.equal(jobs[0].title, "QA Engineer");
+    assert.equal(jobs[0].company, "Ajax Systems");
+    assert.equal(jobs[0].location, "Kyiv");
+    assert.equal(jobs[0].url, detailUrl);
+    assert.match(jobs[0].description, /Requirements/);
+    assert.match(jobs[0].description, /release testing/);
   } finally {
     globalThis.fetch = originalFetch;
   }
