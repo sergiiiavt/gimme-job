@@ -31,7 +31,12 @@ function decodeEntities(value: string): string {
     .replace(/&([a-z]+);/gi, (match, name: string) => named[name.toLowerCase()] ?? match);
 }
 
-export function htmlToVacancyText(html: string): string {
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value : value === null || value === undefined ? "" : String(value);
+}
+
+export function htmlToVacancyText(value: unknown): string {
+  const html = stringValue(value);
   if (!html) return "";
   return decodeEntities(html)
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
@@ -46,6 +51,7 @@ export function htmlToVacancyText(html: string): string {
     .replace(/[ \t]+/g, " ")
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")
+    .replace(/\n\n(?=- )/g, "\n")
     .trim();
 }
 
@@ -67,8 +73,9 @@ function sectionHeading(line: string): { kind: VacancySectionKind; title: string
   return null;
 }
 
-export function parseVacancySections(value: string): VacancySection[] {
-  const source = value.includes("<") && /<\/?[a-z][\s\S]*>/i.test(value) ? htmlToVacancyText(value) : decodeEntities(value);
+export function parseVacancySections(value: unknown): VacancySection[] {
+  const input = stringValue(value);
+  const source = input.includes("<") && /<\/?[a-z][\s\S]*>/i.test(input) ? htmlToVacancyText(input) : decodeEntities(input);
   const lines = source.split(/\r?\n/).map(cleanLine).filter(Boolean);
   const sections: VacancySection[] = [];
   let current: VacancySection = { kind: "overview", title: "Overview", lines: [] };
@@ -95,7 +102,7 @@ export function parseVacancySections(value: string): VacancySection[] {
   return sections;
 }
 
-export function normalizeVacancyDescription(value: string): string {
+export function normalizeVacancyDescription(value: unknown): string {
   const sections = parseVacancySections(value);
   if (!sections.length) return "";
   const showOverviewHeading = sections.length > 1;
