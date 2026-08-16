@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
 import { sectionFromPathname, sectionNavigationHref } from "./navigation-paths";
@@ -503,10 +504,9 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
   },
 };
 
-function currentSectionFromLocation(): PublicSection {
-  if (typeof window === "undefined") return "about";
-  const pathSection = sectionFromPathname(window.location.pathname);
-  const legacyHashSection = window.location.hash.replace("#", "") || null;
+function resolveSection(pathname: string, hash: string): PublicSection {
+  const pathSection = sectionFromPathname(pathname);
+  const legacyHashSection = hash.replace("#", "") || null;
   const candidate = (pathSection ?? legacyHashSection) as PublicSection | null;
   return candidate && (navigationItems.some((item) => item.id === candidate) || hiddenDeepLinkSections.includes(candidate)) ? candidate : "about";
 }
@@ -596,8 +596,10 @@ function secondarySwitcherFor(
 }
 
 export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
+  const pathname = usePathname();
   const [effectiveMode, setEffectiveMode] = useState<SiteMode>(mode);
-  const [section, setSection] = useState<PublicSection>(() => currentSectionFromLocation());
+  const [hash, setHash] = useState(() => typeof window === "undefined" ? "" : window.location.hash);
+  const section = useMemo(() => resolveSection(pathname, hash), [pathname, hash]);
   const [mobileNav, setMobileNav] = useState(false);
   const [subsection, setSubsection] = useState("all");
   const [programmingTrack, setProgrammingTrack] = useState<ProgrammingTrack>("python");
@@ -628,18 +630,14 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [mode]);
 
   useEffect(() => {
-    const syncFromLocation = () => {
-      const nextSection = currentSectionFromLocation();
-      setSection(nextSection);
-      setSubsection("all");
-    };
-    window.addEventListener("hashchange", syncFromLocation);
-    window.addEventListener("popstate", syncFromLocation);
-    return () => {
-      window.removeEventListener("hashchange", syncFromLocation);
-      window.removeEventListener("popstate", syncFromLocation);
-    };
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
+
+  useEffect(() => {
+    setSubsection("all");
+  }, [section]);
 
   useEffect(() => {
     if (section !== "interview" || interviewCatalog) return;
