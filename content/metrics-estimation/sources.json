@@ -1,0 +1,142 @@
+[
+  {
+    "id": "istqb-ctfl-syllabus",
+    "title": "ISTQB Certified Tester Foundation Level Syllabus v4.0.1",
+    "publisher": "ISTQB",
+    "kind": "Official syllabus",
+    "status": "verified",
+    "url": "https://www.istqb.org/sdm_downloads/istqb-certified-tester-foundation-level-syllabus-v4-0/",
+    "role": "Testing vocabulary, estimation techniques, coverage and test-management foundations",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "istqb-glossary",
+    "title": "ISTQB Glossary",
+    "publisher": "ISTQB",
+    "kind": "Official glossary",
+    "status": "verified",
+    "url": "https://glossary.istqb.org/",
+    "role": "Standard definitions for testing, defects, coverage and estimation terminology",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "dora-metrics",
+    "title": "DORA software delivery performance metrics",
+    "publisher": "Google Cloud / DORA",
+    "kind": "Research program",
+    "status": "verified",
+    "url": "https://dora.dev/guides/dora-metrics/",
+    "role": "Current five software-delivery performance metrics and context-sensitive interpretation",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "dora-history",
+    "title": "A history of DORA’s software delivery metrics",
+    "publisher": "Google Cloud / DORA",
+    "kind": "Research history",
+    "status": "verified",
+    "url": "https://dora.dev/insights/dora-metrics-history/",
+    "role": "Evolution from the original four keys to the current five-metric model",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "scrum-guide",
+    "title": "The Scrum Guide — November 2020",
+    "publisher": "Ken Schwaber and Jeff Sutherland",
+    "kind": "Official guide",
+    "status": "verified",
+    "url": "https://scrumguides.org/scrum-guide.html",
+    "role": "Scrum commitments, Product Backlog sizing and empiricism without prescribing story points",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "kanban-guide",
+    "title": "The Kanban Guide",
+    "publisher": "Kanban Guides / ProKanban.org",
+    "kind": "Official guide",
+    "status": "verified",
+    "url": "https://kanbanguides.org/the-kanban-guide/",
+    "role": "WIP, throughput, work item age and cycle time definitions for flow measurement",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "google-sre-books",
+    "title": "Google Site Reliability Engineering books",
+    "publisher": "Google",
+    "kind": "Engineering reference",
+    "status": "verified",
+    "url": "https://sre.google/books/",
+    "role": "SLIs, SLOs, error budgets, incident response and reliability measurement",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "opentelemetry-concepts",
+    "title": "OpenTelemetry concepts",
+    "publisher": "OpenTelemetry",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://opentelemetry.io/docs/concepts/",
+    "role": "Telemetry signals that support production-quality and detection metrics",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "prometheus-alerting",
+    "title": "Prometheus alerting practices",
+    "publisher": "Prometheus",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://prometheus.io/docs/practices/alerting/",
+    "role": "Actionable symptom-based alerting and operational detection signals",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "kubernetes-probes",
+    "title": "Configure liveness, readiness and startup probes",
+    "publisher": "Kubernetes",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/",
+    "role": "Concrete production-detection signals and the difference between health checks",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "nasa-cost-estimating-handbook",
+    "title": "NASA Cost Estimating Handbook v4.0",
+    "publisher": "NASA",
+    "kind": "Government engineering handbook",
+    "status": "verified",
+    "url": "https://www.nasa.gov/ocfo/ppc-corner/nasa-cost-estimating-handbook-ceh/",
+    "role": "WBS, analogy, uncertainty, risk, documenting assumptions and estimate calibration",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "nist-statistics-handbook",
+    "title": "NIST/SEMATECH e-Handbook of Statistical Methods",
+    "publisher": "NIST",
+    "kind": "Official statistics reference",
+    "status": "verified",
+    "url": "https://www.itl.nist.gov/div898/handbook/",
+    "role": "Distributions, percentiles, variation and statistical interpretation",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-25010",
+    "title": "ISO/IEC 25010:2023 — Product quality model",
+    "publisher": "ISO/IEC",
+    "kind": "International standard",
+    "status": "verified",
+    "url": "https://www.iso.org/standard/78176.html",
+    "role": "Product-quality characteristics used to define what quality signals should measure",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-20926-function-points",
+    "title": "ISO/IEC 20926:2009 — IFPUG functional size measurement method",
+    "publisher": "ISO/IEC",
+    "kind": "International standard",
+    "status": "verified",
+    "url": "https://www.iso.org/standard/51717.html",
+    "role": "Standardized function-point sizing method and calibration context",
+    "checkedAt": "2026-08-16"
+  }
+]

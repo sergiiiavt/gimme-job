@@ -1,0 +1,192 @@
+[
+  {
+    "id": "choosing-a-tool-by-layer",
+    "topicId": "tooling-foundations",
+    "label": "Choosing a tool by evidence layer"
+  },
+  {
+    "id": "evidence-capture-and-redaction",
+    "topicId": "tooling-foundations",
+    "label": "Capturing reproducible evidence and redacting secrets"
+  },
+  {
+    "id": "read-only-vs-mutating-investigation",
+    "topicId": "tooling-foundations",
+    "label": "Read-only investigation and knowing when a tool changes state"
+  },
+  {
+    "id": "curl-fundamentals",
+    "topicId": "http-api-tools",
+    "label": "curl fundamentals: building a request from scratch"
+  },
+  {
+    "id": "postman-collections-environments",
+    "topicId": "http-api-tools",
+    "label": "Postman: collections, environments and variables"
+  },
+  {
+    "id": "postman-auth-cookies-multipart",
+    "topicId": "http-api-tools",
+    "label": "Postman: auth, cookies, multipart and scripted assertions"
+  },
+  {
+    "id": "bruno-git-friendly-collections",
+    "topicId": "http-api-tools",
+    "label": "Bruno: file-based, Git-friendly API collections"
+  },
+  {
+    "id": "choosing-http-client",
+    "topicId": "http-api-tools",
+    "label": "Choosing among curl, Postman, Bruno and other HTTP clients"
+  },
+  {
+    "id": "reproducible-request-artifacts",
+    "topicId": "http-api-tools",
+    "label": "Reproducible request artifacts: import, export and safe sharing"
+  },
+  {
+    "id": "elements-and-console",
+    "topicId": "browser-devtools",
+    "label": "Elements and Console for live inspection"
+  },
+  {
+    "id": "network-panel-waterfall",
+    "topicId": "browser-devtools",
+    "label": "Network panel: headers, timing and the waterfall"
+  },
+  {
+    "id": "cache-throttling-emulation",
+    "topicId": "browser-devtools",
+    "label": "Cache disabling, throttling and device emulation limits"
+  },
+  {
+    "id": "application-panel-storage",
+    "topicId": "browser-devtools",
+    "label": "Application panel: cookies, storage and service workers"
+  },
+  {
+    "id": "sources-breakpoints",
+    "topicId": "browser-devtools",
+    "label": "Sources, source maps and breakpoint debugging basics"
+  },
+  {
+    "id": "performance-lighthouse-bridge",
+    "topicId": "browser-devtools",
+    "label": "Performance and Lighthouse as bridges"
+  },
+  {
+    "id": "devtools-security-and-firefox",
+    "topicId": "browser-devtools",
+    "label": "Security/certificate signals and Firefox DevTools comparison"
+  },
+  {
+    "id": "interception-proxy-workflow",
+    "topicId": "interception-proxies",
+    "label": "The interception-proxy workflow and local certificates"
+  },
+  {
+    "id": "fiddler-capture-filter",
+    "topicId": "interception-proxies",
+    "label": "Fiddler Everywhere: capturing, filtering and inspecting traffic"
+  },
+  {
+    "id": "fiddler-rules-rewrite-replay",
+    "topicId": "interception-proxies",
+    "label": "Fiddler rules, request modification and replay"
+  },
+  {
+    "id": "charles-mitmproxy-alternatives",
+    "topicId": "interception-proxies",
+    "label": "Charles and mitmproxy as alternative proxy workflows"
+  },
+  {
+    "id": "certificate-pinning-and-privacy",
+    "topicId": "interception-proxies",
+    "label": "Certificate pinning limits and privacy/security boundaries"
+  },
+  {
+    "id": "safe-db-connection-setup",
+    "topicId": "database-inspection",
+    "label": "Safe connection setup and read-only investigation habits"
+  },
+  {
+    "id": "sql-client-querying-schema",
+    "topicId": "database-inspection",
+    "label": "Querying, filtering and inspecting schema and constraints"
+  },
+  {
+    "id": "transactions-accidental-write-risk",
+    "topicId": "database-inspection",
+    "label": "Transactions and accidental-write risk"
+  },
+  {
+    "id": "exporting-evidence-reconciling",
+    "topicId": "database-inspection",
+    "label": "Exporting evidence and reconciling API/UI results with stored data"
+  },
+  {
+    "id": "capture-vs-display-filters",
+    "topicId": "packet-analysis",
+    "label": "Capture vs display filters and choosing an interface"
+  },
+  {
+    "id": "following-tcp-conversations",
+    "topicId": "packet-analysis",
+    "label": "Following a TCP conversation: handshakes, retransmissions and resets"
+  },
+  {
+    "id": "dns-tls-visibility-limits",
+    "topicId": "packet-analysis",
+    "label": "DNS and TLS visibility: what you can and cannot see"
+  },
+  {
+    "id": "narrowing-capture-exporting",
+    "topicId": "packet-analysis",
+    "label": "Narrowing a capture and exporting evidence"
+  },
+  {
+    "id": "tshark-tcpdump-bridges",
+    "topicId": "packet-analysis",
+    "label": "tshark and tcpdump as scriptable bridges—and when capture is the wrong layer"
+  },
+  {
+    "id": "adb-fundamentals",
+    "topicId": "mobile-diagnostics",
+    "label": "adb fundamentals: devices, install, shell and file access"
+  },
+  {
+    "id": "logcat-filtering-signal",
+    "topicId": "mobile-diagnostics",
+    "label": "Logcat: filtering signal from noise"
+  },
+  {
+    "id": "ios-simulator-device-bridge",
+    "topicId": "mobile-diagnostics",
+    "label": "iOS bridge: Simulator vs device and device logs"
+  },
+  {
+    "id": "instruments-diagnostic-bridge",
+    "topicId": "mobile-diagnostics",
+    "label": "Instruments as a diagnostic bridge"
+  },
+  {
+    "id": "performance-tool-bridge",
+    "topicId": "specialist-bridges",
+    "label": "k6 and JMeter: when to hand off to Performance"
+  },
+  {
+    "id": "security-tool-bridge",
+    "topicId": "specialist-bridges",
+    "label": "ZAP and Burp Suite: when to hand off to Security"
+  },
+  {
+    "id": "accessibility-tool-bridge",
+    "topicId": "specialist-bridges",
+    "label": "Lighthouse, axe and the accessibility tree: when to hand off to Accessibility"
+  },
+  {
+    "id": "integration-tool-bridges",
+    "topicId": "specialist-bridges",
+    "label": "Appium Inspector, grpcurl, WebSocket and Kafka tooling"
+  }
+]

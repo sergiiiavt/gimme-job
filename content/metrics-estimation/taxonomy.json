@@ -1,0 +1,116 @@
+[
+  {
+    "id": "measurement-foundations",
+    "order": 1,
+    "label": "Measurement foundations",
+    "labelUk": "Основи вимірювання",
+    "description": "Build precise measurement vocabulary before formulas: definitions, denominators, windows, distributions and anti-gaming guardrails.",
+    "descriptionUk": "Спочатку точна мова вимірювання: definitions, denominators, windows, distributions і guardrails проти gaming.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "istqb-glossary",
+      "nist-statistics-handbook",
+      "iso-25010"
+    ]
+  },
+  {
+    "id": "qa-product-quality-metrics",
+    "order": 2,
+    "label": "QA & product quality metrics",
+    "labelUk": "QA та product quality metrics",
+    "description": "Turn defect, customer and QA signals into defined KPIs and a small decision-oriented scorecard.",
+    "descriptionUk": "Перетворіть defect, customer і QA signals на визначені KPI та невеликий decision-oriented scorecard.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "istqb-glossary",
+      "iso-25010",
+      "nist-statistics-handbook"
+    ]
+  },
+  {
+    "id": "test-automation-metrics",
+    "order": 3,
+    "label": "Test execution & automation metrics",
+    "labelUk": "Test execution та automation metrics",
+    "description": "Measure execution evidence and automated-feedback health without confusing green dashboards with product quality.",
+    "descriptionUk": "Вимірюйте execution evidence і health автоматизованого feedback, не плутаючи green dashboard із product quality.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "istqb-glossary",
+      "dora-metrics",
+      "nist-statistics-handbook"
+    ]
+  },
+  {
+    "id": "delivery-production-metrics",
+    "order": 4,
+    "label": "Delivery & production metrics",
+    "labelUk": "Delivery та production metrics",
+    "description": "Connect flow, DORA and production-reliability signals while keeping each model’s definitions distinct.",
+    "descriptionUk": "Поєднайте flow, DORA та production-reliability signals, не змішуючи definitions різних models.",
+    "sourceIds": [
+      "kanban-guide",
+      "dora-metrics",
+      "dora-history",
+      "google-sre-books",
+      "opentelemetry-concepts",
+      "prometheus-alerting",
+      "kubernetes-probes"
+    ]
+  },
+  {
+    "id": "estimation-foundations-decomposition",
+    "order": 5,
+    "label": "Estimation foundations & decomposition",
+    "labelUk": "Основи оцінювання та декомпозиція",
+    "description": "Separate estimates from commitments, expose hidden testing work, and use ranges, evidence and decomposition before choosing a formula.",
+    "descriptionUk": "Відокремлюйте оцінки від зобов’язань, робіть видимою приховану тестову роботу та використовуйте діапазони, докази й декомпозицію до вибору формули.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "istqb-glossary",
+      "nasa-cost-estimating-handbook",
+      "scrum-guide"
+    ]
+  },
+  {
+    "id": "estimation-techniques-sizing",
+    "order": 6,
+    "label": "Estimation techniques & sizing",
+    "labelUk": "Техніки оцінювання та sizing",
+    "description": "Use expert collaboration, three-point reasoning and calibrated sizing methods as tools—not universal conversions.",
+    "descriptionUk": "Використовуйте expert collaboration, three-point reasoning і calibrated sizing як інструменти, а не універсальні коефіцієнти.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "scrum-guide",
+      "nasa-cost-estimating-handbook",
+      "iso-20926-function-points"
+    ]
+  },
+  {
+    "id": "risk-forecasting",
+    "order": 7,
+    "label": "Risk-based allocation & forecasting",
+    "labelUk": "Risk-based allocation та forecasting",
+    "description": "Allocate scarce test effort deliberately and forecast completion from observed flow and uncertainty.",
+    "descriptionUk": "Свідомо розподіляйте обмежений test effort і прогнозуйте completion з observed flow та uncertainty.",
+    "sourceIds": [
+      "istqb-ctfl-syllabus",
+      "kanban-guide",
+      "nasa-cost-estimating-handbook",
+      "nist-statistics-handbook"
+    ]
+  },
+  {
+    "id": "calibration-communication",
+    "order": 8,
+    "label": "Calibration & communication",
+    "labelUk": "Calibration та комунікація",
+    "description": "Close the loop: compare estimates with actuals, reforecast deliberately and communicate uncertainty without fake precision.",
+    "descriptionUk": "Закрийте feedback loop: порівнюйте estimates з actuals, свідомо reforecast і комунікуйте uncertainty без fake precision.",
+    "sourceIds": [
+      "nasa-cost-estimating-handbook",
+      "nist-statistics-handbook",
+      "istqb-ctfl-syllabus"
+    ]
+  }
+]
