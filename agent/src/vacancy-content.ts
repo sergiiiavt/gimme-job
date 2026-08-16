@@ -39,9 +39,9 @@ export function htmlToVacancyText(value: unknown): string {
   const html = stringValue(value);
   if (!html) return "";
   return decodeEntities(html)
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi, (_match, _tag, body: string) => `\n\n${body.replace(/<[^>]+>/g, " ").trim()}\n`)
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+    .replace(/<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1\s*>/gi, (_match, _tag, body: string) => `\n\n${body.replace(/<[^>]+>/g, " ").trim()}\n`)
     .replace(/<li\b[^>]*>/gi, "\n- ")
     .replace(/<\/li\s*>/gi, "")
     .replace(/<br\s*\/?\s*>/gi, "\n")
@@ -121,7 +121,7 @@ function objects(value: unknown): Record<string, unknown>[] {
 }
 
 export function extractJobPostingMetadata(html: string): JobPostingMetadata | null {
-  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)) {
     try {
       const parsed = JSON.parse(decodeEntities(match[1] ?? "")) as unknown;
       const posting = objects(parsed).find((entry) => {
