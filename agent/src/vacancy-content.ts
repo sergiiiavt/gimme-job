@@ -35,12 +35,74 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value : value === null || value === undefined ? "" : String(value);
 }
 
+function isTagBoundary(character: string | undefined): boolean {
+  return character === undefined || character === ">" || character === "/" || /\s/.test(character);
+}
+
+function findTagStart(lowerHtml: string, tagName: string, from: number, closing: boolean): number {
+  const needle = `<${closing ? "/" : ""}${tagName}`;
+  let cursor = from;
+  while (cursor < lowerHtml.length) {
+    const index = lowerHtml.indexOf(needle, cursor);
+    if (index < 0) return -1;
+    if (isTagBoundary(lowerHtml[index + needle.length])) return index;
+    cursor = index + needle.length;
+  }
+  return -1;
+}
+
+interface ElementBlock {
+  openTag: string;
+  body: string;
+  start: number;
+  end: number;
+}
+
+function elementBlocks(html: string, tagName: string): ElementBlock[] {
+  const lowerHtml = html.toLowerCase();
+  const result: ElementBlock[] = [];
+  let cursor = 0;
+
+  while (cursor < html.length) {
+    const start = findTagStart(lowerHtml, tagName, cursor, false);
+    if (start < 0) break;
+    const openEnd = html.indexOf(">", start);
+    if (openEnd < 0) break;
+    const closeStart = findTagStart(lowerHtml, tagName, openEnd + 1, true);
+    if (closeStart < 0) break;
+    const closeEnd = html.indexOf(">", closeStart);
+    if (closeEnd < 0) break;
+
+    result.push({
+      openTag: html.slice(start, openEnd + 1),
+      body: html.slice(openEnd + 1, closeStart),
+      start,
+      end: closeEnd + 1,
+    });
+    cursor = closeEnd + 1;
+  }
+
+  return result;
+}
+
+function stripElementBlocks(html: string, tagName: string): string {
+  const blocks = elementBlocks(html, tagName);
+  if (!blocks.length) return html;
+  let output = "";
+  let cursor = 0;
+  for (const block of blocks) {
+    output += html.slice(cursor, block.start);
+    output += " ";
+    cursor = block.end;
+  }
+  return output + html.slice(cursor);
+}
+
 export function htmlToVacancyText(value: unknown): string {
   const html = stringValue(value);
   if (!html) return "";
-  return decodeEntities(html)
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+  const withoutBlockedElements = stripElementBlocks(stripElementBlocks(html, "script"), "style");
+  return decodeEntities(withoutBlockedElements)
     .replace(/<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1\s*>/gi, (_match, _tag, body: string) => `\n\n${body.replace(/<[^>]+>/g, " ").trim()}\n`)
     .replace(/<li\b[^>]*>/gi, "\n- ")
     .replace(/<\/li\s*>/gi, "")
@@ -120,10 +182,15 @@ function objects(value: unknown): Record<string, unknown>[] {
   return [object, ...graph.flatMap(objects)];
 }
 
+function isJsonLdScript(openTag: string): boolean {
+  return /\btype\s*=\s*["']application\/ld\+json["']/i.test(openTag);
+}
+
 export function extractJobPostingMetadata(html: string): JobPostingMetadata | null {
-  for (const match of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)) {
+  for (const block of elementBlocks(html, "script")) {
+    if (!isJsonLdScript(block.openTag)) continue;
     try {
-      const parsed = JSON.parse(decodeEntities(match[1] ?? "")) as unknown;
+      const parsed = JSON.parse(decodeEntities(block.body)) as unknown;
       const posting = objects(parsed).find((entry) => {
         const type = entry["@type"];
         return type === "JobPosting" || (Array.isArray(type) && type.includes("JobPosting"));
@@ -140,7 +207,7 @@ export function extractJobPostingMetadata(html: string): JobPostingMetadata | nu
         datePosted: text(posting.datePosted) || null,
       };
     } catch {
-      // Ignore malformed JSON-LD and continue to source-specific HTML extraction.
+      // Ignore malformed JSON-LD and continue to the next metadata block.
     }
   }
   return null;
