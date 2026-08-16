@@ -38,6 +38,17 @@ test("htmlToVacancyText preserves headings and list item boundaries", () => {
   assert.match(text, /На тебе чекають\n- Гнучкий графік\n- Медичне страхування/);
 });
 
+test("htmlToVacancyText removes script and style blocks with malformed closing tags", () => {
+  const html = `<p>Keep before</p>
+    <script type="text/javascript">window.evil = "do not keep";</script\t\n bar>
+    <style>.secret { display: none; }</style strange-attribute>
+    <p>Keep after</p>`;
+  const text = htmlToVacancyText(html);
+  assert.match(text, /Keep before/);
+  assert.match(text, /Keep after/);
+  assert.doesNotMatch(text, /window\.evil|do not keep|secret|display:\s*none/);
+});
+
 test("parseVacancySections recognizes classic English and Ukrainian vacancy sections", () => {
   const sections = parseVacancySections(htmlToVacancyText(STRUCTURED_HTML));
   assert.deepEqual(
@@ -69,7 +80,7 @@ test("extractJobPostingMetadata reads full vacancy data from JSON-LD", () => {
         "hiringOrganization": { "@type": "Organization", "name": "Example Tech" },
         "description": "<h2>Requirements</h2><ul><li>API testing</li><li>SQL</li></ul>"
       }
-    </script>
+    </script\t\n unexpected>
   </head></html>`;
 
   const metadata = extractJobPostingMetadata(html);
