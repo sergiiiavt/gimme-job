@@ -16,6 +16,7 @@ const MAX_EVENT_ID_LENGTH = 512;
 const MAX_SUMMARY_LENGTH = 500;
 const MAX_NAME_LENGTH = 300;
 const MAX_SOURCE_LENGTH = 100;
+const PROCESSING_LOCK_MS = 10 * 60 * 1000;
 
 export type EmailIngestEnv = {
   DB?: D1Database;
@@ -32,6 +33,8 @@ type PendingEmailEventRow = {
   sender_email: string | null;
   subject: string;
   text_excerpt: string | null;
+  processing_status: string;
+  processing_attempts: number;
 };
 
 type ClassificationUpdate = {
@@ -187,6 +190,9 @@ export async function handlePendingEmailEvents(request: Request, env: EmailInges
   const limit = pendingLimit(request);
   if (limit === null) return json({ error: "limit must be a positive integer." }, 400);
 
+  const now = new Date().toISOString();
+  const staleBefore = new Date(Date.now() - PROCESSING_LOCK_MS).toISOString();
+
   try {
     const result = await env.DB.prepare(`SELECT
       id,
@@ -197,12 +203,18 @@ export async function handlePendingEmailEvents(request: Request, env: EmailInges
       sender_name,
       sender_email,
       subject,
-      text_excerpt
+      text_excerpt,
+      processing_status,
+      processing_attempts
     FROM user_email_events
     WHERE classification = 'UNCLASSIFIED'
+      AND (
+        (processing_status IN ('PENDING', 'RETRY', 'HOLD') AND (next_retry_at IS NULL OR next_retry_at <= ?))
+        OR (processing_status = 'PROCESSING' AND (processing_started_at IS NULL OR processing_started_at <= ?))
+      )
     ORDER BY received_at ASC
     LIMIT ?`)
-      .bind(limit)
+      .bind(now, staleBefore, limit)
       .all<PendingEmailEventRow>();
 
     const events = (result.results ?? []).map((event) => ({
@@ -215,6 +227,8 @@ export async function handlePendingEmailEvents(request: Request, env: EmailInges
       senderEmail: event.sender_email,
       subject: event.subject,
       textExcerpt: event.text_excerpt,
+      processingStatus: event.processing_status,
+      processingAttempts: event.processing_attempts,
     }));
 
     return json({ events });
@@ -251,6 +265,7 @@ export async function handleEmailClassificationUpdate(request: Request, env: Ema
     }
 
     const changed = existing.classification !== update.classification;
+    const timestamp = new Date().toISOString();
     await env.DB.prepare(`UPDATE user_email_events
       SET
         classification = ?,
@@ -261,6 +276,11 @@ export async function handleEmailClassificationUpdate(request: Request, env: Ema
         job_title = COALESCE(?, job_title),
         recruiter_name = COALESCE(?, recruiter_name),
         action = COALESCE(?, action),
+        processing_status = 'CLASSIFIED',
+        processing_started_at = NULL,
+        next_retry_at = NULL,
+        processing_error = NULL,
+        classified_at = COALESCE(classified_at, ?),
         updated_at = ?
       WHERE user_id = ? AND id = ? AND (classification = 'UNCLASSIFIED' OR classification = ?)`)
       .bind(
@@ -272,7 +292,8 @@ export async function handleEmailClassificationUpdate(request: Request, env: Ema
         update.jobTitle,
         update.recruiterName,
         update.action,
-        new Date().toISOString(),
+        timestamp,
+        timestamp,
         update.userId,
         update.id,
         update.classification,

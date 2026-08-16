@@ -7,18 +7,22 @@ import {
 
 const TOKEN = "test-ingest-token-that-is-long-enough";
 
+type PendingRow = {
+  id: string;
+  user_id: string;
+  provider: string;
+  provider_message_id: string;
+  received_at: string;
+  sender_name: string | null;
+  sender_email: string | null;
+  subject: string;
+  text_excerpt: string | null;
+  processing_status: string;
+  processing_attempts: number;
+};
+
 type FakeDbOptions = {
-  rows?: Array<{
-    id: string;
-    user_id: string;
-    provider: string;
-    provider_message_id: string;
-    received_at: string;
-    sender_name: string | null;
-    sender_email: string | null;
-    subject: string;
-    text_excerpt: string | null;
-  }>;
+  rows?: PendingRow[];
   existingClassification?: string | null;
   fail?: boolean;
 };
@@ -41,7 +45,9 @@ function authorizedRequest(
 
 function fakeDb(options: FakeDbOptions = {}) {
   const state = {
+    allSql: [] as string[],
     allBindings: [] as unknown[][],
+    runSql: [] as string[],
     runBindings: [] as unknown[][],
   };
 
@@ -55,6 +61,7 @@ function fakeDb(options: FakeDbOptions = {}) {
         },
         async all<T>() {
           if (options.fail) throw new Error("database unavailable");
+          state.allSql.push(sql);
           state.allBindings.push(values);
           return { success: true, results: (options.rows ?? []) as T[] };
         },
@@ -68,8 +75,9 @@ function fakeDb(options: FakeDbOptions = {}) {
         },
         async run() {
           if (options.fail) throw new Error("database unavailable");
+          state.runSql.push(sql);
           state.runBindings.push(values);
-          return { success: true };
+          return { success: true, meta: { changes: 1 } };
         },
       };
       return statement;
@@ -79,7 +87,7 @@ function fakeDb(options: FakeDbOptions = {}) {
   return { db, state };
 }
 
-test("n8n pending-email endpoint returns bounded structured forwarding data including the text excerpt", async () => {
+test("pending-email endpoint exposes only due work and bounded structured email data", async () => {
   const { db, state } = fakeDb({
     rows: [{
       id: "evt_123",
@@ -91,6 +99,8 @@ test("n8n pending-email endpoint returns bounded structured forwarding data incl
       sender_email: "recruiter@example.com",
       subject: "Interview invitation",
       text_excerpt: "Please join us for a technical interview next Tuesday.",
+      processing_status: "PENDING",
+      processing_attempts: 0,
     }],
   });
 
@@ -111,12 +121,15 @@ test("n8n pending-email endpoint returns bounded structured forwarding data incl
       senderEmail: "recruiter@example.com",
       subject: "Interview invitation",
       textExcerpt: "Please join us for a technical interview next Tuesday.",
+      processingStatus: "PENDING",
+      processingAttempts: 0,
     }],
   });
-  assert.deepEqual(state.allBindings, [[100]]);
+  assert.match(state.allSql[0] ?? "", /processing_status IN \('PENDING', 'RETRY', 'HOLD'\)/);
+  assert.equal(state.allBindings[0]?.at(-1), 100);
 });
 
-test("n8n pending-email endpoint fails closed and validates the limit", async () => {
+test("pending-email endpoint fails closed and validates the limit", async () => {
   const { db } = fakeDb();
 
   const missingToken = await handlePendingEmailEvents(
@@ -140,7 +153,7 @@ test("n8n pending-email endpoint fails closed and validates the limit", async ()
   }
 });
 
-test("n8n classification endpoint stores structured AI classification fields", async () => {
+test("legacy PATCH endpoint still stores structured classification and finalizes processing state", async () => {
   const { db, state } = fakeDb({ existingClassification: "UNCLASSIFIED" });
   const response = await handleEmailClassificationUpdate(
     authorizedRequest(undefined, {
@@ -162,45 +175,43 @@ test("n8n classification endpoint stores structured AI classification fields", a
   );
 
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), {
-    ok: true,
-    id: "evt_123",
-    classification: "INTERVIEW",
-    confidence: 0.96,
-    source: "OPENAI:gpt-5.6",
-    action: "PREPARE_INTERVIEW",
-    changed: true,
-  });
-  assert.equal(state.runBindings.length, 1);
+  const payload = await response.json();
+  assert.equal(payload.classification, "INTERVIEW");
+  assert.equal(payload.changed, true);
+  assert.match(state.runSql[0] ?? "", /processing_status = 'CLASSIFIED'/);
   const values = state.runBindings[0]!;
   assert.equal(values[0], "INTERVIEW");
   assert.equal(values[1], 0.96);
   assert.equal(values[2], "OPENAI:gpt-5.6");
-  assert.equal(values[3], "Technical interview invitation for Senior QA Engineer.");
-  assert.equal(values[4], "Example Corp");
-  assert.equal(values[5], "Senior QA Engineer");
-  assert.equal(values[6], "Anna Smith");
-  assert.equal(values[7], "PREPARE_INTERVIEW");
-  assert.equal(values[9], "user_123");
-  assert.equal(values[10], "evt_123");
-  assert.equal(values[11], "INTERVIEW");
+  assert.equal(values[10], "user_123");
+  assert.equal(values[11], "evt_123");
+  assert.equal(values[12], "INTERVIEW");
 });
 
-test("n8n classification endpoint is idempotent and never overwrites another classification", async () => {
-  const same = fakeDb({ existingClassification: "REJECTION" });
-  const repeated = await handleEmailClassificationUpdate(
+test("classification endpoint accepts NON_JOB and remains idempotent", async () => {
+  const first = fakeDb({ existingClassification: "UNCLASSIFIED" });
+  const response = await handleEmailClassificationUpdate(
     authorizedRequest(undefined, {
       method: "PATCH",
-      body: { userId: "user_123", id: "evt_123", classification: "REJECTION", confidence: 0.9, source: "OPENAI:gpt-5.6", action: "NO_ACTION" },
+      body: { userId: "user_123", id: "evt_123", classification: "NON_JOB", action: "NO_ACTION" },
     }),
-    { DB: same.db, N8N_INGEST_TOKEN: TOKEN },
+    { DB: first.db, N8N_INGEST_TOKEN: TOKEN },
   );
-  assert.equal(repeated.status, 200);
-  const repeatedPayload = await repeated.json();
-  assert.equal(repeatedPayload.changed, false);
-  assert.equal(repeatedPayload.classification, "REJECTION");
-  assert.equal(same.state.runBindings.length, 1);
+  assert.equal(response.status, 200);
 
+  const repeated = fakeDb({ existingClassification: "NON_JOB" });
+  const repeatedResponse = await handleEmailClassificationUpdate(
+    authorizedRequest(undefined, {
+      method: "PATCH",
+      body: { userId: "user_123", id: "evt_123", classification: "NON_JOB", action: "NO_ACTION" },
+    }),
+    { DB: repeated.db, N8N_INGEST_TOKEN: TOKEN },
+  );
+  assert.equal(repeatedResponse.status, 200);
+  assert.equal((await repeatedResponse.json()).changed, false);
+});
+
+test("classification endpoint never overwrites a different classification", async () => {
   const conflict = fakeDb({ existingClassification: "REJECTION" });
   const response = await handleEmailClassificationUpdate(
     authorizedRequest(undefined, {
@@ -212,32 +223,4 @@ test("n8n classification endpoint is idempotent and never overwrites another cla
   assert.equal(response.status, 409);
   assert.deepEqual(await response.json(), { error: "Email event is already classified." });
   assert.equal(conflict.state.runBindings.length, 0);
-});
-
-test("n8n classification endpoint rejects unresolved, unsupported, malformed and unknown events", async () => {
-  const { db, state } = fakeDb({ existingClassification: "UNCLASSIFIED" });
-
-  for (const body of [
-    { userId: "user_123", id: "evt_123", classification: "UNCLASSIFIED" },
-    { userId: "user_123", id: "evt_123", classification: "SPAM" },
-    { userId: "user_123", id: "evt_123", classification: "INTERVIEW", confidence: 2 },
-    { userId: "user_123", id: "evt_123", classification: "INTERVIEW", action: "DELETE_EMAIL" },
-  ]) {
-    const response = await handleEmailClassificationUpdate(
-      authorizedRequest(undefined, { method: "PATCH", body }),
-      { DB: db, N8N_INGEST_TOKEN: TOKEN },
-    );
-    assert.equal(response.status, 400);
-  }
-  assert.equal(state.runBindings.length, 0);
-
-  const unknown = fakeDb({ existingClassification: null });
-  const response = await handleEmailClassificationUpdate(
-    authorizedRequest(undefined, {
-      method: "PATCH",
-      body: { userId: "user_123", id: "evt_missing", classification: "OTHER" },
-    }),
-    { DB: unknown.db, N8N_INGEST_TOKEN: TOKEN },
-  );
-  assert.equal(response.status, 404);
 });

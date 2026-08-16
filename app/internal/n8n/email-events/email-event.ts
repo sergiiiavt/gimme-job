@@ -8,6 +8,7 @@ export const EMAIL_CLASSIFICATIONS = [
   "REJECTION",
   "JOB_ALERT",
   "SERVICE_MESSAGE",
+  "NON_JOB",
   "OTHER",
   // Legacy direct-Gmail ingest value. New classifiers emit RECRUITER_OUTREACH.
   "RECRUITER",

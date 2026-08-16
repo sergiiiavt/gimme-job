@@ -1,0 +1,92 @@
+[
+  {
+    "id": "service-github-ci",
+    "senderName": "GitHub",
+    "senderEmail": "notifications@github.com",
+    "subject": "[example/repo] CI workflow run failed",
+    "textExcerpt": "GitHub Actions reported a failed workflow run.",
+    "expectedClassification": "SERVICE_MESSAGE",
+    "expectedPreAi": true
+  },
+  {
+    "id": "non-job-store-promotion",
+    "senderName": "GOG.com",
+    "senderEmail": "news@gog.com",
+    "subject": "Games on your wishlist are 75% off",
+    "textExcerpt": "Summer sale. Save 75% on games from your wishlist.",
+    "expectedClassification": "NON_JOB",
+    "expectedPreAi": true
+  },
+  {
+    "id": "job-alert-linkedin",
+    "senderName": "LinkedIn",
+    "senderEmail": "jobalerts-noreply@linkedin.com",
+    "subject": "Job alert: QA Lead in Kyiv",
+    "textExcerpt": "Recommended jobs for you based on your alert.",
+    "expectedClassification": "JOB_ALERT",
+    "expectedPreAi": true
+  },
+  {
+    "id": "application-received",
+    "senderName": "Example Careers",
+    "senderEmail": "careers@example.com",
+    "subject": "We received your application",
+    "textExcerpt": "Thank you for applying for Senior QA Engineer. We will review your application.",
+    "expectedClassification": "APPLICATION_RECEIVED",
+    "expectedPreAi": false
+  },
+  {
+    "id": "recruiter-outreach",
+    "senderName": "Anna",
+    "senderEmail": "anna@agency.example",
+    "subject": "QA Lead opportunity",
+    "textExcerpt": "I am recruiting for a QA Lead role and would like to know whether you are interested.",
+    "expectedClassification": "RECRUITER_OUTREACH",
+    "expectedPreAi": false
+  },
+  {
+    "id": "interview-invite",
+    "senderName": "Hiring Team",
+    "senderEmail": "hiring@example.com",
+    "subject": "Technical interview",
+    "textExcerpt": "We would like to invite you to a technical interview next Tuesday.",
+    "expectedClassification": "INTERVIEW",
+    "expectedPreAi": false
+  },
+  {
+    "id": "test-task",
+    "senderName": "Hiring Team",
+    "senderEmail": "hiring@example.com",
+    "subject": "Technical assessment",
+    "textExcerpt": "Please complete the attached take-home assignment by Friday.",
+    "expectedClassification": "TEST_TASK",
+    "expectedPreAi": false
+  },
+  {
+    "id": "offer",
+    "senderName": "People Team",
+    "senderEmail": "people@example.com",
+    "subject": "Employment offer",
+    "textExcerpt": "We are pleased to offer you the Senior QA Engineer position.",
+    "expectedClassification": "OFFER",
+    "expectedPreAi": false
+  },
+  {
+    "id": "rejection",
+    "senderName": "Careers",
+    "senderEmail": "careers@example.com",
+    "subject": "Application update",
+    "textExcerpt": "Unfortunately, we will not be moving forward with your application.",
+    "expectedClassification": "REJECTION",
+    "expectedPreAi": false
+  },
+  {
+    "id": "ambiguous-follow-up",
+    "senderName": "Anna",
+    "senderEmail": "anna@company.example",
+    "subject": "Quick follow-up",
+    "textExcerpt": "Are you free tomorrow to discuss what we spoke about?",
+    "expectedClassification": "OTHER",
+    "expectedPreAi": false
+  }
+]
