@@ -11,8 +11,6 @@ await mkdir(coverageDir, { recursive: true });
 const result = spawnSync(
   process.execPath,
   [
-    "--import",
-    "tsx",
     "--test",
     "--experimental-test-coverage",
     "--test-reporter=spec",
