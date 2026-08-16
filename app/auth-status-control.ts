@@ -221,8 +221,8 @@ const anonymousStyle = {
   padding: "9px 12px",
 } as const;
 
-export function signInHref(personalHref: string): string {
-  return `/workspace/login?next=${encodeURIComponent(personalHref)}`;
+export function signInHref(_personalHref: string): string {
+  return "/login";
 }
 
 // Kept as helpers for the optional experimental Gmail OAuth path.
@@ -393,7 +393,7 @@ function AuthenticatedControl({
         }, refreshing ? "Checking…" : "Check for verification email"),
       ),
       createElement("div", { style: footerStyle },
-        createElement("form", { action: "/workspace/logout", method: "post" },
+        createElement("form", { action: "/logout", method: "post" },
           createElement("button", { style: logoutStyle, type: "submit" }, "Sign out"),
         ),
       ),
@@ -406,7 +406,7 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
   const [forwarding, setForwarding] = useState<ForwardingSetup | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const authSyncHref = mode === "personal" ? personalHref : "/workspace";
+  const authSyncHref = mode === "personal" ? personalHref : "/vacancies";
 
   useEffect(() => startAuthSync({
     mode,
