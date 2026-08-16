@@ -184,6 +184,9 @@
   background: #17231d;
   border: 1px solid #24372d;
   color: #e5eee8;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .article :global(.qa-md-diagram)::before {
