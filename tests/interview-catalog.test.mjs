@@ -309,7 +309,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(privateJobsSource, /aria-label="Search vacancies"/);
   assert.match(privateJobsSource, /aria-pressed=\{job\.feedback === "RELEVANT"\}/);
   assert.match(privateJobsSource, /className="toast" role="status" aria-live="polite"/);
-  assert.match(uiSource, /window\.location\.assign\(sectionNavigationHref\(next, mode\)\)/);
+  assert.match(uiSource, /window\.location\.assign\(sectionNavigationHref\(next, effectiveMode\)\)/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "certifications"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "certifications"'), "Learning path must follow Interview questions.");
