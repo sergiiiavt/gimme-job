@@ -146,6 +146,15 @@ test("a D1 session replaces attacker headers with trusted tenant identity", asyn
   assert.notEqual(calls[0]!.env.APP_PASSWORD, "legacy-secret");
 });
 
+test("the site root renders in place instead of redirecting away from the canonical homepage", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+  const response = await boundary.fetch(new Request("https://example.com/"), env, undefined);
+  assert.equal(response.status, 200);
+  assert.equal(calls[0]!.request.headers.get("x-gimmejob-authenticated"), "0");
+});
+
 test("public multi-user requests reach core without client Authorization", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);
