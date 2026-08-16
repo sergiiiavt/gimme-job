@@ -66,6 +66,8 @@ export const N8N_DOC_URL = `${REPO_URL}/blob/main/docs/n8n-gmail-integration.md`
 export const N8N_WORKFLOW_URL = `${REPO_URL}/blob/main/ops/n8n/workflows/gimmejob-forwarded-email-classifier.json`;
 export const HETZNER_INFRA_URL = `${REPO_URL}/tree/main/ops/hetzner`;
 export const HETZNER_PROVISION_URL = `${REPO_URL}/blob/main/ops/hetzner/provision.mjs`;
+export const HETZNER_BOOTSTRAP_URL = `${REPO_URL}/blob/main/ops/hetzner/bootstrap.sh`;
+export const HETZNER_COMPOSE_URL = `${REPO_URL}/blob/main/ops/hetzner/docker-compose.yml`;
 export const HETZNER_WORKFLOW_URL = `${REPO_URL}/blob/main/.github/workflows/hetzner-n8n.yml`;
 
 export const GRAFANA_DASHBOARD_LINK: AboutLink = {
@@ -186,7 +188,7 @@ export const DATABASE = {
 export const N8N = {
   title: "n8n email automation",
   description:
-    "n8n is the production orchestration layer for tenant-scoped forwarded job-email metadata; the runtime is self-hosted on Hetzner and provisioned from repository code.",
+    "n8n orchestrates tenant-scoped forwarded job-email metadata while GimmeJob keeps identity, ownership, and application state.",
   gmail: {
     title: "Gmail forwarding",
     description: "User filters forward selected job emails to a per-user GimmeJob token address",
@@ -206,17 +208,14 @@ export const N8N = {
     accent: "blue" as const,
   },
   orchestrator: {
-    title: "Hetzner CX23 + n8n",
+    title: "n8n",
     description:
-      "Ubuntu 24.04 VM provisioned as code. Docker Compose runs n8n, PostgreSQL, and Caddy; GitHub Actions manages server, firewall, bootstrap, DNS, and HTTPS readiness.",
+      "Polls the metadata-only internal API every minute and runs deterministic email classification.",
     icon: "n8n" as const,
     accent: "purple" as const,
     links: [
       { label: "n8n", href: N8N_URL, external: true },
-      { label: "Infrastructure as Code", href: HETZNER_INFRA_URL, external: true },
-      { label: "Provisioner", href: HETZNER_PROVISION_URL, external: true },
-      { label: "Provision workflow", href: HETZNER_WORKFLOW_URL, external: true },
-      { label: "n8n workflow", href: N8N_WORKFLOW_URL, external: true },
+      { label: "Workflow", href: N8N_WORKFLOW_URL, external: true },
       { label: "Integration docs", href: N8N_DOC_URL, external: true },
     ],
   },
@@ -237,6 +236,61 @@ export const N8N = {
       icon: "database" as const,
     },
   ] satisfies SectionTile[],
+};
+
+export const INFRASTRUCTURE = {
+  title: "Infrastructure as Code",
+  description:
+    "The production n8n environment is provisioned and configured from repository code on Hetzner Cloud.",
+  actions: {
+    title: "GitHub Actions",
+    description: "Runs the production provisioning workflow on infrastructure changes or manual dispatch",
+    icon: "actions" as const,
+    accent: "blue" as const,
+    links: [{ label: "Provision workflow", href: HETZNER_WORKFLOW_URL, external: true }],
+  },
+  provisioner: {
+    title: "IaC provisioner",
+    description: "Creates or reuses the server and firewall, applies cloud-init, and configures Cloudflare DNS",
+    icon: "code" as const,
+    accent: "green" as const,
+    links: [
+      { label: "Infrastructure code", href: HETZNER_INFRA_URL, external: true },
+      { label: "Provisioner", href: HETZNER_PROVISION_URL, external: true },
+    ],
+  },
+  runtime: {
+    title: "Hetzner CX23",
+    description: "Ubuntu 24.04 production VM created reproducibly from code",
+    icon: "worker" as const,
+    accent: "orange" as const,
+    links: [
+      { label: "Bootstrap", href: HETZNER_BOOTSTRAP_URL, external: true },
+      { label: "Docker Compose", href: HETZNER_COMPOSE_URL, external: true },
+    ],
+    tiles: [
+      {
+        title: "Docker runtime",
+        description: "n8n + PostgreSQL + Caddy",
+        icon: "settings" as const,
+      },
+      {
+        title: "Persistent data",
+        description: "PostgreSQL, n8n, and Caddy volumes",
+        icon: "database" as const,
+      },
+      {
+        title: "Hetzner firewall",
+        description: "Public 22/80/443; application and database ports stay internal",
+        icon: "alert" as const,
+      },
+      {
+        title: "Cloudflare DNS",
+        description: "n8n.gimme-job.com points to the provisioned production VM",
+        icon: "cloudflare" as const,
+      },
+    ] satisfies SectionTile[],
+  },
 };
 
 export const OPENAI = {
