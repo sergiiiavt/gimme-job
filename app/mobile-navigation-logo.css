@@ -1,0 +1,7 @@
+/* Keep the image-based brand mark inside compact mobile navigation drawers.
+   Desktop branding remains unchanged. */
+@media (max-width: 900px) {
+  .kb-navigation.compact.open .kb-mobile-brand {
+    width: calc(100% - 24px);
+  }
+}
