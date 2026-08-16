@@ -26,7 +26,7 @@ type EventRow = {
 };
 
 function fakeDb(initialRow: EventRow | null, options: { denyBudget?: boolean } = {}) {
-  let row = initialRow ? { ...initialRow } : null;
+  const row = initialRow ? { ...initialRow } : null;
   const state = {
     firstBindings: [] as unknown[][],
     runSql: [] as string[],
