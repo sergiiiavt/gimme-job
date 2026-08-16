@@ -19,7 +19,7 @@
     "test:coverage": "node scripts/run-test-coverage.mjs",
     "smoke:vacancies": "node --import tsx scripts/smoke-vacancy-sources.ts",
     "validate:artifact": "node scripts/validate-cloudflare-artifact.mjs",
-    "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-automation-curriculum-content.mjs && node scripts/validate-qa-fundamentals-content.mjs && node scripts/validate-cloud-devops-content.mjs && node scripts/validate-testing-tools-content.mjs && node scripts/validate-metrics-estimation-content.mjs",
+    "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-python-quick-reference.mjs && node scripts/validate-automation-curriculum-content.mjs && node scripts/validate-qa-fundamentals-content.mjs && node scripts/validate-cloud-devops-content.mjs && node scripts/validate-testing-tools-content.mjs && node scripts/validate-metrics-estimation-content.mjs",
     "check:rewild-assets": "node scripts/validate-rewild-assets.mjs",
     "check:agent": "tsc -p tsconfig.agent.json",
     "check:db": "node scripts/check-drizzle-generation.mjs",

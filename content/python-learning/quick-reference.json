@@ -1,0 +1,551 @@
+{
+  "filters": ["All", "Syntax", "Types", "Collections", "Strings", "Functions", "OOP", "Typing", "Files", "Stdlib", "Async", "Testing", "Tooling", "Advanced", "Gotchas"],
+  "cards": [
+    {
+      "id": "core-syntax",
+      "title": "Core Syntax",
+      "tags": ["Syntax"],
+      "entries": [
+        {"term": "print", "detail": "print('hello')"},
+        {"term": "assign", "detail": "x = 1"},
+        {"term": "multiple assign", "detail": "a, b = 1, 2"},
+        {"term": "swap", "detail": "a, b = b, a"},
+        {"term": "augmented", "detail": "x += 1 · x *= 2"},
+        {"term": "membership", "detail": "x in seq · x not in seq"},
+        {"term": "identity", "detail": "x is None · x is not None"},
+        {"term": "walrus", "detail": "if (n := len(items)) > 0: ..."}
+      ],
+      "more": [
+        {"term": "unpack", "detail": "first, *rest = seq"},
+        {"term": "ignore value", "detail": "first, _, last = values"},
+        {"term": "delete", "detail": "del x · del items[0]"},
+        {"term": "docstring", "detail": "def f(): \"\"\"Describe f.\"\"\""},
+        {"term": "numeric separators", "detail": "1_000_000 · 0x_FF_FF"}
+      ]
+    },
+    {
+      "id": "control-flow",
+      "title": "Control Flow",
+      "tags": ["Syntax"],
+      "entries": [
+        {"term": "if / elif / else", "detail": "if x > 0: ..."},
+        {"term": "ternary", "detail": "label = 'yes' if ok else 'no'"},
+        {"term": "for", "detail": "for item in items: ..."},
+        {"term": "while", "detail": "while condition: ..."},
+        {"term": "break", "detail": "break"},
+        {"term": "continue", "detail": "continue"},
+        {"term": "enumerate", "detail": "for i, x in enumerate(items): ..."},
+        {"term": "zip", "detail": "for a, b in zip(xs, ys): ..."}
+      ],
+      "more": [
+        {"term": "for ... else", "detail": "else runs when the loop does not break"},
+        {"term": "while ... else", "detail": "else runs when the loop does not break"},
+        {"term": "match", "detail": "match value: case 0: ..."},
+        {"term": "match guard", "detail": "case x if x > 0: ..."},
+        {"term": "wildcard case", "detail": "case _: ..."}
+      ]
+    },
+    {
+      "id": "strings",
+      "title": "Strings",
+      "tags": ["Strings", "Types"],
+      "entries": [
+        {"term": "index / slice", "detail": "s[0] · s[-1] · s[1:5] · s[::-1]"},
+        {"term": "strip", "detail": "s.strip() · s.lstrip() · s.rstrip()"},
+        {"term": "split", "detail": "s.split(',') · s.splitlines()"},
+        {"term": "join", "detail": "', '.join(parts)"},
+        {"term": "replace", "detail": "s.replace('old', 'new')"},
+        {"term": "find", "detail": "s.find('x') · s.index('x')"},
+        {"term": "prefix / suffix", "detail": "s.startswith('Py') · s.endswith('.py')"},
+        {"term": "f-string", "detail": "f'{name}: {value:.2f}'"}
+      ],
+      "more": [
+        {"term": "case", "detail": "s.lower() · s.upper() · s.casefold()"},
+        {"term": "tests", "detail": "s.isdigit() · s.isalpha() · s.isspace()"},
+        {"term": "partition", "detail": "head, sep, tail = s.partition(':')"},
+        {"term": "padding", "detail": "s.center(20) · s.ljust(20) · s.zfill(5)"},
+        {"term": "encode / decode", "detail": "s.encode('utf-8') · data.decode('utf-8')"},
+        {"term": "raw string", "detail": "r'C:\\temp\\file.txt'"}
+      ]
+    },
+    {
+      "id": "numbers",
+      "title": "Numbers",
+      "tags": ["Types", "Stdlib"],
+      "entries": [
+        {"term": "numeric types", "detail": "int · float · complex"},
+        {"term": "division", "detail": "7 / 3 · 7 // 3 · 7 % 3"},
+        {"term": "power", "detail": "2 ** 8 · pow(2, 8)"},
+        {"term": "abs / round", "detail": "abs(x) · round(x, 2)"},
+        {"term": "divmod", "detail": "q, r = divmod(a, b)"},
+        {"term": "bases", "detail": "bin(n) · oct(n) · hex(n) · int('ff', 16)"},
+        {"term": "math", "detail": "math.sqrt(x) · math.ceil(x) · math.floor(x)"},
+        {"term": "isclose", "detail": "math.isclose(a, b, rel_tol=1e-9)"}
+      ],
+      "more": [
+        {"term": "constants", "detail": "math.pi · math.e · math.inf · math.nan"},
+        {"term": "Decimal", "detail": "Decimal('0.1') + Decimal('0.2')"},
+        {"term": "Fraction", "detail": "Fraction(1, 3)"},
+        {"term": "complex parts", "detail": "z.real · z.imag · z.conjugate()"},
+        {"term": "clamp pattern", "detail": "max(low, min(value, high))"}
+      ]
+    },
+    {
+      "id": "collections",
+      "title": "Collections",
+      "tags": ["Collections", "Types"],
+      "entries": [
+        {"term": "list", "detail": "items = [1, 2, 3]"},
+        {"term": "append / extend", "detail": "items.append(x) · items.extend(xs)"},
+        {"term": "insert / pop", "detail": "items.insert(i, x) · items.pop(i)"},
+        {"term": "sort", "detail": "items.sort(key=fn) · sorted(items, reverse=True)"},
+        {"term": "tuple", "detail": "point = (10, 20) · single = (1,)"},
+        {"term": "set", "detail": "unique = {1, 2, 3} · set(items)"},
+        {"term": "set ops", "detail": "a | b · a & b · a - b · a ^ b"},
+        {"term": "dict", "detail": "user = {'name': 'Ada'}"},
+        {"term": "dict get", "detail": "user.get('name', 'Unknown')"},
+        {"term": "dict iterate", "detail": "for k, v in user.items(): ..."}
+      ],
+      "more": [
+        {"term": "dict update", "detail": "user.update({'age': 35})"},
+        {"term": "dict merge", "detail": "merged = a | b · a |= b"},
+        {"term": "dict remove", "detail": "value = d.pop('k', None) · del d['k']"},
+        {"term": "setdefault", "detail": "groups.setdefault(key, []).append(value)"},
+        {"term": "frozenset", "detail": "frozen = frozenset(items)"},
+        {"term": "copy", "detail": "items.copy() · d.copy()"}
+      ]
+    },
+    {
+      "id": "comprehensions",
+      "title": "Comprehensions",
+      "tags": ["Collections", "Syntax"],
+      "entries": [
+        {"term": "list comp", "detail": "[x * x for x in items]"},
+        {"term": "filter", "detail": "[x for x in items if x > 0]"},
+        {"term": "transform + filter", "detail": "[f(x) for x in items if ok(x)]"},
+        {"term": "set comp", "detail": "{normalize(x) for x in items}"},
+        {"term": "dict comp", "detail": "{x: f(x) for x in items}"},
+        {"term": "generator expr", "detail": "(f(x) for x in items)"},
+        {"term": "conditional value", "detail": "['even' if x % 2 == 0 else 'odd' for x in nums]"}
+      ],
+      "more": [
+        {"term": "flatten one level", "detail": "[x for row in matrix for x in row]"},
+        {"term": "nested pairs", "detail": "[(x, y) for x in xs for y in ys]"},
+        {"term": "any", "detail": "any(ok(x) for x in items)"},
+        {"term": "all", "detail": "all(ok(x) for x in items)"},
+        {"term": "sum", "detail": "sum(x.amount for x in items)"}
+      ]
+    },
+    {
+      "id": "functions",
+      "title": "Functions",
+      "tags": ["Functions", "Syntax"],
+      "entries": [
+        {"term": "define", "detail": "def add(a, b): return a + b"},
+        {"term": "default arg", "detail": "def greet(name='World'): ..."},
+        {"term": "*args", "detail": "def f(*args): ..."},
+        {"term": "**kwargs", "detail": "def f(**kwargs): ..."},
+        {"term": "keyword-only", "detail": "def f(a, *, timeout=5): ..."},
+        {"term": "positional-only", "detail": "def f(a, /, b): ..."},
+        {"term": "unpack call", "detail": "f(*args, **kwargs)"},
+        {"term": "lambda", "detail": "key=lambda item: item.name"}
+      ],
+      "more": [
+        {"term": "annotation", "detail": "def parse(raw: str) -> int: ..."},
+        {"term": "multiple return", "detail": "return value, error"},
+        {"term": "LEGB", "detail": "Local → Enclosing → Global → Builtins"},
+        {"term": "global", "detail": "global counter"},
+        {"term": "nonlocal", "detail": "nonlocal total"},
+        {"term": "first-class function", "detail": "callbacks.append(handler)"}
+      ]
+    },
+    {
+      "id": "iterators-generators",
+      "title": "Iterators & Generators",
+      "tags": ["Functions", "Stdlib", "Advanced"],
+      "entries": [
+        {"term": "iterator", "detail": "it = iter(items)"},
+        {"term": "next", "detail": "next(it) · next(it, default)"},
+        {"term": "generator", "detail": "def gen(): yield value"},
+        {"term": "yield from", "detail": "yield from iterable"},
+        {"term": "generator expr", "detail": "(x * x for x in items)"},
+        {"term": "chain", "detail": "itertools.chain(a, b)"},
+        {"term": "islice", "detail": "itertools.islice(stream, 10)"},
+        {"term": "count / cycle", "detail": "itertools.count() · itertools.cycle(seq)"}
+      ],
+      "more": [
+        {"term": "repeat", "detail": "itertools.repeat(value, times)"},
+        {"term": "takewhile", "detail": "itertools.takewhile(pred, iterable)"},
+        {"term": "dropwhile", "detail": "itertools.dropwhile(pred, iterable)"},
+        {"term": "tee", "detail": "a, b = itertools.tee(iterable, 2)"},
+        {"term": "generator send", "detail": "generator.send(value)"},
+        {"term": "close", "detail": "generator.close()"}
+      ]
+    },
+    {
+      "id": "exceptions",
+      "title": "Exceptions",
+      "tags": ["Syntax", "Advanced"],
+      "entries": [
+        {"term": "try / except", "detail": "try: ... · except ValueError as exc: ..."},
+        {"term": "multiple types", "detail": "except (TypeError, ValueError): ..."},
+        {"term": "else", "detail": "else: ...  # only if no exception"},
+        {"term": "finally", "detail": "finally: ...  # always runs"},
+        {"term": "raise", "detail": "raise ValueError('invalid value')"},
+        {"term": "re-raise", "detail": "except Exception: log(); raise"},
+        {"term": "cause", "detail": "raise DomainError() from exc"},
+        {"term": "custom error", "detail": "class DomainError(Exception): pass"}
+      ],
+      "more": [
+        {"term": "suppress", "detail": "with contextlib.suppress(FileNotFoundError): ..."},
+        {"term": "exception notes", "detail": "exc.add_note('extra context')"},
+        {"term": "ExceptionGroup", "detail": "raise ExceptionGroup('errors', errors)"},
+        {"term": "except*", "detail": "except* ValueError as group: ..."},
+        {"term": "cleanup", "detail": "prefer with/context managers for resources"}
+      ]
+    },
+    {
+      "id": "oop",
+      "title": "OOP",
+      "tags": ["OOP"],
+      "entries": [
+        {"term": "class", "detail": "class User: ..."},
+        {"term": "constructor", "detail": "def __init__(self, name): self.name = name"},
+        {"term": "instance method", "detail": "def save(self): ..."},
+        {"term": "inheritance", "detail": "class Admin(User): ..."},
+        {"term": "super", "detail": "super().__init__(name)"},
+        {"term": "property", "detail": "@property · @value.setter"},
+        {"term": "class method", "detail": "@classmethod · def from_json(cls, raw): ..."},
+        {"term": "static method", "detail": "@staticmethod · def validate(value): ..."}
+      ],
+      "more": [
+        {"term": "isinstance", "detail": "isinstance(obj, User)"},
+        {"term": "issubclass", "detail": "issubclass(Admin, User)"},
+        {"term": "MRO", "detail": "ClassName.mro()"},
+        {"term": "slots", "detail": "class Point: __slots__ = ('x', 'y')"},
+        {"term": "name mangling", "detail": "self.__private"},
+        {"term": "composition", "detail": "self.client = ApiClient()"}
+      ]
+    },
+    {
+      "id": "dataclasses-enum",
+      "title": "Dataclasses / Enum",
+      "tags": ["OOP", "Stdlib"],
+      "entries": [
+        {"term": "dataclass", "detail": "@dataclass · class Point: x: int; y: int"},
+        {"term": "default factory", "detail": "field(default_factory=list)"},
+        {"term": "frozen", "detail": "@dataclass(frozen=True)"},
+        {"term": "slots", "detail": "@dataclass(slots=True)"},
+        {"term": "asdict", "detail": "asdict(instance)"},
+        {"term": "replace", "detail": "replace(instance, x=10)"},
+        {"term": "Enum", "detail": "class Color(Enum): RED = 1"},
+        {"term": "auto", "detail": "RED = auto()"}
+      ],
+      "more": [
+        {"term": "StrEnum", "detail": "class Status(StrEnum): READY = auto()"},
+        {"term": "IntEnum", "detail": "class Code(IntEnum): OK = 200"},
+        {"term": "enum by name", "detail": "Color['RED']"},
+        {"term": "enum by value", "detail": "Color(1)"},
+        {"term": "post init", "detail": "def __post_init__(self): ..."}
+      ]
+    },
+    {
+      "id": "dunder-methods",
+      "title": "Dunder Methods",
+      "tags": ["OOP", "Advanced"],
+      "entries": [
+        {"term": "representation", "detail": "__repr__ · __str__"},
+        {"term": "length", "detail": "__len__"},
+        {"term": "iteration", "detail": "__iter__ · __next__"},
+        {"term": "membership", "detail": "__contains__"},
+        {"term": "indexing", "detail": "__getitem__ · __setitem__"},
+        {"term": "callable object", "detail": "__call__"},
+        {"term": "comparison", "detail": "__eq__ · __lt__ · __le__"},
+        {"term": "hashing", "detail": "__hash__"}
+      ],
+      "more": [
+        {"term": "context manager", "detail": "__enter__ · __exit__"},
+        {"term": "async context", "detail": "__aenter__ · __aexit__"},
+        {"term": "arithmetic", "detail": "__add__ · __sub__ · __mul__"},
+        {"term": "attribute fallback", "detail": "__getattr__"},
+        {"term": "new instance", "detail": "__new__"},
+        {"term": "formatting", "detail": "__format__"}
+      ]
+    },
+    {
+      "id": "typing",
+      "title": "Typing",
+      "tags": ["Typing", "Advanced"],
+      "entries": [
+        {"term": "annotation", "detail": "name: str = 'Ada'"},
+        {"term": "union", "detail": "value: int | str"},
+        {"term": "optional", "detail": "value: str | None"},
+        {"term": "collections", "detail": "items: list[str] · mapping: dict[str, int]"},
+        {"term": "tuple", "detail": "point: tuple[int, int]"},
+        {"term": "Callable", "detail": "Callable[[str], int]"},
+        {"term": "Literal", "detail": "Literal['GET', 'POST']"},
+        {"term": "type alias", "detail": "type UserId = int"}
+      ],
+      "more": [
+        {"term": "TypeVar", "detail": "T = TypeVar('T')"},
+        {"term": "generic syntax", "detail": "class Box[T]: ..."},
+        {"term": "Protocol", "detail": "class SupportsClose(Protocol): ..."},
+        {"term": "TypedDict", "detail": "class UserRow(TypedDict): ..."},
+        {"term": "Self", "detail": "def clone(self) -> Self: ..."},
+        {"term": "Final", "detail": "MAX_RETRIES: Final = 3"},
+        {"term": "ClassVar", "detail": "count: ClassVar[int] = 0"},
+        {"term": "cast", "detail": "user = cast(User, value)"}
+      ]
+    },
+    {
+      "id": "modules-imports",
+      "title": "Modules / Imports",
+      "tags": ["Syntax", "Tooling"],
+      "entries": [
+        {"term": "import", "detail": "import math"},
+        {"term": "alias", "detail": "import pathlib as pl"},
+        {"term": "from import", "detail": "from pathlib import Path"},
+        {"term": "import alias", "detail": "from module import long_name as short"},
+        {"term": "relative import", "detail": "from .helpers import parse"},
+        {"term": "main guard", "detail": "if __name__ == '__main__': main()"},
+        {"term": "public API", "detail": "__all__ = ['Client', 'connect']"},
+        {"term": "run module", "detail": "python -m package.module"}
+      ],
+      "more": [
+        {"term": "reload", "detail": "importlib.reload(module)"},
+        {"term": "dynamic import", "detail": "importlib.import_module(name)"},
+        {"term": "module path", "detail": "module.__file__"},
+        {"term": "package name", "detail": "module.__package__"},
+        {"term": "search path", "detail": "sys.path"}
+      ]
+    },
+    {
+      "id": "files-pathlib",
+      "title": "Files & Pathlib",
+      "tags": ["Files", "Stdlib"],
+      "entries": [
+        {"term": "read text", "detail": "Path('file.txt').read_text(encoding='utf-8')"},
+        {"term": "write text", "detail": "Path('file.txt').write_text(text, encoding='utf-8')"},
+        {"term": "open safely", "detail": "with open(path, encoding='utf-8') as f: ..."},
+        {"term": "binary mode", "detail": "with open(path, 'rb') as f: data = f.read()"},
+        {"term": "join path", "detail": "path = Path('data') / 'items.json'"},
+        {"term": "exists / type", "detail": "path.exists() · path.is_file() · path.is_dir()"},
+        {"term": "glob", "detail": "Path('.').glob('*.py') · Path('.').rglob('*.py')"},
+        {"term": "mkdir", "detail": "path.mkdir(parents=True, exist_ok=True)"}
+      ],
+      "more": [
+        {"term": "rename", "detail": "path.rename(new_path)"},
+        {"term": "unlink", "detail": "path.unlink(missing_ok=True)"},
+        {"term": "parts", "detail": "path.name · path.stem · path.suffix · path.parent"},
+        {"term": "resolve", "detail": "path.resolve()"},
+        {"term": "iterate lines", "detail": "for line in f: ..."},
+        {"term": "seek / tell", "detail": "f.seek(0) · f.tell()"}
+      ]
+    },
+    {
+      "id": "data-formats",
+      "title": "Data Formats",
+      "tags": ["Files", "Stdlib"],
+      "entries": [
+        {"term": "JSON parse", "detail": "obj = json.loads(text)"},
+        {"term": "JSON serialize", "detail": "text = json.dumps(obj, indent=2)"},
+        {"term": "JSON file", "detail": "json.load(f) · json.dump(obj, f)"},
+        {"term": "CSV rows", "detail": "csv.reader(f) · csv.writer(f)"},
+        {"term": "CSV dicts", "detail": "csv.DictReader(f) · csv.DictWriter(f, fields)"},
+        {"term": "TOML", "detail": "tomllib.load(f)"},
+        {"term": "INI", "detail": "configparser.ConfigParser()"},
+        {"term": "pickle", "detail": "pickle.load(f) · pickle.dump(obj, f)"}
+      ],
+      "more": [
+        {"term": "pickle safety", "detail": "never unpickle untrusted data"},
+        {"term": "struct pack", "detail": "struct.pack('>I', value)"},
+        {"term": "struct unpack", "detail": "value, = struct.unpack('>I', data)"},
+        {"term": "base64", "detail": "base64.b64encode(data) · base64.b64decode(text)"},
+        {"term": "YAML", "detail": "third-party: yaml.safe_load(text)"}
+      ]
+    },
+    {
+      "id": "datetime",
+      "title": "Datetime",
+      "tags": ["Stdlib", "Types"],
+      "entries": [
+        {"term": "today", "detail": "date.today()"},
+        {"term": "UTC now", "detail": "datetime.now(timezone.utc)"},
+        {"term": "duration", "detail": "timedelta(days=1, hours=2)"},
+        {"term": "parse", "detail": "datetime.strptime(text, '%Y-%m-%d')"},
+        {"term": "format", "detail": "dt.strftime('%Y-%m-%d %H:%M')"},
+        {"term": "ISO parse", "detail": "datetime.fromisoformat(text)"},
+        {"term": "ISO format", "detail": "dt.isoformat()"},
+        {"term": "timezone", "detail": "ZoneInfo('Europe/Kyiv')"}
+      ],
+      "more": [
+        {"term": "timestamp → datetime", "detail": "datetime.fromtimestamp(ts, tz=timezone.utc)"},
+        {"term": "datetime → timestamp", "detail": "dt.timestamp()"},
+        {"term": "attach timezone", "detail": "dt.replace(tzinfo=timezone.utc)"},
+        {"term": "convert timezone", "detail": "dt.astimezone(zone)"},
+        {"term": "combine", "detail": "datetime.combine(day, time_value)"}
+      ]
+    },
+    {
+      "id": "stdlib-toolbox",
+      "title": "Stdlib Toolbox",
+      "tags": ["Stdlib"],
+      "entries": [
+        {"term": "Counter", "detail": "Counter(items).most_common(3)"},
+        {"term": "defaultdict", "detail": "defaultdict(list)"},
+        {"term": "deque", "detail": "deque(items, maxlen=100)"},
+        {"term": "cache", "detail": "@functools.cache"},
+        {"term": "LRU cache", "detail": "@functools.lru_cache(maxsize=128)"},
+        {"term": "partial", "detail": "functools.partial(fn, fixed_arg)"},
+        {"term": "heap", "detail": "heapq.heappush(heap, x) · heapq.heappop(heap)"},
+        {"term": "bisect", "detail": "bisect.insort(sorted_items, x)"}
+      ],
+      "more": [
+        {"term": "product", "detail": "itertools.product(a, b)"},
+        {"term": "permutations", "detail": "itertools.permutations(items, r)"},
+        {"term": "combinations", "detail": "itertools.combinations(items, r)"},
+        {"term": "statistics", "detail": "statistics.mean(xs) · statistics.median(xs)"},
+        {"term": "random", "detail": "random.choice(items) · random.shuffle(items)"},
+        {"term": "secrets", "detail": "secrets.token_urlsafe(32)"},
+        {"term": "wraps", "detail": "@functools.wraps(func)"}
+      ]
+    },
+    {
+      "id": "os-cli",
+      "title": "OS / CLI",
+      "tags": ["Tooling", "Files", "Stdlib"],
+      "entries": [
+        {"term": "cwd", "detail": "os.getcwd() · os.chdir(path)"},
+        {"term": "environment", "detail": "os.getenv('KEY') · os.environ['KEY']"},
+        {"term": "CLI args", "detail": "sys.argv"},
+        {"term": "exit", "detail": "sys.exit(1)"},
+        {"term": "run command", "detail": "subprocess.run(cmd, check=True)"},
+        {"term": "capture output", "detail": "subprocess.run(cmd, capture_output=True, text=True)"},
+        {"term": "copy / move", "detail": "shutil.copy2(src, dst) · shutil.move(src, dst)"},
+        {"term": "temporary dir", "detail": "with tempfile.TemporaryDirectory() as tmp: ..."}
+      ],
+      "more": [
+        {"term": "argparse", "detail": "parser = argparse.ArgumentParser()"},
+        {"term": "which", "detail": "shutil.which('python')"},
+        {"term": "platform", "detail": "sys.platform · platform.system()"},
+        {"term": "stdin / stdout", "detail": "sys.stdin · sys.stdout · sys.stderr"},
+        {"term": "walk tree", "detail": "os.walk(root)"}
+      ]
+    },
+    {
+      "id": "logging-debugging",
+      "title": "Logging / Debugging",
+      "tags": ["Tooling"],
+      "entries": [
+        {"term": "basic config", "detail": "logging.basicConfig(level=logging.INFO)"},
+        {"term": "logger", "detail": "log = logging.getLogger(__name__)"},
+        {"term": "levels", "detail": "log.debug() · info() · warning() · error()"},
+        {"term": "exception", "detail": "log.exception('operation failed')"},
+        {"term": "breakpoint", "detail": "breakpoint()"},
+        {"term": "pdb", "detail": "python -m pdb script.py"},
+        {"term": "traceback", "detail": "traceback.print_exc()"},
+        {"term": "timeit", "detail": "timeit.timeit('fn()', globals=globals(), number=1000)"}
+      ],
+      "more": [
+        {"term": "assert invariant", "detail": "assert value >= 0, 'value must be non-negative'"},
+        {"term": "inspect signature", "detail": "inspect.signature(func)"},
+        {"term": "caller stack", "detail": "traceback.format_stack()"},
+        {"term": "warning", "detail": "warnings.warn('deprecated', DeprecationWarning)"},
+        {"term": "logger format", "detail": "'%(asctime)s %(levelname)s %(name)s %(message)s'"}
+      ]
+    },
+    {
+      "id": "concurrency",
+      "title": "Concurrency",
+      "tags": ["Async", "Advanced", "Stdlib"],
+      "entries": [
+        {"term": "async function", "detail": "async def fetch(): ..."},
+        {"term": "await", "detail": "result = await fetch()"},
+        {"term": "run event loop", "detail": "asyncio.run(main())"},
+        {"term": "create task", "detail": "task = asyncio.create_task(coro())"},
+        {"term": "gather", "detail": "results = await asyncio.gather(*coros)"},
+        {"term": "TaskGroup", "detail": "async with asyncio.TaskGroup() as tg: ..."},
+        {"term": "thread pool", "detail": "with ThreadPoolExecutor() as ex: ex.map(fn, items)"},
+        {"term": "process pool", "detail": "with ProcessPoolExecutor() as ex: ex.map(fn, items)"}
+      ],
+      "more": [
+        {"term": "timeout", "detail": "async with asyncio.timeout(5): ..."},
+        {"term": "sleep", "detail": "await asyncio.sleep(1)"},
+        {"term": "queue", "detail": "queue = asyncio.Queue()"},
+        {"term": "lock", "detail": "lock = asyncio.Lock()"},
+        {"term": "thread", "detail": "Thread(target=fn, args=(value,)).start()"},
+        {"term": "to_thread", "detail": "await asyncio.to_thread(blocking_fn)"}
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing",
+      "tags": ["Testing", "Tooling"],
+      "entries": [
+        {"term": "assert", "detail": "assert actual == expected"},
+        {"term": "unittest case", "detail": "class TestThing(unittest.TestCase): ..."},
+        {"term": "unittest equality", "detail": "self.assertEqual(actual, expected)"},
+        {"term": "mock", "detail": "Mock(return_value=value)"},
+        {"term": "patch", "detail": "with patch('module.client') as mock_client: ..."},
+        {"term": "pytest test", "detail": "def test_feature(): ..."},
+        {"term": "pytest fixture", "detail": "@pytest.fixture · def client(): ..."},
+        {"term": "pytest raises", "detail": "with pytest.raises(ValueError): ..."}
+      ],
+      "more": [
+        {"term": "parametrize", "detail": "@pytest.mark.parametrize(('x', 'expected'), cases)"},
+        {"term": "monkeypatch", "detail": "monkeypatch.setenv('KEY', 'value')"},
+        {"term": "tmp_path", "detail": "def test_file(tmp_path): ..."},
+        {"term": "approx", "detail": "assert actual == pytest.approx(expected)"},
+        {"term": "unittest subTest", "detail": "with self.subTest(value=value): ..."},
+        {"term": "run pytest", "detail": "pytest -q · pytest path/to/test.py::test_name"}
+      ]
+    },
+    {
+      "id": "sqlite",
+      "title": "SQLite",
+      "tags": ["Stdlib", "Files"],
+      "entries": [
+        {"term": "connect", "detail": "con = sqlite3.connect('app.db')"},
+        {"term": "execute", "detail": "con.execute('SELECT * FROM users')"},
+        {"term": "parameters", "detail": "con.execute('SELECT * FROM users WHERE id = ?', (user_id,))"},
+        {"term": "fetch one", "detail": "row = cursor.fetchone()"},
+        {"term": "fetch all", "detail": "rows = cursor.fetchall()"},
+        {"term": "transaction", "detail": "with con: con.execute(...)"},
+        {"term": "row mapping", "detail": "con.row_factory = sqlite3.Row"},
+        {"term": "insert many", "detail": "con.executemany(sql, rows)"}
+      ],
+      "more": [
+        {"term": "commit", "detail": "con.commit()"},
+        {"term": "rollback", "detail": "con.rollback()"},
+        {"term": "last inserted id", "detail": "cursor.lastrowid"},
+        {"term": "memory DB", "detail": "sqlite3.connect(':memory:')"},
+        {"term": "close", "detail": "con.close()"}
+      ]
+    },
+    {
+      "id": "internals-gotchas",
+      "title": "Internals & Gotchas",
+      "tags": ["Gotchas", "Advanced"],
+      "entries": [
+        {"term": "mutable default", "detail": "avoid def f(items=[]); use None + create inside"},
+        {"term": "late binding", "detail": "lambda x=x: x captures the current loop value"},
+        {"term": "identity vs equality", "detail": "is → same object · == → equal value"},
+        {"term": "shallow copy", "detail": "copy.copy(obj) · list.copy()"},
+        {"term": "deep copy", "detail": "copy.deepcopy(obj)"},
+        {"term": "truthiness", "detail": "False: None, False, 0, '', [], {}, set()"},
+        {"term": "hashability", "detail": "dict/set keys must be hashable"},
+        {"term": "iterator exhaustion", "detail": "iterators are consumed; recreate or materialize if needed"}
+      ],
+      "more": [
+        {"term": "aliasing", "detail": "b = a shares the same object"},
+        {"term": "nested list trap", "detail": "prefer [[0] * 3 for _ in range(3)]"},
+        {"term": "sort return", "detail": "list.sort() mutates and returns None"},
+        {"term": "dict order", "detail": "dict preserves insertion order"},
+        {"term": "floating point", "detail": "use math.isclose for approximate equality"},
+        {"term": "encoding", "detail": "specify encoding='utf-8' for portable text I/O"},
+        {"term": "EAFP", "detail": "try the operation; handle the expected exception"},
+        {"term": "LBYL", "detail": "check first when that is clearer or required"}
+      ]
+    }
+  ]
+}
