@@ -132,7 +132,7 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: 
     if (heading) {
       const level = heading[1].length;
       const text = plainText(heading[2]);
-      const id = headingIdOverrides[text] ?? markdownSlug(heading[2]) || `section-${nodeKey}`;
+      const id = headingIdOverrides[text] ?? (markdownSlug(heading[2]) || `section-${nodeKey}`);
       const content = parseInline(heading[2]);
       if (level === 1) nodes.push(<h1 id={id} key={`h-${nodeKey++}`}>{content}</h1>);
       else if (level === 2) nodes.push(<h2 id={id} key={`h-${nodeKey++}`}>{content}</h2>);
