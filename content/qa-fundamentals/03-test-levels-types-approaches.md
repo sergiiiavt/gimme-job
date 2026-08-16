@@ -2,40 +2,45 @@
 
 # Test Levels, Types & Approaches
 
-Testing vocabulary becomes confusing when independent dimensions are mixed together. A **test level** describes where testing is positioned relative to the system decomposition. A **test type** describes the objective or quality characteristic being evaluated. Static/dynamic and manual/automated describe other dimensions again.
+Testing vocabulary becomes confusing when independent dimensions are mixed together. A **test level** describes where testing is positioned relative to the system decomposition. A **test type** describes the objective or quality characteristic being evaluated. Static/dynamic, confirmation/regression and manual/automated describe other dimensions again.
 
 ## Test levels
 
-A useful foundational model contains four common levels.
+ISTQB CTFL v4.0.1 distinguishes five common test levels. The distinction between the two integration levels is especially useful because integration inside a product and integration with other systems expose different risks.
 
 | Level | Main focus | Typical examples |
 | --- | --- | --- |
 | Component / unit | A small testable component in isolation or near isolation | function, class, module |
-| Integration | Interactions between components or systems | service-to-database, service-to-service, external provider |
-| System | Behaviour of the complete integrated system | end-to-end business capability, system quality characteristics |
+| Component integration | Interfaces and interactions between components or subsystems | service-to-database, module-to-module, internal service boundary |
+| System | Behaviour and quality of the complete integrated system | end-to-end business capability, system quality characteristics |
+| System integration | Interfaces between the system under test and other systems or external services | payment provider, identity provider, partner API, message broker boundary |
 | Acceptance | Evidence that the system is acceptable for users, business or other stakeholders | user acceptance, operational acceptance, contractual acceptance |
 
 ```diagram
 Acceptance: acceptable for intended stakeholders?
         ↑
-System: does the integrated product behave as required?
+System integration: does our system cooperate correctly with external systems?
         ↑
-Integration: do boundaries and collaborators work together?
+System: does the complete integrated product behave as required?
+        ↑
+Component integration: do internal components collaborate correctly?
         ↑
 Component: does the smallest useful unit behave correctly?
 ```
 
-The levels are not a strict organizational chart. A team can run several levels continuously. The important distinction is the **object and purpose of the evidence**.
+The levels are not a mandatory sequence or an organizational chart. A team can run several levels continuously and can automate checks at any of them. The important distinction is the **test object, boundary and purpose of the evidence**.
+
+> **Useful distinction:** "integration testing" is incomplete without context. Ask whether the integration is between components within the product or between the product and another system.
 
 ## Test level is not test type
 
-“Integration testing” describes a level or interaction scope. “Security testing” describes an objective. Security checks can exist at component, integration and system levels. The same is true for performance, reliability and many other test types.
+“System integration testing” describes where the interaction boundary sits. “Security testing” describes an objective. Security checks can exist at component, component-integration, system, system-integration and acceptance levels. The same is true for performance, reliability and many other test types.
 
 > **Common mistake:** treating “unit, integration, system, regression, smoke and performance” as one flat list. These labels describe different axes.
 
 ## Functional and non-functional testing
 
-Functional testing asks whether the system provides required functions and behaviour. Non-functional testing evaluates quality characteristics and constraints such as performance, compatibility, reliability, interaction, security, maintainability or safety.
+Functional testing asks whether the system provides required functions and behaviour. Non-functional testing evaluates quality characteristics and constraints such as performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility or safety.
 
 The distinction is useful, but it should not imply that non-functional concerns are secondary. A function that returns the correct answer after 90 seconds may still be unusable. A feature that works but exposes sensitive data is not acceptable quality.
 
@@ -87,29 +92,31 @@ The same business rule might be checked manually through a browser, automaticall
 
 Automation is strongest when expectations are known and repeated feedback is valuable. Human investigation is strongest when observation, learning, judgment and adaptation matter.
 
-## Choosing the right combination
+## A testing-dimensions model
 
-Instead of asking “what testing type should we do?”, describe the problem along several dimensions:
+Instead of asking “what testing type should we do?”, describe the problem along independent dimensions:
 
 ```diagram
-What are we testing?        → component / integration / system / acceptance
-Why are we testing it?      → functional / security / performance / reliability / ...
-How do we derive tests?     → specification / structure / experience / collaboration
-How do we execute?          → manual / automated / mixed
-When do we apply it?        → static / dynamic / pre-release / production
+WHERE is the boundary?     → component / component integration / system / system integration / acceptance
+WHAT are we evaluating?    → functional / security / performance / reliability / ...
+HOW are tests derived?     → specification / structure / experience / collaboration
+HOW are they executed?     → human / automated / mixed
+WHEN are they applied?     → static / dynamic / pre-release / production
+WHAT changed?              → confirmation / regression
 ```
 
-This produces clearer strategies and prevents terminology from becoming a substitute for reasoning.
+This model is deliberately different from old “test types” mind maps that put every testing term into one hierarchy. A useful taxonomy preserves the fact that the same test can have several properties at once. For example, an automated system-integration test can be functional, regression-focused and specification-derived.
 
 ## Summary
 
+- CTFL v4.0.1 distinguishes component, component integration, system, system integration and acceptance levels.
 - Test levels and test types are different dimensions.
-- Component, integration, system and acceptance testing answer different evidence questions.
 - Functional correctness is only one aspect of product quality.
 - Static testing evaluates work products without executing the software; dynamic testing observes execution.
 - Confirmation testing targets a fix; regression testing targets unintended side effects.
 - Smoke and sanity should be defined by local purpose.
 - Manual and automated describe execution approaches, not types or levels.
+- A multi-axis model is clearer than a single flat “list of test types.”
 
 ## Sources
 
