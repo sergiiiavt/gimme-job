@@ -58,7 +58,11 @@ function vacancyUrl(document: RobotaUaDocument): string | null {
 }
 
 function decodeJsonString(value: string): string {
-  try { return JSON.parse(`"${value.replace(/"/g, '\\"')}"`) as string; } catch { return value; }
+  try {
+    return JSON.parse(`"${value}"`) as string;
+  } catch {
+    return value;
+  }
 }
 
 export function parseRobotaUaDescription(html: string, fallback = ""): string {
