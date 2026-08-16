@@ -37,6 +37,8 @@ jobs:
         run: npm run verify
 
       - name: SonarQube Cloud scan
+        id: sonar
+        continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         with:
           args: >
@@ -45,8 +47,29 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Diagnose Sonar PR issues
+        if: steps.sonar.outcome == 'failure'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: bash
+        run: |
+          echo "--- Sonar unresolved PR issues ---"
+          curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/issues/search?componentKeys=sergiiiavt_gimme-job&pullRequest=104&resolved=false&ps=100" \
+            | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
+                const p=JSON.parse(s);
+                for (const i of p.issues ?? []) console.log(JSON.stringify({rule:i.rule,severity:i.severity,type:i.type,message:i.message,component:i.component,line:i.line,impacts:i.impacts}));
+              });'
+          echo "--- Sonar PR measures ---"
+          curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/measures/component?component=sergiiiavt_gimme-job&pullRequest=104&metricKeys=new_coverage,new_reliability_rating,new_bugs" \
+            | node -e '
+              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.stringify(JSON.parse(s), null, 2)));'
+          exit 1
+
       - name: Deploy Worker and D1
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && steps.sonar.outcome == 'success'
         env:
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
