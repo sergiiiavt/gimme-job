@@ -5,6 +5,7 @@ import {
   DATABASE,
   DEPLOYMENT,
   GRAFANA,
+  INFRASTRUCTURE,
   N8N,
   OPENAI,
   PURPOSE_CARDS,
@@ -269,9 +270,42 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         </div>
       </section>
 
-      <section className="about-tech-section" aria-labelledby="about-openai-title">
+      <section className="about-tech-section" aria-labelledby="about-infrastructure-title">
         <div className="about-tech-section-heading">
           <SectionNumber>3</SectionNumber>
+          <div>
+            <h2 id="about-infrastructure-title">{INFRASTRUCTURE.title}</h2>
+            <p>{INFRASTRUCTURE.description}</p>
+          </div>
+        </div>
+        <div className="about-tech-section-body">
+          <div className="about-tech-deployment-flow">
+            <TechNode icon={INFRASTRUCTURE.actions.icon} title={INFRASTRUCTURE.actions.title} description={INFRASTRUCTURE.actions.description} accent={INFRASTRUCTURE.actions.accent} links={INFRASTRUCTURE.actions.links}/>
+            <FlowArrow/>
+            <TechNode icon={INFRASTRUCTURE.provisioner.icon} title={INFRASTRUCTURE.provisioner.title} description={INFRASTRUCTURE.provisioner.description} accent={INFRASTRUCTURE.provisioner.accent} links={INFRASTRUCTURE.provisioner.links}/>
+            <FlowArrow/>
+            <TechNode icon={INFRASTRUCTURE.runtime.icon} title={INFRASTRUCTURE.runtime.title} description={INFRASTRUCTURE.runtime.description} accent={INFRASTRUCTURE.runtime.accent} links={INFRASTRUCTURE.runtime.links}>
+              <div className="about-tech-node-grid">
+                {INFRASTRUCTURE.runtime.tiles.map((tile) => (
+                  <article key={tile.title} className="about-tech-mini-node">
+                    <header>
+                      <span className="about-tech-mini-icon">
+                        <AboutIconSvg kind={tile.icon}/>
+                      </span>
+                      <strong>{tile.title}</strong>
+                    </header>
+                    <p>{tile.description}</p>
+                  </article>
+                ))}
+              </div>
+            </TechNode>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-tech-section" aria-labelledby="about-openai-title">
+        <div className="about-tech-section-heading">
+          <SectionNumber>4</SectionNumber>
           <div>
             <h2 id="about-openai-title">{OPENAI.title}</h2>
             <p>{OPENAI.description}</p>
@@ -303,7 +337,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-observability-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>4</SectionNumber>
+          <SectionNumber>5</SectionNumber>
           <div>
             <h2 id="about-observability-title">{GRAFANA.title}</h2>
             <p>{GRAFANA.description}</p>
@@ -338,7 +372,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-code-quality-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>5</SectionNumber>
+          <SectionNumber>6</SectionNumber>
           <div>
             <h2 id="about-code-quality-title">{CODE_QUALITY.title}</h2>
             <p>{CODE_QUALITY.description}</p>
@@ -369,7 +403,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-database-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>6</SectionNumber>
+          <SectionNumber>7</SectionNumber>
           <div>
             <h2 id="about-database-title">{DATABASE.title}</h2>
             <p>{DATABASE.description}</p>
