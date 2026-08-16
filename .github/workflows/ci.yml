@@ -38,7 +38,6 @@ jobs:
 
       - name: SonarQube Cloud scan
         id: sonar
-        continue-on-error: true
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         with:
           args: >
@@ -46,32 +45,6 @@ jobs:
             -Dsonar.qualitygate.timeout=300
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Capture Sonar PR diagnostics
-        if: steps.sonar.outcome == 'failure'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: bash
-        run: |
-          mkdir -p sonar-diagnostic
-          curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/issues/search?componentKeys=sergiiiavt_gimme-job&pullRequest=104&resolved=false&ps=100" \
-            > sonar-diagnostic/issues.json
-          curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/measures/component?component=sergiiiavt_gimme-job&pullRequest=104&metricKeys=new_coverage,new_reliability_rating,new_bugs" \
-            > sonar-diagnostic/measures.json
-
-      - name: Upload Sonar diagnostics
-        if: steps.sonar.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-pr-104-diagnostic
-          path: sonar-diagnostic
-          retention-days: 1
-
-      - name: Fail on Sonar quality gate
-        if: steps.sonar.outcome == 'failure'
-        run: exit 1
 
       - name: Deploy Worker and D1
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && steps.sonar.outcome == 'success'
