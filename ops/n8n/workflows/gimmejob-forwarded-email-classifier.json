@@ -97,7 +97,11 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "timezone": "Europe/Kyiv"
+    "timezone": "Europe/Kyiv",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false
   },
   "versionId": "5b097c5c-50b1-4b9c-9e33-a1591874855b",
   "meta": {
