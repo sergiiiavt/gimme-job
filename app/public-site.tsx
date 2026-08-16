@@ -10,6 +10,8 @@ const RewildGame = lazy(() => import("./rewild-game"));
 
 type PublicSection = SiteSection;
 type SiteMode = "public" | "personal";
+type ProgrammingTrack = "python" | "typescript";
+type AutomationTrack = "framework" | "test-architecture";
 type QuestionProgressStatus = "PLANNED" | "LEARNING" | "LEARNED";
 
 interface QuestionProgressEntry {
@@ -521,7 +523,7 @@ function curriculumSubnav(curriculum: LearningCurriculum | null): SubnavItem[] {
   }));
 }
 
-function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null): SubnavItem[] {
+function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null, programmingTrack: ProgrammingTrack, automationTrack: AutomationTrack): SubnavItem[] {
   if (section === "about" || section === "resume" || section === "jobs") return [];
 
   if (section === "rewild") {
@@ -549,18 +551,25 @@ function secondaryNavigation(section: PublicSection, interviewCatalog: Interview
     }));
   }
 
-  if (section === "programming") return curriculumSubnav(pythonCurriculum);
+  if (section === "programming") return programmingTrack === "python" ? curriculumSubnav(pythonCurriculum) : [];
 
-  if (section === "automation") return curriculumSubnav(automationCurriculum);
+  if (section === "automation") return automationTrack === "framework" ? curriculumSubnav(automationCurriculum) : [];
 
   const items = knowledge[section].items;
   return [
     { id: "all", label: "All topics", count: items.length },
-    ...items.map((item) => ({ id: topicId(item.title), label: item.title })),
+    ...items.map((item) => ({ id: topicId(item.title), label: item.title, status: "under-construction" as const })),
   ];
 }
 
-function secondarySwitcherFor(section: PublicSection, openSection: (next: PublicSection) => void): SecondarySwitcher | undefined {
+function secondarySwitcherFor(
+  section: PublicSection,
+  openSection: (next: PublicSection) => void,
+  programmingTrack: ProgrammingTrack,
+  onProgrammingTrackChange: (next: ProgrammingTrack) => void,
+  automationTrack: AutomationTrack,
+  onAutomationTrackChange: (next: AutomationTrack) => void,
+): SecondarySwitcher | undefined {
   if (section === "interview" || section === "python-interview") {
     return {
       activeId: section,
@@ -570,9 +579,16 @@ function secondarySwitcherFor(section: PublicSection, openSection: (next: Public
   }
   if (section === "programming") {
     return {
-      activeId: "python",
-      onSelect: () => {},
-      options: [{ id: "python", label: "Python" }],
+      activeId: programmingTrack,
+      onSelect: (id) => onProgrammingTrackChange(id as ProgrammingTrack),
+      options: [{ id: "python", label: "Python" }, { id: "typescript", label: "TypeScript" }],
+    };
+  }
+  if (section === "automation") {
+    return {
+      activeId: automationTrack,
+      onSelect: (id) => onAutomationTrackChange(id as AutomationTrack),
+      options: [{ id: "framework", label: "Framework" }, { id: "test-architecture", label: "Test Architecture" }],
     };
   }
   return undefined;
@@ -582,6 +598,8 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [section, setSection] = useState<PublicSection>(mode === "personal" ? "interview" : "about");
   const [mobileNav, setMobileNav] = useState(false);
   const [subsection, setSubsection] = useState("all");
+  const [programmingTrack, setProgrammingTrack] = useState<ProgrammingTrack>("python");
+  const [automationTrack, setAutomationTrack] = useState<AutomationTrack>("framework");
   const [interviewCatalog, setInterviewCatalog] = useState<InterviewCatalog | null>(null);
   const [interviewCatalogError, setInterviewCatalogError] = useState(false);
   const [pythonInterviewCatalog, setPythonInterviewCatalog] = useState<InterviewCatalog | null>(null);
@@ -633,7 +651,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [pythonInterviewCatalog, section]);
 
   useEffect(() => {
-    if (section !== "programming" || pythonCurriculum) return;
+    if (section !== "programming" || programmingTrack !== "python" || pythonCurriculum) return;
     let active = true;
     import("@/content/python-learning/catalog")
       .then((module) => {
@@ -643,10 +661,10 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         if (active) setPythonCurriculumError(true);
       });
     return () => { active = false; };
-  }, [pythonCurriculum, section]);
+  }, [programmingTrack, pythonCurriculum, section]);
 
   useEffect(() => {
-    if (section !== "automation" || automationCurriculum) return;
+    if (section !== "automation" || automationTrack !== "framework" || automationCurriculum) return;
     let active = true;
     import("@/content/automation-learning/catalog")
       .then((module) => {
@@ -656,7 +674,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
         if (active) setAutomationCurriculumError(true);
       });
     return () => { active = false; };
-  }, [automationCurriculum, section]);
+  }, [automationCurriculum, automationTrack, section]);
 
   useEffect(() => {
     if (section === "jobs") window.location.assign("/workspace");
@@ -675,8 +693,20 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
-  const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum, automationCurriculum);
-  const secondarySwitcher = secondarySwitcherFor(section, openSection);
+  const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum, automationCurriculum, programmingTrack, automationTrack);
+  const secondarySwitcher = secondarySwitcherFor(
+    section,
+    openSection,
+    programmingTrack,
+    (next) => { setProgrammingTrack(next); setSubsection("all"); },
+    automationTrack,
+    (next) => { setAutomationTrack(next); setSubsection("all"); },
+  );
+  const secondaryEmptyState = section === "programming" && programmingTrack === "typescript"
+    ? "TypeScript track"
+    : section === "automation" && automationTrack === "test-architecture"
+      ? "Test Architecture track"
+      : undefined;
   const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
   const isFullScreenGame = section === "rewild" && subsection === "all";
   const publicHref = section === "about" ? "/" : `/#${section}`;
@@ -695,6 +725,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
           onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
           personalHref={personalHref}
           publicHref={publicHref}
+          secondaryEmptyState={secondaryEmptyState}
           secondaryItems={secondaryItems}
           secondarySwitcher={secondarySwitcher}
           secondaryTitle={activeLabel}
@@ -719,10 +750,12 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             activeTopic={subsection}
             automationCurriculum={automationCurriculum}
             automationCurriculumError={automationCurriculumError}
+            automationTrack={automationTrack}
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
             mode={mode}
             onTopicChange={setSubsection}
+            programmingTrack={programmingTrack}
             pythonCurriculum={pythonCurriculum}
             pythonCurriculumError={pythonCurriculumError}
             pythonInterviewCatalog={pythonInterviewCatalog}
@@ -737,14 +770,28 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   );
 }
 
-function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+function UnderConstructionPage({ copy, title }: { copy: string; title: string }) {
+  return (
+    <div className="kb-content">
+      <section className="kb-under-construction-page">
+        <span className="kb-construction-badge">Under construction</span>
+        <h1>{title}</h1>
+        <p>{copy}</p>
+      </section>
+    </div>
+  );
+}
+
+function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, automationTrack, interviewCatalog, interviewCatalogError, mode, onTopicChange, programmingTrack, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
   automationCurriculum: LearningCurriculum | null;
   automationCurriculumError: boolean;
+  automationTrack: AutomationTrack;
   interviewCatalog: InterviewCatalog | null;
   interviewCatalogError: boolean;
   mode: SiteMode;
   onTopicChange: (topic: string) => void;
+  programmingTrack: ProgrammingTrack;
   pythonCurriculum: LearningCurriculum | null;
   pythonCurriculumError: boolean;
   pythonInterviewCatalog: InterviewCatalog | null;
@@ -783,6 +830,7 @@ function KnowledgeSection({ activeTopic, automationCurriculum, automationCurricu
   }
 
   if (section === "programming") {
+    if (programmingTrack === "typescript") return <UnderConstructionPage title="TypeScript" copy="This programming track is ready in navigation but its lessons have not been published yet."/>;
     if (!pythonCurriculum) {
       return (
         <div className="kb-content iq-page">
@@ -797,6 +845,7 @@ function KnowledgeSection({ activeTopic, automationCurriculum, automationCurricu
   }
 
   if (section === "automation") {
+    if (automationTrack === "test-architecture") return <UnderConstructionPage title="Test Architecture" copy="This automation-testing track is planned but does not have published learning content yet."/>;
     if (!automationCurriculum) {
       return (
         <div className="kb-content iq-page">
@@ -828,7 +877,7 @@ function KnowledgeSection({ activeTopic, automationCurriculum, automationCurricu
       <div className="kb-topic-grid">
         {visibleItems.map((item, index) => (
           <article key={item.title}>
-            <div><span>{String(index + 1).padStart(2, "0")}</span><small>Outline</small></div>
+            <div><span>{String(index + 1).padStart(2, "0")}</span><small className="kb-construction-badge">Under construction</small></div>
             <h2>{item.title}</h2>
             <p>{item.copy}</p>
             <footer>{item.tags.map((tag) => <em key={tag}>{tag}</em>)}</footer>
