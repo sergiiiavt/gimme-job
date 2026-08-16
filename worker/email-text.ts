@@ -132,6 +132,27 @@ function parsedTagName(source: string): { name: string; closing: boolean } {
   return { name: trimmed.slice(start, cursor).toLowerCase(), closing };
 }
 
+type HtmlTagTransition = { skippedTag: string | null; lineBreak: boolean };
+
+function transitionHtmlTag(
+  tag: { name: string; closing: boolean },
+  skippedTag: string | null,
+): HtmlTagTransition {
+  if (skippedTag) {
+    return {
+      skippedTag: tag.closing && tag.name === skippedTag ? null : skippedTag,
+      lineBreak: false,
+    };
+  }
+  if (!tag.closing && SKIPPED_CONTENT_TAGS.has(tag.name)) {
+    return { skippedTag: tag.name, lineBreak: false };
+  }
+  return {
+    skippedTag: null,
+    lineBreak: BLOCK_TAGS.has(tag.name) || LINE_BREAK_TAGS.has(tag.name),
+  };
+}
+
 function htmlToText(value: string): string {
   let output = "";
   let skippedTag: string | null = null;
@@ -144,31 +165,20 @@ function htmlToText(value: string): string {
     }
 
     if (value[index] !== "<") {
-      if (!skippedTag) output += value[index];
+      output += skippedTag ? "" : value[index];
       index += 1;
       continue;
     }
 
     const end = tagEnd(value, index);
     if (end < 0) {
-      if (!skippedTag) output += value.slice(index);
+      output += skippedTag ? "" : value.slice(index);
       break;
     }
 
-    const { name, closing } = parsedTagName(value.slice(index + 1, end));
-    if (skippedTag) {
-      if (closing && name === skippedTag) skippedTag = null;
-      index = end + 1;
-      continue;
-    }
-
-    if (!closing && SKIPPED_CONTENT_TAGS.has(name)) {
-      skippedTag = name;
-      index = end + 1;
-      continue;
-    }
-
-    if (BLOCK_TAGS.has(name) || LINE_BREAK_TAGS.has(name)) output += "\n";
+    const transition = transitionHtmlTag(parsedTagName(value.slice(index + 1, end)), skippedTag);
+    skippedTag = transition.skippedTag;
+    if (transition.lineBreak) output += "\n";
     index = end + 1;
   }
 
