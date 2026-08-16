@@ -14,12 +14,9 @@
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [
-        -560,
-        0
-      ],
+      "position": [-560, 0],
       "id": "4c5e00d2-4601-44f6-a88e-f531538eb47e",
-      "name": "Every minute"
+      "name": "Poll email queue every minute"
     },
     {
       "parameters": {
@@ -32,12 +29,9 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -320,
-        0
-      ],
+      "position": [-300, 0],
       "id": "f4727222-b85d-4f06-b555-e29d95b3ac08",
-      "name": "Fetch unclassified email events",
+      "name": "Fetch pending email work",
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 2000
@@ -49,12 +43,9 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -60,
-        0
-      ],
+      "position": [-20, 0],
       "id": "383c8014-24ba-44fa-a273-402ab14f4ea4",
-      "name": "Prepare email events"
+      "name": "Prepare email IDs"
     },
     {
       "parameters": {
@@ -71,86 +62,35 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        200,
-        0
-      ],
+      "position": [260, 0],
       "id": "7c1c9c57-fd47-4a2a-a56a-4daf527f2f9c",
-      "name": "AI classify email",
+      "name": "Classify and persist via GimmeJob AI",
       "retryOnFail": true,
       "maxTries": 2,
       "waitBetweenTries": 3000
-    },
-    {
-      "parameters": {
-        "method": "PATCH",
-        "url": "https://gimme-job.com/internal/n8n/email-events",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ $json }}",
-        "options": {
-          "timeout": 15000
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        460,
-        0
-      ],
-      "id": "03042d45-5226-44ae-9b9e-41ae5eb79217",
-      "name": "Save classification",
-      "retryOnFail": true,
-      "maxTries": 3,
-      "waitBetweenTries": 2000
     }
   ],
   "connections": {
-    "Every minute": {
-      "main": [
-        [
-          {
-            "node": "Fetch unclassified email events",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Poll email queue every minute": {
+      "main": [[{
+        "node": "Fetch pending email work",
+        "type": "main",
+        "index": 0
+      }]]
     },
-    "Fetch unclassified email events": {
-      "main": [
-        [
-          {
-            "node": "Prepare email events",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Fetch pending email work": {
+      "main": [[{
+        "node": "Prepare email IDs",
+        "type": "main",
+        "index": 0
+      }]]
     },
-    "Prepare email events": {
-      "main": [
-        [
-          {
-            "node": "AI classify email",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI classify email": {
-      "main": [
-        [
-          {
-            "node": "Save classification",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Prepare email IDs": {
+      "main": [[{
+        "node": "Classify and persist via GimmeJob AI",
+        "type": "main",
+        "index": 0
+      }]]
     }
   },
   "pinData": {},
@@ -159,7 +99,7 @@
     "executionOrder": "v1",
     "timezone": "Europe/Kyiv"
   },
-  "versionId": "9f7c2404-a860-4f05-a86a-8912c2358c12",
+  "versionId": "5b097c5c-50b1-4b9c-9e33-a1591874855b",
   "meta": {
     "templateCredsSetupCompleted": false
   },
