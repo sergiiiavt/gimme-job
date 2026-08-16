@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
+import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
 export type ExternalNavigationId = "qa-fundamentals";
@@ -210,7 +211,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
         {item.label}
       </button>
     ) : (
-      <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={item.id === "jobs" ? "/workspace" : `/workspace/learn?section=${item.id}`} key={item.id}>
+      <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={sectionNavigationHref(item.id, mode)} key={item.id}>
         {item.label}
       </Link>
     );
