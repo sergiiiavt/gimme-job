@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import qaFundamentalsCatalog from "@/content/qa-fundamentals/catalog";
+import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import MarkdownDocument, { extractMarkdownHeadings, stripMarkdownSection } from "./qa-markdown";
 import { SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
-type LearningLanguage = "en" | "uk";
 
 const firstTopicId = qaFundamentalsCatalog.taxonomy[0]?.id ?? "qa-testing-fundamentals";
 
@@ -113,18 +113,16 @@ export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
         </button>
 
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero}>
-            <span className={styles.eyebrow}>
-              QA fundamentals · {language === "uk" ? "Розділ" : "Chapter"} {String(chapterIndex + 1).padStart(2, "0")} / 08
-            </span>
-            <h1>{pageTitle}</h1>
-            <p>{chapterDescription}</p>
-            <div className={styles.meta}>
-              <span>{conceptCounts.get(chapter.id) ?? 0} {language === "uk" ? "ключових понять" : "required concepts"}</span>
-              <span>{chapterSources.length} {language === "uk" ? "основних джерел" : "primary references"}</span>
-              <span>{language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material"}</span>
-            </div>
-          </header>
+          <LearningHero
+            description={chapterDescription}
+            eyebrow={`QA fundamentals · ${language === "uk" ? "Розділ" : "Chapter"} ${String(chapterIndex + 1).padStart(2, "0")} / 08`}
+            meta={[
+              `${conceptCounts.get(chapter.id) ?? 0} ${language === "uk" ? "ключових понять" : "required concepts"}`,
+              `${chapterSources.length} ${language === "uk" ? "основних джерел" : "primary references"}`,
+              language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
+            ]}
+            title={pageTitle}
+          />
 
           <div className={styles.layout}>
             <div className={styles.document}>
@@ -132,57 +130,30 @@ export default function QaFundamentalsPage({ mode }: { mode: SiteMode }) {
                 <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={localizedMarkdown}/>
               </article>
 
-              <section className={styles.sourcePanel} id="source-registry" aria-labelledby="qa-source-register">
-                <header>
-                  <h2 id="qa-source-register">{language === "uk" ? "Реєстр джерел" : "Source registry"}</h2>
-                  <span>{language === "uk" ? "Перевірено 16 серпня 2026" : "Verified 16 Aug 2026"}</span>
-                </header>
-                <div className={styles.sources}>
-                  {chapterSources.map((source) => (
-                    <article className={styles.source} key={source.id}>
-                      <div>
-                        <strong>{source.title}</strong>
-                        <p>{source.role}</p>
-                        <span className={styles.sourceStatus}>{source.publisher} · {source.status.replaceAll("-", " ")}</span>
-                      </div>
-                      <a href={source.url} rel="noreferrer" target="_blank">{language === "uk" ? "Джерело" : "Source"} ↗</a>
-                    </article>
-                  ))}
-                </div>
-              </section>
+              <LearningSourceRegistry
+                language={language}
+                sources={chapterSources.map((source) => ({
+                  id: source.id,
+                  meta: source.status.replaceAll("-", " "),
+                  publisher: source.publisher,
+                  role: source.role,
+                  title: source.title,
+                  url: source.url,
+                }))}
+                statusLabel={language === "uk" ? "Перевірено 16 серпня 2026" : "Verified 16 Aug 2026"}
+              />
 
-              <nav className={styles.pager} aria-label="QA fundamentals chapters">
-                <button disabled={!previous} onClick={() => previous && selectTopic(previous.id)} type="button">
-                  <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
-                  <strong>{localizedTopicLabel(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
-                </button>
-                <button disabled={!next} onClick={() => next && selectTopic(next.id)} type="button">
-                  <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
-                  <strong>{localizedTopicLabel(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
-                </button>
-              </nav>
+              <LearningPager
+                ariaLabel="QA fundamentals chapters"
+                labelFor={localizedTopicLabel}
+                language={language}
+                next={next}
+                onSelect={(topic) => selectTopic(topic.id)}
+                previous={previous}
+              />
             </div>
 
-            <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
-              <section className={styles.language} aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-                <span>{language === "uk" ? "Мова" : "Language"}</span>
-                <div role="group" aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-                  <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => setLanguage("en")} type="button">EN</button>
-                  <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => setLanguage("uk")} type="button">UA</button>
-                </div>
-              </section>
-
-              <section className={styles.toc} aria-label={language === "uk" ? "На цій сторінці" : "On this page"}>
-                <span>{language === "uk" ? "На цій сторінці" : "On this page"}</span>
-                <nav>
-                  {headings.map((heading) => <a href={`#${heading.id}`} key={heading.id}>{heading.text}</a>)}
-                  <a className={styles.sourceLink} href="#source-registry">
-                    <small>{language === "uk" ? "Джерела" : "References"}</small>
-                    {language === "uk" ? "Реєстр джерел" : "Source registry"}
-                  </a>
-                </nav>
-              </section>
-            </aside>
+            <LearningRail headings={headings} language={language} onLanguageChange={setLanguage}/>
           </div>
         </div>
       </section>
