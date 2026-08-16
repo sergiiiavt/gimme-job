@@ -1,9 +1,9 @@
 "use client";
 
-import { createElement, useEffect, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 
 export type AuthViewMode = "public" | "personal";
-type AuthProbeResponse = { ok: boolean };
+type AuthProbeResponse = { ok: boolean; status?: number };
 type AuthProbe = () => Promise<AuthProbeResponse>;
 type AuthSyncOptions = {
   mode: AuthViewMode;
@@ -275,6 +275,10 @@ export function startAuthSync({
   let active = true;
   void probe().then((response) => {
     if (!active) return;
+    if (!response.ok && typeof response.status === "number" && response.status !== 401) {
+      onAuthenticatedChange(mode === "personal");
+      return;
+    }
     const authenticated = response.ok;
     onAuthenticatedChange(authenticated);
     if (shouldNormalizeToPersonal(mode, authenticated, personalHref, currentHref())) return replace(personalHref);
@@ -401,9 +405,12 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
   const [forwarding, setForwarding] = useState<ForwardingSetup | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const authTargetRef = useRef(personalHref);
+  authTargetRef.current = personalHref;
 
   useEffect(() => startAuthSync({
-    mode, personalHref,
+    mode,
+    personalHref: authTargetRef.current,
     onAuthenticatedChange: (next) => {
       setAuthenticated(next);
       if (!next) {
@@ -411,7 +418,7 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
         setForwarding(null);
       }
     },
-  }), [mode, personalHref]);
+  }), [mode]);
 
   useEffect(() => {
     if (!authenticated) return;
