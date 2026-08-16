@@ -1,12 +1,18 @@
 import type { JobInput } from "../domain.js";
-import { isRemoteText, safeIsoDate, stripHtml } from "../utils.js";
-import { fetchJson } from "./http.js";
+import {
+  extractJobPostingMetadata,
+  htmlToVacancyText,
+  normalizeVacancyDescription,
+} from "../vacancy-content.js";
+import { isRemoteText, safeIsoDate } from "../utils.js";
+import { fetchJson, fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const API_URL = "https://api.rabota.ua/vacancy/search";
 const PUBLIC_URL = "https://robota.ua";
 const PAGE_SIZE = 50;
 const MAX_PAGES = 3;
+const MAX_DETAIL_FETCHES = 50;
 
 interface RobotaUaDocument {
   id?: string | number;
@@ -16,6 +22,7 @@ interface RobotaUaDocument {
   cityName?: string;
   date?: string;
   shortDescription?: string;
+  description?: string;
   salary?: string | number;
   salaryFrom?: string | number;
   salaryTo?: string | number;
@@ -50,6 +57,25 @@ function vacancyUrl(document: RobotaUaDocument): string | null {
   return `${PUBLIC_URL}/company${encodeURIComponent(notebookId)}/vacancy${encodeURIComponent(id)}`;
 }
 
+function decodeJsonString(value: string): string {
+  try { return JSON.parse(`"${value.replace(/"/g, '\\"')}"`) as string; } catch { return value; }
+}
+
+export function parseRobotaUaDescription(html: string, fallback = ""): string {
+  const jobPosting = extractJobPostingMetadata(html);
+  if (jobPosting?.description) {
+    const description = normalizeVacancyDescription(jobPosting.description);
+    if (description) return description;
+  }
+
+  const candidates = [...html.matchAll(/"description"\s*:\s*"((?:\\.|[^"\\])*)"/g)]
+    .map((match) => decodeJsonString(match[1] ?? ""))
+    .map((value) => normalizeVacancyDescription(htmlToVacancyText(value)))
+    .filter((value) => value.length >= 100)
+    .sort((left, right) => right.length - left.length);
+  return candidates[0] || normalizeVacancyDescription(fallback);
+}
+
 export function parseRobotaUaResponse(payload: unknown, sourceName = "robotaua-qa"): JobInput[] {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return [];
   const response = payload as RobotaUaResponse;
@@ -59,7 +85,7 @@ export function parseRobotaUaResponse(payload: unknown, sourceName = "robotaua-q
     const url = vacancyUrl(document);
     const title = text(document.name);
     if (!url || !title) return [];
-    const description = stripHtml(text(document.shortDescription));
+    const description = normalizeVacancyDescription(text(document.description) || text(document.shortDescription));
     const company = text(document.companyName) || "Unknown";
     const location = text(document.cityName) || "Unknown";
     const combined = `${title}\n${description}\n${location}`;
@@ -105,6 +131,21 @@ export class RobotaUaSource implements JobSource {
       if (pageJobs.length === 0) break;
     }
 
-    return jobs;
+    return Promise.all(jobs.map(async (job, index) => {
+      if (index >= MAX_DETAIL_FETCHES) return job;
+      try {
+        const description = parseRobotaUaDescription(await fetchText(job.url), job.description);
+        if (description.length > job.description.length) {
+          return {
+            ...job,
+            description,
+            remote: job.remote || isRemoteText(`${job.title}\n${description}\n${job.location}`),
+          };
+        }
+      } catch {
+        // Search API data remains usable if an individual detail request fails.
+      }
+      return job;
+    }));
   }
 }
