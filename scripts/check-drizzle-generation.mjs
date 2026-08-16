@@ -45,7 +45,9 @@ function runGeneration() {
 
 function changedPaths(before, after) {
   const paths = new Set([...before.keys(), ...after.keys()]);
-  return [...paths].filter((file) => before.get(file) !== after.get(file)).sort();
+  return [...paths]
+    .filter((file) => before.get(file) !== after.get(file))
+    .sort((left, right) => left.localeCompare(right));
 }
 
 const before = await snapshot();
