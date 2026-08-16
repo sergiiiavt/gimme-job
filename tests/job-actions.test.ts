@@ -31,8 +31,13 @@ const sourceJob: Row = {
 
 class FakeStatement {
   private bindings: unknown[] = [];
+  private readonly database: FakeDb;
+  private readonly sql: string;
 
-  constructor(private readonly database: FakeDb, private readonly sql: string) {}
+  constructor(database: FakeDb, sql: string) {
+    this.database = database;
+    this.sql = sql;
+  }
 
   bind(...values: unknown[]) {
     this.bindings = values;
