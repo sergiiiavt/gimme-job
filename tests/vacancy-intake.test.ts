@@ -20,26 +20,25 @@ class FakeD1 {
   sourceSetting: Record<string, unknown> | null = null;
 
   prepare(query: string) {
-    const db = this;
     const normalized = query.replace(/\s+/g, " ").trim().toLowerCase();
     const execute = (values: unknown[]) => ({
-      async first<T>() {
+      first: async <T>() => {
         if (normalized.includes("select value_json from settings")) {
-          return db.sourceSetting as T | null;
+          return this.sourceSetting as T | null;
         }
         if (normalized.includes("select count(*) as count from jobs")) {
-          return { count: db.jobs.length } as T;
+          return { count: this.jobs.length } as T;
         }
         return null;
       },
-      async all<T>() {
-        if (normalized.includes("from jobs")) return { results: [...db.jobs] as T[] };
+      all: async <T>() => {
+        if (normalized.includes("from jobs")) return { results: [...this.jobs] as T[] };
         return { results: [] as T[] };
       },
-      async run() {
+      run: async () => {
         if (normalized.startsWith("update jobs set")) {
           const id = String(values[14]);
-          const row = db.jobs.find((entry) => entry.id === id);
+          const row = this.jobs.find((entry) => entry.id === id);
           assert.ok(row, `FakeD1 update target ${id} must exist`);
           Object.assign(row, {
             source: values[0], external_id: values[1] ?? row.external_id, title: values[2], company: values[3],
@@ -50,7 +49,7 @@ class FakeD1 {
         } else if (normalized.startsWith("insert into jobs")) {
           const [id, fingerprint, source, externalId, title, company, location, remote, url, applyUrl, description,
             salaryText, postedAt, contactEmail, discoveredAt, updatedAt, rawJson] = values;
-          const existing = db.jobs.find((entry) => entry.fingerprint === fingerprint);
+          const existing = this.jobs.find((entry) => entry.fingerprint === fingerprint);
           if (existing) {
             Object.assign(existing, {
               source, external_id: externalId ?? existing.external_id, title, company, location, remote, url,
@@ -59,7 +58,7 @@ class FakeD1 {
               contact_email: contactEmail ?? existing.contact_email, updated_at: updatedAt, raw_json: rawJson,
             });
           } else {
-            db.jobs.push({
+            this.jobs.push({
               id, fingerprint, source, external_id: externalId, title, company, location, remote, url,
               apply_url: applyUrl, description, salary_text: salaryText, posted_at: postedAt,
               contact_email: contactEmail, discovered_at: discoveredAt, updated_at: updatedAt,
@@ -72,9 +71,9 @@ class FakeD1 {
     });
 
     return {
-      bind(...values: unknown[]) { return execute(values); },
-      async first<T>() { return execute([]).first<T>(); },
-      async all<T>() { return execute([]).all<T>(); },
+      bind: (...values: unknown[]) => execute(values),
+      first: async <T>() => execute([]).first<T>(),
+      all: async <T>() => execute([]).all<T>(),
     };
   }
 }
