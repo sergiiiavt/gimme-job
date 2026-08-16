@@ -38,14 +38,14 @@ test("pre-AI gate classifies consumer promotions as NON_JOB", () => {
   assert.equal(result?.action, "NO_ACTION");
 });
 
-test("pre-AI gate classifies obvious job alerts without AI", () => {
+test("pre-AI gate classifies obvious job alerts without inventing an employer", () => {
   const result = preAiClassification(email({
     sender_email: "jobalerts-noreply@linkedin.com",
     subject: "Job alert: QA Lead in Kyiv",
     text_excerpt: "Recommended jobs for you",
   }));
   assert.equal(result?.classification, "JOB_ALERT");
-  assert.equal(result?.company, "LinkedIn");
+  assert.equal(result?.company, null);
   assert.equal(result?.action, "REVIEW_JOB_ALERT");
 });
 
