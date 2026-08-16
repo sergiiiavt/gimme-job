@@ -1,0 +1,66 @@
+[
+  {
+    "id": "qa-testing-fundamentals",
+    "order": 1,
+    "label": "QA & Testing Fundamentals",
+    "description": "Quality, QA, QC, testing, core vocabulary, verification and validation, why testing exists, and the fundamental testing principles.",
+    "file": "01-qa-testing-fundamentals.md",
+    "sourceIds": ["iso-9000-2026", "istqb-ctfl-v4", "istqb-glossary", "iso-29119-1-2022", "ieee-1012-2024", "iso-25010-2023", "swebok-v4a"]
+  },
+  {
+    "id": "testing-process-lifecycle",
+    "order": 2,
+    "label": "Testing Process & Lifecycle",
+    "description": "How testing fits the software lifecycle and how planning, analysis, design, implementation, execution, monitoring and completion connect.",
+    "file": "02-testing-process-lifecycle.md",
+    "sourceIds": ["istqb-ctfl-v4", "iso-29119-1-2022", "iso-29119-2-2021", "swebok-v4a"]
+  },
+  {
+    "id": "test-levels-types-approaches",
+    "order": 3,
+    "label": "Test Levels, Types & Approaches",
+    "description": "Test levels, functional and non-functional testing, static and dynamic testing, regression and confirmation, and manual versus automated execution.",
+    "file": "03-test-levels-types-approaches.md",
+    "sourceIds": ["istqb-ctfl-v4", "iso-29119-1-2022", "iso-25010-2023", "swebok-v4a"]
+  },
+  {
+    "id": "requirements-test-design",
+    "order": 4,
+    "label": "Requirements & Test Design",
+    "description": "Testability, acceptance criteria, test conditions and cases, traceability, and the core black-box and white-box test design techniques.",
+    "file": "04-requirements-test-design.md",
+    "sourceIds": ["iso-29148-2018", "istqb-ctfl-v4", "iso-29119-2-2021", "iso-29119-4-2021", "swebok-v4a"]
+  },
+  {
+    "id": "documentation-defects",
+    "order": 5,
+    "label": "Test Documentation & Defects",
+    "description": "Useful test work products, strategies and plans, test cases and checklists, reporting, defect records, severity, priority and defect lifecycle.",
+    "file": "05-documentation-defects.md",
+    "sourceIds": ["iso-29119-2-2021", "iso-29119-3-2021", "istqb-ctfl-v4", "swebok-v4a"]
+  },
+  {
+    "id": "risk-coverage-prioritization",
+    "order": 6,
+    "label": "Risk, Coverage & Prioritization",
+    "description": "Product and project risk, coverage as evidence, prioritization, completion criteria, estimation and communicating residual uncertainty.",
+    "file": "06-risk-coverage-prioritization.md",
+    "sourceIds": ["iso-16085-2021", "istqb-ctfl-v4", "iso-29119-2-2021", "iso-29119-4-2021", "swebok-v4a"]
+  },
+  {
+    "id": "static-exploratory-collaborative",
+    "order": 7,
+    "label": "Static, Exploratory & Collaborative Testing",
+    "description": "Reviews, static testing, exploratory and experience-based work, feedback, collaboration and testing as an information-seeking activity.",
+    "file": "07-static-exploratory-collaborative.md",
+    "sourceIds": ["iso-20246-2017", "istqb-ctfl-v4", "iso-29119-4-2021", "swebok-v4a"]
+  },
+  {
+    "id": "agile-modern-delivery",
+    "order": 8,
+    "label": "QA in Agile & Modern Delivery",
+    "description": "Whole-team quality, Agile principles, Scrum context, Definition of Done, continuous feedback, shift-left and shift-right, CI/CD and automation boundaries.",
+    "file": "08-agile-modern-delivery.md",
+    "sourceIds": ["agile-manifesto", "scrum-guide-2020", "iso-29119-6-2021", "istqb-ctfl-v4", "swebok-v4a"]
+  }
+]

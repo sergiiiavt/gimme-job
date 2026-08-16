@@ -1,0 +1,177 @@
+[
+  {
+    "id": "istqb-ctfl-v4",
+    "title": "ISTQB Certified Tester Foundation Level syllabus v4.0.1",
+    "publisher": "ISTQB",
+    "kind": "official-syllabus",
+    "version": "4.0.1",
+    "status": "current",
+    "url": "https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/",
+    "role": "Teaching backbone for testing fundamentals, lifecycle, levels and types, static testing, design techniques, risk, defects and tools.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "istqb-glossary",
+    "title": "ISTQB Glossary",
+    "publisher": "ISTQB",
+    "kind": "official-glossary",
+    "status": "current",
+    "url": "https://glossary.istqb.org/",
+    "role": "Terminology cross-check for testing vocabulary.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29119-1-2022",
+    "title": "ISO/IEC/IEEE 29119-1:2022 — Software testing — General concepts",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2022",
+    "status": "current",
+    "url": "https://www.iso.org/standard/81291.html",
+    "role": "General testing concepts and the common conceptual foundation for the 29119 series.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29119-2-2021",
+    "title": "ISO/IEC/IEEE 29119-2:2021 — Software testing — Test processes",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2021",
+    "status": "current",
+    "url": "https://www.iso.org/standard/79428.html",
+    "role": "Governance, management and implementation processes for software testing across lifecycle models.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29119-3-2021",
+    "title": "ISO/IEC/IEEE 29119-3:2021 — Software testing — Test documentation",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2021",
+    "status": "current",
+    "url": "https://www.iso.org/standard/79429.html",
+    "role": "Reference model for useful testing work products and documentation outputs.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29119-4-2021",
+    "title": "ISO/IEC/IEEE 29119-4:2021 — Software testing — Test techniques",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2021",
+    "status": "current",
+    "url": "https://www.iso.org/standard/79430.html",
+    "role": "Authoritative catalogue and framing of test design techniques.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-25010-2023",
+    "title": "ISO/IEC 25010:2023 — Product quality model",
+    "publisher": "ISO/IEC",
+    "kind": "international-standard",
+    "version": "2023",
+    "status": "current",
+    "url": "https://www.iso.org/standard/78176.html",
+    "role": "Current nine-characteristic product quality model used to reason about quality requirements, testing objectives and acceptance criteria.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-9000-2026",
+    "title": "ISO 9000:2026 — Quality management — Fundamentals and vocabulary",
+    "publisher": "ISO",
+    "kind": "international-standard",
+    "version": "2026",
+    "status": "current",
+    "url": "https://www.iso.org/standard/9000",
+    "role": "Current quality-management fundamentals and vocabulary; used to keep QA/QC/quality concepts broader than software testing alone.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "ieee-1012-2024",
+    "title": "IEEE 1012-2024 — System, Software, and Hardware Verification and Validation",
+    "publisher": "IEEE",
+    "kind": "active-standard",
+    "version": "2024",
+    "status": "current",
+    "url": "https://standards.ieee.org/ieee/1012/7324/",
+    "role": "Verification and validation concepts, intended use, conformance and the range of V&V activities.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29148-2018",
+    "title": "ISO/IEC/IEEE 29148:2018 — Requirements engineering",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2018",
+    "status": "current-under-revision",
+    "url": "https://www.iso.org/standard/72089.html",
+    "role": "Current published requirements-engineering reference for testability, quality and traceable requirement information; Edition 3 is in development.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-20246-2017",
+    "title": "ISO/IEC 20246:2017 — Work product reviews",
+    "publisher": "ISO/IEC",
+    "kind": "international-standard",
+    "version": "2017",
+    "status": "current-confirmed",
+    "url": "https://www.iso.org/standard/67407.html",
+    "role": "Generic framework for reviewing requirements, designs, testware, code and other work products.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-16085-2021",
+    "title": "ISO/IEC/IEEE 16085:2021 — Risk management",
+    "publisher": "ISO/IEC/IEEE",
+    "kind": "international-standard",
+    "version": "2021",
+    "status": "current-under-review",
+    "url": "https://www.iso.org/standard/74371.html",
+    "role": "Systems/software risk-management framework used to ground risk-based testing and prioritization.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "iso-29119-6-2021",
+    "title": "ISO/IEC TR 29119-6:2021 — Testing in agile projects",
+    "publisher": "ISO/IEC",
+    "kind": "technical-report",
+    "version": "2021",
+    "status": "current",
+    "url": "https://www.iso.org/standard/81293.html",
+    "role": "Guidance for applying the 29119 testing concepts and processes in agile lifecycles.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "swebok-v4a",
+    "title": "Guide to the Software Engineering Body of Knowledge (SWEBOK) v4.0a",
+    "publisher": "IEEE Computer Society",
+    "kind": "body-of-knowledge",
+    "version": "4.0a",
+    "status": "current",
+    "url": "https://www.computer.org/education/bodies-of-knowledge/software-engineering/resources/",
+    "role": "Independent completeness check across software testing, requirements, quality and software engineering practice.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "agile-manifesto",
+    "title": "Manifesto for Agile Software Development and its principles",
+    "publisher": "Agile Manifesto authors",
+    "kind": "primary-source",
+    "version": "2001",
+    "status": "current",
+    "url": "https://agilemanifesto.org/",
+    "role": "Primary source for Agile values and principles; used to avoid confusing Agile with a specific framework.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "scrum-guide-2020",
+    "title": "The Scrum Guide — November 2020",
+    "publisher": "Ken Schwaber and Jeff Sutherland",
+    "kind": "official-guide",
+    "version": "2020",
+    "status": "current",
+    "url": "https://scrumguides.org/download.html",
+    "role": "Current official Scrum definition used only for Scrum-specific context inside modern delivery.",
+    "checkedAt": "2026-08-16"
+  }
+]
