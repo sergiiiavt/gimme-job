@@ -6,19 +6,24 @@ import {
   dashboard,
   interviewProgress,
   jsonError,
-  publicJobs,
   readPayload,
   resumePdf,
   recordObservabilityEvent,
   recordObservabilitySnapshot,
   saveSetting,
   settingsView,
-  syncSources,
   updateDraft,
   updateInterviewProgress,
   updateJobTracking,
-  upsertJobs,
 } from "../_jobpilot";
+import {
+  ensureVacancyCatalog,
+  mergeVacancySourceDefaults,
+  publicVacancies,
+  sanitizeDashboardPayload,
+  syncVacancySources,
+  upsertVacancies,
+} from "../_vacancy-intake";
 import {
   saveTenantSetting,
   tenantDashboard,
@@ -63,15 +68,25 @@ function multiUserAdminBlocked(): Response {
   );
 }
 
+async function currentDashboard(request: Request) {
+  const tenant = tenantRequestContext(request);
+  const userId = tenant.authenticated ? tenant.userId : null;
+  const value = tenant.multiUser ? await tenantDashboard(userId, request) : await dashboard(request);
+  return sanitizeDashboardPayload(value);
+}
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const route = await parts(context);
     const tenant = tenantRequestContext(request);
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
-    if (route[0] === "public" && route[1] === "jobs") return Response.json(await publicJobs());
+    if (route[0] === "public" && route[1] === "jobs") {
+      await ensureVacancyCatalog();
+      return Response.json(await publicVacancies());
+    }
     if (route[0] === "dashboard") {
-      const userId = tenant.authenticated ? tenant.userId : null;
-      return Response.json(tenant.multiUser ? await tenantDashboard(userId, request) : await dashboard(request));
+      await ensureVacancyCatalog();
+      return Response.json(await currentDashboard(request));
     }
     if (route[0] === "interview-progress") {
       if (!tenant.multiUser) return Response.json(await interviewProgress());
@@ -81,11 +96,11 @@ export async function GET(request: Request, context: RouteContext) {
       return Response.json(await tenantInterviewProgress(tenant.userId));
     }
     if (route[0] === "settings") {
-      if (!tenant.multiUser) return Response.json(await settingsView());
+      if (!tenant.multiUser) return Response.json(mergeVacancySourceDefaults(await settingsView()));
       if (!tenant.authenticated || !tenant.userId) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
       }
-      return Response.json(await tenantSettingsView(tenant.userId));
+      return Response.json(mergeVacancySourceDefaults(await tenantSettingsView(tenant.userId)));
     }
     const resumeMatch = route[0] === "resumes" && route[1]?.match(/^(.+)\.pdf$/);
     if (resumeMatch) {
@@ -142,79 +157,42 @@ export async function POST(request: Request, context: RouteContext) {
       const startedAt = Date.now();
       const operationId = newOperationId("import");
       const trigger = request.headers.get("x-gimmejob-trigger") === "deployment" ? "deployment" : "api_import";
-      operationalInfo("job_import", {
-        phase: "start",
-        operationId,
-        trigger,
-        itemsSeen: jobs.length,
-      });
+      operationalInfo("job_import", { phase: "start", operationId, trigger, itemsSeen: jobs.length });
       let result;
       try {
-        result = await upsertJobs(jobs);
+        result = await upsertVacancies(jobs);
       } catch (error) {
         const details = safeErrorDetails(error, "database_error");
-        await recordObservabilityEvent({
-          event: "job_import",
-          status: "failure",
-          durationMs: Date.now() - startedAt,
-          itemsSeen: jobs.length,
-          itemsProcessed: null,
-          errorCount: 1,
-          reasonCode: details.reasonCode,
-          httpStatus: details.httpStatus,
-        });
-        operationalError("job_import", {
-          phase: "complete",
-          outcome: "failure",
-          operationId,
-          trigger,
-          stage: "upsert_jobs",
-          durationMs: Date.now() - startedAt,
-          itemsSeen: jobs.length,
-          itemsProcessed: 0,
-          ...details,
-        });
+        await recordObservabilityEvent({ event: "job_import", status: "failure", durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: null, errorCount: 1, reasonCode: details.reasonCode, httpStatus: details.httpStatus });
+        operationalError("job_import", { phase: "complete", outcome: "failure", operationId, trigger, stage: "upsert_jobs", durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: 0, ...details });
         throw error;
       }
-      await recordObservabilityEvent({
-        event: "job_import",
-        status: "success",
-        durationMs: Date.now() - startedAt,
-        itemsSeen: jobs.length,
-        itemsProcessed: result.accepted,
-        errorCount: 0,
-      });
+      await recordObservabilityEvent({ event: "job_import", status: "success", durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: result.accepted, errorCount: 0 });
       await recordObservabilitySnapshot();
-      operationalInfo("job_import", {
-        phase: "complete",
-        outcome: "success",
-        operationId,
-        trigger,
-        durationMs: Date.now() - startedAt,
-        itemsSeen: jobs.length,
-        itemsProcessed: result.accepted,
-      });
-      return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      operationalInfo("job_import", { phase: "complete", outcome: "success", operationId, trigger, durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: result.accepted, rejected: result.rejected, duplicates: result.duplicates });
+      return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "sync") {
       if (tenant.multiUser) return multiUserAdminBlocked();
-      const result = await syncSources({ trigger: "api_sync" }); return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      const result = await syncVacancySources();
+      return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "analyze") {
       if (tenant.multiUser) return tenantUnavailable("Job analysis");
       const result = await analyzeJobs(typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_analyze" });
-      return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "analyze-resume") {
       if (tenant.multiUser) return tenantUnavailable("Resume generation");
       if (typeof payload.jobId !== "string" || !payload.jobId) throw new Error("jobId is required.");
       const result = await adjustResumeForJob(payload.jobId, { trigger: "api_analyze_resume" });
-      return Response.json({ ok: true, result, dashboard: await dashboard(request) });
+      return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "run") {
       if (tenant.multiUser) return multiUserAdminBlocked();
-      const sync = await syncSources({ trigger: "api_run" }); const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_run" });
-      return Response.json({ ok: true, result: { sync, analysis }, dashboard: await dashboard(request) });
+      const sync = await syncVacancySources();
+      const analysis = await analyzeJobs(undefined, typeof payload.limit === "number" ? payload.limit : 25, { trigger: "api_run" });
+      return Response.json({ ok: true, result: { sync, analysis }, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "drafts" && route[1] && route[2]) {
       if (tenant.multiUser) {
@@ -222,10 +200,10 @@ export async function POST(request: Request, context: RouteContext) {
           return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
         }
         await updateTenantDraft(tenant.userId, route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
-        return Response.json({ ok: true, dashboard: await tenantDashboard(tenant.userId, request) });
+        return Response.json({ ok: true, dashboard: await currentDashboard(request) });
       }
       await updateDraft(route[1], route[2], typeof payload.recipient === "string" ? payload.recipient.trim() : undefined);
-      return Response.json({ ok: true, dashboard: await dashboard(request) });
+      return Response.json({ ok: true, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "gmail" && route[1] === "connect") {
       if (tenant.multiUser) {
@@ -249,10 +227,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       const job = tenant.multiUser && tenant.userId
         ? await updateTenantJobTracking(tenant.userId, route[1], payload)
         : await updateJobTracking(route[1], payload);
-      const currentDashboard = tenant.multiUser && tenant.userId
-        ? await tenantDashboard(tenant.userId, request)
-        : await dashboard(request);
-      return Response.json({ ok: true, job, dashboard: currentDashboard });
+      return Response.json({ ok: true, job, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "interview-progress" && route[1]) {
       const progress = tenant.multiUser && tenant.userId
