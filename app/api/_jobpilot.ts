@@ -89,9 +89,25 @@ function now(): string {
   return new Date().toISOString();
 }
 
+function rowText(value: unknown, fallback = ""): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value);
+  return fallback;
+}
+
+function nullableRowText(value: unknown): string | null {
+  const text = rowText(value).trim();
+  return text || null;
+}
+
+function rowNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function parse<T>(value: unknown, fallback: T): T {
+  if (typeof value !== "string") return fallback;
   try {
-    return JSON.parse(String(value)) as T;
+    return JSON.parse(value) as T;
   } catch {
     return fallback;
   }
@@ -194,14 +210,14 @@ export async function recordObservabilitySnapshot(): Promise<void> {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .bind(
         now(),
-        Number(jobCounts?.total_jobs ?? 0),
-        Number(jobCounts?.remote_jobs ?? 0),
-        Number(jobCounts?.reservation_jobs ?? 0),
-        Number(analysisCounts?.analyzed_jobs ?? 0),
-        Number(analysisCounts?.strong_jobs ?? 0),
-        Number(analysisCounts?.possible_jobs ?? 0),
-        Number(analysisCounts?.weak_jobs ?? 0),
-        Number(analysisCounts?.rejected_jobs ?? 0),
+        rowNumber(jobCounts?.total_jobs),
+        rowNumber(jobCounts?.remote_jobs),
+        rowNumber(jobCounts?.reservation_jobs),
+        rowNumber(analysisCounts?.analyzed_jobs),
+        rowNumber(analysisCounts?.strong_jobs),
+        rowNumber(analysisCounts?.possible_jobs),
+        rowNumber(analysisCounts?.weak_jobs),
+        rowNumber(analysisCounts?.rejected_jobs),
       )
       .run();
   } catch (error) {
@@ -216,43 +232,43 @@ export async function recordObservabilitySnapshot(): Promise<void> {
 
 function mapJob(row: Row) {
   return {
-    id: String(row.id),
-    fingerprint: String(row.fingerprint),
-    source: String(row.source),
-    externalId: row.external_id ? String(row.external_id) : null,
-    title: String(row.title),
-    company: String(row.company),
-    location: String(row.location),
-    remote: Number(row.remote) === 1,
-    url: String(row.url),
-    applyUrl: String(row.apply_url),
-    description: String(row.description),
-    salaryText: row.salary_text ? String(row.salary_text) : null,
-    postedAt: row.posted_at ? String(row.posted_at) : null,
-    contactEmail: row.contact_email ? String(row.contact_email) : null,
-    discoveredAt: String(row.discovered_at),
-    updatedAt: String(row.updated_at),
-    status: String(row.status),
-    statusUpdatedAt: row.status_updated_at ? String(row.status_updated_at) : null,
-    feedback: row.feedback ? String(row.feedback) : null,
-    feedbackAt: row.feedback_at ? String(row.feedback_at) : null,
+    id: rowText(row.id),
+    fingerprint: rowText(row.fingerprint),
+    source: rowText(row.source),
+    externalId: nullableRowText(row.external_id),
+    title: rowText(row.title),
+    company: rowText(row.company),
+    location: rowText(row.location),
+    remote: row.remote === 1 || row.remote === true,
+    url: rowText(row.url),
+    applyUrl: rowText(row.apply_url),
+    description: rowText(row.description),
+    salaryText: nullableRowText(row.salary_text),
+    postedAt: nullableRowText(row.posted_at),
+    contactEmail: nullableRowText(row.contact_email),
+    discoveredAt: rowText(row.discovered_at),
+    updatedAt: rowText(row.updated_at),
+    status: rowText(row.status),
+    statusUpdatedAt: nullableRowText(row.status_updated_at),
+    feedback: nullableRowText(row.feedback),
+    feedbackAt: nullableRowText(row.feedback_at),
     raw: parse(row.raw_json, {}),
   };
 }
 
 function mapDraft(row: Row) {
   return {
-    id: String(row.id),
-    jobId: String(row.job_id),
-    recipient: row.recipient ? String(row.recipient) : null,
-    subject: String(row.subject),
-    body: String(row.body),
-    status: String(row.status),
-    approvedAt: row.approved_at ? String(row.approved_at) : null,
-    sentAt: row.sent_at ? String(row.sent_at) : null,
-    providerMessageId: row.provider_message_id ? String(row.provider_message_id) : null,
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
+    id: rowText(row.id),
+    jobId: rowText(row.job_id),
+    recipient: nullableRowText(row.recipient),
+    subject: rowText(row.subject),
+    body: rowText(row.body),
+    status: rowText(row.status),
+    approvedAt: nullableRowText(row.approved_at),
+    sentAt: nullableRowText(row.sent_at),
+    providerMessageId: nullableRowText(row.provider_message_id),
+    createdAt: rowText(row.created_at),
+    updatedAt: rowText(row.updated_at),
   };
 }
 
@@ -276,7 +292,7 @@ async function connections() {
     },
     openai: {
       connected: Boolean(runtime.OPENAI_API_KEY),
-      model: String(runtime.OPENAI_MODEL ?? "gpt-5.6"),
+      model: rowText(runtime.OPENAI_MODEL, "gpt-5.6"),
     },
     boards: {
       rss: Array.isArray(sources.rss) ? sources.rss.length : 0,
@@ -306,9 +322,9 @@ export async function interviewProgress() {
     FROM interview_progress ORDER BY updated_at DESC`).all<Row>();
   return {
     progress: result.results.map((row) => ({
-      questionId: String(row.question_id),
-      status: String(row.status),
-      updatedAt: String(row.updated_at),
+      questionId: rowText(row.question_id),
+      status: rowText(row.status),
+      updatedAt: rowText(row.updated_at),
     })),
   };
 }
@@ -339,6 +355,11 @@ export async function settingsView() {
   };
 }
 
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => rowText(item)).filter(Boolean);
+}
+
 export async function dashboard(request?: Request) {
   await ensureVacancyCatalog();
   const database = await db();
@@ -349,10 +370,10 @@ export async function dashboard(request?: Request) {
     database.prepare("SELECT * FROM application_drafts").all<Row>(),
     connections(),
   ]);
-  const analyses = new Map(analysisResult.results.map((row) => [String(row.job_id), parse<Json>(row.payload_json, {})]));
-  const resumes = new Map(resumeResult.results.map((row) => [String(row.job_id), String(row.markdown)]));
-  const resumePdfs = new Set(resumeResult.results.filter((row) => row.pdf_base64).map((row) => String(row.job_id)));
-  const drafts = new Map(draftResult.results.map((row) => [String(row.job_id), mapDraft(row)]));
+  const analyses = new Map(analysisResult.results.map((row) => [rowText(row.job_id), parse<Json>(row.payload_json, {})]));
+  const resumes = new Map(resumeResult.results.map((row) => [rowText(row.job_id), rowText(row.markdown)]));
+  const resumePdfs = new Set(resumeResult.results.filter((row) => row.pdf_base64).map((row) => rowText(row.job_id)));
+  const drafts = new Map(draftResult.results.map((row) => [rowText(row.job_id), mapDraft(row)]));
   const jobs = jobResult.results.map(mapJob).map((job) => ({
     ...job,
     analysis: analyses.get(job.id) ?? null,
@@ -361,16 +382,16 @@ export async function dashboard(request?: Request) {
     draft: drafts.get(job.id) ?? null,
   }));
   const analyzed = jobs.filter((job) => job.analysis);
-  const requirements = analyzed.flatMap((job) => Array.isArray(job.analysis?.requirementKeywords) ? job.analysis.requirementKeywords.map(String) : []);
-  const gaps = analyzed.flatMap((job) => Array.isArray(job.analysis?.missingSkills) ? job.analysis.missingSkills.map(String) : []);
+  const requirements = analyzed.flatMap((job) => stringArray(job.analysis?.requirementKeywords));
+  const gaps = analyzed.flatMap((job) => stringArray(job.analysis?.missingSkills));
   const verdicts = analyzed.reduce<Record<string, number>>((acc, job) => {
-    const verdict = String(job.analysis?.verdict ?? "weak");
+    const verdict = rowText(job.analysis?.verdict, "weak");
     acc[verdict] = (acc[verdict] ?? 0) + 1;
     return acc;
   }, { strong: 0, possible: 0, weak: 0, reject: 0 });
   const statuses = draftResult.results.reduce<Record<string, number>>((acc, row) => {
-    const status = String(row.status);
-    acc[status] = (acc[status] ?? 0) + 1;
+    const status = rowText(row.status);
+    if (status) acc[status] = (acc[status] ?? 0) + 1;
     return acc;
   }, {});
   const percent = (count: number) => jobs.length ? Math.round(count / jobs.length * 100) : 0;
@@ -400,20 +421,22 @@ export async function dashboard(request?: Request) {
 export async function resumePdf(jobId: string): Promise<Uint8Array | null> {
   const row = await (await db()).prepare("SELECT pdf_base64 FROM resume_variants WHERE job_id = ?").bind(jobId).first<Row>();
   const pdfBase64 = row?.pdf_base64;
-  return pdfBase64 && typeof pdfBase64 === "string" ? base64ToBytes(pdfBase64) : null;
+  return typeof pdfBase64 === "string" && pdfBase64 ? base64ToBytes(pdfBase64) : null;
 }
 
 export async function updateDraft(id: string, action: string, recipient?: string): Promise<void> {
   const database = await db();
   const draft = await database.prepare("SELECT * FROM application_drafts WHERE id = ?").bind(id).first<Row>();
   if (!draft) throw new Error("Application draft not found.");
-  const status = String(draft.status);
+  const status = rowText(draft.status);
+  const currentRecipient = nullableRowText(draft.recipient);
   const timestamp = now();
 
   if (action === "approve") {
-    if (!recipient && !draft.recipient) throw new Error("Add a recipient before approval.");
+    const nextRecipient = recipient || currentRecipient;
+    if (!nextRecipient) throw new Error("Add a recipient before approval.");
     await database.prepare("UPDATE application_drafts SET recipient = ?, status = 'APPROVED', approved_at = ?, updated_at = ? WHERE id = ?")
-      .bind(recipient || draft.recipient, timestamp, timestamp, id)
+      .bind(nextRecipient, timestamp, timestamp, id)
       .run();
     return;
   }
@@ -434,6 +457,21 @@ export async function updateDraft(id: string, action: string, recipient?: string
 const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED", "NOT_INTERESTED", "ARCHIVED"]);
 const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
 
+function requestedStatus(input: Json, currentStatus: string, hasStatus: boolean): string {
+  return hasStatus ? cleanText(input.status).toUpperCase() : currentStatus;
+}
+
+function requestedFeedback(input: Json, currentFeedback: string | null, hasFeedback: boolean): string | null {
+  if (!hasFeedback) return currentFeedback;
+  if (input.feedback === null || input.feedback === "") return null;
+  return cleanText(input.feedback).toUpperCase();
+}
+
+function changedAt(changed: boolean, valuePresent: boolean, timestamp: string, previous: unknown): string | null {
+  if (!changed) return nullableRowText(previous);
+  return valuePresent ? timestamp : null;
+}
+
 export async function updateJobTracking(id: string, input: Json) {
   const database = await db();
   const row = await database.prepare("SELECT status, status_updated_at, feedback, feedback_at FROM jobs WHERE id = ?").bind(id).first<Row>();
@@ -443,34 +481,33 @@ export async function updateJobTracking(id: string, input: Json) {
   const hasFeedback = Object.prototype.hasOwnProperty.call(input, "feedback");
   if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
 
-  const currentStatus = String(row.status);
-  const nextStatus = hasStatus ? cleanText(input.status).toUpperCase() : currentStatus;
+  const currentStatus = rowText(row.status);
+  const nextStatus = requestedStatus(input, currentStatus, hasStatus);
   if (!JOB_STATUSES.has(nextStatus)) throw new Error("Unsupported job status.");
 
-  const currentFeedback = row.feedback ? String(row.feedback) : null;
-  const requestedFeedback = hasFeedback
-    ? input.feedback === null || input.feedback === "" ? null : cleanText(input.feedback).toUpperCase()
-    : currentFeedback;
-  if (requestedFeedback !== null && !JOB_FEEDBACK.has(requestedFeedback)) throw new Error("Unsupported job feedback.");
+  const currentFeedback = nullableRowText(row.feedback);
+  const nextFeedback = requestedFeedback(input, currentFeedback, hasFeedback);
+  if (nextFeedback !== null && !JOB_FEEDBACK.has(nextFeedback)) throw new Error("Unsupported job feedback.");
 
   const timestamp = now();
-  const statusUpdatedAt = nextStatus !== currentStatus
-    ? timestamp
-    : row.status_updated_at ? String(row.status_updated_at) : null;
-  const feedbackAt = requestedFeedback !== currentFeedback
-    ? requestedFeedback ? timestamp : null
-    : row.feedback_at ? String(row.feedback_at) : null;
+  const statusUpdatedAt = changedAt(nextStatus !== currentStatus, true, timestamp, row.status_updated_at);
+  const feedbackAt = changedAt(nextFeedback !== currentFeedback, Boolean(nextFeedback), timestamp, row.feedback_at);
 
   await database.prepare("UPDATE jobs SET status = ?, status_updated_at = ?, feedback = ?, feedback_at = ?, updated_at = ? WHERE id = ?")
-    .bind(nextStatus, statusUpdatedAt, requestedFeedback, feedbackAt, timestamp, id)
+    .bind(nextStatus, statusUpdatedAt, nextFeedback, feedbackAt, timestamp, id)
     .run();
-  return { id, status: nextStatus, feedback: requestedFeedback, statusUpdatedAt, feedbackAt };
+  return { id, status: nextStatus, feedback: nextFeedback, statusUpdatedAt, feedbackAt };
+}
+
+function errorStatus(message: string): number {
+  if (/not found/i.test(message)) return 404;
+  if (/requires|limited|allowed|approve|recipient|required|unsupported/i.test(message)) return 400;
+  return 500;
 }
 
 export function jsonError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  const status = /not found/i.test(message) ? 404 : /requires|limited|allowed|approve|recipient|required|unsupported/i.test(message) ? 400 : 500;
-  return Response.json({ ok: false, error: message }, { status });
+  const message = error instanceof Error ? error.message : rowText(error, "Unknown error");
+  return Response.json({ ok: false, error: message }, { status: errorStatus(message) });
 }
 
 export async function readPayload(request: Request) {
