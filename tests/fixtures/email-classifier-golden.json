@@ -9,6 +9,33 @@
     "expectedPreAi": true
   },
   {
+    "id": "service-github-pr-body-mentions-job-alert",
+    "senderName": "Forwarded message",
+    "senderEmail": "forwarder@example.com",
+    "subject": "Re: [sergiiiavt/gimme-job] Build Automation V2 email processing foundation (PR #100)",
+    "textExcerpt": "The pull request changes job alert detection and contains recommended jobs for you in classifier test data.",
+    "expectedClassification": "SERVICE_MESSAGE",
+    "expectedPreAi": true
+  },
+  {
+    "id": "service-sonarqube-forwarded-sender",
+    "senderName": "Forwarded message",
+    "senderEmail": "forwarder@example.com",
+    "subject": "Quality Gate failed on Pull Request #103",
+    "textExcerpt": "SonarQube Cloud reports new-code coverage and reliability issues.",
+    "expectedClassification": "SERVICE_MESSAGE",
+    "expectedPreAi": true
+  },
+  {
+    "id": "service-github-actions-forwarded-sender",
+    "senderName": "Forwarded message",
+    "senderEmail": "forwarder@example.com",
+    "subject": "CI and Cloudflare deploy workflow run failed",
+    "textExcerpt": "GitHub Actions notification reporting a failed workflow run for the sergiiiavt/gimme-job repository.",
+    "expectedClassification": "SERVICE_MESSAGE",
+    "expectedPreAi": true
+  },
+  {
     "id": "non-job-store-promotion",
     "senderName": "GOG.com",
     "senderEmail": "news@gog.com",
@@ -18,11 +45,38 @@
     "expectedPreAi": true
   },
   {
+    "id": "non-job-prom-delivery",
+    "senderName": "Prom.ua",
+    "senderEmail": "info@prom.ua",
+    "subject": "Замовлення №421404445 доставлено",
+    "textExcerpt": "Ваше замовлення доставлено до відділення Нової пошти.",
+    "expectedClassification": "NON_JOB",
+    "expectedPreAi": true
+  },
+  {
     "id": "job-alert-linkedin",
     "senderName": "LinkedIn",
     "senderEmail": "jobalerts-noreply@linkedin.com",
     "subject": "Job alert: QA Lead in Kyiv",
     "textExcerpt": "Recommended jobs for you based on your alert.",
+    "expectedClassification": "JOB_ALERT",
+    "expectedPreAi": true
+  },
+  {
+    "id": "job-alert-workua",
+    "senderName": "Work.ua",
+    "senderEmail": "jobs@work.ua",
+    "subject": "1 new QA Lead vacancy in Kyiv",
+    "textExcerpt": "New vacancy matching your saved search.",
+    "expectedClassification": "JOB_ALERT",
+    "expectedPreAi": true
+  },
+  {
+    "id": "job-alert-robota",
+    "senderName": "robota.ua",
+    "senderEmail": "jobs@robota.ua",
+    "subject": "Expert Manual QA Engineer at Ciklum",
+    "textExcerpt": "Recommended vacancy from your saved job search.",
     "expectedClassification": "JOB_ALERT",
     "expectedPreAi": true
   },
