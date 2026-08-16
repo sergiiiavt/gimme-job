@@ -86,6 +86,13 @@ interface SidebarProps {
   onSelectSubsection: (subsection: string) => void;
 }
 
+const accountCornerStyle = {
+  position: "fixed",
+  right: "18px",
+  top: "14px",
+  zIndex: 90,
+} as const;
+
 export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
@@ -113,10 +120,6 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
             </section>
           ))}
         </nav>
-
-        <div className="kb-sidebar-footer">
-          <AuthStatusControl mode={mode} personalHref={personalHref}/>
-        </div>
       </aside>
 
       {!hideSecondary && <aside className="kb-subnav">
@@ -145,6 +148,10 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
         </nav>
       )}
       </aside>}
+
+      <div className="kb-account-corner" style={accountCornerStyle}>
+        <AuthStatusControl mode={mode} personalHref={personalHref}/>
+      </div>
     </div>
   );
 }
