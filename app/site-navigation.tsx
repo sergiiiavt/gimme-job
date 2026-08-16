@@ -67,7 +67,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "embedded", label: "Embedded & IoT QA" },
       { id: "performance", label: "Performance & reliability" },
       { id: "security", label: "Security testing" },
-      { id: "devops", label: "Cloud & DevOps" },
+      { id: "devops", label: "Cloud & DevOps", publicHref: "/learn/cloud-devops", personalHref: "/workspace/learn/cloud-devops" },
       { id: "observability", label: "Observability & SRE" },
       { id: "networking", label: "Networking" },
       { id: "linux", label: "Linux & shell" },

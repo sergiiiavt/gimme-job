@@ -1,0 +1,38 @@
+[
+  {
+    "id": "infrastructure-as-code",
+    "order": 1,
+    "label": "Infrastructure as Code",
+    "description": "Learn the engineering model behind repeatable infrastructure: desired state, idempotency, secrets, drift, reviewable changes and verification.",
+    "file": "01-infrastructure-as-code.md",
+    "kind": "foundation",
+    "sourceIds": ["github-actions-docs", "hetzner-api-docs", "gimmejob-provision", "gimmejob-infra-workflow"]
+  },
+  {
+    "id": "gimmejob-infrastructure-case-study",
+    "order": 2,
+    "label": "GimmeJob infrastructure",
+    "description": "Rebuild and understand the production Hetzner n8n runtime used by GimmeJob, from GitHub Actions to VM provisioning, Docker, DNS and HTTPS.",
+    "file": "02-gimmejob-infrastructure-case-study.md",
+    "kind": "case-study",
+    "sourceIds": ["gimmejob-provision", "gimmejob-infra-workflow", "gimmejob-bootstrap", "gimmejob-compose", "gimmejob-caddy", "hetzner-api-docs", "docker-compose-docs"]
+  },
+  {
+    "id": "deployment-gates",
+    "order": 3,
+    "label": "Deployment gates",
+    "description": "Understand how automated delivery is made safe by ordered validation gates, fail-fast behavior, evidence and explicit deployment conditions.",
+    "file": "03-deployment-gates.md",
+    "kind": "foundation",
+    "sourceIds": ["github-actions-docs", "gimmejob-ci", "gimmejob-sonar", "cloudflare-workers-docs"]
+  },
+  {
+    "id": "gimmejob-deployment-gates-case-study",
+    "order": 4,
+    "label": "GimmeJob deployment gates",
+    "description": "Trace the real GimmeJob CI/CD path from pull request validation through Sonar Quality Gate to D1 migration and Cloudflare Workers production deployment.",
+    "file": "04-gimmejob-deployment-gates-case-study.md",
+    "kind": "case-study",
+    "sourceIds": ["gimmejob-ci", "gimmejob-deploy", "gimmejob-sonar", "cloudflare-workers-docs", "cloudflare-d1-docs"]
+  }
+]
