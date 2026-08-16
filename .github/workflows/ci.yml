@@ -109,5 +109,5 @@ jobs:
           check_route "https://gimmejob.gimmejob.workers.dev/learn/testing-tools" 'Testing (&amp;|&) Diagnostic Tools'
           check_route "https://gimmejob.gimmejob.workers.dev/learn/metrics-estimation" 'QA Metrics (&amp;|&) Estimation'
           check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Mutability (&amp;|&) References'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Assign a name to an object'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Bind a name to an object'
           check_header "https://gimmejob.gimmejob.workers.dev/reference/programming" '^cache-control: .*no-store'
