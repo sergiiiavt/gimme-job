@@ -196,7 +196,7 @@ const brandWordmarkStyle = {
   display: "block",
   fontFamily: '"Arial Rounded MT Bold", "Avenir Next", "Segoe UI", system-ui, sans-serif',
   fontSize: "19px",
-  fontWeight: 800,
+  fontWeight: 700,
   letterSpacing: "-0.045em",
   whiteSpace: "nowrap",
 } as const;
