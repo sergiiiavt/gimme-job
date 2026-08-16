@@ -1,0 +1,9 @@
+.job-detail .description p {
+  white-space: pre-line;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.job-detail .description {
+  max-width: 80ch;
+}
