@@ -141,16 +141,17 @@ test("auth sync falls back to the route mode on probe failure and supports cance
   assert.deepEqual(cancelledStates, []);
 });
 
-test("auth control renders one explicit auth action instead of a view switcher", () => {
+test("auth control renders a compact sign-in action publicly and the account menu privately", () => {
   const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/workspace" }));
-  assert.match(publicMarkup, /Public view/);
   assert.match(publicMarkup, />Sign in<\/a>/);
+  assert.doesNotMatch(publicMarkup, /Public view/);
   assert.doesNotMatch(publicMarkup, /Personal<\/a>/);
 
   const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/workspace" }));
   assert.match(personalMarkup, /Signed in/);
   assert.match(personalMarkup, /Personal workspace/);
-  assert.match(personalMarkup, /Log out/);
+  assert.match(personalMarkup, /Gmail forwarding/);
+  assert.match(personalMarkup, /Sign out/);
   assert.match(personalMarkup, /method="post"/);
 });
 

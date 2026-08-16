@@ -86,6 +86,19 @@ interface SidebarProps {
   onSelectSubsection: (subsection: string) => void;
 }
 
+const accountCornerStyle = {
+  position: "fixed",
+  right: "18px",
+  top: "14px",
+  zIndex: 90,
+} as const;
+
+const responsiveAccountStyle = `
+@media (max-width: 820px) {
+  .kb-account-corner { right: 62px !important; top: 8px !important; }
+}
+`;
+
 export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
@@ -97,7 +110,7 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
     </Link>
   );
 
-  return (
+  return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
         <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
@@ -113,10 +126,6 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
             </section>
           ))}
         </nav>
-
-        <div className="kb-sidebar-footer">
-          <AuthStatusControl mode={mode} personalHref={personalHref}/>
-        </div>
       </aside>
 
       {!hideSecondary && <aside className="kb-subnav">
@@ -146,5 +155,10 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
       )}
       </aside>}
     </div>
-  );
+
+    <style>{responsiveAccountStyle}</style>
+    <div className="kb-account-corner" style={accountCornerStyle}>
+      <AuthStatusControl mode={mode} personalHref={personalHref}/>
+    </div>
+  </>;
 }
