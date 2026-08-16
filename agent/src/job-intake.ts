@@ -33,21 +33,129 @@ export interface DedupeResult<T extends IntakeJob> {
   duplicateCount: number;
 }
 
-const ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE = /(?:\b(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+qa\b|\bqa\s+(?:engineer|lead|manager|specialist|analyst|tester|automation)\b|\baqa(?:\s+engineer)?\b|\bsdet\b|\bquality\s+assurance\s+(?:engineer|lead|manager|specialist|analyst)\b|\btest\s+automation\s+(?:engineer|specialist|lead)\b|\bautomation\s+test(?:ing)?\s+engineer\b|\bsoftware\s+(?:test(?:ing)?\s+engineer|tester)\b)/iu;
-const CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE = /(?:qa[- ]?інженер|інженер(?:ка)?\s+(?:з|із)\s+тестування\s+(?:пз|програмного\s+забезпечення)|тестувальник(?:ця|ка)?\s+(?:пз|програмного\s+забезпечення)|qa[- ]?инженер|тестировщик\s+(?:по|программного\s+обеспечения|по))/iu;
-const BARE_QA_TITLE = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation)\s+)?qa(?:\s*\/\s*aqa)?$/iu;
-const ENGLISH_GENERIC_TEST_ROLE = /(?:\btest(?:er|ing)?\s+(?:engineer|specialist|analyst)\b|\btester\b|\btest\s+engineer\b|\bquality\s+engineer\b|\bquality\s+specialist\b)/iu;
-const CYRILLIC_GENERIC_TEST_ROLE = /(?:тестувальник(?:ця|ка)?|тестировщик|інженер(?:ка)?\s+(?:з|із)\s+тестування)/iu;
+const ENGLISH_SOFTWARE_QA_PATTERNS = [
+  /\b(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated) qa\b/iu,
+  /\bqa (?:engineer|specialist|analyst|tester|automation)\b/iu,
+  /\baqa(?: engineer)?\b/iu,
+  /\bsdet\b/iu,
+  /\bquality assurance (?:engineer|specialist|analyst)\b/iu,
+  /\btest automation (?:engineer|specialist|lead)\b/iu,
+  /\bautomation test engineer\b/iu,
+  /\bautomation testing engineer\b/iu,
+  /\bsoftware tester\b/iu,
+  /\bsoftware test engineer\b/iu,
+  /\bsoftware testing engineer\b/iu,
+];
 
-const SOFTWARE_CONTEXT = /(?:\bsoftware\b|\bweb\b|\bmobile\b|\bapi\b|\bbackend\b|\bfront[- ]?end\b|\bapplication(?:s)?\b|\bapp(?:s)?\b|\bqa\b|\baqa\b|\bsdet\b|\bembedded\b|\bfirmware\b|\btest\s+case(?:s)?\b|\btest\s+plan(?:s)?\b|\bbug(?:s)?\b|\bdefect(?:s)?\b|\bjira\b|\bselenium\b|\bplaywright\b|\bcypress\b|\bappium\b|\bpostman\b|\bswagger\b|\brest\b|\bsql\b|\bci\/?cd\b|\bjenkins\b|\bgithub\s+actions\b|\bpytest\b|\bpython\b|\btypescript\b|\bjavascript\b|\bjava\b|\bandroid\b|\bios\b|програмн(?:е|ого|ому|им)\s+забезпечення|веб|мобільн(?:ий|і|ого)|автоматизац(?:ія|ії|ію)\s+тестування|тест[- ]?кейс(?:и|ів)?|дефект(?:и|ів)?)/iu;
+const EXPLICIT_QA_LEADERSHIP_PATTERNS = [
+  /\bqa (?:lead|manager|head|director)\b/iu,
+  /\bqa team lead\b/iu,
+  /\b(?:head|director) of qa\b/iu,
+  /\b(?:head|director) qa\b/iu,
+  /qa[- ]?інженер/iu,
+  /qa[- ]?инженер/iu,
+  /qa[- ]?(?:лід|керівник|менеджер)/iu,
+  /qa[- ]?(?:лид|руководитель|менеджер)/iu,
+  /керівник(?:ця)? qa/iu,
+  /руководитель qa/iu,
+];
 
-const NON_SOFTWARE_TITLE = /(?:cosmet|космет|парфум|perfume|fragrance|food\s+tester|дегуст|лаборант|laboratory\s+tester|textile|текстил|quality\s+control\s+inspector|qc\s+inspector|контролер(?:ка)?\s+якості|відділ\s+технічного\s+контролю|отк|manufactur|виробництв|product\s+tester|тестер\s+продукц)/iu;
-const HARDWARE_ONLY_TITLE = /(?:\bhardware\s+(?:qa|test|tester|testing)\b|\belectronics?\s+(?:test|tester|testing)\b|електронік\S*\s+(?:тест|випробув))/iu;
-const CONFLICTING_PRIMARY_ROLE = /^(?:technical\s+support|tech\s+support|customer\s+support|support\s+specialist|support\s+engineer|developer|software\s+developer|front[- ]?end\s+developer|back[- ]?end\s+developer|product\s+manager|project\s+manager|business\s+analyst|data\s+analyst|recruiter|sales\s+manager|account\s+manager|маркетолог|менеджер\s+з\s+продаж|рекрутер|служба\s+підтримки)/iu;
+const CYRILLIC_SOFTWARE_QA_PATTERNS = [
+  /інженер(?:ка)? з тестування пз/iu,
+  /інженер(?:ка)? із тестування пз/iu,
+  /інженер(?:ка)? з тестування програмного забезпечення/iu,
+  /інженер(?:ка)? із тестування програмного забезпечення/iu,
+  /тестувальник(?:ця|ка)? пз/iu,
+  /тестувальник(?:ця|ка)? програмного забезпечення/iu,
+  /тестировщик программного обеспечения/iu,
+];
 
+const CONTEXTUAL_QA_LEADERSHIP_PATTERNS = [
+  /\bquality assurance (?:lead|manager|head|director)\b/iu,
+  /\bquality assurance team lead\b/iu,
+  /\b(?:head|director) of quality assurance\b/iu,
+  /\b(?:test|testing) (?:lead|manager|head|director)\b/iu,
+  /\b(?:test|testing) team lead\b/iu,
+  /\b(?:head|director) of testing\b/iu,
+  /\b(?:head|director) of software testing\b/iu,
+  /керівник(?:ця)? відділу тестування/iu,
+  /керівник(?:ця)? команди qa/iu,
+  /керівник(?:ця)? команди тестування/iu,
+  /руководитель отдела тестирования/iu,
+  /руководитель команды qa/iu,
+  /руководитель команды тестирования/iu,
+];
+
+const GENERIC_TEST_ROLE_PATTERNS = [
+  /\btest engineer\b/iu,
+  /\btesting engineer\b/iu,
+  /\btest specialist\b/iu,
+  /\btesting specialist\b/iu,
+  /\btest analyst\b/iu,
+  /\btesting analyst\b/iu,
+  /\btester\b/iu,
+  /\bquality engineer\b/iu,
+  /\bquality specialist\b/iu,
+  /тестувальник(?:ця|ка)?/iu,
+  /тестировщик/iu,
+  /інженер(?:ка)? з тестування/iu,
+  /інженер(?:ка)? із тестування/iu,
+];
+
+const SOFTWARE_CONTEXT_PATTERNS = [
+  /\bsoftware\b/iu, /\bweb\b/iu, /\bmobile\b/iu, /\bapi\b/iu, /\bbackend\b/iu,
+  /\bfront-end\b/iu, /\bfrontend\b/iu, /\bapplication\b/iu, /\bapplications\b/iu,
+  /\bapp\b/iu, /\bapps\b/iu, /\baqa\b/iu, /\bsdet\b/iu,
+  /\bembedded\b/iu, /\bfirmware\b/iu, /\btest case\b/iu, /\btest cases\b/iu,
+  /\btest plan\b/iu, /\btest plans\b/iu, /\bbug\b/iu, /\bbugs\b/iu,
+  /\bdefect\b/iu, /\bdefects\b/iu, /\bjira\b/iu, /\bselenium\b/iu,
+  /\bplaywright\b/iu, /\bcypress\b/iu, /\bappium\b/iu, /\bpostman\b/iu,
+  /\bswagger\b/iu, /\brest\b/iu, /\bsql\b/iu, /\bci\/cd\b/iu, /\bci cd\b/iu,
+  /\bjenkins\b/iu, /\bgithub actions\b/iu, /\bpytest\b/iu, /\bpython\b/iu,
+  /\btypescript\b/iu, /\bjavascript\b/iu, /\bjava\b/iu, /\bandroid\b/iu, /\bios\b/iu,
+  /програмне забезпечення/iu, /програмного забезпечення/iu, /\bвеб\b/iu,
+  /мобільн/iu, /автоматизац/iu, /тест[- ]?кейс/iu, /дефект/iu,
+];
+
+const NON_SOFTWARE_TITLE_PATTERNS = [
+  /cosmet/iu, /космет/iu, /парфум/iu, /perfume/iu, /fragrance/iu, /food tester/iu,
+  /дегуст/iu, /лаборант/iu, /laboratory tester/iu, /textile/iu, /текстил/iu,
+  /quality control inspector/iu, /qc inspector/iu, /контролер(?:ка)? якості/iu,
+  /відділ технічного контролю/iu, /\bотк\b/iu, /manufactur/iu, /виробництв/iu,
+  /product tester/iu, /тестер продукц/iu,
+];
+
+const NON_SOFTWARE_CONTEXT_PATTERNS = [
+  /\bpharmaceutical\b/iu, /\bpharma\b/iu, /фармацевт/iu, /\bgmp\b/iu, /\bhaccp\b/iu,
+  /\bfood production\b/iu, /харчов\S* виробництв/iu, /\blaboratory\b/iu, /\blaboratories\b/iu,
+  /лаборатор/iu, /\bcosmetic\b/iu, /\bcosmetics\b/iu, /космет/iu,
+  /\bmanufacturing line\b/iu, /виробнич\S* ліні/iu, /\braw material\b/iu,
+  /\braw materials\b/iu, /сировин/iu, /\bbatch release\b/iu,
+];
+
+const HARDWARE_ONLY_TITLE_PATTERNS = [
+  /\bhardware qa\b/iu, /\bhardware test\b/iu, /\bhardware tester\b/iu, /\bhardware testing\b/iu,
+  /\belectronic test\b/iu, /\belectronics test\b/iu, /\belectronic tester\b/iu,
+  /\belectronics tester\b/iu, /електронік\S* тест/iu, /електронік\S* випробув/iu,
+];
+
+const CONFLICTING_PRIMARY_ROLE_PATTERNS = [
+  /^technical support/iu, /^tech support/iu, /^customer support/iu, /^support specialist/iu,
+  /^support engineer/iu, /^developer/iu, /^software developer/iu, /^front-end developer/iu,
+  /^frontend developer/iu, /^back-end developer/iu, /^backend developer/iu, /^product manager/iu,
+  /^project manager/iu, /^business analyst/iu, /^data analyst/iu, /^recruiter/iu,
+  /^sales manager/iu, /^account manager/iu, /^маркетолог/iu, /^менеджер з продаж/iu,
+  /^рекрутер/iu, /^служба підтримки/iu,
+];
+
+const BARE_QA_TITLE = /^(?:qa|qa\/aqa|senior qa|sr qa|middle qa|mid qa|junior qa|jr qa|lead qa|principal qa|staff qa|manual qa|automation qa|head qa|director qa)$/iu;
 const COMPANY_SUFFIXES = /\b(?:llc|ltd|limited|inc|incorporated|corp|corporation|gmbh|plc|company|co|тов|тзов|пат|ат|фоп)\b/giu;
 const TITLE_STOP_WORDS = new Set(["a", "an", "and", "the", "for", "of", "to", "with", "in", "on", "at", "та", "і", "й", "в", "у", "з", "із", "зі", "для", "на"]);
 const DESCRIPTION_STOP_WORDS = new Set([...TITLE_STOP_WORDS, "we", "you", "our", "your", "is", "are", "be", "will", "this", "that", "as", "or", "by", "from", "ми", "ви", "наш", "ваш", "це", "що", "як", "або", "від", "до", "про", "робота", "роботи"]);
+
+function matchesAny(value: string, patterns: readonly RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(value));
+}
 
 export function normalizeVacancyText(value: string): string {
   return String(value ?? "")
@@ -61,25 +169,32 @@ export function normalizeVacancyText(value: string): string {
 
 export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description" | "company" | "location">): RelevanceDecision {
   const title = normalizeVacancyText(job.title);
-  const body = normalizeVacancyText(`${job.title ?? ""}\n${job.description ?? ""}\n${job.company ?? ""}\n${job.location ?? ""}`);
-  const explicitQaRole = ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
-    || CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
+  const body = normalizeVacancyText(`${job.title}\n${job.description}\n${job.company}\n${job.location}`);
+  const explicitQaRole = matchesAny(title, ENGLISH_SOFTWARE_QA_PATTERNS)
+    || matchesAny(title, CYRILLIC_SOFTWARE_QA_PATTERNS)
+    || matchesAny(title, EXPLICIT_QA_LEADERSHIP_PATTERNS)
     || BARE_QA_TITLE.test(title);
-  const softwareContext = SOFTWARE_CONTEXT.test(body);
+  const contextualQaLeadership = matchesAny(title, CONTEXTUAL_QA_LEADERSHIP_PATTERNS);
+  const softwareContext = matchesAny(body, SOFTWARE_CONTEXT_PATTERNS);
+  const nonSoftwareContext = matchesAny(body, NON_SOFTWARE_CONTEXT_PATTERNS);
+  const nonSoftwareTitle = matchesAny(title, NON_SOFTWARE_TITLE_PATTERNS)
+    || matchesAny(title, HARDWARE_ONLY_TITLE_PATTERNS);
 
-  if ((NON_SOFTWARE_TITLE.test(title) || HARDWARE_ONLY_TITLE.test(title)) && !softwareContext) {
+  if ((nonSoftwareTitle || nonSoftwareContext) && !softwareContext) {
     return { accepted: false, score: 0, reason: "non_software_testing_role" };
   }
-  if (CONFLICTING_PRIMARY_ROLE.test(title) && !explicitQaRole) {
+  if (matchesAny(title, CONFLICTING_PRIMARY_ROLE_PATTERNS) && !explicitQaRole) {
     return { accepted: false, score: 5, reason: "conflicting_primary_role" };
   }
-  if (explicitQaRole) {
+  if (explicitQaRole || (contextualQaLeadership && softwareContext)) {
     return { accepted: true, score: 100, reason: "explicit_software_qa_role" };
   }
-  if (ENGLISH_GENERIC_TEST_ROLE.test(title) || CYRILLIC_GENERIC_TEST_ROLE.test(title)) {
-    return softwareContext
-      ? { accepted: true, score: 80, reason: "generic_test_role_with_software_context" }
-      : { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
+  if (contextualQaLeadership) {
+    return { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
+  }
+  if (matchesAny(title, GENERIC_TEST_ROLE_PATTERNS)) {
+    if (softwareContext) return { accepted: true, score: 80, reason: "generic_test_role_with_software_context" };
+    return { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
   }
   return { accepted: false, score: 0, reason: "no_software_qa_role_signal" };
 }
@@ -136,7 +251,9 @@ function canonicalUrl(value: string): string {
     const url = new URL(value);
     for (const key of [...url.searchParams.keys()]) {
       const normalized = key.toLowerCase();
-      if (normalized.startsWith("utm_") || ["fbclid", "gclid", "ref", "refid", "trackingid"].includes(normalized)) url.searchParams.delete(key);
+      if (normalized.startsWith("utm_") || ["fbclid", "gclid", "ref", "refid", "trackingid"].includes(normalized)) {
+        url.searchParams.delete(key);
+      }
     }
     url.hash = "";
     url.hostname = url.hostname.toLowerCase();
@@ -227,7 +344,9 @@ export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T):
   const rightScore = statePriority(right) + sourcePriority(right.source);
   const primary = leftScore >= rightScore ? left : right;
   const secondary = primary === left ? right : left;
-  const description = (secondary.description?.length ?? 0) > (primary.description?.length ?? 0) ? secondary.description : primary.description;
+  const description = (secondary.description?.length ?? 0) > (primary.description?.length ?? 0)
+    ? secondary.description
+    : primary.description;
 
   return {
     ...primary,
@@ -249,8 +368,9 @@ export function deduplicateVacancies<T extends IntakeJob>(jobs: T[]): DedupeResu
   let duplicateCount = 0;
   for (const job of jobs) {
     const duplicateIndex = result.findIndex((candidate) => areDuplicateVacancies(candidate, job));
-    if (duplicateIndex < 0) result.push(job);
-    else {
+    if (duplicateIndex < 0) {
+      result.push(job);
+    } else {
       result[duplicateIndex] = mergeDuplicateVacancies(result[duplicateIndex], job);
       duplicateCount += 1;
     }
