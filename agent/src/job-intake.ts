@@ -34,9 +34,11 @@ export interface DedupeResult<T extends IntakeJob> {
 }
 
 const ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE = /(?:\b(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+qa\b|\bqa\s+(?:engineer|specialist|analyst|tester|automation)\b|\baqa(?:\s+engineer)?\b|\bsdet\b|\bquality\s+assurance\s+(?:engineer|specialist|analyst)\b|\btest\s+automation\s+(?:engineer|specialist|lead)\b|\bautomation\s+test(?:ing)?\s+engineer\b|\bsoftware\s+(?:test(?:ing)?\s+engineer|tester)\b)/iu;
-const ENGLISH_QA_LEADERSHIP_ROLE = /(?:\b(?:qa|quality\s+assurance)\s+(?:team\s+)?(?:lead|manager|head|director)\b|\b(?:head|director)\s+(?:of\s+)?(?:qa|quality\s+assurance|software\s+testing|testing)\b|\b(?:test|testing)\s+(?:team\s+)?(?:lead|manager|head|director)\b)/iu;
+const ENGLISH_EXPLICIT_QA_LEADERSHIP_ROLE = /(?:\bqa\s+(?:team\s+)?(?:lead|manager|head|director)\b|\b(?:head|director)\s+(?:of\s+)?qa\b)/iu;
+const ENGLISH_CONTEXTUAL_QA_LEADERSHIP_ROLE = /(?:\bquality\s+assurance\s+(?:team\s+)?(?:lead|manager|head|director)\b|\b(?:head|director)\s+(?:of\s+)?quality\s+assurance\b|\b(?:test|testing)\s+(?:team\s+)?(?:lead|manager|head|director)\b|\b(?:head|director)\s+(?:of\s+)?(?:software\s+testing|testing)\b)/iu;
 const CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE = /(?:qa[- ]?інженер|інженер(?:ка)?\s+(?:з|із)\s+тестування\s+(?:пз|програмного\s+забезпечення)|тестувальник(?:ця|ка)?\s+(?:пз|програмного\s+забезпечення)|qa[- ]?инженер|тестировщик\s+(?:по|программного\s+обеспечения|по))/iu;
-const CYRILLIC_QA_LEADERSHIP_ROLE = /(?:керівник(?:ця)?\s+(?:qa|відділу\s+тестування|команди\s+(?:qa|тестування))|qa\s*[- ]?(?:лід|керівник|менеджер)|руководитель\s+(?:qa|отдела\s+тестирования|команды\s+(?:qa|тестирования))|qa\s*[- ]?(?:лид|руководитель|менеджер))/iu;
+const CYRILLIC_EXPLICIT_QA_LEADERSHIP_ROLE = /(?:qa\s*[- ]?(?:лід|керівник|менеджер)|qa\s*[- ]?(?:лид|руководитель|менеджер)|керівник(?:ця)?\s+qa|руководитель\s+qa)/iu;
+const CYRILLIC_CONTEXTUAL_QA_LEADERSHIP_ROLE = /(?:керівник(?:ця)?\s+(?:відділу\s+тестування|команди\s+(?:qa|тестування))|руководитель\s+(?:отдела\s+тестирования|команды\s+(?:qa|тестирования)))/iu;
 const BARE_QA_TITLE = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|head|director)\s+)?qa(?:\s*\/\s*aqa)?$/iu;
 const ENGLISH_GENERIC_TEST_ROLE = /(?:\btest(?:er|ing)?\s+(?:engineer|specialist|analyst)\b|\btester\b|\btest\s+engineer\b|\bquality\s+engineer\b|\bquality\s+specialist\b)/iu;
 const CYRILLIC_GENERIC_TEST_ROLE = /(?:тестувальник(?:ця|ка)?|тестировщик|інженер(?:ка)?\s+(?:з|із)\s+тестування)/iu;
@@ -44,6 +46,7 @@ const CYRILLIC_GENERIC_TEST_ROLE = /(?:тестувальник(?:ця|ка)?|т
 const SOFTWARE_CONTEXT = /(?:\bsoftware\b|\bweb\b|\bmobile\b|\bapi\b|\bbackend\b|\bfront[- ]?end\b|\bapplication(?:s)?\b|\bapp(?:s)?\b|\bqa\b|\baqa\b|\bsdet\b|\bembedded\b|\bfirmware\b|\btest\s+case(?:s)?\b|\btest\s+plan(?:s)?\b|\bbug(?:s)?\b|\bdefect(?:s)?\b|\bjira\b|\bselenium\b|\bplaywright\b|\bcypress\b|\bappium\b|\bpostman\b|\bswagger\b|\brest\b|\bsql\b|\bci\/?cd\b|\bjenkins\b|\bgithub\s+actions\b|\bpytest\b|\bpython\b|\btypescript\b|\bjavascript\b|\bjava\b|\bandroid\b|\bios\b|програмн(?:е|ого|ому|им)\s+забезпечення|веб|мобільн(?:ий|і|ого)|автоматизац(?:ія|ії|ію)\s+тестування|тест[- ]?кейс(?:и|ів)?|дефект(?:и|ів)?)/iu;
 
 const NON_SOFTWARE_TITLE = /(?:cosmet|космет|парфум|perfume|fragrance|food\s+tester|дегуст|лаборант|laboratory\s+tester|textile|текстил|quality\s+control\s+inspector|qc\s+inspector|контролер(?:ка)?\s+якості|відділ\s+технічного\s+контролю|отк|manufactur|виробництв|product\s+tester|тестер\s+продукц)/iu;
+const NON_SOFTWARE_CONTEXT = /(?:\bpharmaceutical\b|\bpharma\b|фармацевт|\bgmp\b|\bhaccp\b|\bfood\s+production\b|харчов\S*\s+виробництв|\blaborator(?:y|ies)\b|лаборатор|\bcosmetic(?:s)?\b|космет|\bmanufacturing\s+line\b|виробнич\S*\s+ліні|\braw\s+materials?\b|сировин|\bbatch\s+release\b)/iu;
 const HARDWARE_ONLY_TITLE = /(?:\bhardware\s+(?:qa|test|tester|testing)\b|\belectronics?\s+(?:test|tester|testing)\b|електронік\S*\s+(?:тест|випробув))/iu;
 const CONFLICTING_PRIMARY_ROLE = /^(?:technical\s+support|tech\s+support|customer\s+support|support\s+specialist|support\s+engineer|developer|software\s+developer|front[- ]?end\s+developer|back[- ]?end\s+developer|product\s+manager|project\s+manager|business\s+analyst|data\s+analyst|recruiter|sales\s+manager|account\s+manager|маркетолог|менеджер\s+з\s+продаж|рекрутер|служба\s+підтримки)/iu;
 
@@ -65,20 +68,26 @@ export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description
   const title = normalizeVacancyText(job.title);
   const body = normalizeVacancyText(`${job.title ?? ""}\n${job.description ?? ""}\n${job.company ?? ""}\n${job.location ?? ""}`);
   const explicitQaRole = ENGLISH_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
-    || ENGLISH_QA_LEADERSHIP_ROLE.test(title)
+    || ENGLISH_EXPLICIT_QA_LEADERSHIP_ROLE.test(title)
     || CYRILLIC_EXPLICIT_SOFTWARE_QA_ROLE.test(title)
-    || CYRILLIC_QA_LEADERSHIP_ROLE.test(title)
+    || CYRILLIC_EXPLICIT_QA_LEADERSHIP_ROLE.test(title)
     || BARE_QA_TITLE.test(title);
+  const contextualQaLeadership = ENGLISH_CONTEXTUAL_QA_LEADERSHIP_ROLE.test(title)
+    || CYRILLIC_CONTEXTUAL_QA_LEADERSHIP_ROLE.test(title);
   const softwareContext = SOFTWARE_CONTEXT.test(body);
+  const nonSoftwareContext = NON_SOFTWARE_CONTEXT.test(body);
 
-  if ((NON_SOFTWARE_TITLE.test(title) || HARDWARE_ONLY_TITLE.test(title)) && !softwareContext) {
+  if ((NON_SOFTWARE_TITLE.test(title) || HARDWARE_ONLY_TITLE.test(title) || nonSoftwareContext) && !softwareContext) {
     return { accepted: false, score: 0, reason: "non_software_testing_role" };
   }
   if (CONFLICTING_PRIMARY_ROLE.test(title) && !explicitQaRole) {
     return { accepted: false, score: 5, reason: "conflicting_primary_role" };
   }
-  if (explicitQaRole) {
+  if (explicitQaRole || (contextualQaLeadership && softwareContext)) {
     return { accepted: true, score: 100, reason: "explicit_software_qa_role" };
+  }
+  if (contextualQaLeadership) {
+    return { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
   }
   if (ENGLISH_GENERIC_TEST_ROLE.test(title) || CYRILLIC_GENERIC_TEST_ROLE.test(title)) {
     return softwareContext
