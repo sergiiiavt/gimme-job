@@ -14,7 +14,7 @@ registerHooks({
 });
 
 function fakeSessionDb() {
-  const state = { deletedSessions: 0, progressUserIds: [] };
+  const state = { deletedSessions: 0, progressUserIds: [], starUserIds: [] };
   const db = {
     prepare(sql) {
       const text = String(sql).replace(/\s+/g, " ").trim();
@@ -38,6 +38,10 @@ function fakeSessionDb() {
           if (text.includes("FROM user_interview_progress")) {
             state.progressUserIds.push(String(statement.params[0]));
             return { results: [{ question_id: "api-testing", status: "LEARNING", updated_at: "2026-08-15T10:00:00.000Z" }] };
+          }
+          if (text.includes("FROM user_interview_stars")) {
+            state.starUserIds.push(String(statement.params[0]));
+            return { results: [{ question_id: "api-testing", created_at: "2026-08-15T10:00:00.000Z" }] };
           }
           return { results: [] };
         },
@@ -90,6 +94,12 @@ test("multi-user Worker serves canonical password login and collapses legacy que
   assert.equal(spoofedApi.status, 401);
   assert.deepEqual(await spoofedApi.json(), { error: "Authentication required." });
 
+  const spoofedStarsApi = await worker.fetch(new Request("https://gimmejob.example/api/interview-stars", {
+    headers: { "x-gimmejob-auth-mode": "multi-user", "x-gimmejob-authenticated": "1", "x-gimmejob-user-id": "victim-user" },
+  }), env, context);
+  assert.equal(spoofedStarsApi.status, 401);
+  assert.deepEqual(await spoofedStarsApi.json(), { error: "Authentication required." });
+
   const legacyWorkspace = await worker.fetch(new Request("https://gimmejob.example/workspace/learn?section=interview", {
     headers: { "x-gimmejob-auth-mode": "multi-user", "x-gimmejob-authenticated": "1", "x-gimmejob-user-id": "victim-user" },
   }), env, context);
@@ -119,6 +129,19 @@ test("multi-user Worker injects only the user id resolved from the server sessio
   const payload = await response.json();
   assert.equal(payload.progress[0].questionId, "api-testing");
   assert.deepEqual(state.progressUserIds, ["user-a"]);
+
+  const starsResponse = await worker.fetch(new Request("https://gimmejob.example/api/interview-stars", {
+    headers: {
+      cookie: "gimmejob_user_session=server-session-token",
+      "x-gimmejob-auth-mode": "multi-user",
+      "x-gimmejob-authenticated": "1",
+      "x-gimmejob-user-id": "attacker-controlled-user",
+    },
+  }), env, context);
+  assert.equal(starsResponse.status, 200);
+  const starsPayload = await starsResponse.json();
+  assert.deepEqual(starsPayload.starredQuestionIds, ["api-testing"]);
+  assert.deepEqual(state.starUserIds, ["user-a"]);
 });
 
 test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", async () => {
