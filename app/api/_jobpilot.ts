@@ -458,12 +458,12 @@ const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFE
 const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
 
 function requestedStatus(input: Json, currentStatus: string): string {
-  if (!Object.prototype.hasOwnProperty.call(input, "status")) return currentStatus;
+  if (!Object.hasOwn(input, "status")) return currentStatus;
   return cleanText(input.status).toUpperCase();
 }
 
 function requestedFeedback(input: Json, currentFeedback: string | null): string | null {
-  if (!Object.prototype.hasOwnProperty.call(input, "feedback")) return currentFeedback;
+  if (!Object.hasOwn(input, "feedback")) return currentFeedback;
   if (input.feedback === null || input.feedback === "") return null;
   return cleanText(input.feedback).toUpperCase();
 }
@@ -478,8 +478,8 @@ export async function updateJobTracking(id: string, input: Json) {
   const row = await database.prepare("SELECT status, status_updated_at, feedback, feedback_at FROM jobs WHERE id = ?").bind(id).first<Row>();
   if (!row) throw new Error("Job not found.");
 
-  const hasStatus = Object.prototype.hasOwnProperty.call(input, "status");
-  const hasFeedback = Object.prototype.hasOwnProperty.call(input, "feedback");
+  const hasStatus = Object.hasOwn(input, "status");
+  const hasFeedback = Object.hasOwn(input, "feedback");
   if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
 
   const currentStatus = rowText(row.status);
