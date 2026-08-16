@@ -105,7 +105,7 @@ const GENERIC_TEST_ROLE_PATTERNS = [
 const SOFTWARE_CONTEXT_PATTERNS = [
   /\bsoftware\b/iu, /\bweb\b/iu, /\bmobile\b/iu, /\bapi\b/iu, /\bbackend\b/iu,
   /\bfront-end\b/iu, /\bfrontend\b/iu, /\bapplication\b/iu, /\bapplications\b/iu,
-  /\bapp\b/iu, /\bapps\b/iu, /\bqa\b/iu, /\baqa\b/iu, /\bsdet\b/iu,
+  /\bapp\b/iu, /\bapps\b/iu, /\baqa\b/iu, /\bsdet\b/iu,
   /\bembedded\b/iu, /\bfirmware\b/iu, /\btest case\b/iu, /\btest cases\b/iu,
   /\btest plan\b/iu, /\btest plans\b/iu, /\bbug\b/iu, /\bbugs\b/iu,
   /\bdefect\b/iu, /\bdefects\b/iu, /\bjira\b/iu, /\bselenium\b/iu,
