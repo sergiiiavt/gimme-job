@@ -127,11 +127,52 @@ const accountCornerStyle = {
   zIndex: 90,
 } as const;
 
+const brandLinkStyle = {
+  alignItems: "center",
+  display: "flex",
+  gap: "8px",
+  lineHeight: 1,
+  minHeight: "42px",
+  padding: "0 8px 18px",
+} as const;
+
+const brandMarkStyle = {
+  display: "block",
+  flex: "0 0 auto",
+  height: "38px",
+  width: "38px",
+} as const;
+
+const brandWordmarkStyle = {
+  color: "#0b1d3a",
+  display: "block",
+  fontFamily: '"Arial Rounded MT Bold", "Avenir Next", "Segoe UI", system-ui, sans-serif',
+  fontSize: "20px",
+  fontWeight: 800,
+  letterSpacing: "-0.045em",
+  whiteSpace: "nowrap",
+} as const;
+
+const brandJobStyle = {
+  color: "#1769ff",
+} as const;
+
 const responsiveAccountStyle = `
 @media (max-width: 820px) {
   .kb-account-corner { right: 62px !important; top: 8px !important; }
 }
 `;
+
+function GimmeJobMark() {
+  return (
+    <svg aria-hidden="true" style={brandMarkStyle} viewBox="0 0 64 64">
+      <circle cx="27.5" cy="29" fill="none" r="20.5" stroke="#1769ff" strokeLinecap="round" strokeWidth="6"/>
+      <path d="M42.5 43.5 54 55" fill="none" stroke="#1769ff" strokeLinecap="round" strokeWidth="6"/>
+      <path d="m18.5 30.5 7.7 7.8L42.5 21" fill="none" stroke="#12c7a5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="6"/>
+      <path d="M44.5 7.5v5M53.7 11.8l-3.5 3.5M57 21h-5" fill="none" stroke="#12c7a5" strokeLinecap="round" strokeWidth="4.5"/>
+    </svg>
+  );
+}
 
 export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: NavigationItem, intro = false) => {
@@ -173,7 +214,10 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
-        <Link className="kb-brand" href={mode === "public" ? "/" : "/workspace"}>GimmeJob</Link>
+        <Link aria-label="GimmeJob home" className="kb-brand" href={mode === "public" ? "/" : "/workspace"} style={brandLinkStyle}>
+          <GimmeJobMark/>
+          <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
+        </Link>
 
         <nav className="kb-nav-list" aria-label="GimmeJob sections">
           {renderItem(navigationIntroItem, true)}
