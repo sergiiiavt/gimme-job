@@ -309,7 +309,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(privateJobsSource, /aria-label="Search vacancies"/);
   assert.match(privateJobsSource, /aria-pressed=\{job\.feedback === "RELEVANT"\}/);
   assert.match(privateJobsSource, /className="toast" role="status" aria-live="polite"/);
-  assert.match(uiSource, /if \(next === "jobs"\) \{\s*\n\s*window\.location\.assign\("\/workspace"\);/);
+  assert.match(uiSource, /window\.location\.assign\(sectionNavigationHref\(next, mode\)\)/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "certifications"'), "The Career group must come before the Learning path.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "certifications"'), "Learning path must follow Interview questions.");
@@ -322,7 +322,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
   assert.match(uiSource, /mode === "personal" \? "interview" : "about"/);
   assert.match(aboutSource, /View source on GitHub/);
-  assert.match(aboutSource, /mode === "personal" \? "\/workspace\/learn\?section=interview" : "#interview"/);
+  assert.match(aboutSource, /const interviewHref = sectionNavigationHref\("interview", mode\)/);
+  assert.doesNotMatch(aboutSource, /#interview/);
   assert.match(aboutSource, /ABOUT_OVERVIEW\.title/);
   assert.match(aboutSource, /DEPLOYMENT\.title/);
   assert.match(aboutSource, /DATABASE\.title/);
