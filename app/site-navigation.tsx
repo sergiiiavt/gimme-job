@@ -153,6 +153,7 @@ interface SidebarProps {
   activeSubsection: string;
   hideSecondary?: boolean;
   onSelectSubsection: (subsection: string) => void;
+  quickReferenceActive?: boolean;
 }
 
 const accountCornerStyle = {
@@ -322,6 +323,41 @@ const responsiveAccountStyle = `
   border-left-color: #6f9248;
 }
 
+.kb-quick-reference-link {
+  align-items: center;
+  background: #f7f8f6;
+  border: 1px solid #e2e6e1;
+  border-radius: 7px;
+  color: #4f5c54;
+  display: flex;
+  font-size: 10.5px;
+  font-weight: 700;
+  justify-content: space-between;
+  margin: 0 4px 7px;
+  min-height: 32px;
+  padding: 6px 8px;
+  text-decoration: none;
+}
+
+.kb-quick-reference-link:hover {
+  background: #f0f3ee;
+  color: #334238;
+}
+
+.kb-quick-reference-link.active {
+  background: #e8f0df;
+  border-color: #cadbb8;
+  color: #3e5d27;
+}
+
+.kb-quick-reference-link small {
+  color: #929a95;
+  font-size: 8.5px;
+  font-weight: 750;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 1100px) {
   .kb-navigation .kb-nav-link {
     font-size: 10.5px;
@@ -434,7 +470,7 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
   }
 }
 
-export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/workspace", quickReferenceActive = false, secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: NavigationItem, intro = false) => {
     const active = item.external ? activeExternalId === item.id : activeSection === item.id;
     const href = item.external
@@ -473,6 +509,11 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   const brandHref = mode === "public"
     ? navigationIntroItem.publicHref ?? "/learn/about"
     : navigationIntroItem.personalHref ?? "/learn/about";
+  const activeNavigationId = activeExternalId ?? activeSection;
+  const learningItems = navigationGroups.find((group) => group.id === "learning")?.items ?? [];
+  const quickReferenceHref = activeNavigationId && learningItems.some((item) => item.id === activeNavigationId)
+    ? `/reference/${activeNavigationId}`
+    : null;
 
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
@@ -503,6 +544,11 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
       </aside>
 
       {!hideSecondary && <aside className="kb-subnav">
+        {quickReferenceHref && (
+          <Link aria-current={quickReferenceActive ? "page" : undefined} className={`kb-quick-reference-link${quickReferenceActive ? " active" : ""}`} href={quickReferenceHref}>
+            <span>Quick reference</span><small>one page</small>
+          </Link>
+        )}
         {secondarySwitcher && (
           <div className="kb-subnav-switch" role="group" aria-label={`${secondaryTitle} catalog`}>
             {secondarySwitcher.options.map((option) => (
