@@ -2,7 +2,7 @@
 
 ## Scope
 
-This curriculum teaches measurement and estimation as decision-support disciplines rather than collections of magic numbers. The public path contains **8 chapters and 68 required concepts** in English and Ukrainian.
+This curriculum teaches measurement and estimation as decision-support disciplines rather than collections of magic numbers. The public path contains **8 chapters and 75 required concepts** in English and Ukrainian. Chapters 2 and 3 (QA & product quality metrics, Test execution & automation metrics) are structured as a metric-by-metric catalog: named metric, formula, worked scenario, decision — not narrative essays.
 
 ## Curriculum
 
@@ -67,4 +67,4 @@ Function points are presented as a standardized functional-size method. Test poi
 
 ## Validation
 
-`scripts/validate-metrics-estimation-content.mjs` enforces the eight-topic/68-concept structure, bilingual parity, source use, DORA current terminology, explicit formula-contract fields, scenario labelling, Scrum wording, and the no-universal-test-points conversion rule.
+`scripts/validate-metrics-estimation-content.mjs` enforces the eight-topic/75-concept structure, bilingual parity, source use, DORA current terminology, explicit formula-contract fields, scenario labelling, Scrum wording, and the no-universal-test-points conversion rule.
