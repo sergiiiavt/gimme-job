@@ -1,5 +1,8 @@
 const DEFAULT_EXCERPT_LENGTH = 4_000;
 const MAX_MIME_DEPTH = 8;
+const BLOCK_TAGS = new Set(["blockquote", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "p", "tr"]);
+const LINE_BREAK_TAGS = new Set(["br", "hr"]);
+const SKIPPED_CONTENT_TAGS = new Set(["script", "style"]);
 
 function splitHeaderBody(entity: string): { headerBlock: string; body: string } {
   const crlfIndex = entity.indexOf("\r\n\r\n");
@@ -38,7 +41,7 @@ function base64Bytes(value: string): Uint8Array {
   try {
     const binary = atob(normalized);
     const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.codePointAt(index) ?? 0;
     return bytes;
   } catch {
     return new TextEncoder().encode(value);
@@ -97,26 +100,103 @@ function decodeHtmlEntities(value: string): string {
   });
 }
 
+function tagEnd(value: string, start: number): number {
+  let quote: '"' | "'" | null = null;
+  for (let index = start + 1; index < value.length; index += 1) {
+    const character = value[index];
+    if (quote) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === ">") return index;
+  }
+  return -1;
+}
+
+function parsedTagName(source: string): { name: string; closing: boolean } {
+  const trimmed = source.trim();
+  let cursor = 0;
+  const closing = trimmed.startsWith("/");
+  if (closing) cursor += 1;
+  while (cursor < trimmed.length && (trimmed[cursor] === " " || trimmed[cursor] === "\t" || trimmed[cursor] === "\r" || trimmed[cursor] === "\n")) cursor += 1;
+  const start = cursor;
+  while (cursor < trimmed.length) {
+    const character = trimmed[cursor];
+    if (character === " " || character === "\t" || character === "\r" || character === "\n" || character === "/") break;
+    cursor += 1;
+  }
+  return { name: trimmed.slice(start, cursor).toLowerCase(), closing };
+}
+
 function htmlToText(value: string): string {
-  return decodeHtmlEntities(value
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<\s*(?:br|hr)\s*\/?\s*>/gi, "\n")
-    .replace(/<\s*\/?\s*(?:p|div|li|tr|h[1-6]|blockquote)[^>]*>/gi, "\n")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<[^>]+>/g, " "));
+  let output = "";
+  let skippedTag: string | null = null;
+
+  for (let index = 0; index < value.length;) {
+    if (value.startsWith("<!--", index)) {
+      const commentEnd = value.indexOf("-->", index + 4);
+      index = commentEnd < 0 ? value.length : commentEnd + 3;
+      continue;
+    }
+
+    if (value[index] !== "<") {
+      if (!skippedTag) output += value[index];
+      index += 1;
+      continue;
+    }
+
+    const end = tagEnd(value, index);
+    if (end < 0) {
+      if (!skippedTag) output += value.slice(index);
+      break;
+    }
+
+    const { name, closing } = parsedTagName(value.slice(index + 1, end));
+    if (skippedTag) {
+      if (closing && name === skippedTag) skippedTag = null;
+      index = end + 1;
+      continue;
+    }
+
+    if (!closing && SKIPPED_CONTENT_TAGS.has(name)) {
+      skippedTag = name;
+      index = end + 1;
+      continue;
+    }
+
+    if (BLOCK_TAGS.has(name) || LINE_BREAK_TAGS.has(name)) output += "\n";
+    index = end + 1;
+  }
+
+  return decodeHtmlEntities(output);
 }
 
 type MimeText = { plain: string[]; html: string[] };
+
+function removeLeadingLineBreak(value: string): string {
+  if (value.startsWith("\r\n")) return value.slice(2);
+  if (value.startsWith("\n")) return value.slice(1);
+  return value;
+}
+
+function removeTrailingLineBreak(value: string): string {
+  if (value.endsWith("\r\n")) return value.slice(0, -2);
+  if (value.endsWith("\n")) return value.slice(0, -1);
+  return value;
+}
 
 function mimeParts(body: string, boundary: string): string[] {
   const marker = `--${boundary}`;
   return body
     .split(marker)
     .slice(1)
-    .map((part) => part.replace(/^\r?\n/, ""))
+    .map(removeLeadingLineBreak)
     .filter((part) => part && !part.startsWith("--"))
-    .map((part) => part.replace(/\r?\n--\s*$/, ""));
+    .map(removeTrailingLineBreak);
 }
 
 function collectMimeText(entity: string, depth = 0): MimeText {
