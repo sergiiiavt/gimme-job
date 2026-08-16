@@ -96,7 +96,6 @@ function returnPathFromRequest(request: Request): string {
 
 function legacyCanonicalPath(url: URL): string | null {
   const direct: Record<string, string> = {
-    "/": "/about",
     "/workspace": "/vacancies",
     "/learn/about": "/about",
     "/learn/resume": "/resume",
