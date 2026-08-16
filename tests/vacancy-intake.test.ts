@@ -11,6 +11,7 @@ const {
   publicHttpsUrl,
   publicVacancies,
   sanitizeDashboardPayload,
+  skippedCloudSources,
   syncVacancySources,
   upsertVacancies,
 } = await import("../app/api/_vacancy-intake.ts");
@@ -23,12 +24,8 @@ class FakeD1 {
     const normalized = query.replace(/\s+/g, " ").trim().toLowerCase();
     const execute = (values: unknown[]) => ({
       first: async <T>() => {
-        if (normalized.includes("select value_json from settings")) {
-          return this.sourceSetting as T | null;
-        }
-        if (normalized.includes("select count(*) as count from jobs")) {
-          return { count: this.jobs.length } as T;
-        }
+        if (normalized.includes("select value_json from settings")) return this.sourceSetting as T | null;
+        if (normalized.includes("select count(*) as count from jobs")) return { count: this.jobs.length } as T;
         return null;
       },
       all: async <T>() => {
@@ -105,8 +102,8 @@ test("publicHttpsUrl permits public HTTPS and blocks local/private sources", () 
   assert.throws(() => publicHttpsUrl("https://192.168.1.4/feed"), /public HTTPS/);
 });
 
-test("buildVacancySources constructs every configured source through shared adapters", () => {
-  const sources = buildVacancySources({
+test("buildVacancySources constructs cloud-safe configured sources and excludes direct Work.ua HTML", () => {
+  const config = {
     rss: [{ name: "dou", url: "https://jobs.dou.ua/vacancies/feeds/?search=QA" }],
     greenhouse: [{ name: "Acme", board: "acme" }],
     lever: [{ name: "LeverCo", board: "leverco" }],
@@ -114,10 +111,15 @@ test("buildVacancySources constructs every configured source through shared adap
     workUa: [{ name: "work", query: "QA Engineer" }],
     robotaUa: [{ name: "robota", query: "QA Engineer" }],
     lobbyX: [{ name: "lobby", query: "QA Engineer" }],
-  });
+  };
+  const sources = buildVacancySources(config);
   assert.deepEqual(sources.map((source) => source.name), [
-    "rss:dou", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "workua:work", "robotaua:robota", "lobbyx:lobby",
+    "rss:dou", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
   ]);
+  assert.deepEqual(skippedCloudSources(config), [{
+    source: "workua:work",
+    reason: "Direct Work.ua HTML access is blocked from cloud-hosted runners (HTTP 403); the adapter remains available for local sync only.",
+  }]);
 });
 
 test("upsertVacancies rejects noise, inserts QA, then merges a cross-source duplicate", async () => {
@@ -190,7 +192,17 @@ test("empty configured source lists make production sync deterministic without e
   const db = new FakeD1();
   db.sourceSetting = { value_json: JSON.stringify({ rss: [], greenhouse: [], lever: [], ashby: [], workUa: [], robotaUa: [], lobbyX: [] }) };
   const result = await syncVacancySources(db);
-  assert.deepEqual(result, { seen: 0, relevant: 0, rejected: 0, duplicates: 0, inserted: 0, updated: 0, accepted: 0, errors: [] });
+  assert.deepEqual(result, { seen: 0, relevant: 0, rejected: 0, duplicates: 0, inserted: 0, updated: 0, accepted: 0, errors: [], skipped: [] });
+});
+
+test("configured Work.ua is reported as skipped rather than failing cloud sync", async () => {
+  const db = new FakeD1();
+  db.sourceSetting = { value_json: JSON.stringify({ rss: [], greenhouse: [], lever: [], ashby: [], workUa: [{ name: "work", query: "QA" }], robotaUa: [], lobbyX: [] }) };
+  const result = await syncVacancySources(db);
+  assert.equal(result.errors.length, 0);
+  assert.equal(result.skipped.length, 1);
+  assert.equal(result.skipped[0].source, "workua:work");
+  assert.match(result.skipped[0].reason, /HTTP 403/);
 });
 
 test("ensureVacancyCatalog does not resync a non-empty catalog", async () => {
