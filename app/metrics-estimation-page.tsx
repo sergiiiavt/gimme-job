@@ -2,10 +2,20 @@
 
 import metricsEstimationCatalog from "@/content/metrics-estimation/catalog";
 import LearningDocumentPage, { type StructuredLearningCurriculum } from "./learning-document-page";
+import { markdownSlug } from "./qa-markdown";
 
 const conceptCounts = new Map(metricsEstimationCatalog.taxonomy.map((topic) => [
   topic.id,
   metricsEstimationCatalog.requiredConcepts.filter((concept) => concept.topicId === topic.id).length,
+]));
+
+const usageByHeadingByTopic = new Map(metricsEstimationCatalog.taxonomy.map((topic) => [
+  topic.id,
+  Object.fromEntries(
+    metricsEstimationCatalog.requiredConcepts
+      .filter((concept) => concept.topicId === topic.id && concept.usage)
+      .map((concept) => [markdownSlug(concept.label), concept.usage!]),
+  ),
 ]));
 
 const curriculum: StructuredLearningCurriculum = {
@@ -23,6 +33,7 @@ const curriculum: StructuredLearningCurriculum = {
     markdownUk: chapter.markdownUk,
     sourceIds: chapter.sourceIds,
     count: conceptCounts.get(chapter.id),
+    usageByHeading: usageByHeadingByTopic.get(chapter.id),
   })),
   sources: metricsEstimationCatalog.sources.map((source) => ({
     id: source.id,

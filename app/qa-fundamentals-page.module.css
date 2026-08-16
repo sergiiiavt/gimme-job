@@ -115,6 +115,40 @@
   line-height: 1.78;
 }
 
+.article :global(.qa-md-usage-badge) {
+  border-radius: 20px;
+  display: inline-block;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1;
+  margin-left: 10px;
+  padding: 5px 9px;
+  position: relative;
+  top: -4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.article :global(.qa-md-usage-badge[data-usage="common"]) {
+  background: #e7f1e0;
+  border: 1px solid #bcd8ac;
+  color: #3c6b2b;
+}
+
+.article :global(.qa-md-usage-badge[data-usage="less-common"]) {
+  background: #faf1dc;
+  border: 1px solid #e9cd8f;
+  color: #8a6414;
+}
+
+.article :global(.qa-md-usage-badge[data-usage="rare"]) {
+  background: #f0f1f4;
+  border: 1px solid #d3d6de;
+  color: #545a68;
+}
+
 .article > p {
   margin: 0 0 17px;
 }
@@ -204,6 +238,8 @@
   background: #f5f7f5;
   border: 1px solid #dde3de;
   color: #33433a;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .article :global(.qa-md-table-wrap) {

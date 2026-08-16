@@ -2,7 +2,11 @@
 
 ## Scope
 
-This curriculum teaches measurement and estimation as decision-support disciplines rather than collections of magic numbers. The public path contains **8 chapters and 75 required concepts** in English and Ukrainian. Chapters 2 and 3 (QA & product quality metrics, Test execution & automation metrics) are structured as a metric-by-metric catalog: named metric, formula, worked scenario, decision — not narrative essays.
+This curriculum teaches measurement and estimation as decision-support disciplines rather than collections of magic numbers. The public path contains **8 chapters and 81 required concepts** in English and Ukrainian. Chapters 2 and 3 (QA & product quality metrics, Test execution & automation metrics) are structured as a metric-by-metric catalog: named metric, formula, worked scenario, decision — not narrative essays.
+
+Each concept can carry a `usage` tag (`common` | `less-common` | `rare`) rendered as a small badge next to its heading, driven entirely by `required-concepts.json` (see `app/qa-markdown.tsx`'s `usageByHeading` prop and `app/metrics-estimation-page.tsx`). It is a practical learning label — how often QA teams reach for something day to day — never a measured market statistic, and untagged/structural headings (Summary, Sources) never render a badge.
+
+Chapter 2 also covers KPI vs KRI and quality gates (metric → target/threshold → gate → decision, hard vs soft). Chapter 5 covers a compact QA decomposition toolkit (functional/component/test-type/platform/risk-based) alongside WBS. Chapter 6 separates Expert Judgment from Wideband Delphi and adds Bottom-Up, Top-Down and Parametric estimation, ordered common → rare. An end-to-end Checkout/payment case study (decomposition → estimate → capacity → execution → quality gate → production → calibration) lives as a collapsible block on chapter 8, via `practical-examples.en/uk.json`.
 
 ## Curriculum
 
@@ -67,4 +71,4 @@ Function points are presented as a standardized functional-size method. Test poi
 
 ## Validation
 
-`scripts/validate-metrics-estimation-content.mjs` enforces the eight-topic/75-concept structure, bilingual parity, source use, DORA current terminology, explicit formula-contract fields, scenario labelling, Scrum wording, and the no-universal-test-points conversion rule.
+`scripts/validate-metrics-estimation-content.mjs` enforces the eight-topic/81-concept structure, bilingual parity, source use, DORA current terminology, explicit formula-contract fields, scenario labelling, Scrum wording, and the no-universal-test-points conversion rule.

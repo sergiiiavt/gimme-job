@@ -22,7 +22,7 @@ const chapters = await Promise.all(Array.from({ length: 8 }, async (_, index) =>
 assert(Array.isArray(taxonomy) && taxonomy.length === 8, "taxonomy must contain exactly 8 top-level topics");
 assert(Array.isArray(chapters) && chapters.length === 8, "chapter documents must contain exactly 8 chapters");
 assert(Array.isArray(sources) && sources.length >= 14, "source registry is unexpectedly small");
-assert(Array.isArray(requiredConcepts) && requiredConcepts.length === 75, "required-concepts count must remain exactly 75");
+assert(Array.isArray(requiredConcepts) && requiredConcepts.length === 81, "required-concepts count must remain exactly 81");
 
 const unique = (items, field, label) => {
   const values = items.map((item) => item[field]);
@@ -112,4 +112,4 @@ assert(allEnglish.toLowerCase().includes("change lead time") && allEnglish.toLow
 assert(allEnglish.includes("not prescribe") && allEnglish.includes("story points"), "Scrum section must distinguish local sizing practice from Scrum requirements");
 assert(allEnglish.includes("no single universal conversion to hours"), "test-points sizing must reject a universal hours conversion");
 
-console.log("Metrics & estimation content valid: 8 topics, 75 required concepts, 14 verified sources.");
+console.log("Metrics & estimation content valid: 8 topics, 81 required concepts, 14 verified sources.");

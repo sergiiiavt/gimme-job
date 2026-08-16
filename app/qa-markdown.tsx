@@ -6,6 +6,22 @@ export interface MarkdownHeading {
   text: string;
 }
 
+export type MarkdownUsageFrequency = "common" | "less-common" | "rare";
+
+const usageBadgeLabel: Record<MarkdownUsageFrequency, string> = {
+  common: "Common",
+  "less-common": "Less common",
+  rare: "Rare",
+};
+
+function UsageBadge({ usage }: { usage: MarkdownUsageFrequency }) {
+  return (
+    <span className="qa-md-usage-badge" data-usage={usage}>
+      {usageBadgeLabel[usage]}
+    </span>
+  );
+}
+
 function plainText(value: string) {
   return value
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -98,7 +114,7 @@ function isBlockStart(lines: string[], index: number) {
     || /^<!--/.test(line);
 }
 
-export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: { headingIdOverrides?: Record<string, string>; markdown: string }) {
+export default function MarkdownDocument({ headingIdOverrides = {}, markdown, usageByHeading = {} }: { headingIdOverrides?: Record<string, string>; markdown: string; usageByHeading?: Record<string, MarkdownUsageFrequency> }) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const nodes: ReactNode[] = [];
   let index = 0;
@@ -173,9 +189,10 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: 
       const text = plainText(heading[2]);
       const id = headingIdOverrides[text] ?? (markdownSlug(heading[2]) || `section-${nodeKey}`);
       const content = parseInline(heading[2]);
+      const usage = usageByHeading[id];
       if (level === 1) nodes.push(<h1 id={id} key={`h-${nodeKey++}`}>{content}</h1>);
-      else if (level === 2) nodes.push(<h2 id={id} key={`h-${nodeKey++}`}>{content}</h2>);
-      else nodes.push(<h3 id={id} key={`h-${nodeKey++}`}>{content}</h3>);
+      else if (level === 2) nodes.push(<h2 id={id} key={`h-${nodeKey++}`}>{content}{usage && <UsageBadge usage={usage} />}</h2>);
+      else nodes.push(<h3 id={id} key={`h-${nodeKey++}`}>{content}{usage && <UsageBadge usage={usage} />}</h3>);
       index += 1;
       continue;
     }

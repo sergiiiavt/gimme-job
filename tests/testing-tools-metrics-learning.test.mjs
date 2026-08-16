@@ -40,7 +40,7 @@ test("learning taxonomies stay compact while preserving the full concept scope",
   const metricsTaxonomy = JSON.parse(await read("content/metrics-estimation/taxonomy.json"));
   const metricsConcepts = JSON.parse(await read("content/metrics-estimation/required-concepts.json"));
   assert.equal(metricsTaxonomy.length, 8);
-  assert.equal(metricsConcepts.length, 75);
+  assert.equal(metricsConcepts.length, 81);
   assert.deepEqual(metricsTaxonomy.map((topic) => topic.id), [
     "measurement-foundations",
     "qa-product-quality-metrics",
