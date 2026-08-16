@@ -47,26 +47,31 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Diagnose Sonar PR issues
+      - name: Capture Sonar PR diagnostics
         if: steps.sonar.outcome == 'failure'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: bash
         run: |
-          echo "--- Sonar unresolved PR issues ---"
+          mkdir -p sonar-diagnostic
           curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/issues/search?componentKeys=sergiiiavt_gimme-job&pullRequest=104&resolved=false&ps=100" \
-            | node -e '
-              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>{
-                const p=JSON.parse(s);
-                for (const i of p.issues ?? []) console.log(JSON.stringify({rule:i.rule,severity:i.severity,type:i.type,message:i.message,component:i.component,line:i.line,impacts:i.impacts}));
-              });'
-          echo "--- Sonar PR measures ---"
+            > sonar-diagnostic/issues.json
           curl --fail --silent --show-error --user "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/measures/component?component=sergiiiavt_gimme-job&pullRequest=104&metricKeys=new_coverage,new_reliability_rating,new_bugs" \
-            | node -e '
-              let s=""; process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.stringify(JSON.parse(s), null, 2)));'
-          exit 1
+            > sonar-diagnostic/measures.json
+
+      - name: Upload Sonar diagnostics
+        if: steps.sonar.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-pr-104-diagnostic
+          path: sonar-diagnostic
+          retention-days: 1
+
+      - name: Fail on Sonar quality gate
+        if: steps.sonar.outcome == 'failure'
+        run: exit 1
 
       - name: Deploy Worker and D1
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && steps.sonar.outcome == 'success'
