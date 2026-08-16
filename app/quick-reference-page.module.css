@@ -38,7 +38,7 @@
   border-radius: 999px;
   color: #5d6761;
   cursor: pointer;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 680;
   line-height: 1;
   min-height: 24px;
@@ -80,7 +80,7 @@
   background: transparent;
   border: 0;
   color: #27322c;
-  font-size: 10px;
+  font-size: 11px;
   min-width: 0;
   outline: 0;
   width: 100%;
@@ -113,7 +113,7 @@
 
 .cardHeader h2 {
   color: #27312b;
-  font-size: 11.25px;
+  font-size: 12.25px;
   letter-spacing: -.01em;
   line-height: 1.12;
   margin: 0;
@@ -121,7 +121,7 @@
 
 .cardHeader small {
   color: #929a95;
-  font-size: 7.5px;
+  font-size: 8.5px;
   font-weight: 760;
   letter-spacing: .055em;
   text-transform: uppercase;
@@ -151,14 +151,33 @@
 .codeList code {
   color: #234027;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 9.25px;
+  font-size: 10.25px;
   font-weight: 650;
 }
 
 .row span {
   color: #626c66;
-  font-size: 9.5px;
+  font-size: 10.5px;
   line-height: 1.28;
+}
+
+.stackedRows .row {
+  gap: 3px;
+  grid-template-columns: 1fr;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+.stackedRows .row code {
+  color: #34433a;
+  font-family: inherit;
+  font-size: 10.75px;
+  font-weight: 760;
+  line-height: 1.22;
+}
+
+.stackedRows .row span {
+  line-height: 1.32;
 }
 
 .codeItem {
@@ -170,7 +189,7 @@
 
 .codeItem span {
   color: #7b847e;
-  font-size: 8.5px;
+  font-size: 9.5px;
   line-height: 1.15;
 }
 
@@ -179,7 +198,7 @@
   border: 1px solid #ecefeb;
   border-radius: 4px;
   color: #26352b;
-  font-size: 8.9px;
+  font-size: 9.9px;
   line-height: 1.32;
   margin: 0;
   overflow-x: auto;
@@ -197,7 +216,7 @@
 
 .notes li {
   color: #59635d;
-  font-size: 9.5px;
+  font-size: 10.5px;
   line-height: 1.28;
   padding-left: 10px;
   position: relative;
@@ -216,7 +235,7 @@
 
 .placeholderBody {
   color: #939a96;
-  font-size: 9.25px;
+  font-size: 10.25px;
   line-height: 1.25;
   padding: 6px 7px 7px;
 }
@@ -226,7 +245,7 @@
   border: 1px dashed #dce2dc;
   border-radius: 6px;
   color: #7d8781;
-  font-size: 10px;
+  font-size: 11px;
   grid-column: 1 / -1;
   padding: 16px;
   text-align: center;
@@ -259,5 +278,9 @@
 
   .row {
     grid-template-columns: minmax(88px, .82fr) minmax(0, 1.3fr);
+  }
+
+  .stackedRows .row {
+    grid-template-columns: 1fr;
   }
 }
