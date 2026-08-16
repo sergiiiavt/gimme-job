@@ -20,7 +20,7 @@ const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
   actions: "https://cdn.simpleicons.org/githubactions",
   cloudflare: "https://cdn.simpleicons.org/cloudflare",
   worker: "https://cdn.simpleicons.org/cloudflareworkers",
-  openai: "https://cdn.simpleicons.org/openai",
+  openai: "https://cdn.jsdelivr.net/npm/simple-icons@15/icons/openai.svg",
   grafana: "https://cdn.simpleicons.org/grafana",
   n8n: "https://cdn.simpleicons.org/n8n",
   gmail: "https://cdn.simpleicons.org/gmail",
