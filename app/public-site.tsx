@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
+import { sectionNavigationHref } from "./navigation-paths";
 import { hiddenDeepLinkSections, navigationItems, type SecondarySwitcher, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
 const RewildGame = lazy(() => import("./rewild-game"));
@@ -504,9 +505,14 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
 
 function currentSectionFromLocation(mode: SiteMode): PublicSection {
   if (typeof window === "undefined") return mode === "personal" ? "interview" : "about";
+  const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const publicPathSection = normalizedPath.startsWith("/learn/")
+    ? normalizedPath.slice("/learn/".length).split("/")[0]
+    : null;
+  const legacyHashSection = window.location.hash.replace("#", "") || null;
   const candidate = (mode === "personal"
     ? new URLSearchParams(window.location.search).get("section")
-    : window.location.hash.replace("#", "")) as PublicSection | null;
+    : publicPathSection ?? legacyHashSection) as PublicSection | null;
   return candidate && (navigationItems.some((item) => item.id === candidate) || hiddenDeepLinkSections.includes(candidate)) ? candidate : mode === "personal" ? "interview" : "about";
 }
 
@@ -610,17 +616,21 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [automationCurriculumError, setAutomationCurriculumError] = useState(false);
 
   useEffect(() => {
-    const onHashChange = () => {
-      setSection(currentSectionFromLocation(mode));
+    const syncFromLocation = () => {
+      const nextSection = currentSectionFromLocation(mode);
+      setSection(nextSection);
       setSubsection("all");
+      if (mode === "public" && window.location.hash) {
+        window.history.replaceState(null, "", sectionNavigationHref(nextSection, "public"));
+      }
     };
-    const frame = window.requestAnimationFrame(onHashChange);
-    window.addEventListener("hashchange", onHashChange);
-    window.addEventListener("popstate", onHashChange);
+    const frame = window.requestAnimationFrame(syncFromLocation);
+    window.addEventListener("hashchange", syncFromLocation);
+    window.addEventListener("popstate", syncFromLocation);
     return () => {
       window.cancelAnimationFrame(frame);
-      window.removeEventListener("hashchange", onHashChange);
-      window.removeEventListener("popstate", onHashChange);
+      window.removeEventListener("hashchange", syncFromLocation);
+      window.removeEventListener("popstate", syncFromLocation);
     };
   }, [mode]);
 
@@ -681,15 +691,8 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [section]);
 
   const openSection = (next: PublicSection) => {
-    if (next === "jobs") {
-      window.location.assign("/workspace");
-      return;
-    }
-    setSection(next);
-    setSubsection("all");
     setMobileNav(false);
-    window.history.replaceState(null, "", mode === "personal" ? `/workspace/learn?section=${next}` : next === "about" ? window.location.pathname : `#${next}`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.location.assign(sectionNavigationHref(next, mode));
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
@@ -709,8 +712,8 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
       : undefined;
   const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
   const isFullScreenGame = section === "rewild" && subsection === "all";
-  const publicHref = section === "about" ? "/" : `/#${section}`;
-  const personalHref = section === "jobs" ? "/workspace" : `/workspace/learn?section=${section}`;
+  const publicHref = sectionNavigationHref(section, "public");
+  const personalHref = sectionNavigationHref(section, "personal");
 
   return (
     <main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>
