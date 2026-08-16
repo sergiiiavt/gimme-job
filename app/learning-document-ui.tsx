@@ -85,20 +85,23 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   );
 }
 
-export function LearningRail({ headings, language, onLanguageChange }: {
+export function LearningRail({ headings, language, languages = ["en", "uk"], onLanguageChange }: {
   headings: LearningTocHeading[];
   language: LearningLanguage;
+  languages?: LearningLanguage[];
   onLanguageChange: (language: LearningLanguage) => void;
 }) {
   return (
     <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
-      <section className={styles.language} aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-        <span>{language === "uk" ? "Мова" : "Language"}</span>
-        <div role="group" aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
-          <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => onLanguageChange("en")} type="button">EN</button>
-          <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => onLanguageChange("uk")} type="button">UA</button>
-        </div>
-      </section>
+      {languages.length > 1 && (
+        <section className={styles.language} aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
+          <span>{language === "uk" ? "Мова" : "Language"}</span>
+          <div role="group" aria-label={language === "uk" ? "Мова матеріалу" : "Material language"}>
+            {languages.includes("en") && <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => onLanguageChange("en")} type="button">EN</button>}
+            {languages.includes("uk") && <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => onLanguageChange("uk")} type="button">UA</button>}
+          </div>
+        </section>
+      )}
 
       <section className={styles.toc} aria-label={language === "uk" ? "На цій сторінці" : "On this page"}>
         <span>{language === "uk" ? "На цій сторінці" : "On this page"}</span>

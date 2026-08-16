@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
-import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
-import { SiteSidebar, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
+import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection } from "./qa-markdown";
+import { SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
@@ -13,7 +13,7 @@ interface LearningSource {
   title: string;
   url: string;
   publisher: string;
-  kind: string;
+  kind?: string;
   role: string;
 }
 
@@ -21,9 +21,16 @@ interface LearningModule {
   id: string;
   label: string;
   labelUk?: string;
+  navLabel?: string;
+  navLabelUk?: string;
   level?: string;
   description: string;
   descriptionUk?: string;
+  markdown?: string;
+  markdownUk?: string;
+  sourceIds?: string[];
+  count?: number;
+  kind?: string;
 }
 
 interface LessonRepoRef {
@@ -65,10 +72,11 @@ interface ReferenceImplementation {
 
 export interface StructuredLearningCurriculum {
   title: string;
+  titleUk?: string;
   description: string;
   taxonomy: LearningModule[];
   sources: LearningSource[];
-  lessons: LearningLesson[];
+  lessons?: LearningLesson[];
   referenceImplementation?: ReferenceImplementation;
 }
 
@@ -79,15 +87,26 @@ interface TrackOption {
   emptyState?: string;
 }
 
+interface LearningMetaContext {
+  language: LearningLanguage;
+  module: LearningModule;
+  lessonCount: number;
+  sourceCount: number;
+}
+
 interface LearningDocumentPageProps {
   mode: SiteMode;
-  section: Extract<SiteSection, "programming" | "automation">;
+  section: SiteSection | null;
+  activeExternalId?: ExternalNavigationId;
   secondaryTitle: string;
   curriculum: StructuredLearningCurriculum;
   publicHref: string;
   personalHref: string;
-  trackOptions: TrackOption[];
-  defaultTrackId: string;
+  trackOptions?: TrackOption[];
+  defaultTrackId?: string;
+  languages?: LearningLanguage[];
+  heroMeta?: (context: LearningMetaContext) => string[];
+  sourceStatusLabel?: (context: LearningMetaContext) => string;
 }
 
 const repoRefKindLabels: Record<string, string> = {
@@ -153,71 +172,89 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   return lines.join("\n");
 }
 
-export default function LearningDocumentPage({ curriculum, defaultTrackId, mode, personalHref, publicHref, secondaryTitle, section, trackOptions }: LearningDocumentPageProps) {
-  const modules = useMemo(() => curriculum.taxonomy.filter((item) => item.level), [curriculum.taxonomy]);
+export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
+  const lessons = useMemo(() => curriculum.lessons ?? [], [curriculum.lessons]);
+  const modules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
   const firstModuleId = modules[0]?.id ?? "";
+  const resolvedTrackOptions = useMemo<TrackOption[]>(
+    () => trackOptions?.length ? trackOptions : [{ id: "default", label: secondaryTitle, available: true }],
+    [secondaryTitle, trackOptions],
+  );
+  const resolvedDefaultTrackId = defaultTrackId ?? resolvedTrackOptions[0]?.id ?? "default";
+  const showTrackSwitcher = resolvedTrackOptions.length > 1;
   const [activeModule, setActiveModule] = useState(firstModuleId);
-  const [activeTrack, setActiveTrack] = useState(defaultTrackId);
-  const [language, setLanguage] = useState<LearningLanguage>("en");
+  const [activeTrack, setActiveTrack] = useState(resolvedDefaultTrackId);
+  const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
   useEffect(() => {
     const syncFromLocation = () => {
-      setActiveTrack(trackFromLocation(trackOptions.map((option) => option.id), defaultTrackId));
+      setActiveTrack(trackFromLocation(resolvedTrackOptions.map((option) => option.id), resolvedDefaultTrackId));
       setActiveModule(topicFromLocation(modules.map((item) => item.id), firstModuleId));
     };
     syncFromLocation();
     window.addEventListener("popstate", syncFromLocation);
     return () => window.removeEventListener("popstate", syncFromLocation);
-  }, [defaultTrackId, firstModuleId, modules, trackOptions]);
+  }, [firstModuleId, modules, resolvedDefaultTrackId, resolvedTrackOptions]);
 
-  const selectedTrack = trackOptions.find((option) => option.id === activeTrack) ?? trackOptions[0];
+  const selectedTrack = resolvedTrackOptions.find((option) => option.id === activeTrack) ?? resolvedTrackOptions[0];
   const trackAvailable = selectedTrack?.available !== false;
   const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
   const activeChapter = modules[moduleIndex] ?? modules[0];
   const moduleLessons = useMemo(
-    () => curriculum.lessons.filter((lesson) => lesson.moduleId === activeChapter?.id).sort((left, right) => left.order - right.order),
-    [activeChapter?.id, curriculum.lessons],
+    () => lessons.filter((lesson) => lesson.moduleId === activeChapter?.id).sort((left, right) => left.order - right.order),
+    [activeChapter?.id, lessons],
   );
   const sourcesById = useMemo(() => new Map(curriculum.sources.map((source) => [source.id, source])), [curriculum.sources]);
   const moduleSources = useMemo(() => {
-    const ids = Array.from(new Set(moduleLessons.flatMap((lesson) => lesson.sourceIds)));
+    const ids = activeChapter?.sourceIds?.length
+      ? activeChapter.sourceIds
+      : Array.from(new Set(moduleLessons.flatMap((lesson) => lesson.sourceIds)));
     return ids.map((id) => sourcesById.get(id)).filter((source): source is LearningSource => Boolean(source));
-  }, [moduleLessons, sourcesById]);
+  }, [activeChapter, moduleLessons, sourcesById]);
 
   const localizedModuleLabel = language === "uk" ? activeChapter?.labelUk ?? activeChapter?.label : activeChapter?.label;
   const localizedModuleDescription = language === "uk" ? activeChapter?.descriptionUk ?? activeChapter?.description : activeChapter?.description;
-  const generatedMarkdown = activeChapter ? [
-    `# ${localizedModuleLabel}`,
-    "",
-    localizedModuleDescription ?? "",
-    "",
-    ...moduleLessons.map((lesson) => lessonMarkdown(lesson, language, curriculum.referenceImplementation)),
-  ].join("\n") : "";
+  const rawMarkdown = language === "uk" ? activeChapter?.markdownUk ?? activeChapter?.markdown : activeChapter?.markdown;
+  const englishRawMarkdown = activeChapter?.markdown ? stripMarkdownSection(activeChapter.markdown, "sources") : "";
+  const generatedMarkdown = rawMarkdown
+    ? stripMarkdownSection(rawMarkdown, "sources")
+    : activeChapter ? [
+      `# ${localizedModuleLabel}`,
+      "",
+      localizedModuleDescription ?? "",
+      "",
+      ...moduleLessons.map((lesson) => lessonMarkdown(lesson, language, curriculum.referenceImplementation)),
+    ].join("\n") : "";
 
-  const headingIdOverrides = Object.fromEntries(moduleLessons.map((lesson) => [
+  const structuredHeadingOverrides = Object.fromEntries(moduleLessons.map((lesson) => [
     language === "uk" ? lesson.titleUk : lesson.title,
     markdownSlug(lesson.title),
   ]));
-  const headings = extractMarkdownHeadings(generatedMarkdown)
-    .filter((heading) => heading.level === 2)
-    .map((heading) => ({ ...heading, id: headingIdOverrides[heading.text] ?? heading.id }));
+  const localizedHeadings = extractMarkdownHeadings(generatedMarkdown).filter((heading) => heading.level === 2);
+  const englishRawHeadings = extractMarkdownHeadings(englishRawMarkdown).filter((heading) => heading.level === 2);
+  const rawHeadingOverrides = Object.fromEntries(localizedHeadings.map((heading, index) => [
+    heading.text,
+    englishRawHeadings[index]?.id ?? heading.id,
+  ]));
+  const headingIdOverrides = rawMarkdown ? rawHeadingOverrides : structuredHeadingOverrides;
+  const headings = localizedHeadings.map((heading) => ({ ...heading, id: headingIdOverrides[heading.text] ?? heading.id }));
 
   const moduleCounts = useMemo(() => new Map(modules.map((item) => [
     item.id,
-    curriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length,
-  ])), [curriculum.lessons, modules]);
+    item.count ?? lessons.filter((lesson) => lesson.moduleId === item.id).length,
+  ])), [lessons, modules]);
   const secondaryItems: SubnavItem[] = trackAvailable ? modules.map((item) => ({
     id: item.id,
-    label: language === "uk" ? item.labelUk ?? item.label : item.label,
-    count: moduleCounts.get(item.id),
+    label: language === "uk" ? item.navLabelUk ?? item.labelUk ?? item.navLabel ?? item.label : item.navLabel ?? item.label,
+    count: moduleCounts.get(item.id) || undefined,
   })) : [];
 
   const switcher: SecondarySwitcher = {
     activeId: activeTrack,
-    options: trackOptions.map(({ id, label }) => ({ id, label })),
+    options: resolvedTrackOptions.map(({ id, label }) => ({ id, label })),
     onSelect: (trackId) => {
-      const option = trackOptions.find((candidate) => candidate.id === trackId);
+      const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
       setActiveTrack(trackId);
       setMobileNav(false);
@@ -236,7 +273,8 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
     setMobileNav(false);
     const url = new URL(window.location.href);
     url.searchParams.set("topic", moduleId);
-    url.searchParams.set("track", activeTrack);
+    if (showTrackSwitcher) url.searchParams.set("track", activeTrack);
+    else url.searchParams.delete("track");
     window.history.pushState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -251,10 +289,27 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
   const next = moduleIndex < modules.length - 1 ? modules[moduleIndex + 1] : undefined;
   const localizedLabel = (item: LearningModule | undefined) => item ? language === "uk" ? item.labelUk ?? item.label : item.label : undefined;
+  const metaContext: LearningMetaContext = {
+    language,
+    module: activeChapter,
+    lessonCount: moduleLessons.length,
+    sourceCount: moduleSources.length,
+  };
+  const meta = heroMeta ? heroMeta(metaContext) : [
+    `${moduleLessons.length} ${language === "uk" ? "тем" : "lessons"}`,
+    `${moduleSources.length} ${language === "uk" ? "джерел" : "references"}`,
+    language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
+  ];
+  const registryStatus = sourceStatusLabel
+    ? sourceStatusLabel(metaContext)
+    : `${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`;
+  const pageTitle = language === "uk" ? curriculum.titleUk ?? curriculum.title : curriculum.title;
+  const trackSegment = showTrackSwitcher ? ` · ${selectedTrack?.label}` : "";
 
   return (
     <main className="kb-shell">
       <SiteSidebar
+        activeExternalId={activeExternalId}
         activeSection={section}
         activeSubsection={trackAvailable ? activeModule : ""}
         mobileOpen={mobileNav}
@@ -265,7 +320,7 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
         publicHref={publicHref}
         secondaryEmptyState={trackAvailable ? undefined : selectedTrack?.emptyState ?? "This learning track is under construction."}
         secondaryItems={secondaryItems}
-        secondarySwitcher={switcher}
+        secondarySwitcher={showTrackSwitcher ? switcher : undefined}
         secondaryTitle={secondaryTitle}
       />
 
@@ -284,13 +339,9 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
             <>
               <LearningHero
                 description={localizedModuleDescription ?? ""}
-                eyebrow={`${secondaryTitle} · ${selectedTrack?.label} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(moduleIndex + 1).padStart(2, "0")} / ${String(modules.length).padStart(2, "0")}`}
-                meta={[
-                  `${moduleLessons.length} ${language === "uk" ? "тем" : "lessons"}`,
-                  `${moduleSources.length} ${language === "uk" ? "джерел" : "references"}`,
-                  language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
-                ]}
-                title={curriculum.title}
+                eyebrow={`${secondaryTitle}${trackSegment} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(moduleIndex + 1).padStart(2, "0")} / ${String(modules.length).padStart(2, "0")}`}
+                meta={meta}
+                title={pageTitle}
               />
 
               <div className={styles.layout}>
@@ -303,13 +354,13 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
                     language={language}
                     sources={moduleSources.map((source) => ({
                       id: source.id,
-                      meta: source.kind.replaceAll("-", " "),
+                      meta: (source.kind ?? "reference").replaceAll("-", " "),
                       publisher: source.publisher,
                       role: source.role,
                       title: source.title,
                       url: source.url,
                     }))}
-                    statusLabel={`${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`}
+                    statusLabel={registryStatus}
                   />
 
                   <LearningPager
@@ -322,7 +373,7 @@ export default function LearningDocumentPage({ curriculum, defaultTrackId, mode,
                   />
                 </div>
 
-                <LearningRail headings={headings} language={language} onLanguageChange={setLanguage}/>
+                <LearningRail headings={headings} language={language} languages={languages} onLanguageChange={setLanguage}/>
               </div>
             </>
           )}

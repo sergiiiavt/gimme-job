@@ -1,0 +1,132 @@
+[
+  {
+    "id": "gimmejob-provision",
+    "title": "GimmeJob Hetzner provisioning implementation",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/ops/hetzner/provision.mjs",
+    "role": "Idempotent provisioning logic for the Hetzner server, firewall, Cloudflare DNS and cloud-init bootstrap.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-infra-workflow",
+    "title": "GimmeJob Hetzner n8n GitHub Actions workflow",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/.github/workflows/hetzner-n8n.yml",
+    "role": "Production trigger, secret boundary, provisioning execution and HTTPS readiness verification.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-bootstrap",
+    "title": "GimmeJob VM bootstrap script",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/ops/hetzner/bootstrap.sh",
+    "role": "Installs Docker, creates swap, generates runtime secrets and starts the production Compose stack.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-compose",
+    "title": "GimmeJob n8n production Docker Compose stack",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/ops/hetzner/docker-compose.yml",
+    "role": "Defines PostgreSQL, n8n, Caddy, persistent volumes and the private internal Docker network.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-caddy",
+    "title": "GimmeJob Caddy reverse-proxy configuration",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/ops/hetzner/Caddyfile",
+    "role": "Public HTTPS entry point in front of the private n8n service.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-ci",
+    "title": "GimmeJob CI and Cloudflare deployment workflow",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/.github/workflows/ci.yml",
+    "role": "Defines the ordered validation gates and the condition that allows production deployment.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-deploy",
+    "title": "GimmeJob Cloudflare deployment implementation",
+    "publisher": "GimmeJob repository",
+    "kind": "implementation",
+    "status": "current-production-source",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/scripts/deploy-cloudflare.mjs",
+    "role": "Validates deployment inputs, prepares D1, applies migrations, deploys the Worker and writes runtime secrets.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "gimmejob-sonar",
+    "title": "GimmeJob SonarQube Cloud project",
+    "publisher": "SonarQube Cloud",
+    "kind": "production-quality-gate",
+    "status": "live-project",
+    "url": "https://sonarcloud.io/summary/overall?id=sergiiiavt_gimme-job&branch=main",
+    "role": "Live static-analysis and Quality Gate evidence used by the CI workflow.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "github-actions-docs",
+    "title": "Workflow syntax for GitHub Actions",
+    "publisher": "GitHub Docs",
+    "kind": "official-documentation",
+    "status": "living-documentation",
+    "url": "https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions",
+    "role": "Reference for triggers, jobs, conditions, secrets, concurrency and workflow execution semantics.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "hetzner-api-docs",
+    "title": "Hetzner Cloud API documentation",
+    "publisher": "Hetzner",
+    "kind": "official-documentation",
+    "status": "living-documentation",
+    "url": "https://docs.hetzner.cloud/",
+    "role": "Reference for automating servers, firewalls and other Hetzner Cloud resources.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "docker-compose-docs",
+    "title": "Docker Compose documentation",
+    "publisher": "Docker",
+    "kind": "official-documentation",
+    "status": "living-documentation",
+    "url": "https://docs.docker.com/compose/",
+    "role": "Reference for defining and operating multi-container applications.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "cloudflare-workers-docs",
+    "title": "Cloudflare Workers documentation",
+    "publisher": "Cloudflare",
+    "kind": "official-documentation",
+    "status": "living-documentation",
+    "url": "https://developers.cloudflare.com/workers/",
+    "role": "Reference for the production serverless runtime used by the main GimmeJob application.",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "cloudflare-d1-docs",
+    "title": "Cloudflare D1 migrations documentation",
+    "publisher": "Cloudflare",
+    "kind": "official-documentation",
+    "status": "living-documentation",
+    "url": "https://developers.cloudflare.com/d1/reference/migrations/",
+    "role": "Reference for applying ordered database schema migrations before application deployment.",
+    "checkedAt": "2026-08-16"
+  }
+]

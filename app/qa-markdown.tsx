@@ -69,6 +69,10 @@ function parseInline(value: string): ReactNode[] {
   return output;
 }
 
+function parseImage(line: string) {
+  return line.match(/^!\[([^\]]*)\]\(((?:https:\/\/|\/)[^\s)]+)(?:\s+"([^"]+)")?\)$/);
+}
+
 function isTableDivider(line: string) {
   const cells = line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
   return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
@@ -88,6 +92,7 @@ function isBlockStart(lines: string[], index: number) {
     || /^[-*]\s+/.test(line)
     || /^\d+\.\s+/.test(line)
     || (/\|/.test(line) && isTableDivider(next))
+    || Boolean(parseImage(line))
     || /^<!--/.test(line);
 }
 
@@ -137,6 +142,19 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown }: 
       if (level === 1) nodes.push(<h1 id={id} key={`h-${nodeKey++}`}>{content}</h1>);
       else if (level === 2) nodes.push(<h2 id={id} key={`h-${nodeKey++}`}>{content}</h2>);
       else nodes.push(<h3 id={id} key={`h-${nodeKey++}`}>{content}</h3>);
+      index += 1;
+      continue;
+    }
+
+    const image = parseImage(line);
+    if (image) {
+      const [, alt, src, caption] = image;
+      nodes.push(
+        <figure key={`image-${nodeKey++}`} style={{ margin: "24px 0" }}>
+          <img alt={alt} loading="lazy" referrerPolicy="no-referrer" src={src} style={{ borderRadius: 10, display: "block", height: "auto", maxWidth: "100%" }}/>
+          {caption && <figcaption style={{ color: "#728078", fontSize: 11, lineHeight: 1.5, marginTop: 8 }}>{caption}</figcaption>}
+        </figure>,
+      );
       index += 1;
       continue;
     }
