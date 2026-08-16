@@ -56,9 +56,9 @@ test("auth session loader uses the no-store account endpoint", async () => {
   assert.equal(missing, null);
 });
 
-test("public routes normalize to the personal view only when authenticated", () => {
+test("canonical routes stay stable across auth state", () => {
   assert.equal(shouldNormalizeToPersonal("public", true, "/vacancies", "https://gimme-job.com/vacancies"), false);
-  assert.equal(shouldNormalizeToPersonal("public", true, "/about", "https://gimme-job.com/about"), true);
+  assert.equal(shouldNormalizeToPersonal("public", true, "/about", "https://gimme-job.com/about"), false);
   assert.equal(shouldNormalizeToPersonal("public", false, "/about", "https://gimme-job.com/about"), false);
   assert.equal(shouldNormalizeToPersonal("personal", true, "/about", "https://gimme-job.com/about"), false);
 });
