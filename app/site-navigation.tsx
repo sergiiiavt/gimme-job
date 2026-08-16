@@ -183,7 +183,7 @@ const responsiveAccountStyle = `
   .kb-floating-menu { z-index: 51 !important; }
   .kb-navigation.open { padding-top: 58px; }
   .kb-navigation.open .kb-mobile-brand { display: flex; }
-  .kb-navigation.open > .kb-sidebar > .kb-brand { display: none; }
+  .kb-navigation.open > .kb-sidebar > .kb-brand { display: none !important; }
   .kb-navigation.open > .kb-sidebar,
   .kb-navigation.open > .kb-subnav { height: auto; min-height: 0; }
 }
