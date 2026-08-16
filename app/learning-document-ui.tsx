@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import styles from "./qa-fundamentals-page.module.css";
+import uiStyles from "./learning-document-ui.module.css";
 
 export type LearningLanguage = "en" | "uk";
 
@@ -91,6 +93,50 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
   languages?: LearningLanguage[];
   onLanguageChange: (language: LearningLanguage) => void;
 }) {
+  const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? "source-registry");
+
+  useEffect(() => {
+    const trackedIds = [...headings.map((heading) => heading.id), "source-registry"];
+    let frame = 0;
+
+    const updateActiveSection = () => {
+      frame = 0;
+      const marker = Math.max(96, Math.min(180, window.innerHeight * 0.22));
+      let nextActiveId = trackedIds[0] ?? "source-registry";
+
+      for (const id of trackedIds) {
+        const element = document.getElementById(id);
+        if (!element) continue;
+
+        const rect = element.getBoundingClientRect();
+        if (rect.top <= marker) nextActiveId = id;
+        else break;
+      }
+
+      const sourceRegistry = document.getElementById("source-registry");
+      if (sourceRegistry && sourceRegistry.getBoundingClientRect().top <= window.innerHeight * 0.55) {
+        nextActiveId = "source-registry";
+      }
+
+      setActiveSectionId((current) => current === nextActiveId ? current : nextActiveId);
+    };
+
+    const scheduleUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    setActiveSectionId(headings[0]?.id ?? "source-registry");
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [headings]);
+
   return (
     <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
       {languages.length > 1 && (
@@ -106,8 +152,24 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       <section className={styles.toc} aria-label={language === "uk" ? "На цій сторінці" : "On this page"}>
         <span>{language === "uk" ? "На цій сторінці" : "On this page"}</span>
         <nav>
-          {headings.map((heading) => <a href={`#${heading.id}`} key={heading.id}>{heading.text}</a>)}
-          <a className={styles.sourceLink} href="#source-registry">
+          {headings.map((heading) => {
+            const isActive = activeSectionId === heading.id;
+            return (
+              <a
+                aria-current={isActive ? "location" : undefined}
+                className={isActive ? uiStyles.activeTocLink : undefined}
+                href={`#${heading.id}`}
+                key={heading.id}
+              >
+                {heading.text}
+              </a>
+            );
+          })}
+          <a
+            aria-current={activeSectionId === "source-registry" ? "location" : undefined}
+            className={`${styles.sourceLink} ${activeSectionId === "source-registry" ? uiStyles.activeTocLink : ""}`}
+            href="#source-registry"
+          >
             <small>{language === "uk" ? "Джерела" : "References"}</small>
             {language === "uk" ? "Реєстр джерел" : "Source registry"}
           </a>
