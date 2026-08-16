@@ -28,8 +28,8 @@ type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
 export const navigationIntroItem: SectionNavigationItem = {
   id: "about",
   label: "About this site",
-  publicHref: "/",
-  personalHref: "/",
+  publicHref: "/learn#about",
+  personalHref: "/learn#about",
 };
 
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
@@ -180,7 +180,7 @@ function GimmeJobMark() {
   );
 }
 
-export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: NavigationItem, intro = false) => {
     if (item.external) {
       return (
@@ -194,24 +194,12 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
       );
     }
 
-    if (item.publicHref && item.personalHref) {
-      return (
-        <Link
-          className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`}
-          href={mode === "public" ? item.publicHref : item.personalHref}
-          key={item.id}
-        >
-          {item.label}
-        </Link>
-      );
-    }
+    const href = item.publicHref && item.personalHref
+      ? mode === "public" ? item.publicHref : item.personalHref
+      : sectionNavigationHref(item.id, mode);
 
-    return onSelect ? (
-      <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
-        {item.label}
-      </button>
-    ) : (
-      <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={sectionNavigationHref(item.id, mode)} key={item.id}>
+    return (
+      <Link className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} href={href} key={item.id}>
         {item.label}
       </Link>
     );
@@ -220,7 +208,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
-        <Link aria-label="GimmeJob — About this site" className="kb-brand" href={mode === "public" ? navigationIntroItem.publicHref ?? "/" : navigationIntroItem.personalHref ?? "/"} style={brandLinkStyle}>
+        <Link aria-label="GimmeJob — About this site" className="kb-brand" href={mode === "public" ? navigationIntroItem.publicHref ?? "/learn#about" : navigationIntroItem.personalHref ?? "/learn#about"} style={brandLinkStyle}>
           <GimmeJobMark/>
           <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
         </Link>
