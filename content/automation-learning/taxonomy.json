@@ -2,83 +2,111 @@
   {
     "id": "all",
     "label": "All lessons",
-    "description": "The complete test automation path: first fixture to automation strategy."
+    "labelUk": "Усі уроки",
+    "description": "The complete test automation path: first fixture to automation strategy.",
+    "descriptionUk": "Повний шлях з автоматизації тестування: від першої fixture до automation strategy."
   },
   {
     "id": "automation-foundations",
     "label": "Foundations & choosing a layer",
+    "labelUk": "Основи та вибір рівня",
     "level": "Beginner",
-    "description": "What automation is for, the layers available, and deciding what to automate at all."
+    "description": "What automation is for, the layers available, and deciding what to automate at all.",
+    "descriptionUk": "Навіщо потрібна автоматизація, які рівні доступні та як вирішувати, що взагалі варто автоматизувати."
   },
   {
     "id": "pytest-core",
     "label": "pytest core: fixtures, scope & markers",
+    "labelUk": "pytest core: fixtures, scope і markers",
     "level": "Beginner",
-    "description": "Fixtures, scope, parametrize, markers, skip versus xfail, and the flags worth knowing."
+    "description": "Fixtures, scope, parametrize, markers, skip versus xfail, and the flags worth knowing.",
+    "descriptionUk": "Fixtures, scope, parametrize, markers, skip проти xfail і корисні pytest flags."
   },
   {
     "id": "project-setup",
     "label": "Project setup & configuration",
+    "labelUk": "Налаштування та конфігурація проєкту",
     "level": "Beginner",
-    "description": "Layout, typed settings, environment layering and a run configuration the whole team shares."
+    "description": "Layout, typed settings, environment layering and a run configuration the whole team shares.",
+    "descriptionUk": "Структура, typed settings, шари environment і спільна для команди run configuration."
   },
   {
     "id": "framework-architecture",
     "label": "Framework architecture",
+    "labelUk": "Архітектура framework",
     "level": "Intermediate",
-    "description": "Layer boundaries, page and service objects, components, naming and the Arrange-Act-Assert shape."
+    "description": "Layer boundaries, page and service objects, components, naming and the Arrange-Act-Assert shape.",
+    "descriptionUk": "Межі шарів, page і service objects, components, naming та структура Arrange-Act-Assert."
   },
   {
     "id": "api-testing",
     "label": "Service & API testing",
+    "labelUk": "Service та API testing",
     "level": "Intermediate",
-    "description": "An instrumented HTTP client, service objects, response validation and a repeatable test-design checklist."
+    "description": "An instrumented HTTP client, service objects, response validation and a repeatable test-design checklist.",
+    "descriptionUk": "Інструментований HTTP client, service objects, response validation і повторюваний test-design checklist."
   },
   {
     "id": "web-ui-testing",
     "label": "Web UI with Playwright",
+    "labelUk": "Web UI з Playwright",
     "level": "Intermediate",
-    "description": "Auto-waiting, locator strategy, page objects, reusing signed-in state and network fault injection."
+    "description": "Auto-waiting, locator strategy, page objects, reusing signed-in state and network fault injection.",
+    "descriptionUk": "Auto-waiting, locator strategy, page objects, повторне використання signed-in state і network fault injection."
   },
   {
     "id": "mobile-testing",
     "label": "Mobile: emulated & real devices",
+    "labelUk": "Mobile: emulated та real devices",
     "level": "Advanced",
-    "description": "Mobile web versus native, Appium sessions and locators, gestures and device-only scenarios."
+    "description": "Mobile web versus native, Appium sessions and locators, gestures and device-only scenarios.",
+    "descriptionUk": "Mobile web проти native, Appium sessions і locators, gestures та device-only scenarios."
   },
   {
     "id": "test-data",
     "label": "Test data & isolation",
+    "labelUk": "Test data та ізоляція",
     "level": "Advanced",
-    "description": "Building data per test, uniqueness under parallel runs, factories, personas and cleanup."
+    "description": "Building data per test, uniqueness under parallel runs, factories, personas and cleanup.",
+    "descriptionUk": "Створення data для кожного test, uniqueness у parallel runs, factories, personas і cleanup."
   },
   {
     "id": "flakiness",
     "label": "Flakiness: diagnosis & cure",
+    "labelUk": "Flakiness: діагностика та усунення",
     "level": "Advanced",
-    "description": "The root causes of non-deterministic tests, how to diagnose each, and how to run a quarantine."
+    "description": "The root causes of non-deterministic tests, how to diagnose each, and how to run a quarantine.",
+    "descriptionUk": "Root causes недетермінованих tests, діагностика кожної причини та організація quarantine."
   },
   {
     "id": "ci-and-reporting",
     "label": "CI, parallelism & reporting",
+    "labelUk": "CI, parallelism та reporting",
     "level": "Advanced",
-    "description": "Pipeline shape, parallel execution, artifacts that explain failures, and gates people trust."
+    "description": "Pipeline shape, parallel execution, artifacts that explain failures, and gates people trust.",
+    "descriptionUk": "Структура pipeline, parallel execution, artifacts для пояснення failures і надійні quality gates."
   },
   {
     "id": "contract-and-property",
     "label": "Contract & property-based testing",
+    "labelUk": "Contract та property-based testing",
     "level": "Expert",
-    "description": "Generating tests from a schema, stating invariants, and triaging what generated tools report."
+    "description": "Generating tests from a schema, stating invariants, and triaging what generated tools report.",
+    "descriptionUk": "Генерація tests зі schema, формулювання invariants і triage результатів generated tools."
   },
   {
     "id": "quality-strategy",
     "label": "Strategy, metrics & influence",
+    "labelUk": "Стратегія, метрики та вплив",
     "level": "Expert",
-    "description": "Risk-based prioritisation, metrics that survive scrutiny, and building a programme from zero."
+    "description": "Risk-based prioritisation, metrics that survive scrutiny, and building a programme from zero.",
+    "descriptionUk": "Risk-based prioritisation, змістовні metrics і побудова automation programme з нуля."
   },
   {
     "id": "methodology",
     "label": "Sources & methodology",
-    "description": "How these lessons are written and validated, and the source catalog behind them."
+    "labelUk": "Джерела та методологія",
+    "description": "How these lessons are written and validated, and the source catalog behind them.",
+    "descriptionUk": "Як написані й перевірені ці уроки та які джерела лежать в їх основі."
   }
 ]
