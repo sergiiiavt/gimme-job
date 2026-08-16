@@ -37,7 +37,6 @@ jobs:
         run: npm run verify
 
       - name: SonarQube Cloud scan
-        id: sonar
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         with:
           args: >
@@ -47,7 +46,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Deploy Worker and D1
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && steps.sonar.outcome == 'success'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -70,3 +69,26 @@ jobs:
             exit 0
           fi
           node scripts/deploy-cloudflare.mjs
+
+      - name: Verify production learning routes
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          check_route() {
+            local url="$1"
+            local marker="$2"
+            local body=""
+            for attempt in {1..10}; do
+              if body="$(curl --fail --silent --show-error --location --max-time 20 "$url")" && grep -Eq "$marker" <<<"$body"; then
+                echo "Verified $url"
+                return 0
+              fi
+              echo "Waiting for production route $url (attempt $attempt/10)..."
+              sleep 3
+            done
+            echo "::error::Production route failed verification: $url"
+            return 1
+          }
+
+          check_route "https://gimmejob.gimmejob.workers.dev/learn/testing-tools" 'Testing (&amp;|&) Diagnostic Tools'
+          check_route "https://gimmejob.gimmejob.workers.dev/learn/metrics-estimation" 'QA Metrics (&amp;|&) Estimation'
