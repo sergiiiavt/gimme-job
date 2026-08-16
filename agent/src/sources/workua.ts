@@ -1,26 +1,26 @@
 import type { JobInput } from "../domain.js";
 import {
+  htmlToVacancyText,
+  normalizeVacancyDescription,
+} from "../vacancy-content.js";
+import {
   canonicalizeUrl,
   decodeHtmlEntities,
   inferRoleTitle,
   isRemoteText,
-  stripHtml,
 } from "../utils.js";
 import { fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const BASE_URL = "https://www.work.ua";
-const MAX_DETAIL_FETCHES = 30;
+const MAX_DETAIL_FETCHES = 40;
 
-// The search-results page only ever shows a truncated teaser paragraph (ending "…").
-// The full description lives on the job's own page, inside <div id="job-description">.
-// Nested <div>s rule out a flat regex, hence the depth-aware scan.
 function extractDivById(html: string, id: string): string {
-  const openMatch = new RegExp(`<div[^>]*\\bid="${id}"[^>]*>`).exec(html);
+  const openMatch = new RegExp(`<div[^>]*\\bid=["']${id}["'][^>]*>`, "i").exec(html);
   if (!openMatch) return "";
   let depth = 1;
   const cursor = openMatch.index + openMatch[0].length;
-  const tagPattern = /<div\b[^>]*>|<\/div>/g;
+  const tagPattern = /<div\b[^>]*>|<\/div>/gi;
   tagPattern.lastIndex = cursor;
   let match: RegExpExecArray | null;
   while ((match = tagPattern.exec(html))) {
@@ -30,13 +30,10 @@ function extractDivById(html: string, id: string): string {
   return html.slice(cursor);
 }
 
-// work.ua job cards vary in structure (salary badges, verified-company markers,
-// work-format tags), so company/location are recovered independently from every
-// "strong-600"/empty-class leaf span in the card rather than one rigid shape.
 const CARD_PATTERN =
-  /href="(\/[a-z]{2}\/jobs\/\d+\/)"[^>]*>([^<]*)<\/a>\s*<\/h2>([\s\S]{0,2500}?)<p class="ellipsis[^"]*"[^>]*>([\s\S]*?)<\/p>/g;
-const STRONG_SPAN_PATTERN = /<span class="strong-600">([^<]*)<\/span>/g;
-const PLAIN_SPAN_PATTERN = /<span class="">([^<]*)<\/span>/g;
+  /href=["'](\/[a-z]{2}\/jobs\/\d+\/)["'][^>]*>([^<]*)<\/a>\s*<\/h2>([\s\S]{0,3000}?)<p class=["']ellipsis[^"']*["'][^>]*>([\s\S]*?)<\/p>/g;
+const STRONG_SPAN_PATTERN = /<span class=["']strong-600["']>([^<]*)<\/span>/g;
+const PLAIN_SPAN_PATTERN = /<span class=["']["']>([^<]*)<\/span>/g;
 
 function extractCompany(meta: string): string {
   const candidates = [...meta.matchAll(STRONG_SPAN_PATTERN)].map((match) =>
@@ -74,10 +71,15 @@ export function parseWorkUaListing(html: string, baseUrl = BASE_URL): WorkUaList
       title: inferRoleTitle(title),
       company: extractCompany(meta ?? ""),
       location: extractLocation(meta ?? ""),
-      description: stripHtml(rawDescription ?? ""),
+      description: normalizeVacancyDescription(htmlToVacancyText(rawDescription ?? "")),
     });
   }
   return listings;
+}
+
+export function parseWorkUaDescription(html: string): string {
+  const body = extractDivById(html, "job-description");
+  return normalizeVacancyDescription(htmlToVacancyText(body));
 }
 
 export class WorkUaSource implements JobSource {
@@ -99,10 +101,11 @@ export class WorkUaSource implements JobSource {
       let description = listing.description;
       if (index < MAX_DETAIL_FETCHES) {
         try {
-          const detailHtml = await fetchText(listing.url);
-          const full = stripHtml(extractDivById(detailHtml, "job-description"));
-          if (full) description = full;
-        } catch { /* keep the search-snippet description if the detail page fetch fails */ }
+          const full = parseWorkUaDescription(await fetchText(listing.url));
+          if (full.length > description.length) description = full;
+        } catch {
+          // Keep the search teaser if the detail page is temporarily unavailable.
+        }
       }
 
       const combined = `${listing.title}\n${description}\n${listing.location}`;
