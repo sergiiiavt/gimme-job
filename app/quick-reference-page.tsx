@@ -6,13 +6,14 @@ import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
 import pythonCurriculum from "@/content/python-learning/catalog";
 import pythonQuickReference from "@/content/python-learning/quick-reference.json";
+import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
 import pythonTaxonomy from "@/content/python-learning/taxonomy.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
 import { navigationGroups, SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./quick-reference-page.module.css";
 
-type ReferenceRow = { term: string; detail: string };
+type ReferenceRow = { term: string; detail: string; meaning?: string };
 type ReferenceCode = { label: string; code: string };
 type ReferenceCard = {
   id: string;
@@ -20,6 +21,7 @@ type ReferenceCard = {
   scope?: string;
   tags?: string[];
   meta?: string;
+  summary?: string;
   rows?: ReferenceRow[];
   moreRows?: ReferenceRow[];
   code?: ReferenceCode[];
@@ -39,18 +41,54 @@ type PythonReferenceCatalog = {
     more: ReferenceRow[];
   }>;
 };
+type PythonReferenceGuidance = {
+  summaries: Record<string, string>;
+  explanations: Record<string, Record<string, string>>;
+  theoryCards: Array<{
+    after: string;
+    id: string;
+    title: string;
+    tags: string[];
+    summary: string;
+    entries: ReferenceRow[];
+    more: ReferenceRow[];
+  }>;
+};
 
 const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops"]);
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
-const pythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.map((card) => ({
-  id: `python-${card.id}`,
-  title: card.title,
-  tags: card.tags,
-  meta: `${card.entries.length + card.more.length} refs`,
-  rows: card.entries,
-  moreRows: card.more,
-  searchTerms: card.tags,
-}));
+const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
+
+function guidedRows(cardId: string, rows: ReferenceRow[]) {
+  const explanations = pythonReferenceGuidanceCatalog.explanations[cardId] ?? {};
+  return rows.map((row) => ({ ...row, meaning: row.meaning ?? explanations[row.term] }));
+}
+
+const pythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
+  const primaryCard: ReferenceCard = {
+    id: `python-${card.id}`,
+    title: card.title,
+    tags: card.tags,
+    meta: `${card.entries.length + card.more.length} refs`,
+    summary: pythonReferenceGuidanceCatalog.summaries[card.id],
+    rows: guidedRows(card.id, card.entries),
+    moreRows: guidedRows(card.id, card.more),
+    searchTerms: card.tags,
+  };
+  const theoryCards = pythonReferenceGuidanceCatalog.theoryCards
+    .filter((theoryCard) => theoryCard.after === card.id)
+    .map((theoryCard): ReferenceCard => ({
+      id: `python-${theoryCard.id}`,
+      title: theoryCard.title,
+      tags: theoryCard.tags,
+      meta: `${theoryCard.entries.length + theoryCard.more.length} refs · theory`,
+      summary: theoryCard.summary,
+      rows: theoryCard.entries,
+      moreRows: theoryCard.more,
+      searchTerms: [...theoryCard.tags, "theory", "concept", "mental model"],
+    }));
+  return [primaryCard, ...theoryCards];
+});
 
 const referenceBlueprints: Record<string, string[]> = {
   "qa-fundamentals": ["Testing levels", "Test design", "Defects & evidence", "Risk & release"],
@@ -75,9 +113,10 @@ function searchableCardText(card: ReferenceCard) {
     card.title,
     card.scope ?? "",
     card.meta ?? "",
+    card.summary ?? "",
     ...(card.tags ?? []),
-    ...(card.rows ?? []).flatMap((row) => [row.term, row.detail]),
-    ...(card.moreRows ?? []).flatMap((row) => [row.term, row.detail]),
+    ...(card.rows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
+    ...(card.moreRows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
     ...(card.code ?? []).flatMap((item) => [item.label, item.code]),
     ...(card.notes ?? []),
     ...(card.searchTerms ?? []),
@@ -147,6 +186,22 @@ function learningSwitcher(referenceId: string): SecondarySwitcher | undefined {
     };
   }
   return undefined;
+}
+
+function ReferenceRows({ cardId, rows, className = "" }: { cardId: string; rows: ReferenceRow[]; className?: string }) {
+  return (
+    <div className={`${styles.rows}${className ? ` ${className}` : ""}`}>
+      {rows.map((row, index) => (
+        <div className={`${styles.row}${row.meaning ? ` ${styles.explainedRow}` : ""}`} key={`${cardId}-row-${index}`}>
+          <code>{row.term}</code>
+          <span className={styles.rowContent}>
+            {row.meaning ? <span className={styles.rowMeaning}>{row.meaning}</span> : null}
+            <span className={styles.rowExample}>{row.detail}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function QuickReferencePage({ referenceId }: { referenceId: string }) {
@@ -235,8 +290,9 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
                     </div>
                     {card.meta || card.scope ? <small>{card.meta ?? card.scope}</small> : null}
                   </header>
-                  {card.rows?.length ? <div className={`${styles.rows}${card.stackedRows ? ` ${styles.stackedRows}` : ""}`}>{card.rows.map((row, index) => <div className={styles.row} key={`${card.id}-row-${index}`}><code>{row.term}</code><span>{row.detail}</span></div>)}</div> : null}
-                  {showMoreRows && card.moreRows?.length ? <div className={`${styles.rows} ${styles.moreRows}`}>{card.moreRows.map((row, index) => <div className={styles.row} key={`${card.id}-more-${index}`}><code>{row.term}</code><span>{row.detail}</span></div>)}</div> : null}
+                  {card.summary ? <p className={styles.cardSummary}>{card.summary}</p> : null}
+                  {card.rows?.length ? <ReferenceRows cardId={card.id} className={card.stackedRows ? styles.stackedRows : ""} rows={card.rows}/> : null}
+                  {showMoreRows && card.moreRows?.length ? <ReferenceRows cardId={`${card.id}-more`} className={styles.moreRows} rows={card.moreRows}/> : null}
                   {!normalizedQuery && card.moreRows?.length ? <button aria-expanded={expanded} className={styles.moreButton} onClick={() => toggleCard(card.id)} type="button">{expanded ? "Less" : `More · ${card.moreRows.length}`}</button> : null}
                   {card.code?.length ? <div className={styles.codeList}>{card.code.map((item, index) => <div className={styles.codeItem} key={`${card.id}-code-${index}`}><span>{item.label}</span><pre><code>{item.code}</code></pre></div>)}</div> : null}
                   {card.notes?.length ? <ul className={styles.notes}>{card.notes.map((note, index) => <li key={`${card.id}-note-${index}`}>{note}</li>)}</ul> : null}
