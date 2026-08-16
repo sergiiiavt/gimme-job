@@ -110,6 +110,9 @@ async function writeDeployConfig(id, multiUserEnabled = false) {
   deployConfig.vars = {
     ...(deployConfig.vars && typeof deployConfig.vars === "object" ? deployConfig.vars : {}),
     MULTI_USER_ENABLED: multiUserEnabled ? "true" : "false",
+    EMAIL_AI_ENABLED: optionalEnvironment("EMAIL_AI_ENABLED") || "true",
+    EMAIL_AI_DAILY_USER_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50",
+    EMAIL_AI_DAILY_GLOBAL_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500",
   };
   deployConfig.d1_databases = [{
     binding: "DB",
@@ -212,7 +215,7 @@ async function main() {
       console.log("Importing the current DOU job feed...");
       await importCurrentJobs(appPassword);
     }
-    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}.`);
+    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await rm(generatedConfigPath, { force: true });
   }
