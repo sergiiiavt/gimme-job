@@ -1198,6 +1198,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kb-subnav-switch button { background: #fff; border: 1px solid #d8dfd8; border-radius: 6px; color: #536159; cursor: pointer; flex: 1; font-size: 11px; font-weight: 750; min-height: 34px; padding: 0 10px; }
 .kb-subnav-switch button:hover { border-color: #aebbb2; color: #26372e; }
 .kb-subnav-switch button.active { background: #dfead9; border-color: #afc3a5; color: #284d37; }
+.kb-construction-badge { align-items: center; background: var(--amber-soft); border: 1px solid #ead7a5; border-radius: 999px; color: var(--amber); display: inline-flex; flex: 0 0 auto; font-size: 7px; font-style: normal; font-weight: 850; letter-spacing: .04em; line-height: 1; padding: 4px 6px; text-transform: uppercase; white-space: nowrap; }
+.kb-subnav nav button .kb-construction-badge { font-size: 6px; padding: 3px 5px; }
+.kb-subnav-empty { border: 1px dashed #d8dfd8; border-radius: 8px; margin-top: 4px; padding: 14px 10px; }
+.kb-subnav-empty strong { color: #58655e; display: block; font-size: 11px; line-height: 1.4; margin-top: 8px; }
+.kb-under-construction-page { background: #fff; border: 1px dashed #d9dfd9; border-radius: 12px; margin-top: 24px; max-width: 720px; padding: 34px; }
+.kb-under-construction-page h1 { font-size: 28px; letter-spacing: -.04em; margin: 14px 0 8px; }
+.kb-under-construction-page p { color: var(--muted); line-height: 1.6; margin: 0; max-width: 560px; }
+.kb-topic-grid article > div small.kb-construction-badge { background: var(--amber-soft); border: 1px solid #ead7a5; color: var(--amber); font-size: 7px; padding: 4px 6px; }
 
 @media (max-width: 700px) {
   .py-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

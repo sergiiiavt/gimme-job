@@ -60,6 +60,7 @@ export interface SubnavItem {
   id: string;
   label: string;
   count?: number;
+  status?: "under-construction";
 }
 
 export interface SecondarySwitcher {
@@ -77,6 +78,7 @@ interface SidebarProps {
   /** Retained temporarily for caller compatibility; public/personal is no longer a user-selectable view. */
   publicHref?: string;
   secondaryTitle: string;
+  secondaryEmptyState?: string;
   secondaryItems: SubnavItem[];
   secondarySwitcher?: SecondarySwitcher;
   activeSubsection: string;
@@ -84,7 +86,7 @@ interface SidebarProps {
   onSelectSubsection: (subsection: string) => void;
 }
 
-export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: { id: SiteSection; label: string }, intro = false) => onSelect ? (
     <button className={`${intro ? "kb-nav-intro " : ""}kb-nav-link${activeSection === item.id ? " active" : ""}`} key={item.id} onClick={() => onSelect(item.id)}>
       {item.label}
@@ -127,13 +129,21 @@ export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = f
             ))}
           </div>
         )}
+        {secondaryEmptyState ? (
+        <div className="kb-subnav-empty" aria-live="polite">
+          <span className="kb-construction-badge">Under construction</span>
+          <strong>{secondaryEmptyState}</strong>
+        </div>
+      ) : (
         <nav aria-label={`${secondaryTitle} subsections`}>
           {secondaryItems.map((item) => (
             <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
-              <span>{item.label}</span>{typeof item.count === "number" && <small>{item.count}</small>}
+              <span>{item.label}</span>
+              {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
             </button>
           ))}
         </nav>
+      )}
       </aside>}
     </div>
   );
