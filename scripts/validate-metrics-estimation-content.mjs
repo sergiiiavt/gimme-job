@@ -44,7 +44,7 @@ assert(taxonomy.every((topic) => chapterIds.has(topic.id)), "every taxonomy topi
 
 for (const source of sources) {
   assert(typeof source.title === "string" && source.title.length > 6, `source ${source.id} needs a useful title`);
-  assert(/^https:\/\//.test(source.url), `source ${source.id} must use HTTPS`);
+  assert(source.url.startsWith("https://"), `source ${source.id} must use HTTPS`);
   assert(source.checkedAt === "2026-08-16", `source ${source.id} must record the current review date`);
   assert(source.status === "verified", `source ${source.id} must be verified`);
   assert(typeof source.role === "string" && source.role.length > 12, `source ${source.id} needs a concrete role`);
@@ -87,9 +87,12 @@ for (const topic of taxonomy) {
   assert(ukHeadings.length === topicConcepts.length + 2, `${topic.id} Ukrainian H2 count must match concepts + Summary/Sources`);
 
   for (const markdown of [english, ukrainian]) {
-    const marker = markdown.match(/<!--\s*concepts:\s*([^>]+?)\s*-->/i);
-    assert(marker, `${topic.id} needs a concepts coverage marker in both languages`);
-    const documented = marker[1].split(",").map((value) => value.trim()).filter(Boolean);
+    const markerPrefix = "<!-- concepts:";
+    const markerStart = markdown.indexOf(markerPrefix);
+    assert(markerStart >= 0, `${topic.id} needs a concepts coverage marker in both languages`);
+    const markerEnd = markdown.indexOf("-->", markerStart + markerPrefix.length);
+    assert(markerEnd > markerStart, `${topic.id} needs a closed concepts coverage marker`);
+    const documented = markdown.slice(markerStart + markerPrefix.length, markerEnd).trim().split(",").map((value) => value.trim()).filter(Boolean);
     const expected = topicConcepts.map((concept) => concept.id);
     assert(JSON.stringify(documented) === JSON.stringify(expected), `${topic.id} concepts marker must match registry order`);
   }
@@ -98,7 +101,6 @@ for (const topic of taxonomy) {
 for (const source of sources) {
   assert(citedSources.has(source.id), `source ${source.id} is registered but unused`);
 }
-
 
 const allEnglish = chapters.map((chapter) => chapter.markdown).join("\n");
 for (const token of ["numerator:", "denominator:", "scope:", "window:", "target:", "owner:", "decision:"]) {
@@ -109,6 +111,5 @@ assert(allEnglish.toLowerCase().includes("deployment rework rate"), "DORA chapte
 assert(allEnglish.toLowerCase().includes("change lead time") && allEnglish.toLowerCase().includes("failed deployment recovery time"), "DORA chapter must use current terminology");
 assert(allEnglish.includes("not prescribe") && allEnglish.includes("story points"), "Scrum section must distinguish local sizing practice from Scrum requirements");
 assert(allEnglish.includes("no single universal conversion to hours"), "test-points sizing must reject a universal hours conversion");
-
 
 console.log("Metrics & estimation content valid: 8 topics, 68 required concepts, 14 verified sources.");
