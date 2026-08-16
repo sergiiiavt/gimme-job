@@ -42,6 +42,41 @@ test("relevance accepts explicit software QA roles", () => {
   assert.equal(classifyJobRelevance(job({ title: "Тестувальник ПЗ" })).accepted, true);
 });
 
+test("relevance keeps QA leadership and management roles", () => {
+  const titles = [
+    "QA Lead",
+    "Lead QA",
+    "QA Team Lead",
+    "QA Manager",
+    "Test Lead",
+    "Test Manager",
+    "Head of QA",
+    "QA Head",
+    "Head of Quality Assurance",
+    "Head of Testing",
+    "QA Director",
+    "Director of QA",
+    "Director of Quality Assurance",
+    "Керівник відділу тестування",
+    "Руководитель отдела тестирования",
+  ];
+
+  for (const title of titles) {
+    const decision = classifyJobRelevance(job({ title }));
+    assert.equal(decision.accepted, true, `${title} should be accepted`);
+    assert.equal(decision.reason, "explicit_software_qa_role", `${title} should be explicit QA`);
+  }
+});
+
+test("leadership wording does not override explicit non-software testing", () => {
+  const decision = classifyJobRelevance(job({
+    title: "Electronics Test Manager",
+    description: "Manage laboratory hardware benches and electronics manufacturing validation.",
+  }));
+  assert.equal(decision.accepted, false);
+  assert.equal(decision.reason, "non_software_testing_role");
+});
+
 test("relevance rejects non-software tester noise", () => {
   const decision = classifyJobRelevance(job({
     title: "Тестувальник косметики",
