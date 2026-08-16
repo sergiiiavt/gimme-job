@@ -57,6 +57,7 @@ export async function POST(request: Request): Promise<Response> {
       inserted: result.inserted,
       updated: result.updated,
       sourceErrors: result.errors.length,
+      skippedSources: result.skipped.map((entry) => entry.source),
     });
     return json({ ok: true, result });
   } catch (error) {
