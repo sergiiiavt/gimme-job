@@ -261,6 +261,7 @@ export async function loadForwardingAddress(fetcher: SessionFetcher = fetch): Pr
 export function shouldNormalizeToPersonal(mode: AuthViewMode, authenticated: boolean, personalHref: string, currentHref: string): boolean {
   if (!authenticated || mode !== "public") return false;
   const target = new URL(personalHref, "https://gimmejob.invalid");
+  if (target.pathname === "/workspace/learn" && target.searchParams.get("section") === "about") return false;
   const current = new URL(currentHref, "https://gimmejob.invalid");
   return `${target.pathname}${target.search}` !== `${current.pathname}${current.search}`;
 }

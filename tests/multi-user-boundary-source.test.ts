@@ -113,6 +113,16 @@ test("private routes reject spoofed tenant identity without a session", async ()
   assert.equal(calls.length, 0);
 });
 
+test("legacy private About URL redirects to the public About page before auth", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+  const response = await boundary.fetch(new Request("https://example.com/workspace/learn?section=about"), env, undefined);
+  assert.equal(response.status, 308);
+  assert.equal(response.headers.get("location"), "/");
+  assert.equal(calls.length, 0);
+});
+
 test("a D1 session replaces attacker headers with trusted tenant identity", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);

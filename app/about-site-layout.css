@@ -136,6 +136,15 @@
   margin-top: 5px;
 }
 
+.about-tech-brand-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: block;
+  height: 1em;
+  width: 1em;
+}
+
 .about-tech-node-links {
   gap: 5px;
   margin-top: 7px;
@@ -234,6 +243,25 @@
 
 .about-tech-deployment-flow > .about-tech-node:last-child {
   max-width: 390px;
+}
+
+/* The Hetzner runtime owns a four-item child grid. Keep those children inside
+   the runtime card instead of letting their intrinsic widths overflow it. */
+.about-tech-deployment-flow > .about-tech-runtime-node {
+  max-width: 390px;
+  width: 390px;
+}
+
+.about-tech-runtime-node .about-tech-node-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.about-tech-runtime-node .about-tech-node-grid > .about-tech-mini-node {
+  max-width: none;
+  min-width: 0;
+  width: 100%;
 }
 
 .about-tech-database-flow > .about-tech-node,
@@ -346,7 +374,8 @@
 
   .about-tech-node-grid,
   .about-tech-data-grid,
-  .about-tech-output-grid {
+  .about-tech-output-grid,
+  .about-tech-runtime-node .about-tech-node-grid {
     grid-template-columns: 1fr;
   }
 }

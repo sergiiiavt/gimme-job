@@ -61,7 +61,8 @@ test("auth session loader uses the no-store account endpoint", async () => {
 
 test("public routes normalize to the private equivalent only when authenticated", () => {
   assert.equal(shouldNormalizeToPersonal("public", true, "/workspace", "https://gimme-job.com/workspace"), false);
-  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace/learn?section=about", "https://gimme-job.com/"), true);
+  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
+  assert.equal(shouldNormalizeToPersonal("public", true, "/workspace/learn?section=interview", "https://gimme-job.com/#interview"), true);
   assert.equal(shouldNormalizeToPersonal("public", false, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
   assert.equal(shouldNormalizeToPersonal("personal", true, "/workspace/learn?section=about", "https://gimme-job.com/"), false);
 });

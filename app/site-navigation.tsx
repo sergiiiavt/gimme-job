@@ -24,7 +24,12 @@ interface ExternalNavigationItem {
 
 type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
 
-export const navigationIntroItem: SectionNavigationItem = { id: "about", label: "About this site" };
+export const navigationIntroItem: SectionNavigationItem = {
+  id: "about",
+  label: "About this site",
+  publicHref: "/",
+  personalHref: "/",
+};
 
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
 export const hiddenDeepLinkSections: SiteSection[] = ["python-interview"];

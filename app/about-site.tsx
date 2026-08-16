@@ -15,7 +15,32 @@ import {
   type AboutAccent,
 } from "./about-site-content";
 
+const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
+  github: "https://cdn.simpleicons.org/github",
+  actions: "https://cdn.simpleicons.org/githubactions",
+  cloudflare: "https://cdn.simpleicons.org/cloudflare",
+  worker: "https://cdn.simpleicons.org/cloudflareworkers",
+  openai: "https://cdn.simpleicons.org/openai",
+  grafana: "https://cdn.simpleicons.org/grafana",
+  n8n: "https://cdn.simpleicons.org/n8n",
+  gmail: "https://cdn.simpleicons.org/gmail",
+  hetzner: "https://cdn.simpleicons.org/hetzner",
+  docker: "https://cdn.simpleicons.org/docker",
+  sonarqube: "https://cdn.simpleicons.org/sonarqube",
+};
+
 function AboutIconSvg({ kind, className }: { kind: AboutIcon; className?: string }) {
+  const brandSource = BRAND_ICON_SOURCES[kind];
+  if (brandSource) {
+    return (
+      <span
+        aria-hidden="true"
+        className={`about-tech-brand-icon${className ? ` ${className}` : ""}`}
+        style={{ backgroundImage: `url("${brandSource}")` }}
+      />
+    );
+  }
+
   const common = {
     fill: "none",
     stroke: "currentColor",
@@ -284,7 +309,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
             <FlowArrow/>
             <TechNode icon={INFRASTRUCTURE.provisioner.icon} title={INFRASTRUCTURE.provisioner.title} description={INFRASTRUCTURE.provisioner.description} accent={INFRASTRUCTURE.provisioner.accent} links={INFRASTRUCTURE.provisioner.links}/>
             <FlowArrow/>
-            <TechNode icon={INFRASTRUCTURE.runtime.icon} title={INFRASTRUCTURE.runtime.title} description={INFRASTRUCTURE.runtime.description} accent={INFRASTRUCTURE.runtime.accent} links={INFRASTRUCTURE.runtime.links}>
+            <TechNode icon={INFRASTRUCTURE.runtime.icon} title={INFRASTRUCTURE.runtime.title} description={INFRASTRUCTURE.runtime.description} accent={INFRASTRUCTURE.runtime.accent} links={INFRASTRUCTURE.runtime.links} className="about-tech-runtime-node">
               <div className="about-tech-node-grid">
                 {INFRASTRUCTURE.runtime.tiles.map((tile) => (
                   <article key={tile.title} className="about-tech-mini-node">

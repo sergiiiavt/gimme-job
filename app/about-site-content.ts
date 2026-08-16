@@ -22,7 +22,11 @@ export type AboutIcon =
   | "dashboard"
   | "alert"
   | "export"
-  | "n8n";
+  | "n8n"
+  | "gmail"
+  | "hetzner"
+  | "docker"
+  | "sonarqube";
 
 export type AboutAccent = "green" | "blue" | "purple" | "orange" | "neutral";
 
@@ -170,7 +174,7 @@ export const DATABASE = {
   d1: {
     title: "D1 Database",
     description: "Production application storage",
-    icon: "database" as const,
+    icon: "cloudflare" as const,
     accent: "blue" as const,
     links: [
       { label: "Schema", href: DB_SCHEMA_URL, external: true },
@@ -192,7 +196,7 @@ export const N8N = {
   gmail: {
     title: "Gmail forwarding",
     description: "User filters forward selected job emails to a per-user GimmeJob token address",
-    icon: "document" as const,
+    icon: "gmail" as const,
     accent: "neutral" as const,
   },
   routing: {
@@ -233,7 +237,7 @@ export const N8N = {
     {
       title: "D1 state",
       description: "GimmeJob remains the system of record; n8n does not own application state",
-      icon: "database" as const,
+      icon: "cloudflare" as const,
     },
   ] satisfies SectionTile[],
 };
@@ -262,7 +266,7 @@ export const INFRASTRUCTURE = {
   runtime: {
     title: "Hetzner CX23",
     description: "Ubuntu 24.04 production VM created reproducibly from code",
-    icon: "worker" as const,
+    icon: "hetzner" as const,
     accent: "orange" as const,
     links: [
       { label: "Bootstrap", href: HETZNER_BOOTSTRAP_URL, external: true },
@@ -272,7 +276,7 @@ export const INFRASTRUCTURE = {
       {
         title: "Docker runtime",
         description: "n8n + PostgreSQL + Caddy",
-        icon: "settings" as const,
+        icon: "docker" as const,
       },
       {
         title: "Persistent data",
@@ -282,7 +286,7 @@ export const INFRASTRUCTURE = {
       {
         title: "Hetzner firewall",
         description: "Public 22/80/443; application and database ports stay internal",
-        icon: "alert" as const,
+        icon: "hetzner" as const,
       },
       {
         title: "Cloudflare DNS",
@@ -331,7 +335,7 @@ export const GRAFANA = {
   workersLogs: {
     title: "Cloudflare Workers Logs",
     description: "Recent runtime diagnostics",
-    icon: "document" as const,
+    icon: "worker" as const,
     accent: "blue" as const,
     links: [{ label: "Open logs", href: CLOUDFLARE_WORKERS_LOGS_URL, external: true }],
   },
@@ -344,7 +348,7 @@ export const GRAFANA = {
   sourceSummary: {
     title: "D1 summary API",
     description: "Aggregated long-term metrics",
-    icon: "database" as const,
+    icon: "cloudflare" as const,
     accent: "blue" as const,
     links: [{ label: "API implementation", href: WORKER_SOURCE_URL, external: true }],
   },
@@ -381,7 +385,7 @@ export const CODE_QUALITY = {
   sonar: {
     title: "SonarQube Cloud",
     description: "Static analysis, quality gate, and code-quality history",
-    icon: "analysis" as const,
+    icon: "sonarqube" as const,
     accent: "purple" as const,
     links: [
       { label: "Live analysis", href: SONARQUBE_PROJECT_URL, external: true },

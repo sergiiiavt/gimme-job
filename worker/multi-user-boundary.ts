@@ -130,6 +130,12 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
 
       const sanitizedRequest = sanitizeIdentityHeaders(request);
 
+      // About this site is a public surface. Keep the old workspace URL as a
+      // canonical redirect so bookmarks never fall through the auth boundary.
+      if (url.pathname === "/workspace/learn" && url.searchParams.get("section") === "about") {
+        return new Response(null, { status: 308, headers: { location: "/" } });
+      }
+
       // Scoped service-to-service n8n routes authenticate with N8N_INGEST_TOKEN.
       // Preserve their Authorization header instead of replacing it with the internal
       // Basic-auth bridge used for browser sessions in multi-user mode.
