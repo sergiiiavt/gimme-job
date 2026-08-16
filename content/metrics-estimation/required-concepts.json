@@ -5,6 +5,11 @@
     "label": "Measure, metric, KPI, target, threshold and guardrail"
   },
   {
+    "id": "kri-key-risk-indicators",
+    "topicId": "measurement-foundations",
+    "label": "Key Risk Indicators: reading risk before it becomes a defect"
+  },
+  {
     "id": "leading-lagging-rate-ratio",
     "topicId": "measurement-foundations",
     "label": "Leading vs lagging, count vs rate vs ratio"
@@ -60,6 +65,11 @@
     "label": "Escaped defects, defect leakage and escape rate"
   },
   {
+    "id": "defect-detection-percentage-ddp",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect Detection Percentage (DDP), the mirror of escape rate"
+  },
+  {
     "id": "defect-removal-efficiency-dre",
     "topicId": "qa-product-quality-metrics",
     "label": "Defect removal efficiency (DRE)"
@@ -68,6 +78,16 @@
     "id": "defect-density-caveats",
     "topicId": "qa-product-quality-metrics",
     "label": "Defect density and its limitations"
+  },
+  {
+    "id": "defect-rejection-invalid-rate",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect rejection rate: not-a-bug, duplicate and invalid reports"
+  },
+  {
+    "id": "defect-severity-distribution",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Defect severity distribution over raw defect count"
   },
   {
     "id": "defect-aging-reopen-rate",
@@ -88,6 +108,11 @@
     "id": "release-quality-trend",
     "topicId": "qa-product-quality-metrics",
     "label": "Root-cause grouping and release-quality trend without a fake single score"
+  },
+  {
+    "id": "quality-gate-hard-soft-example",
+    "topicId": "qa-product-quality-metrics",
+    "label": "Quality gates: hard vs soft, and a worked release-gate example"
   },
   {
     "id": "execution-status-pass-fail-blocked",
@@ -125,6 +150,11 @@
     "label": "Flaky-test rate, retry rate and quarantine backlog/age"
   },
   {
+    "id": "false-failure-rate-infra-vs-product",
+    "topicId": "test-automation-metrics",
+    "label": "False failure rate: infrastructure noise vs real regressions"
+  },
+  {
     "id": "automation-coverage-denominators-deep",
     "topicId": "test-automation-metrics",
     "label": "Automation coverage denominators, in depth"
@@ -133,6 +163,11 @@
     "id": "merge-gate-runtime-diagnosis-time",
     "topicId": "test-automation-metrics",
     "label": "Merge-gate runtime and time to diagnose"
+  },
+  {
+    "id": "automation-execution-time-maintenance-cost",
+    "topicId": "test-automation-metrics",
+    "label": "Automation execution-time trend and maintenance cost"
   },
   {
     "id": "automation-stability-vs-pass-rate",
