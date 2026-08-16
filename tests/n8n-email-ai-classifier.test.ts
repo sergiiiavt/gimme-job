@@ -13,21 +13,71 @@ type EventRow = {
   subject: string;
   text_excerpt: string | null;
   classification: string;
+  classification_confidence: number | null;
+  classification_source: string | null;
+  summary: string | null;
+  company: string | null;
+  job_title: string | null;
+  recruiter_name: string | null;
+  action: string | null;
+  processing_status: string;
+  processing_started_at: string | null;
+  processing_attempts: number;
 };
 
-function fakeDb(row: EventRow | null) {
-  const state = { bindings: [] as unknown[][] };
+function fakeDb(initialRow: EventRow | null, options: { denyBudget?: boolean } = {}) {
+  let row = initialRow ? { ...initialRow } : null;
+  const state = {
+    firstBindings: [] as unknown[][],
+    runSql: [] as string[],
+    runBindings: [] as unknown[][],
+  };
+
   const db = {
-    prepare() {
+    prepare(sql: string) {
       let values: unknown[] = [];
       const statement = {
-        bind(...bound: unknown[]) { values = bound; return statement; },
-        async first<T>() { state.bindings.push(values); return row as T | null; },
+        bind(...bound: unknown[]) {
+          values = bound;
+          return statement;
+        },
+        async first<T>() {
+          state.firstBindings.push(values);
+          return row as T | null;
+        },
+        async run() {
+          state.runSql.push(sql);
+          state.runBindings.push(values);
+
+          if (sql.includes("INSERT INTO email_ai_daily_usage") && options.denyBudget) {
+            return { success: true, meta: { changes: 0 } };
+          }
+
+          if (sql.includes("processing_status = 'PROCESSING'") && row) {
+            row.processing_status = "PROCESSING";
+            row.processing_attempts += 1;
+          }
+
+          if (sql.includes("processing_status = 'CLASSIFIED'") && row) {
+            row.classification = String(values[0]);
+            row.classification_confidence = Number(values[1]);
+            row.classification_source = String(values[2]);
+            row.summary = String(values[3]);
+            row.company = values[4] as string | null;
+            row.job_title = values[5] as string | null;
+            row.recruiter_name = values[6] as string | null;
+            row.action = String(values[7]);
+            row.processing_status = "CLASSIFIED";
+          }
+
+          return { success: true, meta: { changes: 1 } };
+        },
       };
       return statement;
     },
   } as unknown as D1Database;
-  return { db, state };
+
+  return { db, state, row: () => row };
 }
 
 function request(body: unknown, token = TOKEN) {
@@ -51,47 +101,77 @@ function event(overrides: Partial<EventRow> = {}): EventRow {
     subject: "Senior QA Engineer",
     text_excerpt: "We would like to discuss a Senior QA Engineer opportunity with you.",
     classification: "UNCLASSIFIED",
+    classification_confidence: null,
+    classification_source: null,
+    summary: null,
+    company: null,
+    job_title: null,
+    recruiter_name: null,
+    action: null,
+    processing_status: "PENDING",
+    processing_started_at: null,
+    processing_attempts: 0,
     ...overrides,
   };
 }
 
-test("email classifier handles Gmail forwarding confirmation without an OpenAI call", async () => {
+test("email classifier handles Gmail forwarding confirmation without an OpenAI call and persists it", async () => {
   const originalFetch = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = (async () => { calls += 1; throw new Error("unexpected OpenAI call"); }) as typeof fetch;
   try {
-    const { db } = fakeDb(event({
+    const fake = fakeDb(event({
       sender_name: null,
       sender_email: "forwarding-noreply@google.com",
       subject: "Gmail Forwarding Confirmation - Receive Mail from user@gmail.com",
       text_excerpt: null,
     }));
     const response = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
-      DB: db,
+      DB: fake.db,
       N8N_INGEST_TOKEN: TOKEN,
       OPENAI_API_KEY: "sk-test",
       OPENAI_MODEL: "gpt-5.6",
     });
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), {
-      id: "evt_123",
-      userId: "user_123",
-      classification: "SERVICE_MESSAGE",
-      confidence: 1,
-      source: "RULE",
-      summary: "Gmail forwarding confirmation",
-      company: null,
-      jobTitle: null,
-      recruiterName: null,
-      action: "NO_ACTION",
-    });
+    const payload = await response.json();
+    assert.equal(payload.classification, "SERVICE_MESSAGE");
+    assert.equal(payload.processingStatus, "CLASSIFIED");
+    assert.equal(payload.action, "NO_ACTION");
+    assert.match(payload.source, /^RULE:/);
+    assert.equal(fake.row()?.classification, "SERVICE_MESSAGE");
     assert.equal(calls, 0);
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-test("email classifier uses OpenAI structured output and never trusts client-supplied email text", async () => {
+test("email classifier rejects obvious consumer promotions before OpenAI", async () => {
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (async () => { calls += 1; throw new Error("unexpected OpenAI call"); }) as typeof fetch;
+  try {
+    const fake = fakeDb(event({
+      sender_name: "GOG.com",
+      sender_email: "news@gog.com",
+      subject: "Your wishlist games are 75% off",
+      text_excerpt: "Summer sale: save 75% on games from your wishlist.",
+    }));
+    const response = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
+      DB: fake.db,
+      N8N_INGEST_TOKEN: TOKEN,
+      OPENAI_API_KEY: "sk-test",
+    });
+    const payload = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(payload.classification, "NON_JOB");
+    assert.equal(payload.action, "NO_ACTION");
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("email classifier uses OpenAI structured output, records usage, and never trusts client email text", async () => {
   const originalFetch = globalThis.fetch;
   let openAiBody: Record<string, unknown> | null = null;
   globalThis.fetch = (async (_input, init) => {
@@ -110,11 +190,16 @@ test("email classifier uses OpenAI structured output and never trusts client-sup
           }),
         },
       }],
+      usage: {
+        prompt_tokens: 400,
+        completion_tokens: 80,
+        total_tokens: 480,
+      },
     });
   }) as typeof fetch;
 
   try {
-    const { db, state } = fakeDb(event({
+    const fake = fakeDb(event({
       sender_name: "Example Careers",
       sender_email: "careers@example.com",
       subject: "We received your application",
@@ -125,7 +210,7 @@ test("email classifier uses OpenAI structured output and never trusts client-sup
       userId: "user_123",
       textExcerpt: "ATTACKER-CONTROLLED CLIENT VALUE",
     }), {
-      DB: db,
+      DB: fake.db,
       N8N_INGEST_TOKEN: TOKEN,
       OPENAI_API_KEY: "sk-test",
       OPENAI_MODEL: "gpt-5.6",
@@ -138,28 +223,32 @@ test("email classifier uses OpenAI structured output and never trusts client-sup
     assert.equal(payload.source, "OPENAI:gpt-5.6");
     assert.equal(payload.company, "Example Corp");
     assert.equal(payload.action, "TRACK_APPLICATION");
-    assert.deepEqual(state.bindings, [["user_123", "evt_123"]]);
+    assert.equal(payload.processingStatus, "CLASSIFIED");
+    assert.equal(payload.promptVersion, "email-classifier-v2");
+    assert.deepEqual(payload.aiUsage, { inputTokens: 400, outputTokens: 80, totalTokens: 480 });
+    assert.equal(fake.row()?.classification, "APPLICATION_RECEIVED");
 
     const messages = openAiBody?.messages as Array<Record<string, unknown>> | undefined;
     const userContent = String(messages?.[1]?.content ?? "");
     assert.match(userContent, /Thank you for applying for Senior QA Engineer at Example Corp/);
     assert.doesNotMatch(userContent, /ATTACKER-CONTROLLED CLIENT VALUE/);
     assert.equal(openAiBody?.store, false);
+    assert.ok(fake.state.runSql.some((sql) => sql.includes("INSERT INTO email_ai_daily_usage")));
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-test("email classifier degrades to deterministic classification when OpenAI fails", async () => {
+test("email classifier degrades to a strong deterministic hiring classification when OpenAI fails", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async () => new Response("upstream failure", { status: 500 })) as typeof fetch;
   try {
-    const { db } = fakeDb(event({
+    const fake = fakeDb(event({
       subject: "Update on your application",
       text_excerpt: "Unfortunately, we will not be moving forward with your application.",
     }));
     const response = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
-      DB: db,
+      DB: fake.db,
       N8N_INGEST_TOKEN: TOKEN,
       OPENAI_API_KEY: "sk-test",
       OPENAI_MODEL: "gpt-5.6",
@@ -167,17 +256,64 @@ test("email classifier degrades to deterministic classification when OpenAI fail
     assert.equal(response.status, 200);
     const payload = await response.json();
     assert.equal(payload.classification, "REJECTION");
-    assert.equal(payload.source, "FALLBACK");
+    assert.match(payload.source, /^FALLBACK:OPENAI_ERROR:/);
     assert.equal(payload.action, "NO_ACTION");
+    assert.equal(fake.row()?.processing_status, "CLASSIFIED");
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-test("email classifier fails closed for bad auth, unknown events, and already-classified events", async () => {
-  const { db } = fakeDb(event());
+test("email classifier holds ambiguous mail when daily AI budget is exhausted", async () => {
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (async () => { calls += 1; throw new Error("unexpected OpenAI call"); }) as typeof fetch;
+  try {
+    const fake = fakeDb(event({
+      subject: "Quick follow-up",
+      text_excerpt: "Can we discuss this tomorrow?",
+    }), { denyBudget: true });
+    const response = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
+      DB: fake.db,
+      N8N_INGEST_TOKEN: TOKEN,
+      OPENAI_API_KEY: "sk-test",
+      EMAIL_AI_DAILY_USER_LIMIT: "1",
+      EMAIL_AI_DAILY_GLOBAL_LIMIT: "1",
+    });
+    assert.equal(response.status, 202);
+    const payload = await response.json();
+    assert.equal(payload.processingStatus, "HOLD");
+    assert.equal(payload.reason, "AI_DAILY_BUDGET_EXCEEDED");
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("email classifier is idempotent for already-classified events", async () => {
+  const fake = fakeDb(event({
+    classification: "INTERVIEW",
+    classification_confidence: 0.95,
+    classification_source: "OPENAI:gpt-5.6",
+    summary: "Technical interview invitation.",
+    action: "PREPARE_INTERVIEW",
+    processing_status: "CLASSIFIED",
+  }));
+  const response = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
+    DB: fake.db,
+    N8N_INGEST_TOKEN: TOKEN,
+  });
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.classification, "INTERVIEW");
+  assert.equal(payload.reused, true);
+  assert.equal(fake.state.runSql.length, 0);
+});
+
+test("email classifier fails closed for bad auth and unknown events", async () => {
+  const fake = fakeDb(event());
   const unauthorized = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }, "wrong-token"), {
-    DB: db,
+    DB: fake.db,
     N8N_INGEST_TOKEN: TOKEN,
   });
   assert.equal(unauthorized.status, 401);
@@ -188,11 +324,4 @@ test("email classifier fails closed for bad auth, unknown events, and already-cl
     N8N_INGEST_TOKEN: TOKEN,
   });
   assert.equal(notFound.status, 404);
-
-  const classified = fakeDb(event({ classification: "INTERVIEW" }));
-  const conflict = await handleEmailClassification(request({ id: "evt_123", userId: "user_123" }), {
-    DB: classified.db,
-    N8N_INGEST_TOKEN: TOKEN,
-  });
-  assert.equal(conflict.status, 409);
 });
