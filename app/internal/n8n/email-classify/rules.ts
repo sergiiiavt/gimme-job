@@ -95,12 +95,8 @@ export function preAiClassification(event: RuleEmail): RuleClassification | null
   const jobPlatform = /(^|\.)(linkedin\.com|robota\.ua|work\.ua|djinni\.co)$/.test(domain);
   const jobAlertSignal = /job alert|jobs for you|recommended jobs|recommended vacancies|vacancies for you|new jobs matching|vacancy digest|добірк[аи] ваканс|рекомендован[іа] ваканс/.test(searchable);
   if (jobAlertSignal && (jobPlatform || /automated|digest|alert|recommend/.test(searchable))) {
-    let company: string | null = null;
-    if (domain.includes("linkedin")) company = "LinkedIn";
-    else if (domain.includes("robota.ua")) company = "robota.ua";
-    else if (domain.includes("work.ua")) company = "Work.ua";
-    else if (domain.includes("djinni")) company = "Djinni";
-    return result("JOB_ALERT", 0.98, "job-alert", event.subject, { company });
+    // The sending platform is not the employer. Keep company null unless an employer is extracted later.
+    return result("JOB_ALERT", 0.98, "job-alert", event.subject);
   }
 
   const knownConsumerDomain = /(^|\.)(gog\.com|steam(?:powered|community)?\.com|epicgames\.com)$/.test(domain);
