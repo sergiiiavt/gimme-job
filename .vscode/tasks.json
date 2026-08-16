@@ -18,6 +18,28 @@
       }
     },
     {
+      "label": "GimmeJob: Verify like CI",
+      "type": "npm",
+      "script": "verify",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "GimmeJob: Fast verification",
+      "type": "npm",
+      "script": "verify:fast",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
       "label": "GimmeJob: Lint",
       "type": "npm",
       "script": "lint",
@@ -37,17 +59,6 @@
       "script": "build",
       "problemMatcher": [],
       "group": "build"
-    },
-    {
-      "label": "GimmeJob: Deploy to Cloudflare",
-      "type": "npm",
-      "script": "deploy:cloudflare",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      }
     }
   ]
 }
