@@ -142,6 +142,18 @@ const brandLinkStyle = {
   padding: "0 8px 18px",
 } as const;
 
+const mobileBrandLinkStyle = {
+  alignItems: "center",
+  gap: "8px",
+  left: "12px",
+  lineHeight: 1,
+  minHeight: "42px",
+  padding: 0,
+  position: "absolute",
+  top: "8px",
+  zIndex: 47,
+} as const;
+
 const brandMarkStyle = {
   display: "block",
   flex: "0 0 auto",
@@ -164,8 +176,16 @@ const brandJobStyle = {
 } as const;
 
 const responsiveAccountStyle = `
-@media (max-width: 820px) {
-  .kb-account-corner { right: 62px !important; top: 8px !important; }
+.kb-mobile-brand { display: none; }
+
+@media (max-width: 900px) {
+  .kb-account-corner { right: 62px !important; top: 8px !important; z-index: 50 !important; }
+  .kb-floating-menu { z-index: 51 !important; }
+  .kb-navigation.open { padding-top: 58px; }
+  .kb-navigation.open .kb-mobile-brand { display: flex; }
+  .kb-navigation.open > .kb-sidebar > .kb-brand { display: none; }
+  .kb-navigation.open > .kb-sidebar,
+  .kb-navigation.open > .kb-subnav { height: auto; min-height: 0; }
 }
 `;
 
@@ -205,10 +225,19 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
     );
   };
 
+  const brandHref = mode === "public"
+    ? navigationIntroItem.publicHref ?? "/learn#about"
+    : navigationIntroItem.personalHref ?? "/learn#about";
+
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
+      <Link aria-label="GimmeJob — About this site" className="kb-mobile-brand" href={brandHref} style={mobileBrandLinkStyle}>
+        <GimmeJobMark/>
+        <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
+      </Link>
+
       <aside className="kb-sidebar">
-        <Link aria-label="GimmeJob — About this site" className="kb-brand" href={mode === "public" ? navigationIntroItem.publicHref ?? "/learn#about" : navigationIntroItem.personalHref ?? "/learn#about"} style={brandLinkStyle}>
+        <Link aria-label="GimmeJob — About this site" className="kb-brand" href={brandHref} style={brandLinkStyle}>
           <GimmeJobMark/>
           <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
         </Link>
