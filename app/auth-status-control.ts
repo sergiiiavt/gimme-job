@@ -3,12 +3,13 @@
 import { createElement, useEffect, useState } from "react";
 
 export type AuthViewMode = "public" | "personal";
-type AuthProbeResponse = { ok: boolean };
+type AuthProbeResponse = { ok: boolean; status?: number };
 type AuthProbe = () => Promise<AuthProbeResponse>;
 type AuthSyncOptions = {
   mode: AuthViewMode;
   personalHref: string;
   onAuthenticatedChange: (authenticated: boolean) => void;
+  normalizeToPersonal?: boolean;
   probe?: AuthProbe;
   currentHref?: () => string;
   replace?: (href: string) => void;
@@ -267,7 +268,7 @@ export function shouldNormalizeToPersonal(mode: AuthViewMode, authenticated: boo
 }
 
 export function startAuthSync({
-  mode, personalHref, onAuthenticatedChange,
+  mode, personalHref, onAuthenticatedChange, normalizeToPersonal = true,
   probe = async () => fetch("/api/auth-state", { cache: "no-store", headers: { accept: "application/json" } }),
   currentHref = () => window.location.href,
   replace = (href) => window.location.replace(href),
@@ -275,9 +276,13 @@ export function startAuthSync({
   let active = true;
   void probe().then((response) => {
     if (!active) return;
+    if (!response.ok && typeof response.status === "number" && response.status !== 401) {
+      onAuthenticatedChange(mode === "personal");
+      return;
+    }
     const authenticated = response.ok;
     onAuthenticatedChange(authenticated);
-    if (shouldNormalizeToPersonal(mode, authenticated, personalHref, currentHref())) return replace(personalHref);
+    if (normalizeToPersonal && shouldNormalizeToPersonal(mode, authenticated, personalHref, currentHref())) return replace(personalHref);
     if (!authenticated && mode === "personal") replace(signInHref(personalHref));
   }).catch(() => { if (active) onAuthenticatedChange(mode === "personal"); });
   return () => { active = false; };
@@ -401,9 +406,12 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
   const [forwarding, setForwarding] = useState<ForwardingSetup | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const authSyncHref = mode === "personal" ? personalHref : "/workspace";
 
   useEffect(() => startAuthSync({
-    mode, personalHref,
+    mode,
+    personalHref: authSyncHref,
+    normalizeToPersonal: false,
     onAuthenticatedChange: (next) => {
       setAuthenticated(next);
       if (!next) {
@@ -411,7 +419,7 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
         setForwarding(null);
       }
     },
-  }), [mode, personalHref]);
+  }), [authSyncHref, mode]);
 
   useEffect(() => {
     if (!authenticated) return;
