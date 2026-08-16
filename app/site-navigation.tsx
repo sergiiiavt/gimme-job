@@ -219,7 +219,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
   return <>
     <div className={`kb-navigation${hideSecondary ? " compact" : ""}${mobileOpen ? " open" : ""}`}>
       <aside className="kb-sidebar">
-        <Link aria-label="GimmeJob home" className="kb-brand" href={mode === "public" ? "/" : "/workspace"} style={brandLinkStyle}>
+        <Link aria-label="GimmeJob — About this site" className="kb-brand" href={mode === "public" ? navigationIntroItem.publicHref ?? "/" : navigationIntroItem.personalHref ?? "/"} style={brandLinkStyle}>
           <GimmeJobMark/>
           <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
         </Link>
