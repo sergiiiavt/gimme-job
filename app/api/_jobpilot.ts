@@ -457,12 +457,13 @@ export async function updateDraft(id: string, action: string, recipient?: string
 const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED", "NOT_INTERESTED", "ARCHIVED"]);
 const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
 
-function requestedStatus(input: Json, currentStatus: string, hasStatus: boolean): string {
-  return hasStatus ? cleanText(input.status).toUpperCase() : currentStatus;
+function requestedStatus(input: Json, currentStatus: string): string {
+  if (!Object.prototype.hasOwnProperty.call(input, "status")) return currentStatus;
+  return cleanText(input.status).toUpperCase();
 }
 
-function requestedFeedback(input: Json, currentFeedback: string | null, hasFeedback: boolean): string | null {
-  if (!hasFeedback) return currentFeedback;
+function requestedFeedback(input: Json, currentFeedback: string | null): string | null {
+  if (!Object.prototype.hasOwnProperty.call(input, "feedback")) return currentFeedback;
   if (input.feedback === null || input.feedback === "") return null;
   return cleanText(input.feedback).toUpperCase();
 }
@@ -482,11 +483,11 @@ export async function updateJobTracking(id: string, input: Json) {
   if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
 
   const currentStatus = rowText(row.status);
-  const nextStatus = requestedStatus(input, currentStatus, hasStatus);
+  const nextStatus = requestedStatus(input, currentStatus);
   if (!JOB_STATUSES.has(nextStatus)) throw new Error("Unsupported job status.");
 
   const currentFeedback = nullableRowText(row.feedback);
-  const nextFeedback = requestedFeedback(input, currentFeedback, hasFeedback);
+  const nextFeedback = requestedFeedback(input, currentFeedback);
   if (nextFeedback !== null && !JOB_FEEDBACK.has(nextFeedback)) throw new Error("Unsupported job feedback.");
 
   const timestamp = now();
