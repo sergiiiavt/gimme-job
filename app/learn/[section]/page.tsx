@@ -1,7 +1,9 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import PublicSite from "../../public-site";
 
 export default function PublicLearningSectionPage() {
-  return <PublicSite/>;
+  const pathname = usePathname();
+  return <PublicSite key={pathname}/>;
 }
