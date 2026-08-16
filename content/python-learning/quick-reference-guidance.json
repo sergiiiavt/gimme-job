@@ -1,0 +1,241 @@
+{
+  "summaries": {
+    "core-syntax": "Names, assignment, operators, unpacking, and the small pieces of syntax used throughout Python.",
+    "control-flow": "Choose what runs, repeat work, and control whether a loop stops, skips, or continues.",
+    "strings": "Create, inspect, split, combine, search, format, encode, and transform text.",
+    "numbers": "Work with integers, floating-point values, precise decimals, fractions, and common math operations.",
+    "collections": "Store groups of values using lists, tuples, sets, and dictionaries, each with different behavior.",
+    "comprehensions": "Build collections or lazy generators compactly from other iterables, optionally filtering values.",
+    "functions": "Define reusable behavior, control how arguments are accepted, and understand how names are resolved.",
+    "iterators-generators": "Understand Python's iteration protocol and produce values lazily instead of building everything at once.",
+    "exceptions": "Represent failures explicitly, catch only expected errors, and guarantee cleanup when execution leaves a block.",
+    "oop": "Model state and behavior with classes, instances, inheritance, properties, and alternative constructors.",
+    "dataclasses-enum": "Reduce class boilerplate for data objects and represent a fixed set of named values.",
+    "dunder-methods": "Hook your objects into Python syntax such as printing, comparison, iteration, indexing, and context managers.",
+    "typing": "Describe expected value shapes for editors, static type checkers, documentation, and safer refactoring.",
+    "modules-imports": "Split code into modules and packages, import public names, and control module execution.",
+    "files-pathlib": "Read, write, locate, create, rename, and inspect files and directories safely.",
+    "data-formats": "Convert Python values to and from common text or binary formats such as JSON, CSV, TOML, and Base64.",
+    "datetime": "Represent dates, times, durations, timestamps, and time zones without losing temporal context.",
+    "stdlib-toolbox": "Useful batteries-included data structures and algorithms that often replace custom utility code.",
+    "os-cli": "Interact with the operating system, environment variables, command-line arguments, subprocesses, and temporary files.",
+    "logging-debugging": "Observe what a program is doing, inspect failures, stop execution interactively, and measure small code paths.",
+    "concurrency": "Choose between synchronous code, async I/O, threads, and processes based on what is waiting or consuming CPU.",
+    "testing": "Express expected behavior, isolate dependencies, prepare reusable test data, and run focused automated checks.",
+    "sqlite": "Use Python's built-in SQLite driver for lightweight relational storage, queries, parameters, and transactions.",
+    "internals-gotchas": "Common Python behaviors that cause subtle bugs when object identity, mutation, copying, or evaluation is misunderstood."
+  },
+  "explanations": {
+    "core-syntax": {
+      "print": "Send a human-readable representation of values to standard output.",
+      "assign": "Bind a name to an object. Assignment does not copy the object.",
+      "multiple assign": "Bind several names from several values in one statement by unpacking them.",
+      "swap": "Exchange two bindings without a temporary variable.",
+      "augmented": "Update a binding using an operation such as addition or multiplication; mutability affects whether the object itself changes.",
+      "membership": "Check whether a value is present in a container or iterable.",
+      "identity": "Check whether two references point to the exact same object; commonly used with None.",
+      "walrus": "Assign a value inside a larger expression so the computed value can be reused immediately.",
+      "unpack": "Take values from an iterable into separate names; a starred name collects the remaining values.",
+      "ignore value": "Use _ by convention when a value is intentionally not needed.",
+      "delete": "Remove a name, item, slice, or attribute binding; it does not necessarily destroy the underlying object.",
+      "docstring": "Attach documentation text to a module, class, function, or method.",
+      "numeric separators": "Use underscores to make long numeric literals easier to read without changing their value."
+    },
+    "control-flow": {
+      "if / elif / else": "Run one branch based on conditions evaluated from top to bottom.",
+      "ternary": "Choose one of two values inside a single expression.",
+      "for": "Take values from an iterable one at a time and execute the loop body for each value.",
+      "while": "Repeat the loop body while a condition remains truthy.",
+      "break": "Exit the nearest loop immediately and continue after that loop.",
+      "continue": "Skip the rest of the current loop iteration and move to the next one.",
+      "enumerate": "Iterate over values while also receiving a counter, usually starting at zero.",
+      "zip": "Iterate over multiple iterables in parallel, producing tuples of corresponding items.",
+      "for ... else": "Run the else block only when the loop finishes normally rather than through break.",
+      "while ... else": "Run the else block only when the condition becomes false rather than the loop ending through break.",
+      "match": "Select a branch by structural pattern matching instead of a long chain of comparisons.",
+      "match guard": "Add an extra boolean condition to a structural pattern.",
+      "wildcard case": "Match any value not handled by an earlier case."
+    },
+    "collections": {
+      "list": "Ordered, mutable sequence. Items can be replaced, added, removed, and reordered in place.",
+      "tuple": "Ordered, immutable sequence. The tuple cannot replace its items after creation.",
+      "set": "Mutable collection of unique hashable values with fast membership checks.",
+      "dict": "Mutable mapping from unique hashable keys to values.",
+      "append / extend": "Append adds one item; extend adds every item from another iterable.",
+      "sort": "Sort a list in place, or use sorted() to produce a new sorted list from any iterable.",
+      "frozenset": "Immutable set that can itself be used where a hashable value is required.",
+      "copy": "Create a shallow copy of the outer collection; nested objects remain shared."
+    },
+    "functions": {
+      "define": "Create a reusable callable and bind it to a name.",
+      "default arg": "Use a fallback value when the caller omits that argument; avoid mutable objects as defaults.",
+      "*args": "Collect extra positional arguments into a tuple.",
+      "**kwargs": "Collect extra keyword arguments into a dictionary.",
+      "keyword-only": "Require arguments after * to be passed by name, improving call-site clarity.",
+      "positional-only": "Require arguments before / to be supplied by position rather than keyword.",
+      "unpack call": "Expand an iterable into positional arguments and a mapping into keyword arguments at the call site.",
+      "lambda": "Create a small anonymous single-expression function, often used as a key or callback.",
+      "annotation": "Describe the intended parameter and return types without changing normal runtime behavior by itself.",
+      "multiple return": "Return one tuple containing multiple values, which callers can unpack into separate names.",
+      "LEGB": "Python resolves a name through Local, Enclosing, Global, then Builtins scopes.",
+      "global": "Rebind a module-level name from inside a function.",
+      "nonlocal": "Rebind a name from the nearest enclosing function scope.",
+      "first-class function": "Functions are objects: they can be stored, passed to other functions, and returned."
+    },
+    "iterators-generators": {
+      "iterator": "Stateful object that produces one value at a time through next() until it is exhausted.",
+      "next": "Ask an iterator for its next value; StopIteration signals that no values remain.",
+      "generator": "A function containing yield; calling it creates a lazy iterator and suspends state between yielded values.",
+      "yield from": "Delegate part of a generator to another iterable or generator.",
+      "generator expr": "Create a lazy iterator with comprehension-like syntax instead of constructing a full list.",
+      "chain": "Treat several iterables as one continuous sequence without copying their contents.",
+      "islice": "Take a slice-like window from an iterator without first turning it into a list.",
+      "count / cycle": "Produce an unbounded counter or repeatedly cycle through an iterable; consumers must decide when to stop.",
+      "tee": "Create independent iterator views backed by buffered values; heavy imbalance between them can consume memory.",
+      "generator send": "Resume a generator while injecting a value into the suspended yield expression.",
+      "close": "Stop a generator early by raising GeneratorExit inside it."
+    },
+    "exceptions": {
+      "try / except": "Run code that may fail and handle a specific expected exception instead of crashing that control path.",
+      "multiple types": "Handle several related exception types with the same recovery logic.",
+      "else": "Run code only when the try block completed without an exception.",
+      "finally": "Run cleanup code whether the try block succeeds, fails, returns, or breaks out.",
+      "raise": "Create or propagate an exception deliberately when the current operation cannot continue correctly.",
+      "re-raise": "After logging or partial handling, propagate the currently handled exception unchanged.",
+      "cause": "Preserve an underlying exception as the explicit cause of a higher-level domain exception.",
+      "custom error": "Create an exception type that communicates a failure meaningful to your own domain.",
+      "suppress": "Intentionally ignore only named exception types inside a small, explicit block.",
+      "ExceptionGroup": "Carry several unrelated exceptions together, commonly from concurrent work.",
+      "except*": "Handle matching exceptions inside an ExceptionGroup while leaving unmatched ones to propagate.",
+      "cleanup": "Prefer context managers for resource cleanup because they encode enter/exit behavior reliably."
+    },
+    "oop": {
+      "class": "Define a blueprint/type that describes attributes and behavior shared by its instances.",
+      "constructor": "Initialize a newly created instance; self is the instance being initialized.",
+      "instance method": "Method whose first parameter is the instance, conventionally named self.",
+      "inheritance": "Create a class that derives behavior from a base class and can extend or override it.",
+      "super": "Call behavior from the next class in the method-resolution order, usually a base implementation.",
+      "property": "Expose method-backed behavior using attribute syntax, optionally controlling reads and writes.",
+      "class method": "Method receiving the class as cls; useful for alternate constructors and class-level behavior.",
+      "static method": "Function namespaced inside a class that receives neither the instance nor class automatically.",
+      "isinstance": "Check whether an object is an instance of a class or its subclasses.",
+      "issubclass": "Check whether one class inherits from another.",
+      "MRO": "Show the order Python uses when looking up methods across inheritance hierarchies.",
+      "composition": "Build an object from other collaborating objects instead of inheriting all behavior."
+    },
+    "typing": {
+      "union": "Allow a value to have any one of several declared types.",
+      "optional": "Allow either the declared value type or None.",
+      "Callable": "Describe a callable's parameter types and return type.",
+      "Literal": "Restrict a value to specific literal choices for static analysis.",
+      "type alias": "Give a reusable name to a type expression so complex annotations remain readable.",
+      "Protocol": "Describe behavior structurally: a value matches if it provides the required members.",
+      "TypedDict": "Describe the expected keys and value types of dictionary-shaped data.",
+      "cast": "Tell a type checker to treat a value as a type; it does not convert the runtime object."
+    },
+    "modules-imports": {
+      "import": "Load a module and bind its module object to a name.",
+      "from import": "Bind selected public objects from another module directly in the current namespace.",
+      "relative import": "Import from the current package using dots to express package-relative location.",
+      "main guard": "Run code only when this file is executed as the entry module, not when it is imported.",
+      "public API": "Declare which names are exported by wildcard import and document the intended module surface.",
+      "run module": "Execute a module through Python's module loader, preserving package import behavior."
+    },
+    "files-pathlib": {
+      "open safely": "Use a context manager so the file is closed even if an exception occurs.",
+      "binary mode": "Read raw bytes rather than decoded text.",
+      "join path": "Combine path components using Path semantics instead of manual string separators.",
+      "glob": "Find paths whose names match a pattern; rglob searches recursively.",
+      "resolve": "Produce an absolute normalized path, resolving symlinks where the platform supports it."
+    },
+    "concurrency": {
+      "async function": "Define a coroutine function. Calling it creates a coroutine object that must be awaited or scheduled.",
+      "await": "Pause the current coroutine until another awaitable completes, allowing the event loop to run other work.",
+      "run event loop": "Create an event loop, run the top-level coroutine, then cleanly shut the loop down.",
+      "create task": "Schedule a coroutine to run concurrently on the current event loop.",
+      "gather": "Await several awaitables and collect their results in input order.",
+      "TaskGroup": "Run related async tasks as one structured unit and propagate failures as a group.",
+      "thread pool": "Use operating-system threads, typically for blocking I/O or code that releases the GIL.",
+      "process pool": "Use separate processes for CPU-heavy Python work that benefits from true parallel execution.",
+      "timeout": "Limit how long an async block is allowed to wait before cancellation is triggered.",
+      "sleep": "Suspend a coroutine without blocking the event loop.",
+      "queue": "Coordinate producers and consumers without manually sharing a plain list.",
+      "lock": "Ensure only one coroutine at a time enters a protected async critical section.",
+      "to_thread": "Move a blocking synchronous function to a worker thread while keeping an async API."
+    },
+    "testing": {
+      "assert": "Fail the current test when the expected condition is false.",
+      "mock": "Create a controllable test double that records calls and can return configured values.",
+      "patch": "Temporarily replace the name used by code under test, then restore it automatically.",
+      "pytest fixture": "Provide reusable setup/data to tests through dependency injection by parameter name.",
+      "pytest raises": "Assert that a block fails with an expected exception type.",
+      "parametrize": "Run one test function repeatedly with different input/expected-value combinations.",
+      "monkeypatch": "Temporarily modify environment variables, attributes, dictionaries, or paths for a test.",
+      "tmp_path": "Receive a unique temporary Path directory that pytest cleans up after the test session."
+    },
+    "internals-gotchas": {
+      "mutable default": "A mutable default is created once when the function is defined, so later calls can unexpectedly share state.",
+      "late binding": "Closures normally look up captured names when called, not when the closure was created.",
+      "identity vs equality": "Identity asks 'same object?'; equality asks 'equivalent value?'. They answer different questions.",
+      "shallow copy": "Copy only the outer object; references to nested objects remain shared.",
+      "deep copy": "Recursively copy nested state to reduce sharing, which can be expensive or inappropriate for resource objects.",
+      "truthiness": "Any value can participate in a condition; Python converts it through its truth-value rules.",
+      "hashability": "Hashable objects have stable hashing/equality behavior and can be dictionary keys or set members.",
+      "iterator exhaustion": "Most iterators are one-pass; once consumed, asking for more values does not restart them.",
+      "aliasing": "Assignment can give one object several names, so mutation through one name is visible through the others.",
+      "sort return": "In-place list methods generally return None to make mutation explicit rather than look like a new value.",
+      "EAFP": "Perform the operation and handle the specific expected exception when failure is a normal possibility.",
+      "LBYL": "Check a condition before acting when the check itself is meaningful, cheaper, or required."
+    }
+  },
+  "theoryCards": [
+    {
+      "after": "collections",
+      "id": "mutability-references",
+      "title": "Mutability & References",
+      "tags": ["Types", "Collections", "Gotchas"],
+      "summary": "The key mental model: variables are names bound to objects. Mutation changes an object; assignment changes what a name points to.",
+      "entries": [
+        {"term": "mutable", "meaning": "The object can change in place, so every reference to that same object observes the change.", "detail": "list · dict · set · most class instances"},
+        {"term": "immutable", "meaning": "The object itself cannot change in place; an apparent update creates another value and rebinds a name.", "detail": "int · float · bool · str · tuple · frozenset · bytes"},
+        {"term": "assignment binds", "meaning": "Assignment points a name at an object. It does not clone the object.", "detail": "b = a"},
+        {"term": "aliasing", "meaning": "Two names can refer to the same mutable object, so mutation through one name is visible through the other.", "detail": "b = a · b.append(1) · a also changed"},
+        {"term": "rebind vs mutate", "meaning": "Rebinding changes which object a name refers to; mutation changes the existing object itself.", "detail": "x = x + [1]  vs  x.append(1)"},
+        {"term": "function arguments", "meaning": "Parameters are new local names bound to the caller's objects; mutating a passed mutable object can affect caller-visible state.", "detail": "def add(items): items.append('x')"},
+        {"term": "shallow copy", "meaning": "Create a new outer container while keeping references to the same nested objects.", "detail": "b = a.copy() · copy.copy(a)"},
+        {"term": "deep copy", "meaning": "Recursively copy nested state when the new structure really must be independent.", "detail": "b = copy.deepcopy(a)"}
+      ],
+      "more": [
+        {"term": "tuple nuance", "meaning": "A tuple cannot replace its own elements, but an element may itself be a mutable object that can still change.", "detail": "t = ([1],) · t[0].append(2)"},
+        {"term": "+= nuance", "meaning": "+= may mutate a mutable object such as a list, while immutable values such as strings produce a new object.", "detail": "items += [x] · text += 'x'"},
+        {"term": "mutable default", "meaning": "Function default objects are created once, so a mutable default can leak state between calls.", "detail": "def f(items=None): items = [] if items is None else items"},
+        {"term": "nested copy", "meaning": "For known simple shapes, copy the levels you need instead of automatically deep-copying everything.", "detail": "rows = [row.copy() for row in matrix]"},
+        {"term": "id", "meaning": "id() identifies an object for its lifetime in the current process; it is useful for understanding aliasing, not business identity.", "detail": "id(a) == id(b)"}
+      ]
+    },
+    {
+      "after": "collections",
+      "id": "identity-hashing-truthiness",
+      "title": "Identity, Hashing & Truthiness",
+      "tags": ["Types", "Gotchas", "Collections"],
+      "summary": "Three related rules decide how values compare, whether they can be keys, and how they behave inside conditions.",
+      "entries": [
+        {"term": "== equality", "meaning": "Compare values using equality semantics, which classes can customize with __eq__.", "detail": "a == b"},
+        {"term": "is identity", "meaning": "Check whether both references point to the exact same object. Prefer it for None and unique sentinels.", "detail": "value is None"},
+        {"term": "hashable", "meaning": "A value has stable hash/equality behavior and may be used as a dictionary key or set member.", "detail": "str · int · frozenset · tuple of hashable values"},
+        {"term": "unhashable", "meaning": "Common mutable containers are deliberately unhashable because changing them would break hash-based lookup.", "detail": "list · dict · set"},
+        {"term": "truthy / falsy", "meaning": "Conditions ask for a value's truth value; values are not required to literally be True or False.", "detail": "if items: ..."},
+        {"term": "common falsy", "meaning": "None, false booleans, numeric zero, and empty containers/text evaluate as false.", "detail": "None · False · 0 · 0.0 · '' · [] · {} · set()"},
+        {"term": "and / or", "meaning": "Boolean operators short-circuit and return one of their operands, which makes fallback expressions possible.", "detail": "name = raw_name or 'Unknown'"},
+        {"term": "not", "meaning": "Convert a value to its truth value and negate it, producing a real bool.", "detail": "if not items: ..."}
+      ],
+      "more": [
+        {"term": "custom truth", "meaning": "A class can define __bool__, or fall back to __len__, to control whether its instances are truthy.", "detail": "def __bool__(self): return self.ready"},
+        {"term": "hash contract", "meaning": "Objects that compare equal must produce the same hash; mutable equality state therefore makes unsafe keys.", "detail": "a == b  ⇒  hash(a) == hash(b)"},
+        {"term": "sentinel", "meaning": "Use a unique object when None is a valid input and you need to distinguish 'missing' from 'explicitly None'.", "detail": "MISSING = object() · value is MISSING"},
+        {"term": "chained comparison", "meaning": "Python can express range-style comparisons directly without repeating the middle operand.", "detail": "0 < x < 10"},
+        {"term": "membership", "meaning": "Membership usually uses container-specific lookup or equality semantics, not object identity.", "detail": "needle in values"}
+      ]
+    }
+  ]
+}
