@@ -1,6 +1,8 @@
 import taxonomyData from "./taxonomy.json";
 import sourcesData from "./sources.json";
 import requiredConceptsData from "./required-concepts.json";
+import practicalExamplesEnData from "./practical-examples.en.json";
+import practicalExamplesUkData from "./practical-examples.uk.json";
 import chapter01En from "./chapter-01.en.json";
 import chapter01Uk from "./chapter-01.uk.json";
 import chapter02En from "./chapter-02.en.json";
@@ -60,9 +62,20 @@ export interface LearningChapter extends LearningTopic {
   markdownUk: string;
 }
 
+function insertPracticalExamples(markdown: string, addition: string) {
+  if (!addition.trim()) return markdown;
+  const marker = "\n## Summary";
+  if (markdown.includes(marker)) {
+    return markdown.replace(marker, `\n\n${addition.trim()}\n\n## Summary`);
+  }
+  return `${markdown.trimEnd()}\n\n${addition.trim()}`;
+}
+
 const taxonomy = taxonomyData as LearningTopic[];
 const sources = sourcesData as LearningSource[];
 const requiredConcepts = requiredConceptsData as RequiredConcept[];
+const practicalExamplesEn = practicalExamplesEnData as Record<string, string>;
+const practicalExamplesUk = practicalExamplesUkData as Record<string, string>;
 const englishDocuments = [
   chapter01En, chapter02En, chapter03En, chapter04En,
   chapter05En, chapter06En, chapter07En, chapter08En,
@@ -84,8 +97,8 @@ export const catalog = {
   requiredConcepts,
   chapters: taxonomy.map((topic): LearningChapter => ({
     ...topic,
-    markdown: englishById.get(topic.id) ?? "",
-    markdownUk: ukrainianById.get(topic.id) ?? "",
+    markdown: insertPracticalExamples(englishById.get(topic.id) ?? "", practicalExamplesEn[topic.id] ?? ""),
+    markdownUk: insertPracticalExamples(ukrainianById.get(topic.id) ?? "", practicalExamplesUk[topic.id] ?? ""),
   })),
 };
 
