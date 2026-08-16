@@ -1,0 +1,7 @@
+.activeTocLink {
+  background: #e7f1e9 !important;
+  border-left-color: #397657 !important;
+  color: #214b35 !important;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(57, 118, 87, 0.08);
+}
