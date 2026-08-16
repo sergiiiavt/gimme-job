@@ -5,7 +5,7 @@ import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
-export type ExternalNavigationId = "qa-fundamentals";
+export type ExternalNavigationId = "qa-fundamentals" | "testing-tools" | "metrics-estimation";
 
 interface SectionNavigationItem {
   id: SiteSection;
@@ -62,6 +62,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "agentic", label: "AI agents & MCP" },
       { id: "programming", label: "Programming", publicHref: "/learn/programming", personalHref: "/workspace/learn/programming" },
       { id: "automation", label: "Test automation", publicHref: "/learn/automation", personalHref: "/workspace/learn/automation" },
+      {
+        id: "testing-tools",
+        label: "Testing & diagnostic tools",
+        external: true,
+        publicHref: "/learn/testing-tools",
+        personalHref: "/workspace/learn/testing-tools",
+      },
       { id: "api", label: "API & integration" },
       { id: "data", label: "Databases, SQL & BI" },
       { id: "mobile", label: "Mobile & accessibility" },
@@ -73,6 +80,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "networking", label: "Networking" },
       { id: "linux", label: "Linux & shell" },
       { id: "standards", label: "Standards & compliance" },
+      {
+        id: "metrics-estimation",
+        label: "QA metrics & estimation",
+        external: true,
+        publicHref: "/learn/metrics-estimation",
+        personalHref: "/workspace/learn/metrics-estimation",
+      },
       { id: "strategy", label: "Strategy & leadership" },
     ],
   },
