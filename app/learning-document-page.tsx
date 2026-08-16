@@ -173,7 +173,7 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
 }
 
 export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
-  const lessons = curriculum.lessons ?? [];
+  const lessons = useMemo(() => curriculum.lessons ?? [], [curriculum.lessons]);
   const modules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
   const firstModuleId = modules[0]?.id ?? "";
   const resolvedTrackOptions = useMemo<TrackOption[]>(
@@ -211,7 +211,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
       ? activeChapter.sourceIds
       : Array.from(new Set(moduleLessons.flatMap((lesson) => lesson.sourceIds)));
     return ids.map((id) => sourcesById.get(id)).filter((source): source is LearningSource => Boolean(source));
-  }, [activeChapter?.sourceIds, moduleLessons, sourcesById]);
+  }, [activeChapter, moduleLessons, sourcesById]);
 
   const localizedModuleLabel = language === "uk" ? activeChapter?.labelUk ?? activeChapter?.label : activeChapter?.label;
   const localizedModuleDescription = language === "uk" ? activeChapter?.descriptionUk ?? activeChapter?.description : activeChapter?.description;
