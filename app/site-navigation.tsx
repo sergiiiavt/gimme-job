@@ -34,8 +34,8 @@ interface LearningCluster {
 export const navigationIntroItem: SectionNavigationItem = {
   id: "about",
   label: "About this site",
-  publicHref: "/learn/about",
-  personalHref: "/learn/about",
+  publicHref: "/about",
+  personalHref: "/about",
 };
 
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
@@ -470,14 +470,10 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
   }
 }
 
-export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/workspace", quickReferenceActive = false, secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/vacancies", quickReferenceActive = false, secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
   const renderItem = (item: NavigationItem, intro = false) => {
     const active = item.external ? activeExternalId === item.id : activeSection === item.id;
-    const href = item.external
-      ? mode === "public" ? item.publicHref : item.personalHref
-      : item.publicHref && item.personalHref
-        ? mode === "public" ? item.publicHref : item.personalHref
-        : sectionNavigationHref(item.id, mode);
+    const href = item.external ? item.publicHref : sectionNavigationHref(item.id, mode);
 
     return (
       <Link
@@ -506,9 +502,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
     </div>
   );
 
-  const brandHref = mode === "public"
-    ? navigationIntroItem.publicHref ?? "/learn/about"
-    : navigationIntroItem.personalHref ?? "/learn/about";
+  const brandHref = sectionNavigationHref("about", mode);
   const activeNavigationId = activeExternalId ?? activeSection;
   const learningItems = navigationGroups.find((group) => group.id === "learning")?.items ?? [];
   const quickReferenceHref = activeNavigationId && learningItems.some((item) => item.id === activeNavigationId)
