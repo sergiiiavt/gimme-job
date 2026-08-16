@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
 import { sectionFromPathname, sectionNavigationHref } from "./navigation-paths";
@@ -597,6 +597,7 @@ function secondarySwitcherFor(
 
 export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [effectiveMode, setEffectiveMode] = useState<SiteMode>(mode);
   const [hash, setHash] = useState(() => typeof window === "undefined" ? "" : window.location.hash);
   const section = useMemo(() => resolveSection(pathname, hash), [pathname, hash]);
@@ -636,8 +637,8 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, []);
 
   useEffect(() => {
-    setSubsection("all");
-  }, [section]);
+    setSubsection(searchParams.get("topic") ?? "all");
+  }, [searchParams, section]);
 
   useEffect(() => {
     if (section !== "interview" || interviewCatalog) return;

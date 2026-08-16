@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./interview-auth-layout.css";
 import "./about-site-layout.css";
 import "./vacancies-workspace.css";
 import "./vacancy-description.css";

@@ -304,11 +304,9 @@ export default function VacanciesWorkspace() {
 
   const analyze = async () => {
     if (!isPersonal) return;
-    const targetIds = selectedIds.size > 0
-      ? [...selectedIds]
-      : jobs.filter((job) => !job.analysis).slice(0, 25).map((job) => job.id);
+    const targetIds = [...selectedIds];
     if (targetIds.length === 0) {
-      setNotice("No vacancies to analyze — everything visible is already scored.");
+      setNotice("Select at least one vacancy before analyzing.");
       return;
     }
 
@@ -422,7 +420,7 @@ export default function VacanciesWorkspace() {
                 <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
                 {busy === "analyze"
                   ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
-                  : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null}><Icon name="llm"/><span>{selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
+                  : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || selectedIds.size === 0}><Icon name="llm"/><span>{selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
               </div> : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
             </div>
             {isPersonal ? (

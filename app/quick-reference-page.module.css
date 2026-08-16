@@ -389,3 +389,40 @@
     grid-template-columns: 1fr;
   }
 }
+
+.filterGroups {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.filterGroup {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.filterLabel {
+  color: #8a938e;
+  flex: 0 0 auto;
+  font-size: 8px;
+  font-weight: 780;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .filterGroups {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .filterGroup {
+    flex: 1 1 100%;
+  }
+}
