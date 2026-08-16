@@ -119,7 +119,7 @@ test("legacy private About URL redirects to the public About page before auth", 
   const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
   const response = await boundary.fetch(new Request("https://example.com/workspace/learn?section=about"), env, undefined);
   assert.equal(response.status, 308);
-  assert.equal(response.headers.get("location"), "/");
+  assert.equal(response.headers.get("location"), "/learn#about");
   assert.equal(calls.length, 0);
 });
 
