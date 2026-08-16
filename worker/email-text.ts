@@ -132,7 +132,13 @@ function parsedTagName(source: string): { name: string; closing: boolean } {
   return { name: trimmed.slice(start, cursor).toLowerCase(), closing };
 }
 
-type HtmlTagTransition = { skippedTag: string | null; lineBreak: boolean };
+type HtmlTagTransition = { skippedTag: string | null; text: string };
+
+type HtmlScanStep = {
+  nextIndex: number;
+  skippedTag: string | null;
+  text: string;
+};
 
 function transitionHtmlTag(
   tag: { name: string; closing: boolean },
@@ -141,15 +147,50 @@ function transitionHtmlTag(
   if (skippedTag) {
     return {
       skippedTag: tag.closing && tag.name === skippedTag ? null : skippedTag,
-      lineBreak: false,
+      text: "",
     };
   }
   if (!tag.closing && SKIPPED_CONTENT_TAGS.has(tag.name)) {
-    return { skippedTag: tag.name, lineBreak: false };
+    return { skippedTag: tag.name, text: "" };
   }
   return {
     skippedTag: null,
-    lineBreak: BLOCK_TAGS.has(tag.name) || LINE_BREAK_TAGS.has(tag.name),
+    text: BLOCK_TAGS.has(tag.name) || LINE_BREAK_TAGS.has(tag.name) ? "\n" : "",
+  };
+}
+
+function scanHtmlStep(value: string, index: number, skippedTag: string | null): HtmlScanStep {
+  if (value.startsWith("<!--", index)) {
+    const commentEnd = value.indexOf("-->", index + 4);
+    return {
+      nextIndex: commentEnd < 0 ? value.length : commentEnd + 3,
+      skippedTag,
+      text: "",
+    };
+  }
+
+  if (value[index] !== "<") {
+    return {
+      nextIndex: index + 1,
+      skippedTag,
+      text: skippedTag ? "" : value[index],
+    };
+  }
+
+  const end = tagEnd(value, index);
+  if (end < 0) {
+    return {
+      nextIndex: value.length,
+      skippedTag,
+      text: skippedTag ? "" : value.slice(index),
+    };
+  }
+
+  const transition = transitionHtmlTag(parsedTagName(value.slice(index + 1, end)), skippedTag);
+  return {
+    nextIndex: end + 1,
+    skippedTag: transition.skippedTag,
+    text: transition.text,
   };
 }
 
@@ -158,28 +199,10 @@ function htmlToText(value: string): string {
   let skippedTag: string | null = null;
 
   for (let index = 0; index < value.length;) {
-    if (value.startsWith("<!--", index)) {
-      const commentEnd = value.indexOf("-->", index + 4);
-      index = commentEnd < 0 ? value.length : commentEnd + 3;
-      continue;
-    }
-
-    if (value[index] !== "<") {
-      output += skippedTag ? "" : value[index];
-      index += 1;
-      continue;
-    }
-
-    const end = tagEnd(value, index);
-    if (end < 0) {
-      output += skippedTag ? "" : value.slice(index);
-      break;
-    }
-
-    const transition = transitionHtmlTag(parsedTagName(value.slice(index + 1, end)), skippedTag);
-    skippedTag = transition.skippedTag;
-    if (transition.lineBreak) output += "\n";
-    index = end + 1;
+    const step = scanHtmlStep(value, index, skippedTag);
+    output += step.text;
+    skippedTag = step.skippedTag;
+    index = step.nextIndex;
   }
 
   return decodeHtmlEntities(output);
