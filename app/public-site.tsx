@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
-import { sectionNavigationHref } from "./navigation-paths";
+import { sectionFromPathname, sectionNavigationHref } from "./navigation-paths";
 import { hiddenDeepLinkSections, navigationItems, type SecondarySwitcher, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
 const RewildGame = lazy(() => import("./rewild-game"));
@@ -503,16 +503,12 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "re
   },
 };
 
-function currentSectionFromLocation(mode: SiteMode): PublicSection {
-  if (typeof window === "undefined") return mode === "personal" ? "interview" : "about";
-  const publicPathSection = window.location.pathname.startsWith("/learn/")
-    ? window.location.pathname.slice("/learn/".length).split("/")[0]
-    : null;
+function currentSectionFromLocation(): PublicSection {
+  if (typeof window === "undefined") return "about";
+  const pathSection = sectionFromPathname(window.location.pathname);
   const legacyHashSection = window.location.hash.replace("#", "") || null;
-  const candidate = (mode === "personal"
-    ? new URLSearchParams(window.location.search).get("section")
-    : publicPathSection ?? legacyHashSection) as PublicSection | null;
-  return candidate && (navigationItems.some((item) => item.id === candidate) || hiddenDeepLinkSections.includes(candidate)) ? candidate : mode === "personal" ? "interview" : "about";
+  const candidate = (pathSection ?? legacyHashSection) as PublicSection | null;
+  return candidate && (navigationItems.some((item) => item.id === candidate) || hiddenDeepLinkSections.includes(candidate)) ? candidate : "about";
 }
 
 function topicId(value: string) {
@@ -600,7 +596,8 @@ function secondarySwitcherFor(
 }
 
 export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
-  const [section, setSection] = useState<PublicSection>(mode === "personal" ? "interview" : "about");
+  const [effectiveMode, setEffectiveMode] = useState<SiteMode>(mode);
+  const [section, setSection] = useState<PublicSection>(() => currentSectionFromLocation());
   const [mobileNav, setMobileNav] = useState(false);
   const [subsection, setSubsection] = useState("all");
   const [programmingTrack, setProgrammingTrack] = useState<ProgrammingTrack>("python");
@@ -615,23 +612,34 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [automationCurriculumError, setAutomationCurriculumError] = useState(false);
 
   useEffect(() => {
+    if (mode === "personal") {
+      setEffectiveMode("personal");
+      return;
+    }
+    let active = true;
+    fetch("/api/auth-state", { cache: "no-store", headers: { accept: "application/json" } })
+      .then((response) => {
+        if (active) setEffectiveMode(response.ok ? "personal" : "public");
+      })
+      .catch(() => {
+        if (active) setEffectiveMode("public");
+      });
+    return () => { active = false; };
+  }, [mode]);
+
+  useEffect(() => {
     const syncFromLocation = () => {
-      const nextSection = currentSectionFromLocation(mode);
+      const nextSection = currentSectionFromLocation();
       setSection(nextSection);
       setSubsection("all");
-      if (mode === "public" && window.location.hash) {
-        window.history.replaceState(null, "", sectionNavigationHref(nextSection, "public"));
-      }
     };
-    const frame = window.requestAnimationFrame(syncFromLocation);
     window.addEventListener("hashchange", syncFromLocation);
     window.addEventListener("popstate", syncFromLocation);
     return () => {
-      window.cancelAnimationFrame(frame);
       window.removeEventListener("hashchange", syncFromLocation);
       window.removeEventListener("popstate", syncFromLocation);
     };
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     if (section !== "interview" || interviewCatalog) return;
@@ -686,12 +694,12 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   }, [automationCurriculum, automationTrack, section]);
 
   useEffect(() => {
-    if (section === "jobs") window.location.assign("/workspace");
+    if (section === "jobs") window.location.assign("/vacancies");
   }, [section]);
 
   const openSection = (next: PublicSection) => {
     setMobileNav(false);
-    window.location.assign(sectionNavigationHref(next, mode));
+    window.location.assign(sectionNavigationHref(next, effectiveMode));
   };
 
   const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
@@ -722,7 +730,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
           activeSubsection={subsection}
           hideSecondary={hideSecondary}
           mobileOpen={mobileNav}
-          mode={mode}
+          mode={effectiveMode}
           onSelect={openSection}
           onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
           personalHref={personalHref}
@@ -755,7 +763,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             automationTrack={automationTrack}
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
-            mode={mode}
+            mode={effectiveMode}
             onTopicChange={setSubsection}
             programmingTrack={programmingTrack}
             pythonCurriculum={pythonCurriculum}
