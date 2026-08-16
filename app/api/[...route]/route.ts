@@ -16,13 +16,13 @@ import {
   updateInterviewProgress,
   updateJobTracking,
 } from "../_jobpilot";
+import { upsertImportedVacancies } from "../_vacancy-import";
 import {
   ensureVacancyCatalog,
   mergeVacancySourceDefaults,
   publicVacancies,
   sanitizeDashboardPayload,
   syncVacancySources,
-  upsertVacancies,
 } from "../_vacancy-intake";
 import {
   saveTenantSetting,
@@ -160,7 +160,7 @@ export async function POST(request: Request, context: RouteContext) {
       operationalInfo("job_import", { phase: "start", operationId, trigger, itemsSeen: jobs.length });
       let result;
       try {
-        result = await upsertVacancies(jobs);
+        result = await upsertImportedVacancies(jobs);
       } catch (error) {
         const details = safeErrorDetails(error, "database_error");
         await recordObservabilityEvent({ event: "job_import", status: "failure", durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: null, errorCount: 1, reasonCode: details.reasonCode, httpStatus: details.httpStatus });
