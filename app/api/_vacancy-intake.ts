@@ -11,7 +11,6 @@ import { LobbyXSource } from "../../agent/src/sources/lobbyx.js";
 import { RobotaUaSource } from "../../agent/src/sources/robotaua.js";
 import { RssJobSource } from "../../agent/src/sources/rss.js";
 import { collectAllSources, type JobSource } from "../../agent/src/sources/types.js";
-import { WorkUaSource } from "../../agent/src/sources/workua.js";
 import { normalizeVacancyDescription } from "../../agent/src/vacancy-content.js";
 
 type Json = Record<string, unknown>;
@@ -34,6 +33,11 @@ export interface VacancySourceError {
   error: string;
 }
 
+export interface VacancySourceSkip {
+  source: string;
+  reason: string;
+}
+
 export interface VacancySyncResult {
   seen: number;
   relevant: number;
@@ -43,6 +47,7 @@ export interface VacancySyncResult {
   updated: number;
   accepted: number;
   errors: VacancySourceError[];
+  skipped: VacancySourceSkip[];
 }
 
 export const DEFAULT_VACANCY_SOURCES = {
@@ -138,9 +143,6 @@ export function buildVacancySources(config: Json): JobSource[] {
     const board = cleanText(source.board);
     if (name && board) sources.push(new AshbySource(name, board));
   }
-  for (const source of sourceArray(config, "workUa", DEFAULT_VACANCY_SOURCES.workUa)) {
-    sources.push(new WorkUaSource(cleanText(source.name, "workua-qa"), cleanText(source.query, "QA Engineer")));
-  }
   for (const source of sourceArray(config, "robotaUa", DEFAULT_VACANCY_SOURCES.robotaUa)) {
     sources.push(new RobotaUaSource(cleanText(source.name, "robotaua-qa"), cleanText(source.query, "QA Engineer")));
   }
@@ -149,6 +151,13 @@ export function buildVacancySources(config: Json): JobSource[] {
   }
 
   return sources;
+}
+
+export function skippedCloudSources(config: Json): VacancySourceSkip[] {
+  return sourceArray(config, "workUa", DEFAULT_VACANCY_SOURCES.workUa).map((source) => ({
+    source: `workua:${cleanText(source.name, "workua-qa")}`,
+    reason: "Direct Work.ua HTML access is blocked from cloud-hosted runners (HTTP 403); the adapter remains available for local sync only.",
+  }));
 }
 
 function normalizedJob(value: IntakeJob): IntakeJob {
@@ -201,7 +210,7 @@ async function sha256(value: string): Promise<string> {
 export async function upsertVacancies(
   values: IntakeJob[],
   databaseOverride?: D1DatabaseLike,
-): Promise<Omit<VacancySyncResult, "errors">> {
+): Promise<Omit<VacancySyncResult, "errors" | "skipped">> {
   const normalized = values.map(normalizedJob).filter((job) => job.title && job.company && job.url);
   const relevance = filterRelevantVacancies(normalized);
   const incoming = deduplicateVacancies(relevance.jobs);
@@ -317,6 +326,7 @@ export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Pro
     rejected: intake?.rejected ?? 0,
     duplicates: intake?.duplicates ?? stored.duplicates,
     errors,
+    skipped: skippedCloudSources(config),
   };
 }
 
