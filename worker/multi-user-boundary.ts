@@ -133,7 +133,7 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
       // About this site is a public surface. Keep the old workspace URL as a
       // canonical redirect so bookmarks never fall through the auth boundary.
       if (url.pathname === "/workspace/learn" && url.searchParams.get("section") === "about") {
-        return new Response(null, { status: 308, headers: { location: "/" } });
+        return new Response(null, { status: 308, headers: { location: "/learn#about" } });
       }
 
       // Scoped service-to-service n8n routes authenticate with N8N_INGEST_TOKEN.
