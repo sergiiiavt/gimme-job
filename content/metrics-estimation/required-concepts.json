@@ -2,376 +2,487 @@
   {
     "id": "measure-metric-kpi-target-vocabulary",
     "topicId": "measurement-foundations",
-    "label": "Measure, metric, KPI, target, threshold and guardrail"
+    "label": "Measure, metric, KPI, target, threshold and guardrail",
+    "usage": "common"
   },
   {
     "id": "kri-key-risk-indicators",
     "topicId": "measurement-foundations",
-    "label": "Key Risk Indicators: reading risk before it becomes a defect"
+    "label": "Key Risk Indicators: reading risk before it becomes a defect",
+    "usage": "less-common"
   },
   {
     "id": "leading-lagging-rate-ratio",
     "topicId": "measurement-foundations",
-    "label": "Leading vs lagging, count vs rate vs ratio"
+    "label": "Leading vs lagging, count vs rate vs ratio",
+    "usage": "common"
   },
   {
     "id": "observation-window-population-segmentation",
     "topicId": "measurement-foundations",
-    "label": "Observation window, population and segmentation"
+    "label": "Observation window, population and segmentation",
+    "usage": "common"
   },
   {
     "id": "average-median-percentile-baseline",
     "topicId": "measurement-foundations",
-    "label": "Average vs median vs percentile, baseline and normal variation"
+    "label": "Average vs median vs percentile, baseline and normal variation",
+    "usage": "common"
   },
   {
     "id": "goodhart-balanced-sets-correlation",
     "topicId": "measurement-foundations",
-    "label": "Goodhart’s law, balanced metric sets and correlation vs causation"
+    "label": "Goodhart’s law, balanced metric sets and correlation vs causation",
+    "usage": "common"
   },
   {
     "id": "metric-to-kpi-to-target-chain",
     "topicId": "qa-product-quality-metrics",
-    "label": "From raw measure to metric to KPI to target to action"
+    "label": "From raw measure to metric to KPI to target to action",
+    "usage": "common"
   },
   {
     "id": "define-and-track-qa-kpis-workflow",
     "topicId": "qa-product-quality-metrics",
-    "label": "Define and track QA KPIs: escape rate, automation coverage, cycle time and MTTD"
+    "label": "Define and track QA KPIs: escape rate, automation coverage, cycle time and MTTD",
+    "usage": "common"
   },
   {
     "id": "setting-targets-baseline-window",
     "topicId": "qa-product-quality-metrics",
-    "label": "Setting a target: baseline, scope and observation window"
+    "label": "Setting a target: baseline, scope and observation window",
+    "usage": "common"
   },
   {
     "id": "team-vs-individual-metrics",
     "topicId": "qa-product-quality-metrics",
-    "label": "Team and product metrics vs individual performance metrics"
+    "label": "Team and product metrics vs individual performance metrics",
+    "usage": "common"
   },
   {
     "id": "balanced-qa-lead-scorecard",
     "topicId": "qa-product-quality-metrics",
-    "label": "Designing a balanced QA Lead scorecard"
+    "label": "Designing a balanced QA Lead scorecard",
+    "usage": "common"
   },
   {
     "id": "kpi-worked-exercises",
     "topicId": "qa-product-quality-metrics",
-    "label": "Worked exercises: raw metric → KPI, missing denominator and vanity KPI"
+    "label": "Worked exercises: raw metric → KPI, missing denominator and vanity KPI",
+    "usage": "common"
   },
   {
     "id": "escaped-defects-leakage-rate",
     "topicId": "qa-product-quality-metrics",
-    "label": "Escaped defects, defect leakage and escape rate"
+    "label": "Escaped defects, defect leakage and escape rate",
+    "usage": "common"
   },
   {
     "id": "defect-detection-percentage-ddp",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect Detection Percentage (DDP), the mirror of escape rate"
+    "label": "Defect Detection Percentage (DDP), the mirror of escape rate",
+    "usage": "less-common"
   },
   {
     "id": "defect-removal-efficiency-dre",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect removal efficiency (DRE)"
+    "label": "Defect removal efficiency (DRE)",
+    "usage": "less-common"
   },
   {
     "id": "defect-density-caveats",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect density and its limitations"
+    "label": "Defect density and its limitations",
+    "usage": "less-common"
   },
   {
     "id": "defect-rejection-invalid-rate",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect rejection rate: not-a-bug, duplicate and invalid reports"
+    "label": "Defect rejection rate: not-a-bug, duplicate and invalid reports",
+    "usage": "less-common"
   },
   {
     "id": "defect-severity-distribution",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect severity distribution over raw defect count"
+    "label": "Defect severity distribution over raw defect count",
+    "usage": "common"
   },
   {
     "id": "defect-aging-reopen-rate",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect aging and reopen rate"
+    "label": "Defect aging and reopen rate",
+    "usage": "common"
   },
   {
     "id": "defect-resolution-time-distribution",
     "topicId": "qa-product-quality-metrics",
-    "label": "Defect resolution time as a distribution, not one average"
+    "label": "Defect resolution time as a distribution, not one average",
+    "usage": "common"
   },
   {
     "id": "customer-reported-incident-rate",
     "topicId": "qa-product-quality-metrics",
-    "label": "Customer-reported defects and production incident rate"
+    "label": "Customer-reported defects and production incident rate",
+    "usage": "common"
   },
   {
     "id": "release-quality-trend",
     "topicId": "qa-product-quality-metrics",
-    "label": "Root-cause grouping and release-quality trend without a fake single score"
+    "label": "Root-cause grouping and release-quality trend without a fake single score",
+    "usage": "common"
+  },
+  {
+    "id": "kpi-vs-kri-comparison",
+    "topicId": "qa-product-quality-metrics",
+    "label": "KPI vs KRI: how are we performing vs where is risk accumulating",
+    "usage": "common"
   },
   {
     "id": "quality-gate-hard-soft-example",
     "topicId": "qa-product-quality-metrics",
-    "label": "Quality gates: hard vs soft, and a worked release-gate example"
+    "label": "Quality gates: hard vs soft, and a worked release-gate example",
+    "usage": "common"
   },
   {
     "id": "execution-status-pass-fail-blocked",
     "topicId": "test-automation-metrics",
-    "label": "Planned, executed, blocked and pass/fail status"
+    "label": "Planned, executed, blocked and pass/fail status",
+    "usage": "common"
   },
   {
     "id": "pass-rate-is-not-quality",
     "topicId": "test-automation-metrics",
-    "label": "Why pass rate is not a standalone quality KPI"
+    "label": "Why pass rate is not a standalone quality KPI",
+    "usage": "common"
   },
   {
     "id": "requirement-risk-coverage",
     "topicId": "test-automation-metrics",
-    "label": "Requirement coverage and risk-weighted coverage"
+    "label": "Requirement coverage and risk-weighted coverage",
+    "usage": "common"
   },
   {
     "id": "code-coverage-mutation-score",
     "topicId": "test-automation-metrics",
-    "label": "Code coverage and mutation score as specialist signals, not proof"
+    "label": "Code coverage and mutation score as specialist signals, not proof",
+    "usage": "common"
   },
   {
     "id": "regression-completion-caveats",
     "topicId": "test-automation-metrics",
-    "label": "Regression completion without a universal percentage target"
+    "label": "Regression completion without a universal percentage target",
+    "usage": "common"
   },
   {
     "id": "automation-health-governance-layer",
     "topicId": "test-automation-metrics",
-    "label": "Automation health: the governance layer above framework metrics"
+    "label": "Automation health: the governance layer above framework metrics",
+    "usage": "common"
   },
   {
     "id": "flaky-retry-quarantine",
     "topicId": "test-automation-metrics",
-    "label": "Flaky-test rate, retry rate and quarantine backlog/age"
+    "label": "Flaky-test rate, retry rate and quarantine backlog/age",
+    "usage": "common"
   },
   {
     "id": "false-failure-rate-infra-vs-product",
     "topicId": "test-automation-metrics",
-    "label": "False failure rate: infrastructure noise vs real regressions"
+    "label": "False failure rate: infrastructure noise vs real regressions",
+    "usage": "less-common"
   },
   {
     "id": "automation-coverage-denominators-deep",
     "topicId": "test-automation-metrics",
-    "label": "Automation coverage denominators, in depth"
+    "label": "Automation coverage denominators, in depth",
+    "usage": "common"
   },
   {
     "id": "merge-gate-runtime-diagnosis-time",
     "topicId": "test-automation-metrics",
-    "label": "Merge-gate runtime and time to diagnose"
+    "label": "Merge-gate runtime and time to diagnose",
+    "usage": "common"
   },
   {
     "id": "automation-execution-time-maintenance-cost",
     "topicId": "test-automation-metrics",
-    "label": "Automation execution-time trend and maintenance cost"
+    "label": "Automation execution-time trend and maintenance cost",
+    "usage": "less-common"
   },
   {
     "id": "automation-stability-vs-pass-rate",
     "topicId": "test-automation-metrics",
-    "label": "Automation stability vs pass rate"
+    "label": "Automation stability vs pass rate",
+    "usage": "common"
   },
   {
     "id": "lead-cycle-throughput-wip",
     "topicId": "delivery-production-metrics",
-    "label": "Lead time, cycle time, throughput and WIP"
+    "label": "Lead time, cycle time, throughput and WIP",
+    "usage": "common"
   },
   {
     "id": "work-item-age-queue-blocked-time",
     "topicId": "delivery-production-metrics",
-    "label": "Work-item age, queue time and blocked time"
+    "label": "Work-item age, queue time and blocked time",
+    "usage": "less-common"
   },
   {
     "id": "batch-size-release-frequency",
     "topicId": "delivery-production-metrics",
-    "label": "Batch size and release frequency"
+    "label": "Batch size and release frequency",
+    "usage": "common"
   },
   {
     "id": "velocity-should-not-compare-teams",
     "topicId": "delivery-production-metrics",
-    "label": "Why velocity and story points should not compare teams"
+    "label": "Why velocity and story points should not compare teams",
+    "usage": "common"
   },
   {
     "id": "dora-five-metrics-in-depth",
     "topicId": "delivery-production-metrics",
-    "label": "The current five DORA metrics, in depth"
+    "label": "The current five DORA metrics, in depth",
+    "usage": "common"
   },
   {
     "id": "dora-trend-not-ranking",
     "topicId": "delivery-production-metrics",
-    "label": "Application context, trend over ranking, metrics as signals not goals"
+    "label": "Application context, trend over ranking, metrics as signals not goals",
+    "usage": "common"
   },
   {
     "id": "dora-observability-cross-link",
     "topicId": "delivery-production-metrics",
-    "label": "Where DORA connects to deeper reliability material"
+    "label": "Where DORA connects to deeper reliability material",
+    "usage": "less-common"
   },
   {
     "id": "availability-latency-crash-free",
     "topicId": "delivery-production-metrics",
-    "label": "Availability, error/success rate, latency percentiles and crash-free sessions"
+    "label": "Availability, error/success rate, latency percentiles and crash-free sessions",
+    "usage": "common"
   },
   {
     "id": "mttd-generic-mttr-terminology",
     "topicId": "delivery-production-metrics",
-    "label": "MTTD and generic MTTR terminology"
+    "label": "MTTD and generic MTTR terminology",
+    "usage": "common"
   },
   {
     "id": "incident-customer-impact-signals",
     "topicId": "delivery-production-metrics",
-    "label": "Incident and customer-impact signals for QA decisions"
+    "label": "Incident and customer-impact signals for QA decisions",
+    "usage": "common"
   },
   {
     "id": "sli-slo-error-budget-bridge",
     "topicId": "delivery-production-metrics",
-    "label": "SLI, SLO and error-budget vocabulary"
+    "label": "SLI, SLO and error-budget vocabulary",
+    "usage": "less-common"
   },
   {
     "id": "estimate-vs-commitment",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Estimate vs commitment"
+    "label": "Estimate vs commitment",
+    "usage": "common"
   },
   {
     "id": "effort-vs-duration",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Effort vs duration"
+    "label": "Effort vs duration",
+    "usage": "common"
   },
   {
     "id": "point-estimate-vs-range-confidence",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Point estimate vs range and confidence"
+    "label": "Point estimate vs range and confidence",
+    "usage": "common"
   },
   {
     "id": "contingency-vs-padding",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Contingency vs hidden padding"
+    "label": "Contingency vs hidden padding",
+    "usage": "common"
   },
   {
     "id": "capacity-constraints-reestimation",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Capacity constraints and knowing when to re-estimate"
+    "label": "Capacity constraints and knowing when to re-estimate",
+    "usage": "common"
   },
   {
     "id": "wbs-hidden-testing-work",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Work breakdown structure and hidden testing work"
+    "label": "Work breakdown structure and hidden testing work",
+    "usage": "common"
+  },
+  {
+    "id": "qa-decomposition-patterns",
+    "topicId": "estimation-foundations-decomposition",
+    "label": "QA decomposition patterns: functional, component, test-type, platform, risk-based",
+    "usage": "common"
   },
   {
     "id": "analogy-reference-classes",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Analogy and reference-class estimation"
+    "label": "Analogy and reference-class estimation",
+    "usage": "common"
   },
   {
     "id": "historical-ratios-extrapolation",
     "topicId": "estimation-foundations-decomposition",
-    "label": "Historical ratios and extrapolation from actuals"
+    "label": "Historical ratios and extrapolation from actuals",
+    "usage": "common"
   },
   {
     "id": "onetime-setup-vs-recurring-work",
     "topicId": "estimation-foundations-decomposition",
-    "label": "One-time setup work vs recurring per-cycle work"
+    "label": "One-time setup work vs recurring per-cycle work",
+    "usage": "common"
   },
   {
-    "id": "expert-judgment-wideband-delphi",
+    "id": "expert-judgment",
     "topicId": "estimation-techniques-sizing",
-    "label": "Expert judgment and a worked Wideband Delphi round"
+    "label": "Expert judgment",
+    "usage": "common"
+  },
+  {
+    "id": "bottom-up-estimation",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Bottom-up estimation",
+    "usage": "common"
   },
   {
     "id": "planning-poker-tshirt-relative-sizing",
     "topicId": "estimation-techniques-sizing",
-    "label": "Planning Poker, T-shirt sizing and relative sizing"
+    "label": "Planning Poker, T-shirt sizing and relative sizing",
+    "usage": "common"
   },
   {
     "id": "scrum-does-not-require-story-points",
     "topicId": "estimation-techniques-sizing",
-    "label": "What Scrum actually requires—and does not require"
+    "label": "What Scrum actually requires—and does not require",
+    "usage": "common"
   },
   {
     "id": "optimistic-likely-pessimistic",
     "topicId": "estimation-techniques-sizing",
-    "label": "Optimistic, most-likely and pessimistic estimates"
+    "label": "Optimistic, most-likely and pessimistic estimates",
+    "usage": "common"
+  },
+  {
+    "id": "top-down-estimation",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Top-down estimation",
+    "usage": "less-common"
+  },
+  {
+    "id": "parametric-estimation",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Parametric estimation",
+    "usage": "less-common"
   },
   {
     "id": "pert-worked-calculation",
     "topicId": "estimation-techniques-sizing",
-    "label": "A worked PERT-style calculation"
+    "label": "A worked PERT-style calculation",
+    "usage": "less-common"
   },
   {
     "id": "when-pert-gives-false-comfort",
     "topicId": "estimation-techniques-sizing",
-    "label": "When the PERT formula gives false comfort"
+    "label": "When the PERT formula gives false comfort",
+    "usage": "less-common"
+  },
+  {
+    "id": "wideband-delphi",
+    "topicId": "estimation-techniques-sizing",
+    "label": "Wideband Delphi",
+    "usage": "less-common"
   },
   {
     "id": "function-points-use-case-points",
     "topicId": "estimation-techniques-sizing",
-    "label": "Function points and use-case points"
+    "label": "Function points and use-case points",
+    "usage": "rare"
   },
   {
     "id": "test-points-sizing-model",
     "topicId": "estimation-techniques-sizing",
-    "label": "Test points as a calibrated sizing model"
+    "label": "Test points as a calibrated sizing model",
+    "usage": "rare"
   },
   {
     "id": "choosing-a-sizing-model",
     "topicId": "estimation-techniques-sizing",
-    "label": "Choosing a sizing model: calibration before conversion"
+    "label": "Choosing a sizing model: calibration before conversion",
+    "usage": "common"
   },
   {
     "id": "allocating-effort-by-impact-likelihood",
     "topicId": "risk-forecasting",
-    "label": "Allocating test effort by impact and likelihood"
+    "label": "Allocating test effort by impact and likelihood",
+    "usage": "common"
   },
   {
     "id": "critical-path-dependency-constraints",
     "topicId": "risk-forecasting",
-    "label": "Critical-path and dependency constraints on allocation"
+    "label": "Critical-path and dependency constraints on allocation",
+    "usage": "common"
   },
   {
     "id": "deliberate-descoping-communication",
     "topicId": "risk-forecasting",
-    "label": "Deliberate de-scoping and communicating what remains untested"
+    "label": "Deliberate de-scoping and communicating what remains untested",
+    "usage": "common"
   },
   {
     "id": "forecast-vs-estimate",
     "topicId": "risk-forecasting",
-    "label": "Forecast vs estimate"
+    "label": "Forecast vs estimate",
+    "usage": "common"
   },
   {
     "id": "throughput-based-forecasting",
     "topicId": "risk-forecasting",
-    "label": "Throughput-based forecasting"
+    "label": "Throughput-based forecasting",
+    "usage": "less-common"
   },
   {
     "id": "monte-carlo-concept-assumptions",
     "topicId": "risk-forecasting",
-    "label": "The Monte Carlo concept and its assumptions"
+    "label": "The Monte Carlo concept and its assumptions",
+    "usage": "less-common"
   },
   {
     "id": "updating-forecast-as-evidence-changes",
     "topicId": "risk-forecasting",
-    "label": "Updating a forecast as evidence changes"
+    "label": "Updating a forecast as evidence changes",
+    "usage": "common"
   },
   {
     "id": "assumptions-log-range-confidence",
     "topicId": "calibration-communication",
-    "label": "Assumptions log, range and confidence"
+    "label": "Assumptions log, range and confidence",
+    "usage": "less-common"
   },
   {
     "id": "actual-vs-estimate-calibration",
     "topicId": "calibration-communication",
-    "label": "Actual vs estimate and calibration over time"
+    "label": "Actual vs estimate and calibration over time",
+    "usage": "common"
   },
   {
     "id": "reforecasting-cadence",
     "topicId": "calibration-communication",
-    "label": "Reforecasting as scope and evidence change"
+    "label": "Reforecasting as scope and evidence change",
+    "usage": "common"
   },
   {
     "id": "communicating-uncertainty-to-stakeholders",
     "topicId": "calibration-communication",
-    "label": "Communicating estimates and uncertainty to stakeholders"
+    "label": "Communicating estimates and uncertainty to stakeholders",
+    "usage": "common"
   }
 ]

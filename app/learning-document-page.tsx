@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
-import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection } from "./qa-markdown";
+import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
 import { SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
@@ -32,6 +32,7 @@ interface LearningModule {
   sourceIds?: string[];
   count?: number;
   kind?: string;
+  usageByHeading?: Record<string, MarkdownUsageFrequency>;
 }
 
 interface LessonRepoRef {
@@ -345,7 +346,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
               <div className={styles.layout}>
                 <div className={styles.document}>
                   <article className={styles.article}>
-                    <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={generatedMarkdown}/>
+                    <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={generatedMarkdown} usageByHeading={activeChapter?.usageByHeading}/>
                   </article>
 
                   <LearningSourceRegistry

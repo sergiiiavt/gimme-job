@@ -41,10 +41,13 @@ export interface LearningSource {
   checkedAt: string;
 }
 
+export type UsageFrequency = "common" | "less-common" | "rare";
+
 export interface RequiredConcept {
   id: string;
   topicId: string;
   label: string;
+  usage?: UsageFrequency;
 }
 
 interface EnglishChapterDocument {
