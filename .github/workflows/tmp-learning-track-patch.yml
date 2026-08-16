@@ -1,0 +1,401 @@
+name: Temporary learning track patch
+
+on:
+  push:
+    branches: [agent/learning-track-status]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Apply learning navigation changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one match in {path}, found {count}: {old[:80]!r}")
+              file.write_text(text.replace(old, new, 1))
+
+          public_site = "app/public-site.tsx"
+          site_nav = "app/site-navigation.tsx"
+          css = "app/globals.css"
+
+          replace_once(
+              public_site,
+              'type SiteMode = "public" | "personal";\n',
+              'type SiteMode = "public" | "personal";\ntype ProgrammingTrack = "python" | "typescript";\ntype AutomationTrack = "framework" | "test-architecture";\n',
+          )
+
+          old_secondary_navigation = '''function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null): SubnavItem[] {
+            if (section === "about" || section === "resume" || section === "jobs") return [];
+
+            if (section === "rewild") {
+              return [
+                { id: "all", label: "Fight AI slop" },
+                { id: "guide", label: "Field guide" },
+              ];
+            }
+
+            if (section === "interview") {
+              if (!interviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+              return interviewCatalog.taxonomy.map((item) => ({
+                id: item.id,
+                label: item.label,
+                count: item.category ? interviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewCatalog.questions.length : undefined,
+              }));
+            }
+
+            if (section === "python-interview") {
+              if (!pythonInterviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+              return pythonInterviewCatalog.taxonomy.map((item) => ({
+                id: item.id,
+                label: item.label,
+                count: item.category ? pythonInterviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? pythonInterviewCatalog.questions.length : undefined,
+              }));
+            }
+
+            if (section === "programming") return curriculumSubnav(pythonCurriculum);
+
+            if (section === "automation") return curriculumSubnav(automationCurriculum);
+
+            const items = knowledge[section].items;
+            return [
+              { id: "all", label: "All topics", count: items.length },
+              ...items.map((item) => ({ id: topicId(item.title), label: item.title })),
+            ];
+          }'''
+          new_secondary_navigation = '''function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null, programmingTrack: ProgrammingTrack, automationTrack: AutomationTrack): SubnavItem[] {
+            if (section === "about" || section === "resume" || section === "jobs") return [];
+
+            if (section === "rewild") {
+              return [
+                { id: "all", label: "Fight AI slop" },
+                { id: "guide", label: "Field guide" },
+              ];
+            }
+
+            if (section === "interview") {
+              if (!interviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+              return interviewCatalog.taxonomy.map((item) => ({
+                id: item.id,
+                label: item.label,
+                count: item.category ? interviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? interviewCatalog.questions.length : undefined,
+              }));
+            }
+
+            if (section === "python-interview") {
+              if (!pythonInterviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
+              return pythonInterviewCatalog.taxonomy.map((item) => ({
+                id: item.id,
+                label: item.label,
+                count: item.category ? pythonInterviewCatalog.questions.filter((question) => question.category === item.category).length : item.id === "all" ? pythonInterviewCatalog.questions.length : undefined,
+              }));
+            }
+
+            if (section === "programming") return programmingTrack === "python" ? curriculumSubnav(pythonCurriculum) : [];
+
+            if (section === "automation") return automationTrack === "framework" ? curriculumSubnav(automationCurriculum) : [];
+
+            const items = knowledge[section].items;
+            return [
+              { id: "all", label: "All topics", count: items.length },
+              ...items.map((item) => ({ id: topicId(item.title), label: item.title, status: "under-construction" as const })),
+            ];
+          }'''
+          replace_once(public_site, old_secondary_navigation, new_secondary_navigation)
+
+          old_switcher = '''function secondarySwitcherFor(section: PublicSection, openSection: (next: PublicSection) => void): SecondarySwitcher | undefined {
+            if (section === "interview" || section === "python-interview") {
+              return {
+                activeId: section,
+                onSelect: (id) => openSection(id as PublicSection),
+                options: [{ id: "interview", label: "QA" }, { id: "python-interview", label: "Python" }],
+              };
+            }
+            if (section === "programming") {
+              return {
+                activeId: "python",
+                onSelect: () => {},
+                options: [{ id: "python", label: "Python" }],
+              };
+            }
+            return undefined;
+          }'''
+          new_switcher = '''function secondarySwitcherFor(
+            section: PublicSection,
+            openSection: (next: PublicSection) => void,
+            programmingTrack: ProgrammingTrack,
+            onProgrammingTrackChange: (next: ProgrammingTrack) => void,
+            automationTrack: AutomationTrack,
+            onAutomationTrackChange: (next: AutomationTrack) => void,
+          ): SecondarySwitcher | undefined {
+            if (section === "interview" || section === "python-interview") {
+              return {
+                activeId: section,
+                onSelect: (id) => openSection(id as PublicSection),
+                options: [{ id: "interview", label: "QA" }, { id: "python-interview", label: "Python" }],
+              };
+            }
+            if (section === "programming") {
+              return {
+                activeId: programmingTrack,
+                onSelect: (id) => onProgrammingTrackChange(id as ProgrammingTrack),
+                options: [{ id: "python", label: "Python" }, { id: "typescript", label: "TypeScript" }],
+              };
+            }
+            if (section === "automation") {
+              return {
+                activeId: automationTrack,
+                onSelect: (id) => onAutomationTrackChange(id as AutomationTrack),
+                options: [{ id: "framework", label: "Framework" }, { id: "test-architecture", label: "Test Architecture" }],
+              };
+            }
+            return undefined;
+          }'''
+          replace_once(public_site, old_switcher, new_switcher)
+
+          replace_once(
+              public_site,
+              '  const [subsection, setSubsection] = useState("all");\n',
+              '  const [subsection, setSubsection] = useState("all");\n  const [programmingTrack, setProgrammingTrack] = useState<ProgrammingTrack>("python");\n  const [automationTrack, setAutomationTrack] = useState<AutomationTrack>("framework");\n',
+          )
+
+          old_python_effect = '''  useEffect(() => {
+            if (section !== "programming" || pythonCurriculum) return;
+            let active = true;
+            import("@/content/python-learning/catalog")
+              .then((module) => {
+                if (active) setPythonCurriculum(module.default as unknown as LearningCurriculum);
+              })
+              .catch(() => {
+                if (active) setPythonCurriculumError(true);
+              });
+            return () => { active = false; };
+          }, [pythonCurriculum, section]);'''
+          new_python_effect = '''  useEffect(() => {
+            if (section !== "programming" || programmingTrack !== "python" || pythonCurriculum) return;
+            let active = true;
+            import("@/content/python-learning/catalog")
+              .then((module) => {
+                if (active) setPythonCurriculum(module.default as unknown as LearningCurriculum);
+              })
+              .catch(() => {
+                if (active) setPythonCurriculumError(true);
+              });
+            return () => { active = false; };
+          }, [programmingTrack, pythonCurriculum, section]);'''
+          replace_once(public_site, old_python_effect, new_python_effect)
+
+          old_automation_effect = '''  useEffect(() => {
+            if (section !== "automation" || automationCurriculum) return;
+            let active = true;
+            import("@/content/automation-learning/catalog")
+              .then((module) => {
+                if (active) setAutomationCurriculum(module.default as unknown as LearningCurriculum);
+              })
+              .catch(() => {
+                if (active) setAutomationCurriculumError(true);
+              });
+            return () => { active = false; };
+          }, [automationCurriculum, section]);'''
+          new_automation_effect = '''  useEffect(() => {
+            if (section !== "automation" || automationTrack !== "framework" || automationCurriculum) return;
+            let active = true;
+            import("@/content/automation-learning/catalog")
+              .then((module) => {
+                if (active) setAutomationCurriculum(module.default as unknown as LearningCurriculum);
+              })
+              .catch(() => {
+                if (active) setAutomationCurriculumError(true);
+              });
+            return () => { active = false; };
+          }, [automationCurriculum, automationTrack, section]);'''
+          replace_once(public_site, old_automation_effect, new_automation_effect)
+
+          old_secondary_setup = '''  const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
+            const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum, automationCurriculum);
+            const secondarySwitcher = secondarySwitcherFor(section, openSection);
+            const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";'''
+          new_secondary_setup = '''  const activeLabel = navigationItems.find((item) => item.id === section)?.label ?? "Vacancies";
+            const secondaryItems = secondaryNavigation(section, interviewCatalog, pythonInterviewCatalog, pythonCurriculum, automationCurriculum, programmingTrack, automationTrack);
+            const secondarySwitcher = secondarySwitcherFor(
+              section,
+              openSection,
+              programmingTrack,
+              (next) => { setProgrammingTrack(next); setSubsection("all"); },
+              automationTrack,
+              (next) => { setAutomationTrack(next); setSubsection("all"); },
+            );
+            const secondaryEmptyState = section === "programming" && programmingTrack === "typescript"
+              ? "TypeScript track"
+              : section === "automation" && automationTrack === "test-architecture"
+                ? "Test Architecture track"
+                : undefined;
+            const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";'''
+          replace_once(public_site, old_secondary_setup, new_secondary_setup)
+
+          replace_once(
+              public_site,
+              '          secondaryItems={secondaryItems}\n          secondarySwitcher={secondarySwitcher}\n',
+              '          secondaryEmptyState={secondaryEmptyState}\n          secondaryItems={secondaryItems}\n          secondarySwitcher={secondarySwitcher}\n',
+          )
+
+          replace_once(
+              public_site,
+              '            activeTopic={subsection}\n            automationCurriculum={automationCurriculum}\n',
+              '            activeTopic={subsection}\n            automationCurriculum={automationCurriculum}\n            automationTrack={automationTrack}\n',
+          )
+          replace_once(
+              public_site,
+              '            pythonCurriculum={pythonCurriculum}\n            pythonCurriculumError={pythonCurriculumError}\n',
+              '            programmingTrack={programmingTrack}\n            pythonCurriculum={pythonCurriculum}\n            pythonCurriculumError={pythonCurriculumError}\n',
+          )
+
+          old_knowledge_signature = '''function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, interviewCatalog, interviewCatalogError, mode, onTopicChange, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+            activeTopic: string;
+            automationCurriculum: LearningCurriculum | null;
+            automationCurriculumError: boolean;
+            interviewCatalog: InterviewCatalog | null;
+            interviewCatalogError: boolean;
+            mode: SiteMode;
+            onTopicChange: (topic: string) => void;
+            pythonCurriculum: LearningCurriculum | null;
+            pythonCurriculumError: boolean;
+            pythonInterviewCatalog: InterviewCatalog | null;
+            pythonInterviewCatalogError: boolean;
+            section: Exclude<PublicSection, "jobs">;
+          }) {'''
+          new_knowledge_signature = '''function UnderConstructionPage({ copy, title }: { copy: string; title: string }) {
+            return (
+              <div className="kb-content">
+                <section className="kb-under-construction-page">
+                  <span className="kb-construction-badge">Under construction</span>
+                  <h1>{title}</h1>
+                  <p>{copy}</p>
+                </section>
+              </div>
+            );
+          }
+
+          function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, automationTrack, interviewCatalog, interviewCatalogError, mode, onTopicChange, programmingTrack, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
+            activeTopic: string;
+            automationCurriculum: LearningCurriculum | null;
+            automationCurriculumError: boolean;
+            automationTrack: AutomationTrack;
+            interviewCatalog: InterviewCatalog | null;
+            interviewCatalogError: boolean;
+            mode: SiteMode;
+            onTopicChange: (topic: string) => void;
+            programmingTrack: ProgrammingTrack;
+            pythonCurriculum: LearningCurriculum | null;
+            pythonCurriculumError: boolean;
+            pythonInterviewCatalog: InterviewCatalog | null;
+            pythonInterviewCatalogError: boolean;
+            section: Exclude<PublicSection, "jobs">;
+          }) {'''
+          replace_once(public_site, old_knowledge_signature, new_knowledge_signature)
+
+          replace_once(
+              public_site,
+              '  if (section === "programming") {\n    if (!pythonCurriculum) {',
+              '  if (section === "programming") {\n    if (programmingTrack === "typescript") return <UnderConstructionPage title="TypeScript" copy="This programming track is ready in navigation but its lessons have not been published yet."/>;\n    if (!pythonCurriculum) {',
+          )
+          replace_once(
+              public_site,
+              '  if (section === "automation") {\n    if (!automationCurriculum) {',
+              '  if (section === "automation") {\n    if (automationTrack === "test-architecture") return <UnderConstructionPage title="Test Architecture" copy="This automation-testing track is planned but does not have published learning content yet."/>;\n    if (!automationCurriculum) {',
+          )
+
+          replace_once(
+              public_site,
+              '<div><span>{String(index + 1).padStart(2, "0")}</span><small>Outline</small></div>',
+              '<div><span>{String(index + 1).padStart(2, "0")}</span><small className="kb-construction-badge">Under construction</small></div>',
+          )
+
+          replace_once(
+              site_nav,
+              '''export interface SubnavItem {
+            id: string;
+            label: string;
+            count?: number;
+          }''',
+              '''export interface SubnavItem {
+            id: string;
+            label: string;
+            count?: number;
+            status?: "under-construction";
+          }''',
+          )
+          replace_once(
+              site_nav,
+              '  secondaryItems: SubnavItem[];\n  secondarySwitcher?: SecondarySwitcher;\n',
+              '  secondaryEmptyState?: string;\n  secondaryItems: SubnavItem[];\n  secondarySwitcher?: SecondarySwitcher;\n',
+          )
+          replace_once(
+              site_nav,
+              'export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {',
+              'export function SiteSidebar({ activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelect, onSelectSubsection, personalHref = "/workspace", secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {',
+          )
+          old_subnav = '''        <nav aria-label={`${secondaryTitle} subsections`}>
+                  {secondaryItems.map((item) => (
+                    <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
+                      <span>{item.label}</span>{typeof item.count === "number" && <small>{item.count}</small>}
+                    </button>
+                  ))}
+                </nav>'''
+          new_subnav = '''        {secondaryEmptyState ? (
+                  <div className="kb-subnav-empty" aria-live="polite">
+                    <span className="kb-construction-badge">Under construction</span>
+                    <strong>{secondaryEmptyState}</strong>
+                  </div>
+                ) : (
+                  <nav aria-label={`${secondaryTitle} subsections`}>
+                    {secondaryItems.map((item) => (
+                      <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
+                        <span>{item.label}</span>
+                        {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
+                      </button>
+                    ))}
+                  </nav>
+                )}'''
+          replace_once(site_nav, old_subnav, new_subnav)
+
+          css_anchor = '.kb-subnav-switch button.active { background: #dfead9; border-color: #afc3a5; color: #284d37; }\n'
+          css_addition = '''.kb-subnav-switch button.active { background: #dfead9; border-color: #afc3a5; color: #284d37; }
+          .kb-construction-badge { align-items: center; background: var(--amber-soft); border: 1px solid #ead7a5; border-radius: 999px; color: var(--amber); display: inline-flex; flex: 0 0 auto; font-size: 7px; font-style: normal; font-weight: 850; letter-spacing: .04em; line-height: 1; padding: 4px 6px; text-transform: uppercase; white-space: nowrap; }
+          .kb-subnav nav button .kb-construction-badge { font-size: 6px; padding: 3px 5px; }
+          .kb-subnav-empty { border: 1px dashed #d8dfd8; border-radius: 8px; margin-top: 4px; padding: 14px 10px; }
+          .kb-subnav-empty strong { color: #58655e; display: block; font-size: 11px; line-height: 1.4; margin-top: 8px; }
+          .kb-under-construction-page { background: #fff; border: 1px dashed #d9dfd9; border-radius: 12px; margin-top: 24px; max-width: 720px; padding: 34px; }
+          .kb-under-construction-page h1 { font-size: 28px; letter-spacing: -.04em; margin: 14px 0 8px; }
+          .kb-under-construction-page p { color: var(--muted); line-height: 1.6; margin: 0; max-width: 560px; }
+          .kb-topic-grid article > div small.kb-construction-badge { background: var(--amber-soft); border: 1px solid #ead7a5; color: var(--amber); font-size: 7px; padding: 4px 6px; }
+          '''
+          replace_once(css, css_anchor, css_addition)
+          PY
+
+      - name: Verify patch
+        run: git diff --check && git diff -- app/public-site.tsx app/site-navigation.tsx app/globals.css
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/public-site.tsx app/site-navigation.tsx app/globals.css
+          git commit -m "add learning track status navigation"
+          git push
