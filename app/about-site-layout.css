@@ -141,6 +141,23 @@
   margin-top: 7px;
 }
 
+/* Keep integration cards only as wide as their actual content needs. */
+.about-tech-node:has(.about-tech-link[href*="hetzner-n8n.yml"]) {
+  max-width: 210px;
+}
+
+.about-tech-node:has(.about-tech-link[href*="_jobpilot.ts"]) {
+  max-width: 190px;
+}
+
+.about-tech-node:has(.about-tech-link[href*="grafana.net/public-dashboards"]) {
+  max-width: 200px;
+}
+
+.about-tech-node:has(.about-tech-link[href*="sonarcloud.io"]) {
+  max-width: 210px;
+}
+
 .about-tech-link {
   min-height: 29px;
   padding: 0 8px;
@@ -223,6 +240,15 @@
 .about-tech-ai-flow > .about-tech-node,
 .about-tech-observability-flow > .about-tech-node {
   max-width: 220px;
+}
+
+/* Re-apply tighter per-card caps after the generic flow rule above. */
+.about-tech-ai-flow > .about-tech-node:has(.about-tech-link[href*="_jobpilot.ts"]) {
+  max-width: 190px;
+}
+
+.about-tech-observability-flow > .about-tech-node:has(.about-tech-link[href*="grafana.net/public-dashboards"]) {
+  max-width: 200px;
 }
 
 .about-tech-ai-flow > .about-tech-fallback {
