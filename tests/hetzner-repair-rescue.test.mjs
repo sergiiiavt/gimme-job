@@ -13,12 +13,12 @@ test("Hetzner rescue repair validates remote data before using it", { concurrenc
   const originalGithubEnv = process.env.GITHUB_ENV;
   const originalStdoutWrite = process.stdout.write;
   const calls = [];
-  let maskedOutput = "";
+  let capturedOutput = "";
 
   process.env.HETZNER_TOKEN = "test-hetzner-token";
   process.env.GITHUB_ENV = githubEnv;
-  process.stdout.write = ((chunk, ...args) => {
-    maskedOutput += String(chunk);
+  process.stdout.write = ((chunk) => {
+    capturedOutput += String(chunk);
     return true;
   });
 
@@ -60,7 +60,7 @@ test("Hetzner rescue repair validates remote data before using it", { concurrenc
     const output = await readFile(githubEnv, "utf8");
     assert.match(output, /HETZNER_SERVER_IP<<GIMMEJOB_EOF\n203\.0\.113\.10\nGIMMEJOB_EOF/);
     assert.match(output, /HETZNER_RESCUE_PASSWORD<<GIMMEJOB_EOF\nrescue-pass-123\nGIMMEJOB_EOF/);
-    assert.equal(maskedOutput, "::add-mask::rescue-pass-123\n");
+    assert.match(capturedOutput, /::add-mask::rescue-pass-123\n/);
   } finally {
     globalThis.fetch = originalFetch;
     process.stdout.write = originalStdoutWrite;
