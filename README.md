@@ -22,12 +22,12 @@ The **Jobs** module is functional:
 
 The **Interview questions** module contains:
 
-- 672 QA questions across 19 topics and 67 references, with the current total enforced as a rolling non-destructive minimum;
+- a growing QA catalog across 20 topics, protected by non-destructive validator floors rather than a fixed target count;
 - an editorial Starred foundation set that remains separate from frequency-based prevalence and future personal stars;
 - dedicated AI/ML/LLM, Databases/SQL/BI, Observability/Production, and Regulated-domain sections;
 - four evidence-informed prevalence bands and most-common-first sorting;
 - prevalence, seniority, tag, topic and full-text filters;
-- 50 research and validation sources;
+- a maintained source registry and content-quality validation;
 - a lazy-loaded catalog with at most 60 question rows rendered at once.
 
 The **Python interview questions** module is functional and separate from the general QA catalog above, reached from a "QA" / "Python" toggle inside Interview questions rather than its own nav button:
@@ -79,26 +79,31 @@ VS Code shortcuts:
 
 - `Ctrl+Shift+B` — run the local app;
 - **Run and Debug → GimmeJob: Run in VS Code** — start from the debugger panel;
-- **Terminal → Run Task** — lint, type-check, or create a production build.
+- **Terminal → Run Task → GimmeJob: Verify like CI** — run the complete deterministic validation suite before publishing a change.
 
 On Windows PowerShell, if `npm.ps1` is blocked, use `npm.cmd install` and `npm.cmd run local`.
 
 ## Quality checks
 
+During implementation:
+
 ```bash
-npm run lint
-npm run check:agent
-npm run build
-npm run check:cloudflare
+npm run verify:fast
 ```
 
-The same commands run in GitHub Actions for every pull request and push to `main` after this version is pushed to GitHub.
+Before publishing a completed change:
+
+```bash
+npm run verify
+```
+
+`npm run verify` is the local executable contract shared by coding agents and GitHub Actions. It covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation. GitHub Actions additionally runs the SonarQube Cloud quality gate and, on `main`, production deployment.
 
 ## Cloudflare CI/CD
 
-After the three repository secrets below are configured, every successful push to `main` automatically:
+After the required repository secrets below are configured, every successful push to `main` automatically:
 
-1. validates and builds the application;
+1. runs the canonical repository verification and SonarQube quality gate;
 2. finds or creates the `gimmejob-db` D1 database;
 3. applies all migrations from `drizzle/`;
 4. deploys the Worker and static assets;
@@ -109,7 +114,9 @@ Required GitHub repository secrets:
 
 - `CLOUDFLARE_ACCOUNT_ID`;
 - `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit, D1 Edit, and Cloudflare Images Edit permissions;
-- `APP_PASSWORD`, at least 16 characters.
+- `APP_PASSWORD`, at least 16 characters;
+- `GRAFANA_READ_TOKEN`;
+- `N8N_INGEST_TOKEN`.
 
 Optional GitHub repository secrets:
 
@@ -152,8 +159,8 @@ Even a new database needs the initial migration: it creates the first set of tab
 ## Deployment model
 
 1. push to `main`;
-2. GitHub Actions validates and builds;
-3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates the private-workspace password.
+2. GitHub Actions runs `npm run verify` and the remote SonarQube gate;
+3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates provider-managed secrets.
 
 ## Public address
 

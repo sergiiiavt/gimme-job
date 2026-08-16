@@ -52,7 +52,9 @@ The old direct-Gmail n8n ingest endpoint remains available for backward compatib
 
 ## Delivery
 
-GitHub Actions validates content, linting, local-agent types, tests and the production build. On `main`, the same workflow can provision a named D1 database, apply versioned migrations, deploy the Worker, and rotate its Basic Auth password and service tokens from repository secrets. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
+`AGENTS.md` is the cross-agent repository policy. Tool-specific entrypoints such as `CLAUDE.md` and `.github/copilot-instructions.md` defer to it instead of maintaining independent copies. `package.json` is the executable validation source of truth: `npm run verify:fast` is intended for iteration and `npm run verify` mirrors all deterministic CI checks that can run without repository secrets.
+
+GitHub Actions installs dependencies, runs `npm run verify`, then runs the credentialed SonarQube Cloud quality gate. On `main`, the same workflow can provision a named D1 database, apply versioned migrations, deploy the Worker, and rotate provider-managed secrets. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
 
 The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`.
 
