@@ -65,6 +65,18 @@ test("email text extraction falls back to readable HTML text", () => {
   assert.doesNotMatch(excerpt ?? "", /display:none/);
 });
 
+test("email text extraction ignores script and style bodies with spaced closing tags", () => {
+  const raw = [
+    "Content-Type: text/html; charset=utf-8",
+    "",
+    '<html><body><script>window.payload = "<p>hidden</p>";</script ><style>.secret{display:none}</style ><p data-note="1 > 0">Visible interview invitation</p></body></html>',
+  ].join("\r\n");
+
+  const excerpt = extractEmailTextExcerpt(raw);
+  assert.match(excerpt ?? "", /Visible interview invitation/);
+  assert.doesNotMatch(excerpt ?? "", /window\.payload|hidden|secret|display:none/);
+});
+
 test("email text excerpts are hard-bounded", () => {
   const raw = `Content-Type: text/plain\r\n\r\n${"x".repeat(10_000)}`;
   const excerpt = extractEmailTextExcerpt(raw, 1_000);

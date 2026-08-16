@@ -243,15 +243,23 @@ function serviceFastPath(event: EmailEventRow): Omit<ClassificationResult, "id" 
   };
 }
 
+function isAiClassification(value: unknown): value is AiClassification {
+  return typeof value === "string" && AI_CLASSIFICATIONS.includes(value as AiClassification);
+}
+
+function isEmailAction(value: unknown): value is EmailAction {
+  return typeof value === "string" && EMAIL_ACTIONS.includes(value as EmailAction);
+}
+
 function normalizedAiResult(value: unknown, model: string): Omit<ClassificationResult, "id" | "userId"> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("OpenAI returned an invalid classification object.");
   const payload = value as Record<string, unknown>;
-  const classification = String(payload.classification ?? "") as AiClassification;
-  if (!AI_CLASSIFICATIONS.includes(classification)) throw new Error("OpenAI returned an unsupported email classification.");
-  const confidence = Number(payload.confidence);
-  if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) throw new Error("OpenAI returned an invalid confidence score.");
-  const action = String(payload.action ?? "") as EmailAction;
-  if (!EMAIL_ACTIONS.includes(action)) throw new Error("OpenAI returned an unsupported email action.");
+  const classification = payload.classification;
+  if (!isAiClassification(classification)) throw new Error("OpenAI returned an unsupported email classification.");
+  const confidence = payload.confidence;
+  if (typeof confidence !== "number" || !Number.isFinite(confidence) || confidence < 0 || confidence > 1) throw new Error("OpenAI returned an invalid confidence score.");
+  const action = payload.action;
+  if (!isEmailAction(action)) throw new Error("OpenAI returned an unsupported email action.");
   const summary = boundedText(payload.summary, MAX_SUMMARY_LENGTH);
   if (!summary) throw new Error("OpenAI returned an empty email summary.");
 
