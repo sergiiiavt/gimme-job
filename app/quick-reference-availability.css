@@ -1,0 +1,10 @@
+.kb-quick-reference-link {
+  display: none !important;
+}
+
+.kb-quick-reference-link[href="/reference/qa-fundamentals"],
+.kb-quick-reference-link[href="/reference/programming"],
+.kb-quick-reference-link[href="/reference/automation"],
+.kb-quick-reference-link[href="/reference/devops"] {
+  display: flex !important;
+}
