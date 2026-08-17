@@ -9,10 +9,10 @@ const canonicalSectionPaths: Record<string, string> = {
   trends: "/trends",
   certifications: "/learn/certifications",
   strategy: "/learn/strategy",
-  programming: "/learn/programming",
+  programming: "/reference/programming",
   automation: "/learn/automation",
   api: "/learn/api",
-  data: "/learn/data",
+  data: "/reference/data",
   mobile: "/learn/mobile",
   embedded: "/learn/embedded",
   performance: "/learn/performance",
@@ -27,6 +27,8 @@ const canonicalSectionPaths: Record<string, string> = {
   news: "/news",
   rewild: "/fight-ai-slop",
 };
+
+const publishedQuickReferenceSections = new Set(["programming", "data"]);
 
 /**
  * Public and signed-in users share one canonical URL for each content surface.
@@ -50,6 +52,10 @@ export function sectionFromPathname(pathname: string): string | null {
     "/fight-ai-slop": "rewild",
   };
   if (topLevel[normalized]) return topLevel[normalized];
+  if (normalized.startsWith("/reference/")) {
+    const slug = normalized.slice("/reference/".length).split("/")[0];
+    return publishedQuickReferenceSections.has(slug) ? slug : null;
+  }
   if (!normalized.startsWith("/learn/")) return null;
   const slug = normalized.slice("/learn/".length).split("/")[0];
   if (slug === "cloud-devops") return "devops";
