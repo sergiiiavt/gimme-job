@@ -137,6 +137,10 @@ function longestText(values: string[]): string {
   return values.reduce((longest, value) => value.length > longest.length ? value : longest, "");
 }
 
+function douCardCount(html: string): number {
+  return extractElementsByClass(html, "li", "l-vacancy").length;
+}
+
 export function parseDouVacancyListing(html: string, source: string): JobInput[] {
   return extractElementsByClass(html, "li", "l-vacancy")
     .map((block): JobInput | null => {
@@ -261,10 +265,11 @@ async function collectDouQaVacancies(source: string): Promise<JobInput[]> {
   const first = await fetchDouListingPage();
   const jobs = parseDouVacancyListing(first.html, source);
   const seenUrls = new Set(jobs.map((job) => job.url));
-  let count = jobs.length;
+  let count = douCardCount(first.html);
 
   for (let page = 1; page < DOU_MAX_PAGES; page += 1) {
     const loaded = await fetchDouMore(count, first.csrf, first.cookie);
+    const rawBatchCount = douCardCount(loaded.html);
     const batch = parseDouVacancyListing(loaded.html, source);
     let added = 0;
     for (const job of batch) {
@@ -273,8 +278,8 @@ async function collectDouQaVacancies(source: string): Promise<JobInput[]> {
       jobs.push(job);
       added += 1;
     }
-    count += batch.length;
-    if (loaded.last || batch.length === 0 || added === 0 || batch.length < DOU_PAGE_SIZE) break;
+    count += rawBatchCount;
+    if (loaded.last || rawBatchCount === 0 || added === 0 || rawBatchCount < DOU_PAGE_SIZE) break;
   }
 
   return enrichDouDetails(jobs);
@@ -317,8 +322,13 @@ export class RssJobSource implements JobSource {
   async collect(): Promise<JobInput[]> {
     let feedHost = "";
     try { feedHost = new URL(this.url).hostname.toLowerCase(); } catch { /* ignore */ }
-    if (hostMatches(feedHost, "dou.ua") && /(?:search|category)=QA(?:&|$)/i.test(this.url)) {
-      return collectDouQaVacancies(this.name);
+    if (hostMatches(feedHost, "dou.ua") && /[?&]search=QA(?:&|$)/i.test(this.url)) {
+      try {
+        return await collectDouQaVacancies(this.name);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`DOU full discovery failed for ${this.name}; falling back to RSS: ${message}`);
+      }
     }
 
     const xml = await fetchText(this.url);
