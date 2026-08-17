@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeDouImportJobs } from "../app/internal/n8n/vacancies-sync/route.ts";
+import { normalizeDouImportJobs } from "../app/api/_dou-vacancy-import.ts";
 
 function vacancy(id: number, company: string, title: string) {
   return {
