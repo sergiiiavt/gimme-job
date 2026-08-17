@@ -25,6 +25,7 @@ test("Test Automation uses six module-scoped learning tracks", async () => {
   assert.match(page, /moduleIds: \["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"\]/);
   assert.match(page, /moduleIds: \["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
   assert.match(page, /moduleIds: \["reference-framework"\]/);
+  assert.match(page, /referenceFrameworkModule/);
 });
 
 test("shared learning renderer filters the secondary navigation by selected track", async () => {
@@ -38,7 +39,7 @@ test("shared learning renderer filters the secondary navigation by selected trac
 });
 
 test("Reference Framework is a real walkthrough with direct implementation links", async () => {
-  const page = await read("app/automation-learning-page.tsx");
+  const content = await read("content/automation-learning/reference-framework.ts");
 
   for (const path of [
     "pyproject.toml",
@@ -54,10 +55,10 @@ test("Reference Framework is a real walkthrough with direct implementation links
     "framework/utils/reporting.py",
     ".github/workflows/ci.yml",
   ]) {
-    assert.ok(page.includes(`"${path}"`), `Reference walkthrough must link ${path}`);
+    assert.ok(content.includes(`path: "${path}"`), `Reference walkthrough must link ${path}`);
   }
 
-  assert.match(page, /\[live\]/);
-  assert.match(page, /\[reviewed\]/);
-  assert.match(page, /does not teach the same concepts again/i);
+  assert.match(content, /\[live\]/);
+  assert.match(content, /\[reviewed\]/);
+  assert.match(content, /does not teach the same concepts again/i);
 });
