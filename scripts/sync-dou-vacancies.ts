@@ -10,9 +10,13 @@ function requiredEnvironment(name: string): string {
   return value;
 }
 
+function numberField(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 async function main(): Promise<void> {
   const token = requiredEnvironment("N8N_INGEST_TOKEN");
-  const appUrl = (process.env.GIMMEJOB_URL?.trim() || DEFAULT_APP_URL).replace(/\/+$/, "");
+  const appUrl = new URL(process.env.GIMMEJOB_URL?.trim() || DEFAULT_APP_URL).origin;
   const source = new RssJobSource("dou-qa", DOU_RSS_URL);
   const jobs = await source.collect();
 
@@ -25,23 +29,31 @@ async function main(): Promise<void> {
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      "x-gimmejob-mode": "dou-import",
       "x-gimmejob-trigger": process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "manual",
     },
-    body: JSON.stringify({ mode: "dou-import", jobs }),
+    body: JSON.stringify({ jobs }),
     signal: AbortSignal.timeout(120_000),
   });
 
   const body = await response.text();
   if (!response.ok) {
-    throw new Error(`DOU import returned HTTP ${response.status}${body ? `: ${body.slice(0, 500)}` : ""}.`);
+    const details = body ? `: ${body.slice(0, 500)}` : "";
+    throw new Error(`DOU import returned HTTP ${response.status}${details}.`);
   }
 
   const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
   const result = payload.result ?? {};
-  console.log(`DOU runner sync complete: ${jobs.length} collected, ${result.relevant ?? 0} relevant, ${result.rejected ?? 0} rejected, ${result.inserted ?? 0} inserted, ${result.updated ?? 0} updated.`);
+  const relevant = numberField(result.relevant);
+  const rejected = numberField(result.rejected);
+  const inserted = numberField(result.inserted);
+  const updated = numberField(result.updated);
+  console.log(`DOU runner sync complete: ${jobs.length} collected, ${relevant} relevant, ${rejected} rejected, ${inserted} inserted, ${updated} updated.`);
 }
 
-main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
-});
+}
