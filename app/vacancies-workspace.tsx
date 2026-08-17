@@ -373,7 +373,7 @@ export default function VacanciesWorkspace() {
     }
   };
 
-  const updateTracking = async (job: Job, change: { status?: JobStatus }) => {
+  const updateTracking = async (job: Job, change: Partial<Pick<Job, "status">>) => {
     if (!isPersonal) return;
     if (!online) return setNotice("Cloud API is unavailable; demo changes are not saved.");
     setBusy(`job-${job.id}`);
@@ -542,7 +542,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
   >{copied ? "Copied" : label}</button>;
 }
 
-function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; disabled: boolean; authenticated: boolean; onChange: (change: { status?: JobStatus }) => void }) {
+function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; disabled: boolean; authenticated: boolean; onChange: (change: Partial<Pick<Job, "status">>) => void }) {
   const summaryTags = [
     job.remote ? "Remote" : null,
     job.salaryText ? "Salary listed" : null,
