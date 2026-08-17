@@ -4,9 +4,9 @@
 
 .tocRail {
   position: fixed !important;
-  right: 24px;
-  top: 176px;
-  width: 180px;
+  right: 24px !important;
+  top: 176px !important;
+  width: 180px !important;
   z-index: 24;
 }
 
