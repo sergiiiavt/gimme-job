@@ -7,7 +7,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("new learning paths are ordered and route through standalone document pages", async () => {
   const navigation = await read("app/site-navigation.tsx");
   const automation = navigation.indexOf('label: "Test automation"');
-  const tools = navigation.indexOf('label: "Testing & diagnostic tools"');
+  const tools = navigation.indexOf('label: "Testing tools"');
   const api = navigation.indexOf('label: "API & integration"');
   assert.ok(automation >= 0, "Test automation must be present");
   assert.ok(tools > automation, "Testing tools must follow Test automation");

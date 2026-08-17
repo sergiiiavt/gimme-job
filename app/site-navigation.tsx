@@ -70,7 +70,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "automation", label: "Test automation", publicHref: "/learn/automation", personalHref: "/workspace/learn/automation" },
       {
         id: "testing-tools",
-        label: "Testing & diagnostic tools",
+        label: "Testing tools",
         external: true,
         publicHref: "/learn/testing-tools",
         personalHref: "/workspace/learn/testing-tools",
