@@ -1,5 +1,29 @@
 [
   {
+    "id": "python-venv",
+    "title": "venv — Creation of virtual environments",
+    "url": "https://docs.python.org/3/library/venv.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Virtual-environment isolation, creation, activation, disposal and interpreter behaviour"
+  },
+  {
+    "id": "python-pyproject",
+    "title": "Writing your pyproject.toml",
+    "url": "https://packaging.python.org/en/latest/guides/writing-pyproject-toml/",
+    "publisher": "Python Packaging Authority",
+    "kind": "Official packaging guide",
+    "role": "Project metadata, dependency declaration and build-system configuration"
+  },
+  {
+    "id": "pip-local-project-installs",
+    "title": "Local project installs",
+    "url": "https://pip.pypa.io/en/stable/topics/local-project-installs/",
+    "publisher": "Python Packaging Authority",
+    "kind": "Official pip documentation",
+    "role": "Regular versus editable local project installation with pip"
+  },
+  {
     "id": "pytest-docs",
     "title": "pytest documentation",
     "url": "https://docs.pytest.org/en/stable/",
