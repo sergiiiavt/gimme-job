@@ -9,6 +9,7 @@ const canonicalSectionPaths: Record<string, string> = {
   trends: "/trends",
   certifications: "/learn/certifications",
   strategy: "/learn/strategy",
+  "qa-fundamentals": "/reference/qa-fundamentals",
   programming: "/reference/programming",
   automation: "/learn/automation",
   api: "/learn/api",
@@ -28,7 +29,7 @@ const canonicalSectionPaths: Record<string, string> = {
   rewild: "/fight-ai-slop",
 };
 
-const publishedQuickReferenceSections = new Set(["programming", "data"]);
+const publishedQuickReferenceSections = new Set(["qa-fundamentals", "programming", "data"]);
 
 /**
  * Public and signed-in users share one canonical URL for each content surface.
