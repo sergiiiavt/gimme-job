@@ -10,7 +10,7 @@ interface PrivateContact {
   location?: string;
 }
 
-const linkedInUrl = "https://www.linkedin.com/in/serhii-yavtushkevych/";
+const linkedInUrl = "https://www.linkedin.com/in/serhii-yavtushkevych-ba1a2686/";
 
 const skills = [
   "Manual testing: functional, regression, smoke, integration, exploratory",
