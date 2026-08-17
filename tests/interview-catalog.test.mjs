@@ -244,7 +244,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /label: "★ Starred"/);
   assert.match(uiSource, /item\.editorialStar === true/);
   assert.match(uiSource, /aria-label="Starred fundamental"/);
-  assert.match(stylesSource, /\.iq-star-marker \{/);
+  assert.match(stylesSource, /\.iq-star-icon \{/);
   assert.match(uiSource, /function InterviewFilter/);
   assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
   assert.doesNotMatch(uiSource, /<label className="iq-category">/);
@@ -256,7 +256,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /type=\{selectionMode === "single" \? "radio" : "checkbox"\}/);
   assert.match(uiSource, /role=\{selectionMode === "single" \? "radiogroup"/);
   assert.match(uiSource, /const \[prevalences, setPrevalences\] = useState<InterviewPrevalenceFilter\[]>\(\[\]\)/);
-  assert.match(uiSource, /prevalence === "Starred" \? item\.editorialStar === true : prevalence === item\.prevalence/);
+  assert.match(uiSource, /const isStarred = mode === "personal" \? Boolean\(stars\[item\.id]\) : item\.editorialStar === true;/);
+  assert.match(uiSource, /prevalence === "Starred" \? isStarred : prevalence === item\.prevalence/);
   assert.match(uiSource, /\{ value: "learning", label: "Learning path" \}/);
   assert.doesNotMatch(uiSource, /Editorial order/);
   assert.match(uiSource, /if \(sort === "learning"\)/);
@@ -276,11 +277,10 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(routeSource, /interview-progress/);
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
-  assert.match(uiSource, /Personal star/);
-  assert.match(uiSource, /Visible only to you/);
-  assert.match(uiSource, /iq-star-badge/);
+  assert.match(uiSource, /aria-label=\{stars\[item\.id\] \? "Remove your star" : "Star this question"\}/);
+  assert.doesNotMatch(uiSource, /Personal star</);
   assert.match(routeSource, /interview-stars/);
-  assert.match(stylesSource, /\.iq-star-control \{/);
+  assert.match(stylesSource, /\.iq-star-icon\.active \{/);
 
   for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
