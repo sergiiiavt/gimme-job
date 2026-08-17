@@ -208,7 +208,10 @@ export default function AboutSiteEnhancements() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    setTarget(document.querySelector<HTMLElement>(".about-tech-page"));
+    const frame = window.requestAnimationFrame(() => {
+      setTarget(document.querySelector<HTMLElement>(".about-tech-page"));
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   if (!target) return null;
