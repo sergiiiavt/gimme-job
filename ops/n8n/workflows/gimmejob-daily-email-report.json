@@ -1,0 +1,126 @@
+{
+  "name": "GimmeJob - Daily email automation report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-700, 0],
+      "id": "f6c530f3-a09c-4787-a0b0-3dfbb36c34fa",
+      "name": "Every morning at 08:00 Kyiv"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Kyiv', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());\nconst values = Object.fromEntries(parts.map((part) => [part.type, part.value]));\nconst today = `${values.year}-${values.month}-${values.day}`;\nconst previous = new Date(`${today}T00:00:00.000Z`);\nprevious.setUTCDate(previous.getUTCDate() - 1);\nconst reportDate = previous.toISOString().slice(0, 10);\nreturn [{ json: { reportDate } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-450, 0],
+      "id": "e5a7c4c8-8212-469d-938a-4f59a9f12b1f",
+      "name": "Choose previous Kyiv day"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://gimme-job.com/internal/n8n/email-stats?date=' + $json.reportDate }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-180, 0],
+      "id": "ac91c015-cd53-4d7a-a5b3-b22673186a13",
+      "name": "Get daily GimmeJob statistics",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const s = $input.first().json;\nconst t = s.totals ?? {};\nconst r = s.routing ?? {};\nconst ai = s.ai ?? {};\nconst c = s.byClassification ?? {};\nconst important = Array.isArray(s.important) ? s.important : [];\n\nconst esc = (value) => String(value ?? '').replace(/[&<>\\\"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\\\"': '&quot;' })[ch] ?? ch);\nconst n = (value) => Number(value ?? 0).toLocaleString('en-US');\nconst pct = Number(r.aiAvoidanceRatePct ?? 100).toFixed(1);\n\nconst classRows = [\n  ['Application received', c.APPLICATION_RECEIVED],\n  ['Recruiter outreach', c.RECRUITER_OUTREACH],\n  ['Interviews', c.INTERVIEW],\n  ['Test tasks', c.TEST_TASK],\n  ['Offers', c.OFFER],\n  ['Rejections', c.REJECTION],\n].map(([label, value]) => `<tr><td>${label}</td><td style=\"text-align:right\"><b>${n(value)}</b></td></tr>`).join('');\n\nconst importantHtml = important.length\n  ? `<h3>Important events</h3><ul>${important.map((item) => {\n      const title = [item.classification, item.company, item.jobTitle].filter(Boolean).join(' · ');\n      return `<li><b>${esc(title || item.classification)}</b><br>${esc(item.summary || item.subject || '')}${item.action ? `<br><small>Action: ${esc(item.action)}</small>` : ''}</li>`;\n    }).join('')}</ul>`\n  : '<h3>Important events</h3><p>None.</p>';\n\nconst subject = `GimmeJob · ${s.date} · ${n(t.jobRelevant)} job-relevant emails`;\nconst html = `\n<h2>GimmeJob email automation — ${esc(s.date)}</h2>\n<p><b>${n(t.received)}</b> emails received · <b>${n(t.processed)}</b> processed · <b>${n(t.pending)}</b> pending</p>\n<h3>Job-relevant emails: ${n(t.jobRelevant)}</h3>\n<table cellpadding=\"5\" cellspacing=\"0\" border=\"0\">${classRows}</table>\n<h3>Other email</h3>\n<table cellpadding=\"5\" cellspacing=\"0\" border=\"0\">\n<tr><td>Job alerts</td><td style=\"text-align:right\"><b>${n(t.jobAlerts)}</b></td></tr>\n<tr><td>Service messages</td><td style=\"text-align:right\"><b>${n(t.serviceMessages)}</b></td></tr>\n<tr><td>Non-job</td><td style=\"text-align:right\"><b>${n(t.nonJob)}</b></td></tr>\n</table>\n<h3>Automation</h3>\n<table cellpadding=\"5\" cellspacing=\"0\" border=\"0\">\n<tr><td>Rule-based</td><td style=\"text-align:right\"><b>${n(r.rule)}</b></td></tr>\n<tr><td>OpenAI classified</td><td style=\"text-align:right\"><b>${n(r.ai)}</b></td></tr>\n<tr><td>AI avoided</td><td style=\"text-align:right\"><b>${pct}%</b></td></tr>\n<tr><td>OpenAI tokens</td><td style=\"text-align:right\"><b>${n(ai.totalTokens)}</b></td></tr>\n<tr><td>Needs review</td><td style=\"text-align:right\"><b>${n(t.needsReview)}</b></td></tr>\n<tr><td>Held</td><td style=\"text-align:right\"><b>${n(t.held)}</b></td></tr>\n<tr><td>Failed</td><td style=\"text-align:right\"><b>${n(t.failed)}</b></td></tr>\n</table>\n${importantHtml}\n<p><small>Report window: ${esc(s.window?.startUtc)} → ${esc(s.window?.endUtc)} · Europe/Kyiv</small></p>`;\n\nreturn [{ json: { reportDate: s.date, subject, html, totals: t, routing: r, ai, importantCount: important.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [100, 0],
+      "id": "f1a90844-6622-43d2-a07b-9a9128624e0e",
+      "name": "Format daily report"
+    },
+    {
+      "parameters": {
+        "resource": "email",
+        "operation": "send",
+        "fromEmail": "GimmeJob <your-sender@example.com>",
+        "toEmail": "your-email@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [380, 0],
+      "id": "a14ea835-35c7-418e-880f-7cba9bfb810b",
+      "name": "Send daily report email"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: { status: 'DAILY_REPORT_SENT', sentAt: new Date().toISOString(), message: 'GimmeJob daily email automation report sent successfully.' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 0],
+      "id": "550a98e5-d421-465e-a42f-e71de9edb602",
+      "name": "Daily report sent"
+    }
+  ],
+  "connections": {
+    "Every morning at 08:00 Kyiv": {
+      "main": [[{ "node": "Choose previous Kyiv day", "type": "main", "index": 0 }]]
+    },
+    "Choose previous Kyiv day": {
+      "main": [[{ "node": "Get daily GimmeJob statistics", "type": "main", "index": 0 }]]
+    },
+    "Get daily GimmeJob statistics": {
+      "main": [[{ "node": "Format daily report", "type": "main", "index": 0 }]]
+    },
+    "Format daily report": {
+      "main": [[{ "node": "Send daily report email", "type": "main", "index": 0 }]]
+    },
+    "Send daily report email": {
+      "main": [[{ "node": "Daily report sent", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Kyiv",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false
+  },
+  "versionId": "99597f79-cac3-4b4f-841f-5b038be16ae4",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
