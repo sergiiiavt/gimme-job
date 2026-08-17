@@ -179,7 +179,7 @@ function normalizedJob(value: IntakeJob): IntakeJob {
   };
 }
 
-function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string; feedback?: string | null } {
+function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string } {
   return {
     id: String(row.id),
     fingerprint: String(row.fingerprint),
@@ -197,7 +197,6 @@ function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; s
     contactEmail: row.contact_email ? String(row.contact_email) : null,
     raw: parseJson(row.raw_json, {}),
     status: row.status ? String(row.status) : undefined,
-    feedback: row.feedback ? String(row.feedback) : null,
   };
 }
 

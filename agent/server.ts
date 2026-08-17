@@ -85,8 +85,6 @@ function jobView(job: StoredJob) {
     agentStatus: job.status,
     status: tracking?.status ?? (job.status === "ARCHIVED" ? "ARCHIVED" : "NEW"),
     statusUpdatedAt: tracking?.statusUpdatedAt ?? null,
-    feedback: tracking?.feedback ?? null,
-    feedbackAt: tracking?.feedbackAt ?? null,
     analysis: db.getAnalysis(job.id),
     resume: db.getResume(job.id),
     resumePdf: Boolean(db.getResumePdf(job.id)),

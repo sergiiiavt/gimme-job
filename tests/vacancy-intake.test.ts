@@ -59,7 +59,7 @@ class FakeD1 {
               id, fingerprint, source, external_id: externalId, title, company, location, remote, url,
               apply_url: applyUrl, description, salary_text: salaryText, posted_at: postedAt,
               contact_email: contactEmail, discovered_at: discoveredAt, updated_at: updatedAt,
-              status: "NEW", feedback: null, raw_json: rawJson,
+              status: "NEW", raw_json: rawJson,
             });
           }
         }

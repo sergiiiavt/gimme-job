@@ -324,7 +324,6 @@ function statePriority(job: IntakeJob): number {
   const record = job as unknown as Record<string, unknown>;
   let score = 0;
   if (typeof record.status === "string" && !["", "NEW"].includes(record.status)) score += 1000;
-  if (record.feedback) score += 400;
   if (record.analysis) score += 200;
   if (record.draft || record.resume) score += 100;
   return score;

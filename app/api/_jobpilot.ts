@@ -250,8 +250,6 @@ function mapJob(row: Row) {
     updatedAt: rowText(row.updated_at),
     status: rowText(row.status),
     statusUpdatedAt: nullableRowText(row.status_updated_at),
-    feedback: nullableRowText(row.feedback),
-    feedbackAt: nullableRowText(row.feedback_at),
     raw: parse(row.raw_json, {}),
   };
 }
@@ -455,17 +453,10 @@ export async function updateDraft(id: string, action: string, recipient?: string
 }
 
 const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED", "NOT_INTERESTED", "ARCHIVED"]);
-const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
 
 function requestedStatus(input: Json, currentStatus: string): string {
   if (!Object.hasOwn(input, "status")) return currentStatus;
   return cleanText(input.status).toUpperCase();
-}
-
-function requestedFeedback(input: Json, currentFeedback: string | null): string | null {
-  if (!Object.hasOwn(input, "feedback")) return currentFeedback;
-  if (input.feedback === null || input.feedback === "") return null;
-  return cleanText(input.feedback).toUpperCase();
 }
 
 function changedAt(changed: boolean, valuePresent: boolean, timestamp: string, previous: unknown): string | null {
@@ -475,29 +466,22 @@ function changedAt(changed: boolean, valuePresent: boolean, timestamp: string, p
 
 export async function updateJobTracking(id: string, input: Json) {
   const database = await db();
-  const row = await database.prepare("SELECT status, status_updated_at, feedback, feedback_at FROM jobs WHERE id = ?").bind(id).first<Row>();
+  const row = await database.prepare("SELECT status, status_updated_at FROM jobs WHERE id = ?").bind(id).first<Row>();
   if (!row) throw new Error("Job not found.");
 
-  const hasStatus = Object.hasOwn(input, "status");
-  const hasFeedback = Object.hasOwn(input, "feedback");
-  if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
+  if (!Object.hasOwn(input, "status")) throw new Error("Provide status.");
 
   const currentStatus = rowText(row.status);
   const nextStatus = requestedStatus(input, currentStatus);
   if (!JOB_STATUSES.has(nextStatus)) throw new Error("Unsupported job status.");
 
-  const currentFeedback = nullableRowText(row.feedback);
-  const nextFeedback = requestedFeedback(input, currentFeedback);
-  if (nextFeedback !== null && !JOB_FEEDBACK.has(nextFeedback)) throw new Error("Unsupported job feedback.");
-
   const timestamp = now();
   const statusUpdatedAt = changedAt(nextStatus !== currentStatus, true, timestamp, row.status_updated_at);
-  const feedbackAt = changedAt(nextFeedback !== currentFeedback, Boolean(nextFeedback), timestamp, row.feedback_at);
 
-  await database.prepare("UPDATE jobs SET status = ?, status_updated_at = ?, feedback = ?, feedback_at = ?, updated_at = ? WHERE id = ?")
-    .bind(nextStatus, statusUpdatedAt, nextFeedback, feedbackAt, timestamp, id)
+  await database.prepare("UPDATE jobs SET status = ?, status_updated_at = ?, updated_at = ? WHERE id = ?")
+    .bind(nextStatus, statusUpdatedAt, timestamp, id)
     .run();
-  return { id, status: nextStatus, feedback: nextFeedback, statusUpdatedAt, feedbackAt };
+  return { id, status: nextStatus, statusUpdatedAt };
 }
 
 function errorStatus(message: string): number {

@@ -15,8 +15,6 @@ type TrackingRow = {
   job_id: string;
   status: string;
   status_updated_at: string | null;
-  feedback: string | null;
-  feedback_at: string | null;
   updated_at: string;
 };
 
@@ -80,7 +78,7 @@ class FakeDb {
     if (normalized.startsWith("SELECT id FROM jobs")) {
       return this.jobs.has(String(values[0])) ? { id: String(values[0]) } : null;
     }
-    if (normalized.startsWith("SELECT status, status_updated_at, feedback, feedback_at FROM job_tracking")) {
+    if (normalized.startsWith("SELECT status, status_updated_at FROM job_tracking")) {
       return this.tracking.get(this.key(values[0], values[1])) ?? null;
     }
     if (normalized.startsWith("SELECT pdf_base64 FROM user_resume_variants")) {
@@ -155,9 +153,7 @@ class FakeDb {
         job_id: String(values[1]),
         status: String(values[2]),
         status_updated_at: values[3] === null ? null : String(values[3]),
-        feedback: values[4] === null ? null : String(values[4]),
-        feedback_at: values[5] === null ? null : String(values[5]),
-        updated_at: String(values[6]),
+        updated_at: String(values[4]),
       });
       return;
     }
@@ -304,26 +300,25 @@ test("interview stars cannot cross tenant boundaries", async () => {
   await assert.rejects(() => tenant.updateInterviewStar("user-a", "BAD ID", { starred: true }), /identifier/);
 });
 
-test("job status and feedback are tenant scoped", async () => {
+test("job status is tenant scoped", async () => {
   const database = new FakeDb();
   const tenant = state(database);
 
-  const a = await tenant.updateJobTracking("user-a", "job-1", { status: "APPLIED", feedback: "RELEVANT" });
+  const a = await tenant.updateJobTracking("user-a", "job-1", { status: "APPLIED" });
   const b = await tenant.updateJobTracking("user-b", "job-1", { status: "NOT_INTERESTED" });
   assert.equal(a.status, "APPLIED");
-  assert.equal(a.feedback, "RELEVANT");
   assert.equal(b.status, "NOT_INTERESTED");
   assert.equal(database.tracking.get("user-a:job-1")?.status, "APPLIED");
   assert.equal(database.tracking.get("user-b:job-1")?.status, "NOT_INTERESTED");
   await assert.rejects(() => tenant.updateJobTracking("user-a", "missing", { status: "APPLIED" }), /not found/);
   await assert.rejects(() => tenant.updateJobTracking("user-a", "job-1", { status: "HACKED" }), /status/);
-  await assert.rejects(() => tenant.updateJobTracking("user-a", "job-1", {}), /status or feedback/);
+  await assert.rejects(() => tenant.updateJobTracking("user-a", "job-1", {}), /status/);
 });
 
 test("dashboard overlays only the current tenant private state", async () => {
   const database = new FakeDb();
   const tenant = state(database);
-  await tenant.updateJobTracking("user-a", "job-1", { status: "INTERVIEW", feedback: "RELEVANT" });
+  await tenant.updateJobTracking("user-a", "job-1", { status: "INTERVIEW" });
   database.analyses.set("user-a:job-1", {
     user_id: "user-a",
     job_id: "job-1",

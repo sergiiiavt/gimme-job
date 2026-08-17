@@ -34,7 +34,7 @@ On account creation there is an optional `Existing private-site password` field.
 
 - settings
 - interview progress
-- job tracking/status/feedback
+- job tracking/status
 - analyses
 - resume variants
 - application drafts

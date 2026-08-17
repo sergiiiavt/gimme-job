@@ -105,7 +105,6 @@ Personal view may show:
 - status filter;
 - Match score and verdict;
 - pipeline status;
-- Relevant / Not relevant feedback;
 - analysis panel;
 - tailored resume;
 - application draft;
@@ -154,7 +153,6 @@ It must **not** show:
 - Match score/verdict;
 - pipeline status;
 - status filter;
-- Relevant / Not relevant;
 - analysis panel;
 - resume;
 - application draft;

@@ -5,7 +5,6 @@ import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-a
 import { SiteSidebar } from "./site-navigation";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
-type JobFeedback = "RELEVANT" | "NOT_RELEVANT" | null;
 
 interface JobAnalysis {
   score?: number;
@@ -47,8 +46,6 @@ interface Job {
   postedAt: string | null;
   discoveredAt: string;
   status: JobStatus;
-  feedback: JobFeedback;
-  feedbackAt?: string | null;
   statusUpdatedAt?: string | null;
   analysis: JobAnalysis | null;
   resume: string | null;
@@ -87,7 +84,6 @@ const DEMO_JOBS: Job[] = [
     postedAt: new Date().toISOString(),
     discoveredAt: new Date().toISOString(),
     status: "NEW",
-    feedback: null,
     analysis: { score: 91, verdict: "strong", matchingSkills: ["Playwright", "TypeScript", "API testing"], missingSkills: ["AWS"] },
     resume: "# Your Name\nQA Automation Lead\n\n## Summary\nQA leader with hands-on Playwright and TypeScript automation experience.",
     resumePdf: false,
@@ -107,7 +103,6 @@ const DEMO_JOBS: Job[] = [
     postedAt: new Date(Date.now() - 86_400_000).toISOString(),
     discoveredAt: new Date(Date.now() - 86_400_000).toISOString(),
     status: "INTERESTED",
-    feedback: "RELEVANT",
     analysis: { score: 84, verdict: "strong", matchingSkills: ["QA leadership", "Python", "API testing"], missingSkills: [] },
     resume: null,
     resumePdf: false,
@@ -378,7 +373,7 @@ export default function VacanciesWorkspace() {
     }
   };
 
-  const updateTracking = async (job: Job, change: { status?: JobStatus; feedback?: JobFeedback }) => {
+  const updateTracking = async (job: Job, change: Partial<Pick<Job, "status">>) => {
     if (!isPersonal) return;
     if (!online) return setNotice("Cloud API is unavailable; demo changes are not saved.");
     setBusy(`job-${job.id}`);
@@ -515,8 +510,6 @@ export default function VacanciesWorkspace() {
                 <time className="vacancy-cell vacancy-posted" data-label="Posted" dateTime={job.postedAt ?? job.discoveredAt} title={formatDate(job.postedAt ?? job.discoveredAt)}>{formatCompactDate(job.postedAt ?? job.discoveredAt)}</time>
                 {isPersonal && <div className="vacancy-cell vacancy-status-cell" data-label="Status">
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
-                  {job.feedback === "RELEVANT" && <span className="vacancy-feedback good">Relevant</span>}
-                  {job.feedback === "NOT_RELEVANT" && <span className="vacancy-feedback bad">Not relevant</span>}
                 </div>}
               </div>)}
               {visibleJobs.length === 0 && <div className="empty"><strong>{jobs.length ? "No matching jobs" : online === null ? "Loading jobs" : "Collecting the first jobs"}</strong><span>{jobs.length ? "Change the search or filter." : online === null ? "Connecting to the job database…" : isPersonal ? "The first sync runs automatically. You can also press Sync jobs." : "No public vacancies are available right now."}</span></div>}
@@ -549,7 +542,7 @@ function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) 
   >{copied ? "Copied" : label}</button>;
 }
 
-function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; disabled: boolean; authenticated: boolean; onChange: (change: { status?: JobStatus; feedback?: JobFeedback }) => void }) {
+function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; disabled: boolean; authenticated: boolean; onChange: (change: Partial<Pick<Job, "status">>) => void }) {
   const summaryTags = [
     job.remote ? "Remote" : null,
     job.salaryText ? "Salary listed" : null,
@@ -571,10 +564,6 @@ function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; 
 
     {authenticated && <section className="tracking-box">
       <div><label htmlFor={`status-${job.id}`}>Pipeline status</label><select id={`status-${job.id}`} value={job.status} disabled={disabled} onChange={(event) => onChange({ status: event.target.value as JobStatus })}>{STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}</select></div>
-      <div><label>Feedback for the agent</label><div className="feedback-buttons">
-        <button aria-pressed={job.feedback === "RELEVANT"} className={job.feedback === "RELEVANT" ? "active positive" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "RELEVANT" ? null : "RELEVANT" })}><Icon name="check"/>Relevant</button>
-        <button aria-pressed={job.feedback === "NOT_RELEVANT"} className={job.feedback === "NOT_RELEVANT" ? "active negative" : ""} disabled={disabled} onClick={() => onChange({ feedback: job.feedback === "NOT_RELEVANT" ? null : "NOT_RELEVANT" })}><Icon name="x"/>Not relevant</button>
-      </div></div>
     </section>}
 
     <dl className="job-facts"><div><dt>Source</dt><dd>{sourceLabel(job.source)}</dd></div><div><dt>Posted</dt><dd>{formatDate(job.postedAt)}</dd></div><div><dt>Found</dt><dd>{formatDate(job.discoveredAt)}</dd></div><div><dt>Remote</dt><dd>{job.remote ? "Yes" : "Not specified"}</dd></div></dl>

@@ -111,8 +111,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .job-copy > p { color: var(--muted); font-size: 9px; margin: 4px 0 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chips span { background: #f0f2f0; border-radius: 4px; color: #68726d; font-size: 7px; font-weight: 700; padding: 3px 5px; }
-.chips span.good { background: var(--green-soft); color: var(--green); }
-.chips span.bad { background: var(--red-soft); color: var(--red); }
 .chips span.reservation, .job-summary-tags span.reservation { background: var(--amber-soft); color: var(--amber); }
 .status { border-radius: 6px; font-size: 8px; font-weight: 750; padding: 6px 8px; white-space: nowrap; }
 .status-new { background: var(--blue-soft); color: var(--blue); }
@@ -133,14 +131,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .detail-actions { display: flex; gap: 8px; margin: 21px 0; }
 .detail-actions a { align-items: center; background: var(--nav); border: 1px solid var(--nav); border-radius: 8px; color: #fff; display: inline-flex; font-size: 10px; font-weight: 700; gap: 7px; min-height: 38px; padding: 0 13px; }
 .detail-actions a.secondary-link { background: #fff; border-color: var(--line); color: var(--ink); }
-.tracking-box { background: #f7f8f6; border: 1px solid var(--line); border-radius: 11px; display: grid; gap: 14px; grid-template-columns: .7fr 1.3fr; padding: 15px; }
+.tracking-box { background: #f7f8f6; border: 1px solid var(--line); border-radius: 11px; display: grid; gap: 14px; grid-template-columns: 1fr; padding: 15px; }
 .tracking-box label { color: var(--muted); display: block; font-size: 8px; font-weight: 700; letter-spacing: .06em; margin-bottom: 7px; text-transform: uppercase; }
 .tracking-box select { width: 100%; }
-.feedback-buttons { display: grid; gap: 6px; grid-template-columns: 1fr 1fr; }
-.feedback-buttons button { align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; display: flex; font-size: 9px; font-weight: 700; gap: 6px; justify-content: center; min-height: 39px; }
-.feedback-buttons button.active.positive { background: var(--green-soft); border-color: #b9decf; color: var(--green); }
-.feedback-buttons button.active.negative { background: var(--red-soft); border-color: #ebc2c8; color: var(--red); }
-.feedback-buttons button:disabled { cursor: wait; opacity: .6; }
 .job-facts { border-bottom: 1px solid var(--line); display: grid; gap: 0; grid-template-columns: repeat(4, 1fr); margin: 22px 0 0; padding: 0 0 20px; }
 .job-facts div { border-right: 1px solid var(--line); padding: 0 13px; }
 .job-facts div:first-child { padding-left: 0; }
@@ -223,7 +216,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .stat-line > div:nth-child(3), .stat-line > div:nth-child(4) { border-bottom: 0; }
   .feed-tools { grid-template-columns: 1fr; }
   .job-detail { padding: 19px; }
-  .tracking-box { grid-template-columns: 1fr; }
   .job-facts { grid-template-columns: 1fr 1fr; row-gap: 16px; }
   .job-facts div:nth-child(2) { border-right: 0; }
   .job-facts div:nth-child(3) { padding-left: 0; }
@@ -634,7 +626,6 @@ button.iq-star-icon:disabled { cursor: wait; opacity: .6; }
 .detail-head p { font-size: 13px; }
 .detail-actions a { font-size: 12px; min-height: 41px; }
 .tracking-box label { font-size: 10px; }
-.feedback-buttons button { font-size: 12px; min-height: 41px; }
 .job-facts dt { font-size: 9px; }
 .job-facts dd { font-size: 12px; }
 .skills h3, .description h3, .resume-preview h3, .draft-preview h3, .job-analysis h3, .job-resume h3 { font-size: 14px; }
