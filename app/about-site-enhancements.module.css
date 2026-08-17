@@ -31,7 +31,9 @@
   padding: 6px 7px;
 }
 
+.tocRail a:hover,
 .tocRail a[aria-current="location"] {
+  border-left-color: transparent !important;
   font-weight: 400 !important;
 }
 
