@@ -6,9 +6,8 @@
 /*
  * Current-location navigation state
  * ---------------------------------
- * Selection must not replace the contextual background of a navigation item.
- * Keep Learning Path cluster colors and other surface colors intact, then mark
- * only the current location with a blue left rail plus a thin outline.
+ * Only the primary left navigation uses the blue current-location rail.
+ * Selection must not change text weight in any navigation surface.
  */
 
 .kb-navigation .kb-sidebar .kb-nav-link.active {
@@ -16,7 +15,7 @@
   border-left-color: var(--navigation-current-accent) !important;
   box-shadow: inset 0 0 0 1px var(--navigation-current-outline) !important;
   color: #435049 !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 .kb-navigation .kb-sidebar .kb-nav-link.active .kb-nav-icon {
@@ -28,22 +27,46 @@
   background: transparent !important;
 }
 
-/* Quick Reference already has a real border, so use it as the outline. */
-.kb-navigation .kb-quick-reference-link.active {
-  background: #f7f8f6 !important;
-  border-color: var(--navigation-current-outline) !important;
-  border-left: 3px solid var(--navigation-current-accent) !important;
-  box-shadow: none !important;
-  color: #4f5c54 !important;
+/* About this site has its own pale-blue contextual highlight. Keep it stable
+   when selected; selection adds only the primary blue left rail. */
+.kb-navigation .kb-sidebar .kb-nav-intro,
+.kb-navigation .kb-sidebar .kb-nav-intro.active {
+  background: #eef5ff !important;
+  border-color: #d8e6f6 !important;
+  border-bottom-color: #9fc1ea !important;
+  color: #314335 !important;
 }
 
-/* Secondary sidebar: lessons, questions, chapters and other current subsections. */
-.kb-navigation .kb-subnav nav button.active {
-  background: transparent !important;
-  border-left: 3px solid var(--navigation-current-accent) !important;
+.kb-navigation .kb-sidebar .kb-nav-intro:hover {
+  background: #e7f1ff !important;
+}
+
+.kb-navigation .kb-sidebar .kb-nav-intro.active {
+  border-left-color: var(--navigation-current-accent) !important;
   box-shadow: inset 0 0 0 1px var(--navigation-current-outline) !important;
-  color: #5e6963 !important;
-  font-weight: 700 !important;
+}
+
+/* Quick Reference is secondary navigation: keep its own surface treatment,
+   but never add the primary blue rail or a selected-state weight change. */
+.kb-navigation .kb-quick-reference-link,
+.kb-navigation .kb-quick-reference-link.active {
+  font-weight: 500 !important;
+}
+
+.kb-navigation .kb-quick-reference-link.active {
+  background: #e8f0df !important;
+  border: 1px solid #cadbb8 !important;
+  box-shadow: none !important;
+  color: #3e5d27 !important;
+}
+
+/* Secondary sidebar: use the existing soft surface highlight only. */
+.kb-navigation .kb-subnav nav button.active {
+  background: #e6eddf !important;
+  border-left: 0 !important;
+  box-shadow: none !important;
+  color: #284d37 !important;
+  font-weight: 400 !important;
 }
 
 /*
