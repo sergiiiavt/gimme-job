@@ -60,7 +60,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
         id: "qa-fundamentals",
         label: "QA fundamentals",
         external: true,
-        publicHref: "/learn/qa-fundamentals",
+        publicHref: "/reference/qa-fundamentals",
         personalHref: "/workspace/learn/qa-fundamentals",
       },
       { id: "certifications", label: "Certs & Trainings" },
