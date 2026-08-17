@@ -133,7 +133,7 @@ export function jobId(job: { source: string; externalId: string | null; url: str
 }
 
 export function isRemoteText(value: string): boolean {
-  return /\b(remote|work\s+from\s+home|wfh|віддален|дистанційн|ремоут)\b/i.test(value);
+  return /\b(remote|work\s+from\s+home|wfh)\b|віддален|дистанційн|ремоут/iu.test(value);
 }
 
 export function safeIsoDate(value: unknown): string | null {
