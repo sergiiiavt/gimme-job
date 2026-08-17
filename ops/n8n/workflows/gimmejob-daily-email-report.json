@@ -64,8 +64,8 @@
       "parameters": {
         "resource": "email",
         "operation": "send",
-        "fromEmail": "GimmeJob <sergii.iavt@gmail.com>",
-        "toEmail": "sergii.iavt@gmail.com",
+        "fromEmail": "GimmeJob <your-sender@example.com>",
+        "toEmail": "your-email@example.com",
         "subject": "={{ $json.subject }}",
         "emailFormat": "html",
         "html": "={{ $json.html }}",
