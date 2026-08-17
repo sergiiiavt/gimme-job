@@ -459,7 +459,8 @@ export function WorkspaceApp() {
                 onDownload={() => void downloadResumePdf(selected)}
               />
             </article>
-          </section> : <section className="job-list-view">
+          </section> : <section className="job-list-view" aria-busy={online === null}>
+            {online === null && <div className="analyze-progress-bar indeterminate" role="progressbar" aria-label="Loading vacancies"><div/></div>}
             <div className="feed-tools">
               <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
