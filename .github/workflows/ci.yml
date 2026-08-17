@@ -112,4 +112,6 @@ jobs:
           check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Bind a name to an object'
           check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Window ranking'
           check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Dialect'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Find duplicates'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" '>Tasks<'
           check_header "https://gimmejob.gimmejob.workers.dev/reference/programming" '^cache-control: .*no-store'
