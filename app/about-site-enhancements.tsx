@@ -7,6 +7,11 @@ import tocStyles from "./learning-document-ui.module.css";
 import styles from "./about-site-enhancements.module.css";
 
 const REPO_URL = "https://github.com/sergiiiavt/gimme-job";
+const RAW_REPO_URL = "https://raw.githubusercontent.com/sergiiiavt/gimme-job/main";
+
+function rawSource(path: string) {
+  return `${RAW_REPO_URL}/${path}`;
+}
 
 const tocHeadings = [
   { id: "about-overview-title", text: "Why I created this site" },
@@ -18,34 +23,34 @@ const tocHeadings = [
   { id: "about-code-quality-title", text: "Code quality & security" },
   { id: "about-database-title", text: "Database" },
   { id: "about-vacancy-scraper-title", text: "Vacancy Scraper" },
-  { id: "about-authorization-title", text: "Authorization part" },
+  { id: "about-authorization-title", text: "Authorization" },
 ] as const;
 
 const vacancySources = [
   {
     name: "DOU",
-    detail: "RSS + vacancy detail",
-    href: `${REPO_URL}/blob/main/agent/src/sources/rss.ts`,
+    detail: "RSS + detail pages",
+    href: rawSource("agent/src/sources/rss.ts"),
   },
   {
     name: "Djinni",
-    detail: "RSS + vacancy detail",
-    href: `${REPO_URL}/blob/main/agent/src/sources/rss.ts`,
+    detail: "RSS + detail pages",
+    href: rawSource("agent/src/sources/rss.ts"),
   },
   {
     name: "Work.ua",
-    detail: "HTML adapter · local sync",
-    href: `${REPO_URL}/blob/main/agent/src/sources/workua.ts`,
+    detail: "HTML adapter · local",
+    href: rawSource("agent/src/sources/workua.ts"),
   },
   {
     name: "Robota.ua",
-    detail: "API + vacancy detail",
-    href: `${REPO_URL}/blob/main/agent/src/sources/robotaua.ts`,
+    detail: "API + detail pages",
+    href: rawSource("agent/src/sources/robotaua.ts"),
   },
   {
     name: "Lobby X",
-    detail: "API + vacancy detail",
-    href: `${REPO_URL}/blob/main/agent/src/sources/lobbyx.ts`,
+    detail: "API + detail pages",
+    href: rawSource("agent/src/sources/lobbyx.ts"),
   },
 ] as const;
 
@@ -96,7 +101,7 @@ function HighlightNode({
 
 function VacancySourceStrip() {
   return (
-    <div className={styles.sourceStrip} aria-label="Vacancy source adapters">
+    <div className={styles.sourceStrip} aria-label="Five vacancy source adapters">
       {vacancySources.map((source) => (
         <a className={styles.sourceNode} href={source.href} key={source.name} rel="noreferrer" target="_blank">
           <strong>{source.name}</strong>
@@ -119,7 +124,7 @@ function ImplementationHighlights() {
           <span className="about-tech-section-number">1</span>
           <div>
             <h2 id="about-vacancy-scraper-title">Vacancy Scraper</h2>
-            <p>Five job-board adapters feed one normalization, filtering, deduplication, and synchronization pipeline.</p>
+            <p>Five job boards feed one normalization, relevance, deduplication, and synchronization pipeline.</p>
           </div>
         </div>
         <div className="about-tech-section-body">
@@ -128,21 +133,22 @@ function ImplementationHighlights() {
             <HighlightNode
               accent="green"
               icon="search"
-              title="Collect + normalize"
-              description="DOU, Djinni, Work.ua, Robota.ua, and Lobby X are converted into the same vacancy model before relevance filtering and duplicate detection."
+              title="Five source adapters"
+              description="DOU, Djinni, Work.ua, Robota.ua, and Lobby X are converted into the same vacancy model before filtering and duplicate detection."
               links={[
-                { label: "Source configuration", href: `${REPO_URL}/blob/main/app/api/_vacancy-intake.ts` },
-                { label: "Intake logic", href: `${REPO_URL}/blob/main/agent/src/job-intake.ts` },
+                { label: "Source registry", href: rawSource("config/sources.example.json") },
+                { label: "Source builder", href: rawSource("agent/src/sources/index.ts") },
               ]}
             />
             <HighlightNode
               accent="blue"
               icon="code"
-              title="Sync + regression guards"
-              description="The production intake records inserts and updates, reports source failures, and smoke-tests live source parsing. Work.ua is kept as a local adapter because cloud-hosted direct HTML requests are blocked."
+              title="Production intake + guards"
+              description="Cloud intake collects supported sources, normalizes descriptions, filters irrelevant roles, deduplicates results, reports source failures, and smoke-tests live parsing. Work.ua stays local because cloud-hosted direct HTML access is blocked."
               links={[
-                { label: "Vacancy intake", href: `${REPO_URL}/blob/main/app/api/_vacancy-intake.ts` },
-                { label: "Live source smoke", href: `${REPO_URL}/blob/main/scripts/smoke-vacancy-sources.ts` },
+                { label: "Vacancy intake", href: rawSource("app/api/_vacancy-intake.ts") },
+                { label: "Intake logic", href: rawSource("agent/src/job-intake.ts") },
+                { label: "Source smoke", href: rawSource("scripts/smoke-vacancy-sources.ts") },
               ]}
             />
           </div>
@@ -153,8 +159,8 @@ function ImplementationHighlights() {
         <div className="about-tech-section-heading">
           <span className="about-tech-section-number">2</span>
           <div>
-            <h2 id="about-authorization-title">Authorization part</h2>
-            <p>Authentication supports password accounts and Google OAuth with application-owned sessions and protected workspace access.</p>
+            <h2 id="about-authorization-title">Authorization</h2>
+            <p>Password and Google authentication share application-owned sessions and protected workspace access.</p>
           </div>
         </div>
         <div className="about-tech-section-body">
@@ -165,8 +171,7 @@ function ImplementationHighlights() {
               title="Password authentication"
               description="Uses PBKDF2-SHA256 password hashing, constant-time verification, login throttling, and a 30-day application session."
               links={[
-                { label: "Password auth", href: `${REPO_URL}/blob/main/app/auth/password-auth.ts` },
-                { label: "Session routes", href: `${REPO_URL}/tree/main/app/auth/session` },
+                { label: "Password auth", href: rawSource("app/auth/password-auth.ts") },
               ]}
             />
             <HighlightNode
@@ -175,8 +180,7 @@ function ImplementationHighlights() {
               title="Google OAuth + access control"
               description="Handles Google OAuth, user identity, redirect validation, and the shared authorization state used by protected application areas."
               links={[
-                { label: "Google OAuth", href: `${REPO_URL}/blob/main/app/auth/google-oauth.ts` },
-                { label: "Auth module", href: `${REPO_URL}/tree/main/app/auth` },
+                { label: "Google OAuth", href: rawSource("app/auth/google-oauth.ts") },
               ]}
             />
           </div>
@@ -194,7 +198,7 @@ function AboutToc() {
 
     const updateActiveSection = () => {
       frame = 0;
-      const marker = Math.max(96, Math.min(180, window.innerHeight * 0.22));
+      const marker = Math.max(90, Math.min(150, window.innerHeight * 0.18));
       let nextActiveId = tocHeadings[0].id;
 
       for (const heading of tocHeadings) {
@@ -246,6 +250,14 @@ function AboutToc() {
   );
 }
 
+function replaceFragileGithubBlobLinks(target: HTMLElement) {
+  const prefix = `${REPO_URL}/blob/main/`;
+  for (const anchor of target.querySelectorAll<HTMLAnchorElement>(`a[href^="${prefix}"]`)) {
+    const path = anchor.href.slice(prefix.length);
+    if (path) anchor.href = rawSource(path);
+  }
+}
+
 export default function AboutSiteEnhancements() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
@@ -255,6 +267,11 @@ export default function AboutSiteEnhancements() {
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
+
+  useEffect(() => {
+    if (!target) return;
+    replaceFragileGithubBlobLinks(target);
+  }, [target]);
 
   if (!target) return null;
 
