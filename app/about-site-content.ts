@@ -90,7 +90,7 @@ export const PURPOSE_CARDS: PurposeCard[] = [
   {
     number: "01",
     title: "Find a job",
-    description: "Aggregates vacancies from four data sources into one place for review and analysis.",
+    description: "Supports vacancy collection from five job boards in one review and analysis workflow.",
     icon: "search",
     accent: "green",
     link: { label: "Production site", href: PROJECT_URL, external: true },
@@ -148,16 +148,8 @@ export const DEPLOYMENT = {
     accent: "orange" as const,
     links: [{ label: "Production site", href: PROJECT_URL, external: true }],
     tiles: [
-      {
-        title: "Workers",
-        description: "Edge/runtime execution",
-        icon: "worker" as const,
-      },
-      {
-        title: "Static assets",
-        description: "Frontend assets served with the deployment",
-        icon: "asset" as const,
-      },
+      { title: "Workers", description: "Edge/runtime execution", icon: "worker" as const },
+      { title: "Static assets", description: "Frontend assets served with the deployment", icon: "asset" as const },
     ] satisfies SectionTile[],
   },
 };
@@ -165,12 +157,7 @@ export const DEPLOYMENT = {
 export const DATABASE = {
   title: "Database",
   description: "Application data is stored in Cloudflare D1.",
-  worker: {
-    title: "Worker app",
-    description: "Application reads and writes",
-    icon: "worker" as const,
-    accent: "green" as const,
-  },
+  worker: { title: "Worker app", description: "Application reads and writes", icon: "worker" as const, accent: "green" as const },
   d1: {
     title: "D1 Database",
     description: "Production application storage",
@@ -191,30 +178,13 @@ export const DATABASE = {
 
 export const N8N = {
   title: "n8n email automation",
-  description:
-    "n8n orchestrates tenant-scoped forwarded job-email metadata while GimmeJob keeps identity, ownership, and application state.",
-  gmail: {
-    title: "Gmail forwarding",
-    description: "User filters forward selected job emails to a per-user GimmeJob token address",
-    icon: "gmail" as const,
-    accent: "neutral" as const,
-  },
-  routing: {
-    title: "Cloudflare Email Routing",
-    description: "Routes the forwarded message to the GimmeJob Worker email handler",
-    icon: "cloudflare" as const,
-    accent: "orange" as const,
-  },
-  eventStore: {
-    title: "Worker + email events",
-    description: "Resolves the tenant and stores structured metadata in D1",
-    icon: "worker" as const,
-    accent: "blue" as const,
-  },
+  description: "n8n orchestrates tenant-scoped forwarded job-email metadata while GimmeJob keeps identity, ownership, and application state.",
+  gmail: { title: "Gmail forwarding", description: "User filters forward selected job emails to a per-user GimmeJob token address", icon: "gmail" as const, accent: "neutral" as const },
+  routing: { title: "Cloudflare Email Routing", description: "Routes the forwarded message to the GimmeJob Worker email handler", icon: "cloudflare" as const, accent: "orange" as const },
+  eventStore: { title: "Worker + email events", description: "Resolves the tenant and stores structured metadata in D1", icon: "worker" as const, accent: "blue" as const },
   orchestrator: {
     title: "n8n",
-    description:
-      "Polls the metadata-only internal API every minute and runs deterministic email classification.",
+    description: "Polls the metadata-only internal API every minute and runs deterministic email classification.",
     icon: "n8n" as const,
     accent: "purple" as const,
     links: [
@@ -224,28 +194,15 @@ export const N8N = {
     ],
   },
   outputs: [
-    {
-      title: "Classification",
-      description: "Recruiter, interview, rejection, test task, offer, or other",
-      icon: "analysis" as const,
-    },
-    {
-      title: "Internal API",
-      description: "Writes the tenant-scoped result back through a Bearer-protected route",
-      icon: "worker" as const,
-    },
-    {
-      title: "D1 state",
-      description: "GimmeJob remains the system of record; n8n does not own application state",
-      icon: "cloudflare" as const,
-    },
+    { title: "Classification", description: "Recruiter, interview, rejection, test task, offer, or other", icon: "analysis" as const },
+    { title: "Internal API", description: "Writes the tenant-scoped result back through a Bearer-protected route", icon: "worker" as const },
+    { title: "D1 state", description: "GimmeJob remains the system of record; n8n does not own application state", icon: "cloudflare" as const },
   ] satisfies SectionTile[],
 };
 
 export const INFRASTRUCTURE = {
   title: "Infrastructure as Code",
-  description:
-    "The production n8n environment is provisioned and configured from repository code on Hetzner Cloud.",
+  description: "The production n8n environment is provisioned and configured from repository code on Hetzner Cloud.",
   actions: {
     title: "GitHub Actions",
     description: "Runs the production provisioning workflow on infrastructure changes or manual dispatch",
@@ -273,26 +230,10 @@ export const INFRASTRUCTURE = {
       { label: "Docker Compose", href: HETZNER_COMPOSE_URL, external: true },
     ],
     tiles: [
-      {
-        title: "Docker runtime",
-        description: "n8n + PostgreSQL + Caddy",
-        icon: "docker" as const,
-      },
-      {
-        title: "Persistent data",
-        description: "PostgreSQL, n8n, and Caddy volumes",
-        icon: "database" as const,
-      },
-      {
-        title: "Hetzner firewall",
-        description: "Public 22/80/443; application and database ports stay internal",
-        icon: "hetzner" as const,
-      },
-      {
-        title: "Cloudflare DNS",
-        description: "n8n.gimme-job.com points to the provisioned production VM",
-        icon: "cloudflare" as const,
-      },
+      { title: "Docker runtime", description: "n8n + PostgreSQL + Caddy", icon: "docker" as const },
+      { title: "Persistent data", description: "PostgreSQL, n8n, and Caddy volumes", icon: "database" as const },
+      { title: "Hetzner firewall", description: "Public 22/80/443; application and database ports stay internal", icon: "hetzner" as const },
+      { title: "Cloudflare DNS", description: "n8n.gimme-job.com points to the provisioned production VM", icon: "cloudflare" as const },
     ] satisfies SectionTile[],
   },
 };
@@ -300,12 +241,7 @@ export const INFRASTRUCTURE = {
 export const OPENAI = {
   title: "OpenAI integration",
   description: "OpenAI is used for vacancy recognition, analysis, and drafting support.",
-  input: {
-    title: "Job text + profile",
-    description: "Vacancy text and candidate context",
-    icon: "document" as const,
-    accent: "neutral" as const,
-  },
+  input: { title: "Job text + profile", description: "Vacancy text and candidate context", icon: "document" as const, accent: "neutral" as const },
   api: {
     title: "OpenAI API",
     icon: "openai" as const,
@@ -320,47 +256,21 @@ export const OPENAI = {
     { title: "Analysis", description: "Score, match, and explain", icon: "analysis" as const },
     { title: "Drafts", description: "Resume and application drafting support", icon: "draft" as const },
   ] satisfies SectionTile[],
-  fallback: {
-    title: "Fallback",
-    description: "Deterministic logic when AI is unavailable.",
-    icon: "fallback" as const,
-    accent: "neutral" as const,
-  },
+  fallback: { title: "Fallback", description: "Deterministic logic when AI is unavailable.", icon: "fallback" as const, accent: "neutral" as const },
 };
 
 export const GRAFANA = {
   title: "Observability",
-  description:
-    "Short-term production diagnostics and long-term operational monitoring.",
-  workersLogs: {
-    title: "Cloudflare Workers Logs",
-    description: "Recent runtime diagnostics",
-    icon: "worker" as const,
-    accent: "blue" as const,
-    links: [{ label: "Open logs", href: CLOUDFLARE_WORKERS_LOGS_URL, external: true }],
-  },
-  sourceEvents: {
-    title: "App events",
-    description: "Selected operational events",
-    icon: "observability" as const,
-    accent: "green" as const,
-  },
-  sourceSummary: {
-    title: "D1 summary API",
-    description: "Aggregated long-term metrics",
-    icon: "cloudflare" as const,
-    accent: "blue" as const,
-    links: [{ label: "API implementation", href: WORKER_SOURCE_URL, external: true }],
-  },
+  description: "Short-term production diagnostics and long-term operational monitoring.",
+  workersLogs: { title: "Cloudflare Workers Logs", description: "Recent runtime diagnostics", icon: "worker" as const, accent: "blue" as const, links: [{ label: "Open logs", href: CLOUDFLARE_WORKERS_LOGS_URL, external: true }] },
+  sourceEvents: { title: "App events", description: "Selected operational events", icon: "observability" as const, accent: "green" as const },
+  sourceSummary: { title: "D1 summary API", description: "Aggregated long-term metrics", icon: "cloudflare" as const, accent: "blue" as const, links: [{ label: "API implementation", href: WORKER_SOURCE_URL, external: true }] },
   grafana: {
     title: "Grafana",
     description: "Dashboards and alerting",
     icon: "grafana" as const,
     accent: "orange" as const,
-    links: [
-      GRAFANA_DASHBOARD_LINK,
-      { label: "Observability API source", href: WORKER_SOURCE_URL, external: true },
-    ],
+    links: [GRAFANA_DASHBOARD_LINK, { label: "Observability API source", href: WORKER_SOURCE_URL, external: true }],
   },
   outputs: [
     { title: "Dashboards", description: "System and usage metrics", icon: "dashboard" as const },
