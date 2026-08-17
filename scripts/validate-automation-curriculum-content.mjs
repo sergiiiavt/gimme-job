@@ -51,6 +51,16 @@ for (const curriculumModule of modules) {
   assert.ok(levels.has(curriculumModule.level), `Invalid level for module ${curriculumModule.id}`);
   assert.ok(curriculumModule.label?.trim(), `Missing label for module ${curriculumModule.id}`);
   assert.ok(curriculumModule.description?.trim(), `Missing description for module ${curriculumModule.id}`);
+
+  if (curriculumModule.introMarkdown !== undefined) {
+    assert.ok(curriculumModule.introMarkdown.trim().length >= 200, `Module primer is too short for ${curriculumModule.id}`);
+    assert.ok(curriculumModule.introMarkdownUk?.trim(), `Missing Ukrainian module primer for ${curriculumModule.id}`);
+    assert.ok(curriculumModule.introMarkdownUk.trim().length >= 200, `Ukrainian module primer is too short for ${curriculumModule.id}`);
+  }
+
+  for (const sourceId of curriculumModule.sourceIds ?? []) {
+    assert.ok(sourceIds.has(sourceId), `Unknown module source ${sourceId} in ${curriculumModule.id}`);
+  }
 }
 
 for (const lesson of lessons) {
@@ -74,7 +84,7 @@ for (const lesson of lessons) {
   assert.ok(lesson.summaryUk?.trim(), `Missing Ukrainian summary for ${lesson.id}`);
   assert.ok(lesson.concept?.trim(), `Missing concept for ${lesson.id}`);
   assert.ok(lesson.concept.trim().length >= 200, `Concept explanation is too short for ${lesson.id}`);
-  assert.ok(lesson.conceptUk?.trim(), `Missing Ukrainian concept for ${lesson.id}`);
+  assert.ok(lesson.conceptUk?.trim(), `Missing Ukrainian concept explanation for ${lesson.id}`);
   assert.ok(lesson.conceptUk.trim().length >= 200, `Ukrainian concept explanation is too short for ${lesson.id}`);
 
   assert.ok(lesson.keyPoints?.length >= 2, `Add at least two key points for ${lesson.id}`);
@@ -128,8 +138,11 @@ for (const level of levels) {
   assert.ok(lessons.some((lesson) => lesson.level === level), `No lessons use level ${level}`);
 }
 
-const citedSources = new Set(lessons.flatMap((lesson) => lesson.sourceIds));
+const citedSources = new Set([
+  ...lessons.flatMap((lesson) => lesson.sourceIds),
+  ...modules.flatMap((curriculumModule) => curriculumModule.sourceIds ?? []),
+]);
 const unusedSources = [...sourceIds].filter((id) => !citedSources.has(id));
-assert.equal(unusedSources.length, 0, `Every source must be cited by at least one lesson. Unused: ${unusedSources.join(", ")}`);
+assert.equal(unusedSources.length, 0, `Every source must be cited by at least one lesson or module primer. Unused: ${unusedSources.join(", ")}`);
 
 console.log(`Test automation curriculum validated: ${lessons.length} lessons, ${modules.length} modules, ${sources.length} sources.`);
