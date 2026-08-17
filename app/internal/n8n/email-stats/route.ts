@@ -4,15 +4,6 @@ const REPORT_TIME_ZONE = "Europe/Kyiv";
 const MAX_USER_ID_LENGTH = 512;
 const IMPORTANT_LIMIT = 20;
 
-const JOB_RELEVANT_CLASSIFICATIONS = [
-  "APPLICATION_RECEIVED",
-  "RECRUITER_OUTREACH",
-  "INTERVIEW",
-  "TEST_TASK",
-  "OFFER",
-  "REJECTION",
-] as const;
-
 export type EmailStatsEnv = {
   DB?: D1Database;
   N8N_INGEST_TOKEN?: string;
