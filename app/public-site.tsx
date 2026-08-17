@@ -989,11 +989,12 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     return interviewQuestions
       .filter((item) => {
         const tags = tagsFor(item);
+        const isStarred = mode === "personal" ? Boolean(stars[item.id]) : item.editorialStar === true;
         const matchesLevel = levels.length === 0 || levels.includes(item.level);
-        const matchesPrevalence = prevalences.length === 0 || prevalences.some((prevalence) => prevalence === "Starred" ? item.editorialStar === true : prevalence === item.prevalence);
+        const matchesPrevalence = prevalences.length === 0 || prevalences.some((prevalence) => prevalence === "Starred" ? isStarred : prevalence === item.prevalence);
         const matchesCategory = !activeCategory || item.category === activeCategory;
         const matchesTag = selectedTags.length === 0 || tags.some((tag) => selectedTags.includes(tag));
-        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, item.editorialStar ? "star starred fundamental core" : "", ...tags, ...item.strongAnswerSignals]);
+        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, isStarred ? "star starred fundamental core" : "", ...tags, ...item.strongAnswerSignals]);
         return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && matchesSearch;
       })
       .sort((left, right) => {
@@ -1012,7 +1013,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         }
         return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || catalogDifference;
       });
-  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, prevalences, query, selectedTags, sort, topicSearchLabels]);
+  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, mode, prevalences, query, selectedTags, sort, stars, topicSearchLabels]);
 
   const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -1146,7 +1147,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         </div>
         <div className="iq-filter-grid">
           <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
-          <InterviewFilter emptyLabel="All prevalence" helpText="Starred is the editorial core set; frequency bands remain unchanged." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
+          <InterviewFilter emptyLabel="All prevalence" helpText={mode === "personal" ? "Starred is your own private set; frequency bands remain unchanged." : "Starred is the editorial core set; frequency bands remain unchanged."} label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
           <InterviewFilter emptyLabel="All tags" helpText="Matches any selected tag." label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setFilterOpen("tags", nextOpen)} open={openFilter === "tags"} options={interviewTags.map((tag) => ({ label: tag, value: tag }))} searchable selected={selectedTags}/>
           <InterviewFilter emptyLabel="All levels" helpText="Matches any selected seniority level." label="Seniority" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setFilterOpen("levels", nextOpen)} open={openFilter === "levels"} options={interviewLevels.map((level) => ({ label: level, value: level }))} selected={levels}/>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
@@ -1165,14 +1166,25 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
           return (
             <details className="iq-question" key={item.id}>
               <summary>
+                {mode === "personal" ? (
+                  <button
+                    aria-label={stars[item.id] ? "Remove your star" : "Star this question"}
+                    aria-pressed={Boolean(stars[item.id])}
+                    className={`iq-star-icon${stars[item.id] ? " active" : ""}`}
+                    disabled={starBusy === item.id}
+                    onClick={(event) => { event.preventDefault(); event.stopPropagation(); void updateStar(item.id, !stars[item.id]); }}
+                    type="button"
+                  >{stars[item.id] ? "★" : "☆"}</button>
+                ) : item.editorialStar && (
+                  <span aria-label="Starred fundamental" className="iq-star-icon active" role="img">★</span>
+                )}
                 <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
                 <div>
                   <small>{item.category}{item.kind ? ` · ${item.kind}` : ""} · {String(pageStart + index + 1).padStart(3, "0")}</small>
-                  <h2>{item.editorialStar && <span className="iq-star-marker" aria-label="Starred fundamental" role="img">★</span>}{displayQuestion}</h2>
+                  <h2>{displayQuestion}</h2>
                   <span className="iq-question-tags">
                     <em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>
                     {mode === "personal" && progress[item.id] && <em className={`iq-progress-badge iq-progress-${progress[item.id].toLowerCase()}`}>{progressOptions.find((option) => option.value === progress[item.id])?.label}</em>}
-                    {mode === "personal" && stars[item.id] && <em className="iq-star-badge">★ My star</em>}
                     {tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}
                   </span>
                 </div>
@@ -1207,14 +1219,6 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                         <button className={progress[item.id] === option.value ? `active iq-progress-${option.value.toLowerCase()}` : ""} disabled={progressBusy === item.id} key={option.value} onClick={() => void updateProgress(item.id, option.value)}>{option.label}</button>
                       ))}
                       {progress[item.id] && <button className="iq-progress-reset" disabled={progressBusy === item.id} onClick={() => void updateProgress(item.id, null)}>Reset</button>}
-                    </div>
-                  </section>
-                )}
-                {mode === "personal" && (
-                  <section className="iq-star-control">
-                    <div><h3>Personal star</h3><small>Visible only to you</small></div>
-                    <div>
-                      <button className={stars[item.id] ? "active" : ""} disabled={starBusy === item.id} onClick={() => void updateStar(item.id, !stars[item.id])}>{stars[item.id] ? "★ Starred" : "☆ Star this question"}</button>
                     </div>
                   </section>
                 )}
