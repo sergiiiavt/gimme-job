@@ -26,8 +26,7 @@ jobs:
           ref: main
 
       - name: Use Node.js 22.22
-        uses:
-          actions/setup-node@v6
+        uses: actions/setup-node@v6
         with:
           node-version: 22.22
           cache: npm
