@@ -23,16 +23,29 @@ test("desktop vacancy table uses strict data columns", () => {
   assert.match(styles, /\.vacancy-table-row-public/);
 });
 
-test("public state fails closed and private controls are gated", () => {
+test("public state fails closed and private actions remain gated", () => {
   assert.match(source, /const isPersonal = authenticated === true/);
   assert.match(source, /setAuthenticated\(false\);/);
   assert.match(source, /if \(!isPersonal\) return;/);
   assert.match(source, /\{isPersonal \? <div className="page-actions">/);
-  assert.match(source, /\{isPersonal && <select/);
   assert.match(source, /\{isPersonal && <input/);
   assert.match(source, /\{isPersonal && <div className={`vacancy-cell vacancy-match/);
   assert.match(source, /\{isPersonal && <div className="vacancy-cell vacancy-status-cell"/);
   assert.match(source, /\{isPersonal && <article className="job-analysis-resume">/);
+});
+
+test("public and private vacancy lists share compact search and filters", () => {
+  assert.match(source, /className="search vacancy-search"/);
+  assert.match(source, /type="date" aria-label="Filter vacancies by posted date"/);
+  assert.match(source, /label="Status"[\s\S]*options=\{STATUS_OPTIONS\}/);
+  assert.match(source, /label="Conditions"[\s\S]*options=\{CONDITION_OPTIONS\}/);
+  assert.match(source, /const \[statusFilters, setStatusFilters\] = useState<JobStatus\[]>\(\[\]\)/);
+  assert.match(source, /const \[conditionFilters, setConditionFilters\] = useState<JobCondition\[]>\(\[\]\)/);
+  assert.match(source, /statusFilters\.length === 0 \|\| statusFilters\.includes\(job\.status\)/);
+  assert.match(source, /conditionFilters\.length === 0 \|\| conditionFilters\.some/);
+  assert.match(styles, /\.vacancy-search\s*\{[\s\S]*width: 250px/);
+  assert.match(styles, /\.vacancy-date-filter/);
+  assert.match(styles, /\.vacancy-multifilter/);
 });
 
 test("public detail score and tracking are gated by authentication", () => {
