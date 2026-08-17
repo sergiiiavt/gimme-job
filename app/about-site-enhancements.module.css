@@ -1,0 +1,80 @@
+:global(.about-tech-page) {
+  align-items: start;
+  display: grid;
+  gap: 34px;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  max-width: 1180px;
+}
+
+:global(.about-tech-page) > :global(.about-tech-section),
+:global(.about-tech-page) > :global(.about-tech-stack-title) {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.tocRail {
+  grid-column: 2;
+  grid-row: 1 / span 32;
+  min-width: 0;
+  width: 100%;
+}
+
+.highlightGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.highlightNode {
+  min-width: 0;
+}
+
+.highlightNode :global(.about-tech-node-links) {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.highlightNode svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.githubIcon {
+  background-image: url("https://cdn.simpleicons.org/github");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: block;
+  height: 1em;
+  width: 1em;
+}
+
+@media (max-width: 1180px) {
+  :global(.about-tech-page) {
+    gap: 28px;
+    grid-template-columns: minmax(0, 1fr) 190px;
+  }
+}
+
+@media (max-width: 960px) {
+  :global(.about-tech-page) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tocRail {
+    order: -1;
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .highlightGrid {
+    grid-template-columns: 1fr;
+  }
+}
