@@ -17,8 +17,36 @@ const tocHeadings = [
   { id: "about-observability-title", text: "Observability" },
   { id: "about-code-quality-title", text: "Code quality & security" },
   { id: "about-database-title", text: "Database" },
-  { id: "about-vacancy-scrapper-title", text: "Vacancy Scrapper" },
+  { id: "about-vacancy-scraper-title", text: "Vacancy Scraper" },
   { id: "about-authorization-title", text: "Authorization part" },
+] as const;
+
+const vacancySources = [
+  {
+    name: "DOU",
+    detail: "RSS + vacancy detail",
+    href: `${REPO_URL}/blob/main/agent/src/sources/rss.ts`,
+  },
+  {
+    name: "Djinni",
+    detail: "RSS + vacancy detail",
+    href: `${REPO_URL}/blob/main/agent/src/sources/rss.ts`,
+  },
+  {
+    name: "Work.ua",
+    detail: "HTML adapter · local sync",
+    href: `${REPO_URL}/blob/main/agent/src/sources/workua.ts`,
+  },
+  {
+    name: "Robota.ua",
+    detail: "API + vacancy detail",
+    href: `${REPO_URL}/blob/main/agent/src/sources/robotaua.ts`,
+  },
+  {
+    name: "Lobby X",
+    detail: "API + vacancy detail",
+    href: `${REPO_URL}/blob/main/agent/src/sources/lobbyx.ts`,
+  },
 ] as const;
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
@@ -66,6 +94,19 @@ function HighlightNode({
   );
 }
 
+function VacancySourceStrip() {
+  return (
+    <div className={styles.sourceStrip} aria-label="Vacancy source adapters">
+      {vacancySources.map((source) => (
+        <a className={styles.sourceNode} href={source.href} key={source.name} rel="noreferrer" target="_blank">
+          <strong>{source.name}</strong>
+          <span>{source.detail}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function ImplementationHighlights() {
   return (
     <>
@@ -73,34 +114,35 @@ function ImplementationHighlights() {
         IMPLEMENTATION HIGHLIGHTS
       </div>
 
-      <section className="about-tech-section" aria-labelledby="about-vacancy-scrapper-title">
+      <section className="about-tech-section" aria-labelledby="about-vacancy-scraper-title">
         <div className="about-tech-section-heading">
           <span className="about-tech-section-number">1</span>
           <div>
-            <h2 id="about-vacancy-scrapper-title">Vacancy Scrapper</h2>
-            <p>Vacancies are collected, normalized, synchronized, and regression-checked before they appear in the application.</p>
+            <h2 id="about-vacancy-scraper-title">Vacancy Scraper</h2>
+            <p>Five job-board adapters feed one normalization, filtering, deduplication, and synchronization pipeline.</p>
           </div>
         </div>
         <div className="about-tech-section-body">
+          <VacancySourceStrip/>
           <div className={styles.highlightGrid}>
             <HighlightNode
               accent="green"
               icon="search"
-              title="DOU vacancy collection"
-              description="Reads the QA vacancy feed and normalizes external vacancy data into the shared job model."
+              title="Collect + normalize"
+              description="DOU, Djinni, Work.ua, Robota.ua, and Lobby X are converted into the same vacancy model before relevance filtering and duplicate detection."
               links={[
-                { label: "RSS parser", href: `${REPO_URL}/blob/main/scripts/rss-jobs.mjs` },
-                { label: "Agent source", href: `${REPO_URL}/blob/main/agent/src/sources/rss.ts` },
+                { label: "Source configuration", href: `${REPO_URL}/blob/main/app/api/_vacancy-intake.ts` },
+                { label: "Intake logic", href: `${REPO_URL}/blob/main/agent/src/job-intake.ts` },
               ]}
             />
             <HighlightNode
               accent="blue"
               icon="code"
-              title="Sync + regression guard"
-              description="Imports the collected catalog through the internal sync endpoint and verifies known regression vacancies in production."
+              title="Sync + regression guards"
+              description="The production intake records inserts and updates, reports source failures, and smoke-tests live source parsing. Work.ua is kept as a local adapter because cloud-hosted direct HTML requests are blocked."
               links={[
-                { label: "Sync runner", href: `${REPO_URL}/blob/main/scripts/sync-dou-vacancies.ts` },
-                { label: "Source smoke test", href: `${REPO_URL}/blob/main/scripts/smoke-vacancy-sources.ts` },
+                { label: "Vacancy intake", href: `${REPO_URL}/blob/main/app/api/_vacancy-intake.ts` },
+                { label: "Live source smoke", href: `${REPO_URL}/blob/main/scripts/smoke-vacancy-sources.ts` },
               ]}
             />
           </div>

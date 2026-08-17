@@ -90,7 +90,7 @@ export const PURPOSE_CARDS: PurposeCard[] = [
   {
     number: "01",
     title: "Find a job",
-    description: "Aggregates vacancies from four data sources into one place for review and analysis.",
+    description: "Supports vacancy collection from five job boards in one review and analysis workflow.",
     icon: "search",
     accent: "green",
     link: { label: "Production site", href: PROJECT_URL, external: true },

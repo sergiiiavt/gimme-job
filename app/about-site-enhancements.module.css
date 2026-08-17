@@ -1,33 +1,84 @@
 :global(.about-tech-page) {
-  align-items: start;
-  column-gap: 34px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  max-width: 1180px;
-  row-gap: 0;
-}
-
-:global(.about-tech-page) > :global(.about-tech-section),
-:global(.about-tech-page) > :global(.about-tech-stack-title) {
-  grid-column: 1;
-  min-width: 0;
+  max-width: 1280px;
 }
 
 .tocRail {
-  grid-column: 2;
-  grid-row: 1 / span 32;
-  min-width: 0;
+  position: fixed !important;
+  right: 4px;
+  top: 74px;
+  width: 96px;
+  z-index: 24;
+}
+
+.tocRail section {
+  border-radius: 8px;
+  padding: 7px 5px;
+}
+
+.tocRail section > span {
+  font-size: 6px;
+  margin-bottom: 5px;
+}
+
+.tocRail nav {
+  gap: 1px;
+}
+
+.tocRail a {
+  font-size: 7.5px;
+  line-height: 1.16;
+  padding: 4px;
+}
+
+.sourceStrip {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 9px;
   width: 100%;
+}
+
+.sourceNode {
+  background: #f8faf8;
+  border: 1px solid #dfe5e0;
+  border-radius: 8px;
+  min-width: 0;
+  padding: 8px 9px;
+}
+
+.sourceNode:hover {
+  background: #f1f6f2;
+  border-color: #cbd8ce;
+}
+
+.sourceNode strong,
+.sourceNode span {
+  display: block;
+}
+
+.sourceNode strong {
+  color: #26362e;
+  font-size: 10px;
+}
+
+.sourceNode span {
+  color: #7c8881;
+  font-size: 8px;
+  line-height: 1.35;
+  margin-top: 3px;
 }
 
 .highlightGrid {
   display: grid;
-  gap: 12px;
+  gap: 9px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
 }
 
 .highlightNode {
+  max-width: none !important;
   min-width: 0;
+  width: 100% !important;
 }
 
 .highlightNode :global(.about-tech-node-links) {
@@ -55,26 +106,30 @@
   width: 1em;
 }
 
-@media (max-width: 1180px) {
+@media (min-width: 961px) and (max-width: 1679px) {
   :global(.about-tech-page) {
-    column-gap: 28px;
-    grid-template-columns: minmax(0, 1fr) 190px;
+    padding-right: 100px;
+  }
+}
+
+@media (min-width: 1680px) {
+  :global(.about-tech-page) {
+    padding-right: 34px;
   }
 }
 
 @media (max-width: 960px) {
-  :global(.about-tech-page) {
-    display: flex;
-    flex-direction: column;
+  .tocRail {
+    display: none;
   }
 
-  .tocRail {
-    order: -1;
-    position: static;
+  .sourceStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 700px) {
+  .sourceStrip,
   .highlightGrid {
     grid-template-columns: 1fr;
   }
