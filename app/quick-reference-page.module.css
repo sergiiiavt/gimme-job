@@ -225,6 +225,17 @@
   overflow-wrap: anywhere;
 }
 
+.page:has([aria-label="SQL dialect"]) .rowExample {
+  display: block;
+  line-height: 1.4;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: normal;
+}
+
 .explainedRow {
   padding-bottom: 5px;
   padding-top: 5px;
