@@ -4,9 +4,9 @@
 
 .tocRail {
   position: fixed !important;
-  right: 5px;
-  top: 72px;
-  width: 86px;
+  right: 22px;
+  top: 136px;
+  width: 148px;
   z-index: 24;
 }
 
@@ -28,6 +28,10 @@
   font-size: 7px;
   line-height: 1.12;
   padding: 3.5px 3px;
+}
+
+.tocRail a[aria-current="location"] {
+  font-weight: 400 !important;
 }
 
 .sourceStrip {
