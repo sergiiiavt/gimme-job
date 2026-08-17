@@ -6,7 +6,6 @@ import {
   type ApplicationDraftRecord,
   type DraftStatus,
   type JobAnalysis,
-  type JobFeedback,
   type JobInput,
   type JobPipelineStatus,
   type JobTrackingRecord,
@@ -76,8 +75,6 @@ function mapJobTracking(row: DbRow): JobTrackingRecord {
     jobId: String(row.job_id),
     status: String(row.status) as JobPipelineStatus,
     statusUpdatedAt: nullableString(row.status_updated_at),
-    feedback: nullableString(row.feedback) as JobFeedback | null,
-    feedbackAt: nullableString(row.feedback_at),
     updatedAt: String(row.updated_at),
   };
 }
@@ -128,8 +125,6 @@ export class JobDatabase {
         status TEXT NOT NULL DEFAULT 'NEW'
           CHECK (status IN ('NEW', 'INTERESTED', 'APPLIED', 'INTERVIEW', 'OFFER', 'REJECTED', 'NOT_INTERESTED', 'ARCHIVED')),
         status_updated_at TEXT,
-        feedback TEXT CHECK (feedback IS NULL OR feedback IN ('RELEVANT', 'NOT_RELEVANT')),
-        feedback_at TEXT,
         updated_at TEXT NOT NULL
       );
 
@@ -278,33 +273,24 @@ export class JobDatabase {
       const current = this.getJobTracking(jobIdValue);
       const currentStatus: JobPipelineStatus = current?.status
         ?? (job.status === "ARCHIVED" ? "ARCHIVED" : "NEW");
-      const currentFeedback = current?.feedback ?? null;
-      const nextStatus = input.status ?? currentStatus;
-      const nextFeedback = input.feedback !== undefined ? input.feedback : currentFeedback;
+      const nextStatus = input.status;
       const now = new Date().toISOString();
       const statusUpdatedAt = nextStatus !== currentStatus
         ? now
         : current?.statusUpdatedAt ?? null;
-      const feedbackAt = nextFeedback !== currentFeedback
-        ? nextFeedback ? now : null
-        : current?.feedbackAt ?? null;
 
       this.db.prepare(`
         INSERT INTO job_tracking (
-          job_id, status, status_updated_at, feedback, feedback_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?)
+          job_id, status, status_updated_at, updated_at
+        ) VALUES (?, ?, ?, ?)
         ON CONFLICT(job_id) DO UPDATE SET
           status = excluded.status,
           status_updated_at = excluded.status_updated_at,
-          feedback = excluded.feedback,
-          feedback_at = excluded.feedback_at,
           updated_at = excluded.updated_at
       `).run(
         jobIdValue,
         nextStatus,
         statusUpdatedAt,
-        nextFeedback,
-        feedbackAt,
         now,
       );
 

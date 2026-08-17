@@ -31,8 +31,6 @@ export const jobs = sqliteTable("jobs", {
   updatedAt: text("updated_at").notNull(),
   status: text("status").notNull().default("NEW"),
   statusUpdatedAt: text("status_updated_at"),
-  feedback: text("feedback"),
-  feedbackAt: text("feedback_at"),
   rawJson: text("raw_json").notNull().default("{}"),
 });
 

@@ -22,7 +22,6 @@ type TenantStateDeps = {
 
 const INTERVIEW_PROGRESS_STATUSES = new Set(["PLANNED", "LEARNING", "LEARNED"]);
 const JOB_STATUSES = new Set(["NEW", "INTERESTED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED", "NOT_INTERESTED", "ARCHIVED"]);
-const JOB_FEEDBACK = new Set(["RELEVANT", "NOT_RELEVANT"]);
 
 function now(): string {
   return new Date().toISOString();
@@ -222,46 +221,33 @@ export function createTenantState(deps: TenantStateDeps) {
     const job = await database.prepare("SELECT id FROM jobs WHERE id = ? LIMIT 1").bind(jobId).first<Row>();
     if (!job) throw new Error("Job not found.");
 
-    const current = await database.prepare(`SELECT status, status_updated_at, feedback, feedback_at
+    const current = await database.prepare(`SELECT status, status_updated_at
       FROM job_tracking WHERE user_id = ? AND job_id = ? LIMIT 1`)
       .bind(userId, jobId)
       .first<Row>();
 
-    const hasStatus = Object.prototype.hasOwnProperty.call(input, "status");
-    const hasFeedback = Object.prototype.hasOwnProperty.call(input, "feedback");
-    if (!hasStatus && !hasFeedback) throw new Error("Provide status or feedback.");
+    if (!Object.prototype.hasOwnProperty.call(input, "status")) throw new Error("Provide status.");
 
     const currentStatus = current?.status ? String(current.status) : "NEW";
-    const nextStatus = hasStatus ? cleanText(input.status).toUpperCase() : currentStatus;
+    const nextStatus = cleanText(input.status).toUpperCase();
     if (!JOB_STATUSES.has(nextStatus)) throw new Error("Unsupported job status.");
-
-    const currentFeedback = current?.feedback ? String(current.feedback) : null;
-    const requestedFeedback = hasFeedback
-      ? input.feedback === null || input.feedback === "" ? null : cleanText(input.feedback).toUpperCase()
-      : currentFeedback;
-    if (requestedFeedback !== null && !JOB_FEEDBACK.has(requestedFeedback)) throw new Error("Unsupported job feedback.");
 
     const timestamp = now();
     const statusUpdatedAt = nextStatus !== currentStatus
       ? timestamp
       : current?.status_updated_at ? String(current.status_updated_at) : null;
-    const feedbackAt = requestedFeedback !== currentFeedback
-      ? requestedFeedback ? timestamp : null
-      : current?.feedback_at ? String(current.feedback_at) : null;
 
     await database.prepare(`INSERT INTO job_tracking (
-      user_id, job_id, status, status_updated_at, feedback, feedback_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      user_id, job_id, status, status_updated_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(user_id, job_id) DO UPDATE SET
       status = excluded.status,
       status_updated_at = excluded.status_updated_at,
-      feedback = excluded.feedback,
-      feedback_at = excluded.feedback_at,
       updated_at = excluded.updated_at`)
-      .bind(userId, jobId, nextStatus, statusUpdatedAt, requestedFeedback, feedbackAt, timestamp)
+      .bind(userId, jobId, nextStatus, statusUpdatedAt, timestamp)
       .run();
 
-    return { id: jobId, status: nextStatus, feedback: requestedFeedback, statusUpdatedAt, feedbackAt };
+    return { id: jobId, status: nextStatus, statusUpdatedAt };
   }
 
   async function resumePdf(userId: string, jobId: string): Promise<Uint8Array | null> {
@@ -316,8 +302,6 @@ export function createTenantState(deps: TenantStateDeps) {
           ...job,
           status: "NEW",
           statusUpdatedAt: null,
-          feedback: null,
-          feedbackAt: null,
           analysis: null,
           resume: null,
           resumePdf: false,
@@ -363,8 +347,6 @@ export function createTenantState(deps: TenantStateDeps) {
         ...job,
         status: row?.status ? String(row.status) : "NEW",
         statusUpdatedAt: row?.status_updated_at ? String(row.status_updated_at) : null,
-        feedback: row?.feedback ? String(row.feedback) : null,
-        feedbackAt: row?.feedback_at ? String(row.feedback_at) : null,
         analysis: analyses.get(jobId) ?? null,
         resume: resumes.get(jobId) ?? null,
         resumePdf: resumePdfs.has(jobId),

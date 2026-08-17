@@ -8,7 +8,7 @@ register();
 const { JobDatabase } = await import("../agent/src/db.ts");
 const { JobTrackingUpdateSchema } = await import("../agent/src/domain.ts");
 
-test("local-agent tracking persists pipeline status and feedback independently", () => {
+test("local-agent tracking persists pipeline status", () => {
   const database = new JobDatabase(":memory:");
   try {
     const { id } = database.upsertJob({
@@ -29,29 +29,21 @@ test("local-agent tracking persists pipeline status and feedback independently",
 
     assert.equal(database.getJobTracking(id), null);
 
-    const applied = database.updateJobTracking(id, {
-      status: "APPLIED",
-      feedback: "RELEVANT",
-    });
+    const applied = database.updateJobTracking(id, { status: "APPLIED" });
     assert.equal(applied.status, "APPLIED");
-    assert.equal(applied.feedback, "RELEVANT");
     assert.match(applied.statusUpdatedAt ?? "", /^20\d{2}-/);
-    assert.match(applied.feedbackAt ?? "", /^20\d{2}-/);
 
-    const cleared = database.updateJobTracking(id, { feedback: null });
-    assert.equal(cleared.status, "APPLIED");
-    assert.equal(cleared.statusUpdatedAt, applied.statusUpdatedAt);
-    assert.equal(cleared.feedback, null);
-    assert.equal(cleared.feedbackAt, null);
+    const unchanged = database.updateJobTracking(id, { status: "APPLIED" });
+    assert.equal(unchanged.statusUpdatedAt, applied.statusUpdatedAt);
   } finally {
     database.close();
   }
 });
 
 test("local-agent tracking validates updates and exposes the PATCH route through CORS", async () => {
-  assert.throws(() => JobTrackingUpdateSchema.parse({}), /Provide status or feedback/);
+  assert.throws(() => JobTrackingUpdateSchema.parse({}));
   assert.throws(() => JobTrackingUpdateSchema.parse({ status: "REVIEWED" }));
-  assert.deepEqual(JobTrackingUpdateSchema.parse({ feedback: null }), { feedback: null });
+  assert.deepEqual(JobTrackingUpdateSchema.parse({ status: "APPLIED" }), { status: "APPLIED" });
 
   const serverSource = await readFile(new URL("../agent/server.ts", import.meta.url), "utf8");
   const databaseSource = await readFile(new URL("../agent/src/db.ts", import.meta.url), "utf8");

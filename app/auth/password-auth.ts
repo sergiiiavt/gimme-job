@@ -170,8 +170,8 @@ async function claimLegacy(db: D1Database, userId: string): Promise<void> {
     db.prepare("INSERT INTO legacy_workspace_claims (id,user_id,claimed_at) VALUES (1,?,?)").bind(userId, now),
     db.prepare("INSERT OR REPLACE INTO user_settings SELECT ?,key,value_json,updated_at FROM settings").bind(userId),
     db.prepare("INSERT OR REPLACE INTO user_interview_progress SELECT ?,question_id,status,updated_at FROM interview_progress").bind(userId),
-    db.prepare(`INSERT OR REPLACE INTO job_tracking SELECT ?,id,status,status_updated_at,feedback,feedback_at,updated_at FROM jobs
-      WHERE status <> 'NEW' OR status_updated_at IS NOT NULL OR feedback IS NOT NULL OR feedback_at IS NOT NULL`).bind(userId),
+    db.prepare(`INSERT OR REPLACE INTO job_tracking SELECT ?,id,status,status_updated_at,updated_at FROM jobs
+      WHERE status <> 'NEW' OR status_updated_at IS NOT NULL`).bind(userId),
     db.prepare("INSERT OR REPLACE INTO user_analyses SELECT ?,job_id,mode,score,verdict,payload_json,created_at,updated_at FROM analyses").bind(userId),
     db.prepare("INSERT OR REPLACE INTO user_resume_variants SELECT ?,job_id,id,markdown,pdf_base64,created_at,updated_at FROM resume_variants").bind(userId),
     db.prepare(`INSERT OR REPLACE INTO user_application_drafts SELECT ?,job_id,id,recipient,subject,body,status,approved_at,sent_at,provider_message_id,created_at,updated_at FROM application_drafts`).bind(userId),

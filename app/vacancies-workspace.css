@@ -150,8 +150,7 @@
   gap: 4px;
 }
 
-.vacancy-tag,
-.vacancy-feedback {
+.vacancy-tag {
   background: #f0f2f0;
   border-radius: 4px;
   color: #68726d;
@@ -224,16 +223,6 @@
 
 .vacancy-status-cell .status {
   padding: 5px 7px;
-}
-
-.vacancy-feedback.good {
-  background: var(--green-soft);
-  color: var(--green);
-}
-
-.vacancy-feedback.bad {
-  background: var(--red-soft);
-  color: var(--red);
 }
 
 .job-detail-view-public {
