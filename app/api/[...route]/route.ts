@@ -28,11 +28,13 @@ import {
   saveTenantSetting,
   tenantDashboard,
   tenantInterviewProgress,
+  tenantInterviewStars,
   tenantRequestContext,
   tenantResumePdf,
   tenantSettingsView,
   updateTenantDraft,
   updateTenantInterviewProgress,
+  updateTenantInterviewStar,
   updateTenantJobTracking,
 } from "../_tenant-state";
 import {
@@ -93,6 +95,13 @@ export async function GET(request: Request, context: RouteContext) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
       }
       return Response.json(await tenantInterviewProgress(tenant.userId));
+    }
+    if (route[0] === "interview-stars") {
+      if (!tenant.multiUser) return Response.json({ error: "Route not found." }, { status: 404 });
+      if (!tenant.authenticated || !tenant.userId) {
+        return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
+      }
+      return Response.json(await tenantInterviewStars(tenant.userId));
     }
     if (route[0] === "settings") {
       if (!tenant.multiUser) return Response.json(mergeVacancySourceDefaults(await settingsView()));
@@ -234,6 +243,11 @@ export async function PATCH(request: Request, context: RouteContext) {
         ? await updateTenantInterviewProgress(tenant.userId, route[1], payload)
         : await updateInterviewProgress(route[1], payload);
       return Response.json({ ok: true, progress });
+    }
+    if (route[0] === "interview-stars" && route[1]) {
+      if (!tenant.multiUser || !tenant.userId) return Response.json({ error: "Route not found." }, { status: 404 });
+      const star = await updateTenantInterviewStar(tenant.userId, route[1], payload);
+      return Response.json({ ok: true, star });
     }
     return Response.json({ error: "Route not found." }, { status: 404 });
   } catch (error) { return jsonError(error); }

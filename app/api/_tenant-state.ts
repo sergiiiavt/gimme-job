@@ -193,6 +193,31 @@ export function createTenantState(deps: TenantStateDeps) {
     return { questionId, status, updatedAt };
   }
 
+  async function interviewStars(userId: string) {
+    const result = await database.prepare(`SELECT question_id, created_at
+      FROM user_interview_stars WHERE user_id = ? ORDER BY created_at DESC`)
+      .bind(userId)
+      .all<Row>();
+    return {
+      starredQuestionIds: result.results.map((row) => String(row.question_id)),
+    };
+  }
+
+  async function updateInterviewStar(userId: string, questionId: string, input: Json) {
+    if (!validQuestionId(questionId)) throw new Error("Unsupported question identifier.");
+    if (!input.starred) {
+      await database.prepare("DELETE FROM user_interview_stars WHERE user_id = ? AND question_id = ?")
+        .bind(userId, questionId)
+        .run();
+      return { questionId, starred: false };
+    }
+    await database.prepare(`INSERT INTO user_interview_stars (user_id, question_id, created_at) VALUES (?, ?, ?)
+      ON CONFLICT(user_id, question_id) DO NOTHING`)
+      .bind(userId, questionId, now())
+      .run();
+    return { questionId, starred: true };
+  }
+
   async function updateJobTracking(userId: string, jobId: string, input: Json) {
     const job = await database.prepare("SELECT id FROM jobs WHERE id = ? LIMIT 1").bind(jobId).first<Row>();
     if (!job) throw new Error("Job not found.");
@@ -394,11 +419,13 @@ export function createTenantState(deps: TenantStateDeps) {
   return {
     dashboard,
     interviewProgress,
+    interviewStars,
     resumePdf,
     saveSetting,
     settingsView,
     updateDraft,
     updateInterviewProgress,
+    updateInterviewStar,
     updateJobTracking,
   };
 }
@@ -437,6 +464,14 @@ export async function tenantInterviewProgress(userId: string) {
 
 export async function updateTenantInterviewProgress(userId: string, questionId: string, input: Json) {
   return (await runtimeState()).updateInterviewProgress(userId, questionId, input);
+}
+
+export async function tenantInterviewStars(userId: string) {
+  return (await runtimeState()).interviewStars(userId);
+}
+
+export async function updateTenantInterviewStar(userId: string, questionId: string, input: Json) {
+  return (await runtimeState()).updateInterviewStar(userId, questionId, input);
 }
 
 export async function updateTenantJobTracking(userId: string, jobId: string, input: Json) {

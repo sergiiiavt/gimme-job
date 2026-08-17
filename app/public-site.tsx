@@ -910,6 +910,9 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const [progressBusy, setProgressBusy] = useState<string | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
   const [progressLoaded, setProgressLoaded] = useState(mode === "public");
+  const [stars, setStars] = useState<Record<string, boolean>>({});
+  const [starBusy, setStarBusy] = useState<string | null>(null);
+  const [starError, setStarError] = useState<string | null>(null);
 
   const interviewQuestions = catalog.questions;
   const interviewTaxonomy = catalog.taxonomy;
@@ -959,6 +962,25 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
       })
       .finally(() => {
         if (active) setProgressLoaded(true);
+      });
+    return () => { active = false; };
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "personal") return;
+    let active = true;
+    fetch("/api/interview-stars")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Personal stars are temporarily unavailable.");
+        return response.json() as Promise<{ starredQuestionIds?: string[] }>;
+      })
+      .then((result) => {
+        if (!active) return;
+        setStars(Object.fromEntries((result.starredQuestionIds ?? []).map((questionId) => [questionId, true])));
+        setStarError(null);
+      })
+      .catch((error) => {
+        if (active) setStarError(error instanceof Error ? error.message : "Personal stars are temporarily unavailable.");
       });
     return () => { active = false; };
   }, [mode]);
@@ -1061,6 +1083,35 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
       setProgressBusy(null);
     }
   };
+  const updateStar = async (questionId: string, starred: boolean) => {
+    const previous = Boolean(stars[questionId]);
+    setStarBusy(questionId);
+    setStars((current) => {
+      const next = { ...current };
+      if (starred) next[questionId] = true;
+      else delete next[questionId];
+      return next;
+    });
+    try {
+      const response = await fetch(`/api/interview-stars/${encodeURIComponent(questionId)}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ starred }),
+      });
+      if (!response.ok) throw new Error("Could not save this star.");
+      setStarError(null);
+    } catch (error) {
+      setStars((current) => {
+        const next = { ...current };
+        if (previous) next[questionId] = true;
+        else delete next[questionId];
+        return next;
+      });
+      setStarError(error instanceof Error ? error.message : "Could not save this star.");
+    } finally {
+      setStarBusy(null);
+    }
+  };
 
   return (
     <div className="kb-content iq-page">
@@ -1077,8 +1128,8 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
 
       {mode === "personal" && (
         <section className="iq-progress-summary" aria-live="polite">
-          <div><span>Personal learning</span><strong>{progressCounts.LEARNED} learned</strong><strong>{progressCounts.LEARNING} learning</strong><strong>{progressCounts.PLANNED} planned</strong></div>
-          <small>{progressError ?? (progressLoaded ? "Saved privately in your Personal view." : "Loading your progress…")}</small>
+          <div><span>Personal learning</span><strong>{progressCounts.LEARNED} learned</strong><strong>{progressCounts.LEARNING} learning</strong><strong>{progressCounts.PLANNED} planned</strong><strong>{Object.keys(stars).length} starred</strong></div>
+          <small>{starError ?? progressError ?? (progressLoaded ? "Saved privately in your Personal view." : "Loading your progress…")}</small>
         </section>
       )}
 
@@ -1121,6 +1172,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                   <span className="iq-question-tags">
                     <em className={`iq-prevalence iq-prevalence-${item.prevalence.toLowerCase().replace(" ", "-")}`}>{item.prevalence}</em>
                     {mode === "personal" && progress[item.id] && <em className={`iq-progress-badge iq-progress-${progress[item.id].toLowerCase()}`}>{progressOptions.find((option) => option.value === progress[item.id])?.label}</em>}
+                    {mode === "personal" && stars[item.id] && <em className="iq-star-badge">★ My star</em>}
                     {tags.slice(0, 4).map((questionTag) => <em key={questionTag}>{questionTag}</em>)}
                   </span>
                 </div>
@@ -1155,6 +1207,14 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                         <button className={progress[item.id] === option.value ? `active iq-progress-${option.value.toLowerCase()}` : ""} disabled={progressBusy === item.id} key={option.value} onClick={() => void updateProgress(item.id, option.value)}>{option.label}</button>
                       ))}
                       {progress[item.id] && <button className="iq-progress-reset" disabled={progressBusy === item.id} onClick={() => void updateProgress(item.id, null)}>Reset</button>}
+                    </div>
+                  </section>
+                )}
+                {mode === "personal" && (
+                  <section className="iq-star-control">
+                    <div><h3>Personal star</h3><small>Visible only to you</small></div>
+                    <div>
+                      <button className={stars[item.id] ? "active" : ""} disabled={starBusy === item.id} onClick={() => void updateStar(item.id, !stars[item.id])}>{stars[item.id] ? "★ Starred" : "☆ Star this question"}</button>
                     </div>
                   </section>
                 )}

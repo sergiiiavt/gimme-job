@@ -52,6 +52,7 @@ class FakeStatement {
 class FakeDb {
   readonly settings = new Map<string, string>();
   readonly progress = new Map<string, Row>();
+  readonly stars = new Map<string, Row>();
   readonly jobs = new Set<string>(["job-1", "job-2"]);
   readonly tracking = new Map<string, TrackingRow>();
   readonly gmail = new Map<string, Row>();
@@ -99,6 +100,9 @@ class FakeDb {
     if (normalized.startsWith("SELECT question_id, status, updated_at FROM user_interview_progress")) {
       return [...this.progress.values()].filter((row) => row.user_id === userId);
     }
+    if (normalized.startsWith("SELECT question_id, created_at FROM user_interview_stars")) {
+      return [...this.stars.values()].filter((row) => row.user_id === userId);
+    }
     if (normalized.startsWith("SELECT * FROM job_tracking")) {
       return [...this.tracking.values()].filter((row) => row.user_id === userId);
     }
@@ -130,6 +134,18 @@ class FakeDb {
         question_id: String(values[1]),
         status: String(values[2]),
         updated_at: String(values[3]),
+      });
+      return;
+    }
+    if (normalized.startsWith("DELETE FROM user_interview_stars")) {
+      this.stars.delete(this.key(values[0], values[1]));
+      return;
+    }
+    if (normalized.startsWith("INSERT INTO user_interview_stars")) {
+      this.stars.set(this.key(values[0], values[1]), {
+        user_id: String(values[0]),
+        question_id: String(values[1]),
+        created_at: String(values[2]),
       });
       return;
     }
@@ -270,6 +286,24 @@ test("interview progress cannot cross tenant boundaries", async () => {
   await assert.rejects(() => tenant.updateInterviewProgress("user-a", "api-testing", { status: "DONE" }), /status/);
 });
 
+test("interview stars cannot cross tenant boundaries", async () => {
+  const database = new FakeDb();
+  const tenant = state(database);
+
+  await tenant.updateInterviewStar("user-a", "api-testing", { starred: true });
+  assert.deepEqual((await tenant.interviewStars("user-a")).starredQuestionIds, ["api-testing"]);
+  assert.deepEqual((await tenant.interviewStars("user-b")).starredQuestionIds, []);
+
+  await tenant.updateInterviewStar("user-b", "api-testing", { starred: true });
+  assert.deepEqual((await tenant.interviewStars("user-a")).starredQuestionIds, ["api-testing"]);
+  assert.deepEqual((await tenant.interviewStars("user-b")).starredQuestionIds, ["api-testing"]);
+
+  await tenant.updateInterviewStar("user-a", "api-testing", { starred: false });
+  assert.deepEqual((await tenant.interviewStars("user-a")).starredQuestionIds, []);
+  assert.deepEqual((await tenant.interviewStars("user-b")).starredQuestionIds, ["api-testing"]);
+  await assert.rejects(() => tenant.updateInterviewStar("user-a", "BAD ID", { starred: true }), /identifier/);
+});
+
 test("job status and feedback are tenant scoped", async () => {
   const database = new FakeDb();
   const tenant = state(database);
@@ -382,6 +416,21 @@ test("tenant migration scopes every private data family by user id", async () =>
   }
   assert.match(sql, /user_email_events_provider_message_id_unique[^\n]*user_id/);
   assert.match(sql, /PRIMARY KEY \(`user_id`, `job_id`\)/);
+});
+
+test("interview stars migration adds a tenant-scoped table and migrates the current editorial set", async () => {
+  const sql = await readFile(new URL("../drizzle/0012_interview_stars.sql", import.meta.url), "utf8");
+  const editorialStars = JSON.parse(
+    await readFile(new URL("../content/interview/editorial-starred-question-ids.json", import.meta.url), "utf8"),
+  ) as { questionIds: string[] };
+
+  assert.match(sql, /CREATE TABLE `user_interview_stars`/);
+  assert.match(sql, /PRIMARY KEY \(`user_id`, `question_id`\)/);
+  assert.match(sql, /FOREIGN KEY \(`user_id`\) REFERENCES `users`\(`id`\)[^\n]*ON DELETE cascade/);
+  assert.match(sql, /WHERE `users`\.`email` = 'sergii\.iavt@gmail\.com'/);
+  for (const questionId of editorialStars.questionIds) {
+    assert.ok(sql.includes(`'${questionId}'`), `Migration must seed ${questionId}.`);
+  }
 });
 
 test("tenant unavailable response is explicit and non-cacheable", async () => {

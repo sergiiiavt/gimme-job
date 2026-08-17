@@ -276,6 +276,11 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(routeSource, /interview-progress/);
   assert.match(schemaSource, /sqliteTable\("interview_progress"/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
+  assert.match(uiSource, /Personal star/);
+  assert.match(uiSource, /Visible only to you/);
+  assert.match(uiSource, /iq-star-badge/);
+  assert.match(routeSource, /interview-stars/);
+  assert.match(stylesSource, /\.iq-star-control \{/);
 
   for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));

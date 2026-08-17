@@ -479,6 +479,25 @@ test("keeps the public site open and protects the private workspace", async () =
   assert.equal(authorizedResponse.status, 200);
   assert.equal(authorizedResponse.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
 
+  // Personal stars are a tenant-only feature; legacy single-password mode has no per-user
+  // account to scope them to, so the route is simply not offered there.
+  const legacyStarsGetResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/interview-stars", { headers: { cookie: sessionCookie } }),
+    env,
+    context,
+  );
+  assert.equal(legacyStarsGetResponse.status, 404);
+  const legacyStarsPatchResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/interview-stars/testing-purpose-and-limits", {
+      method: "PATCH",
+      headers: { cookie: sessionCookie, "content-type": "application/json" },
+      body: JSON.stringify({ starred: true }),
+    }),
+    env,
+    context,
+  );
+  assert.equal(legacyStarsPatchResponse.status, 404);
+
   // GET /api/dashboard is now public (the vacancy analysis it returns should be visible without
   // logging in); it reaches the handler instead of being blocked at the auth gate. This test env
   // has no D1 binding, so the handler itself fails past the gate — the point here is only that
