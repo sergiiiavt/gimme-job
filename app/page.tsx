@@ -175,7 +175,7 @@ async function api<T>(path: string, method = "GET", payload?: unknown): Promise<
 function Icon({ name, size = 18 }: { name: string; size?: number }) {
   const paths: Record<string, ReactNode> = {
     jobs: <><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></>,
-    interview: <><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M8 9h8M8 13h5"/></>,
+    interview: <><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4 4Z"/><path d="M8 9h8M8 13h5"/></>,
     certifications: <><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1 8 4.5-3 4.5 3-1-8"/><path d="m10 9 1.3 1.3L14.5 7"/></>,
     trends: <><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></>,
     agentic: <><circle cx="12" cy="12" r="3"/><path d="M19 12h3M2 12h3M12 2v3M12 19v3M17 7l2-2M5 19l2-2M17 17l2 2M5 5l2 2"/></>,
@@ -436,15 +436,23 @@ export function WorkspaceApp() {
               </div> : <a className="signin-link" href="/workspace/login">Sign in for full access →</a>}
             </div>
             <div className="stat-line"><Stat value={counts.total} label="Total"/><Stat value={counts.new} label="New"/><Stat value={counts.applied} label="Applied"/><Stat value={counts.interviews} label="Interviews"/></div>
-            {busy === "sync" && <div className="analyze-progress">
-              <div className="analyze-progress-bar indeterminate"><div/></div>
-              <div className="analyze-log" role="log" aria-live="polite"><div>Searching job sources…</div></div>
-            </div>}
-            {(busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
-              {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
-              <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
-            </div>}
           </section>
+
+          {(online === null || busy === "sync") && <div className="analyze-progress" aria-live="polite">
+            <div
+              className="analyze-progress-bar indeterminate"
+              role="progressbar"
+              aria-label={busy === "sync" ? "Loading vacancies from job sources" : "Loading vacancies"}
+            ><div/></div>
+            <div className="analyze-log" role="status">
+              <div>{busy === "sync" ? "Loading vacancies from job sources…" : "Loading vacancies from database…"}</div>
+            </div>
+          </div>}
+
+          {(busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
+            {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
+            <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
+          </div>}
 
           {selected ? <section className="job-detail-view" id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
             <button type="button" className="back-link" onClick={() => setSelectedId(null)}>← Back to vacancies</button>
@@ -459,8 +467,7 @@ export function WorkspaceApp() {
                 onDownload={() => void downloadResumePdf(selected)}
               />
             </article>
-          </section> : <section className="job-list-view" aria-busy={online === null}>
-            {online === null && <div className="analyze-progress-bar indeterminate" role="progressbar" aria-label="Loading vacancies"><div/></div>}
+          </section> : <section className="job-list-view" aria-busy={online === null || busy === "sync"}>
             <div className="feed-tools">
               <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
