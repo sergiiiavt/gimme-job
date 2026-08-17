@@ -27,6 +27,8 @@ interface LearningModule {
   level?: string;
   description: string;
   descriptionUk?: string;
+  introMarkdown?: string;
+  introMarkdownUk?: string;
   markdown?: string;
   markdownUk?: string;
   sourceIds?: string[];
@@ -187,14 +189,17 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   );
   const sourcesById = useMemo(() => new Map(curriculum.sources.map((source) => [source.id, source])), [curriculum.sources]);
   const moduleSources = useMemo(() => {
-    const ids = activeChapter?.sourceIds?.length
-      ? activeChapter.sourceIds
-      : Array.from(new Set(moduleLessons.flatMap((lesson) => lesson.sourceIds)));
+    const ids = Array.from(new Set([
+      ...(activeChapter?.sourceIds ?? []),
+      ...moduleLessons.flatMap((lesson) => lesson.sourceIds),
+    ]));
     return ids.map((id) => sourcesById.get(id)).filter((source): source is LearningSource => Boolean(source));
   }, [activeChapter, moduleLessons, sourcesById]);
 
   const localizedModuleLabel = language === "uk" ? activeChapter?.labelUk ?? activeChapter?.label : activeChapter?.label;
   const localizedModuleDescription = language === "uk" ? activeChapter?.descriptionUk ?? activeChapter?.description : activeChapter?.description;
+  const localizedIntroMarkdown = language === "uk" ? activeChapter?.introMarkdownUk ?? activeChapter?.introMarkdown : activeChapter?.introMarkdown;
+  const englishIntroMarkdown = activeChapter?.introMarkdown ?? "";
   const rawMarkdown = language === "uk" ? activeChapter?.markdownUk ?? activeChapter?.markdown : activeChapter?.markdown;
   const englishRawMarkdown = activeChapter?.markdown ? stripMarkdownSection(activeChapter.markdown, "sources") : "";
   const generatedMarkdown = rawMarkdown
@@ -203,14 +208,24 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
       `# ${localizedModuleLabel}`,
       "",
       localizedModuleDescription ?? "",
+      ...(localizedIntroMarkdown ? ["", localizedIntroMarkdown] : []),
       "",
       ...moduleLessons.map((lesson) => lessonMarkdown(lesson, language, curriculum.referenceImplementation)),
     ].join("\n") : "";
 
-  const structuredHeadingOverrides = Object.fromEntries(moduleLessons.map((lesson) => [
-    language === "uk" ? lesson.titleUk : lesson.title,
-    markdownSlug(lesson.title),
+  const localizedIntroHeadings = extractMarkdownHeadings(localizedIntroMarkdown ?? "").filter((heading) => heading.level === 2);
+  const englishIntroHeadings = extractMarkdownHeadings(englishIntroMarkdown).filter((heading) => heading.level === 2);
+  const introHeadingOverrides = Object.fromEntries(localizedIntroHeadings.map((heading, index) => [
+    heading.text,
+    englishIntroHeadings[index]?.id ?? heading.id,
   ]));
+  const structuredHeadingOverrides = {
+    ...introHeadingOverrides,
+    ...Object.fromEntries(moduleLessons.map((lesson) => [
+      language === "uk" ? lesson.titleUk : lesson.title,
+      markdownSlug(lesson.title),
+    ])),
+  };
   const localizedHeadings = extractMarkdownHeadings(generatedMarkdown).filter((heading) => heading.level === 2);
   const englishRawHeadings = extractMarkdownHeadings(englishRawMarkdown).filter((heading) => heading.level === 2);
   const rawHeadingOverrides = Object.fromEntries(localizedHeadings.map((heading, index) => [
