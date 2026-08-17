@@ -1,3 +1,5 @@
+import { handleDouVacancyImport } from "../../../api/_dou-vacancy-import";
+import { upsertImportedVacancies } from "../../../api/_vacancy-import";
 import { syncVacancySources } from "../../../api/_vacancy-intake";
 import { bearerToken, constantTimeEqual } from "../email-events/email-event";
 
@@ -39,8 +41,11 @@ export async function POST(request: Request): Promise<Response> {
   const env = await runtimeEnv();
   const authError = authorize(request, env);
   if (authError) return authError;
-  const startedAt = Date.now();
 
+  const douImport = await handleDouVacancyImport(request, upsertImportedVacancies);
+  if (douImport) return douImport;
+
+  const startedAt = Date.now();
   try {
     const result = await syncVacancySources();
     console.log({
