@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import qaFundamentalsCatalog from "@/content/qa-fundamentals/catalog";
 import LearningDocumentPage, { type StructuredLearningCurriculum } from "./learning-document-page";
 
@@ -8,7 +10,7 @@ const conceptCounts = new Map(qaFundamentalsCatalog.taxonomy.map((topic) => [
   qaFundamentalsCatalog.requiredConcepts.filter((concept) => concept.topicId === topic.id).length,
 ]));
 
-const curriculum: StructuredLearningCurriculum = {
+const baseCurriculum: StructuredLearningCurriculum = {
   title: qaFundamentalsCatalog.title,
   titleUk: qaFundamentalsCatalog.titleUk,
   description: qaFundamentalsCatalog.description,
@@ -36,6 +38,19 @@ const curriculum: StructuredLearningCurriculum = {
 };
 
 export default function QaFundamentalsPage({ mode }: { mode: "public" | "personal" }) {
+  const searchParams = useSearchParams();
+  const requestedTopic = searchParams.get("topic");
+
+  const curriculum = useMemo<StructuredLearningCurriculum>(() => {
+    if (!requestedTopic) return baseCurriculum;
+    const requestedModule = baseCurriculum.taxonomy.find((item) => item.id === requestedTopic);
+    if (!requestedModule) return baseCurriculum;
+    return {
+      ...baseCurriculum,
+      taxonomy: [requestedModule, ...baseCurriculum.taxonomy.filter((item) => item.id !== requestedTopic)],
+    };
+  }, [requestedTopic]);
+
   return (
     <LearningDocumentPage
       activeExternalId="qa-fundamentals"
