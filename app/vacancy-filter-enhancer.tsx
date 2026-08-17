@@ -82,12 +82,16 @@ function DateFilterPopover({ toolbar }: { toolbar: HTMLElement }) {
       const parsed = parseDateKey(value);
       if (parsed) setCalendarMonth(monthStart(parsed));
     };
-    syncFromNative();
+    const onClear = () => {
+      setSelectedDate("");
+      setCalendarMonth(monthStart(today));
+    };
 
+    syncFromNative();
     const clearButton = toolbar.querySelector<HTMLButtonElement>(".vacancy-clear-filters");
-    clearButton?.addEventListener("click", syncFromNative);
-    return () => clearButton?.removeEventListener("click", syncFromNative);
-  }, [toolbar]);
+    clearButton?.addEventListener("click", onClear);
+    return () => clearButton?.removeEventListener("click", onClear);
+  }, [toolbar, today]);
 
   const setDate = (value: string) => {
     const input = nativeDateInput(toolbar);
@@ -132,7 +136,7 @@ function DateFilterPopover({ toolbar }: { toolbar: HTMLElement }) {
             const day = index + 1;
             const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
             const key = dateKey(date);
-            const future = date.getTime() > new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).getTime();
+            const future = key > todayKey;
             const isToday = key === todayKey;
             const isSelected = key === selectedDate;
             return <button
