@@ -436,3 +436,29 @@
     flex: 1 1 100%;
   }
 }
+
+@media (min-width: 901px) {
+  :global(body):has(.page) :global(.kb-account-corner) {
+    top: 10px !important;
+  }
+
+  :global(body):has(.page) :global(.kb-account-corner) > :global(.kb-auth-control)[href] {
+    align-items: center !important;
+    font-size: 10.5px !important;
+    min-height: 32px !important;
+    padding: 0 10px !important;
+  }
+
+  :global(body):has(.page) :global(.kb-account-corner) > :global(.kb-auth-control) > summary {
+    box-shadow: 0 5px 14px rgba(28,39,35,.09) !important;
+    height: 34px !important;
+    padding: 2px !important;
+    width: 34px !important;
+  }
+
+  :global(body):has(.page) :global(.kb-account-corner) > :global(.kb-auth-control) > summary > span {
+    font-size: 11px !important;
+    height: 28px !important;
+    width: 28px !important;
+  }
+}
