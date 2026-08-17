@@ -423,15 +423,23 @@ export default function VacanciesWorkspace() {
             ) : (
               <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
             )}
-            {isPersonal && busy === "sync" && <div className="analyze-progress">
-              <div className="analyze-progress-bar indeterminate"><div/></div>
-              <div className="analyze-log" role="log" aria-live="polite"><div>Searching job sources…</div></div>
-            </div>}
-            {isPersonal && (busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
-              {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
-              <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
-            </div>}
           </section>
+
+          {(online === null || (isPersonal && busy === "sync")) && <div className="analyze-progress vacancy-load-progress" aria-live="polite">
+            <div
+              className="analyze-progress-bar indeterminate"
+              role="progressbar"
+              aria-label={busy === "sync" ? "Loading vacancies from job sources" : "Loading vacancies"}
+            ><div/></div>
+            <div className="analyze-log" role="status">
+              <div>{busy === "sync" ? "Loading vacancies from job sources…" : "Loading vacancies from database…"}</div>
+            </div>
+          </div>}
+
+          {isPersonal && (busy === "analyze" || analyzeLog.length > 0) && <div className="analyze-progress">
+            {analyzeProgress && <div className="analyze-progress-bar"><div style={{ width: `${analyzeProgress.total ? Math.round(analyzeProgress.done / analyzeProgress.total * 100) : 0}%` }}/></div>}
+            <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
+          </div>}
 
           {selected ? <section className={`job-detail-view${isPersonal ? "" : " job-detail-view-public"}`} id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
             <button type="button" className="back-link" onClick={() => setSelectedId(null)}>← Back to vacancies</button>
@@ -446,7 +454,7 @@ export default function VacanciesWorkspace() {
                 onDownload={() => void downloadResumePdf(selected)}
               />
             </article>}
-          </section> : <section className="job-list-view vacancy-list-view">
+          </section> : <section className="job-list-view vacancy-list-view" aria-busy={online === null || (isPersonal && busy === "sync")}>
             <div className={`feed-tools vacancy-feed-tools vacancy-feed-tools-${viewMode}`}>
               <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
               {isPersonal && <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
