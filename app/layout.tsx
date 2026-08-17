@@ -4,10 +4,10 @@ import "./interview-auth-layout.css";
 import "./about-site-layout.css";
 import "./vacancies-workspace.css";
 import "./vacancy-description.css";
-import "./learning-sidebar-highlights.css";
 import "./quick-reference-availability.css";
 import "./brand-logo.css";
 import "./mobile-navigation-logo.css";
+import "./navigation-current-selection.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
