@@ -145,7 +145,7 @@ function ImplementationHighlights() {
 }
 
 function AboutToc() {
-  const [activeSectionId, setActiveSectionId] = useState(tocHeadings[0].id);
+  const [activeSectionId, setActiveSectionId] = useState<string>(tocHeadings[0].id);
 
   useEffect(() => {
     let frame = 0;
