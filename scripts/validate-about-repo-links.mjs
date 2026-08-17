@@ -23,7 +23,7 @@ if (referencedPaths.size === 0) {
 }
 
 const missing = [];
-for (const repositoryPath of [...referencedPaths].sort()) {
+for (const repositoryPath of [...referencedPaths].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
   try {
     await access(path.join(projectRoot, repositoryPath));
   } catch {
