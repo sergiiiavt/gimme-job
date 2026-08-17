@@ -3,6 +3,7 @@ import { RssJobSource } from "../agent/src/sources/rss.js";
 const DEFAULT_APP_URL = "https://gimmejob.gimmejob.workers.dev";
 const DOU_RSS_URL = "https://jobs.dou.ua/vacancies/feeds/?search=QA";
 const MIN_EXPECTED_VACANCIES = 100;
+const REPORTED_REGRESSION_IDS = new Set(["368919", "368979", "364050"]);
 
 function requiredEnvironment(name: string): string {
   const value = process.env[name]?.trim();
@@ -12,6 +13,36 @@ function requiredEnvironment(name: string): string {
 
 function numberField(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function externalId(value: unknown): string | null {
+  return typeof value === "string" || typeof value === "number" ? String(value) : null;
+}
+
+async function verifyReportedVacancies(appUrl: string, collected: Array<{ externalId?: string | null }>): Promise<void> {
+  const expected = new Set(
+    collected
+      .map((job) => externalId(job.externalId))
+      .filter((id): id is string => Boolean(id) && REPORTED_REGRESSION_IDS.has(id)),
+  );
+  if (expected.size === 0) return;
+
+  const response = await fetch(`${appUrl}/api/public/jobs`, {
+    headers: { accept: "application/json" },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!response.ok) throw new Error("Production vacancy verification request failed.");
+
+  const payload = await response.json() as { jobs?: Array<{ externalId?: unknown }> };
+  const visible = new Set(
+    Array.isArray(payload.jobs)
+      ? payload.jobs.map((job) => externalId(job.externalId)).filter((id): id is string => Boolean(id))
+      : [],
+  );
+  const missing = [...expected].filter((id) => !visible.has(id));
+  if (missing.length > 0) throw new Error("Reported DOU vacancy regression check failed.");
+
+  console.log(`Production DOU regression check passed: ${expected.size}/${expected.size} reported vacancies visible.`);
 }
 
 async function main(): Promise<void> {
@@ -48,6 +79,8 @@ async function main(): Promise<void> {
   const inserted = numberField(result.inserted);
   const updated = numberField(result.updated);
   console.log(`DOU runner sync complete: ${jobs.length} collected, ${relevant} relevant, ${rejected} rejected, ${inserted} inserted, ${updated} updated.`);
+
+  await verifyReportedVacancies(appUrl, jobs);
 }
 
 try {
