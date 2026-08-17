@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import AboutSiteEnhancements from "./about-site-enhancements";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import PublicSite from "./public-site";
 import { SiteSidebar } from "./site-navigation";
@@ -513,7 +514,12 @@ export function WorkspaceApp() {
 }
 
 export default function Home() {
-  return <PublicSite/>;
+  return (
+    <>
+      <PublicSite/>
+      <AboutSiteEnhancements/>
+    </>
+  );
 }
 
 function Stat({ value, label }: { value: number; label: string }) {
