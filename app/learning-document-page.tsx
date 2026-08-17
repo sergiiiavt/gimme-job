@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
@@ -191,11 +191,6 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   const firstModuleId = modules[0]?.id ?? "";
   const initialActiveModuleId = initialModuleId && modules.some((item) => item.id === initialModuleId) ? initialModuleId : firstModuleId;
   const [activeModule, setActiveModule] = useState(initialActiveModuleId);
-
-  useEffect(() => {
-    if (!initialModuleId || !modules.some((item) => item.id === initialModuleId)) return;
-    setActiveModule(initialModuleId);
-  }, [initialModuleId, modules]);
 
   const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
   const activeChapter = modules[moduleIndex] ?? modules[0];
