@@ -20,14 +20,14 @@ async function main(): Promise<void> {
     throw new Error(`DOU discovery returned only ${jobs.length} vacancies; refusing to publish an unexpectedly incomplete catalog.`);
   }
 
-  const response = await fetch(`${appUrl}/internal/n8n/dou-vacancies`, {
+  const response = await fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
       "x-gimmejob-trigger": process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "manual",
     },
-    body: JSON.stringify({ jobs }),
+    body: JSON.stringify({ mode: "dou-import", jobs }),
     signal: AbortSignal.timeout(120_000),
   });
 
