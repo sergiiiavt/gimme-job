@@ -1,9 +1,10 @@
 :global(.about-tech-page) {
   align-items: start;
+  column-gap: 34px;
   display: grid;
-  gap: 34px;
   grid-template-columns: minmax(0, 1fr) 210px;
   max-width: 1180px;
+  row-gap: 0;
 }
 
 :global(.about-tech-page) > :global(.about-tech-section),
@@ -56,7 +57,7 @@
 
 @media (max-width: 1180px) {
   :global(.about-tech-page) {
-    gap: 28px;
+    column-gap: 28px;
     grid-template-columns: minmax(0, 1fr) 190px;
   }
 }
