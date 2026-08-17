@@ -221,11 +221,13 @@
   color: #29442f;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 10.15px;
-  line-height: 1.4;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
 }
 
-.rowExample {
+.page:has([aria-label="SQL dialect"]) .rowExample {
   display: block;
+  line-height: 1.4;
   min-width: 0;
   overflow-x: auto;
   overflow-wrap: normal;
