@@ -143,7 +143,13 @@ async function syncCurrentVacancies(n8nIngestToken) {
     if (response.ok) {
       const payload = await response.json();
       const result = payload.result ?? {};
-      console.log(`Vacancy sync complete: ${result.seen ?? 0} seen, ${result.relevant ?? 0} relevant, ${result.rejected ?? 0} rejected, ${result.duplicates ?? 0} duplicates, ${result.inserted ?? 0} inserted, ${result.updated ?? 0} updated, ${(result.errors ?? []).length} source errors.`);
+      const errors = Array.isArray(result.errors) ? result.errors : [];
+      console.log(`Vacancy sync complete: ${result.seen ?? 0} seen, ${result.relevant ?? 0} relevant, ${result.rejected ?? 0} rejected, ${result.duplicates ?? 0} duplicates, ${result.inserted ?? 0} inserted, ${result.updated ?? 0} updated, ${errors.length} source errors.`);
+      for (const sourceError of errors) {
+        const source = typeof sourceError?.source === "string" ? sourceError.source : "unknown-source";
+        const error = typeof sourceError?.error === "string" ? sourceError.error : "Unknown source failure";
+        console.warn(`Vacancy source error [${source}]: ${error}`);
+      }
       return;
     }
     if (![401, 500, 502, 503, 504].includes(response.status) || attempt === 4) {
