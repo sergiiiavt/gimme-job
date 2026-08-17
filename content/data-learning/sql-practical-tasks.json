@@ -1,0 +1,403 @@
+{
+  "topicFilters": [
+    "Tasks"
+  ],
+  "dialectFilters": [],
+  "cards": [
+    {
+      "id": "task-find-duplicates",
+      "title": "Task · Find duplicates",
+      "topics": ["Tasks", "Aggregation"],
+      "dialects": ["Portable"],
+      "summary": "Interview prompt: find business-key values that occur more than once.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Group by the key and keep only groups whose row count is greater than one.",
+          "detail": "SELECT email, COUNT(*) AS copies\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;"
+        },
+        {
+          "term": "Why",
+          "meaning": "GROUP BY creates one group per key; HAVING filters after aggregation.",
+          "detail": "Use the real uniqueness rule: one column or the full composite business key."
+        }
+      ],
+      "more": [
+        {
+          "term": "Composite key",
+          "meaning": "Duplicate means the whole key repeats, not just one component.",
+          "detail": "GROUP BY first_name, last_name, birth_date HAVING COUNT(*) > 1"
+        },
+        {
+          "term": "NULL rule",
+          "meaning": "Decide whether unknown values belong in the duplicate check.",
+          "detail": "WHERE email IS NOT NULL  -- add when NULL should not form a duplicate group"
+        }
+      ]
+    },
+    {
+      "id": "task-return-all-duplicate-rows",
+      "title": "Task · Return every duplicate row",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "GROUP BY shows duplicate keys; this pattern returns the actual offending rows.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Count rows inside each key partition, then filter in an outer query.",
+          "detail": "WITH x AS (\n  SELECT u.*, COUNT(*) OVER (PARTITION BY email) AS copies\n  FROM users u\n)\nSELECT * FROM x WHERE copies > 1;"
+        },
+        {
+          "term": "Why outer query?",
+          "meaning": "Window values are produced after WHERE, so filter them one query level later.",
+          "detail": "CTE / derived table → compute window result → outer WHERE"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-deduplicate-safely",
+      "title": "Task · Deduplicate safely",
+      "topics": ["Tasks", "Windows", "DML"],
+      "dialects": ["Portable"],
+      "summary": "Identify exactly which rows are duplicates before running dialect-specific DELETE syntax.",
+      "entries": [
+        {
+          "term": "Preview",
+          "meaning": "Rank each duplicate group; rn = 1 is the survivor and rn > 1 are removal candidates.",
+          "detail": "WITH ranked AS (\n  SELECT id, ROW_NUMBER() OVER (\n    PARTITION BY email ORDER BY updated_at DESC, id DESC\n  ) AS rn\n  FROM users\n)\nSELECT id FROM ranked WHERE rn > 1;"
+        },
+        {
+          "term": "Tie-breaker",
+          "meaning": "ORDER BY must choose one deterministic survivor.",
+          "detail": "ORDER BY updated_at DESC, id DESC"
+        }
+      ],
+      "more": [
+        {
+          "term": "Delete",
+          "meaning": "Delete only the previewed primary keys, inside a transaction; DELETE-from-CTE syntax differs by engine.",
+          "detail": "BEGIN → preview IDs → DELETE by primary key → verify counts → COMMIT / ROLLBACK"
+        }
+      ]
+    },
+    {
+      "id": "task-latest-row-per-entity",
+      "title": "Task · Latest row per entity",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Return the newest order, event, status, or version for every entity.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Number rows newest-first inside each entity and keep row 1.",
+          "detail": "WITH ranked AS (\n  SELECT o.*, ROW_NUMBER() OVER (\n    PARTITION BY customer_id ORDER BY created_at DESC, id DESC\n  ) AS rn\n  FROM orders o\n)\nSELECT * FROM ranked WHERE rn = 1;"
+        },
+        {
+          "term": "Pitfall",
+          "meaning": "MAX(created_at) alone returns only a timestamp and can match multiple tied rows.",
+          "detail": "Add a stable secondary key such as id DESC."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-second-highest",
+      "title": "Task · Second-highest distinct value",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Classic interview task: return the second distinct salary, score, or amount.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "DENSE_RANK ranks equal values together and does not leave gaps between distinct values.",
+          "detail": "WITH r AS (\n  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS pos\n  FROM employees\n)\nSELECT DISTINCT salary FROM r WHERE pos = 2;"
+        },
+        {
+          "term": "Alternative",
+          "meaning": "For exactly the second value, compare against the maximum.",
+          "detail": "SELECT MAX(salary) FROM employees\nWHERE salary < (SELECT MAX(salary) FROM employees);"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-nth-highest",
+      "title": "Task · Nth-highest distinct value",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Generalize the second-highest problem while handling ties correctly.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Rank distinct value groups and filter by the requested rank.",
+          "detail": "WITH r AS (\n  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS pos\n  FROM employees\n)\nSELECT DISTINCT salary FROM r WHERE pos = :n;"
+        },
+        {
+          "term": "ROW_NUMBER?",
+          "meaning": "Use ROW_NUMBER only when every row should occupy a different position; use DENSE_RANK for distinct-value ranking.",
+          "detail": "ties: ROW_NUMBER → separate positions · DENSE_RANK → same position"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-top-n-per-group",
+      "title": "Task · Top N per group",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Return the top three products per category, employees per team, or scores per user.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Partition by the group, order by the metric, then filter the generated row number.",
+          "detail": "WITH r AS (\n  SELECT p.*, ROW_NUMBER() OVER (\n    PARTITION BY category_id ORDER BY revenue DESC, id\n  ) AS rn\n  FROM products p\n)\nSELECT * FROM r WHERE rn <= 3;"
+        },
+        {
+          "term": "Include ties",
+          "meaning": "Use RANK or DENSE_RANK when tied metric values should all qualify.",
+          "detail": "RANK() OVER (PARTITION BY category_id ORDER BY revenue DESC)"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-missing-related-rows",
+      "title": "Task · Find entities with no related rows",
+      "topics": ["Tasks", "Joins", "CTE & subquery"],
+      "dialects": ["Portable"],
+      "summary": "Find customers without orders, users without profiles, or test cases without executions.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Use an anti-semi pattern with NOT EXISTS.",
+          "detail": "SELECT c.*\nFROM customers c\nWHERE NOT EXISTS (\n  SELECT 1 FROM orders o WHERE o.customer_id = c.id\n);"
+        },
+        {
+          "term": "Why not NOT IN?",
+          "meaning": "NOT EXISTS avoids the NULL trap that can make NOT IN evaluate to unknown.",
+          "detail": "Prefer NOT EXISTS when the subquery key may contain NULL."
+        }
+      ],
+      "more": [
+        {
+          "term": "LEFT JOIN form",
+          "meaning": "Equivalent when the joined key is non-NULL and the intent is clear.",
+          "detail": "LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL"
+        }
+      ]
+    },
+    {
+      "id": "task-find-orphans",
+      "title": "Task · Find orphan child rows",
+      "topics": ["Tasks", "Joins", "QA patterns"],
+      "dialects": ["Portable"],
+      "summary": "Data-quality task: locate child records whose referenced parent does not exist.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Start from the child table and reject rows that have a matching parent.",
+          "detail": "SELECT o.*\nFROM orders o\nWHERE o.customer_id IS NOT NULL\n  AND NOT EXISTS (\n    SELECT 1 FROM customers c WHERE c.id = o.customer_id\n  );"
+        },
+        {
+          "term": "QA use",
+          "meaning": "Useful after imports, disabled constraints, migrations, or ETL loads.",
+          "detail": "Expected result in an integrity check: 0 rows."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-compare-expected-actual",
+      "title": "Task · Compare expected vs actual data",
+      "topics": ["Tasks", "QA patterns", "Core"],
+      "dialects": ["Portable"],
+      "summary": "Find rows present in the expected result but missing or different in the actual result.",
+      "entries": [
+        {
+          "term": "One direction",
+          "meaning": "EXCEPT returns distinct rows from the left result that are absent from the right result.",
+          "detail": "SELECT id, status, amount FROM expected\nEXCEPT\nSELECT id, status, amount FROM actual;"
+        },
+        {
+          "term": "Full diff",
+          "meaning": "Run EXCEPT in both directions to detect both missing and unexpected rows.",
+          "detail": "expected EXCEPT actual\nUNION ALL\nactual EXCEPT expected"
+        }
+      ],
+      "more": [
+        {
+          "term": "Duplicates",
+          "meaning": "Plain EXCEPT is distinct-set comparison; validate duplicate counts separately when multiplicity matters.",
+          "detail": "GROUP BY business_key HAVING COUNT(*) > 1"
+        }
+      ]
+    },
+    {
+      "id": "task-running-total",
+      "title": "Task · Running total",
+      "topics": ["Tasks", "Windows", "Aggregation"],
+      "dialects": ["Portable"],
+      "summary": "Calculate cumulative balance, revenue, defects, or executions without collapsing rows.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Use SUM as a window aggregate ordered by the sequence of events.",
+          "detail": "SELECT account_id, occurred_at, amount,\n       SUM(amount) OVER (\n         PARTITION BY account_id\n         ORDER BY occurred_at, id\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ) AS running_total\nFROM ledger;"
+        },
+        {
+          "term": "Why ROWS?",
+          "meaning": "An explicit ROWS frame avoids peer-group surprises when several rows share the same ordering value.",
+          "detail": "Use a deterministic ORDER BY, usually timestamp + primary key."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-compare-previous-row",
+      "title": "Task · Compare with the previous row",
+      "topics": ["Tasks", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Detect a change in status, price, count, or measurement between consecutive events.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "LAG exposes a value from the previous row in the window ordering.",
+          "detail": "WITH x AS (\n  SELECT e.*, LAG(status) OVER (\n    PARTITION BY entity_id ORDER BY occurred_at, id\n  ) AS previous_status\n  FROM events e\n)\nSELECT * FROM x\nWHERE previous_status IS NOT NULL\n  AND status <> previous_status;"
+        },
+        {
+          "term": "First row",
+          "meaning": "LAG returns NULL when no previous row exists unless a default is supplied.",
+          "detail": "Handle the first row explicitly when NULL is also a valid business value."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-find-sequence-gaps",
+      "title": "Task · Find gaps in a sequence",
+      "topics": ["Tasks", "Windows", "QA patterns"],
+      "dialects": ["Portable"],
+      "summary": "Detect missing IDs, invoice numbers, versions, or ordered event sequence values.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Compare each sequence value with its predecessor.",
+          "detail": "WITH x AS (\n  SELECT sequence_no,\n         LAG(sequence_no) OVER (ORDER BY sequence_no) AS prev_no\n  FROM events\n)\nSELECT prev_no + 1 AS gap_start, sequence_no - 1 AS gap_end\nFROM x\nWHERE sequence_no > prev_no + 1;"
+        },
+        {
+          "term": "Assumption",
+          "meaning": "This checks numeric continuity, not whether every generated identifier must legally exist.",
+          "detail": "Define the expected sequence rule before treating a gap as a defect."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-conditional-aggregation",
+      "title": "Task · Count several conditions in one query",
+      "topics": ["Tasks", "Aggregation", "QA patterns"],
+      "dialects": ["Portable"],
+      "summary": "Produce pass/fail/error counts or status KPIs without multiple scans or queries.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Turn each condition into 1 or 0 and aggregate it.",
+          "detail": "SELECT\n  SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) AS passed,\n  SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,\n  SUM(CASE WHEN status = 'error'  THEN 1 ELSE 0 END) AS errors\nFROM test_results;"
+        },
+        {
+          "term": "By group",
+          "meaning": "Add GROUP BY to calculate the same metrics per build, suite, team, or day.",
+          "detail": "GROUP BY build_id"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-no-activity-since-cutoff",
+      "title": "Task · No activity since a cutoff",
+      "topics": ["Tasks", "CTE & subquery", "QA patterns"],
+      "dialects": ["Portable"],
+      "summary": "Find users or entities with no qualifying event in a given period without dialect-specific date arithmetic.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Pass the cutoff as a parameter and use NOT EXISTS against qualifying activity.",
+          "detail": "SELECT u.*\nFROM users u\nWHERE NOT EXISTS (\n  SELECT 1 FROM events e\n  WHERE e.user_id = u.id\n    AND e.occurred_at >= :cutoff\n);"
+        },
+        {
+          "term": "Why parameter?",
+          "meaning": "Date-add/subtract syntax differs by dialect; computing the cutoff outside the query keeps the core pattern portable.",
+          "detail": ":cutoff = application/test parameter"
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-detect-join-multiplication",
+      "title": "Task · Detect join multiplication",
+      "topics": ["Tasks", "Joins", "QA patterns"],
+      "dialects": ["Portable"],
+      "summary": "Find parent rows that multiply after a join because the relationship is one-to-many or the join key is incomplete.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Count joined rows per expected parent key and inspect groups with more than one match.",
+          "detail": "SELECT p.id, COUNT(*) AS joined_rows\nFROM parents p\nJOIN children c ON c.parent_id = p.id\nGROUP BY p.id\nHAVING COUNT(*) > 1;"
+        },
+        {
+          "term": "Interpretation",
+          "meaning": "Multiple rows may be correct for 1:N; the defect is assuming 1:1 or omitting part of a composite join key.",
+          "detail": "Check relationship cardinality before adding DISTINCT."
+        }
+      ],
+      "more": []
+    },
+    {
+      "id": "task-keyset-pagination",
+      "title": "Task · Stable next-page query",
+      "topics": ["Tasks", "Performance", "Dialect"],
+      "dialects": ["PostgreSQL", "MySQL", "SQLite", "SQL Server"],
+      "summary": "Use the last seen sort key instead of scanning an ever-growing OFFSET.",
+      "entries": [
+        {
+          "term": "Core predicate",
+          "meaning": "Continue strictly after the last row using the same deterministic sort keys.",
+          "detail": "WHERE created_at < :last_created_at\n   OR (created_at = :last_created_at AND id < :last_id)\nORDER BY created_at DESC, id DESC"
+        },
+        {
+          "term": "Row cap",
+          "meaning": "Apply the dialect's normal row-limiting syntax after the predicate.",
+          "detail": "PostgreSQL/MySQL/SQLite: LIMIT 50 · SQL Server: TOP / OFFSET-FETCH"
+        }
+      ],
+      "more": [
+        {
+          "term": "Pitfall",
+          "meaning": "The cursor columns and ORDER BY must match, and the ordering must be unique enough to avoid skips or repeats.",
+          "detail": "timestamp alone is usually insufficient → add id"
+        }
+      ]
+    },
+    {
+      "id": "task-percent-of-total",
+      "title": "Task · Percent of total",
+      "topics": ["Tasks", "Aggregation", "Windows"],
+      "dialects": ["Portable"],
+      "summary": "Calculate each group's contribution while keeping one result row per group.",
+      "entries": [
+        {
+          "term": "Answer",
+          "meaning": "Aggregate each group, then window-sum those aggregate results for the denominator.",
+          "detail": "SELECT category_id,\n       SUM(amount) AS amount,\n       100.0 * SUM(amount)\n         / NULLIF(SUM(SUM(amount)) OVER (), 0) AS pct_total\nFROM sales\nGROUP BY category_id;"
+        },
+        {
+          "term": "Zero guard",
+          "meaning": "NULLIF prevents division by zero when the total is zero.",
+          "detail": "NULLIF(total, 0)"
+        }
+      ],
+      "more": []
+    }
+  ]
+}

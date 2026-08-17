@@ -9,6 +9,7 @@ import pythonQuickReference from "@/content/python-learning/quick-reference.json
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
 import pythonTaxonomy from "@/content/python-learning/taxonomy.json";
 import sqlQuickReference from "@/content/data-learning/sql-quick-reference.json";
+import sqlPracticalTasks from "@/content/data-learning/sql-practical-tasks.json";
 import qaQuickReference from "@/content/qa-fundamentals/quick-reference.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
@@ -79,7 +80,15 @@ type PythonReferenceGuidance = {
 
 const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops", "data"]);
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
-const sqlReferenceCatalog = sqlQuickReference as SqlReferenceCatalog;
+const baseSqlReferenceCatalog = sqlQuickReference as SqlReferenceCatalog;
+const sqlTaskReferenceCatalog = sqlPracticalTasks as SqlReferenceCatalog;
+const sqlReferenceCatalog: SqlReferenceCatalog = {
+  topicFilters: baseSqlReferenceCatalog.topicFilters.includes("Tasks")
+    ? baseSqlReferenceCatalog.topicFilters
+    : baseSqlReferenceCatalog.topicFilters.flatMap((filter) => filter === "Dialect" ? ["Tasks", filter] : [filter]),
+  dialectFilters: baseSqlReferenceCatalog.dialectFilters,
+  cards: [...baseSqlReferenceCatalog.cards, ...sqlTaskReferenceCatalog.cards],
+};
 const qaReferenceCatalog = qaQuickReference as QaReferenceCatalog;
 const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
 
@@ -324,7 +333,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
           <div className={styles.topbar} aria-label="Quick reference filters">
-            <div className={styles.filterGroups}>
+            <div className={styles.filterGroups} style={referenceId === "data" ? { flexDirection: "column", alignItems: "stretch", gap: 4 } : undefined}>
               <div className={styles.filterGroup}>
                 {referenceId === "data" ? <span className={styles.filterLabel}>Topic</span> : null}
                 <div className={styles.scopes} aria-label="Reference topic">
