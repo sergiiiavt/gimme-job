@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
@@ -110,6 +110,7 @@ interface LearningDocumentPageProps {
   personalHref: string;
   trackOptions?: TrackOption[];
   defaultTrackId?: string;
+  initialModuleId?: string;
   languages?: LearningLanguage[];
   heroMeta?: (context: LearningMetaContext) => string[];
   sourceStatusLabel?: (context: LearningMetaContext) => string;
@@ -166,7 +167,7 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   return lines.join("\n");
 }
 
-export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
+export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
   const lessons = useMemo(() => curriculum.lessons ?? [], [curriculum.lessons]);
   const allModules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
   const resolvedTrackOptions = useMemo<TrackOption[]>(
@@ -188,7 +189,14 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     return allModules.filter((item) => selectedModuleIds.has(item.id));
   }, [allModules, selectedTrack, trackAvailable]);
   const firstModuleId = modules[0]?.id ?? "";
-  const [activeModule, setActiveModule] = useState(firstModuleId);
+  const initialActiveModuleId = initialModuleId && modules.some((item) => item.id === initialModuleId) ? initialModuleId : firstModuleId;
+  const [activeModule, setActiveModule] = useState(initialActiveModuleId);
+
+  useEffect(() => {
+    if (!initialModuleId || !modules.some((item) => item.id === initialModuleId)) return;
+    setActiveModule(initialModuleId);
+  }, [initialModuleId, modules]);
+
   const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
   const activeChapter = modules[moduleIndex] ?? modules[0];
   const moduleLessons = useMemo(
