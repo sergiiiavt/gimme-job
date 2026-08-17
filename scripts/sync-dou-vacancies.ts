@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   const jobs = await source.collect();
 
   if (jobs.length < MIN_EXPECTED_VACANCIES) {
-    throw new Error(`DOU discovery returned only ${jobs.length} vacancies; refusing to publish an unexpectedly incomplete catalog.`);
+    throw new Error("DOU discovery returned an unexpectedly incomplete catalog.");
   }
 
   const response = await fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
@@ -38,8 +38,7 @@ async function main(): Promise<void> {
 
   const body = await response.text();
   if (!response.ok) {
-    const details = body ? `: ${body.slice(0, 500)}` : "";
-    throw new Error(`DOU import returned HTTP ${response.status}${details}.`);
+    throw new Error(`DOU import returned HTTP ${response.status}.`);
   }
 
   const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
@@ -53,7 +52,7 @@ async function main(): Promise<void> {
 
 try {
   await main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
+} catch {
+  console.error("DOU runner sync failed.");
   process.exitCode = 1;
 }
