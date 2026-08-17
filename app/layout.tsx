@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PrimaryNavScrollState from "./primary-nav-scroll-state";
 import "./globals.css";
 import "./interview-auth-layout.css";
 import "./about-site-layout.css";
@@ -37,7 +38,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PrimaryNavScrollState/>
+        {children}
+      </body>
     </html>
   );
 }
