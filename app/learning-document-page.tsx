@@ -87,7 +87,9 @@ export interface StructuredLearningCurriculum {
 interface TrackOption {
   id: string;
   label: string;
+  labelUk?: string;
   available: boolean;
+  moduleIds?: string[];
   emptyState?: string;
 }
 
@@ -166,21 +168,27 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
 
 export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
   const lessons = useMemo(() => curriculum.lessons ?? [], [curriculum.lessons]);
-  const modules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
-  const firstModuleId = modules[0]?.id ?? "";
+  const allModules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
   const resolvedTrackOptions = useMemo<TrackOption[]>(
     () => trackOptions?.length ? trackOptions : [{ id: "default", label: secondaryTitle, available: true }],
     [secondaryTitle, trackOptions],
   );
   const resolvedDefaultTrackId = defaultTrackId ?? resolvedTrackOptions[0]?.id ?? "default";
   const showTrackSwitcher = resolvedTrackOptions.length > 1;
-  const [activeModule, setActiveModule] = useState(firstModuleId);
   const [activeTrack, setActiveTrack] = useState(resolvedDefaultTrackId);
   const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
   const selectedTrack = resolvedTrackOptions.find((option) => option.id === activeTrack) ?? resolvedTrackOptions[0];
   const trackAvailable = selectedTrack?.available !== false;
+  const modules = useMemo(() => {
+    if (!trackAvailable) return [];
+    if (!selectedTrack?.moduleIds?.length) return allModules;
+    const selectedModuleIds = new Set(selectedTrack.moduleIds);
+    return allModules.filter((item) => selectedModuleIds.has(item.id));
+  }, [allModules, selectedTrack, trackAvailable]);
+  const firstModuleId = modules[0]?.id ?? "";
+  const [activeModule, setActiveModule] = useState(firstModuleId);
   const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
   const activeChapter = modules[moduleIndex] ?? modules[0];
   const moduleLessons = useMemo(
@@ -247,12 +255,16 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
 
   const switcher: SecondarySwitcher = {
     activeId: activeTrack,
-    options: resolvedTrackOptions.map(({ id, label }) => ({ id, label })),
+    options: resolvedTrackOptions.map(({ id, label, labelUk }) => ({ id, label: language === "uk" ? labelUk ?? label : label })),
     onSelect: (trackId) => {
       const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
       setActiveTrack(trackId);
-      if (option.available) setActiveModule(firstModuleId);
+      if (option.available) {
+        const allowedIds = option.moduleIds?.length ? new Set(option.moduleIds) : undefined;
+        const firstTrackModule = allowedIds ? allModules.find((item) => allowedIds.has(item.id)) : allModules[0];
+        setActiveModule(firstTrackModule?.id ?? "");
+      }
       setMobileNav(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
@@ -287,7 +299,8 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     ? sourceStatusLabel(metaContext)
     : `${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`;
   const pageTitle = language === "uk" ? curriculum.titleUk ?? curriculum.title : curriculum.title;
-  const trackSegment = showTrackSwitcher ? ` · ${selectedTrack?.label}` : "";
+  const selectedTrackLabel = language === "uk" ? selectedTrack?.labelUk ?? selectedTrack?.label : selectedTrack?.label;
+  const trackSegment = showTrackSwitcher ? ` · ${selectedTrackLabel}` : "";
 
   return (
     <main className="kb-shell">
@@ -316,7 +329,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
               description={selectedTrack?.emptyState ?? "This learning track is under construction."}
               eyebrow={secondaryTitle}
               meta={[]}
-              title={selectedTrack?.label ?? secondaryTitle}
+              title={selectedTrackLabel ?? secondaryTitle}
             />
           ) : (
             <>
