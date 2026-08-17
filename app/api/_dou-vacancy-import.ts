@@ -16,9 +16,12 @@ export interface DouImportResult {
 type DouUpsert = (jobs: unknown[]) => Promise<DouImportResult>;
 
 class DouImportValidationError extends Error {
-  constructor(message: string, readonly status = 400) {
+  readonly status: number;
+
+  constructor(message: string, status = 400) {
     super(message);
     this.name = "DouImportValidationError";
+    this.status = status;
   }
 }
 
