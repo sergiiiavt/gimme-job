@@ -28,6 +28,15 @@ test("Test Automation uses six module-scoped learning tracks", async () => {
   assert.match(page, /referenceFrameworkModule/);
 });
 
+test("Test Automation track tabs fit inside the secondary navigation", async () => {
+  const page = await read("app/automation-learning-page.tsx");
+
+  assert.match(page, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(page, /\.kb-subnav-switch button/);
+  assert.match(page, /min-width: 0/);
+  assert.match(page, /white-space: normal/);
+});
+
 test("shared learning renderer filters the secondary navigation by selected track", async () => {
   const renderer = await read("app/learning-document-page.tsx");
 
