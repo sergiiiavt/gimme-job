@@ -73,7 +73,7 @@ test("vacancy date filter uses the enhanced calendar in public and personal rout
 
 test("vacancy calendar disables future dates and highlights today", () => {
   assert.match(filterEnhancer, /if \(input\) input\.max = todayKey/);
-  assert.match(filterEnhancer, /const future = date\.getTime\(\) >/);
+  assert.match(filterEnhancer, /const future = key > todayKey/);
   assert.match(filterEnhancer, /disabled=\{future\}/);
   assert.match(filterEnhancer, /const canGoNext = !sameMonth/);
   assert.match(filterEnhancer, /disabled=\{!canGoNext\}/);
