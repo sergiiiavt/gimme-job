@@ -2,6 +2,7 @@
   display: none !important;
 }
 
+.kb-quick-reference-link[href="/reference/qa-fundamentals"],
 .kb-quick-reference-link[href="/reference/programming"],
 .kb-quick-reference-link[href="/reference/data"] {
   display: flex !important;

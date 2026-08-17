@@ -12,10 +12,13 @@ const assert = (condition, message) => { if (!condition) fail(message); };
 const taxonomy = await readJson("taxonomy.json");
 const sources = await readJson("sources.json");
 const requiredConcepts = await readJson("required-concepts.json");
+const quickReference = await readJson("quick-reference.json");
 
 assert(Array.isArray(taxonomy) && taxonomy.length === 8, "taxonomy must contain exactly 8 top-level topics");
 assert(Array.isArray(sources) && sources.length >= 12, "source register must contain at least 12 authoritative sources");
 assert(Array.isArray(requiredConcepts) && requiredConcepts.length >= 50, "required-concepts baseline must contain at least 50 concepts");
+assert(Array.isArray(quickReference.filters) && quickReference.filters[0] === "All", "quick reference filters must start with All");
+assert(Array.isArray(quickReference.cards) && quickReference.cards.length >= 24, "quick reference must contain at least 24 practical cards");
 
 const unique = (items, field, label) => {
   const values = items.map((item) => item[field]);
@@ -28,9 +31,11 @@ unique(taxonomy, "order", "taxonomy");
 unique(taxonomy, "file", "taxonomy");
 unique(sources, "id", "sources");
 unique(requiredConcepts, "id", "required concepts");
+unique(quickReference.cards, "id", "quick reference");
 
 const topicIds = new Set(taxonomy.map((topic) => topic.id));
 const sourceIds = new Set(sources.map((source) => source.id));
+const quickReferenceFilters = new Set(quickReference.filters);
 const expectedOrders = Array.from({ length: 8 }, (_, index) => index + 1);
 assert(JSON.stringify(taxonomy.map((topic) => topic.order).sort((a, b) => a - b)) === JSON.stringify(expectedOrders), "topic order must be exactly 1..8");
 
@@ -44,6 +49,18 @@ for (const source of sources) {
 for (const concept of requiredConcepts) {
   assert(topicIds.has(concept.topicId), `concept ${concept.id} references unknown topic ${concept.topicId}`);
   assert(typeof concept.label === "string" && concept.label.length > 3, `concept ${concept.id} needs a readable label`);
+}
+
+for (const card of quickReference.cards) {
+  assert(typeof card.title === "string" && card.title.length > 3, `quick reference ${card.id} needs a readable title`);
+  assert(typeof card.summary === "string" && card.summary.length > 20, `quick reference ${card.id} needs a useful summary`);
+  assert(typeof card.scope === "string" && quickReferenceFilters.has(card.scope) && card.scope !== "All", `quick reference ${card.id} has an invalid scope`);
+  assert(Array.isArray(card.tags) && card.tags.includes(card.scope), `quick reference ${card.id} must include its scope as a tag`);
+  assert(Array.isArray(card.rows) && card.rows.length >= 3, `quick reference ${card.id} needs at least 3 primary rows`);
+  for (const row of [...card.rows, ...(card.moreRows ?? [])]) {
+    assert(typeof row.term === "string" && row.term.length > 0, `quick reference ${card.id} contains a row without a term`);
+    assert(typeof row.detail === "string" && row.detail.length > 5, `quick reference ${card.id} contains a row without useful detail`);
+  }
 }
 
 for (const topic of taxonomy) {
@@ -68,4 +85,4 @@ for (const topic of taxonomy) {
   }
 }
 
-console.log(`QA fundamentals content valid: ${taxonomy.length} topics, ${requiredConcepts.length} required concepts, ${sources.length} sources.`);
+console.log(`QA fundamentals content valid: ${taxonomy.length} topics, ${requiredConcepts.length} required concepts, ${quickReference.cards.length} quick-reference cards, ${sources.length} sources.`);

@@ -9,6 +9,7 @@ import pythonQuickReference from "@/content/python-learning/quick-reference.json
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
 import pythonTaxonomy from "@/content/python-learning/taxonomy.json";
 import sqlQuickReference from "@/content/data-learning/sql-quick-reference.json";
+import qaQuickReference from "@/content/qa-fundamentals/quick-reference.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
 import { navigationGroups, SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
@@ -57,6 +58,10 @@ type SqlReferenceCatalog = {
     more: ReferenceRow[];
   }>;
 };
+type QaReferenceCatalog = {
+  filters: string[];
+  cards: ReferenceCard[];
+};
 
 type PythonReferenceGuidance = {
   summaries: Record<string, string>;
@@ -75,6 +80,7 @@ type PythonReferenceGuidance = {
 const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops", "data"]);
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
 const sqlReferenceCatalog = sqlQuickReference as SqlReferenceCatalog;
+const qaReferenceCatalog = qaQuickReference as QaReferenceCatalog;
 const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
 
 function guidedRows(cardId: string, rows: ReferenceRow[]) {
@@ -122,7 +128,6 @@ const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) 
 }));
 
 const referenceBlueprints: Record<string, string[]> = {
-  "qa-fundamentals": ["Testing levels", "Test design", "Defects & evidence", "Risk & release"],
   automation: ["Locators", "Waits", "Assertions", "Fixtures", "Test architecture"],
   devops: ["CI/CD", "Containers", "Environments", "Deployment gates", "Rollback"],
 };
@@ -138,6 +143,7 @@ function placeholderCards(referenceId: string): ReferenceCard[] {
 function referenceCards(referenceId: string): ReferenceCard[] {
   if (referenceId === "programming") return pythonReferenceCards;
   if (referenceId === "data") return sqlReferenceCards;
+  if (referenceId === "qa-fundamentals") return qaReferenceCatalog.cards;
   return placeholderCards(referenceId);
 }
 
@@ -258,6 +264,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const scopes = useMemo(() => {
     if (referenceId === "programming") return pythonReferenceCatalog.filters;
     if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
+    if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
     return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
   }, [cards, referenceId]);
   const dialects = referenceId === "data" ? sqlReferenceCatalog.dialectFilters : ["All"];
