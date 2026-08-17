@@ -1,29 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import pythonCurriculum from "@/content/python-learning/catalog";
 import LearningDocumentPage from "./learning-document-page";
 
 export default function ProgrammingLearningPage({ mode }: { mode: "public" | "personal" }) {
   const searchParams = useSearchParams();
-  const requestedTopic = searchParams.get("topic");
+  const requestedTopic = searchParams.get("topic") ?? undefined;
   const requestedTrack = searchParams.get("track");
-
-  const curriculum = useMemo(() => {
-    if (!requestedTopic) return pythonCurriculum;
-    const requestedModule = pythonCurriculum.taxonomy.find((item) => item.id === requestedTopic);
-    if (!requestedModule) return pythonCurriculum;
-    return {
-      ...pythonCurriculum,
-      taxonomy: [requestedModule, ...pythonCurriculum.taxonomy.filter((item) => item.id !== requestedTopic)],
-    };
-  }, [requestedTopic]);
 
   return (
     <LearningDocumentPage
-      curriculum={curriculum}
+      curriculum={pythonCurriculum}
       defaultTrackId={requestedTrack === "typescript" ? "typescript" : "python"}
+      initialModuleId={requestedTopic}
       mode={mode}
       personalHref="/workspace/learn/programming"
       publicHref="/learn/programming"
