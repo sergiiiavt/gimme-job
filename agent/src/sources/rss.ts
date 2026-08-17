@@ -230,7 +230,7 @@ async function fetchDouMore(count: number, csrf: string, cookie: string): Promis
     const payload = JSON.parse(text) as DouLoadPayload;
     return {
       html: typeof payload.html === "string" ? payload.html : "",
-      last: payload.last === true,
+      last: payload.last === true || payload.last === "true",
     };
   } catch {
     return { html: text, last: false };
@@ -246,8 +246,7 @@ async function enrichDouDetails(jobs: JobInput[]): Promise<JobInput[]> {
       const full = parseRssDetailDescription(job.url, detailHtml);
       return {
         ...job,
-        company: metadata?.hiringOrganization || job.company,
-        location: metadata?.jobLocation || job.location,
+        company: metadata?.company || job.company,
         description: full.length > job.description.length ? full : job.description,
         postedAt: safeIsoDate(metadata?.datePosted) || job.postedAt,
         remote: job.remote || isRemoteText(`${job.title}\n${full}\n${job.location}`),
