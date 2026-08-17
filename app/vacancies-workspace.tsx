@@ -5,6 +5,7 @@ import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-a
 import { SiteSidebar } from "./site-navigation";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
+type JobCondition = "REMOTE" | "RESERVATION";
 
 interface JobAnalysis {
   score?: number;
@@ -67,6 +68,11 @@ const STATUS_OPTIONS: Array<{ value: JobStatus; label: string }> = [
   { value: "REJECTED", label: "Rejected" },
   { value: "NOT_INTERESTED", label: "Not interested" },
   { value: "ARCHIVED", label: "Archived" },
+];
+
+const CONDITION_OPTIONS: Array<{ value: JobCondition; label: string }> = [
+  { value: "REMOTE", label: "Remote" },
+  { value: "RESERVATION", label: "Бронювання" },
 ];
 
 const DEMO_JOBS: Job[] = [
@@ -170,8 +176,21 @@ function jobDate(job: Job) {
   return new Date(job.postedAt ?? job.discoveredAt);
 }
 
+function jobDateKey(job: Job) {
+  const date = jobDate(job);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function hasReservation(job: Job) {
   return /бронюванн/i.test(job.description);
+}
+
+function matchesCondition(job: Job, condition: JobCondition) {
+  if (condition === "REMOTE") return job.remote;
+  return hasReservation(job);
 }
 
 function formatDate(value: string | null) {
@@ -197,12 +216,52 @@ function verdictLabel(verdict?: string) {
   return verdict.replace(/[_-]+/g, " ").replace(/^./, (letter) => letter.toUpperCase());
 }
 
+function VacancyMultiFilter<T extends string>({ allLabel, className = "", label, onChange, options, selected }: {
+  allLabel: string;
+  className?: string;
+  label: string;
+  onChange: (selected: T[]) => void;
+  options: Array<{ value: T; label: string }>;
+  selected: T[];
+}) {
+  const toggle = (value: T) => {
+    onChange(selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value]);
+  };
+
+  return <div className={`vacancy-multifilter ${className}`.trim()}>
+    <details>
+      <summary aria-label={`${label}: ${selected.length ? `${selected.length} selected` : "all"}`}>
+        <span className="vacancy-filter-summary-label">{label}</span>
+        {selected.length > 0 && <span className="vacancy-filter-summary-count">{selected.length}</span>}
+        <i className="vacancy-filter-chevron" aria-hidden="true">⌄</i>
+      </summary>
+      <div className="vacancy-filter-menu">
+        <label className={`vacancy-filter-option vacancy-filter-option-all${selected.length === 0 ? " active" : ""}`}>
+          <input className="vacancy-filter-option-input" type="checkbox" checked={selected.length === 0} onChange={() => onChange([])}/>
+          <i className="vacancy-filter-option-mark" aria-hidden="true">{selected.length === 0 ? "✓" : ""}</i>
+          <span>{allLabel}</span>
+        </label>
+        {options.map((option) => {
+          const active = selected.includes(option.value);
+          return <label className={`vacancy-filter-option${active ? " active" : ""}`} key={option.value}>
+            <input className="vacancy-filter-option-input" type="checkbox" checked={active} onChange={() => toggle(option.value)}/>
+            <i className="vacancy-filter-option-mark" aria-hidden="true">{active ? "✓" : ""}</i>
+            <span>{option.label}</span>
+          </label>;
+        })}
+      </div>
+    </details>
+  </div>;
+}
+
 export default function VacanciesWorkspace() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [online, setOnline] = useState<boolean | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<JobStatus | "ALL">("ALL");
+  const [dateFilter, setDateFilter] = useState("");
+  const [statusFilters, setStatusFilters] = useState<JobStatus[]>([]);
+  const [conditionFilters, setConditionFilters] = useState<JobCondition[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -250,14 +309,15 @@ export default function VacanciesWorkspace() {
 
   useEffect(() => {
     if (isPersonal) return;
-    if (statusFilter !== "ALL") setStatusFilter("ALL");
     if (selectedIds.size) setSelectedIds(new Set());
-  }, [isPersonal, selectedIds.size, statusFilter]);
+  }, [isPersonal, selectedIds.size]);
 
   const visibleJobs = useMemo(() => jobs
-    .filter((job) => !isPersonal || statusFilter === "ALL" || job.status === statusFilter)
+    .filter((job) => statusFilters.length === 0 || statusFilters.includes(job.status))
+    .filter((job) => !dateFilter || jobDateKey(job) === dateFilter)
+    .filter((job) => conditionFilters.length === 0 || conditionFilters.some((condition) => matchesCondition(job, condition)))
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source} ${job.salaryText ?? ""}`).toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [isPersonal, jobs, query, statusFilter]);
+    .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [conditionFilters, dateFilter, jobs, query, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
   const personalCounts = {
@@ -270,6 +330,14 @@ export default function VacanciesWorkspace() {
     total: jobs.length,
     remote: jobs.filter((job) => job.remote).length,
     reservation: jobs.filter(hasReservation).length,
+  };
+  const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
+
+  const clearFilters = () => {
+    setQuery("");
+    setDateFilter("");
+    setStatusFilters([]);
+    setConditionFilters([]);
   };
 
   const sync = async () => {
@@ -393,11 +461,11 @@ export default function VacanciesWorkspace() {
     <main className="kb-shell">
       <SiteSidebar
         activeSection="jobs"
-        activeSubsection={statusFilter}
+        activeSubsection="ALL"
         hideSecondary
         mobileOpen={mobileNav}
         mode={isPersonal ? "personal" : "public"}
-        onSelectSubsection={(next) => { if (isPersonal) setStatusFilter(next as JobStatus | "ALL"); setMobileNav(false); }}
+        onSelectSubsection={() => setMobileNav(false)}
         personalHref="/workspace"
         publicHref="/"
         secondaryItems={[]}
@@ -456,11 +524,27 @@ export default function VacanciesWorkspace() {
             </article>}
           </section> : <section className="job-list-view vacancy-list-view" aria-busy={online === null || (isPersonal && busy === "sync")}>
             <div className={`feed-tools vacancy-feed-tools vacancy-feed-tools-${viewMode}`}>
-              <label className="search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
-              {isPersonal && <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as JobStatus | "ALL")} aria-label="Filter by status">
-                <option value="ALL">All statuses</option>
-                {STATUS_OPTIONS.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
-              </select>}
+              <label className="search vacancy-search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
+              <label className="vacancy-date-filter">
+                <span>Date</span>
+                <input type="date" aria-label="Filter vacancies by posted date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}/>
+              </label>
+              <VacancyMultiFilter
+                allLabel="All statuses"
+                label="Status"
+                onChange={setStatusFilters}
+                options={STATUS_OPTIONS}
+                selected={statusFilters}
+              />
+              <VacancyMultiFilter
+                allLabel="All conditions"
+                className="vacancy-condition-filter"
+                label="Conditions"
+                onChange={setConditionFilters}
+                options={CONDITION_OPTIONS}
+                selected={conditionFilters}
+              />
+              <button type="button" className="vacancy-clear-filters" onClick={clearFilters} disabled={!hasActiveFilters}>Clear</button>
             </div>
             <div className={`feed-meta vacancy-feed-meta vacancy-feed-meta-${viewMode}`}>
               <span>{visibleJobs.length} jobs</span>
