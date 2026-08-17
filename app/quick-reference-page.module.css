@@ -221,8 +221,17 @@
   color: #29442f;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 10.15px;
-  line-height: 1.28;
-  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.rowExample {
+  display: block;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: normal;
 }
 
 .explainedRow {
