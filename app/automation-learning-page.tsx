@@ -18,17 +18,38 @@ const trackOptions = [
   { id: "reference-framework", label: "Reference Framework", labelUk: "Reference Framework", available: true, moduleIds: ["reference-framework"] },
 ];
 
+const automationTrackLayout = `
+.kb-subnav-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kb-subnav-switch button {
+  flex: none;
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 7px;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+`;
+
 export default function AutomationLearningPage({ mode }: { mode: "public" | "personal" }) {
   return (
-    <LearningDocumentPage
-      curriculum={curriculum}
-      defaultTrackId="foundations"
-      mode={mode}
-      personalHref="/workspace/learn/automation"
-      publicHref="/learn/automation"
-      secondaryTitle="Test automation"
-      section="automation"
-      trackOptions={trackOptions}
-    />
+    <>
+      <style>{automationTrackLayout}</style>
+      <LearningDocumentPage
+        curriculum={curriculum}
+        defaultTrackId="foundations"
+        mode={mode}
+        personalHref="/workspace/learn/automation"
+        publicHref="/learn/automation"
+        secondaryTitle="Test automation"
+        section="automation"
+        trackOptions={trackOptions}
+      />
+    </>
   );
 }
