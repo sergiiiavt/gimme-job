@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { closeVacancyTab, openVacancyTab } from "../app/vacancy-tabs.ts";
+import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "../app/vacancy-tabs.ts";
 
 test("opening a vacancy appends it once", () => {
   const first = openVacancyTab([], "job-1");
@@ -32,4 +32,9 @@ test("closing the last active vacancy falls back left then to Board", () => {
     closeVacancyTab(["job-1"], "job-1", "job-1"),
     { openIds: [], activeId: null },
   );
+});
+
+test("analysis targets the active vacancy tab before board selections", () => {
+  assert.deepEqual(vacancyAnalysisTargets("job-2", ["job-1", "job-3"]), ["job-2"]);
+  assert.deepEqual(vacancyAnalysisTargets(null, ["job-1", "job-3"]), ["job-1", "job-3"]);
 });

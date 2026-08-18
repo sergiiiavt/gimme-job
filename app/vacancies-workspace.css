@@ -9,47 +9,42 @@
 }
 
 .vacancy-tabs {
-  border-bottom: 1px solid var(--line);
-  margin: -2px 0 10px;
+  margin: 0 0 10px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
 }
 
 .vacancy-tab-list {
-  align-items: flex-end;
+  align-items: center;
   display: flex;
   gap: 4px;
   min-width: max-content;
-  padding: 0 2px;
+  padding: 2px 0;
 }
 
 .vacancy-tab-item {
   align-items: center;
-  background: #f7f8f6;
-  border: 1px solid var(--line);
-  border-bottom-color: var(--line);
-  border-radius: 8px 8px 0 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
   display: flex;
-  margin-bottom: -1px;
   max-width: 220px;
   min-width: 0;
-  transition: background .12s ease, border-color .12s ease;
+  transition: background .12s ease;
 }
 
 .vacancy-tab-item:hover {
-  background: #fafbf9;
+  background: #f3f5f2;
 }
 
 .vacancy-tab-item.active {
-  background: #fff;
-  border-color: #b8c6bd;
-  border-bottom-color: #fff;
-  box-shadow: inset 0 2px 0 var(--green);
+  background: #e6eddf;
+  box-shadow: none;
 }
 
 .vacancy-tab-item-board {
-  min-width: 74px;
+  min-width: 68px;
 }
 
 .vacancy-tab {
@@ -60,20 +55,20 @@
   cursor: pointer;
   display: inline-flex;
   font-size: 10px;
-  font-weight: 650;
-  height: 34px;
+  font-weight: 500;
+  height: 32px;
   min-width: 0;
-  padding: 0 11px;
+  padding: 0 10px;
 }
 
 .vacancy-tab-item.active .vacancy-tab {
-  color: var(--ink);
-  font-weight: 750;
+  color: #284d37;
+  font-weight: 400;
 }
 
 .vacancy-job-tab {
   max-width: 184px;
-  padding-right: 5px;
+  padding-right: 4px;
 }
 
 .vacancy-tab-title {
@@ -92,22 +87,64 @@
   cursor: pointer;
   display: inline-flex;
   flex: 0 0 auto;
-  height: 26px;
+  height: 24px;
   justify-content: center;
   margin-right: 3px;
   padding: 0;
-  width: 26px;
+  width: 24px;
 }
 
 .vacancy-tab-close:hover {
-  background: #ecefec;
-  color: var(--ink);
+  background: rgba(40, 77, 55, .08);
+  color: #284d37;
 }
 
 .vacancy-tab:focus-visible,
 .vacancy-tab-close:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: -2px;
+}
+
+.vacancy-detail-tab {
+  display: block;
+}
+
+.vacancy-detail-tab .job-detail {
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.vacancy-detail-tab .job-analysis-resume {
+  margin-top: 16px;
+  min-width: 0;
+  width: 100%;
+}
+
+.vacancy-detail-tab .detail-actions {
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+}
+
+.vacancy-detail-tab .job-summary-tags {
+  align-items: center;
+  margin: 12px 0 0;
+}
+
+.vacancy-detail-tab .job-summary-tags span {
+  line-height: 1.25;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.vacancy-detail-tab .tracking-box {
+  margin-top: 16px;
+}
+
+.vacancy-detail-tab .job-facts {
+  margin-top: 16px;
 }
 
 .vacancy-feed-tools {
@@ -552,15 +589,6 @@
   padding: 5px 7px;
 }
 
-.job-detail-view-public {
-  display: block;
-}
-
-.job-detail-view-public .job-detail {
-  margin: 0 auto;
-  max-width: 980px;
-}
-
 .vacancy-workspace-public .signin-link {
   font-size: 10px;
   font-weight: 750;
@@ -740,7 +768,7 @@
     max-width: 48%;
   }
 
-  .job-detail-view-public .job-detail {
-    max-width: none;
+  .vacancy-detail-tab .detail-actions a {
+    justify-content: center;
   }
 }
