@@ -4,6 +4,7 @@ import "./globals.css";
 import "./interview-auth-layout.css";
 import "./about-site-layout.css";
 import "./vacancies-workspace.css";
+import "./vacancy-detail-layout.css";
 import "./vacancy-filter-enhancer.css";
 import "./vacancy-description.css";
 import "./quick-reference-availability.css";
