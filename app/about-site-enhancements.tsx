@@ -24,6 +24,7 @@ const tocHeadings = [
   { id: "about-database-title", text: "Database" },
   { id: "about-vacancy-scraper-title", text: "Vacancy Scraper" },
   { id: "about-authorization-title", text: "Authorization" },
+  { id: "about-email-automation-workflows-title", text: "Email Automation Workflows" },
 ] as const;
 
 const vacancySources = [
@@ -181,6 +182,41 @@ function ImplementationHighlights() {
               description="Handles Google OAuth, user identity, redirect validation, and the shared authorization state used by protected application areas."
               links={[
                 { label: "Google OAuth", href: rawSource("app/auth/google-oauth.ts") },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="about-tech-section" aria-labelledby="about-email-automation-workflows-title">
+        <div className="about-tech-section-heading">
+          <span className="about-tech-section-number">3</span>
+          <div>
+            <h2 id="about-email-automation-workflows-title">Email Automation Workflows</h2>
+            <p>Two production n8n workflows share D1 as the source of truth: one processes forwarded mail continuously, the other reports the previous day.</p>
+          </div>
+        </div>
+        <div className="about-tech-section-body">
+          <div className={styles.highlightGrid}>
+            <HighlightNode
+              accent="purple"
+              icon="code"
+              title="Workflow 1 · Forwarded email classifier"
+              description="Runs every minute, fetches up to 25 pending tenant-scoped email events, applies deterministic service/job/noise rules first, uses OpenAI only for ambiguous hiring mail, persists the classification in D1, and finishes with a batch summary showing rule-vs-AI routing, token use, held items, and failures."
+              links={[
+                { label: "Classifier workflow", href: rawSource("ops/n8n/workflows/gimmejob-forwarded-email-classifier.json") },
+                { label: "Classifier rules", href: rawSource("app/internal/n8n/email-classify/rules.ts") },
+                { label: "Classifier API", href: rawSource("app/internal/n8n/email-classify/route.ts") },
+              ]}
+            />
+            <HighlightNode
+              accent="green"
+              icon="settings"
+              title="Workflow 2 · Daily automation report"
+              description="Runs at 08:00 Europe/Kyiv, requests the previous complete Kyiv day from the Bearer-protected D1 statistics API, formats received/processed/pending counts, job lifecycle events, job alerts, rule-vs-AI routing and OpenAI token usage, sends an HTML report through SMTP, and ends with an explicit report-sent step."
+              links={[
+                { label: "Daily report workflow", href: rawSource("ops/n8n/workflows/gimmejob-daily-email-report.json") },
+                { label: "Statistics API", href: rawSource("app/internal/n8n/email-stats/route.ts") },
               ]}
             />
           </div>
