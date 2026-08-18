@@ -9,6 +9,7 @@ type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJ
 type JobCondition = "REMOTE" | "RESERVATION";
 type JobSort = "NEWEST" | "OLDEST" | "SCORE_HIGH" | "SCORE_LOW";
 type ScoreTone = "low" | "fair" | "good" | "strong";
+type VacancyViewMode = "public" | "personal";
 
 interface JobAnalysis {
   score?: number;
@@ -103,6 +104,7 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
 
 const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v1";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
+const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 const VACANCY_STALE_MS = 10 * 60 * 1000;
 const VACANCY_GC_MS = 60 * 60 * 1000;
 
@@ -385,6 +387,15 @@ function clearVacancyWorkspace() {
   if (typeof window !== "undefined") window.sessionStorage.removeItem(VACANCY_WORKSPACE_KEY);
 }
 
+function prepareVacancyView(viewMode: VacancyViewMode) {
+  if (typeof window === "undefined") return;
+  const previousView = window.sessionStorage.getItem(VACANCY_VIEW_KEY);
+  if (previousView === viewMode) return;
+  removeVacancyCache();
+  clearVacancyWorkspace();
+  window.sessionStorage.setItem(VACANCY_VIEW_KEY, viewMode);
+}
+
 function VacancyMultiFilter<T extends string>({ allLabel, className = "", label, onChange, options, selected }: {
   allLabel: string;
   className?: string;
@@ -459,7 +470,8 @@ function VacancySort({ onChange, options, value }: {
   </div>;
 }
 
-export default function VacanciesWorkspace() {
+export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) {
+  prepareVacancyView(mode);
   const memoryCache = readClientVacancyCache();
   const memoryWorkspace = readClientVacancyWorkspace();
   const [jobs, setJobs] = useState<Job[]>(() => memoryCache?.jobs ?? []);
@@ -480,7 +492,7 @@ export default function VacanciesWorkspace() {
   const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
   const [authenticated, setAuthenticated] = useState<boolean | null>(() => memoryCache?.authenticated ?? null);
   const analyzeCancelRef = useRef(false);
-  const isPersonal = authenticated === true;
+  const isPersonal = mode === "personal" && authenticated === true;
   const viewMode = isPersonal ? "personal" : "public";
 
   useEffect(() => {
@@ -756,7 +768,9 @@ export default function VacanciesWorkspace() {
                 {busy === "analyze"
                   ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
                   : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || analysisTargetCount === 0}><Icon name="llm"/><span>{selected ? "Analyze vacancy" : selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
-              </div> : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
+              </div> : authenticated === true
+                ? <a className="signin-link" href="/workspace">Open personal view →</a>
+                : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
             </div>
             {isPersonal ? (
               <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>
