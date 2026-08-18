@@ -6,6 +6,15 @@
   padding: 20px 18px 32px;
 }
 
+/* Keep the vacancy Dashboard/list on the same horizontal rhythm as the interview-question list.
+   The opened vacancy detail remains full-width so the two-column workspace does not lose working space. */
+.vacancy-workspace > .vacancy-list-view {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1308px;
+  width: calc(100% - 36px);
+}
+
 .vacancy-workspace-personal .vacancy-page-intro,
 .vacancy-workspace-public .vacancy-page-intro {
   align-items: center;
@@ -192,6 +201,12 @@
   box-shadow: var(--shadow);
 }
 
+@media (max-width: 1100px) {
+  .vacancy-workspace > .vacancy-list-view {
+    width: calc(100% - 20px);
+  }
+}
+
 @media (max-width: 980px) {
   .vacancy-workspace-personal .vacancy-detail-tab {
     display: block;
@@ -205,6 +220,10 @@
 @media (max-width: 700px) {
   .vacancy-workspace {
     padding: 16px 12px 28px;
+  }
+
+  .vacancy-workspace > .vacancy-list-view {
+    width: calc(100% - 32px);
   }
 
   .vacancy-workspace-personal .vacancy-page-intro,
