@@ -43,9 +43,9 @@ test("verdict words inside the score circle explicitly follow the score palette"
   assert.match(styles, /\.score\.score-strong span\s*\{[\s\S]*color:\s*var\(--green\)/);
 });
 
-test("analysis header badge follows the same numeric score palette", () => {
-  assert.match(styles, /:has\(\.score\.score-low\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--red-soft\)[\s\S]*color:\s*var\(--red\)/);
-  assert.match(styles, /:has\(\.score\.score-fair\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--amber-soft\)[\s\S]*color:\s*var\(--amber\)/);
-  assert.match(styles, /:has\(\.score\.score-good\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--blue-soft\)[\s\S]*color:\s*var\(--blue\)/);
-  assert.match(styles, /:has\(\.score\.score-strong\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--green-soft\)[\s\S]*color:\s*var\(--green\)/);
+test("analysis header badge is forced to the same numeric score palette", () => {
+  assert.match(styles, /:has\(\.score-low\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--red-soft\) !important;[\s\S]*color:\s*var\(--red\) !important/);
+  assert.match(styles, /:has\(\.score-fair\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--amber-soft\) !important;[\s\S]*color:\s*var\(--amber\) !important/);
+  assert.match(styles, /:has\(\.score-good\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--blue-soft\) !important;[\s\S]*color:\s*var\(--blue\) !important/);
+  assert.match(styles, /:has\(\.score-strong\) \.job-analysis \.verdict\s*\{[\s\S]*background:\s*var\(--green-soft\) !important;[\s\S]*color:\s*var\(--green\) !important/);
 });
