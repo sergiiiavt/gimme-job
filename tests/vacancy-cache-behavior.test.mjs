@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const source = readFileSync(new URL("../app/vacancies-workspace.tsx", import.meta.url), "utf8");
+const routeResolver = readFileSync(new URL("../app/vacancy-workspace-route.tsx", import.meta.url), "utf8");
 const publicRoute = readFileSync(new URL("../app/vacancies/page.tsx", import.meta.url), "utf8");
 const privateRoute = readFileSync(new URL("../app/workspace/page.tsx", import.meta.url), "utf8");
 
@@ -22,11 +23,15 @@ test("vacancy data cache survives route changes and refreshes within the same vi
   assert.match(source, /if \(shouldRefresh\) void loadDashboard\(\);/);
 });
 
-test("public and private vacancy routes declare their view explicitly", () => {
-  assert.match(publicRoute, /<VacanciesWorkspace key="public" mode="public"\/>/);
-  assert.match(privateRoute, /<VacanciesWorkspace key="personal" mode="personal"\/>/);
-  assert.match(source, /export default function VacanciesWorkspace\(\{ mode \}: \{ mode: VacancyViewMode \}\)/);
-  assert.match(source, /const isPersonal = mode === "personal" && authenticated === true;/);
+test("vacancy route resolves public or personal view from current auth without changing the canonical URL", () => {
+  assert.match(routeResolver, /fetch\("\/api\/auth-state"/);
+  assert.match(routeResolver, /cache: "no-store"/);
+  assert.match(routeResolver, /return response\.ok \? "personal" : "public";/);
+  assert.match(routeResolver, /let currentVacancyView: VacancyViewMode \| null = null;/);
+  assert.match(routeResolver, /useState<VacancyViewMode \| null>\(\(\) => currentVacancyView\)/);
+  assert.match(routeResolver, /<VacanciesWorkspace key=\{mode\} mode=\{mode\}\/>/);
+  assert.match(publicRoute, /<VacancyWorkspaceRoute\/>/);
+  assert.match(privateRoute, /<VacancyWorkspaceRoute\/>/);
 });
 
 test("switching public private view clears vacancy data and workspace caches", () => {
@@ -40,10 +45,8 @@ test("switching public private view clears vacancy data and workspace caches", (
   assert.match(source, /prepareVacancyView\(mode\);/);
 });
 
-test("authenticated public view remains public instead of asking for login", () => {
+test("public view cannot become personal from a cached authenticated flag alone", () => {
   assert.match(source, /const isPersonal = mode === "personal" && authenticated === true;/);
-  assert.match(source, /authenticated === true[\s\S]*href="\/workspace">Open personal view →<\/a>/);
-  assert.match(source, /href="\/workspace\/login">Sign in for personal tools →<\/a>/);
 });
 
 test("open vacancy tabs persist for route navigation and F5 within the same view", () => {
