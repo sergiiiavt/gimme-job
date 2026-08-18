@@ -9,6 +9,7 @@ const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job desc
 const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
 const COMPANY_GAP = `[ \\t]+`;
+const OPTIONAL_GAP = `[ \\t]*`;
 
 function cleanCompany(value: unknown): string {
   if (typeof value !== "string" && typeof value !== "number") return "";
@@ -72,7 +73,7 @@ export function inferCompanyFromText(value: string): string {
   }
 
   for (const line of lines) {
-    const dash = new RegExp(`^(${COMPANY_WORD}(?:${COMPANY_GAP}${COMPANY_WORD}){0,6})${COMPANY_GAP}*[—–-]${COMPANY_GAP}*`, "u").exec(line);
+    const dash = new RegExp(`^(${COMPANY_WORD}(?:${COMPANY_GAP}${COMPANY_WORD}){0,6})${OPTIONAL_GAP}[—–-]${OPTIONAL_GAP}`, "u").exec(line);
     const company = usable(dash?.[1]);
     if (company) return company;
   }
