@@ -43,9 +43,12 @@
 }
 
 @media (min-width: 981px) {
-  /* Vacancies use their own vertical scroll container. Keep a small right gutter so the fixed control never covers table cells. */
+  /* Keep the vacancy table aligned with the left workspace edge while reserving only the right-side control gutter. */
   .vacancy-workspace > .vacancy-list-view {
+    margin-left: 0;
     margin-right: 76px;
+    max-width: none;
+    width: auto;
   }
 
   /* Interview content already leaves a narrow outer gutter; push the control fully into it instead of over the question area. */
