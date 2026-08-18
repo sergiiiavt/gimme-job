@@ -113,6 +113,143 @@
   width: 1em;
 }
 
+.enhancedN8nBody {
+  width: 100% !important;
+}
+
+.enhancedN8nBody > :global(.about-tech-observability-flow) {
+  display: none !important;
+}
+
+.workflowDiagram {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+.workflowRow {
+  align-items: stretch;
+  background: #fbfcfb;
+  border: 1px solid #e0e6e1;
+  border-radius: 10px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 118px minmax(0, 1fr);
+  padding: 10px;
+}
+
+.workflowLabel {
+  align-content: center;
+  border-right: 1px solid #e1e6e2;
+  display: grid;
+  gap: 3px;
+  padding-right: 10px;
+}
+
+.workflowLabel span {
+  color: #7d8982;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.workflowLabel strong {
+  color: #314339;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.workflowLabel small {
+  color: #87928b;
+  font-size: 8px;
+}
+
+.workflowTrack {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+  max-width: 100%;
+  min-width: 0;
+  width: fit-content;
+}
+
+.workflowSources {
+  display: flex;
+  flex: 0 0 170px;
+  flex-direction: column;
+  gap: 6px;
+  width: 170px;
+}
+
+.workflowNode {
+  flex: 0 0 auto !important;
+  max-width: 180px !important;
+  min-width: 160px !important;
+  width: 180px !important;
+}
+
+.workflowSources .workflowNode {
+  max-width: 170px !important;
+  min-width: 170px !important;
+  width: 170px !important;
+}
+
+.workflowNode :global(.about-tech-node-links) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.workflowIcon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  display: block;
+  height: 1em;
+  width: 1em;
+}
+
+.gmailIcon {
+  background-image: url("https://cdn.simpleicons.org/gmail");
+}
+
+.cloudflareIcon,
+.databaseIcon {
+  background-image: url("https://cdn.simpleicons.org/cloudflare");
+}
+
+.workerIcon {
+  background-image: url("https://cdn.simpleicons.org/cloudflareworkers");
+}
+
+.n8nIcon {
+  background-image: url("https://cdn.simpleicons.org/n8n");
+}
+
+.analysisIcon,
+.dashboardIcon {
+  background-image: url("https://cdn.simpleicons.org/chartdotjs");
+}
+
+.workflowArrow {
+  align-items: center;
+  display: flex;
+  flex: 0 0 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.workflowArrow svg {
+  fill: none;
+  height: 12px;
+  stroke: #a7b1aa;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+  width: 30px;
+}
+
 @media (max-width: 1100px) {
   .tocRail {
     display: none;
@@ -121,11 +258,72 @@
   .sourceStrip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .workflowRow {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+
+  .workflowNode {
+    max-width: 165px !important;
+    min-width: 145px !important;
+    width: 165px !important;
+  }
+
+  .workflowSources {
+    flex-basis: 155px;
+    width: 155px;
+  }
+
+  .workflowSources .workflowNode {
+    max-width: 155px !important;
+    min-width: 155px !important;
+    width: 155px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .workflowRow {
+    grid-template-columns: 1fr;
+  }
+
+  .workflowLabel {
+    border-bottom: 1px solid #e1e6e2;
+    border-right: 0;
+    grid-template-columns: auto 1fr auto;
+    padding: 0 0 8px;
+  }
+
+  .workflowTrack {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .workflowSources {
+    flex: none;
+    width: 100%;
+  }
+
+  .workflowNode,
+  .workflowSources .workflowNode {
+    max-width: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .workflowArrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 700px) {
   .sourceStrip,
   .highlightGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workflowLabel {
     grid-template-columns: 1fr;
   }
 }
