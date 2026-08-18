@@ -78,6 +78,24 @@
   color: var(--green);
 }
 
+/* .detail-head span has its own green color in globals.css, so the verdict label
+   must be explicitly colored instead of relying on inheritance from the circle. */
+.vacancy-workspace .score.score-low span {
+  color: var(--red);
+}
+
+.vacancy-workspace .score.score-fair span {
+  color: var(--amber);
+}
+
+.vacancy-workspace .score.score-good span {
+  color: var(--blue);
+}
+
+.vacancy-workspace .score.score-strong span {
+  color: var(--green);
+}
+
 .vacancy-workspace .vacancy-match.has-score strong {
   font-size: 10px;
   letter-spacing: -.02em;
