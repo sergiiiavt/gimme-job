@@ -1,43 +1,151 @@
-<!-- concepts: requirement-testability, acceptance-criteria, test-condition-case-data, traceability, equivalence-partitioning, boundary-value-analysis, decision-table, state-transition, scenario-testing, white-box-coverage -->
+<!-- concepts: requirement-testability, requirement-set-quality, requirement-relations, acceptance-criteria, test-condition-case-data, traceability, equivalence-partitioning, boundary-value-analysis, decision-table, state-transition, scenario-testing, white-box-coverage -->
 
 # Requirements & Test Design
 
 Good testing begins before detailed test cases exist. Test design is the discipline of converting requirements, risks, models and other test bases into a deliberate set of observations that can expose important problems efficiently.
 
-## Requirement quality and testability
+## Good requirements: review the requirement and the set
 
-A requirement is easier to test when it is clear enough to determine whether the delivered behaviour satisfies it. Useful qualities include clarity, consistency, feasibility, necessity, traceability and verifiability.
-
-Compare:
-
-| Weak requirement | Stronger requirement |
-| --- | --- |
-| “The dashboard should load quickly.” | “Under the defined normal-load profile, 95% of authenticated dashboard requests shall complete within 1.5 seconds.” |
-| “Passwords must be secure.” | “Passwords shall be at least 12 characters and shall reject values present in the configured compromised-password list.” |
-
-The stronger versions do not guarantee that the requirement is correct, but they make the expected evidence much easier to reason about.
-
-> **Key point:** discovering an untestable requirement is itself valuable testing work. You do not need runnable software to find ambiguity.
-
-A practical requirement review asks:
+A requirement can be perfectly testable on its own and still be wrong in context. Requirement review therefore has two different scopes:
 
 ```diagram
-Can I identify the expected behaviour?
+Individual requirement
+→ Is this statement good enough by itself?
+
+Requirements set
+→ Do all requirements work together as one coherent specification?
+```
+
+Both matter. Testing only the wording of individual requirements can miss contradictions, duplication and gaps between them.
+
+## Characteristics of a good individual requirement
+
+Useful requirement characteristics are not just academic labels. Each one gives the tester a concrete review question.
+
+| Characteristic | What it means | Tester question |
+| --- | --- | --- |
+| **Clear & unambiguous** | The statement has one intended interpretation. | Could two reasonable people read this differently? |
+| **Verifiable / testable** | There is observable evidence that can show whether it is satisfied. | What exactly would make this pass or fail? |
+| **Complete** | The statement contains the information needed to understand the expected behaviour. | Are inputs, conditions, outcomes, errors or boundaries missing? |
+| **Feasible** | The requirement can realistically be implemented within technical and project constraints. | Is this achievable with the available technology, interfaces, time and resources? |
+| **Necessary** | It contributes to a real stakeholder, business, regulatory or system need. | What would fail or lose value if we removed it? |
+| **Singular / atomic** | It expresses one main obligation or behaviour rather than several unrelated rules joined together. | Would part of this requirement pass while another part fails? |
+| **Consistent** | It does not contradict known rules, terminology or related requirements. | Does another requirement say something incompatible? |
+| **Traceable** | Its origin and downstream consequences can be identified. | Where did this requirement come from, and what depends on it? |
+| **Implementation-independent where appropriate** | It states the required outcome without unnecessarily prescribing a design solution. | Does it say what must be achieved, or accidentally dictate how developers must build it? |
+
+> **Important:** “implementation-independent” is not absolute. Architecture, security, regulatory, protocol or platform requirements may legitimately constrain implementation. The problem is unnecessary design detail masquerading as a business or behavioural requirement.
+
+### Weak vs stronger examples
+
+| Weak requirement | Why it is weak | Stronger requirement |
+| --- | --- | --- |
+| “The dashboard should load quickly.” | “Quickly” has no measurable meaning. | “Under the defined normal-load profile, 95% of authenticated dashboard requests shall complete within 1.5 seconds.” |
+| “Passwords must be secure.” | “Secure” is not a decidable rule. | “Passwords shall contain at least 12 characters and shall reject values present in the configured compromised-password list.” |
+| “The user can edit the profile and the system sends a notification.” | Two behaviours are coupled into one requirement. | Separate profile-update behaviour from notification behaviour and define their relationship explicitly. |
+| “Use Redis to make the page faster.” | It jumps to a solution while the actual required outcome is unclear. | Define the required latency/capacity first; constrain technology separately only if there is a real architectural reason. |
+
+A tester should not ask only “Can I write a test case?” A stronger review asks:
+
+```diagram
+Do I understand exactly what is required?
         ↓
 Can I observe whether it happened?
         ↓
-Can I create the required preconditions and data?
+Are preconditions, inputs and boundaries defined?
         ↓
-Are boundaries, exceptions and dependencies defined?
+Are failure and exception behaviours defined where needed?
         ↓
-Can I trace the evidence back to the requirement or risk?
+Is this requirement necessary and feasible?
+        ↓
+Does it agree with related requirements?
+        ↓
+Can I trace its origin and downstream evidence?
 ```
+
+> **Key point:** discovering an ambiguous, contradictory or unverifiable requirement is testing work. Runnable software is not required to find these defects.
+
+## Characteristics of a good requirements set
+
+Individual quality is not enough. A collection of individually clear requirements can still form a poor specification.
+
+A useful requirements-set review checks for:
+
+- **Completeness:** important behaviours, states, interfaces, constraints and failure cases are not missing.
+- **Consistency:** requirements do not contradict one another.
+- **Non-duplication:** the same rule is not repeated in several places with slightly different wording.
+- **Coherent terminology:** the same concepts, states, actors and data have the same meaning throughout the set.
+- **Traceability:** parent, derived and dependent requirements can be followed in both directions.
+- **Correct decomposition:** high-level needs are refined into lower-level requirements without silently losing part of the intent.
+- **Modifiability:** one business rule should have a clear authoritative place so that a change does not require hunting through many conflicting copies.
+- **Coverage of important quality constraints:** performance, security, reliability, compatibility, accessibility, safety and other relevant concerns are not forgotten just because the functional happy path is documented.
+
+### Example: individually testable, collectively contradictory
+
+```text
+REQ-21: Guest users shall be able to complete checkout without creating an account.
+
+REQ-37: Every checkout shall require an authenticated customer account.
+```
+
+Both statements are clear. Both are testable. The defect exists **between the requirements**.
+
+This is why “testable requirements” and “a testable requirements set” are not the same thing.
+
+## Requirements-to-requirements relationships
+
+Requirements rarely exist as a flat list. They usually form a network of relationships.
+
+Common relationships include:
+
+| Relationship | Meaning | Example |
+| --- | --- | --- |
+| **Derived from / refines** | A lower-level requirement makes a higher-level need more concrete. | A business need for account protection is refined into password, MFA and session requirements. |
+| **Parent / child** | A broad requirement is decomposed into smaller requirements. | “Support checkout” → payment, address, tax and confirmation requirements. |
+| **Depends on / prerequisite** | One requirement only makes sense or can operate when another is satisfied. | Refund processing depends on a completed payment. |
+| **Constrains** | One requirement limits how another may behave. | A security rule constrains how customer data may be displayed. |
+| **Interacts with** | Two requirements affect the same state, data or workflow and must be reviewed together. | Cancellation interacts with payment settlement and inventory reservation. |
+| **Conflicts with** | Two requirements cannot both be true under the same conditions. | Guest checkout allowed vs authentication required for every checkout. |
+| **Overlaps / duplicates** | Two requirements express the same or nearly the same rule. | Password length is defined differently in two separate security sections. |
+
+A practical requirements graph can look like this:
+
+```diagram
+User / stakeholder need
+          ↓
+Business requirement
+          ↓
+System requirement
+          ↓
+Software / feature requirement
+          ↓
+Acceptance criteria
+          ↓
+Test condition
+          ↓
+Test case
+          ↓
+Execution result / defect / evidence
+```
+
+But the useful model is not only vertical. Requirements also connect sideways:
+
+```diagram
+REQ-12 ──depends on────→ REQ-07
+REQ-12 ──refines──────→ REQ-04
+REQ-15 ──interacts with→ REQ-18
+REQ-21 ──conflicts with→ REQ-37
+```
+
+These links make requirement review and change-impact analysis much stronger than treating every requirement as an isolated row in a document.
 
 ## Acceptance criteria
 
 Acceptance criteria describe conditions that must be satisfied for a feature, story or capability to be considered acceptable. They should clarify business rules and observable outcomes rather than merely restate the implementation.
 
 Good acceptance criteria can become part of the test basis, but they are not a complete test strategy. A tester still considers boundaries, negative paths, interactions, quality characteristics and risks that the acceptance criteria may not mention.
+
+Acceptance criteria also do not repair a contradictory requirement set. If two parent requirements conflict, writing precise Given/When/Then examples for both simply makes the conflict easier to see.
 
 ## From test basis to test cases
 
@@ -61,28 +169,52 @@ A **test condition** is something that should be examined: a rule, state, risk, 
 
 Starting directly with detailed steps often hides gaps because the tester becomes occupied with UI mechanics before establishing what must be covered.
 
-## Traceability
+## Bidirectional traceability
 
-Traceability links test work back to its basis and forward to results. It helps answer questions such as:
+Traceability should work in both directions.
 
-- Which requirements have evidence?
-- Which high-risk requirements have no tests?
-- Which tests must be reconsidered after a requirement changes?
-- Which failures affect which business rules?
+**Forward traceability** asks what happened to a requirement:
 
 ```diagram
-Requirement / risk
+Need / requirement
       ↓
-Test condition
+Derived requirements / acceptance criteria
       ↓
-Test case
+Test conditions
       ↓
-Execution result
+Test cases
       ↓
-Defect / evidence / release decision
+Results / defects / release evidence
 ```
 
-Traceability does not require a giant spreadsheet. The implementation can be lightweight, but the relationships should be recoverable when they matter.
+It helps answer:
+
+- Has this requirement been decomposed and implemented?
+- Which tests provide evidence for it?
+- Does it have execution results?
+- Which defects currently affect it?
+
+**Backward traceability** asks why an artifact exists:
+
+```diagram
+Test / implementation / lower-level requirement
+      ↑
+Which requirement or risk justified it?
+      ↑
+Which business or stakeholder need justified that?
+```
+
+It helps detect unnecessary functionality, orphan tests, undocumented behaviour and lower-level requirements with no valid origin.
+
+Traceability is also useful **between requirements themselves**:
+
+- Which lower-level requirements refine this business requirement?
+- If REQ-12 changes, which dependent requirements must be reviewed?
+- Does every derived requirement still preserve the parent intent?
+- Are two requirements defining the same rule differently?
+- Does a new requirement conflict with an existing constraint?
+
+A traceability matrix can be useful, but a giant spreadsheet is not the goal. The implementation can be IDs, links, issue relationships, model references or automated metadata. What matters is that the important relationships can be recovered reliably when coverage or change-impact questions arise.
 
 ## Equivalence partitioning
 
@@ -222,9 +354,12 @@ The result is stronger than repeating the same happy path at several layers.
 
 ## Summary
 
-- Testable requirements make expected evidence observable and decidable.
+- Review both **individual requirements** and the **requirements set**.
+- Good individual requirements should be clear, verifiable, complete, feasible, necessary, singular, consistent and traceable.
+- A requirements set must also be complete, mutually consistent, non-duplicative and coherently structured.
+- Requirements-to-requirements relationships expose dependencies, decomposition, overlap and conflicts that isolated review misses.
+- Bidirectional traceability connects stakeholder needs, requirements, tests, results and defects in both directions.
 - Test conditions should be identified before detailed execution steps.
-- Traceability connects requirements and risks to tests and results.
 - Equivalence partitioning reduces large spaces to meaningful representatives.
 - CTFL distinguishes 2-value and 3-value boundary value analysis.
 - Decision tables model combinations; state transitions model history-dependent behaviour.
