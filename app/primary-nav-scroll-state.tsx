@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 const PRIMARY_NAV_SELECTOR = ".kb-navigation .kb-nav-list";
 const PRIMARY_NAV_SCROLL_KEY = "gimmejob.primary-nav.scrollTop";
+const SCROLL_IDLE_MS = 650;
 
 function readSavedScrollTop() {
   try {
@@ -27,18 +28,33 @@ export default function PrimaryNavScrollState() {
   useEffect(() => {
     let nav: HTMLElement | null = null;
     let restoreFrame: number | null = null;
+    let scrollIdleTimer: number | null = null;
 
-    const saveCurrentPosition = () => {
-      if (nav) saveScrollTop(nav.scrollTop);
+    const handleScroll = () => {
+      if (!nav) return;
+      saveScrollTop(nav.scrollTop);
+      nav.classList.add("is-scrolling");
+
+      if (scrollIdleTimer !== null) window.clearTimeout(scrollIdleTimer);
+      const activeNav = nav;
+      scrollIdleTimer = window.setTimeout(() => {
+        activeNav.classList.remove("is-scrolling");
+        scrollIdleTimer = null;
+      }, SCROLL_IDLE_MS);
     };
 
     const attachToCurrentNav = () => {
       const nextNav = document.querySelector<HTMLElement>(PRIMARY_NAV_SELECTOR);
       if (!nextNav || nextNav === nav) return;
 
-      nav?.removeEventListener("scroll", saveCurrentPosition);
+      if (scrollIdleTimer !== null) {
+        window.clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = null;
+      }
+      nav?.classList.remove("is-scrolling");
+      nav?.removeEventListener("scroll", handleScroll);
       nav = nextNav;
-      nav.addEventListener("scroll", saveCurrentPosition, { passive: true });
+      nav.addEventListener("scroll", handleScroll, { passive: true });
 
       if (restoreFrame !== null) window.cancelAnimationFrame(restoreFrame);
       const savedScrollTop = readSavedScrollTop();
@@ -55,7 +71,9 @@ export default function PrimaryNavScrollState() {
 
     return () => {
       if (restoreFrame !== null) window.cancelAnimationFrame(restoreFrame);
-      nav?.removeEventListener("scroll", saveCurrentPosition);
+      if (scrollIdleTimer !== null) window.clearTimeout(scrollIdleTimer);
+      nav?.classList.remove("is-scrolling");
+      nav?.removeEventListener("scroll", handleScroll);
       observer.disconnect();
     };
   }, []);
