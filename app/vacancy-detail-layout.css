@@ -6,6 +6,13 @@
   padding: 20px 18px 32px;
 }
 
+.vacancy-workspace-personal .vacancy-page-intro {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: flex-start;
+}
+
 .vacancy-workspace-personal .vacancy-detail-tab {
   align-items: start;
   display: grid;
@@ -52,5 +59,11 @@
 @media (max-width: 700px) {
   .vacancy-workspace {
     padding: 16px 12px 28px;
+  }
+
+  .vacancy-workspace-personal .vacancy-page-intro {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
   }
 }
