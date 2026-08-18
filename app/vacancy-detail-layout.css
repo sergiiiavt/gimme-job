@@ -1,0 +1,56 @@
+/* Vacancy detail workspace layout overrides.
+   Keep public vacancy details full-width; use the denser two-sided workspace for signed-in personal tools. */
+
+.vacancy-workspace {
+  max-width: none;
+  padding: 20px 18px 32px;
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, .95fr);
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab .job-detail,
+.vacancy-workspace-personal .vacancy-detail-tab .job-analysis-resume {
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+  width: auto;
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab .job-analysis-resume {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab .job-analysis,
+.vacancy-workspace-personal .vacancy-detail-tab .job-resume {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 980px) {
+  .vacancy-workspace-personal .vacancy-detail-tab {
+    display: block;
+  }
+
+  .vacancy-workspace-personal .vacancy-detail-tab .job-analysis-resume {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .vacancy-workspace {
+    padding: 16px 12px 28px;
+  }
+}
