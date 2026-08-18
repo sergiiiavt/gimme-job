@@ -5,6 +5,8 @@ import { fetchText } from "./http.js";
 
 const UNKNOWN_COMPANY = /^(?:unknown|company is hidden|hidden company|невідома компанія|компанію приховано|компания скрыта|n\/a|none|-)$/iu;
 const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|greenhouse|lever|ashby)$/iu;
+const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job description|responsibilities|requirements|nice to have|what we offer|benefits|conditions|обов[’'ʼ]?язки|вимоги|умови|про компанію|про нас|опис вакансії|задачі|требования|условия)$)|(?:\b(?:full[- ]?time|part[- ]?time|work experience|досвід роботи|повна зайнятість)\b)/iu;
+const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
 
 function cleanCompany(value: unknown): string {
@@ -19,7 +21,14 @@ function cleanCompany(value: unknown): string {
 
 export function isUsableCompany(value: unknown): boolean {
   const company = cleanCompany(value);
-  return Boolean(company && company.length <= 120 && !UNKNOWN_COMPANY.test(company) && !BOARD_NAMES.test(company));
+  return Boolean(
+    company
+      && company.length <= 120
+      && !UNKNOWN_COMPANY.test(company)
+      && !BOARD_NAMES.test(company)
+      && !NON_COMPANY_TEXT.test(company)
+      && !ROLE_LIKE_NAME.test(company),
+  );
 }
 
 function usable(value: unknown): string {
@@ -44,18 +53,18 @@ export function inferCompanyFromText(value: string): string {
   const prefix = text.slice(0, 2_000);
   const lines = prefix.split(/\n+/).map((line) => line.trim()).filter(Boolean);
 
-  for (const line of lines) {
-    const dash = new RegExp(`^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s*[—–-]\\s+`, "u").exec(line);
-    const company = usable(dash?.[1]);
-    if (company) return company;
-  }
-
   const companySentence = new RegExp(
     `(?:^|\\n)(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s+(?:is|є|являється|является)\\s+(?:an?\\s+)?(?:[\\p{L}-]+\\s+){0,5}(?:company|компанія|компания)\\b`,
     "iu",
   ).exec(prefix);
   const sentenceCompany = usable(companySentence?.[1]);
   if (sentenceCompany) return sentenceCompany;
+
+  for (const line of lines) {
+    const dash = new RegExp(`^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s*[—–-]\\s+`, "u").exec(line);
+    const company = usable(dash?.[1]);
+    if (company) return company;
+  }
 
   const labelled = /(?:^|\n)(?:company|компанія|компания)\s*:\s*([^\n|]{2,120})/iu.exec(prefix);
   return usable(labelled?.[1]);
