@@ -15,21 +15,22 @@ function supportsToTop(pathname: string) {
 export default function ToTopButton() {
   const pathname = usePathname();
   const enabled = supportsToTop(pathname);
-  const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    if (!enabled) {
-      setVisible(false);
-      return;
-    }
+    if (!enabled) return;
 
-    const updateVisibility = () => setVisible(window.scrollY > TO_TOP_THRESHOLD);
-    updateVisibility();
+    const updateVisibility = () => setScrolled(window.scrollY > TO_TOP_THRESHOLD);
+    const frame = window.requestAnimationFrame(updateVisibility);
     window.addEventListener("scroll", updateVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", updateVisibility);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateVisibility);
+    };
   }, [enabled, pathname]);
 
   if (!enabled) return null;
+  const visible = scrolled;
 
   return (
     <button
