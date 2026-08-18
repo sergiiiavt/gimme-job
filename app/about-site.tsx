@@ -29,7 +29,7 @@ const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
   gmail: "https://cdn.simpleicons.org/gmail",
   hetzner: "https://cdn.simpleicons.org/hetzner",
   docker: "https://cdn.simpleicons.org/docker",
-  sonarqube: "https://cdn.simpleicons.org/sonarqube",
+  sonarqube: "https://cdn.simpleicons.org/sonarqubecloud",
 };
 
 function AboutIconSvg({ kind, className }: { kind: AboutIcon; className?: string }) {
