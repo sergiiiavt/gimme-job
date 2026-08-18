@@ -35,7 +35,12 @@
   {"id":"scenario-testing","topicId":"requirements-test-design","label":"Scenario/use-case testing"},
   {"id":"white-box-coverage","topicId":"requirements-test-design","label":"Statement and branch coverage basics"},
 
-  {"id":"test-strategy-plan","topicId":"documentation-defects","label":"Test strategy and test plan"},
+  {"id":"test-documentation-model","topicId":"documentation-defects","label":"Test documentation across test activities"},
+  {"id":"test-policy-strategy-plan","topicId":"documentation-defects","label":"Test policy, strategy and plan distinctions"},
+  {"id":"test-plan-purpose","topicId":"documentation-defects","label":"Purpose of a test plan"},
+  {"id":"test-plan-content","topicId":"documentation-defects","label":"Typical test plan content"},
+  {"id":"test-approach-schedule","topicId":"documentation-defects","label":"Test approach vs test schedule"},
+  {"id":"test-plan-reporting-loop","topicId":"documentation-defects","label":"Plan, progress, control and completion reporting"},
   {"id":"test-case-checklist-charter","topicId":"documentation-defects","label":"Test case, checklist and charter"},
   {"id":"test-suite-data-environment","topicId":"documentation-defects","label":"Test suites, data and environment records"},
   {"id":"test-reporting","topicId":"documentation-defects","label":"Progress and completion reporting"},
