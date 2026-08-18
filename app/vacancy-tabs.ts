@@ -19,3 +19,7 @@ export function closeVacancyTab(openIds: string[], activeId: string | null, id: 
     activeId: nextOpenIds[index] ?? nextOpenIds[index - 1] ?? null,
   };
 }
+
+export function vacancyAnalysisTargets(activeId: string | null, selectedIds: Iterable<string>) {
+  return activeId ? [activeId] : [...selectedIds];
+}

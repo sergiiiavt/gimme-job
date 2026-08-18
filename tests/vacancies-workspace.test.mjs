@@ -103,6 +103,35 @@ test("vacancies use closable workspace tabs instead of back navigation", () => {
   assert.match(styles, /overflow-x:\s*auto/);
 });
 
+test("active vacancy tab is the direct analysis target", () => {
+  assert.match(source, /vacancyAnalysisTargets\(selected\?\.id \?\? null, selectedIds\)/);
+  assert.match(source, /const analysisTargetCount = selected \? 1 : selectedIds\.size/);
+  assert.match(source, /disabled=\{busy !== null \|\| analysisTargetCount === 0\}/);
+  assert.match(source, /selected \? "Analyze vacancy"/);
+});
+
+test("public and private vacancy tabs share the same base detail layout", () => {
+  assert.match(source, /className="job-detail-view vacancy-detail-tab"/);
+  assert.doesNotMatch(source, /job-detail-view-public/);
+  assert.match(styles, /\.vacancy-detail-tab\s*\{\s*display:\s*block/);
+  assert.match(styles, /\.vacancy-detail-tab \.job-detail\s*\{[\s\S]*width:\s*100%/);
+  assert.match(styles, /\.vacancy-detail-tab \.job-analysis-resume\s*\{[\s\S]*margin-top:\s*16px/);
+});
+
+test("vacancy tabs use the soft-green secondary-navigation selection style", () => {
+  assert.match(styles, /\.vacancy-tab-item\s*\{[\s\S]*border:\s*0/);
+  assert.match(styles, /\.vacancy-tab-item\.active\s*\{[\s\S]*background:\s*#e6eddf/);
+  assert.match(styles, /\.vacancy-tab-item\.active\s*\{[\s\S]*box-shadow:\s*none/);
+  assert.match(styles, /\.vacancy-tab-item\.active \.vacancy-tab\s*\{[\s\S]*font-weight:\s*400/);
+});
+
+test("vacancy detail tags and actions wrap without colliding", () => {
+  assert.match(styles, /\.vacancy-detail-tab \.detail-actions\s*\{[\s\S]*flex-wrap:\s*wrap/);
+  assert.match(styles, /\.vacancy-detail-tab \.job-summary-tags\s*\{[\s\S]*margin:\s*12px 0 0/);
+  assert.match(styles, /\.vacancy-detail-tab \.job-summary-tags span\s*\{[\s\S]*overflow-wrap:\s*anywhere/);
+  assert.match(styles, /\.vacancy-detail-tab \.tracking-box\s*\{[\s\S]*margin-top:\s*16px/);
+});
+
 test("public detail score and tracking are gated by authentication", () => {
   assert.match(source, /authenticated && typeof job\.analysis\?\.score === "number"/);
   assert.match(source, /\{authenticated && <section className="tracking-box">/);

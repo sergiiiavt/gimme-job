@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import { SiteSidebar } from "./site-navigation";
-import { closeVacancyTab, openVacancyTab } from "./vacancy-tabs";
+import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacancy-tabs";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
@@ -337,6 +337,7 @@ export default function VacanciesWorkspace() {
     reservation: jobs.filter(hasReservation).length,
   };
   const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
+  const analysisTargetCount = selected ? 1 : selectedIds.size;
 
   const clearFilters = () => {
     setQuery("");
@@ -383,7 +384,7 @@ export default function VacanciesWorkspace() {
 
   const analyze = async () => {
     if (!isPersonal) return;
-    const targetIds = [...selectedIds];
+    const targetIds = vacancyAnalysisTargets(selected?.id ?? null, selectedIds);
     if (targetIds.length === 0) {
       setNotice("Select at least one vacancy before analyzing.");
       return;
@@ -419,7 +420,7 @@ export default function VacanciesWorkspace() {
     setNotice(analyzeCancelRef.current
       ? `Stopped after ${completed} of ${targetIds.length}. Nothing was sent.`
       : `Scored ${completed} job(s). Nothing was sent.`);
-    setSelectedIds(new Set());
+    if (!selected) setSelectedIds(new Set());
     setBusy(null);
   };
 
@@ -499,7 +500,7 @@ export default function VacanciesWorkspace() {
                 <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
                 {busy === "analyze"
                   ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
-                  : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || selectedIds.size === 0}><Icon name="llm"/><span>{selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
+                  : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || analysisTargetCount === 0}><Icon name="llm"/><span>{selected ? "Analyze vacancy" : selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
               </div> : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
             </div>
             {isPersonal ? (
@@ -563,7 +564,7 @@ export default function VacanciesWorkspace() {
             <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
           </div>}
 
-          {selected ? <section className={`job-detail-view${isPersonal ? "" : " job-detail-view-public"}`} id="selected-vacancy-detail" role="tabpanel" aria-labelledby={`vacancy-tab-${selected.id}`}>
+          {selected ? <section className="job-detail-view vacancy-detail-tab" id="selected-vacancy-detail" role="tabpanel" aria-labelledby={`vacancy-tab-${selected.id}`}>
             <JobDetailPanel job={selected} disabled={busy === `job-${selected.id}`} authenticated={isPersonal} onChange={(change) => void updateTracking(selected, change)}/>
             {isPersonal && <article className="job-analysis-resume">
               <JobAnalysisPanel job={selected}/>
