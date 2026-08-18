@@ -154,13 +154,8 @@
 }
 
 .vacancy-workspace-public .vacancy-detail-tab .job-detail {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
   margin: 0;
   max-width: none;
-  padding: 18px 0 0;
   width: 100%;
 }
 
