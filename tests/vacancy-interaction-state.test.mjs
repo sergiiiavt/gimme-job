@@ -23,10 +23,10 @@ test("status changes expose immediate database saving feedback", () => {
   assert.match(styles, /Saving status to database/);
 });
 
-test("dashboard and vacancy detail use isolated desktop scroll panes", () => {
+test("private dashboard and vacancy detail use isolated desktop scroll panes", () => {
   assert.match(styles, /@media \(min-width: 981px\)/);
-  assert.match(styles, /\.vacancy-workspace\s*\{[\s\S]*display:\s*flex[\s\S]*height:\s*100dvh[\s\S]*overflow:\s*hidden/);
-  assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view,[\s\S]*\.vacancy-workspace > \.vacancy-detail-tab[\s\S]*overflow-y:\s*auto !important/);
+  assert.match(styles, /\.vacancy-workspace-personal\s*\{[\s\S]*display:\s*flex[\s\S]*height:\s*100dvh[\s\S]*overflow:\s*hidden/);
+  assert.match(styles, /\.vacancy-workspace-personal > \.vacancy-list-view,[\s\S]*\.vacancy-workspace-personal > \.vacancy-detail-tab[\s\S]*overflow-y:\s*auto !important/);
   assert.match(styles, /overscroll-behavior-y:\s*contain/);
 });
 
