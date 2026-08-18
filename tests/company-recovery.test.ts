@@ -16,9 +16,10 @@ test("company validation keeps legitimate names containing digits", () => {
   assert.equal(isUsableCompany("Unknown"), false);
   assert.equal(isUsableCompany("Company is hidden"), false);
   assert.equal(isUsableCompany("QA Engineer"), false);
+  assert.equal(isUsableCompany("Companies"), false);
 });
 
-test("company inference supports Lobby X dash and sentence variants", () => {
+test("company inference supports Lobby X and Djinni prose variants", () => {
   assert.equal(
     inferCompanyFromText("Vyriy Industries — українська Defense Tech компанія, що розробляє автономні системи."),
     "Vyriy Industries",
@@ -30,6 +31,10 @@ test("company inference supports Lobby X dash and sentence variants", () => {
   assert.equal(
     inferCompanyFromText("ДП «Цифрова Армія» — державне підприємство у сфері оборонних технологій."),
     "ДП «Цифрова Армія»",
+  );
+  assert.equal(
+    inferCompanyFromText("About the company: United Tech is a global IT product company.\nRequirements\n- API testing"),
+    "United Tech",
   );
 });
 
@@ -60,11 +65,12 @@ test("company extraction prefers JobPosting hiringOrganization metadata", () => 
   assert.equal(extractCompanyFromHtml("https://example.com/jobs/1", html), "Ajax Systems");
 });
 
-test("company extraction supports company profile links used by job boards", () => {
+test("company extraction supports company profile links without using navigation roots", () => {
   const html = `
     <main>
+      <a href="/companies/">Companies</a>
       <h1>Manual QA Engineer</h1>
-      <a class="company" href="/companies/united-tech/">United Tech</a>
+      <a href="/jobs/?company=united-tech-ce985">United Tech</a>
     </main>
   `;
   assert.equal(extractCompanyFromHtml("https://djinni.co/jobs/1", html), "United Tech");
