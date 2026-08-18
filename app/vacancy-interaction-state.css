@@ -36,9 +36,9 @@
   to { background-position: -100% 0; }
 }
 
-/* On desktop the outer vacancy workspace stays fixed while Dashboard and each vacancy own their scroll. */
+/* In private desktop view the outer workspace stays fixed while Dashboard and each vacancy own their scroll. */
 @media (min-width: 981px) {
-  .vacancy-workspace {
+  .vacancy-workspace-personal {
     display: flex;
     flex-direction: column;
     height: 100dvh;
@@ -46,14 +46,14 @@
     overflow: hidden;
   }
 
-  .vacancy-workspace > .vacancy-page-intro,
-  .vacancy-workspace > .vacancy-tabs,
-  .vacancy-workspace > .analyze-progress {
+  .vacancy-workspace-personal > .vacancy-page-intro,
+  .vacancy-workspace-personal > .vacancy-tabs,
+  .vacancy-workspace-personal > .analyze-progress {
     flex: 0 0 auto;
   }
 
-  .vacancy-workspace > .vacancy-list-view,
-  .vacancy-workspace > .vacancy-detail-tab {
+  .vacancy-workspace-personal > .vacancy-list-view,
+  .vacancy-workspace-personal > .vacancy-detail-tab {
     flex: 1 1 auto;
     min-height: 0;
     overflow-x: hidden;
@@ -62,7 +62,7 @@
     scrollbar-gutter: stable;
   }
 
-  .vacancy-workspace > .vacancy-detail-tab {
+  .vacancy-workspace-personal > .vacancy-detail-tab {
     padding-right: 6px;
   }
 }
