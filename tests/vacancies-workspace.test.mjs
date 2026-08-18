@@ -92,6 +92,17 @@ test("vacancy filter popovers behave as one exclusive group", () => {
   assert.match(filterEnhancer, /document\.addEventListener\("pointerdown", onPointerDown\)/);
 });
 
+test("vacancies use closable workspace tabs instead of back navigation", () => {
+  assert.match(source, /const \[openTabIds, setOpenTabIds\] = useState<string\[]>\(\[\]\)/);
+  assert.match(source, /className="vacancy-tab-list" role="tablist"/);
+  assert.match(source, />Board<\/button>/);
+  assert.match(source, /className="vacancy-tab-close"/);
+  assert.match(source, /onClick=\{\(\) => openVacancy\(job\.id\)\}/);
+  assert.doesNotMatch(source, /Back to vacancies/);
+  assert.match(styles, /\.vacancy-tabs\s*\{/);
+  assert.match(styles, /overflow-x:\s*auto/);
+});
+
 test("public detail score and tracking are gated by authentication", () => {
   assert.match(source, /authenticated && typeof job\.analysis\?\.score === "number"/);
   assert.match(source, /\{authenticated && <section className="tracking-box">/);
