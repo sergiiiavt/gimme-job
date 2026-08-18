@@ -195,6 +195,14 @@
   width: 170px !important;
 }
 
+@media (min-width: 1101px) {
+  .workflowTrack > .workflowNode:first-child {
+    max-width: 170px !important;
+    min-width: 170px !important;
+    width: 170px !important;
+  }
+}
+
 .workflowNode :global(.about-tech-node-links) {
   display: flex;
   flex-wrap: wrap;
