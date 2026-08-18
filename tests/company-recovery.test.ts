@@ -15,6 +15,7 @@ test("company validation keeps legitimate names containing digits", () => {
   assert.equal(isUsableCompany("3DTech"), true);
   assert.equal(isUsableCompany("Unknown"), false);
   assert.equal(isUsableCompany("Company is hidden"), false);
+  assert.equal(isUsableCompany("QA Engineer"), false);
 });
 
 test("company inference supports Lobby X dash and sentence variants", () => {
@@ -29,6 +30,17 @@ test("company inference supports Lobby X dash and sentence variants", () => {
   assert.equal(
     inferCompanyFromText("ДП «Цифрова Армія» — державне підприємство у сфері оборонних технологій."),
     "ДП «Цифрова Армія»",
+  );
+});
+
+test("company inference rejects ordinary vacancy metadata as a company", () => {
+  assert.equal(
+    inferCompanyFromText("Full-time - Work experience more than 2 years.\nRequirements\n- API testing"),
+    "",
+  );
+  assert.equal(
+    inferCompanyFromText("Requirements — API testing, SQL, regression testing"),
+    "",
   );
 });
 
