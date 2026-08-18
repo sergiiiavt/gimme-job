@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { filterRelevantVacancies } from "../agent/src/job-intake.js";
+import { extractCompanyFromHtml, inferCompanyFromText, isUsableCompany } from "../agent/src/sources/company.js";
 import { parseLobbyXDescription, parseLobbyXListing } from "../agent/src/sources/lobbyx.js";
 import { parseRobotaUaDescription, parseRobotaUaResponse } from "../agent/src/sources/robotaua.js";
 import { parseRssDetailDescription } from "../agent/src/sources/rss.js";
@@ -45,36 +46,60 @@ function assertFullDescription(source: string, description: string): void {
   console.log(`${source}: OK, ${description.length} description chars`);
 }
 
+function assertCompany(source: string, company: string): void {
+  assert.ok(isUsableCompany(company), `${source} did not expose a usable company name (received ${JSON.stringify(company)})`);
+  console.log(`${source}: company OK — ${company}`);
+}
+
+function assertCompanyCoverage(source: string, companies: string[], minimum: number): void {
+  assert.ok(companies.length > 0, `${source} did not return company candidates`);
+  const known = companies.filter(isUsableCompany).length;
+  const coverage = known / companies.length;
+  assert.ok(
+    coverage >= minimum,
+    `${source} company coverage ${(coverage * 100).toFixed(1)}% is below ${(minimum * 100).toFixed(0)}% (${known}/${companies.length})`,
+  );
+  console.log(`${source}: company coverage ${(coverage * 100).toFixed(1)}% (${known}/${companies.length})`);
+}
+
 async function smokeRss(source: "DOU" | "Djinni", feed: string): Promise<void> {
   const xml = await text(feed);
   const url = rssFirstLink(xml);
-  const description = parseRssDetailDescription(url, await text(url));
+  const html = await text(url);
+  const description = parseRssDetailDescription(url, html);
   assertFullDescription(source, description);
+  assertCompany(source, extractCompanyFromHtml(url, html) || inferCompanyFromText(description));
 }
 
 async function smokeWorkUa(): Promise<void> {
   const html = await text("https://www.work.ua/en/jobs/?search=QA%20Engineer");
   const listings = parseWorkUaListing(html);
   assert.ok(listings.length > 0, "Work.ua search returned no parseable vacancies");
+  assertCompanyCoverage("Work.ua", listings.map((listing) => listing.company), 0.8);
   const relevant = filterRelevantVacancies(listings.map((listing) => ({
     source: "workua:smoke", externalId: listing.url, title: listing.title, company: listing.company,
     location: listing.location, remote: false, url: listing.url, applyUrl: listing.url,
     description: listing.description, salaryText: null, postedAt: null, contactEmail: null,
   })));
   const vacancy = relevant.jobs[0] ?? listings[0];
-  assertFullDescription("Work.ua", parseWorkUaDescription(await text(vacancy.url)));
+  const detailHtml = await text(vacancy.url);
+  assertFullDescription("Work.ua", parseWorkUaDescription(detailHtml));
+  assertCompany("Work.ua detail", vacancy.company || extractCompanyFromHtml(vacancy.url, detailHtml));
 }
 
 async function smokeRobotaUa(): Promise<void> {
   const payload = await json<unknown>("https://api.rabota.ua/vacancy/search?keyWords=QA%20Engineer&count=20&page=0");
   const jobs = parseRobotaUaResponse(payload, "smoke");
   assert.ok(jobs.length > 0, "Robota.ua API returned no parseable vacancies");
+  assertCompanyCoverage("Robota.ua", jobs.map((job) => job.company), 0.9);
   const relevant = filterRelevantVacancies(jobs).jobs;
   assert.ok(relevant.length > 0, "Robota.ua API returned no relevant software-QA vacancy in the smoke sample");
   const vacancy = relevant[0];
-  const detail = parseRobotaUaDescription(await text(vacancy.url), vacancy.description);
+  const detailHtml = await text(vacancy.url);
+  const detail = parseRobotaUaDescription(detailHtml, vacancy.description);
   assertFullDescription("Robota.ua", detail);
   assert.ok(detail.length >= vacancy.description.length, "Robota.ua detail extraction is shorter than its search/API description");
+  assertCompany("Robota.ua detail", vacancy.company || extractCompanyFromHtml(vacancy.url, detailHtml));
 }
 
 async function smokeLobbyX(): Promise<void> {
@@ -86,16 +111,18 @@ async function smokeLobbyX(): Promise<void> {
   let lastError: unknown = null;
   for (const listing of listings.slice(0, 5)) {
     try {
-      const description = parseLobbyXDescription(await text(listing.url));
+      const html = await text(listing.url);
+      const description = parseLobbyXDescription(html);
       if (description.length >= 120) {
         assertFullDescription("Lobby X", description);
+        assertCompany("Lobby X", extractCompanyFromHtml(listing.url, html) || inferCompanyFromText(description));
         return;
       }
     } catch (error) {
       lastError = error;
     }
   }
-  throw lastError instanceof Error ? lastError : new Error("Lobby X detail pages did not yield a complete description");
+  throw lastError instanceof Error ? lastError : new Error("Lobby X detail pages did not yield a complete description and company");
 }
 
 async function main(): Promise<void> {
