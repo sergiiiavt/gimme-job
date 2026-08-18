@@ -26,7 +26,7 @@ test("to-top control follows the private vacancy scroll container", () => {
 
 test("desktop layout keeps the vacancy table left-aligned with only a right control gutter", () => {
   assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view[\s\S]*margin-left:\s*0/);
-  assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view[\s\S]*margin-right:\s*76px/);
+  assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view[\s\S]*margin-right:\s*60px/);
   assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view[\s\S]*max-width:\s*none/);
   assert.match(styles, /\.vacancy-workspace > \.vacancy-list-view[\s\S]*width:\s*auto/);
   assert.match(styles, /\.to-top-button-interview[\s\S]*right:\s*max\(2px, env\(safe-area-inset-right\)\)/);
