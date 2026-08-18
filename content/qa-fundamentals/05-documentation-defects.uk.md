@@ -2,392 +2,392 @@
 
 # Тестова документація та дефекти
 
-Документація корисна, коли вона зберігає рішення, робить роботу відтворюваною, підтримує traceability або передає докази. Вона є марною, коли існує лише тому, що шаблон вимагає певного документа.
+Документація корисна, коли вона зберігає рішення, робить роботу відтворюваною, підтримує простежуваність (traceability) або передає докази для ухвалення рішень. Вона стає марною, якщо існує лише тому, що «так вимагає шаблон».
 
-Важливе запитання не «які документи має створити QA?», а **яка інформація повинна зберегтися, щоб тестування можна було спланувати, виконати, зрозуміти й використати для рішень?** Вона може бути у формальному документі, test-management tool, tickets, wiki, version-controlled files або їх комбінації.
+Головне запитання не «які документи має створити QA?», а **яка інформація повинна зберегтися, щоб тестування можна було спланувати, виконати, відтворити, оцінити й використати для рішень?** Ця інформація може жити у формальному документі, системі керування тестами, задачах, wiki, файлах у репозиторії або в їх комбінації.
 
-## Тестова документація протягом test process
+## Тестова документація протягом процесу тестування
 
-Testware — це значно більше, ніж test cases. Різні test activities створюють і використовують різні work products.
+Тестові артефакти (testware) — це значно більше, ніж тест-кейси. Різні активності тестування створюють і використовують різні робочі продукти.
 
 ```diagram
-PLANNING
-├── test plan
-├── estimates і schedule
-├── risk information
-└── entry / exit або completion criteria
+ПЛАНУВАННЯ
+├── план тестування
+├── оцінки та графік
+├── інформація про ризики
+└── критерії початку / завершення
 
-MONITORING & CONTROL
-├── progress / status information
-├── updated risks і forecasts
-└── control decisions та зміни плану
+МОНІТОРИНГ І КОНТРОЛЬ
+├── інформація про прогрес і статус
+├── оновлені ризики та прогноз
+└── рішення про зміни плану
 
-ANALYSIS
-├── test conditions
-├── coverage targets
-└── defects / ambiguities у test basis
+АНАЛІЗ
+├── тестові умови
+├── цілі покриття
+└── дефекти або неоднозначності у тестовій основі
 
-DESIGN
-├── test cases
-├── exploratory charters
-├── coverage items
-├── test-data requirements
-└── environment requirements
+ДИЗАЙН
+├── тест-кейси
+├── дослідницькі чартери
+├── елементи покриття
+├── вимоги до тестових даних
+└── вимоги до середовища
 
-IMPLEMENTATION
-├── test procedures / scripts
-├── automated tests
-├── test suites
-├── prepared test data
-├── execution order
-└── environment configuration
+РЕАЛІЗАЦІЯ ТЕСТІВ
+├── процедури / скрипти
+├── автоматизовані тести
+├── тестові набори
+├── підготовлені дані
+├── порядок виконання
+└── конфігурація середовища
 
-EXECUTION
-├── test results / logs / evidence
-└── defect reports
+ВИКОНАННЯ
+├── результати / логи / докази
+└── звіти про дефекти
 
-COMPLETION
-├── test completion report
-├── residual risks і unresolved items
-├── lessons learned
-└── maintained / archived testware
+ЗАВЕРШЕННЯ
+├── підсумковий звіт про тестування
+├── залишкові ризики та відкриті питання
+├── отримані уроки
+└── актуалізовані / архівовані тестові артефакти
 ```
 
-Це **не обов'язково окремі файли**. Невелика команда може тримати більшість інформації в одному project space. У regulated або safety-critical проєкті артефакти можуть вимагати формального control, review і versioning. Інформаційна потреба залишається подібною, навіть якщо форма відрізняється.
+Це **не обов’язково окремі файли**. Невелика команда може тримати більшість цієї інформації в одному робочому просторі. У регульованому або safety-critical проєкті артефакти можуть потребувати формального погодження, версіонування та контролю змін. Інформаційна потреба залишається тією самою, навіть якщо форма документації відрізняється.
 
-## Test policy, strategy, plan, approach і schedule
+## Політика, стратегія, план, підхід і графік тестування
 
-Ці поняття часто зводять до одного «test plan», через що стає незрозуміло, яке саме рішення документується.
+Ці поняття часто змішують і називають одним словом «test plan». Через це губиться сенс того, яке саме рішення документується.
 
-| Термін | Основна мета | Типовий scope |
+| Термін | Основне призначення | Типовий рівень |
 | --- | --- | --- |
-| **Test policy** | Визначає організаційні принципи, очікування або governance для тестування. | Організація / product family |
-| **Test strategy** | Визначає reusable високорівневий підхід до отримання доказів якості. | Організація, продукт, programme або довгострокова ініціатива |
-| **Test plan** | Визначає, як будуть досягнуті test objectives конкретного test effort. | Project, release, iteration, migration або significant change |
-| **Test approach** | Описує вибрані levels, types, techniques, priorities та інші методи всередині плану. | Частина конкретного плану, часто похідна від strategy |
-| **Test schedule** | Розміщує test activities, dependencies і milestones у часі та визначає порядок виконання. | Конкретний test effort |
+| **Політика тестування (test policy)** | Визначає організаційні принципи, очікування та правила керування тестуванням. | Організація / сімейство продуктів |
+| **Стратегія тестування (test strategy)** | Визначає багаторазово застосовний високорівневий підхід до отримання доказів якості. | Організація, продукт, програма або довготривала ініціатива |
+| **План тестування (test plan)** | Визначає, як будуть досягнуті цілі конкретної тестової роботи. | Проєкт, реліз, ітерація, міграція або значна зміна |
+| **Підхід до тестування (test approach)** | Описує вибрані рівні, типи, техніки, пріоритети та способи виконання всередині конкретного плану. | Частина плану тестування |
+| **Графік тестування (test schedule)** | Розміщує активності, залежності та контрольні точки у часі й визначає порядок виконання. | Конкретна тестова робота |
 
-Організації можуть використовувати назви по-різному. Важлива не назва, а **рішення, яке за нею стоїть**.
+Організації можуть використовувати назви трохи по-різному. Важливо розуміти **яке рішення стоїть за кожним поняттям**.
 
 ```diagram
 Організаційний напрям
-Test policy / reusable strategy
+Політика / загальна стратегія
             ↓
-Конкретний release або test effort
-          TEST PLAN
-            ├── scope і objectives
-            ├── risks
-            ├── test approach
-            ├── responsibilities
-            ├── environments і data
-            ├── criteria і metrics
-            └── estimates / schedule
+Конкретний реліз або зміна
+        ПЛАН ТЕСТУВАННЯ
+            ├── scope і цілі
+            ├── ризики
+            ├── підхід до тестування
+            ├── відповідальність
+            ├── середовища і дані
+            ├── критерії та метрики
+            └── оцінка / графік
                        ↓
-                 execution
+                   виконання
 ```
 
-> **Поширена помилка:** називати список browsers, test types і tools «test plan». Це може бути частиною **test approach**, але plan також визначає scope, objectives, responsibilities, risks, resources, criteria і coordination.
+> **Поширена помилка:** називати список браузерів, типів тестування і інструментів «планом тестування». Це лише частина **підходу до тестування**. Повноцінний план також визначає scope, цілі, ризики, відповідальність, ресурси, критерії та координацію роботи.
 
-## Test plan: призначення
+## План тестування: навіщо він потрібен
 
-**Test plan** описує, як і коли будуть досягнуті цілі визначеного test effort. Його цінність не в наявності документа, а в тому, що важливі рішення про тестування приймаються явно до того, як execution витратить більшість доступного часу.
+**План тестування (test plan)** описує, як і коли будуть досягнуті цілі визначеної тестової роботи. Його цінність не в самому документі, а в тому, що ключові рішення приймаються явно **до того**, як команда витратить більшість часу на виконання тестів.
 
-Корисний test plan допомагає команді:
+Корисний план допомагає:
 
-- погодити, що **in scope і out of scope**;
-- визначити **test objectives** і потрібні докази;
-- пов'язати depth і priority тестування з **product і project risks**;
-- визначити потрібні **people, environments, tools і test data**;
-- призначити **responsibilities і decision ownership**;
-- зробити явними **assumptions, dependencies і constraints**;
-- визначити, коли тестування може початися і що означає достатнє завершення;
-- визначити, що вимірюється і як reporting працює;
-- створити baseline для **monitoring and control**, коли реальність відрізняється від плану.
+- погодити, що **входить у scope**, а що явно не входить;
+- визначити **цілі тестування** та потрібні докази;
+- пов’язати глибину і пріоритет тестування з **ризиками продукту та проєкту**;
+- визначити потрібні **людей, середовища, інструменти й тестові дані**;
+- зафіксувати **відповідальність і право ухвалювати рішення**;
+- зробити явними **припущення, залежності та обмеження**;
+- визначити, коли тестування має сенс починати і що означає достатнє завершення;
+- визначити метрики та спосіб звітування;
+- створити baseline для **моніторингу й контролю**, коли реальність відхиляється від плану.
 
-Отже, plan — це і coordination artifact, і baseline для рішень.
+Отже, план тестування — це одночасно інструмент координації та базова точка для подальших рішень.
 
-## Що має бути в test plan
+## Що має бути в плані тестування
 
-Немає сенсу примушувати кожен проєкт до одного жорсткого шаблону. Практичний plan зазвичай має зберігати таку інформацію.
+Немає сенсу примушувати кожен проєкт до одного жорсткого шаблону. Важливо, щоб план зберігав потрібну інформацію.
 
 | Розділ | На яке запитання відповідає |
 | --- | --- |
-| **Context** | Для якого продукту, release, change або test effort створено plan? Навіщо? |
-| **Test basis / references** | Які requirements, designs, contracts, standards, risk analyses або інші джерела визначають expected behaviour? |
-| **Scope** | Які test objects, features, interfaces і quality characteristics включені? Що явно виключено? |
-| **Test objectives** | Які докази має дати тестування? Які рішення вони повинні підтримати? |
-| **Assumptions and constraints** | Що ми припускаємо? Що обмежує time, budget, access, tools, platforms або depth? |
-| **Stakeholders and responsibilities** | Хто тестує, надає data/environment, прибирає blockers, приймає residual risk і приймає release decision? |
-| **Risks and priorities** | Які product/project risks визначають depth, order і contingency planning? |
-| **Test approach** | Які levels, test types, techniques, exploratory work, automation та independence доречні? |
-| **Testware / deliverables** | Які cases, charters, scripts, suites, evidence і reports треба створити або підтримувати? |
-| **Environment, data and tools** | Які systems, versions, accounts, datasets, devices, browsers, simulators або services потрібні? |
-| **Entry criteria** | Що має бути правдою, перш ніж testing activity має сенс починати? |
-| **Exit / completion criteria** | Які докази або умови потрібні, щоб effort вважався достатньо завершеним? |
-| **Metrics and reporting** | Що вимірюється, як часто передається status і кому? |
-| **Communication and escalation** | Як передаються blockers, critical defects, risk changes і decisions? |
-| **Estimate, resources and budget** | Який effort/capacity очікується і які resources потрібні? |
-| **Schedule and dependencies** | Коли відбуваються activities, у якому порядку і які external events можуть їх блокувати? |
+| **Контекст** | Для якого продукту, релізу або зміни створено план і навіщо? |
+| **Тестова основа / посилання** | Які вимоги, дизайни, контракти, стандарти, ризики або інші джерела визначають очікувану поведінку? |
+| **Scope** | Які об’єкти, функції, інтеграції та характеристики якості включені? Що явно виключено? |
+| **Цілі тестування** | Які докази має дати тестування і які рішення ці докази повинні підтримати? |
+| **Припущення та обмеження** | Що ми вважаємо істинним? Що обмежує час, бюджет, доступ, інструменти, платформи або глибину тестування? |
+| **Стейкхолдери та відповідальність** | Хто тестує, надає дані/середовище, усуває блокери, приймає залишковий ризик і ухвалює рішення про реліз? |
+| **Ризики та пріоритети** | Які ризики визначають порядок, глибину та резервний план тестування? |
+| **Підхід до тестування** | Які рівні, типи, техніки, exploratory work, автоматизація та незалежність доречні? |
+| **Тестові артефакти / результати** | Які кейси, чартери, скрипти, набори, докази та звіти треба створити або підтримувати? |
+| **Середовище, дані та інструменти** | Які системи, версії, акаунти, набори даних, пристрої, браузери, симулятори або сервіси потрібні? |
+| **Критерії входу (entry criteria)** | Що має бути готовим, щоб конкретну активність тестування було доцільно починати? |
+| **Критерії виходу / завершення** | Які докази або умови потрібні, щоб роботу можна було вважати достатньо завершеною? |
+| **Метрики та звітування** | Що вимірюємо, як часто повідомляємо статус і кому? |
+| **Комунікація та ескалація** | Як повідомляються блокери, критичні дефекти, зміни ризиків і рішення? |
+| **Оцінка, ресурси та бюджет** | Яка очікувана трудомісткість і які ресурси потрібні? |
+| **Графік і залежності** | Коли виконуються активності, у якому порядку і які зовнішні події можуть їх блокувати? |
 
-Не кожен рядок потребує окремого heading. Для однієї feature на тиждень це може бути одна сторінка. Для multi-system programme — значно більший документ.
+Для невеликої фічі кілька цих пунктів можуть поміститися на одній сторінці. Для складної багатосистемної програми кожен із них може вимагати окремої деталізації.
 
-### Компактний реальний приклад test plan
+### Компактний приклад реального плану
 
-Припустимо, release змінює checkout retry behaviour і додає нового payment provider.
+Припустимо, реліз змінює логіку повторної спроби оплати та додає нового платіжного провайдера.
 
-| Частина plan | Приклад |
+| Частина плану | Приклад |
 | --- | --- |
-| **Scope** | card checkout, retry behaviour, duplicate-payment prevention, new provider integration; gift-card flow не змінюється і out of scope |
-| **Objectives** | показати, що successful payment створює рівно одне order; failed/timeout payment не створює duplicate charge; provider errors мають recoverable поведінку |
-| **Main risks** | duplicate charge, order without confirmed payment, timeout з unknown state, regression existing provider |
-| **Approach** | API decision-table coverage для payment outcomes; state-transition coverage для retry/recovery; provider contract tests; focused browser E2E happy path; exploratory session для interrupted network states |
-| **Environment/data** | staging build, provider sandbox, webhook receiver, test cards для success/decline/timeout, clean-cart accounts |
-| **Entry** | provider sandbox reachable; webhook configuration verified; release candidate deployed; seed data available |
-| **Completion** | усі critical payment risks мають evidence; немає unresolved critical/high duplicate-charge defect без explicit acceptance; planned provider rules covered; known gaps recorded |
-| **Reporting** | daily risk/blocker update під час execution; completion report перед release decision |
-| **Schedule** | contract/API checks спочатку, потім integration recovery, потім focused E2E/regression після стабілізації provider configuration |
+| **Scope** | Оплата карткою, повторні спроби, захист від подвійного списання, інтеграція нового провайдера; gift-card flow не змінюється і поза scope |
+| **Цілі** | Довести, що успішна оплата створює рівно одне замовлення; timeout або помилка не створює подвійного списання; помилки провайдера мають контрольоване відновлення |
+| **Основні ризики** | Подвійне списання, замовлення без підтвердженої оплати, timeout з невідомим станом, регресія старого провайдера |
+| **Підхід** | Decision table для результатів оплати; state transition для retry/recovery; contract tests провайдера; сфокусований E2E happy path; exploratory session для переривання мережі |
+| **Середовище / дані** | Staging build, sandbox провайдера, webhook receiver, тестові картки для success/decline/timeout, акаунти з чистим кошиком |
+| **Entry criteria** | Sandbox доступний; webhook перевірений; release candidate розгорнутий; тестові дані готові |
+| **Completion criteria** | Критичні ризики мають докази; немає неприйнятого critical/high дефекту з подвійним списанням; заплановані правила провайдера покриті; відомі прогалини зафіксовані |
+| **Звітування** | Щоденний статус ризиків/блокерів під час виконання; completion report перед рішенням про реліз |
+| **Графік** | Спочатку contract/API checks, потім integration recovery, після стабілізації конфігурації — E2E і регресія |
 
-Зверніть увагу, чого тут **немає**: сотень назв test cases. Plan визначає тестовий effort; execution detail живе у відповідному testware.
+Зверніть увагу, чого тут **немає**: сотень назв тест-кейсів. План визначає тестову роботу; деталі виконання зберігаються у відповідних тестових артефактах.
 
-## Entry, exit і completion criteria у plan
+## Entry criteria, exit criteria та критерії завершення
 
-Criteria перетворюють нечітке «почнемо, коли буде готово» або «закінчимо, коли все пройде» на decision rules.
+Критерії перетворюють нечіткі фрази «почнемо, коли буде готово» або «закінчимо, коли все пройде» на правила для ухвалення рішень.
 
-**Entry criteria** описують умови, за яких testing activity має сенс починати. Наприклад:
+**Entry criteria** описують умови, за яких тестову активність доцільно починати. Наприклад:
 
-- потрібні environment і build доступні;
-- critical interfaces deployed і reachable;
-- test data або accounts можна створити;
-- test basis достатньо стабільний, щоб визначити expectations;
-- blocking prerequisite defects вирішені.
+- потрібне середовище і build доступні;
+- критичні інтерфейси розгорнуті й відповідають;
+- тестові дані або акаунти можна створити;
+- тестова основа достатньо стабільна, щоб визначити очікування;
+- блокуючі prerequisite defects усунені.
 
-**Exit / completion criteria** описують evidence, потрібний для достатнього завершення effort. Наприклад:
+**Exit / completion criteria** описують докази, потрібні для достатнього завершення роботи. Наприклад:
 
-- agreed high-risk scenarios covered;
-- requirement/risk/technique coverage targets досягнуті або deviations прийняті;
-- немає unresolved defect вище погодженого impact threshold без explicit risk acceptance;
-- planned test results і known limitations доступні decision-makers;
-- residual risks documented.
+- погоджені high-risk сценарії покриті;
+- цілі покриття вимог, ризиків або технік досягнуті або відхилення явно прийняті;
+- немає невирішеного дефекту вище погодженого порогу впливу без явного прийняття ризику;
+- результати тестування і відомі обмеження доступні людям, які ухвалюють рішення;
+- залишкові ризики задокументовані.
 
-Criterion має підтримувати рішення. «100% tests passed» є слабким критерієм, якщо suite не представляє важливі risks.
+Критерій має підтримувати рішення. «100% tests passed» — слабкий критерій, якщо сам набір тестів не представляє важливі ризики.
 
-Деякі команди також визначають **suspension і resumption criteria** — коли execution треба зупинити, бо продовження марне, і що має змінитися перед відновленням.
+Деякі команди також визначають **suspension criteria** і **resumption criteria**: коли тестування треба призупинити, бо продовження не дає цінності, та що повинно змінитися перед відновленням.
 
-## Test approach є частиною plan
+## Підхід до тестування є частиною плану
 
-Test approach пояснює, **як саме буде отримано запланований evidence**. Він може включати:
+Підхід до тестування (test approach) пояснює, **як саме буде отримано заплановані докази**. Він може включати:
 
-- test levels і test objects;
-- functional та relevant non-functional test types;
-- specification-based, structure-based, experience-based і collaborative techniques;
-- risk-based prioritization і test depth;
-- manual, exploratory і automated execution;
-- regression і confirmation approach;
-- degree of test independence;
-- environment і data strategy;
-- automation boundaries і CI/CD placement;
-- production / operational evidence, де доречно.
+- рівні тестування й тестові об’єкти;
+- функціональні та релевантні нефункціональні типи тестування;
+- specification-based, structure-based, experience-based і collaborative техніки;
+- risk-based пріоритизацію та глибину тестування;
+- ручне, дослідницьке та автоматизоване виконання;
+- підхід до regression і confirmation testing;
+- ступінь незалежності тестування;
+- стратегію середовищ і даних;
+- межі автоматизації та її місце у CI/CD;
+- production / operational evidence, якщо це доречно.
 
-Сильний approach є selective. «Run every test type at every level» — це не strategy, а ігнорування cost і risk.
+Сильний підхід вибірковий. «Запустити кожен тип тестування на кожному рівні» — не стратегія, бо вона ігнорує вартість і ризик.
 
-## Test schedule — не test plan
+## Графік тестування — не план тестування
 
-Schedule відповідає на питання **коли й у якому порядку** виконуються planned activities. Він має показувати dependencies, а не лише QA start/end date.
+Графік відповідає на запитання **коли і в якому порядку** виконуються заплановані активності. Він має показувати залежності, а не лише дату початку і завершення роботи QA.
 
 ```diagram
-API contract stable
+API contract стабільний
        ↓
-provider sandbox configured
+provider sandbox налаштований
        ↓
 integration tests
        ↓
-recovery / retry tests
+retry / recovery tests
        ↓
-focused E2E regression
+сфокусована E2E regression
        ↓
-completion assessment
+оцінка завершення
 ```
 
-Schedule також може визначати test execution order. Наприклад, fast build-verification checks запускаються перед expensive regression, щоб broken environment виявлявся рано.
+Графік може також визначати порядок запуску тестів. Наприклад, швидкі build-verification checks доцільно виконати перед дорогою регресією, щоб рано виявити зламане середовище.
 
-## Plan → progress report → control → completion report
+## План → звіт про прогрес → контроль → підсумковий звіт
 
-Planning і reporting утворюють один feedback loop.
+Планування і звітування утворюють один цикл зворотного зв’язку.
 
 ```diagram
-TEST PLAN
-Що ми плануємо досягти і як?
+ПЛАН ТЕСТУВАННЯ
+Що ми плануємо довести і як?
         ↓
-PROGRESS / STATUS REPORT
-Де ми відносно plan?
+ЗВІТ ПРО ПРОГРЕС / СТАТУС
+Де ми відносно плану?
         ↓
-TEST CONTROL
-Що треба змінити, бо reality відрізняється?
+КОНТРОЛЬ ТЕСТУВАННЯ
+Що треба змінити, бо реальність відрізняється?
         ↓
-updated scope / priorities / schedule / approach
+оновлений scope / пріоритети / графік / підхід
         ↺
-TEST COMPLETION REPORT
-Що реально досягнуто, що відхилилося і який risk залишився?
+ПІДСУМКОВИЙ ЗВІТ
+Що реально досягнуто, що відхилилося і який ризик залишився?
 ```
 
-Це пояснює, чому test plan корисний і в adaptive project: plan є поточним baseline, а control дозволяє свідомо його змінювати.
+Саме тому test plan корисний і в адаптивному проєкті: він задає поточний baseline, а контроль дозволяє свідомо його змінювати.
 
-Корисний **progress report** може показувати:
+Корисний **progress report** показує:
 
-- completed і remaining work;
-- evidence для important risks;
-- defects і blockers;
-- environment/data constraints;
-- relevant coverage і execution metrics;
-- deviations from current plan;
-- changed product/project risks;
-- forecast і next activities.
+- виконану й невиконану роботу;
+- отримані докази для важливих ризиків;
+- дефекти й блокери;
+- обмеження середовища або даних;
+- релевантні метрики покриття та виконання;
+- відхилення від поточного плану;
+- зміни ризиків продукту або проєкту;
+- прогноз і наступні активності.
 
-Корисний **completion report** може показувати:
+Корисний **completion report** показує:
 
-- що тестувалось і що не тестувалось;
-- чи досягнуті objectives і completion criteria;
-- важливі deviations from plan;
-- significant defect status;
-- achieved coverage, де це meaningful;
-- unresolved limitations і residual risks;
-- lessons / follow-up actions.
+- що було протестовано і що не було;
+- чи досягнуто цілей і критеріїв завершення;
+- важливі відхилення від плану;
+- статус значущих дефектів;
+- досягнуте покриття, де воно має сенс;
+- невирішені обмеження та залишкові ризики;
+- уроки і подальші дії.
 
-Percent passed може бути корисним операційно, але 99% passing tests не означають 99% product quality. Suite може містити багато low-value tests і пропускати critical risk.
+Відсоток пройдених тестів може бути корисним операційним показником, але 99% passing tests не означають 99% якості продукту. Великий набір low-value тестів може все одно пропустити критичний ризик.
 
-> **Історична примітка:** класичні IEEE 829 templates досі зустрічаються у старих курсах та interview material. IEEE 829-2008 superseded сімейством ISO/IEC/IEEE 29119. Варто вчити purpose та інформацію артефактів, а не memorizing obsolete rigid template.
+> **Історична примітка:** класичні шаблони IEEE 829 досі трапляються у старих курсах та матеріалах для співбесід. IEEE 829-2008 замінено сімейством ISO/IEC/IEEE 29119. Варто вчити призначення й інформацію тестових артефактів, а не запам’ятовувати застарілий жорсткий шаблон.
 
 ## Test case, checklist і exploratory charter
 
-Різні work products підтримують різні види тестування. Жоден із них не є універсально «кращим». Практичне питання — скільки prescriptiveness, reproducibility та свободи виконання потрібно.
+Різні артефакти підходять для різних видів тестування. Жоден із них не є універсально «кращим». Практичне питання — скільки деталізації, відтворюваності та свободи виконавця потрібно.
 
 | Вимір | Детальний test case | Checklist | Exploratory charter |
 | --- | --- | --- | --- |
-| Prescriptiveness | Висока | Середня або низька | Низька |
-| Reproducibility | Висока, якщо case підтримується | Середня | Залежить від session notes |
+| Деталізація | Висока | Середня або низька | Низька |
+| Відтворюваність | Висока, якщо кейс підтримується | Середня | Залежить від нотаток сесії |
 | Свобода виконавця | Низька–середня | Середня–висока | Висока |
-| Maintenance cost | Зазвичай високий | Зазвичай нижчий | Зазвичай низький |
-| Domain knowledge | Залежить від контексту | Часто важливий | Зазвичай важливий |
-| Найкраще підходить | repeatable, delegated або regulated checks | recurring coverage areas | investigation і uncertainty |
+| Вартість підтримки | Зазвичай висока | Зазвичай нижча | Зазвичай низька |
+| Потреба у знанні домену | Залежить від контексту | Часто важлива | Зазвичай важлива |
+| Найкраще підходить | Повторювані, делеговані або регульовані перевірки | Регулярні області покриття | Дослідження та невизначеність |
 
-Детальний test case може містити preconditions, inputs, steps за потреби та expected results. Checklist фіксує prompts на кшталт «minimum/maximum value», «cancel and retry» або «permission boundary», не визначаючи кожну дію. Exploratory charter задає місію, наприклад: «Explore checkout recovery after network interruption, focusing on duplicate orders and stale totals.»
+Детальний test case може містити передумови, вхідні дані, кроки за потреби та очікувані результати. Checklist фіксує підказки на кшталт «мінімальне/максимальне значення», «скасувати і повторити», «межа дозволів», не диктуючи кожну дію. Exploratory charter задає місію, наприклад: «Дослідити відновлення checkout після переривання мережі, зосередившись на подвійних замовленнях і застарілих сумах».
 
 > **Ключова думка:** обирайте найменший артефакт, який зберігає інформацію, реально потрібну команді.
 
 ### Одна функція — три стилі документації
 
-Припустимо, formatting dialog дозволяє обрати font family, style і size.
+Припустимо, діалог форматування дозволяє вибрати шрифт, стиль і розмір.
 
 ```diagram
-Detailed case
-Open dialog → choose Arial → choose Bold → size 12 → Apply
-Expected: selected text is Arial Bold 12
+Детальний test case
+Відкрити діалог → Arial → Bold → 12 → Apply
+Очікування: вибраний текст має Arial Bold 12
 
 Checklist
-font family / style / size / invalid combination / persistence / reset
+шрифт / стиль / розмір / невалідна комбінація / збереження / reset
 
 Exploratory charter
-Explore formatting changes, focusing on combinations, persistence and recovery after undo/redo
+Дослідити комбінації форматування, збереження та відновлення після undo/redo
 ```
 
 Функція та сама. Форма документації змінюється залежно від мети тестування.
 
-## Test suites, дані та середовища
+## Тестові набори, дані та середовища
 
-Test suite групує тести для певної мети: smoke, regression, component area, release gate або іншого рішення. Назва suite має передавати цю мету, а не перетворюватися на сховище всіх historical tests.
+Test suite групує тести для певної мети: smoke, regression, функціональна область, release gate або інше рішення. Назва набору має передавати його призначення, а не перетворюватися на склад усіх історичних тестів.
 
-Інформація про test data та environment є частиною reproducibility. Корисно фіксувати:
+Інформація про тестові дані та середовище є частиною відтворюваності. Корисно фіксувати:
 
-- стан account/persona;
-- спосіб створення або reset даних;
-- application/build version;
-- service і dependency versions;
-- feature flags і configuration;
-- device/browser/OS, де релевантно;
-- external-service assumptions.
+- стан акаунта або персони;
+- спосіб створення чи скидання даних;
+- версію застосунку / build;
+- версії сервісів і залежностей;
+- feature flags і конфігурацію;
+- device/browser/OS, де це релевантно;
+- припущення щодо зовнішніх сервісів.
 
 Без цього контексту «cannot reproduce» часто означає «ми більше не знаємо умов, за яких виникло спостереження».
 
-## Що робить defect report дієвим
+## Що робить звіт про дефект дієвим
 
-Хороший defect report зменшує effort для reproduce, understand, prioritize і fix проблеми.
+Хороший defect report зменшує зусилля, потрібні для відтворення, розуміння, пріоритизації та виправлення проблеми.
 
 Зазвичай мінімально потрібні:
 
-1. короткий title, що описує observed failure;
-2. relevant environment/build;
-3. clear preconditions і data;
-4. minimal reproduction steps або triggering sequence;
-5. actual behaviour;
-6. expected behaviour і basis для цього expectation;
-7. useful evidence — logs, screenshots, traces або request/response details, коли доречно;
-8. impact information.
+1. короткий заголовок, що описує спостережувану помилку;
+2. релевантне середовище і build;
+3. чіткі передумови й дані;
+4. мінімальні кроки відтворення або послідовність, що запускає проблему;
+5. фактична поведінка;
+6. очікувана поведінка та джерело цього очікування;
+7. корисні докази — логи, screenshots, traces, request/response details, де доречно;
+8. інформація про вплив.
 
-Найкращий report не обов'язково найдовший. Приберіть нерелевантні кроки й зафіксуйте shortest reproducible path.
+Найкращий звіт не обов’язково найдовший. Приберіть нерелевантні кроки й залиште найкоротший шлях, який стабільно відтворює проблему.
 
-### Від слабкого report до дієвого
+### Від слабкого звіту до дієвого
 
-Слабкий report:
+Слабкий звіт:
 
-> **Title:** Button does not work
+> **Заголовок:** Button does not work
 >
-> **Steps:** Open the site, log in, go to checkout, enter data, click the button.
+> **Кроки:** Відкрити сайт, увійти, перейти до checkout, ввести дані, натиснути кнопку.
 >
-> **Result:** Nothing happens.
+> **Результат:** Нічого не відбувається.
 
-Такий report змушує читача заново знаходити failure condition. Сильніший варіант фіксує observation і state, що має значення:
+Такий звіт змушує читача заново шукати умову виникнення проблеми. Сильніший варіант фіксує саме важливий стан:
 
 | Поле | Приклад |
 | --- | --- |
-| Title | Checkout remains on Payment step after successful card authorization |
-| Build / environment | staging, build 2026.08.16.3, Chrome 140 |
-| Preconditions | cart contains one in-stock item; test card authorizes successfully |
-| Minimal steps | 1. Open Payment. 2. Enter valid test-card details. 3. Select **Pay**. |
-| Actual | authorization succeeds, spinner disappears, page remains on Payment; no order confirmation appears |
-| Expected | after successful authorization, order is created and Confirmation is displayed |
-| Evidence | payment request/response ID, console trace, screenshot/video |
-| Impact | user may retry payment because the UI gives no confirmation |
+| Заголовок | Checkout залишається на кроці Payment після успішної авторизації картки |
+| Build / середовище | staging, build 2026.08.16.3, Chrome 140 |
+| Передумови | у кошику один товар у наявності; тестова картка успішно авторизується |
+| Мінімальні кроки | 1. Відкрити Payment. 2. Ввести валідні дані тестової картки. 3. Натиснути **Pay**. |
+| Фактичний результат | авторизація успішна, spinner зникає, сторінка залишається на Payment; confirmation не з’являється |
+| Очікуваний результат | після успішної авторизації створюється замовлення і показується Confirmation |
+| Докази | payment request/response ID, console trace, screenshot/video |
+| Вплив | користувач може повторити оплату, бо UI не підтверджує створення замовлення |
 
 ```diagram
-Symptom у title
+Симптом у заголовку
       ↓
-Reproducible state і minimal trigger
+Відтворюваний стан і мінімальний тригер
       ↓
-Actual vs expected behaviour
+Фактичне vs очікуване
       ↓
-Evidence для investigation
+Докази для розслідування
       ↓
-Impact для triage
+Вплив для triage
 ```
 
-Не варто записувати в title guessed technical root cause, якщо його не доведено. «Payment API race condition» — hypothesis; «Checkout remains on Payment after successful authorization» — observation.
+Не варто записувати у заголовок припущену технічну причину, якщо її не доведено. «Payment API race condition» — це гіпотеза; «Checkout залишається на Payment після успішної авторизації» — спостереження.
 
 ## Defect, failure та issue — не синоніми
 
-Defect не обмежується кодом, написаним програмістом. Defects можуть існувати у requirements, design, code, configuration, data, infrastructure та інших work products. **Failure** — це observable incorrect behaviour, коли відповідні умови активують defect. **Issue** зазвичай є workflow container і може представляти defect, question, task, incident або improvement.
+**Defect** — це вада у вимозі, дизайні, коді, конфігурації, даних, інфраструктурі або іншому робочому продукті. **Failure** — спостережувана неправильна поведінка, коли відповідні умови активують дефект. **Issue** зазвичай є елементом workflow і може представляти дефект, запитання, задачу, інцидент або покращення.
 
-Це важливо, тому що перший visible symptom не обов'язково знаходиться там, де defect був внесений.
+Це важливо, тому що перший видимий симптом не обов’язково знаходиться там, де дефект був внесений.
 
 ## Severity і priority
 
-Ці виміри відповідають на різні запитання.
+Ці характеристики відповідають на різні запитання.
 
-- **Severity:** наскільки серйозним є impact дефекту на продукт, користувача, систему або бізнес?
-- **Priority:** наскільки терміново організація має address його відносно іншої роботи?
+- **Severity (серйозність):** наскільки сильний вплив дефекту на продукт, користувача, систему або бізнес?
+- **Priority (пріоритет):** наскільки терміново дефект потрібно виправити відносно іншої роботи?
 
 | Приклад | Severity | Можливий priority |
 | --- | --- | --- |
-| Рідкісний crash в admin-only migration screen | High | Medium, якщо migration буде через кілька місяців |
-| Typo на homepage під час великої campaign | Low | High, бо сьогодні її побачать мільйони users |
-| Payment charged twice | Critical | Critical |
+| Рідкісний crash в admin-only migration screen | High | Medium, якщо міграція буде через кілька місяців |
+| Друкарська помилка на homepage під час великої кампанії | Low | High, бо її сьогодні побачать мільйони користувачів |
+| Подвійне списання оплати | Critical | Critical |
 
-Priority враховує timing, exposure, workaround, business commitments та інший context. Severity сам по собі не визначає schedule. Жоден вимір не «належить QA» або «належить management» за визначенням; ownership залежить від organization і часто вирішується через triage.
+Priority враховує час, частоту виникнення, workaround, бізнес-зобов’язання та інший контекст. Severity сам по собі не визначає термін виправлення. Жоден із цих параметрів за визначенням не «належить QA» чи «належить менеджменту» — відповідальність залежить від процесу конкретної організації.
 
 ## Життєвий цикл дефекту та triage
 
-Defect зазвичай проходить через states reported, reviewed/triaged, assigned, fixed, verified і closed, а також variants rejected, duplicate, deferred або cannot reproduce.
+Дефект зазвичай проходить через стани reported, reviewed/triaged, assigned, fixed, verified і closed, а також може отримати статус rejected, duplicate, deferred або cannot reproduce.
 
-Точний workflow відрізняється. Важливо, щоб кожен transition мав clear meaning.
+Точний workflow відрізняється. Важливо, щоб кожен перехід мав однозначний зміст.
 
 ```diagram
 Reported
@@ -405,11 +405,11 @@ Confirmation testing
 Closed
 ```
 
-Triage — не суперечка про те, хто «правий», QA чи development. Це shared decision щодо evidence, impact, ownership і next action.
+Triage — не суперечка про те, хто «правий», QA чи development. Це спільне рішення щодо доказів, впливу, відповідальності та наступної дії.
 
 ## Симптом, причина і root cause
 
-Visible failure — це **symptom**, а не обов'язково cause.
+Видима неправильна поведінка — це **симптом**, а не обов’язково причина.
 
 ```diagram
 Користувач бачить duplicate order
@@ -421,31 +421,31 @@ Client повторив request після timeout
 Server endpoint не мав idempotency protection
 ```
 
-Defect report може починатися із symptom. Investigation визначає technical cause. Root-cause analysis запитує, чому system і process дозволили цій condition виникнути або escape.
+Defect report може починатися із симптому. Розслідування визначає технічну причину. Root-cause analysis запитує, чому система і процес дозволили цій умові виникнути або дійти до користувача.
 
-Корисна corrective action часто виходить за межі виправлення одного рядка code. Вона може покращити requirements, design patterns, test coverage, observability або review practices, щоб той самий class of problem став менш імовірним.
+Корисна corrective action часто виходить за межі виправлення одного рядка коду. Вона може покращити вимоги, design patterns, test coverage, observability або review practices, щоб той самий клас проблем став менш імовірним.
 
 ## Документація має еволюціонувати
 
-Test artifacts — maintained assets. Коли requirements змінюються, obsolete cases треба оновлювати або видаляти. Коли regression test постійно захищає від escaped defect, original manual case може більше не потребувати тієї самої форми. Коли checklist стає надто vague, йому можуть знадобитися explicit examples.
+Тестові артефакти — це активи, які потрібно підтримувати. Коли вимоги змінюються, застарілі кейси треба оновлювати або видаляти. Коли regression test постійно захищає від дефекту, який уже колись вийшов у production, початковий manual case може більше не потребувати тієї самої форми. Коли checklist стає надто нечітким, йому можуть знадобитися конкретні приклади.
 
-Те саме стосується plans. Plan, який не змінюється разом зі scope, dependencies або risks, стає описом старих assumptions. Monitoring знаходить deviation; control свідомо змінює plan або саму роботу.
+Те саме стосується планів. План, який не змінюється разом зі scope, залежностями або ризиками, швидко перетворюється на опис старих припущень. Моніторинг знаходить відхилення; контроль свідомо змінює план або саму роботу.
 
-Documentation quality не вимірюється кількістю сторінок. Вона вимірюється тим, наскільки добре artifacts зберігають useful knowledge і підтримують decisions.
+Якість документації вимірюється не кількістю сторінок, а тим, наскільки добре артефакти зберігають корисні знання і підтримують рішення.
 
-## Summary
+## Підсумок
 
-- Test documentation охоплює planning, analysis, design, implementation, execution, reporting і completion; test cases — лише один вид testware.
-- Policy, strategy, plan, approach і schedule відповідають на різні planning questions, хоча організації можуть називати їх по-різному.
-- Test plan визначає, як конкретний test effort досягне objectives, і є baseline для coordination, monitoring та control.
-- Корисний plan охоплює context, basis, scope, objectives, assumptions, stakeholders, risks, approach, testware, environments/data, criteria, metrics, communication, resources і schedule.
-- Entry і completion criteria мають виражати decision-relevant conditions, а не ritual percentages.
-- Progress reports порівнюють reality з plan; control змінює plan; completion reports підсумовують evidence, deviations і residual risk.
-- Test cases, checklists і exploratory charters мають різний баланс prescription, maintenance і executor freedom.
-- Data та environment context критичні для reproducibility.
-- Strong defect report розділяє observation, reproduction, expectation, evidence і impact.
-- Severity описує impact; priority — urgency відносно іншої роботи.
-- Root-cause thinking відрізняє visible symptom від underlying technical і systemic causes.
+- Тестова документація охоплює планування, аналіз, дизайн, реалізацію, виконання, звітування та завершення; test cases — лише один вид testware.
+- Policy, strategy, plan, approach і schedule відповідають на різні питання планування, навіть якщо організації інколи називають їх по-різному.
+- Test plan визначає, як конкретна тестова робота досягне цілей, і є baseline для координації, моніторингу та контролю.
+- Корисний план охоплює контекст, тестову основу, scope, цілі, припущення, стейкхолдерів, ризики, підхід, testware, середовища/дані, критерії, метрики, комунікацію, ресурси й графік.
+- Entry і completion criteria мають описувати умови для рішення, а не ритуальні відсотки.
+- Progress report порівнює реальність із планом; control змінює план; completion report підсумовує докази, відхилення та залишковий ризик.
+- Test cases, checklists і exploratory charters мають різний баланс деталізації, підтримки та свободи виконавця.
+- Контекст даних і середовища критичний для відтворюваності.
+- Сильний defect report розділяє спостереження, відтворення, очікування, докази та вплив.
+- Severity описує вплив; priority — терміновість відносно іншої роботи.
+- Root-cause thinking відрізняє видимий симптом від технічної та системної причини.
 
 ## Sources
 

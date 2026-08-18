@@ -26,6 +26,18 @@ const unique = (items, field, label) => {
   assert(new Set(values).size === values.length, `${label} contains duplicate ${field} values`);
 };
 
+const documentedConcepts = (markdown, file) => {
+  const marker = markdown.match(/<!--\s*concepts:\s*([^>]+?)\s*-->/i);
+  assert(marker, `${file} needs a concepts coverage marker`);
+  return new Set(marker[1].split(",").map((value) => value.trim()).filter(Boolean));
+};
+
+const assertBasicMarkdownStructure = (markdown, file) => {
+  assert(/^#\s+.+/m.test(markdown), `${file} needs a level-1 title`);
+  assert((markdown.match(/^##\s+.+/gm) ?? []).length >= 5, `${file} needs at least 5 level-2 sections`);
+  assert(markdown.includes("```diagram"), `${file} needs at least one explanatory diagram`);
+};
+
 unique(taxonomy, "id", "taxonomy");
 unique(taxonomy, "order", "taxonomy");
 unique(taxonomy, "file", "taxonomy");
@@ -71,18 +83,24 @@ for (const topic of taxonomy) {
   assert(topicConcepts.length >= 5, `topic ${topic.id} needs at least 5 required concepts`);
 
   const markdown = await readFile(path.join(contentRoot, topic.file), "utf8");
-  assert(/^#\s+.+/m.test(markdown), `${topic.file} needs a level-1 title`);
-  assert((markdown.match(/^##\s+.+/gm) ?? []).length >= 5, `${topic.file} needs at least 5 level-2 sections`);
+  assertBasicMarkdownStructure(markdown, topic.file);
   assert(/^## Summary\s*$/m.test(markdown), `${topic.file} needs a Summary section`);
   assert(/^## Sources\s*$/m.test(markdown), `${topic.file} needs a Sources section`);
-  assert(markdown.includes("```diagram"), `${topic.file} needs at least one explanatory diagram`);
 
-  const marker = markdown.match(/<!--\s*concepts:\s*([^>]+?)\s*-->/i);
-  assert(marker, `${topic.file} needs a concepts coverage marker`);
-  const documentedConcepts = new Set(marker[1].split(",").map((value) => value.trim()).filter(Boolean));
+  const englishConcepts = documentedConcepts(markdown, topic.file);
   for (const concept of topicConcepts) {
-    assert(documentedConcepts.has(concept.id), `${topic.file} does not explicitly cover required concept ${concept.id}`);
+    assert(englishConcepts.has(concept.id), `${topic.file} does not explicitly cover required concept ${concept.id}`);
+  }
+
+  const ukrainianFile = topic.file.replace(/\.md$/, ".uk.md");
+  const ukrainianMarkdown = await readFile(path.join(contentRoot, ukrainianFile), "utf8");
+  assertBasicMarkdownStructure(ukrainianMarkdown, ukrainianFile);
+  assert(/[А-Яа-яІіЇїЄєҐґ]/.test(ukrainianMarkdown), `${ukrainianFile} must contain Ukrainian content`);
+
+  const ukrainianConcepts = documentedConcepts(ukrainianMarkdown, ukrainianFile);
+  for (const concept of topicConcepts) {
+    assert(ukrainianConcepts.has(concept.id), `${ukrainianFile} does not explicitly cover required concept ${concept.id}`);
   }
 }
 
-console.log(`QA fundamentals content valid: ${taxonomy.length} topics, ${requiredConcepts.length} required concepts, ${quickReference.cards.length} quick-reference cards, ${sources.length} sources.`);
+console.log(`QA fundamentals content valid: ${taxonomy.length} topics, ${requiredConcepts.length} required concepts, ${quickReference.cards.length} quick-reference cards, ${sources.length} sources; Ukrainian concept parity verified.`);
