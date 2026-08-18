@@ -60,6 +60,10 @@ export const DB_SCHEMA_URL = `${REPO_URL}/blob/main/db/schema.ts`;
 export const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
+export const JOB_INTELLIGENCE_URL = `${REPO_URL}/blob/main/agent/src/job-intelligence.ts`;
+export const OPENAI_CALL_URL = `${JOB_INTELLIGENCE_URL}#L384-L417`;
+export const ANALYSIS_PROMPT_URL = `${JOB_INTELLIGENCE_URL}#L63-L80`;
+export const RESUME_PROMPT_URL = `${JOB_INTELLIGENCE_URL}#L82-L109`;
 export const WORKER_SOURCE_URL = `${REPO_URL}/blob/main/worker/index.ts`;
 export const SONARQUBE_CONFIG_URL = `${REPO_URL}/blob/main/sonar-project.properties`;
 export const SONARQUBE_PROJECT_URL = "https://sonarcloud.io/summary/overall?id=sergiiiavt_gimme-job&branch=main";
@@ -308,7 +312,7 @@ export const INFRASTRUCTURE = {
 
 export const OPENAI = {
   title: "OpenAI integration",
-  description: "OpenAI is used for vacancy recognition, analysis, and drafting support.",
+  description: "OpenAI is used for vacancy analysis and resume/application drafting.",
   input: {
     title: "Job text + profile",
     description: "Vacancy text and candidate context",
@@ -320,14 +324,14 @@ export const OPENAI = {
     icon: "openai" as const,
     accent: "green" as const,
     links: [
-      { label: "Production code", href: JOBPILOT_URL, external: true },
-      { label: "Local analyst", href: ANALYST_URL, external: true },
+      { label: "OpenAI call", href: OPENAI_CALL_URL, external: true },
+      { label: "Analysis prompt", href: ANALYSIS_PROMPT_URL, external: true },
+      { label: "Resume prompt", href: RESUME_PROMPT_URL, external: true },
     ],
   },
   outputs: [
-    { title: "Recognition", description: "Extract structured vacancy information", icon: "recognition" as const },
-    { title: "Analysis", description: "Score, match, and explain", icon: "analysis" as const },
-    { title: "Drafts", description: "Resume and application drafting support", icon: "draft" as const },
+    { title: "Analysis", description: "Score, match, explain, and extract structured vacancy signals", icon: "analysis" as const },
+    { title: "Drafts", description: "Tailored resume and application drafting support", icon: "draft" as const },
   ] satisfies SectionTile[],
   fallback: {
     title: "Fallback",
