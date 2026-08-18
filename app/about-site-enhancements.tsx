@@ -8,6 +8,7 @@ import styles from "./about-site-enhancements.module.css";
 
 const REPO_URL = "https://github.com/sergiiiavt/gimme-job";
 const RAW_REPO_URL = "https://raw.githubusercontent.com/sergiiiavt/gimme-job/main";
+const N8N_URL = "https://n8n.gimme-job.com";
 
 function rawSource(path: string) {
   return `${RAW_REPO_URL}/${path}`;
@@ -97,6 +98,169 @@ function HighlightNode({
         {links.map((link) => <ExternalLink href={link.href} key={link.href} label={link.label}/>)}
       </div>
     </article>
+  );
+}
+
+const workflowIconClasses = {
+  gmail: styles.gmailIcon,
+  cloudflare: styles.cloudflareIcon,
+  worker: styles.workerIcon,
+  n8n: styles.n8nIcon,
+  analysis: styles.analysisIcon,
+  database: styles.databaseIcon,
+  dashboard: styles.dashboardIcon,
+} as const;
+
+type WorkflowIcon = keyof typeof workflowIconClasses;
+
+function WorkflowNode({
+  accent,
+  description,
+  icon,
+  links = [],
+  title,
+}: {
+  accent: "green" | "blue" | "purple" | "orange" | "neutral";
+  description: string;
+  icon: WorkflowIcon;
+  links?: Array<{ href: string; label: string }>;
+  title: string;
+}) {
+  return (
+    <article className={`about-tech-node accent-${accent} ${styles.workflowNode}`}>
+      <header>
+        <span className="about-tech-node-icon" aria-hidden="true">
+          <span className={`${styles.workflowIcon} ${workflowIconClasses[icon]}`}/>
+        </span>
+        <strong>{title}</strong>
+      </header>
+      <p>{description}</p>
+      {links.length > 0 ? (
+        <div className="about-tech-node-links">
+          {links.map((link) => <ExternalLink href={link.href} key={`${link.label}-${link.href}`} label={link.label}/>)}
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function WorkflowArrow() {
+  return (
+    <span className={styles.workflowArrow} aria-hidden="true">
+      <svg viewBox="0 0 32 12">
+        <path d="M1 6h27"/>
+        <path d="m23 2 5 4-5 4"/>
+      </svg>
+    </span>
+  );
+}
+
+function WorkflowLabel({ cadence, number, title }: { cadence: string; number: string; title: string }) {
+  return (
+    <div className={styles.workflowLabel}>
+      <span>FLOW {number}</span>
+      <strong>{title}</strong>
+      <small>{cadence}</small>
+    </div>
+  );
+}
+
+function N8nFlowDiagram() {
+  return (
+    <div className={styles.workflowDiagram} aria-label="Two n8n email automation workflows">
+      <section className={styles.workflowRow} aria-label="Flow 1 email classification">
+        <WorkflowLabel cadence="Every minute" number="1" title="EMAIL CLASSIFICATION"/>
+        <div className={styles.workflowTrack}>
+          <div className={styles.workflowSources}>
+            <WorkflowNode
+              accent="neutral"
+              icon="gmail"
+              title="Gmail forwarding"
+              description="Selected job emails are forwarded to the user's GimmeJob token address."
+            />
+            <WorkflowNode
+              accent="orange"
+              icon="cloudflare"
+              title="Cloudflare Email Routing"
+              description="Routes forwarded mail to the Worker email handler."
+            />
+            <WorkflowNode
+              accent="blue"
+              icon="worker"
+              title="Worker + email events"
+              description="Resolves the tenant and stores the email event in D1."
+            />
+          </div>
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="purple"
+            icon="n8n"
+            title="n8n · Email classifier"
+            description="Fetches up to 25 pending events, applies deterministic rules first, and uses OpenAI only when needed."
+            links={[
+              { label: "n8n", href: N8N_URL },
+              { label: "Workflow", href: rawSource("ops/n8n/workflows/gimmejob-forwarded-email-classifier.json") },
+            ]}
+          />
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="green"
+            icon="analysis"
+            title="Classification"
+            description="Lifecycle, job alert, service, non-job, or review result is persisted."
+            links={[
+              { label: "Classifier API", href: rawSource("app/internal/n8n/email-classify/route.ts") },
+            ]}
+          />
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="orange"
+            icon="database"
+            title="D1 state"
+            description="GimmeJob remains the source of truth for processing and classification state."
+          />
+        </div>
+      </section>
+
+      <section className={styles.workflowRow} aria-label="Flow 2 daily report">
+        <WorkflowLabel cadence="Daily · 08:00 Kyiv" number="2" title="DAILY REPORT"/>
+        <div className={styles.workflowTrack}>
+          <WorkflowNode
+            accent="orange"
+            icon="database"
+            title="D1 state"
+            description="Yesterday's completed email-processing data is the report source."
+          />
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="blue"
+            icon="dashboard"
+            title="Daily statistics API"
+            description="Aggregates received, processed, pending, job-relevant, rule-vs-AI, token, held, and failure metrics."
+            links={[
+              { label: "Stats API", href: rawSource("app/internal/n8n/email-stats/route.ts") },
+            ]}
+          />
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="purple"
+            icon="n8n"
+            title="n8n · Daily report"
+            description="Reads the previous complete Kyiv day, formats the HTML report, and sends it at 08:00."
+            links={[
+              { label: "Workflow", href: rawSource("ops/n8n/workflows/gimmejob-daily-email-report.json") },
+            ]}
+          />
+          <WorkflowArrow/>
+          <WorkflowNode
+            accent="green"
+            icon="gmail"
+            title="Gmail / SMTP report"
+            description="Daily automation statistics and important job events arrive as one email."
+          />
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -296,10 +460,13 @@ function replaceFragileGithubBlobLinks(target: HTMLElement) {
 
 export default function AboutSiteEnhancements() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
+  const [n8nTarget, setN8nTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      setTarget(document.querySelector<HTMLElement>(".about-tech-page"));
+      const page = document.querySelector<HTMLElement>(".about-tech-page");
+      setTarget(page);
+      setN8nTarget(page?.querySelector<HTMLElement>(".about-tech-section[aria-labelledby=\"about-n8n-title\"] .about-tech-section-body") ?? null);
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -309,13 +476,24 @@ export default function AboutSiteEnhancements() {
     replaceFragileGithubBlobLinks(target);
   }, [target]);
 
+  useEffect(() => {
+    if (!n8nTarget) return;
+    n8nTarget.classList.add(styles.enhancedN8nBody);
+    return () => n8nTarget.classList.remove(styles.enhancedN8nBody);
+  }, [n8nTarget]);
+
   if (!target) return null;
 
-  return createPortal(
+  return (
     <>
-      <ImplementationHighlights/>
-      <AboutToc/>
-    </>,
-    target,
+      {createPortal(
+        <>
+          <ImplementationHighlights/>
+          <AboutToc/>
+        </>,
+        target,
+      )}
+      {n8nTarget ? createPortal(<N8nFlowDiagram/>, n8nTarget) : null}
+    </>
   );
 }
