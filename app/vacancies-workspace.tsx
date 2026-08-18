@@ -7,6 +7,7 @@ import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacan
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
+type JobSort = "NEWEST" | "OLDEST" | "SCORE_HIGH" | "SCORE_LOW";
 type ScoreTone = "low" | "fair" | "good" | "strong";
 
 interface JobAnalysis {
@@ -74,6 +75,18 @@ const STATUS_OPTIONS: Array<{ value: JobStatus; label: string }> = [
 const CONDITION_OPTIONS: Array<{ value: JobCondition; label: string }> = [
   { value: "REMOTE", label: "Remote" },
   { value: "RESERVATION", label: "Бронювання" },
+];
+
+const PUBLIC_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
+  { value: "NEWEST", label: "Newest first" },
+  { value: "OLDEST", label: "Oldest first" },
+];
+
+const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
+  { value: "NEWEST", label: "Newest first" },
+  { value: "SCORE_HIGH", label: "Highest score first" },
+  { value: "OLDEST", label: "Oldest first" },
+  { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
 const DEMO_JOBS: Job[] = [
@@ -185,6 +198,21 @@ function jobDateKey(job: Job) {
   return `${year}-${month}-${day}`;
 }
 
+function compareJobs(left: Job, right: Job, sortOrder: JobSort) {
+  const dateDifference = jobDate(right).getTime() - jobDate(left).getTime();
+  if (sortOrder === "NEWEST") return dateDifference;
+  if (sortOrder === "OLDEST") return -dateDifference;
+
+  const leftScore = typeof left.analysis?.score === "number" ? left.analysis.score : null;
+  const rightScore = typeof right.analysis?.score === "number" ? right.analysis.score : null;
+  if (leftScore === null && rightScore === null) return dateDifference;
+  if (leftScore === null) return 1;
+  if (rightScore === null) return -1;
+
+  const scoreDifference = sortOrder === "SCORE_HIGH" ? rightScore - leftScore : leftScore - rightScore;
+  return scoreDifference || dateDifference;
+}
+
 function hasReservation(job: Job) {
   return /бронюванн/i.test(job.description);
 }
@@ -271,6 +299,42 @@ function VacancyMultiFilter<T extends string>({ allLabel, className = "", label,
   </div>;
 }
 
+function VacancySort({ onChange, options, value }: {
+  onChange: (value: JobSort) => void;
+  options: Array<{ value: JobSort; label: string }>;
+  value: JobSort;
+}) {
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+  return <div className="vacancy-multifilter vacancy-condition-filter vacancy-sort-filter">
+    <details>
+      <summary aria-label={`Sort: ${selectedOption.label}`}>
+        <span className="vacancy-filter-summary-label">Sort: {selectedOption.label}</span>
+        <i className="vacancy-filter-chevron" aria-hidden="true">⌄</i>
+      </summary>
+      <div className="vacancy-filter-menu">
+        {options.map((option) => {
+          const active = option.value === value;
+          return <label className={`vacancy-filter-option${active ? " active" : ""}`} key={option.value}>
+            <input
+              className="vacancy-filter-option-input"
+              type="radio"
+              name="vacancy-sort"
+              checked={active}
+              onChange={(event) => {
+                onChange(option.value);
+                const details = event.currentTarget.closest("details");
+                if (details) details.open = false;
+              }}
+            />
+            <i className="vacancy-filter-option-mark" aria-hidden="true">{active ? "✓" : ""}</i>
+            <span>{option.label}</span>
+          </label>;
+        })}
+      </div>
+    </details>
+  </div>;
+}
+
 export default function VacanciesWorkspace() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [online, setOnline] = useState<boolean | null>(null);
@@ -280,6 +344,7 @@ export default function VacanciesWorkspace() {
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilters, setStatusFilters] = useState<JobStatus[]>([]);
   const [conditionFilters, setConditionFilters] = useState<JobCondition[]>([]);
+  const [sortOrder, setSortOrder] = useState<JobSort>("NEWEST");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
@@ -330,12 +395,17 @@ export default function VacanciesWorkspace() {
     if (selectedIds.size) setSelectedIds(new Set());
   }, [isPersonal, selectedIds.size]);
 
+  useEffect(() => {
+    if (isPersonal || (sortOrder !== "SCORE_HIGH" && sortOrder !== "SCORE_LOW")) return;
+    setSortOrder("NEWEST");
+  }, [isPersonal, sortOrder]);
+
   const visibleJobs = useMemo(() => jobs
     .filter((job) => statusFilters.length === 0 || statusFilters.includes(job.status))
     .filter((job) => !dateFilter || jobDateKey(job) === dateFilter)
     .filter((job) => conditionFilters.length === 0 || conditionFilters.some((condition) => matchesCondition(job, condition)))
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source} ${job.salaryText ?? ""}`).toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [conditionFilters, dateFilter, jobs, query, statusFilters]);
+    .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, jobs, query, sortOrder, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
   const openTabs = openTabIds
@@ -352,6 +422,7 @@ export default function VacanciesWorkspace() {
     remote: jobs.filter((job) => job.remote).length,
     reservation: jobs.filter(hasReservation).length,
   };
+  const sortOptions = isPersonal ? PERSONAL_SORT_OPTIONS : PUBLIC_SORT_OPTIONS;
   const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
   const analysisTargetCount = selected ? 1 : selectedIds.size;
 
@@ -395,8 +466,6 @@ export default function VacanciesWorkspace() {
       return next;
     });
   };
-  const selectAllVisible = () => { if (isPersonal) setSelectedIds(new Set(visibleJobs.map((job) => job.id))); };
-  const clearSelected = () => setSelectedIds(new Set());
 
   const analyze = async () => {
     if (!isPersonal) return;
@@ -615,16 +684,8 @@ export default function VacanciesWorkspace() {
                 options={CONDITION_OPTIONS}
                 selected={conditionFilters}
               />
+              <VacancySort onChange={setSortOrder} options={sortOptions} value={sortOrder}/>
               <button type="button" className="vacancy-clear-filters" onClick={clearFilters} disabled={!hasActiveFilters}>Clear</button>
-            </div>
-            <div className={`feed-meta vacancy-feed-meta vacancy-feed-meta-${viewMode}`}>
-              <span>{visibleJobs.length} jobs</span>
-              {isPersonal && <span className="feed-meta-select">
-                {selectedIds.size > 0 ? `${selectedIds.size} selected · ` : ""}
-                <button type="button" className="link-button" onClick={selectAllVisible}>Select all</button>
-                {selectedIds.size > 0 && <button type="button" className="link-button" onClick={clearSelected}>Clear</button>}
-              </span>}
-              <span>Newest first</span>
             </div>
 
             <div className={`vacancy-table-head vacancy-table-head-${viewMode}`} aria-hidden="true">
