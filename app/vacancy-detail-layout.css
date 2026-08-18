@@ -96,6 +96,28 @@
   color: var(--green);
 }
 
+/* The Analysis header badge follows the numeric score band, not the verdict class,
+   so it always matches the circle and dashboard score palette. */
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-low) .job-analysis .verdict {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-fair) .job-analysis .verdict {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-good) .job-analysis .verdict {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-strong) .job-analysis .verdict {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
 .vacancy-workspace .vacancy-match.has-score strong {
   font-size: 10px;
   letter-spacing: -.02em;
