@@ -11,6 +11,7 @@ import "./quick-reference-availability.css";
 import "./brand-logo.css";
 import "./mobile-navigation-logo.css";
 import "./navigation-current-selection.css";
+import "./navigation-scroll.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
