@@ -30,6 +30,34 @@
   margin-top: 1px;
 }
 
+/* The analysis badge already exposes the canonical verdict class.
+   Reuse it so the compact score circle shows Strong/Possible/Weak/Reject instead of the generic MATCH label. */
+.vacancy-workspace-personal .vacancy-detail-tab .score span {
+  font-size: 0;
+  line-height: 1;
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab .score span::after {
+  font-size: 5.5px;
+  letter-spacing: .02em;
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.verdict-strong) .score span::after {
+  content: "Strong";
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.verdict-possible) .score span::after {
+  content: "Possible";
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.verdict-weak) .score span::after {
+  content: "Weak";
+}
+
+.vacancy-workspace-personal .vacancy-detail-tab:has(.verdict-reject) .score span::after {
+  content: "Reject";
+}
+
 .vacancy-workspace .score.score-low {
   background: var(--red-soft);
   color: var(--red);
