@@ -35,3 +35,10 @@ test("vacancy score circle displays the canonical analysis verdict instead of MA
   assert.match(styles, /:has\(\.verdict-weak\)[\s\S]*content:\s*"Weak"/);
   assert.match(styles, /:has\(\.verdict-reject\)[\s\S]*content:\s*"Reject"/);
 });
+
+test("verdict words inside the score circle explicitly follow the score palette", () => {
+  assert.match(styles, /\.score\.score-low span\s*\{[\s\S]*color:\s*var\(--red\)/);
+  assert.match(styles, /\.score\.score-fair span\s*\{[\s\S]*color:\s*var\(--amber\)/);
+  assert.match(styles, /\.score\.score-good span\s*\{[\s\S]*color:\s*var\(--blue\)/);
+  assert.match(styles, /\.score\.score-strong span\s*\{[\s\S]*color:\s*var\(--green\)/);
+});
