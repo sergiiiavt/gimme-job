@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import { SiteSidebar } from "./site-navigation";
+import { closeVacancyTab, openVacancyTab } from "./vacancy-tabs";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
@@ -258,6 +259,7 @@ export default function VacanciesWorkspace() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [online, setOnline] = useState<boolean | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [openTabIds, setOpenTabIds] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilters, setStatusFilters] = useState<JobStatus[]>([]);
@@ -320,6 +322,9 @@ export default function VacanciesWorkspace() {
     .sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()), [conditionFilters, dateFilter, jobs, query, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
+  const openTabs = openTabIds
+    .map((id) => jobs.find((job) => job.id === id))
+    .filter((job): job is Job => Boolean(job));
   const personalCounts = {
     total: jobs.length,
     new: jobs.filter((job) => job.status === "NEW").length,
@@ -338,6 +343,17 @@ export default function VacanciesWorkspace() {
     setDateFilter("");
     setStatusFilters([]);
     setConditionFilters([]);
+  };
+
+  const openVacancy = (id: string) => {
+    setOpenTabIds((current) => openVacancyTab(current, id));
+    setSelectedId(id);
+  };
+
+  const closeVacancy = (id: string) => {
+    const next = closeVacancyTab(openTabIds, selectedId, id);
+    setOpenTabIds(next.openIds);
+    setSelectedId(next.activeId);
   };
 
   const sync = async () => {
@@ -493,6 +509,44 @@ export default function VacanciesWorkspace() {
             )}
           </section>
 
+          <nav className="vacancy-tabs" aria-label="Vacancy workspace tabs">
+            <div className="vacancy-tab-list" role="tablist">
+              <div className={`vacancy-tab-item vacancy-tab-item-board${selectedId === null ? " active" : ""}`}>
+                <button
+                  type="button"
+                  className="vacancy-tab"
+                  id="vacancy-tab-board"
+                  role="tab"
+                  aria-selected={selectedId === null}
+                  aria-controls="vacancy-board-panel"
+                  onClick={() => setSelectedId(null)}
+                >Board</button>
+              </div>
+              {openTabs.map((job) => {
+                const active = selectedId === job.id;
+                const title = displayText(job.title);
+                return <div className={`vacancy-tab-item${active ? " active" : ""}`} key={job.id}>
+                  <button
+                    type="button"
+                    className="vacancy-tab vacancy-job-tab"
+                    id={`vacancy-tab-${job.id}`}
+                    role="tab"
+                    aria-selected={active}
+                    aria-controls="selected-vacancy-detail"
+                    title={`${title} — ${displayText(job.company)}`}
+                    onClick={() => setSelectedId(job.id)}
+                  ><span className="vacancy-tab-title">{title}</span></button>
+                  <button
+                    type="button"
+                    className="vacancy-tab-close"
+                    aria-label={`Close ${title} tab`}
+                    onClick={() => closeVacancy(job.id)}
+                  ><Icon name="x" size={12}/></button>
+                </div>;
+              })}
+            </div>
+          </nav>
+
           {(online === null || (isPersonal && busy === "sync")) && <div className="analyze-progress vacancy-load-progress" aria-live="polite">
             <div
               className="analyze-progress-bar indeterminate"
@@ -509,8 +563,7 @@ export default function VacanciesWorkspace() {
             <div className="analyze-log" role="log" aria-live="polite">{analyzeLog.map((line, index) => <div key={index}>{line}</div>)}</div>
           </div>}
 
-          {selected ? <section className={`job-detail-view${isPersonal ? "" : " job-detail-view-public"}`} id="selected-vacancy-detail" role="region" aria-label="Selected vacancy details">
-            <button type="button" className="back-link" onClick={() => setSelectedId(null)}>← Back to vacancies</button>
+          {selected ? <section className={`job-detail-view${isPersonal ? "" : " job-detail-view-public"}`} id="selected-vacancy-detail" role="tabpanel" aria-labelledby={`vacancy-tab-${selected.id}`}>
             <JobDetailPanel job={selected} disabled={busy === `job-${selected.id}`} authenticated={isPersonal} onChange={(change) => void updateTracking(selected, change)}/>
             {isPersonal && <article className="job-analysis-resume">
               <JobAnalysisPanel job={selected}/>
@@ -522,7 +575,7 @@ export default function VacanciesWorkspace() {
                 onDownload={() => void downloadResumePdf(selected)}
               />
             </article>}
-          </section> : <section className="job-list-view vacancy-list-view" aria-busy={online === null || (isPersonal && busy === "sync")}>
+          </section> : <section className="job-list-view vacancy-list-view" id="vacancy-board-panel" role="tabpanel" aria-labelledby="vacancy-tab-board" aria-busy={online === null || (isPersonal && busy === "sync")}>
             <div className={`feed-tools vacancy-feed-tools vacancy-feed-tools-${viewMode}`}>
               <label className="search vacancy-search"><Icon name="search"/><input aria-label="Search vacancies" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search jobs or companies"/></label>
               <label className="vacancy-date-filter">
@@ -575,8 +628,8 @@ export default function VacanciesWorkspace() {
                 className={`vacancy-table-row vacancy-table-row-${viewMode}`}
                 role="button"
                 tabIndex={0}
-                onClick={() => setSelectedId(job.id)}
-                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedId(job.id); } }}
+                onClick={() => openVacancy(job.id)}
+                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openVacancy(job.id); } }}
               >
                 {isPersonal && <input
                   type="checkbox"
