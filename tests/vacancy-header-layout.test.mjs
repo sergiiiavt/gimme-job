@@ -9,6 +9,11 @@ test("personal vacancy counts stay beside the action buttons", () => {
   assert.match(styles, /\.vacancy-workspace-personal \.vacancy-page-intro\s*\{[\s\S]*flex-wrap:\s*wrap/);
 });
 
+test("personal vacancy counts match the action button height", () => {
+  assert.match(styles, /\.vacancy-workspace-personal \.stat-line\s*\{[\s\S]*height:\s*38px/);
+  assert.match(styles, /\.vacancy-workspace-personal \.stat-line\s*\{[\s\S]*padding:\s*0 4px/);
+});
+
 test("personal vacancy header stacks cleanly on mobile", () => {
   assert.match(styles, /@media \(max-width: 700px\)[\s\S]*\.vacancy-workspace-personal \.vacancy-page-intro\s*\{[\s\S]*flex-direction:\s*column/);
 });
