@@ -76,6 +76,17 @@ test("company extraction supports company profile links without using navigation
   assert.equal(extractCompanyFromHtml("https://djinni.co/jobs/1", html), "United Tech");
 });
 
+test("company extraction supports Djinni's current company-slug route", () => {
+  const html = `
+    <main>
+      <h1>QA Engineer</h1>
+      <a href="/jobs/company-dataforest/">Dataforest</a>
+      <p>Dataforest is seeking a QA Engineer for web and API testing.</p>
+    </main>
+  `;
+  assert.equal(extractCompanyFromHtml("https://djinni.co/jobs/841628-qa-engineer-with-ai/", html), "Dataforest");
+});
+
 test("company recovery uses title and description before another network request", async () => {
   const common = {
     source: "rss:test",
