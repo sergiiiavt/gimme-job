@@ -29,6 +29,7 @@ const AUTH_RETURN_SECONDS = 10 * 60;
 const N8N_SERVICE_PATHS = new Set([
   "/internal/n8n/email-events",
   "/internal/n8n/email-classify",
+  "/internal/n8n/email-stats",
   "/internal/n8n/vacancies-sync",
 ]);
 const TRUSTED_AUTH_HEADERS = [
