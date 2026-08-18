@@ -7,6 +7,7 @@ import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacan
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
+type ScoreTone = "low" | "fair" | "good" | "strong";
 
 interface JobAnalysis {
   score?: number;
@@ -216,6 +217,22 @@ function verdictLabel(verdict?: string) {
   return verdict.replace(/[_-]+/g, " ").replace(/^./, (letter) => letter.toUpperCase());
 }
 
+function normalizeScore(score: number) {
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function formatScore(score: number) {
+  return `${normalizeScore(score)}/100`;
+}
+
+function scoreTone(score: number): ScoreTone {
+  const normalized = normalizeScore(score);
+  if (normalized < 40) return "low";
+  if (normalized < 60) return "fair";
+  if (normalized < 80) return "good";
+  return "strong";
+}
+
 function VacancyMultiFilter<T extends string>({ allLabel, className = "", label, onChange, options, selected }: {
   allLabel: string;
   className?: string;
@@ -407,7 +424,7 @@ export default function VacanciesWorkspace() {
         setAuthenticated(Boolean(result.dashboard.authenticated));
         const outcome = result.result[0];
         setAnalyzeLog((log) => [...log, outcome
-          ? `  ✓ ${label} — score ${outcome.score} (${outcome.verdict}, ${outcome.mode})`
+          ? `  ✓ ${label} — score ${formatScore(outcome.score)} (${outcome.verdict}, ${outcome.mode})`
           : `  ✓ ${label} — done`]);
       } catch (error) {
         setAnalyzeLog((log) => [...log, `  ✗ ${label} — ${error instanceof Error ? error.message : String(error)}`]);
@@ -650,8 +667,8 @@ export default function VacanciesWorkspace() {
                   {!job.remote && !hasReservation(job) && <span className="vacancy-dash">—</span>}
                 </div>
                 <div className="vacancy-cell vacancy-salary" data-label="Salary">{job.salaryText ? displayText(job.salaryText) : "—"}</div>
-                {isPersonal && <div className={`vacancy-cell vacancy-match${typeof job.analysis?.score === "number" ? " has-score" : " no-score"}`} data-label="Match">
-                  {typeof job.analysis?.score === "number" ? <><strong>{job.analysis.score}</strong><span>{verdictLabel(job.analysis.verdict)}</span></> : <><strong>—</strong><span>Not analyzed</span></>}
+                {isPersonal && <div className={`vacancy-cell vacancy-match${typeof job.analysis?.score === "number" ? ` has-score score-${scoreTone(job.analysis?.score ?? 0)}` : " no-score"}`} data-label="Match">
+                  {typeof job.analysis?.score === "number" ? <><strong>{formatScore(job.analysis?.score ?? 0)}</strong><span>{verdictLabel(job.analysis.verdict)}</span></> : <><strong>—</strong><span>Not analyzed</span></>}
                 </div>}
                 <time className="vacancy-cell vacancy-posted" data-label="Posted" dateTime={job.postedAt ?? job.discoveredAt} title={formatDate(job.postedAt ?? job.discoveredAt)}>{formatCompactDate(job.postedAt ?? job.discoveredAt)}</time>
                 {isPersonal && <div className="vacancy-cell vacancy-status-cell" data-label="Status">
@@ -699,7 +716,7 @@ function JobDetailPanel({ job, disabled, authenticated, onChange }: { job: Job; 
   return <article className="job-detail">
     <div className="detail-head">
       <div><span>{displayText(job.company)}</span><h2>{displayText(job.title)}</h2><p>{displayText(job.location)}{job.salaryText ? ` · ${job.salaryText}` : ""}</p></div>
-      {authenticated && typeof job.analysis?.score === "number" && <div className="score"><strong>{job.analysis.score}</strong><span>match</span></div>}
+      {authenticated && typeof job.analysis?.score === "number" && <div className={`score score-${scoreTone(job.analysis.score)}`}><strong>{formatScore(job.analysis.score)}</strong><span>match</span></div>}
     </div>
 
     <div className="detail-actions">
@@ -722,7 +739,7 @@ function JobAnalysisPanel({ job }: { job: Job }) {
   if (!job.analysis) return <article className="job-analysis empty-panel"><strong>Not analyzed yet</strong><span>Press Analyze to score this vacancy against the candidate profile.</span></article>;
   const analysis = job.analysis;
   return <article className="job-analysis">
-    <div className="section-head"><h3>Analysis</h3>{typeof analysis.score === "number" && <span className={`verdict verdict-${analysis.verdict ?? "weak"}`}>{analysis.verdict} · {analysis.score}</span>}</div>
+    <div className="section-head"><h3>Analysis</h3>{typeof analysis.score === "number" && <span className={`verdict verdict-${analysis.verdict ?? "weak"}`}>{analysis.verdict} · {formatScore(analysis.score)}</span>}</div>
     {analysis.recommendation && <p className="analysis-recommendation">{analysis.recommendation}</p>}
     {(analysis.matchingSkills?.length || analysis.missingSkills?.length) ? <div className="skills">
       {Boolean(analysis.matchingSkills?.length) && <div><span>Matches</span><p>{analysis.matchingSkills?.map((skill) => <em key={skill}>{skill}</em>)}</p></div>}
