@@ -9,6 +9,7 @@ const {
   classifyJobRelevance,
   deduplicateVacancies,
   filterRelevantVacancies,
+  mergeDuplicateVacancies,
 } = await import("../agent/src/job-intake.ts");
 const { parseRobotaUaResponse } = await import("../agent/src/sources/robotaua.ts");
 
@@ -131,6 +132,40 @@ test("cross-source copies of the same vacancy are merged", () => {
   assert.equal(result.duplicateCount, 1);
   assert.match(result.jobs[0].source, /dou/);
   assert.match(result.jobs[0].source, /robotaua/);
+});
+
+test("duplicate merge upgrades an existing unknown company without losing tracked state", () => {
+  const url = "https://djinni.co/jobs/841628-qa-engineer-with-ai/";
+  const existing = job({
+    source: "rss:djinni-qa",
+    externalId: url,
+    title: "QA Engineer with AI",
+    company: "Unknown",
+    status: "APPLIED",
+    url,
+    applyUrl: url,
+  });
+  const incoming = job({
+    source: "rss:djinni-qa",
+    externalId: url,
+    title: "QA Engineer with AI",
+    company: "Dataforest",
+    url,
+    applyUrl: url,
+  });
+
+  assert.equal(areDuplicateVacancies(existing, incoming), true);
+  const merged = mergeDuplicateVacancies(existing, incoming);
+  assert.equal(merged.company, "Dataforest");
+  assert.equal((merged as unknown as { status?: string }).status, "APPLIED");
+});
+
+test("duplicate merge treats hidden-company placeholders as missing", () => {
+  const merged = mergeDuplicateVacancies(
+    job({ company: "Компанію приховано" }),
+    job({ company: "Ajax Systems" }),
+  );
+  assert.equal(merged.company, "Ajax Systems");
 });
 
 test("same company and title are not blindly merged when descriptions differ", () => {
