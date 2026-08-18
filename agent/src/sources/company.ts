@@ -8,6 +8,7 @@ const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|gre
 const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job description|responsibilities|requirements|nice to have|what we offer|benefits|conditions|обов[’'ʼ]?язки|вимоги|умови|про компанію|про нас|опис вакансії|задачі|требования|условия)$)|(?:\b(?:full[- ]?time|part[- ]?time|work experience|досвід роботи|повна зайнятість)\b)/iu;
 const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
+const COMPANY_GAP = `[ \\t]+`;
 
 function cleanCompany(value: unknown): string {
   if (typeof value !== "string" && typeof value !== "number") return "";
@@ -54,7 +55,7 @@ export function inferCompanyFromText(value: string): string {
   const lines = prefix.split(/\n+/).map((line) => line.trim()).filter(Boolean);
 
   const companySentence = new RegExp(
-    `(?:^|\\n)(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s+(?:is|є|являється|является)\\s+(?:an?\\s+)?(?:[\\p{L}-]+\\s+){0,5}(?:company|компанія|компания)\\b`,
+    `(?:^|\\n)(${COMPANY_WORD}(?:${COMPANY_GAP}${COMPANY_WORD}){0,6})${COMPANY_GAP}(?:is|є|являється|является)${COMPANY_GAP}(?:an?${COMPANY_GAP})?(?:[\\p{L}-]+${COMPANY_GAP}){0,5}(?:company|компанія|компания)\\b`,
     "iu",
   ).exec(prefix);
   const sentenceCompany = usable(companySentence?.[1]);
@@ -63,7 +64,7 @@ export function inferCompanyFromText(value: string): string {
   const aboutCompanyLine = /(?:^|\n)(?:about the company|about company|про компанію|о компании)\s*:\s*([^\n]{2,180})/iu.exec(prefix)?.[1] ?? "";
   if (aboutCompanyLine) {
     const aboutName = new RegExp(
-      `^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})(?=\\s+(?:is|є|являється|является|[—–-])\\s|$)`,
+      `^(${COMPANY_WORD}(?:${COMPANY_GAP}${COMPANY_WORD}){0,6})(?=${COMPANY_GAP}(?:is|є|являється|является|[—–-])${COMPANY_GAP}|$)`,
       "iu",
     ).exec(aboutCompanyLine)?.[1];
     const company = usable(aboutName);
@@ -71,7 +72,7 @@ export function inferCompanyFromText(value: string): string {
   }
 
   for (const line of lines) {
-    const dash = new RegExp(`^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s*[—–-]\\s+`, "u").exec(line);
+    const dash = new RegExp(`^(${COMPANY_WORD}(?:${COMPANY_GAP}${COMPANY_WORD}){0,6})${COMPANY_GAP}*[—–-]${COMPANY_GAP}*`, "u").exec(line);
     const company = usable(dash?.[1]);
     if (company) return company;
   }
