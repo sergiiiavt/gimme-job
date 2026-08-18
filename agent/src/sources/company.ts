@@ -4,7 +4,7 @@ import { decodeHtmlEntities, inferCompany } from "../utils.js";
 import { fetchText } from "./http.js";
 
 const UNKNOWN_COMPANY = /^(?:unknown|company is hidden|hidden company|невідома компанія|компанію приховано|компания скрыта|n\/a|none|-)$/iu;
-const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|greenhouse|lever|ashby)$/iu;
+const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|greenhouse|lever|ashby|companies|компанії|компании)$/iu;
 const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job description|responsibilities|requirements|nice to have|what we offer|benefits|conditions|обов[’'ʼ]?язки|вимоги|умови|про компанію|про нас|опис вакансії|задачі|требования|условия)$)|(?:\b(?:full[- ]?time|part[- ]?time|work experience|досвід роботи|повна зайнятість)\b)/iu;
 const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
@@ -60,6 +60,16 @@ export function inferCompanyFromText(value: string): string {
   const sentenceCompany = usable(companySentence?.[1]);
   if (sentenceCompany) return sentenceCompany;
 
+  const aboutCompanyLine = /(?:^|\n)(?:about the company|about company|про компанію|о компании)\s*:\s*([^\n]{2,180})/iu.exec(prefix)?.[1] ?? "";
+  if (aboutCompanyLine) {
+    const aboutName = new RegExp(
+      `^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})(?=\\s+(?:is|є|являється|является|[—–-])\\s|$)`,
+      "iu",
+    ).exec(aboutCompanyLine)?.[1];
+    const company = usable(aboutName);
+    if (company) return company;
+  }
+
   for (const line of lines) {
     const dash = new RegExp(`^(${COMPANY_WORD}(?:\\s+${COMPANY_WORD}){0,6})\\s*[—–-]\\s+`, "u").exec(line);
     const company = usable(dash?.[1]);
@@ -94,7 +104,8 @@ export function extractCompanyFromHtml(url: string, html: string): string {
     const attributes = anchor[1] ?? "";
     const href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(attributes)?.[1] ?? "";
     const classes = /\bclass\s*=\s*["']([^"']+)["']/i.exec(attributes)?.[1] ?? "";
-    const looksLikeCompanyLink = /\/(?:companies?|jobs\/by-company)\//i.test(href)
+    const looksLikeCompanyLink = /\/(?:companies?|jobs\/by-company)\/[^/?#]+/i.test(href)
+      || /[?&]company=[^&#]+/i.test(href)
       || /(?:^|\s)(?:company|employer)(?:\s|$)/i.test(classes);
     if (!looksLikeCompanyLink) continue;
     const candidate = usable(textFromAnchorBody(anchor[2] ?? ""));
