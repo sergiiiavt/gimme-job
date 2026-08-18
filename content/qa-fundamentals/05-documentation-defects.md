@@ -1,21 +1,261 @@
-<!-- concepts: test-strategy-plan, test-case-checklist-charter, test-suite-data-environment, test-reporting, good-defect-report, severity-priority, defect-lifecycle, root-cause-symptom -->
+<!-- concepts: test-documentation-model, test-policy-strategy-plan, test-plan-purpose, test-plan-content, test-approach-schedule, test-plan-reporting-loop, test-case-checklist-charter, test-suite-data-environment, test-reporting, good-defect-report, severity-priority, defect-lifecycle, root-cause-symptom -->
 
 # Test Documentation & Defects
 
 Documentation is useful when it preserves decisions, makes work reproducible, supports traceability or communicates evidence. It is waste when it exists only because a template says a document must exist.
 
-## Test strategy and test plan
+The important question is not “which documents must QA create?” but **which information must survive so that testing can be planned, performed, understood and used for decisions?** That information may live in a formal document, a test-management tool, tickets, a wiki, version-controlled files or a combination of them.
 
-A **test strategy** describes the higher-level approach to obtaining quality evidence: risks, levels, types, techniques, environments, automation boundaries and decision principles. A **test plan** applies that approach to a particular scope, release, project or test effort.
+## Test documentation across the test process
 
-Organizations use these names differently, so the practical questions matter more than the label:
+Testware is broader than test cases. Different test activities create and consume different work products.
 
-- What is being tested and what is excluded?
-- Which risks matter most?
-- What evidence is required?
-- Which levels, types and techniques will provide it?
-- What environments, tools, data and people are required?
-- How will progress and completion be evaluated?
+```diagram
+PLANNING
+├── test plan
+├── estimates and schedule
+├── risk information
+└── entry / exit or completion criteria
+
+MONITORING & CONTROL
+├── progress / status information
+├── updated risks and forecasts
+└── control decisions and plan changes
+
+ANALYSIS
+├── test conditions
+├── coverage targets
+└── defects or ambiguities found in the test basis
+
+DESIGN
+├── test cases
+├── exploratory charters
+├── coverage items
+├── test-data requirements
+└── environment requirements
+
+IMPLEMENTATION
+├── test procedures / scripts
+├── automated tests
+├── test suites
+├── prepared test data
+├── execution order
+└── environment configuration
+
+EXECUTION
+├── test results / logs / evidence
+└── defect reports
+
+COMPLETION
+├── test completion report
+├── residual risks and unresolved items
+├── lessons learned
+└── maintained / archived testware
+```
+
+These do **not** have to be separate files. A small team may keep most of them in one project space. A regulated or safety-critical project may require controlled, reviewed and versioned artifacts. The information need stays similar even when the packaging changes.
+
+## Test policy, strategy, plan, approach and schedule
+
+These terms are often collapsed into “the test plan,” which makes planning difficult to reason about.
+
+| Term | Main purpose | Typical scope |
+| --- | --- | --- |
+| **Test policy** | Defines organizational principles, expectations or governance for testing. | Organization / product family |
+| **Test strategy** | Defines a reusable higher-level approach to obtaining quality evidence. | Organization, product, programme or long-lived initiative |
+| **Test plan** | Defines how testing objectives will be achieved for a specific test effort. | Project, release, iteration, migration or major change |
+| **Test approach** | Describes the selected levels, types, techniques, priorities and other methods used by the plan. | Part of a specific plan, possibly derived from strategy |
+| **Test schedule** | Places testing activities, dependencies and milestones in time and execution order. | Specific test effort |
+
+Organizations use these labels differently. The useful distinction is the **decision being documented**.
+
+```diagram
+Organizational direction
+Test policy / reusable strategy
+            ↓
+Specific release or test effort
+          TEST PLAN
+            ├── scope and objectives
+            ├── risks
+            ├── test approach
+            ├── responsibilities
+            ├── environments and data
+            ├── criteria and metrics
+            └── estimates / schedule
+                       ↓
+                 execution
+```
+
+> **Common mistake:** calling a list of browsers, test types and tools a “test plan.” That list may describe part of the **test approach**, but a plan also establishes scope, objectives, responsibilities, risks, resources, criteria and coordination.
+
+## Test plan: purpose
+
+A **test plan** describes how and when the objectives of a defined test effort will be achieved. Its value is not the existence of a document; its value is that important testing decisions are made explicitly before execution consumes most of the available time.
+
+A useful test plan should help the team:
+
+- agree what is **in scope and out of scope**;
+- define the **test objectives** and evidence required;
+- connect testing depth and priority to **product and project risks**;
+- identify required **people, environments, tools and test data**;
+- assign **responsibilities and decision ownership**;
+- expose **assumptions, dependencies and constraints**;
+- define when testing can start and what constitutes sufficient completion;
+- define what will be measured and reported;
+- provide a baseline for **monitoring and control** when reality differs from the plan.
+
+A plan is therefore both a coordination artifact and a decision baseline.
+
+## What belongs in a test plan
+
+There is no useful reason to force every project into one rigid template. The following structure captures the information that a practical plan normally needs.
+
+| Section | What it answers |
+| --- | --- |
+| **Context** | What product, release, change or test effort is this plan for? Why does it exist? |
+| **Test basis / references** | Which requirements, designs, contracts, standards, risk analyses or other sources define expected behaviour? |
+| **Scope** | What test objects, features, interfaces and quality characteristics are included? What is explicitly excluded? |
+| **Test objectives** | What evidence must testing provide? Which decisions should that evidence support? |
+| **Assumptions and constraints** | What are we assuming? What limits time, budget, access, tools, platforms or depth? |
+| **Stakeholders and responsibilities** | Who performs testing, supplies data/environments, fixes blockers, accepts residual risk and makes release decisions? |
+| **Risks and priorities** | Which product and project risks drive test depth, order and contingency planning? |
+| **Test approach** | Which levels, test types, techniques, exploratory work, automation and independence are appropriate? |
+| **Testware / deliverables** | Which cases, charters, scripts, suites, evidence and reports must be created or maintained? |
+| **Environment, data and tools** | Which systems, versions, accounts, datasets, devices, browsers, simulators or services are required? |
+| **Entry criteria** | What must be true before a planned testing activity can begin usefully? |
+| **Exit / completion criteria** | What evidence or conditions are required before the effort can be considered sufficiently complete? |
+| **Metrics and reporting** | What will be measured, how often will status be communicated, and to whom? |
+| **Communication and escalation** | How are blockers, critical defects, risk changes and decisions communicated? |
+| **Estimate, resources and budget** | How much effort/capacity is expected and what resources are required? |
+| **Schedule and dependencies** | When will activities happen, in what order, and what external events can block them? |
+
+Not every row needs its own heading in a small plan. For a one-week feature, several may fit into a single page. For a multi-system programme, each may need much more detail.
+
+### A compact real-world test plan example
+
+Suppose a release changes checkout retry behaviour and adds a new payment provider.
+
+| Plan area | Example |
+| --- | --- |
+| **Scope** | card checkout, retry behaviour, duplicate-payment prevention, new provider integration; gift-card flow unchanged and out of scope |
+| **Objectives** | show that successful payment creates exactly one order; failed/time-out payment does not create duplicate charges; provider errors are recoverable and understandable |
+| **Main risks** | duplicate charge, order created without confirmed payment, provider timeout leaving unknown state, regression in existing provider |
+| **Approach** | API decision-table coverage for payment outcomes; state-transition coverage for retry/recovery; provider contract tests; focused browser E2E happy path; exploratory session around interrupted network states |
+| **Environment/data** | staging build, provider sandbox, webhook receiver, test cards for success/decline/timeout, accounts with clean carts |
+| **Entry** | provider sandbox reachable; webhook configuration verified; release candidate deployed; seed data available |
+| **Completion** | all critical payment risks have evidence; no unresolved critical/high duplicate-charge defect without explicit acceptance; planned provider rules covered; known gaps recorded |
+| **Reporting** | daily risk/blocker update during execution; completion report before release decision |
+| **Schedule** | contract/API checks first, then integration recovery, then focused E2E/regression after provider configuration stabilizes |
+
+Notice what is **not** useful: listing hundreds of test-case titles inside the plan. The plan defines the testing effort; detailed testware carries the execution detail.
+
+## Entry, exit and completion criteria in the plan
+
+Criteria turn vague statements such as “start testing when ready” or “finish when everything passes” into decision rules.
+
+**Entry criteria** describe conditions that make a testing activity meaningful to start. Examples:
+
+- required environment and build are available;
+- critical interfaces are deployed and reachable;
+- required test data or accounts can be created;
+- the relevant test basis is stable enough to derive expectations;
+- blocking prerequisite defects are resolved.
+
+**Exit or completion criteria** describe the evidence expected before the effort can be considered sufficiently complete. Examples:
+
+- agreed high-risk scenarios have been covered;
+- defined requirement/risk/technique coverage targets are achieved or deviations are accepted;
+- no unresolved defect exceeds an agreed impact threshold without explicit risk acceptance;
+- planned test results and known limitations are available to decision-makers;
+- residual risks are documented.
+
+A criterion should support a decision. “100% tests passed” is weak when the suite does not represent the important risks.
+
+Some organizations also define **suspension and resumption criteria**: conditions under which testing should stop because continued execution is wasteful, and what must change before it resumes.
+
+## Test approach is part of the plan
+
+The test approach explains **how the planned evidence will be obtained**. It can include:
+
+- test levels and test objects;
+- functional and relevant non-functional test types;
+- specification-based, structure-based, experience-based and collaborative techniques;
+- risk-based prioritization and test depth;
+- manual, exploratory and automated execution;
+- regression and confirmation approach;
+- degree of test independence;
+- environment and data strategy;
+- automation boundaries and CI/CD placement;
+- production or operational evidence where appropriate.
+
+A strong approach is selective. “Run every test type at every level” is not a strategy; it ignores cost and risk.
+
+## Test schedule is not the test plan
+
+The schedule answers **when and in what order** planned activities occur. It should expose dependencies rather than merely give QA a start and end date.
+
+```diagram
+API contract stable
+       ↓
+provider sandbox configured
+       ↓
+integration tests
+       ↓
+recovery / retry tests
+       ↓
+focused E2E regression
+       ↓
+completion assessment
+```
+
+A schedule may also define test execution order. For example, fast build-verification checks can run before expensive regression so a broken environment is detected early.
+
+## Plan → progress report → control → completion report
+
+Planning and reporting form one feedback loop.
+
+```diagram
+TEST PLAN
+What do we intend to achieve and how?
+        ↓
+PROGRESS / STATUS REPORT
+Where are we compared with the plan?
+        ↓
+TEST CONTROL
+What must change because reality differs?
+        ↓
+updated scope / priorities / schedule / approach
+        ↺
+TEST COMPLETION REPORT
+What was actually achieved, what deviated, and what risk remains?
+```
+
+This relationship explains why a test plan is useful even in an adaptive project: the plan provides the current baseline, while control allows that baseline to change deliberately.
+
+A useful **progress report** can communicate:
+
+- work completed and remaining;
+- evidence obtained for important risks;
+- defects and blockers;
+- environment/data constraints;
+- relevant coverage and execution metrics;
+- deviations from the current plan;
+- changed product/project risks;
+- forecast and next activities.
+
+A useful **completion report** can communicate:
+
+- what was tested and what was not;
+- whether objectives and completion criteria were achieved;
+- important deviations from the plan;
+- significant defect status;
+- achieved coverage where meaningful;
+- unresolved limitations and residual risks;
+- lessons or follow-up actions.
+
+Percent passed can be useful operationally, but 99% passing tests do not imply 99% product quality. A suite can contain many low-value tests and still miss a critical risk.
+
+> **Historical note:** the classic IEEE 829 test-documentation templates are still common in old courses and interview material. IEEE 829-2008 has been superseded by the ISO/IEC/IEEE 29119 family. Learn the purpose and information carried by test artifacts rather than memorizing an obsolete rigid template.
 
 ## Test case, checklist and exploratory charter
 
@@ -67,22 +307,6 @@ Test data and environment information are part of reproducibility. Useful record
 - external-service assumptions.
 
 Without this context, “cannot reproduce” often means “we no longer know the conditions under which the observation occurred.”
-
-## Test reporting
-
-Reporting exists to support decisions, not to manufacture reassuring numbers. A useful progress report can communicate:
-
-- what has and has not been examined;
-- which high-risk areas have evidence;
-- important defects and blockers;
-- environment or data limitations;
-- coverage gaps;
-- changes from the plan;
-- current residual uncertainty.
-
-A completion report should answer a stakeholder's real question: **what do we know about this product now, and what important uncertainty remains?**
-
-Percent passed can be useful operationally, but 99% passing tests do not imply 99% product quality. A suite can contain many low-value tests and still miss a critical risk.
 
 ## What makes a defect report actionable
 
@@ -207,18 +431,22 @@ A useful corrective action often goes beyond fixing one line of code. It may imp
 
 Test artifacts are maintained assets. When requirements change, obsolete cases should be updated or removed. When a regression test permanently protects an escaped defect, the original manual case may no longer need the same form. When a checklist becomes too vague, it may need explicit examples.
 
+The same applies to plans. A plan that is never updated when scope, dependencies or risks change becomes historical fiction. Monitoring identifies deviation; control deliberately changes the plan or the work.
+
 Documentation quality is therefore not measured by page count. It is measured by how effectively the artifacts preserve useful knowledge and support decisions.
 
 ## Summary
 
-- Strategy explains the testing approach; plans apply it to a concrete scope.
+- Test documentation spans planning, analysis, design, implementation, execution, reporting and completion; test cases are only one form of testware.
+- Policy, strategy, plan, approach and schedule answer different planning questions even though organizations sometimes use the labels differently.
+- A test plan defines how a specific testing effort will achieve its objectives and acts as a baseline for coordination, monitoring and control.
+- A useful plan covers context, basis, scope, objectives, assumptions, stakeholders, risks, approach, testware, environments/data, criteria, metrics, communication, resources and schedule.
+- Entry and completion criteria should express decision-relevant conditions, not ritual percentages.
+- Progress reports compare reality with the current plan; control changes the plan when needed; completion reports summarize achieved evidence, deviations and residual risk.
 - Test cases, checklists and exploratory charters trade prescription, maintenance and executor freedom differently.
 - Data and environment context are essential for reproducibility.
-- Reporting should communicate evidence, gaps and uncertainty rather than only pass percentages.
 - A strong defect report separates observation, reproduction, expectation, evidence and impact.
-- Defects are not limited to code, and failures are observable consequences rather than “bugs executed by testers.”
 - Severity describes impact; priority describes urgency relative to other work.
-- Defect triage is a shared evidence and prioritization process.
 - Root-cause thinking distinguishes the visible symptom from the underlying technical and systemic causes.
 
 ## Sources
@@ -226,4 +454,5 @@ Documentation quality is therefore not measured by page count. It is measured by
 - [ISO/IEC/IEEE 29119-2:2021 — Test processes](https://www.iso.org/standard/79428.html)
 - [ISO/IEC/IEEE 29119-3:2021 — Test documentation](https://www.iso.org/standard/79429.html)
 - [ISTQB CTFL v4.0](https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/)
+- [IEEE 829-2008 — superseded test documentation standard](https://standards.ieee.org/ieee/829/3787/)
 - [SWEBOK v4.0a](https://www.computer.org/education/bodies-of-knowledge/software-engineering/resources/)
