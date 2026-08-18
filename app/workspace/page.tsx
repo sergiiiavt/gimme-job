@@ -1,8 +1,8 @@
 "use client";
 
 import { VacancyFilterEnhancer } from "../vacancy-filter-enhancer";
-import VacanciesWorkspace from "../vacancies-workspace";
+import VacancyWorkspaceRoute from "../vacancy-workspace-route";
 
 export default function WorkspacePage() {
-  return <><VacanciesWorkspace key="personal" mode="personal"/><VacancyFilterEnhancer/></>;
+  return <><VacancyWorkspaceRoute/><VacancyFilterEnhancer/></>;
 }
