@@ -46,7 +46,7 @@
   /* Keep the vacancy table aligned with the left workspace edge while reserving only the right-side control gutter. */
   .vacancy-workspace > .vacancy-list-view {
     margin-left: 0;
-    margin-right: 76px;
+    margin-right: 60px;
     max-width: none;
     width: auto;
   }
