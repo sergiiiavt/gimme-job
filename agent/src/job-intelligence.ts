@@ -76,7 +76,7 @@ Analysis rules:
 - Penalize genuine blockers, not merely unfamiliar wording.
 - Give evidence-based scores from 0 to 100.
 - Extract normalized requirement keywords that can be aggregated across many vacancies.
-- Detect remote policy, employment type, salary disclosure, language, and Ukrainian mobilization-reservation signals.
+- Detect employment type, salary disclosure, language, and Ukrainian mobilization-reservation signals.
 `;
 
 export const RESUME_INSTRUCTIONS = `
@@ -128,11 +128,10 @@ export const ANALYSIS_JSON_SCHEMA: JsonSchema = {
     marketSignals: {
       type: "object",
       additionalProperties: false,
-      required: ["seniority", "employmentType", "remotePolicy", "salary", "reservation", "language"],
+      required: ["seniority", "employmentType", "salary", "reservation", "language"],
       properties: {
         seniority: { type: "string" },
         employmentType: { type: "string" },
-        remotePolicy: { type: "string" },
         salary: { type: "string" },
         reservation: { type: "string" },
         language: { type: "string" },
@@ -318,7 +317,6 @@ export function deterministicAnalysis(job: StoredJob, profile: CandidateProfile)
     marketSignals: {
       seniority: seniority(text),
       employmentType: employmentType(text),
-      remotePolicy: job.remote ? "Remote mentioned" : "Remote not confirmed",
       salary: salarySignal(job, text),
       reservation: reservationSignal(text),
       language: languageSignal(text),
