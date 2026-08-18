@@ -201,7 +201,7 @@ export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description
 
 function canonicalCompany(value: string): string {
   const normalized = normalizeVacancyText(value).replace(COMPANY_SUFFIXES, " ").replace(/\s+/g, " ").trim();
-  return /^(?:unknown|company is hidden|hidden company|невідома компанія)$/.test(normalized) ? "" : normalized;
+  return /^(?:unknown|company is hidden|hidden company|невідома компанія|компанію приховано|компания скрыта|n a|none)$/.test(normalized) ? "" : normalized;
 }
 
 function canonicalTitle(value: string): string {
@@ -338,6 +338,12 @@ function mergedSources(...values: string[]): string {
   return result.join(",");
 }
 
+function mergedCompany(primary: string, secondary: string): string {
+  if (canonicalCompany(primary)) return primary;
+  if (canonicalCompany(secondary)) return secondary;
+  return primary || secondary || "Unknown";
+}
+
 export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T): T {
   const leftScore = statePriority(left) + sourcePriority(left.source);
   const rightScore = statePriority(right) + sourcePriority(right.source);
@@ -350,6 +356,7 @@ export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T):
   return {
     ...primary,
     source: mergedSources(left.source, right.source),
+    company: mergedCompany(primary.company, secondary.company),
     remote: left.remote || right.remote,
     description,
     salaryText: primary.salaryText ?? secondary.salaryText,
