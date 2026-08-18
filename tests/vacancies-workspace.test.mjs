@@ -4,10 +4,12 @@ import { readFileSync } from "node:fs";
 
 const source = readFileSync(new URL("../app/vacancies-workspace.tsx", import.meta.url), "utf8");
 const styles = readFileSync(new URL("../app/vacancies-workspace.css", import.meta.url), "utf8");
+const detailStyles = readFileSync(new URL("../app/vacancy-detail-layout.css", import.meta.url), "utf8");
 const filterEnhancer = readFileSync(new URL("../app/vacancy-filter-enhancer.tsx", import.meta.url), "utf8");
 const filterStyles = readFileSync(new URL("../app/vacancy-filter-enhancer.css", import.meta.url), "utf8");
 const route = readFileSync(new URL("../app/workspace/page.tsx", import.meta.url), "utf8");
 const publicRoute = readFileSync(new URL("../app/vacancies/page.tsx", import.meta.url), "utf8");
+const layout = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8");
 
 test("workspace uses the approved vacancies workspace", () => {
   assert.match(route, /import VacanciesWorkspace from "\.\.\/vacancies-workspace"/);
@@ -111,12 +113,26 @@ test("active vacancy tab is the direct analysis target", () => {
   assert.match(source, /selected \? "Analyze vacancy"/);
 });
 
-test("public and private vacancy tabs share the same base detail layout", () => {
+test("personal vacancy detail restores the two-sided workspace", () => {
   assert.match(source, /className="job-detail-view vacancy-detail-tab"/);
   assert.doesNotMatch(source, /job-detail-view-public/);
-  assert.match(styles, /\.vacancy-detail-tab\s*\{\s*display:\s*block/);
-  assert.match(styles, /\.vacancy-detail-tab \.job-detail\s*\{[\s\S]*width:\s*100%/);
-  assert.match(styles, /\.vacancy-detail-tab \.job-analysis-resume\s*\{[\s\S]*margin-top:\s*16px/);
+  assert.match(layout, /import "\.\/vacancy-detail-layout\.css"/);
+  assert.match(detailStyles, /\.vacancy-workspace-personal \.vacancy-detail-tab\s*\{[\s\S]*display:\s*grid/);
+  assert.match(detailStyles, /grid-template-columns:\s*minmax\(0, 1\.25fr\) minmax\(360px, \.95fr\)/);
+  assert.match(detailStyles, /\.vacancy-workspace-personal \.vacancy-detail-tab \.job-analysis-resume\s*\{[\s\S]*gap:\s*16px/);
+});
+
+test("analysis and resume are separate cards on the vacancy right side", () => {
+  assert.match(detailStyles, /\.job-analysis-resume\s*\{[\s\S]*background:\s*transparent/);
+  assert.match(detailStyles, /\.job-analysis-resume\s*\{[\s\S]*border:\s*0/);
+  assert.match(detailStyles, /\.job-analysis,[\s\S]*\.job-resume\s*\{[\s\S]*background:\s*var\(--paper\)/);
+  assert.match(detailStyles, /\.job-analysis,[\s\S]*\.job-resume\s*\{[\s\S]*border:\s*1px solid var\(--line\)/);
+});
+
+test("vacancy workspace uses reduced outer page margins", () => {
+  assert.match(detailStyles, /\.vacancy-workspace\s*\{[\s\S]*max-width:\s*none/);
+  assert.match(detailStyles, /\.vacancy-workspace\s*\{[\s\S]*padding:\s*20px 18px 32px/);
+  assert.match(detailStyles, /@media \(max-width: 700px\)[\s\S]*padding:\s*16px 12px 28px/);
 });
 
 test("vacancy tabs use the soft-green secondary-navigation selection style", () => {
@@ -140,11 +156,14 @@ test("public detail score and tracking are gated by authentication", () => {
 
 test("vacancy-specific stylesheet does not replace global typography", () => {
   assert.doesNotMatch(styles, /font-family\s*:/);
+  assert.doesNotMatch(detailStyles, /font-family\s*:/);
   assert.doesNotMatch(filterStyles, /font-family\s*:/);
   assert.doesNotMatch(styles, /(^|\n)body\s*\{/);
+  assert.doesNotMatch(detailStyles, /(^|\n)body\s*\{/);
   assert.doesNotMatch(filterStyles, /(^|\n)body\s*\{/);
   assert.match(styles, /min-height: 54px/);
   assert.match(styles, /@media \(max-width: 1180px\)/);
+  assert.match(detailStyles, /@media \(max-width: 980px\)/);
   assert.match(filterStyles, /@media \(max-width: 980px\)/);
   assert.match(filterStyles, /@media \(max-width: 700px\)/);
 });
