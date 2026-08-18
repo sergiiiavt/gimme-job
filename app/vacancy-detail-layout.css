@@ -13,6 +13,11 @@
   justify-content: flex-start;
 }
 
+.vacancy-workspace-personal .stat-line {
+  height: 38px;
+  padding: 0 4px;
+}
+
 .vacancy-workspace-personal .vacancy-detail-tab {
   align-items: start;
   display: grid;
