@@ -1,0 +1,41 @@
+/* Minimal primary-navigation scrollbar.
+   Keep native scrolling, move the bar to the outside-left edge, and only surface the thumb when useful. */
+
+.kb-navigation .kb-nav-list {
+  direction: rtl;
+  overscroll-behavior: contain;
+  padding-left: 3px;
+  padding-right: 0;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.kb-navigation .kb-nav-list > * {
+  direction: ltr;
+}
+
+.kb-navigation .kb-nav-list:hover,
+.kb-navigation .kb-nav-list:focus-within,
+.kb-navigation .kb-nav-list.is-scrolling {
+  scrollbar-color: rgba(86, 99, 91, .34) transparent;
+}
+
+.kb-navigation .kb-nav-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.kb-navigation .kb-nav-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kb-navigation .kb-nav-list::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.kb-navigation .kb-nav-list:hover::-webkit-scrollbar-thumb,
+.kb-navigation .kb-nav-list:focus-within::-webkit-scrollbar-thumb,
+.kb-navigation .kb-nav-list.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(86, 99, 91, .34);
+}
