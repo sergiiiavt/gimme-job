@@ -96,26 +96,26 @@
   color: var(--green);
 }
 
-/* The Analysis header badge follows the numeric score band, not the verdict class,
-   so it always matches the circle and dashboard score palette. */
-.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-low) .job-analysis .verdict {
-  background: var(--red-soft);
-  color: var(--red);
+/* The Analysis badge is forced from the numeric score class in the open vacancy.
+   Keep this mapping stronger than verdict-specific styles so 82/100 is green even when the verdict is Possible. */
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score-low) .job-analysis .verdict {
+  background: var(--red-soft) !important;
+  color: var(--red) !important;
 }
 
-.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-fair) .job-analysis .verdict {
-  background: var(--amber-soft);
-  color: var(--amber);
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score-fair) .job-analysis .verdict {
+  background: var(--amber-soft) !important;
+  color: var(--amber) !important;
 }
 
-.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-good) .job-analysis .verdict {
-  background: var(--blue-soft);
-  color: var(--blue);
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score-good) .job-analysis .verdict {
+  background: var(--blue-soft) !important;
+  color: var(--blue) !important;
 }
 
-.vacancy-workspace-personal .vacancy-detail-tab:has(.score.score-strong) .job-analysis .verdict {
-  background: var(--green-soft);
-  color: var(--green);
+.vacancy-workspace-personal .vacancy-detail-tab:has(.score-strong) .job-analysis .verdict {
+  background: var(--green-soft) !important;
+  color: var(--green) !important;
 }
 
 .vacancy-workspace .vacancy-match.has-score strong {
