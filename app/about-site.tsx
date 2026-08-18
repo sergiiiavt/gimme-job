@@ -16,6 +16,8 @@ import {
 } from "./about-site-content";
 import { sectionNavigationHref } from "./navigation-paths";
 
+const LINKEDIN_URL = "https://www.linkedin.com/in/serhii-yavtushkevych-ba1a2686/";
+
 const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
   github: "https://cdn.simpleicons.org/github",
   actions: "https://cdn.simpleicons.org/githubactions",
@@ -197,6 +199,9 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
             </div>
           </div>
           <nav className="about-tech-actions" aria-label="About page links">
+            <a className="about-tech-action about-tech-action-primary" href={LINKEDIN_URL} target="_blank" rel="noreferrer">
+              <span>View LinkedIn profile</span>
+            </a>
             <a className="about-tech-action about-tech-action-primary" href={REPO_URL} target="_blank" rel="noreferrer">
               <span>View source on GitHub</span>
             </a>
