@@ -68,6 +68,8 @@ export const CLOUDFLARE_WORKERS_LOGS_URL = "https://dash.cloudflare.com/4f8e2983
 export const N8N_URL = "https://n8n.gimme-job.com";
 export const N8N_DOC_URL = `${REPO_URL}/blob/main/docs/n8n-gmail-integration.md`;
 export const N8N_WORKFLOW_URL = `${REPO_URL}/blob/main/ops/n8n/workflows/gimmejob-forwarded-email-classifier.json`;
+export const N8N_DAILY_REPORT_WORKFLOW_URL = `${REPO_URL}/blob/main/ops/n8n/workflows/gimmejob-daily-email-report.json`;
+export const N8N_EMAIL_STATS_URL = `${REPO_URL}/blob/main/app/internal/n8n/email-stats/route.ts`;
 export const HETZNER_INFRA_URL = `${REPO_URL}/tree/main/ops/hetzner`;
 export const HETZNER_PROVISION_URL = `${REPO_URL}/blob/main/ops/hetzner/provision.mjs`;
 export const HETZNER_BOOTSTRAP_URL = `${REPO_URL}/blob/main/ops/hetzner/bootstrap.sh`;
@@ -192,7 +194,7 @@ export const DATABASE = {
 export const N8N = {
   title: "n8n email automation",
   description:
-    "n8n orchestrates tenant-scoped forwarded job-email metadata while GimmeJob keeps identity, ownership, and application state.",
+    "Two production n8n workflows process forwarded job-email events and send a daily operational report while GimmeJob keeps D1 as the source of truth.",
   gmail: {
     title: "Gmail forwarding",
     description: "User filters forward selected job emails to a per-user GimmeJob token address",
@@ -212,31 +214,38 @@ export const N8N = {
     accent: "blue" as const,
   },
   orchestrator: {
-    title: "n8n",
+    title: "n8n · 2 production workflows",
     description:
-      "Polls the metadata-only internal API every minute and runs deterministic email classification.",
+      "Workflow 1 runs every minute: classify pending mail with deterministic rules first and OpenAI only when needed. Workflow 2 runs daily at 08:00 Kyiv: read D1 statistics, format the previous day's report, and send it by SMTP.",
     icon: "n8n" as const,
     accent: "purple" as const,
     links: [
       { label: "n8n", href: N8N_URL, external: true },
-      { label: "Workflow", href: N8N_WORKFLOW_URL, external: true },
+      { label: "Classifier", href: N8N_WORKFLOW_URL, external: true },
+      { label: "Daily report", href: N8N_DAILY_REPORT_WORKFLOW_URL, external: true },
+      { label: "Stats API", href: N8N_EMAIL_STATS_URL, external: true },
       { label: "Integration docs", href: N8N_DOC_URL, external: true },
     ],
   },
   outputs: [
     {
       title: "Classification",
-      description: "Recruiter, interview, rejection, test task, offer, or other",
+      description: "Lifecycle, job alert, service, non-job, or review classification persisted in D1",
       icon: "analysis" as const,
     },
     {
-      title: "Internal API",
-      description: "Writes the tenant-scoped result back through a Bearer-protected route",
-      icon: "worker" as const,
+      title: "Daily statistics",
+      description: "Received, processed, pending, job-relevant, rule-vs-AI, token, held, and failure metrics",
+      icon: "dashboard" as const,
+    },
+    {
+      title: "Daily SMTP report",
+      description: "Previous complete Kyiv day is formatted as HTML and emailed at 08:00",
+      icon: "gmail" as const,
     },
     {
       title: "D1 state",
-      description: "GimmeJob remains the system of record; n8n does not own application state",
+      description: "GimmeJob remains the system of record; n8n orchestrates but does not own application state",
       icon: "cloudflare" as const,
     },
   ] satisfies SectionTile[],
