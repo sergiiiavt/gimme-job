@@ -12,7 +12,9 @@ async function resolveVacancyView(): Promise<VacancyViewMode> {
     cache: "no-store",
     headers: { accept: "application/json" },
   });
-  return response.ok ? "personal" : "public";
+  if (response.ok) return "personal";
+  if (response.status === 401) return "public";
+  throw new Error(`Auth state request failed: ${response.status}`);
 }
 
 export default function VacancyWorkspaceRoute() {
@@ -26,8 +28,9 @@ export default function VacancyWorkspaceRoute() {
         if (active) setMode(nextMode);
       })
       .catch(() => {
-        currentVacancyView = "public";
-        if (active) setMode("public");
+        const fallbackMode = currentVacancyView ?? "public";
+        currentVacancyView = fallbackMode;
+        if (active) setMode(fallbackMode);
       });
     return () => { active = false; };
   }, []);
