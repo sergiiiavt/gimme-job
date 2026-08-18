@@ -39,7 +39,7 @@ function extractCompany(meta: string): string {
   const candidates = [...meta.matchAll(STRONG_SPAN_PATTERN)].map((match) =>
     decodeHtmlEntities(match[1] ?? "").trim(),
   );
-  const company = candidates.find((text) => text && text !== "Company is hidden" && !/\d/.test(text));
+  const company = candidates.find((text) => text && text !== "Company is hidden");
   return company || "Unknown";
 }
 

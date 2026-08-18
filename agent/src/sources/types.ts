@@ -1,6 +1,7 @@
 import type { JobInput } from "../domain.js";
 import { deduplicateVacancies, filterRelevantVacancies } from "../job-intake.js";
 import { normalizeVacancyDescription } from "../vacancy-content.js";
+import { recoverJobCompany } from "./company.js";
 
 export interface JobSource {
   readonly name: string;
@@ -26,11 +27,22 @@ function normalizeCollectedJob(job: JobInput): JobInput {
   };
 }
 
+async function recoverMissingCompanies(jobs: JobInput[]): Promise<JobInput[]> {
+  const recovered: JobInput[] = [];
+  const batchSize = 6;
+  for (let index = 0; index < jobs.length; index += batchSize) {
+    const batch = jobs.slice(index, index + batchSize);
+    recovered.push(...await Promise.all(batch.map(recoverJobCompany)));
+  }
+  return recovered;
+}
+
 export async function collectAllSources(sources: JobSource[]): Promise<SourceRunResult[]> {
   const sourceResults = await Promise.all(
     sources.map(async (source): Promise<SourceRunResult> => {
       try {
-        const jobs = (await source.collect()).map(normalizeCollectedJob);
+        const normalized = (await source.collect()).map(normalizeCollectedJob);
+        const jobs = await recoverMissingCompanies(normalized);
         return { source: source.name, jobs, error: null, seen: jobs.length };
       } catch (error) {
         return {

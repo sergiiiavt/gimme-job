@@ -1,6 +1,7 @@
 import type { JobInput } from "../domain.js";
 import { htmlToVacancyText, normalizeVacancyDescription } from "../vacancy-content.js";
 import { canonicalizeUrl, decodeHtmlEntities, isRemoteText, safeIsoDate } from "../utils.js";
+import { inferCompanyFromText } from "./company.js";
 import { fetchJson, fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
@@ -32,11 +33,8 @@ function extractDivByClass(html: string, className: string): string {
   return html.slice(cursor);
 }
 
-const COMPANY_PREFIX_PATTERN =
-  /(?:^|\n)([A-ZА-ЯЁІЇЄ][\p{L}0-9«»'".,-]*(?:\s[A-ZА-ЯЁІЇЄ«][\p{L}0-9«»'".,-]*){0,4})\s*[—-]\s/u;
-
 export function inferCompanyFromDescription(description: string): string {
-  return COMPANY_PREFIX_PATTERN.exec(description.slice(0, 400))?.[1]?.trim() || "Unknown";
+  return inferCompanyFromText(description) || "Unknown";
 }
 
 export interface LobbyXListing {
