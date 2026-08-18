@@ -28,3 +28,10 @@ test("score typography is smaller and each band has a distinct color", () => {
   assert.match(styles, /\.score\.score-good\s*\{[\s\S]*var\(--blue-soft\)[\s\S]*var\(--blue\)/);
   assert.match(styles, /\.score\.score-strong\s*\{[\s\S]*var\(--green-soft\)[\s\S]*var\(--green\)/);
 });
+
+test("vacancy score circle displays the canonical analysis verdict instead of MATCH", () => {
+  assert.match(styles, /:has\(\.verdict-strong\)[\s\S]*content:\s*"Strong"/);
+  assert.match(styles, /:has\(\.verdict-possible\)[\s\S]*content:\s*"Possible"/);
+  assert.match(styles, /:has\(\.verdict-weak\)[\s\S]*content:\s*"Weak"/);
+  assert.match(styles, /:has\(\.verdict-reject\)[\s\S]*content:\s*"Reject"/);
+});
