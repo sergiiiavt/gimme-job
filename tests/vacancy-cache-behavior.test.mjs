@@ -26,9 +26,12 @@ test("vacancy data cache survives route changes and refreshes within the same vi
 test("vacancy route resolves public or personal view from current auth without changing the canonical URL", () => {
   assert.match(routeResolver, /fetch\("\/api\/auth-state"/);
   assert.match(routeResolver, /cache: "no-store"/);
-  assert.match(routeResolver, /return response\.ok \? "personal" : "public";/);
+  assert.match(routeResolver, /if \(response\.ok\) return "personal";/);
+  assert.match(routeResolver, /if \(response\.status === 401\) return "public";/);
+  assert.match(routeResolver, /throw new Error\(`Auth state request failed:/);
   assert.match(routeResolver, /let currentVacancyView: VacancyViewMode \| null = null;/);
   assert.match(routeResolver, /useState<VacancyViewMode \| null>\(\(\) => currentVacancyView\)/);
+  assert.match(routeResolver, /const fallbackMode = currentVacancyView \?\? "public";/);
   assert.match(routeResolver, /<VacanciesWorkspace key=\{mode\} mode=\{mode\}\/>/);
   assert.match(publicRoute, /<VacancyWorkspaceRoute\/>/);
   assert.match(privateRoute, /<VacancyWorkspaceRoute\/>/);
