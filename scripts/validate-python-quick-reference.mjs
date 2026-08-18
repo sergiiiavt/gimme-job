@@ -21,19 +21,37 @@ const expectedFilters = [
   "Advanced",
   "Gotchas",
 ];
-const allowedTags = new Set(expectedFilters.slice(1));
-const requiredExplainedCards = new Set([
+
+const requiredCardIds = new Set([
   "core-syntax",
   "control-flow",
+  "strings",
+  "numbers",
+  "collections",
+  "comprehensions",
   "functions",
   "iterators-generators",
   "exceptions",
   "oop",
+  "dataclasses-enum",
+  "dunder-methods",
+  "typing",
+  "modules-imports",
+  "files-pathlib",
+  "data-formats",
+  "datetime",
+  "stdlib-toolbox",
+  "os-cli",
+  "logging-debugging",
   "concurrency",
+  "testing",
+  "sqlite",
+  "internals-gotchas",
 ]);
 
+const allowedTags = new Set(expectedFilters.slice(1));
+
 assert.deepEqual(catalog.filters, expectedFilters, "Python quick-reference filters changed unexpectedly.");
-assert.equal(catalog.cards.length, 24, "Python API quick reference must keep exactly 24 base concept cards.");
 assert.ok(guidance && typeof guidance === "object", "Python quick-reference guidance is missing.");
 assert.equal(guidance.theoryCards?.length, 2, "Python quick reference must include the two focused theory cards.");
 
@@ -69,30 +87,38 @@ for (const card of catalog.cards) {
   assert.ok(Array.isArray(card.more) && card.more.length >= 4, `${card.id} needs at least 4 secondary references.`);
 
   const terms = new Set();
+  const explanations = guidance.explanations?.[card.id];
+  assert.ok(explanations && typeof explanations === "object", `${card.id} needs explanations for every reference.`);
+
   for (const row of [...card.entries, ...card.more]) {
     assert.ok(row.term?.trim(), `Missing term in ${card.id}`);
     assert.ok(row.detail?.trim(), `Missing detail for ${row.term || "unknown row"} in ${card.id}`);
+
     const normalizedTerm = row.term.trim().toLowerCase();
     assert.ok(!terms.has(normalizedTerm), `Duplicate term ${row.term} in ${card.id}`);
     terms.add(normalizedTerm);
+
+    const explanation = explanations[row.term];
+    assert.ok(explanation?.trim(), `${card.id} reference ${row.term} needs a concise human-friendly explanation.`);
+    assert.ok(explanation.trim().length >= 20, `${card.id} reference ${row.term} explanation is too terse to be useful.`);
+
     referenceCount += 1;
+    explainedReferenceCount += 1;
   }
+
   baseTerms.set(card.id, terms);
 
-  if (requiredExplainedCards.has(card.id)) {
-    for (const row of card.entries) {
-      assert.ok(guidance.explanations?.[card.id]?.[row.term]?.trim(), `${card.id} primary reference ${row.term} needs a human explanation.`);
-    }
+  for (const term of Object.keys(explanations)) {
+    assert.ok(terms.has(term.toLowerCase()), `Guidance references unknown term ${term} in ${card.id}.`);
   }
 }
 
-for (const [cardId, explanations] of Object.entries(guidance.explanations ?? {})) {
+for (const requiredId of requiredCardIds) {
+  assert.ok(baseTerms.has(requiredId), `Python quick reference is missing required card ${requiredId}.`);
+}
+
+for (const cardId of Object.keys(guidance.explanations ?? {})) {
   assert.ok(baseTerms.has(cardId), `Guidance references unknown base card ${cardId}.`);
-  for (const [term, explanation] of Object.entries(explanations)) {
-    assert.ok(baseTerms.get(cardId).has(term.toLowerCase()), `Guidance references unknown term ${term} in ${cardId}.`);
-    assert.ok(explanation?.trim(), `Empty explanation for ${term} in ${cardId}.`);
-    explainedReferenceCount += 1;
-  }
 }
 
 for (const card of guidance.theoryCards) {
@@ -106,10 +132,13 @@ for (const card of guidance.theoryCards) {
   for (const row of [...card.entries, ...card.more]) {
     assert.ok(row.term?.trim(), `Missing theory term in ${card.id}`);
     assert.ok(row.meaning?.trim(), `Theory reference ${row.term || "unknown row"} in ${card.id} needs a plain-language meaning.`);
+    assert.ok(row.meaning.trim().length >= 20, `Theory reference ${row.term} in ${card.id} meaning is too terse to be useful.`);
     assert.ok(row.detail?.trim(), `Theory reference ${row.term || "unknown row"} in ${card.id} needs a concrete example.`);
+
     const normalizedTerm = row.term.trim().toLowerCase();
     assert.ok(!terms.has(normalizedTerm), `Duplicate theory term ${row.term} in ${card.id}`);
     terms.add(normalizedTerm);
+
     referenceCount += 1;
     explainedReferenceCount += 1;
   }
@@ -122,8 +151,12 @@ for (const tag of allowedTags) {
   assert.ok([...catalog.cards, ...guidance.theoryCards].some((card) => card.tags.includes(tag)), `No Python quick-reference card uses ${tag}.`);
 }
 
-assert.equal(ids.size, 26, `Python quick reference must render 26 total concept cards; found ${ids.size}.`);
+assert.ok(catalog.cards.length >= requiredCardIds.size, `Python quick reference must keep all required concept cards; found ${catalog.cards.length}.`);
 assert.ok(referenceCount >= 350, `Python quick reference must contain at least 350 reference rows; found ${referenceCount}.`);
-assert.ok(explainedReferenceCount >= 100, `Python quick reference needs substantial plain-language coverage; found ${explainedReferenceCount} explained rows.`);
+assert.equal(explainedReferenceCount, referenceCount, "Every Python quick-reference row must have a human-friendly explanation.");
 
-console.log(`Python quick reference validated: ${ids.size} cards, ${referenceCount} reference rows, ${explainedReferenceCount} explained rows.`);
+const strings = guidance.explanations?.strings ?? {};
+assert.match(strings["f-string"] ?? "", /insert|expression|format/i, "f-string explanation must describe interpolation/formatting.");
+assert.match(strings.find ?? "", /-1/i, "find explanation must mention its missing-value behavior.");
+
+console.log(`Python quick reference validated: ${ids.size} cards, ${referenceCount} reference rows, 100% explained.`);
