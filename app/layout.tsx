@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
+import ToTopButton from "./to-top-button";
 import VacancyScrollState from "./vacancy-scroll-state";
 import "./globals.css";
 import "./interview-auth-layout.css";
@@ -14,6 +15,7 @@ import "./brand-logo.css";
 import "./mobile-navigation-logo.css";
 import "./navigation-current-selection.css";
 import "./navigation-scroll.css";
+import "./to-top-button.css";
 
 export const metadata: Metadata = {
   title: "GimmeJob | Serhii Yavtushkevych's QA engineering portfolio",
@@ -45,6 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <PrimaryNavScrollState/>
         <VacancyScrollState/>
+        <ToTopButton/>
         {children}
       </body>
     </html>
