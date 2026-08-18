@@ -107,6 +107,7 @@ export function extractCompanyFromHtml(url: string, html: string): string {
     const href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(attributes)?.[1] ?? "";
     const classes = /\bclass\s*=\s*["']([^"']+)["']/i.exec(attributes)?.[1] ?? "";
     const looksLikeCompanyLink = /\/(?:companies?|jobs\/by-company)\/[^/?#]+/i.test(href)
+      || /\/jobs\/company-[^/?#]+(?:\/|$)/i.test(href)
       || /[?&]company=[^&#]+/i.test(href)
       || /(?:^|\s)(?:company|employer)(?:\s|$)/i.test(classes);
     if (!looksLikeCompanyLink) continue;
