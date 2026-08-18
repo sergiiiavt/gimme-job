@@ -9,7 +9,10 @@ function supportsToTop(pathname: string) {
   return pathname === "/vacancies"
     || pathname === "/workspace"
     || pathname.startsWith("/interview")
-    || pathname.startsWith("/learn/");
+    || pathname === "/learn"
+    || pathname.startsWith("/learn/")
+    || pathname === "/workspace/learn"
+    || pathname.startsWith("/workspace/learn/");
 }
 
 export default function ToTopButton() {
