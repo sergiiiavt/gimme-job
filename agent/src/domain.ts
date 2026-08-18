@@ -128,7 +128,6 @@ export const JobAnalysisSchema = z.object({
   marketSignals: z.object({
     seniority: z.string(),
     employmentType: z.string(),
-    remotePolicy: z.string(),
     salary: z.string(),
     reservation: z.string(),
     language: z.string(),

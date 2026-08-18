@@ -19,7 +19,6 @@ interface JobAnalysis {
   marketSignals?: {
     seniority: string;
     employmentType: string;
-    remotePolicy: string;
     salary: string;
     reservation: string;
     language: string;
@@ -584,7 +583,6 @@ function JobAnalysisPanel({ job }: { job: Job }) {
     {analysis.marketSignals && <dl className="job-facts market-signals">
       <div><dt>Seniority</dt><dd>{analysis.marketSignals.seniority}</dd></div>
       <div><dt>Employment</dt><dd>{analysis.marketSignals.employmentType}</dd></div>
-      <div><dt>Remote</dt><dd>{analysis.marketSignals.remotePolicy}</dd></div>
       <div><dt>Language</dt><dd>{analysis.marketSignals.language}</dd></div>
     </dl>}
   </article>;

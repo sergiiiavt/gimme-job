@@ -59,7 +59,6 @@ test("deterministic job intelligence is one stable fallback", () => {
   const analysis = deterministicAnalysis(job, profile);
   const pkg = deterministicResumePackage(job, profile);
   assert.equal(analysis.marketSignals.seniority, "Lead/Manager");
-  assert.equal(analysis.marketSignals.remotePolicy, "Remote mentioned");
   assert.ok(analysis.matchingSkills.includes("QA leadership"));
   assert.match(pkg.tailoredResume.markdown, /QA Candidate/);
   assert.equal(pkg.applicationDraft.recipientGuess, "hr@example.com");
@@ -86,7 +85,6 @@ test("OpenAI analysis uses the shared strict schema path", async () => {
     marketSignals: {
       seniority: "Lead/Manager",
       employmentType: "Not specified",
-      remotePolicy: "Remote mentioned",
       salary: "Not disclosed",
       reservation: "Mentioned",
       language: "Not specified",
@@ -202,7 +200,6 @@ test("deterministic analysis distinguishes missing location, reservation and blo
     salaryText: "4000 EUR",
   };
   const result = deterministicAnalysis(candidate, blockedProfile);
-  assert.equal(result.marketSignals.remotePolicy, "Remote not confirmed");
   assert.equal(result.marketSignals.reservation, "Not mentioned");
   assert.equal(result.marketSignals.salary, "4000 EUR");
   assert.ok(result.missingSkills.includes("Cypress"));
