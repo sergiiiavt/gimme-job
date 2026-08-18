@@ -21,11 +21,62 @@
 }
 
 .vacancy-workspace .score strong {
-  font-size: 14px;
+  font-size: 11px;
+  letter-spacing: -.035em;
 }
 
 .vacancy-workspace .score span {
-  font-size: 6.5px;
+  font-size: 5.5px;
+  margin-top: 1px;
+}
+
+.vacancy-workspace .score.score-low {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.vacancy-workspace .score.score-fair {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.vacancy-workspace .score.score-good {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.vacancy-workspace .score.score-strong {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.vacancy-workspace .vacancy-match.has-score strong {
+  font-size: 10px;
+  letter-spacing: -.02em;
+}
+
+.vacancy-workspace .vacancy-match.has-score span {
+  font-size: 7.5px;
+}
+
+.vacancy-workspace .vacancy-match.score-low strong,
+.vacancy-workspace .vacancy-match.score-low span {
+  color: var(--red);
+}
+
+.vacancy-workspace .vacancy-match.score-fair strong,
+.vacancy-workspace .vacancy-match.score-fair span {
+  color: var(--amber);
+}
+
+.vacancy-workspace .vacancy-match.score-good strong,
+.vacancy-workspace .vacancy-match.score-good span {
+  color: var(--blue);
+}
+
+.vacancy-workspace .vacancy-match.score-strong strong,
+.vacancy-workspace .vacancy-match.score-strong span {
+  color: var(--green);
 }
 
 .vacancy-workspace-personal .vacancy-detail-tab {
