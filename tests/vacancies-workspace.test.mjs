@@ -13,7 +13,8 @@ const layout = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8
 
 test("workspace uses the approved vacancies workspace", () => {
   assert.match(route, /import VacanciesWorkspace from "\.\.\/vacancies-workspace"/);
-  assert.match(route, /<VacanciesWorkspace\/>/);
+  assert.match(route, /<VacanciesWorkspace key="personal" mode="personal"\/>/);
+  assert.match(publicRoute, /<VacanciesWorkspace key="public" mode="public"\/>/);
 });
 
 test("desktop vacancy table uses strict data columns", () => {
@@ -29,7 +30,7 @@ test("desktop vacancy table uses strict data columns", () => {
 });
 
 test("public state fails closed and private actions remain gated", () => {
-  assert.match(source, /const isPersonal = authenticated === true/);
+  assert.match(source, /const isPersonal = mode === "personal" && authenticated === true/);
   assert.match(source, /setAuthenticated\(false\);/);
   assert.match(source, /if \(!isPersonal\) return;/);
   assert.match(source, /\{isPersonal \? <div className="page-actions">/);
