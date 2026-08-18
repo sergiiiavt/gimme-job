@@ -95,7 +95,8 @@ test("vacancy filter popovers behave as one exclusive group", () => {
 test("vacancies use closable workspace tabs instead of back navigation", () => {
   assert.match(source, /const \[openTabIds, setOpenTabIds\] = useState<string\[]>\(\[\]\)/);
   assert.match(source, /className="vacancy-tab-list" role="tablist"/);
-  assert.match(source, />Board<\/button>/);
+  assert.match(source, /<strong>Dashboard<\/strong><\/button>/);
+  assert.match(source, /style=\{\{ justifyContent: "center", width: "100%" \}\}/);
   assert.match(source, /className="vacancy-tab-close"/);
   assert.match(source, /onClick=\{\(\) => openVacancy\(job\.id\)\}/);
   assert.doesNotMatch(source, /Back to vacancies/);

@@ -521,7 +521,8 @@ export default function VacanciesWorkspace() {
                   aria-selected={selectedId === null}
                   aria-controls="vacancy-board-panel"
                   onClick={() => setSelectedId(null)}
-                >Board</button>
+                  style={{ justifyContent: "center", width: "100%" }}
+                ><strong>Dashboard</strong></button>
               </div>
               {openTabs.map((job) => {
                 const active = selectedId === job.id;
