@@ -61,6 +61,18 @@ interface DashboardData {
   authenticated?: boolean;
 }
 
+interface VacancyCacheSnapshot {
+  jobs: Job[];
+  authenticated: boolean;
+  dataUpdatedAt: number;
+  lastAccessedAt: number;
+}
+
+interface VacancyWorkspaceSnapshot {
+  openTabIds: string[];
+  selectedId: string | null;
+}
+
 const STATUS_OPTIONS: Array<{ value: JobStatus; label: string }> = [
   { value: "NEW", label: "New" },
   { value: "INTERESTED", label: "Interested" },
@@ -88,6 +100,14 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "OLDEST", label: "Oldest first" },
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
+
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v1";
+const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
+const VACANCY_STALE_MS = 10 * 60 * 1000;
+const VACANCY_GC_MS = 60 * 60 * 1000;
+
+let clientVacancyCache: VacancyCacheSnapshot | null = null;
+let clientVacancyWorkspace: VacancyWorkspaceSnapshot | null = null;
 
 const DEMO_JOBS: Job[] = [
   {
@@ -261,6 +281,110 @@ function scoreTone(score: number): ScoreTone {
   return "strong";
 }
 
+function sortJobsByNewest(jobs: Job[]) {
+  return [...jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
+}
+
+function removeVacancyCache() {
+  clientVacancyCache = null;
+  if (typeof window !== "undefined") window.sessionStorage.removeItem(VACANCY_CACHE_KEY);
+}
+
+function readVacancyCache(): VacancyCacheSnapshot | null {
+  if (typeof window === "undefined") return null;
+  const now = Date.now();
+  let snapshot = clientVacancyCache;
+
+  if (!snapshot) {
+    try {
+      const raw = window.sessionStorage.getItem(VACANCY_CACHE_KEY);
+      if (raw) snapshot = JSON.parse(raw) as VacancyCacheSnapshot;
+    } catch {
+      removeVacancyCache();
+      return null;
+    }
+  }
+
+  if (!snapshot || !Array.isArray(snapshot.jobs) || typeof snapshot.authenticated !== "boolean" || !Number.isFinite(snapshot.dataUpdatedAt) || !Number.isFinite(snapshot.lastAccessedAt)) {
+    removeVacancyCache();
+    return null;
+  }
+
+  if (now - snapshot.lastAccessedAt >= VACANCY_GC_MS) {
+    removeVacancyCache();
+    return null;
+  }
+
+  const touched = { ...snapshot, lastAccessedAt: now };
+  clientVacancyCache = touched;
+  window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(touched));
+  return touched;
+}
+
+function writeVacancyCache(dashboard: DashboardData): VacancyCacheSnapshot {
+  const now = Date.now();
+  const snapshot: VacancyCacheSnapshot = {
+    jobs: sortJobsByNewest(dashboard.jobs),
+    authenticated: Boolean(dashboard.authenticated),
+    dataUpdatedAt: now,
+    lastAccessedAt: now,
+  };
+  clientVacancyCache = snapshot;
+  if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(snapshot));
+  return snapshot;
+}
+
+function touchVacancyCache() {
+  if (typeof window === "undefined") return;
+  const snapshot = clientVacancyCache;
+  if (!snapshot) return;
+  const touched = { ...snapshot, lastAccessedAt: Date.now() };
+  clientVacancyCache = touched;
+  window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(touched));
+}
+
+function readClientVacancyCache() {
+  if (typeof window === "undefined" || !clientVacancyCache) return null;
+  if (Date.now() - clientVacancyCache.lastAccessedAt >= VACANCY_GC_MS) {
+    removeVacancyCache();
+    return null;
+  }
+  return clientVacancyCache;
+}
+
+function readVacancyWorkspace(): VacancyWorkspaceSnapshot | null {
+  if (typeof window === "undefined") return null;
+  if (clientVacancyWorkspace) return clientVacancyWorkspace;
+  try {
+    const raw = window.sessionStorage.getItem(VACANCY_WORKSPACE_KEY);
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw) as VacancyWorkspaceSnapshot;
+    if (!Array.isArray(snapshot.openTabIds) || !snapshot.openTabIds.every((id) => typeof id === "string") || (snapshot.selectedId !== null && typeof snapshot.selectedId !== "string")) {
+      window.sessionStorage.removeItem(VACANCY_WORKSPACE_KEY);
+      return null;
+    }
+    clientVacancyWorkspace = snapshot;
+    return snapshot;
+  } catch {
+    window.sessionStorage.removeItem(VACANCY_WORKSPACE_KEY);
+    return null;
+  }
+}
+
+function readClientVacancyWorkspace() {
+  return typeof window === "undefined" ? null : clientVacancyWorkspace;
+}
+
+function writeVacancyWorkspace(snapshot: VacancyWorkspaceSnapshot) {
+  clientVacancyWorkspace = snapshot;
+  if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_WORKSPACE_KEY, JSON.stringify(snapshot));
+}
+
+function clearVacancyWorkspace() {
+  clientVacancyWorkspace = null;
+  if (typeof window !== "undefined") window.sessionStorage.removeItem(VACANCY_WORKSPACE_KEY);
+}
+
 function VacancyMultiFilter<T extends string>({ allLabel, className = "", label, onChange, options, selected }: {
   allLabel: string;
   className?: string;
@@ -336,10 +460,13 @@ function VacancySort({ onChange, options, value }: {
 }
 
 export default function VacanciesWorkspace() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [online, setOnline] = useState<boolean | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [openTabIds, setOpenTabIds] = useState<string[]>([]);
+  const memoryCache = readClientVacancyCache();
+  const memoryWorkspace = readClientVacancyWorkspace();
+  const [jobs, setJobs] = useState<Job[]>(() => memoryCache?.jobs ?? []);
+  const [online, setOnline] = useState<boolean | null>(() => memoryCache ? true : null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => memoryWorkspace?.selectedId ?? null);
+  const [openTabIds, setOpenTabIds] = useState<string[]>(() => memoryWorkspace?.openTabIds ?? []);
+  const [workspaceReady, setWorkspaceReady] = useState(false);
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilters, setStatusFilters] = useState<JobStatus[]>([]);
@@ -351,7 +478,7 @@ export default function VacanciesWorkspace() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [analyzeProgress, setAnalyzeProgress] = useState<{ done: number; total: number } | null>(null);
   const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [authenticated, setAuthenticated] = useState<boolean | null>(() => memoryCache?.authenticated ?? null);
   const analyzeCancelRef = useRef(false);
   const isPersonal = authenticated === true;
   const viewMode = isPersonal ? "personal" : "public";
@@ -359,12 +486,27 @@ export default function VacanciesWorkspace() {
   useEffect(() => {
     let active = true;
     let retryTimer: number | undefined;
+    const cached = readVacancyCache();
+    const workspace = readVacancyWorkspace();
+
+    if (cached) {
+      setJobs(cached.jobs);
+      setOnline(true);
+      setAuthenticated(cached.authenticated);
+    }
+    if (workspace) {
+      setOpenTabIds(workspace.openTabIds);
+      setSelectedId(workspace.selectedId);
+    }
+    setWorkspaceReady(true);
+
     const loadDashboard = (attempt = 0) => api<DashboardData>("/dashboard")
       .then((result) => {
         if (!active) return;
-        setJobs([...result.jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime()));
+        const snapshot = writeVacancyCache(result);
+        setJobs(snapshot.jobs);
         setOnline(true);
-        setAuthenticated(Boolean(result.authenticated));
+        setAuthenticated(snapshot.authenticated);
       })
       .catch(() => {
         if (!active) return;
@@ -372,17 +514,41 @@ export default function VacanciesWorkspace() {
           retryTimer = window.setTimeout(() => loadDashboard(attempt + 1), 400);
           return;
         }
+        if (cached) {
+          setOnline(false);
+          setAuthenticated(false);
+          return;
+        }
         setJobs(DEMO_JOBS);
         setOnline(false);
         // Fail closed: private controls must never appear because the dashboard request failed.
         setAuthenticated(false);
       });
-    void loadDashboard();
+
+    const shouldRefresh = !cached || Date.now() - cached.dataUpdatedAt >= VACANCY_STALE_MS;
+    if (shouldRefresh) void loadDashboard();
+
     return () => {
       active = false;
+      touchVacancyCache();
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
     };
   }, []);
+
+  useEffect(() => {
+    if (!workspaceReady) return;
+    writeVacancyWorkspace({ openTabIds, selectedId });
+  }, [openTabIds, selectedId, workspaceReady]);
+
+  useEffect(() => {
+    if (!workspaceReady || online !== true || jobs.length === 0) return;
+    const availableIds = new Set(jobs.map((job) => job.id));
+    setOpenTabIds((current) => {
+      const next = current.filter((id) => availableIds.has(id));
+      return next.length === current.length ? current : next;
+    });
+    if (selectedId && !availableIds.has(selectedId)) setSelectedId(null);
+  }, [jobs, online, selectedId, workspaceReady]);
 
   useEffect(() => {
     if (!notice) return;
@@ -426,6 +592,13 @@ export default function VacanciesWorkspace() {
   const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
   const analysisTargetCount = selected ? 1 : selectedIds.size;
 
+  const applyDashboard = (dashboard: DashboardData) => {
+    const snapshot = writeVacancyCache(dashboard);
+    setJobs(snapshot.jobs);
+    setOnline(true);
+    setAuthenticated(snapshot.authenticated);
+  };
+
   const clearFilters = () => {
     setQuery("");
     setDateFilter("");
@@ -446,12 +619,13 @@ export default function VacanciesWorkspace() {
 
   const sync = async () => {
     if (!isPersonal) return;
+    setOpenTabIds([]);
+    setSelectedId(null);
+    clearVacancyWorkspace();
     setBusy("sync");
     try {
       const result = await api<{ dashboard: DashboardData }>("/sync", "POST", {});
-      setJobs(result.dashboard.jobs);
-      setOnline(true);
-      setAuthenticated(Boolean(result.dashboard.authenticated));
+      applyDashboard(result.dashboard);
       setNotice("Job sources synced. Nothing was sent.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error));
@@ -488,9 +662,7 @@ export default function VacanciesWorkspace() {
       setAnalyzeLog((log) => [...log, `Analyzing "${label}"…`]);
       try {
         const result = await api<{ dashboard: DashboardData; result: Array<{ score: number; verdict: string; mode: string }> }>("/analyze", "POST", { jobId });
-        setJobs(result.dashboard.jobs);
-        setOnline(true);
-        setAuthenticated(Boolean(result.dashboard.authenticated));
+        applyDashboard(result.dashboard);
         const outcome = result.result[0];
         setAnalyzeLog((log) => [...log, outcome
           ? `  ✓ ${label} — score ${formatScore(outcome.score)} (${outcome.verdict}, ${outcome.mode})`
@@ -516,9 +688,7 @@ export default function VacanciesWorkspace() {
     setBusy(`resume-${job.id}`);
     try {
       const result = await api<{ dashboard: DashboardData; result: { mode: string } }>("/analyze-resume", "POST", { jobId: job.id });
-      setJobs(result.dashboard.jobs);
-      setOnline(true);
-      setAuthenticated(Boolean(result.dashboard.authenticated));
+      applyDashboard(result.dashboard);
       setNotice(`Resume adjusted (${result.result.mode}). Nothing was sent.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error));
@@ -551,7 +721,7 @@ export default function VacanciesWorkspace() {
     setJobs((current) => current.map((item) => item.id === job.id ? optimistic : item));
     try {
       const result = await api<{ dashboard: DashboardData }>(`/jobs/${encodeURIComponent(job.id)}`, "PATCH", change);
-      setJobs(result.dashboard.jobs);
+      applyDashboard(result.dashboard);
       setNotice("Saved to the database.");
     } catch (error) {
       setJobs((current) => current.map((item) => item.id === job.id ? job : item));
