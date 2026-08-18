@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
+import VacancyScrollState from "./vacancy-scroll-state";
 import "./globals.css";
 import "./interview-auth-layout.css";
 import "./about-site-layout.css";
@@ -7,6 +8,7 @@ import "./vacancies-workspace.css";
 import "./vacancy-detail-layout.css";
 import "./vacancy-filter-enhancer.css";
 import "./vacancy-description.css";
+import "./vacancy-interaction-state.css";
 import "./quick-reference-availability.css";
 import "./brand-logo.css";
 import "./mobile-navigation-logo.css";
@@ -42,6 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <PrimaryNavScrollState/>
+        <VacancyScrollState/>
         {children}
       </body>
     </html>
