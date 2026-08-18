@@ -20,6 +20,14 @@
   padding: 0 4px;
 }
 
+.vacancy-workspace .score strong {
+  font-size: 14px;
+}
+
+.vacancy-workspace .score span {
+  font-size: 6.5px;
+}
+
 .vacancy-workspace-personal .vacancy-detail-tab {
   align-items: start;
   display: grid;
