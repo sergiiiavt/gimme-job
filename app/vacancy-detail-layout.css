@@ -1,5 +1,5 @@
 /* Vacancy detail workspace layout overrides.
-   Keep public vacancy details full-width; use the denser two-sided workspace for signed-in personal tools. */
+   Keep public vacancy details as a centered reading surface; use the denser two-sided workspace for signed-in personal tools. */
 
 .vacancy-workspace {
   max-width: none;
@@ -147,6 +147,23 @@
   color: var(--green);
 }
 
+.vacancy-workspace-public .vacancy-detail-tab {
+  margin: 18px auto 0;
+  max-width: 1040px;
+  padding: 0 clamp(12px, 2.6vw, 36px) 32px;
+}
+
+.vacancy-workspace-public .vacancy-detail-tab .job-detail {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  max-width: none;
+  padding: 18px 0 0;
+  width: 100%;
+}
+
 .vacancy-workspace-personal .vacancy-detail-tab {
   align-items: start;
   display: grid;
@@ -200,5 +217,10 @@
     align-items: stretch;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .vacancy-workspace-public .vacancy-detail-tab {
+    margin-top: 8px;
+    padding: 0 2px 24px;
   }
 }

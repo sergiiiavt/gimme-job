@@ -83,14 +83,35 @@ function escapeHtml(value: string): string {
   })[character] ?? character);
 }
 
-function page(mode: "login" | "register", nextPath: string, email = "", error = ""): Response {
+function normalizePublicReturnPath(request: Request, value: string | null): string {
+  const safePath = (candidate: string): string | null => {
+    const trimmed = candidate.trim();
+    if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.startsWith("/workspace")) return null;
+    return trimmed;
+  };
+
+  if (value) return safePath(value) ?? "/";
+
+  const referer = request.headers.get("referer");
+  if (!referer) return "/";
+  try {
+    const currentUrl = new URL(request.url);
+    const refererUrl = new URL(referer);
+    if (refererUrl.origin !== currentUrl.origin) return "/";
+    return safePath(`${refererUrl.pathname}${refererUrl.search}`) ?? "/";
+  } catch {
+    return "/";
+  }
+}
+
+function page(mode: "login" | "register", nextPath: string, returnPath: string, email = "", error = ""): Response {
   const register = mode === "register";
   const title = register ? "Create account" : "Sign in";
   const alternate = register
-    ? `/workspace/login?next=${encodeURIComponent(nextPath)}`
-    : `/workspace/register?next=${encodeURIComponent(nextPath)}`;
+    ? `/workspace/login?next=${encodeURIComponent(nextPath)}&returnTo=${encodeURIComponent(returnPath)}`
+    : `/workspace/register?next=${encodeURIComponent(nextPath)}&returnTo=${encodeURIComponent(returnPath)}`;
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · GimmeJob</title><style>
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5f7f5;color:#26332d;font-family:Inter,system-ui,sans-serif;padding:24px}.card{width:min(100%,420px);background:white;border:1px solid #dde4de;border-radius:14px;padding:28px;box-shadow:0 16px 45px #1f312714}.brand{font-size:12px;font-weight:900;color:#315a43;letter-spacing:.04em}h1{font-size:24px;margin:18px 0 4px}.sub,.hint{color:#75817b;font-size:12px;line-height:1.45}.err{background:#fff1f0;border:1px solid #f1c7c4;color:#8a302a;border-radius:8px;padding:10px 12px;font-size:12px;margin-top:15px}label{display:grid;gap:7px;font-size:12px;font-weight:750;margin-top:15px}input{border:1px solid #ccd6ce;border-radius:8px;padding:11px 12px;font:inherit}button{width:100%;border:0;border-radius:8px;padding:11px;margin-top:20px;background:#315a43;color:white;font-weight:700;cursor:pointer}a{display:block;text-align:center;margin-top:17px;color:#496557;font-size:12px;text-decoration:none}.back{color:#7c8881;font-size:11px}</style></head><body><main class="card"><div class="brand">GIMMEJOB</div><h1>${title}</h1><p class="sub">${register ? "Create your personal workspace." : "Open your personal workspace."}</p>${error ? `<div class="err">${escapeHtml(error)}</div>` : ""}<form method="post" action="/workspace/${mode}"><input type="hidden" name="next" value="${escapeHtml(nextPath)}"><label>Email<input type="email" name="email" value="${escapeHtml(email)}" maxlength="254" autocomplete="email" required></label><label>Password<input type="password" name="password" minlength="${MIN_PASSWORD}" maxlength="${MAX_PASSWORD}" autocomplete="${register ? "new-password" : "current-password"}" required></label>${register ? `<label>Confirm password<input type="password" name="confirmPassword" minlength="${MIN_PASSWORD}" maxlength="${MAX_PASSWORD}" autocomplete="new-password" required></label>` : ""}<button>${title}</button></form><a href="${alternate}">${register ? "Already have an account? Sign in" : "New to GimmeJob? Create account"}</a><a class="back" href="/">← Public site</a></main></body></html>`;
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5f7f5;color:#26332d;font-family:Inter,system-ui,sans-serif;padding:24px}.card{width:min(100%,420px);background:white;border:1px solid #dde4de;border-radius:14px;padding:28px;box-shadow:0 16px 45px #1f312714}.brand{font-size:12px;font-weight:900;color:#315a43;letter-spacing:.04em}h1{font-size:24px;margin:18px 0 4px}.sub,.hint{color:#75817b;font-size:12px;line-height:1.45}.err{background:#fff1f0;border:1px solid #f1c7c4;color:#8a302a;border-radius:8px;padding:10px 12px;font-size:12px;margin-top:15px}label{display:grid;gap:7px;font-size:12px;font-weight:750;margin-top:15px}input{border:1px solid #ccd6ce;border-radius:8px;padding:11px 12px;font:inherit}button{width:100%;border:0;border-radius:8px;padding:11px;margin-top:20px;background:#315a43;color:white;font-weight:700;cursor:pointer}a{display:block;text-align:center;margin-top:17px;color:#496557;font-size:12px;text-decoration:none}.back{color:#7c8881;font-size:11px}</style></head><body><main class="card"><div class="brand">GIMMEJOB</div><h1>${title}</h1><p class="sub">${register ? "Create your personal workspace." : "Open your personal workspace."}</p>${error ? `<div class="err">${escapeHtml(error)}</div>` : ""}<form method="post" action="/workspace/${mode}"><input type="hidden" name="next" value="${escapeHtml(nextPath)}"><input type="hidden" name="returnTo" value="${escapeHtml(returnPath)}"><label>Email<input type="email" name="email" value="${escapeHtml(email)}" maxlength="254" autocomplete="email" required></label><label>Password<input type="password" name="password" minlength="${MIN_PASSWORD}" maxlength="${MAX_PASSWORD}" autocomplete="${register ? "new-password" : "current-password"}" required></label>${register ? `<label>Confirm password<input type="password" name="confirmPassword" minlength="${MIN_PASSWORD}" maxlength="${MAX_PASSWORD}" autocomplete="new-password" required></label>` : ""}<button>${title}</button></form><a href="${alternate}">${register ? "Already have an account? Sign in" : "New to GimmeJob? Create account"}</a><a class="back" href="${escapeHtml(returnPath)}">← Public site</a></main></body></html>`;
   return new Response(html, {
     status: error ? 400 : 200,
     headers: {
@@ -195,23 +216,25 @@ export async function handlePasswordLogin(request: Request, env: PasswordAuthEnv
   if (!multiUserEnabled(env) || !env.DB) return new Response("Not found.", { status: 404 });
   const url = new URL(request.url);
   const nextPath = normalizeNextPath(url.searchParams.get("next"));
-  if (request.method === "GET" || request.method === "HEAD") return page("login", nextPath);
+  const returnPath = normalizePublicReturnPath(request, url.searchParams.get("returnTo"));
+  if (request.method === "GET" || request.method === "HEAD") return page("login", nextPath, returnPath);
   if (request.method !== "POST") return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD, POST" } });
 
   const form = await request.formData();
   const email = normalizeEmail(String(form.get("email") ?? ""));
   const password = String(form.get("password") ?? "");
   const next = normalizeNextPath(String(form.get("next") ?? nextPath));
-  if (!validEmail(email) || !password) return page("login", next, email, "Invalid email or password.");
+  const formReturnPath = normalizePublicReturnPath(request, String(form.get("returnTo") ?? returnPath));
+  if (!validEmail(email) || !password) return page("login", next, formReturnPath, email, "Invalid email or password.");
   const key = await throttleKey(request, email);
-  if (await isBlocked(env.DB, key)) return page("login", next, email, "Too many sign-in attempts. Try again in 15 minutes.");
+  if (await isBlocked(env.DB, key)) return page("login", next, formReturnPath, email, "Too many sign-in attempts. Try again in 15 minutes.");
 
   const user = await env.DB.prepare("SELECT id,password_hash FROM users WHERE email = ? LIMIT 1")
     .bind(email).first<{ id?: string; password_hash?: string | null }>();
   const valid = Boolean(user?.id && user.password_hash && await verifyPassword(password, user.password_hash));
   if (!valid || !user?.id) {
     await failLogin(env.DB, key);
-    return page("login", next, email, "Invalid email or password.");
+    return page("login", next, formReturnPath, email, "Invalid email or password.");
   }
   await env.DB.prepare("DELETE FROM auth_login_limits WHERE key = ?").bind(key).run();
   await ensureForwardingAlias(env.DB, user.id);
@@ -222,7 +245,8 @@ export async function handlePasswordRegister(request: Request, env: PasswordAuth
   if (!multiUserEnabled(env) || !env.DB) return new Response("Not found.", { status: 404 });
   const url = new URL(request.url);
   const nextPath = normalizeNextPath(url.searchParams.get("next"));
-  if (request.method === "GET" || request.method === "HEAD") return page("register", nextPath);
+  const returnPath = normalizePublicReturnPath(request, url.searchParams.get("returnTo"));
+  if (request.method === "GET" || request.method === "HEAD") return page("register", nextPath, returnPath);
   if (request.method !== "POST") return new Response("Method not allowed.", { status: 405, headers: { allow: "GET, HEAD, POST" } });
 
   const form = await request.formData();
@@ -231,16 +255,17 @@ export async function handlePasswordRegister(request: Request, env: PasswordAuth
   const confirm = String(form.get("confirmPassword") ?? "");
   const legacyPassword = String(form.get("legacyPassword") ?? "");
   const next = normalizeNextPath(String(form.get("next") ?? nextPath));
-  if (!validEmail(email)) return page("register", next, email, "Enter a valid email address.");
-  if (password.length < MIN_PASSWORD || password.length > MAX_PASSWORD) return page("register", next, email, `Password must contain ${MIN_PASSWORD}-${MAX_PASSWORD} characters.`);
-  if (password !== confirm) return page("register", next, email, "Passwords do not match.");
-  if (legacyPassword && (!env.APP_PASSWORD || !constantTimeEqual(legacyPassword, env.APP_PASSWORD))) return page("register", next, email, "The existing private-site password is incorrect.");
+  const formReturnPath = normalizePublicReturnPath(request, String(form.get("returnTo") ?? returnPath));
+  if (!validEmail(email)) return page("register", next, formReturnPath, email, "Enter a valid email address.");
+  if (password.length < MIN_PASSWORD || password.length > MAX_PASSWORD) return page("register", next, formReturnPath, email, `Password must contain ${MIN_PASSWORD}-${MAX_PASSWORD} characters.`);
+  if (password !== confirm) return page("register", next, formReturnPath, email, "Passwords do not match.");
+  if (legacyPassword && (!env.APP_PASSWORD || !constantTimeEqual(legacyPassword, env.APP_PASSWORD))) return page("register", next, formReturnPath, email, "The existing private-site password is incorrect.");
 
   try {
     const userId = await createAccount(env.DB, email, password);
     if (legacyPassword) await claimLegacy(env.DB, userId);
     return redirect(next, await newSession(env.DB, userId));
   } catch (error) {
-    return page("register", next, email, error instanceof Error ? error.message : "Unable to create account.");
+    return page("register", next, formReturnPath, email, error instanceof Error ? error.message : "Unable to create account.");
   }
 }
