@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { handleVacancyAutomationActivity } from "../app/internal/n8n/vacancies-sync/route.ts";
+import { handleVacancyAutomationActivity } from "../app/internal/n8n/vacancies-sync/activity.ts";
 
 const TOKEN = "test-ingest-token";
 
@@ -32,7 +32,7 @@ function fakeDb() {
               job_id: "job-1",
               title: "QA Lead",
               company: "Example",
-              actor_label: "GimmeJob AI",
+              actor_label: "GimmeJob automation",
               action: "analysis_regenerated",
               field: "analysis",
               before_value: "80/100 · possible",
