@@ -421,6 +421,12 @@ test("interview stars migration keeps personal stars tenant-scoped", async () =>
   assert.match(sql, /FOREIGN KEY \(`user_id`\) REFERENCES `users`\(`id`\)[^\n]*ON DELETE cascade/);
 });
 
+test("interview star cleanup migration removes every pre-existing star", async () => {
+  const sql = await readFile(new URL("../drizzle/0013_clear_interview_stars.sql", import.meta.url), "utf8");
+  assert.match(sql, /DELETE FROM `user_interview_stars`/);
+  assert.doesNotMatch(sql, /WHERE/);
+});
+
 test("tenant unavailable response is explicit and non-cacheable", async () => {
   const response = tenantUnavailable("Job analysis");
   assert.equal(response.status, 501);

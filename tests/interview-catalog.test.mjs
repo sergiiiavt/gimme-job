@@ -212,8 +212,9 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.match(generatorSource, /practicalFocusByConcept/);
   assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 672;/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
-  assert.match(generatorSource, /const generatedPrevalence = \(question\) =>/);
-  assert.match(generatorSource, /question\.category === "Practical tasks"/);
+  assert.match(generatorSource, /reviewInterviewPrevalence/);
+  assert.match(generatorSource, /modernSdet\.questions = modernSdet\.questions\.map/);
+  assert.match(generatorSource, /coreFoundations\.questions = coreFoundations\.questions\.map/);
   assert.doesNotMatch(generatorSource, /prevalenceByPosition/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
@@ -240,6 +241,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /placeholder="Search all words across questions, answers, tags, or skills"/);
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
   assert.match(uiSource, /type InterviewPrevalenceFilter = InterviewPrevalence;/);
+  assert.match(uiSource, /const contentMode: SiteMode = \(section === "interview" \|\| section === "python-interview"\) \? mode : effectiveMode;/);
   assert.doesNotMatch(uiSource, /editorialStar/);
   assert.doesNotMatch(uiSource, /Starred fundamental/);
   assert.match(stylesSource, /\.iq-star-icon \{/);

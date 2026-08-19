@@ -92,7 +92,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "test-design-conditions-before-cases",
@@ -156,7 +156,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Very common"
     },
     {
       "id": "test-design-combine-techniques",

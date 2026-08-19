@@ -31,7 +31,7 @@
         "postgres-docs",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "sql-command-families",
@@ -63,7 +63,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "database-keys-and-constraints",
@@ -95,7 +95,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "sql-null-semantics",
@@ -127,7 +127,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "sql-where-group-by-having",
@@ -159,7 +159,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "sql-union-versus-union-all",
@@ -191,7 +191,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "sql-find-duplicate-rows",
@@ -516,7 +516,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "database-indexes",
@@ -549,7 +549,7 @@
         "postgres-docs",
         "google-sre"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "sql-explain-query-plan",
@@ -581,7 +581,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "composite-index-column-order",
@@ -613,7 +613,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "database-schema-migrations",
@@ -646,7 +646,7 @@
         "postgres-docs",
         "google-sre"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "database-data-types-and-boundaries",
@@ -678,7 +678,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "database-test-data-isolation",
@@ -711,7 +711,7 @@
         "postgres-docs",
         "playwright-best-practices"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "database-replication-backup-recovery",
@@ -744,7 +744,7 @@
         "postgres-docs",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "sql-injection-parameterized-queries",
@@ -777,7 +777,7 @@
         "owasp-wstg",
         "postgres-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "database-views-procedures-triggers",
@@ -809,7 +809,7 @@
       "sourceIds": [
         "postgres-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     }
   ]
 }

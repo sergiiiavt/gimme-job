@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { reviewInterviewPrevalence } from "./interview-prevalence-policy.mjs";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
@@ -68,6 +69,7 @@ for (const question of questions) {
   questionTexts.add(normalizedQuestion);
   assert.ok(levels.has(question.level), `Invalid level for ${question.id}`);
   assert.ok(prevalenceLevels.has(question.prevalence), `Invalid prevalence for ${question.id}`);
+  assert.equal(question.prevalence, reviewInterviewPrevalence(question), `Prevalence is not reviewed by current policy for ${question.id}`);
   assert.ok(kinds.has(question.kind), `Invalid or missing kind for ${question.id}`);
   assert.ok(categories.has(question.category), `Unknown category ${question.category} in ${question.id}`);
   assert.ok(question.question?.trim(), `Missing question for ${question.id}`);

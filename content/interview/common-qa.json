@@ -25,7 +25,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -194,7 +194,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Test design"
     },
     {
@@ -221,7 +221,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Test design"
     },
     {
@@ -248,7 +248,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Practical"
     },
     {
@@ -283,7 +283,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Strategy"
     },
     {
@@ -309,7 +309,7 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -336,7 +336,7 @@
         "dou-qa-2022",
         "owasp-wstg"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Test design"
     },
     {
@@ -362,7 +362,7 @@
       "sourceIds": [
         "owasp-wstg"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Security"
     },
     {
@@ -389,7 +389,7 @@
         "dou-qa-2022",
         "owasp-wstg"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -415,7 +415,7 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Integration"
     },
     {
@@ -442,7 +442,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Strategy"
     },
     {
@@ -468,7 +468,7 @@
       "sourceIds": [
         "playwright-best-practices"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Troubleshooting"
     },
     {
@@ -495,7 +495,7 @@
         "dou-qa-2022",
         "playwright-best-practices"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Strategy"
     },
     {
@@ -521,7 +521,7 @@
       "sourceIds": [
         "playwright-best-practices"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Automation"
     },
     {
@@ -547,7 +547,7 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Release decision"
     },
     {
@@ -574,7 +574,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Strategy"
     },
     {
@@ -601,7 +601,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Release decision"
     },
     {
@@ -627,7 +627,7 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Troubleshooting"
     },
     {
@@ -653,7 +653,7 @@
       "sourceIds": [
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Strategy"
     },
     {
@@ -680,7 +680,7 @@
         "dou-qa-2022",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Risk analysis"
     },
     {
@@ -706,7 +706,7 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Leadership"
     },
     {
@@ -733,7 +733,7 @@
         "dou-qa-2022",
         "google-structured-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Behavioral"
     },
     {
@@ -759,7 +759,7 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Leadership"
     },
     {
@@ -785,7 +785,7 @@
       "sourceIds": [
         "google-structured-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Leadership"
     },
     {
@@ -812,7 +812,7 @@
         "dou-qa-2022",
         "google-structured-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Leadership"
     }
   ]

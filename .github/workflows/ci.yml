@@ -8,57 +8,15 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  branch_fix:
-    name: Apply interview cleanup
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/personal-stars-prevalence-audit'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Check out branch
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Use Node.js 22.22
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22.22
-          cache: npm
-
-      - name: Apply reviewed changes
-        run: |
-          node .tmp-apply-interview-review.mjs
-          node scripts/generate-interview-expansion.mjs
-          git checkout origin/main -- .github/workflows/ci.yml
-          rm -f .tmp-apply-interview-review.mjs
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Verify final product diff
-        run: npm run verify
-
-      - name: Commit final product diff
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet && exit 0
-          git commit -m "Clean interview stars and review prevalence"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
-
   validate:
     name: Validate
-    if: github.event_name != 'pull_request' || github.head_ref != 'agent/personal-stars-prevalence-audit'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

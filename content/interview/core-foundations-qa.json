@@ -32,7 +32,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "integration-test-approaches",
@@ -98,7 +98,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "cause-effect-graph-testing",
@@ -130,7 +130,7 @@
       "sourceIds": [
         "istqb-glossary"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "condition-decision-mcdc-coverage",
@@ -162,7 +162,7 @@
       "sourceIds": [
         "istqb-glossary"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "experience-based-techniques-comparison",
@@ -261,7 +261,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "testing-work-products-map",
@@ -294,7 +294,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "good-requirement-quality-characteristics",
@@ -327,7 +327,7 @@
         "nasa-requirements-handbook",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "requirement-acceptance-criteria-business-rule",
@@ -361,7 +361,7 @@
         "scrum-guide",
         "nasa-requirements-handbook"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "requirements-review-techniques",
@@ -394,7 +394,7 @@
         "nasa-requirements-handbook",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "requirement-verification-methods",
@@ -427,7 +427,7 @@
         "nasa-requirements-handbook",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "test-estimation-technique-families",
@@ -459,7 +459,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "three-point-test-estimation",
@@ -491,7 +491,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "test-effort-versus-duration",
@@ -523,7 +523,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "test-estimation-work-breakdown-hidden-work",
@@ -555,7 +555,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "test-reestimation-actuals-feedback",
@@ -587,7 +587,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     }
   ]
 }

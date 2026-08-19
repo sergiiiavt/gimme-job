@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
+import { reviewInterviewPrevalence } from "./interview-prevalence-policy.mjs";
 
 const root = new URL("../", import.meta.url);
 const readJson = async (path) => JSON.parse(await readFile(new URL(path, root), "utf8"));
@@ -217,13 +218,6 @@ const topics = [
   },
 ];
 
-const generatedSpecialistCategories = new Set(["Embedded and IoT", "AI, ML and LLM", "Regulated domains"]);
-const generatedPrevalence = (question) => {
-  if (question.category === "Practical tasks") return "Common";
-  if (generatedSpecialistCategories.has(question.category)) return "Specialist";
-  return "Occasional";
-};
-
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 const levelSequence = ["Junior", "Middle", "Middle", "Senior", "Senior", "Lead"];
 const kinds = ["Scenario", "Risk analysis", "Test design", "Troubleshooting", "Automation", "Release decision"];
@@ -373,9 +367,7 @@ const generatedByCategory = new Map(topics.map((topic) => [topic.category, []]))
 for (const question of generated) generatedByCategory.get(question.category).push(question);
 
 function reviewedPrevalence(question) {
-  if (question.id.startsWith("expanded-")) return generatedPrevalence(question);
-  assert.ok(question.prevalence, `Authored question ${question.id} must have an explicitly reviewed prevalence.`);
-  return question.prevalence;
+  return reviewInterviewPrevalence(question);
 }
 
 function addPrevalence(questions) {
@@ -396,6 +388,10 @@ canonical.questions = canonical.questions.map((question) => enrichedById.get(que
 databaseSql.questions = databaseSql.questions.map((question) => enrichedById.get(question.id));
 observabilityProduction.questions = observabilityProduction.questions.map((question) => enrichedById.get(question.id));
 restoredCoverage.questions = restoredCoverage.questions.map((question) => enrichedById.get(question.id));
+testingFoundations.questions = testingFoundations.questions.map((question) => enrichedById.get(question.id));
+embedded.questions = embedded.questions.map((question) => enrichedById.get(question.id));
+modernSdet.questions = modernSdet.questions.map((question) => enrichedById.get(question.id));
+coreFoundations.questions = coreFoundations.questions.map((question) => enrichedById.get(question.id));
 expanded.questions = [
   ...authoredExpandedQuestions.map((question) => enrichedById.get(question.id)),
   ...preservedGeneratedQuestions.map((question) => enrichedById.get(question.id)),
@@ -422,6 +418,8 @@ await Promise.all([
   writeJson("content/interview/restored-coverage-qa.json", restoredCoverage),
   writeJson("content/interview/testing-foundations-qa.json", testingFoundations),
   writeJson("content/interview/embedded-qa.json", embedded),
+  writeJson("content/interview/modern-sdet-qa.json", modernSdet),
+  writeJson("content/interview/core-foundations-qa.json", coreFoundations),
   writeJson("content/interview/expanded-qa.json", expanded),
   writeJson("content/interview/sources.json", sources),
   writeJson("content/interview/taxonomy.json", taxonomy),
