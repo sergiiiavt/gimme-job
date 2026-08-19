@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/starred-filter-first-compact
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
