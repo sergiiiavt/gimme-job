@@ -1,0 +1,159 @@
+.shell {
+  margin: 20px 0 24px;
+  overflow: hidden;
+  border: 1px solid #dfe5dc;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 300px;
+}
+
+.panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.resultPanel {
+  border-left: 1px solid #dfe5dc;
+  background: #f8faf7;
+}
+
+.header {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e5e9e3;
+  padding: 0 14px;
+  color: #2d4036;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.meta,
+.status {
+  color: #7b877f;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.editor,
+.output {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 214px;
+  flex: 1;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 4;
+}
+
+.editor {
+  resize: vertical;
+  outline: none;
+  background: #ffffff;
+  color: #1f2923;
+}
+
+.editor:focus {
+  box-shadow: inset 0 0 0 2px rgba(68, 104, 83, 0.16);
+}
+
+.output {
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f8faf7;
+  color: #314039;
+}
+
+.toolbar {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #e5e9e3;
+  padding: 8px 12px;
+}
+
+.primaryButton,
+.secondaryButton,
+.clearButton {
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 30px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.primaryButton {
+  border: 1px solid #405e4d;
+  background: #405e4d;
+  color: #ffffff;
+}
+
+.secondaryButton {
+  border: 1px solid #d8dfda;
+  background: #ffffff;
+  color: #405047;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.clearButton:hover {
+  filter: brightness(0.97);
+}
+
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.status {
+  margin-left: auto;
+}
+
+.clearButton {
+  border: 0;
+  background: transparent;
+  padding: 4px 0 4px 8px;
+  color: #6f7d74;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resultPanel {
+    border-top: 1px solid #dfe5dc;
+    border-left: 0;
+  }
+
+  .editor,
+  .output {
+    min-height: 190px;
+  }
+}
