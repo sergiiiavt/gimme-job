@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("QA and Python interview lists mount direct question links", async () => {
+  const [qaPage, pythonPage] = await Promise.all([
+    read("app/interview/page.tsx"),
+    read("app/interview/python/page.tsx"),
+  ]);
+
+  assert.match(qaPage, /InterviewQuestionLinkOverlay pathname="\/interview" questions=\{interviewCatalog\.questions\}/);
+  assert.match(pythonPage, /InterviewQuestionLinkOverlay pathname="\/interview\/python" questions=\{pythonInterviewCatalog\.questions\}/);
+});
+
+test("question link overlay maps visible EN or UA titles to stable question IDs", async () => {
+  const overlay = await read("app/interview-question-link-overlay.tsx");
+
+  assert.match(overlay, /questionDeepLinkHref\(pathname, questionId\)/);
+  assert.match(overlay, /question\.questionUk/);
+  assert.match(overlay, /MutationObserver/);
+  assert.match(overlay, /aria-label="Open direct link to this question"/);
+  assert.match(overlay, /title="Direct link"/);
+  assert.match(overlay, /iq-question-direct-link/);
+});
