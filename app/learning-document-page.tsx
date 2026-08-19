@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { contentHref } from "./content-deep-links";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
@@ -168,6 +170,9 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
 }
 
 export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const lessons = useMemo(() => curriculum.lessons ?? [], [curriculum.lessons]);
   const allModules = useMemo(() => curriculum.taxonomy.filter((item) => item.level || item.markdown), [curriculum.taxonomy]);
   const resolvedTrackOptions = useMemo<TrackOption[]>(
@@ -175,8 +180,12 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     [secondaryTitle, trackOptions],
   );
   const resolvedDefaultTrackId = defaultTrackId ?? resolvedTrackOptions[0]?.id ?? "default";
+  const requestedTrackId = searchParams.get("track");
+  const initialTrackId = requestedTrackId && resolvedTrackOptions.some((option) => option.id === requestedTrackId)
+    ? requestedTrackId
+    : resolvedDefaultTrackId;
   const showTrackSwitcher = resolvedTrackOptions.length > 1;
-  const [activeTrack, setActiveTrack] = useState(resolvedDefaultTrackId);
+  const [activeTrack, setActiveTrack] = useState(initialTrackId);
   const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -189,8 +198,27 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     return allModules.filter((item) => selectedModuleIds.has(item.id));
   }, [allModules, selectedTrack, trackAvailable]);
   const firstModuleId = modules[0]?.id ?? "";
-  const initialActiveModuleId = initialModuleId && modules.some((item) => item.id === initialModuleId) ? initialModuleId : firstModuleId;
+  const requestedModuleId = searchParams.get("topic") ?? initialModuleId;
+  const initialActiveModuleId = requestedModuleId && modules.some((item) => item.id === requestedModuleId) ? requestedModuleId : firstModuleId;
   const [activeModule, setActiveModule] = useState(initialActiveModuleId);
+
+  useEffect(() => {
+    if (!requestedTrackId || !resolvedTrackOptions.some((option) => option.id === requestedTrackId)) return;
+    setActiveTrack((current) => current === requestedTrackId ? current : requestedTrackId);
+  }, [requestedTrackId, resolvedTrackOptions]);
+
+  useEffect(() => {
+    if (!requestedModuleId || !modules.some((item) => item.id === requestedModuleId)) return;
+    setActiveModule((current) => current === requestedModuleId ? current : requestedModuleId);
+  }, [modules, requestedModuleId]);
+
+  useEffect(() => {
+    if (!activeModule || searchParams.get("topic")) return;
+    router.replace(contentHref(pathname, searchParams.toString(), {
+      topic: activeModule,
+      track: showTrackSwitcher ? activeTrack : null,
+    }), { scroll: false });
+  }, [activeModule, activeTrack, pathname, router, searchParams, showTrackSwitcher]);
 
   const moduleIndex = Math.max(0, modules.findIndex((item) => item.id === activeModule));
   const activeChapter = modules[moduleIndex] ?? modules[0];
@@ -246,6 +274,22 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   const headingIdOverrides = rawMarkdown ? rawHeadingOverrides : structuredHeadingOverrides;
   const headings = localizedHeadings.map((heading) => ({ ...heading, id: headingIdOverrides[heading.text] ?? heading.id }));
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.location.hash) return;
+    const rawHash = window.location.hash.slice(1);
+    let targetId = rawHash;
+    try {
+      targetId = decodeURIComponent(rawHash);
+    } catch {
+      targetId = rawHash;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeModule, generatedMarkdown]);
+
   const moduleCounts = useMemo(() => new Map(modules.map((item) => [
     item.id,
     item.count ?? lessons.filter((lesson) => lesson.moduleId === item.id).length,
@@ -263,11 +307,15 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
       const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
       setActiveTrack(trackId);
-      if (option.available) {
-        const allowedIds = option.moduleIds?.length ? new Set(option.moduleIds) : undefined;
-        const firstTrackModule = allowedIds ? allModules.find((item) => allowedIds.has(item.id)) : allModules[0];
-        setActiveModule(firstTrackModule?.id ?? "");
-      }
+      const allowedIds = option.moduleIds?.length ? new Set(option.moduleIds) : undefined;
+      const firstTrackModule = option.available
+        ? (allowedIds ? allModules.find((item) => allowedIds.has(item.id)) : allModules[0])
+        : undefined;
+      setActiveModule(firstTrackModule?.id ?? "");
+      router.push(contentHref(pathname, searchParams.toString(), {
+        topic: firstTrackModule?.id ?? null,
+        track: trackId,
+      }), { scroll: false });
       setMobileNav(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
@@ -276,6 +324,10 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   const selectModule = (moduleId: string) => {
     if (!modules.some((item) => item.id === moduleId)) return;
     setActiveModule(moduleId);
+    router.push(contentHref(pathname, searchParams.toString(), {
+      topic: moduleId,
+      track: showTrackSwitcher ? activeTrack : null,
+    }), { scroll: false });
     setMobileNav(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
