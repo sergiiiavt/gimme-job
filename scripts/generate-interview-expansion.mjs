@@ -217,11 +217,11 @@ const topics = [
   },
 ];
 
-const prevalenceByPosition = (position) => {
-  if (position < 8) return "Very common";
-  if (position < 17) return "Common";
-  if (position < 24) return "Occasional";
-  return "Specialist";
+const generatedSpecialistCategories = new Set(["Embedded and IoT", "AI, ML and LLM", "Regulated domains"]);
+const generatedPrevalence = (question) => {
+  if (question.category === "Practical tasks") return "Common";
+  if (generatedSpecialistCategories.has(question.category)) return "Specialist";
+  return "Occasional";
 };
 
 const slug = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -312,7 +312,6 @@ const preservedGeneratedQuestions = expanded.questions.filter((question) => ques
       ],
     };
   });
-const canonicalPrevalence = new Map(canonical.questions.map((question) => [question.id, question.prevalence]));
 const baseQuestions = [
   ...common.questions,
   ...authoredExpandedQuestions,
@@ -373,16 +372,17 @@ assert.ok(
 const generatedByCategory = new Map(topics.map((topic) => [topic.category, []]));
 for (const question of generated) generatedByCategory.get(question.category).push(question);
 
+function reviewedPrevalence(question) {
+  if (question.id.startsWith("expanded-")) return generatedPrevalence(question);
+  assert.ok(question.prevalence, `Authored question ${question.id} must have an explicitly reviewed prevalence.`);
+  return question.prevalence;
+}
+
 function addPrevalence(questions) {
-  const positions = new Map();
-  return questions.map((question) => {
-    const position = positions.get(question.category) ?? 0;
-    positions.set(question.category, position + 1);
-    return {
-      ...question,
-      prevalence: question.prevalence ?? canonicalPrevalence.get(question.id) ?? prevalenceByPosition(position),
-    };
-  });
+  return questions.map((question) => ({
+    ...question,
+    prevalence: reviewedPrevalence(question),
+  }));
 }
 
 const combinedEditorialOrder = [];

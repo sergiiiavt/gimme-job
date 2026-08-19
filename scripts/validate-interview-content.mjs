@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, editorialStars, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded, sources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
   readJson("../content/interview/database-sql-qa.json"),
@@ -13,7 +13,6 @@ const [common, canonical, databaseSql, observabilityProduction, restoredCoverage
   readJson("../content/interview/embedded-qa.json"),
   readJson("../content/interview/modern-sdet-qa.json"),
   readJson("../content/interview/core-foundations-qa.json"),
-  readJson("../content/interview/editorial-starred-question-ids.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
   readJson("../content/interview/taxonomy.json"),
@@ -132,10 +131,15 @@ for (const question of coreFoundations.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Core foundation question must have a stable explicit id: ${question.id}`);
 }
 
-assert.equal(new Set(editorialStars.questionIds).size, editorialStars.questionIds.length, "Editorial star question IDs must be unique.");
-assert.ok(editorialStars.questionIds.length >= 40, "Keep a useful curated set of starred foundations.");
-for (const questionId of editorialStars.questionIds) {
-  assert.ok(questionIds.has(questionId), `Editorial star references an unknown question: ${questionId}`);
+const generatedSpecialistCategories = new Set(["Embedded and IoT", "AI, ML and LLM", "Regulated domains"]);
+for (const question of questions.filter((item) => item.id.startsWith("expanded-"))) {
+  assert.notEqual(question.prevalence, "Very common", `Generated scenario must not be Very common: ${question.id}`);
+  const expected = question.category === "Practical tasks"
+    ? "Common"
+    : generatedSpecialistCategories.has(question.category)
+      ? "Specialist"
+      : "Occasional";
+  assert.equal(question.prevalence, expected, `Generated prevalence must follow the reviewed policy for ${question.id}`);
 }
 
 const referencedSourceIds = new Set(questions.flatMap((question) => question.sourceIds));

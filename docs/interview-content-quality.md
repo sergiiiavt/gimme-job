@@ -59,11 +59,13 @@ The expansion is role-aware through reusable tags such as `sdet`, `automation-en
 
 The previously generic practical cluster remains intact for stable IDs, but all 22 existing login, elevator, payment and upload scenarios now include product-specific failure modes and adapt their evidence to the stated constraint. This preserves additive history while removing the weakest boilerplate from the candidate experience.
 
-## Core foundations and editorial stars
+## Core foundations, personal stars and prevalence audit
 
 `content/interview/core-foundations-qa.json` adds 18 direct questions for acceptance and integration testing, static and dynamic techniques, experience-based and cause-effect design, structural coverage, test plans, test-case quality, testing work products, requirement quality and review, verification methods, and test-estimation techniques. NASA's requirements guidance adds a primary reference for clarity, completeness, consistency, feasibility, singularity, traceability and verifiability.
 
-`content/interview/editorial-starred-question-ids.json` curates the essential preparation path across both existing and new questions. The Starred option appears in the Prevalence filter for discoverability, but it is an independent editorial flag: every question keeps its real frequency band. No personal state is written yet, leaving future user-specific stars free to remain private.
+The former public editorial-star set has been removed. A star is now exclusively user-specific state stored privately in `user_interview_stars`; public catalog data contains no star field and public question cards render no star. In Personal view, starring and the separate **Starred only** control are independent from prevalence, so a starred question can still be Very common, Common, Occasional or Specialist.
+
+The prevalence audit also removes the generator's old position-based fallback. Exact generated scenario variants are no longer promoted merely because they appeared early in a topic. Classic practical interview exercises are classified **Common**; broad generated variants are **Occasional**; generated variants in Embedded and IoT, AI/ML/LLM, and Regulated domains are **Specialist**. Authored questions retain an explicit reviewed prevalence and can use **Very common** when the direct question is supported as a recurring interview prompt.
 
 ## Readability and media policy
 

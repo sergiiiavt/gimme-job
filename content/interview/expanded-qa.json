@@ -3678,7 +3678,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-testing-objectives-when-the-team-has-one-day-before-release",
@@ -3712,7 +3712,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-testing-objectives-for-a-feature-shared-by-several-services",
@@ -3986,7 +3986,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-test-levels-on-a-fast-moving-product-with-incomplete-requirements",
@@ -4020,7 +4020,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-test-levels-when-the-team-has-one-day-before-release",
@@ -4054,7 +4054,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-test-levels-for-a-feature-shared-by-several-services",
@@ -4089,7 +4089,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-fundamentals-test-levels-after-a-high-impact-production-defect",
@@ -4123,7 +4123,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-equivalence-partitions-for-a-rule-heavy-pricing-flow",
@@ -4158,7 +4158,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-equivalence-partitions-with-many-interacting-inputs",
@@ -4192,7 +4192,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-equivalence-partitions-where-historical-defects-cluster",
@@ -4226,7 +4226,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-equivalence-partitions-under-a-strict-execution-budget",
@@ -4260,7 +4260,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-equivalence-partitions-when-requirements-contain-examples-but-no-formal-rules",
@@ -4534,7 +4534,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-decision-tables-where-historical-defects-cluster",
@@ -4569,7 +4569,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-decision-tables-under-a-strict-execution-budget",
@@ -4603,7 +4603,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-decision-tables-when-requirements-contain-examples-but-no-formal-rules",
@@ -4637,7 +4637,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-test-design-state-transitions-for-a-rule-heavy-pricing-flow",
@@ -4671,7 +4671,7 @@
         "istqb-ctfl-v4",
         "dou-qa-2022"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-plans-across-several-teams-and-releases",
@@ -4706,7 +4706,7 @@
         "istqb-glossary",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-plans-when-evidence-must-survive-an-audit",
@@ -4740,7 +4740,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-plans-for-a-defect-that-cannot-be-reproduced-reliably",
@@ -4774,7 +4774,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-plans-when-requirements-change-during-execution",
@@ -4808,7 +4808,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-plans-with-remote-stakeholders-who-need-concise-decisions",
@@ -4843,7 +4843,7 @@
         "istqb-glossary",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-cases-and-checklists-across-several-teams-and-releases",
@@ -4877,7 +4877,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-cases-and-checklists-when-evidence-must-survive-an-audit",
@@ -4911,7 +4911,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-cases-and-checklists-for-a-defect-that-cannot-be-reproduced-reliably",
@@ -4945,7 +4945,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-cases-and-checklists-when-requirements-change-during-execution",
@@ -4980,7 +4980,7 @@
         "istqb-glossary",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-test-cases-and-checklists-with-remote-stakeholders-who-need-concise-decisions",
@@ -5254,7 +5254,7 @@
         "istqb-glossary",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-defect-reports-for-a-defect-that-cannot-be-reproduced-reliably",
@@ -5288,7 +5288,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-defect-reports-when-requirements-change-during-execution",
@@ -5322,7 +5322,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-defect-reports-with-remote-stakeholders-who-need-concise-decisions",
@@ -5356,7 +5356,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-documentation-defects-defect-triage-across-several-teams-and-releases",
@@ -5391,7 +5391,7 @@
         "istqb-glossary",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-behind-retries-and-a-cdn",
@@ -5427,7 +5427,7 @@
         "openapi-31",
         "graphql-spec"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-http-caching-and-conditional-requests-with-backward-compatible-clients",
@@ -5709,7 +5709,7 @@
         "openapi-31",
         "graphql-spec"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-rest-resource-contracts-with-tenant-scoped-sensitive-data",
@@ -5744,7 +5744,7 @@
         "mdn-http",
         "openapi-31"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-graphql-schemas-and-resolvers-behind-retries-and-a-cdn",
@@ -5779,7 +5779,7 @@
         "mdn-http",
         "openapi-31"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-graphql-schemas-and-resolvers-with-backward-compatible-clients",
@@ -5814,7 +5814,7 @@
         "mdn-http",
         "openapi-31"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-web-api-data-graphql-schemas-and-resolvers-during-concurrent-updates",
@@ -5850,7 +5850,7 @@
         "openapi-31",
         "graphql-spec"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-application-lifecycle-transitions-while-the-network-switches-between-wi-fi-and-cellular",
@@ -5885,7 +5885,7 @@
         "appium-docs",
         "fda-samd"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-application-lifecycle-transitions-under-low-memory-and-low-battery",
@@ -5919,7 +5919,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-application-lifecycle-transitions-after-the-app-is-killed-in-the-background",
@@ -5953,7 +5953,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-application-lifecycle-transitions-across-an-old-and-a-current-os-version",
@@ -5987,7 +5987,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-application-lifecycle-transitions-with-interrupted-installation-or-migration",
@@ -6022,7 +6022,7 @@
         "appium-docs",
         "fda-samd"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-while-the-network-switches-between-wi-fi-and-cellular",
@@ -6056,7 +6056,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-under-low-memory-and-low-battery",
@@ -6090,7 +6090,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-after-the-app-is-killed-in-the-background",
@@ -6124,7 +6124,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-across-an-old-and-a-current-os-version",
@@ -6159,7 +6159,7 @@
         "appium-docs",
         "fda-samd"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-device-and-os-fragmentation-with-interrupted-installation-or-migration",
@@ -6193,7 +6193,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-permissions-and-privacy-while-the-network-switches-between-wi-fi-and-cellular",
@@ -6467,7 +6467,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-offline-synchronization-across-an-old-and-a-current-os-version",
@@ -6501,7 +6501,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-offline-synchronization-with-interrupted-installation-or-migration",
@@ -6535,7 +6535,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-push-notifications-while-the-network-switches-between-wi-fi-and-cellular",
@@ -6570,7 +6570,7 @@
         "appium-docs",
         "fda-samd"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-mobile-push-notifications-under-low-memory-and-low-battery",
@@ -6604,7 +6604,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-automation-scope-for-a-rapidly-changing-user-interface",
@@ -6639,7 +6639,7 @@
         "selenium-docs",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-automation-scope-across-pull-requests-and-nightly-suites",
@@ -6673,7 +6673,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-automation-scope-when-third-party-services-are-unreliable",
@@ -6707,7 +6707,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-automation-scope-with-a-ten-minute-feedback-target",
@@ -6741,7 +6741,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-automation-scope-while-migrating-between-test-frameworks",
@@ -7015,7 +7015,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-test-isolation-when-third-party-services-are-unreliable",
@@ -7050,7 +7050,7 @@
         "selenium-docs",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-test-isolation-with-a-ten-minute-feedback-target",
@@ -7084,7 +7084,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-test-isolation-while-migrating-between-test-frameworks",
@@ -7118,7 +7118,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-automation-ci-wait-strategies-for-a-rapidly-changing-user-interface",
@@ -7152,7 +7152,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-functions-and-side-effects-inside-a-shared-test-library",
@@ -7188,7 +7188,7 @@
         "selenium-docs",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-functions-and-side-effects-when-operations-can-fail-or-time-out",
@@ -7223,7 +7223,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-functions-and-side-effects-under-parallel-execution",
@@ -7258,7 +7258,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-functions-and-side-effects-with-inputs-from-an-untrusted-api",
@@ -7293,7 +7293,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-functions-and-side-effects-while-refactoring-without-changing-behavior",
@@ -7329,7 +7329,7 @@
         "selenium-docs",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-object-composition-inside-a-shared-test-library",
@@ -7364,7 +7364,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-object-composition-when-operations-can-fail-or-time-out",
@@ -7399,7 +7399,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-object-composition-under-parallel-execution",
@@ -7434,7 +7434,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-object-composition-with-inputs-from-an-untrusted-api",
@@ -7470,7 +7470,7 @@
         "selenium-docs",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-object-composition-while-refactoring-without-changing-behavior",
@@ -7505,7 +7505,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-error-handling-inside-a-shared-test-library",
@@ -7787,7 +7787,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-asynchronous-code-with-inputs-from-an-untrusted-api",
@@ -7822,7 +7822,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-asynchronous-code-while-refactoring-without-changing-behavior",
@@ -7857,7 +7857,7 @@
         "playwright-best-practices",
         "mdn-javascript-guide"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-data-structures-inside-a-shared-test-library",
@@ -7893,7 +7893,7 @@
         "selenium-docs",
         "mit-algorithms"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-programming-data-structures-when-operations-can-fail-or-time-out",
@@ -7928,7 +7928,7 @@
         "playwright-best-practices",
         "mit-algorithms"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-container-images-across-development-staging-and-production",
@@ -7963,7 +7963,7 @@
         "git-docs",
         "kubernetes-probes"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-container-images-during-a-rolling-deployment",
@@ -7997,7 +7997,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-container-images-when-a-dependency-is-reachable-only-intermittently",
@@ -8031,7 +8031,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-container-images-under-constrained-cpu-and-memory",
@@ -8065,7 +8065,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-container-images-after-configuration-drift-is-discovered",
@@ -8100,7 +8100,7 @@
         "git-docs",
         "kubernetes-probes"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-across-development-staging-and-production",
@@ -8134,7 +8134,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-during-a-rolling-deployment",
@@ -8168,7 +8168,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-when-a-dependency-is-reachable-only-intermittently",
@@ -8202,7 +8202,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-under-constrained-cpu-and-memory",
@@ -8237,7 +8237,7 @@
         "git-docs",
         "kubernetes-probes"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-service-discovery-and-dns-after-configuration-drift-is-discovered",
@@ -8271,7 +8271,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-environment-configuration-across-development-staging-and-production",
@@ -8545,7 +8545,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-secrets-and-identity-under-constrained-cpu-and-memory",
@@ -8579,7 +8579,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-secrets-and-identity-after-configuration-drift-is-discovered",
@@ -8613,7 +8613,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-infrastructure-changes-across-development-staging-and-production",
@@ -8648,7 +8648,7 @@
         "git-docs",
         "kubernetes-probes"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-infrastructure-infrastructure-changes-during-a-rolling-deployment",
@@ -8682,7 +8682,7 @@
         "docker-docs",
         "git-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-load-models-at-normal-and-peak-traffic",
@@ -8717,7 +8717,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-load-models-during-a-downstream-slowdown",
@@ -8751,7 +8751,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-load-models-with-bursty-arrivals",
@@ -8785,7 +8785,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-load-models-after-a-regional-or-instance-failure",
@@ -8819,7 +8819,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-load-models-while-a-backlog-grows-faster-than-it-drains",
@@ -8854,7 +8854,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-at-normal-and-peak-traffic",
@@ -8888,7 +8888,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-during-a-downstream-slowdown",
@@ -8922,7 +8922,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-with-bursty-arrivals",
@@ -8956,7 +8956,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-after-a-regional-or-instance-failure",
@@ -8991,7 +8991,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-latency-percentiles-while-a-backlog-grows-faster-than-it-drains",
@@ -9025,7 +9025,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-capacity-limits-at-normal-and-peak-traffic",
@@ -9299,7 +9299,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-timeouts-and-retries-after-a-regional-or-instance-failure",
@@ -9333,7 +9333,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-timeouts-and-retries-while-a-backlog-grows-faster-than-it-drains",
@@ -9367,7 +9367,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-circuit-breakers-at-normal-and-peak-traffic",
@@ -9402,7 +9402,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-performance-resilience-circuit-breakers-during-a-downstream-slowdown",
@@ -9436,7 +9436,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-object-level-authorization-across-user-roles-and-tenants",
@@ -9471,7 +9471,7 @@
         "owasp-api-2023",
         "owasp-asvs"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-object-level-authorization-after-authentication-state-changes",
@@ -9505,7 +9505,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-object-level-authorization-with-malicious-and-malformed-input",
@@ -9539,7 +9539,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-object-level-authorization-using-only-a-keyboard-and-screen-reader",
@@ -9574,7 +9574,7 @@
         "owasp-api-2023",
         "wcag-22"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-object-level-authorization-when-an-error-occurs-in-a-dynamic-form",
@@ -9610,7 +9610,7 @@
         "owasp-asvs",
         "wcag-22"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-session-management-across-user-roles-and-tenants",
@@ -9644,7 +9644,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-session-management-after-authentication-state-changes",
@@ -9678,7 +9678,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-session-management-with-malicious-and-malformed-input",
@@ -9712,7 +9712,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-session-management-using-only-a-keyboard-and-screen-reader",
@@ -9748,7 +9748,7 @@
         "owasp-asvs",
         "wcag-22"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-session-management-when-an-error-occurs-in-a-dynamic-form",
@@ -9783,7 +9783,7 @@
         "owasp-api-2023",
         "wcag-22"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-input-handling-across-user-roles-and-tenants",
@@ -10059,7 +10059,7 @@
         "owasp-wstg",
         "owasp-api-2023"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-sensitive-data-exposure-using-only-a-keyboard-and-screen-reader",
@@ -10094,7 +10094,7 @@
         "owasp-api-2023",
         "wcag-22"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-sensitive-data-exposure-when-an-error-occurs-in-a-dynamic-form",
@@ -10129,7 +10129,7 @@
         "owasp-api-2023",
         "wcag-22"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-keyboard-navigation-across-user-roles-and-tenants",
@@ -10165,7 +10165,7 @@
         "owasp-asvs",
         "wcag-22"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-security-accessibility-keyboard-navigation-after-authentication-state-changes",
@@ -10200,7 +10200,7 @@
         "owasp-api-2023",
         "wcag-22"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-refinement-when-scope-changes-mid-iteration",
@@ -10235,7 +10235,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-refinement-with-several-teams-sharing-one-service",
@@ -10269,7 +10269,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-refinement-under-pressure-to-shorten-lead-time",
@@ -10303,7 +10303,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-refinement-when-unfinished-work-spans-releases",
@@ -10337,7 +10337,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-refinement-after-escaped-defects-increase",
@@ -10372,7 +10372,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-definition-of-done-when-scope-changes-mid-iteration",
@@ -10406,7 +10406,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-definition-of-done-with-several-teams-sharing-one-service",
@@ -10440,7 +10440,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-definition-of-done-under-pressure-to-shorten-lead-time",
@@ -10474,7 +10474,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-definition-of-done-when-unfinished-work-spans-releases",
@@ -10509,7 +10509,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-definition-of-done-after-escaped-defects-increase",
@@ -10783,7 +10783,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-work-in-progress-limits-under-pressure-to-shorten-lead-time",
@@ -10817,7 +10817,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-work-in-progress-limits-when-unfinished-work-spans-releases",
@@ -10851,7 +10851,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-work-in-progress-limits-after-escaped-defects-increase",
@@ -10885,7 +10885,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-agile-delivery-release-trains-when-scope-changes-mid-iteration",
@@ -10920,7 +10920,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-product-quality-risks-for-a-new-product-with-little-historical-data",
@@ -10955,7 +10955,7 @@
         "dora",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-product-quality-risks-when-time-is-cut-in-half",
@@ -10989,7 +10989,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-product-quality-risks-across-a-portfolio-of-services",
@@ -11023,7 +11023,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-product-quality-risks-before-a-high-visibility-launch",
@@ -11057,7 +11057,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-product-quality-risks-when-stakeholders-request-a-single-quality-score",
@@ -11331,7 +11331,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-coverage-strategy-across-a-portfolio-of-services",
@@ -11366,7 +11366,7 @@
         "dora",
         "google-sre"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-coverage-strategy-before-a-high-visibility-launch",
@@ -11400,7 +11400,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-coverage-strategy-when-stakeholders-request-a-single-quality-score",
@@ -11434,7 +11434,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-strategy-risk-release-criteria-for-a-new-product-with-little-historical-data",
@@ -11468,7 +11468,7 @@
         "istqb-ctfl-v4",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-quality-ownership-when-delivery-and-quality-goals-appear-to-conflict",
@@ -11503,7 +11503,7 @@
         "dora",
         "scrum-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-quality-ownership-with-a-distributed-cross-functional-team",
@@ -11537,7 +11537,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-quality-ownership-after-trust-has-been-damaged",
@@ -11571,7 +11571,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-quality-ownership-while-introducing-a-major-practice-change",
@@ -11605,7 +11605,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-quality-ownership-when-evidence-is-incomplete-but-a-decision-is-due",
@@ -11640,7 +11640,7 @@
         "dora",
         "scrum-guide"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-coaching-when-delivery-and-quality-goals-appear-to-conflict",
@@ -11914,7 +11914,7 @@
         "dora",
         "scrum-guide"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-stakeholder-alignment-while-introducing-a-major-practice-change",
@@ -11948,7 +11948,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-stakeholder-alignment-when-evidence-is-incomplete-but-a-decision-is-due",
@@ -11982,7 +11982,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-conflict-resolution-when-delivery-and-quality-goals-appear-to-conflict",
@@ -12016,7 +12016,7 @@
         "google-structured-interviews",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-leadership-conflict-resolution-with-a-distributed-cross-functional-team",
@@ -12051,7 +12051,7 @@
         "dora",
         "scrum-guide"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-practical-a-login-form-with-no-written-requirements",
@@ -12088,7 +12088,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-login-form-during-a-thirty-minute-interview-exercise",
@@ -12450,7 +12450,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-payment-checkout-during-a-thirty-minute-interview-exercise",
@@ -12486,7 +12486,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-payment-checkout-after-one-vague-customer-complaint",
@@ -12523,7 +12523,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-payment-checkout-with-only-production-like-black-box-access",
@@ -12559,7 +12559,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-payment-checkout-when-only-the-highest-risks-can-be-demonstrated",
@@ -12595,7 +12595,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-file-upload-with-no-written-requirements",
@@ -12631,7 +12631,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-file-upload-during-a-thirty-minute-interview-exercise",
@@ -12668,7 +12668,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-file-upload-after-one-vague-customer-complaint",
@@ -12704,7 +12704,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-file-upload-with-only-production-like-black-box-access",
@@ -12740,7 +12740,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-file-upload-when-only-the-highest-risks-can-be-demonstrated",
@@ -12776,7 +12776,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-search-box-with-no-written-requirements",
@@ -12813,7 +12813,7 @@
         "katalon-qa-interviews",
         "indeed-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-practical-a-search-box-during-a-thirty-minute-interview-exercise",
@@ -12849,7 +12849,7 @@
         "dou-qa-2022",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-with-imbalanced-or-sparse-examples",
@@ -12885,7 +12885,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-after-a-model-or-prompt-change",
@@ -12920,7 +12920,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-for-a-high-stakes-user-decision",
@@ -12955,7 +12955,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-when-outputs-are-non-deterministic",
@@ -12990,7 +12990,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-training-and-evaluation-data-with-untrusted-retrieved-content-and-external-tools",
@@ -13027,7 +13027,7 @@
         "nist-genai-profile",
         "owasp-llm-top10"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-classification-thresholds-with-imbalanced-or-sparse-examples",
@@ -13062,7 +13062,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-classification-thresholds-after-a-model-or-prompt-change",
@@ -13097,7 +13097,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-classification-thresholds-for-a-high-stakes-user-decision",
@@ -13132,7 +13132,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-classification-thresholds-when-outputs-are-non-deterministic",
@@ -13168,7 +13168,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-classification-thresholds-with-untrusted-retrieved-content-and-external-tools",
@@ -13204,7 +13204,7 @@
         "openai-evals",
         "owasp-llm-top10"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-with-imbalanced-or-sparse-examples",
@@ -13239,7 +13239,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-after-a-model-or-prompt-change",
@@ -13274,7 +13274,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-for-a-high-stakes-user-decision",
@@ -13310,7 +13310,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-when-outputs-are-non-deterministic",
@@ -13345,7 +13345,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-model-drift-with-untrusted-retrieved-content-and-external-tools",
@@ -13381,7 +13381,7 @@
         "openai-evals",
         "owasp-llm-top10"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-with-imbalanced-or-sparse-examples",
@@ -13416,7 +13416,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-after-a-model-or-prompt-change",
@@ -13452,7 +13452,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-for-a-high-stakes-user-decision",
@@ -13487,7 +13487,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-when-outputs-are-non-deterministic",
@@ -13522,7 +13522,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-llm-answer-quality-with-untrusted-retrieved-content-and-external-tools",
@@ -13558,7 +13558,7 @@
         "openai-evals",
         "owasp-llm-top10"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-retrieval-augmented-generation-with-imbalanced-or-sparse-examples",
@@ -13594,7 +13594,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-retrieval-augmented-generation-after-a-model-or-prompt-change",
@@ -13629,7 +13629,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-ai-ml-llm-retrieval-augmented-generation-for-a-high-stakes-user-decision",
@@ -13844,7 +13844,7 @@
         "prometheus-alerting",
         "kubernetes-probes"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-structured-logs-during-a-canary-rollout",
@@ -13879,7 +13879,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-structured-logs-when-failures-are-intermittent",
@@ -13914,7 +13914,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-structured-logs-under-a-partial-dependency-outage",
@@ -13949,7 +13949,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-structured-logs-after-telemetry-volume-or-cardinality-suddenly-grows",
@@ -13985,7 +13985,7 @@
         "prometheus-alerting",
         "kubernetes-probes"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-service-metrics-across-a-distributed-request-path",
@@ -14020,7 +14020,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-service-metrics-during-a-canary-rollout",
@@ -14055,7 +14055,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-service-metrics-when-failures-are-intermittent",
@@ -14090,7 +14090,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-service-metrics-under-a-partial-dependency-outage",
@@ -14126,7 +14126,7 @@
         "prometheus-alerting",
         "kubernetes-probes"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-service-metrics-after-telemetry-volume-or-cardinality-suddenly-grows",
@@ -14161,7 +14161,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-distributed-traces-across-a-distributed-request-path",
@@ -14196,7 +14196,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-distributed-traces-during-a-canary-rollout",
@@ -14231,7 +14231,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-distributed-traces-when-failures-are-intermittent",
@@ -14267,7 +14267,7 @@
         "prometheus-alerting",
         "kubernetes-probes"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-distributed-traces-under-a-partial-dependency-outage",
@@ -14302,7 +14302,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-distributed-traces-after-telemetry-volume-or-cardinality-suddenly-grows",
@@ -14337,7 +14337,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-health-probes-across-a-distributed-request-path",
@@ -14619,7 +14619,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-alerts-and-dashboards-under-a-partial-dependency-outage",
@@ -14654,7 +14654,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-alerts-and-dashboards-after-telemetry-volume-or-cardinality-suddenly-grows",
@@ -14690,7 +14690,7 @@
         "prometheus-alerting",
         "kubernetes-probes"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-observability-production-deployment-verification-across-a-distributed-request-path",
@@ -14725,7 +14725,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "expanded-regulated-domains-risk-classification-for-medical-or-safety-related-software",
@@ -14761,7 +14761,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-risk-classification-when-migrating-validated-data",
@@ -14796,7 +14796,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-risk-classification-after-a-safety-impacting-defect",
@@ -14831,7 +14831,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-risk-classification-with-an-ai-enabled-or-configurable-component",
@@ -14866,7 +14866,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-risk-classification-during-an-inspection-or-independent-assessment",
@@ -14902,7 +14902,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-requirements-traceability-for-medical-or-safety-related-software",
@@ -14937,7 +14937,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-requirements-traceability-when-migrating-validated-data",
@@ -14972,7 +14972,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-requirements-traceability-after-a-safety-impacting-defect",
@@ -15007,7 +15007,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-requirements-traceability-with-an-ai-enabled-or-configurable-component",
@@ -15043,7 +15043,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-requirements-traceability-during-an-inspection-or-independent-assessment",
@@ -15078,7 +15078,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-for-medical-or-safety-related-software",
@@ -15113,7 +15113,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-when-migrating-validated-data",
@@ -15148,7 +15148,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-after-a-safety-impacting-defect",
@@ -15184,7 +15184,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-with-an-ai-enabled-or-configurable-component",
@@ -15219,7 +15219,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-electronic-records-and-signatures-during-an-inspection-or-independent-assessment",
@@ -15254,7 +15254,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-audit-trails-for-medical-or-safety-related-software",
@@ -15289,7 +15289,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-audit-trails-when-migrating-validated-data",
@@ -15325,7 +15325,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-audit-trails-after-a-safety-impacting-defect",
@@ -15360,7 +15360,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-audit-trails-with-an-ai-enabled-or-configurable-component",
@@ -15395,7 +15395,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-audit-trails-during-an-inspection-or-independent-assessment",
@@ -15430,7 +15430,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-software-lifecycle-evidence-for-medical-or-safety-related-software",
@@ -15466,7 +15466,7 @@
         "fda-iec-62304",
         "ecfr-part-11"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-software-lifecycle-evidence-when-migrating-validated-data",
@@ -15501,7 +15501,7 @@
         "fda-csa",
         "fda-iec-62304"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "expanded-regulated-domains-software-lifecycle-evidence-after-a-safety-impacting-defect",

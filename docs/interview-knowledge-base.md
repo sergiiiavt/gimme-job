@@ -65,7 +65,7 @@ The Ukrainian fields and the practical example are plain prose, matching the res
 - Official syllabi, standards, specifications and product documentation validate technical claims.
 - `sources.json` documents why each source is used.
 
-The catalog currently contains 672 canonical questions across 19 topics and 67 sources. The generator preserves every existing stable question ID and allows reviewed additions to increase the total; the validated minimum advances with the catalog so the count cannot regress. Its four prevalence bands are editorial signals, not invented percentages: **Very common**, **Common**, **Occasional**, and **Specialist**. The separate **Starred** filter identifies an editorial core-foundation set without overwriting those frequency bands; personal stars can later be added as private state. Sorting supports a guided learning path, most-common first, Junior-to-Lead, and alphabetical order.
+The catalog is protected by a rolling non-destructive question floor across 20 topics and a researched source registry. The generator preserves every existing stable question ID and allows reviewed additions to increase the total. Its four prevalence bands are reviewed likelihood signals, not invented percentages: **Very common**, **Common**, **Occasional**, and **Specialist**. Authored questions keep explicit reviewed values. Generated scenario variants are intentionally conservative: classic practical exercises are **Common**, broad generated variants are **Occasional**, and role-specific generated variants are **Specialist**. Stars are independent private user state and never change prevalence. Sorting supports a guided learning path, most-common first, Junior-to-Lead, and alphabetical order.
 
 The catalog module is loaded only after the Interview section is opened. Filtering and search operate over the full in-memory catalog, but pagination renders no more than 60 question rows at once.
 
@@ -74,18 +74,20 @@ The catalog module is loaded only after the Interview section is opened. Filteri
 D1 remains appropriate for changeable user-specific state:
 
 ```text
-interview_progress
+user_interview_progress
+  user_id
   question_id
-  status          # new, learning, ready, revisit
-  confidence      # 1-5
-  private_notes
-  bookmarked
-  last_reviewed_at
-  next_review_at
+  status
+  updated_at
+
+user_interview_stars
+  user_id
+  question_id
+  created_at
 ```
 
 The private progress status is unrelated to editorial publication status.
 
 ## Validation and deployment
 
-`npm run check:content` enforces the current 672-question minimum, 19 topics, 67 sources, the curated editorial-star set, five specialist topics, prevalence values, duplicate IDs, known categories and sources, complete answers, answer signals, and valid media. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge. Production deployment is available only from the GitHub Actions workflow after changes reach `main`.
+`npm run check:content` enforces the current non-regression question floor, 20 topics, the researched source floor, the generated-question prevalence policy, prevalence values, duplicate IDs, known categories and sources, complete answers, answer signals, and valid media. Pull-request CI then runs lint, type checking, the production build and Cloudflare artifact validation before merge. Production deployment is available only from the GitHub Actions workflow after changes reach `main`.
