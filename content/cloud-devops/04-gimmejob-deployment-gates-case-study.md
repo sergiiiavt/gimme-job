@@ -242,7 +242,7 @@ The repeated production build is the only deliberate overlap.
 
 A useful pipeline makes the location of failure meaningful.
 
-## Reproduce this model
+## Reproduce it yourself
 
 1. Put deterministic quality checks behind one canonical command.
 2. Run that command on pull requests, not again after merge.
