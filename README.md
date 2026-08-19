@@ -59,7 +59,8 @@ The navigation also contains planned knowledge modules:
 - `db/schema.ts` — D1 schema;
 - `drizzle/` — versioned database migrations;
 - `agent/` — optional local collection and analysis agent;
-- `.github/workflows/ci.yml` — GitHub validation and Cloudflare deployment pipeline;
+- `.github/workflows/ci.yml` — pull-request validation and Sonar quality gate;
+- `.github/workflows/deploy.yml` — production deployment from `main`;
 - `.vscode/` — recommended extensions, tasks, settings, and debugger launch profile.
 
 The only production deployment path is GitHub Actions → Cloudflare Workers + D1. Public interview content remains in Git; D1 stores private vacancy data plus user-specific interview progress and stars.
@@ -97,18 +98,21 @@ Before publishing a completed change:
 npm run verify
 ```
 
-`npm run verify` is the local executable contract shared by coding agents and GitHub Actions. It covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation. GitHub Actions additionally runs the SonarQube Cloud quality gate and, on `main`, production deployment.
+`npm run verify` is the local executable contract shared by coding agents and PR CI. It covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation. Pull-request CI additionally runs the SonarQube Cloud quality gate. Production deployment does not repeat those quality checks after merge.
 
 ## Cloudflare CI/CD
 
-After the required repository secrets below are configured, every successful push to `main` automatically:
+Pull requests to `main` run the canonical repository verification and SonarQube quality gate. After an approved change reaches `main`, the production workflow automatically:
 
-1. runs the canonical repository verification and SonarQube quality gate;
+1. installs dependencies and builds the exact `main` commit;
 2. finds or creates the `gimmejob-db` D1 database;
 3. applies all migrations from `drizzle/`;
-4. deploys the Worker and static assets;
-5. keeps `/` and `/api/public/jobs` public;
-6. protects `/workspace` and all private API/write operations with a signed password session.
+4. deploys the Worker, static assets, and runtime secrets in one Wrangler deployment;
+5. checks the public site and `/api/health` after release;
+6. keeps `/` and `/api/public/jobs` public;
+7. protects `/workspace` and all private API/write operations with a signed password session.
+
+Production deployments are serialized and are not cancelled by newer `main` pushes. Vacancy synchronization runs separately from code deployment.
 
 Required GitHub repository secrets:
 
@@ -158,9 +162,13 @@ Even a new database needs the initial migration: it creates the first set of tab
 
 ## Deployment model
 
-1. push to `main`;
-2. GitHub Actions runs `npm run verify` and the remote SonarQube gate;
-3. the deployment script provisions D1 if needed, applies migrations, deploys the Worker, and updates provider-managed secrets.
+1. open a pull request to `main`;
+2. PR CI runs `npm run verify` and waits for the remote SonarQube quality gate;
+3. merge only after the required `Validate` check passes;
+4. the `main` deployment workflow builds the final commit, applies D1 migrations, and deploys the Worker plus runtime secrets once;
+5. the workflow verifies the public site and health endpoint after release.
+
+Repository protection should require the PR path and an up-to-date `Validate` check before `main` can change.
 
 ## Public address
 
