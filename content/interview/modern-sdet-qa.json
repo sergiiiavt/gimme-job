@@ -29,7 +29,7 @@
       "sourceIds": [
         "android-test-doubles"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "choosing-test-double",
@@ -62,7 +62,7 @@
         "android-test-doubles",
         "playwright-best-practices"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Common"
     },
     {
       "id": "over-mocking-refactoring-risk",
@@ -95,7 +95,7 @@
         "android-test-doubles",
         "playwright-best-practices"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "fake-contract-drift",
@@ -128,7 +128,7 @@
         "android-test-doubles",
         "openapi-31"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "property-based-testing",
@@ -192,7 +192,7 @@
       "sourceIds": [
         "hypothesis-property-testing"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "mutation-testing-suite-strength",
@@ -257,7 +257,7 @@
         "stryker-mutation-testing",
         "dora"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "visual-regression-purpose",
@@ -289,7 +289,7 @@
       "sourceIds": [
         "playwright-visual-comparisons"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "visual-regression-stable-baselines",
@@ -322,7 +322,7 @@
         "playwright-visual-comparisons",
         "playwright-best-practices"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "visual-regression-review-workflow",
@@ -388,7 +388,7 @@
         "selenium-grid",
         "playwright-best-practices"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "browser-grid-parallel-strategy",
@@ -421,7 +421,7 @@
         "selenium-grid",
         "selenium-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "real-device-cloud-strategy",
@@ -455,7 +455,7 @@
         "android-test",
         "selenium-grid"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "big-o-test-automation",
@@ -488,7 +488,7 @@
         "mit-algorithms",
         "gfg-testing-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "choosing-data-structure",
@@ -521,7 +521,7 @@
         "mit-algorithms",
         "gfg-testing-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "coding-frequency-map",
@@ -555,7 +555,7 @@
         "unicode-text-segmentation",
         "gfg-testing-interviews"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "coding-linked-list-cycle",
@@ -687,7 +687,7 @@
         "gfg-testing-interviews",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "coding-review-complexity-correctness",
@@ -720,7 +720,7 @@
         "mit-algorithms",
         "playwright-best-practices"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "i18n-l10n-difference",
@@ -753,7 +753,7 @@
         "unicode-cldr",
         "w3c-bidi"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "locale-formatting-tests",
@@ -883,7 +883,7 @@
         "unicode-text-segmentation",
         "unicode-cldr"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "pseudo-localization",
@@ -983,7 +983,7 @@
         "openai-evals",
         "playwright-best-practices"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "ai-generated-test-grounding",
@@ -1017,7 +1017,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "self-healing-locator-risks",
@@ -1117,7 +1117,7 @@
         "mcp-spec",
         "playwright-mcp"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "playwright-mcp-test-workflow",
@@ -1151,7 +1151,7 @@
         "playwright-best-practices",
         "openai-evals"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Specialist"
     },
     {
       "id": "mcp-agent-tool-security",
@@ -1185,7 +1185,7 @@
         "owasp-llm-top10",
         "playwright-mcp"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Common"
     },
     {
       "id": "test-generating-agent-evaluation",
@@ -1286,7 +1286,7 @@
         "oauth-security-bcp",
         "openid-connect-core"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "oauth-authorization-code-pkce-tests",
@@ -1320,7 +1320,7 @@
         "openid-connect-core",
         "owasp-wstg"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "event-driven-contract-testing",
@@ -1353,7 +1353,7 @@
         "asyncapi-30",
         "openapi-31"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "idempotent-event-consumer",
@@ -1419,7 +1419,7 @@
         "asyncapi-30",
         "google-sre"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "async-trace-correlation",
@@ -1552,7 +1552,7 @@
         "web-vitals",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "frontend-performance-budgets",
@@ -1618,7 +1618,7 @@
         "slsa-12",
         "git-docs"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "ci-secrets-untrusted-pull-requests",
@@ -1651,7 +1651,7 @@
         "slsa-12",
         "owasp-asvs"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "dependency-upgrade-risk-strategy",
@@ -1685,7 +1685,7 @@
         "dora",
         "owasp-asvs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "ai-assisted-requirement-review",
@@ -1718,7 +1718,7 @@
         "istqb-ai-testing",
         "openai-evals"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     }
   ]
 }

@@ -32,7 +32,7 @@
         "istqb-glossary",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -65,7 +65,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -98,7 +98,7 @@
         "istqb-ctfl-v4",
         "istqb-glossary"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -231,7 +231,7 @@
         "istqb-glossary",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -263,7 +263,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -297,7 +297,7 @@
         "openapi-31",
         "owasp-api-2023"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -330,7 +330,7 @@
         "android-test",
         "appium-docs"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -364,7 +364,7 @@
         "selenium-docs",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -397,7 +397,7 @@
         "istqb-ctfl-v4",
         "katalon-qa-interviews"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Strategy"
     },
     {
@@ -430,7 +430,7 @@
         "playwright-best-practices",
         "selenium-docs"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -463,7 +463,7 @@
         "dora",
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Common",
       "kind": "Theory"
     },
     {
@@ -496,7 +496,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -528,7 +528,7 @@
       "sourceIds": [
         "wcag-22"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Test design"
     },
     {
@@ -561,7 +561,7 @@
         "scrum-guide",
         "dou-qa-2022"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -593,7 +593,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -658,7 +658,7 @@
       "sourceIds": [
         "istqb-ctfl-v4"
       ],
-      "prevalence": "Very common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -691,7 +691,7 @@
         "scrum-guide",
         "dora"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Leadership"
     },
     {
@@ -759,7 +759,7 @@
         "openai-evals",
         "nist-genai-profile"
       ],
-      "prevalence": "Common",
+      "prevalence": "Specialist",
       "kind": "Theory"
     },
     {
@@ -792,7 +792,7 @@
         "sklearn-model-evaluation",
         "istqb-ai-testing"
       ],
-      "prevalence": "Common",
+      "prevalence": "Specialist",
       "kind": "Theory"
     },
     {
@@ -892,7 +892,7 @@
         "opentelemetry-concepts",
         "grafana-loki"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -925,7 +925,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "kind": "Theory"
     },
     {
@@ -1000,7 +1000,7 @@
       "level": "Middle",
       "category": "Metrics and estimation",
       "kind": "Theory",
-      "prevalence": "Common",
+      "prevalence": "Occasional",
       "question": "What is the difference between a metric, a KPI, a target and a guardrail?",
       "shortAnswer": "A metric is any measured value. A KPI is a metric explicitly tied to an objective and a decision, chosen deliberately rather than tracked by default. A target is the specific threshold a KPI is expected to reach or hold, and it needs a baseline, scope and observation window to mean anything. A guardrail is a second metric that limits gaming of the first, for example capping merge-gate runtime while requiring coverage not to drop. Not every metric deserves KPI status, and a target copied from another team without its context is close to meaningless.",
       "strongAnswerSignals": [

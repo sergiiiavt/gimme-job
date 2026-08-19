@@ -32,7 +32,7 @@
         "zephyr-testing",
         "linux-kunit"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-host-simulation-hardware-split",
@@ -65,7 +65,7 @@
         "zephyr-testing",
         "linux-kunit"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-hardware-in-loop-purpose",
@@ -97,7 +97,7 @@
         "zephyr-testing",
         "iso-26262"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-board-revision-matrix",
@@ -129,7 +129,7 @@
         "zephyr-testing",
         "iso-26262"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-build-configuration-coverage",
@@ -161,7 +161,7 @@
         "zephyr-testing",
         "fda-iec-62304"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-gpio-digital-interfaces",
@@ -192,7 +192,7 @@
       "sourceIds": [
         "zephyr-testing"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-uart-i2c-spi-testing",
@@ -224,7 +224,7 @@
       "sourceIds": [
         "zephyr-testing"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-can-bus-testing",
@@ -289,7 +289,7 @@
         "iso-26262",
         "zephyr-testing"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-actuator-safety",
@@ -354,7 +354,7 @@
         "zephyr-testing",
         "linux-kunit"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-real-time-deadlines-jitter",
@@ -387,7 +387,7 @@
         "zephyr-testing",
         "iso-26262"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-watchdog-reset-recovery",
@@ -419,7 +419,7 @@
         "zephyr-testing",
         "iso-26262"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-memory-resource-limits",
@@ -452,7 +452,7 @@
         "linux-kunit",
         "zephyr-testing"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-flash-persistence-wear",
@@ -518,7 +518,7 @@
         "mcuboot-design",
         "fda-iec-62304"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-brownout-boot-reset",
@@ -584,7 +584,7 @@
         "mcuboot-design",
         "nist-iot-8259a"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-secure-boot-image-validation",
@@ -714,7 +714,7 @@
       "sourceIds": [
         "nist-iot-8259a"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "iot-logical-interface-access",
@@ -778,7 +778,7 @@
       "sourceIds": [
         "nist-iot-8259a"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "iot-offline-reconnect-behaviour",
@@ -811,7 +811,7 @@
         "nist-iot-8259a",
         "google-sre"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Specialist"
     },
     {
       "id": "iot-fleet-observability-diagnostics",
@@ -844,7 +844,7 @@
         "nist-iot-8259a",
         "opentelemetry-concepts"
       ],
-      "prevalence": "Common"
+      "prevalence": "Specialist"
     },
     {
       "id": "embedded-long-duration-environmental-stress",
