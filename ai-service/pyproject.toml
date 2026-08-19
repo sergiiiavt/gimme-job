@@ -26,11 +26,11 @@ packages = ["src/gimmejob_ai"]
 [tool.coverage.run]
 branch = true
 relative_files = true
-source = ["src/gimmejob_ai"]
+source = ["ai-service/src/gimmejob_ai"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
 
 [tool.coverage.xml]
-output = "coverage.xml"
+output = "ai-service/coverage.xml"
