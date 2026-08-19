@@ -63,6 +63,10 @@ jobs:
 
           test_path = Path("tests/interview-catalog.test.mjs")
           tests = test_path.read_text()
+          old_grid_slice = '''  const filterGrid = uiSource.slice(uiSource.indexOf('<div className="iq-filter-grid">'), uiSource.indexOf('<div className="iq-list">'));\n'''
+          new_grid_slice = '''  const filterGrid = uiSource.slice(uiSource.indexOf('iq-filter-grid${mode === "personal"'), uiSource.indexOf('<div className="iq-list">'));\n'''
+          assert tests.count(old_grid_slice) == 1, "Expected old filter grid test selector"
+          tests = tests.replace(old_grid_slice, new_grid_slice, 1)
           test_marker = '  assert.match(stylesSource, /\\.iq-star-filter \\{/);\n'
           test_addition = (
               test_marker
