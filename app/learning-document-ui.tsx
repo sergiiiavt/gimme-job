@@ -20,6 +20,14 @@ export interface LearningRegistrySource {
   url: string;
 }
 
+function DirectLinkIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="14" viewBox="0 0 24 24" width="14">
+      <path d="M10.2 13.8a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.41 1.41M13.8 10.2a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.41-1.41" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
 export function LearningHero({ description, eyebrow, meta, title }: {
   description: string;
   eyebrow: string;
@@ -87,8 +95,9 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   );
 }
 
-export function LearningRail({ headings, language, languages = ["en", "uk"], onLanguageChange }: {
+export function LearningRail({ headings, hrefForSection = (sectionId) => `#${sectionId}`, language, languages = ["en", "uk"], onLanguageChange }: {
   headings: LearningTocHeading[];
+  hrefForSection?: (sectionId: string) => string;
   language: LearningLanguage;
   languages?: LearningLanguage[];
   onLanguageChange: (language: LearningLanguage) => void;
@@ -153,21 +162,31 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
         <nav>
           {headings.map((heading) => {
             const isActive = activeSectionId === heading.id;
+            const sectionHref = hrefForSection(heading.id);
             return (
-              <a
-                aria-current={isActive ? "location" : undefined}
-                className={isActive ? uiStyles.activeTocLink : undefined}
-                href={`#${heading.id}`}
-                key={heading.id}
-              >
-                {heading.text}
-              </a>
+              <div className={uiStyles.tocRow} key={heading.id}>
+                <a
+                  aria-current={isActive ? "location" : undefined}
+                  className={`${uiStyles.tocTextLink} ${isActive ? uiStyles.activeTocLink : ""}`}
+                  href={sectionHref}
+                >
+                  {heading.text}
+                </a>
+                <a
+                  aria-label={`${language === "uk" ? "Пряме посилання" : "Direct link"}: ${heading.text}`}
+                  className={uiStyles.tocDirectLink}
+                  href={sectionHref}
+                  title={language === "uk" ? "Пряме посилання" : "Direct link"}
+                >
+                  <DirectLinkIcon/>
+                </a>
+              </div>
             );
           })}
           <a
             aria-current={activeSectionId === "source-registry" ? "location" : undefined}
             className={`${styles.sourceLink} ${activeSectionId === "source-registry" ? uiStyles.activeTocLink : ""}`}
-            href="#source-registry"
+            href={hrefForSection("source-registry")}
           >
             <small>{language === "uk" ? "Джерела" : "References"}</small>
             {language === "uk" ? "Реєстр джерел" : "Source registry"}
