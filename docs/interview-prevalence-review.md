@@ -19,4 +19,4 @@ The review uses four signals:
 
 Generated scenario variants can never become **Very common** merely because of their position in a topic. This removes the previous position-based behavior.
 
-Personal stars are completely separate from prevalence. The public/editorial star catalog is removed, and `drizzle/0013_clear_interview_stars.sql` clears all pre-existing star rows once. After that reset, a star can exist only after an explicit personal user action and never changes the occurrence band of a question.
+Personal stars are completely separate from prevalence. The public/editorial star catalog is removed, and `drizzle/0013_clear_interview_stars.sql` clears all pre-existing star rows once. After that reset, a star can exist only after an explicit personal user action and never changes the occurrence band of a question. The site keeps one canonical interview URL: anonymous visitors get the public view with no star controls, while an authenticated session may expose the personal star controls and private state on that same content surface.
