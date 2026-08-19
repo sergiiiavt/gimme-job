@@ -555,7 +555,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-filter-status > span + span { border-left: 1px solid #dde2dd; }
 .iq-filter-status strong { color: #26362e; display: block; font-size: 13px; letter-spacing: -.02em; }
 .iq-filter-grid { border-top: 1px solid #edf0ec; display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; padding-top: 13px; }
-.iq-filter-grid-personal { grid-template-columns: 160px repeat(3, minmax(0, 1fr)) auto; }
+.iq-filter-grid-personal { grid-template-columns: 132px repeat(4, minmax(0, 1fr)) auto; }
 .iq-list { background: #fff; border: 1px solid #e0e4e0; border-radius: 0 0 11px 11px; border-top: 0; overflow: hidden; }
 .iq-question { border-top: 1px solid #e8ebe7; }
 .iq-question:first-child { border-top: 0; }
