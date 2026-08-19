@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { contentHref } from "./content-deep-links";
 import styles from "./qa-fundamentals-page.module.css";
 import uiStyles from "./learning-document-ui.module.css";
 
@@ -95,14 +97,18 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   );
 }
 
-export function LearningRail({ headings, hrefForSection = (sectionId) => `#${sectionId}`, language, languages = ["en", "uk"], onLanguageChange }: {
+export function LearningRail({ headings, hrefForSection, language, languages = ["en", "uk"], onLanguageChange }: {
   headings: LearningTocHeading[];
   hrefForSection?: (sectionId: string) => string;
   language: LearningLanguage;
   languages?: LearningLanguage[];
   onLanguageChange: (language: LearningLanguage) => void;
 }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? "source-registry");
+  const sectionHref = (sectionId: string) => hrefForSection?.(sectionId)
+    ?? contentHref(pathname, searchParams.toString(), {}, sectionId);
 
   useEffect(() => {
     const trackedIds = [...headings.map((heading) => heading.id), "source-registry"];
@@ -162,20 +168,20 @@ export function LearningRail({ headings, hrefForSection = (sectionId) => `#${sec
         <nav>
           {headings.map((heading) => {
             const isActive = activeSectionId === heading.id;
-            const sectionHref = hrefForSection(heading.id);
+            const href = sectionHref(heading.id);
             return (
               <div className={uiStyles.tocRow} key={heading.id}>
                 <a
                   aria-current={isActive ? "location" : undefined}
                   className={`${uiStyles.tocTextLink} ${isActive ? uiStyles.activeTocLink : ""}`}
-                  href={sectionHref}
+                  href={href}
                 >
                   {heading.text}
                 </a>
                 <a
                   aria-label={`${language === "uk" ? "Пряме посилання" : "Direct link"}: ${heading.text}`}
                   className={uiStyles.tocDirectLink}
-                  href={sectionHref}
+                  href={href}
                   title={language === "uk" ? "Пряме посилання" : "Direct link"}
                 >
                   <DirectLinkIcon/>
@@ -186,7 +192,7 @@ export function LearningRail({ headings, hrefForSection = (sectionId) => `#${sec
           <a
             aria-current={activeSectionId === "source-registry" ? "location" : undefined}
             className={`${styles.sourceLink} ${activeSectionId === "source-registry" ? uiStyles.activeTocLink : ""}`}
-            href={hrefForSection("source-registry")}
+            href={sectionHref("source-registry")}
           >
             <small>{language === "uk" ? "Джерела" : "References"}</small>
             {language === "uk" ? "Реєстр джерел" : "Source registry"}
