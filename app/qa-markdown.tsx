@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ExecutablePythonBlock from "./executable-python-block";
 
 export interface MarkdownHeading {
   id: string;
@@ -13,6 +14,18 @@ const usageBadgeLabel: Record<MarkdownUsageFrequency, string> = {
   "less-common": "Less common",
   rare: "Rare",
 };
+
+const unsupportedRunnablePythonPatterns = [
+  /^\s*>>>/m,
+  /\b(?:input|open)\s*\(/,
+  /\bPath\s*\(/,
+  /\b(?:pytest|unittest|requests|httpx|aiohttp|selenium|playwright)\b/,
+  /\b(?:subprocess|multiprocessing|threading|socket|ThreadPoolExecutor|ProcessPoolExecutor)\b/,
+  /\b(?:numpy|pandas|matplotlib|sklearn)\b/,
+  /^\s*(?:python(?:3)?|pip(?:3)?|pytest|ruff|mypy)\s+/m,
+  /^\s*\[(?:tool|project)\./m,
+  /^\s*(?:├|└|│)/m,
+];
 
 function UsageBadge({ usage }: { usage: MarkdownUsageFrequency }) {
   return (
@@ -98,6 +111,12 @@ function tableCells(line: string) {
   return line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
 }
 
+function isRunnablePythonSnippet(language: string, source: string) {
+  if (language !== "python") return false;
+  if (!source.trim() || source.length > 8_000 || !/\bprint\s*\(/.test(source)) return false;
+  return !unsupportedRunnablePythonPatterns.some((pattern) => pattern.test(source));
+}
+
 function isBlockStart(lines: string[], index: number) {
   const line = lines[index] ?? "";
   const next = lines[index + 1] ?? "";
@@ -143,11 +162,16 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         index += 1;
       }
       index += 1;
-      nodes.push(
-        <pre className={language === "diagram" ? "qa-md-diagram" : "qa-md-code"} key={`pre-${nodeKey++}`}>
-          <code>{content.join("\n")}</code>
-        </pre>,
-      );
+      const source = content.join("\n");
+      if (isRunnablePythonSnippet(language, source)) {
+        nodes.push(<ExecutablePythonBlock code={source} key={`python-run-${nodeKey++}`} />);
+      } else {
+        nodes.push(
+          <pre className={language === "diagram" ? "qa-md-diagram" : "qa-md-code"} key={`pre-${nodeKey++}`}>
+            <code>{source}</code>
+          </pre>,
+        );
+      }
       continue;
     }
 
