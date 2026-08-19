@@ -245,6 +245,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(uiSource, /Starred fundamental/);
   assert.match(stylesSource, /\.iq-star-icon \{/);
   assert.match(stylesSource, /\.iq-star-filter \{/);
+  assert.match(stylesSource, /\.iq-filter-grid-personal \{[^}]*grid-template-columns: 160px/);
+  assert.ok(uiSource.indexOf("iq-star-filter${starredOnly") < uiSource.indexOf("emptyLabel=\"Most common first\""));
   assert.match(uiSource, /function InterviewFilter/);
   assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
   assert.doesNotMatch(uiSource, /<label className="iq-category">/);
@@ -274,7 +276,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   }
   assert.match(uiSource, /event\.key === "Escape"/);
   assert.match(uiSource, /closest\("\.iq-filter-control"\)/);
-  const filterGrid = uiSource.slice(uiSource.indexOf('<div className="iq-filter-grid">'), uiSource.indexOf('<div className="iq-list">'));
+  const filterGrid = uiSource.slice(uiSource.indexOf('iq-filter-grid${mode === "personal"'), uiSource.indexOf('<div className="iq-list">'));
   assert.ok(filterGrid.indexOf('label="Sort"') < filterGrid.indexOf('label="Prevalence"'), "Sort must appear before Prevalence.");
   assert.doesNotMatch(filterGrid.match(/label="Prevalence"[^\n]+/)?.[0] ?? "", /selectionMode="single"/);
   assert.match(uiSource, /Personal progress/);
