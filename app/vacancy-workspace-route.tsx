@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import VacancyAuditPortal from "./vacancy-audit-portal";
+import "./vacancy-audit.css";
 import VacanciesWorkspace from "./vacancies-workspace";
 
 type VacancyViewMode = "public" | "personal";
@@ -36,5 +38,8 @@ export default function VacancyWorkspaceRoute() {
   }, []);
 
   if (!mode) return null;
-  return <VacanciesWorkspace key={mode} mode={mode}/>;
+  return <>
+    <VacanciesWorkspace key={mode} mode={mode}/>
+    <VacancyAuditPortal enabled={mode === "personal"}/>
+  </>;
 }
