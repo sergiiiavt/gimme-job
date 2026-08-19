@@ -181,11 +181,10 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   );
   const resolvedDefaultTrackId = defaultTrackId ?? resolvedTrackOptions[0]?.id ?? "default";
   const requestedTrackId = searchParams.get("track");
-  const initialTrackId = requestedTrackId && resolvedTrackOptions.some((option) => option.id === requestedTrackId)
+  const activeTrack = requestedTrackId && resolvedTrackOptions.some((option) => option.id === requestedTrackId)
     ? requestedTrackId
     : resolvedDefaultTrackId;
   const showTrackSwitcher = resolvedTrackOptions.length > 1;
-  const [activeTrack, setActiveTrack] = useState(initialTrackId);
   const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -199,18 +198,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   }, [allModules, selectedTrack, trackAvailable]);
   const firstModuleId = modules[0]?.id ?? "";
   const requestedModuleId = searchParams.get("topic") ?? initialModuleId;
-  const initialActiveModuleId = requestedModuleId && modules.some((item) => item.id === requestedModuleId) ? requestedModuleId : firstModuleId;
-  const [activeModule, setActiveModule] = useState(initialActiveModuleId);
-
-  useEffect(() => {
-    if (!requestedTrackId || !resolvedTrackOptions.some((option) => option.id === requestedTrackId)) return;
-    setActiveTrack((current) => current === requestedTrackId ? current : requestedTrackId);
-  }, [requestedTrackId, resolvedTrackOptions]);
-
-  useEffect(() => {
-    if (!requestedModuleId || !modules.some((item) => item.id === requestedModuleId)) return;
-    setActiveModule((current) => current === requestedModuleId ? current : requestedModuleId);
-  }, [modules, requestedModuleId]);
+  const activeModule = requestedModuleId && modules.some((item) => item.id === requestedModuleId) ? requestedModuleId : firstModuleId;
 
   useEffect(() => {
     if (!activeModule || searchParams.get("topic")) return;
@@ -306,12 +294,10 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     onSelect: (trackId) => {
       const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
-      setActiveTrack(trackId);
       const allowedIds = option.moduleIds?.length ? new Set(option.moduleIds) : undefined;
       const firstTrackModule = option.available
         ? (allowedIds ? allModules.find((item) => allowedIds.has(item.id)) : allModules[0])
         : undefined;
-      setActiveModule(firstTrackModule?.id ?? "");
       router.push(contentHref(pathname, searchParams.toString(), {
         topic: firstTrackModule?.id ?? null,
         track: trackId,
@@ -323,7 +309,6 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
 
   const selectModule = (moduleId: string) => {
     if (!modules.some((item) => item.id === moduleId)) return;
-    setActiveModule(moduleId);
     router.push(contentHref(pathname, searchParams.toString(), {
       topic: moduleId,
       track: showTrackSwitcher ? activeTrack : null,
