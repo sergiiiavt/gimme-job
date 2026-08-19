@@ -22,28 +22,49 @@ export function questionIdForVisibleText(questions: LinkableInterviewQuestion[],
 }
 
 function applyLinkLayout(summary: HTMLElement, link: HTMLAnchorElement) {
-  const hasStar = Boolean(summary.querySelector(".iq-star-icon"));
+  const star = summary.querySelector<HTMLElement>(".iq-star-icon");
+  const hasStar = Boolean(star);
+
+  if (star) {
+    Object.assign(star.style, {
+      alignItems: "center",
+      display: "inline-flex",
+      height: "28px",
+      justifyContent: "center",
+      lineHeight: "28px",
+      padding: "0 0 1px",
+      right: "14px",
+      textAlign: "center",
+      top: "14px",
+      width: "28px",
+    });
+  }
+
   Object.assign(link.style, {
     alignItems: "center",
-    background: "transparent",
-    border: "0",
-    borderRadius: "0",
+    background: "#fff",
+    border: "1px solid #dfe4df",
+    borderRadius: "999px",
     color: "#69766f",
     cursor: "pointer",
     display: "inline-flex",
-    height: "22px",
+    height: "28px",
     justifyContent: "center",
+    lineHeight: "0",
     padding: "0",
     position: "absolute",
-    right: hasStar ? "51px" : "17px",
+    right: hasStar ? "48px" : "14px",
     textDecoration: "none",
-    top: "17px",
-    width: "22px",
+    top: "14px",
+    width: "28px",
     zIndex: "4",
   });
 
+  const svg = link.querySelector<SVGElement>("svg");
+  if (svg) svg.style.display = "block";
+
   const copy = Array.from(summary.children).find((child) => child.tagName === "DIV") as HTMLElement | undefined;
-  if (copy) copy.style.paddingRight = hasStar ? "76px" : "42px";
+  if (copy) copy.style.paddingRight = hasStar ? "80px" : "46px";
 }
 
 function createDirectLink(pathname: string, questionId: string) {
@@ -53,9 +74,17 @@ function createDirectLink(pathname: string, questionId: string) {
   link.title = "Direct link";
   link.setAttribute("aria-label", "Open direct link to this question");
   link.dataset.questionId = questionId;
-  link.innerHTML = '<svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16"><path d="M10.2 13.8a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.41 1.41M13.8 10.2a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.41-1.41" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/></svg>';
-  link.addEventListener("mouseenter", () => { link.style.color = "#315e9c"; });
-  link.addEventListener("mouseleave", () => { link.style.color = "#69766f"; });
+  link.innerHTML = '<svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8.5 12h7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
+  link.addEventListener("mouseenter", () => {
+    link.style.background = "#f5f8f6";
+    link.style.borderColor = "#cbd5cf";
+    link.style.color = "#315e9c";
+  });
+  link.addEventListener("mouseleave", () => {
+    link.style.background = "#fff";
+    link.style.borderColor = "#dfe4df";
+    link.style.color = "#69766f";
+  });
   link.addEventListener("click", (event) => event.stopPropagation());
   return link;
 }

@@ -9,29 +9,82 @@
 .tocRow {
   align-items: center;
   display: grid;
-  gap: 2px;
-  grid-template-columns: minmax(0, 1fr) 20px;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 28px;
 }
 
 .tocTextLink {
   min-width: 0;
 }
 
-.tocDirectLink {
+.tocDirectLink,
+.headingDirectLink,
+.pagerDirectLink {
   align-items: center;
-  background: transparent !important;
-  border-left: 0 !important;
-  border-radius: 0 !important;
-  color: #8a958f !important;
+  background: #fff !important;
+  border: 1px solid #dfe4df !important;
+  border-radius: 999px !important;
+  box-sizing: border-box;
+  color: #69766f !important;
   display: inline-flex;
-  height: 22px;
+  height: 28px;
   justify-content: center;
+  line-height: 0;
   padding: 0 !important;
-  width: 20px;
+  width: 28px;
 }
 
-.tocDirectLink:hover {
-  background: transparent !important;
-  border-left-color: transparent !important;
+.tocDirectLink svg,
+.headingDirectLink svg,
+.pagerDirectLink svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.tocDirectLink:hover,
+.headingDirectLink:hover,
+.pagerDirectLink:hover {
+  background: #f5f8f6 !important;
+  border-color: #cbd5cf !important;
   color: #315e9c !important;
+}
+
+.headingDirectLink {
+  margin-left: 9px;
+  position: relative;
+  top: -2px;
+  vertical-align: middle;
+}
+
+.pagerItem {
+  min-width: 0;
+  position: relative;
+}
+
+.pagerItem > button {
+  height: 100%;
+  padding-right: 50px;
+  width: 100%;
+}
+
+.pagerItem:first-child > button {
+  text-align: left;
+}
+
+.pagerItem:last-child > button {
+  text-align: right;
+}
+
+.pagerDirectLink {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+@media (max-width: 610px) {
+  .pagerItem:last-child > button {
+    text-align: left;
+  }
 }

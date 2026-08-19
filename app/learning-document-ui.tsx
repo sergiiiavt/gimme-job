@@ -22,12 +22,20 @@ export interface LearningRegistrySource {
   url: string;
 }
 
+const directLinkSvgMarkup = '<svg aria-hidden="true" fill="none" height="15" viewBox="0 0 24 24" width="15"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8.5 12h7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
+
 function DirectLinkIcon() {
   return (
-    <svg aria-hidden="true" fill="none" height="14" viewBox="0 0 24 24" width="14">
-      <path d="M10.2 13.8a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.41 1.41M13.8 10.2a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.41-1.41" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8"/>
+    <svg aria-hidden="true" fill="none" height="15" viewBox="0 0 24 24" width="15">
+      <path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8.5 12h7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8"/>
     </svg>
   );
+}
+
+function pagerItemId<T>(item: T | undefined) {
+  if (!item || typeof item !== "object" || !("id" in item)) return null;
+  const id = (item as { id?: unknown }).id;
+  return typeof id === "string" ? id : null;
 }
 
 export function LearningHero({ description, eyebrow, meta, title }: {
@@ -83,16 +91,37 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   onSelect: (item: T) => void;
   previous?: T;
 }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const previousId = pagerItemId(previous);
+  const nextId = pagerItemId(next);
+  const previousHref = previousId ? contentHref(pathname, searchParams.toString(), { topic: previousId }) : null;
+  const nextHref = nextId ? contentHref(pathname, searchParams.toString(), { topic: nextId }) : null;
+
   return (
     <nav className={styles.pager} aria-label={ariaLabel}>
-      <button disabled={!previous} onClick={() => previous && onSelect(previous)} type="button">
-        <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
-        <strong>{labelFor(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
-      </button>
-      <button disabled={!next} onClick={() => next && onSelect(next)} type="button">
-        <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
-        <strong>{labelFor(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
-      </button>
+      <div className={uiStyles.pagerItem}>
+        <button disabled={!previous} onClick={() => previous && onSelect(previous)} type="button">
+          <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
+          <strong>{labelFor(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
+        </button>
+        {previousHref && (
+          <a aria-label={language === "uk" ? "Пряме посилання на попередній розділ" : "Direct link to previous chapter"} className={uiStyles.pagerDirectLink} href={previousHref} title={language === "uk" ? "Пряме посилання" : "Direct link"}>
+            <DirectLinkIcon/>
+          </a>
+        )}
+      </div>
+      <div className={uiStyles.pagerItem}>
+        <button disabled={!next} onClick={() => next && onSelect(next)} type="button">
+          <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
+          <strong>{labelFor(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
+        </button>
+        {nextHref && (
+          <a aria-label={language === "uk" ? "Пряме посилання на наступний розділ" : "Direct link to next chapter"} className={uiStyles.pagerDirectLink} href={nextHref} title={language === "uk" ? "Пряме посилання" : "Direct link"}>
+            <DirectLinkIcon/>
+          </a>
+        )}
+      </div>
     </nav>
   );
 }
@@ -148,6 +177,34 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, [headings]);
+
+  useEffect(() => {
+    const createdLinks: HTMLAnchorElement[] = [];
+    const sectionIds = [...headings.map((heading) => heading.id), "source-registry"];
+
+    for (const sectionId of sectionIds) {
+      const target = sectionId === "source-registry"
+        ? document.getElementById("learning-source-register")
+        : document.getElementById(sectionId);
+      if (!(target instanceof HTMLElement)) continue;
+
+      const existing = Array.from(target.children).find((child) => child.classList.contains(uiStyles.headingDirectLink));
+      if (existing) continue;
+
+      const link = document.createElement("a");
+      link.className = uiStyles.headingDirectLink;
+      link.href = contentHref(pathname, searchParams.toString(), {}, sectionId);
+      link.title = language === "uk" ? "Пряме посилання" : "Direct link";
+      link.setAttribute("aria-label", `${language === "uk" ? "Пряме посилання" : "Direct link"}: ${target.textContent?.trim() ?? sectionId}`);
+      link.innerHTML = directLinkSvgMarkup;
+      target.appendChild(link);
+      createdLinks.push(link);
+    }
+
+    return () => {
+      for (const link of createdLinks) link.remove();
+    };
+  }, [headings, language, pathname, searchParams]);
 
   return (
     <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
