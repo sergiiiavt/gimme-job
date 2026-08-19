@@ -716,7 +716,6 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const isFullScreenGame = section === "rewild" && subsection === "all";
   const publicHref = sectionNavigationHref(section, "public");
   const personalHref = sectionNavigationHref(section, "personal");
-  const contentMode: SiteMode = (section === "interview" || section === "python-interview") ? mode : effectiveMode;
 
   return (
     <main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>
@@ -726,7 +725,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
           activeSubsection={subsection}
           hideSecondary={hideSecondary}
           mobileOpen={mobileNav}
-          mode={contentMode}
+          mode={effectiveMode}
           onSelect={openSection}
           onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}
           personalHref={personalHref}
@@ -759,7 +758,7 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
             automationTrack={automationTrack}
             interviewCatalog={interviewCatalog}
             interviewCatalogError={interviewCatalogError}
-            mode={contentMode}
+            mode={effectiveMode}
             onTopicChange={setSubsection}
             programmingTrack={programmingTrack}
             pythonCurriculum={pythonCurriculum}

@@ -1,27 +1,28 @@
 name: CI and Cloudflare deploy
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  branch_fix:
-    name: Apply final interview corrections
-    if: github.head_ref == 'agent/personal-stars-prevalence-audit'
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Check out branch
+      - name: Check out source
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Use Node.js 22.22
@@ -30,24 +31,124 @@ jobs:
           node-version: 22.22
           cache: npm
 
-      - name: Apply corrections
-        run: |
-          node .tmp-fix-interview-mode-sonar.mjs
-          git checkout origin/main -- .github/workflows/ci.yml
-          rm -f .tmp-fix-interview-mode-sonar.mjs
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify repository
+        run: npm run verify
+
+      - name: SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  deploy:
+    name: Deploy production
+    needs: validate
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out validated source
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22.22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Verify final product diff
-        run: npm run verify
-
-      - name: Commit final product diff
+      - name: Validate deployment configuration
+        env:
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GRAFANA_READ_TOKEN: ${{ secrets.GRAFANA_READ_TOKEN }}
+          N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet && exit 0
-          git commit -m "Finalize interview star cleanup and prevalence review"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          missing=()
+          for name in APP_PASSWORD CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_API_TOKEN GRAFANA_READ_TOKEN N8N_INGEST_TOKEN; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Production deployment blocked because required repository secrets are missing: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Build production artifact
+        run: npm run build
+
+      - name: Deploy Worker and D1
+        env:
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EMAIL_AI_DAILY_GLOBAL_LIMIT: ${{ vars.EMAIL_AI_DAILY_GLOBAL_LIMIT }}
+          EMAIL_AI_DAILY_USER_LIMIT: ${{ vars.EMAIL_AI_DAILY_USER_LIMIT }}
+          EMAIL_AI_ENABLED: ${{ vars.EMAIL_AI_ENABLED }}
+          GMAIL_TOKEN_ENCRYPTION_KEY: ${{ secrets.GMAIL_TOKEN_ENCRYPTION_KEY }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          GRAFANA_READ_TOKEN: ${{ secrets.GRAFANA_READ_TOKEN }}
+          MULTI_USER_ENABLED: ${{ vars.MULTI_USER_ENABLED }}
+          N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+        run: node scripts/deploy-cloudflare.mjs
+
+      - name: Verify production learning routes
+        shell: bash
+        run: |
+          check_route() {
+            local url="$1"
+            local marker="$2"
+            local body=""
+            for attempt in {1..10}; do
+              if body="$(curl --fail --silent --show-error --location --max-time 20 "$url")" && grep -Eq "$marker" <<<"$body"; then
+                echo "Verified $url"
+                return 0
+              fi
+              echo "Waiting for production route $url (attempt $attempt/10)..."
+              sleep 3
+            done
+            echo "::error::Production route failed verification: $url"
+            return 1
+          }
+
+          check_header() {
+            local url="$1"
+            local header_pattern="$2"
+            local headers=""
+            for attempt in {1..10}; do
+              if headers="$(curl --fail --silent --show-error --location --max-time 20 --head "$url")" && grep -Eiq "$header_pattern" <<<"$headers"; then
+                echo "Verified freshness headers for $url"
+                return 0
+              fi
+              echo "Waiting for production freshness header $url (attempt $attempt/10)..."
+              sleep 3
+            done
+            echo "::error::Production route freshness header failed verification: $url"
+            return 1
+          }
+
+          check_route "https://gimmejob.gimmejob.workers.dev/learn/testing-tools" 'Testing (&amp;|&) Diagnostic Tools'
+          check_route "https://gimmejob.gimmejob.workers.dev/learn/metrics-estimation" 'QA Metrics (&amp;|&) Estimation'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Mutability (&amp;|&) References'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Bind a name to an object'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Window ranking'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Dialect'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Find duplicates'
+          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" '>Tasks<'
+          check_header "https://gimmejob.gimmejob.workers.dev/reference/programming" '^cache-control: .*no-store'

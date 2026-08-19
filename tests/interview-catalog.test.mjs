@@ -241,7 +241,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /placeholder="Search all words across questions, answers, tags, or skills"/);
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
   assert.match(uiSource, /type InterviewPrevalenceFilter = InterviewPrevalence;/);
-  assert.match(uiSource, /const contentMode: SiteMode = \(section === "interview" \|\| section === "python-interview"\) \? mode : effectiveMode;/);
   assert.doesNotMatch(uiSource, /editorialStar/);
   assert.doesNotMatch(uiSource, /Starred fundamental/);
   assert.match(stylesSource, /\.iq-star-icon \{/);
