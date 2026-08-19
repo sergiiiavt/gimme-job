@@ -28,7 +28,6 @@ function enabledEnvironment(name) {
 
 function runWrangler(args, options = {}) {
   const capture = options.capture === true;
-  const hasInput = typeof options.input === "string";
   const result = spawnSync(process.execPath, [wranglerCli, ...args], {
     cwd: projectRoot,
     encoding: "utf8",
@@ -39,8 +38,7 @@ function runWrangler(args, options = {}) {
       WRANGLER_SEND_METRICS: "false",
       WRANGLER_WRITE_LOGS: "false",
     },
-    input: options.input,
-    stdio: capture ? ["ignore", "pipe", "inherit"] : hasInput ? ["pipe", "inherit", "inherit"] : "inherit",
+    stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit",
   });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`Wrangler failed: ${args.join(" ")}`);
