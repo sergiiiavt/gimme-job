@@ -1,4 +1,4 @@
-import { tenantRequestContext } from "../../../_tenant-state";
+import { tenantRequestContext } from "../../../_tenant-state.ts";
 
 type VacancyAuditEnv = {
   DB?: D1Database;
