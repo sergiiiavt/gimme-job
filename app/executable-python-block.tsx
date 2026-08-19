@@ -36,16 +36,10 @@ export default function ExecutablePythonBlock({ code }: { code: string }) {
     workerRef.current = null;
   };
 
-  useEffect(() => {
-    setDraft(code);
-    setOutput("Run the code to see the result.");
-    setStatus("idle");
-    destroyWorker();
-
-    return destroyWorker;
-    // destroyWorker only operates on refs and intentionally stays local to this component instance.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
+  useEffect(() => () => {
+    if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+    workerRef.current?.terminate();
+  }, []);
 
   const failAfter = (milliseconds: number, message: string) => {
     clearTimer();
@@ -57,12 +51,11 @@ export default function ExecutablePythonBlock({ code }: { code: string }) {
   };
 
   const run = () => {
-    destroyWorker();
-
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
-    const worker = new Worker("/python-runner.worker.mjs", { type: "module" });
+    const worker = workerRef.current ?? new Worker("/python-runner.worker.mjs", { type: "module" });
     workerRef.current = worker;
+
     setStatus("loading");
     setOutput("Loading Python runtime…");
     failAfter(LOAD_TIMEOUT_MS, "Python runtime could not be loaded. Try again.");
@@ -99,7 +92,7 @@ export default function ExecutablePythonBlock({ code }: { code: string }) {
   };
 
   const reset = () => {
-    destroyWorker();
+    if (status !== "idle") destroyWorker();
     setDraft(code);
     setStatus("idle");
     setOutput("Run the code to see the result.");
@@ -128,7 +121,7 @@ export default function ExecutablePythonBlock({ code }: { code: string }) {
             ) : (
               <button className={styles.primaryButton} onClick={run} type="button">Run</button>
             )}
-            <button className={styles.secondaryButton} disabled={busy && status === "running"} onClick={reset} type="button">Reset</button>
+            <button className={styles.secondaryButton} onClick={reset} type="button">Reset</button>
             {status === "loading" ? <span className={styles.status}>Loading runtime</span> : null}
           </div>
         </section>
