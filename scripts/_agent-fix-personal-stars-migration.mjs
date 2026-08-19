@@ -54,25 +54,25 @@ assert.ok(replacedIsStarred, "Did not find mixed editorial/personal star asserti
 assert.ok(replacedMixedFilter, "Did not find mixed prevalence/star assertion.");
 await writeFile(testsPath, migratedTestLines.join("\n"));
 
-const historicalStarsMigrationPath = "drizzle/0012_interview_stars.sql";
-const historicalStarsSql = await readFile(historicalStarsMigrationPath, "utf8");
-const seededQuestionIds = [...historicalStarsSql.matchAll(/SELECT `users`\.`id`, '([^']+)'/g)].map((match) => match[1]);
-assert.ok(seededQuestionIds.length >= 1, "Historical interview-star migration must contain the old seed set.");
-assert.equal(new Set(seededQuestionIds).size, seededQuestionIds.length, "Historical seeded question ids must be unique.");
-
-const cleanupMigrationPath = "drizzle/0014_remove_editorial_star_seed.sql";
-const quotedSeededIds = seededQuestionIds.map((questionId) => `  '${questionId.replaceAll("'", "''")}'`).join(",\n");
-await writeFile(cleanupMigrationPath, `-- Remove only the historical editorial defaults that were copied into the legacy owner's\n-- personal star table by 0012. The table remains user-scoped; future stars are created only\n-- by explicit user actions through the personal interview-star API.\nDELETE FROM \`user_interview_stars\`\nWHERE \`user_id\` IN (\n  SELECT \`id\` FROM \`users\` WHERE \`email\` = 'sergii.iavt@gmail.com'\n)\nAND \`question_id\` IN (\n${quotedSeededIds}\n);\n`);
-
 const tenantTestPath = "tests/tenant-isolation.test.ts";
 const tenantSource = await readFile(tenantTestPath, "utf8");
 const tenantBlockStart = tenantSource.indexOf('test("interview stars migration adds a tenant-scoped table and migrates the current editorial set"');
 const tenantBlockEnd = tenantSource.indexOf('test("tenant unavailable response is explicit and non-cacheable"', tenantBlockStart);
 assert.ok(tenantBlockStart >= 0 && tenantBlockEnd > tenantBlockStart, "Could not locate interview-star migration test block.");
-const replacementTenantTest = `test("interview stars stay tenant-scoped and historical editorial defaults are removed", async () => {\n  const createSql = await readFile(new URL("../drizzle/0012_interview_stars.sql", import.meta.url), "utf8");\n  const cleanupSql = await readFile(new URL("../drizzle/0014_remove_editorial_star_seed.sql", import.meta.url), "utf8");\n  const historicallySeededIds = [...createSql.matchAll(/SELECT \\`users\\`\\.\\`id\\`, '([^']+)'/g)].map((match) => match[1]);\n\n  assert.match(createSql, /CREATE TABLE \\`user_interview_stars\\`/);\n  assert.match(createSql, /PRIMARY KEY \\(\\`user_id\\`, \\`question_id\\`\\)/);\n  assert.match(createSql, /FOREIGN KEY \\(\\`user_id\\`\\) REFERENCES \\`users\\`\\(\\`id\\`\\)[^\\n]*ON DELETE cascade/);\n  assert.ok(historicallySeededIds.length > 0);\n\n  assert.match(cleanupSql, /DELETE FROM \\`user_interview_stars\\`/);\n  assert.match(cleanupSql, /WHERE \\`user_id\\` IN/);\n  assert.match(cleanupSql, /WHERE \\`email\\` = 'sergii\\.iavt@gmail\\.com'/);\n  assert.match(cleanupSql, /AND \\`question_id\\` IN/);\n  for (const questionId of historicallySeededIds) {\n    assert.ok(cleanupSql.includes(\`'\${questionId}'\`), \`Cleanup migration must remove historical default \${questionId}.\`);\n  }\n});\n\n`;
+const replacementTenantTest = [
+  'test("interview stars migration keeps personal stars tenant-scoped", async () => {',
+  '  const sql = await readFile(new URL("../drizzle/0012_interview_stars.sql", import.meta.url), "utf8");',
+  "",
+  "  assert.match(sql, /CREATE TABLE `user_interview_stars`/);",
+  "  assert.match(sql, /PRIMARY KEY \\(`user_id`, `question_id`\\)/);",
+  "  assert.match(sql, /FOREIGN KEY \\(`user_id`\\) REFERENCES `users`\\(`id`\\)[^\\n]*ON DELETE cascade/);",
+  "});",
+  "",
+  "",
+].join("\n");
 await writeFile(
   tenantTestPath,
   tenantSource.slice(0, tenantBlockStart) + replacementTenantTest + tenantSource.slice(tenantBlockEnd),
 );
 
-console.log(`Fixed temporary migration assertions and added cleanup for ${seededQuestionIds.length} historical editorial stars.`);
+console.log("Fixed temporary migration assertions and decoupled personal-star storage tests from editorial defaults.");
