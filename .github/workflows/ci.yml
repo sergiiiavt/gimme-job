@@ -74,7 +74,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          python - <<'PY'
+          python - <<'PY' | tee sonar-diagnostics.txt
           import base64
           import json
           import os
@@ -134,6 +134,15 @@ jobs:
           except Exception as error:
               print(f"Sonar diagnostics unavailable: {type(error).__name__}: {error}")
           PY
+
+      - name: Upload Sonar diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-diagnostics
+          path: sonar-diagnostics.txt
+          if-no-files-found: ignore
+          retention-days: 1
 
   sonar-main:
     name: Refresh Sonar main
