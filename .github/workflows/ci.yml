@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: quality-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
@@ -49,12 +49,18 @@ jobs:
           python -m pip install uv==0.12.1
           uv lock --project ai-service
 
-      - name: Upload generated uv lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: ai-service-uv-lock
-          path: ai-service/uv.lock
-          retention-days: 1
+      - name: Commit generated uv lock once
+        if: github.head_ref == 'agent/ai-service-foundation'
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          git add ai-service/uv.lock
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Lock AI service Python dependencies"
+            git push origin "HEAD:${HEAD_BRANCH}"
+          fi
 
       - name: Install AI service test dependencies
         run: python -m pip install -e "./ai-service[test]"
