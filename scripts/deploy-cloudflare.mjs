@@ -147,11 +147,19 @@ async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngest
 
 async function validateConfig() {
   await ensureBuildArtifact();
-  await writeDeployConfig(dryRunDatabaseId, false);
   try {
-    runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath]);
+    await writeDeployConfig(dryRunDatabaseId, false);
+    await writeFile(deploySecretsPath, `${JSON.stringify({
+      APP_PASSWORD: "dry-run-app-password",
+      GRAFANA_READ_TOKEN: "dry-run-grafana-token",
+      N8N_INGEST_TOKEN: "dry-run-n8n-token",
+    })}\n`, { mode: 0o600 });
+    runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
   } finally {
-    await rm(generatedConfigPath, { force: true });
+    await Promise.all([
+      rm(generatedConfigPath, { force: true }),
+      rm(deploySecretsPath, { force: true }),
+    ]);
   }
 }
 
@@ -186,10 +194,9 @@ async function main() {
   const id = databaseId(database);
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
 
-  await writeDeployConfig(id, multiUserEnabled);
-  await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth });
-
   try {
+    await writeDeployConfig(id, multiUserEnabled);
+    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth });
     console.log("Applying D1 migrations...");
     runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
