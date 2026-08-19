@@ -555,6 +555,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .iq-filter-status > span + span { border-left: 1px solid #dde2dd; }
 .iq-filter-status strong { color: #26362e; display: block; font-size: 13px; letter-spacing: -.02em; }
 .iq-filter-grid { border-top: 1px solid #edf0ec; display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; padding-top: 13px; }
+.iq-filter-grid-personal { grid-template-columns: 132px repeat(4, minmax(0, 1fr)) auto; }
 .iq-list { background: #fff; border: 1px solid #e0e4e0; border-radius: 0 0 11px 11px; border-top: 0; overflow: hidden; }
 .iq-question { border-top: 1px solid #e8ebe7; }
 .iq-question:first-child { border-top: 0; }
@@ -737,6 +738,15 @@ button.iq-star-icon:disabled { cursor: wait; opacity: .6; }
 .iq-filter-option-radio.active .iq-filter-option-mark { background: #fff; border: 5px solid #587b3e; color: transparent; }
 .iq-filter-option-all { border-bottom: 1px solid #edf0ec; font-weight: 750; margin-bottom: 4px; }
 .iq-option-empty { color: #8a948f; display: block; font-size: 10px; padding: 12px 8px; }
+.iq-star-filter { align-items: center; background: #f7f9f6; border: 1px solid #dce2dc; border-radius: 10px; color: #1e2925; cursor: pointer; display: flex; gap: 10px; min-height: 54px; padding: 7px 12px; text-align: left; }
+.iq-star-filter:hover { background: #fff; border-color: #aab8aa; }
+.iq-star-filter:focus-visible { outline: 3px solid rgba(95,126,53,.16); outline-offset: 2px; }
+.iq-star-filter.active { background: #fff8e8; border-color: #d5bd78; box-shadow: 0 0 0 3px rgba(173,134,39,.08); }
+.iq-star-filter-icon { align-items: center; background: #edf1eb; border-radius: 50%; color: #657168; display: flex; flex: 0 0 auto; font-size: 15px; height: 26px; justify-content: center; width: 26px; }
+.iq-star-filter.active .iq-star-filter-icon { background: #f5dfaa; color: #785d18; }
+.iq-star-filter-copy { display: block; min-width: 0; }
+.iq-star-filter-copy small { color: #839087; display: block; font-size: 8px; font-weight: 750; letter-spacing: .09em; line-height: 1; margin-bottom: 6px; text-transform: uppercase; }
+.iq-star-filter-copy strong { display: block; font-size: 11px; font-weight: 700; line-height: 1.15; white-space: nowrap; }
 .iq-clear { background: #fff; border: 1px solid #d6ddd7; border-radius: 10px; color: #526059; cursor: pointer; font-size: 9px; font-weight: 750; min-height: 54px; padding: 0 15px; white-space: nowrap; }
 .iq-clear:hover:not(:disabled) { background: #1c2723; border-color: #1c2723; color: #fff; }
 .iq-clear:disabled { background: #f8f9f7; cursor: default; opacity: .5; }

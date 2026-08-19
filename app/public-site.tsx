@@ -24,7 +24,7 @@ interface QuestionProgressEntry {
 
 type InterviewLevel = "Junior" | "Middle" | "Senior" | "Lead";
 type InterviewPrevalence = "Very common" | "Common" | "Occasional" | "Specialist";
-type InterviewPrevalenceFilter = InterviewPrevalence | "Starred";
+type InterviewPrevalenceFilter = InterviewPrevalence;
 type InterviewSort = "prevalence" | "learning" | "level" | "alphabetical";
 
 interface InterviewQuestion {
@@ -42,7 +42,6 @@ interface InterviewQuestion {
   example?: string;
   exampleUk?: string;
   sourceIds: string[];
-  editorialStar?: boolean;
   tags?: string[];
   media?: Array<{ src: string; alt: string; caption: string; credit: string }>;
 }
@@ -148,10 +147,7 @@ const pythonLessonSortOptions: Array<{ value: PythonLessonSort; label: string }>
 ];
 const interviewLevels: InterviewLevel[] = ["Junior", "Middle", "Senior", "Lead"];
 const interviewPrevalence: InterviewPrevalence[] = ["Very common", "Common", "Occasional", "Specialist"];
-const interviewPrevalenceFilters: Array<{ label: string; value: InterviewPrevalenceFilter }> = [
-  { label: "★ Starred", value: "Starred" },
-  ...interviewPrevalence.map((value) => ({ label: value, value })),
-];
+const interviewPrevalenceFilters: Array<{ label: string; value: InterviewPrevalenceFilter }> = interviewPrevalence.map((value) => ({ label: value, value }));
 const prevalenceOrder: Record<InterviewPrevalence, number> = { "Very common": 0, Common: 1, Occasional: 2, Specialist: 3 };
 const levelOrder: Record<InterviewLevel, number> = { Junior: 0, Middle: 1, Senior: 2, Lead: 3 };
 const progressOptions: Array<{ value: QuestionProgressStatus; label: string }> = [
@@ -913,6 +909,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   const [stars, setStars] = useState<Record<string, boolean>>({});
   const [starBusy, setStarBusy] = useState<string | null>(null);
   const [starError, setStarError] = useState<string | null>(null);
+  const [starredOnly, setStarredOnly] = useState(false);
 
   const interviewQuestions = catalog.questions;
   const interviewTaxonomy = catalog.taxonomy;
@@ -989,13 +986,14 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     return interviewQuestions
       .filter((item) => {
         const tags = tagsFor(item);
-        const isStarred = mode === "personal" ? Boolean(stars[item.id]) : item.editorialStar === true;
+        const isStarred = Boolean(stars[item.id]);
         const matchesLevel = levels.length === 0 || levels.includes(item.level);
-        const matchesPrevalence = prevalences.length === 0 || prevalences.some((prevalence) => prevalence === "Starred" ? isStarred : prevalence === item.prevalence);
+        const matchesPrevalence = prevalences.length === 0 || prevalences.includes(item.prevalence);
+        const matchesStarred = !starredOnly || (mode === "personal" && isStarred);
         const matchesCategory = !activeCategory || item.category === activeCategory;
         const matchesTag = selectedTags.length === 0 || tags.some((tag) => selectedTags.includes(tag));
-        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, isStarred ? "star starred fundamental core" : "", ...tags, ...item.strongAnswerSignals]);
-        return matchesLevel && matchesPrevalence && matchesCategory && matchesTag && matchesSearch;
+        const matchesSearch = matchesAllSearchTerms(query, [item.question, item.shortAnswer, item.category, topicSearchLabels.get(item.category) ?? "", item.kind ?? "", item.prevalence, mode === "personal" && isStarred ? "star starred" : "", ...tags, ...item.strongAnswerSignals]);
+        return matchesLevel && matchesPrevalence && matchesStarred && matchesCategory && matchesTag && matchesSearch;
       })
       .sort((left, right) => {
         const catalogDifference = (catalogOrder.get(left.id) ?? 0) - (catalogOrder.get(right.id) ?? 0);
@@ -1013,7 +1011,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
         }
         return prevalenceOrder[left.prevalence] - prevalenceOrder[right.prevalence] || catalogDifference;
       });
-  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, mode, prevalences, query, selectedTags, sort, stars, topicSearchLabels]);
+  }, [activeCategory, catalogOrder, interviewQuestions, learningTopicOrder, levels, mode, prevalences, query, selectedTags, sort, starredOnly, stars, topicSearchLabels]);
 
   const pageCount = Math.max(1, Math.ceil(matchingQuestions.length / INTERVIEW_PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -1048,13 +1046,14 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
     setQuery("");
     setLevels([]);
     setPrevalences([]);
+    setStarredOnly(false);
     setSort("prevalence");
     setSelectedTags([]);
     setOpenFilter(null);
     setPage(0);
     onTopicChange("all");
   };
-  const hasActiveFilters = Boolean(activeCategory || selectedTags.length || query || levels.length || prevalences.length || sort !== "prevalence");
+  const hasActiveFilters = Boolean(activeCategory || selectedTags.length || query || levels.length || prevalences.length || starredOnly || sort !== "prevalence");
   const updateProgress = async (questionId: string, status: QuestionProgressStatus | null) => {
     const previous = progress[questionId] ?? null;
     setProgressBusy(questionId);
@@ -1145,9 +1144,20 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
             <span><strong>{visibleQuestions.length}</strong> rendered</span>
           </div>
         </div>
-        <div className="iq-filter-grid">
+        <div className={`iq-filter-grid${mode === "personal" ? " iq-filter-grid-personal" : ""}`}>
+          {mode === "personal" && (
+            <button
+              aria-pressed={starredOnly}
+              className={`iq-star-filter${starredOnly ? " active" : ""}`}
+              onClick={() => { setStarredOnly((current) => !current); setPage(0); }}
+              type="button"
+            >
+              <span className="iq-star-filter-icon" aria-hidden="true">★</span>
+              <span className="iq-star-filter-copy"><small>Personal</small><strong>Starred only</strong></span>
+            </button>
+          )}
           <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
-          <InterviewFilter emptyLabel="All prevalence" helpText={mode === "personal" ? "Starred is your own private set; frequency bands remain unchanged." : "Starred is the editorial core set; frequency bands remain unchanged."} label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
+          <InterviewFilter emptyLabel="All prevalence" helpText="How often this exact question is likely to appear in interviews." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
           <InterviewFilter emptyLabel="All tags" helpText="Matches any selected tag." label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setFilterOpen("tags", nextOpen)} open={openFilter === "tags"} options={interviewTags.map((tag) => ({ label: tag, value: tag }))} searchable selected={selectedTags}/>
           <InterviewFilter emptyLabel="All levels" helpText="Matches any selected seniority level." label="Seniority" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setFilterOpen("levels", nextOpen)} open={openFilter === "levels"} options={interviewLevels.map((level) => ({ label: level, value: level }))} selected={levels}/>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
@@ -1166,7 +1176,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
           return (
             <details className="iq-question" key={item.id}>
               <summary>
-                {mode === "personal" ? (
+                {mode === "personal" && (
                   <button
                     aria-label={stars[item.id] ? "Remove your star" : "Star this question"}
                     aria-pressed={Boolean(stars[item.id])}
@@ -1175,8 +1185,6 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
                     onClick={(event) => { event.preventDefault(); event.stopPropagation(); void updateStar(item.id, !stars[item.id]); }}
                     type="button"
                   >{stars[item.id] ? "★" : "☆"}</button>
-                ) : item.editorialStar && (
-                  <span aria-label="Starred fundamental" className="iq-star-icon active" role="img">★</span>
                 )}
                 <span className={`iq-level iq-level-${item.level.toLowerCase()}`}>{item.level}</span>
                 <div>

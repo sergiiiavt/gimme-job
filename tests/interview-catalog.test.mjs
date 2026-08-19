@@ -5,7 +5,7 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("keeps the interview catalog additive, explicit, and prevalence-complete", async () => {
-  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, editorialStars, expanded, sources, taxonomy] = await Promise.all([
+  const [common, canonical, databaseSql, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded, sources, taxonomy] = await Promise.all([
     readFile(projectFile("content/interview/common-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/canonical-baseline.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/database-sql-qa.json"), "utf8").then(JSON.parse),
@@ -15,7 +15,6 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
     readFile(projectFile("content/interview/embedded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/modern-sdet-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/core-foundations-qa.json"), "utf8").then(JSON.parse),
-    readFile(projectFile("content/interview/editorial-starred-question-ids.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/expanded-qa.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/sources.json"), "utf8").then(JSON.parse),
     readFile(projectFile("content/interview/taxonomy.json"), "utf8").then(JSON.parse),
@@ -34,9 +33,6 @@ test("keeps the interview catalog additive, explicit, and prevalence-complete", 
   assert.equal(embedded.questions.length, 29);
   assert.equal(modernSdet.questions.length, 52);
   assert.equal(coreFoundations.questions.length, 18);
-  assert.equal(new Set(editorialStars.questionIds).size, editorialStars.questionIds.length);
-  assert.ok(editorialStars.questionIds.length >= 40);
-  assert.ok(editorialStars.questionIds.every((id) => questions.some((question) => question.id === id)));
   assert.equal(new Set(canonical.questions.map((question) => question.category)).size, 19);
   assert.equal(new Set([...canonical.questions, ...embedded.questions].map((question) => question.category)).size, 20);
   assert.deepEqual(
@@ -216,6 +212,10 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.match(generatorSource, /practicalFocusByConcept/);
   assert.match(generatorSource, /const MINIMUM_QUESTION_COUNT = 672;/);
   assert.match(generatorSource, /baseQuestions\.length \+ generated\.length >= MINIMUM_QUESTION_COUNT/);
+  assert.match(generatorSource, /reviewInterviewPrevalence/);
+  assert.match(generatorSource, /modernSdet\.questions = modernSdet\.questions\.map/);
+  assert.match(generatorSource, /coreFoundations\.questions = coreFoundations\.questions\.map/);
+  assert.doesNotMatch(generatorSource, /prevalenceByPosition/);
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
 
@@ -240,11 +240,13 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /topicSearchLabels\.get\(item\.category\)/);
   assert.match(uiSource, /placeholder="Search all words across questions, answers, tags, or skills"/);
   assert.match(uiSource, /matchingQuestions\.slice\(pageStart, pageStart \+ INTERVIEW_PAGE_SIZE\)/);
-  assert.match(uiSource, /type InterviewPrevalenceFilter = InterviewPrevalence \| "Starred"/);
-  assert.match(uiSource, /label: "★ Starred"/);
-  assert.match(uiSource, /item\.editorialStar === true/);
-  assert.match(uiSource, /aria-label="Starred fundamental"/);
+  assert.match(uiSource, /type InterviewPrevalenceFilter = InterviewPrevalence;/);
+  assert.doesNotMatch(uiSource, /editorialStar/);
+  assert.doesNotMatch(uiSource, /Starred fundamental/);
   assert.match(stylesSource, /\.iq-star-icon \{/);
+  assert.match(stylesSource, /\.iq-star-filter \{/);
+  assert.match(stylesSource, /\.iq-filter-grid-personal \{[^}]*grid-template-columns: 132px repeat\(4, minmax\(0, 1fr\)\) auto/);
+  assert.ok(uiSource.indexOf("iq-star-filter${starredOnly") < uiSource.indexOf("emptyLabel=\"Most common first\""));
   assert.match(uiSource, /function InterviewFilter/);
   assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
   assert.doesNotMatch(uiSource, /<label className="iq-category">/);
@@ -256,8 +258,12 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /type=\{selectionMode === "single" \? "radio" : "checkbox"\}/);
   assert.match(uiSource, /role=\{selectionMode === "single" \? "radiogroup"/);
   assert.match(uiSource, /const \[prevalences, setPrevalences\] = useState<InterviewPrevalenceFilter\[]>\(\[\]\)/);
-  assert.match(uiSource, /const isStarred = mode === "personal" \? Boolean\(stars\[item\.id]\) : item\.editorialStar === true;/);
-  assert.match(uiSource, /prevalence === "Starred" \? isStarred : prevalence === item\.prevalence/);
+  assert.match(uiSource, /const \[starredOnly, setStarredOnly\] = useState\(false\)/);
+  assert.match(uiSource, /const isStarred = Boolean\(stars\[item\.id\]\);/);
+  assert.match(uiSource, /const matchesPrevalence = prevalences\.length === 0 \|\| prevalences\.includes\(item\.prevalence\);/);
+  assert.match(uiSource, /const matchesStarred = !starredOnly \|\| \(mode === "personal" && isStarred\);/);
+  assert.match(uiSource, /iq-star-filter/);
+  assert.match(uiSource, />Starred only</);
   assert.match(uiSource, /\{ value: "learning", label: "Learning path" \}/);
   assert.doesNotMatch(uiSource, /Editorial order/);
   assert.match(uiSource, /if \(sort === "learning"\)/);
@@ -270,7 +276,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   }
   assert.match(uiSource, /event\.key === "Escape"/);
   assert.match(uiSource, /closest\("\.iq-filter-control"\)/);
-  const filterGrid = uiSource.slice(uiSource.indexOf('<div className="iq-filter-grid">'), uiSource.indexOf('<div className="iq-list">'));
+  const filterGrid = uiSource.slice(uiSource.indexOf('iq-filter-grid${mode === "personal"'), uiSource.indexOf('<div className="iq-list">'));
   assert.ok(filterGrid.indexOf('label="Sort"') < filterGrid.indexOf('label="Prevalence"'), "Sort must appear before Prevalence.");
   assert.doesNotMatch(filterGrid.match(/label="Prevalence"[^\n]+/)?.[0] ?? "", /selectionMode="single"/);
   assert.match(uiSource, /Personal progress/);

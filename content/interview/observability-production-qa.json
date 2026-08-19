@@ -31,7 +31,7 @@
         "opentelemetry-concepts",
         "google-sre"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "choosing-observability-signals",
@@ -64,7 +64,7 @@
         "opentelemetry-concepts",
         "google-sre"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "four-golden-signals",
@@ -97,7 +97,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "metric-counters-gauges-histograms",
@@ -130,7 +130,7 @@
         "opentelemetry-concepts",
         "prometheus-alerting"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "latency-percentiles-versus-averages",
@@ -163,7 +163,7 @@
         "k6-docs",
         "google-sre"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "structured-production-logging",
@@ -196,7 +196,7 @@
         "opentelemetry-concepts",
         "grafana-loki"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "trace-context-log-correlation",
@@ -261,7 +261,7 @@
         "opentelemetry-concepts",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "trace-sampling-strategy",
@@ -293,7 +293,7 @@
       "sourceIds": [
         "opentelemetry-concepts"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "telemetry-cardinality-control",
@@ -359,7 +359,7 @@
         "opentelemetry-concepts",
         "owasp-asvs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "liveness-readiness-startup-probes",
@@ -391,7 +391,7 @@
       "sourceIds": [
         "kubernetes-probes"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "production-health-check-design",
@@ -424,7 +424,7 @@
         "kubernetes-probes",
         "google-sre"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "probe-cascading-failure-risk",
@@ -457,7 +457,7 @@
         "kubernetes-probes",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "post-deployment-production-smoke-tests",
@@ -490,7 +490,7 @@
         "google-sre",
         "dora"
       ],
-      "prevalence": "Very common"
+      "prevalence": "Occasional"
     },
     {
       "id": "synthetic-versus-real-user-monitoring",
@@ -523,7 +523,7 @@
         "google-sre",
         "k6-docs"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "telemetry-pipeline-validation",
@@ -556,7 +556,7 @@
         "opentelemetry-concepts",
         "grafana-loki"
       ],
-      "prevalence": "Occasional"
+      "prevalence": "Common"
     },
     {
       "id": "symptom-versus-cause-alerting",
@@ -589,7 +589,7 @@
         "prometheus-alerting",
         "google-sre"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "actionable-alert-runbook",
@@ -721,7 +721,7 @@
         "google-sre",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "slo-burn-rate-alerts",
@@ -754,7 +754,7 @@
         "google-sre",
         "prometheus-alerting"
       ],
-      "prevalence": "Specialist"
+      "prevalence": "Occasional"
     },
     {
       "id": "incident-timeline-evidence",
@@ -787,7 +787,7 @@
         "google-sre",
         "opentelemetry-concepts"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     },
     {
       "id": "blameless-postmortem-actions",
@@ -820,7 +820,7 @@
         "google-sre",
         "dora"
       ],
-      "prevalence": "Common"
+      "prevalence": "Occasional"
     }
   ]
 }

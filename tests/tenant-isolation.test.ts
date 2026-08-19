@@ -413,19 +413,18 @@ test("tenant migration scopes every private data family by user id", async () =>
   assert.match(sql, /PRIMARY KEY \(`user_id`, `job_id`\)/);
 });
 
-test("interview stars migration adds a tenant-scoped table and migrates the current editorial set", async () => {
+test("interview stars migration keeps personal stars tenant-scoped", async () => {
   const sql = await readFile(new URL("../drizzle/0012_interview_stars.sql", import.meta.url), "utf8");
-  const editorialStars = JSON.parse(
-    await readFile(new URL("../content/interview/editorial-starred-question-ids.json", import.meta.url), "utf8"),
-  ) as { questionIds: string[] };
 
   assert.match(sql, /CREATE TABLE `user_interview_stars`/);
   assert.match(sql, /PRIMARY KEY \(`user_id`, `question_id`\)/);
   assert.match(sql, /FOREIGN KEY \(`user_id`\) REFERENCES `users`\(`id`\)[^\n]*ON DELETE cascade/);
-  assert.match(sql, /WHERE `users`\.`email` = 'sergii\.iavt@gmail\.com'/);
-  for (const questionId of editorialStars.questionIds) {
-    assert.ok(sql.includes(`'${questionId}'`), `Migration must seed ${questionId}.`);
-  }
+});
+
+test("interview star cleanup migration removes every pre-existing star", async () => {
+  const sql = await readFile(new URL("../drizzle/0013_clear_interview_stars.sql", import.meta.url), "utf8");
+  assert.match(sql, /DELETE FROM `user_interview_stars`/);
+  assert.doesNotMatch(sql, /WHERE/);
 });
 
 test("tenant unavailable response is explicit and non-cacheable", async () => {
