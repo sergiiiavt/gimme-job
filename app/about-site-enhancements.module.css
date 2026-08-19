@@ -260,7 +260,7 @@
 
 @media (max-width: 1100px) {
   .tocRail {
-    display: none;
+    display: none !important;
   }
 
   .sourceStrip {
