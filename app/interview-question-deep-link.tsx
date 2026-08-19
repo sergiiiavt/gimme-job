@@ -87,11 +87,25 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
     }
   };
 
+  const returnToQuestionList = () => {
+    try {
+      const referrer = document.referrer ? new URL(document.referrer) : null;
+      if (referrer?.origin === window.location.origin && referrer.pathname === backHref && window.history.length > 1) {
+        window.history.scrollRestoration = "auto";
+        window.history.back();
+        return;
+      }
+    } catch {
+      // Fall through to the canonical list URL if the referrer cannot be parsed.
+    }
+    window.location.assign(backHref);
+  };
+
   return (
     <main className={styles.page}>
       <article className={styles.card} id={`question-${question.id}`}>
         <nav className={styles.topNav} aria-label="Interview question navigation">
-          <a className={styles.backLink} href={backHref}>← All questions</a>
+          <button className={styles.backLink} onClick={returnToQuestionList} type="button">← All questions</button>
           <button className={styles.copyButton} onClick={copyLink} type="button">{copied ? "Copied" : "Copy link"}</button>
         </nav>
 
