@@ -14,7 +14,7 @@ test("QA and Python interview lists mount direct question links", async () => {
   assert.match(pythonPage, /InterviewQuestionLinkOverlay pathname="\/interview\/python" questions=\{pythonInterviewCatalog\.questions\}/);
 });
 
-test("question link overlay inserts real anchors with a plain chain-link icon", async () => {
+test("question link overlay inserts centered circular horizontal-chain controls", async () => {
   const overlay = await read("app/interview-question-link-overlay.tsx");
 
   assert.match(overlay, /questionDeepLinkHref\(pathname, questionId\)/);
@@ -25,9 +25,12 @@ test("question link overlay inserts real anchors with a plain chain-link icon", 
   assert.match(overlay, /setAttribute\("aria-label", "Open direct link to this question"\)/);
   assert.match(overlay, /link\.title = "Direct link"/);
   assert.match(overlay, /iq-question-direct-link/);
-  assert.match(overlay, /background: "transparent"/);
-  assert.match(overlay, /border: "0"/);
-  assert.match(overlay, /borderRadius: "0"/);
+  assert.match(overlay, /background: "#fff"/);
+  assert.match(overlay, /border: "1px solid #dfe4df"/);
+  assert.match(overlay, /borderRadius: "999px"/);
+  assert.match(overlay, /M9 7H7/);
+  assert.match(overlay, /querySelector<HTMLElement>\("\.iq-star-icon"\)/);
+  assert.match(overlay, /lineHeight: "28px"/);
   assert.doesNotMatch(overlay, /createPortal/);
 });
 
