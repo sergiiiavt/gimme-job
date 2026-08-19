@@ -80,7 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
         if request.messages[-1].role != "user":
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="The final message must have role 'user'.",
             )
 
