@@ -22,6 +22,8 @@ type AuditPayload = {
   error?: string;
 };
 
+const AUDIT_REFRESH_MS = 5_000;
+
 function activeVacancy(): { jobId: string | null; target: Element | null } {
   const tab = document.querySelector<HTMLButtonElement>(".vacancy-job-tab[aria-selected='true']");
   const target = document.querySelector("#selected-vacancy-detail .job-detail");
@@ -88,27 +90,36 @@ export default function VacancyAuditPortal({ enabled }: { enabled: boolean }) {
       return;
     }
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    void fetch(`/api/jobs/${encodeURIComponent(jobId)}/audit`, {
-      cache: "no-store",
-      headers: { accept: "application/json" },
-      signal: controller.signal,
-    })
-      .then(async (response) => {
+    let refreshing = false;
+
+    const load = async (showLoading: boolean) => {
+      if (refreshing) return;
+      refreshing = true;
+      if (showLoading) setLoading(true);
+      try {
+        const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}/audit`, {
+          cache: "no-store",
+          headers: { accept: "application/json" },
+          signal: controller.signal,
+        });
         const payload = await response.json() as AuditPayload;
         if (!response.ok) throw new Error(payload.error ?? `Audit request failed: ${response.status}`);
-        return payload;
-      })
-      .then((payload) => setEntries(Array.isArray(payload.entries) ? payload.entries : []))
-      .catch((reason) => {
-        if (controller.signal.aborted) return;
-        setError(reason instanceof Error ? reason.message : String(reason));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
+        setEntries(Array.isArray(payload.entries) ? payload.entries : []);
+        setError(null);
+      } catch (reason) {
+        if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : String(reason));
+      } finally {
+        refreshing = false;
+        if (showLoading && !controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    void load(true);
+    const timer = window.setInterval(() => { void load(false); }, AUDIT_REFRESH_MS);
+    return () => {
+      window.clearInterval(timer);
+      controller.abort();
+    };
   }, [enabled, jobId]);
 
   const content = useMemo(() => {
