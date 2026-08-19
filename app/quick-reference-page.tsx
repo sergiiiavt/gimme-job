@@ -7,6 +7,7 @@ import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
 import pythonCurriculum from "@/content/python-learning/catalog";
 import pythonQuickReference from "@/content/python-learning/quick-reference.json";
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
+import pythonQuickReferenceInterview from "@/content/python-learning/quick-reference-interview.json";
 import pythonTaxonomy from "@/content/python-learning/taxonomy.json";
 import sqlQuickReference from "@/content/data-learning/sql-quick-reference.json";
 import sqlPracticalTasks from "@/content/data-learning/sql-practical-tasks.json";
@@ -36,12 +37,25 @@ type ReferenceCard = {
 };
 type TaxonomyItem = { id: string; label: string; level?: string; kind?: string };
 type RequiredConcept = { topicId: string };
+type InterviewFrequency = "Very common" | "Common" | "Occasional" | "Specialist";
 type PythonReferenceCatalog = {
   filters: string[];
   cards: Array<{
     id: string;
     title: string;
     tags: string[];
+    entries: ReferenceRow[];
+    more: ReferenceRow[];
+  }>;
+};
+type PythonInterviewReferenceCatalog = {
+  filters: string[];
+  priority: Array<{ id: string; frequency: InterviewFrequency }>;
+  cards: Array<{
+    id: string;
+    title: string;
+    tags: string[];
+    summary: string;
     entries: ReferenceRow[];
     more: ReferenceRow[];
   }>;
@@ -63,7 +77,6 @@ type QaReferenceCatalog = {
   filters: string[];
   cards: ReferenceCard[];
 };
-
 type PythonReferenceGuidance = {
   summaries: Record<string, string>;
   explanations: Record<string, Record<string, string>>;
@@ -80,6 +93,15 @@ type PythonReferenceGuidance = {
 
 const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops", "data"]);
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
+const pythonInterviewReferenceCatalog = pythonQuickReferenceInterview as PythonInterviewReferenceCatalog;
+const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
+const pythonReferenceFilters = [
+  ...pythonReferenceCatalog.filters,
+  ...pythonInterviewReferenceCatalog.filters.filter((filter) => !pythonReferenceCatalog.filters.includes(filter)),
+];
+const pythonReferencePriority = new Map(
+  pythonInterviewReferenceCatalog.priority.map((item, index) => [item.id, { frequency: item.frequency, index }]),
+);
 const baseSqlReferenceCatalog = sqlQuickReference as SqlReferenceCatalog;
 const sqlTaskReferenceCatalog = sqlPracticalTasks as SqlReferenceCatalog;
 const sqlReferenceCatalog: SqlReferenceCatalog = {
@@ -90,19 +112,23 @@ const sqlReferenceCatalog: SqlReferenceCatalog = {
   cards: [...baseSqlReferenceCatalog.cards, ...sqlTaskReferenceCatalog.cards],
 };
 const qaReferenceCatalog = qaQuickReference as QaReferenceCatalog;
-const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
 
 function guidedRows(cardId: string, rows: ReferenceRow[]) {
   const explanations = pythonReferenceGuidanceCatalog.explanations[cardId] ?? {};
   return rows.map((row) => ({ ...row, meaning: row.meaning ?? explanations[row.term] }));
 }
 
-const pythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
+function pythonCardMeta(cardId: string) {
+  const frequency = pythonReferencePriority.get(cardId)?.frequency;
+  return frequency ? `Interview · ${frequency}` : undefined;
+}
+
+const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
   const primaryCard: ReferenceCard = {
     id: `python-${card.id}`,
     title: card.title,
     tags: card.tags,
-    meta: `${card.entries.length + card.more.length} refs`,
+    meta: pythonCardMeta(card.id),
     summary: pythonReferenceGuidanceCatalog.summaries[card.id],
     rows: guidedRows(card.id, card.entries),
     moreRows: guidedRows(card.id, card.more),
@@ -114,13 +140,32 @@ const pythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatM
       id: `python-${theoryCard.id}`,
       title: theoryCard.title,
       tags: theoryCard.tags,
-      meta: `${theoryCard.entries.length + theoryCard.more.length} refs · theory`,
+      meta: pythonCardMeta(theoryCard.id),
       summary: theoryCard.summary,
       rows: theoryCard.entries,
       moreRows: theoryCard.more,
       searchTerms: [...theoryCard.tags, "theory", "concept", "mental model"],
     }));
   return [primaryCard, ...theoryCards];
+});
+
+const interviewPythonReferenceCards: ReferenceCard[] = pythonInterviewReferenceCatalog.cards.map((card) => ({
+  id: `python-${card.id}`,
+  title: card.title,
+  tags: card.tags,
+  meta: pythonCardMeta(card.id),
+  summary: card.summary,
+  rows: card.entries,
+  moreRows: card.more,
+  searchTerms: [...card.tags, "interview", "python"],
+}));
+
+const pythonReferenceCards: ReferenceCard[] = [...basePythonReferenceCards, ...interviewPythonReferenceCards].sort((a, b) => {
+  const aId = a.id.replace(/^python-/, "");
+  const bId = b.id.replace(/^python-/, "");
+  const aOrder = pythonReferencePriority.get(aId)?.index ?? Number.MAX_SAFE_INTEGER;
+  const bOrder = pythonReferencePriority.get(bId)?.index ?? Number.MAX_SAFE_INTEGER;
+  return aOrder - bOrder;
 });
 
 const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) => ({
@@ -271,7 +316,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const activeItem = learningGroup?.items.find((item) => item.id === referenceId);
   const cards = referenceCards(referenceId);
   const scopes = useMemo(() => {
-    if (referenceId === "programming") return pythonReferenceCatalog.filters;
+    if (referenceId === "programming") return pythonReferenceFilters;
     if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
     if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
     return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
