@@ -245,7 +245,7 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(uiSource, /Starred fundamental/);
   assert.match(stylesSource, /\.iq-star-icon \{/);
   assert.match(stylesSource, /\.iq-star-filter \{/);
-  assert.match(stylesSource, /\.iq-filter-grid-personal \{[^}]*grid-template-columns: 160px/);
+  assert.match(stylesSource, /\.iq-filter-grid-personal \{[^}]*grid-template-columns: 132px repeat\(4, minmax\(0, 1fr\)\) auto/);
   assert.ok(uiSource.indexOf("iq-star-filter${starredOnly") < uiSource.indexOf("emptyLabel=\"Most common first\""));
   assert.match(uiSource, /function InterviewFilter/);
   assert.doesNotMatch(uiSource, /function MultiSelectFilter/);
