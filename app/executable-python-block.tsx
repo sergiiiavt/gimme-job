@@ -64,7 +64,12 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
     setOutput("Loading Python runtime…");
     failAfter(LOAD_TIMEOUT_MS, "Python runtime could not be loaded. Try again.");
 
-    worker.onmessage = (event: MessageEvent<RunnerMessage>) => {
+    const cleanupListeners = () => {
+      worker.removeEventListener("message", handleMessage);
+      worker.removeEventListener("error", handleError);
+    };
+
+    const handleMessage = (event: MessageEvent<RunnerMessage>) => {
       const message = event.data;
       if (message.id !== requestId) return;
 
@@ -75,17 +80,21 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
         return;
       }
 
+      cleanupListeners();
       clearTimer();
       setStatus("idle");
       setOutput(message.error ? [message.output, message.error].filter(Boolean).join("\n") : message.output || "No output. Add print(...) to display a value.");
     };
 
-    worker.onerror = () => {
+    const handleError = () => {
+      cleanupListeners();
       destroyWorker();
       setStatus("idle");
       setOutput("Python runner failed to start. Try again.");
     };
 
+    worker.addEventListener("message", handleMessage);
+    worker.addEventListener("error", handleError);
     worker.postMessage({ id: requestId, code: draft });
   };
 
