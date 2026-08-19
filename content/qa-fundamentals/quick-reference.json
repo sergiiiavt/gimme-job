@@ -1,573 +1,646 @@
 {
-  "filters": ["All", "Foundations", "Artifacts", "Techniques", "Defects", "Risk & Release", "Delivery"],
+  "filters": ["All", "Foundations", "Test design", "Requirements & Docs", "Defects", "Risk & Release", "Delivery"],
   "cards": [
     {
       "id": "core-distinctions",
-      "title": "Core distinctions",
+      "title": "Core QA distinctions",
       "scope": "Foundations",
-      "tags": ["Foundations", "QA vs QC", "Verification", "Validation"],
-      "meta": "6 contrasts",
-      "summary": "Use these pairs to avoid the most common terminology mistakes in reviews and interviews.",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "Fast definitions for terminology interviewers often use to check whether basic QA concepts are separated correctly.",
       "rows": [
-        {"term": "QA", "meaning": "Process-oriented prevention", "detail": "Improve how quality is built: standards, reviews, workflow, prevention."},
-        {"term": "QC", "meaning": "Product-oriented control", "detail": "Evaluate the product/work product and identify quality problems."},
-        {"term": "Testing", "meaning": "Evaluation activity", "detail": "Reveal information about quality and risk; it does not prove the product is defect-free."},
-        {"term": "Debugging", "meaning": "Developer investigation/fix", "detail": "Find the cause of a failure/defect and change the code or configuration."},
-        {"term": "Verification", "meaning": "Against specified requirements", "detail": "Are we building the product correctly? Reviews and tests can contribute."},
-        {"term": "Validation", "meaning": "Against user/stakeholder needs", "detail": "Are we building the right product for its intended use?"}
-      ],
-      "moreRows": [
-        {"term": "Static", "meaning": "No execution required", "detail": "Reviews, walkthroughs, static analysis, requirement/design inspection."},
-        {"term": "Dynamic", "meaning": "Execute the test object", "detail": "Observe runtime behavior and compare actual results with expectations."}
-      ],
-      "searchTerms": ["quality assurance", "quality control", "testing vs debugging", "verification vs validation", "static dynamic"]
+        {"term": "QA", "meaning": "Process-oriented prevention", "detail": "Improve the way quality is built through standards, reviews, process, feedback, and prevention."},
+        {"term": "QC", "meaning": "Product-oriented control", "detail": "Evaluate work products or the product to identify quality problems."},
+        {"term": "Testing", "meaning": "Evaluation activity", "detail": "Provide information about quality and risk; testing can reveal defects but cannot prove their absence."},
+        {"term": "Debugging", "meaning": "Find and fix the cause", "detail": "Investigate the cause of a failure or defect and change code, configuration, data, or another implementation element."},
+        {"term": "Verification", "meaning": "Against specified requirements", "detail": "Ask whether the product or work product satisfies specified requirements: are we building it correctly?"},
+        {"term": "Validation", "meaning": "Against user/stakeholder needs", "detail": "Ask whether the product is fit for intended use and stakeholder needs: are we building the right product?"}
+      ]
     },
     {
       "id": "testing-principles",
       "title": "Seven testing principles",
       "scope": "Foundations",
-      "tags": ["Foundations", "Principles", "Mental model"],
-      "meta": "7 principles",
-      "summary": "Fast reminders for how to reason about test scope, confidence, and diminishing returns.",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "The seven principles are frequent foundation-level interview material and explain why testing must be selective and context-driven.",
       "rows": [
-        {"term": "Presence, not absence", "detail": "Tests can reveal defects; passing tests cannot prove there are none."},
-        {"term": "Exhaustive is impossible", "detail": "Select representative tests using risk, techniques, and constraints."},
-        {"term": "Test early", "detail": "Finding ambiguity and defects earlier usually reduces rework."},
-        {"term": "Defects cluster", "detail": "A small set of components often contains a large share of failures."}
+        {"term": "Testing shows presence of defects", "detail": "Tests can reveal failures and defects; passing tests cannot prove that no defects remain."},
+        {"term": "Exhaustive testing is impossible", "detail": "Except for very small finite spaces, select tests using risk, techniques, priorities, and constraints."},
+        {"term": "Early testing saves time and money", "detail": "Review requirements, designs, and risks early so defects are found before expensive rework."},
+        {"term": "Defects cluster together", "detail": "A relatively small number of components often contains a large share of observed defects."}
       ],
       "moreRows": [
-        {"term": "Tests wear out", "detail": "Repeated unchanged tests become less effective; review and vary them."},
-        {"term": "Context matters", "detail": "The right strategy depends on product, risk, lifecycle, users, and constraints."},
-        {"term": "Correct but useless", "detail": "A system can meet written requirements and still fail user or business needs."}
-      ],
-      "searchTerms": ["pesticide paradox", "absence of errors fallacy", "defect clustering", "exhaustive testing"]
+        {"term": "Tests wear out", "detail": "Repeated unchanged tests become less effective; revise data, scenarios, and coverage as the product changes."},
+        {"term": "Testing is context dependent", "detail": "The appropriate strategy depends on product, users, risks, lifecycle, technology, and constraints."},
+        {"term": "Absence-of-errors fallacy", "detail": "A technically correct system can still fail if it does not solve the right user or business problem."}
+      ]
     },
     {
       "id": "fundamental-test-process",
-      "title": "Test process at a glance",
+      "title": "Test process / test activities",
       "scope": "Foundations",
-      "tags": ["Foundations", "Process", "Planning"],
-      "meta": "7 activities",
-      "summary": "A lookup sequence, not a waterfall: activities overlap, repeat, and feed each other.",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "Know the activity names and the output of each one; they overlap and iterate rather than forming a strict waterfall.",
       "rows": [
-        {"term": "Plan", "detail": "Define objectives, approach, resources, schedule, risks, and completion criteria."},
-        {"term": "Monitor & control", "detail": "Compare actual progress/status with plan and adjust when needed."},
-        {"term": "Analyze", "detail": "Study the test basis and identify what needs to be tested: test conditions."},
-        {"term": "Design", "detail": "Turn conditions into test cases, coverage items, expected results, and data needs."},
-        {"term": "Implement", "detail": "Prepare procedures/scripts, suites, data, environment, and execution order."},
-        {"term": "Execute", "detail": "Run tests, compare actual vs expected, log evidence, analyze anomalies."}
+        {"term": "Test planning", "detail": "Define objectives, scope, approach, resources, schedule, risks, metrics, and completion criteria."},
+        {"term": "Test monitoring & control", "detail": "Compare actual status with the plan and adjust priorities, scope, resources, or schedule when needed."},
+        {"term": "Test analysis", "detail": "Study the test basis and identify testable features, risks, and test conditions."},
+        {"term": "Test design", "detail": "Derive test cases, coverage items, expected results, and data/environment needs from test conditions."},
+        {"term": "Test implementation", "detail": "Prepare procedures/scripts, suites, data, environments, and execution order."},
+        {"term": "Test execution", "detail": "Run tests, compare actual and expected results, record evidence, and investigate anomalies."}
       ],
       "moreRows": [
-        {"term": "Complete", "detail": "Consolidate results, unresolved risks, lessons, assets, and closure reporting."},
-        {"term": "Rule of thumb", "detail": "If execution is failing repeatedly, check whether analysis/design/data/environment was weak upstream."}
-      ],
-      "searchTerms": ["test activities", "test planning monitoring control analysis design implementation execution completion"]
+        {"term": "Test completion", "detail": "Summarize achieved coverage, unresolved risks, defect status, lessons, and reusable or archived testware."}
+      ]
     },
     {
-      "id": "levels-vs-types",
-      "title": "Test levels vs test types",
+      "id": "test-levels",
+      "title": "Test levels",
       "scope": "Foundations",
-      "tags": ["Foundations", "Levels", "Types"],
-      "meta": "fast matrix",
-      "summary": "Level answers where in the system; type answers what quality question. Combine them.",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "A test level answers where the test object sits in the system decomposition; do not mix levels with test types or regression labels.",
       "rows": [
-        {"term": "Component", "meaning": "Unit/module scope", "detail": "Functions, classes, modules, or components; often isolated and fast."},
-        {"term": "Component integration", "meaning": "Between components", "detail": "Interfaces and interactions inside a subsystem/application."},
-        {"term": "System", "meaning": "Complete integrated system", "detail": "End-to-end behavior and system-level qualities."},
-        {"term": "System integration", "meaning": "Between systems", "detail": "External services, platforms, partner systems, protocols, and contracts."},
-        {"term": "Acceptance", "meaning": "Business/user readiness", "detail": "Validate against acceptance criteria, business processes, and intended use."}
-      ],
-      "moreRows": [
-        {"term": "Functional", "detail": "What the product does: rules, flows, calculations, permissions."},
-        {"term": "Non-functional", "detail": "How well it works: performance, security, interaction, reliability, compatibility, etc."},
-        {"term": "Black-box / white-box", "detail": "Behavior/specification-based versus implementation-structure-based test design."},
-        {"term": "Change-related", "detail": "Confirmation plus regression after a change."},
-        {"term": "Combine them", "detail": "Example: authorization can be system-integration level + functional + security-focused."}
-      ],
-      "searchTerms": ["component integration system acceptance functional nonfunctional black box white box change related"]
+        {"term": "Component / unit", "meaning": "Smallest useful test object", "detail": "Functions, classes, modules, or components, usually tested in isolation or near isolation."},
+        {"term": "Component integration", "meaning": "Between internal components", "detail": "Interfaces and interactions between components, modules, services, or subsystems inside the product."},
+        {"term": "System", "meaning": "Complete integrated system", "detail": "Behavior and quality of the complete system against system-level requirements and risks."},
+        {"term": "System integration", "meaning": "Between systems", "detail": "Interfaces between the system under test and external services, platforms, partner systems, or protocols."},
+        {"term": "Acceptance", "meaning": "Stakeholder readiness", "detail": "Evidence that the system is acceptable for users, business, contractual, operational, or regulatory needs."}
+      ]
     },
     {
-      "id": "quality-lenses",
-      "title": "Quality lenses",
+      "id": "test-types",
+      "title": "Test types",
       "scope": "Foundations",
-      "tags": ["Foundations", "Quality characteristics", "ISO 25010"],
-      "meta": "9 lenses",
-      "summary": "Use quality characteristics as prompts when requirements focus only on happy-path functionality.",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "A test type answers what objective or quality question is being evaluated; the same type can be applied at several test levels.",
       "rows": [
-        {"term": "Function", "detail": "Correct, complete, and appropriate behavior for intended tasks."},
-        {"term": "Performance", "detail": "Latency, throughput, capacity, resource use, behavior under load."},
-        {"term": "Compatibility", "detail": "Coexistence and interoperability with required systems/environments."},
-        {"term": "Interaction", "detail": "Learnability, operability, accessibility, error prevention, user interaction."},
-        {"term": "Reliability", "detail": "Availability, fault tolerance, recoverability, resilience over time."}
+        {"term": "Functional testing", "meaning": "What the system does", "detail": "Evaluate functions, business rules, calculations, permissions, flows, and other specified behavior."},
+        {"term": "Non-functional testing", "meaning": "How well it works", "detail": "Evaluate quality characteristics such as performance, reliability, security, compatibility, interaction capability, or safety."},
+        {"term": "Black-box testing", "meaning": "From specified behavior", "detail": "Derive tests without using internal code structure; focus on inputs, outputs, rules, states, and observable behavior."},
+        {"term": "White-box testing", "meaning": "From internal structure", "detail": "Derive tests from code or architecture structure, for example statements, branches, conditions, or paths."}
       ],
       "moreRows": [
-        {"term": "Security", "detail": "Confidentiality, integrity, authenticity, accountability, resistance to misuse."},
-        {"term": "Maintainability", "detail": "Modularity, analyzability, modifiability, testability, safe change."},
-        {"term": "Flexibility", "detail": "Adaptability to different environments, configurations, or changing needs."},
-        {"term": "Safety", "detail": "Risk of harm and safe behavior when the product can affect people/assets."}
-      ],
-      "searchTerms": ["quality model usability accessibility reliability security maintainability flexibility safety performance compatibility"]
+        {"term": "Combine dimensions", "detail": "Example: a security-focused system-integration test can be non-functional, automated, regression-focused, and black-box at the same time."}
+      ]
     },
     {
-      "id": "artifact-chain",
-      "title": "From requirement to evidence",
-      "scope": "Artifacts",
-      "tags": ["Artifacts", "Traceability", "Test basis"],
-      "meta": "8 artifacts",
-      "summary": "Follow this chain when you need to know what artifact comes next or where a gap originated.",
+      "id": "static-vs-dynamic",
+      "title": "Static vs dynamic testing",
+      "scope": "Foundations",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "Static and dynamic describe whether the test object is executed, not a test level or a quality characteristic.",
       "rows": [
-        {"term": "Test basis", "detail": "Requirements, user stories, designs, contracts, standards, risk information."},
-        {"term": "Test condition", "detail": "A testable aspect, rule, feature, risk, or quality characteristic."},
-        {"term": "Test case", "detail": "Inputs/preconditions/actions plus expected result for a defined objective."},
-        {"term": "Test data", "detail": "Values, accounts, files, states, timestamps, fixtures needed by the case."},
-        {"term": "Procedure / script", "detail": "Executable sequence, manual or automated."},
-        {"term": "Suite", "detail": "A purposeful group of tests: smoke, regression, feature, risk area, etc."}
-      ],
-      "moreRows": [
-        {"term": "Result / log", "detail": "Actual outcome, evidence, environment/build, timestamps, execution status."},
-        {"term": "Defect", "detail": "A documented discrepancy requiring investigation or resolution."},
-        {"term": "Traceability", "detail": "Link basis → conditions/cases → results/defects so coverage and impact can be reasoned about."}
-      ],
-      "searchTerms": ["test basis test condition test case test procedure test suite traceability requirement coverage"]
-    },
-    {
-      "id": "test-case-anatomy",
-      "title": "High-value test case",
-      "scope": "Artifacts",
-      "tags": ["Artifacts", "Test case", "Expected result"],
-      "meta": "practical template",
-      "summary": "Keep only information that makes the objective, data, action, and oracle reproducible.",
-      "rows": [
-        {"term": "Objective", "detail": "What risk/rule/behavior this test is checking."},
-        {"term": "Preconditions", "detail": "Required account, permissions, configuration, state, build, or dependencies."},
-        {"term": "Data", "detail": "Exact inputs or a clear generation rule; include boundary/invalid values when relevant."},
-        {"term": "Action", "detail": "Minimal reproducible steps or API operation."},
-        {"term": "Expected", "detail": "Observable result: UI, response, state change, event, log, DB effect, or no effect."}
-      ],
-      "moreRows": [
-        {"term": "Cleanup", "detail": "Restore state when the test mutates shared data or environment."},
-        {"term": "Avoid", "detail": "Vague expected results such as works correctly or copying every UI click without purpose."},
-        {"term": "Prefer", "detail": "One clear objective per case when separate failures would need separate diagnosis."}
-      ],
-      "searchTerms": ["test case template precondition expected result steps test data"]
-    },
-    {
-      "id": "requirement-testability",
-      "title": "Requirement testability check",
-      "scope": "Artifacts",
-      "tags": ["Artifacts", "Requirements", "Acceptance criteria"],
-      "meta": "review prompts",
-      "summary": "Before designing cases, make the requirement observable enough to test. Ambiguity found here is cheaper than ambiguity found in execution.",
-      "rows": [
-        {"term": "Specific behavior", "detail": "Who does what, under which condition, with which data/state?"},
-        {"term": "Observable result", "detail": "What UI/API/event/data/log/state change proves success or failure?"},
-        {"term": "Rules & boundaries", "detail": "Ranges, defaults, rounding, limits, ordering, duplicates, timeouts, retries."},
-        {"term": "Negative behavior", "detail": "Invalid input, forbidden action, missing dependency, partial failure, cancellation."},
-        {"term": "Roles & states", "detail": "Permissions, lifecycle state, previous actions, concurrency, ownership."}
-      ],
-      "moreRows": [
-        {"term": "Quality constraints", "detail": "Performance, accessibility, security, reliability, compatibility, privacy, safety where relevant."},
-        {"term": "Dependencies", "detail": "External services, configuration, migrations, feature flags, data contracts."},
-        {"term": "Acceptance examples", "detail": "Concrete examples or Given/When/Then scenarios are useful when they clarify a rule; they are not a substitute for missing rules."},
-        {"term": "Red flag", "detail": "Words like fast, intuitive, appropriate, normally, should, supports, or etc. need measurable/contextual meaning."}
-      ],
-      "searchTerms": ["testability requirement review acceptance criteria user story given when then ambiguity"]
-    },
-    {
-      "id": "test-oracles",
-      "title": "Test oracle: how do you know it is correct?",
-      "scope": "Artifacts",
-      "tags": ["Artifacts", "Oracle", "Expected result"],
-      "meta": "6 oracle sources",
-      "summary": "When expected results are unclear, identify the source of truth before adding more tests.",
-      "rows": [
-        {"term": "Requirement / AC", "detail": "Explicit business rule or acceptance criterion."},
-        {"term": "Reference system", "detail": "Trusted existing implementation, simulator, or previous validated version."},
-        {"term": "Independent calculation", "detail": "Recompute using a separate formula/model rather than duplicating implementation logic."},
-        {"term": "Invariant", "detail": "Property that must always hold, e.g. totals balance or IDs stay unique."},
-        {"term": "Domain rule", "detail": "Law, standard, protocol, accounting rule, medical/business domain constraint."}
-      ],
-      "moreRows": [
-        {"term": "Human judgment", "detail": "Useful for UX, visual quality, exploratory testing; define reviewer expectations where possible."},
-        {"term": "Warning", "detail": "A test with no credible oracle can execute successfully while proving very little."}
-      ],
-      "searchTerms": ["test oracle source of truth expected result invariant reference system"]
-    },
-    {
-      "id": "traceability-impact",
-      "title": "Traceability & change impact",
-      "scope": "Artifacts",
-      "tags": ["Artifacts", "Traceability", "Impact analysis"],
-      "meta": "lookup flow",
-      "summary": "Traceability is useful when it answers an impact or coverage question, not when it is maintained as paperwork.",
-      "rows": [
-        {"term": "Requirement changed", "detail": "Find linked conditions/tests, affected interfaces, data, risks, and automation."},
-        {"term": "Test failed", "detail": "Find the requirement/risk it protects and related tests that may expose the same cause."},
-        {"term": "Defect fixed", "detail": "Link confirmation test plus regression candidates around the changed area."},
-        {"term": "Coverage question", "detail": "Show which important requirements/risks have evidence and which do not."}
-      ],
-      "moreRows": [
-        {"term": "Minimum viable links", "detail": "Basis ↔ test ↔ result/defect is often more valuable than dense many-to-many matrices."},
-        {"term": "Stale links", "detail": "Incorrect traceability creates false confidence; automate or simplify maintenance where possible."}
-      ],
-      "searchTerms": ["requirements traceability matrix RTM impact regression coverage"]
-    },
-    {
-      "id": "technique-selector",
-      "title": "Which test technique?",
-      "scope": "Techniques",
-      "tags": ["Techniques", "Selection", "Black-box"],
-      "meta": "decision guide",
-      "summary": "Choose from the shape of the requirement instead of defaulting to random examples.",
-      "rows": [
-        {"term": "Input classes / ranges", "meaning": "Equivalence Partitioning", "detail": "When many values should behave the same."},
-        {"term": "Edges / limits", "meaning": "Boundary Value Analysis", "detail": "When failures are likely at minimum/maximum or just outside."},
-        {"term": "Condition combinations", "meaning": "Decision Table", "detail": "When output depends on multiple Boolean/business conditions."},
-        {"term": "States / sequences", "meaning": "State Transition", "detail": "When behavior depends on history or current state."},
-        {"term": "Code structure", "meaning": "White-box coverage", "detail": "When you need evidence that statements/branches were exercised."},
-        {"term": "Weak spec / discovery", "meaning": "Exploratory", "detail": "When learning and test design need to happen together."}
-      ],
-      "moreRows": [
-        {"term": "Known failure patterns", "meaning": "Error guessing", "detail": "Use defect history, architecture knowledge, and common mistakes."},
-        {"term": "Standard review list", "meaning": "Checklist-based", "detail": "Use stable prompts without turning them into a rigid script."}
-      ],
-      "searchTerms": ["EP BVA decision table state transition exploratory error guessing checklist white box choose technique"]
-    },
-    {
-      "id": "equivalence-partitioning",
-      "title": "Equivalence Partitioning",
-      "scope": "Techniques",
-      "tags": ["Techniques", "EP", "Black-box"],
-      "meta": "formula + example",
-      "summary": "Split a domain into groups expected to behave alike, then test representative members.",
-      "rows": [
-        {"term": "1. Identify domain", "detail": "Example: allowed age is 18–65."},
-        {"term": "2. Partition", "detail": "Valid: 18–65. Invalid: <18. Invalid: >65."},
-        {"term": "3. Pick representatives", "detail": "Example: 30, 17, 66. One representative per partition is the minimum idea, not always enough."},
-        {"term": "Coverage", "detail": "exercised partitions ÷ identified partitions × 100%."}
-      ],
-      "moreRows": [
-        {"term": "Multiple fields", "detail": "Partition each field, then use risk/combination techniques instead of testing every Cartesian product."},
-        {"term": "Do not assume", "detail": "Values belong to one partition only if you have reason to expect equivalent behavior."}
-      ],
-      "searchTerms": ["equivalence classes partitions valid invalid partition coverage"]
-    },
-    {
-      "id": "boundary-value-analysis",
-      "title": "Boundary Value Analysis",
-      "scope": "Techniques",
-      "tags": ["Techniques", "BVA", "Black-box"],
-      "meta": "2-value / 3-value",
-      "summary": "Focus on borders because implementation mistakes often occur at inclusive/exclusive limits.",
-      "rows": [
-        {"term": "Range", "detail": "For valid 18–65, boundaries are 18 and 65."},
-        {"term": "2-value BVA", "detail": "Exercise each boundary and the closest value across it: 17, 18, 65, 66."},
-        {"term": "3-value BVA", "detail": "Exercise below / on / above each boundary: 17, 18, 19 and 64, 65, 66."},
-        {"term": "Open boundary", "detail": "For x < 10, explicitly distinguish 9 from 10; do not treat 10 as valid."}
-      ],
-      "moreRows": [
-        {"term": "Non-numeric", "detail": "Dates, lengths, list sizes, file sizes, pagination limits, retries, and quotas also have boundaries."},
-        {"term": "Combine with EP", "detail": "EP tells you the classes; BVA intensifies testing around their edges."}
-      ],
-      "searchTerms": ["boundary min max off by one 2 value 3 value BVA"]
-    },
-    {
-      "id": "decision-tables",
-      "title": "Decision Tables",
-      "scope": "Techniques",
-      "tags": ["Techniques", "Decision table", "Business rules"],
-      "meta": "rules + coverage",
-      "summary": "Use when combinations of conditions determine different actions or outcomes.",
-      "rows": [
-        {"term": "Conditions", "detail": "List independent inputs/rules, e.g. authenticated? account active? limit exceeded?"},
-        {"term": "Actions", "detail": "List observable outcomes, e.g. allow, deny, require verification."},
-        {"term": "Rules", "detail": "Each feasible column is one combination of condition values and expected actions."},
-        {"term": "Collapse", "detail": "Merge combinations only when a condition truly does not affect the outcome (don't-care)."},
-        {"term": "Coverage", "detail": "executed feasible rules ÷ identified feasible rules × 100%."}
-      ],
-      "moreRows": [
-        {"term": "Check feasibility", "detail": "Remove impossible combinations only with a justified domain rule."},
-        {"term": "Good signal", "detail": "If requirements contain many if/and/or/unless statements, a decision table is often clearer than prose."}
-      ],
-      "searchTerms": ["decision table rule condition action boolean combinations business rules"]
-    },
-    {
-      "id": "state-transition",
-      "title": "State Transition Testing",
-      "scope": "Techniques",
-      "tags": ["Techniques", "State transition", "Workflow"],
-      "meta": "states + transitions",
-      "summary": "Use when the same event can behave differently depending on current state or history.",
-      "rows": [
-        {"term": "State", "detail": "Persistent condition that affects behavior: Draft, Submitted, Approved, Rejected."},
-        {"term": "Event", "detail": "Trigger such as submit, approve, timeout, retry, cancel."},
-        {"term": "Transition", "detail": "Current state + event → next state + observable action."},
-        {"term": "Valid path", "detail": "Exercise required transitions and meaningful multi-step sequences."},
-        {"term": "Invalid transition", "detail": "Try events that must be rejected or ignored from a given state."}
-      ],
-      "moreRows": [
-        {"term": "Coverage", "detail": "executed valid transitions ÷ identified valid transitions × 100% when using valid-transition coverage."},
-        {"term": "History risk", "detail": "Add sequences for retries, back/forward, reopen, timeout, duplicate event, and recovery where relevant."}
-      ],
-      "searchTerms": ["finite state machine FSM transition coverage workflow lifecycle"]
-    },
-    {
-      "id": "white-box-coverage",
-      "title": "Statement vs branch coverage",
-      "scope": "Techniques",
-      "tags": ["Techniques", "White-box", "Coverage"],
-      "meta": "2 formulas",
-      "summary": "Coverage tells you what structure was exercised, not whether assertions or requirements were adequate.",
-      "rows": [
-        {"term": "Statement", "detail": "executed executable statements ÷ total executable statements × 100%."},
-        {"term": "Branch", "detail": "executed branches ÷ total branches × 100%."},
-        {"term": "Relationship", "detail": "100% branch coverage implies 100% statement coverage for the measured code; the reverse is not guaranteed."},
-        {"term": "Example", "detail": "An if statement may execute its body and reach 100% statements while never testing the false branch."}
-      ],
-      "moreRows": [
-        {"term": "Coverage gap", "detail": "Use uncovered branches as investigation prompts, not automatic proof that each deserves a test."},
-        {"term": "Not quality", "detail": "High coverage can coexist with weak assertions, missing requirements, and wrong test data."}
-      ],
-      "searchTerms": ["statement coverage branch decision coverage white box code coverage"]
-    },
-    {
-      "id": "experience-based",
-      "title": "Experience-based testing",
-      "scope": "Techniques",
-      "tags": ["Techniques", "Exploratory", "Error guessing"],
-      "meta": "3 approaches",
-      "summary": "Use tester knowledge deliberately; make the mission and evidence visible so it is not random clicking.",
-      "rows": [
-        {"term": "Exploratory", "detail": "Learn, design, and execute tests in a time-boxed mission; record observations and follow-up ideas."},
-        {"term": "Error guessing", "detail": "Target likely failures from defect history, architecture, edge cases, and common implementation mistakes."},
-        {"term": "Checklist-based", "detail": "Use reusable quality/risk prompts while allowing the tester to choose concrete tests."},
-        {"term": "Session charter", "detail": "Explore [area] with [resources] to discover [risk/problem]."}
-      ],
-      "moreRows": [
-        {"term": "Evidence", "detail": "Capture data, build/environment, notes, screenshots/logs, and discovered risks—not only defects."},
-        {"term": "Pair well with", "detail": "Structured black-box techniques: formal coverage plus discovery usually beats either alone."}
-      ],
-      "searchTerms": ["exploratory testing charter session based error guessing checklist heuristics"]
-    },
-    {
-      "id": "defect-report",
-      "title": "Defect report that can be acted on",
-      "scope": "Defects",
-      "tags": ["Defects", "Bug report", "Evidence"],
-      "meta": "minimum useful fields",
-      "summary": "Optimize for reproducibility, diagnosis, and impact—not for form completion.",
-      "rows": [
-        {"term": "Title", "detail": "Object + failure + condition: Checkout: duplicate charge after payment retry."},
-        {"term": "Context", "detail": "Build/version, environment, device/browser, account/role, feature flags, relevant time."},
-        {"term": "Preconditions & data", "detail": "Exact state and inputs required to reproduce."},
-        {"term": "Steps", "detail": "Minimal numbered sequence; remove irrelevant navigation."},
-        {"term": "Expected vs actual", "detail": "Describe observable difference precisely."},
-        {"term": "Evidence", "detail": "Screenshot/video plus logs, request/response, console, correlation ID, DB/event evidence when useful."}
-      ],
-      "moreRows": [
-        {"term": "Reproducibility", "detail": "Always / intermittent / frequency estimate; mention retries already attempted."},
-        {"term": "Impact", "detail": "Affected users/business flow/workaround and whether data/security/revenue is at risk."},
-        {"term": "Avoid", "detail": "Doesn't work, hidden assumptions, and giant evidence dumps without timestamps or identifiers."}
-      ],
-      "searchTerms": ["bug defect ticket steps reproduce expected actual environment evidence logs"]
-    },
-    {
-      "id": "severity-priority",
-      "title": "Severity vs priority",
-      "scope": "Defects",
-      "tags": ["Defects", "Severity", "Priority"],
-      "meta": "impact vs urgency",
-      "summary": "Severity describes impact; priority describes when the organization chooses to address it.",
-      "rows": [
-        {"term": "Severity", "meaning": "How bad is the effect?", "detail": "Consider user/business/data/security/safety impact and available workaround."},
-        {"term": "Priority", "meaning": "How soon should it be fixed?", "detail": "Affected by release timing, exposure, strategic value, dependencies, and cost."},
-        {"term": "High / High", "detail": "Critical purchase/login/data-loss path affecting current users."},
-        {"term": "High / Low", "detail": "Severe failure in a disabled, obsolete, or inaccessible path may be deferred."},
-        {"term": "Low / High", "detail": "Small visible issue can be urgent for a launch, legal text, or major customer demo."}
-      ],
-      "moreRows": [
-        {"term": "Do not encode", "detail": "Avoid treating severity and priority as the same field with different labels."},
-        {"term": "Team convention", "detail": "Use the project's documented scales; examples above illustrate the distinction, not universal labels."}
-      ],
-      "searchTerms": ["bug severity priority impact urgency blocker critical major minor"]
+        {"term": "Static testing", "meaning": "No execution of the test object", "detail": "Evaluate requirements, designs, code, test cases, or other work products through reviews or static analysis."},
+        {"term": "Dynamic testing", "meaning": "Execute the test object", "detail": "Run software or a system, observe behavior, and compare results with expectations or other oracles."},
+        {"term": "Why static matters", "detail": "It can find ambiguity, inconsistency, unreachable code, standards violations, and design problems before runnable software exists."},
+        {"term": "Why dynamic matters", "detail": "It reveals runtime failures involving behavior, timing, integration, state, environment, data, and resource usage."}
+      ]
     },
     {
       "id": "confirmation-regression",
       "title": "Confirmation vs regression",
       "scope": "Defects",
-      "tags": ["Defects", "Regression", "Retest"],
-      "meta": "after a change",
-      "summary": "First prove the reported failure is fixed; then ask what else the change could have broken.",
+      "tags": ["Defects"],
+      "meta": "Interview · Very common",
+      "summary": "After a change, confirmation proves the reported failure is fixed; regression looks for unintended side effects elsewhere.",
       "rows": [
-        {"term": "Confirmation / retest", "detail": "Re-run the failed scenario and relevant variants against the fixed build."},
-        {"term": "Regression", "detail": "Test unchanged behavior that may be affected by the change."},
-        {"term": "Select by impact", "detail": "Changed code/config + dependencies + shared data + interfaces + adjacent business flows."},
-        {"term": "Select by risk", "detail": "Prioritize high-impact and high-likelihood consequences, not the entire historical suite by default."}
+        {"term": "Confirmation / retest", "detail": "Re-run the previously failing scenario and relevant variants against the fixed build."},
+        {"term": "Regression testing", "detail": "Check previously working behavior that may be affected by the change."},
+        {"term": "Impact analysis", "detail": "Use changed code/configuration, dependencies, shared data, interfaces, and adjacent business flows to select regression scope."},
+        {"term": "Risk-based selection", "detail": "Prioritize high-impact and high-likelihood consequences instead of automatically executing every historical test."}
       ],
       "moreRows": [
-        {"term": "Fixed ≠ safe", "detail": "A defect can be correctly fixed while introducing a new failure elsewhere."},
-        {"term": "Automation", "detail": "Stable repeated regression is a strong automation candidate; exploratory follow-up still adds value for risky changes."}
+        {"term": "Fixed ≠ safe", "detail": "A defect can be correctly fixed while the change introduces a new defect somewhere else."}
+      ]
+    },
+    {
+      "id": "smoke-vs-sanity",
+      "title": "Smoke vs sanity",
+      "scope": "Foundations",
+      "tags": ["Foundations"],
+      "meta": "Interview · Very common",
+      "summary": "These industry labels are not universally standardized, so explain the purpose you use rather than arguing about one absolute definition.",
+      "rows": [
+        {"term": "Smoke testing", "meaning": "Broad and shallow", "detail": "A small set of critical checks that decides whether a build or environment is stable enough for deeper testing."},
+        {"term": "Sanity testing", "meaning": "Focused and narrow", "detail": "A targeted check around a small change or area to decide whether more detailed testing is worthwhile."},
+        {"term": "Typical smoke examples", "detail": "Application starts, login works, core navigation loads, critical API/dependency is reachable, core transaction can complete."},
+        {"term": "Interview answer", "detail": "State your team's convention and the decision each suite supports; acknowledge that organizations use the labels differently."}
+      ]
+    },
+    {
+      "id": "test-design-families",
+      "title": "Test design approaches & technique families",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Start from the formal family name, then name the techniques; this is the interview-friendly map for choosing how tests are derived.",
+      "rows": [
+        {"term": "Black-box / specification-based", "detail": "Derive tests from requirements, rules, models, interfaces, and observable behavior; includes EP, BVA, decision tables, and state transitions."},
+        {"term": "White-box / structure-based", "detail": "Derive tests from internal structure; common foundation examples are statement and branch coverage."},
+        {"term": "Experience-based", "detail": "Use tester knowledge and learning; includes error guessing, exploratory testing, and checklist-based testing."},
+        {"term": "Collaboration-based approaches", "detail": "Derive shared examples with stakeholders, for example user-story collaboration, acceptance criteria, and ATDD."}
       ],
-      "searchTerms": ["confirmation testing retesting regression impact analysis change"]
+      "moreRows": [
+        {"term": "Do not flatten everything", "detail": "Positive/negative, manual/automated, smoke/regression, and test levels describe other dimensions and should not be presented as peer design techniques."}
+      ]
+    },
+    {
+      "id": "equivalence-partitioning",
+      "title": "Equivalence Partitioning",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Divide a large input or state domain into partitions expected to behave similarly, then choose representative values from each meaningful partition.",
+      "rows": [
+        {"term": "Equivalence Partitioning", "meaning": "Group equivalent behavior", "detail": "Identify valid and invalid classes based on actual rules or expected behavior."},
+        {"term": "Example", "detail": "If age must be 18–65: partitions are <18, 18–65, and >65; representative values might be 17, 30, and 66."},
+        {"term": "Coverage", "detail": "Partition coverage = exercised identified partitions ÷ total identified partitions × 100%."},
+        {"term": "Key caution", "detail": "Two values belong to the same partition only when there is a reason to expect equivalent behavior."}
+      ],
+      "moreRows": [
+        {"term": "Multiple fields", "detail": "Partition fields separately, then use risk or combination techniques instead of testing the entire Cartesian product."}
+      ]
+    },
+    {
+      "id": "boundary-value-analysis",
+      "title": "Boundary Value Analysis",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Focus on values around behavior-changing boundaries because implementation errors frequently occur at inclusive and exclusive limits.",
+      "rows": [
+        {"term": "Boundary Value Analysis", "meaning": "Test around edges", "detail": "Identify where behavior changes between partitions and exercise values on and around those boundaries."},
+        {"term": "2-value BVA", "detail": "For valid 18–65, exercise the closest values across each edge: 17, 18 and 65, 66."},
+        {"term": "3-value BVA", "detail": "Exercise below / on / above each boundary: 17, 18, 19 and 64, 65, 66."},
+        {"term": "Non-numeric boundaries", "detail": "Dates, string length, file size, retries, quotas, pagination, timeouts, and list sizes also have boundaries."}
+      ],
+      "moreRows": [
+        {"term": "EP + BVA", "detail": "EP identifies the partitions; BVA intensifies testing at the borders between them."}
+      ]
+    },
+    {
+      "id": "decision-tables",
+      "title": "Decision Table Testing",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Use a decision table when outcomes depend on combinations of conditions; it makes hidden or contradictory business-rule combinations visible.",
+      "rows": [
+        {"term": "Decision Table", "meaning": "Conditions × outcomes", "detail": "List conditions, feasible combinations of their values, and the expected actions for each rule column."},
+        {"term": "Conditions", "detail": "Independent business inputs or predicates such as authenticated?, premium?, limit exceeded?."},
+        {"term": "Actions", "detail": "Observable outcomes such as allow, deny, discount, require verification, or create a record."},
+        {"term": "Coverage", "detail": "Decision-table coverage = executed feasible rules ÷ identified feasible rules × 100%."}
+      ],
+      "moreRows": [
+        {"term": "Don't-care", "detail": "Collapse combinations only when a condition truly cannot affect the outcome for that rule."},
+        {"term": "Interview signal", "detail": "Requirements full of if / and / or / unless logic are strong candidates for a decision table."}
+      ]
+    },
+    {
+      "id": "state-transition",
+      "title": "State Transition Testing",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Use state-transition testing when the same event can behave differently depending on current state or previous events.",
+      "rows": [
+        {"term": "State Transition Testing", "meaning": "State + event → next state", "detail": "Model states, triggering events, resulting states, and observable actions."},
+        {"term": "Valid transition", "detail": "Exercise required transitions, for example Draft → Submitted after Submit."},
+        {"term": "Invalid transition", "detail": "Try events that must be rejected or ignored from a given state, for example Approve while still Draft."},
+        {"term": "Sequence testing", "detail": "Cover history-dependent flows such as retry, reopen, timeout, cancel, duplicate event, lockout, and recovery."}
+      ],
+      "moreRows": [
+        {"term": "Coverage", "detail": "A common measure is executed valid transitions ÷ identified valid transitions × 100%, supplemented by risky sequences."}
+      ]
+    },
+    {
+      "id": "experience-based",
+      "title": "Experience-based techniques",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Very common",
+      "summary": "Use tester experience deliberately: the technique should guide where to look, while the mission and evidence remain visible.",
+      "rows": [
+        {"term": "Error Guessing", "detail": "Target likely defects using defect history, architecture knowledge, edge cases, and common implementation mistakes."},
+        {"term": "Exploratory Testing", "detail": "Learning, test design, and execution happen together while the tester adapts based on observations."},
+        {"term": "Checklist-based Testing", "detail": "Use reusable quality or risk prompts while leaving the tester freedom to choose concrete checks."},
+        {"term": "Exploratory charter", "detail": "A concise mission such as: Explore checkout recovery after network interruption, focusing on duplicate orders and stale totals."}
+      ],
+      "moreRows": [
+        {"term": "Best combination", "detail": "Structured black-box techniques plus experience-based discovery usually provide stronger evidence than either alone."}
+      ]
+    },
+    {
+      "id": "good-requirements",
+      "title": "Good requirement characteristics",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Very common",
+      "summary": "A strong interview answer checks both the wording of one requirement and whether the set of requirements works coherently together.",
+      "rows": [
+        {"term": "Clear & unambiguous", "detail": "A reasonable reader should not be able to derive several different intended behaviors."},
+        {"term": "Verifiable / testable", "detail": "There must be observable evidence that can decide whether the requirement is satisfied."},
+        {"term": "Complete", "detail": "Required conditions, inputs, outcomes, errors, boundaries, and constraints are present where needed."},
+        {"term": "Feasible & necessary", "detail": "The requirement is achievable within real constraints and exists for a stakeholder, business, regulatory, or system need."},
+        {"term": "Singular / atomic", "detail": "It expresses one main obligation rather than several unrelated behaviors joined together."},
+        {"term": "Consistent & traceable", "detail": "It does not contradict known rules and its origin plus downstream consequences can be recovered."}
+      ],
+      "moreRows": [
+        {"term": "Requirements-set quality", "detail": "Also check the set for completeness, consistency, non-duplication, coherent terminology, correct decomposition, modifiability, and quality constraints."},
+        {"term": "Red-flag words", "detail": "Fast, intuitive, appropriate, normally, should, supports, and etc. need measurable or contextual meaning."}
+      ]
+    },
+    {
+      "id": "test-case-anatomy",
+      "title": "Test case structure",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Very common",
+      "summary": "Interview answers should focus on reproducibility and purpose rather than treating every test case as a mandatory long template.",
+      "rows": [
+        {"term": "Objective", "detail": "What rule, risk, behavior, or condition the test is checking."},
+        {"term": "Preconditions", "detail": "Required account, permissions, configuration, system state, build, or dependency state."},
+        {"term": "Test data", "detail": "Exact values or a clear generation rule; include meaningful valid, invalid, and boundary data."},
+        {"term": "Steps / action", "detail": "The minimal reproducible manual sequence or automated/API operation needed to trigger the behavior."},
+        {"term": "Expected result", "detail": "A concrete observable outcome in UI, API response, state, event, log, database, or absence of change."}
+      ],
+      "moreRows": [
+        {"term": "Optional context", "detail": "Cleanup, environment, priority, links, and evidence are useful when they improve repeatability or diagnosis."},
+        {"term": "Avoid", "detail": "Vague expectations such as works correctly and long click-by-click scripts that add no testing intent."}
+      ]
+    },
+    {
+      "id": "test-documentation",
+      "title": "Test documentation / testware",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Very common",
+      "summary": "Test documentation is broader than test cases; know the artifacts and the decision or reproducibility need each one serves.",
+      "rows": [
+        {"term": "Test plan", "detail": "Defines objectives, scope, approach, resources, risks, criteria, responsibilities, estimates, and schedule for a test effort."},
+        {"term": "Test conditions & test cases", "detail": "Record what needs evidence and the concrete inputs, preconditions, actions, and expected results used to obtain it."},
+        {"term": "Checklist / exploratory charter", "detail": "Lighter-weight testware for recurring prompts or investigation where detailed scripts would be wasteful."},
+        {"term": "Test suites, data & environment", "detail": "Group tests for a purpose and preserve the state/configuration required to reproduce execution."},
+        {"term": "Results & defect reports", "detail": "Record actual outcomes, evidence, failures, anomalies, and information needed for investigation."},
+        {"term": "Progress / completion reports", "detail": "Communicate status against the plan, achieved evidence, deviations, unresolved defects, and residual risk."}
+      ],
+      "moreRows": [
+        {"term": "Traceability", "detail": "Links test basis → conditions/cases → results/defects so coverage and change impact can be reasoned about."}
+      ]
+    },
+    {
+      "id": "test-plan-strategy-approach",
+      "title": "Test strategy vs plan vs approach",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Very common",
+      "summary": "These terms are frequently collapsed in interviews; separate the scope and decision each one documents instead of memorizing one rigid template.",
+      "rows": [
+        {"term": "Test policy", "meaning": "Organization-level principles", "detail": "Defines high-level expectations, governance, or principles for testing across an organization or product family."},
+        {"term": "Test strategy", "meaning": "Reusable high-level direction", "detail": "Defines a broader approach for obtaining quality evidence across a product, programme, or long-lived initiative."},
+        {"term": "Test plan", "meaning": "Specific test effort", "detail": "Defines how and when objectives will be achieved for a project, release, iteration, migration, or major change."},
+        {"term": "Test approach", "meaning": "How the plan gets evidence", "detail": "Selected levels, types, techniques, priorities, exploratory work, automation, independence, data, and environments."},
+        {"term": "Test schedule", "meaning": "When and in what order", "detail": "Places activities, dependencies, milestones, and execution order in time."}
+      ],
+      "moreRows": [
+        {"term": "Typical plan content", "detail": "Context, test basis, scope, objectives, risks, responsibilities, approach, environment/data/tools, entry/exit criteria, metrics/reporting, estimates, resources, schedule, and dependencies."}
+      ]
+    },
+    {
+      "id": "defect-lifecycle",
+      "title": "Defect lifecycle",
+      "scope": "Defects",
+      "tags": ["Defects"],
+      "meta": "Interview · Very common",
+      "summary": "Know the normal state flow but emphasize that exact statuses depend on the workflow; what matters is ownership and a verifiable resolution path.",
+      "rows": [
+        {"term": "New / Open", "detail": "A problem is reported with enough evidence for triage and investigation."},
+        {"term": "Triaged / Assigned", "detail": "Impact, validity, ownership, priority, and next action are agreed."},
+        {"term": "In progress / Fixed", "detail": "The cause is addressed and a candidate fix becomes available for verification."},
+        {"term": "Retest / Verified", "detail": "QA or another responsible party confirms the original failure no longer occurs in the intended build/environment."},
+        {"term": "Closed", "detail": "The resolution is accepted and the workflow is complete."}
+      ],
+      "moreRows": [
+        {"term": "Other common outcomes", "detail": "Rejected / not a bug, duplicate, cannot reproduce, deferred, won't fix, reopened, blocked, or needs more information."},
+        {"term": "Reopened", "detail": "Use when the original issue still exists, the fix is incomplete, or the agreed acceptance condition is not satisfied."}
+      ]
+    },
+    {
+      "id": "severity-priority",
+      "title": "Severity vs priority",
+      "scope": "Defects",
+      "tags": ["Defects"],
+      "meta": "Interview · Very common",
+      "summary": "Severity describes impact; priority describes when the organization chooses to address the issue.",
+      "rows": [
+        {"term": "Severity", "meaning": "How bad is the effect?", "detail": "Evaluate user, business, data, security, safety, and operational impact plus the availability of a workaround."},
+        {"term": "Priority", "meaning": "How soon should it be addressed?", "detail": "Affected by release timing, exposure, strategic value, customer commitments, dependencies, and cost."},
+        {"term": "High severity / low priority", "detail": "A severe failure in a disabled, obsolete, or inaccessible path may legitimately be deferred."},
+        {"term": "Low severity / high priority", "detail": "A minor but highly visible issue can be urgent for a launch, legal text, or important customer demo."}
+      ],
+      "moreRows": [
+        {"term": "Team scales", "detail": "Use the project's documented severity and priority definitions; labels such as blocker/critical/major are not universal."}
+      ]
+    },
+    {
+      "id": "defect-report",
+      "title": "Good defect report",
+      "scope": "Defects",
+      "tags": ["Defects"],
+      "meta": "Interview · Very common",
+      "summary": "Optimize a defect report for reproduction, diagnosis, and impact assessment rather than form completion.",
+      "rows": [
+        {"term": "Title", "detail": "State object + observed failure + useful condition, for example: Checkout remains on Payment after successful authorization."},
+        {"term": "Environment / build", "detail": "Exact version, environment, browser/device, role, configuration, feature flags, and relevant timestamp."},
+        {"term": "Preconditions & data", "detail": "Capture the state and inputs required to reproduce the problem."},
+        {"term": "Minimal steps", "detail": "Provide the shortest reliable sequence that triggers the failure; remove irrelevant navigation."},
+        {"term": "Actual vs expected", "detail": "Describe the observable discrepancy and the basis for the expected behavior."},
+        {"term": "Evidence & impact", "detail": "Attach useful logs, request/response, screenshot/video, IDs, DB/event evidence, reproducibility, affected users, and workaround."}
+      ],
+      "moreRows": [
+        {"term": "Avoid guessed root cause", "detail": "Put observed behavior in the title unless the technical cause has actually been demonstrated."}
+      ]
+    },
+    {
+      "id": "traceability-impact",
+      "title": "Traceability / RTM & change impact",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Common",
+      "summary": "Traceability is useful when it answers coverage, origin, or change-impact questions; a giant spreadsheet is not the goal.",
+      "rows": [
+        {"term": "Forward traceability", "detail": "Requirement / risk → derived requirements or acceptance criteria → test conditions → tests → results and defects."},
+        {"term": "Backward traceability", "detail": "Test, implementation, or lower-level requirement → the requirement, risk, or stakeholder need that justifies it."},
+        {"term": "Coverage question", "detail": "Identify important requirements or risks that have evidence and those that remain uncovered."},
+        {"term": "Change impact", "detail": "When a requirement or implementation changes, find dependent requirements, tests, automation, data, interfaces, and risks."}
+      ],
+      "moreRows": [
+        {"term": "RTM", "detail": "A requirements traceability matrix is one implementation; IDs, links, issue relationships, or automated metadata can provide the same capability."},
+        {"term": "Stale links", "detail": "Incorrect traceability creates false confidence, so keep links minimal, meaningful, and maintainable."}
+      ]
+    },
+    {
+      "id": "quality-characteristics",
+      "title": "Quality characteristics",
+      "scope": "Foundations",
+      "tags": ["Foundations"],
+      "meta": "Interview · Common",
+      "summary": "Use canonical quality-characteristic names in interviews, then translate each one into practical testing questions.",
+      "rows": [
+        {"term": "Functional suitability", "detail": "Functional completeness, correctness, and appropriateness for intended tasks."},
+        {"term": "Performance efficiency", "detail": "Time behavior, throughput, capacity, and resource utilization under relevant load."},
+        {"term": "Compatibility", "detail": "Coexistence and interoperability with required systems, platforms, and environments."},
+        {"term": "Interaction capability", "detail": "Recognizability, learnability, operability, error protection, engagement, inclusivity, and accessibility of interaction."},
+        {"term": "Reliability", "detail": "Availability, fault tolerance, recoverability, and behavior over time or under faults."}
+      ],
+      "moreRows": [
+        {"term": "Security", "detail": "Confidentiality, integrity, non-repudiation, accountability, authenticity, and resistance to misuse."},
+        {"term": "Maintainability", "detail": "Modularity, reusability, analyzability, modifiability, and testability of change."},
+        {"term": "Flexibility", "detail": "Adaptability, scalability, installability, and replaceability across environments or changing needs."},
+        {"term": "Safety", "detail": "Risk of harm, safe behavior, hazard identification, fail-safe behavior, and operational constraints where relevant."}
+      ]
+    },
+    {
+      "id": "acceptance-uat-alpha-beta",
+      "title": "Acceptance, UAT, alpha & beta",
+      "scope": "Foundations",
+      "tags": ["Foundations"],
+      "meta": "Interview · Common",
+      "summary": "These labels overlap in real projects, so distinguish the test level, the stakeholder purpose, and who performs the testing.",
+      "rows": [
+        {"term": "Acceptance testing", "detail": "A test level that evaluates whether the system is acceptable against user, business, contractual, operational, or regulatory criteria."},
+        {"term": "UAT", "meaning": "User acceptance testing", "detail": "Acceptance testing from the customer or user perspective to confirm real business work can be completed."},
+        {"term": "Alpha testing", "detail": "Controlled pre-release testing performed at or for the developing organization, often by internal or invited users."},
+        {"term": "Beta testing", "detail": "Pre-release use by selected external users in realistic environments to expose issues and gather feedback."}
+      ],
+      "moreRows": [
+        {"term": "Key distinction", "detail": "Alpha and beta can contribute acceptance evidence, but neither automatically replaces explicit acceptance criteria or release authorization."}
+      ]
+    },
+    {
+      "id": "static-reviews",
+      "title": "Static reviews & static analysis",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Common",
+      "summary": "Know the major review forms and separate human review techniques from tool-based static analysis.",
+      "rows": [
+        {"term": "Informal review", "detail": "A lightweight review with little prescribed process; useful for quick feedback on low-risk work."},
+        {"term": "Walkthrough", "detail": "Usually author-led; the author explains the work product while participants ask questions and provide feedback."},
+        {"term": "Technical review", "detail": "Qualified peers assess technical suitability, alternatives, consistency, risks, or standards compliance."},
+        {"term": "Inspection", "detail": "A formal review with defined roles, preparation, entry criteria, defect logging, moderation, and follow-up."},
+        {"term": "Static analysis", "detail": "Tools examine code or models for properties such as control/data flow, complexity, unreachable code, dependency rules, or security findings."}
+      ]
+    },
+    {
+      "id": "white-box-coverage",
+      "title": "Statement vs branch coverage",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Common",
+      "summary": "Coverage tells you which implementation structure was exercised; it does not prove that assertions, requirements, or test data are good.",
+      "rows": [
+        {"term": "Statement coverage", "detail": "Executed executable statements ÷ total executable statements × 100%."},
+        {"term": "Branch coverage", "detail": "Executed branches / decision outcomes ÷ total branches × 100%."},
+        {"term": "Relationship", "detail": "100% branch coverage implies 100% statement coverage for the measured code; the reverse is not guaranteed."},
+        {"term": "Typical trap", "detail": "An if body may execute and give full statement coverage while the false branch is never tested."}
+      ],
+      "moreRows": [
+        {"term": "Not a quality score", "detail": "High code coverage can coexist with weak assertions, missing requirements, wrong data, and untested integration behavior."}
+      ]
+    },
+    {
+      "id": "requirements-relationships",
+      "title": "Requirements-to-requirements relationships",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Common",
+      "summary": "Requirements are a graph, not a flat list; interview-ready review includes decomposition, dependencies, conflicts, and overlap between requirements.",
+      "rows": [
+        {"term": "Derived from / refines", "detail": "A lower-level requirement makes a higher-level need more concrete while preserving its intent."},
+        {"term": "Parent / child", "detail": "A broad capability is decomposed into smaller requirements that together implement the parent."},
+        {"term": "Depends on / prerequisite", "detail": "One requirement only makes sense or can operate when another requirement or condition is satisfied."},
+        {"term": "Constrains / interacts with", "detail": "One requirement limits another or two requirements affect the same state, data, interface, or workflow."},
+        {"term": "Conflicts / overlaps", "detail": "Requirements may be mutually incompatible or duplicate the same rule with inconsistent wording."}
+      ],
+      "moreRows": [
+        {"term": "Change impact", "detail": "When one requirement changes, review its parents, children, dependencies, interacting rules, acceptance criteria, and linked tests."}
+      ]
+    },
+    {
+      "id": "entry-exit",
+      "title": "Entry, exit, suspension & resumption criteria",
+      "scope": "Risk & Release",
+      "tags": ["Risk & Release"],
+      "meta": "Interview · Common",
+      "summary": "Criteria should trigger real decisions about whether testing can start, continue, stop, or be considered sufficiently complete.",
+      "rows": [
+        {"term": "Entry criteria", "detail": "Conditions required to begin useful testing: valid build, environment/data ready, test basis usable, dependencies available, blockers understood."},
+        {"term": "Exit / completion criteria", "detail": "Evidence needed to consider objectives sufficiently met: risk/coverage goals, defect state, key results, residual risk, required approvals."},
+        {"term": "Suspension criteria", "detail": "Conditions that make continued testing wasteful or unsafe, such as an invalid build, broken environment, or unavailable critical dependency."},
+        {"term": "Resumption criteria", "detail": "Specific evidence that the blocking condition has been resolved and test results can be trusted again."}
+      ],
+      "moreRows": [
+        {"term": "Avoid universal 100% pass", "detail": "A fully green but incomplete or low-value suite can still miss critical risk."}
+      ]
     },
     {
       "id": "risk-based-testing",
       "title": "Risk-based testing",
       "scope": "Risk & Release",
-      "tags": ["Risk & Release", "Risk", "Prioritization"],
-      "meta": "likelihood × impact",
-      "summary": "Spend deeper and earlier testing effort where product risk is highest.",
+      "tags": ["Risk & Release"],
+      "meta": "Interview · Common",
+      "summary": "Allocate earlier and deeper testing effort where product risk is highest, then make residual risk explicit when constraints force trade-offs.",
       "rows": [
-        {"term": "Risk level", "detail": "A common simple model: likelihood × impact. Use the team's scale, not fake precision."},
-        {"term": "Likelihood signals", "detail": "Complex/new code, many dependencies, churn, weak observability, defect history, unfamiliar tech."},
-        {"term": "Impact signals", "detail": "Revenue, safety, security, data loss, legal exposure, user volume, blocked core task, recovery cost."},
-        {"term": "High risk", "detail": "Test earlier, with stronger techniques, broader data, more independence, and more regression."},
-        {"term": "Low risk", "detail": "Use lighter coverage or defer when constraints require it—document the residual risk."}
+        {"term": "Risk level", "detail": "A simple model is likelihood × impact; use the team's scale and avoid fake mathematical precision."},
+        {"term": "Likelihood signals", "detail": "Complexity, novelty, many dependencies, code churn, weak observability, defect history, and unfamiliar technology."},
+        {"term": "Impact signals", "detail": "Revenue, safety, security, data loss, legal exposure, user volume, blocked core tasks, and recovery cost."},
+        {"term": "High risk response", "detail": "Test earlier, with stronger techniques, broader data, more independence, and more focused regression."}
       ],
       "moreRows": [
-        {"term": "Product risk", "detail": "Threat to product quality/user/business outcome."},
-        {"term": "Project risk", "detail": "Threat to delivery/testing itself: time, people, environment, tooling, dependencies."},
-        {"term": "Reassess", "detail": "Risk changes as defects, architecture, usage, and release scope change."}
-      ],
-      "searchTerms": ["risk score likelihood impact product risk project risk risk based testing"]
+        {"term": "Product vs project risk", "detail": "Product risk threatens product quality/outcomes; project risk threatens delivery or testing through time, people, environments, tooling, or dependencies."}
+      ]
     },
     {
       "id": "prioritization",
       "title": "Test prioritization under time pressure",
       "scope": "Risk & Release",
-      "tags": ["Risk & Release", "Prioritization", "Smoke"],
-      "meta": "fast order",
-      "summary": "When you cannot run everything, make the cut explicit instead of pretending coverage is unchanged.",
+      "tags": ["Risk & Release"],
+      "meta": "Interview · Common",
+      "summary": "When everything cannot be tested, make the selection logic and resulting residual risk explicit instead of pretending coverage is unchanged.",
       "rows": [
-        {"term": "1. Release blockers", "detail": "Startup/deploy, auth, data access, payment/core workflow, critical integrations."},
-        {"term": "2. Changed high-risk area", "detail": "Direct change plus dependencies and known regression hotspots."},
-        {"term": "3. Critical user journeys", "detail": "Highest-value/highest-volume end-to-end paths."},
-        {"term": "4. High-severity defect fixes", "detail": "Confirm fixes and targeted regression around them."},
-        {"term": "5. Broader regression", "detail": "Expand by remaining risk, usage, history, and available time."}
+        {"term": "1. Release blockers", "detail": "Deployment/startup, authentication, data access, payments/core workflow, and critical integrations."},
+        {"term": "2. Changed high-risk area", "detail": "The direct change plus dependencies and known regression hotspots."},
+        {"term": "3. Critical user journeys", "detail": "Highest-value, highest-volume, or highest-consequence end-to-end paths."},
+        {"term": "4. Important defect fixes", "detail": "Confirm high-impact fixes and run targeted regression around the affected area."},
+        {"term": "5. Broader regression", "detail": "Expand by remaining risk, usage, defect history, and available time."}
       ],
       "moreRows": [
-        {"term": "De-scoped tests", "detail": "Record what was not tested and the risk accepted."},
-        {"term": "Bad shortcut", "detail": "Selecting only easy/fast tests creates a biased confidence signal."}
-      ],
-      "searchTerms": ["test priority smoke sanity risk time pressure regression suite"]
+        {"term": "De-scoped work", "detail": "Record what was not tested and the risk that is being accepted."}
+      ]
     },
     {
-      "id": "entry-exit",
-      "title": "Entry, exit & stop criteria",
-      "scope": "Risk & Release",
-      "tags": ["Risk & Release", "Criteria", "Planning"],
-      "meta": "gates",
-      "summary": "Criteria should trigger decisions; they are not ceremonial checklists.",
+      "id": "test-pyramid-quadrants",
+      "title": "Test pyramid & testing quadrants",
+      "scope": "Test design",
+      "tags": ["Test design"],
+      "meta": "Interview · Common",
+      "summary": "These are planning heuristics, not laws; use them to explain feedback speed, scope, and the different purposes of technical and business-facing testing.",
       "rows": [
-        {"term": "Entry", "detail": "Conditions to start useful testing: build deployable, environment/data ready, scope/basis available, blockers understood."},
-        {"term": "Exit", "detail": "Evidence needed to consider the objective sufficiently met: planned risk coverage, defect state, key results, residual risk."},
-        {"term": "Stop / suspend", "detail": "Conditions that make continued execution wasteful or unsafe: broken environment, invalid build, blocking dependency."},
-        {"term": "Resume", "detail": "Specific condition proving the blocker is resolved and test evidence can be trusted again."}
-      ],
-      "moreRows": [
-        {"term": "Avoid", "detail": "100% tests passed as a universal exit rule; it ignores missing tests, wrong scope, waived defects, and product risk."},
-        {"term": "Make measurable", "detail": "Use criteria tied to critical flows, risk items, defect thresholds, required environments, and stakeholder acceptance."}
-      ],
-      "searchTerms": ["entry criteria exit criteria suspension resume completion release gate"]
+        {"term": "Test pyramid", "detail": "Prefer many fast lower-level checks, fewer service/integration checks, and a smaller number of expensive UI end-to-end checks when the architecture supports it."},
+        {"term": "Pyramid purpose", "detail": "Optimize feedback speed, diagnosability, maintenance cost, and coverage—not a fixed percentage at each layer."},
+        {"term": "Testing quadrants", "detail": "A collaboration model that distinguishes technology-facing vs business-facing and support-the-team vs critique-the-product activities."},
+        {"term": "Interview caution", "detail": "Neither model replaces risk analysis; a product can legitimately need more integration, hardware, visual, accessibility, or end-to-end evidence."}
+      ]
     },
     {
-      "id": "release-readiness",
-      "title": "Release readiness",
-      "scope": "Risk & Release",
-      "tags": ["Risk & Release", "Release", "Go no-go"],
-      "meta": "decision checklist",
-      "summary": "A release decision is a risk decision supported by evidence, not a single pass percentage.",
+      "id": "test-oracles",
+      "title": "Test oracle: how do you know it is correct?",
+      "scope": "Requirements & Docs",
+      "tags": ["Requirements & Docs"],
+      "meta": "Interview · Common",
+      "summary": "When an expected result is unclear, identify a credible source of truth before adding more test execution.",
       "rows": [
-        {"term": "Critical flows", "detail": "Required journeys pass in the relevant release candidate/environment."},
-        {"term": "Change coverage", "detail": "Changed areas and dependencies received appropriate confirmation/regression."},
-        {"term": "Open defects", "detail": "Known defects are understood by severity, exposure, workaround, and release impact."},
-        {"term": "Residual risk", "detail": "Known untested/partially tested areas and assumptions are visible to decision-makers."},
-        {"term": "Operational readiness", "detail": "Monitoring, alerts, rollback/feature flag, support/runbook, migration/recovery where relevant."}
+        {"term": "Requirement / acceptance criterion", "detail": "An explicit business rule or specified expected behavior."},
+        {"term": "Reference system", "detail": "A trusted existing implementation, simulator, validated previous version, or external authoritative system."},
+        {"term": "Independent calculation", "detail": "Recompute using a separate formula or model instead of copying the implementation logic under test."},
+        {"term": "Invariant / domain rule", "detail": "A property that must always hold or an authoritative law, protocol, accounting, safety, or business constraint."}
       ],
       "moreRows": [
-        {"term": "Environment confidence", "detail": "Understand differences between test and production that could invalidate evidence."},
-        {"term": "Go / no-go", "detail": "QA provides evidence and risk assessment; accountability for the release decision depends on team governance."}
-      ],
-      "searchTerms": ["release readiness go no go residual risk open defects rollback monitoring"]
-    },
-    {
-      "id": "useful-metrics",
-      "title": "Metrics that answer a decision",
-      "scope": "Risk & Release",
-      "tags": ["Risk & Release", "Metrics", "Reporting"],
-      "meta": "signal, not vanity",
-      "summary": "Start with the decision or question; then choose a metric. Raw counts without context are easy to misuse.",
-      "rows": [
-        {"term": "Progress", "detail": "Executed vs planned relevant scope, split by risk/feature/environment—not only total cases."},
-        {"term": "Outcome", "detail": "Pass/fail/blocked trends with causes and affected critical flows."},
-        {"term": "Defects", "detail": "Open/closed trend, severity, age, reopen rate, escaped defects where meaningful."},
-        {"term": "Coverage", "detail": "Requirements/risks/techniques/code areas covered; state what coverage means."},
-        {"term": "Stability", "detail": "Flaky tests, environment failures, automation reliability, build/deploy health."}
-      ],
-      "moreRows": [
-        {"term": "Avoid vanity", "detail": "Number of test cases, bugs found, or automation percentage alone does not equal quality."},
-        {"term": "Context", "detail": "Always pair a metric with timeframe, denominator, scope, and decision threshold when applicable."}
-      ],
-      "searchTerms": ["QA metrics pass rate defect density coverage flaky automation percentage reporting"]
-    },
-    {
-      "id": "environment-data",
-      "title": "Environment & test data triage",
-      "scope": "Delivery",
-      "tags": ["Delivery", "Environment", "Test data"],
-      "meta": "first checks",
-      "summary": "Before filing a product defect, verify that the evidence is not explained by build, configuration, dependency, or data drift.",
-      "rows": [
-        {"term": "Build", "detail": "Exact version/commit/image and deployment time."},
-        {"term": "Config", "detail": "Feature flags, secrets, URLs, locale/timezone, cache, permissions, runtime settings."},
-        {"term": "Dependencies", "detail": "Service versions, stubs/mocks, queues, third parties, database/schema migrations."},
-        {"term": "Data state", "detail": "Account role, seed, ownership, prior mutations, clock-dependent state, cleanup."},
-        {"term": "Observability", "detail": "Logs, traces, metrics, request IDs, events, DB state aligned to the same timestamp."}
-      ],
-      "moreRows": [
-        {"term": "Reproducibility", "detail": "Prefer repeatable seeds/fixtures and isolated accounts for tests that mutate state."},
-        {"term": "Privacy", "detail": "Use synthetic/masked data and least privilege where real personal or sensitive data is unnecessary."}
-      ],
-      "searchTerms": ["test environment configuration data fixture seed dependency feature flag logs trace"]
+        {"term": "Human judgment", "detail": "Useful for UX, visual quality, exploratory work, or other areas where exact automatic oracles are difficult; define reviewer expectations where possible."},
+        {"term": "Weak oracle risk", "detail": "A test can execute successfully while proving little if nobody can explain why the observed result should be considered correct."}
+      ]
     },
     {
       "id": "agile-shift-left",
       "title": "Agile, shift-left & CI",
       "scope": "Delivery",
-      "tags": ["Delivery", "Agile", "Shift-left", "CI"],
-      "meta": "quality feedback loop",
-      "summary": "The goal is earlier, cheaper feedback and shared quality ownership—not merely running tests earlier.",
+      "tags": ["Delivery"],
+      "meta": "Interview · Common",
+      "summary": "The core idea is faster, cheaper feedback and shared quality ownership—not merely moving the same manual tests earlier.",
       "rows": [
-        {"term": "Refinement", "detail": "Challenge ambiguity, examples, risks, testability, observability, and acceptance criteria before coding."},
-        {"term": "During development", "detail": "Review design/code, pair on tests, validate contracts, add component/API checks close to the change."},
-        {"term": "CI gate", "detail": "Run fast deterministic checks on each change; keep failure ownership and diagnosis clear."},
-        {"term": "Post-deploy", "detail": "Use monitoring, synthetic checks, feature flags/canaries, and rollback signals when appropriate."}
+        {"term": "Refinement", "detail": "Challenge ambiguity, examples, acceptance criteria, risks, testability, observability, and dependencies before coding."},
+        {"term": "During development", "detail": "Review design/code, pair on tests, validate contracts, and add component/API checks close to the change."},
+        {"term": "CI", "detail": "Run fast deterministic checks on each relevant change; failures should be owned, diagnosable, and acted on quickly."},
+        {"term": "Post-deploy / shift-right", "detail": "Use monitoring, synthetic checks, canaries, feature flags, and rollback signals as additional evidence after deployment."}
       ],
       "moreRows": [
-        {"term": "Whole-team quality", "detail": "Developers, testers, product, ops, security, and domain experts contribute different evidence."},
-        {"term": "Shift-right", "detail": "Production feedback complements pre-release testing; it does not justify shipping known unsafe behavior."}
+        {"term": "Whole-team quality", "detail": "Developers, testers, product, operations, security, and domain experts contribute different types of quality evidence."}
+      ]
+    },
+    {
+      "id": "release-readiness",
+      "title": "Release readiness / go-no-go evidence",
+      "scope": "Risk & Release",
+      "tags": ["Risk & Release"],
+      "meta": "Interview · Common",
+      "summary": "A release decision is a risk decision supported by evidence; pass percentage alone is not a sufficient release argument.",
+      "rows": [
+        {"term": "Critical flows", "detail": "Required user and business journeys pass in the relevant release candidate and environment."},
+        {"term": "Change coverage", "detail": "Changed areas and dependencies received appropriate confirmation and regression evidence."},
+        {"term": "Open defects", "detail": "Known defects are understood by impact, exposure, workaround, and release consequence."},
+        {"term": "Residual risk", "detail": "Untested or partially tested areas, assumptions, environment gaps, and known limitations are visible to decision-makers."},
+        {"term": "Operational readiness", "detail": "Monitoring, rollback/feature flags, migration/recovery, support, and runbook needs are ready where relevant."}
+      ]
+    },
+    {
+      "id": "useful-metrics",
+      "title": "QA metrics that answer a decision",
+      "scope": "Risk & Release",
+      "tags": ["Risk & Release"],
+      "meta": "Interview · Common",
+      "summary": "Start with the decision or question, then choose a metric; raw counts without denominator, scope, or context are easy to misuse.",
+      "rows": [
+        {"term": "Progress", "detail": "Executed vs planned relevant scope, preferably split by feature, risk, environment, or release objective."},
+        {"term": "Defect signal", "detail": "Open/closed trend, impact, age, reopen rate, or escaped defects where those measures support a decision."},
+        {"term": "Coverage", "detail": "Requirements, risks, techniques, code, platforms, or other coverage—always state what the denominator means."},
+        {"term": "Stability", "detail": "Flaky tests, environment failures, automation reliability, build/deploy health, and recurring blocker causes."}
       ],
-      "searchTerms": ["agile testing shift left shift right continuous integration CI CD whole team"]
+      "moreRows": [
+        {"term": "Avoid vanity metrics", "detail": "Number of test cases, bugs found, or automation percentage alone is not a product-quality score."},
+        {"term": "Context", "detail": "Pair metrics with timeframe, denominator, scope, trend, and threshold or decision when applicable."}
+      ]
+    },
+    {
+      "id": "environment-data",
+      "title": "Environment & test data triage",
+      "scope": "Delivery",
+      "tags": ["Delivery"],
+      "meta": "Interview · Occasional",
+      "summary": "Before declaring a product defect, verify that build, configuration, dependency, or data drift is not explaining the observation.",
+      "rows": [
+        {"term": "Build", "detail": "Exact version, commit, artifact, container image, and deployment timestamp."},
+        {"term": "Configuration", "detail": "Feature flags, URLs, locale/timezone, caches, permissions, secrets wiring, and runtime settings."},
+        {"term": "Dependencies", "detail": "Service versions, stubs/mocks, queues, third parties, database/schema migrations, and network reachability."},
+        {"term": "Data state", "detail": "Account role, ownership, seed, prior mutations, clock-dependent state, cleanup, and concurrency conditions."},
+        {"term": "Observability", "detail": "Align logs, traces, metrics, request IDs, events, and DB state around the same timestamp or correlation ID."}
+      ],
+      "moreRows": [
+        {"term": "Privacy", "detail": "Prefer synthetic or masked data and least privilege when real personal or sensitive data is unnecessary."}
+      ]
     },
     {
       "id": "root-cause-improvement",
-      "title": "Root cause & prevention",
+      "title": "Root cause & defect prevention",
       "scope": "Delivery",
-      "tags": ["Delivery", "RCA", "Process improvement"],
-      "meta": "symptom → system cause",
-      "summary": "Do not stop at developer made a mistake; find the condition that allowed the defect to be created and escape.",
+      "tags": ["Delivery"],
+      "meta": "Interview · Occasional",
+      "summary": "A useful RCA goes beyond developer made a mistake and identifies what allowed the defect to be introduced and escape.",
       "rows": [
-        {"term": "Symptom", "detail": "What users/tests observed."},
-        {"term": "Technical cause", "detail": "Immediate code/config/data/design mechanism that produced the failure."},
-        {"term": "Escape cause", "detail": "Why existing reviews/tests/monitoring did not detect it earlier."},
-        {"term": "System cause", "detail": "Requirement, process, architecture, ownership, tooling, environment, or feedback-loop weakness."},
-        {"term": "Prevention", "detail": "Change the system: clearer rule, review prompt, automated check, safer default, observability, testability, guardrail."}
+        {"term": "Symptom", "detail": "The failure that users, monitoring, or tests observed."},
+        {"term": "Technical cause", "detail": "The immediate code, configuration, data, design, dependency, or infrastructure mechanism that produced the failure."},
+        {"term": "Escape cause", "detail": "Why reviews, tests, monitoring, or release controls did not detect the problem earlier."},
+        {"term": "System cause", "detail": "A weakness in requirements, process, architecture, ownership, tooling, environment, incentives, or feedback loops."},
+        {"term": "Preventive action", "detail": "Change the system with clearer rules, safer defaults, automated checks, testability, observability, review prompts, or guardrails."}
       ],
       "moreRows": [
-        {"term": "5 Whys", "detail": "Useful as a prompt, but verify each causal link with evidence; do not force a single linear cause."},
-        {"term": "Close the loop", "detail": "Track whether the preventive action actually reduced recurrence or detection time."}
-      ],
-      "searchTerms": ["root cause analysis RCA 5 whys prevention defect escape process improvement"]
+        {"term": "5 Whys", "detail": "Use as a prompt, not a ritual; verify each causal link with evidence and allow multiple contributing causes."}
+      ]
     }
   ]
 }
