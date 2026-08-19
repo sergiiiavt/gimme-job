@@ -10,7 +10,7 @@ test("Python learning blocks use the two-panel executable runner", () => {
   assert.match(markdownRenderer, /ExecutablePythonBlock/);
   assert.match(markdownRenderer, /language !== "python"/);
   assert.match(markdownRenderer, /unsupportedRunnablePythonPatterns/);
-  assert.match(markdownRenderer, /\bprint\\s\*\\\(/);
+  assert.ok(markdownRenderer.includes("!/\\bprint\\s*\\(/.test(source)"));
   assert.match(runnerComponent, />Python</);
   assert.match(runnerComponent, />Result</);
   assert.match(runnerComponent, />Run</);
