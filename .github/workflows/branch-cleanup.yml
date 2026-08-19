@@ -15,7 +15,9 @@ permissions:
 
 jobs:
   initial-cleanup:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Delete accumulated branches once
@@ -90,6 +92,9 @@ jobs:
                   deleted += 1
                   print(f"Deleted: {branch}")
               except urllib.error.HTTPError as error:
+                  if error.code == 404:
+                      print(f"Already deleted: {branch}")
+                      continue
                   failures.append((branch, error.code))
                   print(f"Failed: {branch} ({error.code})")
 
