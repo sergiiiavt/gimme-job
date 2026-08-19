@@ -68,6 +68,73 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Diagnose SonarQube Cloud failure
+        if: failure()
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          base_url = "https://sonarcloud.io/api"
+          project_key = "sergiiiavt_gimme-job"
+          pr_number = os.environ["PR_NUMBER"]
+          token = os.environ.get("SONAR_TOKEN", "")
+          auth = base64.b64encode(f"{token}:".encode()).decode()
+
+          def request(path, params):
+              url = f"{base_url}/{path}?{urllib.parse.urlencode(params)}"
+              req = urllib.request.Request(url, headers={"Authorization": f"Basic {auth}"})
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  return json.load(response)
+
+          try:
+              status_payload = request(
+                  "qualitygates/project_status",
+                  {"projectKey": project_key, "pullRequest": pr_number},
+              )
+              project_status = status_payload.get("projectStatus", {})
+              print(f"Quality gate: {project_status.get('status', 'UNKNOWN')}")
+              for condition in project_status.get("conditions", []):
+                  if condition.get("status") == "ERROR":
+                      print(
+                          "Failed condition: "
+                          f"metric={condition.get('metricKey')} "
+                          f"actual={condition.get('actualValue')} "
+                          f"operator={condition.get('comparator')} "
+                          f"threshold={condition.get('errorThreshold')}"
+                      )
+
+              issues_payload = request(
+                  "issues/search",
+                  {
+                      "componentKeys": project_key,
+                      "pullRequest": pr_number,
+                      "resolved": "false",
+                      "types": "VULNERABILITY",
+                      "ps": 100,
+                  },
+              )
+              issues = issues_payload.get("issues", [])
+              print(f"Open vulnerabilities: {len(issues)}")
+              for issue in issues:
+                  print(
+                      "Vulnerability: "
+                      f"rule={issue.get('rule')} "
+                      f"severity={issue.get('severity')} "
+                      f"component={issue.get('component')} "
+                      f"line={issue.get('line')} "
+                      f"message={issue.get('message')}"
+                  )
+          except Exception as error:
+              print(f"Sonar diagnostics unavailable: {type(error).__name__}: {error}")
+          PY
+
   sonar-main:
     name: Refresh Sonar main
     if: github.event_name == 'push'
