@@ -38,7 +38,7 @@ The important boundary is simple:
 
 The deployment workflow therefore does not repeat lint, tests, coverage, Cloudflare dry-run validation, or Sonar analysis.
 
-## Why the workflows are separate
+## Why these decisions
 
 The previous implementation used one workflow for pull requests and `main`. A merged change was validated on the PR and then the same quality suite ran again after merge before deployment. The deployment job also built the application again.
 
@@ -52,6 +52,8 @@ That produced repeated work without creating much additional evidence:
 - the production artifact was built once in PR validation, once in post-merge validation, and once again for deployment.
 
 The refactored design validates once at the merge boundary and rebuilds only what production actually needs: the final `main` commit.
+
+The fresh production build remains intentional. Pull-request checks can run against GitHub's PR merge reference, while production must build the exact commit now present on `main`. Reusing PR artifacts would add artifact provenance and commit-matching machinery that is not justified for this repository.
 
 ## Repository map
 
@@ -127,9 +129,7 @@ After a validated PR reaches `main`, the deployment workflow performs a fresh bu
 npm run build
 ```
 
-This is intentional rather than duplicate CI. Pull-request checks can run against GitHub's PR merge reference; production must build the exact commit now present on `main`.
-
-Reusing a PR artifact would require artifact retention, lookup, trust and commit-matching logic. For this repository, rebuilding is simpler and less error-prone.
+This is intentional rather than duplicate CI. Production must build the exact commit now present on `main`.
 
 ## Production deployments are serialized
 
@@ -182,9 +182,7 @@ Conceptually:
 wrangler deploy --config <generated-config> --secrets-file <temporary-secrets-file>
 ```
 
-This matters because repeatedly running `wrangler secret put` after a code deployment creates additional Worker versions and deployments. Uploading the secrets with the code keeps one logical release as one Worker deployment.
-
-Secrets not included in the temporary file remain managed by Cloudflare. The temporary file is removed in the deployment script's cleanup path and is never committed.
+This avoids repeatedly updating Worker secrets after the code deployment. The temporary file is removed in the deployment script's cleanup path and is never committed.
 
 ## Vacancy synchronization is not deployment
 
@@ -221,6 +219,16 @@ Deployment smoke checks do not assert historical page copy such as individual le
 | live smoke check | no | yes |
 
 The repeated production build is the only deliberate overlap.
+
+## Verification
+
+Verify the delivery model at three boundaries:
+
+- **PR:** `Validate` must pass `npm run verify` and the awaited Sonar Quality Gate; no production deployment should run.
+- **Merge:** `main` protection must require the up-to-date `Validate` check, so stale or unchecked changes cannot enter the production branch.
+- **Production:** the deployment log must show D1 migrations before the single Worker deploy, followed by successful public-page and `/api/health` smoke checks.
+
+The Cloudflare dry run is part of `npm run verify`, so PR CI also exercises the same generated configuration and secrets-file deployment arguments without modifying production.
 
 ## Failure modes
 
