@@ -59,7 +59,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'analysis_created', 'analysis',
+    'automation', 'GimmeJob automation', 'analysis_created', 'analysis',
     NULL,
     CAST(NEW.score AS text) || '/100 · ' || NEW.verdict,
     json_object('mode', NEW.mode, 'score', NEW.score, 'verdict', NEW.verdict),
@@ -79,7 +79,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'analysis_regenerated', 'analysis',
+    'automation', 'GimmeJob automation', 'analysis_regenerated', 'analysis',
     CAST(OLD.score AS text) || '/100 · ' || OLD.verdict,
     CAST(NEW.score AS text) || '/100 · ' || NEW.verdict,
     json_object('mode', NEW.mode, 'score', NEW.score, 'verdict', NEW.verdict),
@@ -96,7 +96,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'resume_created', 'tailored_resume',
+    'automation', 'GimmeJob automation', 'resume_created', 'tailored_resume',
     NULL, 'Generated tailored resume', '{}', NEW.updated_at
   );
 END;
@@ -111,7 +111,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'resume_regenerated', 'tailored_resume',
+    'automation', 'GimmeJob automation', 'resume_regenerated', 'tailored_resume',
     'Existing tailored resume', 'Regenerated tailored resume', '{}', NEW.updated_at
   );
 END;
@@ -126,7 +126,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'application_draft_created', 'application_draft',
+    'automation', 'GimmeJob automation', 'application_draft_created', 'application_draft',
     NULL, 'Draft prepared for approval', '{}', NEW.updated_at
   );
 END;
@@ -146,7 +146,7 @@ BEGIN
     before_value, after_value, metadata_json, created_at
   ) VALUES (
     'audit_' || lower(hex(randomblob(16))), NEW.user_id, NEW.job_id,
-    'automation', 'GimmeJob AI', 'application_draft_regenerated', 'application_draft',
+    'automation', 'GimmeJob automation', 'application_draft_regenerated', 'application_draft',
     CASE WHEN OLD.status = 'REJECTED' THEN 'Rejected draft' ELSE 'Existing draft' END,
     'Draft prepared for approval', '{}', NEW.updated_at
   );
