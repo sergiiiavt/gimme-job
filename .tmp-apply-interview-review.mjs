@@ -113,7 +113,15 @@ function replaceOnce(source, before, after, label) {
   const path = "tests/tenant-isolation.test.ts";
   let source = read(path);
   const marker = 'test("tenant unavailable response is explicit and non-cacheable", async () => {';
-  const testBlock = `test("interview star cleanup migration removes every pre-existing star", async () => {\n  const sql = await readFile(new URL("../drizzle/0013_clear_interview_stars.sql", import.meta.url), "utf8");\n  assert.match(sql, /DELETE FROM \\`user_interview_stars\\`/);\n  assert.doesNotMatch(sql, /WHERE/);\n});\n\n`;
+  const testBlock = [
+    'test("interview star cleanup migration removes every pre-existing star", async () => {',
+    '  const sql = await readFile(new URL("../drizzle/0013_clear_interview_stars.sql", import.meta.url), "utf8");',
+    '  assert.match(sql, /DELETE FROM `user_interview_stars`/);',
+    '  assert.doesNotMatch(sql, /WHERE/);',
+    '});',
+    '',
+    '',
+  ].join("\n");
   source = replaceOnce(source, marker, testBlock + marker, "star cleanup migration regression");
   write(path, source);
 }
