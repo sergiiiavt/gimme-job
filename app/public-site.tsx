@@ -1144,9 +1144,7 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
             <span><strong>{visibleQuestions.length}</strong> rendered</span>
           </div>
         </div>
-        <div className="iq-filter-grid">
-          <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
-          <InterviewFilter emptyLabel="All prevalence" helpText="How often this exact question is likely to appear in interviews." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
+        <div className={`iq-filter-grid${mode === "personal" ? " iq-filter-grid-personal" : ""}`}>
           {mode === "personal" && (
             <button
               aria-pressed={starredOnly}
@@ -1158,6 +1156,8 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
               <span className="iq-star-filter-copy"><small>Personal</small><strong>Starred only</strong></span>
             </button>
           )}
+          <InterviewFilter emptyLabel="Most common first" helpText="Choose the order used for matching questions." label="Sort" onChange={(next) => { setSort(next[0] ?? "prevalence"); setPage(0); }} onOpenChange={(nextOpen) => setFilterOpen("sort", nextOpen)} open={openFilter === "sort"} options={interviewSortOptions} selected={[sort]} selectionMode="single"/>
+          <InterviewFilter emptyLabel="All prevalence" helpText="How often this exact question is likely to appear in interviews." label="Prevalence" onChange={setQuestionPrevalences} onOpenChange={(nextOpen) => setFilterOpen("prevalence", nextOpen)} open={openFilter === "prevalence"} options={interviewPrevalenceFilters} selected={prevalences}/>
           <InterviewFilter emptyLabel="All tags" helpText="Matches any selected tag." label="Tags" onChange={setQuestionTags} onOpenChange={(nextOpen) => setFilterOpen("tags", nextOpen)} open={openFilter === "tags"} options={interviewTags.map((tag) => ({ label: tag, value: tag }))} searchable selected={selectedTags}/>
           <InterviewFilter emptyLabel="All levels" helpText="Matches any selected seniority level." label="Seniority" onChange={setQuestionLevels} onOpenChange={(nextOpen) => setFilterOpen("levels", nextOpen)} open={openFilter === "levels"} options={interviewLevels.map((level) => ({ label: level, value: level }))} selected={levels}/>
           <button className="iq-clear" disabled={!hasActiveFilters} onClick={clearFilters}>Reset filters</button>
