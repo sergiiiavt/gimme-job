@@ -25,24 +25,25 @@ function applyLinkLayout(summary: HTMLElement, link: HTMLAnchorElement) {
   const hasStar = Boolean(summary.querySelector(".iq-star-icon"));
   Object.assign(link.style, {
     alignItems: "center",
-    background: "#fff",
-    border: "1px solid #dfe4df",
-    borderRadius: "999px",
-    color: "#66736d",
+    background: "transparent",
+    border: "0",
+    borderRadius: "0",
+    color: "#69766f",
     cursor: "pointer",
     display: "inline-flex",
-    height: "28px",
+    height: "22px",
     justifyContent: "center",
+    padding: "0",
     position: "absolute",
-    right: hasStar ? "48px" : "14px",
+    right: hasStar ? "51px" : "17px",
     textDecoration: "none",
-    top: "14px",
-    width: "28px",
+    top: "17px",
+    width: "22px",
     zIndex: "4",
   });
 
   const copy = Array.from(summary.children).find((child) => child.tagName === "DIV") as HTMLElement | undefined;
-  if (copy) copy.style.paddingRight = hasStar ? "80px" : "48px";
+  if (copy) copy.style.paddingRight = hasStar ? "76px" : "42px";
 }
 
 function createDirectLink(pathname: string, questionId: string) {
@@ -52,7 +53,9 @@ function createDirectLink(pathname: string, questionId: string) {
   link.title = "Direct link";
   link.setAttribute("aria-label", "Open direct link to this question");
   link.dataset.questionId = questionId;
-  link.innerHTML = '<svg aria-hidden="true" fill="none" height="14" viewBox="0 0 24 24" width="14"><path d="M10.2 13.8a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.41 1.41M13.8 10.2a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.41-1.41" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/></svg>';
+  link.innerHTML = '<svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16"><path d="M10.2 13.8a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.41 1.41M13.8 10.2a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.41-1.41" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/></svg>';
+  link.addEventListener("mouseenter", () => { link.style.color = "#315e9c"; });
+  link.addEventListener("mouseleave", () => { link.style.color = "#69766f"; });
   link.addEventListener("click", (event) => event.stopPropagation());
   return link;
 }
