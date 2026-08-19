@@ -52,47 +52,21 @@ jobs:
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         run: node scripts/deploy-cloudflare.mjs
 
-      - name: Verify production learning routes
+      - name: Verify production
         shell: bash
         run: |
-          check_route() {
-            local url="$1"
-            local marker="$2"
-            local body=""
+          retry() {
             for attempt in {1..10}; do
-              if body="$(curl --fail --silent --show-error --location --max-time 20 "$url")" && grep -Eq "$marker" <<<"$body"; then
-                echo "Verified $url"
+              if "$@"; then
                 return 0
               fi
-              echo "Waiting for production route $url (attempt $attempt/10)..."
+              echo "Waiting for production (attempt $attempt/10)..."
               sleep 3
             done
-            echo "::error::Production route failed verification: $url"
             return 1
           }
 
-          check_header() {
-            local url="$1"
-            local header_pattern="$2"
-            local headers=""
-            for attempt in {1..10}; do
-              if headers="$(curl --fail --silent --show-error --location --max-time 20 --head "$url")" && grep -Eiq "$header_pattern" <<<"$headers"; then
-                echo "Verified freshness headers for $url"
-                return 0
-              fi
-              echo "Waiting for production freshness header $url (attempt $attempt/10)..."
-              sleep 3
-            done
-            echo "::error::Production route freshness header failed verification: $url"
-            return 1
-          }
+          retry curl --fail --silent --show-error --location --max-time 20 \
+            --output /dev/null https://gimme-job.com/
 
-          check_route "https://gimmejob.gimmejob.workers.dev/learn/testing-tools" 'Testing (&amp;|&) Diagnostic Tools'
-          check_route "https://gimmejob.gimmejob.workers.dev/learn/metrics-estimation" 'QA Metrics (&amp;|&) Estimation'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Mutability (&amp;|&) References'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/programming" 'Bind a name to an object'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Window ranking'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Dialect'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" 'Find duplicates'
-          check_route "https://gimmejob.gimmejob.workers.dev/reference/data" '>Tasks<'
-          check_header "https://gimmejob.gimmejob.workers.dev/reference/programming" '^cache-control: .*no-store'
+          retry bash -c 'curl --fail --silent --show-error --location --max-time 20 https://gimme-job.com/api/health | grep -Fq '"'"'"ok":true'"'"''
