@@ -25,6 +25,7 @@ jobs:
           cache: npm
       - name: Apply scoped source changes
         run: |
+          node scripts/_agent-fix-personal-stars-migration.mjs
           node scripts/_agent-apply-personal-stars-prevalence.mjs
           node scripts/generate-interview-expansion.mjs
       - name: Install dependencies
@@ -33,6 +34,7 @@ jobs:
         run: npm run verify
       - name: Commit verified changes and remove temporary automation
         run: |
+          rm scripts/_agent-fix-personal-stars-migration.mjs
           rm scripts/_agent-apply-personal-stars-prevalence.mjs
           rm .github/workflows/_agent-apply-personal-stars-prevalence.yml
           git config user.name "github-actions[bot]"
