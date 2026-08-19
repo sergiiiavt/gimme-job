@@ -8,9 +8,9 @@ const wranglerCli = path.join(projectRoot, "node_modules", "wrangler", "bin", "w
 const artifactConfigPath = path.join(projectRoot, "dist", "server", "wrangler.json");
 const generatedConfigPath = path.join(projectRoot, "dist", "server", "wrangler.generated.json");
 const wranglerRuntimePath = path.join(projectRoot, ".wrangler");
+const deploySecretsPath = path.join(wranglerRuntimePath, "deploy-secrets.json");
 const databaseName = "gimmejob-db";
 const dryRunDatabaseId = "00000000-0000-4000-8000-000000000000";
-const productionUrl = "https://gimmejob.gimmejob.workers.dev";
 
 function requiredEnvironment(name) {
   const value = process.env[name]?.trim();
@@ -28,7 +28,6 @@ function enabledEnvironment(name) {
 
 function runWrangler(args, options = {}) {
   const capture = options.capture === true;
-  const hasInput = typeof options.input === "string";
   const result = spawnSync(process.execPath, [wranglerCli, ...args], {
     cwd: projectRoot,
     encoding: "utf8",
@@ -39,8 +38,7 @@ function runWrangler(args, options = {}) {
       WRANGLER_SEND_METRICS: "false",
       WRANGLER_WRITE_LOGS: "false",
     },
-    input: options.input,
-    stdio: capture ? ["ignore", "pipe", "inherit"] : hasInput ? ["pipe", "inherit", "inherit"] : "inherit",
+    stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit",
   });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`Wrangler failed: ${args.join(" ")}`);
@@ -122,47 +120,45 @@ async function writeDeployConfig(id, multiUserEnabled = false) {
   await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, { mode: 0o600 });
 }
 
+async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth }) {
+  const secrets = {
+    APP_PASSWORD: appPassword,
+    GRAFANA_READ_TOKEN: grafanaReadToken,
+    N8N_INGEST_TOKEN: n8nIngestToken,
+  };
+
+  if (googleAuth.configured) {
+    secrets.GOOGLE_OAUTH_CLIENT_ID = googleAuth.clientId;
+    secrets.GOOGLE_OAUTH_CLIENT_SECRET = googleAuth.clientSecret;
+    secrets.GMAIL_TOKEN_ENCRYPTION_KEY = googleAuth.encryptionKey;
+  }
+
+  const openAiApiKey = optionalEnvironment("OPENAI_API_KEY");
+  if (openAiApiKey) {
+    secrets.OPENAI_API_KEY = openAiApiKey;
+    const openAiModel = optionalEnvironment("OPENAI_MODEL");
+    if (openAiModel) secrets.OPENAI_MODEL = openAiModel;
+  }
+
+  await writeFile(deploySecretsPath, `${JSON.stringify(secrets)}\n`, { mode: 0o600 });
+}
+
 async function validateConfig() {
   await ensureBuildArtifact();
-  await writeDeployConfig(dryRunDatabaseId, false);
   try {
-    runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath]);
+    await writeDeployConfig(dryRunDatabaseId, false);
+    await writeFile(deploySecretsPath, `${JSON.stringify({
+      APP_PASSWORD: "dry-run-app-password",
+      GRAFANA_READ_TOKEN: "dry-run-grafana-token",
+      N8N_INGEST_TOKEN: "dry-run-n8n-token",
+    })}\n`, { mode: 0o600 });
+    runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
   } finally {
-    await rm(generatedConfigPath, { force: true });
+    await Promise.all([
+      rm(generatedConfigPath, { force: true }),
+      rm(deploySecretsPath, { force: true }),
+    ]);
   }
-}
-
-async function syncCurrentVacancies(n8nIngestToken) {
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    const response = await fetch(`${productionUrl}/internal/n8n/vacancies-sync`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${n8nIngestToken}`, "content-type": "application/json", "x-gimmejob-trigger": "deployment" },
-      body: "{}",
-      signal: AbortSignal.timeout(120_000),
-    });
-    if (response.ok) {
-      const payload = await response.json();
-      const result = payload.result ?? {};
-      const errors = Array.isArray(result.errors) ? result.errors : [];
-      console.log(`Vacancy sync complete: ${result.seen ?? 0} seen, ${result.relevant ?? 0} relevant, ${result.rejected ?? 0} rejected, ${result.duplicates ?? 0} duplicates, ${result.inserted ?? 0} inserted, ${result.updated ?? 0} updated, ${errors.length} source errors.`);
-      for (const sourceError of errors) {
-        const source = typeof sourceError?.source === "string" ? sourceError.source : "unknown-source";
-        const error = typeof sourceError?.error === "string" ? sourceError.error : "Unknown source failure";
-        console.warn(`Vacancy source error [${source}]: ${error}`);
-      }
-      return;
-    }
-    if (![401, 500, 502, 503, 504].includes(response.status) || attempt === 4) {
-      const body = await response.text().catch(() => "");
-      throw new Error(`Cloud vacancy sync returned HTTP ${response.status}${body ? `: ${body.slice(0, 300)}` : ""}.`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 2_000 * attempt));
-  }
-}
-
-function putSecret(name, value) {
-  console.log(`Updating ${name}...`);
-  runWrangler(["secret", "put", name, "--config", generatedConfigPath], { input: `${value}\n` });
 }
 
 async function main() {
@@ -195,32 +191,20 @@ async function main() {
   }
   const id = databaseId(database);
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
-  await writeDeployConfig(id, multiUserEnabled);
 
   try {
+    await writeDeployConfig(id, multiUserEnabled);
+    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth });
     console.log("Applying D1 migrations...");
     runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
-    runWrangler(["deploy", "--config", generatedConfigPath]);
-
-    putSecret("APP_PASSWORD", appPassword);
-    putSecret("GRAFANA_READ_TOKEN", grafanaReadToken);
-    putSecret("N8N_INGEST_TOKEN", n8nIngestToken);
-    if (googleAuth.configured) {
-      putSecret("GOOGLE_OAUTH_CLIENT_ID", googleAuth.clientId);
-      putSecret("GOOGLE_OAUTH_CLIENT_SECRET", googleAuth.clientSecret);
-      putSecret("GMAIL_TOKEN_ENCRYPTION_KEY", googleAuth.encryptionKey);
-    }
-    if (process.env.OPENAI_API_KEY) {
-      putSecret("OPENAI_API_KEY", process.env.OPENAI_API_KEY);
-      if (process.env.OPENAI_MODEL) putSecret("OPENAI_MODEL", process.env.OPENAI_MODEL);
-    }
-
-    console.log("Refreshing the shared vacancy catalog through the protected intake endpoint...");
-    await syncCurrentVacancies(n8nIngestToken);
+    runWrangler(["deploy", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
     console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
-    await rm(generatedConfigPath, { force: true });
+    await Promise.all([
+      rm(generatedConfigPath, { force: true }),
+      rm(deploySecretsPath, { force: true }),
+    ]);
   }
 }
 

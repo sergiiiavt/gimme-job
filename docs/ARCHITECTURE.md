@@ -54,7 +54,11 @@ The old direct-Gmail n8n ingest endpoint remains available for backward compatib
 
 `AGENTS.md` is the cross-agent repository policy. Tool-specific entrypoints such as `CLAUDE.md` and `.github/copilot-instructions.md` defer to it instead of maintaining independent copies. `package.json` is the executable validation source of truth: `npm run verify:fast` is intended for iteration and `npm run verify` mirrors all deterministic CI checks that can run without repository secrets.
 
-GitHub Actions installs dependencies, runs `npm run verify`, then runs the credentialed SonarQube Cloud quality gate. On `main`, the same workflow can provision a named D1 database, apply versioned migrations, deploy the Worker, and rotate provider-managed secrets. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
+Delivery has two intentionally separate workflows. Pull requests run `npm run verify` once and then the credentialed SonarQube Cloud quality gate. After a validated PR is merged, the production workflow builds the actual `main` commit, applies D1 migrations, uploads the Worker and runtime secrets in one Wrangler deployment, and performs lightweight production smoke checks. Production deployment does not repeat lint, tests, coverage, the Cloudflare dry run, or Sonar analysis.
+
+The code-quality workflow also refreshes SonarQube Cloud's `main` baseline after each merge. That refresh runs only the build and coverage collection needed for accurate Sonar main-branch and future PR comparisons; it does not rerun the full repository verification and it does not gate or serialize production deployment.
+
+Production deployments are serialized and are not cancelled by newer `main` pushes. Vacancy synchronization remains a separate scheduled operational workflow rather than part of code deployment. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
 
 The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`.
 
