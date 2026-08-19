@@ -1,329 +1,276 @@
 # Real implementation: GimmeJob production deployment gates
 
-> **CASE STUDY · GIMMEJOB** — This chapter traces the exact production delivery path used by the repository and shows how to reproduce the same gate model in another project.
+> **CASE STUDY · GIMMEJOB** — This chapter traces the production delivery path used by the repository and explains why validation and deployment are intentionally separate.
 
 ## What we are building
 
-GimmeJob uses one main GitHub Actions workflow for pull-request validation and production deployment. The same validation sequence runs for both pull requests and `main`, but the actual Cloudflare deployment step is conditionally enabled only for a push or manual workflow dispatch.
+GimmeJob uses two GitHub Actions workflows with different responsibilities:
 
 ```diagram
-Pull request -----------------------------+
-                                           |
-Push to main ------------------------------+--> validate job
-                                           |       |
-Manual workflow dispatch -----------------+       +--> npm ci --ignore-scripts
-                                                   +--> lint
-                                                   +--> agent type-check
-                                                   +--> Drizzle schema drift check
-                                                   +--> content validation
-                                                   +--> Rewild asset validation
-                                                   +--> production build
-                                                   +--> tests + LCOV coverage
-                                                   +--> Cloudflare artifact validation
-                                                   +--> SonarQube Cloud scan + WAIT for Quality Gate
-                                                           |
-                                                           +--> fail: stop
-                                                           |
-                                                           +--> pass
-                                                                  |
-                                                                  v
-                                          Is event push/workflow_dispatch?
-                                                |            |
-                                               no           yes
-                                                |            |
-                                         validation only     v
-                                                     deploy Worker + D1
+Pull request
+    |
+    v
+PR CI
+    +--> npm ci --ignore-scripts
+    +--> npm run verify
+    +--> SonarQube Cloud Quality Gate
+    |
+    +--> fail: PR cannot merge
+    |
+    +--> pass
+            |
+            v
+      merge to main
+            |
+            v
+Production deploy
+    +--> npm ci --ignore-scripts
+    +--> build actual main commit
+    +--> apply D1 migrations
+    +--> deploy Worker + runtime secrets once
+    +--> lightweight production smoke checks
 ```
 
-The workflow therefore has two decisions: **Is the revision technically acceptable?** and **Is this workflow invocation allowed to modify production?**
+The important boundary is simple:
 
-## Requirements and constraints
+- **PR CI answers:** is this change acceptable to merge?
+- **production deployment answers:** can this already-approved `main` revision be released successfully?
 
-The production delivery flow is designed around several explicit requirements:
+The deployment workflow therefore does not repeat lint, tests, coverage, Cloudflare dry-run validation, or Sonar analysis.
 
-- every pull request must run the repository validation suite;
-- pull requests must never deploy production;
-- a push to `main` must pass the same validation before deployment;
-- generated Drizzle migration metadata must match the committed schema;
-- learning/interview content invariants must be validated as code;
-- test coverage must be collected in LCOV form for Sonar analysis;
-- the Cloudflare artifact must be checked before a real deployment;
-- the SonarQube Cloud Quality Gate must finish successfully before deployment continues;
-- production credentials must come from GitHub secrets and variables;
-- D1 migrations must be applied before the new Worker revision is deployed.
+## Why the workflows are separate
+
+The previous implementation used one workflow for pull requests and `main`. A merged change was validated on the PR and then the same quality suite ran again after merge before deployment. The deployment job also built the application again.
+
+That produced repeated work without creating much additional evidence:
+
+- lint and type checking ran twice;
+- content and schema validation ran twice;
+- tests and coverage ran twice;
+- the Cloudflare dry run ran twice;
+- Sonar analysis ran twice;
+- the production artifact was built once in PR validation, once in post-merge validation, and once again for deployment.
+
+The refactored design validates once at the merge boundary and rebuilds only what production actually needs: the final `main` commit.
 
 ## Repository map
 
-| File | Responsibility | Learning point |
-| --- | --- | --- |
-| `.github/workflows/ci.yml` | event triggers, validation order, Sonar gate, deployment condition, secret injection | the delivery policy lives in version control |
-| `scripts/deploy-cloudflare.mjs` | deployment preconditions, D1 discovery/creation, migration, Worker deployment, secret updates | deployment itself is also executable policy |
-| `sonar-project.properties` | Sonar source/coverage configuration and exclusions | quality analysis must match the build/test model |
-| `drizzle/` and `db/schema.ts` | database schema and migration history | schema drift is checked before deployment |
-| `scripts/validate-*-content.mjs` | content-specific invariants | non-code production data can have gates too |
+| File | Responsibility |
+| --- | --- |
+| `.github/workflows/ci.yml` | pull-request validation and Sonar quality gate |
+| `.github/workflows/deploy.yml` | serialized production deployment after `main` changes |
+| `package.json` | canonical deterministic verification command |
+| `scripts/deploy-cloudflare.mjs` | D1 preparation, migrations, generated Wrangler config, one Worker deployment |
+| `sonar-project.properties` | Sonar source and coverage configuration |
+| `drizzle/` and `db/schema.ts` | database schema and migration history |
 
-The workflow is small enough to read end to end, which makes it a useful teaching example.
+## PR gate: canonical repository verification
 
-## Gate 1: dependency installation
-
-The workflow checks out the full repository history and uses the pinned Node runtime expected by the project.
-
-Dependencies are installed with:
+The PR workflow installs from the committed lockfile:
 
 ```bash
 npm ci --ignore-scripts
 ```
 
-`npm ci` makes the install depend on the committed lockfile. `--ignore-scripts` avoids executing arbitrary package lifecycle scripts during dependency installation. The important learning point is that the dependency step is part of the trust boundary, not merely setup boilerplate.
-
-## Gate 2: lint and agent type-check
-
-Two fast source-level gates run early:
+It then runs the repository's single deterministic quality contract:
 
 ```bash
-npm run lint
-npm run check:agent
+npm run verify
 ```
 
-Lint catches configured static-rule violations. The agent type-check verifies the separately configured TypeScript surface used by the local agent code.
+That command already contains the detailed gates:
 
-If either command exits non-zero, GitHub Actions stops the job and no later deployment stage runs.
-
-## Gate 3: database schema drift
-
-The workflow regenerates Drizzle migration metadata and then asks Git whether generation changed committed schema/migration files.
-
-```bash
-npm run db:generate
-git diff --exit-code -- db/schema.ts drizzle
+```text
+lint
+agent TypeScript check
+content validators
+asset validators
+Drizzle generation drift check
+production build
+tests + LCOV coverage
+Cloudflare deployment dry run
 ```
 
-This converts a common repository hygiene problem into a deployment gate. If a developer changed the schema but forgot to commit the generated migration result, CI rejects the revision before production.
+Keeping this logic in `package.json` avoids duplicating the same list in workflow YAML.
 
-## Gate 4: structured content validation
+## PR gate: SonarQube Cloud
 
-GimmeJob contains large structured knowledge bases, so content correctness is treated as part of application correctness.
-
-```bash
-npm run check:content
-```
-
-That command runs validators for interview material, Python content, automation curriculum, QA fundamentals, and the Cloud & DevOps curriculum introduced by this change.
-
-The important pattern is transferable: if production behavior depends on JSON, Markdown, configuration, fixtures, prompts, policies, or other structured content, encode the assumptions and run them as gates.
-
-## Gate 5: production build
-
-The workflow creates the real production artifact before running the later platform-specific checks.
-
-```bash
-npm run build
-```
-
-A successful development server is not sufficient evidence. The actual production build path must succeed because it can exercise different bundling, server/runtime, and asset behavior.
-
-## Gate 6: automated tests and coverage
-
-The repository then runs the test process that produces LCOV coverage:
-
-```bash
-npm run test:coverage
-```
-
-The output is used by SonarQube Cloud later in the job. This is an example of evidence flowing between gates: tests produce both pass/fail behavior and coverage data that another policy engine consumes.
-
-## Gate 7: Cloudflare deployment-artifact validation
-
-Before using production Cloudflare credentials to publish the application, the repository executes its deployment script in dry-run mode through:
-
-```bash
-npm run check:cloudflare
-```
-
-The deploy script verifies that the production artifact exists, generates a temporary deployment configuration, attaches a dry-run D1 binding, and invokes Wrangler deploy with `--dry-run`.
-
-```diagram
-Production build
-      |
-      v
-check:cloudflare
-      |
-      +--> confirm dist/server artifact exists
-      +--> create temporary Wrangler config
-      +--> attach dry-run D1 binding
-      +--> wrangler deploy --dry-run
-      |
-      v
-Artifact is structurally deployable
-```
-
-This gate checks the actual target-platform packaging rather than assuming that a generic application build is enough.
-
-## Gate 8: SonarQube Cloud Quality Gate
-
-The Sonar step is configured with two critical arguments:
+After deterministic verification succeeds, the workflow runs SonarQube Cloud and waits for the remote Quality Gate:
 
 ```text
 -Dsonar.qualitygate.wait=true
 -Dsonar.qualitygate.timeout=300
 ```
 
-`wait=true` changes Sonar from a reporting-only integration into a real deployment gate. The workflow does not simply upload analysis and continue. It waits for the server-side Quality Gate result.
+The PR is not considered acceptable until the server-side quality decision finishes successfully.
 
-```diagram
-GitHub Actions
-      |
-      v
-Submit Sonar analysis
-      |
-      v
-Wait for server-side Quality Gate
-      |
-      +--> FAIL -> CI job fails -> no deploy
-      |
-      +--> PASS -> continue
+## Main protection is part of the design
+
+Removing duplicate post-merge CI is safe only when `main` cannot be changed arbitrarily.
+
+The companion GitHub repository rule should require:
+
+1. changes to `main` through a pull request;
+2. the `Validate` status check before merge;
+3. the PR branch to be up to date with `main` before merge;
+4. no direct force-push or branch deletion bypass.
+
+For a solo-maintainer repository, the PR requirement does not need to require another human approval. The goal is to force the validated merge path, not to invent an unnecessary reviewer process.
+
+The "branch must be up to date" rule matters because PR evidence must apply to the state that will actually be merged. If another PR changed `main` after a check passed, the stale PR should be revalidated against the new base before merge.
+
+## Production build
+
+After a validated PR reaches `main`, the deployment workflow performs a fresh build:
+
+```bash
+npm run build
 ```
 
-This behavior is especially important because an asynchronous quality platform can otherwise report a red project after the application has already been deployed.
+This is intentional rather than duplicate CI. Pull-request checks can run against GitHub's PR merge reference; production must build the exact commit now present on `main`.
 
-## Gate 9: production-event condition
+Reusing a PR artifact would require artifact retention, lookup, trust and commit-matching logic. For this repository, rebuilding is simpler and less error-prone.
 
-Passing every technical gate still does not automatically mean “deploy.” The deployment step contains an explicit event condition:
+## Production deployments are serialized
+
+Production uses one concurrency group with:
 
 ```yaml
-if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+cancel-in-progress: false
 ```
 
-For this workflow, a pull request therefore reaches the end of validation and stops. A push to `main` or a manual dispatch is eligible to execute the production step.
+A newer push therefore does not cancel a deployment that may already be applying migrations or publishing a Worker revision. Releases queue and complete in order instead.
 
-This is a deployment gate even though it is not a test.
+Cancelling stale PR validation is useful. Cancelling an in-progress production mutation is not.
 
-## Step 10: validate deployment secrets
+## D1 migration boundary
 
-The production step receives its credentials from GitHub secrets and configuration from repository variables.
+`scripts/deploy-cloudflare.mjs` refuses a real deployment outside GitHub Actions.
 
-Before invoking the deploy implementation, the shell wrapper checks for the core required secrets. If they are not configured, the current workflow deliberately logs a notice and exits the deployment step successfully rather than attempting a partial Cloudflare deployment.
+For production it:
 
-That behavior should be read as an explicit project policy. In another project you might choose to fail instead. The key lesson is that missing production configuration must have intentional semantics.
-
-## Step 11: prepare D1 and apply migrations
-
-`scripts/deploy-cloudflare.mjs` refuses to perform a real production deployment unless it is running inside GitHub Actions.
-
-It then resolves or creates the `gimmejob-db` D1 database, generates the production Wrangler configuration, and applies remote migrations before publishing the new Worker revision.
+1. validates required environment values;
+2. resolves or creates `gimmejob-db`;
+3. generates the production Wrangler configuration;
+4. applies remote D1 migrations;
+5. deploys the Worker.
 
 ```diagram
-Validated revision
-      |
-      v
-Resolve production D1 database
-      |
-      +--> create database if absent
-      |
-      v
-Generate production Wrangler config
-      |
-      v
-Apply D1 migrations --remote
-      |
-      +--> failure -> stop deployment
-      |
-      v
-Deploy Worker
+main build
+    |
+    v
+resolve D1
+    |
+    v
+apply migrations
+    |
+    +--> fail: stop
+    |
+    v
+deploy Worker
 ```
 
-Migration failure therefore prevents the application deployment from continuing.
+Migration failure prevents the Worker release from continuing.
 
-## Step 12: deploy the Worker and runtime secrets
+## Runtime secrets are deployed with the Worker
 
-After migrations succeed, Wrangler deploy publishes the production Worker.
+The deployment receives secret values from GitHub Actions, writes a temporary runner-local secrets file with restricted permissions, and passes it to Wrangler with the Worker deployment.
 
-The deploy script then writes application secrets such as the application password, Grafana read token, n8n ingest token, optional Google OAuth credentials, and optional OpenAI credentials using Wrangler's secret interface.
+Conceptually:
 
-The repository contains the **names and validation rules** for secrets, while GitHub contains the actual production values.
+```bash
+wrangler deploy --config <generated-config> --secrets-file <temporary-secrets-file>
+```
 
-## Reproduce it yourself
+This matters because repeatedly running `wrangler secret put` after a code deployment creates additional Worker versions and deployments. Uploading the secrets with the code keeps one logical release as one Worker deployment.
 
-To reproduce this gate model in another repository:
+Secrets not included in the temporary file remain managed by Cloudflare. The temporary file is removed in the deployment script's cleanup path and is never committed.
 
-1. Configure one workflow for both pull requests and the protected production branch.
-2. Put cheap deterministic checks first: dependency policy, lint, and type-checking.
-3. Add generated-artifact drift checks for anything developers can forget to commit.
-4. Add validators for structured production content, not only source code.
-5. Build the exact production artifact in CI.
-6. Run automated tests and export coverage in the format required by your quality platform.
-7. Add a target-platform dry run before a real deployment.
-8. Configure external analysis so CI waits for its final pass/fail decision.
-9. Encode the production-event condition directly in workflow YAML.
-10. Inject production credentials only into the deployment step.
-11. Make the deployment script validate that it is running in the intended environment.
-12. Apply database migrations before publishing the application revision when your compatibility model requires that order.
-13. Fail immediately when a migration or deployment command fails.
-14. Add post-deployment health verification if your runtime requires stronger confirmation than the platform deployment response.
+## Vacancy synchronization is not deployment
 
-The exact commands will differ, but the evidence flow should remain explicit.
+Vacancy collection is operational data work, not part of releasing application code.
 
-## Verification
+The old deployment path refreshed the vacancy catalog after publishing the Worker. That created an undesirable dependency: a scraper or source failure could make an otherwise successful code deployment appear failed.
 
-You can verify the design at three levels.
+Vacancy synchronization now stays in its own scheduled workflow. Code deployment and data ingestion can therefore fail, retry and be monitored independently.
 
-**Pull request behavior:** open a PR and confirm the validation job runs while the Cloudflare deployment step is skipped.
+## Post-deployment smoke checks
 
-**Gate behavior:** intentionally break one safe non-production condition on a branch, such as lint or a content invariant, and confirm the job fails before reaching deployment eligibility.
+The production workflow keeps smoke verification, but only for runtime health:
 
-**Main deployment behavior:** after merging an acceptable revision, confirm the `main` workflow passes every gate before the deployment step starts.
+- the public site must respond successfully;
+- `/api/health` must return its successful health payload.
 
-For Sonar specifically, the workflow log should show that the action waits for the Quality Gate result rather than ending immediately after analysis submission.
+Deployment smoke checks do not assert historical page copy such as individual learning-card labels. Those assertions belong in repository tests and content validators, where a copy change does not create a false infrastructure incident.
 
-For the production deploy, the execution order should show D1 migrations before the Worker publish command.
+## What still runs only once
 
-## Why these decisions
+| Check | PR | Deploy |
+| --- | --- | --- |
+| lint | yes | no |
+| type check | yes | no |
+| content validation | yes | no |
+| Drizzle drift check | yes | no |
+| tests | yes | no |
+| coverage | yes | no |
+| Cloudflare dry run | yes | no |
+| Sonar Quality Gate | yes | no |
+| production build | yes | yes, exact `main` commit |
+| D1 remote migrations | no | yes |
+| real Worker deployment | no | yes |
+| live smoke check | no | yes |
 
-**Why one validation job?** The current repository is small enough that a linear job is easy to understand and guarantees ordering without cross-job artifact complexity.
-
-**Why run validation again on `main` after PR checks?** The merge result is the production candidate. Revalidating it avoids treating earlier PR evidence as automatically valid for a different commit SHA.
-
-**Why make content validation a gate?** The site ships knowledge-base data as part of the product. Broken taxonomy, missing source references, or malformed Markdown can be production defects even when TypeScript compiles.
-
-**Why wait for Sonar?** A Quality Gate only protects deployment when its final result controls the workflow.
-
-**Why validate the Cloudflare artifact before deployment?** Build success and target-platform deployability are different questions.
-
-**Why keep deployment logic in a script instead of a long YAML block?** Complex sequencing, validation, D1 discovery, temporary configuration generation, and secret updates are easier to test and reason about as executable application code than as deeply nested workflow shell fragments.
+The repeated production build is the only deliberate overlap.
 
 ## Failure modes
 
-| Failure | Gate that should catch it | Expected result |
-| --- | --- | --- |
-| ESLint violation | lint | job stops before build |
-| Type error in agent code | type-check | job stops before build |
-| schema changed without committed generated migration | Drizzle drift check | `git diff --exit-code` fails |
-| malformed learning taxonomy | content validator | content gate fails |
-| production bundling problem | build | no test/deploy stage proceeds |
-| failing test | test coverage step | no artifact/Sonar/deploy continuation |
-| malformed Cloudflare artifact | dry-run artifact gate | no production Wrangler deploy |
-| Sonar Quality Gate red | awaited Sonar step | CI fails and deployment is blocked |
-| PR event | deployment event condition | validation succeeds, deploy is skipped |
-| D1 migration error | deployment script | Worker publish does not continue |
-| missing required runtime secret | deployment precondition | deployment follows the workflow's explicit missing-secret policy |
+| Failure | Where it should fail |
+| --- | --- |
+| ESLint violation | PR CI |
+| agent TypeScript error | PR CI |
+| malformed content | PR CI |
+| missing generated migration | PR CI |
+| failing automated test | PR CI |
+| insufficient coverage / Sonar issue | PR CI |
+| malformed Cloudflare artifact | PR CI dry run |
+| stale PR after `main` changed | GitHub branch protection / required fresh check |
+| missing production secret | deployment script |
+| D1 migration failure | deployment script before Worker publish |
+| Cloudflare deployment failure | deployment script |
+| public runtime unavailable after release | production smoke check |
+| vacancy source unavailable | vacancy-sync workflow, not code deployment |
 
-A useful pipeline makes the location of failure meaningful. The stage that rejects a revision should tell you which class of evidence is missing.
+A useful pipeline makes the location of failure meaningful.
 
-## Current boundaries and future extensions
+## Reproduce this model
 
-The current production pipeline is automatic after a successful `main` validation. It does **not** currently use a GitHub Environment manual approval as an additional production gate. That is a conscious description of the present implementation, not an omitted tutorial step.
-
-The workflow also focuses mainly on pre-deployment evidence. A future extension could add a dedicated post-deployment synthetic health check, deployment environment approvals, canary strategy, or automatic rollback. Those would complement the existing gates rather than replace them.
+1. Put deterministic quality checks behind one canonical command.
+2. Run that command on pull requests, not again after merge.
+3. Add any credentialed remote quality service to the PR gate.
+4. Protect the production branch so only validated, up-to-date PRs can merge.
+5. Build the exact production commit in the deployment workflow.
+6. Serialize production mutations and do not cancel them mid-run.
+7. Keep migrations immediately before the application release when compatibility requires it.
+8. Upload runtime secrets with the Worker release instead of creating multiple secret-only releases.
+9. Keep data collection, scheduled jobs and other operational workflows independent from code deployment.
+10. Use a small health-oriented post-deployment smoke test; keep regression assertions in the test suite.
 
 ## Summary
 
-GimmeJob's production deployment is a chain of explicit evidence. Pull requests and `main` both pass source, schema, content, build, test, coverage, target-platform, and Sonar gates. Only eligible events may enter the production step. The deploy script then prepares D1, applies migrations, publishes the Worker, and writes runtime secrets.
+The optimized GimmeJob pipeline does less work while preserving the important evidence boundary:
 
-The practical lesson is that “automatic deployment” should never mean “deploy immediately after push.” It should mean **automatically deploy when the repository can prove that the configured release policy has been satisfied**.
+```text
+PR = prove quality once
+main = release the proven change
+production smoke = prove the release is alive
+```
+
+The goal is not to maximize the number of gates. It is to put each gate in the one place where it provides useful evidence.
 
 ## Sources
 
-- [CI and Cloudflare deploy workflow](https://github.com/sergiiiavt/gimme-job/blob/main/.github/workflows/ci.yml)
+- [PR CI workflow](https://github.com/sergiiiavt/gimme-job/blob/main/.github/workflows/ci.yml)
+- [Production deploy workflow](https://github.com/sergiiiavt/gimme-job/blob/main/.github/workflows/deploy.yml)
 - [Cloudflare deployment implementation](https://github.com/sergiiiavt/gimme-job/blob/main/scripts/deploy-cloudflare.mjs)
 - [GimmeJob SonarQube Cloud project](https://sonarcloud.io/summary/overall?id=sergiiiavt_gimme-job&branch=main)
 - [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/)
