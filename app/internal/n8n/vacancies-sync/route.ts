@@ -2,8 +2,12 @@ import { handleDouVacancyImport } from "../../../api/_dou-vacancy-import";
 import { upsertImportedVacancies } from "../../../api/_vacancy-import";
 import { syncVacancySources } from "../../../api/_vacancy-intake";
 import { bearerToken, constantTimeEqual } from "../email-events/email-event";
+import { handleVacancyAutomationActivity } from "./activity.ts";
 
-type VacancySyncEnv = { N8N_INGEST_TOKEN?: string };
+type VacancySyncEnv = {
+  DB?: D1Database;
+  N8N_INGEST_TOKEN?: string;
+};
 
 async function runtimeEnv(): Promise<VacancySyncEnv> {
   return (await import("cloudflare:workers")).env as unknown as VacancySyncEnv;
@@ -35,6 +39,10 @@ function authorize(request: Request, env: VacancySyncEnv): Response | null {
       "x-robots-tag": "noindex, nofollow, noarchive",
     },
   });
+}
+
+export async function GET(request: Request): Promise<Response> {
+  return handleVacancyAutomationActivity(request, await runtimeEnv());
 }
 
 export async function POST(request: Request): Promise<Response> {
