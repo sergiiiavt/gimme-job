@@ -6,18 +6,6 @@
   font-weight: 400 !important;
 }
 
-.tocRow {
-  align-items: center;
-  display: grid;
-  gap: 6px;
-  grid-template-columns: minmax(0, 1fr) 28px;
-}
-
-.tocTextLink {
-  min-width: 0;
-}
-
-.tocDirectLink,
 .headingDirectLink,
 .pagerDirectLink {
   align-items: center;
@@ -34,14 +22,12 @@
   width: 28px;
 }
 
-.tocDirectLink svg,
 .headingDirectLink svg,
 .pagerDirectLink svg {
   display: block;
   flex: 0 0 auto;
 }
 
-.tocDirectLink:hover,
 .headingDirectLink:hover,
 .pagerDirectLink:hover {
   background: #f5f8f6 !important;
