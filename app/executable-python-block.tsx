@@ -16,6 +16,10 @@ const LOAD_TIMEOUT_MS = 30_000;
 const EXECUTION_TIMEOUT_MS = 5_000;
 
 export default function ExecutablePythonBlock({ code }: { code: string }) {
+  return <ExecutablePythonBlockInstance code={code} key={code} />;
+}
+
+function ExecutablePythonBlockInstance({ code }: { code: string }) {
   const [draft, setDraft] = useState(code);
   const [output, setOutput] = useState("Run the code to see the result.");
   const [status, setStatus] = useState<RunnerStatus>("idle");
