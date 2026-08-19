@@ -14,13 +14,16 @@ test("QA and Python interview lists mount direct question links", async () => {
   assert.match(pythonPage, /InterviewQuestionLinkOverlay pathname="\/interview\/python" questions=\{pythonInterviewCatalog\.questions\}/);
 });
 
-test("question link overlay maps visible EN or UA titles to stable question IDs", async () => {
+test("question link overlay inserts real anchors for rendered EN or UA question cards", async () => {
   const overlay = await read("app/interview-question-link-overlay.tsx");
 
   assert.match(overlay, /questionDeepLinkHref\(pathname, questionId\)/);
   assert.match(overlay, /question\.questionUk/);
+  assert.match(overlay, /document\.createElement\("a"\)/);
+  assert.match(overlay, /summary\.appendChild\(link\)/);
   assert.match(overlay, /MutationObserver/);
-  assert.match(overlay, /aria-label="Open direct link to this question"/);
-  assert.match(overlay, /title="Direct link"/);
+  assert.match(overlay, /setAttribute\("aria-label", "Open direct link to this question"\)/);
+  assert.match(overlay, /link\.title = "Direct link"/);
   assert.match(overlay, /iq-question-direct-link/);
+  assert.doesNotMatch(overlay, /createPortal/);
 });
