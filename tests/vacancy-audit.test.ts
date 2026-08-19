@@ -32,7 +32,7 @@ function fakeDb() {
               id: "audit-1",
               job_id: "job-1",
               actor_type: "automation",
-              actor_label: "GimmeJob AI",
+              actor_label: "GimmeJob automation",
               action: "analysis_created",
               field: "analysis",
               before_value: null,
@@ -59,7 +59,7 @@ test("vacancy audit is tenant-scoped and maps actor/change details", async () =>
       id: "audit-1",
       jobId: "job-1",
       actorType: "automation",
-      actorLabel: "GimmeJob AI",
+      actorLabel: "GimmeJob automation",
       action: "analysis_created",
       field: "analysis",
       beforeValue: null,
@@ -89,8 +89,7 @@ test("audit migration captures user and automation mutation paths without no-op 
   assert.match(sql, /WHEN OLD\.status <> NEW\.status/);
   assert.match(sql, /'user', 'You', 'status_changed'/);
   assert.match(sql, /CREATE TRIGGER `audit_user_analyses_update`/);
-  assert.match(sql, /'automation', 'GimmeJob AI', 'analysis_regenerated'/);
+  assert.match(sql, /'automation', 'GimmeJob automation', 'analysis_regenerated'/);
   assert.match(sql, /CREATE TRIGGER `audit_user_resume_variants_update`/);
   assert.match(sql, /CREATE TRIGGER `audit_user_application_drafts_user_status`/);
 });
-
