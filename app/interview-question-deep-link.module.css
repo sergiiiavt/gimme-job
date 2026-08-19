@@ -28,6 +28,14 @@
   text-decoration: none;
 }
 
+button.backLink {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
 .backLink:hover,
 .meta a:hover {
   text-decoration: underline;
