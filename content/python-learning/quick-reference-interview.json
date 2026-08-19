@@ -1,0 +1,272 @@
+{
+  "filters": ["Automation"],
+  "priority": [
+    {"id": "core-syntax", "frequency": "Very common"},
+    {"id": "runtime-model", "frequency": "Very common"},
+    {"id": "collections", "frequency": "Very common"},
+    {"id": "mutability-references", "frequency": "Very common"},
+    {"id": "identity-hashing-truthiness", "frequency": "Very common"},
+    {"id": "internals-gotchas", "frequency": "Very common"},
+    {"id": "strings", "frequency": "Very common"},
+    {"id": "functions", "frequency": "Very common"},
+    {"id": "control-flow", "frequency": "Very common"},
+    {"id": "comprehensions", "frequency": "Very common"},
+    {"id": "oop", "frequency": "Very common"},
+    {"id": "exceptions", "frequency": "Very common"},
+    {"id": "context-managers", "frequency": "Very common"},
+    {"id": "iterators-generators", "frequency": "Very common"},
+    {"id": "decorators", "frequency": "Very common"},
+    {"id": "testing", "frequency": "Very common"},
+    {"id": "pytest-fixtures", "frequency": "Very common"},
+    {"id": "http-automation", "frequency": "Very common"},
+    {"id": "timeout-polling-retry", "frequency": "Very common"},
+    {"id": "gil-concurrency-models", "frequency": "Very common"},
+    {"id": "typing", "frequency": "Common"},
+    {"id": "modules-imports", "frequency": "Common"},
+    {"id": "packaging-environments", "frequency": "Common"},
+    {"id": "files-pathlib", "frequency": "Common"},
+    {"id": "data-formats", "frequency": "Common"},
+    {"id": "regex", "frequency": "Common"},
+    {"id": "dataclasses-enum", "frequency": "Common"},
+    {"id": "dunder-methods", "frequency": "Common"},
+    {"id": "concurrency", "frequency": "Common"},
+    {"id": "memory-performance", "frequency": "Common"},
+    {"id": "logging-debugging", "frequency": "Common"},
+    {"id": "os-cli", "frequency": "Common"},
+    {"id": "numbers", "frequency": "Common"},
+    {"id": "datetime", "frequency": "Occasional"},
+    {"id": "stdlib-toolbox", "frequency": "Occasional"},
+    {"id": "sqlite", "frequency": "Occasional"}
+  ],
+  "cards": [
+    {
+      "id": "runtime-model",
+      "title": "Python runtime & object model",
+      "tags": ["Syntax", "Types", "Gotchas"],
+      "summary": "Interview-level mental model for names, objects, dynamic typing, duck typing, and what CPython actually executes.",
+      "entries": [
+        {"term": "dynamic typing", "meaning": "Types belong to objects rather than variable names, so the same name may later be rebound to an object of another type.", "detail": "value = 1 · value = 'one'"},
+        {"term": "names bind objects", "meaning": "Assignment binds a name to an existing object; it does not copy that object unless you explicitly create a copy.", "detail": "b = a"},
+        {"term": "duck typing", "meaning": "Code usually depends on the operations an object supports rather than requiring one exact declared class.", "detail": "stream.read() works for any compatible object"},
+        {"term": "source → bytecode", "meaning": "CPython compiles Python source to bytecode before executing it with the interpreter rather than executing source text directly line by line.", "detail": "import dis · dis.dis(function)"},
+        {"term": "type", "meaning": "type() returns an object's runtime type and is useful for inspection, though polymorphic code often prefers capability checks or isinstance().", "detail": "type(value)"},
+        {"term": "isinstance", "meaning": "Check whether an object is an instance of a class or any subclass, which is usually safer than exact type equality.", "detail": "isinstance(value, str)"},
+        {"term": "None singleton", "meaning": "None is a singleton sentinel for absence, so identity comparison is the conventional and reliable check.", "detail": "value is None"},
+        {"term": "arguments bind references", "meaning": "Function parameters become local names bound to the caller's objects, so mutating a passed mutable object can be visible to the caller.", "detail": "def add(items): items.append('x')"}
+      ],
+      "more": [
+        {"term": "bytecode cache", "meaning": "CPython may cache compiled bytecode in __pycache__ so unchanged modules do not need to be recompiled on every import.", "detail": "__pycache__/module.cpython-314.pyc"},
+        {"term": "__name__", "meaning": "A module's __name__ is its import name, while a directly executed module receives the special value __main__.", "detail": "if __name__ == '__main__': main()"},
+        {"term": "id", "meaning": "id() identifies an object for its lifetime in the current process and is useful for understanding aliasing, not business identity.", "detail": "id(a) == id(b)"},
+        {"term": "interning caveat", "meaning": "Implementation-level caching can make some equal strings or integers share identity, so never use is for ordinary value comparison.", "detail": "use a == b, not a is b"}
+      ]
+    },
+    {
+      "id": "context-managers",
+      "title": "Context managers",
+      "tags": ["Advanced", "Files"],
+      "summary": "Use with to pair resource acquisition and guaranteed cleanup, including custom and generator-based context managers.",
+      "entries": [
+        {"term": "with", "meaning": "Enter a managed resource for a block and guarantee its exit logic runs when the block finishes, including when an exception occurs.", "detail": "with open(path) as f: data = f.read()"},
+        {"term": "__enter__", "meaning": "Called when entering a with block; its return value becomes the object bound after as.", "detail": "def __enter__(self): return self.resource"},
+        {"term": "__exit__", "meaning": "Called when leaving a with block with exception information when relevant, making it the cleanup hook for class-based managers.", "detail": "def __exit__(self, exc_type, exc, tb): self.close()"},
+        {"term": "suppress from __exit__", "meaning": "Returning a truthy value from __exit__ tells Python that a raised exception was handled and should not propagate.", "detail": "return isinstance(exc, ExpectedError)"},
+        {"term": "@contextmanager", "meaning": "Create a context manager from one generator function instead of writing a class with __enter__ and __exit__ methods.", "detail": "@contextmanager · def resource(): ..."},
+        {"term": "yield boundary", "meaning": "In a @contextmanager function, code before yield is setup and code after yield is teardown that resumes when the with block exits.", "detail": "acquire(); try: yield obj; finally: release()"},
+        {"term": "multiple contexts", "meaning": "Manage several resources in one with statement; cleanup occurs in reverse order of successful entry.", "detail": "with open(a) as fa, open(b) as fb: ..."},
+        {"term": "lock context", "meaning": "Synchronization primitives such as threading.Lock are context managers, so with lock gives exception-safe acquire/release behavior.", "detail": "with lock: shared.append(item)"}
+      ],
+      "more": [
+        {"term": "async with", "meaning": "Use asynchronous context managers when entering or leaving a resource requires awaiting asynchronous work.", "detail": "async with client.stream(...) as response: ..."},
+        {"term": "@asynccontextmanager", "meaning": "Create an asynchronous context manager from an async generator using the same setup-yield-cleanup structure.", "detail": "@asynccontextmanager · async def connection(): ..."},
+        {"term": "ExitStack", "meaning": "Dynamically combine an unknown or conditional number of context managers and cleanup callbacks into one managed stack.", "detail": "with ExitStack() as stack: stack.enter_context(open(path))"},
+        {"term": "suppress", "meaning": "contextlib.suppress intentionally ignores only the named exception types inside a small explicit block.", "detail": "with suppress(FileNotFoundError): path.unlink()"},
+        {"term": "closing", "meaning": "Wrap an object that only exposes close() so it can participate safely in a with statement.", "detail": "with closing(resource) as r: ..."}
+      ]
+    },
+    {
+      "id": "decorators",
+      "title": "Decorators",
+      "tags": ["Functions", "Advanced"],
+      "summary": "Understand what @decorator syntax actually does, how wrappers and closures work, and how to preserve the wrapped function correctly.",
+      "entries": [
+        {"term": "decorator", "meaning": "A decorator receives a function or class and returns the object that should replace it after definition.", "detail": "@trace · def run(): ..."},
+        {"term": "syntax equivalence", "meaning": "Decorator syntax is assignment performed after the function is created; @trace means run = trace(run).", "detail": "run = trace(run)"},
+        {"term": "wrapper", "meaning": "A typical function decorator returns an inner wrapper that adds behavior before or after calling the original function.", "detail": "def wrapper(*args, **kwargs): return func(*args, **kwargs)"},
+        {"term": "functools.wraps", "meaning": "Copy important metadata and expose __wrapped__ so the decorated function still behaves well with docs, debugging, and introspection tools.", "detail": "@wraps(func)"},
+        {"term": "forward arguments", "meaning": "Generic wrappers normally accept and forward *args and **kwargs so they do not accidentally restrict the wrapped callable's signature.", "detail": "return func(*args, **kwargs)"},
+        {"term": "decorator factory", "meaning": "A decorator that itself accepts configuration uses one extra function level: configuration → decorator → wrapper.", "detail": "@retry(attempts=3)"},
+        {"term": "stacked decorators", "meaning": "Stacked decorators apply from the function outward, so @a above @b produces a(b(function)).", "detail": "@a · @b · def f(): ...  →  f = a(b(f))"},
+        {"term": "closure", "meaning": "The returned wrapper can keep access to variables from the enclosing decorator scope even after that outer function has returned.", "detail": "def trace(func): def wrapper(): return func()"}
+      ],
+      "more": [
+        {"term": "async wrapper", "meaning": "A decorator around an async function normally needs an async wrapper that awaits the original coroutine rather than returning it unintentionally.", "detail": "async def wrapper(*a, **kw): return await func(*a, **kw)"},
+        {"term": "callable class", "meaning": "A class implementing __call__ can act as a stateful decorator when the decoration itself needs persistent configuration or counters.", "detail": "class CountCalls: def __call__(self, *args, **kwargs): ..."},
+        {"term": "method decorator", "meaning": "A wrapper around an instance method receives self as part of its forwarded positional arguments just like the original method.", "detail": "def wrapper(self, *args, **kwargs): ..."},
+        {"term": "built-in decorators", "meaning": "property, classmethod and staticmethod are decorators too; each transforms how a function is exposed through a class.", "detail": "@property · @classmethod · @staticmethod"},
+        {"term": "decorator timing", "meaning": "Decoration happens when the containing module or class body executes, not each time the decorated function is later called.", "detail": "import module  # decorators run during definition"}
+      ]
+    },
+    {
+      "id": "gil-concurrency-models",
+      "title": "GIL, threads, processes & asyncio",
+      "tags": ["Async", "Advanced"],
+      "summary": "Choose the concurrency model from the workload: I/O waiting, CPU work, shared memory, process isolation, or cooperative async I/O.",
+      "entries": [
+        {"term": "concurrency vs parallelism", "meaning": "Concurrency means tasks can make progress during overlapping time; parallelism means multiple tasks are literally executing at the same time.", "detail": "asyncio = concurrency · processes = parallel CPU work"},
+        {"term": "GIL", "meaning": "In the default CPython build, the Global Interpreter Lock allows only one thread at a time to execute Python bytecode.", "detail": "CPU-bound Python threads do not normally scale across cores"},
+        {"term": "threading", "meaning": "Threads share one process and memory space, making them lightweight and useful when work spends most of its time waiting on blocking I/O.", "detail": "ThreadPoolExecutor for network/file I/O"},
+        {"term": "multiprocessing", "meaning": "Processes have separate interpreters and memory, so CPU-bound Python can run on multiple cores at the cost of higher startup and communication overhead.", "detail": "ProcessPoolExecutor for CPU-heavy work"},
+        {"term": "asyncio", "meaning": "One event loop cooperatively switches between coroutines at await points, making it efficient for many concurrent I/O operations without one thread per task.", "detail": "await network_call() yields control to the loop"},
+        {"term": "I/O-bound", "meaning": "When most time is spent waiting for network, files, databases, or external services, threads or asyncio can overlap that waiting effectively.", "detail": "HTTP scraper → asyncio or threads"},
+        {"term": "CPU-bound", "meaning": "When most time is spent executing Python computations, processes are the usual default-build choice for true multi-core parallelism.", "detail": "image/data computation → processes"},
+        {"term": "race condition", "meaning": "Shared mutable state can still be corrupted when operations interleave, so protect critical sections with synchronization rather than relying on the GIL.", "detail": "with lock: counter += 1"}
+      ],
+      "more": [
+        {"term": "free-threaded CPython", "meaning": "Optional free-threaded CPython builds can disable the GIL and run Python threads in parallel; do not assume this mode is the default interpreter configuration.", "detail": "sys._is_gil_enabled()"},
+        {"term": "native extensions", "meaning": "Some C-backed libraries release the GIL during heavy work, so their threaded performance can differ from pure-Python CPU workloads.", "detail": "library behavior depends on its implementation"},
+        {"term": "ThreadPoolExecutor", "meaning": "Use a managed pool when you need a bounded set of worker threads rather than creating and joining threads manually.", "detail": "with ThreadPoolExecutor() as ex: ex.map(fn, items)"},
+        {"term": "ProcessPoolExecutor", "meaning": "Use a managed pool of worker processes for parallelizable CPU work when arguments and results can cross process boundaries.", "detail": "with ProcessPoolExecutor() as ex: ex.map(fn, items)"},
+        {"term": "asyncio.to_thread", "meaning": "Offload one blocking synchronous function so it does not freeze the event loop while the rest of the async application keeps running.", "detail": "result = await asyncio.to_thread(blocking_fn)"}
+      ]
+    },
+    {
+      "id": "pytest-fixtures",
+      "title": "pytest fixtures & parametrization",
+      "tags": ["Testing", "Tooling"],
+      "summary": "The pytest mechanics most often discussed in automation interviews: dependency injection, yield teardown, scope, parametrization, and built-in fixtures.",
+      "entries": [
+        {"term": "fixture injection", "meaning": "A test requests a fixture by naming it as a function argument; pytest resolves and executes the matching fixture before calling the test.", "detail": "def test_user(client): ..."},
+        {"term": "fixture return", "meaning": "A normal fixture runs its setup code once for that fixture instance and returns the object that pytest passes into dependent tests or fixtures.", "detail": "@pytest.fixture · def client(): return Client()"},
+        {"term": "yield fixture", "meaning": "Code before yield is setup, the yielded value is injected into the test, and pytest resumes the fixture after the test finishes to run teardown.", "detail": "connect(); yield device; disconnect()"},
+        {"term": "fixture scope", "meaning": "Scope controls how long one fixture instance is reused: function, class, module, package, or session.", "detail": "@pytest.fixture(scope='session')"},
+        {"term": "fixture dependency", "meaning": "Fixtures can depend on other fixtures through their own parameters, letting pytest build the dependency graph in the required order.", "detail": "def authenticated_client(client, token): ..."},
+        {"term": "autouse", "meaning": "An autouse fixture applies automatically within its scope even when tests do not name it explicitly; use it sparingly because dependencies become less visible.", "detail": "@pytest.fixture(autouse=True)"},
+        {"term": "parametrize", "meaning": "Run one test function against multiple explicit data sets while pytest reports each case as a separate test invocation.", "detail": "@pytest.mark.parametrize(('x', 'expected'), [(1, 2), (2, 4)])"},
+        {"term": "pytest.raises", "meaning": "Assert that a specific operation raises an expected exception and optionally inspect the captured exception object.", "detail": "with pytest.raises(ValueError): parse('bad')"}
+      ],
+      "more": [
+        {"term": "monkeypatch", "meaning": "Temporarily replace attributes, environment variables, dictionary entries, or paths and let pytest restore them automatically after the test.", "detail": "monkeypatch.setenv('MODE', 'test')"},
+        {"term": "tmp_path", "meaning": "Receive an isolated temporary pathlib.Path directory for filesystem tests without managing cleanup manually.", "detail": "def test_export(tmp_path): ..."},
+        {"term": "caplog", "meaning": "Capture logging records emitted during a test so assertions can inspect levels, messages, and logger names.", "detail": "def test_logs(caplog): ..."},
+        {"term": "markers", "meaning": "Attach metadata such as smoke, integration, or slow to tests so suites can select or configure groups explicitly.", "detail": "@pytest.mark.smoke · pytest -m smoke"},
+        {"term": "fixture factory", "meaning": "Return a callable from a fixture when one test needs to create several independently configured objects while sharing setup logic.", "detail": "def user_factory(): return lambda **kw: User(**kw)"}
+      ]
+    },
+    {
+      "id": "http-automation",
+      "title": "HTTP clients for automation",
+      "tags": ["Automation", "Testing", "Tooling"],
+      "summary": "Practical HTTP patterns for API tests and helpers: parameters, JSON, sessions, status handling, timeouts, and sync/async clients.",
+      "entries": [
+        {"term": "requests GET", "meaning": "Make a synchronous HTTP request with the requests library and always provide an explicit timeout in automation code.", "detail": "response = requests.get(url, timeout=5)"},
+        {"term": "query params", "meaning": "Pass query parameters as structured data instead of manually concatenating and escaping them into the URL.", "detail": "requests.get(url, params={'page': 2}, timeout=5)"},
+        {"term": "JSON body", "meaning": "Use the json argument to serialize a Python object as JSON and set the appropriate content type automatically.", "detail": "requests.post(url, json={'name': 'Ada'}, timeout=5)"},
+        {"term": "headers", "meaning": "Pass request headers explicitly for authentication, content negotiation, correlation IDs, or other protocol metadata.", "detail": "headers={'Authorization': f'Bearer {token}'}"},
+        {"term": "raise_for_status", "meaning": "Convert unsuccessful HTTP status responses into exceptions when a helper expects a successful request instead of silently continuing.", "detail": "response.raise_for_status()"},
+        {"term": "response JSON", "meaning": "Decode a JSON response into Python values; still validate status, schema, and expected fields rather than assuming the body is correct.", "detail": "payload = response.json()"},
+        {"term": "Session", "meaning": "Reuse cookies, headers, and pooled connections across related requests instead of creating fully independent top-level calls each time.", "detail": "with requests.Session() as session: session.get(url, timeout=5)"},
+        {"term": "httpx.Client", "meaning": "httpx provides a requests-like synchronous client with modern timeout and connection-pooling APIs and a matching asynchronous client.", "detail": "with httpx.Client(timeout=5) as client: client.get(url)"}
+      ],
+      "more": [
+        {"term": "httpx.AsyncClient", "meaning": "Use the asynchronous client when the surrounding application or test helper is already async and many I/O operations should overlap.", "detail": "async with httpx.AsyncClient(timeout=5) as client: await client.get(url)"},
+        {"term": "auth", "meaning": "Prefer the client's structured authentication mechanisms when available rather than hand-building Authorization values repeatedly.", "detail": "requests.get(url, auth=(user, password), timeout=5)"},
+        {"term": "cookies", "meaning": "Sessions persist cookies across calls, which makes them useful for login flows and other stateful API interactions.", "detail": "session.cookies.get_dict()"},
+        {"term": "request evidence", "meaning": "On failure, keep enough request/response context for diagnosis without logging secrets or sensitive payloads.", "detail": "status · URL · correlation ID · safe body excerpt"},
+        {"term": "separate client layer", "meaning": "Keep raw HTTP mechanics in reusable client helpers so tests can express business intent and centralize timeout, auth, and error handling.", "detail": "api.create_user(data) instead of requests.post(...) in every test"}
+      ]
+    },
+    {
+      "id": "timeout-polling-retry",
+      "title": "Timeout, polling & retry",
+      "tags": ["Automation", "Testing", "Tooling"],
+      "summary": "Bound waiting explicitly: use deadlines, poll observable conditions, and retry only failures that can reasonably succeed later.",
+      "entries": [
+        {"term": "timeout", "meaning": "Every operation that can block on an external dependency should have a finite timeout so a failure cannot hang the entire test or worker indefinitely.", "detail": "requests.get(url, timeout=5)"},
+        {"term": "monotonic deadline", "meaning": "Use time.monotonic for elapsed-time deadlines because wall-clock changes do not move it backward or forward unexpectedly.", "detail": "deadline = time.monotonic() + 10"},
+        {"term": "poll condition", "meaning": "Repeatedly check the actual condition you need until it becomes true or the overall deadline expires instead of sleeping once and hoping.", "detail": "while time.monotonic() < deadline: status = get_status()"},
+        {"term": "bounded retry", "meaning": "Limit retries by attempt count or deadline so a persistent failure is surfaced rather than converted into an infinite loop.", "detail": "for attempt in range(3): ..."},
+        {"term": "transient only", "meaning": "Retry failures that may genuinely recover, such as temporary network errors or selected server responses, not deterministic validation or assertion failures.", "detail": "retry TimeoutError, not ValueError from bad test data"},
+        {"term": "exponential backoff", "meaning": "Increase the delay between attempts to reduce pressure on a dependency that may already be overloaded or recovering.", "detail": "delay = min(base * 2 ** attempt, cap)"},
+        {"term": "jitter", "meaning": "Add randomness to retry delays so many workers do not all retry at the same instant and create another traffic spike.", "detail": "sleep(random.uniform(0, delay))"},
+        {"term": "last failure", "meaning": "When retries are exhausted, preserve the final exception and useful attempt diagnostics instead of raising an unrelated generic timeout with no cause.", "detail": "raise RetryError(...) from last_exc"}
+      ],
+      "more": [
+        {"term": "overall vs per-attempt", "meaning": "Distinguish the timeout of one call from the total time allowed for all polling or retry attempts combined.", "detail": "request timeout=2s · overall deadline=10s"},
+        {"term": "idempotency", "meaning": "Before retrying a write operation, understand whether repeating it can duplicate side effects or whether the API provides an idempotency mechanism.", "detail": "POST payment may need an idempotency key"},
+        {"term": "fixed sleep smell", "meaning": "A fixed sleep always waits the full delay when the condition becomes ready early and still fails when the system occasionally needs longer.", "detail": "prefer poll_until(ready, timeout=10) over time.sleep(10)"},
+        {"term": "poll interval", "meaning": "Choose a reasonable interval that balances detection speed against unnecessary calls or load on the dependency.", "detail": "poll every 0.2–1.0s instead of a busy loop"},
+        {"term": "retry ownership", "meaning": "Centralize retry behavior in the client/helper layer when possible so individual tests do not implement inconsistent hidden retry policies.", "detail": "client.get_with_retry(...)"}
+      ]
+    },
+    {
+      "id": "regex",
+      "title": "Regular expressions",
+      "tags": ["Strings", "Stdlib"],
+      "summary": "The re operations most useful in interviews and automation: search, full validation, extraction, replacement, compiled patterns, groups, and flags.",
+      "entries": [
+        {"term": "raw pattern", "meaning": "Write regular-expression patterns as raw strings in most cases so Python string escaping does not compete with regex backslashes.", "detail": "pattern = r'\\d+'"},
+        {"term": "re.search", "meaning": "Find the first match anywhere in the string and return a match object or None when no match exists.", "detail": "match = re.search(r'ID=(\\d+)', text)"},
+        {"term": "re.match", "meaning": "Attempt a match only at the beginning of the string; it does not require the pattern to consume the entire string.", "detail": "re.match(r'GET', request_line)"},
+        {"term": "re.fullmatch", "meaning": "Require the entire string to satisfy the pattern, which is usually clearer than manually anchoring validation patterns.", "detail": "re.fullmatch(r'[A-Z]{3}-\\d{4}', code)"},
+        {"term": "re.findall", "meaning": "Return all non-overlapping matches as strings or tuples, useful when you need the complete set of extracted values at once.", "detail": "ids = re.findall(r'ID=(\\d+)', text)"},
+        {"term": "re.finditer", "meaning": "Iterate lazily over match objects when you need positions, groups, or many matches without building one result list first.", "detail": "for match in re.finditer(pattern, text): ..."},
+        {"term": "re.sub", "meaning": "Return text with matching regions replaced by a string or replacement function.", "detail": "masked = re.sub(r'\\d', '*', card_number)"},
+        {"term": "re.compile", "meaning": "Create a reusable pattern object when the same expression is applied repeatedly or when storing a configured pattern improves readability.", "detail": "token_re = re.compile(r'Bearer\\s+(.+)')"}
+      ],
+      "more": [
+        {"term": "groups", "meaning": "Parentheses capture parts of a match so code can extract only the fields it needs from the larger matched text.", "detail": "match.group(1)"},
+        {"term": "named groups", "meaning": "Give captured fields meaningful names when positional group numbers would make parsing logic difficult to read or maintain.", "detail": "r'(?P<key>\\w+)=(?P<value>\\w+)'"},
+        {"term": "greedy / lazy", "meaning": "Quantifiers are greedy by default; adding ? makes them consume as little text as needed for the overall match to succeed.", "detail": ".*  vs  .*?"},
+        {"term": "flags", "meaning": "Flags alter matching behavior, for example case-insensitive matching, multiline anchors, or dot matching newline characters.", "detail": "re.compile(pattern, re.IGNORECASE | re.MULTILINE)"},
+        {"term": "re.escape", "meaning": "Escape user-provided literal text before inserting it into a regex so special characters are not interpreted as pattern syntax.", "detail": "re.search(re.escape(expected_text), actual)"}
+      ]
+    },
+    {
+      "id": "packaging-environments",
+      "title": "Virtual environments & packaging",
+      "tags": ["Tooling"],
+      "summary": "The project-isolation and dependency-management commands expected in practical Python interviews and day-to-day automation work.",
+      "entries": [
+        {"term": "create venv", "meaning": "Create a project-specific virtual environment with its own interpreter context and isolated site-packages directory.", "detail": "python -m venv .venv"},
+        {"term": "activation", "meaning": "Activation mainly adjusts the shell PATH so python and installed console scripts resolve to the environment; using the environment's interpreter directly also works.", "detail": "Windows: .venv\\Scripts\\Activate.ps1 · POSIX: source .venv/bin/activate"},
+        {"term": "python -m pip", "meaning": "Run pip through the intended Python interpreter so package installation goes to the environment you actually selected.", "detail": "python -m pip install pytest"},
+        {"term": "requirements", "meaning": "Install a declared set of dependencies from a requirements file rather than manually recreating the environment package by package.", "detail": "python -m pip install -r requirements.txt"},
+        {"term": "pyproject.toml", "meaning": "Modern Python projects use pyproject.toml for build-system configuration, project metadata, dependencies, and tool-specific configuration.", "detail": "[build-system] · [project] · [tool.pytest.ini_options]"},
+        {"term": "project dependencies", "meaning": "Declare runtime package requirements as project metadata when the project is packaged rather than hiding them only in developer setup notes.", "detail": "[project] dependencies = ['requests>=2.32']"},
+        {"term": "dependency groups", "meaning": "Use standardized pyproject dependency groups for development-only sets such as test or docs dependencies when your tooling supports them.", "detail": "[dependency-groups] test = ['pytest', 'coverage']"},
+        {"term": "editable install", "meaning": "Install the current project so imports resolve through the working source tree while development changes remain immediately visible.", "detail": "python -m pip install -e ."}
+      ],
+      "more": [
+        {"term": "__init__.py", "meaning": "An __init__.py file defines a regular package and can expose package-level names; namespace packages can exist without one, but ordinary projects usually keep it explicit.", "detail": "package/__init__.py"},
+        {"term": "pip show", "meaning": "Inspect where an installed distribution came from and which version the current interpreter environment is using.", "detail": "python -m pip show requests"},
+        {"term": "pip check", "meaning": "Ask pip to verify that installed package dependency requirements are internally consistent in the current environment.", "detail": "python -m pip check"},
+        {"term": "pip freeze", "meaning": "Capture the currently installed environment as pinned requirement lines; treat it as a snapshot, not automatically as the ideal dependency-design source.", "detail": "python -m pip freeze > requirements.lock.txt"},
+        {"term": "recreate, do not move", "meaning": "Virtual environments contain paths tied to where they were created, so recreate them after moving a project instead of treating .venv as a portable artifact.", "detail": "delete .venv · python -m venv .venv · reinstall dependencies"}
+      ]
+    },
+    {
+      "id": "memory-performance",
+      "title": "Memory management & profiling",
+      "tags": ["Advanced", "Gotchas", "Tooling"],
+      "summary": "Know the CPython memory model at interview depth, then measure CPU and memory behavior before attempting optimization.",
+      "entries": [
+        {"term": "reference counting", "meaning": "The default CPython build primarily tracks how many references point to ordinary objects and can usually reclaim them when that count reaches zero.", "detail": "dropping the last reference usually releases an ordinary object promptly"},
+        {"term": "cyclic GC", "meaning": "A separate garbage collector supplements reference counting by finding unreachable reference cycles whose members would otherwise keep one another alive.", "detail": "two objects referencing each other can still be collected"},
+        {"term": "del", "meaning": "del removes a name, item, or attribute reference; it does not guarantee the underlying object is destroyed if other references still exist.", "detail": "del obj"},
+        {"term": "gc.collect", "meaning": "Trigger an explicit garbage-collection pass for diagnostic or unusual lifecycle needs; normal application code should rarely need to force collection.", "detail": "collected = gc.collect()"},
+        {"term": "sys.getsizeof", "meaning": "Report the shallow size of one object itself; referenced child objects are not recursively included in that number.", "detail": "sys.getsizeof(items)"},
+        {"term": "tracemalloc", "meaning": "Trace Python memory allocations and compare snapshots to locate where memory growth is being allocated.", "detail": "tracemalloc.start() · snapshot = tracemalloc.take_snapshot()"},
+        {"term": "cProfile", "meaning": "Profile function calls and cumulative CPU time to locate actual hot paths before rewriting code based on intuition.", "detail": "python -m cProfile -s cumulative script.py"},
+        {"term": "timeit", "meaning": "Measure a small code path repeatedly under a controlled harness when comparing micro-level implementation choices.", "detail": "python -m timeit 'sum(range(100))'"}
+      ],
+      "more": [
+        {"term": "generator memory", "meaning": "Generators produce values lazily and can reduce peak memory when the consumer does not need the entire result collection at once.", "detail": "(transform(x) for x in stream)"},
+        {"term": "__slots__", "meaning": "Slotted classes can reduce per-instance attribute-storage overhead when creating very large numbers of simple objects, but add design constraints.", "detail": "class Point: __slots__ = ('x', 'y')"},
+        {"term": "weakref", "meaning": "A weak reference observes an object without keeping it alive, useful for caches and back-references whose existence should not control lifetime.", "detail": "parent_ref = weakref.ref(parent)"},
+        {"term": "measure first", "meaning": "Optimize only after profiling identifies a meaningful bottleneck; readability changes made for imagined performance often add complexity without useful gain.", "detail": "profile → identify hot path → optimize → measure again"},
+        {"term": "cache retention", "meaning": "Caches improve speed by intentionally retaining references, so an unbounded cache can become a memory-growth problem even when no object is technically leaked.", "detail": "prefer bounded @lru_cache when the key space can grow indefinitely"}
+      ]
+    }
+  ]
+}
