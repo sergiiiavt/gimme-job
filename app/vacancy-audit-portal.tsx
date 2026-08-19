@@ -84,18 +84,17 @@ export default function VacancyAuditPortal({ enabled }: { enabled: boolean }) {
   }, [enabled]);
 
   useEffect(() => {
-    if (!enabled || !jobId) {
-      setEntries([]);
-      setError(null);
-      return;
-    }
+    if (!enabled || !jobId) return;
     const controller = new AbortController();
     let refreshing = false;
 
     const load = async (showLoading: boolean) => {
       if (refreshing) return;
       refreshing = true;
-      if (showLoading) setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+        setError(null);
+      }
       try {
         const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}/audit`, {
           cache: "no-store",
@@ -114,7 +113,7 @@ export default function VacancyAuditPortal({ enabled }: { enabled: boolean }) {
       }
     };
 
-    void load(true);
+    queueMicrotask(() => { void load(true); });
     const timer = window.setInterval(() => { void load(false); }, AUDIT_REFRESH_MS);
     return () => {
       window.clearInterval(timer);
