@@ -48,12 +48,12 @@ jobs:
         run: python -m pip install -e "./ai-service[test]"
 
       - name: Verify AI service with coverage
-        working-directory: ai-service
         run: |
-          python -m coverage run -m unittest discover -s tests -v
-          python -m coverage report --fail-under=80
-          python -m coverage xml
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          python -m coverage run --rcfile=ai-service/pyproject.toml -m unittest discover -s ai-service/tests -v
+          python -m coverage report --rcfile=ai-service/pyproject.toml --fail-under=80
+          python -m coverage xml --rcfile=ai-service/pyproject.toml
+          rm -f .coverage ai-service/.coverage
+          find ai-service -type d -name __pycache__ -prune -exec rm -rf {} +
 
       - name: SonarQube Cloud quality gate
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
@@ -105,12 +105,12 @@ jobs:
         run: python -m pip install -e "./ai-service[test]"
 
       - name: Collect AI service coverage
-        working-directory: ai-service
         run: |
-          python -m coverage run -m unittest discover -s tests -v
-          python -m coverage report --fail-under=80
-          python -m coverage xml
-          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          python -m coverage run --rcfile=ai-service/pyproject.toml -m unittest discover -s ai-service/tests -v
+          python -m coverage report --rcfile=ai-service/pyproject.toml --fail-under=80
+          python -m coverage xml --rcfile=ai-service/pyproject.toml
+          rm -f .coverage ai-service/.coverage
+          find ai-service -type d -name __pycache__ -prune -exec rm -rf {} +
 
       - name: Refresh SonarQube Cloud main branch
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
