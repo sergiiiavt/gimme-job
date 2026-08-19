@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import interviewCatalog from "@/content/interview/catalog";
 import InterviewQuestionDeepLink from "../interview-question-deep-link";
+import InterviewQuestionLinkOverlay from "../interview-question-link-overlay";
 import PublicSite from "../public-site";
 
 export default function InterviewPage() {
@@ -19,5 +20,10 @@ export default function InterviewPage() {
     );
   }
 
-  return <PublicSite/>;
+  return (
+    <>
+      <PublicSite/>
+      <InterviewQuestionLinkOverlay pathname="/interview" questions={interviewCatalog.questions}/>
+    </>
+  );
 }
