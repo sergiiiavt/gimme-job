@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: starred-filter-layout
+  cancel-in-progress: true
+
 jobs:
   apply:
     runs-on: ubuntu-latest
@@ -76,9 +80,9 @@ jobs:
       - name: Commit final product diff
         shell: bash
         run: |
-          rm -f .github/workflows/tmp-star-filter-layout.yml
+          rm -f .github/workflows/tmp-star-filter-layout.yml .tmp-star-filter-trigger
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/public-site.tsx app/globals.css tests/interview-catalog.test.mjs .github/workflows/tmp-star-filter-layout.yml
+          git add app/public-site.tsx app/globals.css tests/interview-catalog.test.mjs .github/workflows/tmp-star-filter-layout.yml .tmp-star-filter-trigger
           git commit -m "Move starred filter first and narrow it"
           git push origin HEAD:agent/starred-filter-first-compact
