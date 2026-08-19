@@ -106,7 +106,14 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
           <strong>{labelFor(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
         </button>
         {previousHref && (
-          <a aria-label={language === "uk" ? "Пряме посилання на попередній розділ" : "Direct link to previous chapter"} className={uiStyles.pagerDirectLink} href={previousHref} title={language === "uk" ? "Пряме посилання" : "Direct link"}>
+          <a
+            aria-label={language === "uk" ? "Відкрити пряме посилання на попередній розділ у новій вкладці" : "Open direct link to previous chapter in a new tab"}
+            className={uiStyles.pagerDirectLink}
+            href={previousHref}
+            rel="noreferrer"
+            target="_blank"
+            title={language === "uk" ? "Відкрити у новій вкладці" : "Open in new tab"}
+          >
             <DirectLinkIcon/>
           </a>
         )}
@@ -117,7 +124,14 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
           <strong>{labelFor(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
         </button>
         {nextHref && (
-          <a aria-label={language === "uk" ? "Пряме посилання на наступний розділ" : "Direct link to next chapter"} className={uiStyles.pagerDirectLink} href={nextHref} title={language === "uk" ? "Пряме посилання" : "Direct link"}>
+          <a
+            aria-label={language === "uk" ? "Відкрити пряме посилання на наступний розділ у новій вкладці" : "Open direct link to next chapter in a new tab"}
+            className={uiStyles.pagerDirectLink}
+            href={nextHref}
+            rel="noreferrer"
+            target="_blank"
+            title={language === "uk" ? "Відкрити у новій вкладці" : "Open in new tab"}
+          >
             <DirectLinkIcon/>
           </a>
         )}
@@ -194,8 +208,10 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       const link = document.createElement("a");
       link.className = uiStyles.headingDirectLink;
       link.href = contentHref(pathname, searchParams.toString(), {}, sectionId);
-      link.title = language === "uk" ? "Пряме посилання" : "Direct link";
-      link.setAttribute("aria-label", `${language === "uk" ? "Пряме посилання" : "Direct link"}: ${target.textContent?.trim() ?? sectionId}`);
+      link.rel = "noreferrer";
+      link.target = "_blank";
+      link.title = language === "uk" ? "Відкрити у новій вкладці" : "Open in new tab";
+      link.setAttribute("aria-label", `${language === "uk" ? "Відкрити пряме посилання у новій вкладці" : "Open direct link in a new tab"}: ${target.textContent?.trim() ?? sectionId}`);
       link.innerHTML = directLinkSvgMarkup;
       target.appendChild(link);
       createdLinks.push(link);
@@ -223,25 +239,15 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
         <nav>
           {headings.map((heading) => {
             const isActive = activeSectionId === heading.id;
-            const href = sectionHref(heading.id);
             return (
-              <div className={uiStyles.tocRow} key={heading.id}>
-                <a
-                  aria-current={isActive ? "location" : undefined}
-                  className={`${uiStyles.tocTextLink} ${isActive ? uiStyles.activeTocLink : ""}`}
-                  href={href}
-                >
-                  {heading.text}
-                </a>
-                <a
-                  aria-label={`${language === "uk" ? "Пряме посилання" : "Direct link"}: ${heading.text}`}
-                  className={uiStyles.tocDirectLink}
-                  href={href}
-                  title={language === "uk" ? "Пряме посилання" : "Direct link"}
-                >
-                  <DirectLinkIcon/>
-                </a>
-              </div>
+              <a
+                aria-current={isActive ? "location" : undefined}
+                className={isActive ? uiStyles.activeTocLink : undefined}
+                href={sectionHref(heading.id)}
+                key={heading.id}
+              >
+                {heading.text}
+              </a>
             );
           })}
           <a
