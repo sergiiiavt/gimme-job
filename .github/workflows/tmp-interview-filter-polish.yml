@@ -1,0 +1,67 @@
+name: Apply interview filter row polish
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: interview-filter-row-polish
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/interview-filter-row-polish
+          fetch-depth: 0
+
+      - name: Use Node.js 22.22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22
+          cache: npm
+
+      - name: Polish interview filter row
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          css_path = Path('app/globals.css')
+          css = css_path.read_text()
+          old = '.iq-filter-grid-personal { grid-template-columns: 160px repeat(3, minmax(0, 1fr)) auto; }'
+          new = '.iq-filter-grid-personal { grid-template-columns: 132px repeat(4, minmax(0, 1fr)) auto; }'
+          assert css.count(old) == 1, 'Expected one personal interview grid rule'
+          css_path.write_text(css.replace(old, new, 1))
+
+          test_path = Path('tests/interview-catalog.test.mjs')
+          tests = test_path.read_text()
+          old_test = '  assert.match(stylesSource, /\\.iq-filter-grid-personal \\{[^}]*grid-template-columns: 160px/);'
+          new_test = '  assert.match(stylesSource, /\\.iq-filter-grid-personal \\{[^}]*grid-template-columns: 132px repeat\\(4, minmax\\(0, 1fr\\)\\) auto/);'
+          assert tests.count(old_test) == 1, 'Expected one personal grid width assertion'
+          test_path.write_text(tests.replace(old_test, new_test, 1))
+          PY
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify repository
+        run: npm run verify
+
+      - name: Commit final product diff
+        shell: bash
+        run: |
+          rm -f .github/workflows/tmp-interview-filter-polish.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/globals.css tests/interview-catalog.test.mjs .github/workflows/tmp-interview-filter-polish.yml
+          git commit -m "Polish interview filter row"
+          git push origin HEAD:agent/interview-filter-row-polish
