@@ -1,286 +1,348 @@
 # Real implementation: GimmeJob production deployment gates
 
-> **CASE STUDY · GIMMEJOB** — This chapter traces the production delivery path used by the repository and explains why validation and deployment are intentionally separate.
+> **CASE STUDY · GIMMEJOB** — This chapter traces the exact production delivery path used by the repository and shows how to reproduce the same gate model in another project.
 
 ## What we are building
 
-GimmeJob separates merge validation, Sonar baseline maintenance, and production release:
+GimmeJob separates pull-request validation from production deployment. Pull requests run the full quality gate. After merge, deployment starts independently from `main`, while a smaller code-quality job refreshes SonarQube Cloud's `main` baseline for future PR comparisons.
 
 ```diagram
-Pull request
-    |
-    v
-Validate
-    +--> npm run verify
-    +--> SonarQube Cloud Quality Gate
-    |
-    +--> fail: PR cannot merge
-    |
-    +--> pass
-            |
-            v
-      merge to main
-        /       \
-       v         v
-Sonar main     Production deploy
-refresh        +--> build exact main commit
-+--> build     +--> apply D1 migrations
-+--> coverage  +--> deploy Worker + secrets once
-+--> scan      +--> lightweight smoke checks
+Pull request -------------------------> Validate
+                                         |
+                                         +--> npm run verify
+                                         +--> Sonar Quality Gate (wait)
+                                         |
+                                         +--> fail: cannot merge
+                                         |
+                                         +--> pass -> merge to main
+                                                       |        |
+                                                       v        v
+                                              production      Sonar main
+                                              deployment      refresh
+                                                       |        |
+                                                       |        +--> build
+                                                       |        +--> coverage
+                                                       |        +--> scan
+                                                       |
+                                                       +--> build exact main commit
+                                                       +--> D1 migrations
+                                                       +--> Worker + secrets
+                                                       +--> production smoke
 ```
 
-The boundaries are deliberately different:
+The workflow therefore has three decisions: **Is the PR technically acceptable?**, **Is Sonar's main baseline current?**, and **Can the already-approved `main` revision be released successfully?**
 
-- **PR validation answers:** is this change acceptable to merge?
-- **Sonar main refresh answers:** what is the current analyzed baseline for future PR comparisons and the main-branch dashboard?
-- **production deployment answers:** can this already-approved `main` revision be released successfully?
+## Requirements and constraints
 
-The production workflow does not repeat lint, tests, coverage, Cloudflare dry-run validation, or Sonar analysis.
+The production delivery flow is designed around several explicit requirements:
 
-## Why these decisions
-
-The previous implementation used one workflow for pull requests and `main`. A merged change was validated on the PR and then the same quality suite ran again after merge before deployment. The deployment job also built the application again.
-
-That produced repeated work without creating much additional evidence:
-
-- lint and type checking ran twice;
-- content and schema validation ran twice;
-- tests and coverage ran twice;
-- the Cloudflare dry run ran twice;
-- Sonar quality-gate waiting ran twice;
-- the production artifact was built once in PR validation, once in post-merge validation, and once again for deployment.
-
-The refactored design validates the full repository once at the merge boundary. After merge, production only performs release work. A separate, non-blocking Sonar main refresh retains the main-branch analysis needed for an accurate Sonar baseline, but it runs only the build and coverage collection needed by that analysis rather than the whole verification suite.
-
-The fresh production build remains intentional. Pull-request checks can run against GitHub's PR merge reference, while production must build the exact commit now present on `main`. Reusing PR artifacts would add artifact provenance and commit-matching machinery that is not justified for this repository.
+- every pull request must run the repository validation suite;
+- pull requests must never deploy production;
+- `main` must be protected so changes arrive through a validated PR;
+- generated Drizzle migration metadata must match the committed schema;
+- learning/interview content invariants must be validated as code;
+- test coverage must be collected in LCOV form for Sonar analysis;
+- the Cloudflare artifact must be checked before a real deployment;
+- the SonarQube Cloud Quality Gate must finish successfully before a PR can merge;
+- Sonar's `main` baseline must still be refreshed after merge, without gating deployment;
+- production credentials must come from GitHub secrets and variables;
+- D1 migrations must be applied before the new Worker revision is deployed;
+- an in-progress production deployment must not be cancelled by a newer push.
 
 ## Repository map
 
-| File | Responsibility |
-| --- | --- |
-| `.github/workflows/ci.yml` | PR validation plus a lightweight Sonar `main` refresh after merge |
-| `.github/workflows/deploy.yml` | serialized production deployment after `main` changes |
-| `package.json` | canonical deterministic verification command |
-| `scripts/deploy-cloudflare.mjs` | D1 preparation, migrations, generated Wrangler config, one Worker deployment |
-| `sonar-project.properties` | Sonar source and coverage configuration |
-| `drizzle/` and `db/schema.ts` | database schema and migration history |
+| File | Responsibility | Learning point |
+| --- | --- | --- |
+| `.github/workflows/ci.yml` | PR validation, PR Sonar gate, lightweight `main` Sonar refresh | quality policy is separate from release mutation |
+| `.github/workflows/deploy.yml` | serialized production deployment and smoke verification | release work has its own workflow boundary |
+| `scripts/deploy-cloudflare.mjs` | deployment preconditions, D1 discovery/creation, migration, Worker + secret deployment | deployment itself is executable policy |
+| `sonar-project.properties` | Sonar source/coverage configuration and exclusions | quality analysis must match the build/test model |
+| `drizzle/` and `db/schema.ts` | database schema and migration history | schema drift is checked before deployment |
+| `scripts/validate-*-content.mjs` | content-specific invariants | non-code production data can have gates too |
 
-## PR gate: canonical repository verification
+The workflows remain small enough to read end to end, which makes them useful teaching examples.
 
-The PR workflow installs from the committed lockfile:
+## Gate 1: dependency installation
+
+The workflow checks out the full repository history and uses the pinned Node runtime expected by the project.
+
+Dependencies are installed with:
 
 ```bash
 npm ci --ignore-scripts
 ```
 
-It then runs the repository's single deterministic quality contract:
+`npm ci` makes the install depend on the committed lockfile. `--ignore-scripts` avoids executing arbitrary package lifecycle scripts during dependency installation. The important learning point is that the dependency step is part of the trust boundary, not merely setup boilerplate.
+
+## Gate 2: lint and agent type-check
+
+Two fast source-level gates run early as part of `npm run verify`:
 
 ```bash
-npm run verify
+npm run lint
+npm run check:agent
 ```
 
-That command already contains the detailed gates:
+Lint catches configured static-rule violations. The agent type-check verifies the separately configured TypeScript surface used by the local agent code.
 
-```text
-lint
-agent TypeScript check
-content validators
-asset validators
-Drizzle generation drift check
-production build
-tests + LCOV coverage
-Cloudflare deployment dry run
+If either command exits non-zero, GitHub Actions stops the PR job and the revision cannot pass `Validate`.
+
+## Gate 3: database schema drift
+
+The canonical verification command regenerates Drizzle migration metadata and then asks Git whether generation changed committed schema/migration files.
+
+```bash
+npm run db:generate
+git diff --exit-code -- db/schema.ts drizzle
 ```
 
-Keeping this logic in `package.json` avoids duplicating the same list in workflow YAML.
+This converts a common repository hygiene problem into a merge gate. If a developer changed the schema but forgot to commit the generated migration result, CI rejects the revision before it can reach `main`.
 
-## PR gate: SonarQube Cloud
+## Gate 4: structured content validation
 
-After deterministic verification succeeds, the PR job runs SonarQube Cloud and waits for the remote Quality Gate:
+GimmeJob contains large structured knowledge bases, so content correctness is treated as part of application correctness.
+
+```bash
+npm run check:content
+```
+
+That command runs validators for interview material, Python content, automation curriculum, QA fundamentals, and the Cloud & DevOps curriculum introduced by this change.
+
+The important pattern is transferable: if production behavior depends on JSON, Markdown, configuration, fixtures, prompts, policies, or other structured content, encode the assumptions and run them as gates.
+
+## Gate 5: production build
+
+PR verification creates the real production artifact before running the later platform-specific checks.
+
+```bash
+npm run build
+```
+
+A successful development server is not sufficient evidence. The actual production build path must succeed because it can exercise different bundling, server/runtime, and asset behavior.
+
+Production deliberately builds again after merge because it must deploy the exact commit that reached `main`, not a PR merge reference or an artifact whose commit provenance needs separate validation.
+
+## Gate 6: automated tests and coverage
+
+The repository then runs the test process that produces LCOV coverage:
+
+```bash
+npm run test:coverage
+```
+
+The output is used by SonarQube Cloud later in the PR job. This is an example of evidence flowing between gates: tests produce both pass/fail behavior and coverage data that another policy engine consumes.
+
+After merge, the smaller Sonar-main refresh repeats only the build and coverage collection required for an accurate main-branch analysis. It does not rerun lint, content checks, schema-drift checks, or the Cloudflare dry run, and it does not gate deployment.
+
+## Gate 7: Cloudflare deployment-artifact validation
+
+Before a PR can merge, the repository executes its deployment script in dry-run mode through:
+
+```bash
+npm run check:cloudflare
+```
+
+The deploy script verifies that the production artifact exists, generates a temporary deployment configuration, attaches a dry-run D1 binding, creates a temporary non-production secrets file, and invokes Wrangler deploy with `--dry-run` and `--secrets-file`.
+
+```diagram
+Production build
+      |
+      v
+check:cloudflare
+      |
+      +--> confirm dist/server artifact exists
+      +--> create temporary Wrangler config
+      +--> attach dry-run D1 binding
+      +--> create temporary dummy secrets file
+      +--> wrangler deploy --dry-run --secrets-file ...
+      |
+      v
+Artifact and deploy arguments are structurally valid
+```
+
+This gate checks the actual target-platform packaging rather than assuming that a generic application build is enough.
+
+The deployment CLI itself is operational repository tooling executed after Node's coverage collection has finished. It is therefore explicitly excluded from Sonar LCOV attribution, while the real Wrangler dry-run remains a hard PR gate.
+
+## Gate 8: SonarQube Cloud Quality Gate
+
+The PR Sonar step is configured with two critical arguments:
 
 ```text
 -Dsonar.qualitygate.wait=true
 -Dsonar.qualitygate.timeout=300
 ```
 
-The PR is not considered acceptable until the server-side quality decision finishes successfully.
+`wait=true` changes Sonar from a reporting-only integration into a real merge gate. The workflow does not simply upload analysis and continue. It waits for the server-side Quality Gate result.
 
-After merge, the same code-quality workflow has a different `main` job. It rebuilds the source, collects LCOV coverage, and submits a main-branch Sonar analysis without rerunning lint, content checks, schema drift checks, the Cloudflare dry run, or the awaited PR gate. That job is independent of deployment and can be cancelled in favour of a newer `main` revision because only the newest baseline matters.
-
-## Main protection is part of the design
-
-Removing duplicate post-merge CI is safe only when `main` cannot be changed arbitrarily.
-
-The companion GitHub repository rule should require:
-
-1. changes to `main` through a pull request;
-2. the `Validate` status check before merge;
-3. the PR branch to be up to date with `main` before merge;
-4. no direct force-push or branch deletion bypass.
-
-For a solo-maintainer repository, the PR requirement does not need to require another human approval. The goal is to force the validated merge path, not to invent an unnecessary reviewer process.
-
-The "branch must be up to date" rule matters because PR evidence must apply to the state that will actually be merged. If another PR changed `main` after a check passed, the stale PR should be revalidated against the new base before merge.
-
-## Production build
-
-After a validated PR reaches `main`, the deployment workflow performs a fresh build:
-
-```bash
-npm run build
+```diagram
+GitHub Actions
+      |
+      v
+Submit PR Sonar analysis
+      |
+      v
+Wait for server-side Quality Gate
+      |
+      +--> FAIL -> Validate fails -> PR cannot merge
+      |
+      +--> PASS -> PR is eligible to merge
 ```
 
-This is intentional rather than duplicate CI. Production must build the exact commit now present on `main`.
+Sonar's PR analysis compares against the most recently analyzed target branch, so `main` is still analyzed after merges. That `main` refresh is independent of deployment and does not wait on the quality gate because the PR already supplied the release decision.
 
-## Production deployments are serialized
+## Gate 9: protected-main boundary
 
-Production uses one concurrency group with:
+The optimized design depends on GitHub enforcing the merge path. `main` should require:
+
+- a pull request before merging;
+- the `Validate` status check;
+- the branch to be up to date before merging;
+- no ordinary direct-push bypass;
+- no force pushes or branch deletion.
+
+For the current solo-maintainer workflow, another human approval is not required. The purpose is to force changes through the validated PR path, not to create a reviewer ceremony.
+
+This repository rule replaces the old assumption that a second full validation pass on a direct `main` push was the production safety boundary.
+
+## Step 10: production workflow isolation
+
+A push to `main` starts `.github/workflows/deploy.yml`. The production workflow does not depend on the Sonar-main refresh and does not repeat `npm run verify`.
+
+It uses a dedicated concurrency group with:
 
 ```yaml
 cancel-in-progress: false
 ```
 
-A newer push therefore does not cancel a deployment that may already be applying migrations or publishing a Worker revision. Releases queue and complete in order instead.
+This means a newer `main` revision queues behind an in-progress production release instead of cancelling a migration or Worker deployment halfway through.
 
-Cancelling stale PR validation or a stale Sonar-baseline refresh is useful. Cancelling an in-progress production mutation is not.
+## Step 11: prepare D1 and apply migrations
 
-## D1 migration boundary
+`scripts/deploy-cloudflare.mjs` refuses to perform a real production deployment unless it is running inside GitHub Actions.
 
-`scripts/deploy-cloudflare.mjs` refuses a real deployment outside GitHub Actions.
-
-For production it:
-
-1. validates required environment values;
-2. resolves or creates `gimmejob-db`;
-3. generates the production Wrangler configuration;
-4. applies remote D1 migrations;
-5. deploys the Worker.
+It validates the required production environment, resolves or creates the `gimmejob-db` D1 database, generates the production Wrangler configuration, and applies remote migrations before publishing the new Worker revision.
 
 ```diagram
-main build
-    |
-    v
-resolve D1
-    |
-    v
-apply migrations
-    |
-    +--> fail: stop
-    |
-    v
-deploy Worker
+Validated main revision
+      |
+      v
+Resolve production D1 database
+      |
+      +--> create database if absent
+      |
+      v
+Generate production Wrangler config
+      |
+      v
+Apply D1 migrations --remote
+      |
+      +--> failure -> stop deployment
+      |
+      v
+Deploy Worker
 ```
 
-Migration failure prevents the Worker release from continuing.
+Migration failure therefore prevents the application deployment from continuing.
 
-## Runtime secrets are deployed with the Worker
+## Step 12: deploy the Worker and runtime secrets
 
-The deployment receives secret values from GitHub Actions, writes a temporary runner-local secrets file with restricted permissions, and passes it to Wrangler with the Worker deployment.
-
-Conceptually:
+After migrations succeed, Wrangler publishes the production Worker and runtime secrets in one deployment:
 
 ```bash
 wrangler deploy --config <generated-config> --secrets-file <temporary-secrets-file>
 ```
 
-This avoids repeatedly updating Worker secrets after the code deployment. The temporary file is removed in the deployment script's cleanup path and is never committed.
+The temporary file contains required application secrets plus configured optional Google OAuth and OpenAI secrets. Existing Cloudflare secrets not present in the file are preserved by Wrangler. The temporary file is removed after the deployment attempt and is never committed.
 
-The deployment CLI itself is exercised by the canonical Cloudflare dry-run gate after the test-coverage process. Because that operational execution occurs outside the LCOV collection window, the script is explicitly excluded from Sonar coverage attribution rather than wrapped in artificial unit-test scaffolding.
+This replaces the previous sequence of one code deploy followed by multiple `wrangler secret put` operations, each of which could create another Worker version/deployment.
 
-## Vacancy synchronization is not deployment
+Vacancy synchronization is also no longer part of this script. It remains a separate scheduled operational workflow, so a third-party vacancy-source failure cannot turn an otherwise successful code release red.
 
-Vacancy collection is operational data work, not part of releasing application code.
-
-The old deployment path refreshed the vacancy catalog after publishing the Worker. That created an undesirable dependency: a scraper or source failure could make an otherwise successful code deployment appear failed.
-
-Vacancy synchronization now stays in its own scheduled workflow. Code deployment and data ingestion can therefore fail, retry and be monitored independently.
-
-## Post-deployment smoke checks
-
-The production workflow keeps smoke verification, but only for runtime health:
-
-- the public site must respond successfully;
-- `/api/health` must return its successful health payload.
-
-Deployment smoke checks do not assert historical page copy such as individual learning-card labels. Those assertions belong in repository tests and content validators, where a copy change does not create a false infrastructure incident.
-
-## What still runs only once
-
-| Check | PR gate | Sonar main refresh | Deploy |
-| --- | --- | --- | --- |
-| lint | yes | no | no |
-| type check | yes | no | no |
-| content validation | yes | no | no |
-| Drizzle drift check | yes | no | no |
-| tests + coverage | yes | yes, for Sonar baseline | no |
-| Cloudflare dry run | yes | no | no |
-| Sonar Quality Gate wait | yes | no | no |
-| Sonar main analysis | no | yes | no |
-| production build | yes | yes, for coverage | yes, exact `main` commit |
-| D1 remote migrations | no | no | yes |
-| real Worker deployment | no | no | yes |
-| live smoke check | no | no | yes |
-
-The remaining post-merge build/coverage work exists only to keep Sonar's `main` baseline current; it is no longer a release gate.
-
-## Verification
-
-Verify the delivery model at four boundaries:
-
-- **PR:** `Validate` must pass `npm run verify` and the awaited Sonar Quality Gate; no production deployment should run.
-- **Merge:** `main` protection must require the up-to-date `Validate` check, so stale or unchecked changes cannot enter the production branch.
-- **Sonar main:** the separate refresh should submit the current `main` analysis without blocking deployment.
-- **Production:** the deployment log must show D1 migrations before the single Worker deploy, followed by successful public-page and `/api/health` smoke checks.
-
-The Cloudflare dry run is part of `npm run verify`, so PR CI exercises the same generated configuration and secrets-file deployment arguments without modifying production.
-
-## Failure modes
-
-| Failure | Where it should fail |
-| --- | --- |
-| ESLint violation | PR CI |
-| agent TypeScript error | PR CI |
-| malformed content | PR CI |
-| missing generated migration | PR CI |
-| failing automated test | PR CI |
-| insufficient PR coverage / Sonar issue | PR CI |
-| malformed Cloudflare artifact | PR CI dry run |
-| stale PR after `main` changed | GitHub branch protection / required fresh check |
-| Sonar main refresh failure | code-quality workflow only; deployment remains independent |
-| missing production secret | deployment script |
-| D1 migration failure | deployment script before Worker publish |
-| Cloudflare deployment failure | deployment script |
-| public runtime unavailable after release | production smoke check |
-| vacancy source unavailable | vacancy-sync workflow, not code deployment |
-
-A useful pipeline makes the location of failure meaningful.
+After deployment, the workflow checks only production health: the public site must respond successfully and `/api/health` must report success. Historical page-copy assertions belong in tests/content validators rather than deployment smoke checks.
 
 ## Reproduce it yourself
 
-1. Put deterministic quality checks behind one canonical command.
-2. Run that full command on pull requests, not again after merge.
-3. Add any credentialed remote quality service to the PR gate.
-4. If that service needs a current main-branch baseline, refresh only the data it requires after merge and keep that refresh independent of deployment.
-5. Protect the production branch so only validated, up-to-date PRs can merge.
+To reproduce this gate model in another repository:
+
+1. Put the complete deterministic quality contract behind one canonical command.
+2. Run that full contract on pull requests.
+3. Wait for external quality services when their result is part of the merge decision.
+4. Protect the production branch so only validated, up-to-date PRs can change it.
+5. If an external service needs a current target-branch baseline, refresh only the data it requires after merge and keep that job independent of deployment.
 6. Build the exact production commit in the deployment workflow.
-7. Serialize production mutations and do not cancel them mid-run.
-8. Keep migrations immediately before the application release when compatibility requires it.
-9. Upload runtime secrets with the Worker release instead of creating multiple secret-only releases.
-10. Keep data collection, scheduled jobs and other operational workflows independent from code deployment.
-11. Use a small health-oriented post-deployment smoke test; keep regression assertions in the test suite.
+7. Add a target-platform dry run to PR validation.
+8. Inject production credentials only into the deployment workflow.
+9. Make the deployment script validate that it is running in the intended environment.
+10. Apply database migrations before publishing the application revision when your compatibility model requires that order.
+11. Serialize production mutations rather than cancelling them in progress.
+12. Upload code and runtime secrets together when the platform supports an atomic release path.
+13. Keep scheduled data collection independent from code deployment.
+14. Keep post-deployment smoke tests focused on runtime health.
+
+The exact commands will differ, but the evidence flow should remain explicit.
+
+## Verification
+
+You can verify the design at four levels.
+
+**Pull request behavior:** open a PR and confirm `Validate` runs while both production deployment and `Refresh Sonar main` are skipped.
+
+**Gate behavior:** intentionally break one safe non-production condition on a branch, such as lint or a content invariant, and confirm `Validate` fails before the PR can merge.
+
+**Main quality behavior:** after merge, confirm `Refresh Sonar main` runs build + coverage + Sonar analysis without rerunning the full verification suite and without blocking production deployment.
+
+**Main deployment behavior:** confirm the production workflow builds the exact `main` revision, applies D1 migrations, performs one Worker deployment with the secrets file, and finishes with the public/health smoke checks.
+
+For Sonar on a PR, the workflow log should show that the action waits for the Quality Gate result rather than ending immediately after analysis submission.
+
+## Why these decisions
+
+**Why keep the full validation on the PR only?** With protected `main` and a strict required check, that is the merge boundary where the result can still prevent bad code from entering production. Repeating the same full suite after merge adds cost without changing the merge decision.
+
+**Why still analyze `main` in Sonar?** Pull-request analysis compares against the most recent target-branch analysis. Keeping `main` current preserves accurate future PR comparisons and the main-branch dashboard.
+
+**Why run build + coverage again for the Sonar main refresh?** The coverage report is produced by CI and is not promoted automatically from a PR analysis. Reusing PR artifacts would require artifact provenance and commit-matching plumbing that is more complex than this small independent refresh.
+
+**Why make content validation a gate?** The site ships knowledge-base data as part of the product. Broken taxonomy, missing source references, or malformed Markdown can be production defects even when TypeScript compiles.
+
+**Why validate the Cloudflare artifact before merge?** Build success and target-platform deployability are different questions.
+
+**Why keep deployment logic in a script instead of a long YAML block?** D1 discovery, temporary configuration generation, migration order, secrets-file construction, and platform invocation remain clearer as executable code than as deeply nested workflow shell fragments.
+
+## Failure modes
+
+| Failure | Gate that should catch it | Expected result |
+| --- | --- | --- |
+| ESLint violation | PR verification | `Validate` fails |
+| Type error in agent code | PR verification | `Validate` fails |
+| schema changed without committed generated migration | Drizzle drift check | `Validate` fails |
+| malformed learning taxonomy | content validator | `Validate` fails |
+| production bundling problem | PR build | `Validate` fails |
+| failing test | PR test coverage step | `Validate` fails |
+| malformed Cloudflare artifact/deploy args | dry-run artifact gate | `Validate` fails |
+| Sonar PR Quality Gate red | awaited Sonar step | `Validate` fails; PR cannot merge |
+| stale PR after another merge | protected-main strict check | branch must update and revalidate |
+| Sonar main refresh failure | post-merge quality job | deployment remains independent; baseline refresh is red |
+| missing required runtime secret | deployment script | production deployment fails before publish |
+| D1 migration error | deployment script | Worker publish does not continue |
+| Cloudflare deployment error | deployment script | production workflow fails |
+| public runtime unavailable after release | production smoke | production workflow fails |
+| vacancy source error | vacancy-sync workflow | code deployment is unaffected |
+
+A useful pipeline makes the location of failure meaningful. The stage that rejects a revision should tell you which class of evidence is missing.
+
+## Current boundaries and future extensions
+
+The current production pipeline is automatic after a validated PR reaches protected `main`. It does **not** currently use a GitHub Environment manual approval as an additional production gate. That is a conscious description of the present implementation, not an omitted tutorial step.
+
+The post-deployment verification is intentionally small: it confirms the public runtime and health endpoint rather than duplicating page-level regression tests. A future extension could add canary deployment or automatic rollback if the operational risk justifies the additional machinery.
 
 ## Summary
 
-The optimized GimmeJob pipeline does less work while preserving the important evidence boundaries:
+GimmeJob's delivery model now has separate evidence and mutation boundaries. Pull requests run the full source, schema, content, build, test, coverage, Cloudflare dry-run, and Sonar quality gates. Protected `main` is the handoff. After merge, a lightweight Sonar job refreshes the analysis baseline while the production workflow independently builds the exact revision, applies D1 migrations, publishes the Worker and secrets once, and verifies runtime health.
 
-```text
-PR = prove quality once
-main Sonar refresh = keep analysis baseline current
-main deploy = release the proven change
-production smoke = prove the release is alive
-```
-
-The goal is not to maximize the number of gates. It is to put each gate in the one place where it provides useful evidence.
+The practical lesson is that “automatic deployment” should not mean “repeat every check after merge.” It should mean **validate once at the enforced merge boundary, then keep production release work focused on the operations that can only happen in production**.
 
 ## Sources
 
