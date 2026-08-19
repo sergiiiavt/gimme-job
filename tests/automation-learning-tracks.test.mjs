@@ -44,7 +44,9 @@ test("shared learning renderer filters the secondary navigation by selected trac
   assert.match(renderer, /selectedTrack\?\.moduleIds/);
   assert.match(renderer, /selectedModuleIds/);
   assert.match(renderer, /allModules\.filter/);
-  assert.match(renderer, /setActiveModule\(firstTrackModule\?\.id/);
+  assert.match(renderer, /router\.push\(contentHref/);
+  assert.match(renderer, /topic: firstTrackModule\?\.id \?\? null/);
+  assert.match(renderer, /track: trackId/);
 });
 
 test("Reference Framework is a real walkthrough with direct implementation links", async () => {
