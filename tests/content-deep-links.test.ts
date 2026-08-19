@@ -16,6 +16,17 @@ test("contentHref removes parameters and appends a stable heading hash", () => {
   );
 });
 
+test("learning section links preserve the selected topic and track", () => {
+  assert.equal(
+    contentHref("/learn/qa-fundamentals", "topic=requirements-test-design", {}, "decision-table-testing"),
+    "/learn/qa-fundamentals?topic=requirements-test-design#decision-table-testing",
+  );
+  assert.equal(
+    contentHref("/learn/programming", "track=python&topic=functions", {}, "decorators"),
+    "/learn/programming?track=python&topic=functions#decorators",
+  );
+});
+
 test("questionDeepLinkHref uses the stable question id", () => {
   assert.equal(
     questionDeepLinkHref("/interview", "testing-principle-context-dependent"),
