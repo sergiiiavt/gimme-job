@@ -5,9 +5,11 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("ships Fight AI slop as a lazy, local-only public game", async () => {
-  const [gameSource, worldSource, publicSource, navigationSource, stylesSource] = await Promise.all([
+  const [gameSource, facadeSource, worldSource, simulationSource, publicSource, navigationSource, stylesSource] = await Promise.all([
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
+    readFile(projectFile("app/rewild-world-legacy.ts"), "utf8"),
+    readFile(projectFile("app/rewild-simulation.ts"), "utf8"),
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
@@ -23,6 +25,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /const isFullScreenGame = section === "rewild" && subsection === "all"/);
   assert.match(publicSource, /!isFullScreenGame && \(/);
   assert.match(publicSource, /Exit game and return to the site/);
+
+  assert.match(facadeSource, /export \* from "\.\/rewild-world-legacy\.ts"/);
+  assert.match(facadeSource, /from "\.\/rewild-simulation\.ts"/);
   assert.match(worldSource, /export const HEX_COLS = 30;/);
   assert.match(worldSource, /export const HEX_ROWS = 14;/);
   assert.match(worldSource, /from "\.\/rewild-hex-grid\.ts"/);
@@ -40,25 +45,22 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /object\.kind === "pond"/);
   assert.match(worldSource, /export function createFacilityFootprint/);
   assert.match(worldSource, /return hexDisk\(anchor, boss \? 2 : 1\)/);
-  assert.match(worldSource, /export function findPath/);
-  assert.match(worldSource, /for \(const neighbor of hexNeighbors\(current\)\)/);
-  assert.match(worldSource, /hexDistance\(plant, targetHex\(target\)\) <= radius/);
-  assert.match(worldSource, /function spreadCorruption/);
-  assert.match(worldSource, /hexNeighbors\(source\.hex\)/);
-  assert.match(worldSource, /left\.surface === "road" \? 6 : 0/);
-  assert.match(worldSource, /cell\.surface !== "water"/);
-  assert.match(worldSource, /cell\.surface = "rubble"/);
-  assert.match(worldSource, /function reclaimNear/);
   assert.match(worldSource, /export function facilityOperational/);
-  assert.match(worldSource, /state\.ruins\.push/);
   assert.match(worldSource, /export function createReviewGameState/);
-  assert.match(worldSource, /plant\.reclaimTarget = target\.hex/);
-  assert.match(worldSource, /if \(target\.surface === "rubble"\) (?:\{ )?target\.surface = "meadow"/);
   assert.match(worldSource, /export function objectCorruption/);
   assert.match(worldSource, /export function inspectHex/);
-  assert.match(worldSource, /function updateEcosystem/);
-  assert.match(worldSource, /stepCost = cell\?\.surface === "road" \? \.18 : 1/);
-  assert.doesNotMatch(worldSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
+
+  assert.match(simulationSource, /export function createGameState/);
+  assert.match(simulationSource, /export function findPath/);
+  assert.match(simulationSource, /for \(const neighbor of hexNeighbors\(current\)\)/);
+  assert.match(simulationSource, /export function corruptionPercent/);
+  assert.match(simulationSource, /export function updateGame/);
+  assert.match(simulationSource, /export function placePlant/);
+  assert.match(simulationSource, /REWILD_BASELINE\.sunlightPerSecond/);
+  assert.match(simulationSource, /REWILD_BASELINE\.rootReclaimSeconds/);
+  assert.match(simulationSource, /popupDisableSeconds/);
+  assert.doesNotMatch(simulationSource, /roadBoost|stepCost|updateEcosystem\(|facilityOperational\(|hexDirection\(plant/);
+  assert.doesNotMatch(simulationSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
 
   assert.match(gameSource, /from "\.\/rewild-hex-world"/);
   assert.match(gameSource, /export default function RewildGame/);
