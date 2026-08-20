@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
 import ToTopButton from "./to-top-button";
+import VacancyPopoverLayer from "./vacancy-popover-layer";
 import VacancyScrollState from "./vacancy-scroll-state";
 import "./globals.css";
 import "./interview-auth-layout.css";
@@ -11,6 +12,7 @@ import "./vacancy-detail-layout.css";
 import "./vacancy-filter-enhancer.css";
 import "./vacancy-description.css";
 import "./vacancy-interaction-state.css";
+import "./general-ui-fixes.css";
 import "./quick-reference-availability.css";
 import "./brand-logo.css";
 import "./mobile-navigation-logo.css";
@@ -48,6 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <PrimaryNavScrollState/>
         <VacancyScrollState/>
+        <VacancyPopoverLayer/>
         <ToTopButton/>
         {children}
       </body>
