@@ -6,6 +6,12 @@
   font-weight: 400 !important;
 }
 
+.linkableHeading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
 .headingDirectLink,
 .pagerDirectLink {
   align-items: center;
@@ -36,9 +42,9 @@
 }
 
 .headingDirectLink {
-  margin-left: 9px;
-  position: relative;
-  top: -2px;
+  flex: 0 0 28px;
+  margin-left: auto;
+  position: static;
   vertical-align: middle;
 }
 
@@ -69,8 +75,34 @@
   z-index: 2;
 }
 
+.focusedContent {
+  margin: 0 auto !important;
+  max-width: 980px !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+  padding-top: 36px !important;
+}
+
+.focusedLayout {
+  display: block !important;
+  margin: 0 auto;
+  max-width: 900px;
+}
+
+.focusedArticle > h2:first-child {
+  border-top: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
 @media (max-width: 610px) {
   .pagerItem:last-child > button {
     text-align: left;
+  }
+
+  .focusedContent {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    padding-top: 16px !important;
   }
 }
