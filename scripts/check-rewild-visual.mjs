@@ -21,6 +21,8 @@ function touchesRewild() {
   return diff.stdout.split(/\r?\n/).some((file) =>
     file.startsWith("app/rewild-")
     || file.startsWith("tests/rewild-")
+    || file.startsWith("public/rewild/overhead/")
+    || file.startsWith("config/rewild/")
     || file === "visual/rewild-benchmark.html"
     || file === "scripts/check-rewild-visual.mjs"
     || file === "tests/fixtures/rewild-ecosystem.sha256",
@@ -118,7 +120,7 @@ async function main() {
       await mkdir(ARTIFACT_DIR, { recursive: true });
       await writeFile(join(ARTIFACT_DIR, "rewild-benchmark-actual.png"), normalized);
       console.error(`REWILD_BENCHMARK_SHA256=${actual}`);
-      throw new Error("Rewild visual baseline is not recorded yet. Commit the printed SHA-256 after reviewing the generated benchmark artifact.");
+      throw new Error("Rewild visual baseline is deliberately awaiting review. Inspect the uploaded benchmark artifact before recording a new SHA-256.");
     }
 
     if (actual !== expected) {
