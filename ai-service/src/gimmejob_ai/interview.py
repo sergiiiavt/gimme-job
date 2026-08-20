@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import random
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -130,6 +129,11 @@ def find_interview_question(content_root: Path, track: Literal["qa", "python"], 
     return None
 
 
+def _session_order_key(session_id: str, question: CatalogQuestion) -> bytes:
+    value = f"{session_id}\0{question.track}\0{question.id}".encode("utf-8")
+    return hashlib.sha256(value).digest()
+
+
 def select_interview_questions(
     *,
     content_root: Path,
@@ -153,26 +157,13 @@ def select_interview_questions(
     candidates.sort(
         key=lambda question: (
             prevalence_rank.get(question.prevalence.casefold(), 4),
+            _session_order_key(session_id, question),
             question.category.casefold(),
             question.id,
         )
     )
 
-    seed_bytes = hashlib.sha256(session_id.encode("utf-8")).digest()[:8]
-    rng = random.Random(int.from_bytes(seed_bytes, "big"))
-
-    buckets: dict[int, list[CatalogQuestion]] = {}
-    for question in candidates:
-        rank = prevalence_rank.get(question.prevalence.casefold(), 4)
-        buckets.setdefault(rank, []).append(question)
-
-    ordered: list[CatalogQuestion] = []
-    for rank in sorted(buckets):
-        bucket = buckets[rank]
-        rng.shuffle(bucket)
-        ordered.extend(bucket)
-
-    return [question.prompt(language) for question in ordered[:question_count]]
+    return [question.prompt(language) for question in candidates[:question_count]]
 
 
 INTERVIEW_EVALUATION_PROMPT = """You are evaluating a candidate's answer in a technical QA interview.
