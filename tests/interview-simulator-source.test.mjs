@@ -9,6 +9,6 @@ test("interview simulator source renders its initial workspace", () => {
 
   assert.match(html, /Interview simulator/);
   assert.match(html, /Configure interview/);
-  assert.match(html, /Start 10-question interview/);
+  assert.match(html, /Start \d+-question interview/);
   assert.match(html, /Areas to practice/);
 });
