@@ -33,6 +33,15 @@ type ClassificationRow = {
   recruiter_name: string | null;
   action: string | null;
   classified_at: string | null;
+  job_id: string | null;
+  match_status: string | null;
+  match_method: string | null;
+  match_confidence: number | null;
+  status_apply_note: string | null;
+  resolved_at: string | null;
+  status_applied_at: string | null;
+  matched_title: string | null;
+  matched_company: string | null;
 };
 
 const ACTIVITY_LIMIT = 50;
@@ -123,7 +132,7 @@ export async function handleVacancyAutomationActivity(request: Request, env: Vac
   const userId = optionalUserId(request);
   if (userId === undefined) return json({ error: "userId is too long." }, 400);
   const userFilter = userId ? " AND audit.user_id = ?" : "";
-  const emailUserFilter = userId ? " AND user_id = ?" : "";
+  const emailUserFilter = userId ? " AND events.user_id = ?" : "";
   const userBindings = userId ? [userId] : [];
 
   try {
@@ -141,33 +150,42 @@ export async function handleVacancyAutomationActivity(request: Request, env: Vac
         .bind(startUtc, endUtc, ...userBindings, ACTIVITY_LIMIT)
         .all<AuditRow>(),
       env.DB.prepare(`SELECT
-        id, user_id, subject, classification, classification_confidence,
-        classification_source, summary, company, job_title, recruiter_name,
-        action, classified_at
-      FROM user_email_events
-      WHERE classified_at >= ? AND classified_at < ?${emailUserFilter}
-      ORDER BY CASE classification
+        events.id, events.user_id, events.subject, events.classification,
+        events.classification_confidence, events.classification_source,
+        events.summary, events.company, events.job_title, events.recruiter_name,
+        events.action, events.classified_at, events.job_id, events.match_status,
+        events.match_method, events.match_confidence, events.status_apply_note,
+        events.resolved_at, events.status_applied_at,
+        jobs.title AS matched_title, jobs.company AS matched_company
+      FROM user_email_events AS events
+      LEFT JOIN jobs ON jobs.id = events.job_id
+      WHERE events.classified_at >= ? AND events.classified_at < ?${emailUserFilter}
+      ORDER BY CASE events.classification
         WHEN 'OFFER' THEN 1
         WHEN 'INTERVIEW' THEN 2
         WHEN 'TEST_TASK' THEN 3
         WHEN 'RECRUITER_OUTREACH' THEN 4
-        WHEN 'APPLICATION_RECEIVED' THEN 5
-        WHEN 'REJECTION' THEN 6
+        WHEN 'REJECTION' THEN 5
+        WHEN 'APPLICATION_RECEIVED' THEN 6
         WHEN 'JOB_ALERT' THEN 7
         WHEN 'OTHER' THEN 8
         WHEN 'SERVICE_MESSAGE' THEN 9
         WHEN 'NON_JOB' THEN 10
         ELSE 11
-      END, classified_at DESC
+      END, events.classified_at DESC
       LIMIT ?`)
         .bind(startUtc, endUtc, ...userBindings, ACTIVITY_LIMIT)
         .all<ClassificationRow>(),
     ]);
 
+    const classificationRows = classifications.results ?? [];
+    const resolutionNeedsAttention = classificationRows.filter((row) => row.match_status === "AMBIGUOUS" || row.match_status === "UNRESOLVED").length;
+
     return json({
       window: { startUtc, endUtc },
       userId,
       limit: ACTIVITY_LIMIT,
+      resolutionNeedsAttention,
       vacancyChanges: (audit.results ?? []).map((row) => ({
         id: row.id,
         userId: row.user_id,
@@ -182,7 +200,7 @@ export async function handleVacancyAutomationActivity(request: Request, env: Vac
         metadata: parseMetadata(row.metadata_json),
         changedAt: row.created_at,
       })),
-      classifications: (classifications.results ?? []).map((row) => ({
+      classifications: classificationRows.map((row) => ({
         id: row.id,
         userId: row.user_id,
         subject: row.subject,
@@ -196,6 +214,17 @@ export async function handleVacancyAutomationActivity(request: Request, env: Vac
         action: row.action,
         classifiedAt: row.classified_at,
         changedFields: classificationChanges(row),
+        resolution: {
+          status: row.match_status ?? "PENDING",
+          jobId: row.job_id,
+          method: row.match_method,
+          confidence: row.match_confidence,
+          statusNote: row.status_apply_note,
+          resolvedAt: row.resolved_at,
+          statusAppliedAt: row.status_applied_at,
+          matchedTitle: row.matched_title,
+          matchedCompany: row.matched_company,
+        },
       })),
     });
   } catch {

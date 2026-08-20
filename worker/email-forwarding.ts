@@ -49,6 +49,28 @@ function parsedDate(value: string | null): string {
   return new Date().toISOString();
 }
 
+function normalizedMessageId(value: string | null): string | null {
+  const clean = cleanHeader(value, MAX_MESSAGE_ID_LENGTH).toLowerCase();
+  if (!clean) return null;
+  const bracketed = clean.match(/<([^<>\s]+)>/);
+  return (bracketed?.[1] ?? clean.replace(/^<|>$/g, "")).trim() || null;
+}
+
+function firstReferencedMessageId(value: string | null): string | null {
+  const clean = cleanHeader(value, MAX_MESSAGE_ID_LENGTH * 4).toLowerCase();
+  if (!clean) return null;
+  const bracketed = clean.match(/<([^<>\s]+)>/);
+  if (bracketed?.[1]) return bracketed[1];
+  return normalizedMessageId(clean.split(/\s+/)[0] ?? null);
+}
+
+export function forwardedThreadId(headers: Headers, providerMessageId: string): string {
+  return firstReferencedMessageId(headers.get("references"))
+    ?? firstReferencedMessageId(headers.get("in-reply-to"))
+    ?? normalizedMessageId(headers.get("message-id"))
+    ?? providerMessageId.toLowerCase();
+}
+
 function decodeQuotedPrintableAscii(value: string): string {
   return value
     .replace(/=\r?\n/g, "")
@@ -137,6 +159,7 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
     receivedAt,
     String(message.rawSize),
   ].join("|"));
+  const threadId = forwardedThreadId(message.headers, providerMessageId);
   const rawMessage = await boundedRawMessage(message);
   const textExcerpt = rawMessage && !gmailForwardingConfirmation(subject, senderEmail)
     ? extractEmailTextExcerpt(rawMessage, MAX_TEXT_EXCERPT_LENGTH)
@@ -147,8 +170,9 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
     id, user_id, provider, provider_message_id, thread_id, received_at,
     sender_name, sender_email, subject, text_excerpt, classification, summary, company,
     job_title, recruiter_name, job_id, created_at, updated_at
-  ) VALUES (?, ?, 'email_forwarding', ?, NULL, ?, NULL, ?, ?, ?, 'UNCLASSIFIED', NULL, NULL, NULL, NULL, NULL, ?, ?)
+  ) VALUES (?, ?, 'email_forwarding', ?, ?, ?, NULL, ?, ?, ?, 'UNCLASSIFIED', NULL, NULL, NULL, NULL, NULL, ?, ?)
   ON CONFLICT(user_id, provider, provider_message_id) DO UPDATE SET
+    thread_id = COALESCE(excluded.thread_id, user_email_events.thread_id),
     received_at = excluded.received_at,
     sender_email = excluded.sender_email,
     subject = excluded.subject,
@@ -158,6 +182,7 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
       `evt_${crypto.randomUUID()}`,
       alias.user_id,
       providerMessageId,
+      threadId,
       receivedAt,
       senderEmail,
       subject,

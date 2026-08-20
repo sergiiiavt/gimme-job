@@ -70,7 +70,7 @@ test("normal forwarded job email stores a clean bounded text excerpt", async () 
 
   assert.equal(incoming.state.rejected, "");
   assert.equal(state.inserted.length, 1);
-  const excerpt = state.inserted[0]?.[6];
+  const excerpt = state.inserted[0]?.[7];
   assert.equal(
     excerpt,
     "Hello Sergii,\nWe have a Senior QA Engineer role at Example Corp and would like to discuss it with you.",
@@ -98,7 +98,7 @@ test("Gmail forwarding confirmation never stores its verification body as the cl
   await handleForwardedEmail(incoming.value, { DB: db });
 
   assert.equal(state.inserted.length, 1);
-  assert.equal(state.inserted[0]?.[6], null);
+  assert.equal(state.inserted[0]?.[7], null);
   assert.equal(state.verifications.length, 1);
   assert.equal(state.verifications[0]?.[2], "123456789");
 });
@@ -119,5 +119,5 @@ test("oversized raw messages are not parsed or stored as excerpts", async () => 
   await handleForwardedEmail(value, { DB: db });
 
   assert.equal(stateMessage.rejected, "");
-  assert.equal(state.inserted[0]?.[6], null);
+  assert.equal(state.inserted[0]?.[7], null);
 });
