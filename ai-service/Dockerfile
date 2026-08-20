@@ -2,6 +2,7 @@ FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src \
     GIMMEJOB_AI_CONTENT_ROOT=/app/content
 
 WORKDIR /app
@@ -11,7 +12,7 @@ RUN python -m pip install --no-cache-dir uv==0.12.1
 COPY ai-service/pyproject.toml /app/pyproject.toml
 COPY ai-service/uv.lock /app/uv.lock
 COPY ai-service/src /app/src
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-build --no-install-project
 
 COPY content /app/content
 
