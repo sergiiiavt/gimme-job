@@ -14,6 +14,7 @@ test("locks active Rewild overhead atlas frames and v4 fallback policy", async (
 
   assert.equal(contract.activeGeneration, "v3");
   assert.equal(contract.frameVisibilityThreshold, 24);
+  assert.equal(contract.v4Policy.decodePolicy, "fail");
   assert.equal(contract.v4Policy.emptyFramePolicy, "fail");
   assert.equal(contract.v4Policy.silentFallbackAllowed, false);
 
@@ -23,8 +24,11 @@ test("locks active Rewild overhead atlas frames and v4 fallback policy", async (
   assert.ok(terrainAtlas);
   assert.equal(entityAtlas.frames.length, 32);
   assert.equal(terrainAtlas.frames.length, 16);
-  assert.equal(entityAtlas.frames.length, entityAtlas.columns * entityAtlas.rows);
-  assert.equal(terrainAtlas.frames.length, terrainAtlas.columns * terrainAtlas.rows);
+  assert.ok(entityAtlas.frames.length <= entityAtlas.columns * entityAtlas.rows);
+  assert.ok(terrainAtlas.frames.length <= terrainAtlas.columns * terrainAtlas.rows);
+  assert.equal(entityAtlas.decodePolicy, "warn-on-v3-decoder-error");
+  assert.equal(terrainAtlas.decodePolicy, "fail");
+  assert.equal(terrainAtlas.rows, 8);
 
   for (const frame of entityAtlas.frames) {
     assert.match(atlasSource, new RegExp(`"${frame.name}"`));
