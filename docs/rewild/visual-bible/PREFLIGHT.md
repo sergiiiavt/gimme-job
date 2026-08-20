@@ -7,7 +7,7 @@ Run this checklist before generating, accepting, packing, or integrating every v
 - [ ] Decorative props are explicitly marked visual-only.
 - [ ] No invented unit classes, factions, movement systems or abilities.
 - [ ] Visual direction matches all relevant Visual Bible v1 sheets.
-- [ ] Pointy-top hex guides are regular: six equal sides, 120° interior angles, width/height ≈ 0.8660254.
+- [ ] Hex guides match `app/rewild-hex-grid.ts`: regular flat-top, six equal sides, 120° interior angles, width/height ≈ 1.1547005.
 - [ ] X/Y sprite scaling is uniform; no horizontal or vertical stretching.
 - [ ] Large assets use declared multi-hex footprints instead of being squeezed into one cell.
 - [ ] Connected terrain uses six-neighbor edge logic rather than isolated repeated stamps.
