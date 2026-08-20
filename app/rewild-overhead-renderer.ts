@@ -15,5 +15,5 @@ export function renderOverheadGame(
   camera: RewildCamera,
 ) {
   const snapshot = createRenderSnapshot(state);
-  renderProductionGame(context, snapshot.state, camera);
+  renderProductionGame(context, snapshot, camera);
 }

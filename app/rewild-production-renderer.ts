@@ -1,3 +1,4 @@
+import { hexNeighborFor } from "./rewild-hex-grid";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -5,10 +6,11 @@ import {
   HEX_SIZE,
   HOUSE_FOOTPRINT,
   PLANTS,
-  biomeAt,
+  REWILD_HEX_LAYOUT,
   cellAt,
   hexCenter,
   hexDistance,
+  hexKey,
   hexLine,
   hexPolygon,
   inspectHex,
@@ -29,11 +31,17 @@ import {
   spriteForPlant,
   type RewildPixelSpriteId,
 } from "./rewild-pixel-atlas";
+import type { RenderEdge, RenderSnapshot } from "./rewild-render-snapshot";
 
 export interface RewildCamera {
   x: number;
   y: number;
   zoom: number;
+}
+
+interface PixelSegment {
+  from: PixelPoint;
+  to: PixelPoint;
 }
 
 const PALETTE = {
@@ -42,6 +50,7 @@ const PALETTE = {
   meadow: "#6f963e",
   meadowDark: "#557d36",
   forest: "#315d32",
+  forestEdge: "#24492b",
   water: "#245f78",
   waterDark: "#173f57",
   waterLight: "#4d8c9b",
@@ -54,8 +63,8 @@ const PALETTE = {
   corruption2: "#5d504b",
   corruption3: "#433b44",
   corruption4: "#29262f",
-  mesh: "rgba(25,44,33,.13)",
-  meshIndustrial: "rgba(145,155,151,.20)",
+  mesh: "rgba(25,44,33,.065)",
+  meshIndustrial: "rgba(145,155,151,.09)",
   shore: "#94a65d",
   roadEdge: "#5e4b32",
   road: "#9d7b4c",
@@ -65,6 +74,15 @@ const PALETTE = {
   placement: "#f1e78b",
   placementBad: "#dd6d61",
 };
+
+const CORRUPTION_PALETTE: Record<1 | 2 | 3 | 4, string> = {
+  1: PALETTE.corruption1,
+  2: PALETTE.corruption2,
+  3: PALETTE.corruption3,
+  4: PALETTE.corruption4,
+};
+
+const DIRECTION_TO_POLYGON_EDGE = [0, 5, 4, 3, 2, 1] as const;
 
 function tracePolygon(ctx: CanvasRenderingContext2D, points: PixelPoint[]) {
   if (!points.length) return;
@@ -98,6 +116,15 @@ function pixelLine(ctx: CanvasRenderingContext2D, from: PixelPoint, to: PixelPoi
   }
 }
 
+function drawPixelDisc(ctx: CanvasRenderingContext2D, center: PixelPoint, radius: number, color: string) {
+  const integerRadius = Math.max(1, Math.round(radius));
+  ctx.fillStyle = color;
+  for (let y = -integerRadius; y <= integerRadius; y += 1) {
+    const halfSpan = Math.floor(Math.sqrt(integerRadius * integerRadius - y * y));
+    ctx.fillRect(Math.round(center.x - halfSpan), Math.round(center.y + y), halfSpan * 2 + 1, 1);
+  }
+}
+
 function drawHealth(ctx: CanvasRenderingContext2D, center: PixelPoint, ratio: number, width = 30, yOffset = HEX_HEIGHT * .48) {
   const left = Math.round(center.x - width / 2);
   const top = Math.round(center.y - yOffset);
@@ -111,66 +138,110 @@ function industrialInfluence(state: GameState, hex: HexCoord) {
   return state.nodes.some((node) => hexDistance(node.anchor, hex) <= (node.boss ? 4 : 3));
 }
 
-function materialForCell(state: GameState, cell: HexCell) {
-  if (cell.surface === "water") return PALETTE.water;
-  if (cell.surface === "house") return PALETTE.soil;
-  if (cell.surface === "foundation") return cell.corruption >= 3 ? PALETTE.corruption4 : PALETTE.industrial;
-  if (cell.surface === "rubble") return PALETTE.industrialDark;
-  if (cell.corruption === 4) return PALETTE.corruption4;
-  if (cell.corruption === 3) return PALETTE.corruption3;
-  if (cell.corruption === 2) return PALETTE.corruption2;
-  if (cell.corruption === 1) return PALETTE.corruption1;
-  const biome = biomeAt(state.world, cell.hex)?.kind;
-  if (biome === "forest") return PALETTE.forest;
-  if (biome === "rock") return PALETTE.stone;
-  if (biome === "flowers") return PALETTE.meadowLight;
-  if (industrialInfluence(state, cell.hex)) return PALETTE.industrial;
-  const value = cellRandom(cell, 2);
-  return value > .74 ? PALETTE.meadowLight : value < .18 ? PALETTE.meadowDark : PALETTE.meadow;
+function fillHexes(ctx: CanvasRenderingContext2D, hexes: readonly HexCoord[], color: string, scale = 1.055) {
+  ctx.fillStyle = color;
+  for (const hex of hexes) {
+    tracePolygon(ctx, hexPolygon(hex, scale));
+    ctx.fill();
+  }
 }
 
-function drawGround(ctx: CanvasRenderingContext2D, state: GameState) {
+function groupMasks(hexes: readonly HexCoord[]) {
+  const keys = new Set(hexes.map(hexKey));
+  const masks = new Map<string, number>();
+  for (const hex of hexes) {
+    let mask = 0;
+    for (let direction = 0; direction < 6; direction += 1) {
+      const neighbor = hexNeighborFor(REWILD_HEX_LAYOUT, hex, direction);
+      if (neighbor && keys.has(hexKey(neighbor))) mask |= 1 << direction;
+    }
+    masks.set(hexKey(hex), mask);
+  }
+  return masks;
+}
+
+function boundarySegments(hexes: readonly HexCoord[], masks: ReadonlyMap<string, number>): PixelSegment[] {
+  const segments: PixelSegment[] = [];
+  for (const hex of hexes) {
+    const mask = masks.get(hexKey(hex)) ?? 0;
+    const polygon = hexPolygon(hex, 1.028);
+    for (let direction = 0; direction < 6; direction += 1) {
+      if (mask & (1 << direction)) continue;
+      const edgeIndex = DIRECTION_TO_POLYGON_EDGE[direction];
+      segments.push({ from: polygon[edgeIndex], to: polygon[(edgeIndex + 1) % polygon.length] });
+    }
+  }
+  return segments;
+}
+
+export function regionBoundarySegments(snapshot: RenderSnapshot, region: BiomeRegion) {
+  return boundarySegments(region.cells, snapshot.regionNeighborMasks.get(region.id) ?? new Map());
+}
+
+function drawConnectedBiomeGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  for (const region of snapshot.state.world.biomes) {
+    const color = region.kind === "water"
+      ? PALETTE.water
+      : region.kind === "forest"
+        ? PALETTE.forest
+        : region.kind === "rock"
+          ? PALETTE.stone
+          : PALETTE.meadowLight;
+    fillHexes(ctx, region.cells, color, 1.06);
+  }
+}
+
+function drawGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  const state = snapshot.state;
   ctx.fillStyle = PALETTE.outside;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  fillHexes(ctx, [...state.world.cells.values()].map((cell) => cell.hex), PALETTE.meadow, 1.04);
+  drawConnectedBiomeGround(ctx, snapshot);
+
+  const houseGround: HexCoord[] = [];
   for (const cell of state.world.cells.values()) {
-    tracePolygon(ctx, hexPolygon(cell.hex, 1.018));
-    ctx.fillStyle = materialForCell(state, cell);
-    ctx.fill();
+    if (cell.surface === "house") houseGround.push(cell.hex);
+    if (cell.surface !== "meadow" || cell.corruption !== 0 || cell.readability >= .5 || cell.detail <= .55) continue;
+    if (snapshot.occupiedHexes.has(hexKey(cell.hex))) continue;
+    const center = hexCenter(cell.hex);
+    const light = cellRandom(cell, 2) > .57;
+    ctx.fillStyle = light ? PALETTE.meadowLight : PALETTE.meadowDark;
+    const x = Math.round(center.x - 8 + cellRandom(cell, 3) * 16);
+    const y = Math.round(center.y - 5 + cellRandom(cell, 4) * 10);
+    ctx.fillRect(x, y, light ? 3 : 2, 2);
+  }
+  fillHexes(ctx, houseGround, PALETTE.soil, 1.055);
+}
 
-    if (cell.surface === "meadow" && cell.corruption === 0 && cell.readability < .5 && cell.detail > .55 && !biomeAt(state.world, cell.hex)) {
-      const center = hexCenter(cell.hex);
-      drawRewildSprite(ctx, cellRandom(cell, 19) > .78 ? "flower-cluster" : "grass-tuft", center.x, center.y, {
-        scale: cellRandom(cell, 20) > .65 ? .35 : .28,
-        alpha: .72,
-        flipX: cellRandom(cell, 21) > .5,
-      });
-    }
+function drawIndustrialGround(ctx: CanvasRenderingContext2D, state: GameState) {
+  const territory = [...state.world.cells.values()]
+    .filter((cell) => cell.surface !== "water" && industrialInfluence(state, cell.hex))
+    .map((cell) => cell.hex);
+  fillHexes(ctx, territory, PALETTE.industrial, 1.065);
+
+  if (territory.length) {
+    for (const edge of boundarySegments(territory, groupMasks(territory))) pixelLine(ctx, edge.from, edge.to, "rgba(96,105,107,.34)", 2, 1);
+  }
+
+  for (const node of state.nodes) {
+    fillHexes(ctx, node.footprint, PALETTE.industrialDark, 1.035);
+    for (const edge of boundarySegments(node.footprint, groupMasks(node.footprint))) pixelLine(ctx, edge.from, edge.to, PALETTE.industrialLight, 1, 1);
   }
 }
 
-function edgeKey(from: PixelPoint, to: PixelPoint) {
-  const a = `${Math.round(from.x * 10)},${Math.round(from.y * 10)}`;
-  const b = `${Math.round(to.x * 10)},${Math.round(to.y * 10)}`;
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
-function boundaryEdges(region: BiomeRegion) {
-  const edges = new Map<string, { from: PixelPoint; to: PixelPoint; count: number }>();
-  for (const hex of region.cells) {
-    const polygon = hexPolygon(hex, 1.018);
-    for (let index = 0; index < polygon.length; index += 1) {
-      const from = polygon[index];
-      const to = polygon[(index + 1) % polygon.length];
-      const key = edgeKey(from, to);
-      const existing = edges.get(key);
-      if (existing) existing.count += 1;
-      else edges.set(key, { from, to, count: 1 });
-    }
+function drawCorruptionGround(ctx: CanvasRenderingContext2D, state: GameState) {
+  for (const level of [1, 2, 3, 4] as const) {
+    const cells = [...state.world.cells.values()].filter((cell) => cell.corruption === level && cell.surface !== "foundation").map((cell) => cell.hex);
+    fillHexes(ctx, cells, CORRUPTION_PALETTE[level], 1.07);
   }
-  return [...edges.values()].filter((edge) => edge.count === 1);
+  const foundations = [...state.world.cells.values()].filter((cell) => cell.surface === "foundation").map((cell) => cell.hex);
+  const rubble = [...state.world.cells.values()].filter((cell) => cell.surface === "rubble").map((cell) => cell.hex);
+  fillHexes(ctx, foundations, PALETTE.industrialDark, 1.05);
+  fillHexes(ctx, rubble, PALETTE.industrialDark, 1.06);
 }
 
-function drawWater(ctx: CanvasRenderingContext2D, region: BiomeRegion, state: GameState) {
+function drawWater(ctx: CanvasRenderingContext2D, region: BiomeRegion, snapshot: RenderSnapshot) {
+  const state = snapshot.state;
   for (const hex of region.cells) {
     const cell = cellAt(state.world, hex);
     if (!cell) continue;
@@ -181,28 +252,33 @@ function drawWater(ctx: CanvasRenderingContext2D, region: BiomeRegion, state: Ga
     }
     if (cellRandom(cell, 32) > .84) drawRewildSprite(ctx, "water-lilies", center.x, center.y, { scale: .34, alpha: .8, flipX: cellRandom(cell, 33) > .5 });
   }
-  for (const edge of boundaryEdges(region)) pixelLine(ctx, edge.from, edge.to, PALETTE.shore, 3, 1);
+  for (const edge of regionBoundarySegments(snapshot, region)) {
+    pixelLine(ctx, edge.from, edge.to, PALETTE.waterDark, 4, 1);
+    pixelLine(ctx, edge.from, edge.to, PALETTE.shore, 2, 1);
+  }
 }
 
-function drawForest(ctx: CanvasRenderingContext2D, region: BiomeRegion, state: GameState) {
+function drawForest(ctx: CanvasRenderingContext2D, region: BiomeRegion, snapshot: RenderSnapshot) {
+  const state = snapshot.state;
   for (const hex of region.cells) {
     const cell = cellAt(state.world, hex);
-    if (!cell || cellRandom(cell, 40) < .22) continue;
+    if (!cell || cellRandom(cell, 40) < .13) continue;
     const center = hexCenter(hex);
     const id: RewildPixelSpriteId = cellRandom(cell, 41) > .72 ? "tree-pine" : "tree-broadleaf";
     drawRewildSprite(ctx, id, center.x, center.y, {
-      scale: .68 + cellRandom(cell, 42) * .18,
+      scale: .76 + cellRandom(cell, 42) * .2,
       alpha: cell.corruption >= 3 ? .58 : .96,
       flipX: cellRandom(cell, 43) > .5,
     });
   }
-  for (const edge of boundaryEdges(region)) pixelLine(ctx, edge.from, edge.to, "rgba(28,65,38,.72)", 2, 1);
+  for (const edge of regionBoundarySegments(snapshot, region)) pixelLine(ctx, edge.from, edge.to, PALETTE.forestEdge, 2, 1);
 }
 
-function drawRegionDetails(ctx: CanvasRenderingContext2D, state: GameState) {
+function drawRegionDetails(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  const state = snapshot.state;
   for (const region of state.world.biomes) {
-    if (region.kind === "water") drawWater(ctx, region, state);
-    else if (region.kind === "forest") drawForest(ctx, region, state);
+    if (region.kind === "water") drawWater(ctx, region, snapshot);
+    else if (region.kind === "forest") drawForest(ctx, region, snapshot);
     else if (region.kind === "rock") {
       for (const hex of region.cells) {
         const cell = cellAt(state.world, hex);
@@ -221,47 +297,50 @@ function drawRegionDetails(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
-function drawRoad(ctx: CanvasRenderingContext2D, state: GameState) {
-  const cells = state.world.road.cells;
-  for (let index = 1; index < cells.length; index += 1) {
-    if (hexDistance(cells[index - 1], cells[index]) !== 1) continue;
-    const from = hexCenter(cells[index - 1]);
-    const to = hexCenter(cells[index]);
+function edgeJunctions(edges: readonly RenderEdge[]) {
+  const points = new Map<string, HexCoord>();
+  for (const edge of edges) {
+    points.set(hexKey(edge.from), edge.from);
+    points.set(hexKey(edge.to), edge.to);
+  }
+  return [...points.values()];
+}
+
+function drawRoad(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  snapshot.roadEdges.forEach((edge, index) => {
+    const from = hexCenter(edge.from);
+    const to = hexCenter(edge.to);
     pixelLine(ctx, from, to, PALETTE.roadEdge, 15, 1);
     pixelLine(ctx, from, to, PALETTE.road, 10, 1);
     if (index % 4 === 0) pixelLine(ctx, from, to, PALETTE.roadMark, 1, 6);
-  }
-}
-
-function drawIndustrialGround(ctx: CanvasRenderingContext2D, state: GameState) {
-  for (const node of state.nodes) {
-    for (const hex of node.footprint) {
-      tracePolygon(ctx, hexPolygon(hex, .95));
-      ctx.fillStyle = PALETTE.industrialDark;
-      ctx.fill();
-      ctx.strokeStyle = PALETTE.industrialLight;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
+  });
+  for (const hex of edgeJunctions(snapshot.roadEdges)) {
+    const center = hexCenter(hex);
+    drawPixelDisc(ctx, center, 7, PALETTE.roadEdge);
+    drawPixelDisc(ctx, center, 5, PALETTE.road);
   }
 }
 
 function drawMesh(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.lineWidth = 1;
   for (const cell of state.world.cells.values()) {
-    tracePolygon(ctx, hexPolygon(cell.hex, .986));
+    tracePolygon(ctx, hexPolygon(cell.hex, .995));
     ctx.strokeStyle = cell.surface === "foundation" || industrialInfluence(state, cell.hex) ? PALETTE.meshIndustrial : PALETTE.mesh;
     ctx.stroke();
   }
 }
 
-function drawCablePath(ctx: CanvasRenderingContext2D, node: DataNode) {
-  const route = hexLine(node.anchor, node.outlet);
-  for (let index = 1; index < route.length; index += 1) {
-    const from = hexCenter(route[index - 1]);
-    const to = hexCenter(route[index]);
+function drawCableNetwork(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  for (const edge of snapshot.cableEdges) {
+    const from = hexCenter(edge.from);
+    const to = hexCenter(edge.to);
     pixelLine(ctx, from, to, PALETTE.cableDark, 5, 1);
     pixelLine(ctx, from, to, PALETTE.cable, 2, 1);
+  }
+  for (const hex of edgeJunctions(snapshot.cableEdges)) {
+    const center = hexCenter(hex);
+    drawPixelDisc(ctx, center, 3, PALETTE.cableDark);
+    drawPixelDisc(ctx, center, 1, PALETTE.cable);
   }
 }
 
@@ -319,6 +398,10 @@ function drawNatureObject(ctx: CanvasRenderingContext2D, object: WorldObject, st
   if (!sprite) return;
   const center = hexCenter(object.anchor);
   const corruption = cellAt(state.world, object.anchor)?.corruption ?? 0;
+  if (object.shadow) {
+    ctx.fillStyle = "rgba(23,32,29,.28)";
+    ctx.fillRect(Math.round(center.x - 5), Math.round(center.y + HEX_SIZE * .22), 10, 2);
+  }
   drawRewildSprite(ctx, sprite, center.x, center.y, {
     scale: objectScale(object),
     alpha: corruption >= 3 ? .58 : .95,
@@ -332,6 +415,8 @@ function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: Gam
   const center = hexCenter(plant);
   const disabled = plant.disabledUntil > state.elapsed;
   const mature = plant.kind === "elderoak" && plant.age >= 15;
+  ctx.fillStyle = "rgba(23,32,29,.25)";
+  ctx.fillRect(Math.round(center.x - 4), Math.round(center.y + 7), 8, 2);
   drawRewildSprite(ctx, spriteForPlant(plant.kind, mature), center.x, center.y, {
     scale: mature ? .88 : .72,
     alpha: disabled ? .48 : 1,
@@ -358,8 +443,7 @@ function enemyScale(enemy: EnemyEntity) {
 }
 
 function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, state: GameState) {
-  const bob = Math.round(Math.sin((state.elapsed + enemy.id * .31) * 5) * 1.2);
-  const center = { x: enemy.position.x, y: enemy.position.y + bob };
+  const center = enemy.position;
   drawRewildSprite(ctx, spriteForEnemy(enemy.kind), center.x, center.y, {
     scale: enemyScale(enemy),
     flipX: enemy.id % 2 === 0,
@@ -372,15 +456,13 @@ function drawEnemy(ctx: CanvasRenderingContext2D, enemy: EnemyEntity, state: Gam
   }
 }
 
-function drawRouteFeedback(ctx: CanvasRenderingContext2D, state: GameState) {
-  for (const enemy of state.enemies) {
-    if (!enemy.path.length) continue;
-    let previous = enemy.position;
-    for (let index = 0; index < Math.min(enemy.path.length, 6); index += 1) {
-      const next = hexCenter(enemy.path[index]);
-      pixelLine(ctx, previous, next, "rgba(138,45,53,.13)", 2, 5);
-      previous = next;
-    }
+function drawRouteFeedback(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
+  for (const edge of snapshot.enemyRouteEdges) {
+    pixelLine(ctx, hexCenter(edge.from), hexCenter(edge.to), "rgba(138,45,53,.065)", 2, 5);
+  }
+  for (const enemy of snapshot.state.enemies) {
+    const next = enemy.path[0];
+    if (next) pixelLine(ctx, enemy.position, hexCenter(next), "rgba(138,45,53,.11)", 2, 5);
   }
 }
 
@@ -433,22 +515,24 @@ function drawCursor(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.stroke();
 }
 
-export function renderOverheadGame(ctx: CanvasRenderingContext2D, state: GameState, camera: RewildCamera) {
+export function renderOverheadGame(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot, camera: RewildCamera) {
+  const state = snapshot.state;
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   ctx.save();
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
 
-  drawGround(ctx, state);
-  drawRoad(ctx, state);
+  drawGround(ctx, snapshot);
   drawIndustrialGround(ctx, state);
-  drawRegionDetails(ctx, state);
+  drawCorruptionGround(ctx, state);
+  drawRoad(ctx, snapshot);
+  drawRegionDetails(ctx, snapshot);
   drawCorruptionMarks(ctx, state);
   drawMesh(ctx, state);
 
-  for (const node of state.nodes) drawCablePath(ctx, node);
-  drawRouteFeedback(ctx, state);
+  drawCableNetwork(ctx, snapshot);
+  drawRouteFeedback(ctx, snapshot);
   for (const object of state.world.objects) drawNatureObject(ctx, object, state);
   drawHouse(ctx, state);
   for (const node of state.nodes) drawDatacenter(ctx, node);

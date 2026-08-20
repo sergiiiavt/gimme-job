@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { hexNeighborFor } from "../app/rewild-hex-grid.ts";
 import {
+  REWILD_HEX_LAYOUT,
   createGameState,
   hexDistance,
   hexKey,
-  hexNeighbors,
 } from "../app/rewild-hex-world.ts";
 import { createRenderSnapshot } from "../app/rewild-render-snapshot.ts";
 
@@ -36,7 +37,7 @@ test("render snapshots are detached from the live simulation state", () => {
   assert.equal(firstNode.hp, originalSnapshotHp - 17, "renderer-side writes cannot reach the live simulation");
 });
 
-test("render snapshot derives six-neighbor component masks", () => {
+test("render snapshot derives direction-stable six-neighbor component masks", () => {
   const state = createGameState(0, "normal", "playing", { seed: 302 });
   const snapshot = createRenderSnapshot(state);
   const forest = snapshot.state.world.biomes.find((region) => region.kind === "forest");
@@ -49,9 +50,10 @@ test("render snapshot derives six-neighbor component masks", () => {
   for (const cell of forest.cells) {
     const mask = masks.get(hexKey(cell));
     assert.ok(Number.isInteger(mask) && mask >= 0 && mask <= 0b111111);
-    hexNeighbors(cell).forEach((neighbor, index) => {
-      assert.equal(Boolean(mask & (1 << index)), keys.has(hexKey(neighbor)));
-    });
+    for (let direction = 0; direction < 6; direction += 1) {
+      const neighbor = hexNeighborFor(REWILD_HEX_LAYOUT, cell, direction);
+      assert.equal(Boolean(mask & (1 << direction)), Boolean(neighbor && keys.has(hexKey(neighbor))));
+    }
     if (mask) linkedCells += 1;
   }
   assert.ok(linkedCells > 0, "connected regions expose authored neighbor masks for edge rendering");
@@ -68,13 +70,17 @@ test("snapshot edge networks contain only shared-border hex steps", () => {
   }
 });
 
-test("active renderer is isolated behind the render-snapshot adapter", async () => {
+test("active renderer consumes the detached snapshot and its connected-network projections", async () => {
   const [seamSource, productionSource] = await Promise.all([
     readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-production-renderer.ts"), "utf8"),
   ]);
 
   assert.match(seamSource, /createRenderSnapshot\(state\)/);
-  assert.match(seamSource, /renderProductionGame\(context, snapshot\.state, camera\)/);
+  assert.match(seamSource, /renderProductionGame\(context, snapshot, camera\)/);
+  assert.match(productionSource, /snapshot\.regionNeighborMasks/);
+  assert.match(productionSource, /snapshot\.roadEdges/);
+  assert.match(productionSource, /snapshot\.cableEdges/);
+  assert.match(productionSource, /snapshot\.enemyRouteEdges/);
   assert.doesNotMatch(productionSource, /updateGame|placePlant|moveCursor|createGameState/);
 });
