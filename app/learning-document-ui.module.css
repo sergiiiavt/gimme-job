@@ -95,6 +95,45 @@
   padding-top: 0 !important;
 }
 
+.focusedTopNav {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.focusedBackButton,
+.focusedCopyButton {
+  cursor: pointer;
+  font: inherit;
+}
+
+.focusedBackButton {
+  background: transparent;
+  border: 0;
+  color: #315744;
+  padding: 0;
+}
+
+.focusedBackButton:hover {
+  text-decoration: underline;
+}
+
+.focusedCopyButton {
+  background: #fff;
+  border: 1px solid #cad5cd;
+  border-radius: 8px;
+  color: #2d4036;
+  font-size: 13px;
+  font-weight: 650;
+  padding: 8px 12px;
+}
+
+.focusedCopyButton:hover {
+  border-color: #aebfb4;
+}
+
 @media (max-width: 610px) {
   .pagerItem:last-child > button {
     text-align: left;
@@ -104,5 +143,9 @@
     padding-left: 10px !important;
     padding-right: 10px !important;
     padding-top: 16px !important;
+  }
+
+  .focusedTopNav {
+    margin-bottom: 24px;
   }
 }

@@ -233,6 +233,38 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
     const hiddenElements = [navigation, floatingMenu, hero, sourcePanel, pager].filter((element): element is HTMLElement => Boolean(element));
     const originalHiddenDisplays = hiddenElements.map((element) => [element, element.style.display] as const);
     const originalMainMarginLeft = mainRoot?.style.marginLeft ?? "";
+    const fullChapterHref = contentHref(pathname, searchParams.toString(), { section: null }, focusedHeading.id);
+
+    const topNav = document.createElement("nav");
+    topNav.className = uiStyles.focusedTopNav;
+    topNav.setAttribute("aria-label", language === "uk" ? "Навігація окремої теми" : "Focused learning topic navigation");
+
+    const backButton = document.createElement("button");
+    backButton.className = uiStyles.focusedBackButton;
+    backButton.type = "button";
+    backButton.textContent = language === "uk" ? "← Повна сторінка" : "← Full learning page";
+    backButton.addEventListener("click", () => window.location.assign(fullChapterHref));
+
+    const copyButton = document.createElement("button");
+    copyButton.className = uiStyles.focusedCopyButton;
+    copyButton.type = "button";
+    copyButton.textContent = language === "uk" ? "Копіювати посилання" : "Copy link";
+    let copiedTimer = 0;
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        copyButton.textContent = language === "uk" ? "Скопійовано" : "Copied";
+        window.clearTimeout(copiedTimer);
+        copiedTimer = window.setTimeout(() => {
+          copyButton.textContent = language === "uk" ? "Копіювати посилання" : "Copy link";
+        }, 1600);
+      } catch {
+        copyButton.textContent = language === "uk" ? "Копіювати посилання" : "Copy link";
+      }
+    });
+
+    topNav.append(backButton, copyButton);
+    article.insertBefore(topNav, article.firstChild);
 
     hiddenElements.forEach((element) => { element.style.display = "none"; });
     if (mainRoot) mainRoot.style.marginLeft = "0";
@@ -242,6 +274,8 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
     target.classList.add(uiStyles.focusedHeading);
 
     return () => {
+      window.clearTimeout(copiedTimer);
+      topNav.remove();
       originalDisplays.forEach(([element, display]) => { element.style.display = display; });
       originalHiddenDisplays.forEach(([element, display]) => { element.style.display = display; });
       if (mainRoot) mainRoot.style.marginLeft = originalMainMarginLeft;
@@ -250,7 +284,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       article.classList.remove(uiStyles.focusedArticle);
       target.classList.remove(uiStyles.focusedHeading);
     };
-  }, [focusedHeading]);
+  }, [focusedHeading, language, pathname, searchParams]);
 
   useEffect(() => {
     if (focusedHeading) return;
