@@ -7,7 +7,7 @@ import {
   type GameState,
   type HexCoord,
   type HexWorld,
-} from "./rewild-hex-world";
+} from "./rewild-hex-world.ts";
 
 export interface RenderEdge {
   from: HexCoord;
