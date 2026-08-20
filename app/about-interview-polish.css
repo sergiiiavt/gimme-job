@@ -11,6 +11,14 @@
   width: 12px;
 }
 
+/* 1320px content + 220px primary navigation + about 220px for the fixed
+   right rail/gutter. Below this width the TOC must stop floating over content. */
+@media (max-width: 1760px) {
+  aside[aria-label="About page navigation"] {
+    display: none !important;
+  }
+}
+
 /* Keep interview-question controls close to the compact vacancy toolbar height.
    Learning-path pages use .py-page and intentionally retain their existing spacing. */
 .iq-page:not(.py-page) .iq-toolbar {
