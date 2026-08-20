@@ -8,10 +8,11 @@ import sharp from "sharp";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = 4173;
-const DEBUG_PORT = 9222;
 const WIDTH = 1200;
 const HEIGHT = 675;
 const BENCHMARK_URL = `http://127.0.0.1:${PORT}/visual/rewild-benchmark.html`;
+const ENTITY_ATLAS_URL = `http://127.0.0.1:${PORT}/rewild/overhead/entities-atlas-v3.png`;
+const TERRAIN_ATLAS_URL = `http://127.0.0.1:${PORT}/rewild/overhead/terrain-atlas-v3.png`;
 const BASELINE_PATH = join(ROOT, "tests/fixtures/rewild-ecosystem.sha256");
 const ARTIFACT_DIR = join(ROOT, "artifacts");
 
@@ -84,110 +85,13 @@ async function waitForUrl(url, processHandle, label) {
   throw new Error(`Timed out waiting for ${label}: ${lastError}`);
 }
 
-async function connectCdp(webSocketDebuggerUrl) {
-  const socket = new WebSocket(webSocketDebuggerUrl);
-  await new Promise((resolveOpen, rejectOpen) => {
-    const timer = setTimeout(() => rejectOpen(new Error("Timed out opening Chrome DevTools WebSocket.")), 5000);
-    socket.addEventListener("open", () => { clearTimeout(timer); resolveOpen(); }, { once: true });
-    socket.addEventListener("error", () => { clearTimeout(timer); rejectOpen(new Error("Failed to open Chrome DevTools WebSocket.")); }, { once: true });
-  });
-
-  let nextId = 1;
-  const pending = new Map();
-  const diagnostics = [];
-  socket.addEventListener("message", (event) => {
-    const payload = JSON.parse(typeof event.data === "string" ? event.data : Buffer.from(event.data).toString("utf8"));
-    if (payload.id) {
-      const waiter = pending.get(payload.id);
-      if (!waiter) return;
-      pending.delete(payload.id);
-      if (payload.error) waiter.reject(new Error(payload.error.message));
-      else waiter.resolve(payload.result ?? {});
-      return;
-    }
-    if (payload.method === "Runtime.exceptionThrown") {
-      diagnostics.push(payload.params?.exceptionDetails?.exception?.description ?? payload.params?.exceptionDetails?.text ?? "Unknown runtime exception");
-    }
-    if (payload.method === "Log.entryAdded" && payload.params?.entry?.level === "error") diagnostics.push(payload.params.entry.text);
-  });
-
-  const send = (method, params = {}) => {
-    const id = nextId++;
-    return new Promise((resolveResult, rejectResult) => {
-      const timer = setTimeout(() => { pending.delete(id); rejectResult(new Error(`Timed out waiting for CDP method ${method}.`)); }, 10000);
-      pending.set(id, {
-        resolve: (value) => { clearTimeout(timer); resolveResult(value); },
-        reject: (error) => { clearTimeout(timer); rejectResult(error); },
-      });
-      socket.send(JSON.stringify({ id, method, params }));
-    });
-  };
-
-  return { socket, send, diagnostics };
-}
-
-async function captureReadyBenchmark(chrome, temp, rawScreenshot) {
-  const chromeProfile = join(tmpdir(), `rewild-chrome-profile-${process.pid}`);
-  await safeRemove(chromeProfile);
-  const chromeProcess = spawn(chrome, [
-    "--headless=new",
-    "--disable-gpu",
-    "--hide-scrollbars",
-    "--no-sandbox",
-    "--force-device-scale-factor=1",
-    `--window-size=${WIDTH},${HEIGHT}`,
-    `--remote-debugging-port=${DEBUG_PORT}`,
-    `--user-data-dir=${chromeProfile}`,
-    "about:blank",
-  ], { cwd: ROOT, detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"] });
-
-  let chromeOutput = "";
-  chromeProcess.stdout?.on("data", (chunk) => { chromeOutput += chunk.toString(); });
-  chromeProcess.stderr?.on("data", (chunk) => { chromeOutput += chunk.toString(); });
-
-  try {
-    await waitForUrl(`http://127.0.0.1:${DEBUG_PORT}/json/version`, chromeProcess, "Chrome DevTools");
-    const targetResponse = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/new?${encodeURIComponent(BENCHMARK_URL)}`, { method: "PUT" });
-    if (!targetResponse.ok) throw new Error(`Chrome could not create benchmark target: HTTP ${targetResponse.status}.`);
-    const target = await targetResponse.json();
-    const cdp = await connectCdp(target.webSocketDebuggerUrl);
-    try {
-      await cdp.send("Page.enable");
-      await cdp.send("Runtime.enable");
-      await cdp.send("Log.enable");
-      await cdp.send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false });
-      await cdp.send("Page.navigate", { url: BENCHMARK_URL });
-
-      let lastState = null;
-      for (let attempt = 0; attempt < 150; attempt += 1) {
-        const evaluation = await cdp.send("Runtime.evaluate", {
-          expression: `({ ready: document.documentElement.dataset.rewildBenchmark === "ready", href: location.href, canvas: Boolean(document.querySelector("#rewild-benchmark")), width: document.querySelector("#rewild-benchmark")?.width ?? 0, height: document.querySelector("#rewild-benchmark")?.height ?? 0 })`,
-          returnByValue: true,
-        });
-        lastState = evaluation.result?.value ?? null;
-        if (lastState?.ready) break;
-        await sleep(100);
-      }
-      if (!lastState?.ready) {
-        const details = cdp.diagnostics.length ? `\nBrowser errors:\n${cdp.diagnostics.join("\n")}` : "";
-        throw new Error(`Rewild benchmark never reported ready. Last browser state: ${JSON.stringify(lastState)}${details}`);
-      }
-
-      await sleep(100);
-      const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
-      if (!screenshot.data) throw new Error("Chrome DevTools returned an empty Rewild screenshot.");
-      await writeFile(rawScreenshot, Buffer.from(screenshot.data, "base64"));
-    } finally {
-      cdp.socket.close();
-    }
-  } catch (error) {
-    if (chromeOutput.trim()) console.error(chromeOutput.trim());
-    throw error;
-  } finally {
-    stopProcess(chromeProcess);
-    await waitForExit(chromeProcess);
-    await safeRemove(chromeProfile);
-  }
+async function requireAsset(url, label) {
+  const response = await fetch(url, { redirect: "error" });
+  if (!response.ok) throw new Error(`${label} is not served by the benchmark Vite server: HTTP ${response.status}.`);
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("image/png")) throw new Error(`${label} returned ${contentType || "an unknown content type"} instead of image/png.`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length < 1024) throw new Error(`${label} is unexpectedly small (${bytes.length} bytes).`);
 }
 
 async function main() {
@@ -199,6 +103,7 @@ async function main() {
   const chrome = findChrome();
   const temp = await mkdtemp(join(tmpdir(), "rewild-visual-"));
   const rawScreenshot = join(temp, "chrome.png");
+  const chromeProfile = join(temp, "chrome-profile");
   const server = spawn("npm", ["exec", "vite", "--", "--config", "visual/rewild-vite.config.ts"], {
     cwd: ROOT,
     env: { ...process.env, BROWSER: "none" },
@@ -212,7 +117,27 @@ async function main() {
 
   try {
     await waitForUrl(BENCHMARK_URL, server, "Rewild benchmark server");
-    await captureReadyBenchmark(chrome, temp, rawScreenshot);
+    await requireAsset(ENTITY_ATLAS_URL, "Rewild entity atlas");
+    await requireAsset(TERRAIN_ATLAS_URL, "Rewild terrain atlas");
+
+    const chromeRun = spawnSync(chrome, [
+      "--headless=new",
+      "--disable-gpu",
+      "--hide-scrollbars",
+      "--no-sandbox",
+      "--force-device-scale-factor=1",
+      "--run-all-compositor-stages-before-draw",
+      `--window-size=${WIDTH},${HEIGHT}`,
+      "--virtual-time-budget=10000",
+      `--user-data-dir=${chromeProfile}`,
+      `--screenshot=${rawScreenshot}`,
+      BENCHMARK_URL,
+    ], { cwd: ROOT, encoding: "utf8", timeout: 30000 });
+
+    if (chromeRun.status !== 0) {
+      throw new Error(`Chrome benchmark capture failed.\n${chromeRun.stdout}\n${chromeRun.stderr}`);
+    }
+
     const normalized = await sharp(rawScreenshot)
       .resize(WIDTH, HEIGHT, { fit: "fill", kernel: "nearest" })
       .png({ compressionLevel: 9, adaptiveFiltering: false, palette: false })
