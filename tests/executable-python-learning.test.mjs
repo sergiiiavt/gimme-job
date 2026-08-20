@@ -22,18 +22,29 @@ test("supported Python learning blocks use the executable runner without requiri
   assert.match(runnerComponent, />Clear</);
 });
 
-test("Python runner uses dark highlighted editor, floating actions, compact spacing, and working expand state", () => {
+test("Python runner keeps controls and scrollbars on the left and sizes to its code", () => {
   assert.match(runnerComponent, /highlightPython\(draft\)/);
+  assert.match(runnerComponent, /styles\.headerStart/);
   assert.match(runnerComponent, /styles\.actionDock/);
-  assert.match(runnerComponent, /styles\.expandButton/);
-  assert.match(runnerComponent, /setExpanded\(\(value\) => !value\)/);
-  assert.match(runnerComponent, /event\.key === "Escape"/);
+  assert.match(runnerComponent, /styles\.editorScroll/);
+  assert.match(runnerComponent, /styles\.outputScroll/);
+  assert.match(runnerComponent, /EDITOR_LINE_HEIGHT_PX = 21/);
+  assert.match(runnerComponent, /EDITOR_MIN_HEIGHT_PX = 118/);
+  assert.match(runnerComponent, /EDITOR_MAX_HEIGHT_PX = 520/);
+  assert.match(runnerComponent, /codeLines\.length \* EDITOR_LINE_HEIGHT_PX/);
+  assert.match(runnerComponent, /height: `\$\{editorViewportHeight\}px`/);
   assert.match(runnerStyles, /background: #1e1e1e/);
   assert.match(runnerStyles, /margin: 12px 0 16px/);
-  assert.match(runnerStyles, /\.actionDock[\s\S]*position: absolute/);
+  assert.match(runnerStyles, /\.headerStart[\s\S]*display: inline-flex/);
+  assert.match(runnerStyles, /\.editorScroll[\s\S]*direction: rtl/);
+  assert.match(runnerStyles, /\.outputScroll[\s\S]*direction: rtl/);
+  assert.match(runnerStyles, /\.editorCanvas[\s\S]*direction: ltr/);
+  assert.match(runnerStyles, /\.output[\s\S]*direction: ltr/);
+  assert.match(runnerStyles, /\.actionDock[\s\S]*left: 18px/);
   assert.match(runnerStyles, /scrollbar-width: thin/);
   assert.match(runnerStyles, /::-webkit-scrollbar-thumb/);
-  assert.match(runnerStyles, /\.highlight[\s\S]*scrollbar-width: none/);
+  assert.match(runnerComponent, /setExpanded\(\(value\) => !value\)/);
+  assert.match(runnerComponent, /event\.key === "Escape"/);
   assert.match(runnerStyles, /\.tokenKeyword[\s\S]*#c586c0/);
   assert.match(runnerStyles, /\.tokenString[\s\S]*#ce9178/);
   assert.match(runnerStyles, /\.tokenComment[\s\S]*#6a9955/);
