@@ -13,6 +13,15 @@ test("About external actions use the standard external-link glyph and safe TOC b
   assert.match(polishSource, /@media \(max-width: 1760px\) \{\s*aside\[aria-label="About page navigation"\] \{\s*display: none !important;/s);
 });
 
+test("About n8n workflow cards adapt to their content width instead of overflowing", () => {
+  assert.match(polishSource, /div\[aria-label="Two n8n email automation workflows"\] \{[^}]*container-name: about-n8n-flows;[^}]*container-type: inline-size;/s);
+  assert.match(polishSource, /@container about-n8n-flows \(max-width: 980px\)/);
+  assert.match(polishSource, /grid-template-columns: minmax\(120px, 1fr\) 18px minmax\(120px, 1fr\) 18px minmax\(120px, 1fr\) 18px minmax\(120px, 1fr\);/);
+  assert.match(polishSource, /> \.about-tech-node,[\s\S]*?min-width: 0 !important;[\s\S]*?width: 100% !important;/);
+  assert.match(polishSource, /@container about-n8n-flows \(max-width: 720px\)[\s\S]*?grid-template-columns: 1fr;/);
+  assert.match(polishSource, /justify-self: center;\s*transform: rotate\(90deg\);/s);
+});
+
 test("Interview-question toolbar stays compact without changing learning-path controls", () => {
   assert.match(polishSource, /\.iq-page:not\(\.py-page\) \.iq-toolbar \{[^}]*gap: 8px;[^}]*padding: 10px;/s);
   assert.match(polishSource, /\.iq-page:not\(\.py-page\) \.iq-search,[\s\S]*?\.iq-page:not\(\.py-page\) \.iq-filter-status \{[^}]*min-height: 40px;/);
