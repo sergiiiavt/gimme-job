@@ -84,6 +84,27 @@ function googleAuthConfiguration() {
   return { ...values, configured: configuredCount === 3 };
 }
 
+function aiServiceConfiguration() {
+  const url = optionalEnvironment("GIMMEJOB_AI_URL");
+  const serviceToken = optionalEnvironment("GIMMEJOB_AI_SERVICE_TOKEN");
+  if (Boolean(url) !== Boolean(serviceToken)) {
+    throw new Error("GIMMEJOB_AI_URL and GIMMEJOB_AI_SERVICE_TOKEN must be configured together.");
+  }
+  if (!url) return { configured: false, url: "", serviceToken: "" };
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("GIMMEJOB_AI_URL must be a valid URL.");
+  }
+  if (parsed.protocol !== "https:") throw new Error("GIMMEJOB_AI_URL must use HTTPS in production.");
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new Error("GIMMEJOB_AI_URL must not contain credentials, query parameters, or a fragment.");
+  }
+  if (serviceToken.length < 32) throw new Error("GIMMEJOB_AI_SERVICE_TOKEN must contain at least 32 characters.");
+  return { configured: true, url: url.replace(/\/+$/, ""), serviceToken };
+}
+
 async function ensureBuildArtifact() {
   await Promise.all([
     access(path.join(projectRoot, "dist", "server", "index.js")),
@@ -92,7 +113,7 @@ async function ensureBuildArtifact() {
   ]).catch(() => { throw new Error("Production artifact is missing. Run npm run build first."); });
 }
 
-async function writeDeployConfig(id, multiUserEnabled = false) {
+async function writeDeployConfig(id, multiUserEnabled = false, aiService = { configured: false, url: "" }) {
   const deployConfig = JSON.parse(await readFile(artifactConfigPath, "utf8"));
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
@@ -110,6 +131,7 @@ async function writeDeployConfig(id, multiUserEnabled = false) {
     EMAIL_AI_ENABLED: optionalEnvironment("EMAIL_AI_ENABLED") || "true",
     EMAIL_AI_DAILY_USER_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50",
     EMAIL_AI_DAILY_GLOBAL_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500",
+    ...(aiService.configured ? { GIMMEJOB_AI_URL: aiService.url } : {}),
   };
   deployConfig.d1_databases = [{
     binding: "DB",
@@ -120,7 +142,7 @@ async function writeDeployConfig(id, multiUserEnabled = false) {
   await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, { mode: 0o600 });
 }
 
-async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth }) {
+async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth, aiService }) {
   const secrets = {
     APP_PASSWORD: appPassword,
     GRAFANA_READ_TOKEN: grafanaReadToken,
@@ -132,6 +154,8 @@ async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngest
     secrets.GOOGLE_OAUTH_CLIENT_SECRET = googleAuth.clientSecret;
     secrets.GMAIL_TOKEN_ENCRYPTION_KEY = googleAuth.encryptionKey;
   }
+
+  if (aiService.configured) secrets.GIMMEJOB_AI_SERVICE_TOKEN = aiService.serviceToken;
 
   const openAiApiKey = optionalEnvironment("OPENAI_API_KEY");
   if (openAiApiKey) {
@@ -177,6 +201,7 @@ async function main() {
   const multiUserSetting = optionalEnvironment("MULTI_USER_ENABLED");
   const multiUserEnabled = multiUserSetting ? enabledEnvironment("MULTI_USER_ENABLED") : true;
   const googleAuth = googleAuthConfiguration();
+  const aiService = aiServiceConfiguration();
 
   if (appPassword.length < 16) throw new Error("APP_PASSWORD must contain at least 16 characters.");
   if (grafanaReadToken.length < 32) throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
@@ -193,13 +218,13 @@ async function main() {
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
 
   try {
-    await writeDeployConfig(id, multiUserEnabled);
-    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth });
+    await writeDeployConfig(id, multiUserEnabled, aiService);
+    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth, aiService });
     console.log("Applying D1 migrations...");
     runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
-    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
+    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await Promise.all([
       rm(generatedConfigPath, { force: true }),
