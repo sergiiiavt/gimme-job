@@ -30,7 +30,7 @@ function random(cell: HexCell, salt: number) {
   value ^= value >>> 16;
   value = Math.imul(value, 0x85ebca6b) >>> 0;
   value ^= value >>> 13;
-  return (value >>> 0) / 0xffffffff;
+  return (value >>> 0) / 0x100000000;
 }
 
 function biomeKindByCell(state: GameState) {
@@ -112,7 +112,7 @@ function drawMeadowLife(
     const count = 2 + Math.floor(random(cell, 322) * 3);
 
     for (let index = 0; index < count; index += 1) {
-      const offset = CLUSTER_OFFSETS[index];
+      const offset = CLUSTER_OFFSETS[index] ?? CLUSTER_OFFSETS[0];
       const sprite = meadowClusterSprite(cell, clusterKind, index);
       const jitterX = Math.round((random(cell, 340 + index) - .5) * 6);
       const jitterY = Math.round((random(cell, 350 + index) - .5) * 4);
@@ -149,7 +149,7 @@ function drawForestDensity(
     const crownCount = interior ? (neighbors >= 5 ? 3 : 2) : 1;
     const center = hexCenter(cell.hex);
     for (let index = 0; index < crownCount; index += 1) {
-      const offset = CLUSTER_OFFSETS[index];
+      const offset = CLUSTER_OFFSETS[index] ?? CLUSTER_OFFSETS[0];
       const pine = random(cell, 410 + index) > (interior ? .82 : .72);
       const sprite: RewildPixelSpriteId = pine ? "tree-pine" : "tree-broadleaf";
       const baseScale = interior ? (pine ? .37 : .43) : (pine ? .34 : .39);
@@ -203,10 +203,13 @@ function drawWaterEdges(
     // Shore details attach to actual exterior edges. One primary edge is always
     // eligible and a second edge appears only on more exposed shoreline cells.
     const primaryIndex = Math.floor(random(cell, 502) * boundaryDirections.length);
-    const selected = [boundaryDirections[primaryIndex]];
+    const primary = boundaryDirections[primaryIndex];
+    if (!primary) continue;
+    const selected = [primary];
     if (boundaryDirections.length >= 3 && random(cell, 503) > .58) {
       const secondaryIndex = (primaryIndex + 1 + Math.floor(random(cell, 504) * (boundaryDirections.length - 1))) % boundaryDirections.length;
-      selected.push(boundaryDirections[secondaryIndex]);
+      const secondary = boundaryDirections[secondaryIndex];
+      if (secondary) selected.push(secondary);
     }
 
     for (const { neighbor, direction } of selected) {
