@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode, type UIEvent } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./executable-python-block.module.css";
 
 type RunnerStatus = "idle" | "loading" | "running";
@@ -16,6 +16,10 @@ const LOAD_TIMEOUT_MS = 60_000;
 const EXECUTION_TIMEOUT_MS = 5_000;
 const MAX_CODE_LENGTH = 8_000;
 const MAX_RUNS_PER_WORKER = 20;
+const EDITOR_LINE_HEIGHT_PX = 21;
+const EDITOR_VERTICAL_CHROME_PX = 68;
+const EDITOR_MIN_HEIGHT_PX = 118;
+const EDITOR_MAX_HEIGHT_PX = 520;
 
 const pythonTokenPattern = /(#[^\n]*)|((?:'''[\s\S]*?'''|"""[\s\S]*?"""|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"))|\b(False|None|True|and|as|assert|async|await|break|case|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|match|nonlocal|not|or|pass|raise|return|try|while|with|yield)\b|\b(abs|all|any|bool|dict|enumerate|filter|float|int|len|list|map|max|min|next|object|print|range|repr|reversed|round|set|sorted|str|sum|super|tuple|type|zip)\b|\b(\d+(?:\.\d+)?)\b/gm;
 
@@ -60,7 +64,6 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
   const runCountRef = useRef(0);
   const timeoutRef = useRef<number | null>(null);
   const copiedTimeoutRef = useRef<number | null>(null);
-  const highlightRef = useRef<HTMLPreElement | null>(null);
 
   const clearTimer = () => {
     if (timeoutRef.current !== null) {
@@ -184,12 +187,13 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
     }
   };
 
-  const syncHighlightScroll = (event: UIEvent<HTMLTextAreaElement>) => {
-    if (!highlightRef.current) return;
-    highlightRef.current.scrollTop = event.currentTarget.scrollTop;
-    highlightRef.current.scrollLeft = event.currentTarget.scrollLeft;
-  };
-
+  const codeLines = draft.split("\n");
+  const editorContentHeight = Math.max(
+    EDITOR_MIN_HEIGHT_PX,
+    codeLines.length * EDITOR_LINE_HEIGHT_PX + EDITOR_VERTICAL_CHROME_PX,
+  );
+  const editorViewportHeight = Math.min(EDITOR_MAX_HEIGHT_PX, editorContentHeight);
+  const editorColumns = Math.max(1, ...codeLines.map((line) => line.length)) + 4;
   const busy = status !== "idle";
 
   return (
@@ -197,9 +201,7 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
       <div className={styles.grid}>
         <section className={styles.panel} aria-label="Editable Python code">
           <div className={styles.header}>
-            <span>Python</span>
-            <div className={styles.headerActions}>
-              <span className={styles.meta}>{status === "loading" ? "loading runtime" : "editable · browser sandbox"}</span>
+            <div className={styles.headerStart}>
               <button
                 aria-label={expanded ? "Collapse Python runner" : "Expand Python runner"}
                 className={styles.expandButton}
@@ -213,19 +215,27 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
                   <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M6 2H2v4M10 14h4v-4M2.5 5.5l4-4M9.5 14.5l4-4" /></svg>
                 )}
               </button>
+              <span>Python</span>
             </div>
+            <span className={styles.meta}>{status === "loading" ? "loading runtime" : "editable · browser sandbox"}</span>
           </div>
-          <div className={styles.editorFrame}>
-            <pre aria-hidden="true" className={styles.highlight} ref={highlightRef}>{highlightPython(draft)}{"\n"}</pre>
-            <textarea
-              aria-label="Python code"
-              className={styles.editor}
-              maxLength={MAX_CODE_LENGTH}
-              onChange={(event) => setDraft(event.target.value)}
-              onScroll={syncHighlightScroll}
-              spellCheck={false}
-              value={draft}
-            />
+          <div className={styles.editorFrame} style={{ height: `${editorViewportHeight}px` }}>
+            <div className={styles.editorScroll}>
+              <div
+                className={styles.editorCanvas}
+                style={{ height: `${editorContentHeight}px`, width: `max(100%, ${editorColumns}ch)` }}
+              >
+                <pre aria-hidden="true" className={styles.highlight}>{highlightPython(draft)}{"\n"}</pre>
+                <textarea
+                  aria-label="Python code"
+                  className={styles.editor}
+                  maxLength={MAX_CODE_LENGTH}
+                  onChange={(event) => setDraft(event.target.value)}
+                  spellCheck={false}
+                  value={draft}
+                />
+              </div>
+            </div>
             <div className={styles.actionDock}>
               {busy ? (
                 <button className={styles.primaryButton} onClick={stop} type="button">Stop</button>
@@ -243,7 +253,9 @@ function ExecutablePythonBlockInstance({ code }: { code: string }) {
             <span>Result</span>
             <button className={styles.clearButton} onClick={() => setOutput("")} type="button">Clear</button>
           </div>
-          <pre aria-live="polite" className={styles.output}>{output}</pre>
+          <div className={styles.outputScroll}>
+            <pre aria-live="polite" className={styles.output}>{output}</pre>
+          </div>
         </section>
       </div>
     </div>

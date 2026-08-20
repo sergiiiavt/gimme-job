@@ -20,7 +20,7 @@
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  min-height: 300px;
+  min-height: 0;
   background: #1e1e1e;
 }
 
@@ -49,7 +49,7 @@
   justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid #333333;
-  padding: 0 12px 0 14px;
+  padding: 0 12px 0 10px;
   background: #252526;
   color: #d4d4d4;
   font-size: 12px;
@@ -57,8 +57,8 @@
   letter-spacing: 0.02em;
 }
 
-.headerActions {
-  display: flex;
+.headerStart {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
 }
@@ -72,9 +72,29 @@
 
 .editorFrame {
   position: relative;
-  min-height: 258px;
-  flex: 1;
+  min-height: 0;
+  flex: none;
   overflow: hidden;
+  background: #1e1e1e;
+}
+
+.expanded .editorFrame {
+  height: auto !important;
+  flex: 1;
+}
+
+.editorScroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  direction: rtl;
+  background: #1e1e1e;
+}
+
+.editorCanvas {
+  position: relative;
+  min-width: 100%;
+  direction: ltr;
   background: #1e1e1e;
 }
 
@@ -82,12 +102,9 @@
 .highlight,
 .output {
   box-sizing: border-box;
-  width: 100%;
-  min-height: 258px;
   margin: 0;
   border: 0;
   border-radius: 0;
-  padding: 16px 16px 60px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
   line-height: 1.6;
@@ -98,8 +115,10 @@
 .highlight {
   position: absolute;
   inset: 0;
+  width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
+  padding: 16px 16px 60px 24px;
   white-space: pre;
   word-break: normal;
 }
@@ -109,11 +128,6 @@
   pointer-events: none;
   background: #1e1e1e;
   color: #d4d4d4;
-  scrollbar-width: none;
-}
-
-.highlight::-webkit-scrollbar {
-  display: none;
 }
 
 .editor {
@@ -126,39 +140,40 @@
   -webkit-text-fill-color: transparent;
 }
 
-.editor,
-.output {
+.editorScroll,
+.outputScroll {
   scrollbar-color: #3b3b3b transparent;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
-.editor::-webkit-scrollbar,
-.output::-webkit-scrollbar {
+.editorScroll::-webkit-scrollbar,
+.outputScroll::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 
-.editor::-webkit-scrollbar-track,
-.output::-webkit-scrollbar-track {
+.editorScroll::-webkit-scrollbar-track,
+.outputScroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.editor::-webkit-scrollbar-thumb,
-.output::-webkit-scrollbar-thumb {
+.editorScroll::-webkit-scrollbar-thumb,
+.outputScroll::-webkit-scrollbar-thumb {
   border: 1px solid transparent;
   border-radius: 999px;
   background: #3b3b3b;
   background-clip: padding-box;
 }
 
-.editor::-webkit-scrollbar-thumb:hover,
-.output::-webkit-scrollbar-thumb:hover {
+.editorScroll::-webkit-scrollbar-thumb:hover,
+.outputScroll::-webkit-scrollbar-thumb:hover {
   background: #505050;
   background-clip: padding-box;
 }
 
-.editor::-webkit-scrollbar-corner,
-.output::-webkit-scrollbar-corner {
+.editorScroll::-webkit-scrollbar-corner,
+.outputScroll::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -170,21 +185,32 @@
   box-shadow: inset 0 0 0 1px #3f3f46;
 }
 
-.output {
-  min-height: 258px;
+.outputScroll {
+  min-height: 0;
   flex: 1;
   overflow: auto;
+  direction: rtl;
+  background: #181818;
+}
+
+.output {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  padding: 16px 16px 16px 24px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  direction: ltr;
   background: #181818;
   color: #d4d4d4;
+  text-align: left;
 }
 
 .actionDock {
   position: absolute;
   z-index: 4;
-  right: 12px;
-  bottom: 12px;
+  left: 18px;
+  bottom: 14px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -305,13 +331,6 @@
   .resultPanel {
     border-top: 1px solid #3a3a3a;
     border-left: 0;
-  }
-
-  .editorFrame,
-  .editor,
-  .highlight,
-  .output {
-    min-height: 210px;
   }
 
   .meta {
