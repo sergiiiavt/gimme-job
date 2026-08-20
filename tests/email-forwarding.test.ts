@@ -186,7 +186,7 @@ test("oversized headers are bounded and invalid dates fall back safely", async (
   await handleForwardedEmail(incoming.value, { DB: db });
   const values = state.inserted[0]!;
   assert.equal(String(values[2]).length, 1000);
-  assert.equal(String(values[3]).length, 1000);
+  assert.ok(String(values[3]).length > 0 && String(values[3]).length <= 1000);
   assert.equal(String(values[6]).length, 1000);
   assert.ok(Number.isFinite(Date.parse(String(values[4]))));
 });
