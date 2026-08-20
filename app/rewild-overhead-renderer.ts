@@ -1,3 +1,4 @@
+import { renderAuthoredArtOverlay } from "./rewild-authored-overlay";
 import { createRenderSnapshot } from "./rewild-render-snapshot";
 import {
   renderOverheadGame as renderProductionGame,
@@ -16,4 +17,5 @@ export function renderOverheadGame(
 ) {
   const snapshot = createRenderSnapshot(state);
   renderProductionGame(context, snapshot, camera);
+  renderAuthoredArtOverlay(context, snapshot, camera);
 }
