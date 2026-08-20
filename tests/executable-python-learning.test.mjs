@@ -11,6 +11,8 @@ test("supported Python learning blocks use the executable runner without requiri
   assert.match(markdownRenderer, /ExecutablePythonBlock/);
   assert.match(markdownRenderer, /language !== "python"/);
   assert.match(markdownRenderer, /unsupportedRunnablePythonPatterns/);
+  assert.match(markdownRenderer, /runnablePythonImports/);
+  assert.match(markdownRenderer, /hasUnsupportedPythonImport\(source\)/);
   assert.doesNotMatch(markdownRenderer, /!\/\\bprint\\s\*\\\(\/\.test\(source\)/);
   assert.match(runnerComponent, />Python</);
   assert.match(runnerComponent, />Result</);
@@ -42,6 +44,9 @@ test("browser runner is isolated, bounded, and denies browser/network escape pat
   assert.match(runnerWorker, /setStdin\(\{ error: true \}\)/);
   assert.match(runnerWorker, /MAX_CODE_LENGTH = 8_000/);
   assert.match(runnerWorker, /MAX_OUTPUT_CHARS = 32_000/);
+  assert.match(runnerWorker, /credentials: "omit"/);
+  assert.match(runnerWorker, /lockDownWorkerCapabilities\(\)/);
+  assert.match(runnerWorker, /"Worker", "SharedWorker"/);
   assert.match(runnerWorker, /_ast\.parse\(__source__/);
   assert.match(runnerWorker, /_ALLOWED_IMPORTS/);
   assert.match(runnerWorker, /_BLOCKED_NAMES = \{"js", "micropip", "pyodide", "pyodide_js"\}/);
