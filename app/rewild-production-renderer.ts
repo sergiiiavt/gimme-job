@@ -9,6 +9,7 @@ import {
   REWILD_HEX_LAYOUT,
   cellAt,
   hexCenter,
+  hexDistance,
   hexKey,
   hexLine,
   hexPolygon,
@@ -36,6 +37,11 @@ export interface RewildCamera {
   x: number;
   y: number;
   zoom: number;
+}
+
+interface PixelSegment {
+  from: PixelPoint;
+  to: PixelPoint;
 }
 
 const PALETTE = {
@@ -67,6 +73,13 @@ const PALETTE = {
   cableDark: "#72582b",
   placement: "#f1e78b",
   placementBad: "#dd6d61",
+};
+
+const CORRUPTION_PALETTE: Record<1 | 2 | 3 | 4, string> = {
+  1: PALETTE.corruption1,
+  2: PALETTE.corruption2,
+  3: PALETTE.corruption3,
+  4: PALETTE.corruption4,
 };
 
 const DIRECTION_TO_POLYGON_EDGE = [0, 5, 4, 3, 2, 1] as const;
@@ -122,11 +135,7 @@ function drawHealth(ctx: CanvasRenderingContext2D, center: PixelPoint, ratio: nu
 }
 
 function industrialInfluence(state: GameState, hex: HexCoord) {
-  return state.nodes.some((node) => {
-    const dx = Math.abs(node.anchor.q - hex.q);
-    const dy = Math.abs(node.anchor.r - hex.r);
-    return dx <= (node.boss ? 5 : 4) && dy <= (node.boss ? 4 : 3);
-  });
+  return state.nodes.some((node) => hexDistance(node.anchor, hex) <= (node.boss ? 4 : 3));
 }
 
 function fillHexes(ctx: CanvasRenderingContext2D, hexes: readonly HexCoord[], color: string, scale = 1.055) {
@@ -151,8 +160,8 @@ function groupMasks(hexes: readonly HexCoord[]) {
   return masks;
 }
 
-function boundarySegments(hexes: readonly HexCoord[], masks: ReadonlyMap<string, number>) {
-  const segments: RenderEdge[] = [];
+function boundarySegments(hexes: readonly HexCoord[], masks: ReadonlyMap<string, number>): PixelSegment[] {
+  const segments: PixelSegment[] = [];
   for (const hex of hexes) {
     const mask = masks.get(hexKey(hex)) ?? 0;
     const polygon = hexPolygon(hex, 1.028);
@@ -221,10 +230,9 @@ function drawIndustrialGround(ctx: CanvasRenderingContext2D, state: GameState) {
 }
 
 function drawCorruptionGround(ctx: CanvasRenderingContext2D, state: GameState) {
-  const palettes = [PALETTE.corruption1, PALETTE.corruption2, PALETTE.corruption3, PALETTE.corruption4] as const;
-  for (let level = 1; level <= 4; level += 1) {
+  for (const level of [1, 2, 3, 4] as const) {
     const cells = [...state.world.cells.values()].filter((cell) => cell.corruption === level && cell.surface !== "foundation").map((cell) => cell.hex);
-    fillHexes(ctx, cells, palettes[level - 1], 1.07);
+    fillHexes(ctx, cells, CORRUPTION_PALETTE[level], 1.07);
   }
   const foundations = [...state.world.cells.values()].filter((cell) => cell.surface === "foundation").map((cell) => cell.hex);
   const rubble = [...state.world.cells.values()].filter((cell) => cell.surface === "rubble").map((cell) => cell.hex);
