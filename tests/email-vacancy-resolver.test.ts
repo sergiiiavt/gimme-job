@@ -85,6 +85,11 @@ test("weak partial title does not auto-update a vacancy", () => {
   assert.notEqual(result.matchStatus, "MATCHED");
 });
 
+test("hard external-id matching requires a distinctive identifier, not a generic number", async () => {
+  const source = await readFile(new URL("../app/internal/n8n/email-events/vacancy-resolver.ts", import.meta.url), "utf8");
+  assert.match(source, /external_id GLOB '\*\[A-Za-z\]\*'/);
+});
+
 test("resolution migration stores explainable match state", async () => {
   const sql = await readFile(new URL("../drizzle/0015_email_vacancy_resolution.sql", import.meta.url), "utf8");
   for (const column of [
