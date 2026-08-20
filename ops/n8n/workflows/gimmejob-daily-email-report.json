@@ -16,7 +16,7 @@
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [-960, 0],
+      "position": [-1080, 0],
       "id": "f6c530f3-a09c-4787-a0b0-3dfbb36c34fa",
       "name": "Every morning at 08:00 Kyiv"
     },
@@ -27,7 +27,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-720, 0],
+      "position": [-840, 0],
       "id": "e5a7c4c8-8212-469d-938a-4f59a9f12b1f",
       "name": "Choose previous Kyiv day"
     },
@@ -42,12 +42,23 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-470, 0],
+      "position": [-590, 0],
       "id": "ac91c015-cd53-4d7a-a5b3-b22673186a13",
       "name": "Get daily GimmeJob statistics",
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const stats = $input.first().json ?? {};\nconst pending = Number(stats.totals?.pending ?? 0);\nif (pending > 0) throw new Error(`Daily report not sent: ${pending} email(s) are still pending classification.`);\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-340, 0],
+      "id": "2b99803a-cae9-493f-ae42-63c11644c34b",
+      "name": "Require completed email processing"
     },
     {
       "parameters": {
@@ -64,7 +75,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-210, 0],
+      "position": [-90, 0],
       "id": "134dc06e-773b-41df-b5b8-2c8bfe33155b",
       "name": "Reconcile unresolved job emails",
       "retryOnFail": true,
@@ -82,7 +93,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [50, 0],
+      "position": [170, 0],
       "id": "b36f8739-b51d-49b1-b131-9e2c93f2912d",
       "name": "Get detailed automation activity",
       "retryOnFail": true,
@@ -96,7 +107,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [330, 0],
+      "position": [450, 0],
       "id": "f1a90844-6622-43d2-a07b-9a9128624e0e",
       "name": "Format daily report"
     },
@@ -115,7 +126,7 @@
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [610, 0],
+      "position": [730, 0],
       "id": "a14ea835-35c7-418e-880f-7cba9bfb810b",
       "name": "Send daily report email"
     },
@@ -126,7 +137,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [870, 0],
+      "position": [990, 0],
       "id": "550a98e5-d421-465e-a42f-e71de9edb602",
       "name": "Daily report sent"
     }
@@ -147,6 +158,13 @@
       }]]
     },
     "Get daily GimmeJob statistics": {
+      "main": [[{
+        "node": "Require completed email processing",
+        "type": "main",
+        "index": 0
+      }]]
+    },
+    "Require completed email processing": {
       "main": [[{
         "node": "Reconcile unresolved job emails",
         "type": "main",
