@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import EmailResolutionPortal from "./email-resolution-portal";
+import "./email-resolution.css";
 import VacancyAuditPortal from "./vacancy-audit-portal";
 import "./vacancy-audit.css";
 import VacanciesWorkspace from "./vacancies-workspace";
@@ -40,6 +42,7 @@ export default function VacancyWorkspaceRoute() {
   if (!mode) return null;
   return <>
     <VacanciesWorkspace key={mode} mode={mode}/>
+    <EmailResolutionPortal enabled={mode === "personal"}/>
     <VacancyAuditPortal enabled={mode === "personal"}/>
   </>;
 }
