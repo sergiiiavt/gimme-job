@@ -1,17 +1,31 @@
 import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 import sharp from "sharp";
 
-const ROOT = resolve(new URL("..", import.meta.url).pathname);
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = 4173;
 const WIDTH = 1200;
 const HEIGHT = 675;
 const BENCHMARK_URL = `http://127.0.0.1:${PORT}/visual/rewild-benchmark.html`;
 const BASELINE_PATH = join(ROOT, "tests/fixtures/rewild-ecosystem.sha256");
 const ARTIFACT_DIR = join(ROOT, "artifacts");
+
+function touchesRewild() {
+  if (process.env.GITHUB_ACTIONS !== "true") return true;
+  const diff = spawnSync("git", ["diff", "--name-only", "origin/main...HEAD"], { cwd: ROOT, encoding: "utf8" });
+  if (diff.status !== 0) return true;
+  return diff.stdout.split(/\r?\n/).some((file) =>
+    file.startsWith("app/rewild-")
+    || file.startsWith("tests/rewild-")
+    || file === "visual/rewild-benchmark.html"
+    || file === "scripts/check-rewild-visual.mjs"
+    || file === "tests/fixtures/rewild-ecosystem.sha256",
+  );
+}
 
 function findChrome() {
   const candidates = [
@@ -55,10 +69,14 @@ function stopServer(server) {
 }
 
 async function main() {
+  if (!touchesRewild()) {
+    console.log("Rewild visual benchmark skipped: pull request does not touch Rewild.");
+    return;
+  }
+
   const chrome = findChrome();
   const temp = await mkdtemp(join(tmpdir(), "rewild-visual-"));
   const rawScreenshot = join(temp, "chrome.png");
-  const normalizedScreenshot = join(temp, "normalized.png");
   const server = spawn("npm", ["run", "local:web"], {
     cwd: ROOT,
     env: { ...process.env, BROWSER: "none" },
@@ -93,7 +111,6 @@ async function main() {
       .resize(WIDTH, HEIGHT, { fit: "fill", kernel: "nearest" })
       .png({ compressionLevel: 9, adaptiveFiltering: false, palette: false })
       .toBuffer();
-    await writeFile(normalizedScreenshot, normalized);
     const actual = createHash("sha256").update(normalized).digest("hex");
     const expected = (await readFile(BASELINE_PATH, "utf8")).trim();
 
@@ -101,7 +118,7 @@ async function main() {
       await mkdir(ARTIFACT_DIR, { recursive: true });
       await writeFile(join(ARTIFACT_DIR, "rewild-benchmark-actual.png"), normalized);
       console.error(`REWILD_BENCHMARK_SHA256=${actual}`);
-      throw new Error("Rewild visual baseline is not recorded yet. Commit the printed SHA-256 after reviewing artifacts/rewild-benchmark-actual.png.");
+      throw new Error("Rewild visual baseline is not recorded yet. Commit the printed SHA-256 after reviewing the generated benchmark artifact.");
     }
 
     if (actual !== expected) {
@@ -109,7 +126,7 @@ async function main() {
       await writeFile(join(ARTIFACT_DIR, "rewild-benchmark-actual.png"), normalized);
       console.error(`Expected Rewild benchmark SHA-256: ${expected}`);
       console.error(`Actual Rewild benchmark SHA-256:   ${actual}`);
-      throw new Error("Rewild visual regression detected. Review artifacts/rewild-benchmark-actual.png before updating the baseline.");
+      throw new Error("Rewild visual regression detected. Review the generated benchmark artifact before updating the baseline.");
     }
 
     console.log(`Rewild visual benchmark passed: ${actual}`);
