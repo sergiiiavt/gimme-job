@@ -61,6 +61,26 @@ test("focused learning section mirrors interview back and copy-link actions", as
   assert.match(styles, /\.focusedCopyButton[\s\S]*border: 1px solid #cad5cd/);
 });
 
+test("focused learning section keeps the EN/UA switch available", async () => {
+  const [learningUi, styles] = await Promise.all([
+    read("app/learning-document-ui.tsx"),
+    read("app/learning-document-ui.module.css"),
+  ]);
+
+  assert.match(learningUi, /if \(languages\.length > 1\)/);
+  assert.match(learningUi, /languageGroup\.className = uiStyles\.focusedLanguage/);
+  assert.match(learningUi, /languageGroup\.setAttribute\("role", "group"\)/);
+  assert.match(learningUi, /languageButton\.textContent = option === "uk" \? "UA" : "EN"/);
+  assert.match(learningUi, /languageButton\.setAttribute\("aria-pressed", option === language \? "true" : "false"\)/);
+  assert.match(learningUi, /languageButton\.addEventListener\("click", \(\) => onLanguageChange\(option\)\)/);
+  assert.match(learningUi, /rightActions\.appendChild\(copyButton\)/);
+  assert.match(learningUi, /topNav\.append\(backButton, rightActions\)/);
+  assert.match(styles, /\.focusedActions[\s\S]*display: flex/);
+  assert.match(styles, /\.focusedLanguage[\s\S]*display: inline-flex/);
+  assert.match(styles, /\.focusedLanguageActive[\s\S]*background: #fff/);
+  assert.match(styles, /@media \(max-width: 610px\)[\s\S]*\.focusedTopNav[\s\S]*flex-wrap: wrap/);
+});
+
 test("learning chapter direct links open full chapters and clear focused section state", async () => {
   const learningUi = await read("app/learning-document-ui.tsx");
 

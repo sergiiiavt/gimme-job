@@ -103,6 +103,47 @@
   margin-bottom: 30px;
 }
 
+.focusedActions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.focusedLanguage {
+  align-items: center;
+  background: #f2f5f2;
+  border: 1px solid #e1e6e2;
+  border-radius: 8px;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+}
+
+.focusedLanguageButton {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #67736d;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  min-width: 36px;
+  padding: 6px 8px;
+}
+
+.focusedLanguageButton:hover {
+  background: #e7ece8;
+  color: #26362e;
+}
+
+.focusedLanguageActive {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(28, 41, 34, .1);
+  color: #2f714e;
+}
+
 .focusedBackButton,
 .focusedCopyButton {
   cursor: pointer;
@@ -146,6 +187,14 @@
   }
 
   .focusedTopNav {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 24px;
+  }
+
+  .focusedActions {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
