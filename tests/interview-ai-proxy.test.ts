@@ -23,6 +23,15 @@ function authenticatedRequest(method: "GET" | "POST", body?: unknown, userId = "
   });
 }
 
+function unauthenticatedMultiUserRequest(): Request {
+  return new Request("https://gimme-job.com/api/ai/interviews", {
+    headers: {
+      "x-gimmejob-auth-mode": "multi-user",
+      "x-gimmejob-authenticated": "0",
+    },
+  });
+}
+
 function fakeDb(options: FakeDbOptions = {}) {
   const queries: Query[] = [];
   const database = {
@@ -67,7 +76,7 @@ test("AI interview API rejects unauthenticated multi-user access before calling 
   }) as typeof fetch;
   try {
     const response = await handleInterviewAi(
-      new Request("https://gimme-job.com/api/ai/interviews"),
+      unauthenticatedMultiUserRequest(),
       aiEnv(fakeDb().database),
     );
     assert.equal(response.status, 401);
