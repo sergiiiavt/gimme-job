@@ -5,10 +5,11 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("ships Fight AI slop as a lazy, local-only public game", async () => {
-  const [gameSource, rendererSource, facadeSource, worldSource, simulationSource, publicSource, navigationSource, stylesSource] = await Promise.all([
+  const [gameSource, rendererSource, facadeSource, worldSource, legacySource, simulationSource, publicSource, navigationSource, stylesSource] = await Promise.all([
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
+    readFile(projectFile("app/rewild-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world-legacy.ts"), "utf8"),
     readFile(projectFile("app/rewild-simulation.ts"), "utf8"),
     readFile(projectFile("app/public-site.tsx"), "utf8"),
@@ -27,10 +28,12 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(publicSource, /!isFullScreenGame && \(/);
   assert.match(publicSource, /Exit game and return to the site/);
 
-  assert.match(facadeSource, /export \* from "\.\/rewild-world-legacy\.ts"/);
+  assert.match(facadeSource, /export \* from "\.\/rewild-world\.ts"/);
   assert.match(facadeSource, /from "\.\/rewild-simulation\.ts"/);
-  assert.match(worldSource, /export const HEX_COLS = 30;/);
-  assert.match(worldSource, /export const HEX_ROWS = 14;/);
+  assert.match(legacySource, /export \* from "\.\/rewild-world\.ts"/);
+  assert.match(worldSource, /export const HEX_COLS = 37;/);
+  assert.match(worldSource, /export const HEX_ROWS = 15;/);
+  assert.match(worldSource, /export const HEX_SIZE = 21;/);
   assert.match(worldSource, /from "\.\/rewild-hex-grid\.ts"/);
   assert.match(worldSource, /export function hexNeighbors/);
   assert.match(worldSource, /export function hexDistance/);
@@ -46,6 +49,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /export function createFacilityFootprint/);
   assert.match(worldSource, /export function createReviewGameState/);
   assert.match(worldSource, /export function inspectHex/);
+  assert.match(worldSource, /INITIAL_NODE_ANCHORS/);
+  assert.match(worldSource, /forest-west/);
+  assert.match(worldSource, /lake-west/);
 
   assert.match(simulationSource, /export function createGameState/);
   assert.match(simulationSource, /export function findPath/);
