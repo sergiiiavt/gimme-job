@@ -24,10 +24,10 @@ test("Rewild Visual Bible stays aligned with the actual runtime roster", async (
   );
 
   for (const id of ["sunbloom", "thornbramble", "sporecap", "vinewhip", "rootreclaimer", "elderoak"]) {
-    assert.match(manifest, new RegExp(`\\| \\`${id}\\` \\|`), `manifest must include plant ${id}`);
+    assert.ok(manifest.includes(`| \`${id}\` |`), `manifest must include plant ${id}`);
   }
   for (const id of ["clickbait", "deepfake", "popup", "fragment"]) {
-    assert.match(manifest, new RegExp(`\\| \\`${id}\\` \\|`), `manifest must include enemy ${id}`);
+    assert.ok(manifest.includes(`| \`${id}\` |`), `manifest must include enemy ${id}`);
   }
 
   for (const hallucinated of [
@@ -43,7 +43,8 @@ test("Rewild Visual Bible stays aligned with the actual runtime roster", async (
     "Machinists",
     "Collector Fleet",
   ]) {
-    assert.doesNotMatch(manifest, new RegExp(`\\b${hallucinated.replace(" ", "\\s+")}\\b`, "i"), `manifest must not invent ${hallucinated}`);
+    const pattern = hallucinated.replaceAll(" ", "\\s+");
+    assert.doesNotMatch(manifest, new RegExp(`\\b${pattern}\\b`, "i"), `manifest must not invent ${hallucinated}`);
   }
 });
 
