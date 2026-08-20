@@ -6,6 +6,7 @@ type EmailEventRow = {
   subject: string;
   text_excerpt: string | null;
   classification: string;
+  classification_confidence: number | null;
   company: string | null;
   job_title: string | null;
   job_id: string | null;
@@ -77,6 +78,7 @@ const TARGET_STATUS: Record<string, string | null> = {
 const FUZZY_LIMIT = 150;
 const AUTO_MATCH_SCORE = 80;
 const AUTO_MATCH_MARGIN = 15;
+const AUTO_STATUS_CLASSIFICATION_CONFIDENCE = 0.8;
 
 function normalizeText(value: string | null | undefined): string {
   return (value ?? "")
@@ -214,7 +216,7 @@ function compactCandidates(candidates: ScoredCandidate[]) {
 async function loadEvent(db: D1Database, userId: string, eventId: string): Promise<EmailEventRow | null> {
   return db.prepare(`SELECT
     id, user_id, received_at, sender_email, subject, text_excerpt, classification,
-    company, job_title, job_id, thread_id
+    classification_confidence, company, job_title, job_id, thread_id
   FROM user_email_events
   WHERE user_id = ? AND id = ?
   LIMIT 1`)
@@ -308,6 +310,10 @@ async function applyResolvedStatus(
   const target = TARGET_STATUS[event.classification] ?? null;
   if (!target) return { change: null, note: "no_status_change" };
 
+  if (event.classification_confidence === null || event.classification_confidence < AUTO_STATUS_CLASSIFICATION_CONFIDENCE) {
+    return { change: null, note: "classification_confidence_low" };
+  }
+
   const current = candidate.status || "NEW";
   if (current === target) return { change: null, note: `already_${target}` };
 
@@ -339,6 +345,7 @@ async function applyResolvedStatus(
   const metadata = JSON.stringify({
     emailEventId: event.id,
     classification: event.classification,
+    classificationConfidence: event.classification_confidence,
     matchMethod,
     matchConfidence: confidence,
   });
