@@ -245,6 +245,29 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
     backButton.textContent = language === "uk" ? "← Повна сторінка" : "← Full learning page";
     backButton.addEventListener("click", () => window.location.assign(fullChapterHref));
 
+    const rightActions = document.createElement("div");
+    rightActions.className = uiStyles.focusedActions;
+
+    if (languages.length > 1) {
+      const languageGroup = document.createElement("div");
+      languageGroup.className = uiStyles.focusedLanguage;
+      languageGroup.setAttribute("role", "group");
+      languageGroup.setAttribute("aria-label", language === "uk" ? "Мова матеріалу" : "Material language");
+
+      for (const option of languages) {
+        const languageButton = document.createElement("button");
+        languageButton.className = uiStyles.focusedLanguageButton;
+        if (option === language) languageButton.classList.add(uiStyles.focusedLanguageActive);
+        languageButton.type = "button";
+        languageButton.textContent = option === "uk" ? "UA" : "EN";
+        languageButton.setAttribute("aria-pressed", option === language ? "true" : "false");
+        languageButton.addEventListener("click", () => onLanguageChange(option));
+        languageGroup.appendChild(languageButton);
+      }
+
+      rightActions.appendChild(languageGroup);
+    }
+
     const copyButton = document.createElement("button");
     copyButton.className = uiStyles.focusedCopyButton;
     copyButton.type = "button";
@@ -263,7 +286,8 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       }
     });
 
-    topNav.append(backButton, copyButton);
+    rightActions.appendChild(copyButton);
+    topNav.append(backButton, rightActions);
     article.insertBefore(topNav, article.firstChild);
 
     hiddenElements.forEach((element) => { element.style.display = "none"; });
@@ -284,7 +308,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       article.classList.remove(uiStyles.focusedArticle);
       target.classList.remove(uiStyles.focusedHeading);
     };
-  }, [focusedHeading, language, pathname, searchParams]);
+  }, [focusedHeading, language, languages, onLanguageChange, pathname, searchParams]);
 
   useEffect(() => {
     if (focusedHeading) return;
