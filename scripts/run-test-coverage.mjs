@@ -11,10 +11,6 @@ await mkdir(coverageDir, { recursive: true });
 const result = spawnSync(
   process.execPath,
   [
-    "--import",
-    "tsx",
-    "--import",
-    "./tests/register-css-module-loader.mjs",
     "--test",
     "--experimental-test-coverage",
     "--test-reporter=spec",
