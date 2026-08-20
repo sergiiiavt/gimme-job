@@ -2,6 +2,29 @@ const PYODIDE_INDEX_URL = "https://cdn.jsdelivr.net/pyodide/v314.0.4/full/";
 const MAX_CODE_LENGTH = 8_000;
 const MAX_OUTPUT_CHARS = 32_000;
 
+const nativeFetch = globalThis.fetch.bind(globalThis);
+
+globalThis.fetch = (input, init = {}) => {
+  const requestUrl = new URL(typeof input === "string" ? input : input.url, self.location.href);
+  if (!requestUrl.href.startsWith(PYODIDE_INDEX_URL)) {
+    return Promise.reject(new TypeError("Network access is disabled in the learning runner."));
+  }
+  return nativeFetch(input, { ...init, credentials: "omit" });
+};
+
+function lockDownWorkerCapabilities() {
+  const deny = () => {
+    throw new Error("Browser and network APIs are disabled in the learning runner.");
+  };
+  for (const name of ["fetch", "WebSocket", "WebTransport", "EventSource", "XMLHttpRequest", "Worker", "SharedWorker"]) {
+    try {
+      Object.defineProperty(globalThis, name, { configurable: false, value: deny, writable: false });
+    } catch {
+      // Some browser globals are non-configurable; Python-side policy still blocks their bridge paths.
+    }
+  }
+}
+
 const SECURITY_WRAPPER = String.raw`
 import ast as _ast
 import builtins as _builtins
@@ -9,7 +32,7 @@ import builtins as _builtins
 _ALLOWED_IMPORTS = {
     "__future__", "asyncio", "base64", "bisect", "collections", "contextlib", "copy",
     "dataclasses", "datetime", "decimal", "enum", "fractions", "functools", "hashlib",
-    "heapq", "itertools", "json", "math", "operator", "pprint", "random", "re",
+    "heapq", "itertools", "json", "logging", "math", "operator", "pprint", "random", "re",
     "statistics", "string", "time", "typing", "uuid",
 }
 _BLOCKED_CALLS = {
@@ -17,8 +40,10 @@ _BLOCKED_CALLS = {
     "setattr", "delattr", "vars",
 }
 _BLOCKED_ATTRIBUTES = {
-    "connect", "fork", "import_module", "install", "loadPackage", "open_url", "popen",
-    "request", "run_sync", "spawn", "system", "urlopen",
+    "attrgetter", "connect", "fetch", "f_back", "f_globals", "f_locals", "fork",
+    "globalThis", "import_module", "importScripts", "install", "loadPackage", "methodcaller",
+    "modules", "open_url", "popen", "postMessage", "request", "run_sync", "spawn", "sys",
+    "system", "urlopen", "WebSocket", "WebTransport", "XMLHttpRequest",
 }
 _BLOCKED_NAMES = {"js", "micropip", "pyodide", "pyodide_js"}
 
@@ -46,8 +71,11 @@ def _validate(tree):
                 raise RuntimeError(f"'{node.func.id}' is disabled in the learning runner.")
             if isinstance(node.func, _ast.Attribute) and node.func.attr in _BLOCKED_ATTRIBUTES:
                 raise RuntimeError(f"'{node.func.attr}' is disabled in the learning runner.")
-        elif isinstance(node, _ast.Attribute) and node.attr.startswith("__"):
-            raise RuntimeError("Dunder attribute access is disabled in the learning runner.")
+        elif isinstance(node, _ast.Attribute):
+            if node.attr.startswith("__"):
+                raise RuntimeError("Dunder attribute access is disabled in the learning runner.")
+            if node.attr in _BLOCKED_ATTRIBUTES:
+                raise RuntimeError(f"Attribute '{node.attr}' is disabled in the learning runner.")
         elif isinstance(node, _ast.Name) and node.id in _BLOCKED_NAMES:
             raise RuntimeError(f"'{node.id}' is unavailable in the learning runner.")
 
@@ -84,6 +112,7 @@ async function getPyodide() {
       const { loadPyodide } = await import(`${PYODIDE_INDEX_URL}pyodide.mjs`);
       const pyodide = await loadPyodide({ indexURL: PYODIDE_INDEX_URL });
       pyodide.setStdin({ error: true });
+      lockDownWorkerCapabilities();
       return pyodide;
     })();
   }
