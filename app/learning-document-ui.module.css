@@ -89,7 +89,7 @@
   max-width: 900px;
 }
 
-.focusedArticle > h2:first-child {
+.focusedHeading {
   border-top: 0 !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
