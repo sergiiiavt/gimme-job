@@ -125,19 +125,23 @@ test("daily automation activity requires bearer auth and validates the time wind
   )).status, 400);
 });
 
-test("daily report workflow reconciles unresolved mail and renders detailed resolution activity", async () => {
+test("daily report workflow blocks partial reports, reconciles unresolved mail, and renders resolution activity", async () => {
   const workflow = JSON.parse(await readFile(
     new URL("../ops/n8n/workflows/gimmejob-daily-email-report.json", import.meta.url),
     "utf8",
   )) as { nodes: Array<{ name: string; parameters?: { jsCode?: string; url?: string } }>; connections: Record<string, unknown> };
+  const guardNode = workflow.nodes.find((node) => node.name === "Require completed email processing");
   const reconciliationNode = workflow.nodes.find((node) => node.name === "Reconcile unresolved job emails");
   const activityNode = workflow.nodes.find((node) => node.name === "Get detailed automation activity");
   const formatNode = workflow.nodes.find((node) => node.name === "Format daily report");
+  assert.match(guardNode?.parameters?.jsCode ?? "", /pending classification/);
+  assert.match(guardNode?.parameters?.jsCode ?? "", /pending > 0/);
   assert.match(reconciliationNode?.parameters?.url ?? "", /internal\/n8n\/email-resolve/);
   assert.match(activityNode?.parameters?.url ?? "", /internal\/n8n\/vacancies-sync/);
   assert.match(activityNode?.parameters?.url ?? "", /startUtc/);
   assert.match(formatNode?.parameters?.jsCode ?? "", /Vacancy changes by automation/);
   assert.match(formatNode?.parameters?.jsCode ?? "", /Email classification and vacancy resolution/);
   assert.match(formatNode?.parameters?.jsCode ?? "", /Needs vacancy linking/);
+  assert.ok(Object.prototype.hasOwnProperty.call(workflow.connections, "Require completed email processing"));
   assert.ok(Object.prototype.hasOwnProperty.call(workflow.connections, "Reconcile unresolved job emails"));
 });
