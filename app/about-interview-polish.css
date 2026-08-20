@@ -19,6 +19,60 @@
   }
 }
 
+/* Keep the n8n workflow cards responsive to their real content width. Browser
+   zoom and the left navigation can make this region narrower even when the
+   viewport itself is still wider than the normal mobile breakpoints. */
+div[aria-label="Two n8n email automation workflows"] {
+  container-name: about-n8n-flows;
+  container-type: inline-size;
+}
+
+@container about-n8n-flows (max-width: 980px) {
+  div[aria-label="Two n8n email automation workflows"] > section {
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child {
+    display: grid !important;
+    gap: 6px !important;
+    grid-template-columns: minmax(120px, 1fr) 18px minmax(120px, 1fr) 18px minmax(120px, 1fr) 18px minmax(120px, 1fr);
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > .about-tech-node,
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > div:first-child,
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > div:first-child > .about-tech-node {
+    max-width: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > div:first-child {
+    flex-basis: auto !important;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > span {
+    min-width: 18px !important;
+    width: 18px !important;
+  }
+}
+
+@container about-n8n-flows (max-width: 720px) {
+  div[aria-label="Two n8n email automation workflows"] > section {
+    grid-template-columns: 1fr !important;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child {
+    grid-template-columns: 1fr;
+  }
+
+  div[aria-label="Two n8n email automation workflows"] > section > div:last-child > span {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}
+
 /* Keep interview-question controls close to the compact vacancy toolbar height.
    Learning-path pages use .py-page and intentionally retain their existing spacing. */
 .iq-page:not(.py-page) .iq-toolbar {
