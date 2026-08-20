@@ -1,12 +1,9 @@
 import {
   HOUSE_CENTER,
-  REWILD_HEX_LAYOUT,
-  cellAt,
   hexCenter,
   hexDistance,
   hexKey,
   hexNeighbors,
-  hexPolygon,
   type GameState,
   type HexCell,
   type HexCoord,
