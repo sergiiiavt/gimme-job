@@ -95,8 +95,8 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   const searchParams = useSearchParams();
   const previousId = pagerItemId(previous);
   const nextId = pagerItemId(next);
-  const previousHref = previousId ? contentHref(pathname, searchParams.toString(), { topic: previousId }) : null;
-  const nextHref = nextId ? contentHref(pathname, searchParams.toString(), { topic: nextId }) : null;
+  const previousHref = previousId ? contentHref(pathname, searchParams.toString(), { topic: previousId, section: null }) : null;
+  const nextHref = nextId ? contentHref(pathname, searchParams.toString(), { topic: nextId, section: null }) : null;
 
   return (
     <nav className={styles.pager} aria-label={ariaLabel}>
@@ -148,10 +148,14 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const focusedSectionId = searchParams.get("section");
+  const focusedHeading = focusedSectionId ? headings.find((heading) => heading.id === focusedSectionId) : undefined;
   const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? "source-registry");
-  const sectionHref = (sectionId: string) => contentHref(pathname, searchParams.toString(), {}, sectionId);
+  const sectionHref = (sectionId: string) => contentHref(pathname, searchParams.toString(), { section: null }, sectionId);
 
   useEffect(() => {
+    if (focusedHeading) return;
+
     const trackedIds = [...headings.map((heading) => heading.id), "source-registry"];
     let frame = 0;
 
@@ -190,16 +194,71 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       window.removeEventListener("resize", scheduleUpdate);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [headings]);
+  }, [focusedHeading, headings]);
 
   useEffect(() => {
-    const createdLinks: HTMLAnchorElement[] = [];
-    const sectionIds = [...headings.map((heading) => heading.id), "source-registry"];
+    if (!focusedHeading) return;
 
-    for (const sectionId of sectionIds) {
-      const target = sectionId === "source-registry"
-        ? document.getElementById("learning-source-register")
-        : document.getElementById(sectionId);
+    const target = document.getElementById(focusedHeading.id);
+    if (!(target instanceof HTMLElement) || target.tagName !== "H2") return;
+    const article = target.parentElement;
+    if (!(article instanceof HTMLElement)) return;
+
+    const children = Array.from(article.children).filter((child): child is HTMLElement => child instanceof HTMLElement);
+    const sectionStart = children.indexOf(target);
+    if (sectionStart < 0) return;
+
+    let sectionEnd = children.length;
+    for (let index = sectionStart + 1; index < children.length; index += 1) {
+      if (children[index].tagName === "H2") {
+        sectionEnd = index;
+        break;
+      }
+    }
+
+    const originalDisplays = children.map((child) => [child, child.style.display] as const);
+    children.forEach((child, index) => {
+      if (index < sectionStart || index >= sectionEnd) child.style.display = "none";
+    });
+
+    const documentColumn = article.parentElement;
+    const layout = documentColumn?.parentElement instanceof HTMLElement ? documentColumn.parentElement : null;
+    const contentRoot = article.closest<HTMLElement>(".kb-content");
+    const mainRoot = article.closest<HTMLElement>(".kb-main");
+    const navigation = document.querySelector<HTMLElement>(".kb-navigation");
+    const floatingMenu = mainRoot?.querySelector<HTMLElement>(".kb-floating-menu") ?? null;
+    const hero = contentRoot?.querySelector<HTMLElement>(`.${styles.hero}`) ?? null;
+    const sourcePanel = contentRoot?.querySelector<HTMLElement>(`.${styles.sourcePanel}`) ?? null;
+    const pager = contentRoot?.querySelector<HTMLElement>(`.${styles.pager}`) ?? null;
+    const hiddenElements = [navigation, floatingMenu, hero, sourcePanel, pager].filter((element): element is HTMLElement => Boolean(element));
+    const originalHiddenDisplays = hiddenElements.map((element) => [element, element.style.display] as const);
+    const originalMainMarginLeft = mainRoot?.style.marginLeft ?? "";
+
+    hiddenElements.forEach((element) => { element.style.display = "none"; });
+    if (mainRoot) mainRoot.style.marginLeft = "0";
+    layout?.classList.add(uiStyles.focusedLayout);
+    contentRoot?.classList.add(uiStyles.focusedContent);
+    article.classList.add(uiStyles.focusedArticle);
+    target.classList.add(uiStyles.focusedHeading);
+
+    return () => {
+      originalDisplays.forEach(([element, display]) => { element.style.display = display; });
+      originalHiddenDisplays.forEach(([element, display]) => { element.style.display = display; });
+      if (mainRoot) mainRoot.style.marginLeft = originalMainMarginLeft;
+      layout?.classList.remove(uiStyles.focusedLayout);
+      contentRoot?.classList.remove(uiStyles.focusedContent);
+      article.classList.remove(uiStyles.focusedArticle);
+      target.classList.remove(uiStyles.focusedHeading);
+    };
+  }, [focusedHeading]);
+
+  useEffect(() => {
+    if (focusedHeading) return;
+
+    const createdLinks: Array<{ link: HTMLAnchorElement; target: HTMLElement }> = [];
+
+    for (const heading of headings) {
+      const target = document.getElementById(heading.id);
       if (!(target instanceof HTMLElement)) continue;
 
       const existing = Array.from(target.children).find((child) => child.classList.contains(uiStyles.headingDirectLink));
@@ -207,20 +266,26 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
 
       const link = document.createElement("a");
       link.className = uiStyles.headingDirectLink;
-      link.href = contentHref(pathname, searchParams.toString(), {}, sectionId);
+      link.href = contentHref(pathname, searchParams.toString(), { section: heading.id });
       link.rel = "noreferrer";
       link.target = "_blank";
-      link.title = language === "uk" ? "Відкрити у новій вкладці" : "Open in new tab";
-      link.setAttribute("aria-label", `${language === "uk" ? "Відкрити пряме посилання у новій вкладці" : "Open direct link in a new tab"}: ${target.textContent?.trim() ?? sectionId}`);
+      link.title = language === "uk" ? "Відкрити лише цю тему у новій вкладці" : "Open only this topic in a new tab";
+      link.setAttribute("aria-label", `${language === "uk" ? "Відкрити лише цю тему у новій вкладці" : "Open only this topic in a new tab"}: ${target.textContent?.trim() ?? heading.id}`);
       link.innerHTML = directLinkSvgMarkup;
+      target.classList.add(uiStyles.linkableHeading);
       target.appendChild(link);
-      createdLinks.push(link);
+      createdLinks.push({ link, target });
     }
 
     return () => {
-      for (const link of createdLinks) link.remove();
+      for (const { link, target } of createdLinks) {
+        link.remove();
+        target.classList.remove(uiStyles.linkableHeading);
+      }
     };
-  }, [headings, language, pathname, searchParams]);
+  }, [focusedHeading, headings, language, pathname, searchParams]);
+
+  if (focusedHeading) return null;
 
   return (
     <aside className={styles.rail} aria-label={language === "uk" ? "Навігація навчального матеріалу" : "Learning material navigation"}>
