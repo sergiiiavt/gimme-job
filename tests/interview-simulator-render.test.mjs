@@ -1,25 +1,37 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 import react from "@vitejs/plugin-react";
 
+const HOOKS_SPECIFIER = "virtual:interview-simulator-test-hooks";
 const HOOKS_ID = "\0interview-simulator-test-hooks";
 const SIDEBAR_ID = "\0interview-simulator-test-sidebar";
 const LINK_ID = "\0interview-simulator-test-link";
+const SIMULATOR_SUFFIX = "/app/interview/simulator/interview-simulator.tsx";
 
 const testDoubles = {
   name: "interview-simulator-test-doubles",
   enforce: "pre",
   resolveId(id, importer) {
-    if (!importer?.endsWith("/app/interview/simulator/interview-simulator.tsx")) return null;
-    if (id === "react") return HOOKS_ID;
+    if (id === HOOKS_SPECIFIER) return HOOKS_ID;
+    if (!importer?.endsWith(SIMULATOR_SUFFIX)) return null;
     if (id === "../../site-navigation") return SIDEBAR_ID;
     if (id === "next/link") return LINK_ID;
     return null;
   },
-  load(id) {
+  async load(id) {
+    if (id.endsWith(SIMULATOR_SUFFIX)) {
+      const source = await readFile(id, "utf8");
+      const original = 'import { useEffect, useMemo, useState } from "react";';
+      assert.ok(source.includes(original), "simulator hook import changed unexpectedly");
+      return source.replace(
+        original,
+        `import { useEffect, useMemo, useState } from "${HOOKS_SPECIFIER}";`,
+      );
+    }
     if (id === HOOKS_ID) {
       return `
         export function useState(initial) {
