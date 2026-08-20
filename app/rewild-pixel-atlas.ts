@@ -1,1 +1,1 @@
-export * from "./rewild-pixel-atlas-v2";
+export * from "./rewild-pixel-atlas-v3";
