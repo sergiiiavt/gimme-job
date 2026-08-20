@@ -239,6 +239,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
     layout?.classList.add(uiStyles.focusedLayout);
     contentRoot?.classList.add(uiStyles.focusedContent);
     article.classList.add(uiStyles.focusedArticle);
+    target.classList.add(uiStyles.focusedHeading);
 
     return () => {
       originalDisplays.forEach(([element, display]) => { element.style.display = display; });
@@ -247,6 +248,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       layout?.classList.remove(uiStyles.focusedLayout);
       contentRoot?.classList.remove(uiStyles.focusedContent);
       article.classList.remove(uiStyles.focusedArticle);
+      target.classList.remove(uiStyles.focusedHeading);
     };
   }, [focusedHeading]);
 
