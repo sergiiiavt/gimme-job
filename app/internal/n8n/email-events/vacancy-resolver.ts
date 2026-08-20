@@ -259,7 +259,12 @@ async function loadIdentifierCandidates(db: D1Database, event: EmailEventRow): P
   WHERE
     (length(jobs.url) >= 8 AND instr(?, lower(jobs.url)) > 0)
     OR (length(jobs.apply_url) >= 8 AND instr(?, lower(jobs.apply_url)) > 0)
-    OR (jobs.external_id IS NOT NULL AND length(jobs.external_id) >= 5 AND instr(?, lower(jobs.external_id)) > 0)
+    OR (
+      jobs.external_id IS NOT NULL
+      AND length(jobs.external_id) >= 5
+      AND jobs.external_id GLOB '*[A-Za-z]*'
+      AND instr(?, lower(jobs.external_id)) > 0
+    )
   LIMIT 5`)
     .bind(event.user_id, haystack, haystack, haystack)
     .all<CandidateRow>();
