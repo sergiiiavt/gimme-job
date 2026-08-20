@@ -9,6 +9,7 @@
       "frameSize": 64,
       "columns": 8,
       "rows": 4,
+      "decodePolicy": "warn-on-v3-decoder-error",
       "emptyFramePolicy": "allow-declared-runtime-fallback",
       "frames": [
         { "name": "tree-broadleaf", "fallback": "v2:same-id" },
@@ -50,7 +51,8 @@
       "image": "public/rewild/overhead/terrain-atlas-v3.png",
       "frameSize": 32,
       "columns": 8,
-      "rows": 2,
+      "rows": 8,
+      "decodePolicy": "fail",
       "emptyFramePolicy": "fail",
       "frames": [
         { "name": "grass-a" },
@@ -73,6 +75,7 @@
     }
   ],
   "v4Policy": {
+    "decodePolicy": "fail",
     "emptyFramePolicy": "fail",
     "silentFallbackAllowed": false,
     "requiredMetadata": [
