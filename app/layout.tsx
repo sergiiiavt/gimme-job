@@ -5,6 +5,7 @@ import VacancyScrollState from "./vacancy-scroll-state";
 import "./globals.css";
 import "./interview-auth-layout.css";
 import "./about-site-layout.css";
+import "./about-interview-polish.css";
 import "./vacancies-workspace.css";
 import "./vacancy-detail-layout.css";
 import "./vacancy-filter-enhancer.css";
