@@ -42,6 +42,25 @@ test("focused learning section hides the rest of the chapter and surrounding lea
   assert.match(learningUi, /if \(focusedHeading\) return null/);
 });
 
+test("focused learning section mirrors interview back and copy-link actions", async () => {
+  const [learningUi, styles] = await Promise.all([
+    read("app/learning-document-ui.tsx"),
+    read("app/learning-document-ui.module.css"),
+  ]);
+
+  assert.match(learningUi, /const fullChapterHref = contentHref\(pathname, searchParams\.toString\(\), \{ section: null \}, focusedHeading\.id\)/);
+  assert.match(learningUi, /topNav\.className = uiStyles\.focusedTopNav/);
+  assert.match(learningUi, /backButton\.className = uiStyles\.focusedBackButton/);
+  assert.match(learningUi, /window\.location\.assign\(fullChapterHref\)/);
+  assert.match(learningUi, /copyButton\.className = uiStyles\.focusedCopyButton/);
+  assert.match(learningUi, /navigator\.clipboard\.writeText\(window\.location\.href\)/);
+  assert.match(learningUi, /copyButton\.textContent = language === "uk" \? "Скопійовано" : "Copied"/);
+  assert.match(learningUi, /article\.insertBefore\(topNav, article\.firstChild\)/);
+  assert.match(styles, /\.focusedTopNav[\s\S]*justify-content: space-between/);
+  assert.match(styles, /\.focusedBackButton[\s\S]*background: transparent/);
+  assert.match(styles, /\.focusedCopyButton[\s\S]*border: 1px solid #cad5cd/);
+});
+
 test("learning chapter direct links open full chapters and clear focused section state", async () => {
   const learningUi = await read("app/learning-document-ui.tsx");
 
