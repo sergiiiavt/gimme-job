@@ -1,9 +1,10 @@
+import { hexNeighborFor } from "./rewild-hex-grid.ts";
 import {
   HOUSE_FOOTPRINT,
+  REWILD_HEX_LAYOUT,
   hexDistance,
   hexKey,
   hexLine,
-  hexNeighbors,
   type GameState,
   type HexCoord,
   type HexWorld,
@@ -89,9 +90,10 @@ function regionMasks(state: GameState) {
     const masks = new Map<string, number>();
     for (const cell of region.cells) {
       let mask = 0;
-      hexNeighbors(cell).forEach((neighbor, index) => {
-        if (keys.has(hexKey(neighbor))) mask |= 1 << index;
-      });
+      for (let direction = 0; direction < 6; direction += 1) {
+        const neighbor = hexNeighborFor(REWILD_HEX_LAYOUT, cell, direction);
+        if (neighbor && keys.has(hexKey(neighbor))) mask |= 1 << direction;
+      }
       masks.set(hexKey(cell), mask);
     }
     result.set(region.id, masks);
