@@ -8,7 +8,7 @@ This batch is visual-only. It must not add gameplay entities or touch simulation
 
 Generate clean pixel-art source sprites on transparent background. No labels, no baked hex outlines, no shadows that imply a different projection. Preserve native aspect ratio.
 
-### 01A — Road / fence / boundary family
+### 01A — Road / fence / boundary family — REVIEW APPROVED
 1. `road-dirt-straight`
 2. `road-dirt-curve-left`
 3. `road-dirt-curve-right`
@@ -24,7 +24,9 @@ Generate clean pixel-art source sprites on transparent background. No labels, no
 13. `fence-wood-broken`
 14. `barrier-stone-low`
 
-### 01B — Small nature details
+Approval note: the Batch 01A review sheet was explicitly approved in chat on 2026-08-20. It locks the road/fence/barrier style direction for clean production export. The review poster itself is not the final runtime atlas.
+
+### 01B — Small nature details — NEXT REVIEW
 15. `detail-grass-tuft-a`
 16. `detail-grass-tuft-b`
 17. `detail-grass-tuft-c`
@@ -70,8 +72,8 @@ Generate clean pixel-art source sprites on transparent background. No labels, no
 ## Generation strategy
 
 Generate and approve smaller sub-batches rather than all 36 at once:
-1. 01A road/fence/boundary — 14 exact assets.
-2. 01B nature details — 16 exact assets.
+1. 01A road/fence/boundary — 14 exact assets. **Approved for production export.**
+2. 01B nature details — 16 exact assets. **Generate next.**
 3. 01C industrial details — 6 exact assets.
 
 This reduces missing slots, duplicates and hallucinated objects.
