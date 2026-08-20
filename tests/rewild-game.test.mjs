@@ -5,8 +5,9 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("ships Fight AI slop as a lazy, local-only public game", async () => {
-  const [gameSource, facadeSource, worldSource, simulationSource, publicSource, navigationSource, stylesSource] = await Promise.all([
+  const [gameSource, rendererSource, facadeSource, worldSource, simulationSource, publicSource, navigationSource, stylesSource] = await Promise.all([
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
+    readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world-legacy.ts"), "utf8"),
     readFile(projectFile("app/rewild-simulation.ts"), "utf8"),
@@ -42,12 +43,8 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(worldSource, /interface WorldObject/);
   assert.match(worldSource, /interface BiomeRegion/);
   assert.match(worldSource, /surface: roadKeys\.has\(hexKey\(hex\)\) \? "road" : "meadow"/);
-  assert.match(worldSource, /object\.kind === "pond"/);
   assert.match(worldSource, /export function createFacilityFootprint/);
-  assert.match(worldSource, /return hexDisk\(anchor, boss \? 2 : 1\)/);
-  assert.match(worldSource, /export function facilityOperational/);
   assert.match(worldSource, /export function createReviewGameState/);
-  assert.match(worldSource, /export function objectCorruption/);
   assert.match(worldSource, /export function inspectHex/);
 
   assert.match(simulationSource, /export function createGameState/);
@@ -60,49 +57,41 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(simulationSource, /REWILD_BASELINE\.rootReclaimSeconds/);
   assert.match(simulationSource, /popupDisableSeconds/);
   assert.doesNotMatch(simulationSource, /roadBoost|stepCost|updateEcosystem\(|facilityOperational\(|hexDirection\(plant/);
-  assert.doesNotMatch(simulationSource, /const directions = \[\[1, 0\], \[-1, 0\], \[0, 1\], \[0, -1\]\]/);
 
   assert.match(gameSource, /from "\.\/rewild-hex-world"/);
+  assert.match(gameSource, /from "\.\/rewild-overhead-renderer"/);
+  assert.match(gameSource, /renderOverheadGame\(context, state, cameraRef\.current\)/);
   assert.match(gameSource, /export default function RewildGame/);
   assert.doesNotMatch(gameSource, /RewildTacticalGame|End turn|PLAYER PHASE/);
   assert.match(gameSource, /const scale = Math\.min\(bounds\.width \/ CANVAS_WIDTH, bounds\.height \/ CANVAS_HEIGHT\)/);
   assert.ok((gameSource.match(/\}, \[view\]\);/g) ?? []).length >= 3, "Canvas and keyboard effects must rebind when returning from the field guide.");
   assert.match(gameSource, /if \(view !== "all"\) return;/);
   assert.match(gameSource, /Defenders stay planted and attack automatically/);
-  assert.match(gameSource, /ctx\.imageSmoothingEnabled = false/);
-  assert.match(gameSource, /function drawRoad/);
-  assert.match(gameSource, /function drawBiomeRegions/);
-  assert.match(gameSource, /function regionBoundary/);
-  assert.match(gameSource, /function drawCorruption/);
-  assert.match(gameSource, /function drawHexMesh/);
-  assert.match(gameSource, /function drawGrounding/);
-  assert.match(gameSource, /function drawPlantToken/);
-  assert.match(gameSource, /function drawEnemyToken/);
-  assert.match(gameSource, /function drawFacilityGround/);
-  assert.match(gameSource, /function drawAtlasFrame/);
-  assert.match(gameSource, /facilityModules\(node\)/);
-  assert.match(gameSource, /damagedFacilityModules\(node\)/);
-  assert.match(gameSource, /drawNodeConnections\(ctx, node, state\)/);
-  assert.match(gameSource, /drawRuinConnections\(ctx, ruin, state\)/);
-  assert.match(gameSource, /"cable-broken"/);
-  assert.match(gameSource, /"drain-clean"/);
-  assert.match(gameSource, /requestedReviewState/);
-  assert.match(gameSource, /"pondResponse"/);
-  assert.match(gameSource, /environmentVisualState\(state, object\)/);
-  assert.doesNotMatch(gameSource, /ctx\.fillRect\(box\.left, box\.top, box\.width, box\.height\)/);
-  assert.match(gameSource, /"roots-reclaiming"/);
-  assert.doesNotMatch(gameSource, /const wallHeight = stage/);
-  assert.match(gameSource, /function drawRubble/);
-  assert.match(gameSource, /drawSprite\(ctx, object\.sprite/);
-  assert.match(gameSource, /object\.kind !== "house"/);
-  assert.match(gameSource, /const polygon = hexPolygon\(state\.cursor/);
-  assert.doesNotMatch(gameSource, /strokeRect\(state\.cursor/);
   assert.match(gameSource, /const hex = pixelToHex\(worldX, worldY\)/);
   assert.match(gameSource, /Arrows plus Q\/E move the placement cursor across six neighboring cells/);
-  assert.match(gameSource, /onKeyDown=\{onCanvasKeyDown\} tabIndex=\{0\}/);
   assert.match(gameSource, /window\.requestAnimationFrame/);
-  assert.match(gameSource, /className=\{`rw-inspector/);
+  assert.match(gameSource, /STRICT OVERHEAD · REAL-TIME DEFENSE/);
+  assert.doesNotMatch(gameSource, /REWILD_ATLASES|drawSprite|obj-house-v2|terrain-pond|tree-response-states-v1|pond-response-states-v1/);
   assert.doesNotMatch(gameSource, /\/api\//);
+
+  assert.match(rendererSource, /export function renderOverheadGame/);
+  assert.match(rendererSource, /ctx\.imageSmoothingEnabled = false/);
+  assert.match(rendererSource, /function drawGround/);
+  assert.match(rendererSource, /function boundaryEdges/);
+  assert.match(rendererSource, /function drawWater/);
+  assert.match(rendererSource, /function drawForest/);
+  assert.match(rendererSource, /function drawRoad/);
+  assert.match(rendererSource, /function drawIndustrialGround/);
+  assert.match(rendererSource, /function drawMesh/);
+  assert.match(rendererSource, /function drawCablePath/);
+  assert.match(rendererSource, /function drawDatacenter/);
+  assert.match(rendererSource, /function drawHouse/);
+  assert.match(rendererSource, /function drawPlant/);
+  assert.match(rendererSource, /function drawEnemy/);
+  assert.match(rendererSource, /function drawRouteFeedback/);
+  assert.match(rendererSource, /hexNeighbors/);
+  assert.match(rendererSource, /hexLine/);
+  assert.doesNotMatch(rendererSource, /createRadialGradient|quadraticCurveTo|drawImage\(|REWILD_ATLASES|SPRITE_FILES/);
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) assert.match(worldSource, new RegExp(plant.replace(" ", "\\s")));
   for (const enemy of ["AI Slop Swarm", "Deepfake Sludge", "Popup Parasite"]) assert.match(worldSource, new RegExp(enemy));
@@ -113,9 +102,8 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.ok(gameScripts.length >= 1, "The production build must contain a separate Rewild game chunk.");
   const gameOutput = (await Promise.all(gameScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.match(gameOutput, /AI Slop Swarm/);
-  assert.match(gameOutput, /visible hex (?:world|field)/i);
-  assert.match(gameOutput, /tree-response-states-v1\.png/);
-  assert.match(gameOutput, /pond-response-states-v1\.png/);
+  assert.match(gameOutput, /STRICT OVERHEAD/);
+  assert.doesNotMatch(gameOutput, /obj-house-v2\.png|terrain-pond-[12]\.png|tree-response-states-v1\.png|pond-response-states-v1\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
 });
