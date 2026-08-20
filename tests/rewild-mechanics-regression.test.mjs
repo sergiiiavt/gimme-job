@@ -14,6 +14,7 @@ import {
   hexDirection,
   hexDistance,
   hexNeighbors,
+  pixelToHex,
   placePlant,
   updateGame,
 } from "../app/rewild-hex-world.ts";
@@ -66,6 +67,19 @@ test("Siege and Endless start from the PR14 economy and two-node contract", () =
     }
   }
   assert.equal(PLANTS.rootreclaimer.unlockWave, 2);
+});
+
+test("hex topology exposes six unique shared-border neighbors and picking round-trips rendered centers", () => {
+  const interior = { q: 12, r: 6 };
+  const neighbors = hexNeighbors(interior);
+  assert.equal(neighbors.length, 6);
+  assert.equal(new Set(neighbors.map((hex) => `${hex.q},${hex.r}`)).size, 6);
+  for (const neighbor of neighbors) assert.equal(hexDistance(interior, neighbor), 1);
+
+  for (const hex of [interior, { q: 5, r: 5 }, { q: 20, r: 8 }]) {
+    const center = hexCenter(hex);
+    assert.deepEqual(pixelToHex(center.x, center.y), hex);
+  }
 });
 
 test("base income is one sunlight per second and enabled Sunblooms add two", () => {
