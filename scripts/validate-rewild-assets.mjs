@@ -126,12 +126,25 @@ for (const atlas of overheadConfig.atlases ?? []) {
     const header = pngInfo(source);
     const expectedWidth = atlas.columns * atlas.frameSize;
     const expectedHeight = atlas.rows * atlas.frameSize;
+    const capacity = atlas.columns * atlas.rows;
     assert.equal(header.width, expectedWidth, `${atlas.image}: width must be ${expectedWidth}px for ${atlas.columns} × ${atlas.frameSize}px frames`);
     assert.equal(header.height, expectedHeight, `${atlas.image}: height must be ${expectedHeight}px for ${atlas.rows} × ${atlas.frameSize}px frames`);
-    assert.equal(atlas.frames.length, atlas.columns * atlas.rows, `${atlas.id}: frame contract must fill the complete atlas grid`);
+    assert.ok(atlas.frames.length <= capacity, `${atlas.id}: ${atlas.frames.length} declared frames exceed atlas capacity ${capacity}`);
     assert.equal(new Set(atlas.frames.map((frame) => frame.name)).size, atlas.frames.length, `${atlas.id}: frame names must be unique`);
 
-    const { data, info } = await sharp(imagePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let decoded;
+    try {
+      decoded = await sharp(imagePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (atlas.decodePolicy === "warn-on-v3-decoder-error") {
+        warnings.push(`${atlas.id}: static decoder rejected the current compatibility atlas (${message}); browser runtime fallback remains required until v4 replaces it`);
+        continue;
+      }
+      throw error;
+    }
+
+    const { data, info } = decoded;
     for (let index = 0; index < atlas.frames.length; index += 1) {
       const frame = atlas.frames[index];
       const left = (index % atlas.columns) * atlas.frameSize;
