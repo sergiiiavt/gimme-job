@@ -13,6 +13,8 @@ const result = spawnSync(
   [
     "--import",
     "tsx",
+    "--import",
+    "./tests/register-css-module-loader.mjs",
     "--test",
     "--experimental-test-coverage",
     "--test-reporter=spec",
