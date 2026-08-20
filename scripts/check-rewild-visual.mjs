@@ -24,6 +24,7 @@ function touchesRewild() {
     || file.startsWith("public/rewild/overhead/")
     || file.startsWith("config/rewild/")
     || file === "visual/rewild-benchmark.html"
+    || file === "visual/rewild-vite.config.ts"
     || file === "scripts/check-rewild-visual.mjs"
     || file === "tests/fixtures/rewild-ecosystem.sha256",
   );
@@ -49,7 +50,10 @@ async function waitForServer(server) {
   for (let attempt = 0; attempt < 80; attempt += 1) {
     if (server.exitCode !== null) throw new Error(`Vite exited before benchmark capture (code ${server.exitCode}).`);
     try {
-      const response = await fetch(BENCHMARK_URL);
+      const response = await fetch(BENCHMARK_URL, { redirect: "manual" });
+      if (response.status >= 300 && response.status < 400) {
+        throw new Error(`Benchmark URL redirected to ${response.headers.get("location") ?? "an unknown location"}.`);
+      }
       if (response.ok) return;
       lastError = new Error(`HTTP ${response.status}`);
     } catch (error) {
@@ -79,7 +83,7 @@ async function main() {
   const chrome = findChrome();
   const temp = await mkdtemp(join(tmpdir(), "rewild-visual-"));
   const rawScreenshot = join(temp, "chrome.png");
-  const server = spawn("npm", ["run", "local:web"], {
+  const server = spawn("npm", ["exec", "vite", "--", "--config", "visual/rewild-vite.config.ts"], {
     cwd: ROOT,
     env: { ...process.env, BROWSER: "none" },
     detached: process.platform !== "win32",
@@ -100,7 +104,7 @@ async function main() {
       "--no-sandbox",
       "--force-device-scale-factor=1",
       `--window-size=${WIDTH},${HEIGHT}`,
-      "--virtual-time-budget=1200",
+      "--virtual-time-budget=2000",
       `--screenshot=${rawScreenshot}`,
       BENCHMARK_URL,
     ], { cwd: ROOT, encoding: "utf8", timeout: 30000 });
