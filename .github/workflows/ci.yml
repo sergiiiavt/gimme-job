@@ -53,9 +53,11 @@ jobs:
         run: uv lock --project ai-service --check
 
       - name: Install AI service test dependencies
-        run: uv sync --project ai-service --frozen --extra test
+        run: uv sync --project ai-service --frozen --extra test --no-build --no-install-project
 
       - name: Verify AI service with coverage
+        env:
+          PYTHONPATH: ai-service/src
         run: |
           ai-service/.venv/bin/python -m coverage run --rcfile=ai-service/pyproject.toml -m unittest discover -s ai-service/tests -v
           ai-service/.venv/bin/python -m coverage report --rcfile=ai-service/pyproject.toml --fail-under=80
@@ -194,9 +196,11 @@ jobs:
         run: uv lock --project ai-service --check
 
       - name: Install AI service test dependencies
-        run: uv sync --project ai-service --frozen --extra test
+        run: uv sync --project ai-service --frozen --extra test --no-build --no-install-project
 
       - name: Collect AI service coverage
+        env:
+          PYTHONPATH: ai-service/src
         run: |
           ai-service/.venv/bin/python -m coverage run --rcfile=ai-service/pyproject.toml -m unittest discover -s ai-service/tests -v
           ai-service/.venv/bin/python -m coverage report --rcfile=ai-service/pyproject.toml --fail-under=80
