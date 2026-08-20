@@ -1,6 +1,6 @@
 .shell {
   position: relative;
-  margin: 20px 0 24px;
+  margin: 12px 0 16px;
   overflow: hidden;
   border: 1px solid #3a3a3a;
   border-radius: 12px;
@@ -109,6 +109,11 @@
   pointer-events: none;
   background: #1e1e1e;
   color: #d4d4d4;
+  scrollbar-width: none;
+}
+
+.highlight::-webkit-scrollbar {
+  display: none;
 }
 
 .editor {
@@ -119,6 +124,42 @@
   color: transparent;
   caret-color: #d4d4d4;
   -webkit-text-fill-color: transparent;
+}
+
+.editor,
+.output {
+  scrollbar-color: #3b3b3b transparent;
+  scrollbar-width: thin;
+}
+
+.editor::-webkit-scrollbar,
+.output::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.editor::-webkit-scrollbar-track,
+.output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor::-webkit-scrollbar-thumb,
+.output::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #3b3b3b;
+  background-clip: padding-box;
+}
+
+.editor::-webkit-scrollbar-thumb:hover,
+.output::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+  background-clip: padding-box;
+}
+
+.editor::-webkit-scrollbar-corner,
+.output::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .editor::selection {

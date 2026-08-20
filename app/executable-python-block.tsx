@@ -12,7 +12,7 @@ type RunnerMessage = {
   error?: string;
 };
 
-const LOAD_TIMEOUT_MS = 30_000;
+const LOAD_TIMEOUT_MS = 60_000;
 const EXECUTION_TIMEOUT_MS = 5_000;
 const MAX_CODE_LENGTH = 8_000;
 const MAX_RUNS_PER_WORKER = 20;

@@ -4,8 +4,21 @@ const MAX_OUTPUT_CHARS = 32_000;
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
 
+function getRequestUrl(input) {
+  if (typeof input === "string") return new URL(input, self.location.href);
+  if (input instanceof URL) return input;
+  if (input && typeof input.url === "string") return new URL(input.url, self.location.href);
+  throw new TypeError("Unsupported network request in the learning runner.");
+}
+
 globalThis.fetch = (input, init = {}) => {
-  const requestUrl = new URL(typeof input === "string" ? input : input.url, self.location.href);
+  let requestUrl;
+  try {
+    requestUrl = getRequestUrl(input);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
   if (!requestUrl.href.startsWith(PYODIDE_INDEX_URL)) {
     return Promise.reject(new TypeError("Network access is disabled in the learning runner."));
   }
@@ -114,7 +127,10 @@ async function getPyodide() {
       pyodide.setStdin({ error: true });
       lockDownWorkerCapabilities();
       return pyodide;
-    })();
+    })().catch((error) => {
+      pyodidePromise = undefined;
+      throw error;
+    });
   }
 
   return pyodidePromise;

@@ -22,25 +22,33 @@ test("supported Python learning blocks use the executable runner without requiri
   assert.match(runnerComponent, />Clear</);
 });
 
-test("Python runner uses dark highlighted editor, floating actions, and working expand state", () => {
+test("Python runner uses dark highlighted editor, floating actions, compact spacing, and working expand state", () => {
   assert.match(runnerComponent, /highlightPython\(draft\)/);
   assert.match(runnerComponent, /styles\.actionDock/);
   assert.match(runnerComponent, /styles\.expandButton/);
   assert.match(runnerComponent, /setExpanded\(\(value\) => !value\)/);
   assert.match(runnerComponent, /event\.key === "Escape"/);
   assert.match(runnerStyles, /background: #1e1e1e/);
+  assert.match(runnerStyles, /margin: 12px 0 16px/);
   assert.match(runnerStyles, /\.actionDock[\s\S]*position: absolute/);
+  assert.match(runnerStyles, /scrollbar-width: thin/);
+  assert.match(runnerStyles, /::-webkit-scrollbar-thumb/);
+  assert.match(runnerStyles, /\.highlight[\s\S]*scrollbar-width: none/);
   assert.match(runnerStyles, /\.tokenKeyword[\s\S]*#c586c0/);
   assert.match(runnerStyles, /\.tokenString[\s\S]*#ce9178/);
   assert.match(runnerStyles, /\.tokenComment[\s\S]*#6a9955/);
 });
 
-test("browser runner is isolated, bounded, and denies browser/network escape paths", () => {
+test("browser runner is isolated, bounded, and robust during runtime startup", () => {
   assert.match(runnerComponent, /new Worker\("\/python-runner\.worker\.mjs", \{ type: "module" \}\)/);
+  assert.match(runnerComponent, /LOAD_TIMEOUT_MS = 60_000/);
   assert.match(runnerComponent, /EXECUTION_TIMEOUT_MS = 5_000/);
   assert.match(runnerComponent, /MAX_RUNS_PER_WORKER = 20/);
   assert.match(runnerComponent, /maxLength=\{MAX_CODE_LENGTH\}/);
   assert.match(runnerWorker, /pyodide\/v314\.0\.4\/full/);
+  assert.match(runnerWorker, /input instanceof URL/);
+  assert.match(runnerWorker, /typeof input\.url === "string"/);
+  assert.match(runnerWorker, /pyodidePromise = undefined/);
   assert.match(runnerWorker, /setStdin\(\{ error: true \}\)/);
   assert.match(runnerWorker, /MAX_CODE_LENGTH = 8_000/);
   assert.match(runnerWorker, /MAX_OUTPUT_CHARS = 32_000/);
