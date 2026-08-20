@@ -31,7 +31,7 @@ function candidate(overrides: Partial<{
 
 test("company plus exact title produces a strong composite match", () => {
   const result = scoreVacancyCandidate(
-    { company: "SoftServe", job_title: "Lead Test Automation Engineer", sender_email: "recruiter@softserveinc.com" },
+    { company: "SoftServe", job_title: "Lead Test Automation Engineer", sender_email: "recruiter@ats.example" },
     candidate(),
     { exactTitleCount: 2, exactCompanyCount: 2 },
   );
@@ -96,7 +96,7 @@ test("resolution migration stores explainable match state", async () => {
     "status_applied_at",
     "status_apply_note",
   ]) {
-    assert.match(sql, new RegExp(`ADD COLUMN \\\`${column}\\\``));
+    assert.ok(sql.includes("ADD COLUMN `" + column + "`"));
   }
   assert.match(sql, /user_email_events_user_match_status_idx/);
 });
