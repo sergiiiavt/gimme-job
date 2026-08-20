@@ -45,16 +45,20 @@ Required characteristics:
 
 ## 3. Hex geometry is code-authoritative
 
-Runtime layout is pointy-top and regular. Never infer production geometry from a distorted generated reference.
+Never infer production geometry from a generated reference image or stale prose. `app/rewild-hex-grid.ts` is authoritative.
 
-Current values from `app/rewild-world.ts`:
-- `HEX_SIZE = 21`
-- regular pointy-top hex height = `2 * size = 42`
-- regular pointy-top hex width = `sqrt(3) * size ≈ 36.373`
-- width/height ratio ≈ `0.8660254`
-- all six sides equal;
-- all interior angles = 120°;
-- six neighbor directions only.
+Current runtime geometry:
+- regular **flat-top** hexagons;
+- `HEX_SIZE = 21`;
+- width = `2 * size = 42` logical pixels;
+- height = `sqrt(3) * size ≈ 36.373` logical pixels;
+- width/height ratio ≈ `1.1547005`;
+- X step = `1.5 * size = 31.5` logical pixels;
+- six equal sides;
+- every interior angle = 120°;
+- exactly six neighbor directions.
+
+`HEX_GEOMETRY_CONTRACT.md` supersedes older Rewild documents or generated sheets that describe the orientation as pointy-top. The runtime geometry must not be changed merely to make old wording true.
 
 Hard rule: no horizontal or vertical stretching of hex cells, footprints, sprites, or biome masks. Render scale must be uniform in X and Y.
 
@@ -119,7 +123,7 @@ Use asymmetry, distinct silhouettes, size classes and state-specific details whi
 - Flag decorative props separately from gameplay entities.
 
 ### Geometry check
-- Any visible hex guide is regular pointy-top.
+- Any visible hex guide matches `app/rewild-hex-grid.ts`: regular flat-top, six equal sides, 120° interior angles.
 - Uniform X/Y scale.
 - Footprint coordinates fit six-neighbor hex logic.
 
