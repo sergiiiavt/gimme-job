@@ -113,7 +113,7 @@ function tableCells(line: string) {
 
 function isRunnablePythonSnippet(language: string, source: string) {
   if (language !== "python") return false;
-  if (!source.trim() || source.length > 8_000 || !/\bprint\s*\(/.test(source)) return false;
+  if (!source.trim() || source.length > 8_000) return false;
   return !unsupportedRunnablePythonPatterns.some((pattern) => pattern.test(source));
 }
 
