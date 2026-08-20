@@ -41,6 +41,70 @@ class ChatResponse(BaseModel):
     response: AssistantResponse
 
 
+class InterviewQuestionPrompt(BaseModel):
+    """Interview question data safe to send before the candidate answers."""
+
+    id: str
+    question: str
+    level: str
+    category: str
+    prevalence: str
+    kind: str
+    track: Literal["qa", "python"]
+
+
+class InterviewStartRequest(BaseModel):
+    track: Literal["qa", "python", "all"] = "qa"
+    language: Literal["en", "uk"] = "en"
+    question_count: int = Field(default=10, ge=1, le=20)
+    levels: list[str] = Field(default_factory=list, max_length=5)
+    categories: list[str] = Field(default_factory=list, max_length=20)
+    session_id: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class InterviewStartResponse(BaseModel):
+    request_id: str
+    session_id: str
+    questions: list[InterviewQuestionPrompt]
+    selected_count: int
+
+
+class InterviewEvaluateRequest(BaseModel):
+    session_id: str = Field(min_length=1, max_length=200)
+    track: Literal["qa", "python"] = "qa"
+    language: Literal["en", "uk"] = "en"
+    question_id: str = Field(min_length=1, max_length=200)
+    answer: str = Field(min_length=1, max_length=20_000)
+
+
+class InterviewEvaluationDraft(BaseModel):
+    """Provider-generated part of an interview evaluation."""
+
+    score: int = Field(ge=0, le=100)
+    rating: Literal["weak", "partial", "good", "strong"]
+    feedback: str = Field(min_length=1, max_length=4_000)
+    strengths: list[str] = Field(default_factory=list, max_length=8)
+    gaps: list[str] = Field(default_factory=list, max_length=8)
+    follow_up_question: str | None = Field(default=None, max_length=2_000)
+    recommended_topics: list[str] = Field(default_factory=list, max_length=8)
+
+
+class InterviewEvaluation(InterviewEvaluationDraft):
+    """Final evaluation enriched with trusted GimmeJob catalog data."""
+
+    question_id: str
+    reference_answer: str
+    strong_answer_signals: list[str] = Field(default_factory=list)
+
+
+class InterviewEvaluateResponse(BaseModel):
+    request_id: str
+    session_id: str
+    model: str
+    langfuse_tracing: bool
+    evaluation: InterviewEvaluation
+
+
 class HealthResponse(BaseModel):
     service: str
     version: str

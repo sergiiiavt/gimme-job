@@ -8,7 +8,16 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status
 
 from . import __version__
 from .agent import AssistantAgent
-from .schemas import ChatRequest, ChatResponse, HealthResponse
+from .interview import InterviewEvaluator, find_interview_question, select_interview_questions
+from .schemas import (
+    ChatRequest,
+    ChatResponse,
+    HealthResponse,
+    InterviewEvaluateRequest,
+    InterviewEvaluateResponse,
+    InterviewStartRequest,
+    InterviewStartResponse,
+)
 from .settings import Settings, langfuse_configured
 
 logger = logging.getLogger(__name__)
@@ -47,6 +56,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     assistant = AssistantAgent(runtime) if runtime.openai_configured else None
+    interview_evaluator = InterviewEvaluator(runtime) if runtime.openai_configured else None
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
@@ -105,6 +115,77 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             model=runtime.openai_model,
             langfuse_tracing=traced,
             response=response,
+        )
+
+    @app.post(
+        "/v1/interviews/start",
+        response_model=InterviewStartResponse,
+        dependencies=[Depends(require_auth)],
+    )
+    async def start_interview(request: InterviewStartRequest) -> InterviewStartResponse:
+        request_id = uuid4().hex
+        session_id = request.session_id or uuid4().hex
+        questions = select_interview_questions(
+            content_root=runtime.content_root,
+            track=request.track,
+            language=request.language,
+            session_id=session_id,
+            question_count=request.question_count,
+            levels=request.levels,
+            categories=request.categories,
+        )
+        if not questions:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="No interview questions match the selected filters.",
+            )
+        return InterviewStartResponse(
+            request_id=request_id,
+            session_id=session_id,
+            questions=questions,
+            selected_count=len(questions),
+        )
+
+    @app.post(
+        "/v1/interviews/evaluate",
+        response_model=InterviewEvaluateResponse,
+        dependencies=[Depends(require_auth)],
+    )
+    async def evaluate_interview_answer(request: InterviewEvaluateRequest) -> InterviewEvaluateResponse:
+        if interview_evaluator is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="OpenAI is not configured.",
+            )
+        question = find_interview_question(runtime.content_root, request.track, request.question_id)
+        if question is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Interview question not found.",
+            )
+
+        request_id = uuid4().hex
+        try:
+            evaluation, traced = await interview_evaluator.evaluate(
+                question=question,
+                answer=request.answer,
+                language=request.language,
+                session_id=request.session_id,
+                request_id=request_id,
+            )
+        except Exception as error:
+            logger.warning("Interview evaluation failed with %s", type(error).__name__)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="AI provider request failed.",
+            ) from error
+
+        return InterviewEvaluateResponse(
+            request_id=request_id,
+            session_id=request.session_id,
+            model=runtime.openai_model,
+            langfuse_tracing=traced,
+            evaluation=evaluation,
         )
 
     return app
