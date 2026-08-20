@@ -63,6 +63,7 @@ Safety rules:
 - missing company is acceptable only when another strong unique signal identifies the vacancy;
 - same title across several companies stays ambiguous if company is missing;
 - partial/weak title similarity does not auto-update;
+- generic numeric external IDs are not treated as hard identifiers;
 - only one clearly dominant candidate can auto-match.
 
 Top candidates and the signals used are stored in `match_evidence_json` for explanation and manual review.
@@ -94,11 +95,13 @@ Allowed automatic transitions:
 
 Additional guards:
 
+- automatic status mutation requires email-classification confidence of at least `0.80`;
+- a low-confidence email may still be linked to a vacancy for review but cannot change the pipeline automatically;
 - terminal or unsupported transitions are not reopened/overwritten;
 - an email older than the vacancy's latest status change cannot overwrite that newer state;
 - no-op transitions are recorded as resolved but do not create a fake status change.
 
-Successful automatic status changes are recorded by the existing vacancy audit log as `GimmeJob automation`, with email/match details in metadata.
+Successful automatic status changes are recorded by the existing vacancy audit log as `GimmeJob automation`, with email classification confidence and vacancy-match details in metadata.
 
 ## Phase 4 — Ambiguous/unresolved handling
 
@@ -173,6 +176,8 @@ Rejections are included in important events even though their action is `NO_ACTI
 - [x] missing company can resolve through a unique exact title;
 - [x] duplicate title with missing company stays ambiguous;
 - [x] weak title similarity does not auto-match;
+- [x] generic numeric external IDs are not hard matches;
+- [x] low-confidence classification cannot mutate pipeline status;
 - [x] rejection can move `APPLIED` → `REJECTED`;
 - [x] stale email cannot overwrite a newer vacancy state;
 - [x] thread replies inherit the root thread key.
