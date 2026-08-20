@@ -1,15 +1,17 @@
 # GimmeJob AI service
 
-This directory is the isolated Python AI backend for GimmeJob. It intentionally starts small: FastAPI + LangChain + OpenAI + Langfuse Cloud, with no direct LangGraph API yet.
+This directory is the isolated Python AI backend for GimmeJob. The stack is FastAPI + LangChain + OpenAI + Langfuse Cloud, with no direct LangGraph API yet.
 
-## Current milestone
+## Current capabilities
 
 - `GET /health` reports configuration readiness without exposing secrets.
-- `POST /v1/chat` is protected by a server-to-server bearer token.
-- LangChain `create_agent` handles the model/tool loop and structured output.
+- `POST /v1/chat` provides the structured read-only assistant.
+- `POST /v1/interviews/start` builds a reproducible interview set from the existing Git-versioned QA/Python interview catalogs.
+- `POST /v1/interviews/evaluate` evaluates a candidate answer against the trusted catalog answer/signals and returns structured score, feedback, gaps, follow-up question and review topics.
+- Interview start responses never expose the reference answer or strong-answer signals before the user answers.
+- LangChain handles structured model output; Langfuse tracing is enabled automatically when its standard cloud credentials are configured.
 - `search_site_content` searches the existing Git-versioned Markdown learning content.
-- Langfuse tracing is enabled automatically when its standard cloud credentials are configured.
-- The agent is read-only: it cannot mutate GimmeJob state or call external action tools.
+- The service is still read-only with respect to GimmeJob runtime state: progress/session persistence belongs to the authenticated web application/D1 layer, not to this service.
 
 The first search implementation is deterministic lexical retrieval. Its tool contract is deliberately stable so it can later be replaced by embeddings + PostgreSQL/pgvector without changing the assistant API.
 
@@ -59,6 +61,24 @@ curl -X POST http://127.0.0.1:8000/v1/chat \
   -d '{"messages":[{"role":"user","content":"Give me a short explanation of test design techniques"}]}'
 ```
 
+Start an interview:
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/interviews/start \
+  -H "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"track":"qa","language":"en","question_count":5,"levels":["Middle","Senior"]}'
+```
+
+Evaluate one answer using the returned `session_id` and `question_id`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/interviews/evaluate \
+  -H "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"...","track":"qa","language":"en","question_id":"...","answer":"..."}'
+```
+
 ## Tests
 
 ```bash
@@ -73,4 +93,4 @@ Build from the repository root because the image includes the public `content/` 
 docker build -f ai-service/Dockerfile -t gimmejob-ai .
 ```
 
-Do not expose `/v1/chat` directly to the browser. The GimmeJob Worker will later proxy authenticated requests to this service so the service token never reaches client code.
+Do not expose `/v1/chat` or `/v1/interviews/*` directly to the browser. The GimmeJob Worker should proxy authenticated requests to this service so the service token never reaches client code.
