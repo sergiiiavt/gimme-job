@@ -5,18 +5,22 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("Rewild benchmark renders the canonical ecosystem snapshot at 1200x675", async () => {
-  const [page, entry] = await Promise.all([
+  const [page, entry, renderer] = await Promise.all([
     readFile(projectFile("visual/rewild-benchmark.html"), "utf8"),
     readFile(projectFile("app/rewild-benchmark-entry.ts"), "utf8"),
+    readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
   ]);
 
   assert.match(page, /width="1200" height="675"/);
   assert.match(page, /image-rendering: pixelated/);
   assert.match(page, /\/app\/rewild-benchmark-entry\.ts/);
   assert.match(entry, /createReviewGameState\(0, "ecosystem"\)/);
-  assert.match(entry, /createRenderSnapshot\(state\)/);
-  assert.match(entry, /renderOverheadGame\(context, snapshot, \{ x: 0, y: 0, zoom: 1 \}\)/);
+  assert.match(entry, /preloadRewildArt\(\)/);
+  assert.match(entry, /renderOverheadGame\(context, state, \{ x: 0, y: 0, zoom: 1 \}\)/);
   assert.match(entry, /rewildBenchmark = "ready"/);
+  assert.match(renderer, /createRenderSnapshot\(state\)/);
+  assert.match(renderer, /renderProductionGame\(context, snapshot, camera\)/);
+  assert.match(renderer, /renderAuthoredArtOverlay\(context, snapshot, camera\)/);
 });
 
 test("Rewild visual gate captures and normalizes an exact PNG before hashing", async () => {
