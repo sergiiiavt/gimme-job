@@ -7,6 +7,7 @@ import { forwardedThreadId } from "../worker/email-forwarding.ts";
 type FakeOptions = {
   emailReceivedAt?: string;
   statusUpdatedAt?: string | null;
+  classificationConfidence?: number | null;
 };
 
 function fakeResolutionDb(options: FakeOptions = {}) {
@@ -29,6 +30,7 @@ function fakeResolutionDb(options: FakeOptions = {}) {
               subject: "Application update",
               text_excerpt: "We will not proceed with your application for QA Lead.",
               classification: "REJECTION",
+              classification_confidence: options.classificationConfidence ?? 0.86,
               company: "Example",
               job_title: "QA Lead",
               job_id: null,
@@ -75,6 +77,17 @@ test("matched rejection safely moves an applied vacancy to rejected", async () =
   assert.ok(runs.some((entry) => /INSERT INTO job_tracking/.test(entry.sql) && entry.values.includes("REJECTED")));
   assert.ok(runs.some((entry) => /UPDATE user_vacancy_audit_log/.test(entry.sql) && entry.values.includes("automation")));
   assert.ok(runs.some((entry) => /match_status = \?/.test(entry.sql) && entry.values.includes("MATCHED")));
+});
+
+test("low-confidence classification can link a vacancy but cannot change its pipeline status", async () => {
+  const { database, runs } = fakeResolutionDb({ classificationConfidence: 0.65 });
+  const result = await resolveEmailEvent(database, "user-1", "evt-1");
+
+  assert.equal(result.matchStatus, "MATCHED");
+  assert.equal(result.jobId, "job-1");
+  assert.equal(result.statusChange, null);
+  assert.equal(result.statusNote, "classification_confidence_low");
+  assert.ok(!runs.some((entry) => /INSERT INTO job_tracking/.test(entry.sql)));
 });
 
 test("older rejection cannot overwrite a newer vacancy state", async () => {
