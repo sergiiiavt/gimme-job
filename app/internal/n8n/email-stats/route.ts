@@ -230,8 +230,17 @@ export async function handleEmailStats(request: Request, env: EmailStatsEnv): Pr
       FROM user_email_events
       WHERE ${where.sql}
         AND classification IN ('APPLICATION_RECEIVED', 'RECRUITER_OUTREACH', 'INTERVIEW', 'TEST_TASK', 'OFFER', 'REJECTION', 'OTHER')
-        AND COALESCE(action, 'NO_ACTION') <> 'NO_ACTION'
-      ORDER BY received_at DESC
+        AND (classification = 'REJECTION' OR COALESCE(action, 'NO_ACTION') <> 'NO_ACTION')
+      ORDER BY CASE classification
+        WHEN 'OFFER' THEN 1
+        WHEN 'INTERVIEW' THEN 2
+        WHEN 'TEST_TASK' THEN 3
+        WHEN 'RECRUITER_OUTREACH' THEN 4
+        WHEN 'REJECTION' THEN 5
+        WHEN 'APPLICATION_RECEIVED' THEN 6
+        WHEN 'OTHER' THEN 7
+        ELSE 8
+      END, received_at DESC
       LIMIT ?`)
       .bind(...baseBindings, IMPORTANT_LIMIT)
       .all<ImportantEventRow>();
