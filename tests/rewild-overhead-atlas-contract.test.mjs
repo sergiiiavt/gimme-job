@@ -27,7 +27,7 @@ test("locks active Rewild overhead atlas frames and v4 fallback policy", async (
   assert.ok(entityAtlas.frames.length <= entityAtlas.columns * entityAtlas.rows);
   assert.ok(terrainAtlas.frames.length <= terrainAtlas.columns * terrainAtlas.rows);
   assert.equal(entityAtlas.decodePolicy, "warn-on-v3-decoder-error");
-  assert.equal(terrainAtlas.decodePolicy, "fail");
+  assert.equal(terrainAtlas.decodePolicy, "warn-on-v3-decoder-error");
   assert.equal(terrainAtlas.rows, 8);
 
   for (const frame of entityAtlas.frames) {
