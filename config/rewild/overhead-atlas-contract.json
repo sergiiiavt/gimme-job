@@ -52,7 +52,7 @@
       "frameSize": 32,
       "columns": 8,
       "rows": 8,
-      "decodePolicy": "fail",
+      "decodePolicy": "warn-on-v3-decoder-error",
       "emptyFramePolicy": "fail",
       "frames": [
         { "name": "grass-a" },
