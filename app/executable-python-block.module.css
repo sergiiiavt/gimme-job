@@ -1,27 +1,45 @@
 .shell {
+  position: relative;
   margin: 20px 0 24px;
   overflow: hidden;
-  border: 1px solid #dfe5dc;
+  border: 1px solid #3a3a3a;
   border-radius: 12px;
-  background: #ffffff;
+  background: #1e1e1e;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.expanded {
+  position: fixed;
+  inset: 18px;
+  z-index: 1000;
+  margin: 0;
+  max-height: calc(100vh - 36px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
 }
 
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 300px;
+  background: #1e1e1e;
+}
+
+.expanded .grid {
+  height: 100%;
+  min-height: 0;
 }
 
 .panel {
   display: flex;
   min-width: 0;
+  min-height: 0;
   flex-direction: column;
-  background: #ffffff;
+  background: #1e1e1e;
 }
 
 .resultPanel {
-  border-left: 1px solid #dfe5dc;
-  background: #f8faf7;
+  border-left: 1px solid #3a3a3a;
+  background: #181818;
 }
 
 .header {
@@ -30,116 +48,203 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid #e5e9e3;
-  padding: 0 14px;
-  color: #2d4036;
+  border-bottom: 1px solid #333333;
+  padding: 0 12px 0 14px;
+  background: #252526;
+  color: #d4d4d4;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-.meta,
-.status {
-  color: #7b877f;
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta {
+  color: #858585;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;
 }
 
+.editorFrame {
+  position: relative;
+  min-height: 258px;
+  flex: 1;
+  overflow: hidden;
+  background: #1e1e1e;
+}
+
 .editor,
+.highlight,
 .output {
   box-sizing: border-box;
   width: 100%;
-  min-height: 214px;
-  flex: 1;
+  min-height: 258px;
   margin: 0;
   border: 0;
   border-radius: 0;
-  padding: 16px;
+  padding: 16px 16px 60px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
   line-height: 1.6;
   tab-size: 4;
 }
 
+.editor,
+.highlight {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  overflow: auto;
+  white-space: pre;
+  word-break: normal;
+}
+
+.highlight {
+  z-index: 1;
+  pointer-events: none;
+  background: #1e1e1e;
+  color: #d4d4d4;
+}
+
 .editor {
-  resize: vertical;
+  z-index: 2;
+  resize: none;
   outline: none;
-  background: #ffffff;
-  color: #1f2923;
+  background: transparent;
+  color: transparent;
+  caret-color: #d4d4d4;
+  -webkit-text-fill-color: transparent;
+}
+
+.editor::selection {
+  background: rgba(38, 79, 120, 0.78);
 }
 
 .editor:focus {
-  box-shadow: inset 0 0 0 2px rgba(68, 104, 83, 0.16);
+  box-shadow: inset 0 0 0 1px #3f3f46;
 }
 
 .output {
+  min-height: 258px;
+  flex: 1;
   overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  background: #f8faf7;
-  color: #314039;
+  background: #181818;
+  color: #d4d4d4;
 }
 
-.toolbar {
-  display: flex;
-  min-height: 46px;
+.actionDock {
+  position: absolute;
+  z-index: 4;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border-top: 1px solid #e5e9e3;
-  padding: 8px 12px;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #454545;
+  border-radius: 9px;
+  background: rgba(37, 37, 38, 0.96);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
 }
 
 .primaryButton,
 .secondaryButton,
-.clearButton {
-  border-radius: 7px;
+.clearButton,
+.expandButton {
+  border-radius: 6px;
   font: inherit;
   cursor: pointer;
 }
 
 .primaryButton,
 .secondaryButton {
-  min-height: 30px;
-  padding: 5px 11px;
-  font-size: 12px;
+  min-height: 28px;
+  border: 1px solid transparent;
+  padding: 4px 9px;
+  font-size: 11px;
   font-weight: 650;
 }
 
 .primaryButton {
-  border: 1px solid #405e4d;
-  background: #405e4d;
+  border-color: #0e639c;
+  background: #0e639c;
   color: #ffffff;
 }
 
 .secondaryButton {
-  border: 1px solid #d8dfda;
-  background: #ffffff;
-  color: #405047;
+  border-color: #4b4b4b;
+  background: #2d2d30;
+  color: #d4d4d4;
 }
 
-.primaryButton:hover,
+.primaryButton:hover {
+  background: #1177bb;
+}
+
 .secondaryButton:hover,
+.expandButton:hover {
+  background: #3a3d41;
+}
+
 .clearButton:hover {
-  filter: brightness(0.97);
-}
-
-.secondaryButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.status {
-  margin-left: auto;
+  color: #ffffff;
 }
 
 .clearButton {
   border: 0;
   background: transparent;
   padding: 4px 0 4px 8px;
-  color: #6f7d74;
+  color: #9d9d9d;
   font-size: 11px;
   font-weight: 600;
+}
+
+.expandButton {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #464646;
+  background: #2d2d30;
+  color: #c8c8c8;
+}
+
+.expandButton svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.tokenComment {
+  color: #6a9955;
+}
+
+.tokenString {
+  color: #ce9178;
+}
+
+.tokenKeyword {
+  color: #c586c0;
+}
+
+.tokenBuiltin {
+  color: #dcdcaa;
+}
+
+.tokenNumber {
+  color: #b5cea8;
 }
 
 @media (max-width: 800px) {
@@ -147,13 +252,35 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .expanded {
+    inset: 8px;
+    max-height: calc(100vh - 16px);
+  }
+
+  .expanded .grid {
+    overflow: auto;
+  }
+
   .resultPanel {
-    border-top: 1px solid #dfe5dc;
+    border-top: 1px solid #3a3a3a;
     border-left: 0;
   }
 
+  .editorFrame,
   .editor,
+  .highlight,
   .output {
-    min-height: 190px;
+    min-height: 210px;
+  }
+
+  .meta {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .actionDock {
+    scroll-behavior: auto;
   }
 }
