@@ -64,9 +64,10 @@ test("forwarded email metadata is written only to the resolved tenant", async ()
   assert.equal(state.inserted.length, 1);
   assert.equal(state.inserted[0]![1], "user-a");
   assert.equal(state.inserted[0]![2], "<message-1@example.com>");
-  assert.equal(state.inserted[0]![3], "2026-08-15T20:00:00.000Z");
-  assert.equal(state.inserted[0]![4], "recruiter@example.com");
-  assert.equal(state.inserted[0]![5], "QA Engineer interview");
+  assert.equal(state.inserted[0]![3], "message-1@example.com");
+  assert.equal(state.inserted[0]![4], "2026-08-15T20:00:00.000Z");
+  assert.equal(state.inserted[0]![5], "recruiter@example.com");
+  assert.equal(state.inserted[0]![6], "QA Engineer interview");
   assert.equal(state.verifications.length, 0);
 });
 
@@ -169,9 +170,11 @@ test("missing optional headers use safe metadata fallbacks without reading the b
   assert.equal(typeof values[2], "string");
   assert.match(String(values[2]), /^[A-Za-z0-9_-]{40,50}$/);
   assert.equal(typeof values[3], "string");
-  assert.ok(Number.isFinite(Date.parse(String(values[3]))));
-  assert.equal(values[4], "someone@example.com");
-  assert.equal(values[5], "(no subject)");
+  assert.equal(values[3], String(values[2]).toLowerCase());
+  assert.equal(typeof values[4], "string");
+  assert.ok(Number.isFinite(Date.parse(String(values[4]))));
+  assert.equal(values[5], "someone@example.com");
+  assert.equal(values[6], "(no subject)");
 });
 
 test("oversized headers are bounded and invalid dates fall back safely", async () => {
@@ -183,6 +186,7 @@ test("oversized headers are bounded and invalid dates fall back safely", async (
   await handleForwardedEmail(incoming.value, { DB: db });
   const values = state.inserted[0]!;
   assert.equal(String(values[2]).length, 1000);
-  assert.equal(String(values[5]).length, 1000);
-  assert.ok(Number.isFinite(Date.parse(String(values[3]))));
+  assert.ok(String(values[3]).length > 0 && String(values[3]).length <= 1000);
+  assert.equal(String(values[6]).length, 1000);
+  assert.ok(Number.isFinite(Date.parse(String(values[4]))));
 });

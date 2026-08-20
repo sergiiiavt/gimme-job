@@ -71,12 +71,34 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "https://gimme-job.com/internal/n8n/email-resolve",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { id: $json.id, userId: $json.userId } }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [540, -160],
+      "id": "6f5eea8f-0c26-4a08-a4cf-f766c024a5c8",
+      "name": "Resolve vacancy and apply safe status",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const rows = $input.all().map((item) => item.json ?? {});\nconst byClassification = {};\nconst routing = { rule: 0, ai: 0, other: 0 };\nlet openAiTokens = 0;\nlet held = 0;\nlet failed = 0;\nconst attentionClasses = new Set(['APPLICATION_RECEIVED', 'RECRUITER_OUTREACH', 'INTERVIEW', 'TEST_TASK', 'OFFER', 'OTHER']);\nconst attention = [];\n\nfor (const row of rows) {\n  const classification = String(row.classification ?? 'UNKNOWN');\n  byClassification[classification] = (byClassification[classification] ?? 0) + 1;\n\n  const source = String(row.source ?? '');\n  if (source.startsWith('RULE:')) routing.rule += 1;\n  else if (source.startsWith('OPENAI:')) routing.ai += 1;\n  else routing.other += 1;\n\n  const processingStatus = String(row.processingStatus ?? '');\n  if (processingStatus === 'HOLD') held += 1;\n  if (processingStatus === 'FAILED') failed += 1;\n\n  openAiTokens += Number(row.aiUsage?.totalTokens ?? 0);\n\n  if (attentionClasses.has(classification) && row.action !== 'NO_ACTION') {\n    attention.push({\n      id: row.id ?? null,\n      classification,\n      company: row.company ?? null,\n      jobTitle: row.jobTitle ?? null,\n      action: row.action ?? null,\n      summary: row.summary ?? null,\n    });\n  }\n}\n\nconst status = failed > 0 ? 'COMPLETED_WITH_ERRORS' : held > 0 ? 'COMPLETED_WITH_HOLD' : 'COMPLETED';\nconst message = `Batch complete: ${rows.length} processed, ${routing.rule} by rules, ${routing.ai} by AI, ${held} held, ${failed} failed.`;\n\nreturn [{\n  json: {\n    status,\n    message,\n    completedAt: new Date().toISOString(),\n    processed: rows.length,\n    byClassification,\n    routing,\n    openAiTokens,\n    held,\n    failed,\n    needsAttention: attention.length,\n    attention: attention.slice(0, 10),\n  },\n}];"
+        "jsCode": "const rows = $input.all().map((item) => item.json ?? {});\nconst byClassification = {};\nconst routing = { rule: 0, ai: 0, other: 0 };\nlet openAiTokens = 0;\nlet held = 0;\nlet failed = 0;\nconst attentionClasses = new Set(['APPLICATION_RECEIVED', 'RECRUITER_OUTREACH', 'INTERVIEW', 'TEST_TASK', 'OFFER', 'REJECTION', 'OTHER']);\nconst attention = [];\n\nfor (const row of rows) {\n  const classification = String(row.classification ?? 'UNKNOWN');\n  byClassification[classification] = (byClassification[classification] ?? 0) + 1;\n\n  const source = String(row.source ?? '');\n  if (source.startsWith('RULE:')) routing.rule += 1;\n  else if (source.startsWith('OPENAI:')) routing.ai += 1;\n  else routing.other += 1;\n\n  const processingStatus = String(row.processingStatus ?? '');\n  if (processingStatus === 'HOLD') held += 1;\n  if (processingStatus === 'FAILED') failed += 1;\n\n  openAiTokens += Number(row.aiUsage?.totalTokens ?? 0);\n\n  if (attentionClasses.has(classification) && row.action !== 'NO_ACTION') {\n    attention.push({\n      id: row.id ?? null,\n      classification,\n      company: row.company ?? null,\n      jobTitle: row.jobTitle ?? null,\n      action: row.action ?? null,\n      summary: row.summary ?? null,\n    });\n  }\n}\n\nconst status = failed > 0 ? 'COMPLETED_WITH_ERRORS' : held > 0 ? 'COMPLETED_WITH_HOLD' : 'COMPLETED';\nconst message = `Batch complete: ${rows.length} processed, ${routing.rule} by rules, ${routing.ai} by AI, ${held} held, ${failed} failed.`;\n\nreturn [{\n  json: {\n    status,\n    message,\n    completedAt: new Date().toISOString(),\n    processed: rows.length,\n    byClassification,\n    routing,\n    openAiTokens,\n    held,\n    failed,\n    needsAttention: attention.length,\n    attention: attention.slice(0, 10),\n  },\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [560, 0],
+      "position": [560, 80],
       "id": "2e4e2f66-e0be-46e2-a08d-2b0ea811fab5",
       "name": "Batch complete · summary"
     }
@@ -104,11 +126,18 @@
       }]]
     },
     "Classify and persist via GimmeJob AI": {
-      "main": [[{
-        "node": "Batch complete · summary",
-        "type": "main",
-        "index": 0
-      }]]
+      "main": [[
+        {
+          "node": "Resolve vacancy and apply safe status",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Batch complete · summary",
+          "type": "main",
+          "index": 0
+        }
+      ]]
     }
   },
   "pinData": {},
