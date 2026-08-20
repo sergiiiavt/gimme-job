@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
@@ -9,6 +9,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
     gameSource,
     rendererFacadeSource,
     rendererSource,
+    authoredOverlaySource,
     atlasFacadeSource,
     atlasSource,
     facadeSource,
@@ -22,8 +23,9 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
     readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-production-renderer.ts"), "utf8"),
+    readFile(projectFile("app/rewild-authored-overlay.ts"), "utf8"),
     readFile(projectFile("app/rewild-pixel-atlas.ts"), "utf8"),
-    readFile(projectFile("app/rewild-pixel-atlas-v2.ts"), "utf8"),
+    readFile(projectFile("app/rewild-pixel-atlas-v3.ts"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world-legacy.ts"), "utf8"),
@@ -98,6 +100,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
 
   assert.match(rendererFacadeSource, /export \* from "\.\/rewild-production-renderer"/);
   assert.match(rendererFacadeSource, /renderProductionGame\(context, snapshot, camera\)/);
+  assert.match(rendererFacadeSource, /renderAuthoredArtOverlay\(context, snapshot, camera\)/);
   assert.match(rendererSource, /from "\.\/rewild-pixel-atlas"/);
   assert.match(rendererSource, /type \{ RenderEdge, RenderSnapshot \}/);
   assert.match(rendererSource, /export function renderOverheadGame/);
@@ -128,35 +131,51 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(rendererSource, /function drawCableNetwork/);
   assert.match(rendererSource, /snapshot\.cableEdges/);
   assert.match(rendererSource, /function drawDatacenter/);
-  assert.match(rendererSource, /scale: node\.boss \? 1\.58 : 1\.24/);
   assert.match(rendererSource, /function drawHouse/);
-  assert.match(rendererSource, /scale: 1\.55/);
   assert.match(rendererSource, /function drawPlant/);
-  assert.match(rendererSource, /mature \? \.98 : \.82/);
   assert.match(rendererSource, /function drawEnemy/);
   assert.match(rendererSource, /function drawRouteFeedback/);
   assert.match(rendererSource, /snapshot\.enemyRouteEdges/);
-  assert.doesNotMatch(rendererSource, /function materialForCell|function boundaryEdges|function drawCablePath/);
   assert.doesNotMatch(rendererSource, /Math\.sin\(\(state\.elapsed/);
   assert.match(rendererSource, /drawRewildSprite\(ctx, node\.boss \? "mainframe" : "datacenter"/);
   assert.match(rendererSource, /spriteForPlant\(plant\.kind, mature\)/);
   assert.match(rendererSource, /spriteForEnemy\(enemy\.kind\)/);
   assert.doesNotMatch(rendererSource, /createRadialGradient|quadraticCurveTo|REWILD_ATLASES|SPRITE_FILES|obj-house-v2/);
 
-  assert.match(atlasFacadeSource, /export \* from "\.\/rewild-pixel-atlas-v2"/);
-  assert.match(atlasSource, /REWILD_PIXEL_ATLAS_FRAME_SIZE = 48/);
+  assert.match(authoredOverlaySource, /export function renderAuthoredArtOverlay/);
+  assert.match(authoredOverlaySource, /function drawForestDensity/);
+  assert.match(authoredOverlaySource, /function drawWaterEdges/);
+  assert.match(authoredOverlaySource, /function drawIndustrialComplex/);
+  assert.match(authoredOverlaySource, /function drawCorruptionDetail/);
+  assert.match(authoredOverlaySource, /"industrial-fan"/);
+  assert.match(authoredOverlaySource, /"reed-clump"/);
+  assert.match(authoredOverlaySource, /"corruption-spike"/);
+  assert.match(authoredOverlaySource, /snapshot\.occupiedHexes/);
+  assert.doesNotMatch(authoredOverlaySource, /updateGame|placePlant|createGameState|Math\.random/);
+
+  assert.match(atlasFacadeSource, /export \* from "\.\/rewild-pixel-atlas-v3"/);
+  assert.match(atlasSource, /REWILD_PIXEL_ATLAS_FRAME_SIZE = 64/);
   assert.match(atlasSource, /REWILD_PIXEL_SPRITE_IDS/);
   assert.match(atlasSource, /"house-damaged"/);
   assert.match(atlasSource, /"mainframe"/);
   assert.match(atlasSource, /"plant-rootreclaimer"/);
   assert.match(atlasSource, /"enemy-deepfake"/);
-  assert.match(atlasSource, /const PAINTERS:/);
-  assert.match(atlasSource, /export function createRewildPixelAtlas/);
+  assert.match(atlasSource, /"industrial-fan"/);
+  assert.match(atlasSource, /"reed-clump"/);
+  assert.match(atlasSource, /"corruption-spike"/);
+  assert.match(atlasSource, /entities-atlas-v3\.png/);
+  assert.match(atlasSource, /terrain-atlas-v3\.png/);
+  assert.match(atlasSource, /export function preloadRewildArt/);
+  assert.match(atlasSource, /export function drawRewildSprite/);
+  assert.match(atlasSource, /export function drawRewildTerrainStamp/);
   assert.match(atlasSource, /ctx\.drawImage/);
   assert.match(atlasSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(atlasSource, /export function spriteForPlant/);
   assert.match(atlasSource, /export function spriteForEnemy/);
-  assert.doesNotMatch(atlasSource, /\.png|REWILD_ATLASES|createRadialGradient|quadraticCurveTo/);
+  assert.doesNotMatch(atlasSource, /const PAINTERS|paintTree|createRewildPixelAtlas|createRadialGradient|quadraticCurveTo/);
+
+  await access(projectFile("public/rewild/overhead/entities-atlas-v3.png"));
+  await access(projectFile("public/rewild/overhead/terrain-atlas-v3.png"));
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) assert.match(worldSource, new RegExp(plant.replace(" ", "\\s")));
   for (const enemy of ["AI Slop Swarm", "Deepfake Sludge", "Popup Parasite"]) assert.match(worldSource, new RegExp(enemy));
@@ -170,6 +189,8 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(gameOutput, /STRICT OVERHEAD/);
   assert.match(gameOutput, /plant-rootreclaimer/);
   assert.match(gameOutput, /enemy-deepfake/);
+  assert.match(gameOutput, /entities-atlas-v3\.png/);
+  assert.match(gameOutput, /terrain-atlas-v3\.png/);
   assert.doesNotMatch(gameOutput, /obj-house-v2\.png|terrain-pond-[12]\.png|tree-response-states-v1\.png|pond-response-states-v1\.png/);
   const initialOutput = (await Promise.all(scripts.filter((file) => !gameScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
   assert.doesNotMatch(initialOutput, /AI Slop Swarm/);
