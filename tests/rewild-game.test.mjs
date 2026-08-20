@@ -9,6 +9,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
     gameSource,
     rendererFacadeSource,
     rendererSource,
+    atlasFacadeSource,
     atlasSource,
     facadeSource,
     worldSource,
@@ -22,6 +23,7 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
     readFile(projectFile("app/rewild-overhead-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-production-renderer.ts"), "utf8"),
     readFile(projectFile("app/rewild-pixel-atlas.ts"), "utf8"),
+    readFile(projectFile("app/rewild-pixel-atlas-v2.ts"), "utf8"),
     readFile(projectFile("app/rewild-hex-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world.ts"), "utf8"),
     readFile(projectFile("app/rewild-world-legacy.ts"), "utf8"),
@@ -141,19 +143,20 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(rendererSource, /spriteForEnemy\(enemy\.kind\)/);
   assert.doesNotMatch(rendererSource, /createRadialGradient|quadraticCurveTo|REWILD_ATLASES|SPRITE_FILES|obj-house-v2/);
 
+  assert.match(atlasFacadeSource, /export \* from "\.\/rewild-pixel-atlas-v2"/);
   assert.match(atlasSource, /REWILD_PIXEL_ATLAS_FRAME_SIZE = 48/);
   assert.match(atlasSource, /REWILD_PIXEL_SPRITE_IDS/);
   assert.match(atlasSource, /"house-damaged"/);
   assert.match(atlasSource, /"mainframe"/);
   assert.match(atlasSource, /"plant-rootreclaimer"/);
   assert.match(atlasSource, /"enemy-deepfake"/);
+  assert.match(atlasSource, /const PAINTERS:/);
   assert.match(atlasSource, /export function createRewildPixelAtlas/);
-  assert.match(atlasSource, /atlasContext\.drawImage/);
   assert.match(atlasSource, /ctx\.drawImage/);
   assert.match(atlasSource, /ctx\.imageSmoothingEnabled = false/);
   assert.match(atlasSource, /export function spriteForPlant/);
   assert.match(atlasSource, /export function spriteForEnemy/);
-  assert.doesNotMatch(atlasSource, /\.png|REWILD_ATLASES/);
+  assert.doesNotMatch(atlasSource, /\.png|REWILD_ATLASES|createRadialGradient|quadraticCurveTo/);
 
   for (const plant of ["Sunbloom", "Thornbramble", "Sporecap", "Vinewhip", "Rootreclaimer", "Elder Oak"]) assert.match(worldSource, new RegExp(plant.replace(" ", "\\s")));
   for (const enemy of ["AI Slop Swarm", "Deepfake Sludge", "Popup Parasite"]) assert.match(worldSource, new RegExp(enemy));
