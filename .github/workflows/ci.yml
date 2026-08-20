@@ -37,6 +37,18 @@ jobs:
       - name: Verify repository
         run: npm run verify
 
+      - name: Verify Rewild visual benchmark
+        run: npm run check:rewild-visual
+
+      - name: Upload Rewild visual regression
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rewild-visual-regression
+          path: artifacts/rewild-benchmark-actual.png
+          if-no-files-found: ignore
+          retention-days: 3
+
       - name: Use Python 3.13
         uses: actions/setup-python@v6
         with:
