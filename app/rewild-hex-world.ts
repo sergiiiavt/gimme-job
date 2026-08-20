@@ -1,4 +1,4 @@
-export * from "./rewild-world-legacy.ts";
+export * from "./rewild-world.ts";
 export {
   PLANTS,
   corruptionPercent,
