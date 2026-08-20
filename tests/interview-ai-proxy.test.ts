@@ -308,7 +308,7 @@ test("progress aggregation remains tenant-scoped", async () => {
 });
 
 test("interview simulator migration stores private sessions and attempts per user", async () => {
-  const sql = await readFile(new URL("../drizzle/0015_interview_simulator.sql", import.meta.url), "utf8");
+  const sql = await readFile(new URL("../drizzle/0016_interview_simulator.sql", import.meta.url), "utf8");
   assert.match(sql, /CREATE TABLE `user_interview_sessions`/);
   assert.match(sql, /PRIMARY KEY \(`user_id`, `id`\)/);
   assert.match(sql, /CREATE TABLE `user_interview_attempts`/);
