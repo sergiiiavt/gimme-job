@@ -6,7 +6,9 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const configPath = path.join(root, "config", "rewild", "visual-assets.json");
+const overheadConfigPath = path.join(root, "config", "rewild", "overhead-atlas-contract.json");
 const config = JSON.parse(await readFile(configPath, "utf8"));
+const overheadConfig = JSON.parse(await readFile(overheadConfigPath, "utf8"));
 const sourceDirectory = path.join(root, config.sourceDirectory);
 
 function pngInfo(buffer) {
@@ -19,7 +21,19 @@ function pngInfo(buffer) {
   return { width, height, bitDepth, colorType, hasAlpha: colorType === 4 || colorType === 6 };
 }
 
+function visiblePixelsInFrame(data, info, left, top, width, height) {
+  let visiblePixels = 0;
+  for (let y = top; y < top + height; y += 1) {
+    for (let x = left; x < left + width; x += 1) {
+      const alpha = data[(y * info.width + x) * info.channels + 3];
+      if (alpha > 24) visiblePixels += 1;
+    }
+  }
+  return visiblePixels;
+}
+
 const failures = [];
+const warnings = [];
 const rows = [];
 const runtimeSet = new Set(config.runtimeAssets);
 const familyAssets = new Set(Object.values(config.assetFamilies).flat());
@@ -105,6 +119,50 @@ for (const atlas of config.productionAtlases ?? []) {
   }
 }
 
+for (const atlas of overheadConfig.atlases ?? []) {
+  try {
+    const imagePath = path.join(root, atlas.image);
+    const source = await readFile(imagePath);
+    const header = pngInfo(source);
+    const expectedWidth = atlas.columns * atlas.frameSize;
+    const expectedHeight = atlas.rows * atlas.frameSize;
+    const capacity = atlas.columns * atlas.rows;
+    assert.equal(header.width, expectedWidth, `${atlas.image}: width must be ${expectedWidth}px for ${atlas.columns} × ${atlas.frameSize}px frames`);
+    assert.equal(header.height, expectedHeight, `${atlas.image}: height must be ${expectedHeight}px for ${atlas.rows} × ${atlas.frameSize}px frames`);
+    assert.ok(atlas.frames.length <= capacity, `${atlas.id}: ${atlas.frames.length} declared frames exceed atlas capacity ${capacity}`);
+    assert.equal(new Set(atlas.frames.map((frame) => frame.name)).size, atlas.frames.length, `${atlas.id}: frame names must be unique`);
+
+    let decoded;
+    try {
+      decoded = await sharp(imagePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (atlas.decodePolicy === "warn-on-v3-decoder-error") {
+        warnings.push(`${atlas.id}: static decoder rejected the current compatibility atlas (${message}); browser runtime fallback remains required until v4 replaces it`);
+        continue;
+      }
+      throw error;
+    }
+
+    const { data, info } = decoded;
+    for (let index = 0; index < atlas.frames.length; index += 1) {
+      const frame = atlas.frames[index];
+      const left = (index % atlas.columns) * atlas.frameSize;
+      const top = Math.floor(index / atlas.columns) * atlas.frameSize;
+      const visiblePixels = visiblePixelsInFrame(data, info, left, top, atlas.frameSize, atlas.frameSize);
+      if (visiblePixels >= overheadConfig.frameVisibilityThreshold) continue;
+
+      if (atlas.emptyFramePolicy === "allow-declared-runtime-fallback" && frame.fallback) {
+        warnings.push(`${atlas.id}:${frame.name}: only ${visiblePixels} visible pixels; runtime fallback ${frame.fallback} is currently required`);
+        continue;
+      }
+      failures.push(`${atlas.id}:${frame.name}: only ${visiblePixels} visible pixels; authored runtime frame is effectively empty`);
+    }
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+}
+
 for (const artifact of config.reviewArtifacts ?? []) {
   try {
     const artifactStat = await stat(path.join(root, artifact));
@@ -117,12 +175,17 @@ for (const artifact of config.reviewArtifacts ?? []) {
 const duplicateAssets = config.runtimeAssets.filter((asset, index) => config.runtimeAssets.indexOf(asset) !== index);
 for (const duplicate of new Set(duplicateAssets)) failures.push(`${duplicate}: duplicated runtime asset`);
 
+if (warnings.length) {
+  console.warn("Rewild overhead atlas compatibility warnings:");
+  for (const warning of warnings) console.warn(`- ${warning}`);
+}
+
 if (failures.length) {
   console.error("Rewild visual asset validation failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
   const totalBytes = rows.reduce((sum, row) => sum + row.bytes, 0);
-  console.log(`Rewild visual assets validated: ${rows.length} runtime PNGs, ${config.references.length} references, ${config.productionAtlases?.length ?? 0} production atlases, ${(totalBytes / 1024 / 1024).toFixed(2)} MiB.`);
+  console.log(`Rewild visual assets validated: ${rows.length} runtime PNGs, ${config.references.length} references, ${config.productionAtlases?.length ?? 0} production atlases, ${overheadConfig.atlases?.length ?? 0} active overhead atlases, ${(totalBytes / 1024 / 1024).toFixed(2)} MiB.`);
   for (const family of Object.keys(config.assetFamilies)) console.log(`- ${family}: ${config.assetFamilies[family].length}`);
 }
