@@ -14,15 +14,26 @@ import {
   type RewildPixelSpriteId,
   type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
+import {
+  drawRewildDetailV4,
+  type RewildDetailV4Id,
+} from "./rewild-detail-atlas-v4";
 import type { RewildCamera } from "./rewild-production-renderer";
 import type { RenderSnapshot } from "./rewild-render-snapshot";
+
+const CLUSTER_OFFSETS = [
+  [0, 0],
+  [8, -4],
+  [-7, 4],
+  [4, 7],
+] as const;
 
 function random(cell: HexCell, salt: number) {
   let value = (cell.seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0;
   value ^= value >>> 16;
   value = Math.imul(value, 0x85ebca6b) >>> 0;
   value ^= value >>> 13;
-  return (value >>> 0) / 0xffffffff;
+  return (value >>> 0) / 0x100000000;
 }
 
 function biomeKindByCell(state: GameState) {
@@ -56,6 +67,30 @@ function textureCell(
   drawRewildTerrainStamp(ctx, id, center.x, center.y, 43, 43, alpha);
 }
 
+function detailScale(id: RewildDetailV4Id) {
+  if (id === "detail-lily-pads-a") return .42;
+  if (id === "detail-log-a") return .29;
+  if (id === "detail-rock-medium-a") return .31;
+  if (id.startsWith("industrial-")) return .29;
+  return .34;
+}
+
+function drawDetail(
+  ctx: CanvasRenderingContext2D,
+  id: RewildDetailV4Id,
+  x: number,
+  y: number,
+  cell: HexCell,
+  salt: number,
+  scaleMultiplier = 1,
+) {
+  drawRewildDetailV4(ctx, id, x, y, {
+    scale: detailScale(id) * scaleMultiplier,
+    alpha: .78 + random(cell, salt) * .16,
+    flipX: random(cell, salt + 1) > .5,
+  });
+}
+
 function drawMeadowTexture(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
@@ -72,6 +107,26 @@ function drawMeadowTexture(
   }
 }
 
+function meadowClusterSprite(cell: HexCell, theme: number, index: number): RewildDetailV4Id {
+  if (theme > .91) {
+    if (index === 0) return random(cell, 330) > .58 ? "detail-rock-medium-a" : "detail-rock-small-a";
+    return random(cell, 331 + index) > .52 ? "detail-pebbles" : "detail-grass-tuft-a";
+  }
+  if (theme > .76) {
+    if (index === 0) return "detail-shrub-low-a";
+    return random(cell, 334 + index) > .5 ? "detail-grass-tuft-b" : "detail-flower-yellow";
+  }
+  if (theme > .55) {
+    const flowers: RewildDetailV4Id[] = ["detail-flower-yellow", "detail-flower-purple", "detail-wild-weeds", "detail-mushrooms"];
+    return flowers[Math.floor(random(cell, 338 + index) * flowers.length)] ?? flowers[0];
+  }
+  if (theme > .24) {
+    const grasses: RewildDetailV4Id[] = ["detail-grass-tuft-a", "detail-grass-tuft-b", "detail-grass-tuft-c", "detail-wild-weeds"];
+    return grasses[Math.floor(random(cell, 342 + index) * grasses.length)] ?? grasses[0];
+  }
+  return index === 0 && random(cell, 346) > .82 ? "detail-stump-a" : random(cell, 347 + index) > .66 ? "detail-pebbles" : "detail-grass-tuft-c";
+}
+
 function drawMeadowLife(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
@@ -82,28 +137,26 @@ function drawMeadowLife(
     const key = hexKey(cell.hex);
     const kind = kinds.get(key);
     if (blocked.has(key) || cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
-    if (hexDistance(cell.hex, HOUSE_CENTER) <= 2) continue;
-    const roll = random(cell, 320);
-    if (roll < .57) continue;
+    if (hexDistance(cell.hex, HOUSE_CENTER) <= 2 || random(cell, 320) < .84) continue;
+
     const center = hexCenter(cell.hex);
-    const x = center.x + Math.round((random(cell, 321) - .5) * 18);
-    const y = center.y + Math.round((random(cell, 322) - .5) * 12);
-    let sprite: RewildPixelSpriteId;
-    let scale: number;
-    if (roll > .94) {
-      sprite = "rock";
-      scale = .26 + random(cell, 323) * .12;
-    } else if (roll > .84) {
-      sprite = "shrub";
-      scale = .28 + random(cell, 324) * .1;
-    } else if (roll > .69) {
-      sprite = "flower-cluster";
-      scale = .2 + random(cell, 325) * .08;
-    } else {
-      sprite = "grass-tuft";
-      scale = .2 + random(cell, 326) * .08;
+    const count = 2 + Math.floor(random(cell, 321) * 3);
+    const theme = random(cell, 322);
+    for (let index = 0; index < count; index += 1) {
+      const [offsetX, offsetY] = CLUSTER_OFFSETS[index] ?? CLUSTER_OFFSETS[0];
+      const sprite = meadowClusterSprite(cell, theme, index);
+      drawDetail(
+        ctx,
+        sprite,
+        center.x + offsetX + Math.round((random(cell, 350 + index) - .5) * 5),
+        center.y + offsetY + Math.round((random(cell, 354 + index) - .5) * 4),
+        cell,
+        358 + index * 2,
+        .88 + random(cell, 366 + index) * .22,
+      );
     }
-    drawRewildSprite(ctx, sprite, x, y, { scale, alpha: .72 + random(cell, 327) * .2, flipX: random(cell, 328) > .5 });
+
+    if (random(cell, 372) > .975) drawDetail(ctx, "detail-log-a", center.x, center.y + 4, cell, 373, .94);
   }
 }
 
@@ -117,18 +170,27 @@ function drawForestDensity(
     const key = hexKey(cell.hex);
     if (kinds.get(key) !== "forest" || blocked.has(key) || cell.surface === "road") continue;
     const forestNeighbors = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) === "forest").length;
-    if (forestNeighbors < 3 || random(cell, 340) < .32) continue;
+    if (forestNeighbors < 3 || random(cell, 380) < .32) continue;
     const center = hexCenter(cell.hex);
-    const count = forestNeighbors >= 5 && random(cell, 341) > .3 ? 2 : 1;
+    const count = forestNeighbors >= 5 && random(cell, 381) > .3 ? 2 : 1;
     for (let index = 0; index < count; index += 1) {
-      const sprite: RewildPixelSpriteId = random(cell, 342 + index) > .76 ? "tree-pine" : "tree-broadleaf";
-      drawRewildSprite(ctx, sprite, center.x + Math.round((random(cell, 344 + index) - .5) * 26), center.y + Math.round((random(cell, 346 + index) - .5) * 17), {
-        scale: .31 + random(cell, 348 + index) * .12,
+      const sprite: RewildPixelSpriteId = random(cell, 382 + index) > .76 ? "tree-pine" : "tree-broadleaf";
+      drawRewildSprite(ctx, sprite, center.x + Math.round((random(cell, 384 + index) - .5) * 26), center.y + Math.round((random(cell, 386 + index) - .5) * 17), {
+        scale: .31 + random(cell, 388 + index) * .12,
         alpha: cell.corruption >= 3 ? .5 : .8,
-        flipX: random(cell, 350 + index) > .5,
+        flipX: random(cell, 390 + index) > .5,
       });
     }
   }
+}
+
+function shorelinePoint(cell: HexCoord, outside: HexCoord, factor = .42) {
+  const center = hexCenter(cell);
+  const target = hexCenter(outside);
+  return {
+    x: center.x + (target.x - center.x) * factor,
+    y: center.y + (target.y - center.y) * factor,
+  };
 }
 
 function drawWaterEdges(
@@ -140,21 +202,23 @@ function drawWaterEdges(
   for (const cell of snapshot.state.world.cells.values()) {
     const key = hexKey(cell.hex);
     if (kinds.get(key) !== "water" || blocked.has(key)) continue;
-    const neighbors = hexNeighbors(cell.hex);
-    const boundary = neighbors.some((neighbor) => kinds.get(hexKey(neighbor)) !== "water");
+    const exterior = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) !== "water");
     const center = hexCenter(cell.hex);
-    if (!boundary) {
-      if (random(cell, 360) > .76) textureCell(ctx, cell, "water-deep", .12);
+    if (!exterior.length) {
+      if (random(cell, 400) > .76) textureCell(ctx, cell, "water-deep", .12);
+      if (random(cell, 401) > .88) drawDetail(ctx, "detail-lily-pads-a", center.x, center.y, cell, 402, .92);
       continue;
     }
-    if (random(cell, 361) > .45) {
-      drawRewildSprite(ctx, "reed-clump", center.x + Math.round((random(cell, 362) - .5) * 18), center.y + Math.round((random(cell, 363) - .5) * 12), {
-        scale: .22 + random(cell, 364) * .08,
-        alpha: .82,
-        flipX: random(cell, 365) > .5,
-      });
+
+    const primary = exterior[Math.floor(random(cell, 404) * exterior.length)] ?? exterior[0];
+    const shore = shorelinePoint(cell.hex, primary);
+    if (random(cell, 405) > .38) drawDetail(ctx, "detail-reeds-a", shore.x, shore.y, cell, 406, .94);
+    if (exterior.length >= 3 && random(cell, 408) > .7) {
+      const second = exterior[(exterior.indexOf(primary) + 1) % exterior.length] ?? primary;
+      const secondShore = shorelinePoint(cell.hex, second, .39);
+      drawDetail(ctx, "detail-reeds-a", secondShore.x, secondShore.y, cell, 409, .82);
     }
-    if (random(cell, 366) > .82) drawRewildSprite(ctx, "water-lilies", center.x, center.y, { scale: .22, alpha: .82 });
+    if (random(cell, 411) > .78) drawDetail(ctx, "detail-lily-pads-a", center.x, center.y, cell, 412, .88);
   }
 }
 
@@ -165,6 +229,7 @@ function industrialInfluence(state: GameState, hex: HexCoord) {
 function drawIndustrialComplex(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
+  kinds: ReadonlyMap<string, string>,
   blocked: ReadonlySet<string>,
 ) {
   const state = snapshot.state;
@@ -172,29 +237,32 @@ function drawIndustrialComplex(
     const key = hexKey(cell.hex);
     if (blocked.has(key) || cell.surface === "road" || cell.surface === "water" || !industrialInfluence(state, cell.hex)) continue;
     const center = hexCenter(cell.hex);
-    textureCell(ctx, cell, random(cell, 380) > .46 ? "industrial-a" : "industrial-b", .14);
-    const roll = random(cell, 381);
-    if (roll < .48) continue;
-    let sprite: RewildPixelSpriteId;
-    let scale = .28;
-    if (roll > .9) {
-      sprite = "industrial-power";
-      scale = .34;
-    } else if (roll > .76) {
-      sprite = "industrial-fan";
-      scale = .3;
-    } else if (roll > .61) {
-      sprite = "industrial-relay";
-      scale = .27;
-    } else {
-      sprite = "industrial-rubble";
-      scale = .25;
+    textureCell(ctx, cell, random(cell, 430) > .46 ? "industrial-a" : "industrial-b", .14);
+
+    const waterNeighbors = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) === "water");
+    if (waterNeighbors.length && random(cell, 431) > .7) {
+      const water = waterNeighbors[Math.floor(random(cell, 432) * waterNeighbors.length)] ?? waterNeighbors[0];
+      const outlet = shorelinePoint(cell.hex, water, .3);
+      drawDetail(ctx, "industrial-pipe-outlet-a", outlet.x, outlet.y, cell, 433, .88);
+      continue;
     }
-    drawRewildSprite(ctx, sprite, center.x + Math.round((random(cell, 382) - .5) * 14), center.y + Math.round((random(cell, 383) - .5) * 10), {
-      scale: scale + random(cell, 384) * .06,
-      alpha: .88,
-      flipX: random(cell, 385) > .5,
-    });
+
+    const roll = random(cell, 435);
+    if (roll < .58) continue;
+    let sprite: RewildDetailV4Id;
+    if (roll > .9) sprite = "industrial-relay-box-a";
+    else if (roll > .78) sprite = "industrial-junction-box-a";
+    else if (roll > .66) sprite = "industrial-vent-small-a";
+    else sprite = "industrial-debris-small-a";
+    drawDetail(
+      ctx,
+      sprite,
+      center.x + Math.round((random(cell, 436) - .5) * 12),
+      center.y + Math.round((random(cell, 437) - .5) * 8),
+      cell,
+      438,
+      .86 + random(cell, 440) * .14,
+    );
   }
 }
 
@@ -208,13 +276,6 @@ function drawCorruptionDetail(
     const key = hexKey(cell.hex);
     if (blocked.has(key)) continue;
     textureCell(ctx, cell, `corruption-${cell.corruption}` as RewildTerrainTileId, .1 + cell.corruption * .025);
-    if (cell.corruption < 3 || random(cell, 400) < .64) continue;
-    const center = hexCenter(cell.hex);
-    drawRewildSprite(ctx, "corruption-spike", center.x + Math.round((random(cell, 401) - .5) * 14), center.y + Math.round((random(cell, 402) - .5) * 10), {
-      scale: .21 + random(cell, 403) * .08,
-      alpha: .75 + cell.corruption * .05,
-      flipX: random(cell, 404) > .5,
-    });
   }
 }
 
@@ -236,7 +297,7 @@ export function renderAuthoredArtOverlay(
   drawMeadowLife(ctx, snapshot, kinds, blocked);
   drawForestDensity(ctx, snapshot, kinds, blocked);
   drawWaterEdges(ctx, snapshot, kinds, blocked);
-  drawIndustrialComplex(ctx, snapshot, blocked);
+  drawIndustrialComplex(ctx, snapshot, kinds, blocked);
   drawCorruptionDetail(ctx, snapshot, blocked);
 
   ctx.restore();
