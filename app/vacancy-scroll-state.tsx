@@ -4,10 +4,11 @@ import { useEffect } from "react";
 
 type VacancyScrollSnapshot = {
   board: number;
-  details: Record<string, number>;
 };
 
 const STORAGE_PREFIX = "gimmejob:vacancy-scroll-state:v1";
+const BOARD_SELECTOR = ".vacancy-workspace #vacancy-board-panel.vacancy-list-view";
+const DETAIL_SELECTOR = ".vacancy-workspace #selected-vacancy-detail.vacancy-detail-tab";
 
 function storageKey() {
   const mode = window.location.pathname.startsWith("/workspace") ? "personal" : "public";
@@ -17,15 +18,12 @@ function storageKey() {
 function readSnapshot(key: string): VacancyScrollSnapshot {
   try {
     const raw = window.sessionStorage.getItem(key);
-    if (!raw) return { board: 0, details: {} };
+    if (!raw) return { board: 0 };
     const parsed = JSON.parse(raw) as Partial<VacancyScrollSnapshot>;
     const board = Number.isFinite(parsed.board) ? Math.max(0, Number(parsed.board)) : 0;
-    const details = parsed.details && typeof parsed.details === "object"
-      ? Object.fromEntries(Object.entries(parsed.details).filter(([, value]) => Number.isFinite(value)).map(([id, value]) => [id, Math.max(0, Number(value))]))
-      : {};
-    return { board, details };
+    return { board };
   } catch {
-    return { board: 0, details: {} };
+    return { board: 0 };
   }
 }
 
@@ -56,15 +54,18 @@ export default function VacancyScrollState() {
 
     const restoreActivePane = () => {
       restoreFrame = 0;
-      const board = document.querySelector<HTMLElement>(".vacancy-workspace #vacancy-board-panel.vacancy-list-view");
+      const board = document.querySelector<HTMLElement>(BOARD_SELECTOR);
       if (board) {
-        if (lastPane !== board || lastPaneKey !== "board") board.scrollTop = snapshot.board;
+        if (lastPane !== board || lastPaneKey !== "board") {
+          board.scrollTop = snapshot.board;
+          window.scrollTo({ top: snapshot.board, behavior: "auto" });
+        }
         lastPane = board;
         lastPaneKey = "board";
         return;
       }
 
-      const detail = document.querySelector<HTMLElement>(".vacancy-workspace #selected-vacancy-detail.vacancy-detail-tab");
+      const detail = document.querySelector<HTMLElement>(DETAIL_SELECTOR);
       if (!detail) {
         lastPane = null;
         lastPaneKey = "";
@@ -74,7 +75,10 @@ export default function VacancyScrollState() {
       const id = detailId(detail);
       if (!id) return;
       const paneKey = `detail:${id}`;
-      if (lastPane !== detail || lastPaneKey !== paneKey) detail.scrollTop = snapshot.details[id] ?? 0;
+      if (lastPane !== detail || lastPaneKey !== paneKey) {
+        detail.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
       lastPane = detail;
       lastPaneKey = paneKey;
     };
@@ -84,18 +88,16 @@ export default function VacancyScrollState() {
       restoreFrame = window.requestAnimationFrame(restoreActivePane);
     };
 
-    const onScroll = (event: Event) => {
+    const onDocumentScroll = (event: Event) => {
       const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      if (target.matches(".vacancy-workspace #vacancy-board-panel.vacancy-list-view")) {
-        snapshot.board = target.scrollTop;
-        schedulePersist();
-        return;
-      }
-      if (!target.matches(".vacancy-workspace #selected-vacancy-detail.vacancy-detail-tab")) return;
-      const id = detailId(target);
-      if (!id) return;
-      snapshot.details[id] = target.scrollTop;
+      if (!(target instanceof HTMLElement) || !target.matches(BOARD_SELECTOR)) return;
+      snapshot.board = target.scrollTop;
+      schedulePersist();
+    };
+
+    const onWindowScroll = () => {
+      if (!document.querySelector<HTMLElement>(BOARD_SELECTOR)) return;
+      snapshot.board = Math.max(0, window.scrollY);
       schedulePersist();
     };
 
@@ -105,7 +107,6 @@ export default function VacancyScrollState() {
       const button = target.closest<HTMLButtonElement>("button.sync-button");
       if (!button || !button.textContent?.includes("Sync jobs")) return;
       snapshot.board = 0;
-      snapshot.details = {};
       persist();
       lastPane = null;
       lastPaneKey = "";
@@ -113,14 +114,16 @@ export default function VacancyScrollState() {
 
     const observer = new MutationObserver(scheduleRestore);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-labelledby"] });
-    document.addEventListener("scroll", onScroll, true);
+    document.addEventListener("scroll", onDocumentScroll, true);
+    window.addEventListener("scroll", onWindowScroll, { passive: true });
     document.addEventListener("click", onClick, true);
     window.addEventListener("pagehide", persist);
     scheduleRestore();
 
     return () => {
       observer.disconnect();
-      document.removeEventListener("scroll", onScroll, true);
+      document.removeEventListener("scroll", onDocumentScroll, true);
+      window.removeEventListener("scroll", onWindowScroll);
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("pagehide", persist);
       if (restoreFrame) window.cancelAnimationFrame(restoreFrame);

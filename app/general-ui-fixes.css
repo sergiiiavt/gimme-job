@@ -1,0 +1,57 @@
+/* Shared UI overflow fixes: long learning TOCs and vacancy filter top-layer menus. */
+
+@media (min-width: 961px) {
+  aside[aria-label="Learning material navigation"],
+  aside[aria-label="Навігація навчального матеріалу"] {
+    display: flex !important;
+    flex-direction: column;
+    max-height: calc(100dvh - 36px);
+    min-height: 0;
+  }
+
+  section[aria-label="On this page"],
+  section[aria-label="На цій сторінці"] {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  section[aria-label="On this page"] > nav,
+  section[aria-label="На цій сторінці"] > nav {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
+  }
+
+  section[aria-label="On this page"] > nav::-webkit-scrollbar,
+  section[aria-label="На цій сторінці"] > nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  section[aria-label="On this page"] > nav > a,
+  section[aria-label="На цій сторінці"] > nav > a {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+@media (min-width: 1181px) {
+  .kb-content div:has(> aside[aria-label="Learning material navigation"], > aside[aria-label="Навігація навчального матеріалу"]) {
+    grid-template-columns: minmax(0, 1fr) 228px !important;
+  }
+}
+
+@media (min-width: 961px) and (max-width: 1180px) {
+  .kb-content div:has(> aside[aria-label="Learning material navigation"], > aside[aria-label="Навігація навчального матеріалу"]) {
+    grid-template-columns: minmax(0, 1fr) 200px !important;
+  }
+}
+
+.vacancy-filter-menu[popover],
+.vacancy-calendar-menu[popover] {
+  margin: 0;
+}
