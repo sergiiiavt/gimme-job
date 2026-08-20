@@ -1,0 +1,112 @@
+.email-resolution {
+  margin-top: 14px;
+  border: 1px solid var(--border, #d8dde5);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  overflow: hidden;
+}
+
+.email-resolution-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.email-resolution-head div {
+  display: grid;
+  gap: 3px;
+}
+
+.email-resolution-head strong {
+  font-size: 14px;
+}
+
+.email-resolution-head span,
+.email-resolution-copy > span,
+.email-resolution-copy small {
+  color: var(--text-muted, #64748b);
+}
+
+.email-resolution-head span,
+.email-resolution-copy > span {
+  font-size: 12px;
+}
+
+.email-resolution-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  gap: 16px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border, #d8dde5);
+}
+
+.email-resolution-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.email-resolution-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+}
+
+.email-resolution-type {
+  font-weight: 700;
+  color: inherit;
+}
+
+.email-resolution-copy small {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.email-resolution-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.email-resolution-actions select,
+.email-resolution-actions button {
+  min-height: 36px;
+  border: 1px solid var(--border, #d8dde5);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: inherit;
+}
+
+.email-resolution-actions select {
+  min-width: 0;
+  padding: 0 10px;
+}
+
+.email-resolution-actions button {
+  padding: 0 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.email-resolution-actions button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.email-resolution-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border, #d8dde5);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .email-resolution-item {
+    grid-template-columns: 1fr;
+  }
+}
