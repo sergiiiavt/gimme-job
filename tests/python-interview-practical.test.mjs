@@ -66,6 +66,9 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(highlighter, /"#b5cea8"/);
   assert.match(highlighter, /"#4ec9b0"/);
 
+  assert.match(deepLink, /splitPythonPracticalExample\(displayExample\)/);
+  assert.match(deepLink, /hasLegacyPythonCode/);
+  assert.match(deepLink, /renderHighlightedCode\(segment\.text, "python"\)/);
   assert.match(deepLink, /renderHighlightedCode\(example\.code, example\.language\)/);
   assert.match(deepLink, /highlightInterviewCode\(source, language\)/);
   assert.match(deepLink, /Практичний приклад/);
