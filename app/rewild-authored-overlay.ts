@@ -114,6 +114,11 @@ function drawMeadowTexture(
   for (const cell of snapshot.state.world.cells.values()) {
     const key = hexKey(cell.hex);
     const kind = kinds.get(key);
+    // Entities (plants/enemies/nodes) are drawn earlier in renderProductionGame, before this
+    // overlay pass runs — an opaque fill on an occupied hex would paint over them. Only the
+    // hex actually standing on something is skipped (not the wider decorative-prop halo);
+    // this fill is exactly hex-clipped, so it can't visually intrude on a neighboring unit.
+    if (snapshot.occupiedHexes.has(key)) continue;
     if (cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
     const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(random(cell, 301) * GRASS_VARIANTS.length))];
     fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), MEADOW_FALLBACK_COLOR, 1);
