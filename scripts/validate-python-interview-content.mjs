@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
+const readText = async (relativePath) => readFile(new URL(relativePath, import.meta.url), "utf8");
 
 const topicFiles = [
   "core-language-qa",
@@ -19,13 +20,17 @@ const topicFiles = [
   "web-automation-qa",
 ];
 
-const [topicSets, sources, taxonomy] = await Promise.all([
+const [topicSets, practical, codeEnhancements, sources, taxonomy, catalog] = await Promise.all([
   Promise.all(topicFiles.map((name) => readJson(`../content/python-interview/${name}.json`))),
+  readJson("../content/python-interview/practical-qa.json"),
+  readJson("../content/python-interview/code-examples.json"),
   readJson("../content/python-interview/sources.json"),
   readJson("../content/python-interview/taxonomy.json"),
+  readText("../content/python-interview/catalog.ts"),
 ]);
 
-const questions = topicSets.flatMap((set) => set.questions);
+const baseQuestions = topicSets.flatMap((set) => set.questions);
+const questions = [...baseQuestions, ...practical.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Performance", "Design", "Security", "Tooling"]);
@@ -34,8 +39,24 @@ const categories = new Set(taxonomy.flatMap((item) => item.category ? [item.cate
 const questionIds = new Set();
 const questionTexts = new Set();
 
+function validateCodeExample(example, context) {
+  assert.equal(example.language, "python", `${context} must use language=python.`);
+  assert.ok(example.title?.trim(), `Missing code-example title for ${context}.`);
+  assert.ok(example.titleUk?.trim(), `Missing Ukrainian code-example title for ${context}.`);
+  assert.ok(example.code?.trim().length >= 20, `Code example is too short for ${context}.`);
+  assert.ok(example.explanation?.trim().length >= 40, `Code explanation is too short for ${context}.`);
+  assert.ok(example.explanationUk?.trim().length >= 40, `Ukrainian code explanation is too short for ${context}.`);
+  if (example.expectedResult || example.expectedResultUk) {
+    assert.ok(example.expectedResult?.trim(), `Expected result must have English text for ${context}.`);
+    assert.ok(example.expectedResultUk?.trim(), `Expected result must have Ukrainian text for ${context}.`);
+  }
+}
+
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
-assert.ok(questions.length >= 133, "The public Python interview collection must not regress below the current 133-question baseline.");
+assert.ok(baseQuestions.length >= 133, "The researched Python interview collection must not regress below the 133-question baseline.");
+assert.equal(practical.questions.length, 18, "The focused practical Python layer must contain exactly 18 code-writing questions.");
+assert.ok(questions.length >= 151, "The public Python interview collection must include the researched baseline plus practical additions.");
+assert.equal(codeEnhancements.length, 19, "Keep structured code enhancements on the selected 19 high-frequency existing Python questions.");
 assert.ok(sources.length >= 42, "The Python interview source catalog must contain at least 42 researched sources.");
 assert.equal(categories.size, 13, "The Python interview taxonomy must contain exactly 13 question topics.");
 
@@ -78,6 +99,26 @@ for (const question of questions) {
   }
 }
 
+for (const question of practical.questions) {
+  assert.equal(question.kind, "Practical", `New practical-layer question ${question.id} must be Practical.`);
+  assert.ok(question.codeExamples?.length, `New practical-layer question ${question.id} must include a structured code example.`);
+  for (const [index, example] of question.codeExamples.entries()) {
+    validateCodeExample(example, `${question.id} code example ${index + 1}`);
+  }
+}
+
+const enhancementIds = new Set();
+const baseQuestionIds = new Set(baseQuestions.map((question) => question.id));
+for (const enhancement of codeEnhancements) {
+  assert.ok(baseQuestionIds.has(enhancement.id), `Code enhancement targets unknown existing Python question ${enhancement.id}.`);
+  assert.ok(!enhancementIds.has(enhancement.id), `Duplicate Python code enhancement id: ${enhancement.id}`);
+  enhancementIds.add(enhancement.id);
+  assert.ok(enhancement.codeExamples?.length, `Code enhancement ${enhancement.id} must include at least one example.`);
+  for (const [index, example] of enhancement.codeExamples.entries()) {
+    validateCodeExample(example, `${enhancement.id} enhancement ${index + 1}`);
+  }
+}
+
 const referencedSourceIds = new Set(questions.flatMap((question) => question.sourceIds));
 for (const sourceId of sourceIds) {
   assert.ok(referencedSourceIds.has(sourceId), `Source ${sourceId} is not referenced by any question.`);
@@ -92,4 +133,11 @@ for (const category of categories) {
   assert.ok(count >= 8, `Python interview topic ${category} must contain at least 8 questions, found ${count}.`);
 }
 
-console.log(`Python interview content validated: ${questions.length} questions, ${categories.size} topics, ${sources.length} sources.`);
+assert.match(catalog, /import practical from "\.\/practical-qa\.json"/);
+assert.match(catalog, /import codeExamples from "\.\/code-examples\.json"/);
+assert.match(catalog, /\.\.\.practical\.questions/);
+assert.match(catalog, /pythonCodeExamplesById\.get\(question\.id\)/);
+assert.match(catalog, /version: 3/);
+assert.match(catalog, /lastReviewedAt: "2026-08-22"/);
+
+console.log(`Python interview content validated: ${questions.length} questions (${baseQuestions.length} researched + ${practical.questions.length} practical), ${codeEnhancements.length} existing questions with structured code examples, ${categories.size} topics, ${sources.length} sources.`);
