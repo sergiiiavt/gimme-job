@@ -153,6 +153,28 @@ jobs:
                       f"line={issue.get('line')} "
                       f"message={issue.get('message')}"
                   )
+
+              bugs_payload = request(
+                  "issues/search",
+                  {
+                      "componentKeys": project_key,
+                      "pullRequest": pr_number,
+                      "resolved": "false",
+                      "types": "BUG",
+                      "ps": 100,
+                  },
+              )
+              bugs = bugs_payload.get("issues", [])
+              print(f"Open reliability bugs: {len(bugs)}")
+              for issue in bugs:
+                  print(
+                      "Reliability bug: "
+                      f"rule={issue.get('rule')} "
+                      f"severity={issue.get('severity')} "
+                      f"component={issue.get('component')} "
+                      f"line={issue.get('line')} "
+                      f"message={issue.get('message')}"
+                  )
           except Exception as error:
               print(f"Sonar diagnostics unavailable: {type(error).__name__}: {error}")
           PY
