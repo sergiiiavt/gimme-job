@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -10,12 +10,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "v4", "environment-details-atlas-v4.png");
 const metadataPath = path.join(root, "public", "rewild", "v4", "environment-details-atlas-v4.json");
 const generatedSourceDirectory = path.join(root, "public", "rewild", "v4", "source");
-const bundleDirectory = path.join(root, "assets", "rewild", "v4", "source-b64");
+const sourceDirectory = path.join(root, "assets", "rewild", "v4", "source");
 const runtimeSource = await readFile(path.join(root, "app", "rewild-detail-atlas-v4.ts"), "utf8");
 const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
 
 const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
 assert.equal(metadata.image, "environment-details-atlas-v4.png");
+assert.equal(metadata.source, "assets/rewild/v4/source");
 assert.deepEqual(metadata.grid, { columns: 6, rows: 4, slotSize: 128 });
 assert.equal(metadata.frames.length, 22);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), DETAIL_ORDER, "atlas frame order must match the exact approved manifest");
@@ -38,30 +39,29 @@ const runtimeFrames = new Map(
 );
 assert.equal(runtimeFrames.size, DETAIL_ORDER.length, "runtime v4 frame table must contain exactly the 22 approved detail IDs");
 
-const sourceBundles = {};
-for (const bundle of ["nature-a.json", "nature-b.json", "industrial.json"]) {
-  Object.assign(sourceBundles, JSON.parse(await readFile(path.join(bundleDirectory, bundle), "utf8")));
-}
-assert.equal(Object.keys(sourceBundles).length, DETAIL_ORDER.length, "source bundles must contain exactly 22 approved assets");
+const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort();
+const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
+assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed v4 source directory must contain files only");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(), expectedFiles, "committed v4 source directory must contain exactly the approved 22 PNGs");
 
 const sourceHashes = new Map();
 for (const name of DETAIL_ORDER) {
   const fileName = `${name}.png`;
-  assert.ok(fileName in sourceBundles, `${fileName}: missing source payload`);
   assert.ok(runtimeFrames.has(name), `${name}: missing from runtime v4 frame table`);
 
-  const sourceBuffer = Buffer.from(sourceBundles[fileName], "base64");
+  const sourceBuffer = await readFile(path.join(sourceDirectory, fileName));
+  const sourceMeta = await sharp(sourceBuffer).metadata();
+  assert.equal(sourceMeta.format, "png", `${fileName}: committed source must strictly decode as PNG`);
+  assert.ok(sourceMeta.hasAlpha, `${fileName}: committed source must preserve alpha`);
+  assert.ok(sourceMeta.width && sourceMeta.height, `${fileName}: committed source dimensions are missing`);
+  assert.ok(sourceMeta.width <= 128 && sourceMeta.height <= 128, `${fileName}: committed source exceeds atlas slot`);
+
   const generatedBuffer = await readFile(path.join(generatedSourceDirectory, fileName));
-  assert.equal(Buffer.compare(sourceBuffer, generatedBuffer), 0, `${fileName}: generated source differs from approved payload`);
+  assert.equal(Buffer.compare(sourceBuffer, generatedBuffer), 0, `${fileName}: generated source differs from committed PNG`);
 
   const hash = createHash("sha256").update(sourceBuffer).digest("hex");
   assert.ok(!sourceHashes.has(hash), `${fileName}: exact duplicate of ${sourceHashes.get(hash)}`);
   sourceHashes.set(hash, fileName);
-}
-
-for (const fileName of Object.keys(sourceBundles)) {
-  const name = fileName.replace(/\.png$/u, "");
-  assert.ok(DETAIL_ORDER.includes(name), `${fileName}: hallucinated/unapproved source asset`);
 }
 
 const forbiddenHallucinations = [
@@ -112,4 +112,4 @@ assert.match(overlaySource, /drawRewildDetailV4/u, "authored overlay must use th
 assert.match(overlaySource, /CLUSTER_OFFSETS/u, "meadow details must remain clustered rather than uniform per-cell stamps");
 assert.match(overlaySource, /shorelinePoint/u, "water details must remain boundary-aware");
 
-console.log(`Rewild v4 detail atlas validated: ${DETAIL_ORDER.length} exact assets, generated/runtime frames agree, transparent atlas, no duplicate or hallucinated entries.`);
+console.log(`Rewild v4 detail atlas validated: ${DETAIL_ORDER.length} strict PNG sources, generated/runtime frames agree, transparent atlas, no duplicate or hallucinated entries.`);
