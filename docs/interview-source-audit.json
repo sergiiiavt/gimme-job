@@ -1,117 +1,94 @@
 {
-  "version": 5,
+  "version": 6,
   "updatedAt": "2026-08-21",
   "mode": "research-only",
   "productionCatalogChangesAllowed": false,
-  "goal": "Cross-check the existing interview catalog against Ukrainian and international interview-question banks, deduplicate by concept and interview intent, strengthen source evidence, and add only genuinely missing concepts.",
+  "candidateLedger": "docs/interview-source-audit-candidates.json",
+  "goal": "Broaden interview evidence across Ukrainian and international sources without duplicating semantic concepts or inflating the catalog with low-value trivia.",
   "dedupPolicy": {
     "canonicalKey": ["topic", "concept", "interviewIntent", "questionKind"],
     "statuses": ["existing-match", "wording-variant", "related-but-distinct", "new-concept", "uncertain"],
-    "candidateActions": ["merge-source", "add-question", "skip-low-value", "needs-review"],
+    "actions": ["merge-source", "add-question", "skip-low-value", "needs-review"],
     "rules": [
-      "Do not create a new catalog question for wording-only variants.",
-      "Theory and scenario questions may remain separate when they test different interview intent.",
-      "A source hit strengthens source evidence and prevalence; it does not automatically create another question.",
-      "Absence from the current catalog is necessary but not sufficient for adding a question: recurrence and interview value must also justify it.",
-      "Official documentation validates answer correctness but is not by itself an interview-prevalence signal.",
-      "Ukrainian and international interview banks have equal priority as prevalence evidence.",
-      "Broad question banks, interviewer-authored guidance, hiring-derived sources and fresh market snapshots are tracked separately."
+      "Wording variants never create another canonical question.",
+      "Theory and scenario questions may remain separate only when interview intent differs materially.",
+      "A recurring source hit normally strengthens source evidence/prevalence; it does not automatically create a question.",
+      "Absence from the catalog is not enough: recurrence and interview value must justify addition.",
+      "Ukrainian and international interview banks have equal market/prevalence priority.",
+      "Official docs/specifications validate technical answers; interview banks validate recurrence and interview intent."
     ]
   },
   "batches": [
     {
       "id": "ua-dou",
-      "label": "DOU 250+ and DOU 400+",
       "status": "in-progress",
       "sources": [
-        {"id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions", "url": "https://dou.ua/lenta/articles/interview-qa/", "catalogStatus": "existing", "sourceRole": "broad-question-bank"},
-        {"id": "dou-qa-400-2023", "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior", "url": "https://dou.ua/forums/topic/44277/", "catalogStatus": "audit-only-candidate", "sourceRole": "broad-question-bank", "publishedAt": "2023-07-13", "rawQuestionCount": 416, "sections": {"testing-theory": 95, "git": 18, "web": 67, "database": 36, "mobile": 26, "selenium": 23, "scrum": 33, "general": 83, "practical": 35}, "selfDedupStatus": "in-progress", "catalogMatchStatus": "in-progress"}
+        {"id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions", "url": "https://dou.ua/lenta/articles/interview-qa/", "catalogStatus": "existing"},
+        {"id": "dou-qa-400-2023", "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior", "url": "https://dou.ua/forums/topic/44277/", "publishedAt": "2023-07-13", "rawQuestionCount": 416, "catalogStatus": "audit-candidate"}
       ],
-      "confirmedFindings": [
-        "DOU 400+ has internal concept/wording duplicates; 416 is raw, not unique.",
-        "Large parts overlap DOU 250+, especially Selenium, Web/API, Mobile and practical scenarios.",
-        "DOU 400+ remains first-class Ukrainian-market evidence; overlap should strengthen evidence rather than invalidate the source.",
-        "Its practical tail is high-value: release pressure, incomplete testing, ambiguity, developer disagreement, debugging and late QA involvement require intent-level comparison.",
-        "The author says only part of the list came directly from interviews, so individual items still require recurrence/value validation."
+      "sectionCounts": {"testing-theory": 95, "git": 18, "web": 67, "database": 36, "mobile": 26, "selenium": 23, "scrum": 33, "general": 83, "practical": 35},
+      "completed": [
+        "Established that DOU 400+ contains internal semantic/wording duplicates, so raw 416 is not a unique-question count.",
+        "Confirmed large overlap with DOU 250+.",
+        "Reviewed Git section at concept level: practical workflow is more valuable than one-question-per-command trivia.",
+        "Reviewed Mobile section at concept level: TestFlight and traffic interception are strong current gap candidates; several other concepts already exist.",
+        "Reviewed Selenium section directionally: keep modern reliability/tooling concepts; do not add low-value framework trivia.",
+        "Reviewed high-value practical scenarios: release pressure, missing requirements, QA/dev disagreement and risk prioritization mostly map to existing authored questions.",
+        "Confirmed DOU 400+ asks both which QA metric matters and how to measure test effectiveness; semantic pass mapped these to existing quality-metrics rather than a new question."
       ],
-      "observedInternalDuplicateExamples": ["Smoke vs Sanity", "REST API vs SOAP", "A/B testing", "database-type concepts across sections", "emulator vs simulator", "testing without documentation"],
-      "preliminaryCatalogChecks": [
-        {"concept": "database collation", "status": "existing-match", "action": "merge-source"},
-        {"concept": "composite keys", "status": "existing-match", "action": "merge-source"},
-        {"concept": "SQL injection", "status": "existing-match", "action": "merge-source"},
-        {"concept": "emulator versus simulator", "status": "existing-match", "action": "merge-source"},
-        {"concept": "Product Backlog versus Sprint Backlog", "status": "existing-match", "action": "merge-source"},
-        {"concept": "release deadline and risk-based regression", "status": "existing-match", "action": "merge-source"},
-        {"concept": "ambiguous or incomplete requirements", "status": "existing-match", "action": "merge-source"},
-        {"concept": "QA vs engineering disagreement over whether behaviour is a defect", "status": "existing-match", "action": "merge-source", "canonicalQuestionId": "qa-developer-conflict"},
-        {"concept": "TestFlight for distributing and testing iOS builds", "status": "new-concept", "action": "add-question", "confidence": "high", "evidence": "No direct catalog match; recurring in DOU 250+, DOU 400+ and current international mobile-QA interview material. One canonical mobile question only, pending global second pass."},
-        {"concept": "mobile HTTP/HTTPS traffic interception and proxy debugging", "status": "new-concept", "action": "add-question", "confidence": "high", "evidence": "Recurring in DOU 250+, DOU 400+ and current international mobile interview material. Present in GimmeJob testing-tools learning content but no direct interview question found. OWASP MASTG is suitable later for answer validation."},
-        {"concept": "git cherry-pick", "status": "new-concept", "action": "needs-review", "confidence": "low", "evidence": "No direct catalog match, but weaker recurrence/value than practical Git workflow or QA judgment questions."}
+      "remaining": ["Finish Web/API unique-concept pass", "Finish Database unique-concept pass", "Finish Scrum/general/behavioral pass", "Finish practical tail exact intent mapping"]
+    },
+    {
+      "id": "ua-current",
+      "status": "in-progress",
+      "sources": [
+        {"id": "hillel-qa-interviewer-2025", "publisher": "Hillel IT School", "publishedAt": "2025-07-30", "role": "interviewer-authored-guidance"},
+        {"id": "mate-qa-market-2026", "publisher": "Mate academy", "publishedAt": "2026-08", "role": "fresh-market-snapshot"},
+        {"id": "dou-qa-voicechat-2023", "publisher": "DOU", "publishedAt": "2023-08-11", "role": "community-interview-signal"}
+      ],
+      "completed": [
+        "Confirmed classic fundamentals remain current in Ukraine.",
+        "Confirmed stronger emphasis on applied reasoning, ambiguity, communication and scenarios rather than rote definitions."
       ]
     },
     {
-      "id": "ua-other",
-      "label": "Other Ukrainian interview sources",
+      "id": "international-current",
       "status": "in-progress",
       "sources": [
-        {"id": "hillel-qa-interviewer-2025", "publisher": "Hillel IT School", "url": "https://blog.ithillel.ua/articles/what-questions-to-ask-a-qa-engineer", "publishedAt": "2025-07-30", "sourceRole": "interviewer-authored-guidance", "value": "QA Tech Lead perspective based on dozens of Junior-to-Senior interviews; emphasizes contextual reasoning, cases, tools, ambiguity and communication."},
-        {"id": "mate-qa-market-2026", "publisher": "Mate academy", "url": "https://mate.academy/blog/it-career/testuvalnyk-pz-khto-tse-i-shcho-vin-robyt", "publishedAt": "2026-08", "sourceRole": "fresh-market-snapshot", "value": "Fresh Ukrainian Junior signal confirming testing/types, severity vs priority, test case vs checklist, bug reports, smoke/regression/sanity and SDLC/STLC."},
-        {"id": "dou-qa-voicechat-2023", "publisher": "DOU", "url": "https://dou.ua/forums/topic/44752/", "publishedAt": "2023-08-11", "sourceRole": "community-interview-signal"}
+        {"id": "katalon-qa-interviews", "publisher": "Katalon", "freshness": "2026", "catalogStatus": "existing"},
+        {"id": "indeed-qa-interviews", "publisher": "Indeed", "updatedAt": "2026-06-15", "catalogStatus": "existing"},
+        {"id": "gfg-testing-interviews", "publisher": "GeeksforGeeks", "updatedAt": "2026-02-06", "catalogStatus": "existing"},
+        {"id": "testsigma-qa-interviews-2026", "publisher": "Testsigma", "updatedAt": "2026-04-06", "catalogStatus": "audit-candidate"},
+        {"id": "bugbug-qa-interviews-2026", "publisher": "BugBug", "publishedAt": "2026-06-08", "catalogStatus": "audit-candidate"},
+        {"id": "kore1-qa-interviews-2026", "publisher": "KORE1", "updatedAt": "2026-05-01", "catalogStatus": "audit-candidate", "role": "hiring-derived; claims 40+ QA searches in prior 18 months"},
+        {"id": "asserthired-git-qa-2026", "publisher": "AssertHired", "updatedAt": "2026-05", "catalogStatus": "audit-candidate", "role": "QA/SDET-specific Git interview signal"}
       ],
-      "confirmedFindings": [
-        "Fresh Ukrainian guidance confirms classic fundamentals remain current but emphasizes contextual explanation over definitions.",
-        "Case questions about production bugs, missing documentation, developer disagreement and ambiguity remain strong local-market signals.",
-        "The August 2026 Mate snapshot independently confirms several classic DOU fundamentals as still current for Junior QA."
-      ]
-    },
-    {
-      "id": "international-general",
-      "label": "International QA interview banks",
-      "status": "in-progress",
-      "sources": [
-        {"id": "katalon-qa-interviews", "publisher": "Katalon", "url": "https://katalon.com/resources-center/blog/qa-interview-questions", "catalogStatus": "existing", "sourceRole": "broad-current-question-bank", "freshness": "2026 guide"},
-        {"id": "indeed-qa-interviews", "publisher": "Indeed", "url": "https://www.indeed.com/career-advice/interviewing/qa-interview-questions", "catalogStatus": "existing", "sourceRole": "career-question-bank", "updatedAt": "2026-06-15"},
-        {"id": "gfg-testing-interviews", "publisher": "GeeksforGeeks", "catalogStatus": "existing", "sourceRole": "broad-technical-question-bank", "updatedAt": "2026-02-06"},
-        {"id": "testsigma-qa-interviews-2026", "publisher": "Testsigma", "url": "https://testsigma.com/blog/qa-interview-questions/", "catalogStatus": "audit-only-candidate", "sourceRole": "broad-current-question-bank", "updatedAt": "2026-04-06"},
-        {"id": "bugbug-qa-interviews-2026", "publisher": "BugBug", "url": "https://bugbug.io/blog/software-testing/qa-interview-questions/", "catalogStatus": "audit-only-candidate", "sourceRole": "curated-current-question-bank", "publishedAt": "2026-06-08"},
-        {"id": "kore1-qa-interviews-2026", "publisher": "KORE1", "url": "https://www.kore1.com/qa-engineer-interview-questions/", "catalogStatus": "audit-only-candidate", "sourceRole": "hiring-derived-question-bank", "updatedAt": "2026-05-01", "sourceClaim": "Derived from hiring-manager debriefs across 40+ QA searches in the prior 18 months."}
-      ],
-      "confirmedFindings": [
-        "2026 sources confirm classic fundamentals remain relevant; DOU's age alone is not a reason to remove them.",
-        "Current sources emphasize judgment: what not to test/automate, risk-based prioritization, flaky-test diagnosis, missing requirements, production feedback and team quality ownership.",
-        "Katalon adds AI-assisted/agentic QA, but current GimmeJob modern-SDET already covers several related concepts, so many fresh hits should strengthen evidence rather than expand count.",
-        "BugBug 2026 explicitly asks about QA metrics twice: coverage/quality metrics and choosing the most important metric by context.",
-        "KORE1 explicitly asks how to measure test effectiveness and warns that code coverage alone is misleading; this is a hiring-derived current signal."
-      ],
-      "preliminaryCatalogChecks": [
-        {"concept": "flaky-test causes and remediation", "status": "existing-match", "action": "merge-source"},
-        {"concept": "traceability and coverage matrices", "status": "existing-match", "action": "merge-source"},
-        {"concept": "assert versus verify in automation", "status": "existing-match", "action": "merge-source"},
-        {"concept": "AI-assisted testing and self-healing locators", "status": "existing-match", "action": "merge-source"},
-        {"concept": "missed production bug and learning response", "status": "existing-match", "action": "merge-source"},
-        {"concept": "quality ownership across the team", "status": "existing-match", "action": "merge-source"},
-        {"concept": "monkey versus gorilla testing", "status": "new-concept", "action": "skip-low-value", "evidence": "No catalog match; lower preparation value and weaker independent recurrence than judgment/automation/system-quality gaps."}
+      "completed": [
+        "Confirmed current sources still ask classic fundamentals.",
+        "Confirmed 2026 emphasis on judgment: what to test/automate, flaky tests, deadlines, missing requirements, CI/CD and quality ownership.",
+        "Confirmed AI/agentic topics are current but many are already represented in modern-sdet authored questions.",
+        "Confirmed QA metrics/test effectiveness recurs in BugBug and KORE1 but maps to existing quality-metrics.",
+        "Confirmed practical Git workflow/conflict/pull-fetch/review/CI knowledge remains current for QA/SDET and is not clearly represented as a direct authored interview question."
       ]
     },
     {
       "id": "modern-specialist",
-      "label": "Modern AQA, API/distributed systems, AI/LLM and Lead/Senior gaps",
       "status": "in-progress",
-      "focus": ["CI/CD quality gates", "test-suite runtime and parallelization", "automation selection", "AI delegation boundaries", "test effectiveness metrics", "test strategy design", "shift-left participation"],
-      "preliminaryCatalogChecks": [
-        {"concept": "CI/CD quality gates", "status": "existing-match", "action": "merge-source", "evidence": "Direct current interview coverage found in common-qa.json."},
-        {"concept": "test-suite runtime optimization and parallel execution", "status": "existing-match", "action": "merge-source", "evidence": "Direct modern-sdet/canonical interview coverage found."},
-        {"concept": "what should and should not be automated", "status": "existing-match", "action": "merge-source", "canonicalQuestionId": "automation-benefits-risks", "evidence": "Canonical answer already covers selecting stable observations by value, maintenance cost, flakiness and false confidence."},
-        {"concept": "boundaries for delegating QA decisions to AI", "status": "existing-match", "action": "merge-source", "canonicalQuestionIds": ["ai-generated-test-review", "ai-generated-test-grounding", "test-generating-agent-evaluation"], "evidence": "Existing authored questions retain human ownership of test oracles/merge decisions, require grounding and independent verification, and keep human review for security/release-critical changes."},
-        {"concept": "test effectiveness and choosing meaningful QA metrics", "status": "new-concept", "action": "add-question", "confidence": "high", "evidence": "Direct interview wording was not found in the catalog search while the concept recurs in KORE1 and BugBug 2026, with additional current interview banks independently asking the same question. GimmeJob has metrics learning material, but direct interview discoverability appears missing. Proposed one canonical question emphasizing outcome metrics, trend/context and why coverage alone is insufficient."}
-      ]
+      "completed": [
+        "CI/CD quality gates -> existing match",
+        "test-suite runtime/parallelization -> existing match",
+        "automation selection -> existing automation-benefits-risks",
+        "AI human-ownership/delegation boundaries -> existing AI authored questions",
+        "test effectiveness/meaningful metrics -> existing quality-metrics"
+      ],
+      "remaining": ["test strategy design recurrence", "shift-left applied scenarios", "API/distributed-system current banks", "mobile specialist second pass"]
     },
-    {"id": "global-second-pass", "label": "Global semantic deduplication and prevalence review", "status": "pending"}
+    {"id": "global-second-pass", "status": "pending", "purpose": "Recompare all proposed additions and merges against the full authored catalog before any production modifications."}
   ],
-  "strongAddCandidatesSoFar": [
-    "TestFlight for distributing/testing iOS builds",
-    "mobile HTTP/HTTPS traffic interception and proxy debugging",
-    "test effectiveness and choosing meaningful QA metrics"
-  ],
-  "nextAction": "Continue modern-source recurrence checks and DOU 400 section matching, then perform global semantic second-pass dedup before any production sourceIds, prevalence or question content changes."
+  "currentResult": {
+    "strongNewQuestionCandidates": 3,
+    "candidateNames": ["TestFlight", "mobile traffic interception/proxy debugging", "practical Git workflow for QA/AQA"],
+    "importantCorrection": "quality-metrics/test effectiveness was initially suspected as new but semantic second pass found canonical question quality-metrics; treat it as merge-source/prevalence review."
+  },
+  "nextAction": "Finish remaining DOU 400 sections and current international recurrence passes, then execute global semantic second pass. No production interview content changes before that pass."
 }
