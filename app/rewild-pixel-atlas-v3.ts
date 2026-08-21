@@ -57,6 +57,7 @@ export const REWILD_TERRAIN_TILE_IDS = [
   "road-dirt",
   "road-edge",
   "rubble",
+  "grass-d",
 ] as const;
 
 export type RewildTerrainTileId = (typeof REWILD_TERRAIN_TILE_IDS)[number];

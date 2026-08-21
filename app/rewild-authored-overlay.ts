@@ -4,6 +4,7 @@ import {
   hexDistance,
   hexKey,
   hexNeighbors,
+  hexPolygon,
   type GameState,
   type HexCell,
   type HexCoord,
@@ -11,6 +12,7 @@ import {
 import {
   drawRewildSprite,
   drawRewildTerrainStamp,
+  fillRewildTerrainPattern,
   type RewildPixelSpriteId,
   type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
@@ -20,6 +22,9 @@ import {
 } from "./rewild-detail-atlas-v4";
 import type { RewildCamera } from "./rewild-production-renderer";
 import type { RenderSnapshot } from "./rewild-render-snapshot";
+
+const GRASS_VARIANTS: readonly RewildTerrainTileId[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
+const MEADOW_FALLBACK_COLOR = "#719447";
 
 const CLUSTER_OFFSETS = [
   [0, 0],
@@ -67,6 +72,16 @@ function textureCell(
   drawRewildTerrainStamp(ctx, id, center.x, center.y, 43, 43, alpha);
 }
 
+function hexPath(hex: HexCoord, scale: number): Path2D {
+  const points = hexPolygon(hex, scale);
+  const path = new Path2D();
+  if (!points.length) return path;
+  path.moveTo(Math.round(points[0].x), Math.round(points[0].y));
+  for (let index = 1; index < points.length; index += 1) path.lineTo(Math.round(points[index].x), Math.round(points[index].y));
+  path.closePath();
+  return path;
+}
+
 function detailScale(id: RewildDetailV4Id) {
   if (id === "detail-lily-pads-a") return .42;
   if (id === "detail-log-a") return .29;
@@ -95,15 +110,13 @@ function drawMeadowTexture(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
   kinds: ReadonlyMap<string, string>,
-  blocked: ReadonlySet<string>,
 ) {
   for (const cell of snapshot.state.world.cells.values()) {
     const key = hexKey(cell.hex);
     const kind = kinds.get(key);
-    if (blocked.has(key) || cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
-    if (random(cell, 300) > .67) continue;
-    const variant: RewildTerrainTileId = random(cell, 301) < .35 ? "grass-b" : random(cell, 302) < .55 ? "grass-c" : "grass-a";
-    textureCell(ctx, cell, variant, .1 + random(cell, 303) * .08);
+    if (cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
+    const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(random(cell, 301) * GRASS_VARIANTS.length))];
+    fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), MEADOW_FALLBACK_COLOR, 1);
   }
 }
 
@@ -293,7 +306,7 @@ export function renderAuthoredArtOverlay(
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
 
-  drawMeadowTexture(ctx, snapshot, kinds, blocked);
+  drawMeadowTexture(ctx, snapshot, kinds);
   drawMeadowLife(ctx, snapshot, kinds, blocked);
   drawForestDensity(ctx, snapshot, kinds, blocked);
   drawWaterEdges(ctx, snapshot, kinds, blocked);
