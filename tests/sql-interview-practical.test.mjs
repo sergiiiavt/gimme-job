@@ -5,10 +5,11 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("publishes practical SQL tasks and code-aware interview rendering", async () => {
-  const [catalog, practical, examples, page, overlay, deepLink, styles, packageJson] = await Promise.all([
+  const [catalog, practical, examples, dataExamples, page, overlay, deepLink, styles, packageJson] = await Promise.all([
     readFile(projectFile("content/interview/catalog.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-practical-interview.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-code-examples.ts"), "utf8"),
+    readFile(projectFile("content/interview/sql-data-code-examples.ts"), "utf8"),
     readFile(projectFile("app/interview/page.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),
@@ -17,7 +18,11 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
   ]);
 
   assert.equal([...practical.matchAll(/\n    taskId: "task-/g)].length, 14);
-  assert.equal([...examples.matchAll(/\n    id: "[a-z0-9-]+",\n    codeExamples:/g)].length, 25);
+  const codeExampleCount = [examples, dataExamples]
+    .reduce((count, source) => count + [...source.matchAll(/\n    id: "[a-z0-9-]+",\n    codeExamples:/g)].length, 0);
+  assert.equal(codeExampleCount, 33);
+  assert.match(catalog, /import sqlDataCodeExamples from "\.\/sql-data-code-examples"/);
+  assert.match(catalog, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples\]/);
   assert.match(catalog, /\.\.\.sqlPracticalInterview\.questions/);
   assert.match(catalog, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)/);
 
