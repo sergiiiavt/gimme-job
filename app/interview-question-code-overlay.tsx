@@ -20,6 +20,16 @@ interface CodeEnhancedInterviewQuestion {
   codeExamples?: InterviewCodeExample[];
 }
 
+const sqlKeywords = new Set([
+  "ALL", "ALTER", "AND", "AS", "ASC", "BEGIN", "BETWEEN", "BY", "CASE", "COMMIT", "CREATE", "DELETE", "DESC",
+  "DISTINCT", "DROP", "ELSE", "END", "EXCEPT", "EXISTS", "FALSE", "FROM", "FULL", "GROUP", "HAVING", "IN", "INDEX",
+  "INNER", "INSERT", "INTERSECT", "INTO", "IS", "JOIN", "LEFT", "LIKE", "LIMIT", "NOT", "NULL", "ON", "OR", "ORDER",
+  "OUTER", "OVER", "PARTITION", "RIGHT", "ROLLBACK", "SELECT", "SET", "TABLE", "THEN", "TRUE", "UNION", "UNIQUE", "UPDATE",
+  "VALUES", "WHEN", "WHERE", "WITH",
+]);
+
+const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
+
 function normalizeQuestionText(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -31,6 +41,27 @@ function applyStyles(element: HTMLElement, styles: Partial<CSSStyleDeclaration>)
 function activeLanguage(answer: HTMLElement) {
   const active = answer.querySelector<HTMLButtonElement>(".iq-lang-toggle button.active");
   return active?.textContent?.trim() === "UA" ? "uk" : "en";
+}
+
+function appendHighlightedSql(code: HTMLElement, source: string) {
+  let lastIndex = 0;
+  sqlTokenPattern.lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = sqlTokenPattern.exec(source)) !== null) {
+    if (match.index > lastIndex) code.append(document.createTextNode(source.slice(lastIndex, match.index)));
+    const token = match[0];
+    const span = document.createElement("span");
+    span.textContent = token;
+    if (token.startsWith("--")) span.style.color = "#6a9955";
+    else if (token.startsWith("'")) span.style.color = "#ce9178";
+    else if (sqlKeywords.has(token.toUpperCase())) span.style.color = "#569cd6";
+    else span.style.color = "#d4d4d4";
+    code.appendChild(span);
+    lastIndex = sqlTokenPattern.lastIndex;
+  }
+
+  if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
 }
 
 function createCopyButton(code: string) {
@@ -68,13 +99,9 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
   const card = document.createElement("article");
   card.className = "iq-sql-code-card";
   applyStyles(card, {
-    background: "#fbfcfb",
-    border: "1px solid #e1e6e2",
-    borderRadius: "8px",
     display: "grid",
     gap: "8px",
-    overflow: "hidden",
-    padding: "10px",
+    paddingTop: "10px",
   });
 
   const header = document.createElement("div");
@@ -97,22 +124,23 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
   const pre = document.createElement("pre");
   pre.className = "iq-sql-code";
   applyStyles(pre, {
-    background: "#f3f6f3",
-    border: "1px solid #e0e6e1",
-    borderRadius: "6px",
-    color: "#23372a",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    fontSize: "11px",
-    lineHeight: "1.5",
+    background: "#1e1e1e",
+    border: "1px solid #3a3a3a",
+    borderRadius: "8px",
+    color: "#d4d4d4",
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    fontSize: "12px",
+    lineHeight: "1.6",
     margin: "0",
     maxWidth: "100%",
     overflowX: "auto",
-    padding: "10px 11px",
+    padding: "13px 14px",
+    scrollbarColor: "#3b3b3b transparent",
     tabSize: "2",
     whiteSpace: "pre",
   });
   const code = document.createElement("code");
-  code.textContent = example.code;
+  appendHighlightedSql(code, example.code);
   pre.appendChild(code);
 
   const explanation = document.createElement("p");
@@ -151,17 +179,21 @@ function createCodeSection(question: CodeEnhancedInterviewQuestion, language: "e
   section.dataset.language = language;
   applyStyles(section, {
     display: "grid",
-    gap: "8px",
+    gap: "10px",
   });
-
-  const heading = document.createElement("h3");
-  heading.textContent = language === "uk" ? "SQL приклади" : "SQL examples";
-  section.appendChild(heading);
 
   for (const example of question.codeExamples ?? []) {
     section.appendChild(createCodeExampleCard(example, language));
   }
   return section;
+}
+
+function restoreLegacyExample(details: HTMLElement | null) {
+  const copy = details?.querySelector<HTMLElement>(":scope > .iq-answer-copy");
+  if (copy?.dataset.sqlCodeHidden === "true") {
+    copy.style.removeProperty("display");
+    delete copy.dataset.sqlCodeHidden;
+  }
 }
 
 export default function InterviewQuestionCodeOverlay({ questions }: { questions: CodeEnhancedInterviewQuestion[] }) {
@@ -183,20 +215,24 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
           if (!heading || !answer) continue;
 
           const question = questionsByText.get(normalizeQuestionText(heading));
-          const existing = answer.querySelector<HTMLElement>(":scope > .iq-code-examples-overlay");
-          if (!question?.codeExamples?.length) {
+          const practicalExample = answer.querySelector<HTMLElement>(":scope > .iq-example");
+          const existing = practicalExample?.querySelector<HTMLElement>(":scope > .iq-code-examples-overlay") ?? null;
+          if (!question?.codeExamples?.length || !practicalExample) {
             existing?.remove();
+            restoreLegacyExample(practicalExample);
             continue;
+          }
+
+          const legacyCopy = practicalExample.querySelector<HTMLElement>(":scope > .iq-answer-copy");
+          if (legacyCopy) {
+            legacyCopy.style.display = "none";
+            legacyCopy.dataset.sqlCodeHidden = "true";
           }
 
           const language = activeLanguage(answer);
           if (existing?.dataset.questionId === question.id && existing.dataset.language === language) continue;
           existing?.remove();
-
-          const section = createCodeSection(question, language);
-          const firstAnswerSection = Array.from(answer.children).find((child) => child.tagName === "SECTION");
-          if (firstAnswerSection?.nextSibling) answer.insertBefore(section, firstAnswerSection.nextSibling);
-          else answer.appendChild(section);
+          practicalExample.appendChild(createCodeSection(question, language));
         }
       });
     };
@@ -210,6 +246,7 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
       cancelAnimationFrame(frame);
       observer.disconnect();
       for (const section of document.querySelectorAll(".iq-code-examples-overlay")) section.remove();
+      for (const details of document.querySelectorAll<HTMLElement>(".iq-example")) restoreLegacyExample(details);
     };
   }, [questions]);
 
