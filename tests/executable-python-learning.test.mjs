@@ -3,17 +3,19 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const markdownRenderer = readFileSync(new URL("../app/qa-markdown.tsx", import.meta.url), "utf8");
+const executionPolicy = readFileSync(new URL("../app/interview-python-execution.ts", import.meta.url), "utf8");
 const runnerComponent = readFileSync(new URL("../app/executable-python-block.tsx", import.meta.url), "utf8");
 const runnerStyles = readFileSync(new URL("../app/executable-python-block.module.css", import.meta.url), "utf8");
 const runnerWorker = readFileSync(new URL("../public/python-runner.worker.mjs", import.meta.url), "utf8");
 
 test("supported Python learning blocks use the executable runner without requiring print", () => {
   assert.match(markdownRenderer, /ExecutablePythonBlock/);
-  assert.match(markdownRenderer, /language !== "python"/);
-  assert.match(markdownRenderer, /unsupportedRunnablePythonPatterns/);
-  assert.match(markdownRenderer, /runnablePythonImports/);
-  assert.match(markdownRenderer, /hasUnsupportedPythonImport\(source\)/);
-  assert.doesNotMatch(markdownRenderer, /!\/\\bprint\\s\*\\\(\/\.test\(source\)/);
+  assert.match(markdownRenderer, /isRunnablePythonSource\(language, source\)/);
+  assert.match(executionPolicy, /language\.toLowerCase\(\) !== "python"/);
+  assert.match(executionPolicy, /unsupportedRunnablePythonPatterns/);
+  assert.match(executionPolicy, /runnablePythonImports/);
+  assert.match(executionPolicy, /hasUnsupportedPythonImport\(source\)/);
+  assert.doesNotMatch(executionPolicy, /!\/\\bprint\\s\*\\\(\/\.test\(source\)/);
   assert.match(runnerComponent, />Python</);
   assert.match(runnerComponent, />Result</);
   assert.match(runnerComponent, />Run</);

@@ -6,12 +6,14 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
 test("publishes practical Python tasks with structured dark code examples", async () => {
-  const [catalog, practical, enhancements, page, overlay, formatter, highlighter, deepLink, styles, validator, packageJson] = await Promise.all([
+  const [catalog, practical, enhancements, page, overlay, runnableOverlay, executionPolicy, formatter, highlighter, deepLink, styles, validator, packageJson] = await Promise.all([
     readFile(projectFile("content/python-interview/catalog.ts"), "utf8"),
     readJson("content/python-interview/practical-qa.json"),
     readJson("content/python-interview/code-examples.json"),
     readFile(projectFile("app/interview/python/page.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
+    readFile(projectFile("app/python-interview-runnable-overlay.tsx"), "utf8"),
+    readFile(projectFile("app/interview-python-execution.ts"), "utf8"),
     readFile(projectFile("app/interview-practical-formatting.ts"), "utf8"),
     readFile(projectFile("app/interview-code-highlighting.ts"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),
@@ -40,6 +42,7 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(catalog, /version: 3/);
 
   assert.match(page, /InterviewQuestionCodeOverlay/);
+  assert.match(page, /PythonInterviewRunnableOverlay/);
   assert.match(page, /questions=\{pythonInterviewCatalog\.questions\}/);
   assert.match(page, /InterviewQuestionLinkOverlay/);
 
@@ -54,6 +57,14 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(overlay, /practicalExample\.appendChild\(replacement\)/);
   assert.match(overlay, /navigator\.clipboard\.writeText\(code\)/);
 
+  assert.match(runnableOverlay, /ExecutablePythonBlock/);
+  assert.match(runnableOverlay, /createRoot/);
+  assert.match(runnableOverlay, /isRunnablePythonInterviewExample/);
+  assert.match(runnableOverlay, /data-variant="structured"/);
+  assert.match(executionPolicy, /unsupportedRunnablePythonPatterns/);
+  assert.match(executionPolicy, /runnablePythonImports/);
+  assert.match(executionPolicy, /requested === "static"/);
+
   assert.match(formatter, /inlineCodePattern/);
   assert.match(formatter, /looksLikePythonCode/);
   assert.match(formatter, /splitPythonPracticalExample/);
@@ -66,6 +77,8 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(highlighter, /"#b5cea8"/);
   assert.match(highlighter, /"#4ec9b0"/);
 
+  assert.match(deepLink, /ExecutablePythonBlock/);
+  assert.match(deepLink, /isRunnablePythonInterviewExample/);
   assert.match(deepLink, /splitPythonPracticalExample\(displayExample\)/);
   assert.match(deepLink, /hasLegacyPythonCode/);
   assert.match(deepLink, /renderHighlightedCode\(segment\.text, "python"\)/);
