@@ -1,0 +1,45 @@
+[
+  {
+    "id": "test-levels",
+    "sourceIds": ["testsigma-qa-interviews-2026", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "testing-types",
+    "sourceIds": ["testsigma-qa-interviews-2026", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "severity-versus-priority",
+    "sourceIds": ["testsigma-qa-interviews-2026", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "verification-versus-validation",
+    "sourceIds": ["testsigma-qa-interviews-2026", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "test-process-activities",
+    "sourceIds": ["testsigma-qa-interviews-2026", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "good-test-case-characteristics",
+    "sourceIds": ["hillel-qa-interviewer-2025", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "test-plan-essential-contents",
+    "sourceIds": ["hillel-qa-interviewer-2025", "bugbug-qa-interviews-2026"]
+  },
+  {
+    "id": "quality-metrics",
+    "sourceIds": ["bugbug-qa-interviews-2026"],
+    "prevalence": "Common"
+  },
+  {
+    "id": "qa-developer-conflict",
+    "sourceIds": ["bugbug-qa-interviews-2026", "hillel-qa-interviewer-2025"],
+    "prevalence": "Common"
+  },
+  {
+    "id": "starting-qa-strategy",
+    "sourceIds": ["kore1-qa-interviews-2026"],
+    "prevalence": "Common"
+  }
+]

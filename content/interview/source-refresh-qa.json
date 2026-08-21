@@ -1,0 +1,205 @@
+{
+  "collection": "source-refresh-2026",
+  "questions": [
+    {
+      "id": "mobile-pre-release-build-distribution",
+      "level": "Middle",
+      "category": "Mobile",
+      "kind": "Practical",
+      "question": "How do you manage and test pre-release mobile builds with TestFlight or Firebase App Distribution?",
+      "shortAnswer": "Treat every distributed build as a traceable test artifact: verify app/package identity, version and build number, signing or provisioning, target environment and tester access before execution. Test clean install and update paths, keep release notes tied to the exact artifact, collect feedback and crash evidence, and automate distribution from CI where useful without losing approval or provenance.",
+      "strongAnswerSignals": [
+        "verifies build identity, signing and tester entitlement before testing",
+        "covers clean install and update paths rather than only opening the app",
+        "keeps CI distribution, feedback and crash evidence traceable to the exact build"
+      ],
+      "questionUk": "Як керувати та тестувати передрелізні мобільні збірки через TestFlight або Firebase App Distribution?",
+      "shortAnswerUk": "Розглядайте кожну розповсюджену збірку як простежуваний тестовий артефакт: перед виконанням перевіряйте ідентичність застосунку або package, version і build number, підпис чи provisioning, цільове середовище та доступ тестувальників. Перевіряйте clean install і update-сценарії, прив'язуйте release notes до конкретного артефакту, збирайте feedback і crash evidence та за потреби автоматизуйте distribution через CI без втрати контролю й provenance.",
+      "strongAnswerSignalsUk": [
+        "перевіряє ідентичність збірки, підпис і доступ тестувальника до початку тестування",
+        "покриває clean install та update, а не лише запуск застосунку",
+        "зберігає зв'язок CI-distribution, feedback і crash evidence з конкретною збіркою"
+      ],
+      "example": "A team distributes iOS build 4.18.0 (712) to a TestFlight group and the matching Android build through Firebase. QA first confirms both artifacts point to staging, then tests a clean install and an upgrade from the previous release; a crash report is recorded against build 712 instead of being filed against an ambiguous 'latest beta'.",
+      "exampleUk": "Команда розповсюджує iOS build 4.18.0 (712) через групу TestFlight, а відповідну Android-збірку — через Firebase. QA спочатку підтверджує, що обидва артефакти працюють зі staging, після чого перевіряє clean install і оновлення з попереднього релізу; crash report фіксується саме для build 712, а не для невизначеної «останньої beta».",
+      "tags": ["mobile", "beta-distribution", "testflight", "firebase-app-distribution", "ci"],
+      "sourceIds": ["dou-qa-400-2023", "asserthired-mobile-qa-2026", "apple-testflight", "firebase-app-distribution"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "mobile-proxy-traffic-debugging",
+      "level": "Middle",
+      "category": "Mobile",
+      "kind": "Troubleshooting",
+      "question": "How would you inspect and debug a mobile app's HTTP/HTTPS traffic with an interception proxy?",
+      "shortAnswer": "Route the test device or emulator through an interception proxy, install and trust the test CA where the platform and application permit it, reproduce one controlled flow, and inspect requests, responses, headers, payloads and timing alongside application logs. For HTTPS, understand that certificate validation or pinning may intentionally block interception; use an approved test configuration rather than weakening production security controls silently.",
+      "strongAnswerSignals": [
+        "explains device proxy routing and test-certificate trust",
+        "correlates captured traffic with the user action and application logs",
+        "recognizes TLS validation and certificate pinning as intentional interception boundaries"
+      ],
+      "questionUk": "Як дослідити й дебажити HTTP/HTTPS-трафік мобільного застосунку за допомогою interception proxy?",
+      "shortAnswerUk": "Спрямуйте тестовий пристрій або емулятор через interception proxy, встановіть і довірте тестовий CA там, де це дозволяють платформа й застосунок, відтворіть один контрольований сценарій і аналізуйте requests, responses, headers, payloads та timing разом із логами застосунку. Для HTTPS враховуйте, що certificate validation або pinning можуть навмисно блокувати перехоплення; використовуйте погоджену test-конфігурацію, а не приховано послаблюйте production security controls.",
+      "strongAnswerSignalsUk": [
+        "пояснює маршрутизацію пристрою через proxy та довіру до тестового сертифіката",
+        "корелює перехоплений трафік з user action і логами застосунку",
+        "розуміє TLS validation і certificate pinning як навмисні межі для interception"
+      ],
+      "example": "A checkout screen shows a generic payment error. QA routes the device through a proxy and sees the app actually receives HTTP 422 with a field-level validation payload; when the same capture fails on a hardened build because pinning rejects the proxy certificate, the team uses its approved debug build instead of disabling the production control.",
+      "exampleUk": "На checkout-екрані показується загальна помилка оплати. QA спрямовує пристрій через proxy і бачить, що застосунок насправді отримує HTTP 422 з field-level validation payload; коли така сама спроба не працює на hardened build через pinning, команда використовує погоджену debug-збірку замість вимкнення production-захисту.",
+      "tags": ["mobile", "network-debugging", "interception-proxy", "tls"],
+      "sourceIds": ["dou-qa-400-2023", "owasp-mastg"],
+      "prevalence": "Occasional"
+    },
+    {
+      "id": "git-qa-workflow",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "What does a safe day-to-day Git workflow look like for a QA or automation engineer?",
+      "shortAnswer": "Work on a focused branch, make reviewable commits, fetch remote changes before integrating them, and choose merge or rebase according to the team's history policy. Resolve conflicts by understanding both changes and rerunning affected tests, then open a PR and let CI validate the exact commit. Avoid rewriting shared history casually; commands such as cherry-pick are tools for specific cases, not the workflow itself.",
+      "strongAnswerSignals": [
+        "distinguishes fetching remote state from integrating it into local work",
+        "resolves conflicts semantically and reruns affected checks",
+        "connects branch history, pull-request review and CI to the exact commit"
+      ],
+      "questionUk": "Як виглядає безпечний щоденний Git workflow для QA або automation engineer?",
+      "shortAnswerUk": "Працюйте у сфокусованій branch, робіть зручні для review commits, перед інтеграцією отримуйте актуальний remote state через fetch і обирайте merge або rebase відповідно до командної політики історії. Конфлікти вирішуйте з розумінням обох змін і повторним запуском зачеплених тестів, після чого відкривайте PR і дозволяйте CI перевірити саме цей commit. Не переписуйте shared history без потреби; cherry-pick та інші команди — інструменти для окремих випадків, а не сам workflow.",
+      "strongAnswerSignalsUk": [
+        "відрізняє отримання remote state від його інтеграції у локальну роботу",
+        "вирішує конфлікти за змістом і повторно запускає пов'язані перевірки",
+        "пов'язує branch history, PR review і CI з конкретним commit"
+      ],
+      "example": "An AQA engineer finishes a locator refactor while main has moved. Instead of force-pushing over the branch, she fetches origin, rebases according to team policy, resolves a conflict in the shared page object, reruns the affected Playwright tests, pushes the updated branch and reviews the CI result before merge.",
+      "exampleUk": "AQA engineer завершує refactor локаторів, поки main уже змінився. Замість force-push поверх історії він виконує fetch, робить rebase відповідно до командної політики, вирішує конфлікт у shared page object, повторно запускає пов'язані Playwright-тести, пушить оновлену branch і перевіряє CI перед merge.",
+      "tags": ["git", "version-control", "qa-workflow", "ci"],
+      "sourceIds": ["dou-qa-2022", "dou-qa-400-2023", "asserthired-git-qa-2026", "git-docs"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "websocket-realtime-testing",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "kind": "Integration",
+      "question": "How would you test a WebSocket-based real-time feature such as chat or live notifications?",
+      "shortAnswer": "Test connection establishment and authentication separately from message behavior. Verify both directions, message schema and authorization, multiple clients, subscribe/unsubscribe state, graceful close, heartbeat or timeout behavior, disconnect/reconnect and resubscription. Inject duplicates, delayed and reordered messages and rapid bursts, then verify the product's documented ordering, deduplication and recovery rules rather than assuming TCP alone solves application-level state.",
+      "strongAnswerSignals": [
+        "separates handshake and authorization from message-level assertions",
+        "covers disconnect, reconnect, resubscription and multiple concurrent clients",
+        "tests duplicate, delayed, reordered and burst traffic against explicit product semantics"
+      ],
+      "questionUk": "Як тестувати real-time функцію на WebSocket, наприклад чат або live notifications?",
+      "shortAnswerUk": "Окремо перевіряйте встановлення connection та authentication і окремо — поведінку повідомлень. Покрийте обидва напрями передачі, message schema й authorization, кілька клієнтів, subscribe/unsubscribe state, коректне закриття, heartbeat або timeout, disconnect/reconnect і повторну subscription. Ін'єктуйте duplicates, delayed та reordered messages і короткі bursts, після чого перевіряйте задокументовані правила ordering, deduplication і recovery продукту, а не припускайте, що TCP автоматично вирішує application-level state.",
+      "strongAnswerSignalsUk": [
+        "відокремлює handshake та authorization від перевірок самих повідомлень",
+        "покриває disconnect, reconnect, resubscription і кілька одночасних клієнтів",
+        "перевіряє duplicates, delay, reordering і burst traffic за явними правилами продукту"
+      ],
+      "example": "Two browser sessions join the same support chat. QA verifies both receive message A, kills one connection before message B, reconnects it, and checks whether the product correctly restores the subscription without duplicating A or losing B; an unauthorized third session must still be unable to subscribe to that conversation.",
+      "exampleUk": "Дві browser sessions підключаються до одного support chat. QA перевіряє, що обидві отримали message A, розриває одне connection перед message B, відновлює його та перевіряє, чи продукт правильно повертає subscription без дублювання A або втрати B; неавторизована третя session при цьому не повинна мати можливості підписатися на цю розмову.",
+      "tags": ["websocket", "real-time", "messaging", "api-qa"],
+      "sourceIds": ["dou-qa-400-2023", "asserthired-qa-bank-2026", "mdn-websocket"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "mobile-offline-sync-recovery",
+      "level": "Middle",
+      "category": "Mobile",
+      "kind": "Scenario",
+      "question": "How would you test a mobile app that works offline and synchronizes changes after connectivity returns?",
+      "shortAnswer": "Define which actions are allowed offline and what local state is authoritative while disconnected. Create and modify data offline, terminate and restart the app, then restore connectivity under slow or unstable networks. Verify durable queues, retry and backoff, idempotency, duplicate prevention, ordering, stale data and conflict resolution, and confirm the UI exposes pending, failed or conflicted synchronization instead of silently losing user work.",
+      "strongAnswerSignals": [
+        "defines offline capability and local persistence before testing synchronization",
+        "covers retries, duplicates, ordering and conflict resolution under network transitions",
+        "verifies visible recovery states and no silent loss of user changes"
+      ],
+      "questionUk": "Як тестувати мобільний застосунок, який працює offline і синхронізує зміни після відновлення connectivity?",
+      "shortAnswerUk": "Спочатку визначте, які дії дозволені offline і який local state є авторитетним без мережі. Створюйте та змінюйте дані offline, завершуйте й перезапускайте застосунок, а потім відновлюйте connectivity через повільну або нестабільну мережу. Перевіряйте durable queue, retry і backoff, idempotency, захист від duplicates, ordering, stale data та conflict resolution, а UI має явно показувати pending, failed або conflicted synchronization замість тихої втрати роботи користувача.",
+      "strongAnswerSignalsUk": [
+        "визначає offline-capability і local persistence до перевірки synchronization",
+        "покриває retries, duplicates, ordering і conflict resolution під час network transitions",
+        "перевіряє видимі recovery states і відсутність тихої втрати user changes"
+      ],
+      "example": "A salesperson edits the same customer record on a phone while offline and on the web from another device. QA reconnects the phone after several queued edits and verifies the documented conflict rule is applied once, the queue is not replayed twice after an app restart, and the user sees any field that still needs manual resolution.",
+      "exampleUk": "Salesperson редагує той самий customer record на телефоні offline і паралельно у web з іншого пристрою. QA відновлює мережу після кількох queued edits та перевіряє, що задокументоване conflict rule застосувалось один раз, queue не відтворилася повторно після restart застосунку, а користувач бачить поля, які ще потребують manual resolution.",
+      "tags": ["mobile", "offline", "sync", "conflict-resolution"],
+      "sourceIds": ["asserthired-mobile-qa-2026", "android-test"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "mobile-upgrade-state-migration",
+      "level": "Middle",
+      "category": "Mobile",
+      "kind": "Scenario",
+      "question": "How would you test a mobile app upgrade that changes local data or storage schema?",
+      "shortAnswer": "Install representative supported older versions with realistic sessions, settings, cached and persisted data, then upgrade in place to the candidate build. Verify schema migration, authentication state, user preferences and business data, including large and partially populated stores. Exercise interrupted migration, low-storage and restart paths, confirm migration is idempotent where applicable, and ensure failure is recoverable without silent corruption or data loss.",
+      "strongAnswerSignals": [
+        "tests in-place upgrades from representative supported historical versions",
+        "verifies local schema, session, preferences and business data after migration",
+        "covers interruption and recovery without silent corruption or duplicated migration"
+      ],
+      "questionUk": "Як тестувати оновлення мобільного застосунку, яке змінює локальні дані або storage schema?",
+      "shortAnswerUk": "Встановіть репрезентативні підтримувані старі версії з реалістичними sessions, settings, cache і persisted data, а потім виконайте upgrade in place до candidate build. Перевірте schema migration, authentication state, user preferences і business data, включно з великими та частково заповненими сховищами. Покрийте interrupted migration, low-storage і restart-сценарії, перевірте idempotency міграції там, де вона потрібна, і переконайтеся, що збій відновлюється без тихої corruption або втрати даних.",
+      "strongAnswerSignalsUk": [
+        "тестує in-place upgrade з репрезентативних підтримуваних історичних версій",
+        "перевіряє local schema, session, preferences і business data після migration",
+        "покриває interruption та recovery без тихої corruption або повторного застосування migration"
+      ],
+      "example": "Version 6 moves offline orders from one local table layout to another. QA prepares devices on versions 4 and 5 with unsent orders and active sessions, upgrades directly to 6, interrupts one migration by killing the app, and verifies all supported paths resume safely without duplicate orders, lost authentication or an unreadable database.",
+      "exampleUk": "Version 6 переносить offline orders з однієї структури local tables в іншу. QA готує пристрої на versions 4 і 5 з unsent orders та active sessions, оновлює їх напряму до 6, перериває одну migration через kill застосунку й перевіряє, що всі підтримувані шляхи безпечно відновлюються без duplicate orders, втрати authentication або нечитабельної database.",
+      "tags": ["mobile", "upgrade-testing", "data-migration", "local-storage"],
+      "sourceIds": ["dou-qa-400-2023", "android-test"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "shift-left-in-practice",
+      "level": "Middle",
+      "category": "Agile and delivery",
+      "kind": "Strategy",
+      "question": "What does shift-left testing look like in practice, and what does it not mean?",
+      "shortAnswer": "Shift left means moving useful quality feedback to the earliest economical point: QA joins refinement and design, clarifies examples and risks, asks for testability and observability, and helps place checks at component, contract, static-analysis and fast CI layers before expensive system testing. It does not mean moving every test to unit level or making QA responsible earlier; ownership remains with the whole team and later-stage evidence still matters.",
+      "strongAnswerSignals": [
+        "moves specific feedback activities earlier instead of repeating a slogan",
+        "uses lower-cost component, contract, static and CI checks where they fit",
+        "keeps whole-team quality ownership and later-stage validation"
+      ],
+      "questionUk": "Як shift-left testing виглядає на практиці і чого цей підхід не означає?",
+      "shortAnswerUk": "Shift left означає переносити корисний quality feedback у найранішу економічно доцільну точку: QA бере участь у refinement і design, уточнює examples та risks, просить testability й observability та допомагає розміщувати перевірки на component, contract, static-analysis і fast CI layers до дорогого system testing. Це не означає перенести всі тести на unit level або раніше перекласти відповідальність на QA; quality залишається відповідальністю всієї команди, а later-stage evidence усе одно потрібне.",
+      "strongAnswerSignalsUk": [
+        "переносить конкретні feedback activities раніше, а не повторює визначення",
+        "використовує дешевші component, contract, static та CI checks там, де вони доречні",
+        "зберігає whole-team ownership і необхідність later-stage validation"
+      ],
+      "example": "Before implementing a pricing rule, QA reviews examples with the product owner, identifies an ambiguous boundary and asks the developer to expose a deterministic pricing API. Component and contract checks catch two mistakes in the PR, while a smaller end-to-end suite later confirms the integrated checkout flow instead of discovering the rule for the first time there.",
+      "exampleUk": "До реалізації pricing rule QA переглядає examples разом із product owner, знаходить неоднозначну boundary і просить developer надати deterministic pricing API. Component та contract checks ловлять дві помилки ще в PR, а менший end-to-end suite пізніше підтверджує integrated checkout flow замість того, щоб уперше знаходити проблему лише на цьому рівні.",
+      "tags": ["shift-left", "agile", "continuous-testing", "testability"],
+      "sourceIds": ["bugbug-qa-interviews-2026", "kore1-qa-interviews-2026", "asserthired-qa-bank-2026", "istqb-ctfl-v4", "dora"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "automation-tool-selection",
+      "level": "Middle",
+      "category": "Automation and CI",
+      "kind": "Strategy",
+      "question": "How would you choose between Playwright, Selenium, Cypress or another automation approach for a product?",
+      "shortAnswer": "Start from product and team constraints rather than popularity: required browsers and platforms, application architecture, language ecosystem, existing skills, CI topology, parallel execution, debugging artifacts, network control, accessibility needs, plugin maturity and maintenance cost. Prototype the highest-risk workflows with two realistic candidates and compare reliability, diagnostics and operating effort. There is no universal winner; document the trade-off and an exit path.",
+      "strongAnswerSignals": [
+        "starts from product coverage and team constraints instead of a favorite tool",
+        "compares reliability, diagnostics, CI behavior and maintenance cost with a small spike",
+        "documents trade-offs and avoids declaring one framework universally best"
+      ],
+      "questionUk": "Як обрати між Playwright, Selenium, Cypress або іншим підходом до automation для конкретного продукту?",
+      "shortAnswerUk": "Починайте не з популярності, а з обмежень продукту й команди: required browsers і platforms, architecture застосунку, language ecosystem, наявні skills, CI topology, parallel execution, debugging artifacts, network control, accessibility needs, plugin maturity та maintenance cost. Зробіть невеликий prototype найризикованіших workflows у двох реалістичних кандидатах і порівняйте reliability, diagnostics та operating effort. Універсального переможця немає; зафіксуйте trade-off і можливий exit path.",
+      "strongAnswerSignalsUk": [
+        "починає з product coverage і team constraints, а не з улюбленого tool",
+        "порівнює reliability, diagnostics, CI behavior і maintenance cost через невеликий spike",
+        "документує trade-offs і не оголошує один framework універсально найкращим"
+      ],
+      "example": "A team needs Chromium, Firefox and WebKit coverage, TypeScript, parallel CI and strong traces for a modern web app, so Playwright scores well in a short spike. Another organization has a mature Java Selenium Grid, deep internal libraries and legacy browser obligations; replacing it would add more maintenance risk than value, so Selenium remains the rational choice there.",
+      "exampleUk": "Команді потрібні Chromium, Firefox і WebKit, TypeScript, parallel CI та сильні traces для сучасного web app, тому Playwright добре показує себе у короткому spike. Інша організація вже має зрілий Java Selenium Grid, внутрішні libraries і legacy browser obligations; заміна створила б більше maintenance risk, ніж користі, тому Selenium там залишається раціональним вибором.",
+      "tags": ["automation-framework", "tool-selection", "playwright", "selenium", "cypress"],
+      "sourceIds": ["testsigma-qa-interviews-2026", "asserthired-qa-bank-2026", "playwright-best-practices", "selenium-docs"],
+      "prevalence": "Common"
+    }
+  ]
+}
