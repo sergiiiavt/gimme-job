@@ -11,11 +11,13 @@ test("agentic route uses the dedicated learning page", async () => {
   assert.match(route, /return <AgenticLearningPage\/>/);
 });
 
-test("agentic learning embeds the verified Rodion Claude Code video", async () => {
+test("agentic learning embeds verified videos and keeps the Rodion Cowork reference", async () => {
   const page = await read("app/agentic-learning-page.tsx");
 
   assert.match(page, /videoId="zW4SEqgFBJc"/);
+  assert.match(page, /videoId="rSDKAjao_7Q"/);
   assert.match(page, /channel="RO БУДУЄ · Rodion Lozovoi"/);
+  assert.match(page, /channel="Штучка Інтелект"/);
   assert.match(page, /Як автоматизувати 80% роботи за €20\? Повний огляд Claude Cowork/);
   assert.match(page, /Контент-завод з Claude Cowork, Notion та Skill Editor/);
 });
