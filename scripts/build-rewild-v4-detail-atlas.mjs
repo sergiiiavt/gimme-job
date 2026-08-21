@@ -49,11 +49,13 @@ function categoryFor(name) {
   return name.startsWith("industrial-") ? "industrial-detail" : "nature-detail";
 }
 
+const compareAlphabetically = (left, right) => left.localeCompare(right);
+
 async function validateSourceDirectory() {
-  const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort();
+  const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
   const entries = await readdir(sourceDirectory, { withFileTypes: true });
   assert.ok(entries.every((entry) => entry.isFile()), "v4 source directory must contain files only");
-  const actualFiles = entries.map((entry) => entry.name).sort();
+  const actualFiles = entries.map((entry) => entry.name).sort(compareAlphabetically);
   assert.deepEqual(actualFiles, expectedFiles, "v4 source directory must contain exactly the approved 22 PNG assets");
 }
 
