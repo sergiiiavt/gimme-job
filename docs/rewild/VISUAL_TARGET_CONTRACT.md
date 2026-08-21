@@ -1,251 +1,202 @@
-# Rewild target visual contract
+# Rewild target visual contract — audited
 
-Status: implementation gate for the post-#245 visual rebuild.
+Status: current scene-level acceptance contract for the Rewild visual rebuild.
 
-This document narrows the existing [`ART_BIBLE.md`](./ART_BIBLE.md) into a concrete acceptance contract for the current renderer. It does not redefine gameplay. The authoritative visual-only reference remains [`references/top-down-hex-allies-enemies-concept-v2-small-hexes.png`](./references/top-down-hex-allies-enemies-concept-v2-small-hexes.png).
+This document does not redefine gameplay. The authority chain is defined in [`ART_BIBLE.md`](ART_BIBLE.md) and [`visual-bible/README.md`](visual-bible/README.md). Before using any of the seven generated reference sheets, read [`visual-bible/REFERENCE_STATUS.json`](visual-bible/REFERENCE_STATUS.json).
 
 ## 1. Gameplay is frozen
 
 Rewild remains continuous real-time tower defense.
 
 - The player spends sunlight to place defenders.
-- Placed defenders are stationary and attack automatically.
+- Placed defenders are stationary and act automatically.
 - Enemies spawn in waves, move automatically, and attack automatically.
-- House integrity, corruption, score, sunlight, wave progression, Siege/Endless flow, and win/loss rules remain authoritative.
+- House integrity, corruption, score, sunlight, wave progression, and win/loss rules remain authoritative.
 - No selectable/movable allies, AP, player/enemy phases, Move/Attack/Restore commands, or End Turn control may be introduced by visual work.
+- The renderer consumes a detached rendering snapshot and must not mutate simulation state.
 
-The renderer continues to consume a detached snapshot and must not mutate simulation state.
-
-## 2. Scene contract
+## 2. Scene and geometry contract
 
 - Logical scene: 1200 × 675.
 - Projection: strict 90-degree overhead orthographic.
-- Hex field: pointy-top, approximately 37 × 15, radius 21–22 logical pixels.
-- Scaling: uniform nearest-neighbor only; letterbox rather than distort.
-- Pixel density: one coherent runtime language across terrain, environment, structures, defenders, enemies, and VFX.
-- Lighting: stable upper-left light with compact contact darkening; no broad oval shadows.
-- Normal scenery is static. Motion is event/state driven only.
+- Runtime hex field: regular **flat-top** geometry from `app/rewild-hex-grid.ts`.
+- Current `HEX_SIZE`: 21 logical pixels.
+- Hex width: 42 logical pixels.
+- Hex height: `sqrt(3) * 21 ≈ 36.373` logical pixels.
+- X step: 31.5 logical pixels.
+- Six equal sides and six 120° interior angles.
+- Six runtime neighbor directions.
+- Scaling: uniform nearest-neighbor only; never stretch one axis independently.
+- Camera/pivots should land on stable logical pixels where practical.
 
-## 3. Composition contract
+Generated reference hexes are not geometry sources. `04-terrain-transitions.webp` is explicitly rejected because it contains irregular/elongated cells.
 
-The battlefield must read as three connected macro zones before individual props are noticed.
+## 3. Audited visual reference roles
 
-### Natural territory — left
+### Approved interaction reference
+`visual-bible/03-mainframe-interactions.webp`
+- drainage/pollution into water;
+- forest clearing/wasting;
+- industrial expansion corridors;
+- physical pipe/cable relationships.
 
-Must read as a dense living ecosystem, not an empty grass field with random decorations.
+### Approved with exceptions
+`visual-bible/01-environment-detail.webp`
+- use small nature/industrial prop style, fences/barriers, density and placement language;
+- **do not use its road artwork as the production road target**;
+- do not extract production pixels from the sheet.
 
+### Composition only
+`visual-bible/07-gameplay-target.webp`
+- use overall density, readability, nature/industry balance and macro composition;
+- ignore purple crystal corruption;
+- never infer roster/state/geometry from it.
+
+### Inspiration only
+`visual-bible/05-industrial-modular-kit.webp`
+- use physical hardware motifs only;
+- generated module labels are not gameplay entities.
+
+`visual-bible/06-damage-states.webp`
+- use degradation/recovery readability only;
+- generated state labels are not runtime states;
+- ignore crystal corruption.
+
+### Rejected
+- `visual-bible/02-style-scale-footprint.webp`
+- `visual-bible/04-terrain-transitions.webp`
+
+Rejected files must not be supplied to generation prompts or used for production extraction.
+
+## 4. Composition contract
+
+The battlefield should read as connected macro zones before individual micro-props are noticed.
+
+### Natural territory
 Required:
-
 - connected forest canopy masses;
-- clear forest exterior edges and suppressed interior seams;
-- at least one integrated merged lake;
-- layered meadow/forest transitions;
-- medium-size environmental forms such as shrubs, rocks, logs, stumps, roots, and clearings;
-- local clusters rather than one random decoration per cell;
-- enough quiet cells to preserve placement readability.
+- suppressed interior seams and readable exterior edges;
+- integrated connected water rather than isolated blue cells;
+- meso-scale shrubs, rocks, logs, stumps, roots, clearings and shoreline vegetation;
+- local clusters rather than uniform one-prop-per-cell decoration;
+- enough quiet cells to preserve placement and route readability.
 
-Rejected appearance:
+Rejected:
+- repeated identical tree circles;
+- uniform stamp patterns;
+- micro-detail used to hide missing macro structure;
+- water that reads as separate independent hex tiles.
 
-- evenly spaced repeated trees;
-- circles of identical tree stamps;
-- confetti-like micro-detail as the main density source;
-- lakes that read as independent blue hexes.
-
-### Central battlefield and house — center
-
-Must remain readable and somewhat more open than both outer territories.
-
+### House / central battlefield
 Required:
+- house grounded into yard/soil/vegetation context;
+- readable tower-defense space around important routes and placements;
+- natural transitions between meadow, yard and nearby paths.
 
-- an organic dirt path that belongs to the terrain;
-- a grounded house zone with yard/soil/vegetation framing;
-- path/house transitions that do not look like repeated identical chunks;
-- clear tower-defense readability around routes and placement cells.
+Rejected:
+- house visually dropped onto empty grass;
+- repetitive chunky road pieces dominating the center.
 
-Rejected appearance:
-
-- log-like or mechanically repeated zig-zag road segments;
-- house sprite visually dropped onto empty grass.
-
-### Industrial/corrupted territory — right
-
-Must read as a constructed hostile system, not a dark fill with scattered devices.
-
+### Industrial territory
 Required:
-
-- connected industrial ground with internal hierarchy;
-- datacenter compounds with explicit local footprints;
-- foundations/platforms around each datacenter;
-- visible power/cooling/compute/access relationships;
+- connected industrial material ownership;
+- Datacenter/Mainframe footprints integrated into foundations/platforms;
+- physical power/cooling/drainage/access relationships;
 - cable/pipe/conduit/junction networks;
-- machinery, vents, relays, debris, rubble, drains, panels, and hazard details;
-- contaminated transition from healthy terrain into industry;
-- corruption that visibly changes ground and nearby material.
+- machinery, vents, relays, rubble, debris and drains used as visual-only hardware where appropriate;
+- visible transition from healthy territory to industrially stressed/wasted territory.
 
-Rejected appearance:
+Rejected:
+- isolated structures on flat dark circles;
+- random boxes without physical network relationships;
+- generated module labels treated as gameplay classes.
 
-- isolated datacenter sprite on a flat dark patch;
-- random industrial props without compound structure;
-- corruption represented only by a few purple marks.
+## 5. Corruption / waste contract
 
-## 4. Density hierarchy
+Production visual progression should read materially:
 
-Environmental density must come from authored masses at several scales.
+healthy vegetation → stressed vegetation → exposed/polluted soil → cracked/dead/wasted ground → technological/electrical residue.
 
-1. **Macro:** connected forest, lake, industrial compound, corruption territory.
-2. **Meso:** canopy lobes, shoreline bands, yard/path zones, platforms, machinery clusters, rubble fields.
-3. **Micro:** grass tufts, flowers, pebbles, reeds, stains, cracks, small debris.
+Recovery should visibly reverse material ownership when gameplay clears corruption.
 
-Micro-detail is never a substitute for missing macro/meso structure.
+Approved motifs:
+- dead/stressed vegetation;
+- polluted water/soil;
+- dark stains and residues;
+- scorched/electrically stressed ground;
+- broken cables/conductive traces;
+- damaged industrial hardware;
+- rubble and drainage waste.
 
-At least 25% of buildable/traversable cells remain visually quiet, matching the art bible.
+Rejected motifs:
+- purple crystal fields;
+- magical crystal nodes;
+- fantasy glowing veins as the primary read.
 
-## 5. Connected-material rules
+## 6. Runtime state contract
+
+Generated image labels do not define state.
+
+Code-backed environment visual states:
+- `healthy`
+- `stressed`
+- `corrupted`
+- `dead`
+- `recovering`
+
+World-effect vocabulary:
+- `construction`
+- `impact`
+- `shutdown`
+- `collapse`
+- `reclaim`
+- `dilution`
+
+House/DataNode visuals may use explicit mappings from HP/build progress and existing renderer behavior. Do not create runtime states such as `critical`, `destroyed`, `failing`, `overloaded`, or `heavily-damaged` solely from the concept sheets.
+
+## 7. Connected-material rules
 
 ### Forest
-
 - Interior borders disappear under shared canopy.
-- Interior cells favor canopy mass rather than independent tree silhouettes.
-- Exterior cells carry irregular crown edges, understory, and occasional readable trunks/objects.
-- Canopy variation is deterministic from world seed/state.
+- Interior cells favor canopy mass over repeated independent trees.
+- Exterior cells carry irregular crown/understory detail.
 
 ### Water
-
-- Shore treatment exists only on exterior water edges.
-- Interior water edges are uninterrupted.
-- Deep/shallow variation is component-aware rather than one independent pond per cell.
-- Reeds, lilies, rocks, pollution, and vegetation attach to selected exterior edges/shore clusters.
+- Shore treatment appears on exterior edges only.
+- Interior water edges remain visually continuous.
+- Reeds, lilies, rocks and pollution attach to selected exterior zones.
 
 ### Industry
+- Industrial territory replaces meadow material rather than simply tinting it.
+- Structures share foundations and physical networks.
+- Empty industrial cells still read as part of the compound.
 
-- Industrial territory replaces meadow material rather than tinting it.
-- Datacenter footprints expand into compound modules and shared infrastructure.
-- Empty industrial cells still read as prepared/worn/contaminated compound ground.
-- Network connectors terminate at meaningful structure entries or authored junctions.
+### Roads
+Road topology must use six-neighbor runtime adjacency, but **current road art is not approved**. The previous Batch 01A visual approval is withdrawn. A new production road target must be reviewed before atlas integration resumes.
 
-### Corruption
+## 8. Pixel and file contract
 
-Visible progression:
+- One coherent apparent pixel density.
+- Nearest-neighbor runtime scaling.
+- Transparent backgrounds for object sprites.
+- No text labels inside production sprites.
+- No generated hex outlines baked into object sprites.
+- No non-uniform resizing.
+- Keep individual production sources before atlas packing.
+- Final atlases must strictly decode and contain visible pixels in every required frame.
+- v4 must not silently fall back when a required production frame fails.
 
-healthy vegetation → stressed vegetation → exposed soil → cracked dead ground → technological residue.
+## 9. Gameplay-scale acceptance
 
-Recovery must reverse that material ownership visibly when existing gameplay clears corruption.
+A deterministic screenshot hash proves determinism, not artistic quality. Before accepting a new 1200×675 benchmark:
 
-## 6. Hex visibility
+- inspect actual scale and pixel density;
+- verify regular flat-top geometry and no stretch;
+- verify macro/meso/micro density hierarchy;
+- verify roads/shorelines/connectors read continuously;
+- verify units and House remain readable;
+- verify no hallucinated gameplay entities or unsupported state labels entered runtime;
+- verify no purple crystal corruption survived;
+- compare only against the approved scopes listed in `REFERENCE_STATUS.json`.
 
-The hex mesh remains a gameplay substrate, not the dominant visual pattern.
-
-- Normal terrain: low-contrast mesh.
-- Placement/cursor/range/route feedback may locally strengthen it.
-- Connected regions must read before individual cell boundaries.
-- Internal biome seams must not masquerade as shores, canopy edges, or structure outlines.
-
-## 7. Asset contract for v4
-
-Do not produce one monolithic source image. Use reviewable category source sheets and packed runtime atlases.
-
-Recommended source sheets:
-
-1. `nature-source-v1.png`
-2. `water-shore-source-v1.png`
-3. `industry-source-v1.png`
-4. `corruption-source-v1.png`
-5. `entities-source-v1.png`
-6. `vfx-source-v1.png`
-
-Recommended runtime atlases:
-
-- `entities-atlas-v4.png`
-- `terrain-atlas-v4.png`
-- `environment-atlas-v4.png` when environment vocabulary no longer fits cleanly in the entity atlas;
-- `vfx-atlas-v4.png` for event-driven combat/reclaim effects.
-
-Every packed frame requires metadata for:
-
-- sprite id;
-- source frame rectangle;
-- pivot;
-- cell footprint;
-- state;
-- category;
-- variant group where applicable;
-- facing/orientation where applicable.
-
-A frame is not considered valid merely because its rectangle exists. Core validation must prove it contains visible pixels at the expected scale. v4 core frames may not silently rely on v2/v3 fallback art.
-
-## 8. Minimum asset vocabulary before “final” review
-
-### Nature
-
-- 6–8 broadleaf variants;
-- 3–4 pine variants;
-- canopy interior/edge pieces;
-- at least 5 shrub/undergrowth variants;
-- rocks, logs, stumps, roots, flowers, meadow grass, fences/signs/ruins;
-- shore vegetation, reeds, lilies, shoreline rocks.
-
-### House zone
-
-- intact and damaged/critical house states;
-- yard/soil/path transitions;
-- fence/garden/brush framing props.
-
-### Industry
-
-- datacenter core variants;
-- foundations/platform modules;
-- cooling, power, compute/access modules;
-- fans, vents, relays, terminals, transformers/power boxes;
-- crates, conduits, pipes, cable junctions, drains/walls;
-- hazard marks, industrial cracks, debris, rubble, destroyed modules.
-
-### Corruption
-
-- stains;
-- cracks/veins;
-- tendrils;
-- spikes;
-- corrupted vegetation;
-- glowing nodes;
-- contaminated industry;
-- reclaim/recovery transition pieces.
-
-### Combat/VFX
-
-- projectile/attack cues;
-- impacts;
-- reclaim pulse;
-- disable cue;
-- slow cue;
-- corruption-spread cue;
-- datacenter collapse cue.
-
-All effects remain restrained and event driven.
-
-## 9. Benchmark scenes
-
-The visual gate must eventually capture at least these deterministic 1200 × 675 scenes:
-
-1. **Ecosystem overview** — proves macro composition, natural density, house grounding, and industrial structure.
-2. **Mid-combat** — proves unit readability, route/attack feedback, and environment readability under action.
-3. **Corruption-heavy** — proves corruption progression, industrial contamination, and visual hierarchy.
-4. **Damage/collapse** — optional until damage-state assets exist, then required before final acceptance.
-
-A screenshot hash proves determinism only. It must never be accepted as a new artistic baseline before a human visual comparison against the authoritative target.
-
-## 10. Acceptance gate
-
-A pass is not final if any of the following remain obvious at 100% benchmark scale:
-
-- large empty green areas dominate;
-- forest still reads as repeated independent trees;
-- water still reads as blue cell patches;
-- road is a repetitive chunky strip;
-- house is visually isolated;
-- datacenters sit on flat dark blobs;
-- industrial territory lacks internal infrastructure;
-- corruption is only sparse accent marks;
-- art scales/pixel densities visibly conflict;
-- grid contrast competes with world art.
-
-Final acceptance requires the rendered battlefield to clearly belong to the same visual family as the authoritative target, while preserving the original real-time tower-defense mechanics.
+A visual family is not complete merely because CI is green.
