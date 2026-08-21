@@ -4,6 +4,7 @@ import databaseSql from "./database-sql-qa.json";
 import sqlPracticalInterview from "./sql-practical-interview";
 import sqlCodeExamples from "./sql-code-examples";
 import sqlDataCodeExamples from "./sql-data-code-examples";
+import sqlExpandedCodeExamples from "./sql-expanded-code-examples";
 import observabilityProduction from "./observability-production-qa.json";
 import restoredCoverage from "./restored-coverage-qa.json";
 import testingFoundations from "./testing-foundations-qa.json";
@@ -18,7 +19,10 @@ import sourceEvidence from "./source-evidence-overrides.json";
 import taxonomy from "./taxonomy.json";
 
 const sourceEvidenceById = new Map(sourceEvidence.map((item) => [item.id, item]));
-const sqlCodeExamplesById = new Map([...sqlCodeExamples, ...sqlDataCodeExamples].map((item) => [item.id, item.codeExamples]));
+const sqlCodeExamplesById = new Map(
+  [...sqlCodeExamples, ...sqlDataCodeExamples, ...sqlExpandedCodeExamples]
+    .map((item) => [item.id, item.codeExamples]),
+);
 
 function applySourceEvidence<T extends { id: string; sourceIds: string[]; prevalence: string }>(question: T): T {
   const evidence = sourceEvidenceById.get(question.id);
