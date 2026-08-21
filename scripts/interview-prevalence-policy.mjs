@@ -1,8 +1,15 @@
-const INTERVIEW_BANK_SOURCE_IDS = new Set([
-  "dou-qa-2022",
-  "katalon-qa-interviews",
-  "indeed-qa-interviews",
-  "gfg-testing-interviews",
+const INTERVIEW_BANK_SOURCE_FAMILIES = new Map([
+  ["dou-qa-2022", "dou"],
+  ["dou-qa-400-2023", "dou"],
+  ["katalon-qa-interviews", "katalon"],
+  ["indeed-qa-interviews", "indeed"],
+  ["gfg-testing-interviews", "gfg"],
+  ["testsigma-qa-interviews-2026", "testsigma"],
+  ["bugbug-qa-interviews-2026", "bugbug"],
+  ["kore1-qa-interviews-2026", "kore1"],
+  ["asserthired-qa-bank-2026", "asserthired"],
+  ["asserthired-git-qa-2026", "asserthired"],
+  ["asserthired-mobile-qa-2026", "asserthired"],
 ]);
 
 const SPECIALIST_CATEGORIES = new Set([
@@ -85,7 +92,11 @@ function matchesAny(question, patterns) {
 }
 
 function interviewBankHitCount(question) {
-  return new Set((question.sourceIds ?? []).filter((sourceId) => INTERVIEW_BANK_SOURCE_IDS.has(sourceId))).size;
+  return new Set(
+    (question.sourceIds ?? [])
+      .map((sourceId) => INTERVIEW_BANK_SOURCE_FAMILIES.get(sourceId))
+      .filter(Boolean),
+  ).size;
 }
 
 export function reviewInterviewPrevalence(question) {
@@ -107,7 +118,7 @@ export function reviewInterviewPrevalence(question) {
 }
 
 export const interviewPrevalenceReview = {
-  reviewedAt: "2026-08-19",
+  reviewedAt: "2026-08-21",
   bands: ["Very common", "Common", "Occasional", "Specialist"],
-  basis: "Exact question wording, recurrence in the maintained DOU/Katalon/Indeed/GeeksforGeeks interview banks, breadth across QA roles, and role-specificity. Generated scenario variants are never promoted to Very common automatically.",
+  basis: "Exact question wording, recurrence across independent maintained interview-source families, breadth across QA roles, and role-specificity. Multiple pages from one publisher count once, so DOU 250+/400+ and AssertHired specialist pages cannot inflate prevalence by duplication. Generated scenario variants are never promoted to Very common automatically.",
 };
