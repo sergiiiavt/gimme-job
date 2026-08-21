@@ -1,7 +1,8 @@
 {
-  "version": 6,
+  "version": 7,
   "updatedAt": "2026-08-21",
   "mode": "research-only",
+  "phase": "phase-1-complete",
   "productionCatalogChangesAllowed": false,
   "candidateLedger": "docs/interview-source-audit-candidates.json",
   "goal": "Broaden interview evidence across Ukrainian and international sources without duplicating semantic concepts or inflating the catalog with low-value trivia.",
@@ -11,84 +12,108 @@
     "actions": ["merge-source", "add-question", "skip-low-value", "needs-review"],
     "rules": [
       "Wording variants never create another canonical question.",
-      "Theory and scenario questions may remain separate only when interview intent differs materially.",
-      "A recurring source hit normally strengthens source evidence/prevalence; it does not automatically create a question.",
-      "Absence from the catalog is not enough: recurrence and interview value must justify addition.",
-      "Ukrainian and international interview banks have equal market/prevalence priority.",
-      "Official docs/specifications validate technical answers; interview banks validate recurrence and interview intent."
+      "Theory and scenario questions remain separate only when they test materially different skills.",
+      "A source hit normally strengthens evidence/prevalence; it does not automatically create a question.",
+      "Absence from the catalog is necessary but not sufficient: independent recurrence and interview value must justify addition.",
+      "Ukrainian and international interview sources have equal market/prevalence priority.",
+      "Official docs/specifications validate technical answers; interview banks validate recurrence and interview intent.",
+      "Freshness matters most for tools, delivery practices, mobile platforms and AI; classic testing fundamentals do not become obsolete merely because the source is older."
     ]
   },
-  "batches": [
+  "sourceGroups": [
     {
-      "id": "ua-dou",
-      "status": "in-progress",
+      "id": "ukrainian-market",
+      "status": "complete",
       "sources": [
-        {"id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions", "url": "https://dou.ua/lenta/articles/interview-qa/", "catalogStatus": "existing"},
-        {"id": "dou-qa-400-2023", "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior", "url": "https://dou.ua/forums/topic/44277/", "publishedAt": "2023-07-13", "rawQuestionCount": 416, "catalogStatus": "audit-candidate"}
+        {"id": "dou-qa-2022", "title": "DOU — QA interview: 250+ questions", "url": "https://dou.ua/lenta/articles/interview-qa/", "role": "broad-question-bank", "catalogStatus": "existing"},
+        {"id": "dou-qa-400-2023", "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior", "url": "https://dou.ua/forums/topic/44277/", "role": "broad-question-bank", "rawQuestionCount": 416, "catalogStatus": "phase-2-source-candidate"},
+        {"id": "hillel-qa-interviewer-2025", "title": "What questions to ask a QA engineer: a technical interviewer's perspective", "url": "https://blog.ithillel.ua/articles/what-questions-to-ask-a-qa-engineer", "publishedAt": "2025-07-30", "role": "interviewer-authored-guidance"},
+        {"id": "mate-qa-market-2026", "title": "QA tester career guide 2026", "url": "https://mate.academy/blog/it-career/testuvalnyk-pz-khto-tse-i-shcho-vin-robyt", "publishedAt": "2026-08", "role": "fresh-market-snapshot"},
+        {"id": "dou-qa-voicechat-2023", "role": "community-interview-signal"}
       ],
-      "sectionCounts": {"testing-theory": 95, "git": 18, "web": 67, "database": 36, "mobile": 26, "selenium": 23, "scrum": 33, "general": 83, "practical": 35},
-      "completed": [
-        "Established that DOU 400+ contains internal semantic/wording duplicates, so raw 416 is not a unique-question count.",
-        "Confirmed large overlap with DOU 250+.",
-        "Reviewed Git section at concept level: practical workflow is more valuable than one-question-per-command trivia.",
-        "Reviewed Mobile section at concept level: TestFlight and traffic interception are strong current gap candidates; several other concepts already exist.",
-        "Reviewed Selenium section directionally: keep modern reliability/tooling concepts; do not add low-value framework trivia.",
-        "Reviewed high-value practical scenarios: release pressure, missing requirements, QA/dev disagreement and risk prioritization mostly map to existing authored questions.",
-        "Confirmed DOU 400+ asks both which QA metric matters and how to measure test effectiveness; semantic pass mapped these to existing quality-metrics rather than a new question."
-      ],
-      "remaining": ["Finish Web/API unique-concept pass", "Finish Database unique-concept pass", "Finish Scrum/general/behavioral pass", "Finish practical tail exact intent mapping"]
-    },
-    {
-      "id": "ua-current",
-      "status": "in-progress",
-      "sources": [
-        {"id": "hillel-qa-interviewer-2025", "publisher": "Hillel IT School", "publishedAt": "2025-07-30", "role": "interviewer-authored-guidance"},
-        {"id": "mate-qa-market-2026", "publisher": "Mate academy", "publishedAt": "2026-08", "role": "fresh-market-snapshot"},
-        {"id": "dou-qa-voicechat-2023", "publisher": "DOU", "publishedAt": "2023-08-11", "role": "community-interview-signal"}
-      ],
-      "completed": [
-        "Confirmed classic fundamentals remain current in Ukraine.",
-        "Confirmed stronger emphasis on applied reasoning, ambiguity, communication and scenarios rather than rote definitions."
+      "findings": [
+        "DOU 400+ remains valuable Ukrainian-market evidence but its 416 raw prompts include wording/concept duplicates and should never be treated as 416 unique catalog additions.",
+        "Fresh Ukrainian interviewer guidance confirms that fundamentals remain important but should be asked through explanation, examples and scenarios rather than rote definitions.",
+        "Current Ukrainian junior-market material still explicitly asks severity vs priority, test case vs checklist, bug reports, smoke/regression/sanity and SDLC/STLC.",
+        "DOU 400+ practical and Senior sections provide stronger signal than its tool/API trivia for release risk, missing documentation, prioritization, RCA and collaboration."
       ]
     },
     {
       "id": "international-current",
-      "status": "in-progress",
+      "status": "complete",
       "sources": [
-        {"id": "katalon-qa-interviews", "publisher": "Katalon", "freshness": "2026", "catalogStatus": "existing"},
-        {"id": "indeed-qa-interviews", "publisher": "Indeed", "updatedAt": "2026-06-15", "catalogStatus": "existing"},
-        {"id": "gfg-testing-interviews", "publisher": "GeeksforGeeks", "updatedAt": "2026-02-06", "catalogStatus": "existing"},
-        {"id": "testsigma-qa-interviews-2026", "publisher": "Testsigma", "updatedAt": "2026-04-06", "catalogStatus": "audit-candidate"},
-        {"id": "bugbug-qa-interviews-2026", "publisher": "BugBug", "publishedAt": "2026-06-08", "catalogStatus": "audit-candidate"},
-        {"id": "kore1-qa-interviews-2026", "publisher": "KORE1", "updatedAt": "2026-05-01", "catalogStatus": "audit-candidate", "role": "hiring-derived; claims 40+ QA searches in prior 18 months"},
-        {"id": "asserthired-git-qa-2026", "publisher": "AssertHired", "updatedAt": "2026-05", "catalogStatus": "audit-candidate", "role": "QA/SDET-specific Git interview signal"}
+        {"id": "katalon-qa-interviews", "publisher": "Katalon", "freshness": "2026", "role": "broad-current-question-bank", "catalogStatus": "existing"},
+        {"id": "indeed-qa-interviews", "publisher": "Indeed", "updatedAt": "2026-06-15", "role": "career-question-bank", "catalogStatus": "existing"},
+        {"id": "gfg-testing-interviews", "publisher": "GeeksforGeeks", "updatedAt": "2026-02-06", "role": "broad-technical-question-bank", "catalogStatus": "existing"},
+        {"id": "testsigma-qa-interviews-2026", "publisher": "Testsigma", "updatedAt": "2026-04-06", "role": "broad-current-question-bank", "catalogStatus": "phase-2-source-candidate"},
+        {"id": "bugbug-qa-interviews-2026", "publisher": "BugBug", "publishedAt": "2026-06-08", "role": "curated-current-question-bank", "catalogStatus": "phase-2-source-candidate"},
+        {"id": "kore1-qa-interviews-2026", "publisher": "KORE1", "updatedAt": "2026-05", "role": "hiring-derived-question-bank", "note": "Publisher states the bank is informed by hiring-manager debriefs across 40+ QA searches in the prior 18 months.", "catalogStatus": "phase-2-source-candidate"},
+        {"id": "asserthired-qa-2026", "publisher": "AssertHired", "updatedAt": "2026-03/05", "role": "QA/SDET-specific interview signals for Git, automation, CI/CD and mobile", "catalogStatus": "phase-2-source-candidate"},
+        {"id": "sdet-qa-2026", "publisher": "sdet.qa", "publishedAt": "2026-07-19", "role": "current SDET interview bank", "catalogStatus": "audit-only"}
       ],
-      "completed": [
-        "Confirmed current sources still ask classic fundamentals.",
-        "Confirmed 2026 emphasis on judgment: what to test/automate, flaky tests, deadlines, missing requirements, CI/CD and quality ownership.",
-        "Confirmed AI/agentic topics are current but many are already represented in modern-sdet authored questions.",
-        "Confirmed QA metrics/test effectiveness recurs in BugBug and KORE1 but maps to existing quality-metrics.",
-        "Confirmed practical Git workflow/conflict/pull-fetch/review/CI knowledge remains current for QA/SDET and is not clearly represented as a direct authored interview question."
+      "findings": [
+        "2026 sources strongly confirm that classic fundamentals remain relevant, so the age of DOU 250/400 alone is not a reason to remove them.",
+        "The current market puts more weight on applied judgment: what not to test, what not to automate, flaky-test diagnosis, missing requirements, CI/CD, release risk and quality ownership.",
+        "AI-assisted and agentic testing are now visible interview topics, but GimmeJob's modern-SDET authored set already covers most of the meaningful AI decision boundaries.",
+        "Current automation sources emphasize framework selection, pipeline behavior and debugging over memorizing Selenium APIs.",
+        "Current mobile sources emphasize device strategy, network transitions/offline sync, pre-release distribution, proxy debugging, upgrade paths and mobile CI/CD."
       ]
     },
     {
-      "id": "modern-specialist",
-      "status": "in-progress",
-      "completed": [
-        "CI/CD quality gates -> existing match",
-        "test-suite runtime/parallelization -> existing match",
-        "automation selection -> existing automation-benefits-risks",
-        "AI human-ownership/delegation boundaries -> existing AI authored questions",
-        "test effectiveness/meaningful metrics -> existing quality-metrics"
-      ],
-      "remaining": ["test strategy design recurrence", "shift-left applied scenarios", "API/distributed-system current banks", "mobile specialist second pass"]
-    },
-    {"id": "global-second-pass", "status": "pending", "purpose": "Recompare all proposed additions and merges against the full authored catalog before any production modifications."}
+      "id": "specialist-current",
+      "status": "complete",
+      "areas": ["mobile", "automation/SDET", "API/distributed systems", "Git/CI-CD", "AI-assisted QA"],
+      "findings": [
+        "Risk-based mobile device/OS coverage is already directly represented by emulator-simulator-real-device, so fresh device-matrix sources should merge there rather than create a new question.",
+        "Generic asynchronous/eventually-consistent systems are already covered by event-driven-contract-testing, message-ordering-replay-dead-letter and async-trace-correlation; no generic duplicate is recommended.",
+        "WebSocket testing remains a distinct gap because persistent connection lifecycle and bidirectional real-time behavior are not directly represented in the main interview catalog.",
+        "Offline mobile synchronization and app upgrade/local-data migration remain distinct mobile interview intents not adequately represented by notification/offline mentions elsewhere.",
+        "Shift-left exists as learning/tagged content but not as a directly discoverable interview question; 2026 recurrence justifies a canonical applied question.",
+        "Automation framework components are covered, but choosing between Playwright/Selenium/Cypress based on context is a separate current interview intent and remains a gap."
+      ]
+    }
   ],
-  "currentResult": {
-    "strongNewQuestionCandidates": 3,
-    "candidateNames": ["TestFlight", "mobile traffic interception/proxy debugging", "practical Git workflow for QA/AQA"],
-    "importantCorrection": "quality-metrics/test effectiveness was initially suspected as new but semantic second pass found canonical question quality-metrics; treat it as merge-source/prevalence review."
+  "dou400": {
+    "rawQuestionCount": 416,
+    "sectionCounts": {"testing-theory": 95, "git": 18, "web": 67, "database": 36, "mobile": 26, "selenium": 23, "scrum": 33, "general": 83, "practical": 35},
+    "status": "concept-level-gap-and-dedup-pass-complete",
+    "treatment": "Keep as first-class Ukrainian prevalence/coverage evidence; map overlapping prompts to canonical questions and add only distinct high-value concepts.",
+    "notableInternalDuplicates": ["Smoke vs Sanity", "REST vs SOAP", "A/B testing", "database types/relational concepts", "emulator vs simulator", "testing without documentation"]
   },
-  "nextAction": "Finish remaining DOU 400 sections and current international recurrence passes, then execute global semantic second pass. No production interview content changes before that pass."
+  "globalSecondPass": {
+    "status": "complete",
+    "method": "Rechecked every proposed net-new concept against authored interview sets and repo-wide content search, then collapsed overlaps into canonical source merges.",
+    "importantCorrections": [
+      "quality/test effectiveness -> existing quality-metrics",
+      "mobile device matrix -> existing emulator-simulator-real-device",
+      "generic async/eventual consistency -> existing event-driven/order/replay/trace questions",
+      "automation selection -> existing automation-benefits-risks",
+      "AI human-decision boundaries -> existing AI authored questions"
+    ]
+  },
+  "phase1Result": {
+    "recommendedNewCanonicalQuestions": 8,
+    "candidateConcepts": [
+      "pre-release mobile build distribution (TestFlight/Firebase)",
+      "HTTP/HTTPS traffic interception and proxy debugging",
+      "practical Git workflow for QA/AQA",
+      "WebSocket and real-time feature testing",
+      "mobile offline/reconnect sync and conflict handling",
+      "mobile app upgrade/local-state migration testing",
+      "shift-left testing in practice",
+      "automation framework/tool selection"
+    ],
+    "expectedCatalogGrowth": "small; source diversity and prevalence evidence should change much more than question count",
+    "productionCatalogChanged": false,
+    "prCreated": false
+  },
+  "phase2ApplicationPlan": [
+    "Add only the approved canonical questions from the candidate ledger with stable IDs, EN/UA text, practical examples and answer-authority sources.",
+    "Register selected new interview-market sources in content/interview/sources.json.",
+    "Merge source IDs into existing canonical questions where fresh sources independently reinforce the same interview intent.",
+    "Re-run prevalence review using Ukrainian and international recurrence together; do not promote specialist/tool-specific questions merely because a long bank lists them.",
+    "Run repository content validation and full verification only after production content is intentionally changed.",
+    "Use one scoped PR for the completed production application, not one PR per source or batch."
+  ],
+  "nextAction": "Phase 1 is complete. Production application is intentionally not started in this research branch until the audit result is reviewed/accepted."
 }
