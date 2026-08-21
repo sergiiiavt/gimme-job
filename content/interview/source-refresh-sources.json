@@ -1,0 +1,98 @@
+[
+  {
+    "id": "dou-qa-400-2023",
+    "title": "400+ питань на співбесіду QA для всіх рівнів",
+    "url": "https://dou.ua/forums/topic/44277/",
+    "publisher": "DOU",
+    "kind": "Community question bank",
+    "role": "Ukrainian-market recurrence signal across QA theory, web, mobile, Git, Selenium, Scrum and practical interview scenarios"
+  },
+  {
+    "id": "hillel-qa-interviewer-2025",
+    "title": "Які запитання ставити на співбесіді QA-інженеру: погляд з позиції технічного інтерв'юера",
+    "url": "https://blog.ithillel.ua/articles/what-questions-to-ask-a-qa-engineer",
+    "publisher": "Hillel IT School",
+    "kind": "Interviewer guidance",
+    "role": "Fresh Ukrainian interviewer perspective on theory, practical situations, tools, critical thinking and communication"
+  },
+  {
+    "id": "testsigma-qa-interviews-2026",
+    "title": "QA Interview Questions and Answers for 2026",
+    "url": "https://testsigma.com/blog/qa-interview-questions/",
+    "publisher": "Testsigma",
+    "kind": "Community question bank",
+    "role": "Current recurrence signal from beginner through senior QA, manual testing, automation, CI/CD and scenario questions"
+  },
+  {
+    "id": "bugbug-qa-interviews-2026",
+    "title": "Top 40 QA Interview Questions and Answers for 2026",
+    "url": "https://bugbug.io/blog/software-testing/qa-interview-questions/",
+    "publisher": "BugBug",
+    "kind": "Community question bank",
+    "role": "Current recurrence signal for fundamentals, practical judgment, automation, metrics, ambiguity and shift-left testing"
+  },
+  {
+    "id": "kore1-qa-interviews-2026",
+    "title": "QA Engineer Interview Questions 2026",
+    "url": "https://www.kore1.com/qa-engineer-interview-questions/",
+    "publisher": "KORE1",
+    "kind": "Hiring-derived interview guidance",
+    "role": "Current hiring-manager signal for automation fluency, CI/CD, shift-left, AI-assisted testing and quality strategy"
+  },
+  {
+    "id": "asserthired-qa-bank-2026",
+    "title": "200+ QA Interview Questions & Answers (2026)",
+    "url": "https://www.asserthired.com/questions",
+    "publisher": "AssertHired",
+    "kind": "Community question bank",
+    "role": "Current QA/SDET recurrence signal across practical scenarios, automation, API, CI/CD, real-time systems and tool selection"
+  },
+  {
+    "id": "asserthired-git-qa-2026",
+    "title": "Top Git Interview Questions for QA & Testers (2026)",
+    "url": "https://www.asserthired.com/interview-questions/git",
+    "publisher": "AssertHired",
+    "kind": "Specialist interview question bank",
+    "role": "QA/SDET-specific recurrence signal for daily Git workflow, conflicts, merge/rebase, review, undo and CI integration"
+  },
+  {
+    "id": "asserthired-mobile-qa-2026",
+    "title": "Mobile QA Engineer Interview Prep",
+    "url": "https://www.asserthired.com/for/mobile-qa",
+    "publisher": "AssertHired",
+    "kind": "Specialist interview question bank",
+    "role": "Current mobile-QA signal for device strategy, offline synchronization, signing, pre-release distribution and mobile CI/CD"
+  },
+  {
+    "id": "apple-testflight",
+    "title": "TestFlight Overview",
+    "url": "https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview",
+    "publisher": "Apple",
+    "kind": "Official documentation",
+    "role": "Beta-build distribution, tester management and feedback for Apple-platform applications"
+  },
+  {
+    "id": "firebase-app-distribution",
+    "title": "Firebase App Distribution",
+    "url": "https://firebase.google.com/docs/app-distribution",
+    "publisher": "Google",
+    "kind": "Official documentation",
+    "role": "Cross-platform pre-release distribution, tester management, CI integration, feedback and build stability signals"
+  },
+  {
+    "id": "mdn-websocket",
+    "title": "WebSocket API",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
+    "publisher": "Mozilla",
+    "kind": "Technical reference",
+    "role": "Bidirectional WebSocket communication, connection behavior and real-time browser API semantics"
+  },
+  {
+    "id": "owasp-mastg",
+    "title": "OWASP Mobile Application Security Testing Guide",
+    "url": "https://mas.owasp.org/MASTG/",
+    "publisher": "OWASP",
+    "kind": "Testing guide",
+    "role": "Mobile network inspection, interception proxies, TLS trust, certificate handling and pinning behavior"
+  }
+]
