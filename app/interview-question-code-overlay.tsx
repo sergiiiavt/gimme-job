@@ -28,7 +28,19 @@ const sqlKeywords = new Set([
   "VALUES", "WHEN", "WHERE", "WITH",
 ]);
 
+const pythonKeywords = new Set([
+  "and", "as", "assert", "async", "await", "break", "case", "class", "continue", "def", "del", "elif", "else", "except",
+  "False", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "match", "None", "nonlocal", "not", "or",
+  "pass", "raise", "return", "True", "try", "while", "with", "yield",
+]);
+
+const pythonBuiltins = new Set([
+  "all", "any", "bool", "dict", "enumerate", "filter", "float", "int", "iter", "len", "list", "map", "max", "min", "next",
+  "print", "range", "repr", "set", "sorted", "str", "sum", "tuple", "type", "zip",
+]);
+
 const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
+const pythonTokenPattern = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
 
 function normalizeQuestionText(value: string) {
   return value.replace(/\s+/g, " ").trim();
@@ -64,11 +76,50 @@ function appendHighlightedSql(code: HTMLElement, source: string) {
   if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
 }
 
-function createCopyButton(code: string) {
+function appendHighlightedPython(code: HTMLElement, source: string) {
+  let lastIndex = 0;
+  pythonTokenPattern.lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pythonTokenPattern.exec(source)) !== null) {
+    if (match.index > lastIndex) code.append(document.createTextNode(source.slice(lastIndex, match.index)));
+    const token = match[0];
+    const span = document.createElement("span");
+    span.textContent = token;
+
+    if (token.startsWith("#")) span.style.color = "#6a9955";
+    else if (token.startsWith("\"") || token.startsWith("'")) span.style.color = "#ce9178";
+    else if (token.startsWith("@")) span.style.color = "#dcdcaa";
+    else if (/^\d/.test(token)) span.style.color = "#b5cea8";
+    else if (pythonKeywords.has(token)) span.style.color = "#569cd6";
+    else if (pythonBuiltins.has(token)) span.style.color = "#4ec9b0";
+    else span.style.color = "#d4d4d4";
+
+    code.appendChild(span);
+    lastIndex = pythonTokenPattern.lastIndex;
+  }
+
+  if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
+}
+
+function appendHighlightedCode(code: HTMLElement, source: string, language: string) {
+  const normalizedLanguage = language.toLowerCase();
+  if (normalizedLanguage === "python" || normalizedLanguage === "py") {
+    appendHighlightedPython(code, source);
+    return;
+  }
+  if (normalizedLanguage === "sql") {
+    appendHighlightedSql(code, source);
+    return;
+  }
+  code.textContent = source;
+}
+
+function createCopyButton(code: string, language: string) {
   const button = document.createElement("button");
   button.type = "button";
   button.textContent = "Copy";
-  button.setAttribute("aria-label", "Copy SQL example");
+  button.setAttribute("aria-label", `Copy ${language} example`);
   applyStyles(button, {
     alignItems: "center",
     background: "#ffffff",
@@ -97,7 +148,7 @@ function createCopyButton(code: string) {
 
 function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "uk") {
   const card = document.createElement("article");
-  card.className = "iq-sql-code-card";
+  card.className = "iq-code-card";
   applyStyles(card, {
     display: "grid",
     gap: "8px",
@@ -119,10 +170,10 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     fontSize: "11px",
     lineHeight: "1.3",
   });
-  header.append(title, createCopyButton(example.code));
+  header.append(title, createCopyButton(example.code, example.language));
 
   const pre = document.createElement("pre");
-  pre.className = "iq-sql-code";
+  pre.className = "iq-code-block";
   applyStyles(pre, {
     background: "#1e1e1e",
     border: "1px solid #3a3a3a",
@@ -140,7 +191,7 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     whiteSpace: "pre",
   });
   const code = document.createElement("code");
-  appendHighlightedSql(code, example.code);
+  appendHighlightedCode(code, example.code, example.language);
   pre.appendChild(code);
 
   const explanation = document.createElement("p");
@@ -190,9 +241,9 @@ function createCodeSection(question: CodeEnhancedInterviewQuestion, language: "e
 
 function restoreLegacyExample(details: HTMLElement | null) {
   const copy = details?.querySelector<HTMLElement>(":scope > .iq-answer-copy");
-  if (copy?.dataset.sqlCodeHidden === "true") {
+  if (copy?.dataset.codeExampleHidden === "true") {
     copy.style.removeProperty("display");
-    delete copy.dataset.sqlCodeHidden;
+    delete copy.dataset.codeExampleHidden;
   }
 }
 
@@ -226,7 +277,7 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
           const legacyCopy = practicalExample.querySelector<HTMLElement>(":scope > .iq-answer-copy");
           if (legacyCopy) {
             legacyCopy.style.display = "none";
-            legacyCopy.dataset.sqlCodeHidden = "true";
+            legacyCopy.dataset.codeExampleHidden = "true";
           }
 
           const language = activeLanguage(answer);
