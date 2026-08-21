@@ -60,3 +60,7 @@ test("keeps source evidence as overlays instead of duplicate questions", async (
   assert.ok(refreshSources.some((source) => source.id === "dou-qa-400-2023"));
   assert.ok(refreshSources.some((source) => source.id === "hillel-qa-interviewer-2025"));
 });
+
+test("runs the source-refresh repository validator inside the coverage process", async () => {
+  await import("../scripts/validate-interview-source-refresh.mjs");
+});
