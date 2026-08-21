@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { contentHref } from "./content-deep-links";
 import { highlightInterviewCode } from "./interview-code-highlighting";
+import { splitPythonPracticalExample } from "./interview-practical-formatting";
 import styles from "./interview-question-deep-link.module.css";
 
 interface InterviewDeepLinkCodeExample {
@@ -93,6 +94,10 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
   const displayAnswer = showUk && question.shortAnswerUk ? question.shortAnswerUk : question.shortAnswer;
   const displaySignals = showUk && question.strongAnswerSignalsUk ? question.strongAnswerSignalsUk : question.strongAnswerSignals;
   const displayExample = showUk && question.exampleUk ? question.exampleUk : question.example;
+  const legacyPythonSegments = !question.codeExamples?.length && question.id.startsWith("py-") && displayExample
+    ? splitPythonPracticalExample(displayExample)
+    : [];
+  const hasLegacyPythonCode = legacyPythonSegments.some((segment) => segment.type === "code");
   const taxonomyItem = catalog.taxonomy.find((item) => item.category === question.category);
   const categoryHref = taxonomyItem ? contentHref(backHref, "", { topic: taxonomyItem.id }) : backHref;
   const sources = question.sourceIds
@@ -169,7 +174,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
         </section>
 
         {(question.codeExamples?.length || displayExample) ? (
-          <section className={`${styles.section}${question.codeExamples?.length ? ` ${styles.codeSection}` : ""}`}>
+          <section className={`${styles.section}${question.codeExamples?.length || hasLegacyPythonCode ? ` ${styles.codeSection}` : ""}`}>
             <h2>{showUk ? "Практичний приклад" : "Practical example"}</h2>
             {question.codeExamples?.length ? (
               <div className={styles.codeExamples}>
@@ -191,6 +196,20 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                     </article>
                   );
                 })}
+              </div>
+            ) : hasLegacyPythonCode ? (
+              <div className={styles.codeExamples}>
+                {legacyPythonSegments.map((segment, index) => segment.type === "code" ? (
+                  <article className={styles.codeCard} key={`${question.id}-legacy-code-${index}`}>
+                    <header className={styles.codeHeader}>
+                      <strong>{showUk ? "Приклад Python" : "Python example"}</strong>
+                      <button onClick={() => void copyCode(segment.text, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
+                    </header>
+                    <pre className={styles.codeBlock}><code>{renderHighlightedCode(segment.text, "python")}</code></pre>
+                  </article>
+                ) : (
+                  <p className={styles.codeExplanation} key={`${question.id}-legacy-prose-${index}`}>{segment.text}</p>
+                ))}
               </div>
             ) : displayExample ? <p>{displayExample}</p> : null}
           </section>
