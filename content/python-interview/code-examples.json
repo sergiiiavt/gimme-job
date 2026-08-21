@@ -1,0 +1,287 @@
+[
+  {
+    "id": "py-core-mutable-vs-immutable",
+    "codeExamples": [
+      {
+        "title": "Mutable default: bug and fix",
+        "titleUk": "Змінюване значення за замовчуванням: помилка і виправлення",
+        "language": "python",
+        "code": "def add_item(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nprint(add_item(\"a\"))\nprint(add_item(\"b\"))\n\n# Safe version\ndef add_item_safe(item, bucket=None):\n    if bucket is None:\n        bucket = []\n    bucket.append(item)\n    return bucket\n\nprint(add_item_safe(\"a\"))\nprint(add_item_safe(\"b\"))",
+        "explanation": "The first function reuses one list created when the function is defined, so state leaks between calls. The safe version creates a fresh list for each call that omits bucket.",
+        "explanationUk": "Перша функція повторно використовує один список, створений під час визначення функції, тому стан протікає між викликами. Безпечна версія створює новий список для кожного виклику без bucket.",
+        "expectedResult": "The buggy calls print ['a'] then ['a', 'b']; the safe calls print ['a'] then ['b'].",
+        "expectedResultUk": "Помилкові виклики друкують ['a'], потім ['a', 'b']; безпечні — ['a'], потім ['b']."
+      }
+    ]
+  },
+  {
+    "id": "py-core-is-vs-equality",
+    "codeExamples": [
+      {
+        "title": "Identity versus equality",
+        "titleUk": "Ідентичність проти рівності",
+        "language": "python",
+        "code": "a = [1, 2]\nb = [1, 2]\nc = a\n\nprint(a == b)\nprint(a is b)\nprint(a is c)\n\nvalue = None\nprint(value is None)",
+        "explanation": "== asks whether values are equal; is asks whether two names reference the exact same object. Singleton checks such as None should use is.",
+        "explanationUk": "== перевіряє рівність значень; is перевіряє, чи два імені посилаються на той самий об'єкт. Перевірки синглтонів на кшталт None слід робити через is.",
+        "expectedResult": "True, False, True, True.",
+        "expectedResultUk": "True, False, True, True."
+      }
+    ]
+  },
+  {
+    "id": "py-data-set-operations-and-uses",
+    "codeExamples": [
+      {
+        "title": "Deduplicate and compare ID sets",
+        "titleUk": "Дедуплікація та порівняння наборів ID",
+        "language": "python",
+        "code": "existing_ids = {101, 102, 103}\nincoming_ids = {102, 103, 104, 105}\n\nprint(incoming_ids - existing_ids)\nprint(incoming_ids & existing_ids)\nprint(incoming_ids | existing_ids)",
+        "explanation": "Set difference finds IDs that exist only in the incoming set, intersection finds IDs present in both, and union combines both sets without duplicates.",
+        "explanationUk": "Різниця множин знаходить ID лише у вхідному наборі, перетин — ID в обох наборах, а об'єднання поєднує обидва без дублікатів.",
+        "expectedResult": "{104, 105}; {102, 103}; and one set containing 101 through 105 (set display order is not guaranteed).",
+        "expectedResultUk": "{104, 105}; {102, 103}; і одна множина з 101–105 (порядок відображення set не гарантується)."
+      }
+    ]
+  },
+  {
+    "id": "py-data-shallow-vs-deep-copy",
+    "codeExamples": [
+      {
+        "title": "Nested mutation exposes a shallow copy",
+        "titleUk": "Вкладена зміна показує різницю shallow copy",
+        "language": "python",
+        "code": "from copy import deepcopy\n\noriginal = [[1, 2], [3, 4]]\nshallow = original.copy()\ndeep = deepcopy(original)\n\nshallow[0].append(9)\ndeep[1].append(8)\n\nprint(original)\nprint(shallow)\nprint(deep)",
+        "explanation": "The shallow copy creates a new outer list but shares both inner lists with original. deepcopy recursively creates independent nested containers for this ordinary list structure.",
+        "explanationUk": "Shallow copy створює новий зовнішній список, але ділить внутрішні списки з original. deepcopy рекурсивно створює незалежні вкладені контейнери для цієї звичайної структури списків.",
+        "expectedResult": "original and shallow both contain 9 in the first nested list; only deep contains 8 in the second nested list.",
+        "expectedResultUk": "original і shallow обидва містять 9 у першому вкладеному списку; лише deep містить 8 у другому."
+      }
+    ]
+  },
+  {
+    "id": "py-data-comprehensions-vs-generators",
+    "codeExamples": [
+      {
+        "title": "Eager list versus lazy generator",
+        "titleUk": "Жадібний list проти лінивого generator",
+        "language": "python",
+        "code": "squares_list = [n * n for n in range(5)]\nsquares_gen = (n * n for n in range(5))\n\nprint(squares_list)\nprint(next(squares_gen))\nprint(next(squares_gen))\nprint(list(squares_gen))",
+        "explanation": "The comprehension materializes all five values immediately. The generator produces values only when consumed and remembers where it paused between next() calls.",
+        "explanationUk": "Comprehension одразу матеріалізує всі п'ять значень. Генератор створює значення лише під час споживання й пам'ятає місце зупинки між next().",
+        "expectedResult": "[0, 1, 4, 9, 16], then 0, then 1, then [4, 9, 16].",
+        "expectedResultUk": "[0, 1, 4, 9, 16], потім 0, потім 1, потім [4, 9, 16]."
+      }
+    ]
+  },
+  {
+    "id": "py-func-args-and-kwargs",
+    "codeExamples": [
+      {
+        "title": "Forward an arbitrary call signature",
+        "titleUk": "Передача довільної сигнатури виклику",
+        "language": "python",
+        "code": "def trace(func):\n    def wrapper(*args, **kwargs):\n        print(\"args:\", args)\n        print(\"kwargs:\", kwargs)\n        return func(*args, **kwargs)\n    return wrapper\n\n@trace\ndef greet(name, punctuation=\"!\"):\n    return f\"Hello, {name}{punctuation}\"\n\nprint(greet(\"Ada\", punctuation=\".\"))",
+        "explanation": "*args collects positional values into a tuple and **kwargs collects keyword values into a dict. Forwarding both lets the wrapper preserve the wrapped function's calling flexibility.",
+        "explanationUk": "*args збирає позиційні значення в tuple, а **kwargs — іменовані в dict. Передача обох зберігає гнучкість виклику обгорнутої функції.",
+        "expectedResult": "The wrapper prints ('Ada',), then {'punctuation': '.'}, then Hello, Ada.",
+        "expectedResultUk": "Wrapper друкує ('Ada',), потім {'punctuation': '.'}, потім Hello, Ada."
+      }
+    ]
+  },
+  {
+    "id": "py-func-default-argument-evaluation-timing",
+    "codeExamples": [
+      {
+        "title": "Compute dynamic defaults at call time",
+        "titleUk": "Обчислення динамічних значень за замовчуванням під час виклику",
+        "language": "python",
+        "code": "from datetime import datetime\n\ndef stamp_bad(created_at=datetime.now()):\n    return created_at\n\ndef stamp_good(created_at=None):\n    if created_at is None:\n        created_at = datetime.now()\n    return created_at\n\nprint(stamp_bad() is stamp_bad())\nprint(stamp_good() == stamp_good())",
+        "explanation": "The bad default is evaluated once when def executes. None is a sentinel that lets the safe version evaluate datetime.now() each time the function is called.",
+        "explanationUk": "Погане значення за замовчуванням обчислюється один раз при виконанні def. None слугує sentinel, щоб безпечна версія викликала datetime.now() під час кожного виклику функції.",
+        "expectedResult": "The first comparison is True because both calls reuse one datetime object; the second comparison is normally False because each call creates a new timestamp.",
+        "expectedResultUk": "Перше порівняння True, бо обидва виклики повторно використовують один datetime; друге зазвичай False, бо кожен виклик створює нову мітку часу."
+      }
+    ]
+  },
+  {
+    "id": "py-func-closures-and-cell-variables",
+    "codeExamples": [
+      {
+        "title": "Late binding in loop-created closures",
+        "titleUk": "Late binding у замиканнях, створених у циклі",
+        "language": "python",
+        "code": "bad = [lambda: i for i in range(3)]\ngood = [lambda i=i: i for i in range(3)]\n\nprint([fn() for fn in bad])\nprint([fn() for fn in good])",
+        "explanation": "The bad lambdas share one closure cell for i and read its final value later. Binding i as a default argument stores the current value when each lambda is created.",
+        "explanationUk": "Погані lambda ділять одну closure-комірку для i й пізніше читають її фінальне значення. Фіксація i як аргументу за замовчуванням зберігає поточне значення під час створення кожної lambda.",
+        "expectedResult": "[2, 2, 2] followed by [0, 1, 2].",
+        "expectedResultUk": "[2, 2, 2], потім [0, 1, 2]."
+      }
+    ]
+  },
+  {
+    "id": "py-func-lambda-vs-def",
+    "codeExamples": [
+      {
+        "title": "Use lambda only for small inline expressions",
+        "titleUk": "Lambda лише для коротких inline-виразів",
+        "language": "python",
+        "code": "items = [\n    {\"name\": \"slow\", \"duration\": 8},\n    {\"name\": \"fast\", \"duration\": 2},\n]\n\nordered = sorted(items, key=lambda item: item[\"duration\"])\n\ndef duration(item):\n    \"\"\"Named helper when logic deserves reuse or explanation.\"\"\"\n    return item[\"duration\"]\n\nprint(ordered)\nprint(sorted(items, key=duration))",
+        "explanation": "A lambda is concise for a disposable single expression such as a sort key. A named def is clearer once logic needs documentation, reuse, annotations, or multiple statements.",
+        "explanationUk": "Lambda зручна для одноразового короткого виразу, наприклад sort key. Іменований def зрозуміліший, коли логіка потребує документації, повторного використання, анотацій чи кількох операторів.",
+        "expectedResult": "Both sorts put the item with duration 2 before the item with duration 8.",
+        "expectedResultUk": "Обидва сортування ставлять елемент з duration 2 перед duration 8."
+      }
+    ]
+  },
+  {
+    "id": "py-iter-iterator-protocol",
+    "codeExamples": [
+      {
+        "title": "What a for loop does internally",
+        "titleUk": "Що цикл for робить всередині",
+        "language": "python",
+        "code": "values = [10, 20]\nit = iter(values)\n\nwhile True:\n    try:\n        value = next(it)\n    except StopIteration:\n        break\n    else:\n        print(value)",
+        "explanation": "for obtains an iterator once with iter(), repeatedly calls next(), and stops when StopIteration is raised. Lists are iterable; the separate object returned by iter(list) is the iterator.",
+        "explanationUk": "for один раз отримує iterator через iter(), повторно викликає next() і завершується на StopIteration. List є iterable; окремий об'єкт від iter(list) є iterator.",
+        "expectedResult": "10 followed by 20.",
+        "expectedResultUk": "10, потім 20."
+      }
+    ]
+  },
+  {
+    "id": "py-iter-generator-functions-and-yield",
+    "codeExamples": [
+      {
+        "title": "Generator pauses and resumes around yield",
+        "titleUk": "Generator зупиняється і продовжується навколо yield",
+        "language": "python",
+        "code": "def countdown(n):\n    print(\"started\")\n    while n > 0:\n        yield n\n        n -= 1\n\ngen = countdown(3)\nprint(\"created\")\nprint(next(gen))\nprint(next(gen))\nprint(list(gen))",
+        "explanation": "Calling countdown creates the generator without running its body. Each consumption resumes execution until the next yield and preserves n between resumptions.",
+        "explanationUk": "Виклик countdown створює generator без виконання тіла. Кожне споживання продовжує виконання до наступного yield і зберігає n між відновленнями.",
+        "expectedResult": "created, started, 3, 2, then [1].",
+        "expectedResultUk": "created, started, 3, 2, потім [1]."
+      }
+    ]
+  },
+  {
+    "id": "py-iter-generator-exhaustion-statefulness",
+    "codeExamples": [
+      {
+        "title": "A generator is single-use",
+        "titleUk": "Generator одноразовий",
+        "language": "python",
+        "code": "def numbers():\n    yield 1\n    yield 2\n\ngen = numbers()\nprint(list(gen))\nprint(list(gen))\n\n# Create a new generator when another pass is needed\nprint(list(numbers()))",
+        "explanation": "Once a generator reaches StopIteration it stays exhausted. Re-run the generator function to get a fresh generator when you need another pass.",
+        "explanationUk": "Після досягнення StopIteration generator залишається вичерпаним. Викличте generator-функцію знову, щоб отримати новий generator для повторного проходу.",
+        "expectedResult": "[1, 2], then [], then [1, 2].",
+        "expectedResultUk": "[1, 2], потім [], потім [1, 2]."
+      }
+    ]
+  },
+  {
+    "id": "py-err-try-except-else-finally-order",
+    "codeExamples": [
+      {
+        "title": "Keep follow-up work out of the protected try block",
+        "titleUk": "Винесіть наступну роботу за межі захищеного try",
+        "language": "python",
+        "code": "def parse_and_use(text):\n    try:\n        value = int(text)\n    except ValueError:\n        print(\"invalid\")\n    else:\n        print(100 // value)\n    finally:\n        print(\"cleanup\")\n\nparse_and_use(\"4\")\nparse_and_use(\"bad\")",
+        "explanation": "except handles only failures from the protected parse. else runs only after a successful try, while finally runs on both paths and is appropriate for guaranteed cleanup.",
+        "explanationUk": "except обробляє лише помилки захищеного parse. else виконується лише після успішного try, а finally — в обох шляхах і підходить для гарантованого cleanup.",
+        "expectedResult": "For '4': 25 then cleanup. For 'bad': invalid then cleanup.",
+        "expectedResultUk": "Для '4': 25, потім cleanup. Для 'bad': invalid, потім cleanup."
+      }
+    ]
+  },
+  {
+    "id": "py-err-custom-exceptions-and-chaining",
+    "codeExamples": [
+      {
+        "title": "Wrap a low-level error without losing its cause",
+        "titleUk": "Обгортання низькорівневої помилки зі збереженням причини",
+        "language": "python",
+        "code": "class ConfigMissingError(RuntimeError):\n    pass\n\ndef require_key(config, key):\n    try:\n        return config[key]\n    except KeyError as exc:\n        raise ConfigMissingError(f\"Missing config key: {key}\") from exc\n\nrequire_key({}, \"token\")",
+        "explanation": "Callers can catch the domain-specific ConfigMissingError, while `from exc` keeps the original KeyError as an explicit cause in the traceback.",
+        "explanationUk": "Код, що викликає, може перехопити доменний ConfigMissingError, а `from exc` зберігає початковий KeyError як явну причину в traceback.",
+        "expectedResult": "ConfigMissingError is raised, with KeyError('token') shown as its direct cause.",
+        "expectedResultUk": "Виникає ConfigMissingError, а KeyError('token') показано як його пряму причину."
+      }
+    ]
+  },
+  {
+    "id": "py-conc-threading-vs-multiprocessing",
+    "codeExamples": [
+      {
+        "title": "Choose an executor from the workload",
+        "titleUk": "Вибір executor за типом навантаження",
+        "language": "python",
+        "code": "from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor\n\ndef fetch(url):\n    ...  # blocking network I/O\n\ndef crunch(number):\n    return sum(i * i for i in range(number))\n\nwith ThreadPoolExecutor(max_workers=8) as pool:\n    io_results = list(pool.map(fetch, urls))\n\nwith ProcessPoolExecutor() as pool:\n    cpu_results = list(pool.map(crunch, numbers))",
+        "explanation": "Threads are the usual fit for blocking I/O because waiting can overlap cheaply. Processes are the usual default-build CPython choice for pure-Python CPU work because each process has its own interpreter.",
+        "explanationUk": "Threads зазвичай підходять для блокуючого I/O, бо очікування можна дешево перекривати. Processes — типовий вибір для pure-Python CPU роботи у стандартному CPython, бо кожен процес має власний інтерпретатор.",
+        "expectedResult": "The example illustrates the model choice; fetch/urls/numbers must be supplied by the application.",
+        "expectedResultUk": "Приклад показує вибір моделі; fetch/urls/numbers мають бути задані застосунком."
+      }
+    ]
+  },
+  {
+    "id": "py-conc-asyncio-event-loop-coroutines",
+    "codeExamples": [
+      {
+        "title": "Concurrent I/O with asyncio.gather",
+        "titleUk": "Конкурентний I/O через asyncio.gather",
+        "language": "python",
+        "code": "import asyncio\n\nasync def fetch(name, delay):\n    await asyncio.sleep(delay)\n    return name\n\nasync def main():\n    results = await asyncio.gather(\n        fetch(\"a\", 0.2),\n        fetch(\"b\", 0.1),\n    )\n    print(results)\n\nasyncio.run(main())",
+        "explanation": "Each coroutine yields control at await, letting the event loop run another ready coroutine. gather preserves input order in its returned results even if b finishes first.",
+        "explanationUk": "Кожна coroutine віддає керування на await, дозволяючи event loop виконати іншу готову coroutine. gather зберігає порядок вхідних задач у результаті, навіть якщо b завершується першою.",
+        "expectedResult": "['a', 'b'] after roughly 0.2 seconds rather than 0.3 seconds of serial waiting.",
+        "expectedResultUk": "['a', 'b'] приблизно через 0.2 секунди замість 0.3 секунди послідовного очікування."
+      }
+    ]
+  },
+  {
+    "id": "py-conc-race-conditions-and-locks",
+    "codeExamples": [
+      {
+        "title": "Protect shared state with a lock",
+        "titleUk": "Захист спільного стану через lock",
+        "language": "python",
+        "code": "from threading import Lock, Thread\n\ncounter = 0\nlock = Lock()\n\ndef increment_many():\n    global counter\n    for _ in range(10_000):\n        with lock:\n            counter += 1\n\nthreads = [Thread(target=increment_many) for _ in range(4)]\nfor thread in threads:\n    thread.start()\nfor thread in threads:\n    thread.join()\n\nprint(counter)",
+        "explanation": "The lock makes the read-modify-write update a critical section shared by all threads. Do not treat the GIL as a substitute for application-level synchronization.",
+        "explanationUk": "Lock робить read-modify-write оновлення критичною секцією, спільною для всіх потоків. Не слід вважати GIL заміною прикладної синхронізації.",
+        "expectedResult": "40000.",
+        "expectedResultUk": "40000."
+      }
+    ]
+  },
+  {
+    "id": "py-web-requests-vs-urllib",
+    "codeExamples": [
+      {
+        "title": "Reusable HTTP client with Session",
+        "titleUk": "Повторно використовуваний HTTP-клієнт через Session",
+        "language": "python",
+        "code": "import requests\n\nwith requests.Session() as session:\n    session.headers.update({\"Accept\": \"application/json\"})\n    response = session.get(\n        \"https://api.example.test/users/42\",\n        timeout=5,\n    )\n    response.raise_for_status()\n    user = response.json()\n    print(user[\"id\"])",
+        "explanation": "Session reuses connection pooling plus shared headers/cookies across calls. A timeout and raise_for_status() make failure behavior explicit instead of allowing indefinite waits or silently accepting error responses.",
+        "explanationUk": "Session повторно використовує connection pool і спільні headers/cookies між викликами. timeout та raise_for_status() роблять помилки явними замість нескінченного очікування чи тихого прийняття error response.",
+        "expectedResult": "For a successful JSON response such as {'id': 42}, it prints 42; network/status errors raise exceptions.",
+        "expectedResultUk": "Для успішної JSON-відповіді на кшталт {'id': 42} друкує 42; network/status помилки викликають exceptions."
+      }
+    ]
+  },
+  {
+    "id": "py-web-selenium-explicit-vs-implicit-waits",
+    "codeExamples": [
+      {
+        "title": "Wait for the exact UI condition",
+        "titleUk": "Очікування конкретної UI-умови",
+        "language": "python",
+        "code": "from selenium.webdriver.common.by import By\nfrom selenium.webdriver.support import expected_conditions as EC\nfrom selenium.webdriver.support.ui import WebDriverWait\n\nlogin = WebDriverWait(driver, 10).until(\n    EC.element_to_be_clickable((By.CSS_SELECTOR, \"[data-testid='login']\"))\n)\nlogin.click()",
+        "explanation": "The explicit wait states exactly what must become true at this point in the test. This is more local and diagnosable than applying one implicit timeout to every element lookup.",
+        "explanationUk": "Explicit wait прямо описує, що саме має стати істинним у цій точці тесту. Це локальніше й легше діагностується, ніж один implicit timeout для кожного пошуку елемента.",
+        "expectedResult": "The click occurs only after the login element is present and clickable, or TimeoutException is raised after 10 seconds.",
+        "expectedResultUk": "Клік відбувається лише після появи й клікабельності login-елемента, або через 10 секунд виникає TimeoutException."
+      }
+    ]
+  }
+]
