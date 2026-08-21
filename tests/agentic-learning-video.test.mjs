@@ -51,7 +51,7 @@ test("agentic learning restores the original under-construction roadmap tabs", a
   assert.match(page, /id=\{item\.id\}/);
 });
 
-test("learning video playback policy exposes 3× and 4× without pretending unsupported rates work", () => {
+test("learning video playback policy exposes 3× and 4× and can still identify advertised rates", () => {
   assert.deepEqual([...LEARNING_VIDEO_PLAYBACK_RATES], [1, 1.25, 1.5, 1.75, 2, 3, 4]);
   assert.equal(isLearningVideoRateSupported([1, 1.5, 2, 3, 4], 3), true);
   assert.equal(isLearningVideoRateSupported([1, 1.5, 2, 3, 4], 4), true);
@@ -61,16 +61,29 @@ test("learning video playback policy exposes 3× and 4× without pretending unsu
   assert.equal(sameLearningVideoRate(1.98, 2), false);
 });
 
-test("learning video uses YouTube IFrame API and capability-gated custom speeds", async () => {
+test("learning video always attempts requested custom speed and reports YouTube's actual result", async () => {
   const player = await read("app/learning-video.tsx");
 
   assert.match(player, /https:\/\/www\.youtube\.com\/iframe_api/);
   assert.match(player, /getAvailablePlaybackRates/);
-  assert.match(player, /setPlaybackRate/);
+  assert.match(player, /player\.setPlaybackRate\(rate\)/);
+  assert.match(player, /const actual = player\.getPlaybackRate\(\)/);
+  assert.match(player, /setLastAttempt\(\{ requested: rate, actual \}\)/);
   assert.match(player, /LEARNING_VIDEO_PLAYBACK_RATES\.map/);
-  assert.match(player, /isLearningVideoRateSupported/);
-  assert.match(player, /disabled=\{!supported\}/);
-  assert.match(player, /3× and 4× stay visible but are enabled only when YouTube reports those rates/);
+  assert.match(player, /disabled=\{!ready\}/);
+  assert.doesNotMatch(player, /disabled=\{!supported\}/);
+  assert.doesNotMatch(player, /if \(!player \|\| !isLearningVideoRateSupported/);
+  assert.match(player, /Request \$\{rate\}×; YouTube may clamp it to a supported speed/);
+  assert.match(player, /Requested \$\{lastAttempt\.requested\}×; YouTube applied \$\{lastAttempt\.actual\}×/);
   assert.doesNotMatch(player, /contentDocument/);
   assert.doesNotMatch(player, /querySelector\(["']video["']\)/);
+});
+
+test("agentic copy describes best-effort 3× and 4× requests instead of capability gating", async () => {
+  const page = await read("app/agentic-learning-page.tsx");
+
+  assert.match(page, /best-effort setPlaybackRate/);
+  assert.match(page, /кожен клік 3× \/ 4× завжди відправляє/);
+  assert.match(page, /фактично застосований rate/);
+  assert.doesNotMatch(page, /активуються тільки коли YouTube віддає їх/);
 });

@@ -35,6 +35,11 @@ type YouTubeWindow = Window & typeof globalThis & {
   onYouTubeIframeAPIReady?: () => void;
 };
 
+type PlaybackAttempt = {
+  requested: number;
+  actual: number;
+};
+
 let youtubeApiPromise: Promise<YouTubeNamespace> | null = null;
 
 function loadYouTubeApi() {
@@ -82,6 +87,7 @@ export default function LearningVideo({ channel, title, videoId }: {
   const playerRef = useRef<YouTubePlayer | null>(null);
   const [availableRates, setAvailableRates] = useState<number[]>([]);
   const [currentRate, setCurrentRate] = useState(1);
+  const [lastAttempt, setLastAttempt] = useState<PlaybackAttempt | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,11 +143,18 @@ export default function LearningVideo({ channel, title, videoId }: {
 
   const setRate = (rate: number) => {
     const player = playerRef.current;
-    if (!player || !isLearningVideoRateSupported(availableRates, rate)) return;
+    if (!player || !ready) return;
+
+    setLastAttempt(null);
     player.setPlaybackRate(rate);
+
     window.setTimeout(() => {
-      if (playerRef.current === player) setCurrentRate(player.getPlaybackRate());
-    }, 80);
+      if (playerRef.current !== player) return;
+      const actual = player.getPlaybackRate();
+      setCurrentRate(actual);
+      setAvailableRates(player.getAvailablePlaybackRates());
+      setLastAttempt({ requested: rate, actual });
+    }, 180);
   };
 
   return (
@@ -157,24 +170,30 @@ export default function LearningVideo({ channel, title, videoId }: {
       <div className={styles.controls} role="group" aria-label="Playback speed">
         <span className={styles.controlsLabel}>Speed</span>
         {LEARNING_VIDEO_PLAYBACK_RATES.map((rate) => {
-          const supported = ready && isLearningVideoRateSupported(availableRates, rate);
+          const advertised = ready && isLearningVideoRateSupported(availableRates, rate);
           const isActive = sameLearningVideoRate(currentRate, rate);
-          const unavailableMessage = `${rate}× is not exposed by the YouTube embedded player for this video.`;
           return (
             <button
               aria-pressed={isActive}
               className={`${styles.speed}${isActive ? ` ${styles.speedActive}` : ""}`}
-              disabled={!supported}
+              disabled={!ready}
               key={rate}
               onClick={() => setRate(rate)}
-              title={supported ? `Play at ${rate}×` : unavailableMessage}
+              title={advertised ? `Play at ${rate}×` : `Request ${rate}×; YouTube may clamp it to a supported speed`}
               type="button"
             >
               {rate}×
             </button>
           );
         })}
-        <span className={styles.note}>3× and 4× stay visible but are enabled only when YouTube reports those rates for this embed.</span>
+        <span className={styles.note}>Every speed button sends the requested value to YouTube. Unsupported values such as 3× or 4× may be clamped by the embedded player.</span>
+        {lastAttempt && (
+          <span className={styles.note} aria-live="polite">
+            {sameLearningVideoRate(lastAttempt.requested, lastAttempt.actual)
+              ? `Applied ${lastAttempt.actual}×.`
+              : `Requested ${lastAttempt.requested}×; YouTube applied ${lastAttempt.actual}×.`}
+          </span>
+        )}
       </div>
     </section>
   );
