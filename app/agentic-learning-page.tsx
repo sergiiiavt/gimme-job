@@ -13,7 +13,19 @@ const headings = [
   { id: "agentic-patterns", text: "Agentic workflow patterns" },
 ];
 
-const navigation: SubnavItem[] = headings.map(({ id, text }) => ({ id, label: text }));
+const roadmapItems = [
+  { id: "tools-and-actions", title: "Tools and actions", copy: "Typed tools, validation, permissions, retries, and safe external actions." },
+  { id: "state-and-memory", title: "State and memory", copy: "Session state, durable memory, retrieval, and boundaries between user and agent data." },
+  { id: "approval-workflows", title: "Approval workflows", copy: "Human confirmation before applications, messages, or any consequential action." },
+  { id: "agent-evaluation", title: "Agent evaluation", copy: "Task success, trajectory checks, tool correctness, regression suites, and observability." },
+  { id: "mcp-experiments", title: "MCP experiments", copy: "Small integrations for job sources, Gmail, GitHub, and structured knowledge." },
+  { id: "pet-projects", title: "Pet projects", copy: "A portfolio backlog of narrow, testable agents instead of one uncontrolled system." },
+] as const;
+
+const navigation: SubnavItem[] = [
+  ...headings.map(({ id, text }) => ({ id, label: text })),
+  ...roadmapItems.map(({ id, title }) => ({ id, label: title, status: "under-construction" as const })),
+];
 
 const copy = {
   en: {
@@ -23,8 +35,7 @@ const copy = {
     codeTitle: "Claude Code: a practical start",
     codeIntro: "A Ukrainian walkthrough from Rodion Lozovoi that starts from zero and builds a working web application with Claude Code. Use it as the practical entry point before moving to broader agentic workflows.",
     coworkTitle: "Claude Cowork: work beyond coding",
-    coworkIntro: "Cowork is the bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. The chapter combines a practical content-workflow video with a second Rodion Cowork resource.",
-    pending: "The exact YouTube watch URL still needs to be verified before embedding. The player intentionally does not guess video IDs.",
+    coworkIntro: "Cowork is the bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. This chapter combines two practical Cowork walkthroughs.",
     rodionCowork: "How to automate 80% of work for €20? Full Claude Cowork overview",
     shtuchkaCowork: "Content factory with Claude Cowork, Notion and Skill Editor",
     patternsTitle: "Agentic workflow patterns to notice",
@@ -37,7 +48,9 @@ const copy = {
       "MCP and connectors: treat external systems as explicit capabilities with scoped permissions.",
     ],
     speed: "Playback speed",
-    speedCopy: "The custom player asks YouTube which playback rates are actually available. 3× and 4× are shown explicitly, but enabled only when the embedded player reports support for them. This avoids a control that silently falls back to 2×.",
+    speedCopy: "The console trick uses the native HTMLMediaElement video.playbackRate property on youtube.com. Our page embeds YouTube in a cross-origin iframe, so it cannot reach that inner <video>; it can only request rates through the YouTube IFrame API. 3× and 4× remain visible and become active only when YouTube exposes them for the embed.",
+    roadmapTitle: "Planned Agentic topics",
+    underConstruction: "Under construction",
   },
   uk: {
     title: "AI agents & MCP",
@@ -46,8 +59,7 @@ const copy = {
     codeTitle: "Claude Code: практичний старт",
     codeIntro: "Україномовний walkthrough Родіона Лозового: від нуля до робочого вебзастосунку за допомогою Claude Code. Це практична точка входу перед ширшими agentic workflows.",
     coworkTitle: "Claude Cowork: agentic робота поза кодом",
-    coworkIntro: "Cowork показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Тут поєднані практичне відео про content workflow та ще один Cowork-матеріал Родіона.",
-    pending: "Точний YouTube watch URL ще треба верифікувати перед embed. Плеєр навмисно не вгадує video ID.",
+    coworkIntro: "Cowork показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Тут зібрані два практичні Cowork walkthroughs.",
     rodionCowork: "Як автоматизувати 80% роботи за €20? Повний огляд Claude Cowork",
     shtuchkaCowork: "Контент-завод з Claude Cowork, Notion та Skill Editor",
     patternsTitle: "Agentic patterns, які варто помічати",
@@ -60,7 +72,9 @@ const copy = {
       "MCP та connectors: зовнішні системи як явні capabilities з обмеженими permissions.",
     ],
     speed: "Швидкість відтворення",
-    speedCopy: "Наш плеєр запитує у YouTube реально доступні playback rates. 3× і 4× показуються окремо, але активуються лише якщо embedded player повідомляє, що підтримує їх. Тобто кнопка не маскує тихий fallback до 2×.",
+    speedCopy: "Трюк у console працює через нативну властивість HTMLMediaElement video.playbackRate безпосередньо на youtube.com. У нас YouTube відкритий у cross-origin iframe, тому gimme-job.com не може дістатися до внутрішнього <video> і може лише просити швидкість через YouTube IFrame API. 3× і 4× залишаються видимими та активуються тільки коли YouTube віддає їх для embed.",
+    roadmapTitle: "Заплановані Agentic теми",
+    underConstruction: "Under construction",
   },
 };
 
@@ -125,12 +139,11 @@ export default function AgenticLearningPage() {
                     title={text.shtuchkaCowork}
                     videoId="rSDKAjao_7Q"
                   />
-                  <div className={styles.referenceCard}>
-                    <strong>RO БУДУЄ · Rodion Lozovoi</strong>
-                    <h3>{text.rodionCowork}</h3>
-                    <p>{text.pending}</p>
-                    <a href="https://cases.media/article/claude-dlya-menedzheriv-yak-zarobiti-plyus-u-karmu-vid-komandi" rel="noreferrer" target="_blank">Verified reference ↗</a>
-                  </div>
+                  <LearningVideo
+                    channel="RO БУДУЄ · Rodion Lozovoi"
+                    title={text.rodionCowork}
+                    videoId="LZ79ZwTI6lU"
+                  />
                 </div>
 
                 <h2 id="agentic-patterns">{text.patternsTitle}</h2>
@@ -138,6 +151,15 @@ export default function AgenticLearningPage() {
                 <ul>{text.patterns.map((item) => <li key={item}>{item}</li>)}</ul>
                 <h3>{text.speed}</h3>
                 <p>{text.speedCopy}</p>
+
+                <h2>{text.roadmapTitle}</h2>
+                {roadmapItems.map((item) => (
+                  <section className={styles.referenceCard} id={item.id} key={item.id}>
+                    <strong>{text.underConstruction}</strong>
+                    <h3>{item.title}</h3>
+                    <p>{item.copy}</p>
+                  </section>
+                ))}
               </article>
             </div>
 
