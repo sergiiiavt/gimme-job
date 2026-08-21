@@ -9,7 +9,7 @@ function looksLikePythonCode(value: string) {
   if (!snippet) return false;
   if (snippet.includes("\n")) return true;
 
-  return /^(?:python|pytest|pip|uv|poetry)\b|(^|\s)(?:async\s+def|def|class|for|while|if|elif|else|try|except|finally|with|import|from|return|yield|await|raise|assert)\b|(?:==|!=|<=|>=|:=|->)|\b(?:is|in)\b|[=()\[\]{}]|\.[A-Za-z_]\w*\s*\(/.test(snippet);
+  return /(?:^(?:python|pytest|pip|uv|poetry)\b|(?:^|\s)(?:async\s+def|def|class|for|while|if|elif|else|try|except|finally|with|import|from|return|yield|await|raise|assert)\b|(?:==|!=|<=|>=|:=|->)|\b(?:is|in)\b|[=()\[\]{}]|\.[A-Za-z_]\w*\s*\()/.test(snippet);
 }
 
 function appendProse(segments: PracticalExampleSegment[], value: string) {
