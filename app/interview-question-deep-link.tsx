@@ -4,6 +4,17 @@ import { useState } from "react";
 import { contentHref } from "./content-deep-links";
 import styles from "./interview-question-deep-link.module.css";
 
+interface InterviewDeepLinkCodeExample {
+  title: string;
+  titleUk?: string;
+  language: string;
+  code: string;
+  explanation: string;
+  explanationUk?: string;
+  expectedResult?: string;
+  expectedResultUk?: string;
+}
+
 interface InterviewDeepLinkQuestion {
   id: string;
   level: string;
@@ -18,6 +29,7 @@ interface InterviewDeepLinkQuestion {
   strongAnswerSignalsUk?: string[];
   example?: string;
   exampleUk?: string;
+  codeExamples?: InterviewDeepLinkCodeExample[];
   sourceIds: string[];
   tags?: string[];
 }
@@ -52,6 +64,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
   const question = catalog.questions.find((item) => item.id === questionId);
   const [language, setLanguage] = useState<"en" | "uk">("en");
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<number | null>(null);
 
   if (!question) {
     return (
@@ -84,6 +97,16 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
+    }
+  };
+
+  const copyCode = async (code: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(index);
+      window.setTimeout(() => setCopiedCode((current) => current === index ? null : current), 1400);
+    } catch {
+      setCopiedCode(null);
     }
   };
 
@@ -127,18 +150,44 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
         </header>
 
         <section className={styles.section}>
-          <h2>Answer</h2>
+          <h2>{showUk ? "Відповідь" : "Answer"}</h2>
           <p>{displayAnswer}</p>
         </section>
 
+        {question.codeExamples?.length ? (
+          <section className={`${styles.section} ${styles.codeSection}`}>
+            <h2>{showUk ? "SQL приклади" : "SQL examples"}</h2>
+            <div className={styles.codeExamples}>
+              {question.codeExamples.map((example, index) => {
+                const title = showUk && example.titleUk ? example.titleUk : example.title;
+                const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
+                const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
+                return (
+                  <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
+                    <header className={styles.codeHeader}>
+                      <strong>{title}</strong>
+                      <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
+                    </header>
+                    <pre className={styles.codeBlock}><code>{example.code}</code></pre>
+                    <p className={styles.codeExplanation}>{explanation}</p>
+                    {expectedResult && (
+                      <p className={styles.expectedResult}><strong>{showUk ? "Очікуваний результат" : "Expected result"}:</strong> {expectedResult}</p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         <section className={styles.section}>
-          <h2>Strong answer includes</h2>
+          <h2>{showUk ? "Сильна відповідь включає" : "Strong answer includes"}</h2>
           <ul>{displaySignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
         </section>
 
         {displayExample && (
           <section className={styles.section}>
-            <h2>Example</h2>
+            <h2>{showUk ? "Практичний контекст" : "Practical context"}</h2>
             <p>{displayExample}</p>
           </section>
         )}
@@ -151,7 +200,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
 
         {sources.length ? (
           <section className={styles.sources}>
-            <h2>Sources</h2>
+            <h2>{showUk ? "Джерела" : "Sources"}</h2>
             {sources.map((source) => (
               <a href={source.url} key={source.id} rel="noreferrer" target="_blank">
                 <strong>{source.title}</strong>
