@@ -111,16 +111,18 @@ function meadowClusterSprite(cell: HexCell, theme: number, index: number): Rewil
   return index === 0 && random(cell, 346) > .82 ? "detail-stump-a" : random(cell, 347 + index) > .66 ? "detail-pebbles" : "detail-grass-tuft-c";
 }
 
-function drawMeadowLife(
+// Exported so the ground layer can draw this before entities (see rewild-production-renderer's
+// renderOverheadGame) — units then simply paint over the clutter like everything else on the
+// ground, instead of this pass needing an occupied-hex halo to avoid hiding them.
+export function drawMeadowLife(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
   kinds: ReadonlyMap<string, string>,
-  blocked: ReadonlySet<string>,
 ) {
   for (const cell of snapshot.state.world.cells.values()) {
     const key = hexKey(cell.hex);
     const kind = kinds.get(key);
-    if (blocked.has(key) || cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
+    if (cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
     if (hexDistance(cell.hex, HOUSE_CENTER) <= 2 || random(cell, 320) < .84) continue;
 
     const center = hexCenter(cell.hex);
@@ -277,7 +279,6 @@ export function renderAuthoredArtOverlay(
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
 
-  drawMeadowLife(ctx, snapshot, kinds, blocked);
   drawForestDensity(ctx, snapshot, kinds, blocked);
   drawWaterEdges(ctx, snapshot, kinds, blocked);
   drawIndustrialComplex(ctx, snapshot, kinds, blocked);
