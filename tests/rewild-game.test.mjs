@@ -147,9 +147,10 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(authoredOverlaySource, /function drawWaterEdges/);
   assert.match(authoredOverlaySource, /function drawIndustrialComplex/);
   assert.match(authoredOverlaySource, /function drawCorruptionDetail/);
-  assert.match(authoredOverlaySource, /"industrial-fan"/);
-  assert.match(authoredOverlaySource, /"reed-clump"/);
-  assert.match(authoredOverlaySource, /"corruption-spike"/);
+  assert.match(authoredOverlaySource, /"industrial-vent-small-a"/);
+  assert.match(authoredOverlaySource, /"detail-reeds-a"/);
+  assert.match(authoredOverlaySource, /corruption-\$\{cell\.corruption\}/);
+  assert.doesNotMatch(authoredOverlaySource, /"industrial-fan"|"reed-clump"|"corruption-spike"/);
   assert.match(authoredOverlaySource, /snapshot\.occupiedHexes/);
   assert.doesNotMatch(authoredOverlaySource, /updateGame|placePlant|createGameState|Math\.random/);
 
