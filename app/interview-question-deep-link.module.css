@@ -175,10 +175,10 @@ button.backLink {
 }
 
 .codeHeader button {
-  background: #ffffff;
-  border: 1px solid #ced8d1;
+  background: #2d2d30;
+  border: 1px solid #4b4b4b;
   border-radius: 7px;
-  color: #526158;
+  color: #d4d4d4;
   cursor: pointer;
   flex: 0 0 auto;
   font-size: 11px;
@@ -188,24 +188,46 @@ button.backLink {
 }
 
 .codeHeader button:hover {
-  background: #f3f6f3;
-  border-color: #b8c6bc;
+  background: #3a3d41;
+  border-color: #5a5a5a;
 }
 
 .codeBlock {
-  background: #f2f5f2;
-  border: 1px solid #dce3dd;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
   border-radius: 8px;
-  color: #21362a;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #d4d4d4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.6;
   margin: 0;
   max-width: 100%;
   overflow-x: auto;
   padding: 13px 14px;
+  scrollbar-color: #3b3b3b transparent;
+  scrollbar-width: thin;
   tab-size: 2;
   white-space: pre;
+}
+
+.codeBlock::-webkit-scrollbar {
+  height: 7px;
+}
+
+.codeBlock::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.codeBlock::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #3b3b3b;
+  background-clip: padding-box;
+}
+
+.codeBlock::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+  background-clip: padding-box;
 }
 
 .codeBlock code {
