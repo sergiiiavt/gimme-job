@@ -1,24 +1,13 @@
 {
-  "version": 2,
+  "version": 3,
   "updatedAt": "2026-08-21",
   "mode": "research-only",
   "productionCatalogChangesAllowed": false,
   "goal": "Cross-check the existing interview catalog against Ukrainian and international interview-question banks, deduplicate by concept and interview intent, strengthen source evidence, and add only genuinely missing concepts.",
   "dedupPolicy": {
     "canonicalKey": ["topic", "concept", "interviewIntent", "questionKind"],
-    "statuses": [
-      "existing-match",
-      "wording-variant",
-      "related-but-distinct",
-      "new-concept",
-      "uncertain"
-    ],
-    "candidateActions": [
-      "merge-source",
-      "add-question",
-      "skip-low-value",
-      "needs-review"
-    ],
+    "statuses": ["existing-match", "wording-variant", "related-but-distinct", "new-concept", "uncertain"],
+    "candidateActions": ["merge-source", "add-question", "skip-low-value", "needs-review"],
     "rules": [
       "Do not create a new catalog question for wording-only variants.",
       "Theory and scenario questions may remain separate when they test different interview intent.",
@@ -26,7 +15,7 @@
       "A concept being absent from the current catalog is necessary but not sufficient for adding it: interview value and recurrence must also be considered.",
       "Official documentation validates answer correctness but is not by itself an interview-prevalence signal.",
       "Ukrainian interview banks and international interview banks have equal priority as prevalence evidence.",
-      "Broad question banks, interviewer-authored guidance, and fresh market snapshots are tracked separately so one type of source cannot masquerade as another."
+      "Broad question banks, interviewer-authored guidance, hiring-derived sources and fresh market snapshots are tracked separately."
     ]
   },
   "batches": [
@@ -70,7 +59,8 @@
         "Large parts of DOU 400+ overlap directly with the older DOU 250+ collection, especially Selenium, Web/API, Mobile and practical scenarios.",
         "DOU 400+ also contains additional Git, database, Scrum, behavioural and scenario material that must be checked against the current GimmeJob catalog before being considered new.",
         "DOU 400+ is retained as a first-class Ukrainian-market interview signal rather than being discarded because of overlap.",
-        "The DOU 400+ author states that some questions came from interviews and most were collected while reading testing resources; this makes the collection useful as coverage evidence but not proof that every listed question is commonly asked."
+        "The DOU 400+ author states that some questions came from interviews and most were collected while reading testing resources; this makes the collection useful as coverage evidence but not proof that every listed question is commonly asked.",
+        "The final practical section contains higher-value judgment scenarios such as release pressure, incomplete testing, ambiguous requirements, developer disagreement, debugging and late QA involvement; these deserve intent-level comparison rather than being collapsed into generic theory."
       ],
       "observedInternalDuplicateExamples": [
         "Smoke vs Sanity appears more than once.",
@@ -81,48 +71,15 @@
         "Testing without documentation appears in closely overlapping general questions."
       ],
       "preliminaryCatalogChecks": [
-        {
-          "concept": "database collation",
-          "status": "existing-match",
-          "action": "merge-source",
-          "evidence": "Present in content/interview/database-sql-qa.json."
-        },
-        {
-          "concept": "composite keys",
-          "status": "existing-match",
-          "action": "merge-source",
-          "evidence": "Present in content/interview/database-sql-qa.json."
-        },
-        {
-          "concept": "SQL injection",
-          "status": "existing-match",
-          "action": "merge-source",
-          "evidence": "Present in content/interview/database-sql-qa.json and restored-coverage-qa.json."
-        },
-        {
-          "concept": "emulator versus simulator",
-          "status": "existing-match",
-          "action": "merge-source",
-          "evidence": "Present in canonical-baseline.json and embedded-qa.json."
-        },
-        {
-          "concept": "Product Backlog versus Sprint Backlog",
-          "status": "existing-match",
-          "action": "merge-source",
-          "evidence": "Present in canonical-baseline.json/common-qa.json."
-        },
-        {
-          "concept": "TestFlight",
-          "status": "new-concept",
-          "action": "needs-review",
-          "evidence": "No matching interview-catalog entry found by repository search; also appears in the older DOU 250+ bank, so this is a known Ukrainian-bank coverage gap rather than a DOU-400-only discovery."
-        },
-        {
-          "concept": "git cherry-pick",
-          "status": "new-concept",
-          "action": "needs-review",
-          "evidence": "No matching catalog entry found by repository search; must still pass recurrence/value review before addition."
-        }
+        {"concept": "database collation", "status": "existing-match", "action": "merge-source", "evidence": "Present in content/interview/database-sql-qa.json."},
+        {"concept": "composite keys", "status": "existing-match", "action": "merge-source", "evidence": "Present in content/interview/database-sql-qa.json."},
+        {"concept": "SQL injection", "status": "existing-match", "action": "merge-source", "evidence": "Present in database-sql-qa.json/restored-coverage-qa.json."},
+        {"concept": "emulator versus simulator", "status": "existing-match", "action": "merge-source", "evidence": "Present in canonical-baseline.json/embedded-qa.json."},
+        {"concept": "Product Backlog versus Sprint Backlog", "status": "existing-match", "action": "merge-source", "evidence": "Present in canonical-baseline.json/common-qa.json."},
+        {"concept": "release deadline and risk-based regression", "status": "existing-match", "action": "merge-source", "evidence": "Current interview catalog contains release/deadline/risk scenarios; exact DOU practical variants still require intent-level matching."},
+        {"concept": "ambiguous or incomplete requirements", "status": "existing-match", "action": "merge-source", "evidence": "Present in core-foundations-qa.json/restored-coverage-qa.json and related authored entries."},
+        {"concept": "TestFlight", "status": "new-concept", "action": "needs-review", "evidence": "No matching interview-catalog entry found by repository search; also appears in DOU 250+, so this is a known Ukrainian-bank coverage gap rather than a DOU-400-only discovery."},
+        {"concept": "git cherry-pick", "status": "new-concept", "action": "needs-review", "evidence": "No matching catalog entry found by repository search; must pass recurrence/value review before addition."}
       ]
     },
     {
@@ -147,7 +104,7 @@
           "url": "https://mate.academy/blog/it-career/testuvalnyk-pz-khto-tse-i-shcho-vin-robyt",
           "publishedAt": "2026-08",
           "sourceRole": "fresh-market-snapshot",
-          "value": "Very fresh Ukrainian junior-market confirmation. Explicitly lists testing/types, severity vs priority, test case vs checklist, bug report, smoke/regression/sanity and SDLC/STLC as common junior interview prompts. Narrow source, so use as prevalence confirmation rather than a broad bank."
+          "value": "Very fresh Ukrainian junior-market confirmation. Lists testing/types, severity vs priority, test case vs checklist, bug report, smoke/regression/sanity and SDLC/STLC as common junior prompts."
         },
         {
           "id": "dou-qa-voicechat-2023",
@@ -156,7 +113,7 @@
           "url": "https://dou.ua/forums/topic/44752/",
           "publishedAt": "2023-08-11",
           "sourceRole": "community-interview-signal",
-          "value": "Supporting Ukrainian context for Junior/Middle/Senior interview tasks and expectations; not treated as an independent large question bank."
+          "value": "Supporting Ukrainian context for Junior/Middle/Senior interview tasks and expectations; not an independent large bank."
         }
       ],
       "confirmedFindings": [
@@ -168,8 +125,84 @@
     {
       "id": "international-general",
       "label": "International QA interview banks",
-      "status": "pending",
-      "plannedSources": ["Katalon", "Indeed", "GeeksforGeeks", "Testsigma", "BugBug", "KORE1"]
+      "status": "in-progress",
+      "sources": [
+        {
+          "id": "katalon-qa-interviews",
+          "publisher": "Katalon",
+          "title": "60+ QA Interview Questions & Answers: 2026 Guide",
+          "url": "https://katalon.com/resources-center/blog/qa-interview-questions",
+          "catalogStatus": "existing",
+          "sourceRole": "broad-current-question-bank",
+          "freshness": "2026 guide",
+          "value": "Broad Junior-to-Lead coverage plus dedicated AI/modern QA section, agentic QA, automation strategy and scenario questions."
+        },
+        {
+          "id": "indeed-qa-interviews",
+          "publisher": "Indeed",
+          "title": "35 QA Interview Questions",
+          "url": "https://www.indeed.com/career-advice/interviewing/qa-interview-questions",
+          "catalogStatus": "existing",
+          "sourceRole": "career-question-bank",
+          "updatedAt": "2026-06-15",
+          "value": "Strong signal for open-ended experience, communication, risk-based thinking, QA fundamentals and practical work without documentation."
+        },
+        {
+          "id": "gfg-testing-interviews",
+          "publisher": "GeeksforGeeks",
+          "title": "Software Testing Interview Questions and Answers",
+          "catalogStatus": "existing",
+          "sourceRole": "broad-technical-question-bank",
+          "updatedAt": "2026-02-06",
+          "value": "Wide technical coverage; supplemented by separate current automation, performance, database and API interview collections."
+        },
+        {
+          "id": "testsigma-qa-interviews-2026",
+          "publisher": "Testsigma",
+          "title": "70+ QA Interview Questions Hiring Managers Ask With Answers",
+          "url": "https://testsigma.com/blog/qa-interview-questions/",
+          "catalogStatus": "audit-only-candidate",
+          "sourceRole": "broad-current-question-bank",
+          "updatedAt": "2026-04-06",
+          "value": "Beginner-to-Senior, manual plus automation; useful independent recurrence signal for current generic QA coverage."
+        },
+        {
+          "id": "bugbug-qa-interviews-2026",
+          "publisher": "BugBug",
+          "title": "Top 40 QA Interview Questions and Answers for 2026",
+          "url": "https://bugbug.io/blog/software-testing/qa-interview-questions/",
+          "catalogStatus": "audit-only-candidate",
+          "sourceRole": "curated-current-question-bank",
+          "publishedAt": "2026-06-08",
+          "value": "Compact high-signal bank covering fundamentals, test design, automation, flaky tests, no-requirements scenarios, collaboration, metrics, leadership and practical judgment; explicitly describes what interviewers evaluate."
+        },
+        {
+          "id": "kore1-qa-interviews-2026",
+          "publisher": "KORE1",
+          "title": "QA Engineer Interview Questions 2026",
+          "url": "https://www.kore1.com/qa-engineer-interview-questions/",
+          "catalogStatus": "audit-only-candidate",
+          "sourceRole": "hiring-derived-question-bank",
+          "updatedAt": "2026-05-01",
+          "sourceClaim": "Question bank derived from hiring-manager debriefs across 40+ QA searches in the prior 18 months.",
+          "value": "High-value current signal for automation fluency, CI/CD, AI-assisted testing and strategy/judgment rather than vocabulary."
+        }
+      ],
+      "confirmedFindings": [
+        "2026 sources strongly confirm that classic fundamentals remain relevant; DOU's age alone is not a reason to remove those concepts.",
+        "Current international sources shift emphasis toward judgment: what not to test, what not to automate, risk-based prioritization, flaky-test diagnosis, missing requirements, production feedback and team-level quality ownership.",
+        "Katalon explicitly adds AI-assisted and agentic QA for 2026, while the existing GimmeJob modern-SDET set already covers AI-assisted review and self-healing concepts, so modern-source review is expected to strengthen evidence more than explode the question count.",
+        "KORE1 is tracked separately as hiring-derived evidence because its stated methodology is materially different from general SEO/career lists."
+      ],
+      "preliminaryCatalogChecks": [
+        {"concept": "flaky-test causes and remediation", "status": "existing-match", "action": "merge-source", "evidence": "Present in current interview catalog including testing-foundations/common/modern-SDET coverage."},
+        {"concept": "traceability and coverage matrices", "status": "existing-match", "action": "merge-source", "evidence": "Present in restored-coverage/core-foundations/canonical coverage."},
+        {"concept": "assert versus verify in automation", "status": "existing-match", "action": "merge-source", "evidence": "Related authored coverage exists in canonical/modern-SDET interview content; exact wording may differ."},
+        {"concept": "AI-assisted testing and self-healing locators", "status": "existing-match", "action": "merge-source", "evidence": "Present in modern-sdet-qa.json and documented in interview-content-quality.md."},
+        {"concept": "missed production bug and learning response", "status": "existing-match", "action": "merge-source", "evidence": "Semantic coverage exists across observability-production, embedded, modern-SDET and canonical entries."},
+        {"concept": "quality ownership across the team", "status": "existing-match", "action": "merge-source", "evidence": "Current interview catalog contains shared-quality/team-ownership concepts."},
+        {"concept": "monkey versus gorilla testing", "status": "new-concept", "action": "skip-low-value", "evidence": "No catalog match found; currently seen in one compact 2026 bank and has lower preparation value than scenario, automation and system-quality gaps. Reconsider only if it recurs independently."}
+      ]
     },
     {
       "id": "modern-specialist",
@@ -182,5 +215,5 @@
       "status": "pending"
     }
   ],
-  "nextAction": "Continue DOU 400+ concept normalization and catalog matching, with special attention to Git, Mobile, behavioural and practical sections; classify absent concepts by interview value before moving to international banks."
+  "nextAction": "Finish the DOU 400+ high-value practical/Git/Mobile gap classification, then cross-check the 2026 international banks for recurrent concepts not already represented in the catalog. Only after the global second pass should production sourceIds, prevalence or question content change."
 }
