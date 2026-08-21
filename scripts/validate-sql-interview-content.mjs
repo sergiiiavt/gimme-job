@@ -20,6 +20,7 @@ const [
   practicalSource,
   codeExampleSource,
   dataCodeExampleSource,
+  expandedCodeExampleSource,
   catalogSource,
 ] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
@@ -37,6 +38,7 @@ const [
   readText("../content/interview/sql-practical-interview.ts"),
   readText("../content/interview/sql-code-examples.ts"),
   readText("../content/interview/sql-data-code-examples.ts"),
+  readText("../content/interview/sql-expanded-code-examples.ts"),
   readText("../content/interview/catalog.ts"),
 ]);
 
@@ -54,13 +56,13 @@ const baseQuestions = [
   ...sourceRefresh.questions,
 ];
 const existingSqlQuestions = baseQuestions.filter((question) => question.category === "Databases, SQL and BI");
-const enhancementIds = [codeExampleSource, dataCodeExampleSource]
+const enhancementIds = [codeExampleSource, dataCodeExampleSource, expandedCodeExampleSource]
   .flatMap((source) => [...source.matchAll(/\n    id: "([a-z0-9-]+)",\n    codeExamples:/g)].map((match) => match[1]));
 const practicalIds = [...practicalSource.matchAll(/\n    id: "(sql-[a-z0-9-]+)",/g)].map((match) => match[1]);
 const practicalTaskIds = [...practicalSource.matchAll(/\n    taskId: "([a-z0-9-]+)",/g)].map((match) => match[1]);
 
 assert.equal(databaseSql.questions.length, 25, "The audited SQL foundation set should stay at 25 questions.");
-assert.equal(existingSqlQuestions.length, 33, "The existing Databases, SQL and BI topic should contain 33 pre-overhaul questions.");
+assert.ok(existingSqlQuestions.length >= 33, "The Databases, SQL and BI topic unexpectedly lost pre-existing coverage.");
 assert.equal(enhancementIds.length, existingSqlQuestions.length, "Every existing SQL/BI question should have a structured code example.");
 assert.equal(new Set(enhancementIds).size, enhancementIds.length, "SQL code-example enhancement IDs must be unique.");
 assert.deepEqual(
@@ -94,11 +96,14 @@ assert.match(codeExampleSource, /language: "sql"/);
 assert.match(codeExampleSource, /expectedResultUk/);
 assert.match(dataCodeExampleSource, /language: "sql"/);
 assert.match(dataCodeExampleSource, /expectedResultUk/);
+assert.match(expandedCodeExampleSource, /language: "sql"/);
+assert.match(expandedCodeExampleSource, /expectedResultUk/);
 
 assert.match(catalogSource, /import sqlPracticalInterview from "\.\/sql-practical-interview"/);
 assert.match(catalogSource, /import sqlCodeExamples from "\.\/sql-code-examples"/);
 assert.match(catalogSource, /import sqlDataCodeExamples from "\.\/sql-data-code-examples"/);
-assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples\]/);
+assert.match(catalogSource, /import sqlExpandedCodeExamples from "\.\/sql-expanded-code-examples"/);
+assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples, \.\.\.sqlExpandedCodeExamples\]/);
 assert.match(catalogSource, /\.\.\.sqlPracticalInterview\.questions/);
 assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)/);
 assert.match(catalogSource, /version: 15/);
