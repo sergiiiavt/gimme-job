@@ -2,7 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 import { contentHref } from "./content-deep-links";
+import ExecutablePythonBlock from "./executable-python-block";
 import { highlightInterviewCode } from "./interview-code-highlighting";
+import {
+  isRunnablePythonInterviewExample,
+  type PythonInterviewExecution,
+} from "./interview-python-execution";
 import { splitPythonPracticalExample } from "./interview-practical-formatting";
 import styles from "./interview-question-deep-link.module.css";
 
@@ -15,6 +20,7 @@ interface InterviewDeepLinkCodeExample {
   explanationUk?: string;
   expectedResult?: string;
   expectedResultUk?: string;
+  execution?: PythonInterviewExecution;
 }
 
 interface InterviewDeepLinkQuestion {
@@ -182,13 +188,20 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                   const title = showUk && example.titleUk ? example.titleUk : example.title;
                   const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
                   const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
+                  const runnable = isRunnablePythonInterviewExample(example.language, example.code, example.execution);
                   return (
                     <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
                       <header className={styles.codeHeader}>
                         <strong>{title}</strong>
-                        <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
+                        {!runnable && (
+                          <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
+                        )}
                       </header>
-                      <pre className={styles.codeBlock}><code>{renderHighlightedCode(example.code, example.language)}</code></pre>
+                      {runnable ? (
+                        <ExecutablePythonBlock code={example.code} />
+                      ) : (
+                        <pre className={styles.codeBlock}><code>{renderHighlightedCode(example.code, example.language)}</code></pre>
+                      )}
                       <p className={styles.codeExplanation}>{explanation}</p>
                       {expectedResult && (
                         <p className={styles.expectedResult}><strong>{showUk ? "Очікуваний результат" : "Expected result"}:</strong> {expectedResult}</p>
