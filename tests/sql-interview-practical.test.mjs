@@ -47,7 +47,7 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
 
   assert.match(deepLink, /Practical example/);
   assert.match(deepLink, /Практичний приклад/);
-  assert.match(deepLink, /highlightSql\(example\.code\)/);
+  assert.match(deepLink, /highlightCode\(example\.code, example\.language\)/);
   assert.match(deepLink, /copyCode\(example\.code, index\)/);
   assert.match(styles, /\.codeBlock \{/);
   assert.match(styles, /background: #1e1e1e;/);
