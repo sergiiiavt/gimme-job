@@ -1,14 +1,16 @@
 # V4 Batch 01 — Terrain, Road and Small Detail Primitives
 
-Base: Visual Bible v1.
+Base: audited Visual Bible v1.1 (`REFERENCE_STATUS.json`).
 
 This batch is visual-only. It must not add gameplay entities or touch simulation code.
 
-## Production source layout
+## Production source rules
 
-Generate clean pixel-art source sprites on transparent background. No labels, no baked hex outlines, no shadows that imply a different projection. Preserve native aspect ratio.
+Use clean pixel-art source sprites on transparent background. No labels, no baked hex outlines, no shadows that imply a different projection. Preserve native aspect ratio. Never extract production pixels from a Visual Bible image whose `productionExtractionAllowed` value is `false`.
 
-### 01A — Road / fence / boundary family — REVIEW APPROVED
+### 01A — Road / fence / boundary family — **REVIEW APPROVAL RETRACTED / REDESIGN REQUIRED**
+
+Planned topology vocabulary remains:
 1. `road-dirt-straight`
 2. `road-dirt-curve-left`
 3. `road-dirt-curve-right`
@@ -24,9 +26,16 @@ Generate clean pixel-art source sprites on transparent background. No labels, no
 13. `fence-wood-broken`
 14. `barrier-stone-low`
 
-Approval note: the Batch 01A review sheet was explicitly approved in chat on 2026-08-20. It locks the road/fence/barrier style direction for clean production export. The review poster itself is not the final runtime atlas.
+Audit correction:
+- the earlier Batch 01A review approval is withdrawn;
+- road drawings in `01-environment-detail.webp` are illustrative and **not** approved production road art;
+- `04-terrain-transitions.webp` is rejected and must not be used in road/transition generation;
+- existing experimental road source work must not be promoted merely because topology/connector logic is valid;
+- define and review a new production road target before atlas integration resumes.
 
-### 01B — Small nature details — SOURCE LOCKED / RUNTIME INTEGRATION
+Fence/barrier motifs in `01-environment-detail.webp` may still inform visual language, but clean production sprites require a fresh production review.
+
+### 01B — Small nature details — SOURCE LOCKED / RUNTIME INTEGRATED
 15. `detail-grass-tuft-a`
 16. `detail-grass-tuft-b`
 17. `detail-grass-tuft-c`
@@ -44,9 +53,9 @@ Approval note: the Batch 01A review sheet was explicitly approved in chat on 202
 29. `detail-reeds-a`
 30. `detail-lily-pads-a`
 
-The 16 exact assets are stored losslessly-for-pipeline as base64 PNG source bundles under `assets/rewild/v4/source-b64/`. They are deterministically decoded and packed during local development, validation, and production build. No generated contact-sheet labels or background pixels enter the runtime atlas.
+The exact production PNG sources are committed under `assets/rewild/v4/source/` and are packed deterministically by the v4 detail-atlas build. The Visual Bible sheets are review references, not atlas source material.
 
-### 01C — Small industrial details — SOURCE LOCKED / RUNTIME INTEGRATION
+### 01C — Small industrial details — SOURCE LOCKED / RUNTIME INTEGRATED
 31. `industrial-cable-segment-a`
 32. `industrial-junction-box-a`
 33. `industrial-relay-box-a`
@@ -54,7 +63,7 @@ The 16 exact assets are stored losslessly-for-pipeline as base64 PNG source bund
 35. `industrial-vent-small-a`
 36. `industrial-debris-small-a`
 
-These six assets use the same deterministic source-bundle and atlas pipeline as 01B. They are decorative physical hardware only and do not create gameplay entities.
+These six assets use the same committed-PNG and atlas pipeline as 01B. They are decorative physical hardware only and do not create gameplay entities.
 
 ## Geometry constraints
 
@@ -63,32 +72,43 @@ These six assets use the same deterministic source-bundle and atlas pipeline as 
 - Production sprites themselves contain no hex outline.
 - Never resize non-uniformly.
 - Road/fence/pipe/cable connector directions must correspond to the six runtime neighbor directions, not arbitrary screen-space angles.
+- `04-terrain-transitions.webp` must never be used as a geometry guide.
 
 ## Style constraints
 
-- Match Visual Bible `01-environment-detail.webp`, `04-terrain-transitions.webp`, and `07-gameplay-target.webp`.
-- Cozy, moderately detailed pixel art.
-- Natural asymmetry.
-- No repeated template silhouette.
-- Small props remain readable without competing with units or major structures.
-- Industrial pieces are physical hardware, not magical/electrical fantasy motifs.
+Permitted references for this batch:
+- `01-environment-detail.webp` — small props, fences/barriers, flora, industrial details and density only; **exclude road artwork as a production target**;
+- `03-mainframe-interactions.webp` — physical industrial/nature interaction when relevant;
+- `07-gameplay-target.webp` — composition/density only, excluding corruption motifs;
+- `05-industrial-modular-kit.webp` — hardware inspiration only, with generated labels ignored.
 
-## Generation strategy
+Rejected references:
+- `02-style-scale-footprint.webp`;
+- `04-terrain-transitions.webp`.
 
-1. 01A road/fence/boundary — 14 exact assets. **Review approved; connector-aware production export is next.**
-2. 01B nature details — 16 exact assets. **Source locked and wired to v4 authored overlay.**
-3. 01C industrial details — 6 exact assets. **Source locked and wired to v4 authored overlay.**
+General style:
+- cozy, moderately detailed pixel art;
+- natural asymmetry;
+- no repeated template silhouette;
+- small props remain readable without competing with units or major structures;
+- industrial pieces are physical hardware, not magical fantasy motifs;
+- corruption/waste is technological/ecological damage, never purple crystal terrain.
 
-No further concept-sheet generation is required for 01B/01C. New generation is allowed only for a specific rejected/missing production asset or a later explicitly defined family.
+## Current strategy
+
+1. **01A road/fence/boundary — redesign required.** Stop experimental road integration until a new production target is reviewed.
+2. **01B nature details — integrated.** Do not redraw as part of the road redesign.
+3. **01C industrial details — integrated.** Do not redraw as part of the road redesign.
 
 ## Acceptance gate
 
-Before integration:
-- inspect generated sheet for invented gameplay entities: expected count = 0;
+Before any future 01A integration:
+- confirm the new road/fence production target is explicitly reviewed;
+- inspect every generated asset for invented gameplay entities: expected count = 0;
 - verify every intended slot and reject missing/duplicated/hallucinated items;
 - confirm no stretched hex guides;
 - confirm no text baked into sprite cells;
-- crop/export each accepted source separately;
 - validate alpha bounds and transparent padding;
 - pack without non-uniform resizing;
-- review at actual 1200×675 gameplay scale.
+- validate connector masks against the real six-neighbor grid;
+- review at actual 1200×675 gameplay scale before updating any benchmark hash.

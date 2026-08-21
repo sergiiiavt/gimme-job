@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "referenceCanvas": {
     "width": 1200,
     "height": 675,
@@ -7,77 +7,69 @@
     "scaleMode": "uniform-nearest-neighbor-letterbox",
     "pixelSnap": true
   },
-  "authoritativeReference": "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png",
-  "authoritativeReferenceScope": "visual-only",
+  "authority": {
+    "gameplayAndGeometry": [
+      "app/rewild-world.ts",
+      "app/rewild-simulation.ts",
+      "app/rewild-hex-grid.ts"
+    ],
+    "referenceStatus": "docs/rewild/visual-bible/REFERENCE_STATUS.json",
+    "visualBible": "docs/rewild/visual-bible/README.md",
+    "productionRules": "docs/rewild/visual-bible/PRODUCTION_RULES.md",
+    "spriteManifest": "docs/rewild/visual-bible/SPRITE_MANIFEST.md"
+  },
   "references": [
-    "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png",
-    "docs/rewild/references/approved-world-direction.png",
-    "docs/rewild/references/baseline-before-vertical-slice.png",
-    "docs/rewild/references/vertical-slice-target-v1.png"
+    "docs/rewild/visual-bible/01-environment-detail.webp",
+    "docs/rewild/visual-bible/02-style-scale-footprint.webp",
+    "docs/rewild/visual-bible/03-mainframe-interactions.webp",
+    "docs/rewild/visual-bible/04-terrain-transitions.webp",
+    "docs/rewild/visual-bible/05-industrial-modular-kit.webp",
+    "docs/rewild/visual-bible/06-damage-states.webp",
+    "docs/rewild/visual-bible/07-gameplay-target.webp"
   ],
   "referenceStatus": {
-    "docs/rewild/references/top-down-hex-allies-enemies-concept-v2-small-hexes.png": "authoritative-visual-only",
-    "docs/rewild/references/approved-world-direction.png": "superseded-mood-reference",
-    "docs/rewild/references/baseline-before-vertical-slice.png": "historical-baseline",
-    "docs/rewild/references/vertical-slice-target-v1.png": "superseded-composition-reference"
+    "docs/rewild/visual-bible/01-environment-detail.webp": "approved-with-exceptions",
+    "docs/rewild/visual-bible/02-style-scale-footprint.webp": "rejected",
+    "docs/rewild/visual-bible/03-mainframe-interactions.webp": "approved",
+    "docs/rewild/visual-bible/04-terrain-transitions.webp": "rejected",
+    "docs/rewild/visual-bible/05-industrial-modular-kit.webp": "inspiration-only",
+    "docs/rewild/visual-bible/06-damage-states.webp": "inspiration-only",
+    "docs/rewild/visual-bible/07-gameplay-target.webp": "composition-only"
   },
   "hexLayout": {
-    "orientation": "pointy-top",
-    "visibility": "always-visible-subordinate-mesh",
-    "reviewColumnsApprox": 37,
-    "reviewRowsApprox": 15,
-    "radiusLogicalPixels": {
-      "minimum": 21,
-      "maximum": 22
-    },
+    "orientation": "flat-top",
+    "sizeLogicalPixels": 21,
+    "widthLogicalPixels": 42,
+    "heightLogicalPixelsApprox": 36.373066958946424,
+    "xStepLogicalPixels": 31.5,
+    "interiorAngleDegrees": 120,
     "neighborDirections": 6,
-    "automaticEnemyRouteDirections": 6,
-    "playerControlledUnitMovement": false,
-    "edgeAnchoredNetworks": [
-      "road",
-      "cable",
-      "root",
-      "drain",
-      "wall"
-    ]
+    "visibility": "visible-subordinate-mesh",
+    "uniformScaleRequired": true
   },
   "visualContract": {
-    "referenceScope": "visual-only-not-gameplay-design",
     "projection": "strict-overhead-orthographic",
     "gameOnlyBenchmarkFrame": true,
     "connectedTerritories": true,
-    "connectedTerrainFamilies": [
-      "forest",
-      "water",
-      "industry",
-      "corruption",
-      "reclamation"
-    ],
     "animationPolicy": "existing-gameplay-event-and-state-transition-only",
+    "corruptionLanguage": "technological-ecological-damage",
+    "roadProductionStatus": "redesign-required",
     "forbiddenPresentation": [
-      "three-quarter-runtime-sprites",
-      "hidden-hex-mesh",
       "non-uniform-scaling",
-      "smooth-vector-terrain",
+      "smooth-runtime-resampling",
       "large-oval-shadows",
       "perpetual-idle-motion",
-      "decorative-particle-noise"
+      "decorative-particle-noise",
+      "purple-crystal-corruption",
+      "generated-reference-geometry-as-runtime-authority"
     ]
   },
   "gameplayContract": {
     "authority": "existing-real-time-tower-defense",
-    "defenders": "player-placed-stationary-automatic-attack",
+    "defenders": "player-placed-stationary-automatic-action",
     "enemies": "automatic-wave-spawn-movement-and-attack",
-    "resources": [
-      "sunlight"
-    ],
+    "resource": "sunlight",
     "objective": "protect-house-integrity",
-    "persistentSystems": [
-      "corruption",
-      "score",
-      "waves",
-      "win-loss-flow"
-    ],
     "forbiddenChanges": [
       "selectable-movable-allies",
       "action-points",
@@ -87,26 +79,6 @@
       "attack-command",
       "restore-command",
       "end-turn-control"
-    ]
-  },
-  "benchmarkScene": {
-    "id": "overhead-hex-target-v1",
-    "deterministic": true,
-    "procedural": false,
-    "requiredComposition": [
-      "connected-nature-left",
-      "connected-industry-right",
-      "merged-forest",
-      "merged-lake",
-      "six-edge-natural-network",
-      "six-edge-industrial-network",
-      "protected-house-with-integrity",
-      "stationary-placed-defenders",
-      "automatic-wave-enemies",
-      "sunlight-wave-score-hud",
-      "automatic-route-and-attack-feedback",
-      "corruption-state",
-      "quiet-traversable-cells"
     ]
   },
   "sourceDirectory": "public/rewild",
@@ -223,168 +195,6 @@
     "referenceOnlyLegacy": [
       "obj-house.png",
       "terrain-meadow.png"
-    ]
-  },
-  "requiredPhase1AtlasFamilies": [
-    {
-      "id": "overhead-terrain-connected",
-      "image": "overhead/terrain-connected-v1.png",
-      "metadata": "overhead/terrain-connected-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "grass-variants",
-        "territory-materials",
-        "connected-region-exterior-edges"
-      ]
-    },
-    {
-      "id": "overhead-gameplay-feedback",
-      "image": "overhead/gameplay-feedback-v1.png",
-      "metadata": "overhead/gameplay-feedback-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "visible-mesh",
-        "placement-preview",
-        "attack-range",
-        "automatic-enemy-route",
-        "target",
-        "damage",
-        "house-danger"
-      ]
-    },
-    {
-      "id": "overhead-forest-nature",
-      "image": "overhead/forest-nature-v1.png",
-      "metadata": "overhead/forest-nature-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "single-cell-tree",
-        "merged-canopy-interior",
-        "merged-canopy-exterior",
-        "rocks",
-        "low-nature-objects"
-      ]
-    },
-    {
-      "id": "overhead-water-connected",
-      "image": "overhead/water-connected-v1.png",
-      "metadata": "overhead/water-connected-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "water-interior",
-        "shore-by-edge-mask",
-        "reeds",
-        "rocks",
-        "polluted-inlet"
-      ]
-    },
-    {
-      "id": "overhead-industry-datacenter",
-      "image": "overhead/industry-datacenter-v1.png",
-      "metadata": "overhead/industry-datacenter-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "industrial-ground",
-        "compute",
-        "cooling",
-        "power",
-        "access",
-        "damage",
-        "rubble"
-      ]
-    },
-    {
-      "id": "overhead-edge-networks",
-      "image": "overhead/edge-networks-v1.png",
-      "metadata": "overhead/edge-networks-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "road",
-        "cable",
-        "root",
-        "drain",
-        "wall",
-        "terminators",
-        "junctions",
-        "broken-states"
-      ]
-    },
-    {
-      "id": "overhead-defenders",
-      "image": "overhead/defenders-v1.png",
-      "metadata": "overhead/defenders-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "stationary-idle",
-        "placement",
-        "automatic-attack",
-        "damage"
-      ]
-    },
-    {
-      "id": "overhead-enemies",
-      "image": "overhead/enemies-v1.png",
-      "metadata": "overhead/enemies-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "six-direction-idle",
-        "automatic-six-direction-move",
-        "automatic-attack",
-        "damage",
-        "death"
-      ]
-    },
-    {
-      "id": "overhead-world-state-transitions",
-      "image": "overhead/world-state-transitions-v1.png",
-      "metadata": "overhead/world-state-transitions-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "construction",
-        "corruption",
-        "rubble",
-        "environmental-recovery"
-      ]
-    },
-    {
-      "id": "overhead-house",
-      "image": "overhead/house-v1.png",
-      "metadata": "overhead/house-v1.json",
-      "status": "required-not-produced",
-      "contents": [
-        "intact",
-        "damaged",
-        "critical",
-        "destroyed"
-      ]
-    }
-  ],
-  "phase1AtlasMetadataContract": {
-    "requiredFrameFields": [
-      "name",
-      "x",
-      "y",
-      "width",
-      "height",
-      "pivotX",
-      "pivotY",
-      "footprint",
-      "facing",
-      "state"
-    ],
-    "allowedFacingValues": [
-      "none",
-      "all-six",
-      "0",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5"
-    ],
-    "contactSheetsRequired": [
-      "native-scale",
-      "gameplay-scale"
     ]
   },
   "productionAtlases": [
@@ -508,17 +318,5 @@
       "production/tree-response-states-v1.png",
       "production/pond-response-states-v1.png"
     ]
-  },
-  "verticalSliceProductionQueue": [
-    "overhead-terrain-connected",
-    "overhead-gameplay-feedback",
-    "overhead-forest-nature",
-    "overhead-water-connected",
-    "overhead-industry-datacenter",
-    "overhead-edge-networks",
-    "overhead-defenders",
-    "overhead-enemies",
-    "overhead-world-state-transitions",
-    "overhead-house"
-  ]
+  }
 }
