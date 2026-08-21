@@ -35,16 +35,19 @@ function hasUnsupportedPythonImport(source: string) {
   return false;
 }
 
+export function isRunnablePythonSource(language: string, source: string) {
+  if (language.toLowerCase() !== "python") return false;
+  if (!source.trim() || source.length > 8_000 || hasUnsupportedPythonImport(source)) return false;
+  return !unsupportedRunnablePythonPatterns.some((pattern) => pattern.test(source));
+}
+
 export function classifyPythonInterviewExecution(
   language: string,
   source: string,
   requested?: PythonInterviewExecution,
 ): PythonInterviewExecution {
   if (requested === "static") return "static";
-  if (language.toLowerCase() !== "python") return "static";
-  if (!source.trim() || source.length > 8_000 || hasUnsupportedPythonImport(source)) return "static";
-  if (unsupportedRunnablePythonPatterns.some((pattern) => pattern.test(source))) return "static";
-  return "python";
+  return isRunnablePythonSource(language, source) ? "python" : "static";
 }
 
 export function isRunnablePythonInterviewExample(
