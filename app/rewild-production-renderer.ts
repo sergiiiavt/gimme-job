@@ -35,6 +35,7 @@ import {
   type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
 import type { RenderEdge, RenderSnapshot } from "./rewild-render-snapshot";
+import { drawMeadowLife } from "./rewild-authored-overlay";
 
 export interface RewildCamera {
   x: number;
@@ -695,6 +696,7 @@ export function renderOverheadGame(ctx: CanvasRenderingContext2D, snapshot: Rend
   drawRoad(ctx, snapshot);
   drawCorruptionMarks(ctx, state);
   drawMesh(ctx, state);
+  drawMeadowLife(ctx, snapshot, biomeKindByCell(state));
 
   drawCableNetwork(ctx, snapshot);
   drawRouteFeedback(ctx, snapshot);
