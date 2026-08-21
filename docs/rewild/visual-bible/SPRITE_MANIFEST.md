@@ -1,37 +1,41 @@
 # Rewild Sprite Manifest v4
 
-This manifest is the production-art checklist. Gameplay-owned entries must map to code. Visual-only props must never be treated as gameplay entities.
+This manifest is the production-art checklist. Gameplay-owned entries must map to code. Visual-only props must never be treated as gameplay entities. Generated concept-sheet labels are not runtime state or entity definitions.
 
-Status values: `existing-v3`, `planned-v4`, `review`, `approved`, `integrated`.
+Status values include: `existing-v3`, `planned-v4`, `review`, `approved`, `integrated`, `redesign-required`.
 
 ## A. Gameplay structures
 
-| ID | Code concept | Footprint | States | Status |
+Exact runtime visual-state mapping must come from code/renderer behavior, not from `06-damage-states.webp` labels.
+
+| ID | Code concept | Footprint | Code-backed visual cues / mapping | Status |
 | --- | --- | --- | --- | --- |
-| `structure-house` | House | multi-hex | intact, damaged, critical, destroyed | planned-v4 |
-| `structure-datacenter` | regular `DataNode` | multi-hex | construction, active, damaged, failing, ruined | planned-v4 |
-| `structure-mainframe` | boss `DataNode` | multi-hex | construction, active, overloaded, heavily-damaged, ruined | planned-v4 |
-| `structure-facility-ruin` | `FacilityRuin` | inherits node footprint | collapsed/rubble | planned-v4 |
+| `structure-house` | House | multi-hex | current runtime uses `house` and `house-damaged`, selected from HP; any additional variants require an explicit HP/state mapping | planned-v4 |
+| `structure-datacenter` | regular `DataNode` | multi-hex | `buildProgress`, HP, shutdown/collapse effects; exact damage variants must be explicitly mapped | planned-v4 |
+| `structure-mainframe` | boss `DataNode` | multi-hex | same code-backed DataNode cues, with boss scale/footprint; exact damage variants must be explicitly mapped | planned-v4 |
+| `structure-facility-ruin` | `FacilityRuin` | inherits node footprint | collapsed/rubble representation after facility collapse | planned-v4 |
+
+Do **not** infer runtime states such as `critical`, `destroyed`, `failing`, `overloaded`, or `heavily-damaged` from generated concept-sheet labels.
 
 ## B. Player plant units — exact current roster
 
-| ID | `PlantKind` | Footprint | Required visual states | Status |
+| ID | `PlantKind` | Footprint | Required visual cues | Status |
 | --- | --- | --- | --- | --- |
-| `plant-sunbloom` | `sunbloom` | 1 hex | idle, attack/resource cue, damaged | existing-v3 → planned-v4 |
-| `plant-thornbramble` | `thornbramble` | 1 hex | idle, automatic attack, damaged | existing-v3 → planned-v4 |
-| `plant-sporecap` | `sporecap` | 1 hex | idle, pulse attack, damaged | existing-v3 → planned-v4 |
-| `plant-vinewhip` | `vinewhip` | 1 hex | idle, ranged attack, damaged | existing-v3 → planned-v4 |
-| `plant-rootreclaimer` | `rootreclaimer` | 1 hex | idle, reclaim action, damaged | existing-v3 → planned-v4 |
-| `plant-elderoak` | `elderoak` | 1 gameplay anchor, visually larger | young, mature, attack, damaged | existing-v3 → planned-v4 |
+| `plant-sunbloom` | `sunbloom` | 1 hex | idle/resource cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-thornbramble` | `thornbramble` | 1 hex | idle, automatic attack cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-sporecap` | `sporecap` | 1 hex | idle, pulse attack cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-vinewhip` | `vinewhip` | 1 hex | idle, ranged attack/slow cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-rootreclaimer` | `rootreclaimer` | 1 hex | idle, reclaim cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-elderoak` | `elderoak` | 1 gameplay anchor, visually larger | young/mature age presentation, attack cue, HP damage readability | existing-v3 → planned-v4 |
 
 ## C. Enemy units — exact current roster
 
-| ID | `EnemyKind` | Footprint | Locomotion visual language | Required visual states | Status |
+| ID | `EnemyKind` | Footprint | Locomotion visual language | Required visual cues | Status |
 | --- | --- | --- | --- | --- | --- |
-| `enemy-clickbait` | `clickbait` | 1 hex | small device swarm / wheels / compact moving hardware | six-direction movement readability, attack, damaged, death | existing-v3 → planned-v4 |
-| `enemy-deepfake` | `deepfake` | 1 hex | heavier technical media/device mass on tracks or wheels; distinct silhouette from clickbait | six-direction movement readability, attack, damaged, death | existing-v3 → planned-v4 |
-| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, damaged, death | existing-v3 → planned-v4 |
-| `enemy-fragment` | `fragment` | 1 hex | compact broken server/device fragment on small tracks/wheels | six-direction movement readability, attack, damaged, death | existing-v3 → planned-v4 |
+| `enemy-clickbait` | `clickbait` | 1 hex | small device swarm / wheels / compact moving hardware | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
+| `enemy-deepfake` | `deepfake` | 1 hex | heavier technical media/device mass on tracks or wheels; distinct silhouette from clickbait | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
+| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, HP damage/death feedback | existing-v3 → planned-v4 |
+| `enemy-fragment` | `fragment` | 1 hex | compact broken server/device fragment on small tracks/wheels | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
 
 ## D. World objects already represented by code/art
 
@@ -49,11 +53,11 @@ Status values: `existing-v3`, `planned-v4`, `review`, `approved`, `integrated`.
 | `world-fence` | fence | no | existing-v3 → planned variants |
 | `world-sign` | sign | no | existing-v3 → planned variants |
 
-## E. Visual-only detail props approved by the Bible
+## E. Visual-only detail vocabulary
 
-These improve composition but must not appear in simulation collections as new gameplay entities.
+These improve composition but must not appear in simulation collections as new gameplay entities. Their reference authority is controlled by `REFERENCE_STATUS.json`.
 
-### Nature/details
+### Nature/details — integrated v4 detail family
 - grass tuft variants A/B/C
 - wild meadow weeds
 - flower patch variants
@@ -66,7 +70,10 @@ These improve composition but must not appear in simulation collections as new g
 - reeds
 - lily pads
 
-### Road/fence vocabulary
+### Road/fence vocabulary — **REDESIGN REQUIRED**
+The topology vocabulary remains useful, but the prior visual approval is withdrawn. `01-environment-detail.webp` road art is not a production target, and `04-terrain-transitions.webp` is rejected.
+
+Planned topology vocabulary:
 - dirt road straight
 - bend/curve
 - T-junction
@@ -79,7 +86,9 @@ These improve composition but must not appear in simulation collections as new g
 - broken fence
 - low stone edging
 
-### Industrial detail vocabulary
+Before producing or integrating this family, define and review a new production road target. Connector topology must use the real six-neighbor runtime grid.
+
+### Industrial detail vocabulary — integrated small-detail family / future expansion controlled
 - cable straight/corner/T/junction/terminator
 - pipe straight/corner/T/junction/terminator
 - pipe outlet into water
@@ -90,7 +99,7 @@ These improve composition but must not appear in simulation collections as new g
 - foundation/platform pieces
 - rubble/debris/broken equipment
 
-These names are art vocabulary, not new gameplay unit classes.
+Names shown in `05-industrial-modular-kit.webp` are visual inspiration only and do not create gameplay module classes.
 
 ## F. Connected terrain families
 
@@ -101,7 +110,7 @@ These names are art vocabulary, not new gameplay unit classes.
 - shore edges/corners/transitions
 - soil/yard
 
-### Road
+### Road — target not yet re-approved
 - interior
 - edge
 - bends
@@ -116,9 +125,11 @@ These names are art vocabulary, not new gameplay unit classes.
 - damaged/broken ground
 
 ### Wasted/corrupted ground
-Corruption levels 1–4 remain gameplay state. Visual language should progress from stressed/polluted ground to severely wasted/electrically stressed industrial blight. Avoid making crystals the primary read.
+Corruption levels 1–4 remain gameplay state. Visual language should progress from stressed/polluted ground to severely wasted/electrically stressed industrial blight.
 
-Required transitions:
+**Forbidden primary corruption language:** purple crystals, fantasy crystal nodes, magical glowing veins.
+
+Required visual transitions once a clean transition target is approved:
 - healthy → stressed
 - stressed → wasted
 - wasted → recovering
@@ -127,15 +138,17 @@ Required transitions:
 - forest ↔ industry clearing/damage
 - water ↔ wasted/polluted edge
 
+`04-terrain-transitions.webp` is rejected and cannot serve as the production source for these transitions.
+
 ## G. Production priority
 
-1. Terrain/road/nature-detail primitives.
-2. Forest + water connected families.
+1. Re-establish a clean production target for roads/connected terrain before further road integration.
+2. Forest + water connected families using approved references only.
 3. House.
-4. Datacenter/Mainframe industrial modules and connections.
+4. Datacenter/Mainframe industrial modules and physical connections.
 5. Exact six plant units.
 6. Exact four enemies.
-7. Damage/recovery states.
+7. Code-mapped damage/recovery visuals.
 8. VFX/attack/reclaim/collapse feedback.
 
-Before changing this manifest, verify the requested addition against code or explicit user approval.
+Before changing this manifest, verify the requested addition against code or explicit user approval and re-check `REFERENCE_STATUS.json`.
