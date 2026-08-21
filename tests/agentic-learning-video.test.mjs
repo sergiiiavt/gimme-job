@@ -20,15 +20,35 @@ test("agentic route uses the dedicated learning page", async () => {
   assert.match(route, /return <AgenticLearningPage\/>/);
 });
 
-test("agentic learning embeds verified videos and keeps the Rodion Cowork reference", async () => {
+test("agentic learning embeds all three verified videos", async () => {
   const page = await read("app/agentic-learning-page.tsx");
 
   assert.match(page, /videoId="zW4SEqgFBJc"/);
   assert.match(page, /videoId="rSDKAjao_7Q"/);
+  assert.match(page, /videoId="LZ79ZwTI6lU"/);
   assert.match(page, /channel="RO БУДУЄ · Rodion Lozovoi"/);
   assert.match(page, /channel="Штучка Інтелект"/);
   assert.match(page, /Як автоматизувати 80% роботи за €20\? Повний огляд Claude Cowork/);
   assert.match(page, /Контент-завод з Claude Cowork, Notion та Skill Editor/);
+  assert.doesNotMatch(page, /Точний YouTube watch URL ще треба верифікувати/);
+});
+
+test("agentic learning restores the original under-construction roadmap tabs", async () => {
+  const page = await read("app/agentic-learning-page.tsx");
+
+  for (const title of [
+    "Tools and actions",
+    "State and memory",
+    "Approval workflows",
+    "Agent evaluation",
+    "MCP experiments",
+    "Pet projects",
+  ]) {
+    assert.match(page, new RegExp(title));
+  }
+
+  assert.match(page, /status: "under-construction" as const/);
+  assert.match(page, /id=\{item\.id\}/);
 });
 
 test("learning video playback policy exposes 3× and 4× without pretending unsupported rates work", () => {
