@@ -21,6 +21,23 @@ assert.equal(metadata.frames.length, 22);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), DETAIL_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, DETAIL_ORDER.length, "v4 detail names must be unique");
 
+const runtimeFramePattern = /^\s*"([^"]+)": \{ x: (\d+), y: (\d+), width: (\d+), height: (\d+), pivotX: ([\d.]+), pivotY: ([\d.]+) \},$/gmu;
+const runtimeFrames = new Map(
+  [...runtimeSource.matchAll(runtimeFramePattern)].map((match) => [match[1], {
+    frame: {
+      x: Number.parseInt(match[2], 10),
+      y: Number.parseInt(match[3], 10),
+      width: Number.parseInt(match[4], 10),
+      height: Number.parseInt(match[5], 10),
+    },
+    pivot: {
+      x: Number.parseFloat(match[6]),
+      y: Number.parseFloat(match[7]),
+    },
+  }]),
+);
+assert.equal(runtimeFrames.size, DETAIL_ORDER.length, "runtime v4 frame table must contain exactly the 22 approved detail IDs");
+
 const sourceBundles = {};
 for (const bundle of ["nature-a.json", "nature-b.json", "industrial.json"]) {
   Object.assign(sourceBundles, JSON.parse(await readFile(path.join(bundleDirectory, bundle), "utf8")));
@@ -31,7 +48,7 @@ const sourceHashes = new Map();
 for (const name of DETAIL_ORDER) {
   const fileName = `${name}.png`;
   assert.ok(fileName in sourceBundles, `${fileName}: missing source payload`);
-  assert.match(runtimeSource, new RegExp(`\\"${name}\\"`), `${name}: missing from runtime v4 atlas ID list`);
+  assert.ok(runtimeFrames.has(name), `${name}: missing from runtime v4 frame table`);
 
   const sourceBuffer = Buffer.from(sourceBundles[fileName], "base64");
   const generatedBuffer = await readFile(path.join(generatedSourceDirectory, fileName));
@@ -80,6 +97,7 @@ for (const frame of metadata.frames) {
   assert.ok(x + width <= info.width && y + height <= info.height, `${frame.name}: frame exceeds atlas bounds`);
   assert.ok(frame.pivot.x >= 0 && frame.pivot.x <= 1 && frame.pivot.y >= 0 && frame.pivot.y <= 1, `${frame.name}: invalid pivot`);
   assert.deepEqual(frame.footprint, ["0,0"], `${frame.name}: Batch 01B/01C details must remain decorative one-cell assets`);
+  assert.deepEqual(runtimeFrames.get(frame.name), { frame: frame.frame, pivot: frame.pivot }, `${frame.name}: runtime frame must exactly match generated atlas metadata`);
 
   let visible = 0;
   for (let py = y; py < y + height; py += 1) {
@@ -94,4 +112,4 @@ assert.match(overlaySource, /drawRewildDetailV4/u, "authored overlay must use th
 assert.match(overlaySource, /CLUSTER_OFFSETS/u, "meadow details must remain clustered rather than uniform per-cell stamps");
 assert.match(overlaySource, /shorelinePoint/u, "water details must remain boundary-aware");
 
-console.log(`Rewild v4 detail atlas validated: ${DETAIL_ORDER.length} exact assets, transparent atlas, no duplicate or hallucinated entries.`);
+console.log(`Rewild v4 detail atlas validated: ${DETAIL_ORDER.length} exact assets, generated/runtime frames agree, transparent atlas, no duplicate or hallucinated entries.`);
