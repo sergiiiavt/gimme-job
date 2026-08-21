@@ -8,7 +8,7 @@ This batch is visual-only. It must not add gameplay entities or touch simulation
 
 Generate clean pixel-art source sprites on transparent background. No labels, no baked hex outlines, no shadows that imply a different projection. Preserve native aspect ratio.
 
-### 01A — Road / fence / boundary family — REVIEW APPROVED
+### 01A — Road / fence / boundary family — SOURCE LOCKED / RUNTIME INTEGRATION
 1. `road-dirt-straight`
 2. `road-dirt-curve-left`
 3. `road-dirt-curve-right`
@@ -24,7 +24,9 @@ Generate clean pixel-art source sprites on transparent background. No labels, no
 13. `fence-wood-broken`
 14. `barrier-stone-low`
 
-Approval note: the Batch 01A review sheet was explicitly approved in chat on 2026-08-20. It locks the road/fence/barrier style direction for clean production export. The review poster itself is not the final runtime atlas.
+Approval note: the Batch 01A review sheet was explicitly approved in chat on 2026-08-20. It locks the road/fence/barrier style direction. The review poster itself is not used as runtime art.
+
+The 14 exact production sprites are stored as individual transparent PNG files under `assets/rewild/v4/road-source/`. `scripts/build-rewild-v4-road-atlas.mjs` packs them without non-uniform resizing into the generated runtime atlas. The runtime chooses road/fence pieces from the real six-direction flat-top neighbor topology and rotates assets only in exact 60-degree steps. `barrier-stone-low` is source-locked but remains staged until a real world-object placement requires it; it is not invented as a gameplay entity.
 
 ### 01B — Small nature details — SOURCE LOCKED / RUNTIME INTEGRATION
 15. `detail-grass-tuft-a`
@@ -44,7 +46,7 @@ Approval note: the Batch 01A review sheet was explicitly approved in chat on 202
 29. `detail-reeds-a`
 30. `detail-lily-pads-a`
 
-The 16 exact assets are stored losslessly-for-pipeline as base64 PNG source bundles under `assets/rewild/v4/source-b64/`. They are deterministically decoded and packed during local development, validation, and production build. No generated contact-sheet labels or background pixels enter the runtime atlas.
+The 16 exact assets are stored as individual PNG production sources under `assets/rewild/v4/source/`. They are deterministically packed during local development, validation, and production build. No generated contact-sheet labels or background pixels enter the runtime atlas.
 
 ### 01C — Small industrial details — SOURCE LOCKED / RUNTIME INTEGRATION
 31. `industrial-cable-segment-a`
@@ -54,7 +56,7 @@ The 16 exact assets are stored losslessly-for-pipeline as base64 PNG source bund
 35. `industrial-vent-small-a`
 36. `industrial-debris-small-a`
 
-These six assets use the same deterministic source-bundle and atlas pipeline as 01B. They are decorative physical hardware only and do not create gameplay entities.
+These six assets use the same deterministic individual-PNG source and atlas pipeline as 01B. They are decorative physical hardware only and do not create gameplay entities.
 
 ## Geometry constraints
 
@@ -73,22 +75,22 @@ These six assets use the same deterministic source-bundle and atlas pipeline as 
 - Small props remain readable without competing with units or major structures.
 - Industrial pieces are physical hardware, not magical/electrical fantasy motifs.
 
-## Generation strategy
+## Production status
 
-1. 01A road/fence/boundary — 14 exact assets. **Review approved; connector-aware production export is next.**
+1. 01A road/fence/boundary — 14 exact assets. **Source locked; connector-aware v4 runtime layer and strict validator implemented.**
 2. 01B nature details — 16 exact assets. **Source locked and wired to v4 authored overlay.**
 3. 01C industrial details — 6 exact assets. **Source locked and wired to v4 authored overlay.**
 
-No further concept-sheet generation is required for 01B/01C. New generation is allowed only for a specific rejected/missing production asset or a later explicitly defined family.
+No further concept-sheet generation is required for Batch 01. New generation is allowed only for a specific rejected/missing production asset or a later explicitly defined family.
 
 ## Acceptance gate
 
-Before integration:
-- inspect generated sheet for invented gameplay entities: expected count = 0;
-- verify every intended slot and reject missing/duplicated/hallucinated items;
-- confirm no stretched hex guides;
-- confirm no text baked into sprite cells;
-- crop/export each accepted source separately;
-- validate alpha bounds and transparent padding;
+Before Batch 01A is considered complete:
+- expected invented gameplay entities = 0;
+- verify all 14 intended PNGs and reject missing/duplicated/hallucinated files;
+- confirm source/runtime geometry remains regular flat-top with six exact directions;
+- confirm no text or hex outlines are baked into sprite cells;
+- validate alpha and strict PNG decoding;
 - pack without non-uniform resizing;
-- review at actual 1200×675 gameplay scale.
+- verify road/fence overlay does not mutate simulation state;
+- review the actual deterministic 1200×675 gameplay capture before accepting the visual result.
