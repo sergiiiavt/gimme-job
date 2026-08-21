@@ -1,66 +1,114 @@
 {
-  "version": 1,
+  "version": 2,
   "updatedAt": "2026-08-21",
-  "purpose": "Current semantic-dedup ledger. This file is research-only and overrides earlier preliminary candidate classifications when they conflict.",
+  "purpose": "Final Phase-1 semantic-dedup candidate ledger. Research-only: production interview content is unchanged.",
   "productionChangesAllowed": false,
   "addQuestionCandidates": [
     {
-      "concept": "TestFlight for distributing and testing iOS builds",
+      "concept": "Pre-release mobile build distribution and beta workflow (TestFlight/Firebase App Distribution)",
       "category": "Mobile",
       "confidence": "high",
-      "reason": "No direct current interview-catalog question found. Recurs in DOU 250+, DOU 400+ and current international mobile-QA interview material.",
-      "shape": "One practical canonical question about what TestFlight is, how a QA uses it, build/version/device access and feedback/crash workflow. Do not split into command/tool trivia."
+      "reason": "No direct interview-catalog question found. TestFlight recurs in DOU 250+, DOU 400+ and current 2026 mobile-QA interview material; current mobile interview guidance also treats TestFlight/Firebase distribution and mobile CI/CD as practical knowledge.",
+      "shape": "One practical question about getting the correct pre-release build to testers, build/version identity, tester/device access, signing/provisioning constraints, feedback/crash evidence and CI distribution. Keep TestFlight as a concrete iOS example rather than creating several vendor questions."
     },
     {
-      "concept": "Mobile HTTP/HTTPS traffic interception and proxy debugging",
-      "category": "Mobile",
+      "concept": "HTTP/HTTPS traffic interception and proxy debugging for client applications",
+      "category": "Web, API and data",
       "confidence": "high",
-      "reason": "No direct interview-catalog question found. Recurs in DOU 250+, DOU 400+ and current international mobile interview material; GimmeJob currently has the topic only in testing-tools learning content.",
-      "shape": "One Middle-level practical question covering proxy setup, device trust/certificates, request/response inspection and HTTPS interception limitations. Use OWASP MASTG later only to validate the answer."
+      "reason": "No direct interview-catalog question found. DOU 250+/400+ and current mobile QA material repeatedly mention sniffers or Charles/Proxyman/Fiddler-style debugging; GimmeJob currently teaches proxies in testing-tools content but does not ask the interview intent directly.",
+      "shape": "One practical question about configuring an intercepting proxy, inspecting requests/responses, reproducing network failures, certificates/trust, HTTPS limitations such as pinning, and separating client, network and backend evidence. Use official/security documentation later to validate the answer."
     },
     {
       "concept": "Practical Git workflow for QA/AQA",
       "category": "Infrastructure",
+      "confidence": "high",
+      "reason": "DOU 250+ contains baseline Git questions; DOU 400+ adds conflicts, fetch/pull and cherry-pick; current 2026 QA/SDET interview sources explicitly ask daily workflow, merge/rebase, conflict resolution, PR review and CI integration. No direct authored GimmeJob interview question covers the workflow end to end.",
+      "shape": "One practical workflow question: branch -> change -> commit -> sync -> merge/rebase decision -> resolve conflicts -> PR/review -> CI. Fold fetch/pull/cherry-pick/reset/revert into follow-ups instead of creating command-by-command trivia."
+    },
+    {
+      "concept": "Testing WebSocket and real-time bidirectional features",
+      "category": "Web, API and data",
+      "confidence": "high",
+      "reason": "DOU 400+ asks WebSocket/socket questions and current 2026 technical interview sources independently emphasize WebSocket lifecycle, async messages, reconnect, ordering and delivery behavior. Repo-wide search found WebSocket material in learning content but no direct authored QA interview question in the main interview catalog.",
+      "shape": "One practical Middle/Senior question covering handshake/authentication, connection lifecycle, messages in both directions, reconnect/backoff, duplicate/missed/out-of-order messages, permissions, multiple clients and useful diagnostics. Do not duplicate generic messaging contract/replay questions already present."
+    },
+    {
+      "concept": "Mobile offline operation, reconnect and synchronization/conflict handling",
+      "category": "Mobile",
+      "confidence": "high",
+      "reason": "Current 2026 mobile-QA interview sources explicitly ask how to test an app offline and synchronize when connectivity returns. Existing push-notification coverage mentions offline recovery but does not test general local writes, queued actions, resync, duplication, stale data and conflicts as the primary interview intent.",
+      "shape": "One scenario question: start online -> lose/poor network -> perform reads/writes offline -> background/kill/restart where relevant -> reconnect -> verify retries, ordering, idempotency, conflict policy, stale-state UX and no data loss/duplication."
+    },
+    {
+      "concept": "Mobile app upgrade and local-state/data migration testing",
+      "category": "Mobile",
       "confidence": "medium-high",
-      "reason": "DOU 250+ contains baseline Git questions; DOU 400+ adds conflicts, pull vs fetch and cherry-pick; a current 2026 QA/SDET-specific interview source emphasizes daily workflow, branching, merge conflicts, undo/review and CI integration. No direct authored Git interview question was found in common-qa, canonical-baseline or modern-sdet authored sets.",
-      "shape": "Prefer one practical workflow question over separate trivia for clone/pull/fetch/cherry-pick. A strong answer should explain branch -> change -> commit -> sync/rebase-or-merge -> conflict handling -> PR -> CI, with safe handling of shared history."
+      "reason": "DOU 400+ includes local data migration, and current 2026 mobile QA material treats install-over-old-version, retained sessions/preferences and on-device schema migration as a distinct real-world risk. No direct authored GimmeJob mobile interview question was found for upgrade-path preservation.",
+      "shape": "One practical question comparing clean install with upgrade paths. Seed representative state on older supported versions, install the new build, verify migration/data/session/settings, interrupted/failed migration behavior, compatibility and launch stability."
+    },
+    {
+      "concept": "Shift-left testing implemented in practice",
+      "category": "Agile and delivery",
+      "confidence": "high",
+      "reason": "GimmeJob has shift-left in learning content, taxonomy and requirement-review tags, but no direct interview question. Multiple current 2026 QA/SDET banks ask it explicitly and evaluate concrete process changes rather than the definition alone.",
+      "shape": "One Middle-level strategy question covering refinement/three-amigos, testability/design review, component/contract checks, static analysis and fast PR feedback, while preserving whole-team ownership and avoiding the simplistic answer 'move tests earlier'."
+    },
+    {
+      "concept": "Choosing an automation framework/tool for a product and team",
+      "category": "Automation and CI",
+      "confidence": "high",
+      "reason": "The catalog has a direct question about framework components, but not the distinct decision intent of choosing Playwright, Selenium, Cypress or another approach. Current 2026 QA automation interview sources ask the comparison/selection question explicitly.",
+      "shape": "One practical decision question based on product/browser/platform needs, team languages/skills, debugging and auto-waiting model, parallelism, CI infrastructure, ecosystem, maintainability, migration cost and total ownership cost. Avoid declaring one framework universally best."
     }
   ],
   "mergeSourceCandidates": [
-    {"concept": "QA vs engineering disagreement about whether behavior is a defect", "canonicalQuestionId": "qa-developer-conflict", "reason": "Exact interview intent already exists; DOU 400+ and current international banks should strengthen evidence."},
-    {"concept": "Useful QA/test metrics and test effectiveness", "canonicalQuestionId": "quality-metrics", "reason": "Earlier audit temporarily classified this as new, but semantic second pass found the authored question. DOU 400+ asks both which metric matters and how to measure test effectiveness; BugBug and KORE1 2026 independently reinforce the same intent. This is source/prevalence work, not a new question."},
-    {"concept": "What should and should not be automated", "canonicalQuestionId": "automation-benefits-risks", "reason": "Existing question already balances automation value, maintenance, flakiness and false confidence; fresh sources reinforce it."},
-    {"concept": "AI-generated test review and human decision boundaries", "canonicalQuestionIds": ["ai-generated-test-review", "ai-generated-test-grounding", "test-generating-agent-evaluation"], "reason": "Existing authored AI questions already retain human ownership, require grounding and independent validation."},
-    {"concept": "CI/CD quality gates", "reason": "Direct interview coverage already exists in common-qa."},
+    {"concept": "QA vs engineering disagreement about whether behavior is a defect", "canonicalQuestionId": "qa-developer-conflict", "reason": "Exact interview intent already exists."},
+    {"concept": "Useful QA/test metrics and test effectiveness", "canonicalQuestionId": "quality-metrics", "reason": "DOU 400+, BugBug and KORE1 reinforce an existing authored question; update evidence/prevalence instead of adding another metrics question."},
+    {"concept": "What should and should not be automated", "canonicalQuestionId": "automation-benefits-risks", "reason": "Existing question already covers value, maintenance, flakiness and false confidence."},
+    {"concept": "Risk-based mobile device/OS matrix and real-device versus emulator coverage", "canonicalQuestionId": "emulator-simulator-real-device", "reason": "Global second pass found the canonical question already explicitly requires a risk-based device matrix."},
+    {"concept": "Generic asynchronous/eventually-consistent integration testing", "canonicalQuestionIds": ["event-driven-contract-testing", "message-ordering-replay-dead-letter", "async-trace-correlation"], "reason": "The authored modern-SDET set already covers contract compatibility, ordering, retries/replay/dead-letter behavior and async diagnostics. Do not create a generic duplicate; WebSocket remains distinct."},
+    {"concept": "AI-generated test review and human decision boundaries", "canonicalQuestionIds": ["ai-generated-test-review", "ai-generated-test-grounding", "test-generating-agent-evaluation"], "reason": "Existing authored AI questions already keep human ownership and require grounding/independent validation."},
+    {"concept": "Test strategy for a poorly documented/existing product", "canonicalQuestionId": "starting-qa-strategy", "reason": "Fresh Senior/Lead sources reinforce an existing direct strategy question."},
+    {"concept": "CI/CD quality gates", "reason": "Direct current interview coverage exists."},
     {"concept": "Test-suite runtime optimization and parallel execution", "reason": "Direct canonical/modern-SDET coverage exists."},
     {"concept": "Flaky-test diagnosis and remediation", "reason": "Direct current interview coverage exists."},
     {"concept": "Traceability and coverage matrices", "reason": "Direct current interview coverage exists."},
-    {"concept": "Ambiguous or missing requirements", "reason": "Direct current interview coverage exists across authored fundamentals/restored sets."},
-    {"concept": "Release pressure and risk-based regression selection", "reason": "Current authored catalog already covers this intent; DOU 400+ practical variants are evidence, not net-new questions."},
-    {"concept": "Database collation", "reason": "Already in database-sql-qa."},
-    {"concept": "Composite keys", "reason": "Already in database-sql-qa."},
-    {"concept": "SQL injection", "reason": "Already in database/restored authored coverage."},
-    {"concept": "Emulator vs simulator", "reason": "Already in canonical/embedded coverage."},
-    {"concept": "Product Backlog vs Sprint Backlog", "reason": "Already in canonical/common coverage."}
+    {"concept": "Ambiguous or missing requirements", "reason": "Direct authored fundamentals/restored coverage exists."},
+    {"concept": "Release pressure and risk-based regression selection", "canonicalQuestionId": "release-with-known-defect", "reason": "Existing strategy questions already cover risk, options, mitigation and release ownership."},
+    {"concept": "Production escape RCA", "canonicalQuestionId": "escaped-defect-rca", "reason": "Existing authored question covers technical cause, escape point and systemic actions."},
+    {"concept": "HTTP idempotency and repeat requests", "canonicalQuestionId": "http-method-semantics", "reason": "Existing direct API question."},
+    {"concept": "API rate limits/concurrency/security/downstream checks", "canonicalQuestionId": "api-test-model", "reason": "Existing endpoint scenario already includes these dimensions."},
+    {"concept": "Database fundamentals including constraints, NULL, transactions and collation", "reason": "Rich authored database-sql coverage already exists."},
+    {"concept": "Product Backlog vs Sprint Backlog and core Scrum concepts", "reason": "Existing canonical/common coverage; fresh sources should affect evidence rather than count."},
+    {"concept": "Push notifications and deep/universal links", "reason": "Existing authored mobile coverage already handles lifecycle, routing, offline/privacy and deep-link states."}
   ],
   "skipLowValueCandidates": [
-    {"concept": "Monkey vs gorilla testing", "reason": "Absent from current catalog but low preparation value and currently weaker independent recurrence than judgment/system-quality topics."},
-    {"concept": "Name ten Selenium interfaces", "reason": "Framework trivia with low transfer value; modern sources emphasize debugging, reliability, framework choices and delivery integration."},
-    {"concept": "Selenium Action vs Actions trivia", "reason": "Java/Selenium-specific API trivia; only useful if a vacancy explicitly requires that stack."},
-    {"concept": "Automating CAPTCHA with Selenium", "reason": "Poor general interview target; CAPTCHA is intentionally designed to resist automation and should normally be bypassed/controlled in test environments rather than treated as a core QA automation skill."},
-    {"concept": "Fixed current Android/iOS version numbers", "reason": "Time-sensitive memorization; replace with a device/OS coverage strategy question rather than storing a version-number quiz."},
-    {"concept": "Ideal Scrum team size or fixed sprint trivia", "reason": "Prefer current Scrum concepts and practical delivery trade-offs over memorized pseudo-rules."
-    }
+    {"concept": "Monkey vs gorilla testing", "reason": "Low preparation value and weak independent recurrence versus higher-value strategy/system topics."},
+    {"concept": "Name ten Selenium interfaces", "reason": "Framework trivia with low transfer value."},
+    {"concept": "Selenium Action vs Actions trivia", "reason": "Java/Selenium-specific API trivia; vacancy-specific at most."},
+    {"concept": "Automating CAPTCHA with Selenium", "reason": "Poor general target; controlled bypass/test hooks are the meaningful engineering topic."},
+    {"concept": "Fixed current Android/iOS version numbers", "reason": "Time-sensitive memorization; device strategy is the durable interview concept."},
+    {"concept": "Ideal Scrum team size or fixed sprint trivia", "reason": "Prefer current Scrum responsibilities and delivery trade-offs."},
+    {"concept": "Separate git cherry-pick question", "reason": "Fold into practical Git workflow as a follow-up."},
+    {"concept": "Separate API gateway vocabulary question", "reason": "Current API catalog already covers contracts, downstream failures, auth, rate limits and resilience; add only if future independent QA banks show a distinct gateway-testing intent."},
+    {"concept": "Separate generic eventual-consistency question", "reason": "Would overlap existing event-driven/order/replay/trace questions; keep the generated concept coverage and authored specialized questions."},
+    {"concept": "Separate device-farm question", "reason": "Fold into the existing risk-based emulator/simulator/real-device matrix question."}
   ],
-  "needsReview": [
-    {"concept": "git cherry-pick", "reason": "The command recurs, but should probably be absorbed into the practical Git workflow question rather than become its own canonical question."},
-    {"concept": "Mobile local-data migration", "reason": "Search suggests related current coverage; needs intent-level verification before deciding merge vs distinct mobile scenario."},
-    {"concept": "Mobile build/install/deployment flow", "reason": "Potentially overlaps TestFlight/install testing and current mobile coverage; avoid splitting into redundant tool-specific questions."},
-    {"concept": "Web/API sniffers or interception outside mobile", "reason": "May overlap the proposed mobile proxy question and existing testing-tools learning content; decide whether one cross-platform debugging question is better than two platform-specific ones."}
-  ],
+  "needsReview": [],
   "sourceTreatment": {
     "ukrainianPriority": "equal",
-    "rule": "DOU/Hillel/Mate and international banks are peers as market/prevalence evidence. Freshness changes confidence for evolving tooling, not the importance of Ukrainian context.",
-    "answerAuthority": "Use official specifications/documentation to validate answers; interview banks validate recurrence and wording/intention only."
+    "rule": "DOU/Hillel/Mate and international sources are peers as market/prevalence evidence. Freshness changes confidence for evolving tooling, not the priority of Ukrainian context.",
+    "answerAuthority": "Use official specifications/documentation to validate answers; interview banks and interviewer/hiring sources validate recurrence and interview intent.",
+    "sourceWeighting": [
+      "Repeated across independent Ukrainian and international banks",
+      "Interviewer/hiring-derived evidence",
+      "Freshness for rapidly changing tools and practices",
+      "Interview transfer value and decision-making depth",
+      "Avoid treating large SEO-style lists as proof that every item is common"
+    ]
+  },
+  "phase1Result": {
+    "recommendedNewCanonicalQuestions": 8,
+    "principle": "Broaden source diversity and modern coverage without turning source wording variants into catalog growth."
   }
 }
