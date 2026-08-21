@@ -57,11 +57,25 @@ async function validateSourceDirectory() {
   assert.deepEqual(entries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "v4 road source directory must contain exactly the approved 14 PNG assets");
 }
 
+async function strictDecode(fileName, buffer) {
+  try {
+    const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    assert.equal(info.width, SLOT_SIZE, `${fileName}: decoded width must remain ${SLOT_SIZE}px`);
+    assert.equal(info.height, SLOT_SIZE, `${fileName}: decoded height must remain ${SLOT_SIZE}px`);
+    assert.equal(info.channels, 4, `${fileName}: decoded source must have RGBA channels`);
+    assert.ok(data.some((value, index) => index % info.channels === 3 && value > 0), `${fileName}: decoded source is fully transparent`);
+    return null;
+  } catch (error) {
+    return `${fileName}: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
+
 export async function buildRewildV4RoadAtlas() {
   await validateSourceDirectory();
   await mkdir(outputDirectory, { recursive: true });
   const composites = [];
   const frames = [];
+  const decodeFailures = [];
 
   for (let index = 0; index < ROAD_ORDER.length; index += 1) {
     const name = ROAD_ORDER[index];
@@ -72,6 +86,9 @@ export async function buildRewildV4RoadAtlas() {
     assert.ok(metadata.hasAlpha, `${fileName}: source must preserve alpha`);
     assert.equal(metadata.width, SLOT_SIZE, `${fileName}: source width must remain ${SLOT_SIZE}px`);
     assert.equal(metadata.height, SLOT_SIZE, `${fileName}: source height must remain ${SLOT_SIZE}px`);
+
+    const decodeFailure = await strictDecode(fileName, buffer);
+    if (decodeFailure) decodeFailures.push(decodeFailure);
 
     const column = index % COLUMNS;
     const row = Math.floor(index / COLUMNS);
@@ -88,6 +105,8 @@ export async function buildRewildV4RoadAtlas() {
       state: name.includes("broken") ? "broken" : name.includes("worn") ? "worn" : "default",
     });
   }
+
+  assert.deepEqual(decodeFailures, [], `v4 road source pixel decode failures:\n${decodeFailures.join("\n")}`);
 
   await sharp({
     create: {
