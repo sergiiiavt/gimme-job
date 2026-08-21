@@ -63,31 +63,64 @@ const sqlKeywords = new Set([
   "VALUES", "WHEN", "WHERE", "WITH",
 ]);
 
-const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
+const pythonKeywords = new Set([
+  "and", "as", "assert", "async", "await", "break", "case", "class", "continue", "def", "del", "elif", "else", "except",
+  "False", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "match", "None", "nonlocal", "not", "or",
+  "pass", "raise", "return", "True", "try", "while", "with", "yield",
+]);
 
-function highlightSql(source: string): ReactNode[] {
+const pythonBuiltins = new Set([
+  "all", "any", "bool", "dict", "enumerate", "filter", "float", "int", "iter", "len", "list", "map", "max", "min", "next",
+  "print", "range", "repr", "set", "sorted", "str", "sum", "tuple", "type", "zip",
+]);
+
+const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
+const pythonTokenPattern = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
+
+function highlightTokens(source: string, pattern: RegExp, colorForToken: (token: string) => string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   let lastIndex = 0;
   let tokenIndex = 0;
   let match: RegExpExecArray | null;
-  sqlTokenPattern.lastIndex = 0;
+  pattern.lastIndex = 0;
 
-  while ((match = sqlTokenPattern.exec(source)) !== null) {
+  while ((match = pattern.exec(source)) !== null) {
     if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
     const token = match[0];
-    const color = token.startsWith("--")
-      ? "#6a9955"
-      : token.startsWith("'")
-        ? "#ce9178"
-        : sqlKeywords.has(token.toUpperCase())
-          ? "#569cd6"
-          : "#d4d4d4";
-    nodes.push(<span key={`sql-token-${tokenIndex++}`} style={{ color }}>{token}</span>);
-    lastIndex = sqlTokenPattern.lastIndex;
+    nodes.push(<span key={`${keyPrefix}-${tokenIndex++}`} style={{ color: colorForToken(token) }}>{token}</span>);
+    lastIndex = pattern.lastIndex;
   }
 
   if (lastIndex < source.length) nodes.push(source.slice(lastIndex));
   return nodes;
+}
+
+function highlightSql(source: string): ReactNode[] {
+  return highlightTokens(source, sqlTokenPattern, (token) => {
+    if (token.startsWith("--")) return "#6a9955";
+    if (token.startsWith("'")) return "#ce9178";
+    if (sqlKeywords.has(token.toUpperCase())) return "#569cd6";
+    return "#d4d4d4";
+  }, "sql-token");
+}
+
+function highlightPython(source: string): ReactNode[] {
+  return highlightTokens(source, pythonTokenPattern, (token) => {
+    if (token.startsWith("#")) return "#6a9955";
+    if (token.startsWith("\"") || token.startsWith("'")) return "#ce9178";
+    if (token.startsWith("@")) return "#dcdcaa";
+    if (/^\d/.test(token)) return "#b5cea8";
+    if (pythonKeywords.has(token)) return "#569cd6";
+    if (pythonBuiltins.has(token)) return "#4ec9b0";
+    return "#d4d4d4";
+  }, "python-token");
+}
+
+function highlightCode(source: string, language: string): ReactNode[] | string {
+  const normalizedLanguage = language.toLowerCase();
+  if (normalizedLanguage === "python" || normalizedLanguage === "py") return highlightPython(source);
+  if (normalizedLanguage === "sql") return highlightSql(source);
+  return source;
 }
 
 export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, questionId }: {
@@ -209,7 +242,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                         <strong>{title}</strong>
                         <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
                       </header>
-                      <pre className={styles.codeBlock}><code>{highlightSql(example.code)}</code></pre>
+                      <pre className={styles.codeBlock}><code>{highlightCode(example.code, example.language)}</code></pre>
                       <p className={styles.codeExplanation}>{explanation}</p>
                       {expectedResult && (
                         <p className={styles.expectedResult}><strong>{showUk ? "Очікуваний результат" : "Expected result"}:</strong> {expectedResult}</p>
