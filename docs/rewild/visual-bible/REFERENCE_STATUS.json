@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "codeIsAuthoritativeFor": [
+      "gameplay entities",
+      "gameplay behavior",
+      "state vocabulary",
+      "footprints",
+      "hex geometry"
+    ],
+    "generatedTextIsAuthoritative": false,
+    "rejectedReferencesMayBeUsedInPrompts": false,
+    "rejectedReferencesMayBeUsedForProductionExtraction": false
+  },
+  "references": [
+    {
+      "file": "01-environment-detail.webp",
+      "status": "approved-with-exceptions",
+      "promptAllowed": true,
+      "productionExtractionAllowed": false,
+      "approvedFor": [
+        "small nature prop style",
+        "small industrial prop style",
+        "fence and barrier visual language",
+        "environment detail density",
+        "placement composition"
+      ],
+      "forbiddenFor": [
+        "production road art",
+        "road topology",
+        "hex geometry",
+        "gameplay entity definitions"
+      ],
+      "notes": [
+        "Road examples are illustrative only and are not an approved production road family.",
+        "Do not crop or derive final road sprites directly from this sheet."
+      ]
+    },
+    {
+      "file": "02-style-scale-footprint.webp",
+      "status": "rejected",
+      "promptAllowed": false,
+      "productionExtractionAllowed": false,
+      "approvedFor": [],
+      "forbiddenFor": [
+        "roster",
+        "scale contract",
+        "footprints",
+        "corruption language",
+        "hex geometry",
+        "sprite generation"
+      ],
+      "notes": [
+        "The panel labelled as the actual game roster does not faithfully represent the code-authoritative roster.",
+        "The sheet includes purple crystal corruption that conflicts with the production corruption rule.",
+        "Retained only for provenance."
+      ]
+    },
+    {
+      "file": "03-mainframe-interactions.webp",
+      "status": "approved",
+      "promptAllowed": true,
+      "productionExtractionAllowed": false,
+      "approvedFor": [
+        "mainframe interaction with water",
+        "drainage and pollution composition",
+        "forest clearing and wasting",
+        "industrial expansion into nature",
+        "physical pipe and connector relationships"
+      ],
+      "forbiddenFor": [
+        "new gameplay entities",
+        "exact runtime footprints",
+        "hex geometry"
+      ],
+      "notes": [
+        "Use as an interaction/composition reference only; code still defines all gameplay objects."
+      ]
+    },
+    {
+      "file": "04-terrain-transitions.webp",
+      "status": "rejected",
+      "promptAllowed": false,
+      "productionExtractionAllowed": false,
+      "approvedFor": [],
+      "forbiddenFor": [
+        "terrain geometry",
+        "transition masks",
+        "corruption language",
+        "sprite generation",
+        "production extraction"
+      ],
+      "notes": [
+        "Several shown cells are vertically elongated or otherwise irregular rather than regular runtime hexagons.",
+        "The wasted-ground examples contain purple crystal/fantasy corruption.",
+        "Retained only for provenance and must be replaced before terrain-transition production work."
+      ]
+    },
+    {
+      "file": "05-industrial-modular-kit.webp",
+      "status": "inspiration-only",
+      "promptAllowed": true,
+      "productionExtractionAllowed": false,
+      "approvedFor": [
+        "industrial hardware motifs",
+        "cables and pipes",
+        "cooling and drainage hardware",
+        "foundations and rubble language",
+        "industrial density"
+      ],
+      "forbiddenFor": [
+        "gameplay entity names",
+        "module gameplay semantics",
+        "exact footprints",
+        "camera/projection contract"
+      ],
+      "notes": [
+        "Generated labels such as Security Core, Quantum Relay, Control Room Module and similar names are visual concepts only and must never enter gameplay code or the canonical roster.",
+        "Use hardware motifs, not generated labels."
+      ]
+    },
+    {
+      "file": "06-damage-states.webp",
+      "status": "inspiration-only",
+      "promptAllowed": true,
+      "productionExtractionAllowed": false,
+      "approvedFor": [
+        "visual degradation mood",
+        "damage readability",
+        "recovery visual direction"
+      ],
+      "forbiddenFor": [
+        "runtime state vocabulary",
+        "state transitions",
+        "gameplay mechanics",
+        "corruption language"
+      ],
+      "notes": [
+        "Labels such as Critical, Destroyed, Failing, Overloaded and Heavily Damaged are not code-authoritative runtime states.",
+        "The scenario area contains purple crystal corruption and must not define production corruption visuals."
+      ]
+    },
+    {
+      "file": "07-gameplay-target.webp",
+      "status": "composition-only",
+      "promptAllowed": true,
+      "productionExtractionAllowed": false,
+      "approvedFor": [
+        "overall gameplay composition",
+        "visual density",
+        "relative readability",
+        "nature versus industry balance",
+        "large-scale world mood"
+      ],
+      "forbiddenFor": [
+        "canonical roster",
+        "gameplay mechanics",
+        "state vocabulary",
+        "hex geometry",
+        "corruption motifs"
+      ],
+      "notes": [
+        "Purple crystal corruption shown on the industrial side is explicitly non-authoritative and must be replaced by wasted, polluted, electrically/industrially stressed ground.",
+        "Any visible unit or structure must still be checked against code before production use."
+      ]
+    }
+  ]
+}
