@@ -28,11 +28,13 @@ export const ALL_TERRAIN_TILE_IDS = [
 // its own batch lands, per the Visual Bible's "one family at a time" rule.
 export const MEADOW_FAMILY_TILE_IDS = ["grass-a", "grass-b", "grass-c", "grass-d"];
 
+const compareAlphabetically = (left, right) => left.localeCompare(right);
+
 async function validateSourceDirectory() {
-  const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort();
+  const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort(compareAlphabetically);
   const entries = await readdir(sourceDirectory, { withFileTypes: true });
   assert.ok(entries.every((entry) => entry.isFile()), "terrain source directory must contain files only");
-  const actualFiles = entries.map((entry) => entry.name).sort();
+  const actualFiles = entries.map((entry) => entry.name).sort(compareAlphabetically);
   assert.deepEqual(actualFiles, expectedFiles, "terrain source directory must contain exactly the meadow family's approved PNGs");
 }
 

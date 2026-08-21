@@ -17,6 +17,7 @@ const overlaySource = await readFile(path.join(root, "app", "rewild-authored-ove
 
 const FRAME_SIZE = 32;
 const ATLAS_COLUMNS = 8;
+const compareAlphabetically = (left, right) => left.localeCompare(right);
 
 // The 16 tile IDs that existed before this batch, in their original order. Any change to
 // this prefix would shift every existing frame's computed atlas position.
@@ -45,11 +46,11 @@ assert.deepEqual(runtimeTileIds, ALL_TERRAIN_TILE_IDS, "build script's ALL_TERRA
 assert.equal(new Set(runtimeTileIds).size, runtimeTileIds.length, "terrain tile IDs must be unique");
 
 // 2. Committed source PNGs: exactly the meadow family, each a valid 32x32 PNG.
-const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort();
+const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort(compareAlphabetically);
 const { readdir } = await import("node:fs/promises");
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
 assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed terrain source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(), expectedFiles, "committed terrain source directory must contain exactly the meadow family's approved PNGs");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed terrain source directory must contain exactly the meadow family's approved PNGs");
 
 const sourceRaw = new Map();
 for (const id of MEADOW_FAMILY_TILE_IDS) {
