@@ -74,7 +74,7 @@ function createDirectLink(pathname: string, questionId: string) {
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   link.title = "Open direct link in a new tab";
-  link.setAttribute("aria-label", "Open direct link to this question in a new tab");
+  link.setAttribute("aria-label", "Open direct link to this question");
   link.dataset.questionId = questionId;
   link.innerHTML = '<svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8.5 12h7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
   link.addEventListener("mouseenter", () => {
