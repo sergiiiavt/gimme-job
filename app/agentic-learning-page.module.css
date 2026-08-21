@@ -4,8 +4,6 @@
   padding: 34px 36px 70px;
 }
 
-hero {}
-
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
