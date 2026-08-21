@@ -141,6 +141,95 @@ button.backLink {
   margin-top: 7px;
 }
 
+.codeSection {
+  display: grid;
+  gap: 12px;
+}
+
+.codeExamples {
+  display: grid;
+  gap: 14px;
+}
+
+.codeCard {
+  background: #fbfcfb;
+  border: 1px solid #dfe6e0;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  padding: 14px;
+}
+
+.codeHeader {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.codeHeader strong {
+  color: #314139;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.codeHeader button {
+  background: #ffffff;
+  border: 1px solid #ced8d1;
+  border-radius: 7px;
+  color: #526158;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.codeHeader button:hover {
+  background: #f3f6f3;
+  border-color: #b8c6bc;
+}
+
+.codeBlock {
+  background: #f2f5f2;
+  border: 1px solid #dce3dd;
+  border-radius: 8px;
+  color: #21362a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 13px 14px;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.codeBlock code {
+  font: inherit;
+}
+
+.section .codeExplanation,
+.section .expectedResult {
+  color: #536159;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.section .expectedResult {
+  border-top: 1px solid #e6ebe7;
+  color: #647168;
+  padding-top: 9px;
+}
+
+.expectedResult strong {
+  color: #405047;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -192,5 +281,14 @@ button.backLink {
 
   .topNav {
     margin-bottom: 24px;
+  }
+
+  .codeCard {
+    padding: 11px;
+  }
+
+  .codeBlock {
+    font-size: 11px;
+    padding: 11px;
   }
 }
