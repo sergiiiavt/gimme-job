@@ -13,6 +13,7 @@ const generatedSourceDirectory = path.join(root, "public", "rewild", "v4", "sour
 const sourceDirectory = path.join(root, "assets", "rewild", "v4", "source");
 const runtimeSource = await readFile(path.join(root, "app", "rewild-detail-atlas-v4.ts"), "utf8");
 const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
+const compareAlphabetically = (left, right) => left.localeCompare(right);
 
 const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
 assert.equal(metadata.image, "environment-details-atlas-v4.png");
@@ -39,10 +40,10 @@ const runtimeFrames = new Map(
 );
 assert.equal(runtimeFrames.size, DETAIL_ORDER.length, "runtime v4 frame table must contain exactly the 22 approved detail IDs");
 
-const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort();
+const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
 assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed v4 source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(), expectedFiles, "committed v4 source directory must contain exactly the approved 22 PNGs");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 source directory must contain exactly the approved 22 PNGs");
 
 const sourceHashes = new Map();
 for (const name of DETAIL_ORDER) {
