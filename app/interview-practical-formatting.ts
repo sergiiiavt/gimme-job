@@ -9,13 +9,13 @@ function looksLikePythonCode(value: string) {
   if (!snippet) return false;
   if (snippet.includes("\n")) return true;
 
-  return /(^|\s)(?:async\s+def|def|class|for|while|if|elif|else|try|except|finally|with|import|from|return|yield|await|raise|assert)\b|(?:==|!=|<=|>=|:=|->)|[=()\[\]{}]|\.[A-Za-z_]\w*\s*\(/.test(snippet);
+  return /^(?:python|pytest|pip|uv|poetry)\b|(^|\s)(?:async\s+def|def|class|for|while|if|elif|else|try|except|finally|with|import|from|return|yield|await|raise|assert)\b|(?:==|!=|<=|>=|:=|->)|\b(?:is|in)\b|[=()\[\]{}]|\.[A-Za-z_]\w*\s*\(/.test(snippet);
 }
 
 function appendProse(segments: PracticalExampleSegment[], value: string) {
   const text = value.trim();
   if (!text) return;
-  const previous = segments.at(-1);
+  const previous = segments[segments.length - 1];
   if (previous?.type === "prose") {
     previous.text = `${previous.text} ${text}`.trim();
     return;
