@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { contentHref } from "./content-deep-links";
 import styles from "./interview-question-deep-link.module.css";
 
@@ -53,6 +53,41 @@ export interface InterviewDeepLinkCatalog {
   questions: InterviewDeepLinkQuestion[];
   sources: InterviewDeepLinkSource[];
   taxonomy: InterviewDeepLinkTaxonomyItem[];
+}
+
+const sqlKeywords = new Set([
+  "ALL", "ALTER", "AND", "AS", "ASC", "BEGIN", "BETWEEN", "BY", "CASE", "COMMIT", "CREATE", "DELETE", "DESC",
+  "DISTINCT", "DROP", "ELSE", "END", "EXCEPT", "EXISTS", "FALSE", "FROM", "FULL", "GROUP", "HAVING", "IN", "INDEX",
+  "INNER", "INSERT", "INTERSECT", "INTO", "IS", "JOIN", "LEFT", "LIKE", "LIMIT", "NOT", "NULL", "ON", "OR", "ORDER",
+  "OUTER", "OVER", "PARTITION", "RIGHT", "ROLLBACK", "SELECT", "SET", "TABLE", "THEN", "TRUE", "UNION", "UNIQUE", "UPDATE",
+  "VALUES", "WHEN", "WHERE", "WITH",
+]);
+
+const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
+
+function highlightSql(source: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let tokenIndex = 0;
+  let match: RegExpExecArray | null;
+  sqlTokenPattern.lastIndex = 0;
+
+  while ((match = sqlTokenPattern.exec(source)) !== null) {
+    if (match.index > lastIndex) nodes.push(source.slice(lastIndex, match.index));
+    const token = match[0];
+    const color = token.startsWith("--")
+      ? "#6a9955"
+      : token.startsWith("'")
+        ? "#ce9178"
+        : sqlKeywords.has(token.toUpperCase())
+          ? "#569cd6"
+          : "#d4d4d4";
+    nodes.push(<span key={`sql-token-${tokenIndex++}`} style={{ color }}>{token}</span>);
+    lastIndex = sqlTokenPattern.lastIndex;
+  }
+
+  if (lastIndex < source.length) nodes.push(source.slice(lastIndex));
+  return nodes;
 }
 
 export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, questionId }: {
@@ -154,43 +189,38 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
           <p>{displayAnswer}</p>
         </section>
 
-        {question.codeExamples?.length ? (
-          <section className={`${styles.section} ${styles.codeSection}`}>
-            <h2>{showUk ? "SQL приклади" : "SQL examples"}</h2>
-            <div className={styles.codeExamples}>
-              {question.codeExamples.map((example, index) => {
-                const title = showUk && example.titleUk ? example.titleUk : example.title;
-                const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
-                const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
-                return (
-                  <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
-                    <header className={styles.codeHeader}>
-                      <strong>{title}</strong>
-                      <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
-                    </header>
-                    <pre className={styles.codeBlock}><code>{example.code}</code></pre>
-                    <p className={styles.codeExplanation}>{explanation}</p>
-                    {expectedResult && (
-                      <p className={styles.expectedResult}><strong>{showUk ? "Очікуваний результат" : "Expected result"}:</strong> {expectedResult}</p>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-
         <section className={styles.section}>
           <h2>{showUk ? "Сильна відповідь включає" : "Strong answer includes"}</h2>
           <ul>{displaySignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
         </section>
 
-        {displayExample && (
-          <section className={styles.section}>
-            <h2>{showUk ? "Практичний контекст" : "Practical context"}</h2>
-            <p>{displayExample}</p>
+        {(question.codeExamples?.length || displayExample) ? (
+          <section className={`${styles.section}${question.codeExamples?.length ? ` ${styles.codeSection}` : ""}`}>
+            <h2>{showUk ? "Практичний приклад" : "Practical example"}</h2>
+            {question.codeExamples?.length ? (
+              <div className={styles.codeExamples}>
+                {question.codeExamples.map((example, index) => {
+                  const title = showUk && example.titleUk ? example.titleUk : example.title;
+                  const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
+                  const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
+                  return (
+                    <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
+                      <header className={styles.codeHeader}>
+                        <strong>{title}</strong>
+                        <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
+                      </header>
+                      <pre className={styles.codeBlock}><code>{highlightSql(example.code)}</code></pre>
+                      <p className={styles.codeExplanation}>{explanation}</p>
+                      {expectedResult && (
+                        <p className={styles.expectedResult}><strong>{showUk ? "Очікуваний результат" : "Expected result"}:</strong> {expectedResult}</p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : displayExample ? <p>{displayExample}</p> : null}
           </section>
-        )}
+        ) : null}
 
         {question.tags?.length ? (
           <section className={styles.tags} aria-label="Question tags">

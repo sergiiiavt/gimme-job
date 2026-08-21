@@ -71,6 +71,8 @@ function createDirectLink(pathname: string, questionId: string) {
   const link = document.createElement("a");
   link.className = "iq-question-direct-link";
   link.href = questionDeepLinkHref(pathname, questionId);
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
   link.title = "Direct link";
   link.setAttribute("aria-label", "Open direct link to this question");
   link.dataset.questionId = questionId;
@@ -120,6 +122,8 @@ export default function InterviewQuestionLinkOverlay({ pathname, questions }: {
             createdLinks.add(link);
           } else {
             link.href = questionDeepLinkHref(pathname, questionId);
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
             link.dataset.questionId = questionId;
           }
 
