@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { highlightInterviewCode } from "./interview-code-highlighting";
 
 interface InterviewCodeExample {
   title: string;
@@ -20,28 +21,6 @@ interface CodeEnhancedInterviewQuestion {
   codeExamples?: InterviewCodeExample[];
 }
 
-const sqlKeywords = new Set([
-  "ALL", "ALTER", "AND", "AS", "ASC", "BEGIN", "BETWEEN", "BY", "CASE", "COMMIT", "CREATE", "DELETE", "DESC",
-  "DISTINCT", "DROP", "ELSE", "END", "EXCEPT", "EXISTS", "FALSE", "FROM", "FULL", "GROUP", "HAVING", "IN", "INDEX",
-  "INNER", "INSERT", "INTERSECT", "INTO", "IS", "JOIN", "LEFT", "LIKE", "LIMIT", "NOT", "NULL", "ON", "OR", "ORDER",
-  "OUTER", "OVER", "PARTITION", "RIGHT", "ROLLBACK", "SELECT", "SET", "TABLE", "THEN", "TRUE", "UNION", "UNIQUE", "UPDATE",
-  "VALUES", "WHEN", "WHERE", "WITH",
-]);
-
-const pythonKeywords = new Set([
-  "and", "as", "assert", "async", "await", "break", "case", "class", "continue", "def", "del", "elif", "else", "except",
-  "False", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "match", "None", "nonlocal", "not", "or",
-  "pass", "raise", "return", "True", "try", "while", "with", "yield",
-]);
-
-const pythonBuiltins = new Set([
-  "all", "any", "bool", "dict", "enumerate", "filter", "float", "int", "iter", "len", "list", "map", "max", "min", "next",
-  "print", "range", "repr", "set", "sorted", "str", "sum", "tuple", "type", "zip",
-]);
-
-const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
-const pythonTokenPattern = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
-
 function normalizeQuestionText(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -55,71 +34,25 @@ function activeLanguage(answer: HTMLElement) {
   return active?.textContent?.trim() === "UA" ? "uk" : "en";
 }
 
-function appendHighlightedSql(code: HTMLElement, source: string) {
-  let lastIndex = 0;
-  sqlTokenPattern.lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = sqlTokenPattern.exec(source)) !== null) {
-    if (match.index > lastIndex) code.append(document.createTextNode(source.slice(lastIndex, match.index)));
-    const token = match[0];
-    const span = document.createElement("span");
-    span.textContent = token;
-    if (token.startsWith("--")) span.style.color = "#6a9955";
-    else if (token.startsWith("'")) span.style.color = "#ce9178";
-    else if (sqlKeywords.has(token.toUpperCase())) span.style.color = "#569cd6";
-    else span.style.color = "#d4d4d4";
-    code.appendChild(span);
-    lastIndex = sqlTokenPattern.lastIndex;
-  }
-
-  if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
-}
-
-function appendHighlightedPython(code: HTMLElement, source: string) {
-  let lastIndex = 0;
-  pythonTokenPattern.lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = pythonTokenPattern.exec(source)) !== null) {
-    if (match.index > lastIndex) code.append(document.createTextNode(source.slice(lastIndex, match.index)));
-    const token = match[0];
-    const span = document.createElement("span");
-    span.textContent = token;
-
-    if (token.startsWith("#")) span.style.color = "#6a9955";
-    else if (token.startsWith("\"") || token.startsWith("'")) span.style.color = "#ce9178";
-    else if (token.startsWith("@")) span.style.color = "#dcdcaa";
-    else if (/^\d/.test(token)) span.style.color = "#b5cea8";
-    else if (pythonKeywords.has(token)) span.style.color = "#569cd6";
-    else if (pythonBuiltins.has(token)) span.style.color = "#4ec9b0";
-    else span.style.color = "#d4d4d4";
-
-    code.appendChild(span);
-    lastIndex = pythonTokenPattern.lastIndex;
-  }
-
-  if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
-}
-
 function appendHighlightedCode(code: HTMLElement, source: string, language: string) {
-  const normalizedLanguage = language.toLowerCase();
-  if (normalizedLanguage === "python" || normalizedLanguage === "py") {
-    appendHighlightedPython(code, source);
-    return;
+  for (const token of highlightInterviewCode(source, language)) {
+    if (!token.color) {
+      code.append(document.createTextNode(token.text));
+      continue;
+    }
+    const span = document.createElement("span");
+    span.textContent = token.text;
+    span.style.color = token.color;
+    code.appendChild(span);
   }
-  if (normalizedLanguage === "sql") {
-    appendHighlightedSql(code, source);
-    return;
-  }
-  code.textContent = source;
 }
 
 function createCopyButton(code: string, language: string) {
   const button = document.createElement("button");
   button.type = "button";
   button.textContent = "Copy";
-  button.setAttribute("aria-label", `Copy ${language} example`);
+  const languageLabel = language.toLowerCase() === "sql" ? "SQL" : language.toLowerCase() === "python" ? "Python" : language;
+  button.setAttribute("aria-label", `Copy ${languageLabel} example`);
   applyStyles(button, {
     alignItems: "center",
     background: "#ffffff",
