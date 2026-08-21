@@ -156,6 +156,10 @@ for (const atlas of overheadConfig.atlases ?? []) {
         warnings.push(`${atlas.id}:${frame.name}: only ${visiblePixels} visible pixels; runtime fallback ${frame.fallback} is currently required`);
         continue;
       }
+      if (frame.pending) {
+        warnings.push(`${atlas.id}:${frame.name}: only ${visiblePixels} visible pixels; not yet authored, pending a future batch`);
+        continue;
+      }
       failures.push(`${atlas.id}:${frame.name}: only ${visiblePixels} visible pixels; authored runtime frame is effectively empty`);
     }
   } catch (error) {

@@ -1,0 +1,108 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import sharp from "sharp";
+import {
+  ALL_TERRAIN_TILE_IDS,
+  MEADOW_FAMILY_TILE_IDS,
+  buildRewildTerrainAtlas,
+} from "./build-rewild-terrain-atlas.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
+const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
+const runtimeSource = await readFile(path.join(root, "app", "rewild-pixel-atlas-v3.ts"), "utf8");
+const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
+
+const FRAME_SIZE = 32;
+const ATLAS_COLUMNS = 8;
+const compareAlphabetically = (left, right) => left.localeCompare(right);
+
+// The 16 tile IDs that existed before this batch, in their original order. Any change to
+// this prefix would shift every existing frame's computed atlas position.
+const PRE_EXISTING_TILE_IDS = [
+  "grass-a", "grass-b", "grass-c", "forest-floor", "water-deep", "water-shallow", "soil",
+  "industrial-a", "industrial-b", "corruption-1", "corruption-2", "corruption-3", "corruption-4",
+  "road-dirt", "road-edge", "rubble",
+];
+
+// 1. Runtime REWILD_TERRAIN_TILE_IDS: pre-existing prefix untouched, new tiles appended after it.
+const runtimeArrayMatch = runtimeSource.match(/export const REWILD_TERRAIN_TILE_IDS = \[([\s\S]*?)\] as const;/u);
+assert.ok(runtimeArrayMatch, "REWILD_TERRAIN_TILE_IDS not found in app/rewild-pixel-atlas-v3.ts");
+const runtimeTileIds = [...runtimeArrayMatch[1].matchAll(/"([^"]+)"/gu)].map((match) => match[1]);
+
+assert.deepEqual(
+  runtimeTileIds.slice(0, PRE_EXISTING_TILE_IDS.length),
+  PRE_EXISTING_TILE_IDS,
+  "the 16 pre-existing terrain tile IDs must stay in their original order — reordering shifts every existing atlas frame",
+);
+assert.deepEqual(
+  runtimeTileIds.slice(PRE_EXISTING_TILE_IDS.length),
+  ["grass-d"],
+  "new meadow tiles must be appended immediately after the pre-existing 16, in this exact order",
+);
+assert.deepEqual(runtimeTileIds, ALL_TERRAIN_TILE_IDS, "build script's ALL_TERRAIN_TILE_IDS must match the runtime array exactly");
+assert.equal(new Set(runtimeTileIds).size, runtimeTileIds.length, "terrain tile IDs must be unique");
+
+// 2. Committed source PNGs: exactly the meadow family, each a valid 32x32 PNG.
+const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort(compareAlphabetically);
+const { readdir } = await import("node:fs/promises");
+const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
+assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed terrain source directory must contain files only");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed terrain source directory must contain exactly the meadow family's approved PNGs");
+
+const sourceRaw = new Map();
+for (const id of MEADOW_FAMILY_TILE_IDS) {
+  const fileName = `${id}.png`;
+  const buffer = await readFile(path.join(sourceDirectory, fileName));
+  const metadata = await sharp(buffer).metadata();
+  assert.equal(metadata.format, "png", `${fileName}: committed source must strictly decode as PNG`);
+  assert.equal(metadata.width, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px wide`);
+  assert.equal(metadata.height, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px tall`);
+  sourceRaw.set(id, await sharp(buffer).ensureAlpha().raw().toBuffer());
+}
+
+// 3. Rebuilding from committed source must reproduce the committed atlas exactly (no drift).
+const committedAtlas = await readFile(atlasPath);
+await buildRewildTerrainAtlas();
+const rebuiltAtlas = await readFile(atlasPath);
+assert.equal(Buffer.compare(committedAtlas, rebuiltAtlas), 0, "committed terrain-atlas-v3.png does not match a fresh build from committed source — rebuild and commit the output");
+
+// 4. Atlas sanity: decodes, correct size, has alpha.
+const atlasMeta = await sharp(atlasPath).metadata();
+assert.equal(atlasMeta.width, 256);
+assert.equal(atlasMeta.height, 256);
+assert.ok(atlasMeta.hasAlpha, "terrain atlas must be RGBA");
+
+const { data: atlasData, info: atlasInfo } = await sharp(atlasPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+
+for (const id of MEADOW_FAMILY_TILE_IDS) {
+  const index = ALL_TERRAIN_TILE_IDS.indexOf(id);
+  const left = (index % ATLAS_COLUMNS) * FRAME_SIZE;
+  const top = Math.floor(index / ATLAS_COLUMNS) * FRAME_SIZE;
+
+  // 5. Atlas frame must pixel-match the committed source exactly.
+  const expected = sourceRaw.get(id);
+  const actual = Buffer.alloc(FRAME_SIZE * FRAME_SIZE * 4);
+  for (let row = 0; row < FRAME_SIZE; row += 1) {
+    const atlasRowStart = ((top + row) * atlasInfo.width + left) * 4;
+    atlasData.copy(actual, row * FRAME_SIZE * 4, atlasRowStart, atlasRowStart + FRAME_SIZE * 4);
+  }
+  assert.equal(Buffer.compare(expected, actual), 0, `${id}: atlas frame does not match committed source pixel-for-pixel`);
+
+  // 6. Frame must not be a degenerate flat fill (real texture, not an accidental blank/solid tile).
+  const colors = new Set();
+  for (let p = 0; p < actual.length; p += 4) colors.add(`${actual[p]},${actual[p + 1]},${actual[p + 2]}`);
+  assert.ok(colors.size >= 8, `${id}: atlas frame has almost no color variation (${colors.size} distinct colors) — looks blank or a flat fill, not authored texture`);
+}
+
+// 7. Renderer wiring: every meadow tile must be referenced by the variant rotation, and the
+// rotation must fill the hex ground itself (fillRewildTerrainPattern), not merely stamp a
+// small faint dab on top of an unrelated flat fill.
+for (const id of MEADOW_FAMILY_TILE_IDS) {
+  assert.ok(overlaySource.includes(`"${id}"`), `${id}: not referenced in app/rewild-authored-overlay.ts meadow variant rotation`);
+}
+assert.match(overlaySource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern, not just a faint stamp");
+
+console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles, pre-existing 16 IDs untouched, atlas matches committed source, renderer wiring intact.`);
