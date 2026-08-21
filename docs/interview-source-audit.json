@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-21",
+  "mode": "research-only",
+  "productionCatalogChangesAllowed": false,
+  "goal": "Cross-check the existing interview catalog against Ukrainian and international interview-question banks, deduplicate by concept and interview intent, strengthen source evidence, and add only genuinely missing concepts.",
+  "dedupPolicy": {
+    "canonicalKey": ["topic", "concept", "interviewIntent", "questionKind"],
+    "statuses": [
+      "existing-match",
+      "wording-variant",
+      "related-but-distinct",
+      "new-concept",
+      "uncertain"
+    ],
+    "rules": [
+      "Do not create a new catalog question for wording-only variants.",
+      "Theory and scenario questions may remain separate when they test different interview intent.",
+      "A source hit strengthens source evidence and prevalence; it does not automatically create another question.",
+      "Official documentation validates answer correctness but is not by itself an interview-prevalence signal.",
+      "Ukrainian interview banks and international interview banks have equal priority as prevalence evidence."
+    ]
+  },
+  "batches": [
+    {
+      "id": "ua-dou",
+      "label": "DOU 250+ and DOU 400+",
+      "status": "in-progress",
+      "sources": [
+        {
+          "id": "dou-qa-2022",
+          "title": "DOU — QA interview: 250+ questions",
+          "url": "https://dou.ua/lenta/articles/interview-qa/",
+          "catalogStatus": "existing"
+        },
+        {
+          "id": "dou-qa-400-2023",
+          "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior",
+          "url": "https://dou.ua/forums/topic/44277/",
+          "catalogStatus": "audit-only-candidate",
+          "publishedAt": "2023-07-13",
+          "rawQuestionCount": 416,
+          "sections": {
+            "testing-theory": 95,
+            "git": 18,
+            "web": 67,
+            "database": 36,
+            "mobile": 26,
+            "selenium": 23,
+            "scrum": 33,
+            "general": 83,
+            "practical": 35
+          },
+          "selfDedupStatus": "in-progress",
+          "catalogMatchStatus": "in-progress"
+        }
+      ],
+      "confirmedFindings": [
+        "DOU 400+ contains internal wording/concept duplicates, so its raw count must never be treated as a unique-question count.",
+        "Large parts of DOU 400+ overlap directly with the older DOU 250+ collection, especially Selenium, Web/API, Mobile and practical scenarios.",
+        "DOU 400+ also contains additional Git, database, Scrum, behavioural and scenario material that must be checked against the current GimmeJob catalog before being considered new.",
+        "DOU 400+ is retained as a first-class Ukrainian-market interview signal rather than being discarded because of overlap."
+      ],
+      "observedInternalDuplicateExamples": [
+        "Smoke vs Sanity appears more than once.",
+        "REST API vs SOAP appears more than once.",
+        "A/B testing appears more than once.",
+        "Database-type and relational-database concepts recur across Web and Database sections.",
+        "Emulator vs simulator is split into closely overlapping questions.",
+        "Testing without documentation appears in closely overlapping general questions."
+      ]
+    },
+    {
+      "id": "ua-other",
+      "label": "Other Ukrainian interview sources",
+      "status": "pending"
+    },
+    {
+      "id": "international-general",
+      "label": "International QA interview banks",
+      "status": "pending",
+      "plannedSources": ["Katalon", "Indeed", "GeeksforGeeks", "Testsigma", "BugBug", "KORE1"]
+    },
+    {
+      "id": "modern-specialist",
+      "label": "Modern AQA, API/distributed systems, AI/LLM and Lead/Senior gaps",
+      "status": "pending"
+    },
+    {
+      "id": "global-second-pass",
+      "label": "Global semantic deduplication and prevalence review",
+      "status": "pending"
+    }
+  ],
+  "nextAction": "Finish DOU 400+ self-dedup and compare DOU-400-only concepts against the full existing catalog before adding any source IDs or questions."
+}
