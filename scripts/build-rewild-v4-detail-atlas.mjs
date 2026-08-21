@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const sourceDirectory = path.join(root, "assets", "rewild", "v4", "source-b64");
+const sourceDirectory = path.join(root, "assets", "rewild", "v4", "source");
 const outputDirectory = path.join(root, "public", "rewild", "v4");
 const sourceOutputDirectory = path.join(outputDirectory, "source");
 const atlasPath = path.join(outputDirectory, "environment-details-atlas-v4.png");
@@ -40,8 +40,6 @@ export const DETAIL_ORDER = [
   "industrial-debris-small-a",
 ];
 
-const BUNDLES = ["nature-a.json", "nature-b.json", "industrial.json"];
-
 function pivotFor(name) {
   if (name === "detail-lily-pads-a" || name === "industrial-cable-segment-a") return { x: 0.5, y: 0.5 };
   return { x: 0.5, y: 0.92 };
@@ -51,25 +49,16 @@ function categoryFor(name) {
   return name.startsWith("industrial-") ? "industrial-detail" : "nature-detail";
 }
 
-async function readSources() {
-  const sources = {};
-  for (const bundle of BUNDLES) {
-    const payload = JSON.parse(await readFile(path.join(sourceDirectory, bundle), "utf8"));
-    for (const [fileName, encoded] of Object.entries(payload)) {
-      assert.ok(!(fileName in sources), `${fileName}: duplicated across v4 source bundles`);
-      sources[fileName] = encoded;
-    }
-  }
-
-  const expected = new Set(DETAIL_ORDER.map((name) => `${name}.png`));
-  assert.equal(Object.keys(sources).length, expected.size, "v4 source bundle count must match the exact detail manifest");
-  for (const fileName of Object.keys(sources)) assert.ok(expected.has(fileName), `${fileName}: unexpected/hallucinated v4 detail source`);
-  for (const fileName of expected) assert.ok(fileName in sources, `${fileName}: missing v4 detail source`);
-  return sources;
+async function validateSourceDirectory() {
+  const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort();
+  const entries = await readdir(sourceDirectory, { withFileTypes: true });
+  assert.ok(entries.every((entry) => entry.isFile()), "v4 source directory must contain files only");
+  const actualFiles = entries.map((entry) => entry.name).sort();
+  assert.deepEqual(actualFiles, expectedFiles, "v4 source directory must contain exactly the approved 22 PNG assets");
 }
 
 export async function buildRewildV4DetailAtlas() {
-  const sources = await readSources();
+  await validateSourceDirectory();
   await mkdir(outputDirectory, { recursive: true });
   await mkdir(sourceOutputDirectory, { recursive: true });
 
@@ -79,7 +68,7 @@ export async function buildRewildV4DetailAtlas() {
   for (let index = 0; index < DETAIL_ORDER.length; index += 1) {
     const name = DETAIL_ORDER[index];
     const fileName = `${name}.png`;
-    const buffer = Buffer.from(sources[fileName], "base64");
+    const buffer = await readFile(path.join(sourceDirectory, fileName));
     const metadata = await sharp(buffer).metadata();
     assert.equal(metadata.format, "png", `${fileName}: source must decode as PNG`);
     assert.ok(metadata.hasAlpha, `${fileName}: source must retain transparency`);
@@ -119,7 +108,7 @@ export async function buildRewildV4DetailAtlas() {
   const metadata = {
     schemaVersion: 1,
     image: path.basename(atlasPath),
-    source: "assets/rewild/v4/source-b64",
+    source: "assets/rewild/v4/source",
     grid: { columns: COLUMNS, rows: ROWS, slotSize: SLOT_SIZE },
     frames,
   };
