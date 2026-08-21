@@ -23,7 +23,7 @@ const copy = {
     codeTitle: "Claude Code: a practical start",
     codeIntro: "A Ukrainian walkthrough from Rodion Lozovoi that starts from zero and builds a working web application with Claude Code. Use it as the practical entry point before moving to broader agentic workflows.",
     coworkTitle: "Claude Cowork: work beyond coding",
-    coworkIntro: "Cowork is the better bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. Two Ukrainian videos are selected for this chapter.",
+    coworkIntro: "Cowork is the bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. The chapter combines a practical content-workflow video with a second Rodion Cowork resource.",
     pending: "The exact YouTube watch URL still needs to be verified before embedding. The player intentionally does not guess video IDs.",
     rodionCowork: "How to automate 80% of work for €20? Full Claude Cowork overview",
     shtuchkaCowork: "Content factory with Claude Cowork, Notion and Skill Editor",
@@ -46,7 +46,7 @@ const copy = {
     codeTitle: "Claude Code: практичний старт",
     codeIntro: "Україномовний walkthrough Родіона Лозового: від нуля до робочого вебзастосунку за допомогою Claude Code. Це практична точка входу перед ширшими agentic workflows.",
     coworkTitle: "Claude Cowork: agentic робота поза кодом",
-    coworkIntro: "Cowork добре показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Для цього розділу відібрано два україномовні відео.",
+    coworkIntro: "Cowork показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Тут поєднані практичне відео про content workflow та ще один Cowork-матеріал Родіона.",
     pending: "Точний YouTube watch URL ще треба верифікувати перед embed. Плеєр навмисно не вгадує video ID.",
     rodionCowork: "Як автоматизувати 80% роботи за €20? Повний огляд Claude Cowork",
     shtuchkaCowork: "Контент-завод з Claude Cowork, Notion та Skill Editor",
@@ -69,10 +69,10 @@ export default function AgenticLearningPage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [activeSubsection, setActiveSubsection] = useState(headings[0].id);
   const text = copy[language];
-  const localizedHeadings = useMemo(() => headings.map((heading, index) => ({
-    ...heading,
-    text: language === "uk" ? [text.codeTitle, text.coworkTitle, text.patternsTitle][index] : [text.codeTitle, text.coworkTitle, text.patternsTitle][index],
-  })), [language, text]);
+  const localizedHeadings = useMemo(() => {
+    const labels = [text.codeTitle, text.coworkTitle, text.patternsTitle];
+    return headings.map((heading, index) => ({ ...heading, text: labels[index] }));
+  }, [text]);
 
   const openSection = (section: Parameters<typeof sectionNavigationHref>[0]) => {
     window.location.assign(sectionNavigationHref(section, "public"));
@@ -120,17 +120,16 @@ export default function AgenticLearningPage() {
                 <h2 id="claude-cowork">{text.coworkTitle}</h2>
                 <p>{text.coworkIntro}</p>
                 <div className={styles.videoGroup}>
+                  <LearningVideo
+                    channel="Штучка Інтелект"
+                    title={text.shtuchkaCowork}
+                    videoId="rSDKAjao_7Q"
+                  />
                   <div className={styles.referenceCard}>
                     <strong>RO БУДУЄ · Rodion Lozovoi</strong>
                     <h3>{text.rodionCowork}</h3>
                     <p>{text.pending}</p>
                     <a href="https://cases.media/article/claude-dlya-menedzheriv-yak-zarobiti-plyus-u-karmu-vid-komandi" rel="noreferrer" target="_blank">Verified reference ↗</a>
-                  </div>
-                  <div className={styles.referenceCard}>
-                    <strong>Штучка Інтелект</strong>
-                    <h3>{text.shtuchkaCowork}</h3>
-                    <p>{text.pending}</p>
-                    <a href="https://open.subsub.io/channels/shtuchka-intelekt/view/content" rel="noreferrer" target="_blank">Verified reference ↗</a>
                   </div>
                 </div>
 
