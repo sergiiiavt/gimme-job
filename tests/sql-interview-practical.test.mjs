@@ -57,7 +57,8 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
 
   assert.match(linkOverlay, /link\.target = "_blank"/);
   assert.match(linkOverlay, /link\.rel = "noopener noreferrer"/);
-  assert.match(linkOverlay, /Open direct link to this question in a new tab/);
+  assert.match(linkOverlay, /link\.title = "Open direct link in a new tab"/);
+  assert.match(linkOverlay, /setAttribute\("aria-label", "Open direct link to this question"\)/);
 
   assert.match(packageJson.scripts["check:content"], /validate-sql-interview-content\.mjs/);
 });
