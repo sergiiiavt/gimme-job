@@ -39,6 +39,9 @@ function loadYouTubeApi() {
   if (youtubeApiPromise) return youtubeApiPromise;
 
   youtubeApiPromise = new Promise<YouTubeNamespace>((resolve, reject) => {
+    const finish = () => {
+      if (target.YT?.Player) resolve(target.YT);
+    };
     const previousReady = target.onYouTubeIframeAPIReady;
     target.onYouTubeIframeAPIReady = () => {
       previousReady?.();
@@ -48,13 +51,16 @@ function loadYouTubeApi() {
 
     const existing = document.querySelector<HTMLScriptElement>('script[src="https://www.youtube.com/iframe_api"]');
     if (existing) {
+      existing.addEventListener("load", finish, { once: true });
       existing.addEventListener("error", () => reject(new Error("Could not load the YouTube IFrame API.")), { once: true });
+      window.setTimeout(finish, 0);
       return;
     }
 
     const script = document.createElement("script");
     script.src = "https://www.youtube.com/iframe_api";
     script.async = true;
+    script.addEventListener("load", finish, { once: true });
     script.addEventListener("error", () => reject(new Error("Could not load the YouTube IFrame API.")), { once: true });
     document.head.appendChild(script);
   });
@@ -79,11 +85,15 @@ export default function LearningVideo({ channel, title, videoId }: {
 
   useEffect(() => {
     let cancelled = false;
+    const mount = mountRef.current;
+    if (!mount) return undefined;
+    const host = document.createElement("div");
+    mount.replaceChildren(host);
 
     loadYouTubeApi()
       .then((YT) => {
-        if (cancelled || !mountRef.current) return;
-        const player = new YT.Player(mountRef.current, {
+        if (cancelled) return;
+        const player = new YT.Player(host, {
           videoId,
           playerVars: {
             controls: 1,
@@ -119,6 +129,7 @@ export default function LearningVideo({ channel, title, videoId }: {
       cancelled = true;
       playerRef.current?.destroy();
       playerRef.current = null;
+      mount.replaceChildren();
     };
   }, [title, videoId]);
 
@@ -134,7 +145,8 @@ export default function LearningVideo({ channel, title, videoId }: {
   return (
     <section className={styles.card} aria-label={`${title} video`}>
       <div className={styles.frame}>
-        {error ? <div className={styles.error}>{error}</div> : <div ref={mountRef}/>} 
+        <div ref={mountRef}/>
+        {error && <div className={styles.error}>{error}</div>}
       </div>
       <div className={styles.meta}>
         <strong>{title}</strong>
