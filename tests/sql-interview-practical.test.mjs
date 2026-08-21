@@ -5,7 +5,7 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("publishes practical SQL tasks and code-aware interview rendering", async () => {
-  const [catalog, practical, examples, dataExamples, expandedExamples, page, overlay, deepLink, styles, packageJson] = await Promise.all([
+  const [catalog, practical, examples, dataExamples, expandedExamples, page, overlay, deepLink, linkOverlay, styles, packageJson] = await Promise.all([
     readFile(projectFile("content/interview/catalog.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-practical-interview.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-code-examples.ts"), "utf8"),
@@ -14,6 +14,7 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
     readFile(projectFile("app/interview/page.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),
+    readFile(projectFile("app/interview-question-link-overlay.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.module.css"), "utf8"),
     readFile(projectFile("package.json"), "utf8").then(JSON.parse),
   ]);
@@ -33,18 +34,30 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
 
   assert.match(page, /InterviewQuestionCodeOverlay/);
   assert.match(overlay, /className = "iq-code-examples-overlay"/);
+  assert.match(overlay, /querySelector<HTMLElement>\(":scope > \.iq-example"\)/);
+  assert.match(overlay, /legacyCopy\.style\.display = "none"/);
+  assert.match(overlay, /practicalExample\.appendChild\(createCodeSection/);
+  assert.match(overlay, /background: "#1e1e1e"/);
+  assert.match(overlay, /span\.style\.color = "#569cd6"/);
+  assert.match(overlay, /span\.style\.color = "#6a9955"/);
+  assert.match(overlay, /span\.style\.color = "#ce9178"/);
   assert.match(overlay, /whiteSpace: "pre"/);
   assert.match(overlay, /overflowX: "auto"/);
   assert.match(overlay, /navigator\.clipboard\.writeText\(code\)/);
-  assert.match(overlay, /SQL examples/);
-  assert.match(overlay, /SQL приклади/);
 
-  assert.match(deepLink, /question\.codeExamples\?\.length/);
-  assert.match(deepLink, /<pre className=\{styles\.codeBlock\}><code>\{example\.code\}<\/code><\/pre>/);
+  assert.match(deepLink, /Practical example/);
+  assert.match(deepLink, /Практичний приклад/);
+  assert.match(deepLink, /highlightSql\(example\.code\)/);
   assert.match(deepLink, /copyCode\(example\.code, index\)/);
   assert.match(styles, /\.codeBlock \{/);
+  assert.match(styles, /background: #1e1e1e;/);
+  assert.match(styles, /color: #d4d4d4;/);
   assert.match(styles, /white-space: pre;/);
   assert.match(styles, /overflow-x: auto;/);
+
+  assert.match(linkOverlay, /link\.target = "_blank"/);
+  assert.match(linkOverlay, /link\.rel = "noopener noreferrer"/);
+  assert.match(linkOverlay, /Open direct link to this question in a new tab/);
 
   assert.match(packageJson.scripts["check:content"], /validate-sql-interview-content\.mjs/);
 });
