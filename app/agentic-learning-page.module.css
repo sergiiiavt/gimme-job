@@ -1,0 +1,105 @@
+.page {
+  max-width: 1420px;
+  margin: 0 auto;
+  padding: 34px 36px 70px;
+}
+
+hero {}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 42px;
+  align-items: start;
+  margin-top: 34px;
+}
+
+.document {
+  min-width: 0;
+  max-width: 920px;
+}
+
+.article {
+  color: #34483c;
+}
+
+.article h2 {
+  margin: 42px 0 12px;
+  scroll-margin-top: 24px;
+  color: #1e3026;
+  font-size: clamp(23px, 2.4vw, 31px);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.article h2:first-child {
+  margin-top: 0;
+}
+
+.article h3 {
+  margin: 26px 0 8px;
+  color: #293d31;
+  font-size: 17px;
+}
+
+.article p,
+.article li {
+  color: #4c5d53;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.article ul {
+  margin: 10px 0 24px;
+  padding-left: 22px;
+}
+
+.videoGroup {
+  display: grid;
+  gap: 26px;
+}
+
+.referenceCard {
+  margin: 22px 0 30px;
+  padding: 16px 18px;
+  border: 1px dashed #cbd6ce;
+  border-radius: 12px;
+  background: #f8faf7;
+}
+
+.referenceCard strong {
+  display: block;
+  color: #2b4033;
+  font-size: 14px;
+}
+
+.referenceCard p {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.referenceCard a {
+  color: #315c44;
+  font-weight: 700;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 24px 16px 52px;
+  }
+
+  .layout {
+    gap: 24px;
+    margin-top: 26px;
+  }
+
+  .article h2 {
+    margin-top: 34px;
+  }
+}
