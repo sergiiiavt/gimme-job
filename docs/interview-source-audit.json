@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "updatedAt": "2026-08-21",
   "mode": "research-only",
   "productionCatalogChangesAllowed": false,
@@ -13,12 +13,20 @@
       "new-concept",
       "uncertain"
     ],
+    "candidateActions": [
+      "merge-source",
+      "add-question",
+      "skip-low-value",
+      "needs-review"
+    ],
     "rules": [
       "Do not create a new catalog question for wording-only variants.",
       "Theory and scenario questions may remain separate when they test different interview intent.",
       "A source hit strengthens source evidence and prevalence; it does not automatically create another question.",
+      "A concept being absent from the current catalog is necessary but not sufficient for adding it: interview value and recurrence must also be considered.",
       "Official documentation validates answer correctness but is not by itself an interview-prevalence signal.",
-      "Ukrainian interview banks and international interview banks have equal priority as prevalence evidence."
+      "Ukrainian interview banks and international interview banks have equal priority as prevalence evidence.",
+      "Broad question banks, interviewer-authored guidance, and fresh market snapshots are tracked separately so one type of source cannot masquerade as another."
     ]
   },
   "batches": [
@@ -31,13 +39,15 @@
           "id": "dou-qa-2022",
           "title": "DOU — QA interview: 250+ questions",
           "url": "https://dou.ua/lenta/articles/interview-qa/",
-          "catalogStatus": "existing"
+          "catalogStatus": "existing",
+          "sourceRole": "broad-question-bank"
         },
         {
           "id": "dou-qa-400-2023",
           "title": "DOU — 400+ QA interview questions for Junior, Middle, Senior",
           "url": "https://dou.ua/forums/topic/44277/",
           "catalogStatus": "audit-only-candidate",
+          "sourceRole": "broad-question-bank",
           "publishedAt": "2023-07-13",
           "rawQuestionCount": 416,
           "sections": {
@@ -59,7 +69,8 @@
         "DOU 400+ contains internal wording/concept duplicates, so its raw count must never be treated as a unique-question count.",
         "Large parts of DOU 400+ overlap directly with the older DOU 250+ collection, especially Selenium, Web/API, Mobile and practical scenarios.",
         "DOU 400+ also contains additional Git, database, Scrum, behavioural and scenario material that must be checked against the current GimmeJob catalog before being considered new.",
-        "DOU 400+ is retained as a first-class Ukrainian-market interview signal rather than being discarded because of overlap."
+        "DOU 400+ is retained as a first-class Ukrainian-market interview signal rather than being discarded because of overlap.",
+        "The DOU 400+ author states that some questions came from interviews and most were collected while reading testing resources; this makes the collection useful as coverage evidence but not proof that every listed question is commonly asked."
       ],
       "observedInternalDuplicateExamples": [
         "Smoke vs Sanity appears more than once.",
@@ -68,12 +79,91 @@
         "Database-type and relational-database concepts recur across Web and Database sections.",
         "Emulator vs simulator is split into closely overlapping questions.",
         "Testing without documentation appears in closely overlapping general questions."
+      ],
+      "preliminaryCatalogChecks": [
+        {
+          "concept": "database collation",
+          "status": "existing-match",
+          "action": "merge-source",
+          "evidence": "Present in content/interview/database-sql-qa.json."
+        },
+        {
+          "concept": "composite keys",
+          "status": "existing-match",
+          "action": "merge-source",
+          "evidence": "Present in content/interview/database-sql-qa.json."
+        },
+        {
+          "concept": "SQL injection",
+          "status": "existing-match",
+          "action": "merge-source",
+          "evidence": "Present in content/interview/database-sql-qa.json and restored-coverage-qa.json."
+        },
+        {
+          "concept": "emulator versus simulator",
+          "status": "existing-match",
+          "action": "merge-source",
+          "evidence": "Present in canonical-baseline.json and embedded-qa.json."
+        },
+        {
+          "concept": "Product Backlog versus Sprint Backlog",
+          "status": "existing-match",
+          "action": "merge-source",
+          "evidence": "Present in canonical-baseline.json/common-qa.json."
+        },
+        {
+          "concept": "TestFlight",
+          "status": "new-concept",
+          "action": "needs-review",
+          "evidence": "No matching interview-catalog entry found by repository search; also appears in the older DOU 250+ bank, so this is a known Ukrainian-bank coverage gap rather than a DOU-400-only discovery."
+        },
+        {
+          "concept": "git cherry-pick",
+          "status": "new-concept",
+          "action": "needs-review",
+          "evidence": "No matching catalog entry found by repository search; must still pass recurrence/value review before addition."
+        }
       ]
     },
     {
       "id": "ua-other",
       "label": "Other Ukrainian interview sources",
-      "status": "pending"
+      "status": "in-progress",
+      "sources": [
+        {
+          "id": "hillel-qa-interviewer-2025",
+          "title": "What questions to ask a QA engineer: a technical interviewer's perspective",
+          "publisher": "Hillel IT School",
+          "url": "https://blog.ithillel.ua/articles/what-questions-to-ask-a-qa-engineer",
+          "publishedAt": "2025-07-30",
+          "sourceRole": "interviewer-authored-guidance",
+          "authorContext": "QA Tech Lead who states she has conducted dozens of Junior-to-Senior QA interviews",
+          "value": "High Ukrainian-market signal for interview intent: understanding over memorization, case-based reasoning, real tool usage, ambiguity handling and communication. Includes a Top-30 Junior QA topic list."
+        },
+        {
+          "id": "mate-qa-market-2026",
+          "title": "QA tester career guide 2026",
+          "publisher": "Mate academy",
+          "url": "https://mate.academy/blog/it-career/testuvalnyk-pz-khto-tse-i-shcho-vin-robyt",
+          "publishedAt": "2026-08",
+          "sourceRole": "fresh-market-snapshot",
+          "value": "Very fresh Ukrainian junior-market confirmation. Explicitly lists testing/types, severity vs priority, test case vs checklist, bug report, smoke/regression/sanity and SDLC/STLC as common junior interview prompts. Narrow source, so use as prevalence confirmation rather than a broad bank."
+        },
+        {
+          "id": "dou-qa-voicechat-2023",
+          "title": "DOU VoiceChat: What QA needs to know for interviews",
+          "publisher": "DOU",
+          "url": "https://dou.ua/forums/topic/44752/",
+          "publishedAt": "2023-08-11",
+          "sourceRole": "community-interview-signal",
+          "value": "Supporting Ukrainian context for Junior/Middle/Senior interview tasks and expectations; not treated as an independent large question bank."
+        }
+      ],
+      "confirmedFindings": [
+        "Fresh Ukrainian interviewer guidance reinforces classic fundamentals but places more weight on explaining concepts in context than reciting definitions.",
+        "Case-based questions such as a production bug, a product without documentation, disagreement with a developer, and ambiguous input are strong local-market signals and should be matched by interview intent, not only keywords.",
+        "The August 2026 Mate snapshot independently confirms several classic fundamentals as still current for Junior QA interviews in Ukraine, reducing concern that the DOU fundamentals are obsolete."
+      ]
     },
     {
       "id": "international-general",
@@ -92,5 +182,5 @@
       "status": "pending"
     }
   ],
-  "nextAction": "Finish DOU 400+ self-dedup and compare DOU-400-only concepts against the full existing catalog before adding any source IDs or questions."
+  "nextAction": "Continue DOU 400+ concept normalization and catalog matching, with special attention to Git, Mobile, behavioural and practical sections; classify absent concepts by interview value before moving to international banks."
 }
