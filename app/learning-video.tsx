@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  isLearningVideoRateSupported,
+  LEARNING_VIDEO_PLAYBACK_RATES,
+  sameLearningVideoRate,
+} from "./learning-video-policy";
 import styles from "./learning-video.module.css";
 
 type YouTubePlayer = {
@@ -68,9 +73,6 @@ function loadYouTubeApi() {
   return youtubeApiPromise;
 }
 
-const requestedRates = [1, 1.25, 1.5, 1.75, 2, 3, 4];
-const sameRate = (left: number, right: number) => Math.abs(left - right) < 0.01;
-
 export default function LearningVideo({ channel, title, videoId }: {
   channel: string;
   title: string;
@@ -135,7 +137,7 @@ export default function LearningVideo({ channel, title, videoId }: {
 
   const setRate = (rate: number) => {
     const player = playerRef.current;
-    if (!player || !availableRates.some((candidate) => sameRate(candidate, rate))) return;
+    if (!player || !isLearningVideoRateSupported(availableRates, rate)) return;
     player.setPlaybackRate(rate);
     window.setTimeout(() => {
       if (playerRef.current === player) setCurrentRate(player.getPlaybackRate());
@@ -154,9 +156,9 @@ export default function LearningVideo({ channel, title, videoId }: {
       </div>
       <div className={styles.controls} role="group" aria-label="Playback speed">
         <span className={styles.controlsLabel}>Speed</span>
-        {requestedRates.map((rate) => {
-          const supported = ready && availableRates.some((candidate) => sameRate(candidate, rate));
-          const isActive = sameRate(currentRate, rate);
+        {LEARNING_VIDEO_PLAYBACK_RATES.map((rate) => {
+          const supported = ready && isLearningVideoRateSupported(availableRates, rate);
+          const isActive = sameLearningVideoRate(currentRate, rate);
           const unavailableMessage = `${rate}× is not exposed by the YouTube embedded player for this video.`;
           return (
             <button
