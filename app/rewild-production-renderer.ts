@@ -28,9 +28,11 @@ import {
 } from "./rewild-hex-world";
 import {
   drawRewildSprite,
+  fillRewildTerrainPattern,
   spriteForEnemy,
   spriteForPlant,
   type RewildPixelSpriteId,
+  type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
 import type { RenderEdge, RenderSnapshot } from "./rewild-render-snapshot";
 
@@ -87,6 +89,8 @@ const CORRUPTION_PALETTE: Record<1 | 2 | 3 | 4, string> = {
   4: PALETTE.corruption4,
 };
 
+const GRASS_VARIANTS: readonly RewildTerrainTileId[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
+
 const DIRECTION_TO_POLYGON_EDGE = [0, 5, 4, 3, 2, 1] as const;
 
 function tracePolygon(ctx: CanvasRenderingContext2D, points: PixelPoint[]) {
@@ -95,6 +99,16 @@ function tracePolygon(ctx: CanvasRenderingContext2D, points: PixelPoint[]) {
   ctx.moveTo(Math.round(points[0].x), Math.round(points[0].y));
   for (let index = 1; index < points.length; index += 1) ctx.lineTo(Math.round(points[index].x), Math.round(points[index].y));
   ctx.closePath();
+}
+
+function hexPath(hex: HexCoord, scale: number): Path2D {
+  const points = hexPolygon(hex, scale);
+  const path = new Path2D();
+  if (!points.length) return path;
+  path.moveTo(Math.round(points[0].x), Math.round(points[0].y));
+  for (let index = 1; index < points.length; index += 1) path.lineTo(Math.round(points[index].x), Math.round(points[index].y));
+  path.closePath();
+  return path;
 }
 
 function hash(seed: number, salt: number) {
@@ -222,6 +236,14 @@ function drawCompositionWash(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.globalAlpha = 1;
 }
 
+function biomeKindByCell(state: GameState) {
+  const kinds = new Map<string, string>();
+  for (const region of state.world.biomes) {
+    for (const hex of region.cells) kinds.set(hexKey(hex), region.kind);
+  }
+  return kinds;
+}
+
 function drawGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
   const state = snapshot.state;
   ctx.fillStyle = PALETTE.outside;
@@ -230,20 +252,18 @@ function drawGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
   drawCompositionWash(ctx, state);
   drawConnectedBiomeGround(ctx, snapshot);
 
+  // Authored grass tiles are the actual ground here, drawn before any entity in the render
+  // order (see renderOverheadGame) — units, plants, and enemies naturally paint on top of this
+  // with no per-frame occupied/enemy exclusion needed, unlike the earlier overlay-pass attempt.
+  const kinds = biomeKindByCell(state);
   const houseGround: HexCoord[] = [];
   for (const cell of state.world.cells.values()) {
     if (cell.surface === "house") houseGround.push(cell.hex);
-    if (cell.surface !== "meadow" || cell.corruption !== 0 || cell.readability >= .5 || cell.detail <= .55) continue;
-    if (snapshot.occupiedHexes.has(hexKey(cell.hex))) continue;
-    const center = hexCenter(cell.hex);
-    const westBias = Math.max(0, 1 - cell.hex.q / REWILD_HEX_LAYOUT.cols);
-    const light = cellRandom(cell, 2) < .18 + westBias * .18;
-    ctx.fillStyle = light ? PALETTE.meadowLight : PALETTE.meadowDark;
-    const x = Math.round(center.x - 8 + cellRandom(cell, 3) * 16);
-    const y = Math.round(center.y - 5 + cellRandom(cell, 4) * 10);
-    ctx.globalAlpha = light ? .48 : .34;
-    ctx.fillRect(x, y, light ? 3 : 2, 2);
-    ctx.globalAlpha = 1;
+    if (cell.surface !== "meadow" || cell.corruption !== 0) continue;
+    const kind = kinds.get(hexKey(cell.hex));
+    if (kind === "forest" || kind === "water") continue;
+    const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(cellRandom(cell, 301) * GRASS_VARIANTS.length))];
+    fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), PALETTE.meadow, 1);
   }
   fillHexes(ctx, houseGround, PALETTE.soil, 1.055);
 }

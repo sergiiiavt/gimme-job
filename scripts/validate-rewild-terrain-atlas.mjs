@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
 const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
 const runtimeSource = await readFile(path.join(root, "app", "rewild-pixel-atlas-v3.ts"), "utf8");
-const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
+const rendererSource = await readFile(path.join(root, "app", "rewild-production-renderer.ts"), "utf8");
 
 const FRAME_SIZE = 32;
 const ATLAS_COLUMNS = 8;
@@ -98,11 +98,19 @@ for (const id of MEADOW_FAMILY_TILE_IDS) {
 }
 
 // 7. Renderer wiring: every meadow tile must be referenced by the variant rotation, and the
-// rotation must fill the hex ground itself (fillRewildTerrainPattern), not merely stamp a
-// small faint dab on top of an unrelated flat fill.
+// rotation must fill the hex ground itself (fillRewildTerrainPattern) as part of drawGround,
+// before any entity draws — not a post-hoc overlay stamp that needs per-frame exclusion logic
+// to avoid painting over units.
 for (const id of MEADOW_FAMILY_TILE_IDS) {
-  assert.ok(overlaySource.includes(`"${id}"`), `${id}: not referenced in app/rewild-authored-overlay.ts meadow variant rotation`);
+  assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in app/rewild-production-renderer.ts meadow variant rotation`);
 }
-assert.match(overlaySource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern, not just a faint stamp");
+assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
+assert.match(rendererSource, /function drawGround\(/u, "drawGround must remain the home of the meadow tile fill");
+{
+  const groundStart = rendererSource.indexOf("function drawGround(");
+  const groundEnd = rendererSource.indexOf("\nfunction ", groundStart + 1);
+  const groundBody = rendererSource.slice(groundStart, groundEnd === -1 ? undefined : groundEnd);
+  assert.match(groundBody, /fillRewildTerrainPattern/u, "the meadow tile fill must live inside drawGround itself, not merely be referenced elsewhere in the file");
+}
 
 console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles, pre-existing 16 IDs untouched, atlas matches committed source, renderer wiring intact.`);

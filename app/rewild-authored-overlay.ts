@@ -4,7 +4,6 @@ import {
   hexDistance,
   hexKey,
   hexNeighbors,
-  hexPolygon,
   type GameState,
   type HexCell,
   type HexCoord,
@@ -12,7 +11,6 @@ import {
 import {
   drawRewildSprite,
   drawRewildTerrainStamp,
-  fillRewildTerrainPattern,
   type RewildPixelSpriteId,
   type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
@@ -22,9 +20,6 @@ import {
 } from "./rewild-detail-atlas-v4";
 import type { RewildCamera } from "./rewild-production-renderer";
 import type { RenderSnapshot } from "./rewild-render-snapshot";
-
-const GRASS_VARIANTS: readonly RewildTerrainTileId[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
-const MEADOW_FALLBACK_COLOR = "#719447";
 
 const CLUSTER_OFFSETS = [
   [0, 0],
@@ -72,16 +67,6 @@ function textureCell(
   drawRewildTerrainStamp(ctx, id, center.x, center.y, 43, 43, alpha);
 }
 
-function hexPath(hex: HexCoord, scale: number): Path2D {
-  const points = hexPolygon(hex, scale);
-  const path = new Path2D();
-  if (!points.length) return path;
-  path.moveTo(Math.round(points[0].x), Math.round(points[0].y));
-  for (let index = 1; index < points.length; index += 1) path.lineTo(Math.round(points[index].x), Math.round(points[index].y));
-  path.closePath();
-  return path;
-}
-
 function detailScale(id: RewildDetailV4Id) {
   if (id === "detail-lily-pads-a") return .42;
   if (id === "detail-log-a") return .29;
@@ -104,30 +89,6 @@ function drawDetail(
     alpha: .78 + random(cell, salt) * .16,
     flipX: random(cell, salt + 1) > .5,
   });
-}
-
-function drawMeadowTexture(
-  ctx: CanvasRenderingContext2D,
-  snapshot: RenderSnapshot,
-  kinds: ReadonlyMap<string, string>,
-) {
-  // occupiedHexes is static placement only (house/plants/nodes/ruins) and deliberately excludes
-  // enemies, since they move between hexes rather than occupy one. Enemies still stand on a hex
-  // at render time though, so they need their own exclusion here or the opaque fill paints over
-  // them too — this is exactly what was missed the first time this check was restored.
-  const enemyHexes = new Set(snapshot.state.enemies.map((enemy) => hexKey(enemy.hex)));
-  for (const cell of snapshot.state.world.cells.values()) {
-    const key = hexKey(cell.hex);
-    const kind = kinds.get(key);
-    // Entities are drawn earlier in renderProductionGame, before this overlay pass runs — an
-    // opaque fill on an occupied hex would paint over them. Only the hex actually standing on
-    // something is skipped (not the wider decorative-prop halo); this fill is exactly
-    // hex-clipped, so it can't visually intrude on a neighboring unit.
-    if (snapshot.occupiedHexes.has(key) || enemyHexes.has(key)) continue;
-    if (cell.surface !== "meadow" || cell.corruption !== 0 || kind === "forest" || kind === "water") continue;
-    const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(random(cell, 301) * GRASS_VARIANTS.length))];
-    fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), MEADOW_FALLBACK_COLOR, 1);
-  }
 }
 
 function meadowClusterSprite(cell: HexCell, theme: number, index: number): RewildDetailV4Id {
@@ -316,7 +277,6 @@ export function renderAuthoredArtOverlay(
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
 
-  drawMeadowTexture(ctx, snapshot, kinds);
   drawMeadowLife(ctx, snapshot, kinds, blocked);
   drawForestDensity(ctx, snapshot, kinds, blocked);
   drawWaterEdges(ctx, snapshot, kinds, blocked);
