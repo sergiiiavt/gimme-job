@@ -2,6 +2,7 @@ import {
   cellAt,
   hexCenter,
   hexDirection,
+  hexDistance,
   hexKey,
   type HexCoord,
   type WorldObject,
@@ -34,7 +35,7 @@ function fenceMasks(objects: readonly WorldObject[]) {
   for (const fence of fences) {
     let mask = 0;
     for (const other of fences) {
-      if (other.id === fence.id) continue;
+      if (other.id === fence.id || hexDistance(fence.anchor, other.anchor) !== 1) continue;
       mask = addDirection(mask, fence.anchor, other.anchor);
     }
     masks.set(hexKey(fence.anchor), mask);
@@ -57,6 +58,10 @@ function straightMaskFrom(mask: number) {
 function roadOverlayBlocked(snapshot: RenderSnapshot) {
   const blocked = new Set(snapshot.occupiedHexes);
   for (const enemy of snapshot.state.enemies) blocked.add(hexKey(enemy.hex));
+  for (const object of snapshot.state.world.objects) {
+    if (object.kind === "fence") continue;
+    for (const hex of object.footprint) blocked.add(hexKey(hex));
+  }
   return blocked;
 }
 
