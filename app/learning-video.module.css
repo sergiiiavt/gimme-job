@@ -96,10 +96,12 @@
 }
 
 .error {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  height: 100%;
   padding: 22px;
+  background: #101410;
   color: #e6ece7;
   font-size: 13px;
   text-align: center;
