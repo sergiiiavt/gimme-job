@@ -6,12 +6,13 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
 test("publishes practical Python tasks with structured dark code examples", async () => {
-  const [catalog, practical, enhancements, page, overlay, highlighter, deepLink, styles, validator, packageJson] = await Promise.all([
+  const [catalog, practical, enhancements, page, overlay, formatter, highlighter, deepLink, styles, validator, packageJson] = await Promise.all([
     readFile(projectFile("content/python-interview/catalog.ts"), "utf8"),
     readJson("content/python-interview/practical-qa.json"),
     readJson("content/python-interview/code-examples.json"),
     readFile(projectFile("app/interview/python/page.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
+    readFile(projectFile("app/interview-practical-formatting.ts"), "utf8"),
     readFile(projectFile("app/interview-code-highlighting.ts"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.module.css"), "utf8"),
@@ -42,13 +43,20 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(page, /questions=\{pythonInterviewCatalog\.questions\}/);
   assert.match(page, /InterviewQuestionLinkOverlay/);
 
+  assert.match(overlay, /splitPythonPracticalExample/);
+  assert.match(overlay, /createLegacyPythonSection/);
+  assert.match(overlay, /question\.id\.startsWith\("py-"\)/);
   assert.match(overlay, /highlightInterviewCode\(source, language\)/);
   assert.match(overlay, /background: "#1e1e1e"/);
   assert.match(overlay, /whiteSpace: "pre"/);
   assert.match(overlay, /overflowX: "auto"/);
   assert.match(overlay, /legacyCopy\.style\.display = "none"/);
-  assert.match(overlay, /practicalExample\.appendChild\(createCodeSection/);
+  assert.match(overlay, /practicalExample\.appendChild\(replacement\)/);
   assert.match(overlay, /navigator\.clipboard\.writeText\(code\)/);
+
+  assert.match(formatter, /inlineCodePattern/);
+  assert.match(formatter, /looksLikePythonCode/);
+  assert.match(formatter, /splitPythonPracticalExample/);
 
   assert.match(highlighter, /const pythonKeywords = new Set/);
   assert.match(highlighter, /const pythonBuiltins = new Set/);
@@ -58,6 +66,9 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(highlighter, /"#b5cea8"/);
   assert.match(highlighter, /"#4ec9b0"/);
 
+  assert.match(deepLink, /splitPythonPracticalExample\(displayExample\)/);
+  assert.match(deepLink, /hasLegacyPythonCode/);
+  assert.match(deepLink, /renderHighlightedCode\(segment\.text, "python"\)/);
   assert.match(deepLink, /renderHighlightedCode\(example\.code, example\.language\)/);
   assert.match(deepLink, /highlightInterviewCode\(source, language\)/);
   assert.match(deepLink, /Практичний приклад/);

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { highlightInterviewCode } from "./interview-code-highlighting";
+import { splitPythonPracticalExample } from "./interview-practical-formatting";
 
 interface InterviewCodeExample {
   title: string;
@@ -18,6 +19,8 @@ interface CodeEnhancedInterviewQuestion {
   id: string;
   question: string;
   questionUk?: string;
+  example?: string;
+  exampleUk?: string;
   codeExamples?: InterviewCodeExample[];
 }
 
@@ -79,6 +82,31 @@ function createCopyButton(code: string, language: string) {
   return button;
 }
 
+function createCodeBlock(source: string, language: string) {
+  const pre = document.createElement("pre");
+  pre.className = "iq-code-block";
+  applyStyles(pre, {
+    background: "#1e1e1e",
+    border: "1px solid #3a3a3a",
+    borderRadius: "8px",
+    color: "#d4d4d4",
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    fontSize: "12px",
+    lineHeight: "1.6",
+    margin: "0",
+    maxWidth: "100%",
+    overflowX: "auto",
+    padding: "13px 14px",
+    scrollbarColor: "#3b3b3b transparent",
+    tabSize: "2",
+    whiteSpace: "pre",
+  });
+  const code = document.createElement("code");
+  appendHighlightedCode(code, source, language);
+  pre.appendChild(code);
+  return pre;
+}
+
 function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "uk") {
   const card = document.createElement("article");
   card.className = "iq-code-card";
@@ -105,28 +133,6 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
   });
   header.append(title, createCopyButton(example.code, example.language));
 
-  const pre = document.createElement("pre");
-  pre.className = "iq-code-block";
-  applyStyles(pre, {
-    background: "#1e1e1e",
-    border: "1px solid #3a3a3a",
-    borderRadius: "8px",
-    color: "#d4d4d4",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-    fontSize: "12px",
-    lineHeight: "1.6",
-    margin: "0",
-    maxWidth: "100%",
-    overflowX: "auto",
-    padding: "13px 14px",
-    scrollbarColor: "#3b3b3b transparent",
-    tabSize: "2",
-    whiteSpace: "pre",
-  });
-  const code = document.createElement("code");
-  appendHighlightedCode(code, example.code, example.language);
-  pre.appendChild(code);
-
   const explanation = document.createElement("p");
   explanation.textContent = language === "uk" && example.explanationUk ? example.explanationUk : example.explanation;
   applyStyles(explanation, {
@@ -136,7 +142,7 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     margin: "0",
   });
 
-  card.append(header, pre, explanation);
+  card.append(header, createCodeBlock(example.code, example.language), explanation);
 
   const expected = language === "uk" && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
   if (expected) {
@@ -156,11 +162,12 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
   return card;
 }
 
-function createCodeSection(question: CodeEnhancedInterviewQuestion, language: "en" | "uk") {
+function createStructuredCodeSection(question: CodeEnhancedInterviewQuestion, language: "en" | "uk") {
   const section = document.createElement("section");
   section.className = "iq-code-examples-overlay";
   section.dataset.questionId = question.id;
   section.dataset.language = language;
+  section.dataset.variant = "structured";
   applyStyles(section, {
     display: "grid",
     gap: "10px",
@@ -169,6 +176,68 @@ function createCodeSection(question: CodeEnhancedInterviewQuestion, language: "e
   for (const example of question.codeExamples ?? []) {
     section.appendChild(createCodeExampleCard(example, language));
   }
+  return section;
+}
+
+function createLegacyPythonSection(question: CodeEnhancedInterviewQuestion, language: "en" | "uk") {
+  const source = language === "uk" && question.exampleUk ? question.exampleUk : question.example;
+  if (!source) return null;
+
+  const segments = splitPythonPracticalExample(source);
+  if (!segments.some((segment) => segment.type === "code")) return null;
+
+  const section = document.createElement("section");
+  section.className = "iq-code-examples-overlay";
+  section.dataset.questionId = question.id;
+  section.dataset.language = language;
+  section.dataset.variant = "legacy-python";
+  applyStyles(section, {
+    display: "grid",
+    gap: "9px",
+    paddingTop: "10px",
+  });
+
+  let codeIndex = 0;
+  for (const segment of segments) {
+    if (segment.type === "prose") {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = segment.text;
+      applyStyles(paragraph, {
+        color: "#59655e",
+        fontSize: "11px",
+        lineHeight: "1.5",
+        margin: "0",
+      });
+      section.appendChild(paragraph);
+      continue;
+    }
+
+    const card = document.createElement("article");
+    card.className = "iq-code-card iq-code-card-legacy";
+    applyStyles(card, { display: "grid", gap: "8px" });
+
+    const header = document.createElement("div");
+    applyStyles(header, {
+      alignItems: "center",
+      display: "flex",
+      gap: "8px",
+      justifyContent: "space-between",
+    });
+    const title = document.createElement("strong");
+    title.textContent = language === "uk"
+      ? `Приклад Python${segments.filter((item) => item.type === "code").length > 1 ? ` ${codeIndex + 1}` : ""}`
+      : `Python example${segments.filter((item) => item.type === "code").length > 1 ? ` ${codeIndex + 1}` : ""}`;
+    applyStyles(title, {
+      color: "#344039",
+      fontSize: "11px",
+      lineHeight: "1.3",
+    });
+    header.append(title, createCopyButton(segment.text, "python"));
+    card.append(header, createCodeBlock(segment.text, "python"));
+    section.appendChild(card);
+    codeIndex += 1;
+  }
+
   return section;
 }
 
@@ -184,7 +253,7 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
   useEffect(() => {
     const questionsByText = new Map<string, CodeEnhancedInterviewQuestion>();
     for (const question of questions) {
-      if (!question.codeExamples?.length) continue;
+      if (!question.codeExamples?.length && !question.example) continue;
       questionsByText.set(normalizeQuestionText(question.question), question);
       if (question.questionUk) questionsByText.set(normalizeQuestionText(question.questionUk), question);
     }
@@ -201,7 +270,21 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
           const question = questionsByText.get(normalizeQuestionText(heading));
           const practicalExample = answer.querySelector<HTMLElement>(":scope > .iq-example");
           const existing = practicalExample?.querySelector<HTMLElement>(":scope > .iq-code-examples-overlay") ?? null;
-          if (!question?.codeExamples?.length || !practicalExample) {
+          if (!question || !practicalExample) {
+            existing?.remove();
+            restoreLegacyExample(practicalExample);
+            continue;
+          }
+
+          const language = activeLanguage(answer);
+          const variant = question.codeExamples?.length ? "structured" : question.id.startsWith("py-") ? "legacy-python" : "none";
+          const replacement = variant === "structured"
+            ? createStructuredCodeSection(question, language)
+            : variant === "legacy-python"
+              ? createLegacyPythonSection(question, language)
+              : null;
+
+          if (!replacement) {
             existing?.remove();
             restoreLegacyExample(practicalExample);
             continue;
@@ -213,10 +296,14 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
             legacyCopy.dataset.codeExampleHidden = "true";
           }
 
-          const language = activeLanguage(answer);
-          if (existing?.dataset.questionId === question.id && existing.dataset.language === language) continue;
+          if (
+            existing?.dataset.questionId === question.id
+            && existing.dataset.language === language
+            && existing.dataset.variant === replacement.dataset.variant
+          ) continue;
+
           existing?.remove();
-          practicalExample.appendChild(createCodeSection(question, language));
+          practicalExample.appendChild(replacement);
         }
       });
     };
