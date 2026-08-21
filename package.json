@@ -22,7 +22,7 @@
     "validate:artifact": "node scripts/validate-cloudflare-artifact.mjs",
     "check:about-links": "node scripts/validate-about-repo-links.mjs",
     "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-python-quick-reference.mjs && node scripts/validate-sql-quick-reference.mjs && node scripts/validate-automation-curriculum-content.mjs && node scripts/validate-qa-fundamentals-content.mjs && node scripts/validate-cloud-devops-content.mjs && node scripts/validate-testing-tools-content.mjs && node scripts/validate-metrics-estimation-content.mjs && npm run check:about-links",
-    "check:rewild-assets": "npm run build:rewild-v4-details && node scripts/validate-rewild-assets.mjs",
+    "check:rewild-assets": "npm run build:rewild-v4-details && node scripts/validate-rewild-v4-detail-atlas.mjs && node scripts/validate-rewild-assets.mjs",
     "check:rewild-visual": "node scripts/check-rewild-visual.mjs",
     "check:agent": "tsc -p tsconfig.agent.json",
     "check:db": "node scripts/check-drizzle-generation.mjs",
