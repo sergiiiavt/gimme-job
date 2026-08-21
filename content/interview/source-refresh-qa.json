@@ -173,8 +173,8 @@
       "example": "Before implementing a pricing rule, QA reviews examples with the product owner, identifies an ambiguous boundary and asks the developer to expose a deterministic pricing API. Component and contract checks catch two mistakes in the PR, while a smaller end-to-end suite later confirms the integrated checkout flow instead of discovering the rule for the first time there.",
       "exampleUk": "До реалізації pricing rule QA переглядає examples разом із product owner, знаходить неоднозначну boundary і просить developer надати deterministic pricing API. Component та contract checks ловлять дві помилки ще в PR, а менший end-to-end suite пізніше підтверджує integrated checkout flow замість того, щоб уперше знаходити проблему лише на цьому рівні.",
       "tags": ["shift-left", "agile", "continuous-testing", "testability"],
-      "sourceIds": ["bugbug-qa-interviews-2026", "kore1-qa-interviews-2026", "istqb-ctfl-v4", "dora"],
-      "prevalence": "Common"
+      "sourceIds": ["bugbug-qa-interviews-2026", "kore1-qa-interviews-2026", "asserthired-qa-bank-2026", "istqb-ctfl-v4", "dora"],
+      "prevalence": "Very common"
     },
     {
       "id": "automation-tool-selection",
