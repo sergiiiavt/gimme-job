@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { highlightInterviewCode } from "./interview-code-highlighting";
 
 interface InterviewCodeExample {
   title: string;
@@ -20,16 +21,6 @@ interface CodeEnhancedInterviewQuestion {
   codeExamples?: InterviewCodeExample[];
 }
 
-const sqlKeywords = new Set([
-  "ALL", "ALTER", "AND", "AS", "ASC", "BEGIN", "BETWEEN", "BY", "CASE", "COMMIT", "CREATE", "DELETE", "DESC",
-  "DISTINCT", "DROP", "ELSE", "END", "EXCEPT", "EXISTS", "FALSE", "FROM", "FULL", "GROUP", "HAVING", "IN", "INDEX",
-  "INNER", "INSERT", "INTERSECT", "INTO", "IS", "JOIN", "LEFT", "LIKE", "LIMIT", "NOT", "NULL", "ON", "OR", "ORDER",
-  "OUTER", "OVER", "PARTITION", "RIGHT", "ROLLBACK", "SELECT", "SET", "TABLE", "THEN", "TRUE", "UNION", "UNIQUE", "UPDATE",
-  "VALUES", "WHEN", "WHERE", "WITH",
-]);
-
-const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
-
 function normalizeQuestionText(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -43,32 +34,25 @@ function activeLanguage(answer: HTMLElement) {
   return active?.textContent?.trim() === "UA" ? "uk" : "en";
 }
 
-function appendHighlightedSql(code: HTMLElement, source: string) {
-  let lastIndex = 0;
-  sqlTokenPattern.lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = sqlTokenPattern.exec(source)) !== null) {
-    if (match.index > lastIndex) code.append(document.createTextNode(source.slice(lastIndex, match.index)));
-    const token = match[0];
+function appendHighlightedCode(code: HTMLElement, source: string, language: string) {
+  for (const token of highlightInterviewCode(source, language)) {
+    if (!token.color) {
+      code.append(document.createTextNode(token.text));
+      continue;
+    }
     const span = document.createElement("span");
-    span.textContent = token;
-    if (token.startsWith("--")) span.style.color = "#6a9955";
-    else if (token.startsWith("'")) span.style.color = "#ce9178";
-    else if (sqlKeywords.has(token.toUpperCase())) span.style.color = "#569cd6";
-    else span.style.color = "#d4d4d4";
+    span.textContent = token.text;
+    span.style.color = token.color;
     code.appendChild(span);
-    lastIndex = sqlTokenPattern.lastIndex;
   }
-
-  if (lastIndex < source.length) code.append(document.createTextNode(source.slice(lastIndex)));
 }
 
-function createCopyButton(code: string) {
+function createCopyButton(code: string, language: string) {
   const button = document.createElement("button");
   button.type = "button";
   button.textContent = "Copy";
-  button.setAttribute("aria-label", "Copy SQL example");
+  const languageLabel = language.toLowerCase() === "sql" ? "SQL" : language.toLowerCase() === "python" ? "Python" : language;
+  button.setAttribute("aria-label", `Copy ${languageLabel} example`);
   applyStyles(button, {
     alignItems: "center",
     background: "#ffffff",
@@ -97,7 +81,7 @@ function createCopyButton(code: string) {
 
 function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "uk") {
   const card = document.createElement("article");
-  card.className = "iq-sql-code-card";
+  card.className = "iq-code-card";
   applyStyles(card, {
     display: "grid",
     gap: "8px",
@@ -119,10 +103,10 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     fontSize: "11px",
     lineHeight: "1.3",
   });
-  header.append(title, createCopyButton(example.code));
+  header.append(title, createCopyButton(example.code, example.language));
 
   const pre = document.createElement("pre");
-  pre.className = "iq-sql-code";
+  pre.className = "iq-code-block";
   applyStyles(pre, {
     background: "#1e1e1e",
     border: "1px solid #3a3a3a",
@@ -140,7 +124,7 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     whiteSpace: "pre",
   });
   const code = document.createElement("code");
-  appendHighlightedSql(code, example.code);
+  appendHighlightedCode(code, example.code, example.language);
   pre.appendChild(code);
 
   const explanation = document.createElement("p");
@@ -190,9 +174,9 @@ function createCodeSection(question: CodeEnhancedInterviewQuestion, language: "e
 
 function restoreLegacyExample(details: HTMLElement | null) {
   const copy = details?.querySelector<HTMLElement>(":scope > .iq-answer-copy");
-  if (copy?.dataset.sqlCodeHidden === "true") {
+  if (copy?.dataset.codeExampleHidden === "true") {
     copy.style.removeProperty("display");
-    delete copy.dataset.sqlCodeHidden;
+    delete copy.dataset.codeExampleHidden;
   }
 }
 
@@ -226,7 +210,7 @@ export default function InterviewQuestionCodeOverlay({ questions }: { questions:
           const legacyCopy = practicalExample.querySelector<HTMLElement>(":scope > .iq-answer-copy");
           if (legacyCopy) {
             legacyCopy.style.display = "none";
-            legacyCopy.dataset.sqlCodeHidden = "true";
+            legacyCopy.dataset.codeExampleHidden = "true";
           }
 
           const language = activeLanguage(answer);
