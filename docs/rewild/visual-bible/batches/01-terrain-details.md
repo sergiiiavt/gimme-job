@@ -26,7 +26,7 @@ Generate clean pixel-art source sprites on transparent background. No labels, no
 
 Approval note: the Batch 01A review sheet was explicitly approved in chat on 2026-08-20. It locks the road/fence/barrier style direction for clean production export. The review poster itself is not the final runtime atlas.
 
-### 01B — Small nature details — NEXT REVIEW
+### 01B — Small nature details — SOURCE LOCKED / RUNTIME INTEGRATION
 15. `detail-grass-tuft-a`
 16. `detail-grass-tuft-b`
 17. `detail-grass-tuft-c`
@@ -44,13 +44,17 @@ Approval note: the Batch 01A review sheet was explicitly approved in chat on 202
 29. `detail-reeds-a`
 30. `detail-lily-pads-a`
 
-### 01C — Small industrial details
+The 16 exact assets are stored losslessly-for-pipeline as base64 PNG source bundles under `assets/rewild/v4/source-b64/`. They are deterministically decoded and packed during local development, validation, and production build. No generated contact-sheet labels or background pixels enter the runtime atlas.
+
+### 01C — Small industrial details — SOURCE LOCKED / RUNTIME INTEGRATION
 31. `industrial-cable-segment-a`
 32. `industrial-junction-box-a`
 33. `industrial-relay-box-a`
 34. `industrial-pipe-outlet-a`
 35. `industrial-vent-small-a`
 36. `industrial-debris-small-a`
+
+These six assets use the same deterministic source-bundle and atlas pipeline as 01B. They are decorative physical hardware only and do not create gameplay entities.
 
 ## Geometry constraints
 
@@ -71,12 +75,11 @@ Approval note: the Batch 01A review sheet was explicitly approved in chat on 202
 
 ## Generation strategy
 
-Generate and approve smaller sub-batches rather than all 36 at once:
-1. 01A road/fence/boundary — 14 exact assets. **Approved for production export.**
-2. 01B nature details — 16 exact assets. **Generate next.**
-3. 01C industrial details — 6 exact assets.
+1. 01A road/fence/boundary — 14 exact assets. **Review approved; connector-aware production export is next.**
+2. 01B nature details — 16 exact assets. **Source locked and wired to v4 authored overlay.**
+3. 01C industrial details — 6 exact assets. **Source locked and wired to v4 authored overlay.**
 
-This reduces missing slots, duplicates and hallucinated objects.
+No further concept-sheet generation is required for 01B/01C. New generation is allowed only for a specific rejected/missing production asset or a later explicitly defined family.
 
 ## Acceptance gate
 
