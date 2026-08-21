@@ -5,17 +5,7 @@ import { validateCloudflareArtifact } from "./validate-cloudflare-artifact.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const vinextCli = path.join(projectRoot, "node_modules", "vinext", "dist", "cli.js");
-const rewildV4Builder = path.join(projectRoot, "scripts", "build-rewild-v4-detail-atlas.mjs");
 const timeout = Number.parseInt(process.env.GIMMEJOB_BUILD_TIMEOUT_MS ?? "180000", 10);
-
-console.log("Building Rewild v4 environmental detail atlas...");
-const rewildResult = spawnSync(process.execPath, [rewildV4Builder], {
-  cwd: projectRoot,
-  stdio: "inherit",
-  timeout: 30000,
-});
-if (rewildResult.error) throw rewildResult.error;
-if (rewildResult.status !== 0) throw new Error(`Rewild v4 detail atlas build failed with exit code ${rewildResult.status ?? "unknown"}.`);
 
 console.log("Running bounded vinext build...");
 const result = spawnSync(process.execPath, [vinextCli, "build"], {
