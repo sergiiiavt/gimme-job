@@ -37,7 +37,8 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
   assert.match(overlay, /className = "iq-code-examples-overlay"/);
   assert.match(overlay, /querySelector<HTMLElement>\(":scope > \.iq-example"\)/);
   assert.match(overlay, /legacyCopy\.style\.display = "none"/);
-  assert.match(overlay, /practicalExample\.appendChild\(createCodeSection/);
+  assert.match(overlay, /createStructuredCodeSection\(question, language\)/);
+  assert.match(overlay, /practicalExample\.appendChild\(replacement\)/);
   assert.match(overlay, /background: "#1e1e1e"/);
   assert.match(overlay, /highlightInterviewCode\(source, language\)/);
   assert.match(overlay, /whiteSpace: "pre"/);
