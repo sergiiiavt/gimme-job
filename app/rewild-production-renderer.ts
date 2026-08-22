@@ -508,7 +508,7 @@ function drawDatacenter(ctx: CanvasRenderingContext2D, node: DataNode) {
   drawPixelDisc(ctx, { x: center.x, y: center.y + 9 }, node.boss ? 25 : 19, PALETTE.industrialDark);
   ctx.globalAlpha = 1;
   drawRewildSprite(ctx, node.boss ? "mainframe" : "datacenter", center.x, center.y, {
-    scale: node.boss ? 1.58 : 1.24,
+    scale: 1.28,
     alpha: ratio < .25 ? .72 : 1,
   });
   drawHealth(ctx, center, ratio, node.boss ? 56 : 42, node.boss ? 37 : 30);
@@ -528,7 +528,7 @@ function drawHouse(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.globalAlpha = .24;
   drawPixelDisc(ctx, { x: center.x, y: center.y + 11 }, 24, PALETTE.meadowDark);
   ctx.globalAlpha = 1;
-  drawRewildSprite(ctx, ratio < .45 ? "house-damaged" : "house", center.x, center.y, { scale: 1.55 });
+  drawRewildSprite(ctx, ratio < .45 ? "house-damaged" : "house", center.x, center.y, { scale: .95 });
   drawHealth(ctx, center, ratio, 50, 34);
 }
 
