@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
-import { register } from "tsx/esm/api";
+import { register as registerTsx } from "tsx/esm/api";
 
-register();
+registerTsx();
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const { handleMcpRequest, MCP_TOOL_NAMES } = await import("../worker/mcp.ts");
 const { default: interviewCatalog } = await import("../content/interview/catalog.ts");
@@ -11,8 +13,11 @@ const firstQuestion = interviewCatalog.questions[0];
 
 class FakeStatement {
   private bindings: unknown[] = [];
+  private readonly sql: string;
 
-  constructor(private readonly sql: string) {}
+  constructor(sql: string) {
+    this.sql = sql;
+  }
 
   bind(...values: unknown[]) {
     this.bindings = values;
