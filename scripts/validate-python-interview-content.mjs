@@ -18,24 +18,28 @@ const topicFiles = [
   "typing-static-analysis-qa",
   "stdlib-tooling-qa",
   "web-automation-qa",
+  "aqa-specific-qa",
 ];
 
-const [topicSets, practical, codeEnhancements, topicOverrides, sources, taxonomy, catalog] = await Promise.all([
+const [topicSets, practical, codeEnhancements, topicOverrides, baseSources, aqaInterviewSources, taxonomy, catalog] = await Promise.all([
   Promise.all(topicFiles.map((name) => readJson(`../content/python-interview/${name}.json`))),
   readJson("../content/python-interview/practical-qa.json"),
   readJson("../content/python-interview/code-examples.json"),
   readJson("../content/python-interview/topic-overrides.json"),
   readJson("../content/python-interview/sources.json"),
+  readJson("../content/python-interview/aqa-interview-sources.json"),
   readJson("../content/python-interview/taxonomy.json"),
   readText("../content/python-interview/catalog.ts"),
 ]);
 
+const sources = [...baseSources, ...aqaInterviewSources];
 const baseQuestions = topicSets.flatMap((set) => set.questions);
 const questions = [...baseQuestions, ...practical.questions];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Performance", "Design", "Security", "Tooling"]);
 const sourceIds = new Set(sources.map((source) => source.id));
+const aqaInterviewSourceIds = new Set(aqaInterviewSources.map((source) => source.id));
 const categories = new Set(taxonomy.flatMap((item) => item.category ? [item.category] : []));
 const questionIds = new Set();
 const questionTexts = new Set();
@@ -54,11 +58,12 @@ function validateCodeExample(example, context) {
 }
 
 assert.equal(sourceIds.size, sources.length, "Source IDs must be unique.");
-assert.ok(baseQuestions.length >= 133, "The researched Python interview collection must not regress below the 133-question baseline.");
+assert.ok(baseQuestions.length >= 142, "The researched Python interview collection must not regress below the evidence-backed 142-question baseline.");
 assert.equal(practical.questions.length, 18, "The focused practical Python layer must contain exactly 18 code-writing questions.");
-assert.ok(questions.length >= 151, "The public Python interview collection must include the researched baseline plus practical additions.");
+assert.ok(questions.length >= 160, "The public Python interview collection must include the researched baseline plus practical additions.");
 assert.equal(codeEnhancements.length, 19, "Keep structured code enhancements on the selected 19 high-frequency existing Python questions.");
-assert.ok(sources.length >= 42, "The Python interview source catalog must contain at least 42 researched sources.");
+assert.ok(sources.length >= 51, "The Python interview source catalog must contain the researched baseline plus current Python AQA evidence.");
+assert.ok(aqaInterviewSources.length >= 9, "Keep a meaningful current source set for Python AQA interview relevance.");
 assert.equal(categories.size, 14, "The Python interview taxonomy must contain exactly 14 question topics.");
 
 for (const source of sources) {
@@ -97,6 +102,10 @@ for (const question of questions) {
   assert.ok(question.sourceIds?.length, `Add at least one source for ${question.id}`);
   for (const sourceId of question.sourceIds) {
     assert.ok(sourceIds.has(sourceId), `Unknown source ${sourceId} in ${question.id}`);
+  }
+  if (question.id.startsWith("py-aqa-")) {
+    assert.equal(question.category, "Python AQA specific", `Evidence-backed AQA question ${question.id} must stay in Python AQA specific.`);
+    assert.ok(question.sourceIds.some((sourceId) => aqaInterviewSourceIds.has(sourceId)), `AQA question ${question.id} must cite current AQA interview, market, or specialist evidence.`);
   }
 }
 
@@ -150,17 +159,25 @@ for (const category of categories) {
 }
 
 const aqaQuestions = effectiveQuestions.filter((question) => question.category === "Python AQA specific");
-assert.ok(aqaQuestions.length >= 10, `Python AQA specific must contain at least 10 questions, found ${aqaQuestions.length}.`);
+const evidenceBackedAqaQuestions = aqaQuestions.filter((question) => question.id.startsWith("py-aqa-"));
+assert.ok(aqaQuestions.length >= 22, `Python AQA specific must contain at least 22 meaningful questions, found ${aqaQuestions.length}.`);
+assert.ok(evidenceBackedAqaQuestions.length >= 9, `Python AQA specific must keep the current interview-evidence expansion, found ${evidenceBackedAqaQuestions.length}.`);
 assert.ok(aqaQuestions.some((question) => question.tags?.includes("pytest")), "Python AQA specific must include pytest coverage.");
-assert.ok(aqaQuestions.some((question) => question.tags?.includes("test-automation")), "Python AQA specific must include browser/framework automation coverage.");
+assert.ok(aqaQuestions.some((question) => question.tags?.includes("selenium")), "Python AQA specific must include Selenium coverage.");
+assert.ok(aqaQuestions.some((question) => question.tags?.includes("playwright")), "Python AQA specific must include Playwright coverage.");
+assert.ok(aqaQuestions.some((question) => question.tags?.includes("test-automation")), "Python AQA specific must include framework automation coverage.");
 
+assert.match(catalog, /import aqaSpecific from "\.\/aqa-specific-qa\.json"/);
 assert.match(catalog, /import practical from "\.\/practical-qa\.json"/);
 assert.match(catalog, /import codeExamples from "\.\/code-examples\.json"/);
 assert.match(catalog, /import topicOverrides from "\.\/topic-overrides\.json"/);
+assert.match(catalog, /import aqaSources from "\.\/aqa-interview-sources\.json"/);
+assert.match(catalog, /\.\.\.aqaSpecific\.questions/);
 assert.match(catalog, /\.\.\.practical\.questions/);
 assert.match(catalog, /pythonTopicOverrideById\.get\(question\.id\)/);
 assert.match(catalog, /pythonCodeExamplesById\.get\(question\.id\)/);
-assert.match(catalog, /version: 4/);
+assert.match(catalog, /const sources = \[\.\.\.baseSources, \.\.\.aqaSources\]/);
+assert.match(catalog, /version: 5/);
 assert.match(catalog, /lastReviewedAt: "2026-08-22"/);
 
 console.log(`Python interview content validated: ${questions.length} questions (${baseQuestions.length} researched + ${practical.questions.length} practical), ${codeEnhancements.length} existing questions with structured code examples, ${categories.size} topics, ${topicOverrides.length} topic overrides, ${sources.length} sources.`);

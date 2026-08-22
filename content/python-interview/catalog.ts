@@ -11,10 +11,12 @@ import packagingEnvironments from "./packaging-environments-qa.json";
 import typingStaticAnalysis from "./typing-static-analysis-qa.json";
 import stdlibTooling from "./stdlib-tooling-qa.json";
 import webAutomation from "./web-automation-qa.json";
+import aqaSpecific from "./aqa-specific-qa.json";
 import practical from "./practical-qa.json";
 import codeExamples from "./code-examples.json";
 import topicOverrides from "./topic-overrides.json";
-import sources from "./sources.json";
+import baseSources from "./sources.json";
+import aqaSources from "./aqa-interview-sources.json";
 import taxonomy from "./taxonomy.json";
 
 const pythonCodeExamplesById = new Map(
@@ -38,6 +40,7 @@ const questions = [
   ...typingStaticAnalysis.questions,
   ...stdlibTooling.questions,
   ...webAutomation.questions,
+  ...aqaSpecific.questions,
   ...practical.questions,
 ].map((question) => {
   const category = pythonTopicOverrideById.get(question.id);
@@ -46,16 +49,18 @@ const questions = [
   return enhancement ? { ...withTopic, codeExamples: enhancement } : withTopic;
 });
 
+const sources = [...baseSources, ...aqaSources];
+
 export const pythonInterviewCatalog = {
-  version: 4,
+  version: 5,
   title: "Python interview knowledge base",
   description: "Canonical Python interview questions with original answers, practical code-writing tasks, executable-style examples, tags and traceable technical sources.",
   lastReviewedAt: "2026-08-22",
   methodology: {
-    coverage: "Real Python, GeeksforGeeks, InterviewBit, Toptal and DataCamp are cross-checked for recurring interview themes across fundamentals, data structures, OOP, concurrency, typing and tooling. A dedicated Python AQA topic groups pytest, mocking, API-client, browser-automation, configuration and practical test-framework questions without duplicating their canonical records. A focused practical layer adds common code-writing exercises without turning the collection into an unbounded algorithm bank.",
-    answers: "Every answer is written for this knowledge base and checked against the official Python documentation and the relevant PEP where one exists. High-frequency topics also use structured Python code examples with explanation and expected behavior.",
+    coverage: "General Python interview themes are cross-checked against Real Python, GeeksforGeeks, InterviewBit, Toptal and DataCamp. Python AQA coverage is additionally checked against current 2026 SDET and pytest interview banks, Playwright interview material, Ukrainian Python automation hiring signals and practitioner framework guidance. Only recurring or role-relevant AQA concepts are added; useful but weakly evidenced pytest APIs are left out rather than used to pad the topic.",
+    answers: "Every answer is written for this knowledge base and checked against the official Python documentation and the relevant PEP where one exists. AQA-specific answers also use the official pytest, pytest-xdist, Selenium and Playwright documentation for tool behavior. High-frequency topics use practical examples that reflect automation work rather than trivia.",
     publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks.",
-    prevalence: "Prevalence is an editorial four-band signal, not a fabricated percentage. It reflects how often a topic recurs across the cross-checked community sources and how broadly it applies across Python roles, including test-automation engineers.",
+    prevalence: "Prevalence is an editorial four-band signal, not a fabricated percentage. For Python AQA questions it reflects recurrence across current interview sources plus current hiring relevance; official documentation establishes correctness but does not by itself make a topic common in interviews.",
     media: "This collection currently ships without images; original diagrams can be added later using the same media schema as the QA interview catalog."
   },
   taxonomy,
