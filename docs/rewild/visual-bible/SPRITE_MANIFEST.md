@@ -10,9 +10,9 @@ Exact runtime visual-state mapping must come from code/renderer behavior, not fr
 
 | ID | Code concept | Footprint | Code-backed visual cues / mapping | Status |
 | --- | --- | --- | --- | --- |
-| `structure-house` | House | multi-hex | current runtime uses `house` and `house-damaged`, selected from HP; any additional variants require an explicit HP/state mapping | planned-v4 |
-| `structure-datacenter` | regular `DataNode` | multi-hex | `buildProgress`, HP, shutdown/collapse effects; exact damage variants must be explicitly mapped | planned-v4 |
-| `structure-mainframe` | boss `DataNode` | multi-hex | same code-backed DataNode cues, with boss scale/footprint; exact damage variants must be explicitly mapped | planned-v4 |
+| `structure-house` | House | 3-hex `HOUSE_FOOTPRINT` | current runtime uses `house` and `house-damaged`, selected from HP; any additional variants require an explicit HP/state mapping | integrated (v4) |
+| `structure-datacenter` | regular `DataNode` | `hexDisk(anchor, 1)`, 7 hexes | `buildProgress`, HP, shutdown/collapse effects; exact damage variants must be explicitly mapped | integrated (v4) — single default frame only, damage/collapse variants remain a future batch |
+| `structure-mainframe` | boss `DataNode` | `hexDisk(anchor, 2)`, 19 hexes | same code-backed DataNode cues, with boss scale/footprint; exact damage variants must be explicitly mapped | integrated (v4) — single default frame only, damage/collapse variants remain a future batch |
 | `structure-facility-ruin` | `FacilityRuin` | inherits node footprint | collapsed/rubble representation after facility collapse | planned-v4 |
 
 Do **not** infer runtime states such as `critical`, `destroyed`, `failing`, `overloaded`, or `heavily-damaged` from generated concept-sheet labels.
@@ -153,6 +153,6 @@ Required visual transitions once a clean transition target is approved:
 7. Code-mapped damage/recovery visuals.
 8. VFX/attack/reclaim/collapse feedback.
 
-Items 5 and 6 were completed ahead of items 1–4 on explicit user request (2026-08-22): all six plant units and all four enemies, including `enemy-popup`, are integrated at v4 (see section C for the popup resolution). Items 1–4 remain outstanding.
+Items 3, 4, 5 and 6 were completed ahead of items 1–2 on explicit user request (2026-08-22): all six plant units, all four enemies (including `enemy-popup`, see section C), and House/Datacenter/Mainframe (section A) are integrated at v4. Items 1–2 (roads/connected terrain, forest+water) remain outstanding.
 
 Before changing this manifest, verify the requested addition against code or explicit user approval and re-check `REFERENCE_STATUS.json`.

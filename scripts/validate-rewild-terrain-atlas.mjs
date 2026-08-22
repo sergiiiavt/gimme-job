@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import {
   ALL_TERRAIN_TILE_IDS,
+  FOREST_WATER_FAMILY_TILE_IDS,
   MEADOW_FAMILY_TILE_IDS,
   buildRewildTerrainAtlas,
 } from "./build-rewild-terrain-atlas.mjs";
@@ -12,8 +13,10 @@ import {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
 const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
+const forestWaterSourceDirectory = path.join(root, "assets", "rewild", "terrain", "forest-water-source");
 const runtimeSource = await readFile(path.join(root, "app", "rewild-pixel-atlas-v3.ts"), "utf8");
 const rendererSource = await readFile(path.join(root, "app", "rewild-production-renderer.ts"), "utf8");
+const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
 
 const FRAME_SIZE = 32;
 const ATLAS_COLUMNS = 8;
@@ -45,23 +48,31 @@ assert.deepEqual(
 assert.deepEqual(runtimeTileIds, ALL_TERRAIN_TILE_IDS, "build script's ALL_TERRAIN_TILE_IDS must match the runtime array exactly");
 assert.equal(new Set(runtimeTileIds).size, runtimeTileIds.length, "terrain tile IDs must be unique");
 
-// 2. Committed source PNGs: exactly the meadow family, each a valid 32x32 PNG.
-const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort(compareAlphabetically);
+// 2. Committed source PNGs: exactly each family's tiles, each a valid 32x32 PNG.
 const { readdir } = await import("node:fs/promises");
-const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
-assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed terrain source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed terrain source directory must contain exactly the meadow family's approved PNGs");
 
-const sourceRaw = new Map();
-for (const id of MEADOW_FAMILY_TILE_IDS) {
-  const fileName = `${id}.png`;
-  const buffer = await readFile(path.join(sourceDirectory, fileName));
-  const metadata = await sharp(buffer).metadata();
-  assert.equal(metadata.format, "png", `${fileName}: committed source must strictly decode as PNG`);
-  assert.equal(metadata.width, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px wide`);
-  assert.equal(metadata.height, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px tall`);
-  sourceRaw.set(id, await sharp(buffer).ensureAlpha().raw().toBuffer());
+async function validateCommittedFamily(directory, tileIds, label) {
+  const expectedFiles = tileIds.map((id) => `${id}.png`).sort(compareAlphabetically);
+  const entries = await readdir(directory, { withFileTypes: true });
+  assert.ok(entries.every((entry) => entry.isFile()), `committed ${label} terrain source directory must contain files only`);
+  assert.deepEqual(entries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, `committed ${label} terrain source directory must contain exactly its family's approved PNGs`);
+
+  const raw = new Map();
+  for (const id of tileIds) {
+    const fileName = `${id}.png`;
+    const buffer = await readFile(path.join(directory, fileName));
+    const metadata = await sharp(buffer).metadata();
+    assert.equal(metadata.format, "png", `${fileName}: committed source must strictly decode as PNG`);
+    assert.equal(metadata.width, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px wide`);
+    assert.equal(metadata.height, FRAME_SIZE, `${fileName}: committed source must be exactly ${FRAME_SIZE}px tall`);
+    raw.set(id, await sharp(buffer).ensureAlpha().raw().toBuffer());
+  }
+  return raw;
 }
+
+const sourceRaw = await validateCommittedFamily(sourceDirectory, MEADOW_FAMILY_TILE_IDS, "meadow");
+const forestWaterRaw = await validateCommittedFamily(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS, "forest/water");
+for (const [id, buffer] of forestWaterRaw) sourceRaw.set(id, buffer);
 
 // 3. Rebuilding from committed source must reproduce the committed atlas exactly (no drift).
 const committedAtlas = await readFile(atlasPath);
@@ -77,7 +88,7 @@ assert.ok(atlasMeta.hasAlpha, "terrain atlas must be RGBA");
 
 const { data: atlasData, info: atlasInfo } = await sharp(atlasPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 
-for (const id of MEADOW_FAMILY_TILE_IDS) {
+for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
   const index = ALL_TERRAIN_TILE_IDS.indexOf(id);
   const left = (index % ATLAS_COLUMNS) * FRAME_SIZE;
   const top = Math.floor(index / ATLAS_COLUMNS) * FRAME_SIZE;
@@ -113,4 +124,14 @@ assert.match(rendererSource, /function drawGround\(/u, "drawGround must remain t
   assert.match(groundBody, /fillRewildTerrainPattern/u, "the meadow tile fill must live inside drawGround itself, not merely be referenced elsewhere in the file");
 }
 
-console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles, pre-existing 16 IDs untouched, atlas matches committed source, renderer wiring intact.`);
+// 8. Water overlay wiring: each water tile is a per-cell textureCell stamp in
+// rewild-authored-overlay.ts (matching the existing corruption/industrial convention), not a
+// full-region tiled fill. forest-floor is authored and packed into the atlas but intentionally
+// unreferenced: every forest cell now gets a real tree from drawForestDensity (one per hex, no
+// sparse/clearing gate), leaving no bare-ground cell for a litter accent to occupy — it remains
+// available for a future thinning/clearing pass.
+assert.match(overlaySource, /textureCell\(ctx, cell, "water-shallow"/u, "water-shallow must be drawn as a textureCell stamp, matching the corruption/industrial convention");
+assert.match(overlaySource, /textureCell\(ctx, cell, "water-deep"/u, "water-deep must be drawn as a textureCell stamp (this call pre-dates this batch; it was previously unreachable art)");
+assert.doesNotMatch(rendererSource, /fillRewildTerrainPattern\(ctx, ["'`](forest-floor|water-deep|water-shallow)["'`]/u, "forest/water tiles must not be wired as a full-region fillRewildTerrainPattern fill in rewild-production-renderer.ts — see the textureCell stamp convention above");
+
+console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles and ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles, pre-existing 16 IDs untouched, atlas matches committed source, overlay wiring intact.`);

@@ -117,7 +117,6 @@ test("ships Fight AI slop as a lazy, local-only public game", async () => {
   assert.match(rendererSource, /waterShallow/);
   assert.match(rendererSource, /function drawForest/);
   assert.match(rendererSource, /forestDeep/);
-  assert.match(rendererSource, /neighborCount >= 5/);
   assert.match(rendererSource, /function drawRoad/);
   assert.match(rendererSource, /roadDirt/);
   assert.match(rendererSource, /snapshot\.roadEdges/);

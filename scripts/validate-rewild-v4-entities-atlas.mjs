@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { ENTITY_ORDER } from "./build-rewild-v4-entities-atlas.mjs";
 import { decodeAtlasWithTransparentCorners } from "./rewild-v4-atlas-validate-pixels.mjs";
+import { assertFrameGeometry, parseRuntimeFrameTable } from "./rewild-v4-atlas-validate-frames.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "v4", "entities-atlas-v4.png");
@@ -24,16 +25,7 @@ assert.equal(metadata.frames.length, 11);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), ENTITY_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, ENTITY_ORDER.length, "v4 entity names must be unique");
 
-const runtimeFramePattern = /^\s*"([^"]+)": \{ x: (\d+), y: (\d+), width: (\d+), height: (\d+) \},$/gmu;
-const runtimeFrames = new Map(
-  [...runtimeSource.matchAll(runtimeFramePattern)].map((match) => [match[1], {
-    x: Number.parseInt(match[2], 10),
-    y: Number.parseInt(match[3], 10),
-    width: Number.parseInt(match[4], 10),
-    height: Number.parseInt(match[5], 10),
-  }]),
-);
-assert.equal(runtimeFrames.size, ENTITY_ORDER.length, "runtime v4 entity frame table must contain exactly the 11 approved IDs");
+const runtimeFrames = parseRuntimeFrameTable(runtimeSource, ENTITY_ORDER.length, "entity");
 
 const expectedFiles = ENTITY_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
@@ -88,20 +80,8 @@ assert.equal(atlasMeta.width, 160);
 assert.equal(atlasMeta.height, 96);
 
 for (const frame of metadata.frames) {
-  const { x, y, width, height } = frame.frame;
-  assert.ok(x >= 0 && y >= 0 && width > 0 && height > 0, `${frame.name}: invalid frame rectangle`);
-  assert.ok(x + width <= info.width && y + height <= info.height, `${frame.name}: frame exceeds atlas bounds`);
-  assert.deepEqual(frame.pivot, { x: 0.5, y: 0.5 }, `${frame.name}: unit sprites must stay center-pivoted to match the existing hex-center draw call`);
+  assertFrameGeometry(frame, runtimeFrames, { data, info }, "unit");
   assert.deepEqual(frame.footprint, ["0,0"], `${frame.name}: current roster units remain single-hex footprints`);
-  assert.deepEqual(runtimeFrames.get(frame.name), frame.frame, `${frame.name}: runtime frame must exactly match generated atlas metadata`);
-
-  let visible = 0;
-  for (let py = y; py < y + height; py += 1) {
-    for (let px = x; px < x + width; px += 1) {
-      if (data[(py * info.width + px) * info.channels + 3] > 24) visible += 1;
-    }
-  }
-  assert.ok(visible >= 24, `${frame.name}: atlas frame is effectively empty`);
 }
 
 assert.match(facadeSource, /rewild-entity-atlas-v4/u, "the v3/v2 compatibility facade must route the new roster through the v4 entity atlas");

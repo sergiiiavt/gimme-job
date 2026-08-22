@@ -20,7 +20,7 @@ const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
 assert.equal(metadata.image, "environment-details-atlas-v4.png");
 assert.equal(metadata.source, "assets/rewild/v4/source");
 assert.deepEqual(metadata.grid, { columns: 6, rows: 4, slotSize: 128 });
-assert.equal(metadata.frames.length, 22);
+assert.equal(metadata.frames.length, 24);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), DETAIL_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, DETAIL_ORDER.length, "v4 detail names must be unique");
 
@@ -39,12 +39,12 @@ const runtimeFrames = new Map(
     },
   }]),
 );
-assert.equal(runtimeFrames.size, DETAIL_ORDER.length, "runtime v4 frame table must contain exactly the 22 approved detail IDs");
+assert.equal(runtimeFrames.size, DETAIL_ORDER.length, "runtime v4 frame table must contain exactly the approved detail IDs");
 
 const expectedFiles = DETAIL_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
 assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed v4 source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 source directory must contain exactly the approved 22 PNGs");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 source directory must contain exactly the approved PNGs");
 
 const sourceHashes = new Map();
 for (const name of DETAIL_ORDER) {
@@ -103,5 +103,8 @@ for (const frame of metadata.frames) {
 assert.match(overlaySource, /drawRewildDetailV4/u, "authored overlay must use the v4 detail renderer");
 assert.match(overlaySource, /CLUSTER_OFFSETS/u, "meadow details must remain clustered rather than uniform per-cell stamps");
 assert.match(overlaySource, /shorelinePoint/u, "water details must remain boundary-aware");
+assert.match(overlaySource, /"detail-tree-pine-a"/u, "forest density must draw the real detail-tree-pine-a sprite, not the old v3 tree-pine fallback");
+assert.match(overlaySource, /"detail-tree-broadleaf-a"/u, "forest density must draw the real detail-tree-broadleaf-a sprite, not the old v3 tree-broadleaf fallback");
+assert.doesNotMatch(overlaySource, /drawRewildSprite\(ctx, sprite/u, "drawForestDensity must no longer call the old v3 drawRewildSprite path for trees");
 
 console.log(`Rewild v4 detail atlas validated: ${DETAIL_ORDER.length} strict PNG sources, generated/runtime frames agree, transparent atlas, no duplicate or hallucinated entries.`);

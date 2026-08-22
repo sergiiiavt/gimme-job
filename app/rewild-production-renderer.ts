@@ -378,41 +378,11 @@ function drawWater(ctx: CanvasRenderingContext2D, region: BiomeRegion, snapshot:
   });
 }
 
+// Trees themselves are drawn once, by drawForestDensity in rewild-authored-overlay.ts (real v4
+// art). This pass only draws the region's boundary outline — it must not also place tree
+// sprites, or every forest cell gets two overlapping tree systems (the old v3 fallback showing
+// through behind the new art).
 function drawForest(ctx: CanvasRenderingContext2D, region: BiomeRegion, snapshot: RenderSnapshot) {
-  const state = snapshot.state;
-  const masks = snapshot.regionNeighborMasks.get(region.id) ?? new Map<string, number>();
-  for (const hex of region.cells) {
-    const cell = cellAt(state.world, hex);
-    if (!cell || cell.surface === "road") continue;
-    const neighborCount = bitCount(masks.get(hexKey(hex)) ?? 0);
-    const center = hexCenter(hex);
-    const clearing = neighborCount >= 4 && cellRandom(cell, 44) < .1;
-    if (clearing) {
-      ctx.globalAlpha = .4;
-      drawPixelDisc(ctx, center, 10, PALETTE.meadowDark);
-      ctx.globalAlpha = 1;
-      continue;
-    }
-    if (neighborCount >= 4) {
-      ctx.globalAlpha = .38;
-      drawPixelDisc(ctx, center, 15, PALETTE.forestDeep);
-      ctx.globalAlpha = 1;
-    }
-    if (cellRandom(cell, 40) < (neighborCount >= 4 ? .05 : .24)) continue;
-    const id: RewildPixelSpriteId = cellRandom(cell, 41) > .7 ? "tree-pine" : "tree-broadleaf";
-    drawRewildSprite(ctx, id, center.x, center.y, {
-      scale: neighborCount >= 4 ? .88 + cellRandom(cell, 42) * .16 : .72 + cellRandom(cell, 42) * .15,
-      alpha: cell.corruption >= 3 ? .56 : .98,
-      flipX: cellRandom(cell, 43) > .5,
-    });
-    if (neighborCount >= 5 && cellRandom(cell, 45) > .48) {
-      drawRewildSprite(ctx, cellRandom(cell, 46) > .6 ? "tree-pine" : "tree-broadleaf", center.x + (cellRandom(cell, 47) - .5) * 16, center.y + (cellRandom(cell, 48) - .5) * 12, {
-        scale: .52 + cellRandom(cell, 49) * .12,
-        alpha: cell.corruption >= 3 ? .44 : .84,
-        flipX: cellRandom(cell, 50) > .5,
-      });
-    }
-  }
   regionBoundarySegments(snapshot, region).forEach((edge, index) => {
     if (index % 4 !== 1) pixelLine(ctx, edge.from, edge.to, PALETTE.forestEdge, 2, 2);
   });
@@ -508,7 +478,7 @@ function drawDatacenter(ctx: CanvasRenderingContext2D, node: DataNode) {
   drawPixelDisc(ctx, { x: center.x, y: center.y + 9 }, node.boss ? 25 : 19, PALETTE.industrialDark);
   ctx.globalAlpha = 1;
   drawRewildSprite(ctx, node.boss ? "mainframe" : "datacenter", center.x, center.y, {
-    scale: node.boss ? 1.58 : 1.24,
+    scale: 1.28,
     alpha: ratio < .25 ? .72 : 1,
   });
   drawHealth(ctx, center, ratio, node.boss ? 56 : 42, node.boss ? 37 : 30);
@@ -528,7 +498,7 @@ function drawHouse(ctx: CanvasRenderingContext2D, state: GameState) {
   ctx.globalAlpha = .24;
   drawPixelDisc(ctx, { x: center.x, y: center.y + 11 }, 24, PALETTE.meadowDark);
   ctx.globalAlpha = 1;
-  drawRewildSprite(ctx, ratio < .45 ? "house-damaged" : "house", center.x, center.y, { scale: 1.55 });
+  drawRewildSprite(ctx, ratio < .45 ? "house-damaged" : "house", center.x, center.y, { scale: .95 });
   drawHealth(ctx, center, ratio, 50, 34);
 }
 

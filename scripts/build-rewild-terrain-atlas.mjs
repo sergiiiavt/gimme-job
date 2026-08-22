@@ -6,6 +6,7 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
+const forestWaterSourceDirectory = path.join(root, "assets", "rewild", "terrain", "forest-water-source");
 const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
 
 const ATLAS_COLUMNS = 8;
@@ -22,20 +23,26 @@ export const ALL_TERRAIN_TILE_IDS = [
   "grass-d",
 ];
 
-// This build step owns only the meadow family's slots. Other families stay whatever the
-// existing committed atlas already has for them (typically still-empty reserved slots) —
-// each family adds its own source directory and extends this script's sibling list when
-// its own batch lands, per the Visual Bible's "one family at a time" rule.
+// This build step owns the meadow and forest/water families' slots. Other families (soil,
+// industrial, corruption, road) stay whatever the existing committed atlas already has for them
+// (typically still-empty reserved slots) — each family adds its own source directory and extends
+// this script's sibling list when its own batch lands, per the Visual Bible's "one family at a
+// time" rule.
 export const MEADOW_FAMILY_TILE_IDS = ["grass-a", "grass-b", "grass-c", "grass-d"];
+
+// Prompted fresh from code-authoritative BiomeKind data and the approved references only —
+// 04-terrain-transitions.webp (rejected, forbidden for transition/terrain-geometry generation)
+// was not used. See docs/rewild/visual-bible/batches/04-forest-and-water.md.
+export const FOREST_WATER_FAMILY_TILE_IDS = ["forest-floor", "water-deep", "water-shallow"];
 
 const compareAlphabetically = (left, right) => left.localeCompare(right);
 
-async function validateSourceDirectory() {
-  const expectedFiles = MEADOW_FAMILY_TILE_IDS.map((id) => `${id}.png`).sort(compareAlphabetically);
-  const entries = await readdir(sourceDirectory, { withFileTypes: true });
-  assert.ok(entries.every((entry) => entry.isFile()), "terrain source directory must contain files only");
+async function validateFamilyDirectory(directory, tileIds, label) {
+  const expectedFiles = tileIds.map((id) => `${id}.png`).sort(compareAlphabetically);
+  const entries = await readdir(directory, { withFileTypes: true });
+  assert.ok(entries.every((entry) => entry.isFile()), `${label} terrain source directory must contain files only`);
   const actualFiles = entries.map((entry) => entry.name).sort(compareAlphabetically);
-  assert.deepEqual(actualFiles, expectedFiles, "terrain source directory must contain exactly the meadow family's approved PNGs");
+  assert.deepEqual(actualFiles, expectedFiles, `${label} terrain source directory must contain exactly its family's approved PNGs`);
 }
 
 async function loadExistingAtlasComposite() {
@@ -56,19 +63,13 @@ async function loadExistingAtlasComposite() {
   }
 }
 
-export async function buildRewildTerrainAtlas() {
-  await validateSourceDirectory();
-  await mkdir(path.dirname(atlasPath), { recursive: true });
-
+async function familyComposites(directory, tileIds) {
   const composites = [];
-  const existingBase = await loadExistingAtlasComposite();
-  if (existingBase) composites.push({ ...existingBase, left: 0, top: 0 });
-
-  for (const id of MEADOW_FAMILY_TILE_IDS) {
+  for (const id of tileIds) {
     const index = ALL_TERRAIN_TILE_IDS.indexOf(id);
     assert.ok(index >= 0, `${id}: not present in ALL_TERRAIN_TILE_IDS`);
 
-    const buffer = await readFile(path.join(sourceDirectory, `${id}.png`));
+    const buffer = await readFile(path.join(directory, `${id}.png`));
     const metadata = await sharp(buffer).metadata();
     assert.equal(metadata.format, "png", `${id}.png: source must decode as PNG`);
     assert.equal(metadata.width, FRAME_SIZE, `${id}.png: source must be exactly ${FRAME_SIZE}px wide`);
@@ -78,6 +79,20 @@ export async function buildRewildTerrainAtlas() {
     const row = Math.floor(index / ATLAS_COLUMNS);
     composites.push({ input: buffer, left: column * FRAME_SIZE, top: row * FRAME_SIZE });
   }
+  return composites;
+}
+
+export async function buildRewildTerrainAtlas() {
+  await validateFamilyDirectory(sourceDirectory, MEADOW_FAMILY_TILE_IDS, "meadow");
+  await validateFamilyDirectory(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS, "forest/water");
+  await mkdir(path.dirname(atlasPath), { recursive: true });
+
+  const composites = [];
+  const existingBase = await loadExistingAtlasComposite();
+  if (existingBase) composites.push({ ...existingBase, left: 0, top: 0 });
+
+  composites.push(...await familyComposites(sourceDirectory, MEADOW_FAMILY_TILE_IDS));
+  composites.push(...await familyComposites(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS));
 
   await sharp({
     create: {
@@ -91,7 +106,7 @@ export async function buildRewildTerrainAtlas() {
     .png({ compressionLevel: 9, adaptiveFiltering: false })
     .toFile(atlasPath);
 
-  console.log(`Built Rewild terrain atlas: packed ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles into ${path.relative(root, atlasPath)}.`);
+  console.log(`Built Rewild terrain atlas: packed ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles and ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles into ${path.relative(root, atlasPath)}.`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
