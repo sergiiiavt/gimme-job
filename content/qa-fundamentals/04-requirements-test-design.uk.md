@@ -187,6 +187,42 @@ Result / defect / evidence
 
 Traceability не потребує гігантської RTM. Реалізація може бути легкою, але зв’язки мають відновлюватися тоді, коли це потрібно для coverage або impact analysis.
 
+## Техніки дизайну тестів: спільна карта
+
+Перед тим як вибирати конкретні test cases, варто спочатку визначити, **який тип проблеми ми моделюємо**. Назви test-design techniques часто змішують із test levels, test types, automation, smoke/regression або positive/negative testing. Це різні виміри.
+
+Практична спільна карта:
+
+| Сімейство / підхід | Основні техніки або практики | Коли найкраще підходить |
+| --- | --- | --- |
+| **Black-box / specification-based** | Equivalence Partitioning, Boundary Value Analysis, Decision Table Testing, State Transition Testing | Виводимо тести з вимог, правил, inputs, outputs та спостережуваної поведінки. |
+| **White-box / structure-based** | Statement coverage, Branch coverage | Виводимо тести з коду або іншої внутрішньої структури. |
+| **Experience-based** | Error Guessing, Exploratory Testing, Checklist-based Testing | Використовуємо досвід тестувальника, знання продукту, defect history та heuristics. |
+| **Collaboration-based approaches** | User-story collaboration, acceptance criteria, ATDD | Формуємо спільні приклади та очікування разом зі stakeholders до або під час реалізації. |
+| **Додаткові / просунуті техніки** | Scenario/use-case testing, Pairwise/Combinatorial Testing, Cause-effect Modeling, Mutation Testing | Покриваємо workflows, combinations, логічні зв’язки або оцінюємо силу test suite. |
+
+> **Не варто зводити все до одного плаского списку.** Manual vs automated, functional vs non-functional, smoke vs regression, test levels і positive vs negative testing описують інші виміри. Їх можна комбінувати з design technique, але це не рівноправні test-design techniques.
+
+### Як вибрати техніку
+
+Починайте з форми проблеми, а не з улюбленої техніки.
+
+| Проблема тестування | Сильна стартова техніка |
+| --- | --- |
+| Великий input domain із групами, для яких очікується однакова поведінка | **Equivalence Partitioning** |
+| Поведінка змінюється на межах, thresholds, довжинах, датах або quotas | **Boundary Value Analysis** |
+| Результат залежить від комбінацій business conditions | **Decision Table Testing** |
+| Поведінка залежить від поточного state або попередніх events | **State Transition Testing** |
+| Треба перевірити реалістичний багатокроковий business/user flow | **Scenario / Use-case Testing** |
+| Потрібен доказ щодо виконаної implementation structure | **White-box coverage** |
+| Відомі типові дефекти або ймовірні failure modes не повністю описані специфікацією | **Error Guessing** |
+| Специфікація неповна або важливо навчатися під час тестування | **Exploratory Testing** |
+| Потрібен повторюваний набір domain heuristics для різних тестувальників | **Checklist-based Testing** |
+| Багато configuration parameters створюють забагато combinations | **Pairwise / Combinatorial Testing** |
+| Команді потрібні спільні конкретні приклади ще до реалізації | **ATDD / collaboration-based approaches** |
+
+На практиці техніки часто комбінуються. Наприклад, checkout rule може вимагати EP для customer categories, BVA для monetary thresholds, decision table для discount conditions, state transitions для payment status і scenarios для повного purchase flow.
+
 ## Equivalence partitioning
 
 Equivalence partitioning ділить великий простір входів або станів на групи, від яких очікується подібна поведінка. Замість перевірки кожного можливого значення тестувальник обирає представників змістовних partitions.
@@ -298,6 +334,63 @@ White-box або structure-based techniques виводять тести з вн�
 
 > **Поширена помилка:** використовувати code coverage як оцінку якості. Це сигнал покриття, який може показати неперевірену структуру; він не доводить, що виконувану поведінку протестовано добре.
 
+## Experience-based techniques
+
+Experience-based techniques використовують знання тестувальника, defect history, розуміння домену та постійне навчання. Вони особливо корисні, коли специфікація неповна або формальні моделі не охоплюють усі реалістичні failure modes.
+
+### Error guessing
+
+Error guessing цілеспрямовано перевіряє failures, які досвідчений тестувальник вважає ймовірними.
+
+Для file-upload feature корисними припущеннями можуть бути:
+
+- zero-byte або надзвичайно великий файл;
+- правильне розширення з неочікуваним content;
+- duplicate names або повторний upload request;
+- перерваний network transfer;
+- незвичні Unicode-символи у filename;
+- заповнення storage quota під час операції.
+
+Цінність дають досвід і докази, а не випадкові кліки. Defect history, production incidents і відомі слабкі місця технології роблять error guessing значно сильнішим.
+
+### Exploratory testing
+
+Exploratory testing поєднує **навчання, test design і execution**, а не повністю розділяє їх заздалегідь. Тестувальник формує hypothesis, проводить сфокусоване дослідження, спостерігає за продуктом і адаптує наступні перевірки на основі отриманих знань.
+
+Корисна exploratory session усе одно має структуру: charter або mission, time box де це доречно, notes щодо coverage та observations, а також відтворювані defect evidence.
+
+Приклад charter: «Дослідити поведінку checkout, коли payment успішний, але confirmation або inventory services відповідають із затримкою чи недоступні».
+
+Exploratory testing не означає undocumented або unplanned testing. Це означає, що детальний test design розвивається в процесі навчання.
+
+### Checklist-based testing
+
+Checklist-based testing використовує повторюваний набір перевірок або heuristics, сформований зі standards, past defects, domain knowledge чи досвіду команди.
+
+Для API endpoint checklist може нагадувати перевірити:
+
+- authentication та authorization;
+- required і optional fields;
+- invalid types та malformed payloads;
+- boundaries і size limits;
+- idempotency або duplicate requests;
+- error schema та status codes;
+- logging і sensitive-data exposure.
+
+Checklist має стимулювати мислення, а не перетворюватися на механічний script. Його потрібно оновлювати, коли змінюються продукт, ризики або defect patterns.
+
+## Collaboration-based approaches
+
+Collaboration-based approaches створюють спільні приклади й очікування між business, development і testing roles. Вони посилюють test design, зменшуючи неоднозначність ще до завершення реалізації.
+
+Поширені практики:
+
+- **User-story collaboration:** обговорювати story, risks, examples та open questions, а не вважати текст ticket достатньою специфікацією.
+- **Acceptance criteria:** визначати спостережувані умови, за яких поведінка є прийнятною.
+- **ATDD (Acceptance Test-Driven Development):** спільно виводити конкретні acceptance examples до реалізації та використовувати їх для спрямування development і testing.
+
+Ці підходи не замінюють EP, BVA, decision tables або exploratory testing. Спільний acceptance example усе одно може потребувати boundary analysis, negative partitions, state coverage та experience-based exploration.
+
 ## Корисні техніки поза CTFL Foundation core
 
 Є й інші корисні техніки, але їх не слід подавати так, наче всі вони входять до актуального Foundation-набору CTFL.
@@ -319,7 +412,8 @@ White-box або structure-based techniques виводять тести з вн�
 4. state transitions для активації та завершення дії купона;
 5. scenarios для реалістичних purchase journeys;
 6. structural coverage для пошуку важливих implementation paths, пропущених specification-based tests;
-7. pairwise coverage, коли взаємодіє багато environment або configuration parameters.
+7. error guessing та exploratory testing для failure modes, які специфікація не охоплює повністю;
+8. pairwise coverage, коли взаємодіє багато environment або configuration parameters.
 
 Результат сильніший, ніж повторення одного happy path на кількох рівнях.
 
@@ -330,10 +424,12 @@ White-box або structure-based techniques виводять тести з вн�
 - Requirement-to-requirement relationships допомагають бачити parent/child, derived, dependency, constraint, interaction, conflict і duplicate зв’язки.
 - Двонапрямна traceability дозволяє пройти від потреби й вимоги до тесту та результату — і назад.
 - Test conditions потрібно визначати до детальних кроків виконання.
+- Тримайте одну спільну карту test design: **black-box/specification-based, white-box/structure-based, experience-based, collaboration-based approaches плюс вибрані advanced techniques**.
 - Equivalence partitioning зменшує великі простори до змістовних представників.
 - CTFL розрізняє 2-value і 3-value boundary value analysis.
 - Decision tables моделюють комбінації; state transitions — поведінку, залежну від історії.
 - Scenario testing і structural coverage додають інші типи доказів, а не замінюють black-box techniques.
+- Error guessing, exploratory testing і checklist-based testing покривають важливе experience-based мислення, яке формальні моделі можуть пропустити.
 - Pairwise і cause-effect є корисними розширеннями, тоді як positive/negative labels не є окремими формальними test-design techniques.
 
 ## Sources
