@@ -7,6 +7,18 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 const readText = (path) => readFile(projectFile(path), "utf8");
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function matchesSubtopicTerm(searchable, term) {
+  const needle = term.toLowerCase();
+  if (/^[a-z0-9+#.]{1,3}$/.test(needle)) {
+    return new RegExp(`(^|[^a-z0-9])${escapeRegExp(needle)}([^a-z0-9]|$)`).test(searchable);
+  }
+  return searchable.includes(needle);
+}
+
 function classifySubtopic(question, config) {
   const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
@@ -14,7 +26,7 @@ function classifySubtopic(question, config) {
   const rule = config.rules?.find((candidate) => {
     if (candidate.category && candidate.category !== question.category) return false;
     if (candidate.kind && candidate.kind !== question.kind) return false;
-    return !candidate.any?.length || candidate.any.some((term) => searchable.includes(term.toLowerCase()));
+    return !candidate.any?.length || candidate.any.some((term) => matchesSubtopicTerm(searchable, term));
   });
   return rule?.target ?? config.fallbackByCategory?.[question.category] ?? config.fallback;
 }
@@ -166,7 +178,8 @@ test("renders content-width domain buttons and logical topics underneath", async
 
   assert.match(catalog, /import subtopics from "\.\/subtopics\.json"/);
   assert.match(catalog, /classifySubtopic\(question, selectedDomainCategory\)/);
-  assert.match(catalog, /selectedSubtopics\?\.taxonomy/);
+  assert.match(catalog, /selectedSubtopics\?\.taxonomy\.filter/);
   assert.match(pythonCatalog, /interviewSubtopics\.domains/);
   assert.match(pythonCatalog, /classifyPythonSubtopic\(enhanced\)/);
+  assert.match(pythonCatalog, /pythonSubtopics\.taxonomy\.filter/);
 });
