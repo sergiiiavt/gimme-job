@@ -57,7 +57,7 @@ export class GimmeJobMcpClient {
     this.fetchImpl = options.fetchImpl ?? fetch;
   }
 
-  private headers(): HeadersInit {
+  private headers(): Record<string, string> {
     return {
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
