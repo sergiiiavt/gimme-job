@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { STRUCTURE_ORDER } from "./build-rewild-v4-structures-atlas.mjs";
 import { decodeAtlasWithTransparentCorners } from "./rewild-v4-atlas-validate-pixels.mjs";
+import { assertFrameGeometry, parseRuntimeFrameTable } from "./rewild-v4-atlas-validate-frames.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "v4", "structures-atlas-v4.png");
@@ -23,16 +24,7 @@ assert.equal(metadata.frames.length, 4);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), STRUCTURE_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, STRUCTURE_ORDER.length, "v4 structure names must be unique");
 
-const runtimeFramePattern = /^\s*"([^"]+)": \{ x: (\d+), y: (\d+), width: (\d+), height: (\d+) \},$/gmu;
-const runtimeFrames = new Map(
-  [...runtimeSource.matchAll(runtimeFramePattern)].map((match) => [match[1], {
-    x: Number.parseInt(match[2], 10),
-    y: Number.parseInt(match[3], 10),
-    width: Number.parseInt(match[4], 10),
-    height: Number.parseInt(match[5], 10),
-  }]),
-);
-assert.equal(runtimeFrames.size, STRUCTURE_ORDER.length, "runtime v4 structure frame table must contain exactly the 4 approved IDs");
+const runtimeFrames = parseRuntimeFrameTable(runtimeSource, STRUCTURE_ORDER.length, "structure");
 
 const expectedFiles = STRUCTURE_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
@@ -66,19 +58,7 @@ assert.equal(footprintByName.get("mainframe").radius, 2, "mainframe footprint mu
 const { data, info } = await decodeAtlasWithTransparentCorners(atlasPath, "v4 structures atlas must preserve alpha");
 
 for (const frame of metadata.frames) {
-  const { x, y, width, height } = frame.frame;
-  assert.ok(x >= 0 && y >= 0 && width > 0 && height > 0, `${frame.name}: invalid frame rectangle`);
-  assert.ok(x + width <= info.width && y + height <= info.height, `${frame.name}: frame exceeds atlas bounds`);
-  assert.deepEqual(frame.pivot, { x: 0.5, y: 0.5 }, `${frame.name}: structure sprites must stay center-pivoted to match the hex-center draw call`);
-  assert.deepEqual(runtimeFrames.get(frame.name), frame.frame, `${frame.name}: runtime frame must exactly match generated atlas metadata`);
-
-  let visible = 0;
-  for (let py = y; py < y + height; py += 1) {
-    for (let px = x; px < x + width; px += 1) {
-      if (data[(py * info.width + px) * info.channels + 3] > 24) visible += 1;
-    }
-  }
-  assert.ok(visible >= 24, `${frame.name}: atlas frame is effectively empty`);
+  assertFrameGeometry(frame, runtimeFrames, { data, info }, "structure");
 }
 
 assert.match(facadeSource, /rewild-structure-atlas-v4/u, "the v3/v2 compatibility facade must route the structure roster through the v4 structure atlas");
