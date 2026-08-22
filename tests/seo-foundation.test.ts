@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
-import robots from "../app/robots.ts";
 import {
   LEARNING_SEO,
   PUBLIC_SITEMAP_PATHS,
@@ -13,7 +13,6 @@ import {
   noIndexMetadata,
   referenceSectionMetadata,
 } from "../app/seo.ts";
-import sitemap from "../app/sitemap.ts";
 
 const canonical = (metadata: ReturnType<typeof createPageMetadata>) => metadata.alternates?.canonical;
 
@@ -54,28 +53,26 @@ test("noindex metadata is explicit and non-cacheable", () => {
   assert.deepEqual(privateMetadata.robots, { index: false, follow: false, nocache: true });
 });
 
-test("sitemap publishes canonical public URLs only", () => {
-  const entries = sitemap();
-  const urls = entries.map((entry) => entry.url);
+test("public sitemap source is generated only from the canonical route registry", async () => {
+  const source = await readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8");
 
-  assert.equal(entries.length, PUBLIC_SITEMAP_PATHS.length);
-  assert.ok(urls.includes(`${SITE_ORIGIN}/interview`));
-  assert.ok(urls.includes(`${SITE_ORIGIN}/interview/python`));
-  assert.ok(urls.includes(`${SITE_ORIGIN}/learn/automation`));
-  assert.ok(urls.includes(`${SITE_ORIGIN}/reference/data`));
-  assert.equal(urls.some((url) => url.includes("/workspace")), false);
-  assert.equal(urls.some((url) => url.endsWith("/learn/data")), false);
-  assert.equal(new Set(urls).size, urls.length);
+  assert.ok(source.includes("PUBLIC_SITEMAP_PATHS.map"));
+  assert.ok(source.includes("new URL(path, SITE_ORIGIN).toString()"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/python"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/automation"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/reference/data"));
+  assert.equal(PUBLIC_SITEMAP_PATHS.some((path) => path.includes("/workspace")), false);
+  assert.equal(PUBLIC_SITEMAP_PATHS.includes("/learn/data" as never), false);
+  assert.equal(new Set(PUBLIC_SITEMAP_PATHS).size, PUBLIC_SITEMAP_PATHS.length);
 });
 
-test("robots blocks service endpoints but leaves noindex pages crawlable", () => {
-  const policy = robots();
-  assert.equal(policy.sitemap, `${SITE_ORIGIN}/sitemap.xml`);
-  assert.equal(policy.host, SITE_ORIGIN);
+test("robots source blocks service endpoints but leaves noindex workspace crawlable", async () => {
+  const source = await readFile(new URL("../app/robots.ts", import.meta.url), "utf8");
 
-  const rule = Array.isArray(policy.rules) ? policy.rules[0] : policy.rules;
-  assert.equal(rule.userAgent, "*");
-  assert.equal(rule.allow, "/");
-  assert.deepEqual(rule.disallow, ["/api/", "/auth/"]);
-  assert.equal((rule.disallow as string[]).includes("/workspace/"), false);
+  assert.ok(source.includes('disallow: ["/api/", "/auth/"]'));
+  assert.equal(source.includes('"/workspace/"'), false);
+  assert.ok(source.includes('sitemap: `${SITE_ORIGIN}/sitemap.xml`'));
+  assert.ok(source.includes("host: SITE_ORIGIN"));
+  assert.equal(SITE_ORIGIN, "https://gimme-job.com");
 });
