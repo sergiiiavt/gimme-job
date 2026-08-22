@@ -1,0 +1,15 @@
+[
+  { "id": "py-std-pytest-fixtures-and-scope", "category": "Python AQA specific" },
+  { "id": "py-std-pytest-parametrize", "category": "Python AQA specific" },
+  { "id": "py-std-unittest-mock-patching", "category": "Python AQA specific" },
+  { "id": "py-web-selenium-explicit-vs-implicit-waits", "category": "Python AQA specific" },
+  { "id": "py-web-page-object-model", "category": "Python AQA specific" },
+  { "id": "py-web-conftest-and-test-organization", "category": "Python AQA specific" },
+  { "id": "py-web-requests-session-reuse", "category": "Python AQA specific" },
+  { "id": "py-web-mocking-http-for-tests", "category": "Python AQA specific" },
+  { "id": "py-web-environment-config-for-automation", "category": "Python AQA specific" },
+  { "id": "py-web-headless-browser-in-ci", "category": "Python AQA specific" },
+  { "id": "py-practical-pytest-yield-fixture", "category": "Python AQA specific" },
+  { "id": "py-practical-pytest-parametrize", "category": "Python AQA specific" },
+  { "id": "py-practical-http-session-bounded-retry", "category": "Python AQA specific" }
+]
