@@ -1,4 +1,4 @@
-import { INTERVIEW_DOMAIN_ROUTES } from "./domain-routes";
+import { INTERVIEW_DOMAIN_ROUTES } from "./domain-routes.ts";
 
 export const UK_INTERVIEW_INDEX = {
   englishPath: "/interview",
