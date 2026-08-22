@@ -1,0 +1,78 @@
+{
+  "taxonomy": [
+    {
+      "id": "all",
+      "label": "All QA domains",
+      "description": "The complete QA interview collection across all specialist domains."
+    },
+    {
+      "id": "generic-qa",
+      "label": "Generic QA",
+      "category": "Generic QA",
+      "description": "Testing fundamentals, test design, defects, delivery, metrics, strategy, leadership, reliability, security and cross-cutting QA practice."
+    },
+    {
+      "id": "automation-qa",
+      "label": "Automation QA",
+      "category": "Automation QA",
+      "description": "Automation strategy, framework design, programming concepts, CI execution and maintainable test code."
+    },
+    {
+      "id": "sql-databases",
+      "label": "SQL & Databases",
+      "category": "SQL & Databases",
+      "description": "SQL, relational databases, transactions, data integrity, data pipelines, BI and analytical validation."
+    },
+    {
+      "id": "web-api",
+      "label": "Web & API",
+      "category": "Web & API",
+      "description": "HTTP, browsers, APIs, authentication, integrations, service behaviour and web-facing data flows."
+    },
+    {
+      "id": "mobile",
+      "label": "Mobile",
+      "category": "Mobile",
+      "description": "Android and iOS testing, devices, application lifecycle, networks, permissions and releases."
+    },
+    {
+      "id": "embedded-iot",
+      "label": "Embedded & IoT",
+      "category": "Embedded & IoT",
+      "description": "Firmware, hardware interfaces, real-time behaviour, power, OTA updates, constrained devices and IoT security."
+    },
+    {
+      "id": "ai-llm",
+      "label": "AI & LLM QA",
+      "category": "AI & LLM QA",
+      "description": "Model and dataset quality, LLM evaluation, RAG, prompt security, agent behaviour and non-deterministic systems."
+    },
+    {
+      "id": "methodology",
+      "label": "Sources & methodology",
+      "description": "Source analysis, prevalence model, editorial approach and maintenance rules."
+    }
+  ],
+  "categoryToDomain": {
+    "Fundamentals": "Generic QA",
+    "Test design": "Generic QA",
+    "Documentation and defects": "Generic QA",
+    "Infrastructure": "Generic QA",
+    "Performance and resilience": "Generic QA",
+    "Security and accessibility": "Generic QA",
+    "Agile and delivery": "Generic QA",
+    "Metrics and estimation": "Generic QA",
+    "Strategy and risk": "Generic QA",
+    "Leadership": "Generic QA",
+    "Practical tasks": "Generic QA",
+    "Observability and production": "Generic QA",
+    "Regulated domains": "Generic QA",
+    "Automation and CI": "Automation QA",
+    "Programming": "Automation QA",
+    "Databases, SQL and BI": "SQL & Databases",
+    "Web, API and data": "Web & API",
+    "Mobile": "Mobile",
+    "Embedded and IoT": "Embedded & IoT",
+    "AI, ML and LLM": "AI & LLM QA"
+  }
+}
