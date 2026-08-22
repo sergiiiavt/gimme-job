@@ -37,17 +37,17 @@ Decision meanings:
 | `house-damaged` | objective state | Rework | Add critical/destroyed states and keep pivots/footprint stable. |
 | `datacenter` | hostile structure | Replace as final | Current single-object role is too isolated. Convert to compound core plus explicit foundation/cooling/power/access modules. |
 | `mainframe` | boss structure | Replace as final | Boss needs larger multi-cell compound/state family rather than one isolated sprite. |
-| `plant-sunbloom` | defender | Rework | Keep identity, improve strict-overhead silhouette and event states. |
-| `plant-thornbramble` | defender | Rework | Improve compact silhouette, contact/root and damage states. |
-| `plant-sporecap` | defender | Rework | Add restrained attack pulse/impact state. |
-| `plant-vinewhip` | defender | Rework | Add anticipation/strike/recovery/damage states without moving the placed unit. |
-| `plant-rootreclaimer` | defender | Rework | Needs visible relationship to reclaim/recovery material. |
-| `plant-elderoak` | defender | Rework | Align growth pivot/scale with mature state. |
-| `plant-elderoak-mature` | defender | Rework | Preserve large silhouette; add attack/damage states. |
-| `enemy-clickbait` | enemy | Rework | Improve contrast on both green and dark ground; add movement/attack/damage frames. |
-| `enemy-deepfake` | enemy | Rework | Improve strict-overhead sludge identity and split feedback. |
-| `enemy-popup` | enemy | Rework | Improve disable cue and terrain contrast. |
-| `enemy-fragment` | enemy | Rework | Needs distinct readable child silhouette at runtime scale. |
+| `plant-sunbloom` | defender | Integrated (v4) | Single default-state 32px sprite via `entities-atlas-v4.png`; event/damage states remain a future batch. |
+| `plant-thornbramble` | defender | Integrated (v4) | Single default-state 32px sprite; contact/root and damage states remain a future batch. |
+| `plant-sporecap` | defender | Integrated (v4) | Single default-state 32px sprite; attack pulse/impact state remains a future batch. |
+| `plant-vinewhip` | defender | Integrated (v4) | Single default-state 32px sprite; anticipation/strike/recovery/damage states remain a future batch. |
+| `plant-rootreclaimer` | defender | Integrated (v4) | Single default-state 32px sprite depicting glowing reclaim roots; further reclaim-event cue remains a future batch. |
+| `plant-elderoak` | defender | Integrated (v4) | Shares one authored oak source with `plant-elderoak-mature`, presented at two renderer scales; a distinct young silhouette remains a future batch. |
+| `plant-elderoak-mature` | defender | Integrated (v4) | See `plant-elderoak`; attack/damage states remain a future batch. |
+| `enemy-clickbait` | enemy | Integrated (v4) | Single default-state 32px sprite; movement/attack/damage frames remain a future batch. |
+| `enemy-deepfake` | enemy | Integrated (v4) | Single default-state 32px sprite; split/attack/damage frames remain a future batch. |
+| `enemy-popup` | enemy | Blocked | Only-generated PixelLab candidates (reviewed 2026-08-22) were consistently an isometric wall-mounted pane, incompatible with `strict-overhead-orthographic`; still on v3 pending a redo with an explicit top-down/ground-device prompt. |
+| `enemy-fragment` | enemy | Integrated (v4) | Single default-state 32px sprite; movement/attack/damage frames remain a future batch. |
 | `corruption-node` | corruption/source | Rework | Needs connected veins/stains/tendrils and level/state context. |
 | `industrial-fan` | industry prop | Replace fallback-quality | #245 can substitute `datacenter` when v3 is empty. Final art requires dedicated cooling/fan modules. |
 | `industrial-power` | industry prop | Replace fallback-quality | #245 can substitute `datacenter`; final requires transformer/power-box family. |

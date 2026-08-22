@@ -1,6 +1,11 @@
 export * from "./rewild-pixel-atlas-v3";
 
 import {
+  drawRewildEntityV4Sprite,
+  REWILD_ENTITY_V4_IDS,
+  type RewildEntityV4Id,
+} from "./rewild-entity-atlas-v4";
+import {
   REWILD_PIXEL_SPRITE_IDS as REWILD_V2_SPRITE_IDS,
   drawRewildSprite as drawRewildV2Sprite,
   type RewildPixelSpriteId as RewildV2SpriteId,
@@ -11,6 +16,7 @@ import {
   type RewildSpriteDrawOptions,
 } from "./rewild-pixel-atlas-v3";
 
+const V4_ENTITY_SPRITES = new Set<string>(REWILD_ENTITY_V4_IDS);
 const V2_SPRITES = new Set<string>(REWILD_V2_SPRITE_IDS);
 const V3_VISIBILITY = new Map<RewildPixelSpriteId, boolean>();
 
@@ -55,6 +61,7 @@ export function drawRewildSprite(
   y: number,
   options: RewildSpriteDrawOptions = {},
 ) {
+  if (V4_ENTITY_SPRITES.has(id)) return drawRewildEntityV4Sprite(ctx, id as RewildEntityV4Id, x, y, options);
   if (v3FrameHasVisiblePixels(id)) return drawRewildV3Sprite(ctx, id, x, y, options);
 
   const fallback = V2_SPRITES.has(id) ? id as RewildV2SpriteId : V3_FALLBACKS[id];

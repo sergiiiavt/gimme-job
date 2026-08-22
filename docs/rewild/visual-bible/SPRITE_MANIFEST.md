@@ -21,21 +21,23 @@ Do **not** infer runtime states such as `critical`, `destroyed`, `failing`, `ove
 
 | ID | `PlantKind` | Footprint | Required visual cues | Status |
 | --- | --- | --- | --- | --- |
-| `plant-sunbloom` | `sunbloom` | 1 hex | idle/resource cue, HP damage readability | existing-v3 → planned-v4 |
-| `plant-thornbramble` | `thornbramble` | 1 hex | idle, automatic attack cue, HP damage readability | existing-v3 → planned-v4 |
-| `plant-sporecap` | `sporecap` | 1 hex | idle, pulse attack cue, HP damage readability | existing-v3 → planned-v4 |
-| `plant-vinewhip` | `vinewhip` | 1 hex | idle, ranged attack/slow cue, HP damage readability | existing-v3 → planned-v4 |
-| `plant-rootreclaimer` | `rootreclaimer` | 1 hex | idle, reclaim cue, HP damage readability | existing-v3 → planned-v4 |
-| `plant-elderoak` | `elderoak` | 1 gameplay anchor, visually larger | young/mature age presentation, attack cue, HP damage readability | existing-v3 → planned-v4 |
+| `plant-sunbloom` | `sunbloom` | 1 hex | idle/resource cue, HP damage readability | integrated (v4) |
+| `plant-thornbramble` | `thornbramble` | 1 hex | idle, automatic attack cue, HP damage readability | integrated (v4) |
+| `plant-sporecap` | `sporecap` | 1 hex | idle, pulse attack cue, HP damage readability | integrated (v4) |
+| `plant-vinewhip` | `vinewhip` | 1 hex | idle, ranged attack/slow cue, HP damage readability | integrated (v4) |
+| `plant-rootreclaimer` | `rootreclaimer` | 1 hex | idle, reclaim cue, HP damage readability | integrated (v4) |
+| `plant-elderoak` | `elderoak` | 1 gameplay anchor, visually larger | young/mature age presentation, attack cue, HP damage readability | integrated (v4) — `plant-elderoak` and `plant-elderoak-mature` intentionally share one authored oak identity at two renderer scales; no separate young sprite was produced |
 
 ## C. Enemy units — exact current roster
 
 | ID | `EnemyKind` | Footprint | Locomotion visual language | Required visual cues | Status |
 | --- | --- | --- | --- | --- | --- |
-| `enemy-clickbait` | `clickbait` | 1 hex | small device swarm / wheels / compact moving hardware | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
-| `enemy-deepfake` | `deepfake` | 1 hex | heavier technical media/device mass on tracks or wheels; distinct silhouette from clickbait | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
-| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, HP damage/death feedback | existing-v3 → planned-v4 |
-| `enemy-fragment` | `fragment` | 1 hex | compact broken server/device fragment on small tracks/wheels | six-direction movement readability, attack, HP damage/death feedback | existing-v3 → planned-v4 |
+| `enemy-clickbait` | `clickbait` | 1 hex | small device swarm / wheels / compact moving hardware | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
+| `enemy-deepfake` | `deepfake` | 1 hex | heavier technical media/device mass on tracks or wheels; distinct silhouette from clickbait | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
+| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, HP damage/death feedback | existing-v3 → planned-v4, blocked — see note below |
+| `enemy-fragment` | `fragment` | 1 hex | compact broken server/device fragment on small tracks/wheels | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
+
+`enemy-popup`'s only generated PixelLab candidates (batch reviewed 2026-08-22) rendered consistently as a vertical wall-mounted window/pane at an oblique angle — incompatible with the `strict-overhead-orthographic` projection in `VISUAL_TARGET_CONTRACT.md`. Those candidates were left in PixelLab review and not integrated. `enemy-popup` remains on the v3 atlas until a fresh batch is generated with an explicit top-down/ground-level device framing.
 
 ## D. World objects already represented by code/art
 
@@ -150,5 +152,7 @@ Required visual transitions once a clean transition target is approved:
 6. Exact four enemies.
 7. Code-mapped damage/recovery visuals.
 8. VFX/attack/reclaim/collapse feedback.
+
+Items 5 and 6 were completed ahead of items 1–4 on explicit user request (2026-08-22): all six plant units and three of four enemies are integrated at v4; `enemy-popup` is blocked (see section C). Items 1–4 remain outstanding.
 
 Before changing this manifest, verify the requested addition against code or explicit user approval and re-check `REFERENCE_STATUS.json`.

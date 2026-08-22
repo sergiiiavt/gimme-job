@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { DETAIL_ORDER } from "./build-rewild-v4-detail-atlas.mjs";
+import { decodeAtlasWithTransparentCorners } from "./rewild-v4-atlas-validate-pixels.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "v4", "environment-details-atlas-v4.png");
@@ -78,19 +79,9 @@ for (const forbidden of forbiddenHallucinations) {
   assert.ok(!DETAIL_ORDER.includes(forbidden), `${forbidden}: hallucinated gameplay entity entered detail manifest`);
 }
 
-const atlasMeta = await sharp(atlasPath).metadata();
+const { atlasMeta, data, info } = await decodeAtlasWithTransparentCorners(atlasPath, "v4 detail atlas must preserve alpha");
 assert.equal(atlasMeta.width, 768);
 assert.equal(atlasMeta.height, 512);
-assert.ok(atlasMeta.hasAlpha, "v4 detail atlas must preserve alpha");
-
-const { data, info } = await sharp(atlasPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-const cornerOffsets = [
-  0,
-  info.width - 1,
-  (info.height - 1) * info.width,
-  info.width * info.height - 1,
-];
-for (const pixel of cornerOffsets) assert.equal(data[pixel * info.channels + 3], 0, "atlas canvas corners must remain transparent");
 
 for (const frame of metadata.frames) {
   const { x, y, width, height } = frame.frame;
