@@ -74,13 +74,19 @@
     "id": "stdlib-tooling",
     "label": "Standard library & tooling",
     "category": "Standard library and tooling",
-    "description": "collections, itertools, functools, pathlib, logging, debugging and pytest."
+    "description": "collections, itertools, functools, pathlib, logging, debugging and general-purpose standard-library tools."
+  },
+  {
+    "id": "python-aqa-specific",
+    "label": "Python AQA specific",
+    "category": "Python AQA specific",
+    "description": "pytest, fixtures, mocking, API clients, Selenium/Playwright patterns, configuration, CI and practical test-automation code."
   },
   {
     "id": "web-automation-qa",
-    "label": "Web, automation & QA-relevant Python",
+    "label": "Web & HTTP Python",
     "category": "Web, automation and QA-relevant Python",
-    "description": "HTTP clients, minimal web frameworks and the Python patterns used in test automation."
+    "description": "HTTP clients, web frameworks and server-interface concepts that are useful beyond test automation."
   },
   {
     "id": "methodology",

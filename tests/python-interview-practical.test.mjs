@@ -39,7 +39,7 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(catalog, /import codeExamples from "\.\/code-examples\.json"/);
   assert.match(catalog, /\.\.\.practical\.questions/);
   assert.match(catalog, /pythonCodeExamplesById\.get\(question\.id\)/);
-  assert.match(catalog, /version: 3/);
+  assert.match(catalog, /version: 4/);
 
   assert.match(page, /InterviewQuestionCodeOverlay/);
   assert.match(page, /PythonInterviewRunnableOverlay/);
