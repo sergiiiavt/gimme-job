@@ -25,6 +25,8 @@ const exactIds = [
   "industrial-pipe-outlet-a",
   "industrial-vent-small-a",
   "industrial-debris-small-a",
+  "detail-tree-pine-a",
+  "detail-tree-broadleaf-a",
 ];
 
 const forbiddenHallucinations = [
