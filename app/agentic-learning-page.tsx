@@ -10,6 +10,7 @@ import styles from "./agentic-learning-page.module.css";
 const headings = [
   { id: "claude-code", text: "Claude Code" },
   { id: "claude-cowork", text: "Claude Cowork" },
+  { id: "claude-prompting", text: "Prompting Claude" },
   { id: "agentic-patterns", text: "Agentic workflow patterns" },
 ];
 
@@ -38,6 +39,9 @@ const copy = {
     coworkIntro: "Cowork is the bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. This chapter combines two practical Cowork walkthroughs.",
     rodionCowork: "How to automate 80% of work for €20? Full Claude Cowork overview",
     shtuchkaCowork: "Content factory with Claude Cowork, Notion and Skill Editor",
+    promptingTitle: "Prompting Claude effectively",
+    promptingIntro: "A practical Ukrainian video built around prompting advice from a Claude engineer. Use it to improve task framing, context, constraints and iteration before applying those habits to Claude Code, Cowork and agent workflows.",
+    promptingVideo: "Claude engineer explains how to write prompts properly",
     patternsTitle: "Agentic workflow patterns to notice",
     patternsIntro: "Do not watch the videos only as product tutorials. Map each example to reusable agent design ideas:",
     patterns: [
@@ -62,6 +66,9 @@ const copy = {
     coworkIntro: "Cowork показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Тут зібрані два практичні Cowork walkthroughs.",
     rodionCowork: "Як автоматизувати 80% роботи за €20? Повний огляд Claude Cowork",
     shtuchkaCowork: "Контент-завод з Claude Cowork, Notion та Skill Editor",
+    promptingTitle: "Як ефективно писати промпти для Claude",
+    promptingIntro: "Практичне україномовне відео на основі порад інженера Claude. Корисне для framing задачі, контексту, обмежень та ітерацій — перед тим як переносити ці звички у Claude Code, Cowork та agentic workflows.",
+    promptingVideo: "Інженер Claude показав, ЯК ПРАВИЛЬНО писати промти",
     patternsTitle: "Agentic patterns, які варто помічати",
     patternsIntro: "Дивись на ці відео не лише як на product tutorials. Прив’язуй приклади до повторно використовуваних принципів побудови агентів:",
     patterns: [
@@ -84,7 +91,7 @@ export default function AgenticLearningPage() {
   const [activeSubsection, setActiveSubsection] = useState(headings[0].id);
   const text = copy[language];
   const localizedHeadings = useMemo(() => {
-    const labels = [text.codeTitle, text.coworkTitle, text.patternsTitle];
+    const labels = [text.codeTitle, text.coworkTitle, text.promptingTitle, text.patternsTitle];
     return headings.map((heading, index) => ({ ...heading, text: labels[index] }));
   }, [text]);
 
@@ -145,6 +152,14 @@ export default function AgenticLearningPage() {
                     videoId="LZ79ZwTI6lU"
                   />
                 </div>
+
+                <h2 id="claude-prompting">{text.promptingTitle}</h2>
+                <p>{text.promptingIntro}</p>
+                <LearningVideo
+                  channel="YouTube · Ukrainian"
+                  title={text.promptingVideo}
+                  videoId="geoFJ6OXMKE"
+                />
 
                 <h2 id="agentic-patterns">{text.patternsTitle}</h2>
                 <p>{text.patternsIntro}</p>
