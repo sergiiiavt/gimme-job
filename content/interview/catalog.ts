@@ -25,6 +25,7 @@ const sqlCodeExamplesById = new Map(
   [...sqlCodeExamples, ...sqlDataCodeExamples, ...sqlExpandedCodeExamples]
     .map((item) => [item.id, item.codeExamples]),
 );
+const sqlPracticalQuestionIds = new Set(sqlPracticalInterview.questions.map((question) => question.id));
 const categoryToDomain = domains.categoryToDomain as Record<string, string>;
 
 type SubtopicRule = {
@@ -74,11 +75,13 @@ function matchesSubtopicTerm(searchable: string, term: string) {
 function classifySubtopic(question: { id: string; category: string; kind?: string; question: string; tags?: string[] }, domainCategory: string) {
   const config = subtopicDomains[domainCategory];
   if (!config) return question.category;
+  if (domainCategory === "SQL & Databases" && sqlPracticalQuestionIds.has(question.id)) return "Practical SQL";
 
   const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
     .toLowerCase();
   const matchedRule = config.rules?.find((rule) => {
+    if (domainCategory === "SQL & Databases" && rule.target === "Practical SQL") return false;
     if (rule.category && rule.category !== question.category) return false;
     if (rule.kind && rule.kind !== question.kind) return false;
     return !rule.any?.length || rule.any.some((term) => matchesSubtopicTerm(searchable, term));
