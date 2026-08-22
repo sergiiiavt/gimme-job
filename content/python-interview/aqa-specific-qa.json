@@ -1,0 +1,229 @@
+{
+  "questions": [
+    {
+      "id": "py-aqa-pytest-markers-selection-xfail",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Practical",
+      "question": "How do pytest markers, `-m` selection, `skip` and `xfail` differ, and how would you use them in a real automation suite?",
+      "shortAnswer": "Custom markers attach metadata such as `smoke`, `api` or `slow` to tests and let CI select subsets with `pytest -m`; they should be registered so typos do not silently create new marks. `skip` means the test should not run under the current condition, while `xfail` documents a known expected failure and can be made strict so an unexpected pass is visible. Use markers to define execution slices, not to hide unstable tests indefinitely, and keep reasons for skip/xfail explicit and reviewable.",
+      "strongAnswerSignals": [
+        "distinguishes metadata and selection from execution outcomes",
+        "explains skip versus expected failure and the value of strict xfail",
+        "registers custom markers and avoids using them as permanent flakiness hiding"
+      ],
+      "questionUk": "Чим у pytest відрізняються markers, вибір через `-m`, `skip` і `xfail`, і як їх використовувати в реальному automation suite?",
+      "shortAnswerUk": "Custom markers додають тестам metadata на кшталт `smoke`, `api` або `slow` і дозволяють CI запускати потрібні subsets через `pytest -m`; markers варто реєструвати, щоб typo не створював новий mark непомітно. `skip` означає, що тест за поточної умови не слід виконувати, а `xfail` документує відомий expected failure і може бути strict, щоб unexpected pass був видимим. Markers мають визначати execution slices, а не безстроково приховувати нестабільні тести; причини skip/xfail повинні бути явними й переглядатися.",
+      "strongAnswerSignalsUk": [
+        "відрізняє metadata та selection від результатів виконання",
+        "пояснює skip проти expected failure і користь strict xfail",
+        "реєструє custom markers і не використовує їх для постійного приховування flakiness"
+      ],
+      "example": "A pull-request job runs `pytest -m \"smoke and not external\"`, while a nightly job runs the full regression set. A test blocked by an unavailable third-party sandbox uses `skipif` with a clear condition; a test for a confirmed product defect uses a ticket-linked strict `xfail` so the team notices when the defect is fixed.",
+      "exampleUk": "PR job запускає `pytest -m \"smoke and not external\"`, а nightly job виконує повний regression set. Тест, заблокований недоступним third-party sandbox, використовує `skipif` з явною умовою; тест на підтверджений product defect має прив'язаний до ticket strict `xfail`, щоб команда помітила виправлення дефекту.",
+      "tags": ["pytest", "markers", "xfail", "test-selection"],
+      "sourceIds": ["pytest-docs", "asserthired-pytest-2026"]
+    },
+    {
+      "id": "py-aqa-monkeypatch-vs-mock-patch",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Practical",
+      "question": "When would you use pytest `monkeypatch` instead of `unittest.mock.patch`, and what should you patch?",
+      "shortAnswer": "`monkeypatch` is convenient when a pytest test needs temporary changes to attributes, dictionaries, environment variables, paths or the working directory; pytest automatically restores those changes after the requesting scope finishes. `unittest.mock.patch` is stronger when you need mocks with call assertions, autospec or detailed behavior control. In either case patch the name that the code under test actually looks up, not blindly the object where it was originally defined, and prefer explicit dependency injection when extensive patching starts to dominate the design.",
+      "strongAnswerSignals": [
+        "uses monkeypatch for temporary pytest-managed state such as env vars and attributes",
+        "uses mock.patch when call verification or richer Mock behavior is required",
+        "patches where the dependency is looked up and recognizes excessive patching as a design smell"
+      ],
+      "questionUk": "Коли варто використовувати pytest `monkeypatch` замість `unittest.mock.patch`, і що саме потрібно patch-ити?",
+      "shortAnswerUk": "`monkeypatch` зручний, коли pytest-тесту треба тимчасово змінити attributes, dictionaries, environment variables, paths або working directory; pytest автоматично відновить ці зміни після завершення відповідного scope. `unittest.mock.patch` сильніший, коли потрібні call assertions, autospec або детальний контроль поведінки Mock. В обох випадках patch-ити треба ім'я, яке код під тестом реально lookup-ить, а не механічно об'єкт у місці його початкового визначення; якщо patching стає основою дизайну, краще розглянути явну dependency injection.",
+      "strongAnswerSignalsUk": [
+        "використовує monkeypatch для тимчасового pytest-managed state на кшталт env vars та attributes",
+        "обирає mock.patch, коли потрібні call verification або багатша Mock-поведінка",
+        "patch-ить у місці lookup залежності й розуміє надмірний patching як design smell"
+      ],
+      "example": "A configuration test uses `monkeypatch.setenv(\"API_URL\", \"https://stub\")` because the only goal is temporary process state. A service test uses `patch(\"orders.client.send\", autospec=True)` because it must verify that `send()` was called once with the exact payload.",
+      "exampleUk": "Configuration test використовує `monkeypatch.setenv(\"API_URL\", \"https://stub\")`, бо потрібно лише тимчасово змінити process state. Service test використовує `patch(\"orders.client.send\", autospec=True)`, бо треба перевірити, що `send()` викликано один раз з точним payload.",
+      "tags": ["pytest", "monkeypatch", "mocking", "unittest-mock"],
+      "sourceIds": ["pytest-docs", "asserthired-pytest-2026", "python-docs-unittest"]
+    },
+    {
+      "id": "py-aqa-pytest-xdist-parallel-isolation",
+      "level": "Senior",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Design",
+      "question": "What usually breaks when a pytest suite is parallelized with `pytest-xdist`, and how do you design the suite to remain reliable?",
+      "shortAnswer": "`pytest-xdist` runs tests in separate worker processes, so hidden shared state becomes visible quickly: reused accounts, fixed filenames or ports, shared database rows, order dependencies and session fixtures that assumed one process can all break. Make tests independently seed and clean their data, give workers unique resources when required, avoid relying on execution order, and choose a distribution mode that respects expensive or shared fixtures. Parallelism should expose coupling, not be fixed with sleeps or broad retries.",
+      "strongAnswerSignals": [
+        "recognizes that xdist workers are separate processes with independent pytest execution",
+        "identifies shared data, fixed resources and order dependence as common parallel failures",
+        "uses isolated test data or worker-specific resources and understands distribution modes"
+      ],
+      "questionUk": "Що зазвичай ламається після паралелізації pytest suite через `pytest-xdist`, і як спроєктувати suite так, щоб він залишався надійним?",
+      "shortAnswerUk": "`pytest-xdist` виконує тести в окремих worker processes, тому прихований shared state швидко стає проблемою: повторне використання accounts, фіксовані filenames або ports, спільні database rows, order dependencies і session fixtures, які розраховували на один process. Тести мають незалежно створювати й очищати data, за потреби отримувати worker-specific resources, не залежати від порядку виконання та використовувати distribution mode, що враховує дорогі або shared fixtures. Parallelism має виявляти coupling, а не маскуватися sleeps чи широкими retries.",
+      "strongAnswerSignalsUk": [
+        "розуміє, що xdist workers є окремими processes з незалежним pytest execution",
+        "називає shared data, fixed resources та order dependence типовими причинами parallel failures",
+        "використовує isolated test data або worker-specific resources і розуміє distribution modes"
+      ],
+      "example": "After switching to `pytest -n 8`, account tests fail randomly because all workers update the same user. The fix is to provision a unique user per worker or per test and clean it deterministically; changing the command to `-n 2` merely makes the race rarer and does not solve it.",
+      "exampleUk": "Після переходу на `pytest -n 8` account tests починають випадково падати, бо всі workers змінюють одного користувача. Правильне рішення — створювати unique user на worker або test і детерміновано його очищати; перехід на `-n 2` лише робить race рідшим, але не усуває причину.",
+      "tags": ["pytest", "pytest-xdist", "parallel-testing", "test-isolation"],
+      "sourceIds": ["pytest-xdist-docs", "asserthired-pytest-2026", "sdet-qa-interviews-2026"]
+    },
+    {
+      "id": "py-aqa-flaky-pytest-ci-diagnosis",
+      "level": "Middle",
+      "prevalence": "Very common",
+      "category": "Python AQA specific",
+      "kind": "Troubleshooting",
+      "question": "A Python automation test is flaky only in CI or under parallel execution. How do you investigate it instead of just adding retries?",
+      "shortAnswer": "First make the failure observable: preserve traceback, logs, request/response evidence, browser trace or screenshot, test seed and worker identity. Reproduce with the same environment and execution mode, then test the common causes systematically: fixed sleeps, stale or brittle locators, shared state, test-order dependence, data collisions, asynchronous completion and environment instability. Quarantine a known flaky test from a blocking gate if necessary, but keep ownership and a fix deadline; retries may reduce disruption only when they are visible and measured, never as the root-cause strategy.",
+      "strongAnswerSignals": [
+        "collects enough CI evidence to reproduce the exact failing conditions",
+        "investigates timing, shared state, ordering, selectors and environment instead of assuming product failure",
+        "treats quarantine or retries as controlled mitigation with ownership, not the fix"
+      ],
+      "questionUk": "Python automation test flaky лише в CI або під parallel execution. Як його досліджувати замість простого додавання retries?",
+      "shortAnswerUk": "Спочатку зробіть failure спостережуваним: збережіть traceback, logs, request/response evidence, browser trace або screenshot, test seed і worker identity. Відтворіть ті самі environment та execution mode, а потім системно перевірте типові причини: fixed sleeps, stale або brittle locators, shared state, test-order dependence, data collisions, asynchronous completion та нестабільність environment. Відомий flaky test за потреби можна тимчасово quarantine з blocking gate, але з owner і строком виправлення; retries допустимі лише як видима й вимірювана mitigation, а не як root-cause strategy.",
+      "strongAnswerSignalsUk": [
+        "збирає достатньо CI evidence для відтворення точних умов failure",
+        "перевіряє timing, shared state, ordering, selectors та environment замість припущення про product bug",
+        "трактує quarantine або retries як контрольовану mitigation з ownership, а не як fix"
+      ],
+      "example": "A checkout test passes locally but fails 3% of the time on four CI workers. The trace shows two workers reuse the same cart account and overwrite each other's state. Creating isolated users removes the flake; adding `reruns=3` would only have hidden the race and made the pipeline look healthier than it was.",
+      "exampleUk": "Checkout test стабільний локально, але падає у 3% запусків на чотирьох CI workers. Trace показує, що два workers використовують один cart account і перезаписують state один одного. Ізольовані users усувають flake; `reruns=3` лише приховав би race і створив хибне враження стабільного pipeline.",
+      "tags": ["pytest", "flaky-tests", "ci", "troubleshooting"],
+      "sourceIds": ["pytest-docs", "sdet-qa-interviews-2026", "scrolltest-sdet-guide-2026", "eleks-python-aqa-2026"]
+    },
+    {
+      "id": "py-aqa-python-framework-design",
+      "level": "Senior",
+      "prevalence": "Very common",
+      "category": "Python AQA specific",
+      "kind": "Design",
+      "question": "How would you design a maintainable Python test automation framework from scratch?",
+      "shortAnswer": "Start from the product risks and execution needs, then separate responsibilities: pytest test layer, reusable domain/page or API-client layer, fixtures and lifecycle, configuration, test-data factories, assertions, diagnostics/reporting and CI integration. Keep tests thin and business-readable, avoid one global utility module or inheritance tree that owns everything, make dependencies explicit, and design for independent local and parallel execution. A strong framework is not a folder template; its boundaries make changes, debugging and ownership predictable.",
+      "strongAnswerSignals": [
+        "defines clear layers for tests, interactions or clients, fixtures, data, configuration, diagnostics and CI",
+        "keeps tests thin while avoiding god utilities and deep inheritance",
+        "designs for isolation, parallel execution, maintainability and observable failures"
+      ],
+      "questionUk": "Як спроєктувати maintainable Python test automation framework з нуля?",
+      "shortAnswerUk": "Почніть з product risks і execution needs, а потім розділіть responsibilities: pytest test layer, reusable domain/page або API-client layer, fixtures і lifecycle, configuration, test-data factories, assertions, diagnostics/reporting та CI integration. Тести мають бути тонкими й business-readable; не створюйте один global utility module або inheritance tree, який відповідає за все, робіть dependencies явними й одразу проєктуйте independent local та parallel execution. Сильний framework — це не folder template, а boundaries, що роблять зміни, debugging і ownership передбачуваними.",
+      "strongAnswerSignalsUk": [
+        "визначає чіткі layers для tests, interactions або clients, fixtures, data, configuration, diagnostics та CI",
+        "тримає tests тонкими й уникає god utilities та deep inheritance",
+        "проєктує isolation, parallel execution, maintainability та observable failures"
+      ],
+      "example": "For a product with REST APIs and a browser UI, pytest owns execution; typed API clients and page/component objects expose business actions; fixtures provision users and clean state; data factories generate unique records; config is environment-driven; failure hooks attach logs/traces; CI selects smoke versus regression and runs safe subsets in parallel.",
+      "exampleUk": "Для продукту з REST APIs і browser UI pytest керує execution; typed API clients та page/component objects надають business actions; fixtures створюють users і очищають state; data factories генерують unique records; config залежить від environment; failure hooks додають logs/traces; CI вибирає smoke або regression і безпечно запускає subsets паралельно.",
+      "tags": ["pytest", "test-automation", "framework-design", "architecture"],
+      "sourceIds": ["sdet-qa-interviews-2026", "scrolltest-sdet-guide-2026", "eleks-python-aqa-2026", "dou-selenium-python-framework-2025"]
+    },
+    {
+      "id": "py-aqa-test-data-factories-isolation",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Design",
+      "question": "How do you manage test data in a Python automation framework so tests stay independent and parallel-safe?",
+      "shortAnswer": "Prefer factories or builder helpers that create the smallest valid object and allow each test to override only what matters. Provision data through the fastest reliable layer, often API or direct test-support interfaces rather than UI setup, give each test unique identifiers, and make cleanup deterministic or use disposable namespaces. Fixtures should control lifecycle, while factories describe data; avoid a shared mutable 'test user' or giant static JSON file that makes tests order-dependent and unsafe under parallel execution.",
+      "strongAnswerSignals": [
+        "separates data construction with factories from lifecycle management with fixtures",
+        "creates unique independent state and prefers fast setup paths over UI setup",
+        "plans cleanup or disposable data so parallel tests cannot collide"
+      ],
+      "questionUk": "Як керувати test data у Python automation framework, щоб тести залишалися незалежними та parallel-safe?",
+      "shortAnswerUk": "Використовуйте factories або builder helpers, які створюють мінімально валідний object і дозволяють кожному test перевизначити лише важливі поля. Provision data робіть через найшвидший надійний layer — часто API або test-support interfaces замість UI setup — давайте кожному тесту unique identifiers і забезпечуйте deterministic cleanup або disposable namespaces. Fixtures мають керувати lifecycle, а factories — описувати data; shared mutable 'test user' чи один великий static JSON роблять suite order-dependent і небезпечним для parallel execution.",
+      "strongAnswerSignalsUk": [
+        "відокремлює construction data через factories від lifecycle management через fixtures",
+        "створює unique independent state і віддає перевагу швидким setup paths замість UI setup",
+        "планує cleanup або disposable data, щоб parallel tests не конфліктували"
+      ],
+      "example": "Instead of ten tests sharing `qa_user@example.com`, a `user_factory()` creates a unique account through an API and a fixture registers cleanup. The same tests can now run in any order and on eight workers without fighting over balances, permissions or passwords.",
+      "exampleUk": "Замість десяти tests зі спільним `qa_user@example.com`, `user_factory()` створює unique account через API, а fixture реєструє cleanup. Тепер ті самі tests можна запускати в будь-якому порядку й на восьми workers без конфліктів через balances, permissions або passwords.",
+      "tags": ["pytest", "test-data", "factories", "test-isolation"],
+      "sourceIds": ["sdet-qa-interviews-2026", "scrolltest-sdet-guide-2026", "dou-selenium-python-framework-2025"]
+    },
+    {
+      "id": "py-aqa-selenium-stale-dynamic-elements",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Troubleshooting",
+      "question": "What causes Selenium `StaleElementReferenceException` in dynamic applications, and how should you fix it?",
+      "shortAnswer": "A Selenium WebElement references a specific DOM node; it becomes stale when navigation, re-rendering or JavaScript replaces or detaches that node. Do not catch the exception around the whole test or add an arbitrary sleep. Re-locate the element after the state change, wait for the actual condition that makes the new element usable, and improve the page/component abstraction so it stores locator intent rather than long-lived dynamic WebElement instances where appropriate.",
+      "strongAnswerSignals": [
+        "explains staleness as a stored reference to a DOM node that was replaced or detached",
+        "re-locates after the relevant state transition and waits for a meaningful condition",
+        "avoids blanket retries, sleeps and long-lived dynamic WebElement storage"
+      ],
+      "questionUk": "Що спричиняє Selenium `StaleElementReferenceException` у dynamic applications і як це правильно виправляти?",
+      "shortAnswerUk": "Selenium WebElement посилається на конкретний DOM node; reference стає stale, коли navigation, re-rendering або JavaScript замінює чи detach-ить цей node. Не треба обгортати весь test у catch або додавати довільний sleep. Повторно знайдіть element після state change, дочекайтеся реальної condition, за якої новий element готовий до дії, і покращте page/component abstraction так, щоб вона зберігала locator intent, а не довгоживучі dynamic WebElement instances там, де це доречно.",
+      "strongAnswerSignalsUk": [
+        "пояснює staleness як збережений reference на DOM node, який було замінено або detached",
+        "повторно знаходить element після відповідного state transition і чекає meaningful condition",
+        "уникає blanket retries, sleeps і довгоживучих dynamic WebElement references"
+      ],
+      "example": "A React table re-renders after filtering. The test saved a row WebElement before clicking Filter and then reused it, causing a stale reference. The fix is to wait until filtering completes and locate the row again by a stable business attribute instead of retrying the stale object itself.",
+      "exampleUk": "React table re-render-иться після filtering. Test зберіг row WebElement до натискання Filter і потім використав його повторно, отримавши stale reference. Виправлення — дочекатися завершення filtering і знову знайти row за stable business attribute, а не retry-ити сам stale object.",
+      "tags": ["selenium", "stale-element", "dynamic-ui", "waits"],
+      "sourceIds": ["selenium-python-docs", "scrolltest-sdet-guide-2026", "eleks-python-aqa-2026"]
+    },
+    {
+      "id": "py-aqa-playwright-auto-waiting-locators",
+      "level": "Middle",
+      "prevalence": "Very common",
+      "category": "Python AQA specific",
+      "kind": "Practical",
+      "question": "How do Playwright's locators and auto-waiting change the way you write Python UI tests compared with Selenium-style explicit waits?",
+      "shortAnswer": "A Playwright locator is re-resolved when it is used and participates in retryable actions and assertions. Before an action such as click, Playwright waits for relevant actionability conditions such as visibility, stability, event reception and enabled state; web-first assertions retry until their condition is met. Prefer user-facing locators such as role, label or test id over brittle DOM chains, and do not replace Playwright's waiting model with `time.sleep()` or arbitrary timeouts unless diagnosing a specific problem.",
+      "strongAnswerSignals": [
+        "explains locator re-resolution and actionability rather than saying only that Playwright waits automatically",
+        "prefers semantic user-facing locators over brittle CSS or XPath structure",
+        "uses retrying assertions and avoids fixed sleeps as normal synchronization"
+      ],
+      "questionUk": "Як Playwright locators та auto-waiting змінюють написання Python UI tests порівняно з Selenium-style explicit waits?",
+      "shortAnswerUk": "Playwright locator повторно resolve-иться під час використання і бере участь у retryable actions та assertions. Перед action на кшталт click Playwright чекає релевантних actionability conditions — visibility, stability, event reception та enabled state; web-first assertions retry-яться до виконання condition. Віддавайте перевагу user-facing locators на кшталт role, label або test id замість brittle DOM chains і не замінюйте waiting model Playwright на `time.sleep()` чи довільні timeouts, якщо це не діагностика конкретної проблеми.",
+      "strongAnswerSignalsUk": [
+        "пояснює locator re-resolution та actionability, а не лише фразу що Playwright чекає автоматично",
+        "обирає semantic user-facing locators замість brittle CSS або XPath structure",
+        "використовує retrying assertions і не покладається на fixed sleeps для synchronization"
+      ],
+      "example": "For a Save button, `page.get_by_role(\"button\", name=\"Save\").click()` lets Playwright wait until that single button is actionable. A following `expect(page.get_by_text(\"Saved\")).to_be_visible()` retries the assertion; adding `time.sleep(2)` between the two usually makes the test slower and less deterministic.",
+      "exampleUk": "Для Save button `page.get_by_role(\"button\", name=\"Save\").click()` дозволяє Playwright дочекатися, поки саме ця кнопка стане actionable. Далі `expect(page.get_by_text(\"Saved\")).to_be_visible()` retry-ить assertion; `time.sleep(2)` між ними зазвичай лише робить test повільнішим і менш deterministic.",
+      "tags": ["playwright", "locators", "auto-waiting", "ui-automation"],
+      "sourceIds": ["playwright-python-docs", "aitestplaybook-playwright-2026", "testing-academy-playwright-2026", "scrolltest-sdet-guide-2026"]
+    },
+    {
+      "id": "py-aqa-playwright-browser-context-isolation",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Python AQA specific",
+      "kind": "Design",
+      "question": "What is a Playwright `BrowserContext`, and why is it central to test isolation and parallel execution?",
+      "shortAnswer": "A BrowserContext is an isolated browser session inside one browser process, similar to a fresh incognito profile: cookies, local storage, permissions and other session state are separated from other contexts. Creating a fresh context per test gives strong isolation without launching a full browser each time, while multiple pages in one context intentionally share session state. Use separate contexts for independent users or tests and reuse authentication through explicit storage-state setup rather than leaking state from one test into another.",
+      "strongAnswerSignals": [
+        "describes BrowserContext as isolated browser-session state rather than another page",
+        "connects fresh contexts to cheap test isolation and safe parallelism",
+        "uses separate contexts for independent users and explicit storage state for controlled auth reuse"
+      ],
+      "questionUk": "Що таке Playwright `BrowserContext` і чому він є центральним для test isolation та parallel execution?",
+      "shortAnswerUk": "BrowserContext — це ізольована browser session всередині одного browser process, подібна до нового incognito profile: cookies, local storage, permissions та інший session state відокремлені від інших contexts. Fresh context на кожен test дає сильну isolation без запуску повного browser щоразу, тоді як кілька pages всередині одного context навмисно ділять session state. Для незалежних users або tests використовуйте окремі contexts, а authentication reuse робіть через явний storage-state setup, а не через витік state між тестами.",
+      "strongAnswerSignalsUk": [
+        "описує BrowserContext як ізольований browser-session state, а не просто ще одну page",
+        "пов'язує fresh contexts з дешевою test isolation та safe parallelism",
+        "використовує окремі contexts для independent users і explicit storage state для контрольованого auth reuse"
+      ],
+      "example": "A messaging test needs Alice and Bob online at once. It creates two contexts, logs each user in separately and opens one page per context. Their cookies and local storage cannot overwrite each other, while both sessions still run efficiently inside the same browser process.",
+      "exampleUk": "Messaging test потребує одночасно Alice і Bob. Він створює два contexts, окремо логінить кожного user і відкриває по одній page у кожному context. Їх cookies та local storage не перезаписують один одного, хоча обидві sessions ефективно працюють в одному browser process.",
+      "tags": ["playwright", "browser-context", "test-isolation", "parallel-testing"],
+      "sourceIds": ["playwright-python-docs", "aitestplaybook-playwright-2026", "testing-academy-playwright-2026"]
+    }
+  ]
+}
