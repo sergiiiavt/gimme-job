@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { INTERVIEW_DOMAIN_ROUTES, interviewDomainRouteBySlug } from "@/content/interview/domain-routes";
-import { SITE_ORIGIN, createPageMetadata, noIndexMetadata } from "../../seo";
+import { SITE_ORIGIN, bilingualLanguageAlternates, createPageMetadata, noIndexMetadata } from "../../seo";
 import InterviewDomainPageClient from "../interview-domain-page-client";
 
 export function generateStaticParams() {
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ domain: s
     title: route.title,
     description: route.description,
     path: route.path,
-  });
+  }, bilingualLanguageAlternates(route.path, `/uk${route.path}`));
 }
 
 export default async function InterviewDomainPage({ params }: { params: Promise<{ domain: string }> }) {

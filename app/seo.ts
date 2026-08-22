@@ -11,6 +11,8 @@ type SeoPage = Readonly<{
   path: string;
 }>;
 
+export type SeoLanguageAlternates = Readonly<Record<"en" | "uk" | "x-default", string>>;
+
 export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
   certifications: {
     title: "QA Certifications",
@@ -117,6 +119,18 @@ export const REFERENCE_SEO: Readonly<Record<string, SeoPage>> = {
   },
 };
 
+export const UKRAINIAN_SITEMAP_PATHS = [
+  "/uk/interview",
+  "/uk/interview/python",
+  "/uk/interview/generic-qa",
+  "/uk/interview/automation",
+  "/uk/interview/sql",
+  "/uk/interview/web-api",
+  "/uk/interview/mobile",
+  "/uk/interview/embedded-iot",
+  "/uk/interview/ai-llm",
+] as const;
+
 export const PUBLIC_SITEMAP_PATHS = [
   "/",
   "/about",
@@ -134,16 +148,34 @@ export const PUBLIC_SITEMAP_PATHS = [
   "/trends",
   "/news",
   "/fight-ai-slop",
+  ...UKRAINIAN_SITEMAP_PATHS,
   ...Object.values(LEARNING_SEO).map((page) => page.path),
   ...Object.values(REFERENCE_SEO).map((page) => page.path),
 ] as const;
 
-export function createPageMetadata(page: SeoPage): Metadata {
+function normalizedPath(path: string): string {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+export function bilingualLanguageAlternates(englishPath: string, ukrainianPath?: string): SeoLanguageAlternates {
+  const english = normalizedPath(englishPath);
+  const ukrainian = ukrainianPath ? normalizedPath(ukrainianPath) : `/uk${english}`;
+  return {
+    en: english,
+    uk: ukrainian,
+    "x-default": english,
+  };
+}
+
+export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlternates): Metadata {
   const fullTitle = `${page.title} | ${SITE_NAME}`;
   return {
     title: fullTitle,
     description: page.description,
-    alternates: { canonical: page.path },
+    alternates: {
+      canonical: page.path,
+      ...(languages ? { languages } : {}),
+    },
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
