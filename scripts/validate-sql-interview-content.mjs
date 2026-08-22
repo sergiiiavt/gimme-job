@@ -103,9 +103,10 @@ assert.match(catalogSource, /import sqlPracticalInterview from "\.\/sql-practica
 assert.match(catalogSource, /import sqlCodeExamples from "\.\/sql-code-examples"/);
 assert.match(catalogSource, /import sqlDataCodeExamples from "\.\/sql-data-code-examples"/);
 assert.match(catalogSource, /import sqlExpandedCodeExamples from "\.\/sql-expanded-code-examples"/);
+assert.match(catalogSource, /import domains from "\.\/domains\.json"/);
 assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples, \.\.\.sqlExpandedCodeExamples\]/);
 assert.match(catalogSource, /\.\.\.sqlPracticalInterview\.questions/);
-assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)/);
-assert.match(catalogSource, /version: 15/);
+assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)\.map\(applyInterviewDomain\)/);
+assert.match(catalogSource, /version: 16/);
 
 console.log(`SQL interview content validated: ${existingSqlQuestions.length} existing + ${practicalIds.length} practical questions, with structured code examples on every existing SQL/BI question.`);
