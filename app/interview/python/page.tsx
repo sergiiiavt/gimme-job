@@ -6,6 +6,7 @@ import InterviewDomainSwitcherOverlay from "../../interview-domain-switcher-over
 import InterviewQuestionCodeOverlay from "../../interview-question-code-overlay";
 import InterviewQuestionDeepLink from "../../interview-question-deep-link";
 import InterviewQuestionLinkOverlay from "../../interview-question-link-overlay";
+import InterviewSeoOverlay from "../../interview-seo-overlay";
 import PythonInterviewRunnableOverlay from "../../python-interview-runnable-overlay";
 import PublicSite from "../../public-site";
 
@@ -27,6 +28,7 @@ export default function PythonInterviewPage() {
     <>
       <PublicSite/>
       <InterviewDomainSwitcherOverlay/>
+      <InterviewSeoOverlay python/>
       <InterviewQuestionCodeOverlay questions={pythonInterviewCatalog.questions}/>
       <PythonInterviewRunnableOverlay questions={pythonInterviewCatalog.questions}/>
       <InterviewQuestionLinkOverlay pathname="/interview/python" questions={pythonInterviewCatalog.questions}/>

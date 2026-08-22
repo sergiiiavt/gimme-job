@@ -30,6 +30,7 @@ const canonicalSectionPaths: Record<string, string> = {
 };
 
 const publishedQuickReferenceSections = new Set(["qa-fundamentals", "programming", "data"]);
+const publishedInterviewDomainSlugs = new Set(["generic-qa", "automation", "sql", "web-api", "mobile", "embedded-iot", "ai-llm"]);
 
 /**
  * Public and signed-in users share one canonical URL for each content surface.
@@ -53,6 +54,10 @@ export function sectionFromPathname(pathname: string): string | null {
     "/fight-ai-slop": "rewild",
   };
   if (topLevel[normalized]) return topLevel[normalized];
+  if (normalized.startsWith("/interview/")) {
+    const slug = normalized.slice("/interview/".length);
+    if (publishedInterviewDomainSlugs.has(slug)) return "interview";
+  }
   if (normalized.startsWith("/reference/")) {
     const slug = normalized.slice("/reference/".length).split("/")[0];
     return publishedQuickReferenceSections.has(slug) ? slug : null;

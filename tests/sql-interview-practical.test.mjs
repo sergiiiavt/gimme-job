@@ -11,7 +11,7 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
     readFile(projectFile("content/interview/sql-code-examples.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-data-code-examples.ts"), "utf8"),
     readFile(projectFile("content/interview/sql-expanded-code-examples.ts"), "utf8"),
-    readFile(projectFile("app/interview/page.tsx"), "utf8"),
+    readFile(projectFile("app/interview/interview-domain-page-client.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
     readFile(projectFile("app/interview-code-highlighting.ts"), "utf8"),
     readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),

@@ -5,12 +5,14 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("QA and Python interview lists mount direct question links", async () => {
-  const [qaPage, pythonPage] = await Promise.all([
+  const [qaPage, qaClient, pythonPage] = await Promise.all([
     read("app/interview/page.tsx"),
+    read("app/interview/interview-domain-page-client.tsx"),
     read("app/interview/python/page.tsx"),
   ]);
 
-  assert.match(qaPage, /InterviewQuestionLinkOverlay pathname="\/interview" questions=\{interviewCatalog\.questions\}/);
+  assert.match(qaPage, /<InterviewDomainPageClient\/>/);
+  assert.match(qaClient, /InterviewQuestionLinkOverlay pathname=\{canonicalPath\} questions=\{interviewCatalog\.questions\}/);
   assert.match(pythonPage, /InterviewQuestionLinkOverlay pathname="\/interview\/python" questions=\{pythonInterviewCatalog\.questions\}/);
 });
 

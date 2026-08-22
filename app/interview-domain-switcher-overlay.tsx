@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
+import { INTERVIEW_DOMAIN_ROUTES, interviewDomainRouteFromPathname } from "@/content/interview/domain-routes";
 
+const routeById = new Map(INTERVIEW_DOMAIN_ROUTES.map((route) => [route.id, route]));
 const interviewDomains = [
-  { id: "generic-qa", label: "Generic QA", href: "/interview?domain=generic-qa" },
+  { id: "generic-qa", label: routeById.get("generic-qa")?.switcherLabel ?? "Generic QA", href: routeById.get("generic-qa")?.path ?? "/interview/generic-qa" },
   { id: "python", label: "Python", href: "/interview/python" },
-  { id: "automation-qa", label: "Automation", href: "/interview?domain=automation-qa" },
-  { id: "sql-databases", label: "SQL / DB", href: "/interview?domain=sql-databases" },
-  { id: "web-api", label: "Web / API", href: "/interview?domain=web-api" },
-  { id: "mobile", label: "Mobile", href: "/interview?domain=mobile" },
-  { id: "embedded-iot", label: "Embedded", href: "/interview?domain=embedded-iot" },
-  { id: "ai-llm", label: "AI / LLM", href: "/interview?domain=ai-llm" },
+  { id: "automation-qa", label: routeById.get("automation-qa")?.switcherLabel ?? "Automation", href: routeById.get("automation-qa")?.path ?? "/interview/automation" },
+  { id: "sql-databases", label: routeById.get("sql-databases")?.switcherLabel ?? "SQL / DB", href: routeById.get("sql-databases")?.path ?? "/interview/sql" },
+  { id: "web-api", label: routeById.get("web-api")?.switcherLabel ?? "Web / API", href: routeById.get("web-api")?.path ?? "/interview/web-api" },
+  { id: "mobile", label: routeById.get("mobile")?.switcherLabel ?? "Mobile", href: routeById.get("mobile")?.path ?? "/interview/mobile" },
+  { id: "embedded-iot", label: routeById.get("embedded-iot")?.switcherLabel ?? "Embedded", href: routeById.get("embedded-iot")?.path ?? "/interview/embedded-iot" },
+  { id: "ai-llm", label: routeById.get("ai-llm")?.switcherLabel ?? "AI / LLM", href: routeById.get("ai-llm")?.path ?? "/interview/ai-llm" },
 ] as const;
 
 export default function InterviewDomainSwitcherOverlay() {
@@ -21,9 +23,10 @@ export default function InterviewDomainSwitcherOverlay() {
   const [host, setHost] = useState<HTMLElement | null>(null);
 
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  const pathDomain = interviewDomainRouteFromPathname(normalizedPath);
   const activeDomain = normalizedPath === "/interview/python"
     ? "python"
-    : searchParams.get("domain") ?? "generic-qa";
+    : pathDomain?.id ?? searchParams.get("domain") ?? "generic-qa";
 
   useEffect(() => {
     let disposed = false;

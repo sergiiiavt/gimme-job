@@ -20,6 +20,16 @@ const expectedRoutes: Record<string, string> = {
   rewild: "/fight-ai-slop",
 };
 
+const interviewDomainPaths = [
+  "/interview/generic-qa",
+  "/interview/automation",
+  "/interview/sql",
+  "/interview/web-api",
+  "/interview/mobile",
+  "/interview/embedded-iot",
+  "/interview/ai-llm",
+] as const;
+
 test("public and authenticated navigation share canonical query-free routes", () => {
   for (const [section, expected] of Object.entries(expectedRoutes)) {
     assert.equal(sectionNavigationHref(section, "public"), expected);
@@ -34,6 +44,12 @@ test("canonical route paths resolve directly to their site sections", () => {
   assert.equal(sectionFromPathname("/resume"), "resume");
   assert.equal(sectionFromPathname("/interview"), "interview");
   assert.equal(sectionFromPathname("/interview/python"), "python-interview");
+  for (const path of interviewDomainPaths) {
+    assert.equal(sectionFromPathname(path), "interview", `${path} should resolve to the interview section`);
+    assert.equal(sectionFromPathname(`${path}/`), "interview", `${path}/ should normalize to the interview section`);
+  }
+  assert.equal(sectionFromPathname("/interview/unknown-domain"), null);
+  assert.equal(sectionFromPathname("/interview/simulator"), null);
   assert.equal(sectionFromPathname("/learn/api"), "api");
   assert.equal(sectionFromPathname("/reference/qa-fundamentals"), "qa-fundamentals");
   assert.equal(sectionFromPathname("/reference/programming"), "programming");
