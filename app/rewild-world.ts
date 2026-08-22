@@ -314,15 +314,12 @@ export function createHexWorld(seed = MAP_SEED): HexWorld {
     if (cell) cell.surface = "house";
   }
 
-  const forest = biomes.find((entry) => entry.id === "forest-west")!;
   const lake = biomes.find((entry) => entry.id === "lake-west")!;
   const objects: WorldObject[] = [
     object("house", "house", HOUSE_CENTER, HOUSE_FOOTPRINT, true),
-    object("tree-west-a", "tree", { q: 3, r: 3 }, hexDisk({ q: 3, r: 3 }, 1), true),
-    object("tree-west-b", "tree", { q: 6, r: 2 }, [{ q: 6, r: 2 }], true),
-    object("pine-west", "pine", { q: 8, r: 4 }, [{ q: 8, r: 4 }], true),
     object("pond-west", "pond", { q: 5, r: 8 }, lake.cells, true),
     object("rocks-ne", "rock", { q: 32, r: 3 }, [{ q: 32, r: 3 }], true),
+    object("tree-open-meadow", "tree", { q: 25, r: 6 }, [{ q: 25, r: 6 }], true),
     object("shrub-house", "shrub", { q: 8, r: 7 }),
     object("log-southwest", "log", { q: 4, r: 12 }),
     object("fence-house", "fence", { q: 11, r: 9 }),
@@ -330,7 +327,6 @@ export function createHexWorld(seed = MAP_SEED): HexWorld {
     object("ruin-mid", "ruin", { q: 19, r: 7 }, [{ q: 19, r: 7 }], true),
     object("flowers-house", "flowers", { q: 12, r: 5 }, biomes.find((entry) => entry.id === "flowers-house")!.cells),
   ];
-  void forest;
   return { seed, cells, objects, road, biomes };
 }
 

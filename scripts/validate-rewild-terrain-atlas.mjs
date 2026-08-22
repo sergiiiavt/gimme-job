@@ -108,30 +108,33 @@ for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
   assert.ok(colors.size >= 8, `${id}: atlas frame has almost no color variation (${colors.size} distinct colors) — looks blank or a flat fill, not authored texture`);
 }
 
-// 7. Renderer wiring: every meadow tile must be referenced by the variant rotation, and the
-// rotation must fill the hex ground itself (fillRewildTerrainPattern) as part of drawGround,
-// before any entity draws — not a post-hoc overlay stamp that needs per-frame exclusion logic
-// to avoid painting over units.
-for (const id of MEADOW_FAMILY_TILE_IDS) {
-  assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in app/rewild-production-renderer.ts meadow variant rotation`);
+// 7. Renderer wiring: every terrain tile — meadow AND forest/water alike — must be referenced
+// and fill the hex ground itself (fillRewildTerrainPattern) as part of drawGround, before any
+// entity draws — not a post-hoc overlay stamp that needs per-frame exclusion logic to avoid
+// painting over units. Forest and water previously fell back to a flat procedural color; every
+// forest cell already gets a real tree from drawForestDensity (one per hex, no sparse/clearing
+// gate) and every water cell gets its own real ground texture here, so the two layer together
+// instead of the tree/shoreline decor sitting on bare flat color.
+for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
+  assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in app/rewild-production-renderer.ts ground fill`);
 }
 assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
-assert.match(rendererSource, /function drawGround\(/u, "drawGround must remain the home of the meadow tile fill");
+assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, "forest-floor", hexPath\(cell\.hex/u, "forest ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
+assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, exterior === 0 \? "water-deep" : "water-shallow", hexPath\(cell\.hex/u, "water ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround, deep vs shallow chosen by exterior neighbor count");
+assert.match(rendererSource, /function drawGround\(/u, "drawGround must remain the home of the terrain tile fill");
 {
   const groundStart = rendererSource.indexOf("function drawGround(");
   const groundEnd = rendererSource.indexOf("\nfunction ", groundStart + 1);
   const groundBody = rendererSource.slice(groundStart, groundEnd === -1 ? undefined : groundEnd);
-  assert.match(groundBody, /fillRewildTerrainPattern/u, "the meadow tile fill must live inside drawGround itself, not merely be referenced elsewhere in the file");
+  assert.match(groundBody, /fillRewildTerrainPattern/u, "the terrain tile fill must live inside drawGround itself, not merely be referenced elsewhere in the file");
 }
 
-// 8. Water overlay wiring: each water tile is a per-cell textureCell stamp in
-// rewild-authored-overlay.ts (matching the existing corruption/industrial convention), not a
-// full-region tiled fill. forest-floor is authored and packed into the atlas but intentionally
-// unreferenced: every forest cell now gets a real tree from drawForestDensity (one per hex, no
-// sparse/clearing gate), leaving no bare-ground cell for a litter accent to occupy — it remains
-// available for a future thinning/clearing pass.
-assert.match(overlaySource, /textureCell\(ctx, cell, "water-shallow"/u, "water-shallow must be drawn as a textureCell stamp, matching the corruption/industrial convention");
-assert.match(overlaySource, /textureCell\(ctx, cell, "water-deep"/u, "water-deep must be drawn as a textureCell stamp (this call pre-dates this batch; it was previously unreachable art)");
-assert.doesNotMatch(rendererSource, /fillRewildTerrainPattern\(ctx, ["'`](forest-floor|water-deep|water-shallow)["'`]/u, "forest/water tiles must not be wired as a full-region fillRewildTerrainPattern fill in rewild-production-renderer.ts — see the textureCell stamp convention above");
+// 8. Water overlay wiring: rewild-authored-overlay.ts still adds reeds and lily pads per water
+// cell (matching the corruption/industrial decal convention), but must not also stamp
+// water-deep/water-shallow itself — drawGround already fills the whole hex with that art, and a
+// second small centered textureCell stamp on top would just double-render the same texture.
+assert.doesNotMatch(overlaySource, /textureCell\(ctx, cell, "water-(deep|shallow)"/u, "water-deep/water-shallow must not also be drawn as a textureCell overlay stamp now that drawGround fills the whole hex with this art");
+assert.match(overlaySource, /detail-lily-pads-a/u, "water overlay must still add lily pad decor");
+assert.match(overlaySource, /detail-reeds-a/u, "water overlay must still add reed decor");
 
 console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles and ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles, pre-existing 16 IDs untouched, atlas matches committed source, overlay wiring intact.`);

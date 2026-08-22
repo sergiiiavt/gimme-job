@@ -42,6 +42,10 @@ function biomeKindByCell(state: GameState) {
   return kinds;
 }
 
+// Deliberately excludes the live hover cursor: it moves every pointermove frame, and earlier
+// including it here made ground decor (trees, water edges, industrial/corruption stamps) flicker
+// in and out around the mouse as it moved. Only actual placed objects should clear decor beneath
+// them.
 function blockedHalo(snapshot: RenderSnapshot) {
   const blocked = new Set(snapshot.occupiedHexes);
   const addWithNeighbors = (hex: HexCoord) => {
@@ -51,7 +55,6 @@ function blockedHalo(snapshot: RenderSnapshot) {
   for (const plant of snapshot.state.plants) addWithNeighbors(plant);
   for (const enemy of snapshot.state.enemies) addWithNeighbors(enemy.hex);
   for (const node of snapshot.state.nodes) for (const hex of node.footprint) addWithNeighbors(hex);
-  addWithNeighbors(snapshot.state.cursor);
   return blocked;
 }
 
@@ -185,12 +188,10 @@ function drawWaterEdges(
     const exterior = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) !== "water");
     const center = hexCenter(cell.hex);
     if (!exterior.length) {
-      textureCell(ctx, cell, "water-deep", 1, 18);
       if (random(cell, 401) > .88) drawDetail(ctx, "detail-lily-pads-a", center.x, center.y, cell, 402, .92);
       continue;
     }
 
-    textureCell(ctx, cell, "water-shallow", 1, 18);
     const primary = exterior[Math.floor(random(cell, 404) * exterior.length)] ?? exterior[0];
     const shore = shorelinePoint(cell.hex, primary);
     if (random(cell, 405) > .38) drawDetail(ctx, "detail-reeds-a", shore.x, shore.y, cell, 406, .94);
