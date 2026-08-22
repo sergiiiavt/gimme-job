@@ -1,0 +1,74 @@
+[
+  {
+    "id": "asserthired-pytest-2026",
+    "title": "pytest Interview Questions",
+    "url": "https://www.asserthired.com/interview-questions/pytest",
+    "publisher": "AssertHired",
+    "kind": "Current interview question bank",
+    "role": "2026 Python QA/SDET recurrence signal for pytest fixtures, markers, monkeypatch, xdist, reporting and framework structure"
+  },
+  {
+    "id": "sdet-qa-interviews-2026",
+    "title": "50 SDET Interview Questions (With Sample Answers) 2026",
+    "url": "https://sdet.qa/blog/sdet-interview-questions/",
+    "publisher": "sdet.qa",
+    "kind": "Current SDET interview question bank",
+    "role": "2026 recurrence signal for framework design, test-data isolation, flaky-test handling, API testing and practical coding"
+  },
+  {
+    "id": "scrolltest-sdet-guide-2026",
+    "title": "The Complete 2026 SDET Interview Preparation Guide",
+    "url": "https://scrolltest.com/2026-sdet-interview-preparation-guide-questions-domains-2/",
+    "publisher": "ScrollTest",
+    "kind": "Current SDET interview guide",
+    "role": "2026 interview signal for Selenium dynamic elements, Playwright, framework design, test data and CI-oriented automation"
+  },
+  {
+    "id": "aitestplaybook-playwright-2026",
+    "title": "Playwright Interview Questions for SDET 2026",
+    "url": "https://www.aitestplaybook.com/blog/playwright-interview-questions-sdet-2026",
+    "publisher": "AI Test Automation Hub",
+    "kind": "Current practitioner interview guide",
+    "role": "2026 interview signal for Playwright auto-waiting, semantic locators, browser contexts, network interception and debugging"
+  },
+  {
+    "id": "testing-academy-playwright-2026",
+    "title": "Playwright Interview Questions and Answers (2026 Guide)",
+    "url": "https://app.thetestingacademy.com/blog/playwright-interview-questions-and-answers",
+    "publisher": "The Testing Academy",
+    "kind": "Current interview question bank",
+    "role": "2026 recurrence signal for Playwright locators, auto-waiting, fixtures, network interception and hands-on debugging"
+  },
+  {
+    "id": "eleks-python-aqa-2026",
+    "title": "Strong Middle / Senior Automation Test Engineer (Python)",
+    "url": "https://jobs.dou.ua/companies/eleks/vacancies/358535/",
+    "publisher": "ELEKS via DOU Jobs",
+    "kind": "Current Ukrainian hiring signal",
+    "role": "2026 Ukrainian-market evidence for Python framework design, Selenium, Playwright, REST, CI/CD, flake-rate ownership and test-layer architecture"
+  },
+  {
+    "id": "dou-selenium-python-framework-2025",
+    "title": "Компоненти фреймворку автоматизації тестування за допомогою Selenium та Python",
+    "url": "https://dou.ua/forums/topic/52539/",
+    "publisher": "DOU",
+    "kind": "Ukrainian practitioner article",
+    "role": "Practitioner evidence for Python/Selenium framework architecture, reusable components and automation design choices"
+  },
+  {
+    "id": "playwright-python-docs",
+    "title": "Playwright for Python documentation",
+    "url": "https://playwright.dev/python/docs/intro",
+    "publisher": "Microsoft Playwright",
+    "kind": "Official documentation",
+    "role": "Authoritative Python behavior for locators, auto-waiting, browser contexts, network controls and test isolation"
+  },
+  {
+    "id": "pytest-xdist-docs",
+    "title": "pytest-xdist documentation",
+    "url": "https://pytest-xdist.readthedocs.io/en/stable/",
+    "publisher": "pytest-dev",
+    "kind": "Official plugin documentation",
+    "role": "Authoritative behavior for distributed pytest execution, workers, scheduling and parallel-test isolation constraints"
+  }
+]
