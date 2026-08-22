@@ -106,7 +106,7 @@ assert.match(catalogSource, /import sqlExpandedCodeExamples from "\.\/sql-expand
 assert.match(catalogSource, /import domains from "\.\/domains\.json"/);
 assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples, \.\.\.sqlExpandedCodeExamples\]/);
 assert.match(catalogSource, /\.\.\.sqlPracticalInterview\.questions/);
-assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)\.map\(applyInterviewDomain\)/);
-assert.match(catalogSource, /version: 16/);
+assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)/);
+assert.match(catalogSource, /version: 17/);
 
 console.log(`SQL interview content validated: ${existingSqlQuestions.length} existing + ${practicalIds.length} practical questions, with structured code examples on every existing SQL/BI question.`);

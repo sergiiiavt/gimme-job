@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import interviewCatalog from "@/content/interview/catalog";
+import InterviewDomainSwitcherOverlay from "../interview-domain-switcher-overlay";
 import InterviewQuestionCodeOverlay from "../interview-question-code-overlay";
 import InterviewQuestionDeepLink from "../interview-question-deep-link";
 import InterviewQuestionLinkOverlay from "../interview-question-link-overlay";
@@ -26,6 +27,7 @@ export default function InterviewPage() {
   return (
     <>
       <PublicSite/>
+      <InterviewDomainSwitcherOverlay/>
       <InterviewQuestionCodeOverlay questions={interviewCatalog.questions}/>
       <InterviewQuestionLinkOverlay pathname="/interview" questions={interviewCatalog.questions}/>
       <Link className={styles.simulatorLink} href="/interview/simulator">Run AI interview</Link>
