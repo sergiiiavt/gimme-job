@@ -79,7 +79,7 @@ function vectorIndexExists(indexes) {
 function ensureVectorIndex() {
   if (vectorIndexExists(listVectorIndexes())) return;
   console.log(`Creating Vectorize index ${vectorIndexName}...`);
-  runWrangler(["vectorize", "create", vectorIndexName, "--dimensions", "768", "--metric", "cosine"]);
+  runWrangler(["vectorize", "create", vectorIndexName, "--dimensions", "1024", "--metric", "cosine"]);
   if (!vectorIndexExists(listVectorIndexes())) throw new Error(`Could not verify Vectorize index ${vectorIndexName}.`);
 }
 
