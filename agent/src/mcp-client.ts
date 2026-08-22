@@ -18,8 +18,7 @@ type RpcFailure = {
 
 export type GimmeJobMcpClientOptions = {
   url?: string;
-  username?: string;
-  password?: string;
+  token?: string;
   fetchImpl?: typeof fetch;
 };
 
@@ -35,25 +34,23 @@ export type McpToolCallResult = {
   isError?: boolean;
 };
 
-const DEFAULT_MCP_URL = "https://gimme-job.com/api/mcp";
+const DEFAULT_MCP_URL = "https://gimme-job.com/mcp";
 const DEFAULT_PROTOCOL_VERSION = "2026-07-28";
-
-function basicAuthorization(username: string, password: string): string {
-  return `Basic ${Buffer.from(`${username}:${password}`, "utf8").toString("base64")}`;
-}
 
 export class GimmeJobMcpClient {
   readonly url: string;
-  readonly username: string;
-  private readonly password: string;
+  private readonly token: string;
   private readonly fetchImpl: typeof fetch;
   private nextId = 1;
   private initialized = false;
 
   constructor(options: GimmeJobMcpClientOptions = {}) {
-    this.url = options.url ?? process.env.GIMMEJOB_MCP_URL?.trim() || DEFAULT_MCP_URL;
-    this.username = options.username ?? process.env.GIMMEJOB_MCP_USERNAME?.trim() || "gimmejob";
-    this.password = options.password ?? process.env.GIMMEJOB_MCP_PASSWORD?.trim() || process.env.APP_PASSWORD?.trim() || "";
+    this.url = options.url ?? (process.env.GIMMEJOB_MCP_URL?.trim() || DEFAULT_MCP_URL);
+    this.token = options.token
+      ?? (process.env.GIMMEJOB_MCP_TOKEN?.trim()
+        || process.env.MCP_SERVICE_TOKEN?.trim()
+        || process.env.APP_PASSWORD?.trim()
+        || "");
     this.fetchImpl = options.fetchImpl ?? fetch;
   }
 
@@ -61,7 +58,7 @@ export class GimmeJobMcpClient {
     return {
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
-      ...(this.password ? { authorization: basicAuthorization(this.username, this.password) } : {}),
+      ...(this.token ? { "x-gimmejob-mcp-token": this.token } : {}),
     };
   }
 
