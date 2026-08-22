@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
@@ -75,7 +76,7 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
       {breadcrumbHost && createPortal(
         <>
           <nav className="iq-seo-breadcrumb" aria-label="Breadcrumb">
-            <a href="/interview">Interview questions</a>
+            <Link href="/interview">Interview questions</Link>
             <span aria-hidden="true">/</span>
             <span aria-current="page">{label}</span>
           </nav>
@@ -127,7 +128,7 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
       {relatedHost && createPortal(
         <nav className="iq-seo-related" aria-label={`Related ${label} learning`}>
           <span>Related learning</span>
-          {relatedLinks.map((link) => <a href={link.href} key={link.href}>{link.label}</a>)}
+          {relatedLinks.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
         </nav>,
         relatedHost,
       )}
