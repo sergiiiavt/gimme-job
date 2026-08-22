@@ -80,8 +80,9 @@ export default function InterviewDomainSwitcherOverlay() {
       </nav>
       <style>{`
         .iq-domain-switcher {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: stretch;
+          display: flex;
+          flex-wrap: wrap;
           gap: 6px;
           margin: 0 0 10px;
         }
@@ -91,15 +92,18 @@ export default function InterviewDomainSwitcherOverlay() {
           border: 1px solid #d8ddd7;
           border-radius: 6px;
           color: #435049;
-          display: flex;
+          display: inline-flex;
+          flex: 0 0 auto;
           font-size: 10px;
           font-weight: 600;
           justify-content: center;
           line-height: 1.15;
           min-height: 34px;
-          padding: 6px 5px;
+          padding: 6px 10px;
           text-align: center;
           text-decoration: none;
+          white-space: nowrap;
+          width: auto;
         }
         .iq-domain-switcher a:hover {
           background: #f3f5f2;
