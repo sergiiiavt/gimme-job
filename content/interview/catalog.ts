@@ -77,7 +77,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
   if (!config) return question.category;
   if (domainCategory === "SQL & Databases" && sqlPracticalQuestionIds.has(question.id)) return "Practical SQL";
 
-  const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
+  const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
     .toLowerCase();
   const matchedRule = config.rules?.find((rule) => {
