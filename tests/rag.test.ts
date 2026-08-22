@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
-import { register } from "tsx/esm/api";
+import { register as registerTsx } from "tsx/esm/api";
 
-register();
+registerTsx();
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const {
   handleRagReindexRequest,
