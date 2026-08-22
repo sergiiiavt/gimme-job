@@ -7,8 +7,6 @@ register();
 const { handleMcpRequest, MCP_TOOL_NAMES } = await import("../worker/mcp.ts");
 const { default: interviewCatalog } = await import("../content/interview/catalog.ts");
 
-type Row = Record<string, unknown>;
-
 const firstQuestion = interviewCatalog.questions[0];
 
 class FakeStatement {
