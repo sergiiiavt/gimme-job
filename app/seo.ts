@@ -132,20 +132,21 @@ export const PUBLIC_SITEMAP_PATHS = [
 ] as const;
 
 export function createPageMetadata(page: SeoPage): Metadata {
+  const fullTitle = `${page.title} | ${SITE_NAME}`;
   return {
-    title: page.title,
+    title: fullTitle,
     description: page.description,
     alternates: { canonical: page.path },
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
-      title: page.title,
+      title: fullTitle,
       description: page.description,
       url: page.path,
     },
     twitter: {
       card: "summary",
-      title: page.title,
+      title: fullTitle,
       description: page.description,
     },
   };
@@ -176,16 +177,12 @@ export function referenceSectionMetadata(section: string): Metadata {
 }
 
 export function legacyReferenceMetadata(section: keyof typeof REFERENCE_SEO): Metadata {
-  const page = REFERENCE_SEO[section];
-  return {
-    ...createPageMetadata(page),
-    alternates: { canonical: page.path },
-  };
+  return createPageMetadata(REFERENCE_SEO[section]);
 }
 
 export function noIndexMetadata(title: string, description: string): Metadata {
   return {
-    title,
+    title: `${title} | ${SITE_NAME}`,
     description,
     robots: { index: false, follow: false, nocache: true },
   };
