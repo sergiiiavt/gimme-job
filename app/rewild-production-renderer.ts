@@ -13,6 +13,7 @@ import {
   hexDistance,
   hexKey,
   hexLine,
+  hexNeighbors,
   hexPolygon,
   inspectHex,
   type BiomeRegion,
@@ -122,16 +123,6 @@ function hash(seed: number, salt: number) {
 
 function cellRandom(cell: HexCell, salt: number) {
   return hash(cell.seed, salt);
-}
-
-function bitCount(value: number) {
-  let count = 0;
-  let remaining = value;
-  while (remaining) {
-    count += remaining & 1;
-    remaining >>>= 1;
-  }
-  return count;
 }
 
 function pixelLine(ctx: CanvasRenderingContext2D, from: PixelPoint, to: PixelPoint, color: string, width = 2, step = 2) {
@@ -253,16 +244,24 @@ function drawGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
   drawCompositionWash(ctx, state);
   drawConnectedBiomeGround(ctx, snapshot);
 
-  // Authored grass tiles are the actual ground here, drawn before any entity in the render
+  // Authored ground tiles are the actual ground here, drawn before any entity in the render
   // order (see renderOverheadGame) — units, plants, and enemies naturally paint on top of this
   // with no per-frame occupied/enemy exclusion needed, unlike the earlier overlay-pass attempt.
   const kinds = biomeKindByCell(state);
   const houseGround: HexCoord[] = [];
   for (const cell of state.world.cells.values()) {
     if (cell.surface === "house") houseGround.push(cell.hex);
+    if (cell.surface === "water") {
+      const exterior = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) !== "water").length;
+      fillRewildTerrainPattern(ctx, exterior === 0 ? "water-deep" : "water-shallow", hexPath(cell.hex, 1.04), PALETTE.water, 1);
+      continue;
+    }
     if (cell.surface !== "meadow" || cell.corruption !== 0) continue;
     const kind = kinds.get(hexKey(cell.hex));
-    if (kind === "forest" || kind === "water") continue;
+    if (kind === "forest") {
+      fillRewildTerrainPattern(ctx, "forest-floor", hexPath(cell.hex, 1.04), PALETTE.forest, 1);
+      continue;
+    }
     const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(cellRandom(cell, 301) * GRASS_VARIANTS.length))];
     fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), PALETTE.meadow, 1);
   }
@@ -346,30 +345,11 @@ function drawCorruptionTransition(ctx: CanvasRenderingContext2D, state: GameStat
   }
 }
 
+// The water tile itself is drawn once, in drawGround, using real water-deep/water-shallow v4
+// pixel art. This pass only draws the region's shoreline outline plus the overlay's own lily
+// pads/reeds (drawWaterEdges in rewild-authored-overlay.ts) — it must not also place its own
+// procedural fill or lily sprite, or the tile art gets buried under an old flat overlay.
 function drawWater(ctx: CanvasRenderingContext2D, region: BiomeRegion, snapshot: RenderSnapshot) {
-  const state = snapshot.state;
-  const masks = snapshot.regionNeighborMasks.get(region.id) ?? new Map<string, number>();
-  for (const hex of region.cells) {
-    const cell = cellAt(state.world, hex);
-    if (!cell) continue;
-    const center = hexCenter(hex);
-    const neighbors = bitCount(masks.get(hexKey(hex)) ?? 0);
-    if (neighbors >= 5) {
-      ctx.globalAlpha = .48;
-      drawPixelDisc(ctx, center, 13, PALETTE.waterDeep);
-      ctx.globalAlpha = 1;
-    } else if (neighbors <= 3) {
-      ctx.globalAlpha = .32;
-      drawPixelDisc(ctx, center, 10, PALETTE.waterShallow);
-      ctx.globalAlpha = 1;
-    }
-    if (cellRandom(cell, 30) > .5) {
-      const y = Math.round(center.y + (cellRandom(cell, 31) - .5) * 10);
-      const half = 4 + Math.round(cellRandom(cell, 34) * 6);
-      pixelLine(ctx, { x: center.x - half, y }, { x: center.x + half, y }, PALETTE.waterLight, 1, 2);
-    }
-    if (neighbors <= 4 && cellRandom(cell, 32) > .91) drawRewildSprite(ctx, "water-lilies", center.x, center.y, { scale: .3, alpha: .72, flipX: cellRandom(cell, 33) > .5 });
-  }
   regionBoundarySegments(snapshot, region).forEach((edge, index) => {
     pixelLine(ctx, edge.from, edge.to, PALETTE.waterDeep, 4, 1);
     if (index % 2 === 0) pixelLine(ctx, edge.from, edge.to, PALETTE.shore, 2, 2);
