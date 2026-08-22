@@ -54,6 +54,19 @@ draw size (`NATIVE_TO_LEGACY_SCALE = 2`) so passing the same `scale` values prod
 on-screen footprint as before. This keeps the renderer and gameplay-tuned scale constants
 untouched.
 
+## Shared build/validate tooling
+
+`scripts/build-rewild-v4-entities-atlas.mjs` and `scripts/validate-rewild-v4-entities-atlas.mjs`
+share their atlas-packing (canvas composite + metadata JSON write) and atlas-decoding
+(alpha check + corner-transparency check) logic with the Batch 01B/01C detail-atlas
+scripts, via `scripts/rewild-v4-atlas-pack.mjs` and `scripts/rewild-v4-atlas-validate-pixels.mjs`
+respectively. Both `build-rewild-v4-detail-atlas.mjs` and `validate-rewild-v4-detail-atlas.mjs`
+were updated to call the same shared helpers instead of duplicating that logic; the detail
+atlas's built output (`environment-details-atlas-v4.png`/`.json`) is byte-identical before and
+after. Unlike the atlas-family entry points themselves, these two shared helpers are plain
+Node/`sharp` logic with no browser dependency, so they carry direct unit-test coverage
+(`tests/rewild-v4-atlas-pack.test.mjs`) rather than a `sonar.coverage.exclusions` entry.
+
 ## Integration seam
 
 `app/rewild-pixel-atlas.ts` (the existing v3→v2 compatibility facade already consumed by the
