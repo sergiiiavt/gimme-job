@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { ENTITY_ORDER } from "./build-rewild-v4-entities-atlas.mjs";
+import { decodeAtlasWithTransparentCorners } from "./rewild-v4-atlas-validate-pixels.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "v4", "entities-atlas-v4.png");
@@ -83,19 +84,9 @@ for (const forbidden of forbiddenHallucinations) {
   assert.ok(!ENTITY_ORDER.includes(forbidden), `${forbidden}: out-of-roster or off-spec entity entered the v4 entity manifest`);
 }
 
-const atlasMeta = await sharp(atlasPath).metadata();
+const { atlasMeta, data, info } = await decodeAtlasWithTransparentCorners(atlasPath, "v4 entities atlas must preserve alpha");
 assert.equal(atlasMeta.width, 160);
 assert.equal(atlasMeta.height, 64);
-assert.ok(atlasMeta.hasAlpha, "v4 entities atlas must preserve alpha");
-
-const { data, info } = await sharp(atlasPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-const cornerOffsets = [
-  0,
-  info.width - 1,
-  (info.height - 1) * info.width,
-  info.width * info.height - 1,
-];
-for (const pixel of cornerOffsets) assert.equal(data[pixel * info.channels + 3], 0, "atlas canvas corners must remain transparent");
 
 for (const frame of metadata.frames) {
   const { x, y, width, height } = frame.frame;
