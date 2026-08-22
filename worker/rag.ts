@@ -39,7 +39,7 @@ type VectorizeQueryResponse = {
 export type RagEnv = {
   DB: D1Database;
   AI?: {
-    run(model: string, input: { text: string[]; pooling?: string }): Promise<unknown>;
+    run(model: string, input: { text: string[] }): Promise<unknown>;
   };
   RAG_INDEX?: {
     upsert(vectors: Array<{
@@ -54,7 +54,7 @@ export type RagEnv = {
   };
 };
 
-const EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5";
+const EMBEDDING_MODEL = "@cf/baai/bge-m3";
 const EMBEDDING_TEXT_LIMIT = 1_800;
 const INDEX_BATCH_LIMIT = 32;
 
@@ -83,6 +83,16 @@ function compactText(parts: string[]): string {
     .filter(Boolean)
     .join("\n")
     .slice(0, 12_000);
+}
+
+function compactVectorId(prefix: "j" | "l" | "q", source: string): string {
+  let hash = 1469598103934665603n;
+  const prime = 1099511628211n;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= BigInt(source.charCodeAt(index));
+    hash = BigInt.asUintN(64, hash * prime);
+  }
+  return `${prefix}:${hash.toString(16).padStart(16, "0")}`;
 }
 
 function collectStrings(value: unknown, depth = 0): string[] {
@@ -119,7 +129,7 @@ function learningDocuments(): RagDocument[] {
     const title = learningTitle(item);
     const text = compactText([title, ...collectStrings(item)]);
     return {
-      id: `learning:${key}:${refId}`,
+      id: compactVectorId("l", `${key}:${refId}`),
       kind: "learning" as const,
       refId,
       title,
@@ -150,7 +160,7 @@ function questionDocuments(): RagDocument[] {
       ...collectStrings(question.codeExamples),
     ]);
     return {
-      id: `question:${refId}`,
+      id: compactVectorId("q", refId),
       kind: "question",
       refId,
       title,
@@ -191,7 +201,7 @@ async function jobDocuments(env: RagEnv): Promise<RagDocument[]> {
       clean(row.description, 10_000),
     ]);
     return {
-      id: `job:${refId}`,
+      id: compactVectorId("j", refId),
       kind: "job",
       refId,
       title,
@@ -216,7 +226,6 @@ async function embed(env: RagEnv, texts: string[]): Promise<number[][]> {
   if (!env.AI) throw new Error("Workers AI binding is not configured.");
   const raw = await env.AI.run(EMBEDDING_MODEL, {
     text: texts.map((text) => text.slice(0, EMBEDDING_TEXT_LIMIT)),
-    pooling: "cls",
   }) as AiEmbeddingResponse;
   if (!Array.isArray(raw.data) || raw.data.length !== texts.length) {
     throw new Error("Workers AI returned an unexpected embedding response.");
