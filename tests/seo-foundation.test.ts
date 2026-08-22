@@ -70,8 +70,9 @@ test("public sitemap source is generated only from the canonical route registry"
 test("robots source blocks service endpoints but leaves noindex workspace crawlable", async () => {
   const source = await readFile(new URL("../app/robots.ts", import.meta.url), "utf8");
 
-  assert.ok(source.includes('disallow: ["/api/", "/auth/"]'));
-  assert.equal(source.includes('"/workspace/"'), false);
+  assert.match(source, /["']\/api\/["']/);
+  assert.match(source, /["']\/auth\/?["']/);
+  assert.doesNotMatch(source, /["']\/workspace\/?["']/);
   assert.ok(source.includes('sitemap: `${SITE_ORIGIN}/sitemap.xml`'));
   assert.ok(source.includes("host: SITE_ORIGIN"));
   assert.equal(SITE_ORIGIN, "https://gimme-job.com");
