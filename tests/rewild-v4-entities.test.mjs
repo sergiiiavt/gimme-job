@@ -13,6 +13,7 @@ const exactIds = [
   "enemy-clickbait",
   "enemy-deepfake",
   "enemy-fragment",
+  "enemy-popup",
 ];
 
 const forbiddenHallucinations = [
@@ -41,10 +42,6 @@ test("Rewild v4 entity roster is exact and matches the code-authoritative plant/
     assert.doesNotMatch(runtime, new RegExp(name, "iu"), `${name} must not enter the v4 entity runtime`);
     assert.doesNotMatch(builder, new RegExp(name, "iu"), `${name} must not enter the v4 entity build`);
   }
-
-  // enemy-popup is intentionally excluded: the generated candidates for it rendered as an
-  // isometric wall-mounted pane, incompatible with the strict-overhead projection contract.
-  assert.doesNotMatch(runtime, /"enemy-popup"/u, "enemy-popup must stay on the v3 atlas until a top-down-compliant batch replaces it");
 
   const runtimeIdBlock = runtime.match(/REWILD_ENTITY_V4_IDS = \[([\s\S]*?)\] as const;/u)?.[1] ?? "";
   const runtimeIds = [...runtimeIdBlock.matchAll(/"([^"]+)"/gu)].map((match) => match[1]);

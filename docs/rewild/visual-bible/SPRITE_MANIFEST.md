@@ -34,10 +34,10 @@ Do **not** infer runtime states such as `critical`, `destroyed`, `failing`, `ove
 | --- | --- | --- | --- | --- | --- |
 | `enemy-clickbait` | `clickbait` | 1 hex | small device swarm / wheels / compact moving hardware | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
 | `enemy-deepfake` | `deepfake` | 1 hex | heavier technical media/device mass on tracks or wheels; distinct silhouette from clickbait | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
-| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, HP damage/death feedback | existing-v3 → planned-v4, blocked — see note below |
+| `enemy-popup` | `popup` | 1 hex | screen/sign/device body with mechanical legs/wheels; clearly different from other enemies | six-direction movement readability, disable/attack cue, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
 | `enemy-fragment` | `fragment` | 1 hex | compact broken server/device fragment on small tracks/wheels | six-direction movement readability, attack, HP damage/death feedback | integrated (v4) — single default frame only; direction/attack/death frames remain a future batch |
 
-`enemy-popup`'s only generated PixelLab candidates (batch reviewed 2026-08-22) rendered consistently as a vertical wall-mounted window/pane at an oblique angle — incompatible with the `strict-overhead-orthographic` projection in `VISUAL_TARGET_CONTRACT.md`. Those candidates were left in PixelLab review and not integrated. `enemy-popup` remains on the v3 atlas until a fresh batch is generated with an explicit top-down/ground-level device framing.
+`enemy-popup`'s first generated PixelLab candidates (batch reviewed 2026-08-22) rendered consistently as a vertical wall-mounted window/pane at an oblique angle — incompatible with the `strict-overhead-orthographic` projection in `VISUAL_TARGET_CONTRACT.md`. Those candidates were left in PixelLab review and not integrated. A same-day follow-up batch used PixelLab's `view: "top-down"` structured parameter (instead of hand-written "isometric" prompt language) and produced a compliant device-viewed-from-above result, now integrated.
 
 ## D. World objects already represented by code/art
 
@@ -153,6 +153,6 @@ Required visual transitions once a clean transition target is approved:
 7. Code-mapped damage/recovery visuals.
 8. VFX/attack/reclaim/collapse feedback.
 
-Items 5 and 6 were completed ahead of items 1–4 on explicit user request (2026-08-22): all six plant units and three of four enemies are integrated at v4; `enemy-popup` is blocked (see section C). Items 1–4 remain outstanding.
+Items 5 and 6 were completed ahead of items 1–4 on explicit user request (2026-08-22): all six plant units and all four enemies, including `enemy-popup`, are integrated at v4 (see section C for the popup resolution). Items 1–4 remain outstanding.
 
 Before changing this manifest, verify the requested addition against code or explicit user approval and re-check `REFERENCE_STATUS.json`.

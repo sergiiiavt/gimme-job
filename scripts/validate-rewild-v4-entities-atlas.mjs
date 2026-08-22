@@ -19,8 +19,8 @@ const compareAlphabetically = (left, right) => left.localeCompare(right);
 const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
 assert.equal(metadata.image, "entities-atlas-v4.png");
 assert.equal(metadata.source, "assets/rewild/v4/entities-source");
-assert.deepEqual(metadata.grid, { columns: 5, rows: 2, slotSize: 32 });
-assert.equal(metadata.frames.length, 10);
+assert.deepEqual(metadata.grid, { columns: 5, rows: 3, slotSize: 32 });
+assert.equal(metadata.frames.length, 11);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), ENTITY_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, ENTITY_ORDER.length, "v4 entity names must be unique");
 
@@ -33,12 +33,12 @@ const runtimeFrames = new Map(
     height: Number.parseInt(match[5], 10),
   }]),
 );
-assert.equal(runtimeFrames.size, ENTITY_ORDER.length, "runtime v4 entity frame table must contain exactly the 10 approved IDs");
+assert.equal(runtimeFrames.size, ENTITY_ORDER.length, "runtime v4 entity frame table must contain exactly the 11 approved IDs");
 
 const expectedFiles = ENTITY_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
 assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed v4 entities source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 entities source directory must contain exactly the approved 10 PNGs");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 entities source directory must contain exactly the approved 11 PNGs");
 
 const sourceHashes = new Map();
 const elderoakHashes = new Map();
@@ -78,7 +78,6 @@ const forbiddenHallucinations = [
   "builder",
   "transport",
   "mainframe-link",
-  "enemy-popup",
 ];
 for (const forbidden of forbiddenHallucinations) {
   assert.ok(!ENTITY_ORDER.includes(forbidden), `${forbidden}: out-of-roster or off-spec entity entered the v4 entity manifest`);
@@ -86,7 +85,7 @@ for (const forbidden of forbiddenHallucinations) {
 
 const { atlasMeta, data, info } = await decodeAtlasWithTransparentCorners(atlasPath, "v4 entities atlas must preserve alpha");
 assert.equal(atlasMeta.width, 160);
-assert.equal(atlasMeta.height, 64);
+assert.equal(atlasMeta.height, 96);
 
 for (const frame of metadata.frames) {
   const { x, y, width, height } = frame.frame;
