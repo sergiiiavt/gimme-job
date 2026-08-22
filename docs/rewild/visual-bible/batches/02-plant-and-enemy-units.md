@@ -33,17 +33,16 @@ Four of the 14 review objects were **not** integrated and are unrelated to this 
 - One generic "cozy 16-bit isometric asset pack" style-test object — not mapped to any roster
   ID, left untouched.
 
-## Known exclusion: `enemy-popup`
+## Known exclusion (resolved 2026-08-22): `enemy-popup`
 
 All sampled `enemy-popup` candidates (frames 0, 10, 30, 50 of 64) rendered as a vertical,
 wall-mounted glass pane/window at an oblique angle with visible frame depth — consistent with
-the batch's prompt, which requested "2:1 isometric perspective." This directly conflicts with
+the batch's prompt, which requested "2:1 isometric perspective." This directly conflicted with
 `VISUAL_TARGET_CONTRACT.md` section 2 (`projection: strict 90-degree overhead orthographic`) and
 `config/rewild/visual-assets.json`'s `visualContract.projection: "strict-overhead-orthographic"`.
-No candidate in this batch is usable for `enemy-popup`; it remains on the v3 atlas. A future
-batch needs a fresh generation with an explicit top-down/ground-level device framing (the
-manifest's required cue is "screen/sign/device body with mechanical legs/wheels" seen from
-above, not a mounted screen facing the camera).
+No candidate in this original batch was usable for `enemy-popup`. See "2026-08-22 follow-up"
+below for the fresh generation that resolved this — using PixelLab's `view: "top-down"`
+parameter instead of hand-written isometric prompt text fixed it on the first attempt.
 
 ## Scale compensation
 
@@ -73,6 +72,40 @@ Node/`sharp` logic with no browser dependency, so they carry direct unit-test co
 renderer) now checks the new roster first and routes those 9 ids to
 `drawRewildEntityV4Sprite`; every other id falls through to the pre-existing v3→v2 chain
 unchanged. `rewild-production-renderer.ts` was not modified.
+
+## 2026-08-22 follow-up: full regeneration + enemy-popup resolved
+
+The user reported the batch above "looks like shit" against a fresh set of concept-sheet
+screenshots and asked for a PixelLab redraw. Two things were true at once:
+
+- **The account's subscription generation balance was still `0`** (unchanged from the original
+  batch), but the account also held **$8.33 in "fallback" credits** usable without an active
+  subscription — confirmed via `agent_help`, then verified live: `create_1_direction_object` at
+  32px costs **$0.09/call** regardless of subscription state. All 11 units (the original 10 plus
+  a retry of `enemy-popup`) were regenerated for well under $1 total.
+- **The concept sheet showing the "actual game roster" panel is `02-style-scale-footprint.webp`,
+  which `REFERENCE_STATUS.json` marks `rejected`** with `"sprite generation"` explicitly listed
+  under `forbiddenFor`, because "the panel labelled as the actual game roster does not faithfully
+  represent the code-authoritative roster." This regeneration did not prompt PixelLab from that
+  sheet directly — every description was grounded in the code-authoritative `PLANTS`/`ENEMIES`
+  configs in `app/rewild-world.ts` (name, role, HP, color), using the sheet only as loose
+  informal inspiration for silhouette/shape. That mitigates the sheet's specific documented
+  objection (roster fidelity) but does not erase the `rejected` status — a future session
+  shouldn't treat this as a precedent that the sheet is now approved for prompting.
+
+**What changed technically vs. the original batch:** every prompt used PixelLab's structured
+`view: "top-down"` parameter instead of hand-written "2:1 isometric perspective" prompt text.
+That parameter is what fixed `enemy-popup` — the original batch's isometric-flavored text
+produced a wall-mounted window/pane; the same subject prompted with `view: "top-down"` produced
+a compliant device-viewed-from-above result on the first try. All 10 previously-integrated units
+were also regenerated (not just re-reviewed) for a closer match to the concept sheet's level of
+detail; `plant-thornbramble`'s description tripped PixelLab's content-policy filter twice
+(`"tightly coiled"` + thorn/blood-adjacent wording is the suspected trigger) before a
+softer third rewrite succeeded.
+
+`enemy-popup` is now part of `ENTITY_ORDER` (position 11) and the v4 atlas grid grew from 5×2 to
+5×3 slots to fit it; `app/rewild-pixel-atlas.ts`'s existing `V4_ENTITY_SPRITES` gate needed no
+changes since it already keys off `REWILD_ENTITY_V4_IDS` by string id.
 
 ## Known pre-existing issue (not introduced by this batch)
 

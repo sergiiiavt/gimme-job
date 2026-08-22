@@ -9,6 +9,7 @@ export const REWILD_ENTITY_V4_IDS = [
   "enemy-clickbait",
   "enemy-deepfake",
   "enemy-fragment",
+  "enemy-popup",
 ] as const;
 
 export type RewildEntityV4Id = (typeof REWILD_ENTITY_V4_IDS)[number];
@@ -29,11 +30,12 @@ export interface RewildEntityDrawOptions {
 
 const ENTITY_ATLAS_URL = "/rewild/v4/entities-atlas-v4.png";
 
-// Source sprites are authored at 32px native. The pre-existing v3 entity atlas (and every
-// scale constant already tuned against it in rewild-production-renderer.ts, e.g. plant/enemy
-// `scale`) assumes 64px native frames. Doubling here keeps on-screen unit size unchanged for
-// every existing caller without touching renderer/gameplay code.
-const NATIVE_TO_LEGACY_SCALE = 2;
+// Source sprites are authored at 32px native and are tightly cropped (subject fills the frame,
+// no padding). The pre-existing v3 entity atlas assumed 64px native frames with padding around
+// the subject, so naively doubling to "match" 64px made v4 sprites overflow their hex (e.g. a
+// mature elderoak rendered ~63px wide inside a 42px hex). 1.3 keeps units comfortably inside
+// their hex footprint while staying close to the old on-screen scale for every existing caller.
+const NATIVE_TO_LEGACY_SCALE = 1.3;
 
 export const REWILD_ENTITY_V4_FRAMES: Record<RewildEntityV4Id, RewildEntityV4Frame> = {
   "plant-sunbloom": { x: 0, y: 0, width: 32, height: 32 },
@@ -46,6 +48,7 @@ export const REWILD_ENTITY_V4_FRAMES: Record<RewildEntityV4Id, RewildEntityV4Fra
   "enemy-clickbait": { x: 64, y: 32, width: 32, height: 32 },
   "enemy-deepfake": { x: 96, y: 32, width: 32, height: 32 },
   "enemy-fragment": { x: 128, y: 32, width: 32, height: 32 },
+  "enemy-popup": { x: 0, y: 64, width: 32, height: 32 },
 };
 
 let entityImage: HTMLImageElement | null = null;

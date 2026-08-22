@@ -14,7 +14,7 @@ const metadataPath = path.join(outputDirectory, "entities-atlas-v4.json");
 
 const SLOT_SIZE = 32;
 const COLUMNS = 5;
-const ROWS = 2;
+const ROWS = 3;
 
 export const ENTITY_ORDER = [
   "plant-sunbloom",
@@ -27,6 +27,7 @@ export const ENTITY_ORDER = [
   "enemy-clickbait",
   "enemy-deepfake",
   "enemy-fragment",
+  "enemy-popup",
 ];
 
 function categoryFor(name) {
