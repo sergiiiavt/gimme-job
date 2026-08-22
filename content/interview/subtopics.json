@@ -1,0 +1,229 @@
+{
+  "domains": {
+    "Generic QA": {
+      "taxonomy": [
+        { "id": "testing-fundamentals", "label": "Testing fundamentals", "category": "Testing fundamentals", "description": "Core testing purpose, principles, levels, types and terminology." },
+        { "id": "test-design", "label": "Test design", "category": "Test design", "description": "Systematic black-box, white-box and experience-based test design." },
+        { "id": "test-documentation", "label": "Documentation & traceability", "category": "Documentation & traceability", "description": "Requirements, test artifacts, reviews and traceability." },
+        { "id": "defects-triage", "label": "Defects & triage", "category": "Defects & triage", "description": "Defect reporting, severity, priority, triage and reproducibility." },
+        { "id": "infrastructure-environments", "label": "Infrastructure & environments", "category": "Infrastructure & environments", "description": "Test environments, Git, containers, cloud, Linux and networking." },
+        { "id": "performance", "label": "Performance", "category": "Performance", "description": "Load, stress, bottlenecks, response time and throughput." },
+        { "id": "reliability-resilience", "label": "Reliability & resilience", "category": "Reliability & resilience", "description": "Recovery, failover, degradation, fault tolerance and resilience." },
+        { "id": "security", "label": "Security", "category": "Security", "description": "Application security, authorization, privacy and security testing." },
+        { "id": "accessibility", "label": "Accessibility", "category": "Accessibility", "description": "WCAG, keyboard access, assistive technology and inclusive quality." },
+        { "id": "agile-delivery", "label": "Agile & delivery", "category": "Agile & delivery", "description": "Scrum, Kanban, shift-left and continuous delivery." },
+        { "id": "metrics-estimation", "label": "Metrics & estimation", "category": "Metrics & estimation", "description": "QA measurement, estimation, forecasting and uncertainty." },
+        { "id": "strategy-risk", "label": "Strategy & risk", "category": "Strategy & risk", "description": "Quality strategy, product risk, prioritization and release decisions." },
+        { "id": "leadership", "label": "Leadership", "category": "Leadership", "description": "People, stakeholders, conflict, coaching and change." },
+        { "id": "practical-scenarios", "label": "Practical scenarios", "category": "Practical scenarios", "description": "Scenario analysis and hands-on QA interview exercises." },
+        { "id": "observability-production", "label": "Observability & production", "category": "Observability & production", "description": "Telemetry, health checks, deployment verification and incidents." },
+        { "id": "regulated-compliance", "label": "Regulated & compliance", "category": "Regulated & compliance", "description": "Traceability, data integrity, safety and regulated change control." }
+      ],
+      "rules": [
+        { "category": "Documentation and defects", "target": "Defects & triage", "any": ["defect", "bug", "severity", "priority", "triage", "reproduce", "root cause"] },
+        { "category": "Security and accessibility", "target": "Accessibility", "any": ["accessibility", "wcag", "screen reader", "keyboard", "aria", "contrast", "assistive"] },
+        { "category": "Performance and resilience", "target": "Reliability & resilience", "any": ["resilien", "recovery", "failover", "fault", "chaos", "circuit breaker", "degradation", "availability", "retry"] }
+      ],
+      "fallbackByCategory": {
+        "Fundamentals": "Testing fundamentals",
+        "Test design": "Test design",
+        "Documentation and defects": "Documentation & traceability",
+        "Infrastructure": "Infrastructure & environments",
+        "Performance and resilience": "Performance",
+        "Security and accessibility": "Security",
+        "Agile and delivery": "Agile & delivery",
+        "Metrics and estimation": "Metrics & estimation",
+        "Strategy and risk": "Strategy & risk",
+        "Leadership": "Leadership",
+        "Practical tasks": "Practical scenarios",
+        "Observability and production": "Observability & production",
+        "Regulated domains": "Regulated & compliance"
+      },
+      "fallback": "Testing fundamentals"
+    },
+    "Automation QA": {
+      "taxonomy": [
+        { "id": "automation-strategy", "label": "Strategy & coverage", "category": "Automation strategy & coverage", "description": "What to automate, coverage, value, maintainability and automation strategy." },
+        { "id": "automation-framework", "label": "Framework architecture", "category": "Framework architecture", "description": "Framework structure, abstractions, patterns, configuration and extensibility." },
+        { "id": "automation-ui", "label": "UI automation", "category": "UI automation", "description": "Browser and UI automation, selectors, waits and page/component abstractions." },
+        { "id": "automation-api", "label": "API automation", "category": "API automation", "description": "Automated service/API checks, clients, contracts and data setup." },
+        { "id": "automation-code", "label": "Test code & programming", "category": "Test code & programming", "description": "Programming concepts, code quality, OOP and maintainable test implementation." },
+        { "id": "automation-ci", "label": "CI/CD & execution", "category": "CI/CD & execution", "description": "Pipeline execution, environments, reporting, parallel runs and delivery integration." },
+        { "id": "automation-reliability", "label": "Flakiness & reliability", "category": "Flakiness & reliability", "description": "Synchronization, isolation, retries, flaky-test diagnosis and deterministic execution." }
+      ],
+      "rules": [
+        { "target": "Flakiness & reliability", "any": ["flaky", "flakiness", "retry", "retries", "synchron", "wait", "race", "shared state", "test isolation", "order depend", "unstable"] },
+        { "target": "Framework architecture", "any": ["framework", "page object", "screenplay", "factory", "dependency injection", "design pattern", "architecture", "abstraction"] },
+        { "target": "UI automation", "any": ["selenium", "playwright", "webdriver", "locator", "selector", "browser automation", "ui automation", "page element"] },
+        { "target": "API automation", "any": ["api automation", "rest client", "http client", "request library", "service automation", "contract test"] },
+        { "target": "CI/CD & execution", "any": ["ci", "cd", "pipeline", "github actions", "runner", "parallel", "docker", "reporting", "nightly"] },
+        { "category": "Programming", "target": "Test code & programming", "any": ["oop", "class", "inheritance", "composition", "pattern", "code", "algorithm", "big-o", "concurrency"] }
+      ],
+      "fallbackByCategory": {
+        "Programming": "Test code & programming",
+        "Automation and CI": "Automation strategy & coverage"
+      },
+      "fallback": "Automation strategy & coverage"
+    },
+    "SQL & Databases": {
+      "taxonomy": [
+        { "id": "sql-fundamentals", "label": "SQL fundamentals & CRUD", "category": "SQL fundamentals & CRUD", "description": "Core SQL syntax, filtering, NULL handling, CRUD and basic querying." },
+        { "id": "sql-joins-ctes", "label": "Joins, subqueries & CTEs", "category": "Joins, subqueries & CTEs", "description": "JOINs, nested queries, CTEs and set operations." },
+        { "id": "sql-aggregation-windows", "label": "Aggregation & window functions", "category": "Aggregation & window functions", "description": "GROUP BY, HAVING, aggregates, ranking and analytic windows." },
+        { "id": "db-design-integrity", "label": "DB design & integrity", "category": "DB design & integrity", "description": "Schemas, keys, constraints, normalization and referential integrity." },
+        { "id": "db-transactions", "label": "Transactions & concurrency", "category": "Transactions & concurrency", "description": "ACID, isolation, locks, deadlocks and concurrent data changes." },
+        { "id": "db-performance", "label": "Indexes & query performance", "category": "Indexes & query performance", "description": "Indexes, execution plans and query-performance diagnosis." },
+        { "id": "db-nosql", "label": "NoSQL & data models", "category": "NoSQL & data models", "description": "Relational versus non-relational models and consistency trade-offs." },
+        { "id": "data-bi", "label": "ETL, warehouse & BI", "category": "ETL, warehouse & BI", "description": "Data pipelines, warehouses, facts/dimensions, lineage and BI validation." },
+        { "id": "sql-practical", "label": "Practical SQL", "category": "Practical SQL", "description": "Hands-on query-writing and data-validation interview tasks." }
+      ],
+      "rules": [
+        { "target": "SQL fundamentals & CRUD", "any": ["sql-command-families"] },
+        { "kind": "Practical", "target": "Practical SQL", "any": ["sql", "query", "database", "data"] },
+        { "target": "ETL, warehouse & BI", "any": ["etl", "warehouse", "data warehouse", "dwh", "fact table", "dimension", "star schema", "bi", "dashboard", "lineage", "batch", "streaming", "slowly changing", "semantic measure", "data pipeline"] },
+        { "target": "NoSQL & data models", "any": ["nosql", "non-relational", "document database", "key-value", "mongodb", "graph database", "wide column", "data model"] },
+        { "target": "Indexes & query performance", "any": ["index", "execution plan", "query plan", "explain", "query performance", "optimization", "optimisation"] },
+        { "target": "Transactions & concurrency", "any": ["transaction", "acid", "isolation", "deadlock", "lock", "commit", "rollback", "concurren", "phantom read", "dirty read", "lost update"] },
+        { "target": "Aggregation & window functions", "any": ["aggregate", "aggregation", "group by", "having", "window function", "row_number", "rank(", "dense_rank", "partition by"] },
+        { "target": "Joins, subqueries & CTEs", "any": [" join", "join ", "subquery", "subqueries", "cte", "common table expression", "union", "intersect", "except"] },
+        { "target": "DB design & integrity", "any": ["constraint", "primary key", "foreign key", "normalization", "normalisation", "schema", "referential", "integrity", "migration", "relationship"] }
+      ],
+      "fallback": "SQL fundamentals & CRUD"
+    },
+    "Web & API": {
+      "taxonomy": [
+        { "id": "web-http", "label": "HTTP & web fundamentals", "category": "HTTP & web fundamentals", "description": "HTTP semantics, methods, status codes, URLs, caching and core web behaviour." },
+        { "id": "web-rest-api", "label": "REST & API design", "category": "REST & API design", "description": "Resources, idempotency, versioning, pagination and API design behaviour." },
+        { "id": "web-auth", "label": "Auth & sessions", "category": "Auth & sessions", "description": "Authentication, authorization, cookies, sessions, OAuth/OIDC and tokens." },
+        { "id": "web-contracts", "label": "Contracts & data formats", "category": "Contracts & data formats", "description": "JSON/XML, schemas, OpenAPI, serialization and contract validation." },
+        { "id": "web-integration", "label": "Integration & messaging", "category": "Integration & messaging", "description": "Queues, events, webhooks, WebSockets and distributed integrations." },
+        { "id": "web-browser", "label": "Browser & client behaviour", "category": "Browser & client behaviour", "description": "Browser storage, DOM/client behaviour, CORS and caching boundaries." },
+        { "id": "web-diagnostics", "label": "API testing & diagnostics", "category": "API testing & diagnostics", "description": "API test strategy, network inspection, debugging and service diagnostics." }
+      ],
+      "rules": [
+        { "target": "Auth & sessions", "any": ["authentication", "authorization", "oauth", "oidc", "jwt", "token", "session", "cookie", "csrf", "login"] },
+        { "target": "Integration & messaging", "any": ["queue", "kafka", "rabbit", "message", "event-driven", "event driven", "webhook", "websocket", "async integration"] },
+        { "target": "Contracts & data formats", "any": ["openapi", "swagger", "schema", "contract", "json", "xml", "serialization", "deserialization", "protobuf", "graphql schema"] },
+        { "target": "Browser & client behaviour", "any": ["browser", "dom", "localstorage", "local storage", "sessionstorage", "cors", "same-origin", "cache-control", "service worker"] },
+        { "target": "API testing & diagnostics", "any": ["api testing", "api test", "postman", "devtools", "network tab", "proxy", "request response", "request/response", "debug"] },
+        { "target": "REST & API design", "any": ["rest", "resource", "idempot", "pagination", "versioning", "rate limit", "endpoint", "put vs patch", "api design"] }
+      ],
+      "fallback": "HTTP & web fundamentals"
+    },
+    "Mobile": {
+      "taxonomy": [
+        { "id": "mobile-fundamentals", "label": "Mobile fundamentals", "category": "Mobile fundamentals", "description": "Platform differences, native/hybrid concepts and mobile-specific test scope." },
+        { "id": "mobile-lifecycle", "label": "Lifecycle & app state", "category": "Lifecycle & app state", "description": "Install/update, foreground/background, interruptions and state restoration." },
+        { "id": "mobile-permissions", "label": "Permissions, notifications & links", "category": "Permissions, notifications & links", "description": "Runtime permissions, push notifications, universal/deep links and intents." },
+        { "id": "mobile-devices", "label": "Devices & compatibility", "category": "Devices & compatibility", "description": "OS versions, screens, orientation, fragmentation, emulators and real devices." },
+        { "id": "mobile-network", "label": "Network & offline", "category": "Network & offline", "description": "Connectivity changes, offline mode, weak networks and synchronization." },
+        { "id": "mobile-performance", "label": "Performance, battery & resources", "category": "Performance, battery & resources", "description": "CPU, memory, battery, thermal behaviour and mobile performance." },
+        { "id": "mobile-release", "label": "Releases & distribution", "category": "Releases & distribution", "description": "Signing, builds, stores, staged rollout, upgrades and release validation." },
+        { "id": "mobile-automation", "label": "Automation & diagnostics", "category": "Mobile automation & diagnostics", "description": "Appium, ADB/logcat, platform diagnostics and mobile automation." }
+      ],
+      "rules": [
+        { "target": "Mobile automation & diagnostics", "any": ["appium", "adb", "logcat", "xcode", "uiautomator", "espresso", "xcuitest", "mobile automation", "device log"] },
+        { "target": "Releases & distribution", "any": ["app store", "play store", "signing", "release", "build", "version", "upgrade", "update", "distribution", "rollout"] },
+        { "target": "Performance, battery & resources", "any": ["battery", "memory", "cpu", "thermal", "performance", "resource", "startup time", "ANR"] },
+        { "target": "Permissions, notifications & links", "any": ["permission", "notification", "push", "deep link", "universal link", "intent", "apns", "fcm"] },
+        { "target": "Network & offline", "any": ["offline", "network", "connectivity", "wifi", "wi-fi", "cellular", "airplane", "sync"] },
+        { "target": "Devices & compatibility", "any": ["device", "os version", "android version", "ios version", "screen", "orientation", "fragmentation", "emulator", "simulator", "tablet"] },
+        { "target": "Lifecycle & app state", "any": ["lifecycle", "foreground", "background", "termination", "install", "uninstall", "state restoration", "interruption", "resume"] }
+      ],
+      "fallback": "Mobile fundamentals"
+    },
+    "Embedded & IoT": {
+      "taxonomy": [
+        { "id": "embedded-fundamentals", "label": "Embedded fundamentals", "category": "Embedded fundamentals", "description": "Embedded architecture, layered test strategy and hardware/software boundaries." },
+        { "id": "embedded-firmware", "label": "Firmware & hardware interfaces", "category": "Firmware & hardware interfaces", "description": "Firmware, sensors, actuators, GPIO, drivers and hardware interaction." },
+        { "id": "embedded-protocols", "label": "Protocols & connectivity", "category": "Protocols & connectivity", "description": "UART, SPI, I2C, CAN, BLE, MQTT and device connectivity." },
+        { "id": "embedded-realtime", "label": "Timing & real-time behaviour", "category": "Timing & real-time behaviour", "description": "Interrupts, deadlines, races, scheduling and deterministic timing." },
+        { "id": "embedded-power", "label": "Power & constrained resources", "category": "Power & constrained resources", "description": "Power loss, battery, sleep modes, memory and constrained-device behaviour." },
+        { "id": "embedded-ota", "label": "Boot, OTA & recovery", "category": "Boot, OTA & recovery", "description": "Boot flows, firmware update, rollback, interruption and recovery." },
+        { "id": "embedded-diagnostics", "label": "Diagnostics, SIL & HIL", "category": "Diagnostics, SIL & HIL", "description": "Simulation, hardware-in-loop, logs, JTAG and test instrumentation." },
+        { "id": "embedded-security", "label": "IoT security & reliability", "category": "IoT security & reliability", "description": "Device identity, secure communication, failure handling and field reliability." }
+      ],
+      "rules": [
+        { "target": "IoT security & reliability", "any": ["security", "secure", "identity", "provision", "certificate", "encryption", "threat", "fault tolerance", "reliability"] },
+        { "target": "Diagnostics, SIL & HIL", "any": ["hil", "sil", "hardware-in-the-loop", "software-in-the-loop", "jtag", "debug", "trace", "diagnostic", "test bench", "simulator"] },
+        { "target": "Boot, OTA & recovery", "any": ["ota", "firmware update", "boot", "bootloader", "rollback", "recovery", "update interruption"] },
+        { "target": "Power & constrained resources", "any": ["power", "battery", "sleep", "memory", "resource constraint", "constrained", "brownout", "brown-out"] },
+        { "target": "Timing & real-time behaviour", "any": ["real-time", "real time", "timing", "deadline", "interrupt", "scheduler", "latency", "race", "concurrency"] },
+        { "target": "Protocols & connectivity", "any": ["uart", "spi", "i2c", "i²c", "can bus", "can ", "mqtt", "ble", "bluetooth", "wifi", "wi-fi", "protocol", "bus"] },
+        { "target": "Firmware & hardware interfaces", "any": ["firmware", "hardware", "sensor", "actuator", "gpio", "driver", "adc", "dac"] }
+      ],
+      "fallback": "Embedded fundamentals"
+    },
+    "AI & LLM QA": {
+      "taxonomy": [
+        { "id": "ai-data-quality", "label": "ML & data quality", "category": "ML & data quality", "description": "Datasets, labels, bias, features, drift and ML-specific quality risks." },
+        { "id": "ai-model-evaluation", "label": "Model evaluation & metrics", "category": "Model evaluation & metrics", "description": "Classification/regression metrics, thresholds and model-quality evaluation." },
+        { "id": "ai-llm-evaluation", "label": "LLM evaluation & hallucinations", "category": "LLM evaluation & hallucinations", "description": "Generative quality, hallucinations, non-determinism and evaluation design." },
+        { "id": "ai-rag-prompting", "label": "Prompts, RAG & grounding", "category": "Prompts, RAG & grounding", "description": "Prompt behaviour, retrieval, embeddings, grounding and context quality." },
+        { "id": "ai-agents", "label": "Agents & tool use", "category": "Agents & tool use", "description": "Agent workflows, tool/function calling, planning and multi-step behaviour." },
+        { "id": "ai-safety", "label": "Safety, security & guardrails", "category": "Safety, security & guardrails", "description": "Prompt injection, jailbreaks, privacy, harmful outputs and guardrails." },
+        { "id": "ai-production", "label": "Production & observability", "category": "AI production & observability", "description": "Monitoring, latency, cost, drift and production evaluation of AI systems." }
+      ],
+      "rules": [
+        { "target": "Safety, security & guardrails", "any": ["prompt injection", "jailbreak", "guardrail", "safety", "security", "pii", "privacy", "toxic", "harmful", "red team"] },
+        { "target": "Agents & tool use", "any": ["agent", "tool use", "tool-use", "function calling", "mcp", "workflow", "multi-step"] },
+        { "target": "Prompts, RAG & grounding", "any": ["rag", "retrieval", "embedding", "vector", "grounding", "prompt", "context window", "context quality"] },
+        { "target": "AI production & observability", "any": ["production", "monitor", "observability", "latency", "cost", "drift", "telemetry"] },
+        { "target": "Model evaluation & metrics", "any": ["precision", "recall", "f1", "auc", "roc", "confusion matrix", "accuracy", "regression metric", "threshold"] },
+        { "target": "ML & data quality", "any": ["dataset", "training data", "label", "feature", "bias", "class imbalance", "data quality", "model drift"] },
+        { "target": "LLM evaluation & hallucinations", "any": ["llm", "generative", "hallucination", "temperature", "non-determin", "evaluation"] }
+      ],
+      "fallback": "LLM evaluation & hallucinations"
+    },
+    "Python": {
+      "taxonomy": [
+        { "id": "core-language", "label": "Core language & syntax", "category": "Core language and syntax", "description": "Interpreter model, variables, scoping, truthiness, operators and execution basics." },
+        { "id": "data-types-structures", "label": "Data types & structures", "category": "Data types and structures", "description": "Lists, tuples, dicts, sets, comprehensions, mutability and copying." },
+        { "id": "strings-text", "label": "Strings & text processing", "category": "Strings and text processing", "description": "String immutability, formatting, encoding and regular expressions." },
+        { "id": "functions-functional", "label": "Functions & functional tools", "category": "Functions and functional tools", "description": "Arguments, closures, lambdas, first-class functions and functional idioms." },
+        { "id": "oop", "label": "Object-oriented Python", "category": "Object-oriented Python", "description": "Classes, inheritance, MRO, dunder methods, dataclasses and composition." },
+        { "id": "iterators-generators-decorators", "label": "Iterators, generators & decorators", "category": "Iterators, generators and decorators", "description": "Iterator protocol, generators and decorator design." },
+        { "id": "errors-context-managers", "label": "Errors & context managers", "category": "Errors and context managers", "description": "Exceptions, exception groups, context managers and resource safety." },
+        { "id": "concurrency", "label": "Concurrency & parallelism", "category": "Concurrency and parallelism", "description": "GIL, threading, multiprocessing, asyncio and free-threaded Python." },
+        { "id": "memory-performance", "label": "Memory & performance", "category": "Memory management and performance", "description": "Reference counting, garbage collection, profiling and optimization." },
+        { "id": "packaging-environments", "label": "Modules, packaging & environments", "category": "Modules, packaging and environments", "description": "Imports, virtual environments, packaging and dependency management." },
+        { "id": "typing-static-analysis", "label": "Typing & static analysis", "category": "Typing and static analysis", "description": "Type hints, generics, protocols and static type checking." },
+        { "id": "stdlib-tooling", "label": "Standard library & tooling", "category": "Standard library and tooling", "description": "Core standard-library tools, logging, debugging and utilities." },
+        { "id": "web-http-python", "label": "Web & HTTP Python", "category": "Web, automation and QA-relevant Python", "description": "HTTP clients, web frameworks and server-interface concepts." },
+        { "id": "python-pytest", "label": "Pytest & fixtures", "category": "Pytest & fixtures", "description": "Fixtures, scopes, parametrization, markers, conftest and pytest execution." },
+        { "id": "python-mocking", "label": "Mocking & test isolation", "category": "Mocking & test isolation", "description": "Mock/patch, monkeypatch, dependency isolation and test doubles." },
+        { "id": "python-browser-aqa", "label": "Browser automation", "category": "Python browser automation", "description": "Selenium/Playwright, waits, locators and page abstractions in Python." },
+        { "id": "python-api-aqa", "label": "API & service automation", "category": "Python API & service automation", "description": "requests/httpx clients, API checks, retries and service automation." },
+        { "id": "python-aqa-reliability", "label": "Parallelism & flaky tests", "category": "Python AQA reliability", "description": "xdist, parallel execution, state isolation and flaky-test diagnosis." },
+        { "id": "python-aqa-framework", "label": "Framework design & CI", "category": "Python AQA framework & CI", "description": "Automation framework structure, configuration, reporting and CI integration." },
+        { "id": "python-aqa-practical", "label": "AQA practical tasks", "category": "Python AQA practical tasks", "description": "Hands-on Python test-automation coding and design exercises." }
+      ],
+      "rules": [
+        { "category": "Python AQA specific", "target": "Python AQA reliability", "any": ["xdist", "parallel", "flaky", "flakiness", "retry", "shared state", "isolation", "race", "order depend"] },
+        { "category": "Python AQA specific", "target": "Mocking & test isolation", "any": ["mock", "monkeypatch", "patch", "test double", "stub", "fake"] },
+        { "category": "Python AQA specific", "target": "Python browser automation", "any": ["selenium", "playwright", "browser", "webdriver", "locator", "page object", "headless"] },
+        { "category": "Python AQA specific", "target": "Python API & service automation", "any": ["requests", "httpx", "api", "http client", "session reuse", "service client"] },
+        { "category": "Python AQA specific", "target": "Pytest & fixtures", "any": ["pytest", "fixture", "conftest", "parametrize", "marker", "xfail", "skipif"] },
+        { "category": "Python AQA specific", "target": "Python AQA framework & CI", "any": ["framework", "ci", "pipeline", "configuration", "report", "allure", "environment"] },
+        { "category": "Python AQA specific", "kind": "Practical", "target": "Python AQA practical tasks", "any": ["test", "automation", "python"] }
+      ],
+      "fallbackByCategory": {
+        "Core language and syntax": "Core language and syntax",
+        "Data types and structures": "Data types and structures",
+        "Strings and text processing": "Strings and text processing",
+        "Functions and functional tools": "Functions and functional tools",
+        "Object-oriented Python": "Object-oriented Python",
+        "Iterators, generators and decorators": "Iterators, generators and decorators",
+        "Errors and context managers": "Errors and context managers",
+        "Concurrency and parallelism": "Concurrency and parallelism",
+        "Memory management and performance": "Memory management and performance",
+        "Modules, packaging and environments": "Modules, packaging and environments",
+        "Typing and static analysis": "Typing and static analysis",
+        "Standard library and tooling": "Standard library and tooling",
+        "Web, automation and QA-relevant Python": "Web, automation and QA-relevant Python",
+        "Python AQA specific": "Python AQA framework & CI"
+      },
+      "fallback": "Python AQA practical tasks"
+    }
+  }
+}
