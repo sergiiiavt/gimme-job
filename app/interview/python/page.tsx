@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import pythonInterviewCatalog from "@/content/python-interview/catalog";
+import InterviewDomainSwitcherOverlay from "../../interview-domain-switcher-overlay";
 import InterviewQuestionCodeOverlay from "../../interview-question-code-overlay";
 import InterviewQuestionDeepLink from "../../interview-question-deep-link";
 import InterviewQuestionLinkOverlay from "../../interview-question-link-overlay";
@@ -25,6 +26,7 @@ export default function PythonInterviewPage() {
   return (
     <>
       <PublicSite/>
+      <InterviewDomainSwitcherOverlay/>
       <InterviewQuestionCodeOverlay questions={pythonInterviewCatalog.questions}/>
       <PythonInterviewRunnableOverlay questions={pythonInterviewCatalog.questions}/>
       <InterviewQuestionLinkOverlay pathname="/interview/python" questions={pythonInterviewCatalog.questions}/>
