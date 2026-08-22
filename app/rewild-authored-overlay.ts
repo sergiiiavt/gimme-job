@@ -9,9 +9,7 @@ import {
   type HexCoord,
 } from "./rewild-hex-world";
 import {
-  drawRewildSprite,
   drawRewildTerrainStamp,
-  type RewildPixelSpriteId,
   type RewildTerrainTileId,
 } from "./rewild-pixel-atlas";
 import {
@@ -62,9 +60,10 @@ function textureCell(
   cell: HexCell,
   id: RewildTerrainTileId,
   alpha: number,
+  size = 43,
 ) {
   const center = hexCenter(cell.hex);
-  drawRewildTerrainStamp(ctx, id, center.x, center.y, 43, 43, alpha);
+  drawRewildTerrainStamp(ctx, id, center.x, center.y, size, size, alpha);
 }
 
 function detailScale(id: RewildDetailV4Id) {
@@ -155,18 +154,13 @@ function drawForestDensity(
   for (const cell of snapshot.state.world.cells.values()) {
     const key = hexKey(cell.hex);
     if (kinds.get(key) !== "forest" || blocked.has(key) || cell.surface === "road") continue;
-    const forestNeighbors = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) === "forest").length;
-    if (forestNeighbors < 3 || random(cell, 380) < .32) continue;
     const center = hexCenter(cell.hex);
-    const count = forestNeighbors >= 5 && random(cell, 381) > .3 ? 2 : 1;
-    for (let index = 0; index < count; index += 1) {
-      const sprite: RewildPixelSpriteId = random(cell, 382 + index) > .76 ? "tree-pine" : "tree-broadleaf";
-      drawRewildSprite(ctx, sprite, center.x + Math.round((random(cell, 384 + index) - .5) * 26), center.y + Math.round((random(cell, 386 + index) - .5) * 17), {
-        scale: .31 + random(cell, 388 + index) * .12,
-        alpha: cell.corruption >= 3 ? .5 : .8,
-        flipX: random(cell, 390 + index) > .5,
-      });
-    }
+    const sprite: RewildDetailV4Id = random(cell, 382) > .76 ? "detail-tree-pine-a" : "detail-tree-broadleaf-a";
+    drawRewildDetailV4(ctx, sprite, center.x, center.y, {
+      scale: .46 + random(cell, 388) * .1,
+      alpha: cell.corruption >= 3 ? .5 : .8,
+      flipX: random(cell, 390) > .5,
+    });
   }
 }
 
@@ -191,11 +185,12 @@ function drawWaterEdges(
     const exterior = hexNeighbors(cell.hex).filter((neighbor) => kinds.get(hexKey(neighbor)) !== "water");
     const center = hexCenter(cell.hex);
     if (!exterior.length) {
-      if (random(cell, 400) > .76) textureCell(ctx, cell, "water-deep", .12);
+      textureCell(ctx, cell, "water-deep", 1, 18);
       if (random(cell, 401) > .88) drawDetail(ctx, "detail-lily-pads-a", center.x, center.y, cell, 402, .92);
       continue;
     }
 
+    textureCell(ctx, cell, "water-shallow", 1, 18);
     const primary = exterior[Math.floor(random(cell, 404) * exterior.length)] ?? exterior[0];
     const shore = shorelinePoint(cell.hex, primary);
     if (random(cell, 405) > .38) drawDetail(ctx, "detail-reeds-a", shore.x, shore.y, cell, 406, .94);

@@ -21,6 +21,8 @@ export const REWILD_DETAIL_V4_IDS = [
   "industrial-pipe-outlet-a",
   "industrial-vent-small-a",
   "industrial-debris-small-a",
+  "detail-tree-pine-a",
+  "detail-tree-broadleaf-a",
 ] as const;
 
 export type RewildDetailV4Id = (typeof REWILD_DETAIL_V4_IDS)[number];
@@ -66,6 +68,8 @@ export const REWILD_DETAIL_V4_FRAMES: Record<RewildDetailV4Id, RewildDetailV4Fra
   "industrial-pipe-outlet-a": { x: 142, y: 413, width: 100, height: 69, pivotX: 0.5, pivotY: 0.92 },
   "industrial-vent-small-a": { x: 282, y: 420, width: 76, height: 55, pivotX: 0.5, pivotY: 0.92 },
   "industrial-debris-small-a": { x: 393, y: 416, width: 110, height: 63, pivotX: 0.5, pivotY: 0.92 },
+  "detail-tree-pine-a": { x: 544, y: 408, width: 64, height: 80, pivotX: 0.5, pivotY: 0.92 },
+  "detail-tree-broadleaf-a": { x: 672, y: 408, width: 64, height: 80, pivotX: 0.5, pivotY: 0.92 },
 };
 
 let detailImage: HTMLImageElement | null = null;
