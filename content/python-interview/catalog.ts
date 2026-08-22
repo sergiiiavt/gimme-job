@@ -56,7 +56,7 @@ function matchesSubtopicTerm(searchable: string, term: string) {
 }
 
 function classifyPythonSubtopic(question: { id: string; category: string; kind?: string; question: string; tags?: string[] }) {
-  const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
+  const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
     .toLowerCase();
   const matchedRule = pythonSubtopics.rules?.find((rule) => {
