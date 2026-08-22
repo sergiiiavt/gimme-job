@@ -216,6 +216,42 @@ Traceability is also useful **between requirements themselves**:
 
 A traceability matrix can be useful, but a giant spreadsheet is not the goal. The implementation can be IDs, links, issue relationships, model references or automated metadata. What matters is that the important relationships can be recovered reliably when coverage or change-impact questions arise.
 
+## Test design techniques: common map
+
+Before choosing individual test cases, identify **which kind of problem you are trying to model**. Test-design labels are often mixed with test levels, test types, automation, smoke/regression, or positive/negative testing. They are different dimensions.
+
+A useful common map is:
+
+| Family / approach | Main techniques or practices | Best fit |
+| --- | --- | --- |
+| **Black-box / specification-based** | Equivalence Partitioning, Boundary Value Analysis, Decision Table Testing, State Transition Testing | Derive tests from requirements, rules, inputs, outputs and observable behaviour. |
+| **White-box / structure-based** | Statement coverage, Branch coverage | Derive tests from code or other internal structure. |
+| **Experience-based** | Error Guessing, Exploratory Testing, Checklist-based Testing | Use tester knowledge, product learning, defect history and heuristics. |
+| **Collaboration-based approaches** | User-story collaboration, acceptance criteria, ATDD | Build shared examples and expectations with stakeholders before or during implementation. |
+| **Additional / advanced techniques** | Scenario/use-case testing, Pairwise/Combinatorial Testing, Cause-effect Modeling, Mutation Testing | Cover workflows, combinations, logical relations, or evaluate the strength of a test suite. |
+
+> **Do not flatten everything into one list.** Manual vs automated, functional vs non-functional, smoke vs regression, test levels, and positive vs negative testing describe other dimensions. They can be combined with a design technique, but they are not peer test-design techniques.
+
+### How to choose a technique
+
+Start from the shape of the problem rather than from a favorite technique.
+
+| Testing problem | Strong starting technique |
+| --- | --- |
+| Large input domain with groups expected to behave alike | **Equivalence Partitioning** |
+| Behaviour changes at limits, thresholds, lengths, dates or quotas | **Boundary Value Analysis** |
+| Outcome depends on combinations of business conditions | **Decision Table Testing** |
+| Behaviour depends on current state or previous events | **State Transition Testing** |
+| Need to validate a realistic multi-step business/user flow | **Scenario / Use-case Testing** |
+| Need evidence about exercised implementation structure | **White-box coverage** |
+| Known defect patterns or likely failure modes are not fully specified | **Error Guessing** |
+| Specification is incomplete or learning while testing is valuable | **Exploratory Testing** |
+| A repeatable set of domain heuristics should guide different testers | **Checklist-based Testing** |
+| Many configuration parameters create too many combinations | **Pairwise / Combinatorial Testing** |
+| Team needs shared executable-style examples before implementation | **ATDD / collaboration-based approaches** |
+
+In practice, several techniques are usually combined. For example, a checkout rule may need EP for customer categories, BVA for monetary thresholds, a decision table for discount conditions, state transitions for payment status, and scenarios for the complete purchase flow.
+
 ## Equivalence partitioning
 
 Equivalence partitioning divides a large input or state space into groups expected to behave similarly. Instead of testing every possible value, the tester selects representatives from meaningful partitions.
@@ -327,6 +363,63 @@ Two basic measures are:
 
 > **Common mistake:** treating code coverage as a quality score. It is a coverage signal that can reveal untested structure; it cannot prove that the exercised behaviour was tested well.
 
+## Experience-based techniques
+
+Experience-based techniques use tester knowledge, defect history, domain understanding and continuous learning. They are especially useful when specifications are incomplete or when formal models do not capture all realistic failure modes.
+
+### Error guessing
+
+Error guessing deliberately targets failures that experienced testers consider likely.
+
+For a file-upload feature, useful guesses might include:
+
+- zero-byte or extremely large files;
+- a valid extension with unexpected content;
+- duplicate names or repeated upload requests;
+- interrupted network transfer;
+- unusual Unicode characters in the filename;
+- storage quota becoming full during the operation.
+
+The value comes from evidence and experience, not random clicking. Defect history, production incidents and known technology weaknesses make error guessing much stronger.
+
+### Exploratory testing
+
+Exploratory testing combines **learning, test design and execution** rather than fully separating them in advance. The tester forms a hypothesis, performs focused exploration, observes the product and adapts the next tests based on what was learned.
+
+A useful exploratory session still has structure: a charter or mission, a time box when appropriate, notes about coverage and observations, and reproducible defect evidence.
+
+Example charter: “Explore checkout behaviour when payment succeeds but confirmation or inventory services are delayed or unavailable.”
+
+Exploratory testing does not mean undocumented or unplanned testing. It means that detailed test design evolves while the tester learns.
+
+### Checklist-based testing
+
+Checklist-based testing uses a reusable set of checks or heuristics derived from standards, past defects, domain knowledge or team experience.
+
+For an API endpoint, a checklist might remind the tester to consider:
+
+- authentication and authorization;
+- required and optional fields;
+- invalid types and malformed payloads;
+- boundaries and size limits;
+- idempotency or duplicate requests;
+- error schema and status codes;
+- logging and sensitive-data exposure.
+
+A checklist should trigger thinking rather than become a mechanical script. It must evolve when the product, risks or defect patterns change.
+
+## Collaboration-based approaches
+
+Collaboration-based approaches create shared examples and expectations across business, development and testing roles. They strengthen test design by reducing ambiguity before implementation is complete.
+
+Common practices include:
+
+- **User-story collaboration:** discuss the story, risks, examples and open questions instead of treating the ticket text as sufficient specification.
+- **Acceptance criteria:** define observable conditions that make the behaviour acceptable.
+- **ATDD (Acceptance Test-Driven Development):** collaboratively derive concrete acceptance examples before implementation and use them to guide development and testing.
+
+These approaches do not replace EP, BVA, decision tables or exploratory testing. A shared acceptance example can still require boundary analysis, negative partitions, state coverage and experience-based exploration.
+
 ## Useful techniques beyond the CTFL Foundation core
 
 The uploaded course material also contains techniques worth knowing, but they should not be presented as if they are all part of the current CTFL Foundation technique set.
@@ -348,7 +441,8 @@ Good test design usually combines multiple lenses. For a discount engine, you mi
 4. state transitions for coupon activation and expiry;
 5. scenarios for realistic purchase journeys;
 6. structural coverage to find important implementation paths missed by specification-based tests;
-7. pairwise coverage when many environment or configuration parameters interact.
+7. error guessing and exploratory testing for failure modes not fully captured by the specification;
+8. pairwise coverage when many environment or configuration parameters interact.
 
 The result is stronger than repeating the same happy path at several layers.
 
@@ -360,10 +454,12 @@ The result is stronger than repeating the same happy path at several layers.
 - Requirements-to-requirements relationships expose dependencies, decomposition, overlap and conflicts that isolated review misses.
 - Bidirectional traceability connects stakeholder needs, requirements, tests, results and defects in both directions.
 - Test conditions should be identified before detailed execution steps.
+- Keep one common map of test design: **black-box/specification-based, white-box/structure-based, experience-based, collaboration-based approaches, plus selected advanced techniques**.
 - Equivalence partitioning reduces large spaces to meaningful representatives.
 - CTFL distinguishes 2-value and 3-value boundary value analysis.
 - Decision tables model combinations; state transitions model history-dependent behaviour.
 - Scenario testing and structural coverage add different evidence rather than replacing black-box techniques.
+- Error guessing, exploratory testing and checklist-based testing cover important experience-based reasoning that formal models may miss.
 - Pairwise and cause-effect techniques are useful extensions, while positive/negative labels are not separate formal test-design techniques.
 
 ## Sources
