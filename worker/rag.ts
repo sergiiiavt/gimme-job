@@ -3,7 +3,10 @@ import automationCurriculum from "../content/automation-learning/catalog";
 import cloudDevopsCatalog from "../content/cloud-devops/catalog";
 import metricsEstimationCatalog from "../content/metrics-estimation/catalog";
 import pythonCurriculum from "../content/python-learning/catalog";
+import pythonQuickReference from "../content/python-learning/quick-reference.json";
 import qaFundamentalsCatalog from "../content/qa-fundamentals/catalog";
+import sqlPracticalTasks from "../content/data-learning/sql-practical-tasks.json";
+import sqlQuickReference from "../content/data-learning/sql-quick-reference.json";
 import testingToolsCatalog from "../content/testing-tools/catalog";
 
 type Json = Record<string, unknown>;
@@ -65,10 +68,13 @@ const learningCatalogs: Array<{
 }> = [
   { key: "qa-fundamentals", route: "/reference/qa-fundamentals", value: qaFundamentalsCatalog },
   { key: "python", route: "/learn/programming", value: pythonCurriculum },
+  { key: "python-quick-reference", route: "/learn/programming", value: pythonQuickReference },
   { key: "automation", route: "/learn/automation", value: automationCurriculum },
   { key: "testing-tools", route: "/learn/testing-tools", value: testingToolsCatalog },
   { key: "cloud-devops", route: "/learn/cloud-devops", value: cloudDevopsCatalog },
   { key: "metrics-estimation", route: "/learn/metrics-estimation", value: metricsEstimationCatalog },
+  { key: "sql-quick-reference", route: "/learn/data", value: sqlQuickReference },
+  { key: "sql-practical-tasks", route: "/learn/data", value: sqlPracticalTasks },
 ];
 
 function clean(value: unknown, max = 60_000): string {
@@ -111,7 +117,7 @@ function collectStrings(value: unknown, depth = 0): string[] {
 function catalogItems(catalog: unknown): Json[] {
   if (!catalog || typeof catalog !== "object") return [];
   const value = catalog as Json;
-  for (const key of ["lessons", "chapters", "articles", "modules", "taxonomy"]) {
+  for (const key of ["lessons", "chapters", "articles", "modules", "taxonomy", "cards"]) {
     if (Array.isArray(value[key]) && (value[key] as unknown[]).length) {
       return (value[key] as unknown[]).filter((item): item is Json => Boolean(item && typeof item === "object" && !Array.isArray(item)));
     }
