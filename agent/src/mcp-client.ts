@@ -19,6 +19,7 @@ type RpcFailure = {
 export type GimmeJobMcpClientOptions = {
   url?: string;
   token?: string;
+  userEmail?: string;
   fetchImpl?: typeof fetch;
 };
 
@@ -40,6 +41,7 @@ const DEFAULT_PROTOCOL_VERSION = "2026-07-28";
 export class GimmeJobMcpClient {
   readonly url: string;
   private readonly token: string;
+  private readonly userEmail: string;
   private readonly fetchImpl: typeof fetch;
   private nextId = 1;
   private initialized = false;
@@ -51,6 +53,7 @@ export class GimmeJobMcpClient {
         || process.env.MCP_SERVICE_TOKEN?.trim()
         || process.env.APP_PASSWORD?.trim()
         || "");
+    this.userEmail = options.userEmail ?? (process.env.GIMMEJOB_MCP_USER_EMAIL?.trim() || "");
     this.fetchImpl = options.fetchImpl ?? fetch;
   }
 
@@ -59,6 +62,7 @@ export class GimmeJobMcpClient {
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
       ...(this.token ? { "x-gimmejob-mcp-token": this.token } : {}),
+      ...(this.userEmail ? { "x-gimmejob-mcp-user-email": this.userEmail } : {}),
     };
   }
 
