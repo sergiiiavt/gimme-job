@@ -19,11 +19,12 @@ function matchesSubtopicTerm(searchable, term) {
   return searchable.includes(needle);
 }
 
-function classifySubtopic(question, config) {
+function classifySubtopic(question, config, domain = null) {
   const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
     .toLowerCase();
   const rule = config.rules?.find((candidate) => {
+    if (domain === "SQL & Databases" && candidate.target === "Practical SQL") return false;
     if (candidate.category && candidate.category !== question.category) return false;
     if (candidate.kind && candidate.kind !== question.kind) return false;
     return !candidate.any?.length || candidate.any.some((term) => matchesSubtopicTerm(searchable, term));
@@ -108,7 +109,7 @@ test("audits every current QA question into a valid logical subtopic", async () 
     const validCategories = new Set(config.taxonomy.map((item) => item.category));
     const usedCategories = new Set();
     for (const question of domainQuestions) {
-      const category = classifySubtopic(question, config);
+      const category = classifySubtopic(question, config, domain);
       assert.ok(validCategories.has(category), `${question.id} maps to unknown ${domain} subtopic: ${category}`);
       usedCategories.add(category);
     }
@@ -177,6 +178,7 @@ test("renders content-width domain buttons and logical topics underneath", async
   assert.match(pythonPage, /<InterviewDomainSwitcherOverlay\/>/);
 
   assert.match(catalog, /import subtopics from "\.\/subtopics\.json"/);
+  assert.match(catalog, /sqlPracticalQuestionIds\.has\(question\.id\)/);
   assert.match(catalog, /classifySubtopic\(question, selectedDomainCategory\)/);
   assert.match(catalog, /selectedSubtopics\?\.taxonomy\.filter/);
   assert.match(pythonCatalog, /interviewSubtopics\.domains/);
