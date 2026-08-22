@@ -20,7 +20,7 @@ function matchesSubtopicTerm(searchable, term) {
 }
 
 function classifySubtopic(question, config, domain = null) {
-  const searchable = [question.id, question.category, question.kind ?? "", question.question, ...(question.tags ?? [])]
+  const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
     .toLowerCase();
   const rule = config.rules?.find((candidate) => {
