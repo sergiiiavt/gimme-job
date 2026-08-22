@@ -7,6 +7,8 @@ import {
   REFERENCE_SEO,
   SITE_NAME,
   SITE_ORIGIN,
+  UKRAINIAN_SITEMAP_PATHS,
+  bilingualLanguageAlternates,
   createPageMetadata,
   learningSectionMetadata,
   legacyReferenceMetadata,
@@ -28,6 +30,31 @@ test("SEO metadata helpers create branded canonical metadata", () => {
   assert.equal(canonical(metadata), "/learn/api");
   assert.equal(metadata.openGraph?.url, "/learn/api");
   assert.equal(metadata.twitter?.title, `API Testing | ${SITE_NAME}`);
+});
+
+test("bilingual metadata keeps reciprocal English, Ukrainian, and x-default alternates", () => {
+  const languages = bilingualLanguageAlternates("/interview/sql", "/uk/interview/sql");
+  const metadata = createPageMetadata({
+    title: "SQL interview questions",
+    description: "SQL interview preparation.",
+    path: "/interview/sql",
+  }, languages);
+  const ukrainianMetadata = createPageMetadata({
+    title: "SQL питання для співбесіди",
+    description: "Підготовка до SQL співбесіди.",
+    path: "/uk/interview/sql",
+  }, languages);
+
+  assert.deepEqual(languages, {
+    en: "/interview/sql",
+    uk: "/uk/interview/sql",
+    "x-default": "/interview/sql",
+  });
+  assert.deepEqual(metadata.alternates?.languages, languages);
+  assert.equal(canonical(metadata), "/interview/sql");
+  assert.deepEqual(ukrainianMetadata.alternates?.languages, languages);
+  assert.equal(canonical(ukrainianMetadata), "/uk/interview/sql");
+  assert.equal(bilingualLanguageAlternates("interview/sql").uk, "/uk/interview/sql");
 });
 
 test("learning metadata covers known and fallback routes", () => {
@@ -62,6 +89,10 @@ test("public sitemap source is generated only from the canonical route registry"
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/python"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/automation"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/reference/data"));
+  assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview"));
+  assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview/python"));
+  assert.ok(UKRAINIAN_SITEMAP_PATHS.every((path) => PUBLIC_SITEMAP_PATHS.includes(path)));
+  assert.equal(UKRAINIAN_SITEMAP_PATHS.length, 9);
   assert.equal(PUBLIC_SITEMAP_PATHS.some((path) => path.includes("/workspace")), false);
   assert.equal(PUBLIC_SITEMAP_PATHS.includes("/learn/data" as never), false);
   assert.equal(new Set(PUBLIC_SITEMAP_PATHS).size, PUBLIC_SITEMAP_PATHS.length);
