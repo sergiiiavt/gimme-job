@@ -3,6 +3,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { packRewildV4Atlas } from "./rewild-v4-atlas-pack.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceDirectory = path.join(root, "assets", "rewild", "v4", "source");
@@ -95,28 +96,17 @@ export async function buildRewildV4DetailAtlas() {
     });
   }
 
-  await sharp({
-    create: {
-      width: COLUMNS * SLOT_SIZE,
-      height: ROWS * SLOT_SIZE,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite(composites)
-    .png({ compressionLevel: 9, adaptiveFiltering: false })
-    .toFile(atlasPath);
-
-  const metadata = {
-    schemaVersion: 1,
-    image: path.basename(atlasPath),
-    source: "assets/rewild/v4/source",
-    grid: { columns: COLUMNS, rows: ROWS, slotSize: SLOT_SIZE },
+  await packRewildV4Atlas({
+    atlasPath,
+    metadataPath,
+    composites,
     frames,
-  };
-  await writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
-
-  console.log(`Built Rewild v4 detail atlas: ${frames.length} exact frames, ${COLUMNS}x${ROWS} slots.`);
+    columns: COLUMNS,
+    rows: ROWS,
+    slotSize: SLOT_SIZE,
+    source: "assets/rewild/v4/source",
+    label: "detail",
+  });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
