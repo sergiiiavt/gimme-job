@@ -1,7 +1,5 @@
 const PYODIDE_INDEX_URL = "https://cdn.jsdelivr.net/pyodide/v314.0.4/full/";
 const MAX_CODE_LENGTH = 12_000;
-const MAX_ROWS = 200;
-const MAX_CELL_CHARS = 2_000;
 
 const SEED_SQL = String.raw`
 PRAGMA foreign_keys = OFF;
@@ -13,17 +11,26 @@ CREATE TABLE users (
   last_name TEXT,
   birth_date TEXT,
   status TEXT,
+  phone TEXT,
+  role TEXT,
   created_at TEXT,
   updated_at TEXT
 );
 INSERT INTO users VALUES
-  (1, 'anna@example.com', 'Anna', 'Novak', '1992-03-11', 'active', '2026-01-05T09:00:00', '2026-08-20T10:00:00'),
-  (2, 'mark@example.com', 'Mark', 'Stone', '1989-06-22', 'active', '2026-02-10T10:00:00', '2026-08-19T12:00:00'),
-  (3, 'anna@example.com', 'Anna', 'Novak', '1992-03-11', 'inactive', '2026-03-12T11:00:00', '2026-08-18T08:00:00'),
-  (4, 'john@example.com', 'John', 'Miller', '1995-09-14', 'active', '2026-04-02T12:00:00', '2026-08-17T09:00:00'),
-  (5, NULL, 'Iryna', 'Bondar', '1991-12-01', 'pending', '2026-05-01T08:00:00', '2026-08-16T09:00:00'),
-  (6, 'qa@example.com', 'Olena', 'Test', '1994-02-18', 'active', '2026-06-03T08:00:00', '2026-08-15T09:00:00'),
-  (7, 'qa@example.com', 'Oleh', 'Test', '1990-04-07', 'active', '2026-07-04T08:00:00', '2026-08-14T09:00:00');
+  (1, 'anna@example.com', 'Anna', 'Novak', '1992-03-11', 'active', NULL, 'qa', '2026-01-05T09:00:00', '2026-08-20T10:00:00'),
+  (2, 'mark@example.com', 'Mark', 'Stone', '1989-06-22', 'active', '+380501111111', 'dev', '2026-02-10T10:00:00', '2026-08-19T12:00:00'),
+  (3, 'anna@example.com', 'Anna', 'Novak', '1992-03-11', 'inactive', NULL, 'qa', '2026-03-12T11:00:00', '2026-08-18T08:00:00'),
+  (4, 'john@example.com', 'John', 'Miller', '1995-09-14', 'active', '+380502222222', 'analyst', '2026-04-02T12:00:00', '2026-08-17T09:00:00'),
+  (5, NULL, 'Iryna', 'Bondar', '1991-12-01', 'pending', NULL, 'qa', '2026-05-01T08:00:00', '2026-08-16T09:00:00'),
+  (6, 'qa@example.com', 'Olena', 'Test', '1994-02-18', 'active', '+380503333333', 'qa', '2026-06-03T08:00:00', '2026-08-15T09:00:00'),
+  (7, 'qa@example.com', 'Oleh', 'Test', '1990-04-07', 'active', NULL, 'qa', '2026-07-04T08:00:00', '2026-08-14T09:00:00');
+
+CREATE TABLE active_customers (id INTEGER PRIMARY KEY, email TEXT);
+INSERT INTO active_customers VALUES
+  (1, 'anna@example.com'), (2, 'mark@example.com'), (3, 'shared@example.com');
+CREATE TABLE archived_customers (id INTEGER PRIMARY KEY, email TEXT);
+INSERT INTO archived_customers VALUES
+  (10, 'old@example.com'), (11, 'shared@example.com');
 
 CREATE TABLE departments (id INTEGER PRIMARY KEY, name TEXT);
 INSERT INTO departments VALUES (1, 'QA'), (2, 'Engineering'), (3, 'Data');
@@ -61,17 +68,21 @@ CREATE TABLE orders (
   customer_id INTEGER,
   status TEXT,
   amount REAL,
+  total REAL,
+  currency TEXT,
+  order_date TEXT,
+  paid_at TEXT,
   created_at TEXT,
   updated_at TEXT
 );
 INSERT INTO orders VALUES
-  (1, 1, 'paid', 120.00, '2026-08-01T09:00:00', '2026-08-01T10:00:00'),
-  (2, 1, 'paid', 80.00, '2026-08-12T09:00:00', '2026-08-12T10:00:00'),
-  (3, 1, 'cancelled', 55.00, '2026-08-12T09:00:00', '2026-08-13T10:00:00'),
-  (4, 2, 'paid', 220.00, '2026-08-03T09:00:00', '2026-08-03T10:00:00'),
-  (5, 2, 'pending', 95.00, '2026-08-20T09:00:00', '2026-08-20T10:00:00'),
-  (6, 3, 'paid', 310.00, '2026-08-11T09:00:00', '2026-08-11T10:00:00'),
-  (7, 999, 'paid', 42.00, '2026-08-09T09:00:00', '2026-08-09T10:00:00');
+  (1, 1, 'paid', 120.00, 120.00, 'USD', '2026-08-01', '2026-08-01T10:00:00', '2026-08-01T09:00:00', '2026-08-01T10:00:00'),
+  (2, 1, 'paid', 80.00, 80.00, 'USD', '2026-08-12', '2026-08-12T10:00:00', '2026-08-12T09:00:00', '2026-08-12T10:00:00'),
+  (3, 1, 'cancelled', 55.00, 55.00, 'EUR', '2026-08-12', NULL, '2026-08-12T09:00:00', '2026-08-13T10:00:00'),
+  (4, 2, 'paid', 220.00, 220.00, 'USD', '2026-08-03', '2026-08-03T10:00:00', '2026-08-03T09:00:00', '2026-08-03T10:00:00'),
+  (5, 2, 'pending', 95.00, 95.00, NULL, '2026-08-20', NULL, '2026-08-20T09:00:00', '2026-08-20T10:00:00'),
+  (6, 3, 'paid', 310.00, 310.00, 'USD', '2026-08-11', '2026-08-11T10:00:00', '2026-08-11T09:00:00', '2026-08-11T10:00:00'),
+  (7, 999, 'paid', 42.00, 42.00, 'USD', '2026-08-09', '2026-08-09T10:00:00', '2026-08-09T09:00:00', '2026-08-09T10:00:00');
 
 CREATE TABLE categories (id INTEGER PRIMARY KEY, name TEXT);
 INSERT INTO categories VALUES (1, 'Hardware'), (2, 'Software');
@@ -219,6 +230,7 @@ _DEFAULT_PARAMS = {
     "limit": 3,
     "status": "paid",
     "customer_id": 1,
+    "order_id": 1,
     "id": 1,
     "email": "anna@example.com",
 }
