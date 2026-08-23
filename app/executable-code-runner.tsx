@@ -27,6 +27,8 @@ type ExecutableCodeRunnerProps = {
   highlight: (source: string) => ReactNode[];
   formatResult: (message: WorkerRunnerMessage) => string;
   renderResult?: (message: WorkerRunnerMessage) => ReactNode | null;
+  additionalActions?: ReactNode;
+  additionalPanel?: ReactNode;
 };
 
 const LOAD_TIMEOUT_MS = 60_000;
@@ -35,6 +37,15 @@ const EDITOR_LINE_HEIGHT_PX = 21;
 const EDITOR_VERTICAL_CHROME_PX = 68;
 const EDITOR_MIN_HEIGHT_PX = 118;
 const EDITOR_MAX_HEIGHT_PX = 520;
+
+function resetHorizontalScroll(element: HTMLElement | null) {
+  if (!element) return;
+  window.requestAnimationFrame(() => {
+    // The scroll container is RTL only so its vertical scrollbar stays on the left.
+    // Chromium/Firefox use negative scrollLeft values for the physical left edge.
+    element.scrollLeft = -element.scrollWidth;
+  });
+}
 
 export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
   const {
@@ -51,6 +62,8 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
     highlight,
     formatResult,
     renderResult,
+    additionalActions,
+    additionalPanel,
   } = props;
   const [draft, setDraft] = useState(code);
   const [message, setMessage] = useState(initialMessage);
@@ -63,6 +76,8 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
   const runCountRef = useRef(0);
   const timeoutRef = useRef<number | null>(null);
   const copiedTimeoutRef = useRef<number | null>(null);
+  const editorScrollRef = useRef<HTMLDivElement | null>(null);
+  const outputScrollRef = useRef<HTMLDivElement | null>(null);
 
   const clearTimer = () => {
     if (timeoutRef.current !== null) {
@@ -90,6 +105,14 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
     if (copiedTimeoutRef.current !== null) window.clearTimeout(copiedTimeoutRef.current);
     workerRef.current?.terminate();
   }, []);
+
+  useEffect(() => {
+    resetHorizontalScroll(editorScrollRef.current);
+  }, [code, expanded]);
+
+  useEffect(() => {
+    resetHorizontalScroll(outputScrollRef.current);
+  }, [outcome, expanded]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -179,6 +202,7 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
     setStatus("idle");
     setOutcome(null);
     setMessage(initialMessage);
+    resetHorizontalScroll(editorScrollRef.current);
   };
 
   const copy = async () => {
@@ -231,7 +255,7 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
             <span className={styles.meta}>{status === "loading" ? "loading runtime" : readyMeta}</span>
           </div>
           <div className={styles.editorFrame} style={{ height: `${editorViewportHeight}px` }}>
-            <div className={styles.editorScroll}>
+            <div className={styles.editorScroll} ref={editorScrollRef}>
               <div
                 className={styles.editorCanvas}
                 style={{ height: `${editorContentHeight}px`, width: `max(100%, ${editorColumns}ch)` }}
@@ -255,6 +279,7 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
               )}
               <button className={styles.secondaryButton} onClick={reset} type="button">Reset</button>
               <button className={styles.secondaryButton} onClick={copy} type="button">{copied ? "Copied" : "Copy"}</button>
+              {additionalActions}
             </div>
           </div>
         </section>
@@ -264,11 +289,12 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
             <span>Result</span>
             <button className={styles.clearButton} onClick={clearResult} type="button">Clear</button>
           </div>
-          <div className={styles.outputScroll}>
+          <div className={styles.outputScroll} ref={outputScrollRef}>
             {renderedResult ?? <pre aria-live="polite" className={styles.output}>{message}</pre>}
           </div>
         </section>
       </div>
+      {additionalPanel}
     </div>
   );
 }

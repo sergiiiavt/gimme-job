@@ -67,6 +67,32 @@ test("published SQL practice tasks expose the runner", () => {
   assert.match(referenceOverlay, /<ExecutableSqlBlock code=\{row\.detail\}/);
 });
 
+test("SQL runner starts horizontal overflow at the beginning while retaining left scrollbars", () => {
+  assert.match(runnerShell, /function resetHorizontalScroll/);
+  assert.match(runnerShell, /element\.scrollLeft = -element\.scrollWidth/);
+  assert.match(runnerShell, /ref=\{editorScrollRef\}/);
+  assert.match(runnerShell, /ref=\{outputScrollRef\}/);
+});
+
+test("SQL sample database can be inspected from the runner", () => {
+  assert.match(runnerComponent, />\s*Database\s*</);
+  assert.match(runnerComponent, /action: "inspect"/);
+  assert.match(runnerComponent, /Starting state · resets on every Run/);
+  assert.match(runnerComponent, /DatabasePanel/);
+  assert.match(runnerWorker, /const INSPECT_WRAPPER/);
+  assert.match(runnerWorker, /sqlite_master/);
+  assert.match(runnerWorker, /PRAGMA table_info/);
+  assert.match(runnerWorker, /"rowCount": _row_count/);
+  assert.match(runnerWorker, /action === "inspect"/);
+});
+
+test("SQL worker transports explicit JSON results instead of parsing an undefined script return", () => {
+  assert.match(runnerWorker, /__result_json__ = json\.dumps/);
+  assert.match(runnerWorker, /globals\.get\("__result_json__"\)/);
+  assert.match(runnerWorker, /if \(raw == null\) throw new Error\("SQL runtime returned no result\."\)/);
+  assert.doesNotMatch(runnerWorker, /const raw = await pyodide\.runPythonAsync\(SQL_WRAPPER/);
+});
+
 test("SQL runner is isolated from production data and bounded", () => {
   assert.match(runnerShell, /new Worker\(workerUrl, \{ type: "module" \}\)/);
   assert.match(runnerShell, /LOAD_TIMEOUT_MS = 60_000/);
