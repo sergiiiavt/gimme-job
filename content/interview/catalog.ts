@@ -5,6 +5,7 @@ import sqlPracticalInterview from "./sql-practical-interview";
 import sqlCodeExamples from "./sql-code-examples";
 import sqlDataCodeExamples from "./sql-data-code-examples";
 import sqlExpandedCodeExamples from "./sql-expanded-code-examples";
+import { applySqlInterviewAudit } from "./sql-interview-audit";
 import observabilityProduction from "./observability-production-qa.json";
 import restoredCoverage from "./restored-coverage-qa.json";
 import testingFoundations from "./testing-foundations-qa.json";
@@ -104,7 +105,7 @@ const allQuestions = [
   ...coreFoundations.questions,
   ...expanded.questions,
   ...sourceRefresh.questions,
-].map(applySourceEvidence).map(applySqlCodeExamples);
+].map(applySourceEvidence).map(applySqlCodeExamples).map(applySqlInterviewAudit);
 
 const sources = [...baseSources, ...sourceRefreshSources];
 const runtimePathname = typeof window === "undefined" ? "" : window.location.pathname.replace(/\/+$/, "");
@@ -136,14 +137,14 @@ const scopedTopicTaxonomy = scopeToDomain
   : topicTaxonomy;
 
 export const interviewCatalog = {
-  version: 17,
+  version: 18,
   title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
   description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
-  lastReviewedAt: "2026-08-22",
+  lastReviewedAt: "2026-08-24",
   methodology: {
-    coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. The UI uses top-level interview domains and a second level of logical subtopics derived from the existing questions without rewriting them.",
-    answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Every existing Databases, SQL and BI question now pairs the concept with an executable SQL example and explicit reasoning where SQL can act as the verification tool, and dedicated script-writing questions add hands-on interview practice.",
-    publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs, wording, answers, examples, source evidence or the authored source categories in Git. Empty presentation groups are omitted instead of showing zero-count navigation entries. Canonical interview-domain URLs expose the same scoped catalog for search engines and direct navigation while legacy query-string domain links remain compatible.",
+    coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
+    answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
+    publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
     prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple DOU collections or several specialist pages from one publisher cannot inflate prevalence. Very common remains reserved for repeatedly recurring foundations; generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
     media: "Original diagrams and properly licensed images are stored with the site. Every image requires alternative text, a caption and source credit."
   },
