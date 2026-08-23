@@ -5,6 +5,7 @@ import test from "node:test";
 const markdownRenderer = readFileSync(new URL("../app/qa-markdown.tsx", import.meta.url), "utf8");
 const executionPolicy = readFileSync(new URL("../app/interview-python-execution.ts", import.meta.url), "utf8");
 const runnerComponent = readFileSync(new URL("../app/executable-python-block.tsx", import.meta.url), "utf8");
+const runnerShell = readFileSync(new URL("../app/executable-code-runner.tsx", import.meta.url), "utf8");
 const runnerStyles = readFileSync(new URL("../app/executable-python-block.module.css", import.meta.url), "utf8");
 const runnerWorker = readFileSync(new URL("../public/python-runner.worker.mjs", import.meta.url), "utf8");
 
@@ -16,25 +17,25 @@ test("supported Python learning blocks use the executable runner without requiri
   assert.match(executionPolicy, /runnablePythonImports/);
   assert.match(executionPolicy, /hasUnsupportedPythonImport\(source\)/);
   assert.doesNotMatch(executionPolicy, /!\/\\bprint\\s\*\\\(\/\.test\(source\)/);
-  assert.match(runnerComponent, />Python</);
-  assert.match(runnerComponent, />Result</);
-  assert.match(runnerComponent, />Run</);
-  assert.match(runnerComponent, />Reset</);
-  assert.match(runnerComponent, /Copied" : "Copy"/);
-  assert.match(runnerComponent, />Clear</);
+  assert.match(runnerComponent, /language="Python"/);
+  assert.match(runnerShell, />Result</);
+  assert.match(runnerShell, />Run</);
+  assert.match(runnerShell, />Reset</);
+  assert.match(runnerShell, /Copied" : "Copy"/);
+  assert.match(runnerShell, />Clear</);
 });
 
 test("Python runner keeps controls and scrollbars on the left and sizes to its code", () => {
-  assert.match(runnerComponent, /highlightPython\(draft\)/);
-  assert.match(runnerComponent, /styles\.headerStart/);
-  assert.match(runnerComponent, /styles\.actionDock/);
-  assert.match(runnerComponent, /styles\.editorScroll/);
-  assert.match(runnerComponent, /styles\.outputScroll/);
-  assert.match(runnerComponent, /EDITOR_LINE_HEIGHT_PX = 21/);
-  assert.match(runnerComponent, /EDITOR_MIN_HEIGHT_PX = 118/);
-  assert.match(runnerComponent, /EDITOR_MAX_HEIGHT_PX = 520/);
-  assert.match(runnerComponent, /codeLines\.length \* EDITOR_LINE_HEIGHT_PX/);
-  assert.match(runnerComponent, /height: `\$\{editorViewportHeight\}px`/);
+  assert.match(runnerComponent, /highlight=\{highlightPython\}/);
+  assert.match(runnerShell, /styles\.headerStart/);
+  assert.match(runnerShell, /styles\.actionDock/);
+  assert.match(runnerShell, /styles\.editorScroll/);
+  assert.match(runnerShell, /styles\.outputScroll/);
+  assert.match(runnerShell, /EDITOR_LINE_HEIGHT_PX = 21/);
+  assert.match(runnerShell, /EDITOR_MIN_HEIGHT_PX = 118/);
+  assert.match(runnerShell, /EDITOR_MAX_HEIGHT_PX = 520/);
+  assert.match(runnerShell, /codeLines\.length \* EDITOR_LINE_HEIGHT_PX/);
+  assert.match(runnerShell, /height: `\$\{editorViewportHeight\}px`/);
   assert.match(runnerStyles, /background: #1e1e1e/);
   assert.match(runnerStyles, /margin: 12px 0 16px/);
   assert.match(runnerStyles, /\.headerStart[\s\S]*display: inline-flex/);
@@ -45,19 +46,21 @@ test("Python runner keeps controls and scrollbars on the left and sizes to its c
   assert.match(runnerStyles, /\.actionDock[\s\S]*left: 18px/);
   assert.match(runnerStyles, /scrollbar-width: thin/);
   assert.match(runnerStyles, /::-webkit-scrollbar-thumb/);
-  assert.match(runnerComponent, /setExpanded\(\(value\) => !value\)/);
-  assert.match(runnerComponent, /event\.key === "Escape"/);
+  assert.match(runnerShell, /setExpanded\(\(value\) => !value\)/);
+  assert.match(runnerShell, /event\.key === "Escape"/);
   assert.match(runnerStyles, /\.tokenKeyword[\s\S]*#c586c0/);
   assert.match(runnerStyles, /\.tokenString[\s\S]*#ce9178/);
   assert.match(runnerStyles, /\.tokenComment[\s\S]*#6a9955/);
 });
 
 test("browser runner is isolated, bounded, and robust during runtime startup", () => {
-  assert.match(runnerComponent, /new Worker\("\/python-runner\.worker\.mjs", \{ type: "module" \}\)/);
-  assert.match(runnerComponent, /LOAD_TIMEOUT_MS = 60_000/);
-  assert.match(runnerComponent, /EXECUTION_TIMEOUT_MS = 5_000/);
+  assert.match(runnerComponent, /workerUrl="\/python-runner\.worker\.mjs"/);
+  assert.match(runnerShell, /new Worker\(workerUrl, \{ type: "module" \}\)/);
+  assert.match(runnerShell, /LOAD_TIMEOUT_MS = 60_000/);
+  assert.match(runnerShell, /EXECUTION_TIMEOUT_MS = 5_000/);
   assert.match(runnerComponent, /MAX_RUNS_PER_WORKER = 20/);
-  assert.match(runnerComponent, /maxLength=\{MAX_CODE_LENGTH\}/);
+  assert.match(runnerComponent, /MAX_CODE_LENGTH = 8_000/);
+  assert.match(runnerShell, /maxLength=\{maxCodeLength\}/);
   assert.match(runnerWorker, /pyodide\/v314\.0\.4\/full/);
   assert.match(runnerWorker, /input instanceof URL/);
   assert.match(runnerWorker, /typeof input\.url === "string"/);
