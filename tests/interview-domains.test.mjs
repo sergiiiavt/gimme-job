@@ -156,8 +156,9 @@ test("keeps Python language topics and splits the broad Python AQA bucket", asyn
 });
 
 test("renders content-width domain buttons and logical topics underneath", async () => {
-  const [overlay, catalog, pythonCatalog, qaPage, qaClient, pythonPage] = await Promise.all([
+  const [overlay, globals, catalog, pythonCatalog, qaPage, qaClient, pythonPage] = await Promise.all([
     readText("app/interview-domain-switcher-overlay.tsx"),
+    readText("app/globals.css"),
     readText("content/interview/catalog.ts"),
     readText("content/python-interview/catalog.ts"),
     readText("app/interview/page.tsx"),
@@ -170,10 +171,10 @@ test("renders content-width domain buttons and logical topics underneath", async
   }
 
   assert.match(overlay, /\.kb-subnav-switch/);
-  assert.match(overlay, /display: flex;/);
-  assert.match(overlay, /flex-wrap: wrap;/);
+  assert.match(globals, /\.kb-subnav nav \{[^}]*flex-direction: column;/s);
+  assert.match(overlay, /\.kb-subnav nav\.iq-domain-switcher \{[^}]*flex-direction: row;[^}]*flex-wrap: wrap;/s);
   assert.match(overlay, /flex: 0 0 auto;/);
-  assert.match(overlay, /width: auto;/);
+  assert.match(overlay, /width: max-content;/);
   assert.doesNotMatch(overlay, /grid-template-columns/);
   assert.match(qaPage, /<InterviewDomainPageClient\/>/);
   assert.match(qaClient, /<InterviewDomainSwitcherOverlay\/>/);
