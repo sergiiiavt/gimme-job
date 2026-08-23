@@ -27,6 +27,10 @@ function enabledEnvironment(name) {
   return optionalEnvironment(name).toLowerCase() === "true";
 }
 
+function deploymentWarning(message) {
+  console.warn(`::warning::${message}`);
+}
+
 function runWrangler(args, options = {}) {
   const capture = options.capture === true;
   const result = spawnSync(process.execPath, [wranglerCli, ...args], {
@@ -76,11 +80,18 @@ function vectorIndexExists(indexes) {
   return indexes.some((index) => index?.name === vectorIndexName);
 }
 
-function ensureVectorIndex() {
-  if (vectorIndexExists(listVectorIndexes())) return;
-  console.log(`Creating Vectorize index ${vectorIndexName}...`);
-  runWrangler(["vectorize", "create", vectorIndexName, "--dimensions", "1024", "--metric", "cosine"]);
-  if (!vectorIndexExists(listVectorIndexes())) throw new Error(`Could not verify Vectorize index ${vectorIndexName}.`);
+function tryEnsureVectorIndex() {
+  try {
+    if (vectorIndexExists(listVectorIndexes())) return true;
+    console.log(`Creating Vectorize index ${vectorIndexName}...`);
+    runWrangler(["vectorize", "create", vectorIndexName, "--dimensions", "1024", "--metric", "cosine"]);
+    if (!vectorIndexExists(listVectorIndexes())) throw new Error(`Could not verify Vectorize index ${vectorIndexName}.`);
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    deploymentWarning(`Vectorize provisioning is unavailable (${message}). Continuing core deployment without semantic RAG bindings. Add Vectorize Read/Write to CLOUDFLARE_API_TOKEN to enable RAG.`);
+    return false;
+  }
 }
 
 function googleAuthConfiguration() {
@@ -129,13 +140,18 @@ async function ensureBuildArtifact() {
   ]).catch(() => { throw new Error("Production artifact is missing. Run npm run build first."); });
 }
 
-async function writeDeployConfig(id, multiUserEnabled = false, aiService = { configured: false, url: "" }) {
+async function writeDeployConfig(id, multiUserEnabled = false, aiService = { configured: false, url: "" }, ragEnabled = true) {
   const deployConfig = JSON.parse(await readFile(artifactConfigPath, "utf8"));
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
-  deployConfig.ai = { binding: "AI" };
-  deployConfig.vectorize = [{ binding: "RAG_INDEX", index_name: vectorIndexName }];
+  if (ragEnabled) {
+    deployConfig.ai = { binding: "AI" };
+    deployConfig.vectorize = [{ binding: "RAG_INDEX", index_name: vectorIndexName }];
+  } else {
+    delete deployConfig.ai;
+    delete deployConfig.vectorize;
+  }
   const existingObservability = deployConfig.observability && typeof deployConfig.observability === "object" ? deployConfig.observability : {};
   const existingLogs = existingObservability.logs && typeof existingObservability.logs === "object" ? existingObservability.logs : {};
   deployConfig.observability = {
@@ -237,10 +253,20 @@ async function rebuildRagIndex(mcpServiceToken) {
   throw new Error("RAG reindex exceeded the maximum batch count.");
 }
 
+async function refreshRagIndexBestEffort(mcpServiceToken) {
+  try {
+    console.log("Refreshing the Vectorize RAG corpus...");
+    await rebuildRagIndex(mcpServiceToken);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    deploymentWarning(`Core Worker deployment succeeded, but the RAG refresh failed (${message}). Semantic search will fall back until the next successful refresh.`);
+  }
+}
+
 async function validateConfig() {
   await ensureBuildArtifact();
   try {
-    await writeDeployConfig(dryRunDatabaseId, false);
+    await writeDeployConfig(dryRunDatabaseId, false, { configured: false, url: "" }, true);
     await writeFile(deploySecretsPath, `${JSON.stringify({
       APP_PASSWORD: "dry-run-app-password",
       GRAFANA_READ_TOKEN: "dry-run-grafana-token",
@@ -282,7 +308,7 @@ async function main() {
   if (explicitMcpServiceToken && explicitMcpServiceToken.length < 32) throw new Error("MCP_SERVICE_TOKEN must contain at least 32 characters when configured separately.");
 
   await ensureBuildArtifact();
-  ensureVectorIndex();
+  const ragEnabled = tryEnsureVectorIndex();
   let database = findDatabase(listDatabases());
   if (!database) {
     console.log(`Creating D1 database ${databaseName}...`);
@@ -293,15 +319,14 @@ async function main() {
   if (!id) throw new Error(`Could not resolve the ID of D1 database ${databaseName}.`);
 
   try {
-    await writeDeployConfig(id, multiUserEnabled, aiService);
+    await writeDeployConfig(id, multiUserEnabled, aiService, ragEnabled);
     await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, mcpServiceToken, googleAuth, aiService });
     console.log("Applying D1 migrations...");
     runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
-    console.log("Refreshing the Vectorize RAG corpus...");
-    await rebuildRagIndex(mcpServiceToken);
-    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. MCP service token: ${explicitMcpServiceToken ? "dedicated" : "APP_PASSWORD fallback"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
+    if (ragEnabled) await refreshRagIndexBestEffort(mcpServiceToken);
+    console.log(`Cloudflare deployment completed. RAG: ${ragEnabled ? "enabled/best-effort refresh" : "degraded lexical fallback"}. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. MCP service token: ${explicitMcpServiceToken ? "dedicated" : "APP_PASSWORD fallback"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await Promise.all([
       rm(generatedConfigPath, { force: true }),
