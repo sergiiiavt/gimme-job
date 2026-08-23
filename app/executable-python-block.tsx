@@ -47,6 +47,7 @@ export default function ExecutablePythonBlock({ code }: { code: string }) {
       formatResult={formatPythonResult}
       highlight={highlightPython}
       initialMessage="Run the code to see the result."
+      key={code}
       language="Python"
       loadingErrorMessage="Python runtime could not be loaded. Try again."
       loadingMessage="Loading Python runtime…"
