@@ -112,19 +112,17 @@ for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS, ..
   assert.ok(colors.size >= 8, `${id}: atlas frame has almost no color variation (${colors.size} distinct colors) — looks blank or a flat fill, not authored texture`);
 }
 
-// 7. Renderer wiring: forest/water/corruption tiles must be referenced and fill the hex ground
-// itself (fillRewildTerrainPattern) as part of drawGround, before any entity draws — not a
-// post-hoc overlay stamp that needs per-frame exclusion logic to avoid painting over units.
-// Forest and water previously fell back to a flat procedural color; every forest cell already
-// gets a real tree from drawForestDensity (one per hex, no sparse/clearing gate) and every water
-// cell gets its own real ground texture here, so the two layer together instead of the
-// tree/shoreline decor sitting on bare flat color.
-// (Meadow/grass moved off this tiled-pattern path entirely — see validate-rewild-v4-ground-atlas.mjs;
-// the v3 meadow source PNGs validated above stay committed as inert legacy assets, matching the
-// precedent for other now-unused v3 tiles like water-lilies.)
-for (const id of [...FOREST_WATER_FAMILY_TILE_IDS, ...CORRUPTION_FAMILY_TILE_IDS]) {
+// 7. Renderer wiring: every terrain tile — meadow AND forest/water alike — must be referenced
+// and fill the hex ground itself (fillRewildTerrainPattern) as part of drawGround, before any
+// entity draws — not a post-hoc overlay stamp that needs per-frame exclusion logic to avoid
+// painting over units. Forest and water previously fell back to a flat procedural color; every
+// forest cell already gets a real tree from drawForestDensity (one per hex, no sparse/clearing
+// gate) and every water cell gets its own real ground texture here, so the two layer together
+// instead of the tree/shoreline decor sitting on bare flat color.
+for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS, ...CORRUPTION_FAMILY_TILE_IDS]) {
   assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in app/rewild-production-renderer.ts ground fill`);
 }
+assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
 assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, "forest-floor", hexPath\(cell\.hex/u, "forest ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
 assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, exterior === 0 \? "water-deep" : "water-shallow", hexPath\(cell\.hex/u, "water ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround, deep vs shallow chosen by exterior neighbor count");
 assert.match(rendererSource, /function drawGround\(/u, "drawGround must remain the home of the terrain tile fill");

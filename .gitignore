@@ -54,9 +54,6 @@ next-env.d.ts
 /public/rewild/v4/structures-atlas-v4.png
 /public/rewild/v4/structures-atlas-v4.json
 /public/rewild/v4/structures-source/
-/public/rewild/v4/ground-atlas-v4.png
-/public/rewild/v4/ground-atlas-v4.json
-/public/rewild/v4/ground-source/
 
 # local agent data and credentials
 /config/profile.json
