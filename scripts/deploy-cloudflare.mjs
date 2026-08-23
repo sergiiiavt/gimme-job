@@ -10,6 +10,7 @@ const generatedConfigPath = path.join(projectRoot, "dist", "server", "wrangler.g
 const wranglerRuntimePath = path.join(projectRoot, ".wrangler");
 const deploySecretsPath = path.join(wranglerRuntimePath, "deploy-secrets.json");
 const databaseName = "gimmejob-db";
+const vectorIndexName = "gimmejob-rag";
 const dryRunDatabaseId = "00000000-0000-4000-8000-000000000000";
 
 function requiredEnvironment(name) {
@@ -45,17 +46,17 @@ function runWrangler(args, options = {}) {
   return result.stdout ?? "";
 }
 
-function parseDatabaseList(output) {
+function parseJsonList(output, resourceName) {
   const firstBracket = output.indexOf("[");
   const lastBracket = output.lastIndexOf("]");
-  if (firstBracket < 0 || lastBracket < firstBracket) throw new Error("Wrangler did not return a D1 database list as JSON.");
+  if (firstBracket < 0 || lastBracket < firstBracket) throw new Error(`Wrangler did not return a ${resourceName} list as JSON.`);
   const value = JSON.parse(output.slice(firstBracket, lastBracket + 1));
-  if (!Array.isArray(value)) throw new Error("Unexpected D1 database list response.");
+  if (!Array.isArray(value)) throw new Error(`Unexpected ${resourceName} list response.`);
   return value;
 }
 
 function listDatabases() {
-  return parseDatabaseList(runWrangler(["d1", "list", "--json"], { capture: true }));
+  return parseJsonList(runWrangler(["d1", "list", "--json"], { capture: true }), "D1 database");
 }
 
 function findDatabase(databases) {
@@ -65,6 +66,21 @@ function findDatabase(databases) {
 function databaseId(database) {
   const value = database?.uuid ?? database?.id;
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function listVectorIndexes() {
+  return parseJsonList(runWrangler(["vectorize", "list", "--json"], { capture: true }), "Vectorize index");
+}
+
+function vectorIndexExists(indexes) {
+  return indexes.some((index) => index?.name === vectorIndexName);
+}
+
+function ensureVectorIndex() {
+  if (vectorIndexExists(listVectorIndexes())) return;
+  console.log(`Creating Vectorize index ${vectorIndexName}...`);
+  runWrangler(["vectorize", "create", vectorIndexName, "--dimensions", "1024", "--metric", "cosine"]);
+  if (!vectorIndexExists(listVectorIndexes())) throw new Error(`Could not verify Vectorize index ${vectorIndexName}.`);
 }
 
 function googleAuthConfiguration() {
@@ -118,6 +134,8 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
+  deployConfig.ai = { binding: "AI" };
+  deployConfig.vectorize = [{ binding: "RAG_INDEX", index_name: vectorIndexName }];
   const existingObservability = deployConfig.observability && typeof deployConfig.observability === "object" ? deployConfig.observability : {};
   const existingLogs = existingObservability.logs && typeof existingObservability.logs === "object" ? existingObservability.logs : {};
   deployConfig.observability = {
@@ -142,11 +160,12 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
   await writeFile(generatedConfigPath, `${JSON.stringify(deployConfig, null, 2)}\n`, { mode: 0o600 });
 }
 
-async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth, aiService }) {
+async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, mcpServiceToken, googleAuth, aiService }) {
   const secrets = {
     APP_PASSWORD: appPassword,
     GRAFANA_READ_TOKEN: grafanaReadToken,
     N8N_INGEST_TOKEN: n8nIngestToken,
+    MCP_SERVICE_TOKEN: mcpServiceToken,
   };
 
   if (googleAuth.configured) {
@@ -167,6 +186,57 @@ async function writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngest
   await writeFile(deploySecretsPath, `${JSON.stringify(secrets)}\n`, { mode: 0o600 });
 }
 
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function postRagBatch(url, token, cursor) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-gimmejob-mcp-token": token,
+        },
+        body: JSON.stringify({ cursor, limit: 32 }),
+      });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+      const payload = JSON.parse(text);
+      if (!payload?.ok) throw new Error(payload?.error || "RAG reindex endpoint returned an unsuccessful response.");
+      return payload;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 8) await sleep(3_000);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("RAG reindex request failed.");
+}
+
+async function rebuildRagIndex(mcpServiceToken) {
+  const baseUrl = (optionalEnvironment("GIMMEJOB_PUBLIC_URL") || "https://gimme-job.com").replace(/\/+$/, "");
+  const url = `${baseUrl}/internal/rag/reindex`;
+  let cursor = 0;
+  let indexed = 0;
+  let total = null;
+
+  for (let batch = 0; batch < 500; batch += 1) {
+    const result = await postRagBatch(url, mcpServiceToken, cursor);
+    indexed += Number(result.indexed ?? 0);
+    total = Number(result.total ?? total ?? 0);
+    if (result.nextCursor === null || result.nextCursor === undefined) {
+      console.log(`RAG index refreshed: ${indexed}/${total} documents (${JSON.stringify(result.counts ?? {})}).`);
+      return;
+    }
+    const nextCursor = Number(result.nextCursor);
+    if (!Number.isFinite(nextCursor) || nextCursor <= cursor) throw new Error("RAG reindex cursor did not advance.");
+    cursor = nextCursor;
+  }
+  throw new Error("RAG reindex exceeded the maximum batch count.");
+}
+
 async function validateConfig() {
   await ensureBuildArtifact();
   try {
@@ -175,6 +245,7 @@ async function validateConfig() {
       APP_PASSWORD: "dry-run-app-password",
       GRAFANA_READ_TOKEN: "dry-run-grafana-token",
       N8N_INGEST_TOKEN: "dry-run-n8n-token",
+      MCP_SERVICE_TOKEN: "dry-run-mcp-service-token",
     })}\n`, { mode: 0o600 });
     runWrangler(["deploy", "--dry-run", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
   } finally {
@@ -198,6 +269,8 @@ async function main() {
   const appPassword = requiredEnvironment("APP_PASSWORD");
   const grafanaReadToken = requiredEnvironment("GRAFANA_READ_TOKEN");
   const n8nIngestToken = requiredEnvironment("N8N_INGEST_TOKEN");
+  const explicitMcpServiceToken = optionalEnvironment("MCP_SERVICE_TOKEN");
+  const mcpServiceToken = explicitMcpServiceToken || appPassword;
   const multiUserSetting = optionalEnvironment("MULTI_USER_ENABLED");
   const multiUserEnabled = multiUserSetting ? enabledEnvironment("MULTI_USER_ENABLED") : true;
   const googleAuth = googleAuthConfiguration();
@@ -206,8 +279,10 @@ async function main() {
   if (appPassword.length < 16) throw new Error("APP_PASSWORD must contain at least 16 characters.");
   if (grafanaReadToken.length < 32) throw new Error("GRAFANA_READ_TOKEN must contain at least 32 characters.");
   if (n8nIngestToken.length < 32) throw new Error("N8N_INGEST_TOKEN must contain at least 32 characters.");
+  if (explicitMcpServiceToken && explicitMcpServiceToken.length < 32) throw new Error("MCP_SERVICE_TOKEN must contain at least 32 characters when configured separately.");
 
   await ensureBuildArtifact();
+  ensureVectorIndex();
   let database = findDatabase(listDatabases());
   if (!database) {
     console.log(`Creating D1 database ${databaseName}...`);
@@ -219,12 +294,14 @@ async function main() {
 
   try {
     await writeDeployConfig(id, multiUserEnabled, aiService);
-    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, googleAuth, aiService });
+    await writeDeploymentSecrets({ appPassword, grafanaReadToken, n8nIngestToken, mcpServiceToken, googleAuth, aiService });
     console.log("Applying D1 migrations...");
     runWrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", generatedConfigPath]);
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
-    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
+    console.log("Refreshing the Vectorize RAG corpus...");
+    await rebuildRagIndex(mcpServiceToken);
+    console.log(`Cloudflare deployment completed. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. MCP service token: ${explicitMcpServiceToken ? "dedicated" : "APP_PASSWORD fallback"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await Promise.all([
       rm(generatedConfigPath, { force: true }),
