@@ -37,6 +37,7 @@ import {
 } from "./rewild-pixel-atlas";
 import type { RenderEdge, RenderSnapshot } from "./rewild-render-snapshot";
 import { drawMeadowLife } from "./rewild-authored-overlay";
+import { drawRewildGroundV4Sprite, type RewildGroundV4Id } from "./rewild-ground-atlas-v4";
 
 export interface RewildCamera {
   x: number;
@@ -101,7 +102,7 @@ const CORRUPTION_TILES: Record<1 | 2 | 3 | 4, RewildTerrainTileId> = {
   4: "corruption-4",
 };
 
-const GRASS_VARIANTS: readonly RewildTerrainTileId[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
+const GRASS_VARIANTS: readonly RewildGroundV4Id[] = ["grass-a"];
 
 const DIRECTION_TO_POLYGON_EDGE = [0, 5, 4, 3, 2, 1] as const;
 
@@ -273,7 +274,8 @@ function drawGround(ctx: CanvasRenderingContext2D, snapshot: RenderSnapshot) {
       continue;
     }
     const variant = GRASS_VARIANTS[Math.min(GRASS_VARIANTS.length - 1, Math.floor(cellRandom(cell, 301) * GRASS_VARIANTS.length))];
-    fillRewildTerrainPattern(ctx, variant, hexPath(cell.hex, 1.04), PALETTE.meadow, 1);
+    const center = hexCenter(cell.hex);
+    drawRewildGroundV4Sprite(ctx, variant, center.x, center.y);
   }
   fillHexes(ctx, houseGround, PALETTE.soil, 1.055);
 }
