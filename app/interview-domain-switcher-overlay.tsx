@@ -82,14 +82,15 @@ export default function InterviewDomainSwitcherOverlay() {
         ))}
       </nav>
       <style>{`
-        .iq-domain-switcher {
-          align-items: stretch;
+        .kb-subnav nav.iq-domain-switcher {
+          align-items: center;
           display: flex;
+          flex-direction: row;
           flex-wrap: wrap;
           gap: 6px;
           margin: 0 0 10px;
         }
-        .iq-domain-switcher a {
+        .kb-subnav nav.iq-domain-switcher a {
           align-items: center;
           background: #fff;
           border: 1px solid #d8ddd7;
@@ -101,18 +102,19 @@ export default function InterviewDomainSwitcherOverlay() {
           font-weight: 600;
           justify-content: center;
           line-height: 1.15;
+          max-width: 100%;
           min-height: 34px;
           padding: 6px 10px;
           text-align: center;
           text-decoration: none;
           white-space: nowrap;
-          width: auto;
+          width: max-content;
         }
-        .iq-domain-switcher a:hover {
+        .kb-subnav nav.iq-domain-switcher a:hover {
           background: #f3f5f2;
           color: #26322c;
         }
-        .iq-domain-switcher a.active {
+        .kb-subnav nav.iq-domain-switcher a.active {
           background: #e7f0df;
           border-color: #b7c9a8;
           color: #345523;
