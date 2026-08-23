@@ -115,6 +115,8 @@ test("content audit fixes the identified correctness defects", () => {
   assert.match(sqlInterviewAudit["sql-compare-previous-row"].codePatch.code, /rn > 1/);
   assert.match(sqlInterviewAudit["sql-compare-previous-row"].codePatch.code, /status IS NULL AND previous_status IS NOT NULL/);
   assert.match(sqlInterviewAudit["sql-running-total"].codePatch.code, /ORDER BY account_id, occurred_at, id;/);
+  assert.match(sqlInterviewAudit["sql-keyset-pagination"].codePatch.code, /^SELECT /);
+  assert.match(sqlInterviewAudit["sql-keyset-pagination"].codePatch.code, /LIMIT :limit;/);
 });
 
 test("applying an audit attaches scope, dialect, runtime and content corrections", () => {
