@@ -29,6 +29,10 @@ const unsupportedRunnableSqlPatterns = [
   /\b(?:source_orders|warehouse_orders|raw_events|dim_customer|test_customers|test_orders|fact_sales|dim_date)\b/i,
 ];
 
+export type SqlRuntimeHint = {
+  engine?: string;
+};
+
 function skipLeadingSqlTrivia(source: string) {
   let index = 0;
 
@@ -68,4 +72,8 @@ export function isRunnableSqlSource(language: string, source: string) {
   if (!normalized || normalized.length > 12_000) return false;
   if (!runnableSqlKeywords.has(readLeadingSqlKeyword(normalized))) return false;
   return !unsupportedRunnableSqlPatterns.some((pattern) => pattern.test(normalized));
+}
+
+export function isRunnableSqlInterviewExample(language: string, source: string, runtime?: SqlRuntimeHint) {
+  return runtime?.engine === "sqlite" && isRunnableSqlSource(language, source);
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { isRunnableSqlSource } from "../app/interview-sql-execution.ts";
+import { isRunnableSqlInterviewExample, isRunnableSqlSource } from "../app/interview-sql-execution.ts";
 
 const markdownRenderer = readFileSync(new URL("../app/qa-markdown.tsx", import.meta.url), "utf8");
 const executionPolicy = readFileSync(new URL("../app/interview-sql-execution.ts", import.meta.url), "utf8");
@@ -9,6 +9,7 @@ const runnerComponent = readFileSync(new URL("../app/executable-sql-block.tsx", 
 const runnerShell = readFileSync(new URL("../app/executable-code-runner.tsx", import.meta.url), "utf8");
 const runnerWorker = readFileSync(new URL("../public/sql-runner.worker.mjs", import.meta.url), "utf8");
 const interviewOverlay = readFileSync(new URL("../app/sql-interview-runnable-overlay.tsx", import.meta.url), "utf8");
+const codeOverlay = readFileSync(new URL("../app/interview-question-code-overlay.tsx", import.meta.url), "utf8");
 const interviewPage = readFileSync(new URL("../app/interview/interview-domain-page-client.tsx", import.meta.url), "utf8");
 const deepLink = readFileSync(new URL("../app/interview-question-deep-link.tsx", import.meta.url), "utf8");
 const referenceOverlay = readFileSync(new URL("../app/sql-reference-runnable-overlay.tsx", import.meta.url), "utf8");
@@ -44,6 +45,13 @@ test("SQL runnable policy accepts SQLite examples and rejects unsupported source
   assert.equal(isRunnableSqlSource("sql", "CREATE TABLE users (id INTEGER);"), false);
 });
 
+test("interview SQL only runs when the audited runtime explicitly selects SQLite", () => {
+  assert.equal(isRunnableSqlInterviewExample("sql", "SELECT * FROM users;", { engine: "sqlite" }), true);
+  assert.equal(isRunnableSqlInterviewExample("sql", "SELECT * FROM users;", { engine: "static" }), false);
+  assert.equal(isRunnableSqlInterviewExample("sql", "SELECT * FROM users;"), false);
+  assert.equal(isRunnableSqlInterviewExample("sql", "SELECT * FROM users WHERE created_at >= DATE '2026-01-01';", { engine: "sqlite" }), false);
+});
+
 test("SQL runnable policy avoids nested leading-comment regex parsing", () => {
   assert.doesNotMatch(executionPolicy, /runnableSqlStart/);
   assert.match(executionPolicy, /indexOf\("\*\/"/);
@@ -51,12 +59,17 @@ test("SQL runnable policy avoids nested leading-comment regex parsing", () => {
   assert.equal(typeof isRunnableSqlSource("sql", adversarial), "boolean");
 });
 
-test("SQL interview examples and direct links use the executable runner", () => {
+test("SQL interview examples and direct links use audited runtime metadata", () => {
   assert.match(interviewPage, /SqlInterviewRunnableOverlay/);
-  assert.match(interviewOverlay, /isRunnableSqlSource\(example\.language, example\.code\)/);
+  assert.match(interviewOverlay, /isRunnableSqlInterviewExample\(example\.language, example\.code, example\.sqlRuntime\)/);
   assert.match(interviewOverlay, /ExecutableSqlBlock/);
   assert.match(interviewOverlay, /Copy SQL example/);
-  assert.match(deepLink, /const runnableSql = isRunnableSqlSource/);
+  assert.match(deepLink, /const runnableSql = isRunnableSqlInterviewExample\(example\.language, example\.code, example\.sqlRuntime\)/);
+  assert.match(deepLink, /example\.sqlDialect/);
+  assert.match(deepLink, /runtimeNote/);
+  assert.match(codeOverlay, /question\.sqlScope/);
+  assert.match(codeOverlay, /example\.sqlDialect/);
+  assert.match(codeOverlay, /example\.sqlRuntime/);
   assert.match(deepLink, /<ExecutableSqlBlock code=\{example\.code\}/);
 });
 

@@ -7,6 +7,7 @@ export type RunnableInterviewCodeExample = {
   language: string;
   code: string;
   execution?: unknown;
+  sqlRuntime?: { engine?: string };
 };
 
 type RunnableInterviewQuestion = {

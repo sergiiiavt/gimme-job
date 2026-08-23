@@ -13,6 +13,12 @@ interface InterviewCodeExample {
   explanationUk?: string;
   expectedResult?: string;
   expectedResultUk?: string;
+  sqlDialect?: string;
+  sqlRuntime?: {
+    engine?: string;
+    note?: string;
+    noteUk?: string;
+  };
 }
 
 interface CodeEnhancedInterviewQuestion {
@@ -22,6 +28,7 @@ interface CodeEnhancedInterviewQuestion {
   example?: string;
   exampleUk?: string;
   codeExamples?: InterviewCodeExample[];
+  sqlScope?: string;
 }
 
 function normalizeQuestionText(value: string) {
@@ -107,7 +114,69 @@ function createCodeBlock(source: string, language: string) {
   return pre;
 }
 
-function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "uk") {
+function createMetaChip(text: string) {
+  const chip = document.createElement("span");
+  chip.textContent = text;
+  applyStyles(chip, {
+    background: "#f2f6f3",
+    border: "1px solid #d9e2dc",
+    borderRadius: "999px",
+    color: "#536159",
+    fontSize: "10px",
+    fontWeight: "700",
+    lineHeight: "1.2",
+    padding: "4px 7px",
+  });
+  return chip;
+}
+
+function createSqlMetadata(example: InterviewCodeExample, language: "en" | "uk", scope?: string) {
+  if (!example.sqlDialect && !example.sqlRuntime && !scope) return null;
+
+  const wrapper = document.createElement("div");
+  applyStyles(wrapper, {
+    display: "grid",
+    gap: "6px",
+  });
+
+  const chips = document.createElement("div");
+  applyStyles(chips, {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+  });
+  if (scope) chips.appendChild(createMetaChip(scope));
+  if (example.sqlDialect) chips.appendChild(createMetaChip(`${language === "uk" ? "Діалект" : "Dialect"} · ${example.sqlDialect}`));
+  if (example.sqlRuntime) {
+    chips.appendChild(createMetaChip(
+      example.sqlRuntime.engine === "sqlite"
+        ? "Runtime · SQLite sample DB"
+        : language === "uk" ? "Runtime · статичний приклад" : "Runtime · static example",
+    ));
+  }
+  wrapper.appendChild(chips);
+
+  const runtimeNote = language === "uk" && example.sqlRuntime?.noteUk
+    ? example.sqlRuntime.noteUk
+    : example.sqlRuntime?.note;
+  if (runtimeNote) {
+    const note = document.createElement("p");
+    note.textContent = runtimeNote;
+    applyStyles(note, {
+      borderLeft: "2px solid #c8d5cc",
+      color: "#65736b",
+      fontSize: "10.5px",
+      lineHeight: "1.45",
+      margin: "0",
+      paddingLeft: "8px",
+    });
+    wrapper.appendChild(note);
+  }
+
+  return wrapper;
+}
+
+function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "uk", scope?: string) {
   const card = document.createElement("article");
   card.className = "iq-code-card";
   applyStyles(card, {
@@ -142,7 +211,10 @@ function createCodeExampleCard(example: InterviewCodeExample, language: "en" | "
     margin: "0",
   });
 
-  card.append(header, createCodeBlock(example.code, example.language), explanation);
+  card.appendChild(header);
+  const metadata = createSqlMetadata(example, language, scope);
+  if (metadata) card.appendChild(metadata);
+  card.append(createCodeBlock(example.code, example.language), explanation);
 
   const expected = language === "uk" && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
   if (expected) {
@@ -174,7 +246,7 @@ function createStructuredCodeSection(question: CodeEnhancedInterviewQuestion, la
   });
 
   for (const example of question.codeExamples ?? []) {
-    section.appendChild(createCodeExampleCard(example, language));
+    section.appendChild(createCodeExampleCard(example, language, question.sqlScope));
   }
   return section;
 }
