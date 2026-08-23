@@ -241,7 +241,6 @@ export const sqlInterviewAudit: Record<string, SqlInterviewAuditEntry> = {
       code: `CREATE VIEW paid_order_totals AS\nSELECT customer_id, SUM(amount) AS total\nFROM orders\nWHERE status = 'paid'\nGROUP BY customer_id;\n\nSELECT *\nFROM paid_order_totals\nWHERE customer_id = 1;`,
     },
   },
-
   "etl-testing-basics": {
     scope: "Data / ETL / BI",
     dialect: "SQL standard",
@@ -295,7 +294,6 @@ export const sqlInterviewAudit: Record<string, SqlInterviewAuditEntry> = {
     dialect: "SQL standard",
     runtime: external("Requires governed fact_sales/dim_date tables and uses SQL-standard DATE typed literals.", "Потребує governed fact_sales/dim_date tables і використовує SQL-standard DATE typed literals."),
   },
-
   "database-test-scope": {
     scope: "Database concept",
     dialect: "Portable SQL",
@@ -310,7 +308,6 @@ export const sqlInterviewAudit: Record<string, SqlInterviewAuditEntry> = {
     dialect: "Portable SQL",
     runtime: sqlite(),
   },
-
   "sql-return-all-duplicate-rows": {
     scope: "SQL language",
     dialect: "Portable SQL",
@@ -388,6 +385,13 @@ export const sqlInterviewAudit: Record<string, SqlInterviewAuditEntry> = {
     scope: "SQL language",
     dialect: "Portable SQL",
     runtime: sqlite("The core keyset predicate is portable; this playground uses SQLite LIMIT syntax for the bounded page.", "Core keyset predicate є portable; playground використовує SQLite LIMIT syntax для bounded page."),
+    codePatch: {
+      code: `SELECT id, customer_id, status, created_at\nFROM orders\nWHERE created_at < :last_created_at\n   OR (created_at = :last_created_at AND id < :last_id)\nORDER BY created_at DESC, id DESC\nLIMIT :limit;`,
+      explanation: "Use the last seen (created_at, id) tuple as the cursor and keep the predicate aligned with the deterministic descending ORDER BY. The playground uses SQLite LIMIT syntax and sample parameter values.",
+      explanationUk: "Використовуйте last seen tuple (created_at, id) як cursor і тримайте predicate узгодженим із deterministic descending ORDER BY. Playground використовує SQLite LIMIT syntax і sample parameter values.",
+      expectedResult: "The next bounded page after the configured sample cursor, in deterministic descending order.",
+      expectedResultUk: "Наступна bounded page після налаштованого sample cursor у deterministic descending order.",
+    },
   },
   "sql-percent-of-total": {
     scope: "SQL language",
