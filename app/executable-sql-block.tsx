@@ -103,6 +103,7 @@ export default function ExecutableSqlBlock({ code }: { code: string }) {
       formatResult={formatSqlResult}
       highlight={highlightSql}
       initialMessage="Run the query to see the result."
+      key={code}
       language="SQL"
       loadingErrorMessage="SQLite runtime could not be loaded. Try again."
       loadingMessage="Loading SQLite runtime…"
