@@ -48,6 +48,7 @@ jobs:
           GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           GRAFANA_READ_TOKEN: ${{ secrets.GRAFANA_READ_TOKEN }}
+          MCP_SERVICE_TOKEN: ${{ secrets.MCP_SERVICE_TOKEN }}
           MULTI_USER_ENABLED: ${{ vars.MULTI_USER_ENABLED }}
           N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
