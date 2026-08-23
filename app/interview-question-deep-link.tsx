@@ -81,7 +81,7 @@ function renderHighlightedCode(source: string, language: string): ReactNode[] {
 }
 
 function sqlRuntimeLabel(engine: string | undefined, showUk: boolean) {
-  if (engine === "sqlite") return showUk ? "Runtime · SQLite sample DB" : "Runtime · SQLite sample DB";
+  if (engine === "sqlite") return "Runtime · SQLite sample DB";
   return showUk ? "Runtime · статичний приклад" : "Runtime · static example";
 }
 
