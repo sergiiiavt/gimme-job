@@ -2,7 +2,7 @@
 
 import ExecutableSqlBlock from "./executable-sql-block";
 import InterviewRunnableOverlay, { type RunnableInterviewCodeExample } from "./interview-runnable-overlay";
-import { isRunnableSqlSource } from "./interview-sql-execution";
+import { isRunnableSqlInterviewExample } from "./interview-sql-execution";
 
 interface RunnableInterviewQuestion {
   id: string;
@@ -10,7 +10,7 @@ interface RunnableInterviewQuestion {
 }
 
 function isRunnable(example: RunnableInterviewCodeExample) {
-  return isRunnableSqlSource(example.language, example.code);
+  return isRunnableSqlInterviewExample(example.language, example.code, example.sqlRuntime);
 }
 
 function renderRunner(example: RunnableInterviewCodeExample) {
