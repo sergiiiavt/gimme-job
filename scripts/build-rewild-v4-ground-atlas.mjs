@@ -11,11 +11,15 @@ const sourceOutputDirectory = path.join(outputDirectory, "ground-source");
 const atlasPath = path.join(outputDirectory, "ground-atlas-v4.png");
 const metadataPath = path.join(outputDirectory, "ground-atlas-v4.json");
 
-export const GROUND_ORDER = ["grass-a", "grass-b", "grass-c", "grass-d"];
+// Single variant: the user supplied one exact tile image (rotated 90° from its original
+// pointy-top orientation to the game's flat-top orientation — a lossless pixel transform for a
+// regular hexagon) and asked for that exact art, not a generated approximation. More variants can
+// be appended here later without any other wiring change.
+export const GROUND_ORDER = ["grass-a"];
 
-// All four tiles share one native size: width = 2 * 32 (exact), height = round(sqrt(3) * 32),
-// matching the runtime's flat-top hex aspect ratio (app/rewild-hex-grid.ts) at a 32px hex "size"
-// so DRAW_SCALE = HEX_SIZE / 32 maps them onto the real hex footprint with no distortion.
+// Native size: width = 2 * 32 (exact), height = round(sqrt(3) * 32), matching the runtime's
+// flat-top hex aspect ratio (app/rewild-hex-grid.ts) at a 32px hex "size" so DRAW_SCALE =
+// HEX_SIZE / 32 maps it onto the real hex footprint with no distortion.
 const TILE_WIDTH = 64;
 const TILE_HEIGHT = 56;
 
@@ -26,7 +30,7 @@ async function validateSourceDirectory() {
   const entries = await readdir(sourceDirectory, { withFileTypes: true });
   assert.ok(entries.every((entry) => entry.isFile()), "v4 ground source directory must contain files only");
   const actualFiles = entries.map((entry) => entry.name).sort(compareAlphabetically);
-  assert.deepEqual(actualFiles, expectedFiles, "v4 ground source directory must contain exactly the approved 4 PNG assets");
+  assert.deepEqual(actualFiles, expectedFiles, `v4 ground source directory must contain exactly the approved ${GROUND_ORDER.length} PNG asset(s)`);
 }
 
 // Packed as a horizontal strip (matching structures) rather than the shared square-slot packer:

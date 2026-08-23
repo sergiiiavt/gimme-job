@@ -102,7 +102,7 @@ const CORRUPTION_TILES: Record<1 | 2 | 3 | 4, RewildTerrainTileId> = {
   4: "corruption-4",
 };
 
-const GRASS_VARIANTS: readonly RewildGroundV4Id[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
+const GRASS_VARIANTS: readonly RewildGroundV4Id[] = ["grass-a"];
 
 const DIRECTION_TO_POLYGON_EDGE = [0, 5, 4, 3, 2, 1] as const;
 

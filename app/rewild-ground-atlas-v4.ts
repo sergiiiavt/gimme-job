@@ -1,6 +1,6 @@
 import { createRewildV4AtlasRuntime, type RewildV4DrawOptions } from "./rewild-v4-atlas-runtime";
 
-export const REWILD_GROUND_V4_IDS = ["grass-a", "grass-b", "grass-c", "grass-d"] as const;
+export const REWILD_GROUND_V4_IDS = ["grass-a"] as const;
 
 export type RewildGroundV4Id = (typeof REWILD_GROUND_V4_IDS)[number];
 
@@ -15,9 +15,6 @@ const NATIVE_TO_HEX_SCALE = 21 / 32;
 
 export const REWILD_GROUND_V4_FRAMES: Record<RewildGroundV4Id, { x: number; y: number; width: number; height: number }> = {
   "grass-a": { x: 0, y: 0, width: 64, height: 56 },
-  "grass-b": { x: 64, y: 0, width: 64, height: 56 },
-  "grass-c": { x: 128, y: 0, width: 64, height: 56 },
-  "grass-d": { x: 192, y: 0, width: 64, height: 56 },
 };
 
 const runtime = createRewildV4AtlasRuntime(GROUND_ATLAS_URL, REWILD_GROUND_V4_FRAMES, "ground");

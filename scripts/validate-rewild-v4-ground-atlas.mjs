@@ -20,7 +20,7 @@ const compareAlphabetically = (left, right) => left.localeCompare(right);
 const metadata = JSON.parse(await readFile(metadataPath, "utf8"));
 assert.equal(metadata.image, "ground-atlas-v4.png");
 assert.equal(metadata.source, "assets/rewild/v4/ground-source");
-assert.equal(metadata.frames.length, 4);
+assert.equal(metadata.frames.length, GROUND_ORDER.length);
 assert.deepEqual(metadata.frames.map((frame) => frame.name), GROUND_ORDER, "atlas frame order must match the exact approved manifest");
 assert.equal(new Set(metadata.frames.map((frame) => frame.name)).size, GROUND_ORDER.length, "v4 ground tile names must be unique");
 
@@ -29,7 +29,7 @@ const runtimeFrames = parseRuntimeFrameTable(runtimeSource, GROUND_ORDER.length,
 const expectedFiles = GROUND_ORDER.map((name) => `${name}.png`).sort(compareAlphabetically);
 const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true });
 assert.ok(sourceEntries.every((entry) => entry.isFile()), "committed v4 ground source directory must contain files only");
-assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, "committed v4 ground source directory must contain exactly the approved 4 PNGs");
+assert.deepEqual(sourceEntries.map((entry) => entry.name).sort(compareAlphabetically), expectedFiles, `committed v4 ground source directory must contain exactly the approved ${GROUND_ORDER.length} PNG(s)`);
 
 const sourceHashes = new Map();
 for (const name of GROUND_ORDER) {
