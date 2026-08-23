@@ -248,19 +248,6 @@ function drawIndustrialComplex(
   }
 }
 
-function drawCorruptionDetail(
-  ctx: CanvasRenderingContext2D,
-  snapshot: RenderSnapshot,
-  blocked: ReadonlySet<string>,
-) {
-  for (const cell of snapshot.state.world.cells.values()) {
-    if (!cell.corruption || cell.surface === "foundation") continue;
-    const key = hexKey(cell.hex);
-    if (blocked.has(key)) continue;
-    textureCell(ctx, cell, `corruption-${cell.corruption}` as RewildTerrainTileId, .1 + cell.corruption * .025);
-  }
-}
-
 export function renderAuthoredArtOverlay(
   ctx: CanvasRenderingContext2D,
   snapshot: RenderSnapshot,
@@ -278,7 +265,6 @@ export function renderAuthoredArtOverlay(
   drawForestDensity(ctx, snapshot, kinds, blocked);
   drawWaterEdges(ctx, snapshot, kinds, blocked);
   drawIndustrialComplex(ctx, snapshot, kinds, blocked);
-  drawCorruptionDetail(ctx, snapshot, blocked);
 
   ctx.restore();
 }

@@ -71,6 +71,9 @@ const PALETTE = {
   corruption2: "#594f4a",
   corruption3: "#413b43",
   corruption4: "#29272f",
+  // Thermal/electrical damage accent for the heaviest corruption marks — Art Bible-approved
+  // "technological/electrical residue" language, deliberately not purple (a rejected motif).
+  corruptionEmber: "#d97b34",
   meshIndustrial: "rgba(145,155,151,.035)",
   meshPlacement: "rgba(235,225,145,.12)",
   shore: "#8fa563",
@@ -89,6 +92,13 @@ const CORRUPTION_PALETTE: Record<1 | 2 | 3 | 4, string> = {
   2: PALETTE.corruption2,
   3: PALETTE.corruption3,
   4: PALETTE.corruption4,
+};
+
+const CORRUPTION_TILES: Record<1 | 2 | 3 | 4, RewildTerrainTileId> = {
+  1: "corruption-1",
+  2: "corruption-2",
+  3: "corruption-3",
+  4: "corruption-4",
 };
 
 const GRASS_VARIANTS: readonly RewildTerrainTileId[] = ["grass-a", "grass-b", "grass-c", "grass-d"];
@@ -305,9 +315,9 @@ function drawIndustrialGround(ctx: CanvasRenderingContext2D, state: GameState) {
 }
 
 function drawCorruptionGround(ctx: CanvasRenderingContext2D, state: GameState) {
-  for (const level of [1, 2, 3, 4] as const) {
-    const cells = [...state.world.cells.values()].filter((cell) => cell.corruption === level && cell.surface !== "foundation").map((cell) => cell.hex);
-    fillHexes(ctx, cells, CORRUPTION_PALETTE[level], 1.07);
+  for (const cell of state.world.cells.values()) {
+    if (!cell.corruption || cell.surface === "foundation") continue;
+    fillRewildTerrainPattern(ctx, CORRUPTION_TILES[cell.corruption], hexPath(cell.hex, 1.07), CORRUPTION_PALETTE[cell.corruption], 1);
   }
   const foundations = [...state.world.cells.values()].filter((cell) => cell.surface === "foundation").map((cell) => cell.hex);
   const rubble = [...state.world.cells.values()].filter((cell) => cell.surface === "rubble").map((cell) => cell.hex);
@@ -521,7 +531,10 @@ function drawNatureObject(ctx: CanvasRenderingContext2D, object: WorldObject, st
     rotation: object.rotation,
     flipX: object.id.length % 2 === 0,
   });
-  if (corruption >= 3) drawRewildSprite(ctx, "corruption-node", center.x + 7, center.y + 5, { scale: .27, alpha: .72 });
+  if (corruption >= 3) {
+    ctx.fillStyle = corruption >= 4 ? PALETTE.corruptionEmber : PALETTE.industrialRust;
+    ctx.fillRect(Math.round(center.x + 5), Math.round(center.y + 3), 3, 3);
+  }
 }
 
 function drawPlant(ctx: CanvasRenderingContext2D, plant: PlantEntity, state: GameState) {
@@ -607,15 +620,11 @@ function drawCorruptionMarks(ctx: CanvasRenderingContext2D, state: GameState) {
     if (cell.corruption < 2 || cell.surface === "foundation") continue;
     const center = hexCenter(cell.hex);
     const strength = cell.corruption;
-    if (strength >= 4 && cellRandom(cell, 90) > .52) {
-      drawRewildSprite(ctx, "corruption-node", center.x, center.y, { scale: .26 + cellRandom(cell, 91) * .08, alpha: .66 });
-    } else {
-      ctx.fillStyle = strength >= 3 ? "#6d506f" : "#6c6657";
-      for (let mark = 0; mark < strength; mark += 1) {
-        const x = Math.round(center.x - 10 + cellRandom(cell, 100 + mark) * 20);
-        const y = Math.round(center.y - 6 + cellRandom(cell, 110 + mark) * 12);
-        ctx.fillRect(x, y, strength >= 3 ? 3 : 2, 2);
-      }
+    ctx.fillStyle = strength >= 4 ? PALETTE.corruptionEmber : strength >= 3 ? PALETTE.industrialRust : "#6c6657";
+    for (let mark = 0; mark < strength; mark += 1) {
+      const x = Math.round(center.x - 10 + cellRandom(cell, 100 + mark) * 20);
+      const y = Math.round(center.y - 6 + cellRandom(cell, 110 + mark) * 12);
+      ctx.fillRect(x, y, strength >= 3 ? 3 : 2, 2);
     }
   }
 }

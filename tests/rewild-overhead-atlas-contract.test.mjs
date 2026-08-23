@@ -38,11 +38,15 @@ test("locks active Rewild overhead atlas frames and v4 fallback policy", async (
     assert.ok(frame.fallback, `${frame.name} must declare its temporary v3 fallback while compatibility mode is allowed`);
   }
 
-  const meadowFamily = ["grass-a", "grass-b", "grass-c", "grass-d"];
+  const authoredFamily = [
+    "grass-a", "grass-b", "grass-c", "grass-d",
+    "forest-floor", "water-deep", "water-shallow",
+    "corruption-1", "corruption-2", "corruption-3", "corruption-4",
+  ];
   for (const frame of terrainAtlas.frames) {
     assert.match(atlasSource, new RegExp(`"${frame.name}"`));
-    const isMeadow = meadowFamily.includes(frame.name);
-    assert.equal(!!frame.pending, !isMeadow, `${frame.name}: pending must be true for not-yet-authored tiles and unset for the authored meadow family`);
+    const isAuthored = authoredFamily.includes(frame.name);
+    assert.equal(!!frame.pending, !isAuthored, `${frame.name}: pending must be true for not-yet-authored tiles and unset for authored families`);
   }
 
   for (const [id, fallback] of [

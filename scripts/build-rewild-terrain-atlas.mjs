@@ -7,6 +7,7 @@ import sharp from "sharp";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
 const forestWaterSourceDirectory = path.join(root, "assets", "rewild", "terrain", "forest-water-source");
+const corruptionSourceDirectory = path.join(root, "assets", "rewild", "terrain", "corruption-source");
 const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
 
 const ATLAS_COLUMNS = 8;
@@ -23,8 +24,8 @@ export const ALL_TERRAIN_TILE_IDS = [
   "grass-d",
 ];
 
-// This build step owns the meadow and forest/water families' slots. Other families (soil,
-// industrial, corruption, road) stay whatever the existing committed atlas already has for them
+// This build step owns the meadow, forest/water, and corruption families' slots. Other families
+// (soil, industrial, road) stay whatever the existing committed atlas already has for them
 // (typically still-empty reserved slots) — each family adds its own source directory and extends
 // this script's sibling list when its own batch lands, per the Visual Bible's "one family at a
 // time" rule.
@@ -34,6 +35,10 @@ export const MEADOW_FAMILY_TILE_IDS = ["grass-a", "grass-b", "grass-c", "grass-d
 // 04-terrain-transitions.webp (rejected, forbidden for transition/terrain-geometry generation)
 // was not used. See docs/rewild/visual-bible/batches/04-forest-and-water.md.
 export const FOREST_WATER_FAMILY_TILE_IDS = ["forest-floor", "water-deep", "water-shallow"];
+
+// Corruption progression per SPRITE_MANIFEST.md: "stressed/polluted ground to severely wasted /
+// electrically stressed industrial blight" — never purple crystal/fantasy corruption language.
+export const CORRUPTION_FAMILY_TILE_IDS = ["corruption-1", "corruption-2", "corruption-3", "corruption-4"];
 
 const compareAlphabetically = (left, right) => left.localeCompare(right);
 
@@ -85,6 +90,7 @@ async function familyComposites(directory, tileIds) {
 export async function buildRewildTerrainAtlas() {
   await validateFamilyDirectory(sourceDirectory, MEADOW_FAMILY_TILE_IDS, "meadow");
   await validateFamilyDirectory(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS, "forest/water");
+  await validateFamilyDirectory(corruptionSourceDirectory, CORRUPTION_FAMILY_TILE_IDS, "corruption");
   await mkdir(path.dirname(atlasPath), { recursive: true });
 
   const composites = [];
@@ -93,6 +99,7 @@ export async function buildRewildTerrainAtlas() {
 
   composites.push(...await familyComposites(sourceDirectory, MEADOW_FAMILY_TILE_IDS));
   composites.push(...await familyComposites(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS));
+  composites.push(...await familyComposites(corruptionSourceDirectory, CORRUPTION_FAMILY_TILE_IDS));
 
   await sharp({
     create: {
@@ -106,7 +113,7 @@ export async function buildRewildTerrainAtlas() {
     .png({ compressionLevel: 9, adaptiveFiltering: false })
     .toFile(atlasPath);
 
-  console.log(`Built Rewild terrain atlas: packed ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles and ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles into ${path.relative(root, atlasPath)}.`);
+  console.log(`Built Rewild terrain atlas: packed ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles, ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles, and ${CORRUPTION_FAMILY_TILE_IDS.length} corruption tiles into ${path.relative(root, atlasPath)}.`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
