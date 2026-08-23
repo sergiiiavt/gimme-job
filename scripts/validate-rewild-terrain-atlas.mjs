@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import {
   ALL_TERRAIN_TILE_IDS,
+  CORRUPTION_FAMILY_TILE_IDS,
   FOREST_WATER_FAMILY_TILE_IDS,
   MEADOW_FAMILY_TILE_IDS,
   buildRewildTerrainAtlas,
@@ -14,6 +15,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atlasPath = path.join(root, "public", "rewild", "overhead", "terrain-atlas-v3.png");
 const sourceDirectory = path.join(root, "assets", "rewild", "terrain", "source");
 const forestWaterSourceDirectory = path.join(root, "assets", "rewild", "terrain", "forest-water-source");
+const corruptionSourceDirectory = path.join(root, "assets", "rewild", "terrain", "corruption-source");
 const runtimeSource = await readFile(path.join(root, "app", "rewild-pixel-atlas-v3.ts"), "utf8");
 const rendererSource = await readFile(path.join(root, "app", "rewild-production-renderer.ts"), "utf8");
 const overlaySource = await readFile(path.join(root, "app", "rewild-authored-overlay.ts"), "utf8");
@@ -73,6 +75,8 @@ async function validateCommittedFamily(directory, tileIds, label) {
 const sourceRaw = await validateCommittedFamily(sourceDirectory, MEADOW_FAMILY_TILE_IDS, "meadow");
 const forestWaterRaw = await validateCommittedFamily(forestWaterSourceDirectory, FOREST_WATER_FAMILY_TILE_IDS, "forest/water");
 for (const [id, buffer] of forestWaterRaw) sourceRaw.set(id, buffer);
+const corruptionRaw = await validateCommittedFamily(corruptionSourceDirectory, CORRUPTION_FAMILY_TILE_IDS, "corruption");
+for (const [id, buffer] of corruptionRaw) sourceRaw.set(id, buffer);
 
 // 3. Rebuilding from committed source must reproduce the committed atlas exactly (no drift).
 const committedAtlas = await readFile(atlasPath);
@@ -88,7 +92,7 @@ assert.ok(atlasMeta.hasAlpha, "terrain atlas must be RGBA");
 
 const { data: atlasData, info: atlasInfo } = await sharp(atlasPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 
-for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
+for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS, ...CORRUPTION_FAMILY_TILE_IDS]) {
   const index = ALL_TERRAIN_TILE_IDS.indexOf(id);
   const left = (index % ATLAS_COLUMNS) * FRAME_SIZE;
   const top = Math.floor(index / ATLAS_COLUMNS) * FRAME_SIZE;
@@ -115,7 +119,7 @@ for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
 // forest cell already gets a real tree from drawForestDensity (one per hex, no sparse/clearing
 // gate) and every water cell gets its own real ground texture here, so the two layer together
 // instead of the tree/shoreline decor sitting on bare flat color.
-for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS]) {
+for (const id of [...MEADOW_FAMILY_TILE_IDS, ...FOREST_WATER_FAMILY_TILE_IDS, ...CORRUPTION_FAMILY_TILE_IDS]) {
   assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in app/rewild-production-renderer.ts ground fill`);
 }
 assert.match(rendererSource, /fillRewildTerrainPattern\(ctx, variant, hexPath\(cell\.hex/u, "meadow ground must be filled with real tile art via fillRewildTerrainPattern inside drawGround");
@@ -137,4 +141,23 @@ assert.doesNotMatch(overlaySource, /textureCell\(ctx, cell, "water-(deep|shallow
 assert.match(overlaySource, /detail-lily-pads-a/u, "water overlay must still add lily pad decor");
 assert.match(overlaySource, /detail-reeds-a/u, "water overlay must still add reed decor");
 
-console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles and ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles, pre-existing 16 IDs untouched, atlas matches committed source, overlay wiring intact.`);
+// 9. Corruption wiring: drawCorruptionGround fills every corrupted, non-foundation hex with real
+// per-level tile art (a stressed/polluted-to-wasted/electrically-stressed material progression,
+// per SPRITE_MANIFEST.md — never purple crystal/fantasy corruption) via fillRewildTerrainPattern,
+// replacing the old flat CORRUPTION_PALETTE-only fill. The overlay's old low-alpha
+// textureCell(corruption-N) stamp is now redundant with that real fill and must be gone, not
+// double-drawing the same art on top of itself.
+assert.match(rendererSource, /function drawCorruptionGround\(/u, "drawCorruptionGround must remain the home of the corruption tile fill");
+{
+  const corruptionStart = rendererSource.indexOf("function drawCorruptionGround(");
+  const corruptionEnd = rendererSource.indexOf("\nfunction ", corruptionStart + 1);
+  const corruptionBody = rendererSource.slice(corruptionStart, corruptionEnd === -1 ? undefined : corruptionEnd);
+  assert.match(corruptionBody, /fillRewildTerrainPattern\(ctx, CORRUPTION_TILES\[cell\.corruption\], hexPath\(cell\.hex/u, "corruption ground must be filled with real tile art via fillRewildTerrainPattern, chosen per corruption level");
+}
+for (const id of CORRUPTION_FAMILY_TILE_IDS) {
+  assert.ok(rendererSource.includes(`"${id}"`), `${id}: not referenced in the CORRUPTION_TILES level lookup`);
+}
+assert.doesNotMatch(overlaySource, /function drawCorruptionDetail/u, "drawCorruptionDetail's textureCell(corruption-N) stamp is redundant now that drawCorruptionGround fills the whole hex with this art");
+assert.doesNotMatch(overlaySource, /textureCell\(ctx, cell, `corruption-/u, "corruption-N must not also be drawn as a textureCell overlay stamp now that drawCorruptionGround fills the whole hex with this art");
+
+console.log(`Rewild terrain atlas validated: ${MEADOW_FAMILY_TILE_IDS.length} meadow tiles, ${FOREST_WATER_FAMILY_TILE_IDS.length} forest/water tiles, and ${CORRUPTION_FAMILY_TILE_IDS.length} corruption tiles, pre-existing 16 IDs untouched, atlas matches committed source, overlay wiring intact.`);
