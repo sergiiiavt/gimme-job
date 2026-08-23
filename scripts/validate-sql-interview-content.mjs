@@ -21,6 +21,7 @@ const [
   codeExampleSource,
   dataCodeExampleSource,
   expandedCodeExampleSource,
+  auditSource,
   catalogSource,
 ] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
@@ -39,6 +40,7 @@ const [
   readText("../content/interview/sql-code-examples.ts"),
   readText("../content/interview/sql-data-code-examples.ts"),
   readText("../content/interview/sql-expanded-code-examples.ts"),
+  readText("../content/interview/sql-interview-audit.ts"),
   readText("../content/interview/catalog.ts"),
 ]);
 
@@ -60,6 +62,7 @@ const enhancementIds = [codeExampleSource, dataCodeExampleSource, expandedCodeEx
   .flatMap((source) => [...source.matchAll(/\n    id: "([a-z0-9-]+)",\n    codeExamples:/g)].map((match) => match[1]));
 const practicalIds = [...practicalSource.matchAll(/\n    id: "(sql-[a-z0-9-]+)",/g)].map((match) => match[1]);
 const practicalTaskIds = [...practicalSource.matchAll(/\n    taskId: "([a-z0-9-]+)",/g)].map((match) => match[1]);
+const auditIds = [...auditSource.matchAll(/^  "([a-z0-9-]+)": \{/gm)].map((match) => match[1]);
 
 assert.equal(databaseSql.questions.length, 25, "The audited SQL foundation set should stay at 25 questions.");
 assert.ok(existingSqlQuestions.length >= 33, "The Databases, SQL and BI topic unexpectedly lost pre-existing coverage.");
@@ -75,6 +78,11 @@ assert.equal(practicalIds.length, 14, "The practical SQL interview layer should 
 assert.equal(new Set(practicalIds).size, practicalIds.length, "Practical SQL interview question IDs must be unique.");
 assert.equal(practicalTaskIds.length, 14, "Every practical interview question must reuse one maintained SQL task card.");
 assert.equal(new Set(practicalTaskIds).size, practicalTaskIds.length, "Practical SQL task-card references must be unique.");
+
+const expectedAuditIds = new Set([...existingSqlQuestions.map((question) => question.id), ...practicalIds]);
+assert.equal(auditIds.length, expectedAuditIds.size, "Every SQL/DB/BI and practical SQL question must have exactly one audit entry.");
+assert.equal(new Set(auditIds).size, auditIds.length, "SQL audit IDs must be unique.");
+assert.deepEqual(new Set(auditIds), expectedAuditIds, "SQL audit metadata must cover the complete SQL interview set.");
 
 const taskIds = new Set(sqlTasks.cards.map((card) => card.id));
 const existingQuestionIds = new Set(baseQuestions.map((question) => question.id));
@@ -99,6 +107,15 @@ assert.match(dataCodeExampleSource, /expectedResultUk/);
 assert.match(expandedCodeExampleSource, /language: "sql"/);
 assert.match(expandedCodeExampleSource, /expectedResultUk/);
 
+assert.match(auditSource, /SqlQuestionScope = "SQL language" \| "Database concept" \| "DBMS-specific" \| "Data \/ ETL \/ BI"/);
+assert.match(auditSource, /SqlDialect = "Portable SQL" \| "SQL standard" \| "PostgreSQL" \| "DBMS-dependent"/);
+assert.match(auditSource, /sqlDialect: audit\.dialect/);
+assert.match(auditSource, /sqlRuntime: audit\.runtime/);
+assert.match(auditSource, /sqlScope: audit\.scope/);
+assert.match(auditSource, /DATE 'YYYY-MM-DD' typed literal is SQL-standard syntax/);
+assert.match(auditSource, /EXPLAIN \(ANALYZE, BUFFERS\) is PostgreSQL-specific/);
+
+assert.match(catalogSource, /import \{ applySqlInterviewAudit \} from "\.\/sql-interview-audit"/);
 assert.match(catalogSource, /import sqlPracticalInterview from "\.\/sql-practical-interview"/);
 assert.match(catalogSource, /import sqlCodeExamples from "\.\/sql-code-examples"/);
 assert.match(catalogSource, /import sqlDataCodeExamples from "\.\/sql-data-code-examples"/);
@@ -106,7 +123,8 @@ assert.match(catalogSource, /import sqlExpandedCodeExamples from "\.\/sql-expand
 assert.match(catalogSource, /import domains from "\.\/domains\.json"/);
 assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples, \.\.\.sqlExpandedCodeExamples\]/);
 assert.match(catalogSource, /\.\.\.sqlPracticalInterview\.questions/);
-assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)/);
-assert.match(catalogSource, /version: 17/);
+assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)\.map\(applySqlInterviewAudit\)/);
+assert.match(catalogSource, /version: 18/);
+assert.match(catalogSource, /lastReviewedAt: "2026-08-24"/);
 
-console.log(`SQL interview content validated: ${existingSqlQuestions.length} existing + ${practicalIds.length} practical questions, with structured code examples on every existing SQL/BI question.`);
+console.log(`SQL interview content validated: ${existingSqlQuestions.length} existing + ${practicalIds.length} practical questions, all covered by dialect/runtime audit metadata.`);
