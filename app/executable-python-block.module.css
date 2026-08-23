@@ -212,14 +212,22 @@
   left: 18px;
   bottom: 14px;
   display: inline-flex;
+  max-width: calc(100% - 36px);
   align-items: center;
   gap: 4px;
+  overflow-x: auto;
   padding: 4px;
   border: 1px solid #454545;
   border-radius: 9px;
+  direction: ltr;
   background: rgba(37, 37, 38, 0.96);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(8px);
+  scrollbar-width: none;
+}
+
+.actionDock::-webkit-scrollbar {
+  display: none;
 }
 
 .primaryButton,
@@ -234,6 +242,7 @@
 .primaryButton,
 .secondaryButton {
   min-height: 28px;
+  flex: 0 0 auto;
   border: 1px solid transparent;
   padding: 4px 9px;
   font-size: 11px;
@@ -294,6 +303,161 @@
   stroke-width: 1.4;
 }
 
+.databaseButtonActive {
+  border-color: #4f7d2d;
+  background: #314222;
+  color: #e4f1d8;
+}
+
+.databasePanel {
+  border-top: 1px solid #3a3a3a;
+  background: #181818;
+  color: #d4d4d4;
+}
+
+.databaseHeader {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #303030;
+  background: #202020;
+  font-size: 11px;
+}
+
+.databaseHeader > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.databaseHeader strong {
+  color: #e5e5e5;
+  font-size: 12px;
+}
+
+.databaseHeader span,
+.databaseState,
+.databaseError,
+.databaseTableMeta span {
+  color: #8f8f8f;
+}
+
+.databaseState,
+.databaseError {
+  padding: 14px 16px;
+  font-size: 12px;
+}
+
+.databaseError {
+  color: #f0a1a1;
+}
+
+.databaseTabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 12px;
+  border-bottom: 1px solid #303030;
+  direction: ltr;
+  scrollbar-color: #3b3b3b transparent;
+  scrollbar-width: thin;
+}
+
+.databaseTab {
+  display: inline-flex;
+  min-height: 30px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #3f3f3f;
+  border-radius: 7px;
+  padding: 4px 9px;
+  background: #252526;
+  color: #c9c9c9;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.databaseTab span {
+  color: #7f7f7f;
+  font-size: 10px;
+}
+
+.databaseTabActive {
+  border-color: #5b8240;
+  background: #2d3a25;
+  color: #edf5e7;
+}
+
+.databaseTableMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px 6px;
+  font-size: 11px;
+}
+
+.databaseTableMeta strong {
+  color: #e0e0e0;
+  font-size: 12px;
+}
+
+.databaseTableScroll {
+  overflow-x: auto;
+  direction: ltr;
+  padding: 0 12px 12px;
+  scrollbar-color: #3b3b3b transparent;
+  scrollbar-width: thin;
+}
+
+.databaseTable {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  direction: ltr;
+  color: #d4d4d4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.databaseTable th,
+.databaseTable td {
+  border-bottom: 1px solid #303030;
+  padding: 7px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.databaseTable th {
+  background: #202020;
+  color: #dcdcdc;
+  font-weight: 700;
+}
+
+.databaseTable th span,
+.databaseTable th small {
+  display: block;
+}
+
+.databaseTable th small {
+  margin-top: 2px;
+  color: #777777;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.databaseNull {
+  color: #777777;
+  font-style: italic;
+}
+
 .tokenComment {
   color: #6a9955;
 }
@@ -335,6 +499,21 @@
 
   .meta {
     display: none;
+  }
+
+  .databaseHeader,
+  .databaseTableMeta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+
+@media (max-width: 420px) {
+  .primaryButton,
+  .secondaryButton {
+    padding-right: 7px;
+    padding-left: 7px;
   }
 }
 
