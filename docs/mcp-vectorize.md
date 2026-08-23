@@ -65,13 +65,17 @@ The embedding model is Cloudflare Workers AI `@cf/baai/bge-m3`, selected for mul
 
 ## Index lifecycle
 
+For full semantic RAG, the GitHub `CLOUDFLARE_API_TOKEN` must include Cloudflare account permissions `Vectorize Read` and `Vectorize Write` in addition to the existing Worker/D1 permissions.
+
 Production deployment:
 
-1. creates `gimmejob-rag` when it does not exist;
-2. deploys Workers AI (`AI`) and Vectorize (`RAG_INDEX`) bindings;
+1. attempts to discover or create `gimmejob-rag`;
+2. when Vectorize is available, deploys Workers AI (`AI`) and Vectorize (`RAG_INDEX`) bindings;
 3. applies D1 migrations as before;
 4. deploys the Worker;
-5. calls the private `/internal/rag/reindex` endpoint in batches of 32 until all interview, learning, and vacancy documents are upserted.
+5. when RAG is enabled, calls the private `/internal/rag/reindex` endpoint in batches of 32 until all interview, learning, and vacancy documents are upserted.
+
+Vectorize is deliberately an optional secondary index. If provisioning cannot run, for example because the Cloudflare token has not yet been granted Vectorize permissions, the production Worker and D1 deployment continues without `AI`/`RAG_INDEX`. MCP search then uses the existing deterministic lexical/catalog fallbacks. A post-deploy RAG refresh failure is reported as a GitHub Actions warning rather than turning an otherwise successful site deployment red.
 
 No D1 schema migration is required for MCP or RAG.
 
