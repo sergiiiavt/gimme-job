@@ -9,6 +9,7 @@ import InterviewQuestionDeepLink from "../interview-question-deep-link";
 import InterviewQuestionLinkOverlay from "../interview-question-link-overlay";
 import InterviewSeoOverlay from "../interview-seo-overlay";
 import PublicSite from "../public-site";
+import SqlInterviewRunnableOverlay from "../sql-interview-runnable-overlay";
 import styles from "./interview-page.module.css";
 
 export default function InterviewDomainPageClient({ canonicalPath = "/interview", domainSlug }: { canonicalPath?: string; domainSlug?: string }) {
@@ -31,6 +32,7 @@ export default function InterviewDomainPageClient({ canonicalPath = "/interview"
       <InterviewDomainSwitcherOverlay/>
       <InterviewSeoOverlay domainSlug={domainSlug}/>
       <InterviewQuestionCodeOverlay questions={interviewCatalog.questions}/>
+      <SqlInterviewRunnableOverlay questions={interviewCatalog.questions}/>
       <InterviewQuestionLinkOverlay pathname={canonicalPath} questions={interviewCatalog.questions}/>
       <Link className={styles.simulatorLink} href="/interview/simulator">Run AI interview</Link>
     </>

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import ExecutablePythonBlock from "./executable-python-block";
+import ExecutableSqlBlock from "./executable-sql-block";
 import { isRunnablePythonSource } from "./interview-python-execution";
+import { isRunnableSqlSource } from "./interview-sql-execution";
 
 export interface MarkdownHeading {
   id: string;
@@ -148,6 +150,8 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
       const source = content.join("\n");
       if (isRunnablePythonSource(language, source)) {
         nodes.push(<ExecutablePythonBlock code={source} key={`python-run-${nodeKey++}`} />);
+      } else if (isRunnableSqlSource(language, source)) {
+        nodes.push(<ExecutableSqlBlock code={source} key={`sql-run-${nodeKey++}`} />);
       } else {
         nodes.push(
           <pre className={language === "diagram" ? "qa-md-diagram" : "qa-md-code"} key={`pre-${nodeKey++}`}>

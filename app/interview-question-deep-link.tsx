@@ -3,12 +3,14 @@
 import { useState, type ReactNode } from "react";
 import { contentHref } from "./content-deep-links";
 import ExecutablePythonBlock from "./executable-python-block";
+import ExecutableSqlBlock from "./executable-sql-block";
 import { highlightInterviewCode } from "./interview-code-highlighting";
 import {
   isRunnablePythonInterviewExample,
   type PythonInterviewExecution,
 } from "./interview-python-execution";
 import { splitPythonPracticalExample } from "./interview-practical-formatting";
+import { isRunnableSqlSource } from "./interview-sql-execution";
 import styles from "./interview-question-deep-link.module.css";
 
 interface InterviewDeepLinkCodeExample {
@@ -188,7 +190,9 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                   const title = showUk && example.titleUk ? example.titleUk : example.title;
                   const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
                   const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
-                  const runnable = isRunnablePythonInterviewExample(example.language, example.code, example.execution);
+                  const runnablePython = isRunnablePythonInterviewExample(example.language, example.code, example.execution);
+                  const runnableSql = isRunnableSqlSource(example.language, example.code);
+                  const runnable = runnablePython || runnableSql;
                   return (
                     <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
                       <header className={styles.codeHeader}>
@@ -197,8 +201,10 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                           <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
                         )}
                       </header>
-                      {runnable ? (
+                      {runnablePython ? (
                         <ExecutablePythonBlock code={example.code} />
+                      ) : runnableSql ? (
+                        <ExecutableSqlBlock code={example.code} />
                       ) : (
                         <pre className={styles.codeBlock}><code>{renderHighlightedCode(example.code, example.language)}</code></pre>
                       )}
