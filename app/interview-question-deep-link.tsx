@@ -10,7 +10,7 @@ import {
   type PythonInterviewExecution,
 } from "./interview-python-execution";
 import { splitPythonPracticalExample } from "./interview-practical-formatting";
-import { isRunnableSqlSource } from "./interview-sql-execution";
+import { isRunnableSqlInterviewExample } from "./interview-sql-execution";
 import styles from "./interview-question-deep-link.module.css";
 
 interface InterviewDeepLinkCodeExample {
@@ -23,6 +23,12 @@ interface InterviewDeepLinkCodeExample {
   expectedResult?: string;
   expectedResultUk?: string;
   execution?: PythonInterviewExecution;
+  sqlDialect?: string;
+  sqlRuntime?: {
+    engine?: string;
+    note?: string;
+    noteUk?: string;
+  };
 }
 
 interface InterviewDeepLinkQuestion {
@@ -42,6 +48,7 @@ interface InterviewDeepLinkQuestion {
   codeExamples?: InterviewDeepLinkCodeExample[];
   sourceIds: string[];
   tags?: string[];
+  sqlScope?: string;
 }
 
 interface InterviewDeepLinkSource {
@@ -71,6 +78,11 @@ function renderHighlightedCode(source: string, language: string): ReactNode[] {
       ? <span key={`code-token-${index}`} style={{ color: token.color }}>{token.text}</span>
       : token.text
   ));
+}
+
+function sqlRuntimeLabel(engine: string | undefined, showUk: boolean) {
+  if (engine === "sqlite") return showUk ? "Runtime · SQLite sample DB" : "Runtime · SQLite sample DB";
+  return showUk ? "Runtime · статичний приклад" : "Runtime · static example";
 }
 
 export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, questionId }: {
@@ -158,6 +170,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
           <span className={styles.eyebrow}>{eyebrow}</span>
           <div className={styles.meta}>
             <a href={categoryHref}>{taxonomyItem?.label ?? question.category}</a>
+            {question.sqlScope && <span>{question.sqlScope}</span>}
             <span>{question.level}</span>
             <span>{question.prevalence}</span>
             {question.kind && <span>{question.kind}</span>}
@@ -190,8 +203,9 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                   const title = showUk && example.titleUk ? example.titleUk : example.title;
                   const explanation = showUk && example.explanationUk ? example.explanationUk : example.explanation;
                   const expectedResult = showUk && example.expectedResultUk ? example.expectedResultUk : example.expectedResult;
+                  const runtimeNote = showUk && example.sqlRuntime?.noteUk ? example.sqlRuntime.noteUk : example.sqlRuntime?.note;
                   const runnablePython = isRunnablePythonInterviewExample(example.language, example.code, example.execution);
-                  const runnableSql = isRunnableSqlSource(example.language, example.code);
+                  const runnableSql = isRunnableSqlInterviewExample(example.language, example.code, example.sqlRuntime);
                   const runnable = runnablePython || runnableSql;
                   return (
                     <article className={styles.codeCard} key={`${question.id}-code-${index}`}>
@@ -201,6 +215,13 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                           <button onClick={() => void copyCode(example.code, index)} type="button">{copiedCode === index ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати" : "Copy")}</button>
                         )}
                       </header>
+                      {(example.sqlDialect || example.sqlRuntime) && (
+                        <div className={styles.codeMeta}>
+                          {example.sqlDialect && <span>{showUk ? "Діалект" : "Dialect"} · {example.sqlDialect}</span>}
+                          {example.sqlRuntime && <span>{sqlRuntimeLabel(example.sqlRuntime.engine, showUk)}</span>}
+                        </div>
+                      )}
+                      {runtimeNote && <p className={styles.runtimeNote}>{runtimeNote}</p>}
                       {runnablePython ? (
                         <ExecutablePythonBlock code={example.code} />
                       ) : runnableSql ? (
