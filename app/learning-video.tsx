@@ -71,7 +71,7 @@ function loadYouTubeApi() {
     script.src = "https://www.youtube.com/iframe_api";
     script.async = true;
     script.addEventListener("load", finish, { once: true });
-    script.addEventListener("error", () => reject(new Error("Could not load YouTube player.")), { once: true });
+    script.addEventListener("error", () => reject(new Error("Could not load the YouTube IFrame API.")), { once: true });
     document.head.appendChild(script);
   });
 
