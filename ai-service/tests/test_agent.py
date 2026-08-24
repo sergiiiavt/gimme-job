@@ -9,6 +9,7 @@ from unittest.mock import patch
 from pydantic import SecretStr
 
 from gimmejob_ai.agent import AssistantAgent, build_search_tool
+from gimmejob_ai.retrieval import RetrievalHit, RetrievalResult
 from gimmejob_ai.schemas import AssistantResponse, ChatMessage
 from gimmejob_ai.settings import Settings, langfuse_configured
 
@@ -23,6 +24,16 @@ class _FakeAgentRuntime:
         return {"structured_response": self.structured_response}
 
 
+class _FakeRetriever:
+    def __init__(self, result: RetrievalResult) -> None:
+        self.result = result
+        self.queries: list[tuple[str, str, int]] = []
+
+    async def search(self, query: str, language: str, limit: int = 8) -> RetrievalResult:
+        self.queries.append((query, language, limit))
+        return self.result
+
+
 class AgentTests(unittest.IsolatedAsyncioTestCase):
     def _settings(self, content_root: Path) -> Settings:
         return Settings(
@@ -32,19 +43,34 @@ class AgentTests(unittest.IsolatedAsyncioTestCase):
             service_token=SecretStr("service-token"),
         )
 
-    def test_search_tool_returns_only_real_site_paths(self) -> None:
+    async def test_search_tool_uses_canonical_rag_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
-            root = Path(temporary_directory)
-            (root / "testing.md").write_text(
-                "# Test design techniques\nBoundary value analysis checks values around boundaries.\n",
-                encoding="utf-8",
+            result = RetrievalResult(
+                strategy="vectorize",
+                embedding_model="@cf/baai/bge-m3",
+                hits=(
+                    RetrievalHit(
+                        id="l:1",
+                        ref_id="boundary-values",
+                        kind="learning",
+                        title="Boundary value analysis",
+                        text="Boundary value analysis checks values around boundaries.",
+                        score=0.91,
+                        source_path="qa-fundamentals/boundary-values",
+                        route="/reference/qa-fundamentals",
+                    ),
+                ),
             )
-            tool = build_search_tool(self._settings(root))
+            retriever = _FakeRetriever(result)
+            tool = build_search_tool(self._settings(Path(temporary_directory)), retriever=retriever)
 
-            result = tool.invoke({"query": "boundary value", "language": "en", "limit": 3})
+            response = await tool.ainvoke({"query": "boundary value", "language": "en", "limit": 3})
 
-            self.assertEqual(result["query"], "boundary value")
-            self.assertEqual(result["results"][0]["path"], "testing.md")
+            self.assertEqual(response["query"], "boundary value")
+            self.assertEqual(response["retrieval"], "vectorize")
+            self.assertEqual(response["embedding_model"], "@cf/baai/bge-m3")
+            self.assertEqual(response["results"][0]["source_path"], "qa-fundamentals/boundary-values")
+            self.assertEqual(retriever.queries, [("boundary value", "en", 3)])
 
     def test_langfuse_configuration_requires_both_keys(self) -> None:
         with patch.dict(os.environ, {}, clear=True):
@@ -63,7 +89,7 @@ class AgentTests(unittest.IsolatedAsyncioTestCase):
             settings = self._settings(Path(temporary_directory))
             expected = AssistantResponse(
                 answer="Use boundary values around each equivalence partition.",
-                sources=["qa.md"],
+                sources=["qa-fundamentals/bva"],
             )
             runtime = _FakeAgentRuntime(expected)
             assistant = AssistantAgent.__new__(AssistantAgent)

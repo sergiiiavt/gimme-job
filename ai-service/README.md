@@ -4,17 +4,17 @@ This directory is the isolated Python AI backend for GimmeJob. The stack is Fast
 
 ## Current capabilities
 
-- `GET /health` reports configuration readiness without exposing secrets.
+- `GET /health` reports OpenAI, service-auth, canonical-RAG, Langfuse, and content readiness without exposing secrets.
 - `POST /v1/chat` provides the structured read-only assistant.
-- `POST /v1/learning-path` runs an explicit LangGraph workflow that retrieves Git-backed material, chooses a repository-grounded or clearly labelled general branch, produces a connected learning map, and verifies every returned source reference and edge.
-- `POST /v1/interviews/start` builds a reproducible interview set from the existing Git-versioned QA/Python interview catalogs.
-- `POST /v1/interviews/evaluate` evaluates a candidate answer against the trusted catalog answer/signals and returns structured score, feedback, gaps, follow-up question and review topics.
-- Interview start responses never expose the reference answer or strong-answer signals before the user answers.
-- LangGraph handles learning-advisor orchestration, LangChain handles structured model output, and Langfuse tracing callbacks are attached automatically when its standard cloud credentials are configured.
-- Repository retrieval searches cached chunks from the existing Git-versioned Markdown and JSON learning/interview content.
-- The service is still read-only with respect to GimmeJob runtime state: progress/session persistence belongs to the authenticated web application/D1 layer, not to this service.
-
-The first search implementation is deterministic lexical retrieval. Its tool contract is deliberately stable so it can later be replaced by embeddings + PostgreSQL/pgvector without changing the assistant API.
+- `POST /v1/learning-path` runs an explicit LangGraph workflow: contextualize the conversation → retrieve from the single GimmeJob RAG pipeline → choose grounded/general composition → verify source attribution and map connectivity.
+- `POST /v1/interviews/start` builds a reproducible interview set from the Git-versioned QA/Python interview catalogs.
+- `POST /v1/interviews/evaluate` evaluates a candidate answer against the trusted catalog answer/signals.
+- LangGraph owns orchestration; LangChain owns model/message/structured-output integration; OpenAI generates the structured answer.
+- The Python service does **not** maintain its own second search index or lexical retriever. It calls the authenticated canonical Worker RAG endpoint.
+- The canonical Worker RAG uses Cloudflare Workers AI + Vectorize when available and degrades to lexical ranking inside the same pipeline. Git/D1 remain authoritative sources.
+- Langfuse callbacks capture the LangGraph/model execution. A root Learning Path trace also records canonical retrieval strategy, embedding model, retrieved IDs/scores, and deterministic runtime quality scores.
+- Supported OpenAI generations report token usage through the LangChain/Langfuse integration; Langfuse model definitions turn that usage into per-generation and aggregate cost.
+- The service remains read-only with respect to GimmeJob runtime state.
 
 ## Local setup
 
@@ -31,17 +31,22 @@ Set at least:
 ```text
 GIMMEJOB_AI_OPENAI_API_KEY=...
 GIMMEJOB_AI_SERVICE_TOKEN=use-a-long-random-value
+GIMMEJOB_AI_RAG_URL=http://127.0.0.1:<gimmejob-port>/internal/rag/search
+GIMMEJOB_AI_RAG_SERVICE_TOKEN=use-a-second-long-random-value
 ```
 
-For Langfuse Cloud tracing, create a project and add:
+The Worker must receive the same second value as `GIMMEJOB_RAG_SERVICE_TOKEN`.
+
+For Langfuse Cloud tracing and cost observability, create a project and add:
 
 ```text
 LANGFUSE_PUBLIC_KEY=pk-lf-...
 LANGFUSE_SECRET_KEY=sk-lf-...
 LANGFUSE_BASE_URL=https://cloud.langfuse.com
+LANGFUSE_TRACING_ENVIRONMENT=development
 ```
 
-Run:
+Run the normal GimmeJob Worker locally so `/internal/rag/search` is reachable, then run the AI service:
 
 ```bash
 uvicorn gimmejob_ai.main:app --reload --port 8000
@@ -52,6 +57,8 @@ Check health:
 ```bash
 curl http://127.0.0.1:8000/health
 ```
+
+A fully ready service reports `openai_configured`, `service_auth_configured`, and `rag_configured` as `true`. Langfuse is optional for answer delivery, so `langfuse_configured` may be false without degrading the core request path.
 
 Call the assistant:
 
@@ -71,7 +78,39 @@ curl -X POST http://127.0.0.1:8000/v1/learning-path \
   -d '{"session_id":"demo-session","messages":[{"role":"user","content":"Python parallelism"}]}'
 ```
 
-The learning-path response reports `orchestration: "langgraph"`, `retrieval_mode`, the workflow steps actually executed, and a structured `response.learning_map` with bounded `nodes` and `edges`.
+The response reports `orchestration: "langgraph"`, grounded/general `retrieval_mode`, the executed workflow steps, and a bounded `response.learning_map`.
+
+## Langfuse observability and RAG quality
+
+One learning-path request is intended to produce one root trace with:
+
+```text
+Learning Path Advisor
+  contextualize_query
+  retrieve_canonical_rag
+    canonical-rag-retrieval
+  compose_repository_answer | compose_general_answer
+    OpenAI generation (tokens + cost when model pricing is known)
+  verify_grounding_and_map
+```
+
+Runtime trace scores currently include:
+
+- `map_connected`
+- `retrieval_result_count`
+- `retrieval_top_score`
+- `grounded_node_ratio` for grounded answers
+- `source_validity` for grounded answers
+
+`rag_metrics.py` provides deterministic offline ranking metrics for Langfuse dataset/experiment runs:
+
+- Precision@K
+- Recall@K
+- Hit Rate@K
+- Reciprocal Rank (MRR when aggregated)
+- nDCG@K
+
+Faithfulness/groundedness, answer relevance, completeness/correctness, and citation quality belong in the Langfuse evaluation layer (LLM-as-a-Judge or Ragas) rather than in the production answer code. Retrieval thresholds should be tuned against those labeled experiments rather than hand-optimized from individual prompts.
 
 Start an interview:
 
@@ -99,10 +138,10 @@ python -m unittest discover -s tests -v
 
 ## Docker
 
-Build from the repository root because the image includes the public `content/` directory:
+Build from the repository root because the image includes the public `content/` directory used by deterministic interview start/evaluation data:
 
 ```bash
 docker build -f ai-service/Dockerfile -t gimmejob-ai .
 ```
 
-Do not expose `/v1/chat`, `/v1/learning-path`, or `/v1/interviews/*` directly to the browser. The GimmeJob Worker should proxy authenticated requests to this service so the service token never reaches client code.
+Do not expose `/v1/chat`, `/v1/learning-path`, or `/v1/interviews/*` directly to the browser. The GimmeJob Worker proxies browser requests so the AI service token never reaches client code. The canonical RAG endpoint is separately protected by `GIMMEJOB_RAG_SERVICE_TOKEN`.

@@ -154,5 +154,6 @@ class HealthResponse(BaseModel):
     model: str
     openai_configured: bool
     service_auth_configured: bool
+    rag_configured: bool
     langfuse_configured: bool
     content_available: bool

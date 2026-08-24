@@ -8,7 +8,9 @@ registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const {
   handleRagReindexRequest,
+  handleRagSearchRequest,
   reindexRagBatch,
+  searchRagDocuments,
   semanticSearch,
   staticRagDocuments,
 } = await import("../worker/rag.ts");
@@ -19,12 +21,7 @@ function makeEnv() {
     embeddedTexts: string[][];
     upserts: Array<Array<Record<string, unknown>>>;
     queries: Array<Record<string, unknown>>;
-  } = {
-    models: [],
-    embeddedTexts: [],
-    upserts: [],
-    queries: [],
-  };
+  } = { models: [], embeddedTexts: [], upserts: [], queries: [] };
 
   const job = {
     id: "job-1",
@@ -39,14 +36,14 @@ function makeEnv() {
     posted_at: "2026-08-22T10:00:00.000Z",
     updated_at: "2026-08-22T10:00:00.000Z",
   };
+  const questionDocument = staticRagDocuments().find((document) => document.kind === "question")!;
+  const learningDocument = staticRagDocuments().find((document) => document.kind === "learning")!;
 
   const env = {
     DB: {
       prepare() {
         return {
-          async all<T>() {
-            return { results: [job] as T[] };
-          },
+          async all<T>() { return { results: [job] as T[] }; },
         };
       },
     },
@@ -58,15 +55,13 @@ function makeEnv() {
       },
     },
     RAG_INDEX: {
-      async upsert(vectors: Array<Record<string, unknown>>) {
-        calls.upserts.push(vectors);
-      },
+      async upsert(vectors: Array<Record<string, unknown>>) { calls.upserts.push(vectors); },
       async query(_vector: number[], options: Record<string, unknown>) {
         calls.queries.push(options);
         return {
           matches: [
-            { id: "q:1", score: 0.91, metadata: { kind: "question", refId: "question-1", title: "Question" } },
-            { id: "l:1", score: 0.88, metadata: { kind: "learning", refId: "lesson-1", title: "Lesson" } },
+            { id: questionDocument.id, score: 0.91, metadata: questionDocument.metadata },
+            { id: learningDocument.id, score: 0.88, metadata: learningDocument.metadata },
           ],
         };
       },
@@ -76,13 +71,16 @@ function makeEnv() {
   return { env, calls };
 }
 
-test("static RAG documents use compact Vectorize-safe IDs and contain questions and learning", () => {
+test("static RAG corpus contains QA, Python interview, and learning documents with compact IDs", () => {
   const documents = staticRagDocuments();
   const kinds = new Set(documents.map((document) => document.kind));
+  const tracks = new Set(documents.filter((document) => document.kind === "question").map((document) => document.metadata.track));
 
   assert.ok(documents.length > 100);
   assert.equal(kinds.has("question"), true);
   assert.equal(kinds.has("learning"), true);
+  assert.equal(tracks.has("qa"), true);
+  assert.equal(tracks.has("python"), true);
   assert.ok(documents.every((document) => new TextEncoder().encode(document.id).byteLength <= 64));
   assert.ok(documents.every((document) => document.metadata.refId === document.refId));
 });
@@ -97,6 +95,73 @@ test("semantic search embeds with multilingual BGE-M3 and filters by document ki
   assert.equal(results.length, 1);
   assert.equal(results[0].metadata.kind, "question");
   assert.equal(results[0].score, 0.91);
+});
+
+test("semantic search returns no matches without query or Vectorize bindings", async () => {
+  const { env } = makeEnv();
+  assert.deepEqual(await semanticSearch(env as never, "   ", ["question"], 5), []);
+  assert.deepEqual(await semanticSearch({ DB: env.DB } as never, "Python", ["question"], 5), []);
+});
+
+test("canonical RAG materializes authoritative documents after Vectorize retrieval", async () => {
+  const { env } = makeEnv();
+  const result = await searchRagDocuments(env as never, "Python testing", ["question", "learning"], 5);
+
+  assert.equal(result.retrieval, "vectorize");
+  assert.equal(result.embeddingModel, "@cf/baai/bge-m3");
+  assert.equal(result.results.length, 2);
+  assert.ok(result.results.every((item) => item.text.length > 0));
+  assert.ok(result.results.every((item) => item.route?.startsWith("/")));
+});
+
+test("canonical RAG owns lexical degradation when Vectorize is unavailable", async () => {
+  const pythonDocument = staticRagDocuments().find(
+    (document) => document.kind === "question" && document.metadata.track === "python" && document.title.toLowerCase().includes("async"),
+  ) ?? staticRagDocuments().find((document) => document.kind === "question" && document.metadata.track === "python")!;
+  const query = pythonDocument.title.split(/\s+/).slice(0, 3).join(" ");
+  const result = await searchRagDocuments({ DB: makeEnv().env.DB } as never, query, ["question"], 5);
+
+  assert.equal(result.retrieval, "lexical-fallback");
+  assert.ok(result.results.length > 0);
+  assert.ok(result.results.some((item) => item.metadata.track === "python"));
+});
+
+test("canonical RAG degrades to lexical search when semantic matches are below threshold", async () => {
+  const { env } = makeEnv();
+  const document = staticRagDocuments().find((item) => item.kind === "question" && item.metadata.track === "python")!;
+  const query = document.title.split(/\s+/).slice(0, 3).join(" ");
+  const lowScoreEnv = {
+    ...env,
+    RAG_INDEX: {
+      ...env.RAG_INDEX,
+      async query() {
+        return { matches: [{ id: document.id, score: 0.1, metadata: document.metadata }] };
+      },
+    },
+  };
+
+  const result = await searchRagDocuments(lowScoreEnv as never, query, ["question"], 5);
+  assert.equal(result.retrieval, "lexical-fallback");
+  assert.ok(result.results.some((item) => item.id === document.id));
+});
+
+test("canonical RAG degrades to lexical search when semantic retrieval throws", async () => {
+  const { env } = makeEnv();
+  const document = staticRagDocuments().find((item) => item.kind === "question" && item.metadata.track === "python")!;
+  const query = document.title.split(/\s+/).slice(0, 3).join(" ");
+  const failingEnv = {
+    ...env,
+    RAG_INDEX: {
+      ...env.RAG_INDEX,
+      async query() {
+        throw new Error("Vectorize unavailable");
+      },
+    },
+  };
+
+  const result = await searchRagDocuments(failingEnv as never, query, ["question"], 5);
+  assert.equal(result.retrieval, "lexical-fallback");
+  assert.ok(result.results.length > 0);
 });
 
 test("RAG reindex batches static content and D1 jobs without making Vectorize authoritative", async () => {
@@ -118,9 +183,63 @@ test("RAG reindex batches static content and D1 jobs without making Vectorize au
   assert.equal((calls.upserts[1][0].metadata as Record<string, unknown>).refId, "job-1");
 });
 
+test("RAG search HTTP handler validates request and returns bounded canonical results", async () => {
+  const { env } = makeEnv();
+  const wrongMethod = await handleRagSearchRequest(new Request("https://example.test/internal/rag/search"), env as never);
+  assert.equal(wrongMethod.status, 405);
+
+  const malformed = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", { method: "POST", body: "{" }),
+    env as never,
+  );
+  assert.equal(malformed.status, 400);
+
+  const missingQuery = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "" }),
+    }),
+    env as never,
+  );
+  assert.equal(missingQuery.status, 400);
+
+  const invalidKinds = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "Python", kinds: ["learning", "private"] }),
+    }),
+    env as never,
+  );
+  assert.equal(invalidKinds.status, 400);
+
+  const invalidLimit = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "Python", limit: 13 }),
+    }),
+    env as never,
+  );
+  assert.equal(invalidLimit.status, 400);
+
+  const success = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "Python testing", kinds: ["learning", "question"], limit: 4 }),
+    }),
+    env as never,
+  );
+  assert.equal(success.status, 200);
+  const payload = await success.json() as Record<string, unknown>;
+  assert.equal(payload.ok, true);
+  assert.equal(payload.retrieval, "vectorize");
+});
+
 test("RAG reindex HTTP handler validates method, configuration and payload", async () => {
   const { env } = makeEnv();
-
   const wrongMethod = await handleRagReindexRequest(new Request("https://example.test/internal/rag/reindex"), env as never);
   assert.equal(wrongMethod.status, 405);
 

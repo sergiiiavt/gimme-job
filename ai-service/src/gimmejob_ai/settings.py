@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     service_token: SecretStr | None = None
     content_root: Path = Path("../content")
     request_timeout_seconds: float = 45.0
+    rag_url: str | None = None
+    rag_service_token: SecretStr | None = None
 
     @property
     def openai_configured(self) -> bool:
@@ -31,6 +33,15 @@ class Settings(BaseSettings):
     @property
     def service_auth_configured(self) -> bool:
         return bool(self.service_token and self.service_token.get_secret_value().strip())
+
+    @property
+    def rag_configured(self) -> bool:
+        return bool(
+            self.rag_url
+            and self.rag_url.strip()
+            and self.rag_service_token
+            and self.rag_service_token.get_secret_value().strip()
+        )
 
 
 def langfuse_configured() -> bool:

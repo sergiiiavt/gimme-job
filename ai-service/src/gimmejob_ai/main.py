@@ -25,6 +25,7 @@ from .settings import Settings, langfuse_configured
 logger = logging.getLogger(__name__)
 
 _OPENAI_NOT_CONFIGURED_DETAIL = "OpenAI is not configured."
+_RAG_NOT_CONFIGURED_DETAIL = "Canonical RAG is not configured."
 _AI_PROVIDER_FAILED_DETAIL = "AI provider request failed."
 
 
@@ -60,14 +61,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
     )
 
-    assistant = AssistantAgent(runtime) if runtime.openai_configured else None
-    learning_advisor = LearningAdvisorGraph(runtime) if runtime.openai_configured else None
+    rag_ai_ready = runtime.openai_configured and runtime.rag_configured
+    assistant = AssistantAgent(runtime) if rag_ai_ready else None
+    learning_advisor = LearningAdvisorGraph(runtime) if rag_ai_ready else None
     interview_evaluator = InterviewEvaluator(runtime) if runtime.openai_configured else None
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
         content_available = runtime.content_root.resolve().is_dir()
-        ready = runtime.openai_configured and runtime.service_auth_configured and content_available
+        ready = (
+            runtime.openai_configured
+            and runtime.service_auth_configured
+            and runtime.rag_configured
+            and content_available
+        )
         return HealthResponse(
             service="gimmejob-ai",
             version=__version__,
@@ -76,6 +83,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             model=runtime.openai_model,
             openai_configured=runtime.openai_configured,
             service_auth_configured=runtime.service_auth_configured,
+            rag_configured=runtime.rag_configured,
             langfuse_configured=langfuse_configured(),
             content_available=content_available,
         )
@@ -83,17 +91,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def require_auth(authorization: str | None = Header(default=None)) -> None:
         _authorized(runtime, authorization)
 
+    def require_rag_ai(component: object | None) -> None:
+        if not runtime.openai_configured:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
+            )
+        if not runtime.rag_configured or component is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=_RAG_NOT_CONFIGURED_DETAIL,
+            )
+
     @app.post(
         "/v1/chat",
         response_model=ChatResponse,
         dependencies=[Depends(require_auth)],
     )
     async def chat(request: ChatRequest) -> ChatResponse:
-        if assistant is None:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
-            )
+        require_rag_ai(assistant)
         if request.messages[-1].role != "user":
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -128,11 +144,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         dependencies=[Depends(require_auth)],
     )
     async def learning_path(request: ChatRequest) -> LearningAdvisorResponse:
-        if learning_advisor is None:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
-            )
+        require_rag_ai(learning_advisor)
         if request.messages[-1].role != "user":
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
