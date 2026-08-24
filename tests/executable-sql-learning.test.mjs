@@ -76,7 +76,7 @@ test("SQL interview examples and direct links use audited runtime metadata", () 
 test("SQL quick reference stays static instead of mounting executable SQL", () => {
   assert.doesNotMatch(referencePage, /SqlReferenceRunnableOverlay/);
   assert.doesNotMatch(referencePage, /section === "data"/);
-  assert.match(referencePage, /<QuickReferencePage referenceId=\{section\}\/>/);
+  assert.match(referencePage, /<QuickReferencePage referenceId=\{section\}\/\>/);
 });
 
 test("SQL runner starts horizontal overflow at the beginning while retaining left scrollbars", () => {
@@ -106,7 +106,7 @@ test("SQL sample database is responsive and refreshes from the current runner se
 test("SQL worker keeps mutations until Reset destroys the worker", () => {
   assert.match(runnerWorker, /let sessionGlobals/);
   assert.match(runnerWorker, /function getSessionGlobals\(pyodide\)/);
-  assert.match(runnerWorker, /if \("_conn" not in globals\(\)\)/);
+  assert.match(runnerWorker, /if "_conn" not in globals\(\):/);
   assert.match(runnerWorker, /_conn\.commit\(\)/);
   assert.match(runnerWorker, /_conn\.rollback\(\)/);
   assert.match(runnerWorker, /result\.database = readJsonResult\(globals\)/);
