@@ -25,11 +25,11 @@ The local agent remains separate so source collection and experimentation can ru
 
 ## AI assistant boundary
 
-The new `ai-service/` is a separate Python service rather than another Cloudflare Worker route. Its first milestone uses FastAPI, LangChain, OpenAI, and optional Langfuse Cloud tracing. LangChain `create_agent` owns the initial model/tool loop; GimmeJob does not use the direct LangGraph API yet. The service returns structured responses that can later be rendered as knowledge, learning, interview, and hint cards in the web UI.
+The `ai-service/` is a separate Python service rather than another Cloudflare Worker route. The generic `/v1/chat` path retains its LangChain agent loop. The dedicated `/v1/learning-path` path uses the LangGraph `StateGraph` API directly: retrieve Git material, choose a repository-grounded or clearly labelled general branch, compose structured output through LangChain, then verify source attribution and graph connectivity. The web UI renders that result as an answer, evidence for the executed workflow, source-backed cards, and a connected learning map.
 
-The first tool is read-only `search_site_content`, backed by deterministic lexical search over the existing Git-versioned Markdown under `content/`. This deliberately preserves the public-content source of truth and establishes a stable tool contract that can later move to embeddings plus PostgreSQL/pgvector without changing the assistant API.
+AI-service retrieval is read-only deterministic lexical search over the existing Git-versioned Markdown and structured JSON under `content/`. This deliberately preserves the public-content source of truth. It is separate from the optional Cloudflare Workers AI + Vectorize secondary index used by the private MCP endpoint and documented in `docs/mcp-vectorize.md`.
 
-The AI service is a server-to-server boundary. `/v1/chat` requires its own bearer token and must not be called directly from browser code; a future authenticated GimmeJob Worker proxy will call it so the service credential never reaches the client. The first milestone has no D1 access, no private user-state access, and no write/action tools. `/health` exposes readiness flags only and never secrets.
+The AI service is a server-to-server boundary. Its `/v1/chat`, `/v1/learning-path`, and interview endpoints require an independent bearer token and must not be called directly from browser code. The authenticated GimmeJob Worker routes proxy browser requests so the service credential never reaches the client. The Python service has no D1 access, no private user-state access, and no write/action tools; learning-path requests do not persist plans. `/health` exposes readiness flags only and never secrets.
 
 Langfuse is observability only and must not be a runtime dependency for successful answers. When `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are configured, LangChain callbacks emit traces, request metadata, session IDs, model calls, and tool calls to Langfuse Cloud. If Langfuse is absent or its callback cannot initialize, the assistant continues without tracing.
 
@@ -84,7 +84,7 @@ The production n8n runtime is managed separately on the Hetzner VM by the files 
 - only a bounded readable excerpt is retained for ordinary email classification;
 - external fetches accept only public HTTPS sources;
 - applications are never sent by vacancy sync or analysis;
-- the AI service chat endpoint requires an independent server-to-server token and remains read-only in its first milestone;
-- Langfuse credentials stay in runtime secrets and are never returned by health or chat responses;
+- the AI service endpoints require an independent server-to-server token and remain read-only;
+- Langfuse credentials stay in runtime secrets and are never returned by health or AI responses;
 - GitHub Actions has read-only repository permissions;
 - hosted credentials belong in provider-managed secrets.

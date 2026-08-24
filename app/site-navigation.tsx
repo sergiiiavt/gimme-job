@@ -5,7 +5,7 @@ import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
-export type ExternalNavigationId = "qa-fundamentals" | "testing-tools" | "metrics-estimation";
+export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation";
 
 interface SectionNavigationItem {
   id: SiteSection;
@@ -49,6 +49,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
       { id: "jobs", label: "Vacancies" },
       { id: "resume", label: "My Resume" },
       { id: "interview", label: "Interview questions" },
+      {
+        id: "ai-assistant",
+        label: "AI Assistant",
+        external: true,
+        publicHref: "/ai-assistant",
+        personalHref: "/ai-assistant",
+      },
       { id: "trends", label: "Trends" },
     ],
   },
@@ -359,6 +366,21 @@ const responsiveAccountStyle = `
 }
 
 @media (max-width: 1100px) {
+  .kb-navigation .kb-brand {
+    gap: 5px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  .kb-navigation .kb-brand svg {
+    height: 28px !important;
+    width: 28px !important;
+  }
+
+  .kb-navigation .kb-brand strong {
+    font-size: 15px !important;
+  }
+
   .kb-navigation .kb-nav-link {
     font-size: 10.5px;
     gap: 6px;
@@ -419,6 +441,8 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
       return <svg {...props}><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg>;
     case "interview":
       return <svg {...props}><path d="M4 5h16v11H9l-5 4z"/></svg>;
+    case "ai-assistant":
+      return <svg {...props}><path d="M7 4h10l3 3v10l-3 3H7l-3-3V7zM9 9h.01M15 9h.01M9 14h6M12 4V2"/></svg>;
     case "trends":
       return <svg {...props}><path d="m4 17 5-5 4 3 7-8M15 7h5v5"/></svg>;
     case "qa-fundamentals":
@@ -560,7 +584,14 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
         ) : (
           <nav aria-label={`${secondaryTitle} subsections`}>
             {secondaryItems.map((item) => (
-              <button className={activeSubsection === item.id ? "active" : ""} key={item.id} onClick={() => onSelectSubsection(item.id)}>
+              <button
+                aria-current={activeSubsection === item.id ? "page" : undefined}
+                aria-pressed={activeSubsection === item.id}
+                className={activeSubsection === item.id ? "active" : ""}
+                key={item.id}
+                onClick={() => onSelectSubsection(item.id)}
+                type="button"
+              >
                 <span>{item.label}</span>
                 {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
               </button>

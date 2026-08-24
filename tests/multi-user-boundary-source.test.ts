@@ -95,6 +95,10 @@ test("multi-user canonical login and registration render local account forms", a
   assert.equal(login.status, 200);
   assert.match(await login.text(), /Sign in/);
 
+  const assistantLogin = await boundary.fetch(new Request("https://example.com/login", { headers: { referer: "https://example.com/ai-assistant/interview" } }), env, undefined);
+  assert.equal(assistantLogin.status, 200);
+  assert.match(assistantLogin.headers.get("set-cookie") ?? "", /gimmejob_auth_return=%2Fai-assistant%2Finterview/);
+
   const legacyRegister = await boundary.fetch(new Request("https://example.com/workspace/register?next=%2Fworkspace"), env, undefined);
   assert.equal(legacyRegister.status, 308);
   assert.equal(legacyRegister.headers.get("location"), "/register");

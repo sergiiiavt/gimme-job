@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { AI_ASSISTANT_TOPICS, INTERACTIVE_INTERVIEW_TOPIC, aiAssistantTopicHref } from "../../ai-assistant/assistant-navigation";
 import { SiteSidebar } from "../../site-navigation";
 import styles from "./interview-simulator.module.css";
 
@@ -278,17 +279,23 @@ export default function InterviewSimulator() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function selectAssistantTopic(topic: string) {
+    setMobileNav(false);
+    if (topic !== INTERACTIVE_INTERVIEW_TOPIC) window.location.assign(aiAssistantTopicHref(topic));
+  }
+
   return (
     <main className="kb-shell">
       <SiteSidebar
-        activeSection="interview"
-        activeSubsection=""
-        hideSecondary
+        activeExternalId="ai-assistant"
+        activeSection={null}
+        activeSubsection={INTERACTIVE_INTERVIEW_TOPIC}
         mobileOpen={mobileNav}
         mode="personal"
-        onSelectSubsection={() => undefined}
-        secondaryItems={[]}
-        secondaryTitle="Interview simulator"
+        onSelectSubsection={selectAssistantTopic}
+        personalHref="/ai-assistant/interview"
+        secondaryItems={AI_ASSISTANT_TOPICS}
+        secondaryTitle="AI Assistant"
       />
 
       <section className="kb-main">

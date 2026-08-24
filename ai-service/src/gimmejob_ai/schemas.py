@@ -24,6 +24,29 @@ class AssistantCard(BaseModel):
     source_path: str | None = None
 
 
+class LearningMapNode(BaseModel):
+    """One UI-ready node in a connected learning map."""
+
+    id: str = Field(min_length=1, max_length=120)
+    title: str = Field(min_length=1, max_length=240)
+    summary: str = Field(min_length=1, max_length=2_000)
+    kind: Literal["topic", "foundation", "concept", "practice", "source"]
+    source_path: str | None = Field(default=None, max_length=500)
+    duration_minutes: int | None = Field(default=None, ge=1, le=240)
+
+
+class LearningMapEdge(BaseModel):
+    source: str = Field(min_length=1, max_length=120)
+    target: str = Field(min_length=1, max_length=120)
+    label: str = Field(min_length=1, max_length=120)
+
+
+class LearningMap(BaseModel):
+    title: str = Field(default="Learning path", min_length=1, max_length=240)
+    nodes: list[LearningMapNode] = Field(default_factory=list, max_length=8)
+    edges: list[LearningMapEdge] = Field(default_factory=list, max_length=12)
+
+
 class AssistantResponse(BaseModel):
     """Structured final output from the LangChain agent."""
 
@@ -31,6 +54,7 @@ class AssistantResponse(BaseModel):
     cards: list[AssistantCard] = Field(default_factory=list)
     sources: list[str] = Field(default_factory=list)
     suggested_prompts: list[str] = Field(default_factory=list)
+    learning_map: LearningMap = Field(default_factory=LearningMap)
 
 
 class ChatResponse(BaseModel):
@@ -38,6 +62,23 @@ class ChatResponse(BaseModel):
     session_id: str
     model: str
     langfuse_tracing: bool
+    response: AssistantResponse
+
+
+class WorkflowStep(BaseModel):
+    id: str = Field(min_length=1, max_length=120)
+    label: str = Field(min_length=1, max_length=240)
+    detail: str = Field(min_length=1, max_length=1_000)
+
+
+class LearningAdvisorResponse(BaseModel):
+    request_id: str
+    session_id: str
+    model: str
+    langfuse_tracing: bool
+    orchestration: Literal["langgraph"] = "langgraph"
+    retrieval_mode: Literal["repository", "general"]
+    workflow_steps: list[WorkflowStep]
     response: AssistantResponse
 
 

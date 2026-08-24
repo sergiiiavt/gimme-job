@@ -37,8 +37,9 @@ const TRUSTED_AUTH_HEADERS = [
   "x-gimmejob-user-id",
   "x-gimmejob-authenticated",
 ] as const;
-const CANONICAL_RETURN_PREFIXES = ["/learn/", "/reference/"];
+const CANONICAL_RETURN_PREFIXES = ["/ai-assistant/", "/learn/", "/reference/"];
 const CANONICAL_RETURN_PATHS = new Set([
+  "/ai-assistant",
   "/about",
   "/vacancies",
   "/resume",

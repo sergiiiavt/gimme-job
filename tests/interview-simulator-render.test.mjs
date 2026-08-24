@@ -246,3 +246,24 @@ test("renders completed interview summaries for mixed, all-strong, and all-weak 
   }));
   assert.match(allWeak, /No area reached 65% in this session/);
 });
+
+test("moves the simulator into the AI Assistant workspace without changing its hook order", async () => {
+  const [simulatorSource, assistantNavigation, legacyPage, assistantPage, interviewCatalogPage] = await Promise.all([
+    readFile(new URL("../app/interview/simulator/interview-simulator.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ai-assistant/assistant-navigation.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/interview/simulator/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ai-assistant/interview/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/interview/interview-domain-page-client.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(simulatorSource, /activeExternalId="ai-assistant"/);
+  assert.match(simulatorSource, /activeSubsection=\{INTERACTIVE_INTERVIEW_TOPIC\}/);
+  assert.doesNotMatch(simulatorSource, /hideSecondary/);
+  assert.ok(
+    assistantNavigation.indexOf('label: "Interactive interview"') < assistantNavigation.indexOf('label: "Learning Path Advisor"'),
+    "Interactive interview must be the first AI Assistant topic.",
+  );
+  assert.match(legacyPage, /redirect\("\/ai-assistant\/interview"\)/);
+  assert.match(assistantPage, /<InterviewSimulator\/>/);
+  assert.doesNotMatch(interviewCatalogPage, /Run AI interview|simulatorLink|interview-page\.module\.css/);
+});
