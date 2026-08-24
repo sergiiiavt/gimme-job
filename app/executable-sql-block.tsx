@@ -9,22 +9,12 @@ const MAX_RUNS_PER_WORKER = 30;
 const INSPECT_TIMEOUT_MS = 60_000;
 
 type SqlCell = string | number | null;
-type SqlResult = {
-  columns: string[];
-  rows: SqlCell[][];
-  changes: number;
-  statementCount: number;
-  truncated: boolean;
-  message: string;
-};
-
 type SqlColumnInfo = {
   name: string;
   type: string;
   notNull: boolean;
   primaryKey: boolean;
 };
-
 type SqlTableInfo = {
   name: string;
   columns: SqlColumnInfo[];
@@ -32,9 +22,17 @@ type SqlTableInfo = {
   rowCount: number;
   truncated: boolean;
 };
-
 type SqlDatabaseInfo = {
   tables: SqlTableInfo[];
+};
+type SqlResult = {
+  columns: string[];
+  rows: SqlCell[][];
+  changes: number;
+  statementCount: number;
+  truncated: boolean;
+  message: string;
+  database?: SqlDatabaseInfo;
 };
 
 const sqlTokenPattern = /(--[^\n]*|\/\*[\s\S]*?\*\/)|('(?:''|[^'])*')|\b(SELECT|FROM|WHERE|GROUP|BY|HAVING|ORDER|ASC|DESC|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|ON|AS|WITH|RECURSIVE|UNION|ALL|EXCEPT|INTERSECT|DISTINCT|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|DROP|ALTER|INDEX|VIEW|CASE|WHEN|THEN|ELSE|END|OVER|PARTITION|ROWS|BETWEEN|UNBOUNDED|PRECEDING|CURRENT|ROW|AND|OR|NOT|NULL|IS|IN|EXISTS|LIKE|LIMIT|OFFSET|PRIMARY|KEY|FOREIGN|REFERENCES|DEFAULT|CHECK|UNIQUE|BEGIN|COMMIT|ROLLBACK|EXPLAIN)\b|\b(COUNT|SUM|AVG|MIN|MAX|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|COALESCE|NULLIF|ROUND|LOWER|UPPER|LENGTH|CAST)\b|\b(\d+(?:\.\d+)?)\b/gim;
@@ -74,9 +72,10 @@ function getSqlResult(message: WorkerRunnerMessage): SqlResult | null {
 
 function getDatabaseInfo(message: WorkerRunnerMessage): SqlDatabaseInfo | null {
   if (!message.result || typeof message.result !== "object") return null;
-  const candidate = message.result as Partial<SqlDatabaseInfo>;
-  if (!Array.isArray(candidate.tables)) return null;
-  return candidate as SqlDatabaseInfo;
+  const candidate = message.result as Partial<SqlResult> & Partial<SqlDatabaseInfo>;
+  if (candidate.database && Array.isArray(candidate.database.tables)) return candidate.database;
+  if (Array.isArray(candidate.tables)) return { tables: candidate.tables as SqlTableInfo[] };
+  return null;
 }
 
 function formatSqlResult(message: WorkerRunnerMessage) {
@@ -91,11 +90,11 @@ function ResultTable({ result }: { result: SqlResult }) {
 
   return (
     <div aria-live="polite" style={{ direction: "ltr", minWidth: "100%", padding: "14px 16px 18px 24px" }}>
-      <table style={{ borderCollapse: "collapse", color: "#d4d4d4", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, minWidth: "100%", whiteSpace: "nowrap" }}>
+      <table style={{ borderCollapse: "collapse", color: "#d4d4d4", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", fontSize: 12, minWidth: `${Math.max(360, result.columns.length * 96)}px`, tableLayout: "auto", width: "100%" }}>
         <thead>
           <tr>
             {result.columns.map((column) => (
-              <th key={column} style={{ borderBottom: "1px solid #454545", color: "#c8c8c8", fontWeight: 700, padding: "7px 10px", textAlign: "left" }}>{column}</th>
+              <th key={column} style={{ borderBottom: "1px solid #454545", color: "#c8c8c8", fontWeight: 700, maxWidth: 240, overflowWrap: "anywhere", padding: "7px 10px", textAlign: "left" }}>{column}</th>
             ))}
           </tr>
         </thead>
@@ -103,7 +102,7 @@ function ResultTable({ result }: { result: SqlResult }) {
           {result.rows.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {result.columns.map((column, columnIndex) => (
-                <td key={`${column}-${columnIndex}`} style={{ borderBottom: "1px solid #303030", padding: "7px 10px", textAlign: "left" }}>
+                <td key={`${column}-${columnIndex}`} style={{ borderBottom: "1px solid #303030", maxWidth: 240, overflowWrap: "anywhere", padding: "7px 10px", textAlign: "left", verticalAlign: "top" }}>
                   {row[columnIndex] === null ? <span style={{ color: "#858585" }}>NULL</span> : String(row[columnIndex] ?? "")}
                 </td>
               ))}
@@ -143,7 +142,7 @@ function DatabasePanel({
       <div className={styles.databaseHeader}>
         <div>
           <strong>Sample database</strong>
-          <span>Starting state · resets on every Run</span>
+          <span>Current session · Reset restores sample data</span>
         </div>
         {database ? <span>{database.tables.length} tables</span> : null}
       </div>
@@ -163,8 +162,8 @@ function DatabasePanel({
                 role="tab"
                 type="button"
               >
-                {candidate.name}
-                <span>{candidate.rowCount}</span>
+                <span className={styles.databaseTabName}>{candidate.name}</span>
+                <span className={styles.databaseTabCount}>{candidate.rowCount}</span>
               </button>
             ))}
           </div>
@@ -175,7 +174,7 @@ function DatabasePanel({
           </div>
 
           <div className={styles.databaseTableScroll}>
-            <table className={styles.databaseTable}>
+            <table className={styles.databaseTable} style={{ minWidth: `${Math.max(360, table.columns.length * 96)}px` }}>
               <thead>
                 <tr>
                   {table.columns.map((column) => (
@@ -216,13 +215,35 @@ export default function ExecutableSqlBlock({ code }: { code: string }) {
   const inspectorTimeoutRef = useRef<number | null>(null);
   const inspectorRequestIdRef = useRef(0);
 
+  const stopInspector = () => {
+    if (inspectorTimeoutRef.current !== null) {
+      window.clearTimeout(inspectorTimeoutRef.current);
+      inspectorTimeoutRef.current = null;
+    }
+    inspectorWorkerRef.current?.terminate();
+    inspectorWorkerRef.current = null;
+  };
+
   useEffect(() => () => {
     if (inspectorTimeoutRef.current !== null) window.clearTimeout(inspectorTimeoutRef.current);
     inspectorWorkerRef.current?.terminate();
   }, []);
 
-  const loadDatabase = () => {
-    if (database || databaseLoading) return;
+  const applyDatabase = (nextDatabase: SqlDatabaseInfo) => {
+    setDatabase(nextDatabase);
+    setDatabaseError("");
+    setDatabaseLoading(false);
+    setSelectedTable((current) => {
+      if (current && nextDatabase.tables.some((table) => table.name === current)) return current;
+      const normalizedCode = code.toLowerCase();
+      const referenced = nextDatabase.tables.find((table) => normalizedCode.includes(table.name.toLowerCase()));
+      return referenced?.name ?? nextDatabase.tables[0]?.name ?? "";
+    });
+  };
+
+  const loadDatabase = (force = false) => {
+    if (!force && (database || databaseLoading)) return;
+    if (force) stopInspector();
 
     const requestId = inspectorRequestIdRef.current + 1;
     inspectorRequestIdRef.current = requestId;
@@ -244,22 +265,20 @@ export default function ExecutableSqlBlock({ code }: { code: string }) {
       const next = event.data;
       if (next.id !== requestId || next.type === "running") return;
       cleanup();
-      setDatabaseLoading(false);
       if (next.error) {
+        setDatabaseLoading(false);
         setDatabaseError(next.error);
         return;
       }
 
       const nextDatabase = getDatabaseInfo(next);
       if (!nextDatabase) {
+        setDatabaseLoading(false);
         setDatabaseError("Sample database could not be read.");
         return;
       }
 
-      setDatabase(nextDatabase);
-      const normalizedCode = code.toLowerCase();
-      const referenced = nextDatabase.tables.find((table) => normalizedCode.includes(table.name.toLowerCase()));
-      setSelectedTable(referenced?.name ?? nextDatabase.tables[0]?.name ?? "");
+      applyDatabase(nextDatabase);
     };
 
     const handleError = () => {
@@ -282,6 +301,21 @@ export default function ExecutableSqlBlock({ code }: { code: string }) {
     const nextOpen = !databaseOpen;
     setDatabaseOpen(nextOpen);
     if (nextOpen && !database && !databaseLoading) loadDatabase();
+  };
+
+  const handleRunComplete = (message: WorkerRunnerMessage) => {
+    if (message.error) return;
+    const nextDatabase = getDatabaseInfo(message);
+    if (nextDatabase) applyDatabase(nextDatabase);
+  };
+
+  const handleReset = () => {
+    stopInspector();
+    setDatabase(null);
+    setSelectedTable("");
+    setDatabaseError("");
+    setDatabaseLoading(false);
+    if (databaseOpen) loadDatabase(true);
   };
 
   return (
@@ -316,6 +350,8 @@ export default function ExecutableSqlBlock({ code }: { code: string }) {
       loadingMessage="Loading SQLite runtime…"
       maxCodeLength={MAX_CODE_LENGTH}
       maxRunsPerWorker={MAX_RUNS_PER_WORKER}
+      onReset={handleReset}
+      onRunComplete={handleRunComplete}
       readyMeta="SQLite · sample DB · browser sandbox"
       renderResult={renderSqlResult}
       runnerErrorMessage="SQL runner failed to start. Try again."

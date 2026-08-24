@@ -29,6 +29,8 @@ type ExecutableCodeRunnerProps = {
   renderResult?: (message: WorkerRunnerMessage) => ReactNode | null;
   additionalActions?: ReactNode;
   additionalPanel?: ReactNode;
+  onRunComplete?: (message: WorkerRunnerMessage) => void;
+  onReset?: () => void;
 };
 
 const LOAD_TIMEOUT_MS = 60_000;
@@ -64,6 +66,8 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
     renderResult,
     additionalActions,
     additionalPanel,
+    onRunComplete,
+    onReset,
   } = props;
   const [draft, setDraft] = useState(code);
   const [message, setMessage] = useState(initialMessage);
@@ -170,6 +174,7 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
       setStatus("idle");
       setOutcome(next);
       setMessage(formatResult(next));
+      onRunComplete?.(next);
       runCountRef.current += 1;
       if (runCountRef.current >= maxRunsPerWorker) destroyWorker();
     };
@@ -202,6 +207,7 @@ export default function ExecutableCodeRunner(props: ExecutableCodeRunnerProps) {
     setStatus("idle");
     setOutcome(null);
     setMessage(initialMessage);
+    onReset?.();
     resetHorizontalScroll(editorScrollRef.current);
   };
 

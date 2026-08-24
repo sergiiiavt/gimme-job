@@ -269,6 +269,14 @@ def _cell(value):
     return text[:_MAX_CELL_CHARS] + ("…" if len(text) > _MAX_CELL_CHARS else "")
 
 
+def _ensure_connection():
+    global _conn
+    if "_conn" not in globals():
+        _conn = sqlite3.connect(":memory:")
+        _conn.executescript(__seed__)
+    return _conn
+
+
 if _BLOCKED.search(__query__):
     raise RuntimeError("ATTACH, DETACH, VACUUM and load_extension are disabled in the SQL runner.")
 
@@ -276,14 +284,13 @@ _statements = _split_statements(__query__)
 if not _statements:
     raise RuntimeError("Enter a complete SQL statement before running.")
 
-_conn = sqlite3.connect(":memory:")
-try:
-    _conn.executescript(__seed__)
-    _baseline_changes = _conn.total_changes
-    _columns = []
-    _rows = []
-    _truncated = False
+_conn = _ensure_connection()
+_baseline_changes = _conn.total_changes
+_columns = []
+_rows = []
+_truncated = False
 
+try:
     for _statement in _statements:
         _names = set(_PARAM.findall(_statement))
         _missing = sorted(name for name in _names if name not in _DEFAULT_PARAMS)
@@ -303,23 +310,25 @@ try:
             _columns = []
             _rows = []
             _truncated = False
+    _conn.commit()
+except Exception:
+    _conn.rollback()
+    raise
 
-    _changes = _conn.total_changes - _baseline_changes
-    _message = (
-        f"{_changes} row{'s' if _changes != 1 else ''} changed."
-        if _changes
-        else "Query executed successfully."
-    )
-    __result_json__ = json.dumps({
-        "columns": _columns,
-        "rows": _rows,
-        "changes": _changes,
-        "statementCount": len(_statements),
-        "truncated": _truncated,
-        "message": _message,
-    })
-finally:
-    _conn.close()
+_changes = _conn.total_changes - _baseline_changes
+_message = (
+    f"{_changes} row{'s' if _changes != 1 else ''} changed."
+    if _changes
+    else "Query executed successfully."
+)
+__result_json__ = json.dumps({
+    "columns": _columns,
+    "rows": _rows,
+    "changes": _changes,
+    "statementCount": len(_statements),
+    "truncated": _truncated,
+    "message": _message,
+})
 `;
 
 const INSPECT_WRAPPER = String.raw`
@@ -344,42 +353,47 @@ def _cell(value):
     return text[:_MAX_CELL_CHARS] + ("…" if len(text) > _MAX_CELL_CHARS else "")
 
 
-_conn = sqlite3.connect(":memory:")
-try:
-    _conn.executescript(__seed__)
-    _tables = []
-    _names = [row[0] for row in _conn.execute(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
-    )]
+def _ensure_connection():
+    global _conn
+    if "_conn" not in globals():
+        _conn = sqlite3.connect(":memory:")
+        _conn.executescript(__seed__)
+    return _conn
 
-    for _name in _names:
-        _safe_name = _name.replace('"', '""')
-        _column_rows = _conn.execute(f'PRAGMA table_info("{_safe_name}")').fetchall()
-        _columns = [
-            {
-                "name": row[1],
-                "type": row[2] or "",
-                "notNull": bool(row[3]),
-                "primaryKey": bool(row[5]),
-            }
-            for row in _column_rows
-        ]
-        _row_count = _conn.execute(f'SELECT COUNT(*) FROM "{_safe_name}"').fetchone()[0]
-        _fetched = _conn.execute(f'SELECT * FROM "{_safe_name}" LIMIT {_MAX_PREVIEW_ROWS + 1}').fetchall()
-        _tables.append({
-            "name": _name,
-            "columns": _columns,
-            "rows": [[_cell(value) for value in row] for row in _fetched[:_MAX_PREVIEW_ROWS]],
-            "rowCount": _row_count,
-            "truncated": len(_fetched) > _MAX_PREVIEW_ROWS,
-        })
 
-    __result_json__ = json.dumps({"tables": _tables})
-finally:
-    _conn.close()
+_conn = _ensure_connection()
+_tables = []
+_names = [row[0] for row in _conn.execute(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+)]
+
+for _name in _names:
+    _safe_name = _name.replace('"', '""')
+    _column_rows = _conn.execute(f'PRAGMA table_info("{_safe_name}")').fetchall()
+    _columns = [
+        {
+            "name": row[1],
+            "type": row[2] or "",
+            "notNull": bool(row[3]),
+            "primaryKey": bool(row[5]),
+        }
+        for row in _column_rows
+    ]
+    _row_count = _conn.execute(f'SELECT COUNT(*) FROM "{_safe_name}"').fetchone()[0]
+    _fetched = _conn.execute(f'SELECT * FROM "{_safe_name}" LIMIT {_MAX_PREVIEW_ROWS + 1}').fetchall()
+    _tables.append({
+        "name": _name,
+        "columns": _columns,
+        "rows": [[_cell(value) for value in row] for row in _fetched[:_MAX_PREVIEW_ROWS]],
+        "rowCount": _row_count,
+        "truncated": len(_fetched) > _MAX_PREVIEW_ROWS,
+    })
+
+__result_json__ = json.dumps({"tables": _tables})
 `;
 
 let pyodidePromise;
+let sessionGlobals;
 
 async function getPyodide() {
   if (!pyodidePromise) {
@@ -390,11 +404,29 @@ async function getPyodide() {
       lockDownWorkerCapabilities();
       return pyodide;
     })().catch((error) => {
+      sessionGlobals?.destroy();
+      sessionGlobals = undefined;
       pyodidePromise = undefined;
       throw error;
     });
   }
   return pyodidePromise;
+}
+
+function getSessionGlobals(pyodide) {
+  if (!sessionGlobals) {
+    const createDict = pyodide.globals.get("dict");
+    sessionGlobals = createDict();
+    createDict.destroy();
+    sessionGlobals.set("__seed__", SEED_SQL);
+  }
+  return sessionGlobals;
+}
+
+function readJsonResult(globals) {
+  const raw = globals.get("__result_json__");
+  if (raw == null) throw new Error("SQL runtime returned no result.");
+  return JSON.parse(String(raw));
 }
 
 self.onmessage = async (event) => {
@@ -414,30 +446,25 @@ self.onmessage = async (event) => {
     }
   }
 
-  let globals;
   try {
     const pyodide = await getPyodide();
+    const globals = getSessionGlobals(pyodide);
     self.postMessage({ id, type: "running" });
-    const createDict = pyodide.globals.get("dict");
-    globals = createDict();
-    createDict.destroy();
-    globals.set("__seed__", SEED_SQL);
 
     if (action === "inspect") {
       await pyodide.runPythonAsync(INSPECT_WRAPPER, { globals });
-    } else {
-      globals.set("__query__", code);
-      await pyodide.runPythonAsync(SQL_WRAPPER, { globals });
+      self.postMessage({ id, type: "result", result: readJsonResult(globals) });
+      return;
     }
 
-    const raw = globals.get("__result_json__");
-    if (raw == null) throw new Error("SQL runtime returned no result.");
-    const result = JSON.parse(String(raw));
+    globals.set("__query__", code);
+    await pyodide.runPythonAsync(SQL_WRAPPER, { globals });
+    const result = readJsonResult(globals);
+    await pyodide.runPythonAsync(INSPECT_WRAPPER, { globals });
+    result.database = readJsonResult(globals);
     self.postMessage({ id, type: "result", result });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     self.postMessage({ id, type: "result", error: message.slice(0, 8_000) });
-  } finally {
-    globals?.destroy();
   }
 };
