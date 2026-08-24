@@ -270,7 +270,8 @@ class LearningAdvisorGraph:
     async def _retrieve_canonical_rag(self, state: LearningAdvisorState) -> dict[str, object]:
         query = state["query"]
         language = state["language"]
-        result: RetrievalResult
+        result: RetrievalResult | None = None
+        retrieval_started = False
 
         if langfuse_configured():
             try:
@@ -280,31 +281,35 @@ class LearningAdvisorGraph:
                     name="canonical-rag-retrieval",
                     input={"query": query, "language": language, "limit": 8},
                 ) as observation:
+                    retrieval_started = True
                     result = await self.retriever.search(query, language, limit=8)
-                    observation.update(
-                        output={
-                            "strategy": result.strategy,
-                            "count": len(result.hits),
-                            "results": [
-                                {
-                                    "id": hit.id,
-                                    "ref_id": hit.ref_id,
-                                    "kind": hit.kind,
-                                    "title": hit.title,
-                                    "score": hit.score,
-                                    "source_path": hit.source_path,
-                                }
-                                for hit in result.hits
-                            ],
-                        },
-                        metadata={"embedding_model": result.embedding_model},
-                    )
+                    try:
+                        observation.update(
+                            output={
+                                "strategy": result.strategy,
+                                "count": len(result.hits),
+                                "results": [
+                                    {
+                                        "id": hit.id,
+                                        "ref_id": hit.ref_id,
+                                        "kind": hit.kind,
+                                        "title": hit.title,
+                                        "score": hit.score,
+                                        "source_path": hit.source_path,
+                                    }
+                                    for hit in result.hits
+                                ],
+                            },
+                            metadata={"embedding_model": result.embedding_model},
+                        )
+                    except Exception:
+                        logger.warning("Langfuse retriever observation update failed; retrieval result preserved.")
             except Exception as error:
-                if isinstance(error, RuntimeError):
+                if retrieval_started and result is None:
                     raise
                 logger.warning("Langfuse retriever observation failed with %s", type(error).__name__)
-                result = await self.retriever.search(query, language, limit=8)
-        else:
+
+        if result is None:
             result = await self.retriever.search(query, language, limit=8)
 
         hits = list(result.hits)
