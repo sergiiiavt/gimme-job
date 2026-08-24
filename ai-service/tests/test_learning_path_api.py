@@ -26,7 +26,7 @@ class _FakeLearningAdvisor:
         return (
             AssistantResponse(
                 answer="Repository-grounded path",
-                sources=["python-learning/advanced-lessons.json#parallelism"],
+                sources=["python-interview/python-parallelism"],
                 learning_map=LearningMap(
                     title="Python parallelism",
                     nodes=[
@@ -35,7 +35,7 @@ class _FakeLearningAdvisor:
                             title="Parallelism",
                             summary="Learn processes and their trade-offs.",
                             kind="concept",
-                            source_path="python-learning/advanced-lessons.json#parallelism",
+                            source_path="python-interview/python-parallelism",
                             duration_minutes=30,
                         )
                     ],
@@ -46,7 +46,7 @@ class _FakeLearningAdvisor:
             [
                 WorkflowStep(
                     id="retrieve",
-                    label="Retrieve Git materials",
+                    label="Retrieve canonical RAG context",
                     detail="Found one material.",
                 )
             ],
@@ -69,6 +69,8 @@ class LearningPathApiTests(unittest.TestCase):
             content_root=content_root,
             openai_api_key=SecretStr("openai-test-key"),
             service_token=SecretStr("test-token"),
+            rag_url="http://localhost/internal/rag/search",
+            rag_service_token=SecretStr("rag-test-token"),
         )
 
     def test_learning_path_requires_bearer_token(self) -> None:
@@ -121,7 +123,7 @@ class LearningPathApiTests(unittest.TestCase):
             self.assertEqual(body["retrieval_mode"], "repository")
             self.assertEqual(body["workflow_steps"][0]["id"], "retrieve")
             node = body["response"]["learning_map"]["nodes"][0]
-            self.assertEqual(node["source_path"], "python-learning/advanced-lessons.json#parallelism")
+            self.assertEqual(node["source_path"], "python-interview/python-parallelism")
             self.assertEqual(node["duration_minutes"], 30)
             self.assertTrue(body["langfuse_tracing"])
 
