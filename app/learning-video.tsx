@@ -166,9 +166,7 @@ export default function LearningVideo({ channel, channelUrl, title, videoId }: {
       </div>
       <div className={styles.meta}>
         <strong>{title}</strong>
-        <span>
-          Source channel: <a href={channelUrl} rel="noopener noreferrer" target="_blank">{channel}</a> · YouTube
-        </span>
+        <span><a href={channelUrl} rel="noopener noreferrer" target="_blank">{channel}</a> · YouTube</span>
       </div>
       <div className={styles.controls} role="group" aria-label="Playback speed">
         <span className={styles.controlsLabel}>Speed</span>
