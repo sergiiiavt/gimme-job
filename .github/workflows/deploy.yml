@@ -76,11 +76,11 @@ jobs:
 
           check_logo() {
             local file="/tmp/gimmejob-logo.png"
-            local signature
+            local hash
             curl --fail --silent --show-error --location --max-time 20 \
               --output "$file" "$1" || return 1
-            signature="$(head -c 8 "$file" | od -An -t x1 | tr -d ' \n')"
-            test "$signature" = "89504e470d0a1a0a"
+            hash="$(sha256sum "$file" | awk '{print $1}')"
+            test "$hash" = "bc08029dfcb097c555315bbe79eaaab52bb5fe92671f8a75c6a87d48be707684"
           }
 
           check_health() {
