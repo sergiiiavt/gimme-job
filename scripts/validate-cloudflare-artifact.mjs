@@ -8,9 +8,10 @@ export async function validateCloudflareArtifact() {
   const worker = path.join(projectRoot, "dist", "server", "index.js");
   const wranglerConfig = path.join(projectRoot, "dist", "server", "wrangler.json");
   const clientAssets = path.join(projectRoot, "dist", "client");
+  const logoAsset = path.join(clientAssets, "gimmejob-logo.png");
 
-  await Promise.all([access(worker), access(wranglerConfig), access(clientAssets)]).catch(() => {
-    throw new Error("Missing Cloudflare Worker, generated configuration, or client assets.");
+  await Promise.all([access(worker), access(wranglerConfig), access(clientAssets), access(logoAsset)]).catch(() => {
+    throw new Error("Missing Cloudflare Worker, generated configuration, client assets, or approved GimmeJob logo.");
   });
 
   const config = JSON.parse(await readFile(wranglerConfig, "utf8"));
@@ -19,7 +20,7 @@ export async function validateCloudflareArtifact() {
     throw new Error("Generated Cloudflare configuration has no DB binding.");
   }
 
-  console.log("Validated Cloudflare Worker, client assets and D1 binding.");
+  console.log("Validated Cloudflare Worker, client assets, approved logo and D1 binding.");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
