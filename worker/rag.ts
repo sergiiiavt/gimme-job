@@ -10,7 +10,8 @@ import sqlQuickReference from "../content/data-learning/sql-quick-reference.json
 import testingToolsCatalog from "../content/testing-tools/catalog";
 
 type Json = Record<string, unknown>;
-type RagKind = "job" | "learning" | "question";
+export type RagKind = "job" | "learning" | "question";
+export type RagRetrievalMode = "vectorize" | "lexical-fallback";
 
 export type RagDocument = {
   id: string;
@@ -25,6 +26,26 @@ export type RagMatch = {
   id: string;
   score: number;
   metadata: Record<string, unknown>;
+};
+
+export type RagSearchResult = {
+  id: string;
+  kind: RagKind;
+  refId: string;
+  title: string;
+  text: string;
+  score: number;
+  sourcePath: string;
+  route: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export type RagSearchResponse = {
+  query: string;
+  retrieval: RagRetrievalMode;
+  embeddingModel: string;
+  count: number;
+  results: RagSearchResult[];
 };
 
 type AiEmbeddingResponse = {
@@ -60,6 +81,14 @@ export type RagEnv = {
 const EMBEDDING_MODEL = "@cf/baai/bge-m3";
 const EMBEDDING_TEXT_LIMIT = 1_800;
 const INDEX_BATCH_LIMIT = 32;
+const SEARCH_TEXT_LIMIT = 6_000;
+const MIN_VECTOR_SCORE = 0.45;
+const QUERY_TOKEN_RE = /[\p{L}\p{N}+#.-]+/gu;
+const QUERY_STOP_WORDS = new Set([
+  "a", "an", "and", "about", "do", "does", "explain", "for", "from", "give", "help", "how", "in", "is",
+  "learn", "me", "need", "of", "path", "please", "show", "teach", "the", "to", "understand", "want", "what", "with",
+  "вивчити", "допоможи", "мені", "навчи", "покажи", "поясни", "про", "стати", "хочу", "що", "як",
+]);
 
 const learningCatalogs: Array<{
   key: string;
@@ -134,6 +163,7 @@ function learningDocuments(): RagDocument[] {
     const refId = clean(item.id, 300) || `${key}-${index + 1}`;
     const title = learningTitle(item);
     const text = compactText([title, ...collectStrings(item)]);
+    const topic = clean(item.moduleId || item.id, 300);
     return {
       id: compactVectorId("l", `${key}:${refId}`),
       kind: "learning" as const,
@@ -146,6 +176,7 @@ function learningDocuments(): RagDocument[] {
         title: title.slice(0, 500),
         catalog: key,
         route,
+        ...(topic ? { topic } : {}),
         snippet: text.slice(0, 900),
       },
     };
@@ -177,6 +208,7 @@ function questionDocuments(): RagDocument[] {
         title: title.slice(0, 500),
         category: clean(question.category, 300),
         prevalence: clean(question.prevalence, 100),
+        route: "/interview",
         snippet: text.slice(0, 900),
       },
     };
@@ -221,6 +253,7 @@ async function jobDocuments(env: RagEnv): Promise<RagDocument[]> {
         source: clean(row.source, 300),
         remote: row.remote === 1 || row.remote === true,
         url: clean(row.url, 1_000),
+        route: "/vacancies",
         updatedAt: clean(row.updated_at, 100),
         snippet: text.slice(0, 900),
       },
@@ -264,6 +297,166 @@ export async function semanticSearch(
       metadata: match.metadata ?? {},
     }))
     .slice(0, Math.max(1, limit));
+}
+
+function queryTokens(query: string): string[] {
+  const raw = query.toLowerCase().match(QUERY_TOKEN_RE) ?? [];
+  const unique = [...new Set(raw.map((token) => token.replace(/^[-.]+|[-.]+$/g, "")).filter((token) => token.length >= 2))];
+  const meaningful = unique.filter((token) => !QUERY_STOP_WORDS.has(token));
+  return (meaningful.length ? meaningful : unique).slice(0, 24);
+}
+
+function lexicalDocumentScore(document: RagDocument, query: string): number | null {
+  const tokens = queryTokens(query);
+  if (!tokens.length) return null;
+  const title = document.title.toLowerCase();
+  const text = document.text.toLowerCase();
+  const matched = tokens.filter((token) => title.includes(token) || text.includes(token));
+  const minimumMatches = tokens.length === 1 ? 1 : tokens.length <= 4 ? 2 : Math.min(3, Math.ceil(tokens.length / 4));
+  if (matched.length < minimumMatches) return null;
+
+  const titleMatches = matched.filter((token) => title.includes(token)).length;
+  const coverage = matched.length / tokens.length;
+  const titleCoverage = titleMatches / tokens.length;
+  const phrase = query.trim().toLowerCase();
+  const phraseBonus = phrase && (title.includes(phrase) || text.includes(phrase)) ? 0.15 : 0;
+  return Math.min(1, coverage * 0.65 + titleCoverage * 0.2 + phraseBonus);
+}
+
+async function documentsForKinds(env: RagEnv, kinds: RagKind[]): Promise<RagDocument[]> {
+  const allowed = new Set(kinds);
+  const documents = staticRagDocuments().filter((document) => allowed.has(document.kind));
+  if (allowed.has("job")) documents.push(...await jobDocuments(env));
+  return documents;
+}
+
+function sourcePath(document: RagDocument): string {
+  const route = clean(document.metadata.route, 1_000);
+  if (!route.startsWith("/") || route.startsWith("//")) return "/";
+  if (document.kind !== "learning") return route;
+  const topic = clean(document.metadata.topic, 300);
+  return topic ? `${route}?topic=${encodeURIComponent(topic)}` : route;
+}
+
+function presentDocument(document: RagDocument, score: number, metadata: Record<string, unknown> = document.metadata): RagSearchResult {
+  const route = clean(document.metadata.route, 1_000);
+  return {
+    id: document.id,
+    kind: document.kind,
+    refId: document.refId,
+    title: document.title,
+    text: document.text.slice(0, SEARCH_TEXT_LIMIT),
+    score,
+    sourcePath: sourcePath(document),
+    route: route.startsWith("/") && !route.startsWith("//") ? route : null,
+    metadata,
+  };
+}
+
+function materializeSemanticResults(
+  matches: RagMatch[],
+  documents: RagDocument[],
+  limit: number,
+): RagSearchResult[] {
+  const byId = new Map(documents.map((document) => [document.id, document]));
+  const results: RagSearchResult[] = [];
+  for (const match of matches) {
+    if (match.score < MIN_VECTOR_SCORE) continue;
+    const document = byId.get(match.id);
+    if (!document) continue;
+    results.push(presentDocument(document, match.score, match.metadata));
+    if (results.length >= limit) break;
+  }
+  return results;
+}
+
+function lexicalSearch(documents: RagDocument[], query: string, limit: number): RagSearchResult[] {
+  return documents
+    .map((document) => ({ document, score: lexicalDocumentScore(document, query) }))
+    .filter((item): item is { document: RagDocument; score: number } => item.score !== null)
+    .sort((left, right) => right.score - left.score || left.document.title.localeCompare(right.document.title))
+    .slice(0, limit)
+    .map(({ document, score }) => presentDocument(document, score));
+}
+
+export async function searchRagDocuments(
+  env: RagEnv,
+  query: string,
+  kinds: RagKind[] = ["learning", "question"],
+  requestedLimit = 8,
+): Promise<RagSearchResponse> {
+  const normalizedQuery = query.trim().slice(0, 2_000);
+  const limit = Math.max(1, Math.min(12, Math.trunc(requestedLimit) || 8));
+  const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
+  const selectedKinds = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
+  const documents = await documentsForKinds(env, selectedKinds);
+
+  if (normalizedQuery && ragAvailable(env)) {
+    try {
+      const matches = await semanticSearch(env, normalizedQuery, selectedKinds, Math.min(50, limit * 3));
+      const results = materializeSemanticResults(matches, documents, limit);
+      if (results.length) {
+        return {
+          query: normalizedQuery,
+          retrieval: "vectorize",
+          embeddingModel: EMBEDDING_MODEL,
+          count: results.length,
+          results,
+        };
+      }
+    } catch {
+      // The canonical retriever deliberately degrades inside one pipeline instead of
+      // pushing every consumer into its own fallback implementation.
+    }
+  }
+
+  const results = normalizedQuery ? lexicalSearch(documents, normalizedQuery, limit) : [];
+  return {
+    query: normalizedQuery,
+    retrieval: "lexical-fallback",
+    embeddingModel: EMBEDDING_MODEL,
+    count: results.length,
+    results,
+  };
+}
+
+export async function handleRagSearchRequest(request: Request, env: RagEnv): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("Method not allowed.", {
+      status: 405,
+      headers: { allow: "POST", "cache-control": "no-store" },
+    });
+  }
+
+  let body: Json;
+  try {
+    body = await request.json() as Json;
+  } catch {
+    return Response.json({ error: "Request body must be valid JSON." }, { status: 400, headers: { "cache-control": "no-store" } });
+  }
+
+  const query = clean(body.query, 2_000);
+  if (!query) return Response.json({ error: "query is required." }, { status: 400, headers: { "cache-control": "no-store" } });
+
+  const rawKinds = Array.isArray(body.kinds) ? body.kinds.map((kind) => clean(kind, 30)) : ["learning", "question"];
+  const kinds = rawKinds.filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
+  if (!kinds.length || kinds.length !== rawKinds.length) {
+    return Response.json({ error: "kinds must contain only job, learning, or question." }, { status: 400, headers: { "cache-control": "no-store" } });
+  }
+  const limit = typeof body.limit === "number" && Number.isInteger(body.limit) ? body.limit : 8;
+  if (limit < 1 || limit > 12) {
+    return Response.json({ error: "limit must be between 1 and 12." }, { status: 400, headers: { "cache-control": "no-store" } });
+  }
+
+  try {
+    const result = await searchRagDocuments(env, query, kinds, limit);
+    return Response.json({ ok: true, ...result }, { headers: { "cache-control": "no-store" } });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "RAG search failed." },
+      { status: 500, headers: { "cache-control": "no-store" } },
+    );
+  }
 }
 
 export async function reindexRagBatch(
