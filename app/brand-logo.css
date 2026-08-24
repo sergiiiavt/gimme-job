@@ -1,9 +1,13 @@
-/* Use the native transparent logo so the sidebar/menu background shows through exactly.
-   The previous image-based logo baked its own background color into the WebP. */
+/* Approved GimmeJob logo asset.
+   Keep the selected image artwork intact; do not replace it with the native SVG/text fallback.
+   Background treatment may be adjusted separately, but the logo artwork itself must remain this asset. */
 .kb-brand,
 .kb-mobile-brand {
   background-color: transparent;
-  background-image: none;
+  background-image: url("/gimmejob-logo.png");
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: contain;
   box-sizing: border-box;
   width: 188px;
 }
@@ -12,7 +16,7 @@
 .kb-brand > strong,
 .kb-mobile-brand > svg,
 .kb-mobile-brand > strong {
-  visibility: visible !important;
+  visibility: hidden !important;
 }
 
 .kb-brand {
