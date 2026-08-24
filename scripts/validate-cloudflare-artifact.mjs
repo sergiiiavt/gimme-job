@@ -2,13 +2,28 @@ import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APPROVED_LOGO_SHA256 = "bc08029dfcb097c555315bbe79eaaab52bb5fe92671f8a75c6a87d48be707684";
+const APPROVED_LOGO_WIDTH = 600;
+const APPROVED_LOGO_HEIGHT = 171;
+const APPROVED_LOGO_PIXEL_SHA256 = "713c1322cd53bb7a0e9fb084e6281d0cd5d224245592ddaa034dc8d6a2c6016c";
 
-async function sha256(filePath) {
-  const content = await readFile(filePath);
-  return createHash("sha256").update(content).digest("hex");
+async function logoPixelSignature(filePath) {
+  const { data, info } = await sharp(filePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  return {
+    width: info.width,
+    height: info.height,
+    channels: info.channels,
+    hash: createHash("sha256").update(data).digest("hex"),
+  };
+}
+
+function isApprovedLogo(signature) {
+  return signature.width === APPROVED_LOGO_WIDTH
+    && signature.height === APPROVED_LOGO_HEIGHT
+    && signature.channels === 4
+    && signature.hash === APPROVED_LOGO_PIXEL_SHA256;
 }
 
 export async function validateCloudflareArtifact() {
@@ -22,9 +37,12 @@ export async function validateCloudflareArtifact() {
     throw new Error("Missing Cloudflare Worker, generated configuration, client assets, or approved GimmeJob logo.");
   });
 
-  const [sourceLogoHash, deployedLogoHash] = await Promise.all([sha256(sourceLogo), sha256(logoAsset)]);
-  if (sourceLogoHash !== APPROVED_LOGO_SHA256 || deployedLogoHash !== APPROVED_LOGO_SHA256) {
-    throw new Error(`GimmeJob logo does not match the approved artwork. expected=${APPROVED_LOGO_SHA256} source=${sourceLogoHash} artifact=${deployedLogoHash}`);
+  const [sourceSignature, artifactSignature] = await Promise.all([
+    logoPixelSignature(sourceLogo),
+    logoPixelSignature(logoAsset),
+  ]);
+  if (!isApprovedLogo(sourceSignature) || !isApprovedLogo(artifactSignature)) {
+    throw new Error(`GimmeJob logo pixels do not match the approved artwork. expected=${APPROVED_LOGO_WIDTH}x${APPROVED_LOGO_HEIGHT}/${APPROVED_LOGO_PIXEL_SHA256} source=${sourceSignature.width}x${sourceSignature.height}/${sourceSignature.hash} artifact=${artifactSignature.width}x${artifactSignature.height}/${artifactSignature.hash}`);
   }
 
   const config = JSON.parse(await readFile(wranglerConfig, "utf8"));
@@ -33,7 +51,7 @@ export async function validateCloudflareArtifact() {
     throw new Error("Generated Cloudflare configuration has no DB binding.");
   }
 
-  console.log("Validated Cloudflare Worker, client assets, exact approved logo and D1 binding.");
+  console.log("Validated Cloudflare Worker, client assets, exact approved logo pixels and D1 binding.");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
