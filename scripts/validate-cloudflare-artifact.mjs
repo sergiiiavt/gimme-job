@@ -24,7 +24,7 @@ export async function validateCloudflareArtifact() {
 
   const [sourceLogoHash, deployedLogoHash] = await Promise.all([sha256(sourceLogo), sha256(logoAsset)]);
   if (sourceLogoHash !== APPROVED_LOGO_SHA256 || deployedLogoHash !== APPROVED_LOGO_SHA256) {
-    throw new Error("GimmeJob logo does not match the approved artwork.");
+    throw new Error(`GimmeJob logo does not match the approved artwork. expected=${APPROVED_LOGO_SHA256} source=${sourceLogoHash} artifact=${deployedLogoHash}`);
   }
 
   const config = JSON.parse(await readFile(wranglerConfig, "utf8"));
