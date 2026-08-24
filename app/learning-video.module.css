@@ -39,6 +39,16 @@
   line-height: 1.5;
 }
 
+.meta a {
+  color: inherit;
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.meta a:hover {
+  color: #3f5a49;
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;

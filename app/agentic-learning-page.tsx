@@ -32,15 +32,15 @@ const copy = {
   en: {
     title: "AI agents & MCP",
     description: "Practical agentic workflows: start with Claude Code, move into Claude Cowork, then connect the ideas to tools, approvals, state, MCP and evaluation.",
-    meta: ["Ukrainian video materials", "Embedded playback", "Best-effort 3× / 4× speeds"],
+    meta: ["Claude Code: end-to-end build", "Cowork: files & connectors", "Prompting: 4 practical rules"],
     codeTitle: "Claude Code: a practical start",
-    codeIntro: "A Ukrainian walkthrough from Rodion Lozovoi that starts from zero and builds a working web application with Claude Code. Use it as the practical entry point before moving to broader agentic workflows.",
+    codeIntro: "Rodion Lozovoi starts from zero and builds a working web application with Claude Code. Use the walkthrough to see the full flow: initial setup, task framing, iteration, and a concrete result.",
     coworkTitle: "Claude Cowork: work beyond coding",
     coworkIntro: "Cowork is the bridge from coding agents to general work agents: files, connectors, repeatable workflows and human approval. This chapter combines two practical Cowork walkthroughs.",
     rodionCowork: "How to automate 80% of work for €20? Full Claude Cowork overview",
     shtuchkaCowork: "Content factory with Claude Cowork, Notion and Skill Editor",
     promptingTitle: "Prompting Claude effectively",
-    promptingIntro: "A practical Ukrainian video built around prompting advice from a Claude engineer. Use it to improve task framing, context, constraints and iteration before applying those habits to Claude Code, Cowork and agent workflows.",
+    promptingIntro: "This video breaks down four prompting rules from Anthropic engineers and shows how to apply them in practice: task framing, context, constraints, and iteration. Use them as a checklist for Claude Code, Cowork, and agent workflows.",
     promptingVideo: "Claude engineer explains how to write prompts properly",
     patternsTitle: "Agentic workflow patterns to notice",
     patternsIntro: "Do not watch the videos only as product tutorials. Map each example to reusable agent design ideas:",
@@ -59,15 +59,15 @@ const copy = {
   uk: {
     title: "AI agents & MCP",
     description: "Практичні agentic workflows: спочатку Claude Code, далі Claude Cowork, а потім зв’язок із tools, approval gates, state, MCP та evaluation.",
-    meta: ["Україномовні відеоматеріали", "Вбудований плеєр", "Best-effort 3× / 4×"],
+    meta: ["Claude Code: build від 0 до результату", "Cowork: файли та connectors", "Prompting: 4 практичні правила"],
     codeTitle: "Claude Code: практичний старт",
-    codeIntro: "Україномовний walkthrough Родіона Лозового: від нуля до робочого вебзастосунку за допомогою Claude Code. Це практична точка входу перед ширшими agentic workflows.",
+    codeIntro: "Родіон Лозовий починає з нуля і будує робочий вебзастосунок за допомогою Claude Code. Корисно пройти весь flow: початкове налаштування, постановка задачі, ітерації та конкретний результат.",
     coworkTitle: "Claude Cowork: agentic робота поза кодом",
     coworkIntro: "Cowork показує перехід від coding agents до general-work agents: файли, конектори, повторювані workflows та human approval. Тут зібрані два практичні Cowork walkthroughs.",
     rodionCowork: "Як автоматизувати 80% роботи за €20? Повний огляд Claude Cowork",
     shtuchkaCowork: "Контент-завод з Claude Cowork, Notion та Skill Editor",
     promptingTitle: "Як ефективно писати промпти для Claude",
-    promptingIntro: "Практичне україномовне відео на основі порад інженера Claude. Корисне для framing задачі, контексту, обмежень та ітерацій — перед тим як переносити ці звички у Claude Code, Cowork та agentic workflows.",
+    promptingIntro: "Відео розбирає чотири правила промптингу від інженерів Anthropic і показує їх практичне застосування: постановка задачі, контекст, обмеження та ітерації. Використовуй їх як чекліст для Claude Code, Cowork та agentic workflows.",
     promptingVideo: "Інженер Claude показав, ЯК ПРАВИЛЬНО писати промти",
     patternsTitle: "Agentic patterns, які варто помічати",
     patternsIntro: "Дивись на ці відео не лише як на product tutorials. Прив’язуй приклади до повторно використовуваних принципів побудови агентів:",
@@ -134,6 +134,7 @@ export default function AgenticLearningPage() {
                 <p>{text.codeIntro}</p>
                 <LearningVideo
                   channel="RO БУДУЄ · Rodion Lozovoi"
+                  channelUrl="https://www.youtube.com/@ro_dionys"
                   title="Claude Code Desktop: from zero to a working web app"
                   videoId="zW4SEqgFBJc"
                 />
@@ -143,11 +144,13 @@ export default function AgenticLearningPage() {
                 <div className={styles.videoGroup}>
                   <LearningVideo
                     channel="Штучка Інтелект"
+                    channelUrl="https://www.youtube.com/@shtuchka-intelekt"
                     title={text.shtuchkaCowork}
                     videoId="rSDKAjao_7Q"
                   />
                   <LearningVideo
                     channel="RO БУДУЄ · Rodion Lozovoi"
+                    channelUrl="https://www.youtube.com/@ro_dionys"
                     title={text.rodionCowork}
                     videoId="LZ79ZwTI6lU"
                   />
@@ -156,7 +159,8 @@ export default function AgenticLearningPage() {
                 <h2 id="claude-prompting">{text.promptingTitle}</h2>
                 <p>{text.promptingIntro}</p>
                 <LearningVideo
-                  channel="YouTube · Ukrainian"
+                  channel="Hillel IT School"
+                  channelUrl="https://www.youtube.com/@HillelITSchool"
                   title={text.promptingVideo}
                   videoId="geoFJ6OXMKE"
                 />
