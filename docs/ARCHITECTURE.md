@@ -23,15 +23,23 @@ The hosted application is a React/Vinext worker with same-origin API routes. Pub
 
 The local agent remains separate so source collection and experimentation can run from VS Code without weakening the hosted application's approval-first behaviour.
 
-## AI assistant boundary
+## AI assistant and canonical RAG boundary
 
-The `ai-service/` is a separate Python service rather than another Cloudflare Worker route. The generic `/v1/chat` path retains its LangChain agent loop. The dedicated `/v1/learning-path` path uses the LangGraph `StateGraph` API directly: retrieve Git material, choose a repository-grounded or clearly labelled general branch, compose structured output through LangChain, then verify source attribution and graph connectivity. The web UI renders that result as an answer, evidence for the executed workflow, source-backed cards, and a connected learning map.
+The `ai-service/` is a separate Python service rather than another Cloudflare Worker route. The generic `/v1/chat` path uses LangChain's agent/model integration. The dedicated `/v1/learning-path` path uses LangGraph `StateGraph` directly: contextualize a conversation query, retrieve canonical GimmeJob context, choose a grounded or clearly labelled general branch, compose typed output through LangChain/OpenAI, then verify source attribution and graph connectivity. The web UI renders the final answer, source-backed learning cards, and a connected learning map.
 
-AI-service retrieval is read-only deterministic lexical search over the existing Git-versioned Markdown and structured JSON under `content/`. This deliberately preserves the public-content source of truth. It is separate from the optional Cloudflare Workers AI + Vectorize secondary index used by the private MCP endpoint and documented in `docs/mcp-vectorize.md`.
+GimmeJob has **one retrieval system**. `worker/rag.ts` owns the canonical corpus and retrieval policy for learning material, QA/Python interview questions, and jobs. Git and D1 remain authoritative data sources. Cloudflare Workers AI produces multilingual BGE-M3 embeddings and Vectorize provides semantic candidate ranking when its bindings are available. Lexical ranking is a resilience mode inside the same canonical pipeline, not a second RAG implementation. Every consumer receives the same retrieval strategy/result contract.
 
-The AI service is a server-to-server boundary. Its `/v1/chat`, `/v1/learning-path`, and interview endpoints require an independent bearer token and must not be called directly from browser code. The authenticated GimmeJob Worker routes proxy browser requests so the service credential never reaches the client. The Python service has no D1 access, no private user-state access, and no write/action tools; learning-path requests do not persist plans. `/health` exposes readiness flags only and never secrets.
+The canonical Worker RAG is used by MCP tools and by the Python AI service. The Python service calls the authenticated `/internal/rag/search` endpoint with `GIMMEJOB_AI_RAG_SERVICE_TOKEN`; the Worker checks the matching `GIMMEJOB_RAG_SERVICE_TOKEN`. The previous Python-local lexical content retriever is removed. This keeps retrieval scoring, thresholds, corpus composition, Python/QA interview coverage, and Vectorize fallback behavior in one place.
 
-Langfuse is observability only and must not be a runtime dependency for successful answers. When `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are configured, LangChain callbacks emit traces, request metadata, session IDs, model calls, and tool calls to Langfuse Cloud. If Langfuse is absent or its callback cannot initialize, the assistant continues without tracing.
+The AI service is a server-to-server boundary. Its `/v1/chat`, `/v1/learning-path`, and interview endpoints require an independent bearer token and must not be called directly from browser code. The authenticated GimmeJob Worker routes proxy browser requests so the AI service credential never reaches the client. The Python service has no D1 access, no private user-state access, and no write/action tools; learning-path requests do not persist plans. `/health` exposes readiness flags only and never secrets.
+
+## Langfuse observability and RAG evaluation
+
+Langfuse is observability/evaluation infrastructure and must not be a runtime dependency for successful answers. When `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are configured, the learning advisor creates one root trace around the LangGraph execution. LangChain callbacks attach model generations to that trace; supported model calls expose token usage and Langfuse model definitions turn usage into per-generation/trace cost.
+
+The learning-path trace records the canonical retrieval strategy, embedding model, retrieved IDs/titles/scores, request/session metadata, model output, and deterministic production scores such as map connectivity, retrieval result count/top score, grounded-node ratio, and source validity. If Langfuse initialization or scoring fails, answer delivery continues.
+
+Offline retrieval evaluation uses labeled expected source IDs and the deterministic metrics in `ai-service/src/gimmejob_ai/rag_metrics.py`: Precision@K, Recall@K, Hit Rate@K, reciprocal rank/MRR, and nDCG@K. Langfuse datasets/experiments are the intended place to aggregate those metrics across regression suites. Semantic answer metrics such as faithfulness/groundedness, answer relevance, completeness/correctness, and citation quality should be attached as Langfuse scores through evaluator jobs (for example LLM-as-a-Judge or Ragas), rather than being embedded into the production answer path. Retrieval thresholds are therefore evaluation-tuned configuration candidates, not product assumptions.
 
 ## Email automation boundary
 
@@ -70,7 +78,7 @@ The code-quality workflow also refreshes SonarQube Cloud's `main` baseline after
 
 Production deployments are serialized and are not cancelled by newer `main` pushes. Vacancy synchronization remains a separate scheduled operational workflow rather than part of code deployment. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
 
-The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`. The AI service is container-ready but is not added to the production Hetzner compose stack in this milestone; that deployment remains a separate follow-up after its service secret and Langfuse Cloud project are configured.
+The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`. The Python AI service remains container-ready but its production Hetzner deployment is a separate delivery step; until that service is deployed and `GIMMEJOB_AI_URL` is configured, the Worker learning-path proxy correctly reports the AI feature as unavailable.
 
 ## Security boundaries
 
@@ -85,6 +93,7 @@ The production n8n runtime is managed separately on the Hetzner VM by the files 
 - external fetches accept only public HTTPS sources;
 - applications are never sent by vacancy sync or analysis;
 - the AI service endpoints require an independent server-to-server token and remain read-only;
+- canonical RAG search uses a separate service token from AI-service browser proxy authentication and MCP authentication;
 - Langfuse credentials stay in runtime secrets and are never returned by health or AI responses;
 - GitHub Actions has read-only repository permissions;
 - hosted credentials belong in provider-managed secrets.
