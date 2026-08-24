@@ -43,6 +43,8 @@ class ApiTests(unittest.TestCase):
             content_root=content_root,
             openai_api_key=SecretStr("openai-test-key"),
             service_token=SecretStr("test-token"),
+            rag_url="http://localhost/internal/rag/search",
+            rag_service_token=SecretStr("rag-test-token"),
         )
 
     def test_health_is_degraded_without_openai_key(self) -> None:
@@ -61,6 +63,7 @@ class ApiTests(unittest.TestCase):
             self.assertEqual(body["status"], "degraded")
             self.assertFalse(body["openai_configured"])
             self.assertTrue(body["service_auth_configured"])
+            self.assertFalse(body["rag_configured"])
 
     def test_health_is_ok_when_required_runtime_configuration_exists(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -75,6 +78,7 @@ class ApiTests(unittest.TestCase):
             self.assertEqual(body["status"], "ok")
             self.assertTrue(body["openai_configured"])
             self.assertTrue(body["service_auth_configured"])
+            self.assertTrue(body["rag_configured"])
             self.assertTrue(body["content_available"])
 
     def test_chat_requires_bearer_token_before_provider_call(self) -> None:
@@ -125,6 +129,25 @@ class ApiTests(unittest.TestCase):
             )
 
             self.assertEqual(response.status_code, 503)
+
+    def test_chat_requires_canonical_rag_configuration(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            settings = Settings(
+                environment="test",
+                content_root=Path(temporary_directory),
+                openai_api_key=SecretStr("openai-test-key"),
+                service_token=SecretStr("test-token"),
+            )
+            client = TestClient(create_app(settings))
+
+            response = client.post(
+                "/v1/chat",
+                headers={"Authorization": "Bearer test-token"},
+                json={"messages": [{"role": "user", "content": "Hello"}]},
+            )
+
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.json()["detail"], "Canonical RAG is not configured.")
 
     def test_chat_requires_final_user_message(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
