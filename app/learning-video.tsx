@@ -71,15 +71,16 @@ function loadYouTubeApi() {
     script.src = "https://www.youtube.com/iframe_api";
     script.async = true;
     script.addEventListener("load", finish, { once: true });
-    script.addEventListener("error", () => reject(new Error("Could not load the YouTube IFrame API.")), { once: true });
+    script.addEventListener("error", () => reject(new Error("Could not load YouTube player.")), { once: true });
     document.head.appendChild(script);
   });
 
   return youtubeApiPromise;
 }
 
-export default function LearningVideo({ channel, title, videoId }: {
+export default function LearningVideo({ channel, channelUrl, title, videoId }: {
   channel: string;
+  channelUrl: string;
   title: string;
   videoId: string;
 }) {
@@ -165,7 +166,9 @@ export default function LearningVideo({ channel, title, videoId }: {
       </div>
       <div className={styles.meta}>
         <strong>{title}</strong>
-        <span>{channel} · YouTube</span>
+        <span>
+          Source channel: <a href={channelUrl} rel="noopener noreferrer" target="_blank">{channel}</a> · YouTube
+        </span>
       </div>
       <div className={styles.controls} role="group" aria-label="Playback speed">
         <span className={styles.controlsLabel}>Speed</span>
