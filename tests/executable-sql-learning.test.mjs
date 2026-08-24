@@ -7,12 +7,12 @@ const markdownRenderer = readFileSync(new URL("../app/qa-markdown.tsx", import.m
 const executionPolicy = readFileSync(new URL("../app/interview-sql-execution.ts", import.meta.url), "utf8");
 const runnerComponent = readFileSync(new URL("../app/executable-sql-block.tsx", import.meta.url), "utf8");
 const runnerShell = readFileSync(new URL("../app/executable-code-runner.tsx", import.meta.url), "utf8");
+const runnerStyles = readFileSync(new URL("../app/executable-python-block.module.css", import.meta.url), "utf8");
 const runnerWorker = readFileSync(new URL("../public/sql-runner.worker.mjs", import.meta.url), "utf8");
 const interviewOverlay = readFileSync(new URL("../app/sql-interview-runnable-overlay.tsx", import.meta.url), "utf8");
 const codeOverlay = readFileSync(new URL("../app/interview-question-code-overlay.tsx", import.meta.url), "utf8");
 const interviewPage = readFileSync(new URL("../app/interview/interview-domain-page-client.tsx", import.meta.url), "utf8");
 const deepLink = readFileSync(new URL("../app/interview-question-deep-link.tsx", import.meta.url), "utf8");
-const referenceOverlay = readFileSync(new URL("../app/sql-reference-runnable-overlay.tsx", import.meta.url), "utf8");
 const referencePage = readFileSync(new URL("../app/reference/[section]/page.tsx", import.meta.url), "utf8");
 
 test("SQL learning blocks use the executable runner", () => {
@@ -73,11 +73,10 @@ test("SQL interview examples and direct links use audited runtime metadata", () 
   assert.match(deepLink, /<ExecutableSqlBlock code=\{example\.code\}/);
 });
 
-test("published SQL practice tasks expose the runner", () => {
-  assert.match(referencePage, /section === "data" \? <SqlReferenceRunnableOverlay\/>/);
-  assert.match(referenceOverlay, /sql-practical-tasks\.json/);
-  assert.match(referenceOverlay, /isRunnableSqlSource\("sql", row\.detail\)/);
-  assert.match(referenceOverlay, /<ExecutableSqlBlock code=\{row\.detail\}/);
+test("SQL quick reference stays static instead of mounting executable SQL", () => {
+  assert.doesNotMatch(referencePage, /SqlReferenceRunnableOverlay/);
+  assert.doesNotMatch(referencePage, /section === "data"/);
+  assert.match(referencePage, /<QuickReferencePage referenceId=\{section\}\/>/);
 });
 
 test("SQL runner starts horizontal overflow at the beginning while retaining left scrollbars", () => {
@@ -87,16 +86,31 @@ test("SQL runner starts horizontal overflow at the beginning while retaining lef
   assert.match(runnerShell, /ref=\{outputScrollRef\}/);
 });
 
-test("SQL sample database can be inspected from the runner", () => {
+test("SQL sample database is responsive and refreshes from the current runner session", () => {
   assert.match(runnerComponent, />\s*Database\s*</);
   assert.match(runnerComponent, /action: "inspect"/);
-  assert.match(runnerComponent, /Starting state · resets on every Run/);
-  assert.match(runnerComponent, /DatabasePanel/);
+  assert.match(runnerComponent, /Current session · Reset restores sample data/);
+  assert.match(runnerComponent, /onRunComplete=\{handleRunComplete\}/);
+  assert.match(runnerComponent, /onReset=\{handleReset\}/);
+  assert.match(runnerComponent, /candidate\.database/);
+  assert.match(runnerStyles, /grid-template-columns: repeat\(auto-fit, minmax\(108px, 1fr\)\)/);
+  assert.match(runnerStyles, /\.databaseTableScroll \{[^}]*overflow-x: auto;/s);
+  assert.match(runnerStyles, /\.databaseTable th,[\s\S]*max-width: 240px;/);
   assert.match(runnerWorker, /const INSPECT_WRAPPER/);
   assert.match(runnerWorker, /sqlite_master/);
   assert.match(runnerWorker, /PRAGMA table_info/);
   assert.match(runnerWorker, /"rowCount": _row_count/);
   assert.match(runnerWorker, /action === "inspect"/);
+});
+
+test("SQL worker keeps mutations until Reset destroys the worker", () => {
+  assert.match(runnerWorker, /let sessionGlobals/);
+  assert.match(runnerWorker, /function getSessionGlobals\(pyodide\)/);
+  assert.match(runnerWorker, /if \("_conn" not in globals\(\)\)/);
+  assert.match(runnerWorker, /_conn\.commit\(\)/);
+  assert.match(runnerWorker, /_conn\.rollback\(\)/);
+  assert.match(runnerWorker, /result\.database = readJsonResult\(globals\)/);
+  assert.match(runnerShell, /const reset = \(\) => \{[\s\S]*destroyWorker\(\);[\s\S]*onReset\?\.\(\);/);
 });
 
 test("SQL worker transports explicit JSON results instead of parsing an undefined script return", () => {
