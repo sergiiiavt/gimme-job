@@ -97,6 +97,12 @@ test("semantic search embeds with multilingual BGE-M3 and filters by document ki
   assert.equal(results[0].score, 0.91);
 });
 
+test("semantic search returns no matches without query or Vectorize bindings", async () => {
+  const { env } = makeEnv();
+  assert.deepEqual(await semanticSearch(env as never, "   ", ["question"], 5), []);
+  assert.deepEqual(await semanticSearch({ DB: env.DB } as never, "Python", ["question"], 5), []);
+});
+
 test("canonical RAG materializes authoritative documents after Vectorize retrieval", async () => {
   const { env } = makeEnv();
   const result = await searchRagDocuments(env as never, "Python testing", ["question", "learning"], 5);
@@ -118,6 +124,44 @@ test("canonical RAG owns lexical degradation when Vectorize is unavailable", asy
   assert.equal(result.retrieval, "lexical-fallback");
   assert.ok(result.results.length > 0);
   assert.ok(result.results.some((item) => item.metadata.track === "python"));
+});
+
+test("canonical RAG degrades to lexical search when semantic matches are below threshold", async () => {
+  const { env } = makeEnv();
+  const document = staticRagDocuments().find((item) => item.kind === "question" && item.metadata.track === "python")!;
+  const query = document.title.split(/\s+/).slice(0, 3).join(" ");
+  const lowScoreEnv = {
+    ...env,
+    RAG_INDEX: {
+      ...env.RAG_INDEX,
+      async query() {
+        return { matches: [{ id: document.id, score: 0.1, metadata: document.metadata }] };
+      },
+    },
+  };
+
+  const result = await searchRagDocuments(lowScoreEnv as never, query, ["question"], 5);
+  assert.equal(result.retrieval, "lexical-fallback");
+  assert.ok(result.results.some((item) => item.id === document.id));
+});
+
+test("canonical RAG degrades to lexical search when semantic retrieval throws", async () => {
+  const { env } = makeEnv();
+  const document = staticRagDocuments().find((item) => item.kind === "question" && item.metadata.track === "python")!;
+  const query = document.title.split(/\s+/).slice(0, 3).join(" ");
+  const failingEnv = {
+    ...env,
+    RAG_INDEX: {
+      ...env.RAG_INDEX,
+      async query() {
+        throw new Error("Vectorize unavailable");
+      },
+    },
+  };
+
+  const result = await searchRagDocuments(failingEnv as never, query, ["question"], 5);
+  assert.equal(result.retrieval, "lexical-fallback");
+  assert.ok(result.results.length > 0);
 });
 
 test("RAG reindex batches static content and D1 jobs without making Vectorize authoritative", async () => {
@@ -149,6 +193,36 @@ test("RAG search HTTP handler validates request and returns bounded canonical re
     env as never,
   );
   assert.equal(malformed.status, 400);
+
+  const missingQuery = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "" }),
+    }),
+    env as never,
+  );
+  assert.equal(missingQuery.status, 400);
+
+  const invalidKinds = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "Python", kinds: ["learning", "private"] }),
+    }),
+    env as never,
+  );
+  assert.equal(invalidKinds.status, 400);
+
+  const invalidLimit = await handleRagSearchRequest(
+    new Request("https://example.test/internal/rag/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: "Python", limit: 13 }),
+    }),
+    env as never,
+  );
+  assert.equal(invalidLimit.status, 400);
 
   const success = await handleRagSearchRequest(
     new Request("https://example.test/internal/rag/search", {
