@@ -310,6 +310,9 @@
 }
 
 .databasePanel {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   border-top: 1px solid #3a3a3a;
   background: #181818;
   color: #d4d4d4;
@@ -357,21 +360,23 @@
 }
 
 .databaseTabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
   gap: 6px;
-  overflow-x: auto;
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border-bottom: 1px solid #303030;
   direction: ltr;
-  scrollbar-color: #3b3b3b transparent;
-  scrollbar-width: thin;
 }
 
 .databaseTab {
   display: inline-flex;
+  width: 100%;
+  min-width: 0;
   min-height: 30px;
-  flex: 0 0 auto;
   align-items: center;
+  justify-content: space-between;
   gap: 7px;
   border: 1px solid #3f3f3f;
   border-radius: 7px;
@@ -383,7 +388,16 @@
   cursor: pointer;
 }
 
-.databaseTab span {
+.databaseTabName {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.databaseTabCount {
+  flex: 0 0 auto;
   color: #7f7f7f;
   font-size: 10px;
 }
@@ -396,6 +410,7 @@
 
 .databaseTableMeta {
   display: flex;
+  min-width: 0;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
@@ -409,7 +424,11 @@
 }
 
 .databaseTableScroll {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   overflow-x: auto;
+  overflow-y: hidden;
   direction: ltr;
   padding: 0 12px 12px;
   scrollbar-color: #3b3b3b transparent;
@@ -418,21 +437,25 @@
 
 .databaseTable {
   width: 100%;
-  min-width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
   direction: ltr;
   color: #d4d4d4;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .databaseTable th,
 .databaseTable td {
+  max-width: 240px;
   border-bottom: 1px solid #303030;
   padding: 7px 9px;
+  overflow-wrap: anywhere;
   text-align: left;
   vertical-align: top;
+  word-break: break-word;
 }
 
 .databaseTable th {
@@ -514,6 +537,10 @@
   .secondaryButton {
     padding-right: 7px;
     padding-left: 7px;
+  }
+
+  .databaseTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
