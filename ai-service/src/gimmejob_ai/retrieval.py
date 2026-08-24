@@ -12,6 +12,18 @@ from .settings import Settings
 
 RetrievalStrategy = Literal["vectorize", "lexical-fallback"]
 
+_ROUTE_SOURCE_PREFIXES = {
+    "/reference/qa-fundamentals": "qa-fundamentals",
+    "/learn/programming": "python-learning",
+    "/reference/programming": "python-learning",
+    "/learn/automation": "automation-learning",
+    "/learn/testing-tools": "testing-tools",
+    "/learn/cloud-devops": "cloud-devops",
+    "/learn/metrics-estimation": "metrics-estimation",
+    "/learn/data": "data-learning",
+    "/reference/data": "data-learning",
+}
+
 
 @dataclass(frozen=True)
 class RetrievalHit:
@@ -73,6 +85,25 @@ def _required_text(value: object, field: str, max_length: int) -> str:
     return cleaned
 
 
+def _ui_source_path(kind: str, ref_id: str, route: str | None) -> str:
+    """Translate canonical routes to the source-key format already understood by the UI.
+
+    The Worker owns canonical product routes while the AI output contract deliberately keeps
+    opaque, non-URL source keys. This prevents the model from inventing arbitrary navigation
+    while preserving the existing allow-listed UI mapper.
+    """
+
+    if kind == "question":
+        prefix = "python-interview" if route and route.split("?", 1)[0] == "/interview/python" else "interview"
+        return f"{prefix}/{ref_id}"
+
+    route_path = route.split("?", 1)[0] if route else ""
+    prefix = _ROUTE_SOURCE_PREFIXES.get(route_path)
+    if not prefix:
+        raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
+    return f"{prefix}/{ref_id}"
+
+
 def _parse_hit(value: object) -> RetrievalHit:
     if not isinstance(value, dict):
         raise ValueError("Canonical RAG result must be an object.")
@@ -82,19 +113,19 @@ def _parse_hit(value: object) -> RetrievalHit:
     score = value.get("score")
     if not isinstance(score, (int, float)) or not 0 <= float(score) <= 1.5:
         raise ValueError("Canonical RAG returned an invalid score.")
+    ref_id = _required_text(value.get("refId"), "refId", 300)
     route_value = value.get("route")
     route = None if route_value is None else _required_text(route_value, "route", 1_000)
-    source_path = _required_text(value.get("sourcePath"), "sourcePath", 1_000)
-    if not source_path.startswith("/") or source_path.startswith("//"):
-        raise ValueError("Canonical RAG returned an unsafe source path.")
+    if route is not None and (not route.startswith("/") or route.startswith("//")):
+        raise ValueError("Canonical RAG returned an unsafe route.")
     return RetrievalHit(
         id=_required_text(value.get("id"), "id", 200),
-        ref_id=_required_text(value.get("refId"), "refId", 300),
+        ref_id=ref_id,
         kind=kind,
         title=_required_text(value.get("title"), "title", 1_000),
         text=_required_text(value.get("text"), "text", 6_000),
         score=float(score),
-        source_path=source_path,
+        source_path=_ui_source_path(kind, ref_id, route),
         route=route,
     )
 
