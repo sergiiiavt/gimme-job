@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APPROVED_LOGO_WIDTH = 600;
-const APPROVED_LOGO_HEIGHT = 171;
-const APPROVED_LOGO_PIXEL_SHA256 = "713c1322cd53bb7a0e9fb084e6281d0cd5d224245592ddaa034dc8d6a2c6016c";
+const APPROVED_LOGO_WIDTH = 512;
+const APPROVED_LOGO_HEIGHT = 146;
+const APPROVED_LOGO_PIXEL_SHA256 = "7e78acf1f907c8b1b400785b24b5ad4c9e28ffbcb62f89b782e4dff233c1ede7";
 
 async function logoPixelSignature(filePath) {
   const { data, info } = await sharp(filePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
