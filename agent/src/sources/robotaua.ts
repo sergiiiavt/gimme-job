@@ -1,4 +1,5 @@
 import type { JobInput } from "../domain.js";
+import { normalizeUkrainianLocation } from "../location.js";
 import {
   extractJobPostingMetadata,
   htmlToVacancyText,
@@ -91,7 +92,7 @@ export function parseRobotaUaResponse(payload: unknown, sourceName = "robotaua-q
     if (!url || !title) return [];
     const description = normalizeVacancyDescription(text(document.description) || text(document.shortDescription));
     const company = text(document.companyName) || "Unknown";
-    const location = text(document.cityName) || "Unknown";
+    const location = normalizeUkrainianLocation(document.cityName) || "Unknown";
     const combined = `${title}\n${description}\n${location}`;
 
     return [{
