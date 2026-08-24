@@ -32,7 +32,7 @@ const copy = {
   en: {
     title: "AI agents & MCP",
     description: "Practical agentic workflows: start with Claude Code, move into Claude Cowork, then connect the ideas to tools, approvals, state, MCP and evaluation.",
-    meta: ["Claude Code in practice", "Cowork workflows", "Prompting & agent patterns"],
+    meta: ["Claude Code: end-to-end build", "Cowork: files & connectors", "Prompting: 4 practical rules"],
     codeTitle: "Claude Code: a practical start",
     codeIntro: "Rodion Lozovoi starts from zero and builds a working web application with Claude Code. Use the walkthrough to see the full flow: initial setup, task framing, iteration, and a concrete result.",
     coworkTitle: "Claude Cowork: work beyond coding",
@@ -59,7 +59,7 @@ const copy = {
   uk: {
     title: "AI agents & MCP",
     description: "Практичні agentic workflows: спочатку Claude Code, далі Claude Cowork, а потім зв’язок із tools, approval gates, state, MCP та evaluation.",
-    meta: ["Claude Code на практиці", "Cowork workflows", "Prompting та agent patterns"],
+    meta: ["Claude Code: build від 0 до результату", "Cowork: файли та connectors", "Prompting: 4 практичні правила"],
     codeTitle: "Claude Code: практичний старт",
     codeIntro: "Родіон Лозовий починає з нуля і будує робочий вебзастосунок за допомогою Claude Code. Корисно пройти весь flow: початкове налаштування, постановка задачі, ітерації та конкретний результат.",
     coworkTitle: "Claude Cowork: agentic робота поза кодом",
