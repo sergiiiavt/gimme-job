@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateCloudflareArtifact } from "./validate-cloudflare-artifact.mjs";
@@ -22,5 +23,13 @@ const result = spawnSync(process.execPath, [vinextCli, "build"], {
 
 if (result.error) throw result.error;
 if (result.status !== 0) throw new Error(`vinext build failed with exit code ${result.status ?? "unknown"}.`);
+
+// The navigation uses the exact approved logo as /gimmejob-logo.png on both
+// desktop and mobile. Keep it explicit in the Cloudflare client artifact so a
+// framework/public-directory change cannot silently deploy an empty brand slot.
+await copyFile(
+  path.join(projectRoot, "public", "gimmejob-logo.png"),
+  path.join(projectRoot, "dist", "client", "gimmejob-logo.png"),
+);
 
 await validateCloudflareArtifact();
