@@ -272,9 +272,17 @@ export async function semanticSearch(env: RagEnv, query: string, kinds: RagKind[
     .slice(0, Math.max(1, limit));
 }
 
+function trimTokenPunctuation(token: string): string {
+  let start = 0;
+  let end = token.length;
+  while (start < end && (token[start] === "-" || token[start] === ".")) start += 1;
+  while (end > start && (token[end - 1] === "-" || token[end - 1] === ".")) end -= 1;
+  return token.slice(start, end);
+}
+
 function queryTokens(query: string): string[] {
   const raw = query.toLowerCase().match(QUERY_TOKEN_RE) ?? [];
-  const unique = [...new Set(raw.map((token) => token.replace(/^[-.]+|[-.]+$/g, "")).filter((token) => token.length >= 2))];
+  const unique = [...new Set(raw.map(trimTokenPunctuation).filter((token) => token.length >= 2))];
   const meaningful = unique.filter((token) => !QUERY_STOP_WORDS.has(token));
   return (meaningful.length ? meaningful : unique).slice(0, 24);
 }
@@ -285,7 +293,12 @@ function lexicalDocumentScore(document: RagDocument, query: string): number | nu
   const title = document.title.toLowerCase();
   const text = document.text.toLowerCase();
   const matched = tokens.filter((token) => title.includes(token) || text.includes(token));
-  const minimumMatches = tokens.length === 1 ? 1 : tokens.length <= 4 ? 2 : Math.min(3, Math.ceil(tokens.length / 4));
+  let minimumMatches = 1;
+  if (tokens.length > 4) {
+    minimumMatches = Math.min(3, Math.ceil(tokens.length / 4));
+  } else if (tokens.length > 1) {
+    minimumMatches = 2;
+  }
   if (matched.length < minimumMatches) return null;
   const titleMatches = matched.filter((token) => title.includes(token)).length;
   const coverage = matched.length / tokens.length;
