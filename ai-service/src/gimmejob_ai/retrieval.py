@@ -4,7 +4,7 @@ import asyncio
 import json
 from dataclasses import asdict, dataclass
 from typing import Literal, Protocol
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -93,14 +93,13 @@ def _ui_source_path(kind: str, ref_id: str, route: str | None) -> str:
     while preserving the existing allow-listed UI mapper.
     """
 
-    if kind == "question":
-        prefix = "python-interview" if route and route.split("?", 1)[0] == "/interview/python" else "interview"
-        return f"{prefix}/{ref_id}"
-
     route_path = route.split("?", 1)[0] if route else ""
-    prefix = _ROUTE_SOURCE_PREFIXES.get(route_path)
-    if not prefix:
-        raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
+    if kind == "question":
+        prefix = "python-interview" if route_path == "/interview/python" else "interview"
+    else:
+        prefix = _ROUTE_SOURCE_PREFIXES.get(route_path)
+        if not prefix:
+            raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
     return f"{prefix}/{ref_id}"
 
 
@@ -164,7 +163,7 @@ class CanonicalRagClient:
                 raw = response.read(256_000)
         except HTTPError as error:
             raise RuntimeError(f"Canonical RAG request failed with HTTP {error.code}.") from error
-        except (URLError, TimeoutError, OSError) as error:
+        except OSError as error:
             raise RuntimeError("Canonical RAG service is unavailable.") from error
 
         try:
