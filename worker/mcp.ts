@@ -1,7 +1,7 @@
 import { z } from "zod";
 import interviewCatalog from "../content/interview/catalog";
 import { analyzeJobsForUser } from "../app/api/_job-actions";
-import { type RagEnv, type RagMatch, semanticSearch } from "./rag";
+import { type RagEnv, type RagSearchResult, searchRagDocuments } from "./rag";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -52,7 +52,7 @@ export const MCP_TOOL_NAMES = [
 export const MCP_TOOLS = [
   {
     name: "search_jobs",
-    description: "Search GimmeJob vacancies semantically, with optional source, status, and remote filters.",
+    description: "Search GimmeJob vacancies through the canonical RAG pipeline, with optional source, status, and remote filters.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -68,7 +68,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "get_interview_questions",
-    description: "Find interview questions from the canonical Git-backed question catalog using semantic retrieval and catalog filters.",
+    description: "Find interview questions from the canonical Git-backed catalog through the shared RAG pipeline and catalog filters.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -82,7 +82,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "get_learning_progress",
-    description: "Read private persisted interview-learning progress and optionally retrieve semantically relevant learning materials.",
+    description: "Read private persisted interview-learning progress and optionally retrieve relevant learning materials through canonical RAG.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -94,7 +94,7 @@ export const MCP_TOOLS = [
   },
   {
     name: "analyze_vacancy",
-    description: "Analyze one stored GimmeJob vacancy with the same AI/deterministic fallback used by the site and return RAG-based interview and learning preparation.",
+    description: "Analyze one stored GimmeJob vacancy and return canonical-RAG interview and learning preparation.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -134,7 +134,7 @@ function statusText(row: Row): string {
   return clean(row.tracked_status || row.status || "NEW", 100).toUpperCase() || "NEW";
 }
 
-function mapJob(row: Row, score?: number) {
+function mapJob(row: Row, result?: RagSearchResult, retrieval?: string) {
   return {
     id: clean(row.id, 300),
     title: clean(row.title, 1_000),
@@ -148,7 +148,8 @@ function mapJob(row: Row, score?: number) {
     discoveredAt: clean(row.discovered_at, 100) || null,
     url: clean(row.url, 2_000),
     description: clean(row.description, 4_000),
-    semanticScore: typeof score === "number" ? score : null,
+    retrievalScore: result?.score ?? null,
+    semanticScore: retrieval === "vectorize" ? result?.score ?? null : null,
   };
 }
 
@@ -175,46 +176,15 @@ async function loadJobs(env: McpEnv, context: RequestContext, ids?: string[]): P
   return result.results;
 }
 
-function lexicalJobScore(row: Row, query: string): number {
-  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const title = clean(row.title).toLowerCase();
-  const company = clean(row.company).toLowerCase();
-  const location = clean(row.location).toLowerCase();
-  const description = clean(row.description).toLowerCase();
-  let score = 0;
-  for (const token of tokens) {
-    if (title.includes(token)) score += 6;
-    if (company.includes(token)) score += 4;
-    if (location.includes(token)) score += 2;
-    if (description.includes(token)) score += 1;
-  }
-  return score;
-}
-
 async function searchJobs(env: McpEnv, request: Request, raw: unknown) {
   const input = SearchJobsInput.parse(raw ?? {});
   const context = requestContext(request);
-  let semantic: RagMatch[] = [];
-  try {
-    semantic = await semanticSearch(env, input.query, ["job"], Math.min(50, input.limit * 3));
-  } catch {
-    semantic = [];
-  }
-
-  const semanticIds = semantic.map((match) => clean(match.metadata.refId, 300)).filter(Boolean);
-  const scoreById = new Map(semantic.map((match) => [clean(match.metadata.refId, 300), match.score]));
-  let rows = await loadJobs(env, context, semanticIds.length ? semanticIds : undefined);
-
-  if (!semanticIds.length) {
-    rows = rows
-      .map((row) => ({ row, score: lexicalJobScore(row, input.query) }))
-      .filter((item) => item.score > 0)
-      .sort((left, right) => right.score - left.score)
-      .map((item) => item.row);
-  } else {
-    const rank = new Map(semanticIds.map((id, index) => [id, index]));
-    rows.sort((left, right) => (rank.get(clean(left.id)) ?? Number.MAX_SAFE_INTEGER) - (rank.get(clean(right.id)) ?? Number.MAX_SAFE_INTEGER));
-  }
+  const rag = await searchRagDocuments(env, input.query, ["job"], Math.min(12, input.limit));
+  const ids = rag.results.map((result) => result.refId).filter(Boolean);
+  const resultById = new Map(rag.results.map((result) => [result.refId, result]));
+  let rows = ids.length ? await loadJobs(env, context, ids) : [];
+  const rank = new Map(ids.map((id, index) => [id, index]));
+  rows.sort((left, right) => (rank.get(clean(left.id)) ?? Number.MAX_SAFE_INTEGER) - (rank.get(clean(right.id)) ?? Number.MAX_SAFE_INTEGER));
 
   const sourceNeedle = input.source?.toLowerCase();
   const statusNeedle = input.status?.toUpperCase();
@@ -227,31 +197,17 @@ async function searchJobs(env: McpEnv, request: Request, raw: unknown) {
 
   return {
     query: input.query,
-    retrieval: semanticIds.length ? "vectorize" : "lexical-fallback",
+    retrieval: rag.retrieval,
+    embeddingModel: rag.embeddingModel,
     count: filtered.length,
-    jobs: filtered.map((row) => mapJob(row, scoreById.get(clean(row.id)))),
+    jobs: filtered.map((row) => mapJob(row, resultById.get(clean(row.id)), rag.retrieval)),
   };
 }
 
 const interviewQuestions = interviewCatalog.questions as unknown as Json[];
 const questionById = new Map(interviewQuestions.map((question) => [clean(question.id), question]));
 
-function questionSearchText(question: Json): string {
-  return [question.question, question.answer, question.category, ...(Array.isArray(question.tags) ? question.tags : [])]
-    .map((value) => clean(value).toLowerCase())
-    .join(" ");
-}
-
-function lexicalQuestionMatches(query: string): Json[] {
-  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!tokens.length) return interviewQuestions;
-  return interviewQuestions.filter((question) => {
-    const text = questionSearchText(question);
-    return tokens.every((token) => text.includes(token));
-  });
-}
-
-function presentQuestion(question: Json, score?: number) {
+function presentQuestion(question: Json, result?: RagSearchResult, retrieval?: string) {
   return {
     id: clean(question.id, 300),
     question: clean(question.question || question.title, 2_000),
@@ -260,26 +216,21 @@ function presentQuestion(question: Json, score?: number) {
     kind: clean(question.kind, 100) || null,
     prevalence: clean(question.prevalence, 100) || null,
     tags: Array.isArray(question.tags) ? question.tags.map((tag) => clean(tag, 100)).filter(Boolean) : [],
-    semanticScore: typeof score === "number" ? score : null,
+    retrievalScore: result?.score ?? null,
+    semanticScore: retrieval === "vectorize" ? result?.score ?? null : null,
   };
 }
 
 async function getInterviewQuestions(env: McpEnv, raw: unknown) {
   const input = InterviewQuestionsInput.parse(raw ?? {});
   const query = input.query?.trim() ?? "";
-  let semantic: RagMatch[] = [];
-  if (query) {
-    try {
-      semantic = await semanticSearch(env, query, ["question"], Math.min(50, input.limit * 3));
-    } catch {
-      semantic = [];
-    }
-  }
-
-  const scoreById = new Map(semantic.map((match) => [clean(match.metadata.refId, 300), match.score]));
-  let questions = semantic.length
-    ? semantic.map((match) => questionById.get(clean(match.metadata.refId, 300))).filter((item): item is Json => Boolean(item))
-    : lexicalQuestionMatches(query);
+  const rag = query
+    ? await searchRagDocuments(env, query, ["question"], Math.min(12, input.limit))
+    : null;
+  const resultById = new Map((rag?.results ?? []).map((result) => [result.refId, result]));
+  let questions = rag
+    ? rag.results.map((result) => questionById.get(result.refId)).filter((item): item is Json => Boolean(item))
+    : interviewQuestions;
 
   if (input.category) {
     const needle = input.category.toLowerCase();
@@ -293,9 +244,10 @@ async function getInterviewQuestions(env: McpEnv, raw: unknown) {
 
   return {
     query: query || null,
-    retrieval: query ? (semantic.length ? "vectorize" : "and-lexical-fallback") : "catalog",
+    retrieval: rag?.retrieval ?? "catalog",
+    embeddingModel: rag?.embeddingModel ?? null,
     count: questions.length,
-    questions: questions.map((question) => presentQuestion(question, scoreById.get(clean(question.id)))),
+    questions: questions.map((question) => presentQuestion(question, resultById.get(clean(question.id)), rag?.retrieval)),
   };
 }
 
@@ -330,21 +282,19 @@ async function getLearningProgress(env: McpEnv, request: Request, raw: unknown) 
     };
   });
 
-  let recommendedMaterials: Array<Record<string, unknown>> = [];
-  if (input.query) {
-    try {
-      recommendedMaterials = (await semanticSearch(env, input.query, ["learning"], input.limit)).map((match) => ({
-        id: clean(match.metadata.refId, 300),
-        title: clean(match.metadata.title, 1_000),
-        catalog: clean(match.metadata.catalog, 200),
-        route: clean(match.metadata.route, 1_000),
-        snippet: clean(match.metadata.snippet, 1_200),
-        semanticScore: match.score,
-      }));
-    } catch {
-      recommendedMaterials = [];
-    }
-  }
+  const recommendations = input.query
+    ? await searchRagDocuments(env, input.query, ["learning"], Math.min(12, input.limit))
+    : null;
+  const recommendedMaterials = (recommendations?.results ?? []).map((result) => ({
+    id: result.refId,
+    title: result.title,
+    catalog: clean(result.metadata.catalog, 200),
+    route: result.route,
+    sourcePath: result.sourcePath,
+    snippet: result.text.slice(0, 1_200),
+    retrievalScore: result.score,
+    semanticScore: recommendations?.retrieval === "vectorize" ? result.score : null,
+  }));
 
   return {
     scope: "interview_questions",
@@ -354,17 +304,20 @@ async function getLearningProgress(env: McpEnv, request: Request, raw: unknown) 
     items,
     recommendedMaterials,
     recommendationQuery: input.query ?? null,
+    recommendationRetrieval: recommendations?.retrieval ?? null,
   };
 }
 
-function presentPreparationMatch(match: RagMatch) {
+function presentPreparationMatch(result: RagSearchResult, retrieval: string) {
   return {
-    id: clean(match.metadata.refId, 300),
-    title: clean(match.metadata.title, 1_000),
-    category: clean(match.metadata.category || match.metadata.catalog, 300) || null,
-    route: clean(match.metadata.route, 1_000) || null,
-    snippet: clean(match.metadata.snippet, 1_200) || null,
-    semanticScore: match.score,
+    id: result.refId,
+    title: result.title,
+    category: clean(result.metadata.category || result.metadata.catalog, 300) || null,
+    route: result.route,
+    sourcePath: result.sourcePath,
+    snippet: result.text.slice(0, 1_200),
+    retrievalScore: result.score,
+    semanticScore: retrieval === "vectorize" ? result.score : null,
   };
 }
 
@@ -385,17 +338,10 @@ async function analyzeVacancy(env: McpEnv, request: Request, raw: unknown) {
         .bind(input.job_id).first<Row>();
 
   const preparationQuery = `${clean(job.title, 1_000)} ${clean(job.description, 3_000)}`.trim();
-  let learning: RagMatch[] = [];
-  let questions: RagMatch[] = [];
-  try {
-    [learning, questions] = await Promise.all([
-      semanticSearch(env, preparationQuery, ["learning"], input.preparation_limit),
-      semanticSearch(env, preparationQuery, ["question"], input.preparation_limit),
-    ]);
-  } catch {
-    learning = [];
-    questions = [];
-  }
+  const [learning, questions] = await Promise.all([
+    searchRagDocuments(env, preparationQuery, ["learning"], input.preparation_limit),
+    searchRagDocuments(env, preparationQuery, ["question"], input.preparation_limit),
+  ]);
 
   return {
     job: {
@@ -414,9 +360,10 @@ async function analyzeVacancy(env: McpEnv, request: Request, raw: unknown) {
       payload: parseJson(analysisRow.payload_json),
     } : null,
     preparation: {
-      learningMaterials: learning.map(presentPreparationMatch),
-      interviewQuestions: questions.map(presentPreparationMatch),
-      retrieval: learning.length || questions.length ? "vectorize" : "unavailable-or-empty",
+      learningMaterials: learning.results.map((item) => presentPreparationMatch(item, learning.retrieval)),
+      interviewQuestions: questions.results.map((item) => presentPreparationMatch(item, questions.retrieval)),
+      learningRetrieval: learning.retrieval,
+      questionRetrieval: questions.retrieval,
     },
   };
 }
@@ -468,7 +415,7 @@ async function handleRpcMessage(message: unknown, request: Request, env: McpEnv)
       protocolVersion: clean(params.protocolVersion, 100) || "2026-07-28",
       capabilities: { tools: { listChanged: false } },
       serverInfo: { name: "gimmejob", version: "0.1.0" },
-      instructions: "Use GimmeJob tools for vacancy search/analysis and private interview-learning progress. Public learning and interview content remains Git-backed; Vectorize is retrieval-only.",
+      instructions: "Use GimmeJob tools for vacancy search/analysis and private interview-learning progress. All semantic and lexical retrieval runs through one canonical RAG pipeline; Git/D1 remain authoritative sources.",
     });
   }
   if (method === "ping") return rpcResult(id, {});
