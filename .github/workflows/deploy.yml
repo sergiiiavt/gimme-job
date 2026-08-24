@@ -76,11 +76,20 @@ jobs:
 
           check_logo() {
             local file="/tmp/gimmejob-logo.png"
-            local hash
             curl --fail --silent --show-error --location --max-time 20 \
               --output "$file" "$1" || return 1
-            hash="$(sha256sum "$file" | awk '{print $1}')"
-            test "$hash" = "bc08029dfcb097c555315bbe79eaaab52bb5fe92671f8a75c6a87d48be707684"
+            LOGO_FILE="$file" node --input-type=module <<'NODE'
+          import { createHash } from "node:crypto";
+          import sharp from "sharp";
+
+          const expected = "713c1322cd53bb7a0e9fb084e6281d0cd5d224245592ddaa034dc8d6a2c6016c";
+          const { data, info } = await sharp(process.env.LOGO_FILE).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+          const actual = createHash("sha256").update(data).digest("hex");
+          if (info.width !== 600 || info.height !== 171 || info.channels !== 4 || actual !== expected) {
+            console.error(`Production logo mismatch: ${info.width}x${info.height}/${actual}`);
+            process.exit(1);
+          }
+          NODE
           }
 
           check_health() {
