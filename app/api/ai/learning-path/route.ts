@@ -89,7 +89,7 @@ function isJsonObject(value: unknown): value is JsonObject {
 function requiredText(value: unknown, maxLength: number): string | null {
   if (typeof value !== "string" || value.length > maxLength) return null;
   const cleaned = value.trim();
-  return cleaned ? cleaned : null;
+  return cleaned || null;
 }
 
 function nullableText(value: unknown, maxLength: number): string | null | undefined {
@@ -168,7 +168,7 @@ function parseLearningMapNodes(value: unknown): LearningMapNode[] | null {
     const kind = requiredText(item.kind, MAX_KIND_LENGTH) as LearningMapNodeKind | null;
     const sourcePath = nullableText(item.source_path, MAX_PATH_LENGTH);
     const rawDuration = item.duration_minutes;
-    const durationMinutes = rawDuration === null || rawDuration === undefined ? null : rawDuration;
+    const durationMinutes = rawDuration ?? null;
     if (
       !id || !title || !summary || !kind || !MAP_NODE_KINDS.has(kind) || sourcePath === undefined
       || (durationMinutes !== null && (
@@ -257,7 +257,9 @@ function aiBaseUrl(env: LearningPathAiEnv): URL | null {
     if (url.username || url.password || (url.protocol !== "https:" && !(localDevelopment && url.protocol === "http:"))) return null;
     url.search = "";
     url.hash = "";
-    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+    while (url.pathname.length > 1 && url.pathname.endsWith("/")) {
+      url.pathname = url.pathname.slice(0, -1);
+    }
     return url;
   } catch {
     return null;
@@ -316,7 +318,7 @@ export async function handleLearningPathAi(request: Request, env: LearningPathAi
 
   const messages = parseMessages(input.messages);
   if (!messages) return json({ error: "Provide between 1 and 30 valid messages." }, 400);
-  if (messages[messages.length - 1].role !== "user") {
+  if (messages.at(-1)?.role !== "user") {
     return json({ error: "The final message must be from the user." }, 400);
   }
 

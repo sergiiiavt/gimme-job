@@ -201,6 +201,9 @@ test("uses the camelCase learning-path contract and accessible selected subnav s
   assert.match(componentSource, /payload\.learningMap|value\.response\.learningMap/);
   assert.match(componentSource, /source !== target/);
   assert.match(componentSource, /typed\.status === 401/);
+  assert.match(componentSource, /globalThis\.crypto\.randomUUID\(\)/);
+  assert.doesNotMatch(componentSource, /Math\.random\(\)/);
+  assert.match(componentSource, /<output aria-label="Building a source-backed learning map"/);
   assert.doesNotMatch(componentSource, /dangerouslySetInnerHTML/);
   assert.match(sidebarSource, /aria-current=\{activeSubsection === item\.id \? "page" : undefined\}/);
   assert.match(sidebarSource, /aria-pressed=\{activeSubsection === item\.id\}/);

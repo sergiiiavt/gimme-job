@@ -216,7 +216,7 @@ class LearningAdvisorGraph:
             logger.warning("Langfuse callback initialization failed; tracing disabled for this request.")
             return None
 
-    async def _retrieve_git_materials(self, state: LearningAdvisorState) -> dict[str, object]:
+    def _retrieve_git_materials(self, state: LearningAdvisorState) -> dict[str, object]:
         messages = state["messages"]
         query = messages[-1].content
         language: Literal["en", "uk"] = "uk" if _CYRILLIC_RE.search(query) else "en"
@@ -298,7 +298,7 @@ class LearningAdvisorGraph:
             ),
         }
 
-    async def _verify_grounding_and_map(self, state: LearningAdvisorState) -> dict[str, object]:
+    def _verify_grounding_and_map(self, state: LearningAdvisorState) -> dict[str, object]:
         draft = state["draft_response"]
         hits = state.get("hits", [])
         mode = state["retrieval_mode"]

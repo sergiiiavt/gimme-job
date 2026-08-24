@@ -360,7 +360,7 @@
   background: rgba(255, 255, 255, .06);
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 999px;
-  color: #a8b6ae;
+  color: #d7e2db;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 8px;
   padding: 6px 9px;
@@ -557,7 +557,7 @@
 
 .edgeArrow small {
   background: #f4f7f2;
-  color: #71816f;
+  color: #4d5e51;
   font-size: 7px;
   justify-self: center;
   max-width: 100%;
@@ -614,7 +614,7 @@
 .nodeTopline > small {
   background: #eef2ec;
   border-radius: 999px;
-  color: #65746b;
+  color: #48594e;
   font-size: 7px;
   padding: 4px 6px;
   white-space: nowrap;
@@ -762,7 +762,7 @@
 .sourceUnavailable {
   background: #f2f3f1;
   border: 1px solid #e1e4e0;
-  color: #7b837e;
+  color: #505a54;
 }
 
 .sources,

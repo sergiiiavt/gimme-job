@@ -221,10 +221,10 @@ export function sourcePathToHref(sourcePath: string | null): string | null {
 
 function sourceLabel(sourcePath: string): string {
   const normalized = sourcePath.replaceAll("\\", "/");
-  return normalized.split("/").filter(Boolean).at(-1) ?? sourcePath;
+  return normalized.split("/").findLast((segment) => segment.length > 0) ?? sourcePath;
 }
 
-function SourceLink({ sourcePath }: { sourcePath: string }) {
+function SourceLink({ sourcePath }: Readonly<{ sourcePath: string }>) {
   const href = sourcePathToHref(sourcePath);
   return href ? (
     <Link className={styles.sourceLink} href={href} title={sourcePath}>
@@ -233,7 +233,7 @@ function SourceLink({ sourcePath }: { sourcePath: string }) {
   ) : <span className={styles.sourceUnavailable} title={sourcePath}>{sourceLabel(sourcePath)}</span>;
 }
 
-function ExecutionEvidence({ result }: { result: LearningPathApiResponse }) {
+function ExecutionEvidence({ result }: Readonly<{ result: LearningPathApiResponse }>) {
   const repositoryRetrieval = result.retrievalMode === "repository";
   return (
     <section aria-label="AI execution evidence" className={styles.executionPanel}>
@@ -263,7 +263,7 @@ function ExecutionEvidence({ result }: { result: LearningPathApiResponse }) {
   );
 }
 
-function LearningMapView({ learningMap }: { learningMap: LearningMap }) {
+function LearningMapView({ learningMap }: Readonly<{ learningMap: LearningMap }>) {
   const nodes = learningMap.nodes.slice(0, MAX_MAP_NODES);
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
   const edges = learningMap.edges
@@ -325,11 +325,11 @@ function LearningMapView({ learningMap }: { learningMap: LearningMap }) {
   );
 }
 
-export function LearningPathResponseView({ busy = false, onSuggestedPrompt, result }: {
+export function LearningPathResponseView({ busy = false, onSuggestedPrompt, result }: Readonly<{
   busy?: boolean;
   onSuggestedPrompt?: (prompt: string) => void;
   result: LearningPathApiResponse;
-}) {
+}>) {
   const cards = result.response.cards.slice(0, MAX_CARDS);
   const sources = [...new Set(result.response.sources)].slice(0, MAX_SOURCES);
   const prompts = result.response.suggestedPrompts.slice(0, MAX_SUGGESTED_PROMPTS);
@@ -375,8 +375,27 @@ export function LearningPathResponseView({ busy = false, onSuggestedPrompt, resu
 }
 
 function messageId(role: ChatRole): string {
-  const randomId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-  return `${role}-${randomId}`;
+  return `${role}-${globalThis.crypto.randomUUID()}`;
+}
+
+function ConversationTurn({ busy, message, onSuggestedPrompt }: Readonly<{
+  busy: boolean;
+  message: DisplayMessage;
+  onSuggestedPrompt: (prompt: string) => void;
+}>) {
+  if (message.role === "user") {
+    return (
+      <article className={styles.userTurn}>
+        <span>You</span><p>{message.content}</p>
+      </article>
+    );
+  }
+  if (!message.result) return null;
+  return (
+    <article className={styles.assistantTurn}>
+      <LearningPathResponseView busy={busy} onSuggestedPrompt={onSuggestedPrompt} result={message.result}/>
+    </article>
+  );
 }
 
 function apiErrorMessage(value: unknown, fallback: string): string {
@@ -504,21 +523,20 @@ export default function LearningPathAdvisor() {
                 </section>
               )}
 
-              {messages.map((message) => message.role === "user" ? (
-                <article className={styles.userTurn} key={message.id}>
-                  <span>You</span><p>{message.content}</p>
-                </article>
-              ) : message.result ? (
-                <article className={styles.assistantTurn} key={message.id}>
-                  <LearningPathResponseView busy={busy} onSuggestedPrompt={(prompt) => void sendPrompt(prompt)} result={message.result}/>
-                </article>
-              ) : null)}
+              {messages.map((message) => (
+                <ConversationTurn
+                  busy={busy}
+                  key={message.id}
+                  message={message}
+                  onSuggestedPrompt={(prompt) => void sendPrompt(prompt)}
+                />
+              ))}
 
               {busy && (
-                <div aria-label="Building a source-backed learning map" className={styles.loading} role="status">
+                <output aria-label="Building a source-backed learning map" className={styles.loading}>
                   <span aria-hidden="true"><i/><i/><i/></span>
                   <div><strong>Building your connected learning map</strong><small>Running the workflow and retrieving relevant GimmeJob material…</small></div>
-                </div>
+                </output>
               )}
             </div>
 

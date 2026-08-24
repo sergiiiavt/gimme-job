@@ -141,6 +141,54 @@ def _is_json_chunk(value: object) -> bool:
     return any(key in value and isinstance(_localized_value(value[key], "en"), str) for key in _JSON_IDENTITY_KEYS)
 
 
+def _extend_flattened_parts(
+    parts: list[str],
+    value: object,
+    language: Literal["en", "uk"],
+) -> bool:
+    parts.extend(_flatten_json_value(value, language, nested=True))
+    return len(parts) >= 80
+
+
+def _flatten_json_list(value: list[object], language: Literal["en", "uk"]) -> list[str]:
+    parts: list[str] = []
+    for item in value:
+        if isinstance(item, dict) and _is_json_chunk(item):
+            continue
+        if _extend_flattened_parts(parts, item, language):
+            break
+    return parts
+
+
+def _uses_other_localization(
+    record: dict[object, object],
+    key: object,
+    language: Literal["en", "uk"],
+) -> bool:
+    if not isinstance(key, str):
+        return False
+    if language == "en":
+        return key.endswith("Uk")
+    return not key.endswith("Uk") and f"{key}Uk" in record
+
+
+def _flatten_json_mapping(
+    value: dict[object, object],
+    language: Literal["en", "uk"],
+    nested: bool,
+) -> list[str]:
+    if nested and _is_json_chunk(value):
+        return []
+
+    parts: list[str] = []
+    for key, item in value.items():
+        if _uses_other_localization(value, key, language):
+            continue
+        if _extend_flattened_parts(parts, item, language):
+            break
+    return parts
+
+
 def _flatten_json_value(
     value: object,
     language: Literal["en", "uk"],
@@ -154,27 +202,9 @@ def _flatten_json_value(
     if isinstance(value, (int, float, bool)):
         return [str(value)]
     if isinstance(value, list):
-        parts: list[str] = []
-        for item in value:
-            if isinstance(item, dict) and _is_json_chunk(item):
-                continue
-            parts.extend(_flatten_json_value(item, language, nested=True))
-            if len(parts) >= 80:
-                break
-        return parts
+        return _flatten_json_list(value, language)
     if isinstance(value, dict):
-        if nested and _is_json_chunk(value):
-            return []
-        parts = []
-        for key, item in value.items():
-            if language == "en" and key.endswith("Uk"):
-                continue
-            if language == "uk" and not key.endswith("Uk") and f"{key}Uk" in value:
-                continue
-            parts.extend(_flatten_json_value(item, language, nested=True))
-            if len(parts) >= 80:
-                break
-        return parts
+        return _flatten_json_mapping(value, language, nested)
     return []
 
 
@@ -199,21 +229,118 @@ def _cached_markdown_document(
     relative_path: str,
     modified_ns: int,
     size: int,
-) -> tuple[_SearchDocument, ...]:
+) -> _SearchDocument | None:
     del modified_ns, size
     path = Path(absolute_path)
     try:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
-        return ()
-    return (
-        _SearchDocument(
-            file_path=relative_path,
-            path=relative_path,
-            title=_title(text, path.stem),
-            text=text,
-        ),
+        return None
+    return _SearchDocument(
+        file_path=relative_path,
+        path=relative_path,
+        title=_title(text, path.stem),
+        text=text,
     )
+
+
+def _unique_json_source_path(relative_path: str, base_fragment: str, used_paths: set[str]) -> str:
+    source_path = f"{relative_path}#{base_fragment}"
+    suffix = 2
+    while source_path in used_paths:
+        source_path = f"{relative_path}#{base_fragment}-{suffix}"
+        suffix += 1
+    used_paths.add(source_path)
+    return source_path
+
+
+def _json_chunk_document(
+    record: dict[object, object],
+    trail: tuple[str, ...],
+    relative_path: str,
+    language: Literal["en", "uk"],
+    document_index: int,
+    used_paths: set[str],
+) -> _SearchDocument | None:
+    fallback_title = trail[-1] if trail else Path(relative_path).stem
+    title = _record_title(record, language, fallback_title)
+    record_id = record.get("id")
+    identity = record_id if isinstance(record_id, str) else "-".join([*trail[-3:], title])
+    base_fragment = _fragment(identity, f"item-{document_index + 1}")
+    source_path = _unique_json_source_path(relative_path, base_fragment, used_paths)
+    text = _clean_text(" ".join(_flatten_json_value(record, language)))
+    if not text:
+        return None
+    return _SearchDocument(
+        file_path=relative_path,
+        path=source_path,
+        title=title,
+        text=text,
+    )
+
+
+def _visit_json_mapping(
+    value: dict[object, object],
+    trail: tuple[str, ...],
+    relative_path: str,
+    language: Literal["en", "uk"],
+    documents: list[_SearchDocument],
+    used_paths: set[str],
+) -> None:
+    if _is_json_chunk(value):
+        document = _json_chunk_document(
+            value,
+            trail,
+            relative_path,
+            language,
+            len(documents),
+            used_paths,
+        )
+        if document is not None:
+            documents.append(document)
+
+    for key, item in value.items():
+        _visit_json_value(
+            item,
+            (*trail, str(key)),
+            relative_path,
+            language,
+            documents,
+            used_paths,
+        )
+
+
+def _visit_json_list(
+    value: list[object],
+    trail: tuple[str, ...],
+    relative_path: str,
+    language: Literal["en", "uk"],
+    documents: list[_SearchDocument],
+    used_paths: set[str],
+) -> None:
+    for index, item in enumerate(value):
+        _visit_json_value(
+            item,
+            (*trail, str(index)),
+            relative_path,
+            language,
+            documents,
+            used_paths,
+        )
+
+
+def _visit_json_value(
+    value: object,
+    trail: tuple[str, ...],
+    relative_path: str,
+    language: Literal["en", "uk"],
+    documents: list[_SearchDocument],
+    used_paths: set[str],
+) -> None:
+    if isinstance(value, dict):
+        _visit_json_mapping(value, trail, relative_path, language, documents, used_paths)
+    elif isinstance(value, list):
+        _visit_json_list(value, trail, relative_path, language, documents, used_paths)
 
 
 @lru_cache(maxsize=512)
@@ -232,41 +359,7 @@ def _cached_json_documents(
 
     documents: list[_SearchDocument] = []
     used_paths: set[str] = set()
-
-    def visit(value: object, trail: tuple[str, ...]) -> None:
-        if isinstance(value, dict):
-            if _is_json_chunk(value):
-                fallback_title = trail[-1] if trail else Path(relative_path).stem
-                title = _record_title(value, language, fallback_title)
-                record_id = value.get("id")
-                identity = record_id if isinstance(record_id, str) else "-".join((*trail[-3:], title))
-                base_fragment = _fragment(identity, f"item-{len(documents) + 1}")
-                source_path = f"{relative_path}#{base_fragment}"
-                suffix = 2
-                while source_path in used_paths:
-                    source_path = f"{relative_path}#{base_fragment}-{suffix}"
-                    suffix += 1
-                used_paths.add(source_path)
-
-                parts = _flatten_json_value(value, language)
-                text = _clean_text(" ".join(parts))
-                if text:
-                    documents.append(
-                        _SearchDocument(
-                            file_path=relative_path,
-                            path=source_path,
-                            title=title,
-                            text=text,
-                        )
-                    )
-
-            for key, item in value.items():
-                visit(item, (*trail, str(key)))
-        elif isinstance(value, list):
-            for index, item in enumerate(value):
-                visit(item, (*trail, str(index)))
-
-    visit(raw, ())
+    _visit_json_value(raw, (), relative_path, language, documents, used_paths)
     return tuple(documents)
 
 
@@ -284,14 +377,14 @@ def _documents(root: Path, language: Literal["en", "uk"]) -> list[_SearchDocumen
             continue
 
         if path.suffix.casefold() == ".md":
-            documents.extend(
-                _cached_markdown_document(
-                    str(path),
-                    relative_path,
-                    stat.st_mtime_ns,
-                    stat.st_size,
-                )
+            document = _cached_markdown_document(
+                str(path),
+                relative_path,
+                stat.st_mtime_ns,
+                stat.st_size,
             )
+            if document is not None:
+                documents.append(document)
         else:
             documents.extend(
                 _cached_json_documents(
@@ -352,6 +445,89 @@ def _diversified_results(scored: list[_ScoredDocument], limit: int) -> list[_Sco
     return selected
 
 
+def _rank_documents(
+    root: Path,
+    language: Literal["en", "uk"],
+    query: str,
+    query_tokens: list[str],
+) -> list[_ScoredDocument]:
+    scored = [
+        result
+        for document in _documents(root, language)
+        if (result := _score_document(document, query, query_tokens)) is not None
+    ]
+    scored.sort(key=lambda item: (-item.score, item.document.path))
+    return scored
+
+
+def _supplement_uncovered_terms(
+    query_tokens: list[str],
+    all_scored: list[_ScoredDocument],
+    selected: list[_ScoredDocument],
+    selected_paths: set[str],
+    covered_terms: set[str],
+    limit: int,
+) -> None:
+    for token in query_tokens:
+        if token in covered_terms or len(selected) >= limit:
+            continue
+        supplement = next(
+            (
+                item
+                for item in all_scored
+                if token in item.matched_terms and item.document.path not in selected_paths
+            ),
+            None,
+        )
+        if supplement is None:
+            continue
+        selected.append(supplement)
+        selected_paths.add(supplement.document.path)
+        covered_terms.update(supplement.matched_terms)
+
+
+def _fill_from_ranked(
+    ranked: list[_ScoredDocument],
+    selected: list[_ScoredDocument],
+    selected_paths: set[str],
+    limit: int,
+) -> None:
+    for item in ranked:
+        if len(selected) >= limit:
+            break
+        if item.document.path in selected_paths:
+            continue
+        selected.append(item)
+        selected_paths.add(item.document.path)
+
+
+def _select_search_results(
+    query_tokens: list[str],
+    all_scored: list[_ScoredDocument],
+    ranked_strong: list[_ScoredDocument],
+    limit: int,
+) -> list[_ScoredDocument]:
+    reserve = min(len(query_tokens), 3, max(0, limit - 1))
+    selected = ranked_strong[: max(1, limit - reserve)]
+    selected_paths = {item.document.path for item in selected}
+    covered_terms = {term for item in selected for term in item.matched_terms}
+
+    # Once a sufficiently relevant result anchors the query in the repository,
+    # include the best exact hit for any remaining concept. This lets a query such
+    # as "asyncio for test automation" combine asyncio and automation material
+    # without letting an unrelated one-word collision claim repository grounding.
+    _supplement_uncovered_terms(
+        query_tokens,
+        all_scored,
+        selected,
+        selected_paths,
+        covered_terms,
+        limit,
+    )
+    _fill_from_ranked(ranked_strong, selected, selected_paths, limit)
+    return selected
+
+
 def search_content(
     query: str,
     content_root: Path,
@@ -370,48 +546,13 @@ def search_content(
 
     bounded_limit = max(1, min(limit, 8))
     minimum_matches = 1 if len(query_tokens) == 1 else max(2, math.ceil(len(query_tokens) / 2))
-    all_scored = [
-        result
-        for document in _documents(root, language)
-        if (result := _score_document(document, query, query_tokens)) is not None
-    ]
-    all_scored.sort(key=lambda item: (-item.score, item.document.path))
+    all_scored = _rank_documents(root, language, query, query_tokens)
     strong = [item for item in all_scored if item.matched_tokens >= minimum_matches]
     if not strong:
         return []
 
     ranked_strong = _diversified_results(strong, bounded_limit)
-    reserve = min(len(query_tokens), 3, max(0, bounded_limit - 1))
-    selected = ranked_strong[: max(1, bounded_limit - reserve)]
-    selected_paths = {item.document.path for item in selected}
-    covered_terms = {term for item in selected for term in item.matched_terms}
-
-    # Once a sufficiently relevant result anchors the query in the repository,
-    # include the best exact hit for any remaining concept. This lets a query such
-    # as "asyncio for test automation" combine asyncio and automation material
-    # without letting an unrelated one-word collision claim repository grounding.
-    for token in query_tokens:
-        if token in covered_terms or len(selected) >= bounded_limit:
-            continue
-        supplement = next(
-            (
-                item
-                for item in all_scored
-                if token in item.matched_terms and item.document.path not in selected_paths
-            ),
-            None,
-        )
-        if supplement is not None:
-            selected.append(supplement)
-            selected_paths.add(supplement.document.path)
-            covered_terms.update(supplement.matched_terms)
-
-    for item in ranked_strong:
-        if len(selected) >= bounded_limit:
-            break
-        if item.document.path not in selected_paths:
-            selected.append(item)
-            selected_paths.add(item.document.path)
+    selected = _select_search_results(query_tokens, all_scored, ranked_strong, bounded_limit)
 
     return [
         SearchHit(

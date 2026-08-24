@@ -24,6 +24,9 @@ from .settings import Settings, langfuse_configured
 
 logger = logging.getLogger(__name__)
 
+_OPENAI_NOT_CONFIGURED_DETAIL = "OpenAI is not configured."
+_AI_PROVIDER_FAILED_DETAIL = "AI provider request failed."
+
 
 def _authorized(settings: Settings, authorization: str | None) -> None:
     if not settings.service_auth_configured:
@@ -89,7 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if assistant is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI is not configured.",
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
             )
         if request.messages[-1].role != "user":
             raise HTTPException(
@@ -109,7 +112,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("AI request failed with %s", type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI provider request failed.",
+                detail=_AI_PROVIDER_FAILED_DETAIL,
             ) from error
 
         return ChatResponse(
@@ -122,14 +125,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post(
         "/v1/learning-path",
-        response_model=LearningAdvisorResponse,
         dependencies=[Depends(require_auth)],
     )
     async def learning_path(request: ChatRequest) -> LearningAdvisorResponse:
         if learning_advisor is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI is not configured.",
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
             )
         if request.messages[-1].role != "user":
             raise HTTPException(
@@ -149,7 +151,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("Learning path request failed with %s", type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI provider request failed.",
+                detail=_AI_PROVIDER_FAILED_DETAIL,
             ) from error
 
         return LearningAdvisorResponse(
@@ -200,7 +202,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if interview_evaluator is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI is not configured.",
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
             )
         question = find_interview_question(runtime.content_root, request.track, request.question_id)
         if question is None:
@@ -222,7 +224,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("Interview evaluation failed with %s", type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI provider request failed.",
+                detail=_AI_PROVIDER_FAILED_DETAIL,
             ) from error
 
         return InterviewEvaluateResponse(
