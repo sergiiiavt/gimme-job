@@ -5,9 +5,11 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APPROVED_LOGO_WIDTH = 512;
-const APPROVED_LOGO_HEIGHT = 146;
-const APPROVED_LOGO_PIXEL_SHA256 = "7e78acf1f907c8b1b400785b24b5ad4c9e28ffbcb62f89b782e4dff233c1ede7";
+// Canonical navigation logo is derived only from the user-approved chat image:
+// transparent margins trimmed, then resized for web delivery. No SVG/text recreation.
+const APPROVED_LOGO_WIDTH = 188;
+const APPROVED_LOGO_HEIGHT = 54;
+const APPROVED_LOGO_PIXEL_SHA256 = "f4d7cc3beac0fdf960b2f3e23a2afcb7f4ec75202a475bac5a7b71efd003cfef";
 
 async function logoPixelSignature(filePath) {
   const { data, info } = await sharp(filePath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
