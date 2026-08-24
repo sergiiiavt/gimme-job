@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status
 from . import __version__
 from .agent import AssistantAgent
 from .interview import InterviewEvaluator, find_interview_question, select_interview_questions
+from .learning_path import LearningAdvisorGraph
 from .schemas import (
     ChatRequest,
     ChatResponse,
@@ -17,10 +18,14 @@ from .schemas import (
     InterviewEvaluateResponse,
     InterviewStartRequest,
     InterviewStartResponse,
+    LearningAdvisorResponse,
 )
 from .settings import Settings, langfuse_configured
 
 logger = logging.getLogger(__name__)
+
+_OPENAI_NOT_CONFIGURED_DETAIL = "OpenAI is not configured."
+_AI_PROVIDER_FAILED_DETAIL = "AI provider request failed."
 
 
 def _authorized(settings: Settings, authorization: str | None) -> None:
@@ -56,6 +61,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     assistant = AssistantAgent(runtime) if runtime.openai_configured else None
+    learning_advisor = LearningAdvisorGraph(runtime) if runtime.openai_configured else None
     interview_evaluator = InterviewEvaluator(runtime) if runtime.openai_configured else None
 
     @app.get("/health", response_model=HealthResponse)
@@ -86,7 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if assistant is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI is not configured.",
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
             )
         if request.messages[-1].role != "user":
             raise HTTPException(
@@ -106,7 +112,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("AI request failed with %s", type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI provider request failed.",
+                detail=_AI_PROVIDER_FAILED_DETAIL,
             ) from error
 
         return ChatResponse(
@@ -114,6 +120,47 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             session_id=session_id,
             model=runtime.openai_model,
             langfuse_tracing=traced,
+            response=response,
+        )
+
+    @app.post(
+        "/v1/learning-path",
+        dependencies=[Depends(require_auth)],
+    )
+    async def learning_path(request: ChatRequest) -> LearningAdvisorResponse:
+        if learning_advisor is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
+            )
+        if request.messages[-1].role != "user":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="The final message must have role 'user'.",
+            )
+
+        request_id = uuid4().hex
+        session_id = request.session_id or uuid4().hex
+        try:
+            response, traced, retrieval_mode, workflow_steps = await learning_advisor.answer(
+                messages=request.messages,
+                session_id=session_id,
+                request_id=request_id,
+            )
+        except Exception as error:
+            logger.warning("Learning path request failed with %s", type(error).__name__)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=_AI_PROVIDER_FAILED_DETAIL,
+            ) from error
+
+        return LearningAdvisorResponse(
+            request_id=request_id,
+            session_id=session_id,
+            model=runtime.openai_model,
+            langfuse_tracing=traced,
+            retrieval_mode=retrieval_mode,
+            workflow_steps=workflow_steps,
             response=response,
         )
 
@@ -155,7 +202,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if interview_evaluator is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI is not configured.",
+                detail=_OPENAI_NOT_CONFIGURED_DETAIL,
             )
         question = find_interview_question(runtime.content_root, request.track, request.question_id)
         if question is None:
@@ -177,7 +224,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("Interview evaluation failed with %s", type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="AI provider request failed.",
+                detail=_AI_PROVIDER_FAILED_DETAIL,
             ) from error
 
         return InterviewEvaluateResponse(

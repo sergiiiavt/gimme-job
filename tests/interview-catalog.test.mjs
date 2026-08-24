@@ -288,10 +288,10 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(routeSource, /interview-stars/);
   assert.match(stylesSource, /\.iq-star-icon\.active \{/);
 
-  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
+  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
-  assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "trends"/);
+  assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "ai-assistant"[\s\S]*?id: "trends"/);
   assert.match(navigationSource, /id: "learning",[\s\S]*?label: "Learning path"/);
   assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "rewild"/);
   assert.match(stylesSource, /\.kb-area-group-career/);
@@ -322,6 +322,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(uiSource, /window\.location\.assign\(sectionNavigationHref\(next, effectiveMode\)\)/);
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "certifications"'), "The Career group must come before the Learning path.");
+  assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "ai-assistant"'), "AI Assistant must follow Interview questions.");
+  assert.ok(navigationSource.indexOf('id: "ai-assistant"') < navigationSource.indexOf('id: "trends"'), "AI Assistant must remain inside the Career group.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "certifications"'), "Learning path must follow Interview questions.");
   assert.ok(navigationSource.indexOf('id: "certifications"') < navigationSource.indexOf('id: "llm"'), "Certs & Trainings must lead the Learning path.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
