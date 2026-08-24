@@ -81,4 +81,5 @@ jobs:
           }
 
           retry check_page "https://gimme-job.com/"
+          retry check_page "https://gimme-job.com/gimmejob-logo.png"
           retry check_health "https://gimme-job.com/api/health"
