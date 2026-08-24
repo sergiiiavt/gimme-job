@@ -1,36 +1,22 @@
 /* Approved GimmeJob logo asset.
-   The exact selected PNG overlays the built-in SVG/text brand in both desktop and mobile navigation.
-   Never hide the fallback: if the PNG is unavailable, the brand must still remain visible instead of leaving a blank slot. */
+   Render only the selected PNG artwork in both desktop and mobile navigation.
+   The previous inline SVG/text brand must never be visible underneath it. */
 .kb-brand,
 .kb-mobile-brand {
   background-color: transparent;
-  background-image: none;
-  box-sizing: border-box;
-  isolation: isolate;
-  position: relative;
-  width: 188px;
-}
-
-.kb-brand::after,
-.kb-mobile-brand::after {
   background-image: url("/gimmejob-logo.png");
   background-position: left center;
   background-repeat: no-repeat;
   background-size: contain;
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 2;
+  box-sizing: border-box;
+  width: 188px;
 }
 
 .kb-brand > svg,
 .kb-brand > strong,
 .kb-mobile-brand > svg,
 .kb-mobile-brand > strong {
-  position: relative;
-  visibility: visible !important;
-  z-index: 1;
+  display: none !important;
 }
 
 .kb-brand {

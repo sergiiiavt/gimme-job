@@ -74,6 +74,15 @@ jobs:
               --output /dev/null "$1"
           }
 
+          check_logo() {
+            local file="/tmp/gimmejob-logo.png"
+            local signature
+            curl --fail --silent --show-error --location --max-time 20 \
+              --output "$file" "$1" || return 1
+            signature="$(head -c 8 "$file" | od -An -t x1 | tr -d ' \n')"
+            test "$signature" = "89504e470d0a1a0a"
+          }
+
           check_health() {
             local body
             body="$(curl --fail --silent --show-error --location --max-time 20 "$1")" &&
@@ -81,5 +90,5 @@ jobs:
           }
 
           retry check_page "https://gimme-job.com/"
-          retry check_page "https://gimme-job.com/gimmejob-logo.png"
+          retry check_logo "https://gimme-job.com/gimmejob-logo.png"
           retry check_health "https://gimme-job.com/api/health"
