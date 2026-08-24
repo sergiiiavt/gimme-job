@@ -19,13 +19,13 @@ test("canonical RAG service token requires the exact private header value", () =
   assert.equal(hasRagServiceToken(good, undefined), false);
 });
 
-test("canonical RAG token comparison handles UTF-8 without accepting a different value", () => {
-  const configured = "токен-🔐-0123456789abcdef0123456789abcdef";
+test("canonical RAG token comparison handles non-ASCII header bytes without accepting a different value", () => {
+  const configured = "caf\u00e9-0123456789abcdef0123456789abcdef";
   const exact = new Request("https://example.test/internal/rag/search", {
     headers: { "x-gimmejob-rag-token": configured },
   });
   const different = new Request("https://example.test/internal/rag/search", {
-    headers: { "x-gimmejob-rag-token": configured.replace("🔐", "🔑") },
+    headers: { "x-gimmejob-rag-token": configured.replace("\u00e9", "\u00e8") },
   });
 
   assert.equal(hasRagServiceToken(exact, configured), true);
