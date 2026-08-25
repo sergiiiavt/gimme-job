@@ -250,7 +250,9 @@ async function handleMultiUserLogout(request: Request, env: BoundaryEnv): Promis
     });
   }
   const returnPath = returnPathFromRequest(request);
-  await deleteUserSession(request, env);
+
+  await deleteUserSession(request, env).catch((error) => console.error("Failed to delete user session during logout", error));
+
   return new Response(null, {
     status: 303,
     headers: {
