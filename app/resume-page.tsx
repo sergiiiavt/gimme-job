@@ -14,8 +14,8 @@ const linkedInUrl = "https://www.linkedin.com/in/serhii-yavtushkevych-ba1a2686/"
 
 const skills = [
   "QA leadership: 12-person team, planning, prioritization, mentoring, onboarding, QA process improvement",
-  "Manual / integration testing: Web, API, functional, regression, smoke, exploratory, integration",
   "Test automation: Python, Pytest, Playwright, TypeScript, Selenium, Behave",
+  "AI / LLM: AI tools in QA and automation, testing LLM-based solutions, RAG familiarity",
   "Backend / API: REST, HTTP, Postman, Bruno, client-server testing, Fiddler, WebSocket familiarity",
   "Databases / data: MSSQL, PostgreSQL, SQL, data validation, ETL familiarity",
   "CI/CD and engineering tools: Azure DevOps Pipelines, GitHub Actions, Jenkins, Azure, Docker, Git",
@@ -23,7 +23,7 @@ const skills = [
   "Logs / observability: Grafana, Azure Application Insights, troubleshooting and defect localization",
   "Mobile / desktop: Android/iOS testing, desktop testing, Appium familiarity",
   "Embedded / IoT familiarity: software-hardware interaction, MQTT, BLE",
-  "AI / LLM: AI tools in QA and automation, testing LLM-based solutions, RAG familiarity",
+  "Manual testing: Web and API, functional, regression, smoke, exploratory, and integration testing",
   "Test management / performance: Jira, TestRail, Azure DevOps, Zephyr, JMeter",
 ];
 
