@@ -14,7 +14,7 @@ const expectedRoutes: Record<string, string> = {
   "qa-fundamentals": "/reference/qa-fundamentals",
   programming: "/reference/programming",
   automation: "/learn/automation",
-  data: "/reference/data",
+  data: "/learn/data",
   devops: "/learn/cloud-devops",
   news: "/news",
   rewild: "/fight-ai-slop",
@@ -51,6 +51,7 @@ test("canonical route paths resolve directly to their site sections", () => {
   assert.equal(sectionFromPathname("/interview/unknown-domain"), null);
   assert.equal(sectionFromPathname("/interview/simulator"), null);
   assert.equal(sectionFromPathname("/learn/api"), "api");
+  assert.equal(sectionFromPathname("/learn/data"), "data");
   assert.equal(sectionFromPathname("/reference/qa-fundamentals"), "qa-fundamentals");
   assert.equal(sectionFromPathname("/reference/programming"), "programming");
   assert.equal(sectionFromPathname("/reference/data"), "data");
