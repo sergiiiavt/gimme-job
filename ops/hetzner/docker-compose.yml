@@ -48,6 +48,18 @@ services:
     networks:
       - n8n_internal
 
+  gimmejob-ai:
+    image: ghcr.io/sergiiiavt/gimme-job-ai:latest
+    restart: unless-stopped
+    profiles:
+      - ai
+    env_file:
+      - ./ai.env
+    expose:
+      - "8000"
+    networks:
+      - n8n_internal
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
