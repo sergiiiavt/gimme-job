@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import automationCurriculum from "@/content/automation-learning/catalog";
 import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
+import sqlCurriculum from "@/content/data-learning/catalog";
 import pythonCurriculum from "@/content/python-learning/catalog";
 import pythonQuickReference from "@/content/python-learning/quick-reference.json";
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
@@ -186,6 +187,24 @@ const referenceBlueprints: Record<string, string[]> = {
   devops: ["CI/CD", "Containers", "Environments", "Deployment gates", "Rollback"],
 };
 
+const dataTrackLayout = `
+.kb-subnav-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kb-subnav-switch button {
+  flex: none;
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 7px;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+`;
+
 function slug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -261,13 +280,11 @@ function learningSubnav(referenceId: string): SubnavItem[] {
     }));
   }
   if (referenceId === "data") {
-    return [
-      { id: "sql", label: "SQL", count: 17 },
-      { id: "database-integrity", label: "Database integrity", status: "under-construction" },
-      { id: "etl-and-elt", label: "ETL and ELT", status: "under-construction" },
-      { id: "data-quality", label: "Data quality", status: "under-construction" },
-      { id: "bi-semantics-and-lineage", label: "BI semantics and lineage", status: "under-construction" },
-    ];
+    return sqlCurriculum.taxonomy.map((item) => ({
+      id: item.id,
+      label: item.navLabel ?? item.label,
+      count: item.count || undefined,
+    }));
   }
   const taxonomy = cloudDevopsTaxonomy as TaxonomyItem[];
   return taxonomy.map((item) => ({
@@ -288,6 +305,19 @@ function learningSwitcher(referenceId: string): SecondarySwitcher | undefined {
     return {
       activeId: "framework",
       options: [{ id: "framework", label: "Framework" }, { id: "test-architecture", label: "Test Architecture" }],
+      onSelect: (id) => window.location.assign(regularLearningHref(referenceId, undefined, id)),
+    };
+  }
+  if (referenceId === "data") {
+    return {
+      activeId: "sql",
+      options: [
+        { id: "sql", label: "SQL" },
+        { id: "database-integrity", label: "Database integrity" },
+        { id: "etl-and-elt", label: "ETL & ELT" },
+        { id: "data-quality", label: "Data quality" },
+        { id: "bi-semantics-and-lineage", label: "BI semantics & lineage" },
+      ],
       onSelect: (id) => window.location.assign(regularLearningHref(referenceId, undefined, id)),
     };
   }
@@ -342,13 +372,9 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const activeExternalId = external ? activeItem.id as ExternalNavigationId : undefined;
   const secondaryItems = learningSubnav(referenceId);
   const secondarySwitcher = learningSwitcher(referenceId);
-  const activeTrack = referenceId === "programming" ? "python" : referenceId === "automation" ? "framework" : undefined;
+  const activeTrack = referenceId === "programming" ? "python" : referenceId === "automation" ? "framework" : referenceId === "data" ? "sql" : undefined;
 
   const selectLearningTopic = (topicId: string) => {
-    if (referenceId === "data") {
-      if (topicId === "sql") window.location.assign(regularLearningHref(referenceId));
-      return;
-    }
     window.location.assign(regularLearningHref(referenceId, topicId, activeTrack));
   };
 
@@ -363,6 +389,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
 
   return (
     <main className="kb-shell">
+      {referenceId === "data" ? <style>{dataTrackLayout}</style> : null}
       <SiteSidebar
         activeExternalId={activeExternalId}
         activeSection={activeSection}
