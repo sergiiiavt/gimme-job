@@ -99,6 +99,22 @@ jobs:
               grep -Fq '"ok":true' <<<"$body"
           }
 
+          check_logout() {
+            local headers="/tmp/gimmejob-logout-headers"
+            local status
+            status="$(curl --silent --show-error --max-time 20 \
+              --request POST \
+              --header 'Cookie: gimmejob_user_session=production-logout-probe' \
+              --header 'Referer: https://gimme-job.com/' \
+              --dump-header "$headers" \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              'https://gimme-job.com/logout')" || return 1
+            [[ "$status" == "303" ]] || return 1
+            grep -Eiq '^set-cookie: gimmejob_user_session=;.*Max-Age=0' "$headers"
+          }
+
           retry check_page "https://gimme-job.com/"
           retry check_logo "https://gimme-job.com/gimmejob-logo.png"
           retry check_health "https://gimme-job.com/api/health"
+          retry check_logout
