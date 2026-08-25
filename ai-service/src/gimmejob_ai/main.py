@@ -11,6 +11,7 @@ from .agent import AssistantAgent
 from .interview import InterviewEvaluator, find_interview_question, select_interview_questions
 from .learning_path import LearningAdvisorGraph
 from .schemas import (
+    AssistantResponse,
     ChatRequest,
     ChatResponse,
     HealthResponse,
@@ -19,6 +20,9 @@ from .schemas import (
     InterviewStartRequest,
     InterviewStartResponse,
     LearningAdvisorResponse,
+    LearningMap,
+    LearningMapNode,
+    WorkflowStep,
 )
 from .settings import Settings, langfuse_configured
 
@@ -50,6 +54,54 @@ def _authorized(settings: Settings, authorization: str | None) -> None:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid bearer token.",
         )
+
+
+def _learning_path_fallback(request: ChatRequest) -> tuple[AssistantResponse, list[WorkflowStep]]:
+    topic = request.messages[-1].content.strip()
+    title = topic[:240] or "Learning topic"
+    ukrainian = any("\u0400" <= character <= "\u04ff" for character in topic)
+    if ukrainian:
+        answer = (
+            "AI-генерація тимчасово недоступна, тому показано безпечний базовий план. "
+            f"Почни з основ теми «{title}», потім розбери ключові поняття та закріпи їх невеликим практичним прикладом."
+        )
+        summary = "Опрацюй базові поняття, перевір розуміння на прикладах і переходь до практики."
+        step_detail = "AI workflow failed safely; returned a deterministic fallback instead of an error page."
+    else:
+        answer = (
+            "AI generation is temporarily unavailable, so a safe baseline plan is shown. "
+            f"Start with the fundamentals of “{title}”, then study the core concepts and reinforce them with a small practical example."
+        )
+        summary = "Learn the fundamentals, verify the concepts with examples, then move into hands-on practice."
+        step_detail = "AI workflow failed safely; returned a deterministic fallback instead of an error page."
+
+    return (
+        AssistantResponse(
+            answer=answer,
+            cards=[],
+            sources=[],
+            suggested_prompts=[],
+            learning_map=LearningMap(
+                title=title,
+                nodes=[
+                    LearningMapNode(
+                        id="runtime-fallback-topic",
+                        title=title,
+                        summary=summary,
+                        kind="topic",
+                    )
+                ],
+                edges=[],
+            ),
+        ),
+        [
+            WorkflowStep(
+                id="runtime_fallback",
+                label="Use safe runtime fallback",
+                detail=step_detail,
+            )
+        ],
+    )
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -159,12 +211,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 session_id=session_id,
                 request_id=request_id,
             )
-        except Exception as error:
-            logger.warning("Learning path request failed with %s", type(error).__name__)
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=_AI_PROVIDER_FAILED_DETAIL,
-            ) from error
+        except Exception:
+            logger.exception("Learning path workflow failed; returning deterministic fallback")
+            response, workflow_steps = _learning_path_fallback(request)
+            traced = False
+            retrieval_mode = "general"
 
         return LearningAdvisorResponse(
             request_id=request_id,
