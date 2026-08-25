@@ -187,3 +187,37 @@ jobs:
             echo "Last health response: $last_body" >&2
           fi
           exit 1
+
+      - name: Verify Learning Advisor end to end
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload='{"messages":[{"role":"user","content":"Python parallelism"}],"session_id":"production-deploy-smoke"}'
+          body="$(curl --fail --silent --show-error --max-time 60 \
+            --request POST \
+            --header "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$AI_URL/v1/learning-path")"
+
+          if ! grep -Fq '"orchestration":"langgraph"' <<<"$body"; then
+            echo "Learning Advisor smoke response did not match the LangGraph contract." >&2
+            exit 1
+          fi
+          if ! grep -Fq '"learning_map"' <<<"$body"; then
+            echo "Learning Advisor smoke response did not include a learning map." >&2
+            exit 1
+          fi
+          if grep -Fq '"id":"runtime_fallback"' <<<"$body"; then
+            echo "Learning Advisor reached its safe runtime fallback; the primary AI workflow is still failing." >&2
+            exit 1
+          fi
+          echo "Learning Advisor primary workflow passed end-to-end smoke verification."
+
+      - name: Collect AI service diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          SSH=(ssh -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
+          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            'cd /opt/gimmejob-n8n && docker compose --profile ai logs --no-color --tail=160 gimmejob-ai' || true
