@@ -14,7 +14,7 @@ export const sqlCurriculum = {
     prevalence: "Module levels reflect learning dependency: Beginner establishes query fluency, Intermediate builds relational/data-modification skills, Advanced adds analytical/performance/testing patterns, and Expert focuses on production habits and mastery.",
     media: "The current SQL path prioritizes text, executable examples, database inspection, and exercises. Diagrams can be added later where they improve relational-model or query-plan explanations."
   },
-  taxonomy: sqlModules,
+  taxonomy: sqlModules.map((module) => ({ ...module, sourceIds: [...module.sourceIds] })),
   sources,
 };
 
