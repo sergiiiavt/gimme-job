@@ -44,7 +44,7 @@ export default function DataLearningPage({ mode }: { mode: "public" | "personal"
         defaultTrackId="sql"
         heroMeta={({ module, sourceCount }) => [
           "Under review",
-          `${module.count ?? 0} focused topics`,
+          `${module?.count ?? 0} focused topics`,
           `${sourceCount} references · runnable SQLite examples`,
         ]}
         initialModuleId={requestedTopic}
