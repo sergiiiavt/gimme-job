@@ -127,7 +127,7 @@ class LearningPathApiTests(unittest.TestCase):
             self.assertEqual(node["duration_minutes"], 30)
             self.assertTrue(body["langfuse_tracing"])
 
-    def test_learning_path_provider_failure_is_sanitized(self) -> None:
+    def test_learning_path_runtime_failure_returns_renderable_safe_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             settings = self._settings(Path(temporary_directory))
             with patch("gimmejob_ai.main.LearningAdvisorGraph", _FailingLearningAdvisor):
@@ -139,9 +139,30 @@ class LearningPathApiTests(unittest.TestCase):
                 json={"messages": [{"role": "user", "content": "Python parallelism"}]},
             )
 
-            self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json()["detail"], "AI provider request failed.")
+            self.assertEqual(response.status_code, 200)
+            body = response.json()
+            self.assertEqual(body["retrieval_mode"], "general")
+            self.assertFalse(body["langfuse_tracing"])
+            self.assertEqual(body["workflow_steps"][0]["id"], "runtime_fallback")
+            self.assertEqual(body["response"]["learning_map"]["title"], "Python parallelism")
+            self.assertEqual(len(body["response"]["learning_map"]["nodes"]), 1)
+            self.assertEqual(body["response"]["sources"], [])
             self.assertNotIn("secret details", response.text)
+
+    def test_learning_path_runtime_failure_localizes_ukrainian_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            settings = self._settings(Path(temporary_directory))
+            with patch("gimmejob_ai.main.LearningAdvisorGraph", _FailingLearningAdvisor):
+                client = TestClient(create_app(settings))
+
+            response = client.post(
+                "/v1/learning-path",
+                headers={"Authorization": "Bearer test-token"},
+                json={"messages": [{"role": "user", "content": "Паралелізм у Python"}]},
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("AI-генерація тимчасово недоступна", response.json()["response"]["answer"])
 
 
 if __name__ == "__main__":
