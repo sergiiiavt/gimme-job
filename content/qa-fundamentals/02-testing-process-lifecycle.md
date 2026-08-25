@@ -4,6 +4,23 @@
 
 Testing is not a phase that begins after coding. It is a set of activities that starts when the team can first examine useful information and continues while the product changes in production.
 
+## STLC and the modern test process
+
+**STLC (Software Testing Life Cycle)** is a common interview and industry label for the lifecycle of testing work. Different sources group the phases differently. For interview purposes, recognize the popular six-phase wording, but use the more precise ISTQB test activities when explaining how testing actually works.
+
+| Common STLC wording | Closest ISTQB test activities |
+| --- | --- |
+| Requirement analysis | Test analysis, supported by early reviews of the test basis |
+| Test planning | Test planning plus test monitoring and control |
+| Test case development | Test analysis, test design and test implementation |
+| Test environment setup | Mainly test implementation |
+| Test execution | Test execution |
+| Test cycle closure | Test completion |
+
+The mapping is approximate, not a second official ISTQB lifecycle. In particular, environment setup is not a separate ISTQB activity, and test case development compresses several distinct activities into one label.
+
+The activities are **not a strict waterfall**. Planning, monitoring, analysis, design, implementation, execution and completion overlap, repeat and feed one another. In Agile and continuous delivery, the same activities may occur many times inside a sprint or even for a single change.
+
 ## Testing throughout the SDLC
 
 Different lifecycle models organize work differently, but the testing problem stays similar: obtain useful evidence early enough to influence decisions. Requirements can be reviewed before code exists. Designs can be challenged for testability. Component tests can run while implementation is still local. Integration and system evidence grows as the product becomes more complete.
@@ -100,9 +117,11 @@ That naturally connects confirmation testing and regression testing, covered in 
 
 ## Summary
 
+- STLC is a common umbrella term; the exact phase names vary by source.
+- For precise explanations, use the ISTQB activities: planning, monitoring/control, analysis, design, implementation, execution and completion.
+- Testing activities overlap and iterate rather than forming a strict waterfall.
 - Testing activities exist across the lifecycle, not only after development.
 - Test analysis determines what needs evidence; test design determines how to obtain it.
-- Planning, monitoring and control form a feedback loop rather than a one-time document exercise.
 - Testware includes far more than test cases.
 - Completion should communicate evidence, gaps and residual risk.
 - Production changes create new testing work through maintenance and impact analysis.
