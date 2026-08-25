@@ -2,3 +2,8 @@ n8n.gimme-job.com {
   encode zstd gzip
   reverse_proxy n8n:5678
 }
+
+ai.gimme-job.com {
+  encode zstd gzip
+  reverse_proxy gimmejob-ai:8000
+}
