@@ -13,7 +13,7 @@ const canonicalSectionPaths: Record<string, string> = {
   programming: "/reference/programming",
   automation: "/learn/automation",
   api: "/learn/api",
-  data: "/reference/data",
+  data: "/learn/data",
   mobile: "/learn/mobile",
   embedded: "/learn/embedded",
   performance: "/learn/performance",

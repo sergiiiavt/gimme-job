@@ -34,6 +34,11 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     description: "Practical API testing learning materials covering HTTP, REST, contracts, authentication, negative testing, and automation examples.",
     path: "/learn/api",
   },
+  data: {
+    title: "SQL Learning Path",
+    description: "A complete SQL learning path for QA and quality engineers covering querying, joins, aggregation, CTEs, window functions, transactions, schema design, performance, security, and practical data validation.",
+    path: "/learn/data",
+  },
   mobile: {
     title: "Mobile Testing Learning",
     description: "Practical mobile testing materials for Android and iOS, including device tooling, logs, debugging, and automation concepts.",

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "w3schools-sql-syllabus",
+    "title": "SQL Syllabus (Curriculum)",
+    "url": "https://www.w3schools.com/sql/sql_syllabus.asp",
+    "publisher": "W3Schools",
+    "kind": "tutorial",
+    "role": "Beginner-friendly coverage checklist and sequencing reference for core SQL syntax, querying, joins, DML, DDL, constraints, views, and security basics."
+  },
+  {
+    "id": "w3schools-sql-tutorial",
+    "title": "SQL Tutorial",
+    "url": "https://www.w3schools.com/sql/",
+    "publisher": "W3Schools",
+    "kind": "tutorial",
+    "role": "Supplementary examples and exercises for foundational SQL statements; used as a breadth reference rather than the authority for engine-specific behavior."
+  },
+  {
+    "id": "postgresql-18-tutorial",
+    "title": "PostgreSQL 18 Tutorial",
+    "url": "https://www.postgresql.org/docs/current/tutorial.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "official documentation",
+    "role": "Primary semantic reference for relational concepts, querying, joins, aggregates, updates, deletes, views, foreign keys, transactions, and window functions."
+  },
+  {
+    "id": "postgresql-18-queries",
+    "title": "PostgreSQL 18 — Queries",
+    "url": "https://www.postgresql.org/docs/current/queries.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "official documentation",
+    "role": "Detailed reference for FROM/WHERE/GROUP BY/HAVING, set operations, sorting, LIMIT/OFFSET, CTEs, recursive queries, and query processing."
+  },
+  {
+    "id": "postgresql-18-ddl",
+    "title": "PostgreSQL 18 — Data Definition",
+    "url": "https://www.postgresql.org/docs/current/ddl.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "official documentation",
+    "role": "Reference for tables, defaults, generated columns, constraints, privileges, schemas, inheritance/partitioning concepts, and other DDL topics."
+  },
+  {
+    "id": "postgresql-18-transactions",
+    "title": "PostgreSQL 18 — Transactions",
+    "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "official documentation",
+    "role": "Primary reference for atomic transactions, BEGIN/COMMIT/ROLLBACK, savepoints, and transaction reasoning."
+  },
+  {
+    "id": "postgresql-18-window",
+    "title": "PostgreSQL 18 — Window Functions",
+    "url": "https://www.postgresql.org/docs/current/tutorial-window.html",
+    "publisher": "PostgreSQL Global Development Group",
+    "kind": "official documentation",
+    "role": "Primary reference for OVER, PARTITION BY, window ordering, ranking, running calculations, and the difference between windows and aggregation."
+  },
+  {
+    "id": "sqlite-select",
+    "title": "SQLite — SELECT",
+    "url": "https://www.sqlite.org/lang_select.html",
+    "publisher": "SQLite",
+    "kind": "official documentation",
+    "role": "Runtime-aligned reference for SELECT grammar and behavior in the in-browser SQLite practice environment."
+  },
+  {
+    "id": "sqlite-transaction",
+    "title": "SQLite — Transaction",
+    "url": "https://www.sqlite.org/lang_transaction.html",
+    "publisher": "SQLite",
+    "kind": "official documentation",
+    "role": "Runtime-aligned reference for SQLite transaction behavior and explicit transaction control."
+  },
+  {
+    "id": "sqlite-query-planner",
+    "title": "SQLite Query Planning",
+    "url": "https://www.sqlite.org/queryplanner.html",
+    "publisher": "SQLite",
+    "kind": "official documentation",
+    "role": "Accessible explanation of indexes, lookup strategies, multi-column indexes, covering indexes, and query planning trade-offs."
+  },
+  {
+    "id": "sqlbolt",
+    "title": "SQLBolt Interactive SQL Lessons",
+    "url": "https://sqlbolt.com/",
+    "publisher": "SQLBolt",
+    "kind": "interactive tutorial",
+    "role": "Practice-sequencing reference: short concept blocks followed immediately by hands-on SELECT, filtering, joins, aggregates, DML, and DDL exercises."
+  },
+  {
+    "id": "owasp-sql-injection",
+    "title": "SQL Injection Prevention Cheat Sheet",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+    "publisher": "OWASP Foundation",
+    "kind": "security guidance",
+    "role": "Security authority for parameterized queries/prepared statements, allow-list validation, and why string-concatenated SQL is unsafe."
+  }
+]

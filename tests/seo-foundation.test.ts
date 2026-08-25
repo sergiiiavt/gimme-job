@@ -59,6 +59,7 @@ test("bilingual metadata keeps reciprocal English, Ukrainian, and x-default alte
 
 test("learning metadata covers known and fallback routes", () => {
   assert.equal(canonical(learningSectionMetadata("automation")), LEARNING_SEO.automation.path);
+  assert.equal(canonical(learningSectionMetadata("data")), LEARNING_SEO.data.path);
   assert.equal(canonical(learningSectionMetadata("release-readiness")), "/learn/release-readiness");
   assert.equal(learningSectionMetadata("release-readiness").title, "Release Readiness Learning | GimmeJob");
 
@@ -88,13 +89,13 @@ test("public sitemap source is generated only from the canonical route registry"
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/python"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/automation"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/data"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/reference/data"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview/python"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.every((path) => PUBLIC_SITEMAP_PATHS.includes(path)));
   assert.equal(UKRAINIAN_SITEMAP_PATHS.length, 9);
   assert.equal(PUBLIC_SITEMAP_PATHS.some((path) => path.includes("/workspace")), false);
-  assert.equal(PUBLIC_SITEMAP_PATHS.includes("/learn/data" as never), false);
   assert.equal(new Set(PUBLIC_SITEMAP_PATHS).size, PUBLIC_SITEMAP_PATHS.length);
 });
 
