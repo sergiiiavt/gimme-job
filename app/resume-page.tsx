@@ -13,15 +13,18 @@ interface PrivateContact {
 const linkedInUrl = "https://www.linkedin.com/in/serhii-yavtushkevych-ba1a2686/";
 
 const skills = [
-  "Manual testing: functional, regression, smoke, integration, exploratory",
-  "Test automation: Python, Selenium, Behave, Pytest, Playwright, TypeScript",
-  "API testing: Postman, web services testing",
-  "Performance testing: JMeter",
-  "SQL and database validation",
-  "CI/CD and tools: Jenkins, Azure, Docker, Git",
-  "Test management / bug tracking: TFS, Jira, Zephyr, TestRail, QC, TestLink",
-  "Leadership, Scrum Master, coaching, communication with Product Owner",
-  "Broad use of AI tools and experience testing LLM-based solutions",
+  "QA leadership: 12-person team, planning, prioritization, mentoring, onboarding, QA process improvement",
+  "Manual / integration testing: Web, API, functional, regression, smoke, exploratory, integration",
+  "Test automation: Python, Pytest, Playwright, TypeScript, Selenium, Behave",
+  "Backend / API: REST, HTTP, Postman, Bruno, client-server testing, Fiddler, WebSocket familiarity",
+  "Databases / data: MSSQL, PostgreSQL, SQL, data validation, ETL familiarity",
+  "CI/CD and engineering tools: Azure DevOps Pipelines, GitHub Actions, Jenkins, Azure, Docker, Git",
+  "Test documentation: test cases, checklists, test plans, bug reports, reporting",
+  "Logs / observability: Grafana, Azure Application Insights, troubleshooting and defect localization",
+  "Mobile / desktop: Android/iOS testing, desktop testing, Appium familiarity",
+  "Embedded / IoT familiarity: software-hardware interaction, MQTT, BLE",
+  "AI / LLM: AI tools in QA and automation, testing LLM-based solutions, RAG familiarity",
+  "Test management / performance: Jira, TestRail, Azure DevOps, Zephyr, JMeter",
 ];
 
 const experience = [
@@ -30,12 +33,12 @@ const experience = [
     company: "TIETO UKRAINE LTD",
     period: "April 2021 - Present",
     achievements: [
-      "Led a 12-person QA team, including task coordination and delivery control.",
-      "Planned testing activities and managed priorities and scope of work.",
-      "Mentored new employees and supported onboarding and team development.",
-      "Communicated with the Product Owner and other stakeholders on product quality.",
-      "Prepared reports, maintained test documentation, and improved QA processes.",
-      "Participated in Scrum processes and acted as Scrum Master when needed.",
+      "Lead a 12-person QA team, coordinating day-to-day work, priorities, mentoring, onboarding, and delivery control.",
+      "Plan testing activities and release-related QA work, balancing scope, priorities, risks, and delivery needs.",
+      "Build and continuously improve QA processes, test documentation, reporting, and team working practices.",
+      "Built an automated testing framework and CI process to support repeatable quality checks and faster feedback.",
+      "Collaborate with Product Owner, developers, and other stakeholders on product quality, defects, release readiness, and technical issues.",
+      "Test LLM-based solutions and apply AI tools in QA analysis, test design, automation, and engineering workflows.",
     ],
   },
   {
@@ -43,30 +46,33 @@ const experience = [
     company: "GlobalLogic",
     period: "January 2019 - May 2021",
     achievements: [
-      "Developed and maintained automated tests for web applications.",
-      "Worked with the Python stack, Selenium, Behave, Pytest, Playwright, and TypeScript.",
-      "Integrated automated tests into CI/CD processes and supported release quality.",
-      "Performed API testing, database data validation, and maintained test documentation.",
+      "Developed, maintained, and extended automated tests for web applications.",
+      "Worked with Python, Selenium, Behave, Pytest, Playwright, and TypeScript across automation tasks.",
+      "Performed API testing and database validation to verify backend behavior and data correctness.",
+      "Integrated automated tests into CI/CD processes and supported release quality with repeatable automated checks.",
+      "Maintained test documentation and collaborated with development teams on defect investigation and resolution.",
     ],
   },
   {
-    role: "Lead QA Engineer",
+    role: "Senior / Lead QA Engineer",
     company: "GlobalLogic",
     period: "January 2014 - June 2019",
     privateLocation: true,
     achievements: [
-      "Performed manual testing of software products, requirements analysis, and test design.",
-      "Created test cases, checklists, test plans, and managed defect tracking.",
-      "Coordinated QA activities and collaborated with development and management teams.",
+      "Led testing activities and coordinated QA work across the team while helping establish and improve QA processes.",
+      "Performed functional and integration testing for web and API-based systems, including requirements analysis and test design.",
+      "Created and maintained test cases, checklists, test plans, bug reports, and defect-tracking workflows.",
+      "Validated data in databases, localized defects, investigated failures, and supported troubleshooting across system components.",
+      "Worked closely with developers, analysts, managers, and other stakeholders to clarify requirements and improve product quality.",
     ],
   },
 ];
 
 const additional = [
-  "Experience creating and maintaining test documentation.",
-  "Strong reporting and structured communication skills.",
-  "Experience coaching and mentoring employees.",
-  "Hands-on experience acting as Scrum Master.",
+  "Experience coaching, mentoring, and onboarding QA engineers.",
+  "Hands-on experience acting as Scrum Master and supporting Scrum team practices.",
+  "Practical use of AI/LLM tools in testing, analysis, automation, and day-to-day engineering work.",
+  "Broad experience combining manual testing, automation, API/data validation, troubleshooting, and QA leadership.",
 ];
 
 export default function ResumePage({ mode }: { mode: SiteMode }) {
@@ -98,7 +104,7 @@ export default function ResumePage({ mode }: { mode: SiteMode }) {
         <header className="resume-header">
           <span>{mode === "personal" ? "PERSONAL RESUME / PRIVATE CONTACT" : "PUBLIC RESUME / LINKEDIN ONLY"}</span>
           <h1>SERHII YAVTUSHKEVYCH</h1>
-          <p>Lead QA Engineer <i/> Senior QA Engineer <i/> QA Automation Engineer</p>
+          <p>QA Team Lead <i/> Senior QA Engineer <i/> QA Automation Engineer</p>
           <div className="resume-contact" aria-live="polite">
             {mode === "personal" && contactState === "loading" && <span>Loading private contact…</span>}
             {mode === "personal" && contactState === "error" && <span>Private contact is temporarily unavailable.</span>}
@@ -112,7 +118,7 @@ export default function ResumePage({ mode }: { mode: SiteMode }) {
 
         <section className="resume-section">
           <h2>Profile</h2>
-          <p>QA Lead / Test Engineer with 12+ years of experience in comprehensive software testing, primarily web applications and APIs. 4+ years of experience in test automation using Python, Selenium, Behave, Pytest, Playwright, and TypeScript. Led a QA team of 12 people: coordinated tasks, managed scope, mentored newcomers, maintained quality processes, and collaborated with stakeholders. Strengths include building QA processes, test documentation, API and database testing, reporting, Scrum practices, and team coaching. Hands-on experience applying AI tools in testing and automation tasks.</p>
+          <p>QA Team Lead / Senior QA Engineer with 12+ years of experience across Web and API testing, functional and integration testing, and 4+ years of hands-on test automation. Experienced in leading a 12-person QA team, planning testing and release activities, improving QA processes, mentoring engineers, and working directly with product and engineering stakeholders. Strong practical background in REST API testing, SQL and database validation with MSSQL and PostgreSQL, test documentation, logs and observability, troubleshooting, automation framework development, and CI processes. Additional experience includes mobile and desktop testing, Appium familiarity, embedded/IoT concepts such as MQTT and BLE, and practical use of AI/LLM tools including testing LLM-based solutions and familiarity with RAG.</p>
         </section>
 
         <section className="resume-section">
