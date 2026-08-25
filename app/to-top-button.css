@@ -42,6 +42,13 @@
   white-space: nowrap;
 }
 
+@media (min-width: 901px) {
+  /* Keep the top account control on the same browser-edge gutter as the floating To top control. */
+  .kb-account-corner {
+    right: max(10px, env(safe-area-inset-right)) !important;
+  }
+}
+
 @media (min-width: 981px) {
   /* Keep the vacancy table aligned with the left workspace edge while reserving only the right-side control gutter. */
   .vacancy-workspace > .vacancy-list-view {
