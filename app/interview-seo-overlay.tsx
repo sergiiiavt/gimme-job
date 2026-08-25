@@ -22,11 +22,9 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
   );
   const label = python ? "Python" : route?.label;
   const relatedLinks = python ? pythonRelatedLinks : route?.relatedLinks;
-  const englishPath = python ? "/interview/python" : pathname === "/interview" ? "/interview" : route?.path;
-  const ukrainianPath = englishPath ? `/uk${englishPath}` : undefined;
   const [breadcrumbHost, setBreadcrumbHost] = useState<HTMLElement | null>(null);
   const [relatedHost, setRelatedHost] = useState<HTMLElement | null>(null);
-  const enabled = Boolean(label && relatedLinks?.length && ukrainianPath);
+  const enabled = Boolean(label && relatedLinks?.length);
 
   useEffect(() => {
     if (!enabled) return;
@@ -73,7 +71,7 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
     };
   }, [enabled]);
 
-  if (!enabled || !label || !relatedLinks || !ukrainianPath) return null;
+  if (!enabled || !label || !relatedLinks) return null;
 
   return (
     <>
@@ -106,24 +104,20 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
               gap: 8px 14px;
               margin: 7px 0 0;
             }
-            .iq-seo-related,
-            .iq-seo-language {
+            .iq-seo-related {
               align-items: center;
               display: flex;
               flex-wrap: wrap;
               gap: 6px;
             }
-            .iq-seo-related > span,
-            .iq-seo-language > span:first-child {
+            .iq-seo-related > span {
               color: #6a756f;
               font-size: 10px;
               font-weight: 600;
               margin-right: 2px;
               text-transform: uppercase;
             }
-            .iq-seo-related a,
-            .iq-seo-language a,
-            .iq-seo-language .active {
+            .iq-seo-related a {
               border: 1px solid #d8ddd7;
               border-radius: 999px;
               color: #435049;
@@ -131,13 +125,7 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
               padding: 4px 8px;
               text-decoration: none;
             }
-            .iq-seo-language .active {
-              background: #e7f0df;
-              border-color: #b7c9a8;
-              color: #345523;
-            }
-            .iq-seo-related a:hover,
-            .iq-seo-language a:hover {
+            .iq-seo-related a:hover {
               background: #f3f5f2;
               color: #26322c;
             }
@@ -150,11 +138,6 @@ export default function InterviewSeoOverlay({ domainSlug, python = false }: { do
           <nav className="iq-seo-related" aria-label={`Related ${label} learning`}>
             <span>Related learning</span>
             {relatedLinks.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
-          </nav>
-          <nav className="iq-seo-language" aria-label="Page language">
-            <span>Language</span>
-            <span className="active" aria-current="page">EN</span>
-            <Link href={ukrainianPath} hrefLang="uk" lang="uk">UA</Link>
           </nav>
         </div>,
         relatedHost,

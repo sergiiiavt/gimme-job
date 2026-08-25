@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
+import { setInterviewCatalogDomain } from "@/content/interview/catalog";
 import { INTERVIEW_DOMAIN_ROUTES, interviewDomainRouteFromPathname } from "@/content/interview/domain-routes";
+import { rememberInterviewPath } from "./interview-navigation-memory";
 
 const routeById = new Map(INTERVIEW_DOMAIN_ROUTES.map((route) => [route.id, route]));
 const interviewDomains = [
@@ -17,6 +20,13 @@ const interviewDomains = [
   { id: "ai-llm", label: routeById.get("ai-llm")?.switcherLabel ?? "AI / LLM", href: routeById.get("ai-llm")?.path ?? "/interview/ai-llm" },
 ] as const;
 
+type InterviewDomain = (typeof interviewDomains)[number];
+
+function resetInterviewViewState() {
+  document.querySelector<HTMLButtonElement>(".iq-filter-grid .iq-clear:not(:disabled)")?.click();
+  document.querySelector<HTMLButtonElement>(".kb-subnav > nav:not(.iq-domain-switcher) > button:first-child")?.click();
+}
+
 export default function InterviewDomainSwitcherOverlay() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -27,6 +37,14 @@ export default function InterviewDomainSwitcherOverlay() {
   const activeDomain = normalizedPath === "/interview/python"
     ? "python"
     : pathDomain?.id ?? searchParams.get("domain") ?? "generic-qa";
+
+  const activateDomain = (domain: InterviewDomain) => {
+    rememberInterviewPath(domain.href);
+    if (activeDomain === domain.id) return;
+
+    resetInterviewViewState();
+    if (domain.id !== "python") setInterviewCatalogDomain(domain.id);
+  };
 
   useEffect(() => {
     let disposed = false;
@@ -71,14 +89,16 @@ export default function InterviewDomainSwitcherOverlay() {
     <>
       <nav className="iq-domain-switcher" aria-label="Interview question domains">
         {interviewDomains.map((domain) => (
-          <a
+          <Link
             aria-current={activeDomain === domain.id ? "page" : undefined}
             className={activeDomain === domain.id ? "active" : ""}
             href={domain.href}
             key={domain.id}
+            onClick={() => activateDomain(domain)}
+            scroll={false}
           >
             {domain.label}
-          </a>
+          </Link>
         ))}
       </nav>
       <style>{`

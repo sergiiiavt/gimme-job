@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import InterviewNavigationState from "./interview-navigation-state";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "./seo";
 import ToTopButton from "./to-top-button";
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
         />
+        <InterviewNavigationState/>
         <PrimaryNavScrollState/>
         <VacancyScrollState/>
         <VacancyPopoverLayer/>
