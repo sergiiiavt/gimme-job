@@ -262,8 +262,7 @@ function learningSubnav(referenceId: string): SubnavItem[] {
   }
   if (referenceId === "data") {
     return [
-      { id: "all", label: "All topics", count: 5 },
-      { id: "sql-foundations", label: "SQL foundations", status: "under-construction" },
+      { id: "sql", label: "SQL", count: 17 },
       { id: "database-integrity", label: "Database integrity", status: "under-construction" },
       { id: "etl-and-elt", label: "ETL and ELT", status: "under-construction" },
       { id: "data-quality", label: "Data quality", status: "under-construction" },
@@ -346,6 +345,10 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const activeTrack = referenceId === "programming" ? "python" : referenceId === "automation" ? "framework" : undefined;
 
   const selectLearningTopic = (topicId: string) => {
+    if (referenceId === "data") {
+      if (topicId === "sql") window.location.assign(regularLearningHref(referenceId));
+      return;
+    }
     window.location.assign(regularLearningHref(referenceId, topicId, activeTrack));
   };
 
