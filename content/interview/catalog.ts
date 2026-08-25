@@ -110,51 +110,66 @@ const allQuestions = [
 ].map(applySourceEvidence).map(applySqlCodeExamples).map(applySqlInterviewAudit);
 
 const sources = [...baseSources, ...sourceRefreshSources];
+
+function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean) {
+  const selectedDomain = domains.taxonomy.find((item) => item.id === requestedDomainId && item.category)
+    ?? domains.taxonomy.find((item) => item.id === "generic-qa");
+  const selectedDomainCategory = selectedDomain?.category ?? "Generic QA";
+  const selectedSubtopics = subtopicDomains[selectedDomainCategory];
+  const scopedQuestions = scopeToDomain
+    ? allQuestions
+        .filter((question) => categoryToDomain[question.category] === selectedDomainCategory)
+        .map((question) => ({ ...question, category: classifySubtopic(question, selectedDomainCategory) }))
+    : allQuestions;
+  const populatedScopedCategories = new Set(scopedQuestions.map((question) => question.category));
+  const scopedTopicTaxonomy = scopeToDomain
+    ? [
+        {
+          id: "all",
+          label: `All ${selectedDomain?.label ?? "Generic QA"}`,
+          description: `All interview questions in the ${selectedDomain?.label ?? "Generic QA"} domain.`,
+        },
+        ...(selectedSubtopics?.taxonomy.filter((item) => populatedScopedCategories.has(item.category))
+          ?? topicTaxonomy.filter((item) => item.category && categoryToDomain[item.category] === selectedDomainCategory)),
+        ...topicTaxonomy.filter((item) => item.id === "methodology"),
+      ]
+    : topicTaxonomy;
+
+  return {
+    version: 18,
+    title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
+    description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
+    lastReviewedAt: "2026-08-24",
+    methodology: {
+      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
+      answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
+      publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
+      prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple DOU collections or several specialist pages from one publisher cannot inflate prevalence. Very common remains reserved for repeatedly recurring foundations; generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
+      media: "Original diagrams and properly licensed images are stored with the site. Every image requires alternative text, a caption and source credit."
+    },
+    taxonomy: scopedTopicTaxonomy,
+    domains: domains.taxonomy,
+    categoryToDomain,
+    sources,
+    questions: scopedQuestions,
+  };
+}
+
+export function interviewCatalogForDomain(domainId: string) {
+  return buildInterviewCatalog(domainId, true);
+}
+
 const runtimePathname = typeof window === "undefined" ? "" : window.location.pathname.replace(/\/+$/, "");
 const runtimeSearchParams = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
 const requestedRoute = interviewDomainRouteFromPathname(runtimePathname);
 const requestedDomainId = requestedRoute?.id ?? runtimeSearchParams?.get("domain") ?? "generic-qa";
-const selectedDomain = domains.taxonomy.find((item) => item.id === requestedDomainId && item.category)
-  ?? domains.taxonomy.find((item) => item.id === "generic-qa");
-const selectedDomainCategory = selectedDomain?.category ?? "Generic QA";
-const selectedSubtopics = subtopicDomains[selectedDomainCategory];
 const scopeToDomain = (runtimePathname === "/interview" || Boolean(requestedRoute)) && !runtimeSearchParams?.has("question");
-const scopedQuestions = scopeToDomain
-  ? allQuestions
-      .filter((question) => categoryToDomain[question.category] === selectedDomainCategory)
-      .map((question) => ({ ...question, category: classifySubtopic(question, selectedDomainCategory) }))
-  : allQuestions;
-const populatedScopedCategories = new Set(scopedQuestions.map((question) => question.category));
-const scopedTopicTaxonomy = scopeToDomain
-  ? [
-      {
-        id: "all",
-        label: `All ${selectedDomain?.label ?? "Generic QA"}`,
-        description: `All interview questions in the ${selectedDomain?.label ?? "Generic QA"} domain.`,
-      },
-      ...(selectedSubtopics?.taxonomy.filter((item) => populatedScopedCategories.has(item.category))
-        ?? topicTaxonomy.filter((item) => item.category && categoryToDomain[item.category] === selectedDomainCategory)),
-      ...topicTaxonomy.filter((item) => item.id === "methodology"),
-    ]
-  : topicTaxonomy;
 
-export const interviewCatalog = {
-  version: 18,
-  title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
-  description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
-  lastReviewedAt: "2026-08-24",
-  methodology: {
-    coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
-    answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
-    publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
-    prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple DOU collections or several specialist pages from one publisher cannot inflate prevalence. Very common remains reserved for repeatedly recurring foundations; generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
-    media: "Original diagrams and properly licensed images are stored with the site. Every image requires alternative text, a caption and source credit."
-  },
-  taxonomy: scopedTopicTaxonomy,
-  domains: domains.taxonomy,
-  categoryToDomain,
-  sources,
-  questions: scopedQuestions
-};
+export const interviewCatalog = buildInterviewCatalog(requestedDomainId, scopeToDomain);
+
+export function setInterviewCatalogDomain(domainId: string) {
+  Object.assign(interviewCatalog, interviewCatalogForDomain(domainId));
+  return interviewCatalog;
+}
 
 export default interviewCatalog;
