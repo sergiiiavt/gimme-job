@@ -1,0 +1,138 @@
+name: Deploy AI service to Hetzner
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Publish AI service image
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gimmejob-ai-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DEPLOY_HOST: n8n.gimme-job.com
+      DEPLOY_USER: root
+      AI_URL: https://ai.gimme-job.com
+      HETZNER_DEPLOY_SSH_KEY: ${{ secrets.HETZNER_DEPLOY_SSH_KEY }}
+      GIMMEJOB_AI_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GIMMEJOB_AI_OPENAI_MODEL: ${{ vars.GIMMEJOB_AI_OPENAI_MODEL || 'gpt-5.4-mini' }}
+      GIMMEJOB_AI_SERVICE_TOKEN: ${{ secrets.GIMMEJOB_AI_SERVICE_TOKEN }}
+      GIMMEJOB_AI_RAG_SERVICE_TOKEN: ${{ secrets.GIMMEJOB_RAG_SERVICE_TOKEN }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com' }}
+
+    steps:
+      - name: Check out production source
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Validate deployment secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            HETZNER_DEPLOY_SSH_KEY
+            GIMMEJOB_AI_OPENAI_API_KEY
+            GIMMEJOB_AI_SERVICE_TOKEN
+            GIMMEJOB_AI_RAG_SERVICE_TOKEN
+            LANGFUSE_PUBLIC_KEY
+            LANGFUSE_SECRET_KEY
+          )
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "Required repository secret $name is missing." >&2
+              exit 1
+            fi
+          done
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HETZNER_DEPLOY_SSH_KEY" >"$HOME/.ssh/gimmejob-deploy"
+          chmod 600 "$HOME/.ssh/gimmejob-deploy"
+          ssh-keyscan -T 10 -H "$DEPLOY_HOST" >"$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Build protected AI runtime environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          cat >"$RUNNER_TEMP/gimmejob-ai.env" <<EOF
+          GIMMEJOB_AI_ENVIRONMENT=production
+          GIMMEJOB_AI_OPENAI_API_KEY=$GIMMEJOB_AI_OPENAI_API_KEY
+          GIMMEJOB_AI_OPENAI_MODEL=$GIMMEJOB_AI_OPENAI_MODEL
+          GIMMEJOB_AI_SERVICE_TOKEN=$GIMMEJOB_AI_SERVICE_TOKEN
+          GIMMEJOB_AI_CONTENT_ROOT=/app/content
+          GIMMEJOB_AI_REQUEST_TIMEOUT_SECONDS=45
+          GIMMEJOB_AI_RAG_URL=https://gimme-job.com/internal/rag/search
+          GIMMEJOB_AI_RAG_SERVICE_TOKEN=$GIMMEJOB_AI_RAG_SERVICE_TOKEN
+          LANGFUSE_PUBLIC_KEY=$LANGFUSE_PUBLIC_KEY
+          LANGFUSE_SECRET_KEY=$LANGFUSE_SECRET_KEY
+          LANGFUSE_BASE_URL=$LANGFUSE_BASE_URL
+          LANGFUSE_TRACING_ENVIRONMENT=production
+          EOF
+          chmod 600 "$RUNNER_TEMP/gimmejob-ai.env"
+
+      - name: Upload runtime configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH=(ssh -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
+          SCP=(scp -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
+
+          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            'install -d -m 700 /opt/gimmejob-n8n'
+
+          "${SCP[@]}" \
+            ops/hetzner/docker-compose.yml \
+            ops/hetzner/Caddyfile \
+            "$RUNNER_TEMP/gimmejob-ai.env" \
+            "$DEPLOY_USER@$DEPLOY_HOST:/opt/gimmejob-n8n/"
+
+          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/gimmejob-n8n
+          mv -f gimmejob-ai.env ai.env
+          chmod 600 ai.env
+          chmod 644 docker-compose.yml Caddyfile
+          docker compose --profile ai pull gimmejob-ai caddy
+          docker compose --profile ai up -d gimmejob-ai caddy
+          docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+          docker compose --profile ai ps
+          REMOTE
+
+      - name: Verify AI HTTPS and readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            body="$(curl --fail --silent --show-error --max-time 10 "$AI_URL/health" || true)"
+            if grep -Fq '"ready":true' <<<"$body"; then
+              echo "AI service is ready at $AI_URL"
+              exit 0
+            fi
+            echo "Waiting for AI container, DNS, TLS, canonical RAG and model readiness ($attempt/60)..."
+            sleep 5
+          done
+          echo "AI service did not become ready within 5 minutes." >&2
+          exit 1
