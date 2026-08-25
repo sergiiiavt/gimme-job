@@ -78,7 +78,7 @@ The code-quality workflow also refreshes SonarQube Cloud's `main` baseline after
 
 Production deployments are serialized and are not cancelled by newer `main` pushes. Vacancy synchronization remains a separate scheduled operational workflow rather than part of code deployment. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
 
-The production n8n runtime is managed separately on the Hetzner VM by the files under `ops/hetzner/`. Importable n8n workflow definitions live under `ops/n8n/workflows/`. The Python AI service remains container-ready but its production Hetzner deployment is a separate delivery step; until that service is deployed and `GIMMEJOB_AI_URL` is configured, the Worker learning-path proxy correctly reports the AI feature as unavailable.
+The production Hetzner VM is managed by the files under `ops/hetzner/`. n8n and the Python AI service share the private Docker network but expose no application ports directly on the host; Caddy publishes only HTTP/HTTPS and proxies `n8n.gimme-job.com` to n8n and `ai.gimme-job.com` to `gimmejob-ai:8000`. The AI image is built and published to GHCR by `ai-image.yml`. `ai-deploy.yml` copies the protected AI runtime environment to the VM over SSH, pulls the public GHCR image, starts the Compose `ai` profile, reloads Caddy, and verifies `/health`. Successful future AI image builds on `main` trigger that deployment automatically; the initial activation requires the deployment SSH key and AI/Langfuse secrets to be configured in GitHub. The Worker uses `GIMMEJOB_AI_URL=https://ai.gimme-job.com` and its independent service token to reach the service.
 
 ## Security boundaries
 
