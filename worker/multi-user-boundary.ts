@@ -250,7 +250,13 @@ async function handleMultiUserLogout(request: Request, env: BoundaryEnv): Promis
     });
   }
   const returnPath = returnPathFromRequest(request);
-  await deleteUserSession(request, env);
+
+  try {
+    await deleteUserSession(request, env);
+  } catch (error) {
+    console.error("Failed to delete user session during logout", error);
+  }
+
   return new Response(null, {
     status: 303,
     headers: {
@@ -273,18 +279,12 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
 
       const sanitizedRequest = sanitizeIdentityHeaders(request);
 
-      // Scoped service-to-service n8n routes authenticate with N8N_INGEST_TOKEN.
-      // Preserve their Authorization header instead of replacing it with the internal
-      // Basic-auth bridge used for browser sessions in multi-user mode.
       if (N8N_SERVICE_PATHS.has(url.pathname)) {
         return coreWorker.fetch(sanitizedRequest, env, ctx);
       }
 
-      // Keep legacy single-user mode untouched. Canonical URL collapsing belongs to
-      // the multi-user browser surface where public and authenticated views share URLs.
       if (!multiUserEnabled(env)) return coreWorker.fetch(sanitizedRequest, env, ctx);
 
-      // Keep old URLs working, but immediately collapse them to one query-free URL scheme.
       if (!["/workspace/login", "/workspace/register", "/workspace/logout"].includes(url.pathname)) {
         const canonical = legacyCanonicalPath(url);
         if (canonical) return redirectCanonical(canonical);
