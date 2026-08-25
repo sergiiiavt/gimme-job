@@ -65,12 +65,20 @@ EOF
 fi
 chmod 600 "$RUNTIME_DIR/.env"
 
-log "Starting PostgreSQL, n8n, and Caddy"
 cd "$RUNTIME_DIR"
-docker compose pull
-docker compose up -d --remove-orphans
+if [[ -f "$RUNTIME_DIR/ai.env" ]]; then
+  chmod 600 "$RUNTIME_DIR/ai.env"
+  log "Starting PostgreSQL, n8n, GimmeJob AI, and Caddy"
+  docker compose --profile ai pull
+  docker compose --profile ai up -d --remove-orphans
+  docker compose --profile ai ps
+else
+  log "Starting PostgreSQL, n8n, and Caddy (AI runtime not configured yet)"
+  docker compose pull
+  docker compose up -d --remove-orphans
+  docker compose ps
+fi
 
-docker compose ps
 install -m 600 /dev/null "$RUNTIME_DIR/.bootstrap-complete"
 date -u +%FT%TZ >"$RUNTIME_DIR/.bootstrap-complete"
 log "Bootstrap complete"
