@@ -171,9 +171,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          last_body=""
           for attempt in $(seq 1 60); do
             body="$(curl --fail --silent --show-error --max-time 10 "$AI_URL/health" || true)"
-            if grep -Fq '"ready":true' <<<"$body"; then
+            last_body="$body"
+            if grep -Fq '"status":"ok"' <<<"$body"; then
               echo "AI service is ready at $AI_URL"
               exit 0
             fi
@@ -181,4 +183,7 @@ jobs:
             sleep 5
           done
           echo "AI service did not become ready within 5 minutes." >&2
+          if [[ -n "$last_body" ]]; then
+            echo "Last health response: $last_body" >&2
+          fi
           exit 1
