@@ -13,7 +13,7 @@ registerHooks({
   },
 });
 
-function fakeSessionDb() {
+function fakeSessionDb({ failSessionDelete = false } = {}) {
   const state = { deletedSessions: 0, progressUserIds: [], starUserIds: [] };
   const db = {
     prepare(sql) {
@@ -46,7 +46,10 @@ function fakeSessionDb() {
           return { results: [] };
         },
         async run() {
-          if (text.startsWith("DELETE FROM user_sessions WHERE token_hash")) state.deletedSessions += 1;
+          if (text.startsWith("DELETE FROM user_sessions WHERE token_hash")) {
+            if (failSessionDelete) throw new Error("simulated D1 session delete failure");
+            state.deletedSessions += 1;
+          }
           return { success: true };
         },
       };
@@ -215,4 +218,24 @@ test("multi-user logout invalidates the D1 session and returns to the same canon
   assert.match(response.headers.get("set-cookie") ?? "", /^gimmejob_user_session=;/);
   assert.match(response.headers.get("set-cookie") ?? "", /HttpOnly/);
   assert.match(response.headers.get("set-cookie") ?? "", /Secure/);
+});
+
+test("multi-user logout still clears the browser session when D1 deletion fails", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("multi-user-logout-d1-failure-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const { db } = fakeSessionDb({ failSessionDelete: true });
+  const env = envFor(db);
+  const response = await worker.fetch(new Request("https://gimmejob.example/logout", {
+    method: "POST",
+    headers: {
+      cookie: "gimmejob_user_session=server-session-token",
+      referer: "https://gimmejob.example/",
+    },
+  }), env, context);
+
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get("location"), "/vacancies");
+  assert.match(response.headers.get("set-cookie") ?? "", /^gimmejob_user_session=;/);
+  assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/);
 });
