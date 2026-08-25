@@ -61,4 +61,4 @@ jobs:
         if: steps.hetzner.outputs.dns_configured != 'true'
         shell: bash
         run: |
-          echo "::warning::Hetzner was provisioned, but the existing CLOUDFLARE_API_TOKEN could not create/update n8n.gimme-job.com. Add DNS Write permission to that token or create the A record manually."
+          echo "::warning::Hetzner was provisioned, but the existing CLOUDFLARE_API_TOKEN could not create/update n8n.gimme-job.com and ai.gimme-job.com. Add DNS Write permission to that token or create both A records manually."
