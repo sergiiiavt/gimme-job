@@ -9,6 +9,7 @@ import { applySqlInterviewAudit } from "./sql-interview-audit";
 import observabilityProduction from "./observability-production-qa.json";
 import restoredCoverage from "./restored-coverage-qa.json";
 import testingFoundations from "./testing-foundations-qa.json";
+import stlc from "./stlc-qa.json";
 import embedded from "./embedded-qa.json";
 import modernSdet from "./modern-sdet-qa.json";
 import coreFoundations from "./core-foundations-qa.json";
@@ -100,6 +101,7 @@ const allQuestions = [
   ...observabilityProduction.questions,
   ...restoredCoverage.questions,
   ...testingFoundations.questions,
+  ...stlc.questions,
   ...embedded.questions,
   ...modernSdet.questions,
   ...coreFoundations.questions,

@@ -1,0 +1,105 @@
+{
+  "collection": "stlc-explicit-coverage",
+  "questions": [
+    {
+      "id": "stlc-main-activities",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "What is STLC, and what are the main activities of the software test process?",
+      "shortAnswer": "STLC (Software Testing Life Cycle) is a common umbrella term for the lifecycle of testing work. For a precise modern answer, use the ISTQB test activities: test planning; test monitoring and control; test analysis; test design; test implementation; test execution; and test completion. These activities overlap and iterate rather than forming a strict waterfall. Different interview sources may group them into fewer named STLC phases, so explain the model you are using instead of treating one six-step list as universal.",
+      "strongAnswerSignals": [
+        "names the seven ISTQB test activities",
+        "explains that activities overlap and iterate",
+        "recognizes STLC as a common umbrella term whose phase grouping varies"
+      ],
+      "questionUk": "Що таке STLC і які основні активності процесу тестування?",
+      "shortAnswerUk": "STLC (Software Testing Life Cycle) — поширений загальний термін для життєвого циклу тестової роботи. Для точного сучасного пояснення варто використовувати test activities ISTQB: test planning; test monitoring and control; test analysis; test design; test implementation; test execution; test completion. Ці активності перекриваються та повторюються, а не утворюють жорсткий waterfall. У різних джерелах для співбесід їх можуть групувати в меншу кількість фаз STLC, тому краще явно назвати модель, яку ви використовуєте, а не подавати один шестикроковий список як універсальний стандарт.",
+      "strongAnswerSignalsUk": [
+        "називає сім test activities ISTQB",
+        "пояснює, що активності перекриваються та повторюються",
+        "розуміє STLC як загальний термін, групування фаз якого може відрізнятися"
+      ],
+      "example": "A checkout change can trigger analysis of new risks, design of boundary and integration checks, implementation of data and automation, execution in CI, and a completion decision for the release. While those are happening, monitoring may change priorities and planning may be updated, so the process is iterative rather than a one-way chain.",
+      "exampleUk": "Зміна checkout може одночасно запустити аналіз нових ризиків, проєктування boundary та integration перевірок, підготовку даних і автоматизації, виконання в CI та рішення про завершення тестування для релізу. Паралельно monitoring може змінити пріоритети, а planning — оновитися, тому процес є ітеративним, а не одностороннім ланцюжком.",
+      "tags": ["stlc", "test-process", "test-activities", "istqb"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    },
+    {
+      "id": "stlc-common-phases-vs-istqb",
+      "level": "Middle",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "How do the commonly quoted STLC phases map to the ISTQB test activities?",
+      "shortAnswer": "A common six-phase interview model maps approximately as follows: requirement analysis → test analysis and early review of the test basis; test planning → test planning plus monitoring and control; test case development → test analysis, design and implementation; test environment setup → mainly test implementation; test execution → test execution; test cycle closure → test completion. The mapping is approximate: ISTQB does not define environment setup as a separate test activity, and 'test case development' compresses several different activities.",
+      "strongAnswerSignals": [
+        "maps all six common labels without presenting them as official ISTQB phases",
+        "places environment setup mainly under test implementation",
+        "separates analysis, design and implementation instead of calling all of them test-case writing"
+      ],
+      "questionUk": "Як поширені фази STLC співвідносяться з test activities ISTQB?",
+      "shortAnswerUk": "Поширену шестикрокову модель для співбесід можна приблизно зіставити так: requirement analysis → test analysis і раннє рев’ю test basis; test planning → test planning плюс monitoring and control; test case development → test analysis, design та implementation; test environment setup → переважно test implementation; test execution → test execution; test cycle closure → test completion. Це приблизне зіставлення: ISTQB не визначає environment setup як окрему test activity, а 'test case development' стискає кілька різних активностей в один етап.",
+      "strongAnswerSignalsUk": [
+        "зіставляє всі шість поширених назв, не називаючи їх офіційними фазами ISTQB",
+        "відносить environment setup переважно до test implementation",
+        "розділяє analysis, design та implementation замість зведення їх до написання тест-кейсів"
+      ],
+      "example": "If an interviewer expects the classic list, you can name Requirement Analysis, Test Planning, Test Case Development, Environment Setup, Test Execution and Test Cycle Closure, then clarify that in ISTQB terminology Test Case Development is split into analysis, design and implementation and that monitoring/control runs throughout the effort.",
+      "exampleUk": "Якщо інтерв’юер очікує класичний список, можна назвати Requirement Analysis, Test Planning, Test Case Development, Environment Setup, Test Execution і Test Cycle Closure, а потім уточнити, що в термінології ISTQB Test Case Development розділяється на analysis, design та implementation, а monitoring/control триває протягом усього тестового зусилля.",
+      "tags": ["stlc", "istqb", "test-process", "mapping"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "stlc-sequential-agile",
+      "level": "Middle",
+      "category": "Agile and delivery",
+      "kind": "Scenario",
+      "question": "Are STLC activities sequential, and how do they work in Agile or continuous delivery?",
+      "shortAnswer": "No. Test activities have logical relationships, but they overlap, repeat and feed back into one another. In Agile, analysis and design can begin during refinement, implementation can happen alongside development, execution can run continuously in CI, monitoring and control can change priorities at any time, and completion is evaluated per story, sprint, release or change depending on context. The same activities still exist; the cadence and granularity change.",
+      "strongAnswerSignals": [
+        "rejects a rigid waterfall interpretation",
+        "shows where activities occur in refinement, development, CI and release work",
+        "explains that Agile changes cadence rather than eliminating test activities"
+      ],
+      "questionUk": "Чи є активності STLC послідовними і як вони працюють в Agile або continuous delivery?",
+      "shortAnswerUk": "Ні. Між test activities є логічні зв’язки, але вони перекриваються, повторюються і створюють зворотні зв’язки. В Agile analysis і design можуть починатися ще на refinement, implementation виконується паралельно з розробкою, execution може постійно запускатися в CI, monitoring and control у будь-який момент змінює пріоритети, а completion оцінюється для story, sprint, release або окремої зміни залежно від контексту. Самі активності нікуди не зникають — змінюються їх cadence і granularity.",
+      "strongAnswerSignalsUk": [
+        "не трактує STLC як жорсткий waterfall",
+        "показує активності на refinement, під час розробки, у CI та релізному процесі",
+        "пояснює, що Agile змінює cadence, а не скасовує test activities"
+      ],
+      "example": "For a small API story, QA can review acceptance criteria on Monday, design cases while the endpoint is being coded, prepare test data the same day, run contract and integration tests on every pull request, adjust regression scope after a defect is found, and close the testing objective when the agreed evidence is complete.",
+      "exampleUk": "Для невеликої API story QA може в понеділок переглянути acceptance criteria, проєктувати кейси паралельно з реалізацією endpoint, того ж дня підготувати test data, запускати contract та integration tests на кожен pull request, змінити regression scope після знайденого дефекту й завершити тестову ціль, коли погоджені докази отримані.",
+      "tags": ["stlc", "agile", "continuous-testing", "test-activities"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Common"
+    },
+    {
+      "id": "stlc-vs-sdlc",
+      "level": "Junior",
+      "category": "Fundamentals",
+      "kind": "Theory",
+      "question": "What is the difference between STLC and SDLC?",
+      "shortAnswer": "SDLC describes the broader software/product development lifecycle: discovery or requirements, design, implementation, verification, deployment, operation and change, with the exact model depending on the organization. STLC focuses on the testing work within and across that lifecycle. STLC is not a separate lifecycle that starts after development; testing activities begin as soon as useful test-basis information exists and continue through production changes and maintenance testing.",
+      "strongAnswerSignals": [
+        "defines SDLC as broader than testing",
+        "places test activities throughout the SDLC rather than after coding",
+        "mentions production change and maintenance testing"
+      ],
+      "questionUk": "У чому різниця між STLC і SDLC?",
+      "shortAnswerUk": "SDLC описує ширший життєвий цикл розробки програмного продукту: discovery або requirements, design, implementation, verification, deployment, operation та зміни; точна модель залежить від організації. STLC фокусується на тестовій роботі всередині та протягом цього життєвого циклу. STLC — не окремий цикл, який починається після розробки: test activities стартують, щойно з’являється корисна інформація test basis, і продовжуються через production changes та maintenance testing.",
+      "strongAnswerSignalsUk": [
+        "визначає SDLC як ширший процес, ніж тестування",
+        "розміщує test activities протягом SDLC, а не після coding",
+        "згадує production changes і maintenance testing"
+      ],
+      "example": "During requirements refinement, the SDLC is still in an early product-development stage, but STLC work has already started because QA can review acceptance criteria, identify risks and derive test conditions before implementation exists.",
+      "exampleUk": "Під час refinement вимог SDLC ще перебуває на ранньому етапі розробки продукту, але робота STLC вже почалася: QA може рев’ювати acceptance criteria, визначати ризики та виводити test conditions ще до появи реалізації.",
+      "tags": ["stlc", "sdlc", "test-process", "lifecycle"],
+      "sourceIds": ["istqb-ctfl-v4"],
+      "prevalence": "Very common"
+    }
+  ]
+}

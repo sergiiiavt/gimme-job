@@ -38,21 +38,29 @@
     },
     {
       "id": "fundamental-test-process",
-      "title": "Test process / test activities",
+      "title": "STLC / test process / test activities",
       "scope": "Foundations",
       "tags": ["Foundations"],
       "meta": "Interview · Very common",
-      "summary": "Know the activity names and the output of each one; they overlap and iterate rather than forming a strict waterfall.",
+      "summary": "STLC is a common umbrella term. For a precise answer, know the seven ISTQB test activities and also recognize the popular six-phase STLC wording; the activities overlap and iterate rather than forming a strict waterfall.",
       "rows": [
         {"term": "Test planning", "detail": "Define objectives, scope, approach, resources, schedule, risks, metrics, and completion criteria."},
         {"term": "Test monitoring & control", "detail": "Compare actual status with the plan and adjust priorities, scope, resources, or schedule when needed."},
         {"term": "Test analysis", "detail": "Study the test basis and identify testable features, risks, and test conditions."},
         {"term": "Test design", "detail": "Derive test cases, coverage items, expected results, and data/environment needs from test conditions."},
         {"term": "Test implementation", "detail": "Prepare procedures/scripts, suites, data, environments, and execution order."},
-        {"term": "Test execution", "detail": "Run tests, compare actual and expected results, record evidence, and investigate anomalies."}
+        {"term": "Test execution", "detail": "Run tests, compare actual and expected results, record evidence, and investigate anomalies."},
+        {"term": "Test completion", "detail": "Summarize achieved coverage, unresolved risks, defect status, lessons, and reusable or archived testware."}
       ],
       "moreRows": [
-        {"term": "Test completion", "detail": "Summarize achieved coverage, unresolved risks, defect status, lessons, and reusable or archived testware."}
+        {"term": "Common STLC: Requirement analysis", "detail": "Maps mainly to test analysis plus early review of the test basis."},
+        {"term": "Common STLC: Test planning", "detail": "Maps to test planning plus test monitoring and control."},
+        {"term": "Common STLC: Test case development", "detail": "Compresses test analysis, test design, and test implementation into one popular interview label."},
+        {"term": "Common STLC: Environment setup", "detail": "Maps mainly to test implementation; ISTQB does not define it as a separate test activity."},
+        {"term": "Common STLC: Test execution", "detail": "Maps directly to test execution."},
+        {"term": "Common STLC: Test cycle closure", "detail": "Maps approximately to test completion."},
+        {"term": "STLC ≠ rigid sequence", "detail": "In Agile and continuous delivery, planning, analysis, design, implementation, execution, monitoring/control, and completion overlap and repeat at different granularities."},
+        {"term": "STLC vs SDLC", "detail": "SDLC is the broader product/software development lifecycle; STLC describes testing work across that lifecycle and does not start only after coding."}
       ]
     },
     {
