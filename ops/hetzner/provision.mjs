@@ -5,9 +5,7 @@ const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 const SERVER_NAME = "gimmejob-n8n";
 const FIREWALL_NAME = "gimmejob-n8n-fw";
 const SERVER_TYPE = "cx23";
-const N8N_HOSTNAME = "n8n.gimme-job.com";
-const AI_HOSTNAME = "ai.gimme-job.com";
-const PUBLIC_HOSTNAMES = [N8N_HOSTNAME, AI_HOSTNAME];
+const HOSTNAME = "n8n.gimme-job.com";
 const ZONE_NAME = "gimme-job.com";
 const PREFERRED_LOCATIONS = ["nbg1", "fsn1", "hel1"];
 
@@ -259,33 +257,31 @@ async function configureCloudflareDns(ipv4) {
     const zone = zones.result?.find((item) => item.name === ZONE_NAME);
     if (!zone) throw new Error(`Cloudflare zone ${ZONE_NAME} was not found`);
 
-    for (const hostname of PUBLIC_HOSTNAMES) {
-      const records = await cf(
-        `/zones/${zone.id}/dns_records?type=A&name=${encodeURIComponent(hostname)}`,
-      );
-      const record = records.result?.[0];
-      const desired = {
-        type: "A",
-        name: hostname,
-        content: ipv4,
-        ttl: 1,
-        proxied: false,
-        comment: "GimmeJob Hetzner runtime; managed by GitHub Actions",
-      };
+    const records = await cf(
+      `/zones/${zone.id}/dns_records?type=A&name=${encodeURIComponent(HOSTNAME)}`,
+    );
+    const record = records.result?.[0];
+    const desired = {
+      type: "A",
+      name: HOSTNAME,
+      content: ipv4,
+      ttl: 1,
+      proxied: false,
+      comment: "GimmeJob n8n runtime on Hetzner; managed by GitHub Actions",
+    };
 
-      if (record) {
-        await cf(`/zones/${zone.id}/dns_records/${record.id}`, {
-          method: "PATCH",
-          body: desired,
-        });
-        console.log(`Updated ${hostname} -> ${ipv4}`);
-      } else {
-        await cf(`/zones/${zone.id}/dns_records`, {
-          method: "POST",
-          body: desired,
-        });
-        console.log(`Created ${hostname} -> ${ipv4}`);
-      }
+    if (record) {
+      await cf(`/zones/${zone.id}/dns_records/${record.id}`, {
+        method: "PATCH",
+        body: desired,
+      });
+      console.log(`Updated ${HOSTNAME} -> ${ipv4}`);
+    } else {
+      await cf(`/zones/${zone.id}/dns_records`, {
+        method: "POST",
+        body: desired,
+      });
+      console.log(`Created ${HOSTNAME} -> ${ipv4}`);
     }
     return true;
   } catch {
@@ -316,19 +312,17 @@ const dnsConfigured = await configureCloudflareDns(ipv4);
 setOutput("server_id", server.id);
 setOutput("server_ip", ipv4);
 setOutput("dns_configured", dnsConfigured ? "true" : "false");
-setOutput("n8n_url", `https://${N8N_HOSTNAME}`);
-setOutput("ai_url", `https://${AI_HOSTNAME}`);
+setOutput("n8n_url", `https://${HOSTNAME}`);
 
 addSummary([
-  "## Hetzner production runtime",
+  "## Hetzner n8n runtime",
   "",
   `- Server: \`${SERVER_NAME}\` (ID ${server.id})`,
   `- IPv4: \`${ipv4}\``,
-  `- n8n: https://${N8N_HOSTNAME}`,
-  `- AI service: https://${AI_HOSTNAME}`,
+  `- n8n: https://${HOSTNAME}`,
   `- Cloudflare DNS updated: ${dnsConfigured ? "yes" : "no"}`,
   "- Ports exposed by Hetzner firewall: 22/tcp, 80/tcp, 443/tcp, 443/udp",
-  "- PostgreSQL, n8n port 5678, and AI port 8000 are Docker-internal only",
+  "- PostgreSQL and n8n port 5678 are Docker-internal only",
 ]);
 
 console.log(`Server ready for bootstrap: ${SERVER_NAME} ${ipv4}`);
