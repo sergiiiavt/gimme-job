@@ -97,6 +97,14 @@ function returnPathFromRequest(request: Request): string {
 }
 
 function legacyCanonicalPath(url: URL): string | null {
+  if (url.pathname === "/reference/qa-fundamentals") {
+    const topics = url.searchParams.getAll("topic");
+    const keys = [...new Set(url.searchParams.keys())];
+    if (topics.length === 1 && topics[0].trim() && keys.length === 1 && keys[0] === "topic") {
+      return `/learn/qa-fundamentals?topic=${encodeURIComponent(topics[0].trim())}`;
+    }
+  }
+
   const direct: Record<string, string> = {
     "/workspace": "/vacancies",
     "/learn/about": "/about",
@@ -152,11 +160,19 @@ export function privateNextPath(_url: URL): string {
   return "/vacancies";
 }
 
+function isPublicEphemeralAiRequest(request: Request, url: URL): boolean {
+  if (request.headers.get("x-gimmejob-session-scope") !== "ephemeral") return false;
+  if (url.pathname === "/api/ai/learning-path") return request.method === "POST";
+  if (url.pathname === "/api/ai/interviews") return request.method === "GET" || request.method === "POST";
+  return false;
+}
+
 export function isPrivateRequest(request: Request, url: URL): boolean {
   if (url.pathname === "/workspace") return false;
   if (["/login", "/register", "/workspace/login", "/workspace/register"].includes(url.pathname)) return false;
   if (url.pathname.startsWith("/workspace/")) return true;
   if (!url.pathname.startsWith("/api/")) return false;
+  if (isPublicEphemeralAiRequest(request, url)) return false;
 
   const isRead = request.method === "GET" || request.method === "HEAD";
   const isPublicApi = url.pathname === "/api/health" || url.pathname === "/api/public/jobs" || url.pathname === "/api/dashboard";
