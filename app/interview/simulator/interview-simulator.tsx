@@ -106,7 +106,11 @@ const countOptions = [5, 10] as const;
 async function api<T>(input: RequestInit = {}): Promise<T> {
   const response = await fetch("/api/ai/interviews", {
     ...input,
-    headers: { "content-type": "application/json", ...(input.headers ?? {}) },
+    headers: {
+      "content-type": "application/json",
+      "x-gimmejob-session-scope": "ephemeral",
+      ...(input.headers ?? {}),
+    },
     cache: "no-store",
   });
   const body = await response.json().catch(() => ({})) as { error?: string } & T;
@@ -444,8 +448,8 @@ export default function InterviewSimulator() {
           {authRequired && (
             <div className={styles.authBanner}>
               <div>
-                <strong>Sign in to save interview progress.</strong>
-                <span>Public interviews still work, but results stay only in the current session.</span>
+                <strong>Sign in to run an AI interview.</strong>
+                <span>Public session access could not be established. Signing in also saves your progress.</span>
               </div>
               <Link href="/login">Sign in</Link>
             </div>
