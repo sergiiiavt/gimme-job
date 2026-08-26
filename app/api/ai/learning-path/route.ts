@@ -302,7 +302,7 @@ async function callAi(
   env: LearningPathAiEnv,
   messages: ChatMessage[],
   sessionId: string | null,
-  language: AdvisorLanguage,
+  language: AdvisorLanguage | null,
 ): Promise<Response> {
   const base = aiBaseUrl(env);
   const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
@@ -319,7 +319,10 @@ async function callAi(
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({ messages: withLanguageControl(messages, language), session_id: sessionId }),
+      body: JSON.stringify({
+        messages: language ? withLanguageControl(messages, language) : messages,
+        session_id: sessionId,
+      }),
     });
   } catch {
     return json({ error: "AI learning path service is temporarily unavailable." }, 502);
@@ -364,7 +367,7 @@ export async function handleLearningPathAi(request: Request, env: LearningPathAi
   if (input.language !== undefined && !explicitLanguage) {
     return json({ error: "Response language must be 'en' or 'uk'." }, 400);
   }
-  const language = explicitLanguage ?? selectedLegacyLanguage(messages) ?? "en";
+  const language = explicitLanguage ?? selectedLegacyLanguage(messages);
 
   let sessionId: string | null = null;
   if (input.sessionId !== undefined && input.sessionId !== null) {
