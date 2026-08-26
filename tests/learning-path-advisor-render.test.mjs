@@ -51,7 +51,7 @@ const repositoryResult = {
   sessionId: "session-1234567890",
   retrievalMode: "repository",
   response: {
-    answer: "Start with the core concurrency model, then validate it with interview practice.",
+    answer: "Start with the **core concurrency model**, then validate it with interview practice.",
     cards: [
       {
         kind: "learning",
@@ -113,6 +113,9 @@ test("renders the public AI Assistant shell and content-first prompt", () => {
   assert.match(html, /data-active-external="ai-assistant"/);
   assert.match(html, /data-active-subsection="learning-path-advisor"/);
   assert.match(html, /Interactive interview\|Learning Path Advisor/);
+  assert.match(html, /aria-label="Response language"/);
+  assert.match(html, />EN<\/button>/);
+  assert.match(html, />UA<\/button>/);
   assert.doesNotMatch(html, /Sign in to continue/);
 });
 
@@ -133,6 +136,49 @@ test("renders learning materials first and interview questions second with new-t
   assert.match(html, /rel="noreferrer"/);
   assert.ok(html.indexOf("GimmeJob materials") < html.indexOf("Interview questions"));
   assert.match(html, /Compare threading and multiprocessing/);
+});
+
+test("renders supported bold markdown without exposing markdown markers", () => {
+  const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: repositoryResult }));
+
+  assert.match(html, /<strong>core concurrency model<\/strong>/);
+  assert.doesNotMatch(html, /\*\*core concurrency model\*\*/);
+});
+
+test("deduplicates recommendations that resolve to the same real destination", () => {
+  const duplicateResult = structuredClone(repositoryResult);
+  duplicateResult.response.cards = [];
+  duplicateResult.response.learningMap.nodes = [
+    {
+      id: "levels",
+      title: "Test levels",
+      summary: "Where testing happens.",
+      kind: "topic",
+      sourcePath: "content/qa-fundamentals/testing-levels.json",
+      durationMinutes: 10,
+    },
+    {
+      id: "types",
+      title: "Test types",
+      summary: "What quality or behaviour is evaluated.",
+      kind: "concept",
+      sourcePath: "content/qa-fundamentals/testing-types.json",
+      durationMinutes: 15,
+    },
+    {
+      id: "techniques",
+      title: "Design techniques",
+      summary: "How coverage is designed.",
+      kind: "practice",
+      sourcePath: "content/qa-fundamentals/test-design.json",
+      durationMinutes: 20,
+    },
+  ];
+
+  const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: duplicateResult }));
+  assert.match(html, />1 topic</);
+  assert.equal((html.match(/href="\/reference\/qa-fundamentals"/g) ?? []).length, 1);
+  assert.equal((html.match(/>Open topic<\/a>/g) ?? []).length, 1);
 });
 
 test("does not expose implementation evidence or relationship arrows", () => {
@@ -160,7 +206,7 @@ test("accepts only allow-listed internal content links and keeps legacy sources 
   assert.equal(sourcePathToHref("https://malicious.example/path"), null);
 });
 
-test("uses ephemeral public scope and keeps generated UI free from HTML injection", async () => {
+test("uses ephemeral public scope, forwards language, and keeps generated UI free from HTML injection", async () => {
   const [componentSource, sidebarSource] = await Promise.all([
     readFile(new URL("../app/ai-assistant/learning-path-advisor.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/site-navigation.tsx", import.meta.url), "utf8"),
@@ -168,7 +214,7 @@ test("uses ephemeral public scope and keeps generated UI free from HTML injectio
 
   assert.match(componentSource, /fetch\("\/api\/ai\/learning-path"/);
   assert.match(componentSource, /"x-gimmejob-session-scope": "ephemeral"/);
-  assert.match(componentSource, /JSON\.stringify\(\{ messages: requestMessages, \.\.\.\(sessionId \? \{ sessionId \} : \{\}\) \}\)/);
+  assert.match(componentSource, /JSON\.stringify\(\{ messages: requestMessages, language, \.\.\.\(sessionId \? \{ sessionId \} : \{\}\) \}\)/);
   assert.match(componentSource, /value\.requestId/);
   assert.match(componentSource, /value\.response\.learningMap/);
   assert.match(componentSource, /target="_blank"/);

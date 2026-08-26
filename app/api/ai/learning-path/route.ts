@@ -1,4 +1,10 @@
 import { tenantRequestContext } from "../../_tenant-state.ts";
+import {
+  parseAdvisorLanguage,
+  selectedLegacyLanguage,
+  withLanguageControl,
+  type AdvisorLanguage,
+} from "./language.ts";
 
 type LearningPathAiEnv = {
   GIMMEJOB_AI_URL?: string;
@@ -239,11 +245,7 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
       cards,
       sources,
       suggestedPrompts,
-      learningMap: {
-        title: mapTitle,
-        nodes,
-        edges,
-      },
+      learningMap: { title: mapTitle, nodes, edges },
     },
   };
 }
@@ -257,16 +259,19 @@ function aiBaseUrl(env: LearningPathAiEnv): URL | null {
     if (url.username || url.password || (url.protocol !== "https:" && !(localDevelopment && url.protocol === "http:"))) return null;
     url.search = "";
     url.hash = "";
-    while (url.pathname.length > 1 && url.pathname.endsWith("/")) {
-      url.pathname = url.pathname.slice(0, -1);
-    }
+    while (url.pathname.length > 1 && url.pathname.endsWith("/")) url.pathname = url.pathname.slice(0, -1);
     return url;
   } catch {
     return null;
   }
 }
 
-async function callAi(env: LearningPathAiEnv, messages: ChatMessage[], sessionId: string | null): Promise<Response> {
+async function callAi(
+  env: LearningPathAiEnv,
+  messages: ChatMessage[],
+  sessionId: string | null,
+  language: AdvisorLanguage | null,
+): Promise<Response> {
   const base = aiBaseUrl(env);
   const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
   if (!base || !token) return json({ error: "AI learning path service is not configured." }, 503);
@@ -278,11 +283,11 @@ async function callAi(env: LearningPathAiEnv, messages: ChatMessage[], sessionId
   try {
     upstream = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ messages, session_id: sessionId }),
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        messages: language ? withLanguageControl(messages, language, MAX_MESSAGES) : messages,
+        session_id: sessionId,
+      }),
     });
   } catch {
     return json({ error: "AI learning path service is temporarily unavailable." }, 502);
@@ -319,20 +324,22 @@ export async function handleLearningPathAi(request: Request, env: LearningPathAi
 
   const messages = parseMessages(input.messages);
   if (!messages) return json({ error: "Provide between 1 and 30 valid messages." }, 400);
-  if (messages.at(-1)?.role !== "user") {
-    return json({ error: "The final message must be from the user." }, 400);
+  if (messages.at(-1)?.role !== "user") return json({ error: "The final message must be from the user." }, 400);
+
+  const explicitLanguage = input.language === undefined ? null : parseAdvisorLanguage(input.language);
+  if (input.language !== undefined && !explicitLanguage) {
+    return json({ error: "Response language must be 'en' or 'uk'." }, 400);
   }
+  const language = explicitLanguage ?? selectedLegacyLanguage(messages);
 
   let sessionId: string | null = null;
   if (input.sessionId !== undefined && input.sessionId !== null) {
     const parsedSessionId = requiredText(input.sessionId, MAX_SESSION_ID_LENGTH);
-    if (!parsedSessionId || !validSessionId(parsedSessionId)) {
-      return json({ error: "Invalid session identifier." }, 400);
-    }
+    if (!parsedSessionId || !validSessionId(parsedSessionId)) return json({ error: "Invalid session identifier." }, 400);
     sessionId = parsedSessionId;
   }
 
-  return callAi(env, messages, sessionId);
+  return callAi(env, messages, sessionId, language);
 }
 
 export async function POST(request: Request): Promise<Response> {
