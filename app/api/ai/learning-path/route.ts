@@ -1,4 +1,10 @@
 import { tenantRequestContext } from "../../_tenant-state.ts";
+import {
+  parseAdvisorLanguage,
+  selectedLegacyLanguage,
+  withLanguageControl,
+  type AdvisorLanguage,
+} from "./language.ts";
 
 type LearningPathAiEnv = {
   GIMMEJOB_AI_URL?: string;
@@ -6,7 +12,6 @@ type LearningPathAiEnv = {
 };
 
 type JsonObject = Record<string, unknown>;
-type AdvisorLanguage = "en" | "uk";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -67,7 +72,6 @@ const MAX_PATH_LENGTH = 1_000;
 const MAX_PROMPT_LENGTH = 2_000;
 const MAX_DURATION_MINUTES = 240;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
-const LANGUAGE_CONTROL_PATTERN = /^\[\[gimmejob-language:(en|uk)\]\]$/;
 const CARD_KINDS = new Set<AssistantCardKind>(["knowledge", "learning", "interview", "hint"]);
 const MAP_NODE_KINDS = new Set<LearningMapNodeKind>(["topic", "foundation", "concept", "practice", "source"]);
 
@@ -101,36 +105,6 @@ function nullableText(value: unknown, maxLength: number): string | null | undefi
 
 function validSessionId(value: string): boolean {
   return value.length <= MAX_SESSION_ID_LENGTH && SESSION_ID_PATTERN.test(value);
-}
-
-function parseLanguage(value: unknown): AdvisorLanguage | null {
-  return value === "en" || value === "uk" ? value : null;
-}
-
-function languageControl(message: ChatMessage): AdvisorLanguage | null {
-  if (message.role !== "assistant") return null;
-  const match = LANGUAGE_CONTROL_PATTERN.exec(message.content.trim());
-  return match ? parseLanguage(match[1]) : null;
-}
-
-function selectedLegacyLanguage(messages: ChatMessage[]): AdvisorLanguage | null {
-  for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const language = languageControl(messages[index]);
-    if (language) return language;
-  }
-  return null;
-}
-
-function withLanguageControl(messages: ChatMessage[], language: AdvisorLanguage): ChatMessage[] {
-  const conversation = messages.filter((message) => languageControl(message) === null);
-  const bounded = conversation.slice(-(MAX_MESSAGES - 1));
-  const latest = bounded.at(-1);
-  if (!latest || latest.role !== "user") return bounded;
-  return [
-    ...bounded.slice(0, -1),
-    { role: "assistant", content: `[[gimmejob-language:${language}]]` },
-    latest,
-  ];
 }
 
 function parseMessages(value: unknown): ChatMessage[] | null {
@@ -271,11 +245,7 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
       cards,
       sources,
       suggestedPrompts,
-      learningMap: {
-        title: mapTitle,
-        nodes,
-        edges,
-      },
+      learningMap: { title: mapTitle, nodes, edges },
     },
   };
 }
@@ -289,9 +259,7 @@ function aiBaseUrl(env: LearningPathAiEnv): URL | null {
     if (url.username || url.password || (url.protocol !== "https:" && !(localDevelopment && url.protocol === "http:"))) return null;
     url.search = "";
     url.hash = "";
-    while (url.pathname.length > 1 && url.pathname.endsWith("/")) {
-      url.pathname = url.pathname.slice(0, -1);
-    }
+    while (url.pathname.length > 1 && url.pathname.endsWith("/")) url.pathname = url.pathname.slice(0, -1);
     return url;
   } catch {
     return null;
@@ -315,12 +283,9 @@ async function callAi(
   try {
     upstream = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
       body: JSON.stringify({
-        messages: language ? withLanguageControl(messages, language) : messages,
+        messages: language ? withLanguageControl(messages, language, MAX_MESSAGES) : messages,
         session_id: sessionId,
       }),
     });
@@ -359,11 +324,9 @@ export async function handleLearningPathAi(request: Request, env: LearningPathAi
 
   const messages = parseMessages(input.messages);
   if (!messages) return json({ error: "Provide between 1 and 30 valid messages." }, 400);
-  if (messages.at(-1)?.role !== "user") {
-    return json({ error: "The final message must be from the user." }, 400);
-  }
+  if (messages.at(-1)?.role !== "user") return json({ error: "The final message must be from the user." }, 400);
 
-  const explicitLanguage = input.language === undefined ? null : parseLanguage(input.language);
+  const explicitLanguage = input.language === undefined ? null : parseAdvisorLanguage(input.language);
   if (input.language !== undefined && !explicitLanguage) {
     return json({ error: "Response language must be 'en' or 'uk'." }, 400);
   }
@@ -372,9 +335,7 @@ export async function handleLearningPathAi(request: Request, env: LearningPathAi
   let sessionId: string | null = null;
   if (input.sessionId !== undefined && input.sessionId !== null) {
     const parsedSessionId = requiredText(input.sessionId, MAX_SESSION_ID_LENGTH);
-    if (!parsedSessionId || !validSessionId(parsedSessionId)) {
-      return json({ error: "Invalid session identifier." }, 400);
-    }
+    if (!parsedSessionId || !validSessionId(parsedSessionId)) return json({ error: "Invalid session identifier." }, 400);
     sessionId = parsedSessionId;
   }
 
