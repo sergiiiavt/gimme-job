@@ -98,6 +98,7 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.hits[1].source_path, "interview/test-design")
         self.assertEqual(result.hits[2].source_path, "python-learning/concurrency")
         self.assertEqual(captured_headers["X-gimmejob-rag-token"], "rag-token")
+        self.assertEqual(captured_headers["User-agent"], "curl/8.10.1 GimmeJob-AI/1.0")
 
     async def test_client_rejects_unallowlisted_learning_route(self) -> None:
         payload = self._payload(
