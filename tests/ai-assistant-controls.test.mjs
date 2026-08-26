@@ -18,7 +18,7 @@ test("Learning Path Advisor exposes switchable language and voice input", async 
   assert.match(component, /webkitSpeechRecognition/);
   assert.match(component, /instance\.lang = language === "uk" \? "uk-UA" : "en-US"/);
   assert.match(component, /aria-pressed=\{listening\}/);
-  assert.match(component, /\[\[gimmejob-language:\$\{language\}\]\]/);
+  assert.match(component, /body: JSON\.stringify\(\{ messages: requestMessages, language,/);
 });
 
 test("shared AI controls visibly distinguish active dictation", async () => {
