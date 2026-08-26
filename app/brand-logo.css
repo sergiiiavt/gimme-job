@@ -20,7 +20,9 @@
 }
 
 .kb-brand {
+  margin-inline: auto;
   min-height: 50px !important;
+  transform: translateY(-4px);
 }
 
 .kb-mobile-brand {
