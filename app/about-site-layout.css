@@ -270,6 +270,39 @@
   max-width: 220px;
 }
 
+/* The LangGraph row has more endpoints than the older observability flows.
+   Bound the complete flow to the available body width and keep the two RAG
+   links on their own row instead of letting them become extra flex columns. */
+.about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-section-body {
+  width: 100%;
+}
+
+.about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-observability-flow {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 24px minmax(180px, 220px) 24px minmax(0, 1fr);
+  width: 100%;
+}
+
+.about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-output-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-width: 0;
+  width: 100%;
+}
+
+.about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-output-grid > .about-tech-mini-node {
+  max-width: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-output-grid > .about-tech-node-links {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
 /* Re-apply tighter per-card caps after the generic flow rule above. */
 .about-tech-ai-flow > .about-tech-node:has(.about-tech-link[href*="_jobpilot.ts"]) {
   max-width: 190px;
@@ -313,7 +346,8 @@
   .about-tech-deployment-flow,
   .about-tech-database-flow,
   .about-tech-ai-flow,
-  .about-tech-observability-flow {
+  .about-tech-observability-flow,
+  .about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-observability-flow {
     display: grid;
     grid-template-columns: 1fr;
     width: 100%;
@@ -330,7 +364,8 @@
 
   .about-tech-node-grid,
   .about-tech-data-grid,
-  .about-tech-output-grid {
+  .about-tech-output-grid,
+  .about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-output-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
@@ -375,7 +410,8 @@
   .about-tech-node-grid,
   .about-tech-data-grid,
   .about-tech-output-grid,
-  .about-tech-runtime-node .about-tech-node-grid {
+  .about-tech-runtime-node .about-tech-node-grid,
+  .about-tech-section[aria-labelledby="about-ai-stack-title"] .about-tech-output-grid {
     grid-template-columns: 1fr;
   }
 }
