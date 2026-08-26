@@ -37,9 +37,10 @@ export default function IstqbAiTestingPage() {
     () => new Map(istqbAiTestingCatalog.sources.map((source) => [source.id, source])),
     [],
   );
-  const moduleSources = activeModule.sourceIds
-    .map((id) => sourceMap.get(id))
-    .filter((source): source is NonNullable<typeof source> => Boolean(source));
+  const moduleSources = activeModule.sourceIds.flatMap((id) => {
+    const source = sourceMap.get(id);
+    return source ? [source] : [];
+  });
   const markdownHeadings = extractMarkdownHeadings(activeModule.markdown)
     .filter((heading) => heading.level === 2)
     .map(({ id, text }) => ({ id, text }));
