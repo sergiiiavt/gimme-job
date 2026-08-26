@@ -436,7 +436,10 @@ export default function LearningPathAdvisor() {
     try {
       const response = await fetch("/api/ai/learning-path", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          "x-gimmejob-session-scope": "ephemeral",
+        },
         cache: "no-store",
         body: JSON.stringify({ messages: requestMessages, ...(sessionId ? { sessionId } : {}) }),
       });
