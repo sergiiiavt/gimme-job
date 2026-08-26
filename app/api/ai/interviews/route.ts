@@ -215,6 +215,28 @@ async function loadOwnedSession(database: D1Database, userId: string, sessionId:
     .first<Row>();
 }
 
+async function stopInterview(request: JsonObject, env: InterviewAiEnv, userId: string | null): Promise<Response> {
+  const sessionId = text(request.sessionId, MAX_SESSION_ID_LENGTH);
+  if (!validSessionId(sessionId)) return json({ error: "Invalid interview session." }, 400);
+  if (!userId || !env.DB) return json({ sessionId, stopped: true, persistent: false });
+
+  const session = await loadOwnedSession(env.DB, userId, sessionId);
+  if (!session) return json({ error: "Interview session not found." }, 404);
+  const status = String(session.status);
+  if (status === "STOPPED" || status === "COMPLETED") {
+    return json({ sessionId, stopped: status === "STOPPED", persistent: true });
+  }
+
+  try {
+    await env.DB.prepare(`UPDATE user_interview_sessions SET status = 'STOPPED', updated_at = ? WHERE user_id = ? AND id = ?`)
+      .bind(new Date().toISOString(), userId, sessionId)
+      .run();
+    return json({ sessionId, stopped: true, persistent: true });
+  } catch {
+    return json({ error: "Interview could not be stopped. Please retry." }, 500);
+  }
+}
+
 async function evaluateAnswer(request: JsonObject, env: InterviewAiEnv, userId: string | null): Promise<Response> {
   const sessionId = text(request.sessionId, MAX_SESSION_ID_LENGTH);
   const questionId = text(request.questionId, 200);
@@ -230,7 +252,7 @@ async function evaluateAnswer(request: JsonObject, env: InterviewAiEnv, userId: 
   if (userId && env.DB) {
     const session = await loadOwnedSession(env.DB, userId, sessionId);
     if (!session) return json({ error: "Interview session not found." }, 404);
-    if (String(session.status) === "COMPLETED") return json({ error: "Interview session is already completed." }, 409);
+    if (String(session.status) !== "ACTIVE") return json({ error: "Interview session is no longer active." }, 409);
     const plan = parseQuestionPlan(session.question_plan_json);
     planQuestion = plan.find((question) => question.id === questionId);
     if (!planQuestion) return json({ error: "Question does not belong to this interview session." }, 400);
@@ -367,8 +389,11 @@ async function progressView(env: InterviewAiEnv, userId: string | null): Promise
 
 export async function handleInterviewAi(request: Request, env: InterviewAiEnv): Promise<Response> {
   const tenant = tenantRequestContext(request);
-  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId)) return json({ error: "Authentication required." }, 401);
-  const userId = tenant.multiUser ? tenant.userId : null;
+  const ephemeral = request.headers.get("x-gimmejob-session-scope") === "ephemeral";
+  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId) && !ephemeral) {
+    return json({ error: "Authentication required." }, 401);
+  }
+  const userId = tenant.multiUser && tenant.authenticated && tenant.userId ? tenant.userId : null;
 
   if (request.method === "GET") return progressView(env, userId);
   if (request.method !== "POST") return new Response(null, { status: 405, headers: { allow: "GET, POST" } });
@@ -385,6 +410,7 @@ export async function handleInterviewAi(request: Request, env: InterviewAiEnv): 
   const action = text(input.action, 20);
   if (action === "start") return startInterview(input, env, userId);
   if (action === "evaluate") return evaluateAnswer(input, env, userId);
+  if (action === "stop") return stopInterview(input, env, userId);
   return json({ error: "Unsupported interview action." }, 400);
 }
 

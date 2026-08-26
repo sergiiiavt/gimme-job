@@ -303,7 +303,8 @@ async function callAi(env: LearningPathAiEnv, messages: ChatMessage[], sessionId
 
 export async function handleLearningPathAi(request: Request, env: LearningPathAiEnv): Promise<Response> {
   const tenant = tenantRequestContext(request);
-  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId)) {
+  const ephemeral = request.headers.get("x-gimmejob-session-scope") === "ephemeral";
+  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId) && !ephemeral) {
     return json({ error: "Authentication required." }, 401);
   }
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405, { allow: "POST" });

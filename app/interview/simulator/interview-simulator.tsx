@@ -78,6 +78,27 @@ type EvaluateResponse = {
   } | null;
 };
 
+type SpeechAlternative = { transcript: string };
+type SpeechResult = { isFinal: boolean; length: number; [index: number]: SpeechAlternative };
+type SpeechResultList = { length: number; [index: number]: SpeechResult };
+type SpeechEvent = { resultIndex: number; results: SpeechResultList };
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onresult: ((event: SpeechEvent) => void) | null;
+  abort: () => void;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
 const emptyProgress: ProgressView = { persistent: false, recentSessions: [], areas: [] };
 const levelOptions = ["Any", "Junior", "Middle", "Senior", "Lead"] as const;
 const countOptions = [5, 10] as const;
@@ -85,7 +106,11 @@ const countOptions = [5, 10] as const;
 async function api<T>(input: RequestInit = {}): Promise<T> {
   const response = await fetch("/api/ai/interviews", {
     ...input,
-    headers: { "content-type": "application/json", ...(input.headers ?? {}) },
+    headers: {
+      "content-type": "application/json",
+      "x-gimmejob-session-scope": "ephemeral",
+      ...(input.headers ?? {}),
+    },
     cache: "no-store",
   });
   const body = await response.json().catch(() => ({})) as { error?: string } & T;
@@ -114,6 +139,21 @@ function shortDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(date);
 }
 
+function speechRecognitionConstructor(): SpeechRecognitionConstructor | null {
+  if (typeof window === "undefined") return null;
+  const speechWindow = window as SpeechWindow;
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
+}
+
+function MicrophoneIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="17" viewBox="0 0 24 24" width="17">
+      <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 1 0 6 0V6a3 3 0 0 0-3-3Z" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M6.5 11.5v.5a5.5 5.5 0 0 0 11 0v-.5M12 17.5V21M9.5 21h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
 export default function InterviewSimulator() {
   const [mobileNav, setMobileNav] = useState(false);
   const [stage, setStage] = useState<InterviewStage>("setup");
@@ -132,6 +172,9 @@ export default function InterviewSimulator() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [authRequired, setAuthRequired] = useState(false);
+  const [stopped, setStopped] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [recognition, setRecognition] = useState<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -214,8 +257,10 @@ export default function InterviewSimulator() {
       setAnswer("");
       setEvaluation(null);
       setResults([]);
+      setStopped(false);
       setStage("question");
       setAuthRequired(false);
+      setProgress((current) => ({ ...current, persistent: response.persistent || current.persistent }));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (requestError) {
       const typed = requestError as Error & { status?: number };
@@ -237,6 +282,8 @@ export default function InterviewSimulator() {
           action: "evaluate",
           sessionId,
           questionId: currentQuestion.id,
+          track: currentQuestion.track,
+          language,
           answer,
         }),
       });
@@ -255,6 +302,7 @@ export default function InterviewSimulator() {
     if (questionIndex >= questions.length - 1) {
       setStage("complete");
       setEvaluation(null);
+      setStopped(false);
       await refreshProgress();
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -266,7 +314,84 @@ export default function InterviewSimulator() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function stopInterview() {
+    if (busy) return;
+    recognition?.abort();
+    setRecognition(null);
+    setListening(false);
+    setBusy(true);
+    setError("");
+    try {
+      if (sessionId) {
+        await api({
+          method: "POST",
+          body: JSON.stringify({ action: "stop", sessionId }),
+        });
+      }
+      setStopped(true);
+      setEvaluation(null);
+      setStage("complete");
+      await refreshProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (requestError) {
+      const typed = requestError as Error & { status?: number };
+      if (typed.status === 401) setAuthRequired(true);
+      setError(typed.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function toggleDictation() {
+    if (recognition && listening) {
+      recognition.stop();
+      return;
+    }
+
+    const Recognition = speechRecognitionConstructor();
+    if (!Recognition) {
+      setError("Voice input is not supported in this browser.");
+      return;
+    }
+
+    const instance = new Recognition();
+    instance.lang = language === "uk" ? "uk-UA" : "en-US";
+    instance.continuous = true;
+    instance.interimResults = false;
+    instance.onresult = (event) => {
+      let transcript = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        if (result?.isFinal) transcript += result[0]?.transcript ?? "";
+      }
+      const cleaned = transcript.trim();
+      if (cleaned) setAnswer((current) => `${current}${current.trim() ? " " : ""}${cleaned}`.slice(0, 20_000));
+    };
+    instance.onerror = () => {
+      setListening(false);
+      setRecognition(null);
+    };
+    instance.onend = () => {
+      setListening(false);
+      setRecognition(null);
+    };
+
+    setError("");
+    setRecognition(instance);
+    setListening(true);
+    try {
+      instance.start();
+    } catch {
+      setListening(false);
+      setRecognition(null);
+      setError("Voice input could not be started.");
+    }
+  }
+
   function reset() {
+    recognition?.abort();
+    setRecognition(null);
+    setListening(false);
     setStage("setup");
     setSessionId("");
     setQuestions([]);
@@ -274,6 +399,7 @@ export default function InterviewSimulator() {
     setAnswer("");
     setEvaluation(null);
     setResults([]);
+    setStopped(false);
     setError("");
     void refreshProgress();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -291,9 +417,10 @@ export default function InterviewSimulator() {
         activeSection={null}
         activeSubsection={INTERACTIVE_INTERVIEW_TOPIC}
         mobileOpen={mobileNav}
-        mode="personal"
+        mode={progress.persistent ? "personal" : "public"}
         onSelectSubsection={selectAssistantTopic}
         personalHref="/ai-assistant/interview"
+        publicHref="/ai-assistant/interview"
         secondaryItems={AI_ASSISTANT_TOPICS}
         secondaryTitle="AI Assistant"
       />
@@ -308,20 +435,21 @@ export default function InterviewSimulator() {
         >☰</button>
 
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero}>
-            <div>
-              <p className={styles.eyebrow}>GimmeJob AI · Interview</p>
-              <h1>Interview simulator</h1>
-              <p className={styles.lead}>Answer real questions from the GimmeJob catalog. AI evaluates the answer against maintained reference material and remembers your weak areas.</p>
-            </div>
-            <Link className={styles.questionBankLink} href="/interview">Question bank</Link>
-          </header>
+          {stage === "setup" && (
+            <header className={styles.hero} style={{ marginBottom: 18 }}>
+              <div>
+                <p className={styles.eyebrow}>GimmeJob AI</p>
+                <h1 style={{ fontSize: "clamp(26px, 3.5vw, 36px)", marginBottom: 0 }}>AI interview</h1>
+              </div>
+              <Link className={styles.questionBankLink} href="/interview">Question bank</Link>
+            </header>
+          )}
 
           {authRequired && (
             <div className={styles.authBanner}>
               <div>
                 <strong>Sign in to run an AI interview.</strong>
-                <span>Your attempts and skill progress are private and stored per account.</span>
+                <span>Public session access could not be established. Signing in also saves your progress.</span>
               </div>
               <Link href="/login">Sign in</Link>
             </div>
@@ -329,10 +457,10 @@ export default function InterviewSimulator() {
           {error && <div className={styles.errorBanner} role="alert">{error}</div>}
 
           {stage === "setup" && (
-            <div className={styles.setupGrid}>
+            <div className={styles.setupGrid} style={progress.persistent ? undefined : { gridTemplateColumns: "1fr" }}>
               <section className={styles.panel}>
                 <div className={styles.panelHeader}>
-                  <div><p className={styles.kicker}>New session</p><h2>Configure interview</h2></div>
+                  <div><h2 style={{ marginTop: 0 }}>Configure interview</h2></div>
                 </div>
                 <div className={styles.formGrid}>
                   <fieldset className={styles.fieldset}>
@@ -365,38 +493,40 @@ export default function InterviewSimulator() {
                 <button className={styles.primaryButton} disabled={busy || authRequired} onClick={() => void start()} type="button">
                   {busy ? "Starting…" : `Start ${questionCount}-question interview`}
                 </button>
-                <p className={styles.helper}>Questions are weighted toward common interview topics. Reference answers stay hidden until you submit your answer.</p>
+                {!progress.persistent && <p className={styles.helper}>Public session · results disappear when the session ends. Sign in to keep progress.</p>}
               </section>
 
-              <section className={styles.panel}>
-                <div className={styles.panelHeader}>
-                  <div><p className={styles.kicker}>Progress memory</p><h2>Areas to practice</h2></div>
-                  {progress.persistent && <span className={styles.savedBadge}>Saved</span>}
-                </div>
-                {progressLoading ? (
-                  <div className={styles.emptyState}>Loading your interview history…</div>
-                ) : progress.areas.length ? (
-                  <div className={styles.areaList}>
-                    {progress.areas.slice(0, 6).map((area) => (
-                      <div className={styles.areaRow} key={`${area.track}-${area.category}`}>
-                        <div><strong>{area.category}</strong><span>{readableTrack(area.track)} · {area.attempts} answer{area.attempts === 1 ? "" : "s"}</span></div>
-                        <span className={`${styles.miniScore} ${scoreClass(area.averageScore)}`}>{area.averageScore}%</span>
-                      </div>
-                    ))}
+              {progress.persistent && (
+                <section className={styles.panel}>
+                  <div className={styles.panelHeader}>
+                    <div><p className={styles.kicker}>Progress</p><h2>Areas to practice</h2></div>
+                    <span className={styles.savedBadge}>Saved</span>
                   </div>
-                ) : <div className={styles.emptyState}>Complete an interview and your weakest categories will appear here.</div>}
-                {progress.recentSessions.length > 0 && (
-                  <div className={styles.recentBlock}>
-                    <h3>Recent interviews</h3>
-                    {progress.recentSessions.slice(0, 3).map((session) => (
-                      <div className={styles.recentRow} key={session.id}>
-                        <span>{readableTrack(session.track)} · {session.answeredQuestions}/{session.totalQuestions}</span>
-                        <span>{session.averageScore === null ? "—" : `${session.averageScore}%`} · {shortDate(session.updatedAt)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+                  {progressLoading ? (
+                    <div className={styles.emptyState}>Loading interview history…</div>
+                  ) : progress.areas.length ? (
+                    <div className={styles.areaList}>
+                      {progress.areas.slice(0, 6).map((area) => (
+                        <div className={styles.areaRow} key={`${area.track}-${area.category}`}>
+                          <div><strong>{area.category}</strong><span>{readableTrack(area.track)} · {area.attempts} answer{area.attempts === 1 ? "" : "s"}</span></div>
+                          <span className={`${styles.miniScore} ${scoreClass(area.averageScore)}`}>{area.averageScore}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <div className={styles.emptyState}>Your weakest categories will appear here after an interview.</div>}
+                  {progress.recentSessions.length > 0 && (
+                    <div className={styles.recentBlock}>
+                      <h3>Recent interviews</h3>
+                      {progress.recentSessions.slice(0, 3).map((session) => (
+                        <div className={styles.recentRow} key={session.id}>
+                          <span>{readableTrack(session.track)} · {session.answeredQuestions}/{session.totalQuestions}</span>
+                          <span>{session.averageScore === null ? "—" : `${session.averageScore}%`} · {shortDate(session.updatedAt)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
             </div>
           )}
 
@@ -404,23 +534,39 @@ export default function InterviewSimulator() {
             <section className={styles.interviewLayout}>
               <div className={styles.sessionTopline}>
                 <div><span>{readableTrack(currentQuestion.track)}</span><span>{currentQuestion.level}</span><span>{currentQuestion.category}</span></div>
-                <strong>{questionIndex + 1} / {questions.length}</strong>
+                <span style={{ alignItems: "center", display: "flex", gap: 10 }}>
+                  <strong>{questionIndex + 1} / {questions.length}</strong>
+                  <button className={styles.secondaryButton} disabled={busy} onClick={() => void stopInterview()} style={{ minHeight: 32, padding: "0 10px" }} type="button">Stop</button>
+                </span>
               </div>
               <div className={styles.progressBar} aria-label={`Question ${questionIndex + 1} of ${questions.length}`}>
                 <span style={{ width: `${((questionIndex + (evaluation ? 1 : 0)) / questions.length) * 100}%` }}/>
               </div>
               <article className={styles.questionCard}>
-                <div className={styles.questionMeta}><span>{currentQuestion.prevalence}</span><span>{currentQuestion.kind}</span></div>
                 <h2>{currentQuestion.question}</h2>
                 {!evaluation ? (
                   <>
                     <label className={styles.answerField}>
                       <span>Your answer</span>
-                      <textarea autoFocus maxLength={20_000} onChange={(event) => setAnswer(event.target.value)} placeholder="Answer as you would in a real interview. A concise answer is fine if it covers the key points." rows={9} value={answer}/>
+                      <textarea autoFocus maxLength={20_000} onChange={(event) => setAnswer(event.target.value)} placeholder="Answer as you would in a real interview." rows={8} value={answer}/>
                     </label>
                     <div className={styles.answerActions}>
                       <span>{answer.length.toLocaleString()} / 20,000</span>
-                      <button className={styles.primaryButton} disabled={busy || !answer.trim()} onClick={() => void submit()} type="button">{busy ? "Evaluating…" : "Submit answer"}</button>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          aria-label={listening ? "Stop voice input" : "Dictate answer"}
+                          aria-pressed={listening}
+                          className={styles.secondaryButton}
+                          disabled={busy}
+                          onClick={toggleDictation}
+                          style={{ minHeight: 42, minWidth: 42, padding: 0 }}
+                          title={listening ? "Stop voice input" : "Dictate answer"}
+                          type="button"
+                        >
+                          <MicrophoneIcon/>
+                        </button>
+                        <button className={styles.primaryButton} disabled={busy || !answer.trim()} onClick={() => void submit()} type="button">{busy ? "Evaluating…" : "Submit answer"}</button>
+                      </div>
                     </div>
                   </>
                 ) : (
@@ -441,7 +587,7 @@ export default function InterviewSimulator() {
                     {evaluation.follow_up_question && <div className={styles.followUp}><span>Likely follow-up</span><strong>{evaluation.follow_up_question}</strong></div>}
                     {evaluation.recommended_topics.length > 0 && <div className={styles.topicList}><span>Review next</span><div>{evaluation.recommended_topics.map((topic) => <span key={topic}>{topic}</span>)}</div></div>}
                     <div className={styles.nextRow}>
-                      <span>Answer saved to your interview progress.</span>
+                      <span>{progress.persistent ? "Saved to your progress." : "Kept in this session only."}</span>
                       <button className={styles.primaryButton} onClick={() => void next()} type="button">{questionIndex === questions.length - 1 ? "Finish interview" : "Next question"}</button>
                     </div>
                   </div>
@@ -452,10 +598,10 @@ export default function InterviewSimulator() {
 
           {stage === "complete" && (
             <section className={styles.completeCard}>
-              <p className={styles.kicker}>Interview complete</p>
+              <p className={styles.kicker}>{stopped ? "Interview stopped" : "Interview complete"}</p>
               <div className={styles.completeHeadline}>
                 <div className={`${styles.finalScore} ${scoreClass(averageScore ?? 0)}`}><strong>{averageScore ?? 0}</strong><span>/100 average</span></div>
-                <div><h2>{readableTrack(track)} interview result</h2><p>{results.length} answers evaluated. These results are now part of your progress history.</p></div>
+                <div><h2>{readableTrack(track)} interview result</h2><p>{results.length} answer{results.length === 1 ? "" : "s"} evaluated. {progress.persistent ? "Saved to your progress history." : "This result exists only in the current session."}</p></div>
               </div>
               <div className={styles.summaryGrid}>
                 <div>
@@ -470,7 +616,7 @@ export default function InterviewSimulator() {
                 </div>
               </div>
               <div className={styles.completeActions}>
-                <Link className={styles.secondaryButton} href="/interview">Review question bank</Link>
+                <Link className={styles.secondaryButton} href="/interview">Question bank</Link>
                 <button className={styles.primaryButton} onClick={reset} type="button">Start another interview</button>
               </div>
             </section>
