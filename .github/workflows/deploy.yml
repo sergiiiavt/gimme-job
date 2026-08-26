@@ -116,7 +116,7 @@ jobs:
 
           check_public_interview() {
             local body
-            body="$(curl --fail --silent --show-error --location --max-time 20 \
+            body="$(curl --fail --silent --show-error --max-time 20 \
               --header 'x-gimmejob-session-scope: ephemeral' \
               'https://gimme-job.com/api/ai/interviews')" || return 1
             grep -Fq '"persistent":false' <<<"$body"
@@ -124,7 +124,7 @@ jobs:
 
           check_public_learning_advisor() {
             local body
-            body="$(curl --fail --silent --show-error --location --max-time 60 \
+            body="$(curl --fail --silent --show-error --max-time 60 \
               --request POST \
               --header 'content-type: application/json' \
               --header 'x-gimmejob-session-scope: ephemeral' \
