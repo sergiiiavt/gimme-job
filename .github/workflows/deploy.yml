@@ -114,7 +114,43 @@ jobs:
             grep -Eiq '^set-cookie: gimmejob_user_session=;.*Max-Age=0' "$headers"
           }
 
+          check_public_interview() {
+            local body
+            body="$(curl --fail --silent --show-error --location --max-time 20 \
+              --header 'x-gimmejob-session-scope: ephemeral' \
+              'https://gimme-job.com/api/ai/interviews')" || return 1
+            grep -Fq '"persistent":false' <<<"$body"
+          }
+
+          check_public_learning_advisor() {
+            local body
+            body="$(curl --fail --silent --show-error --location --max-time 60 \
+              --request POST \
+              --header 'content-type: application/json' \
+              --header 'x-gimmejob-session-scope: ephemeral' \
+              --data '{"messages":[{"role":"user","content":"QA test planning"}]}' \
+              'https://gimme-job.com/api/ai/learning-path')" || return 1
+            grep -Fq '"requestId":' <<<"$body" &&
+              grep -Fq '"sessionId":' <<<"$body" &&
+              grep -Fq '"learningMap":' <<<"$body"
+          }
+
+          check_qa_topic_link() {
+            local headers="/tmp/gimmejob-qa-topic-headers"
+            local status
+            status="$(curl --silent --show-error --max-time 20 \
+              --dump-header "$headers" \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              'https://gimme-job.com/reference/qa-fundamentals?topic=testing-process-lifecycle')" || return 1
+            [[ "$status" == "308" ]] || return 1
+            grep -Eiq '^location: /learn/qa-fundamentals\?topic=testing-process-lifecycle' "$headers"
+          }
+
           retry check_page "https://gimme-job.com/"
           retry check_logo "https://gimme-job.com/gimmejob-logo.png"
           retry check_health "https://gimme-job.com/api/health"
           retry check_logout
+          retry check_public_interview
+          retry check_public_learning_advisor
+          retry check_qa_topic_link
