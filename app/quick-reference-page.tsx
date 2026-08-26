@@ -114,6 +114,106 @@ const sqlReferenceCatalog: SqlReferenceCatalog = {
 };
 const qaReferenceCatalog = qaQuickReference as QaReferenceCatalog;
 
+const qaReferenceLifecycleOrder = [
+  "core-distinctions",
+  "testing-principles",
+  "software-lifecycle-models",
+  "agile-shift-left",
+  "fundamental-test-process",
+  "test-plan-strategy-approach",
+  "risk-based-testing",
+  "prioritization",
+  "good-requirements",
+  "requirements-relationships",
+  "traceability-impact",
+  "static-reviews",
+  "test-levels",
+  "test-types",
+  "quality-characteristics",
+  "test-pyramid-quadrants",
+  "test-design-families",
+  "test-design-techniques",
+  "equivalence-partitioning",
+  "boundary-value-analysis",
+  "decision-tables",
+  "state-transition",
+  "experience-based",
+  "test-oracles",
+  "test-case-anatomy",
+  "test-documentation",
+  "environment-data",
+  "entry-exit",
+  "smoke-vs-sanity",
+  "white-box-coverage",
+  "confirmation-regression",
+  "severity-priority",
+  "defect-report",
+  "defect-lifecycle",
+  "acceptance-uat-alpha-beta",
+  "useful-metrics",
+  "release-readiness",
+  "root-cause-improvement",
+] as const;
+
+const qaReferenceLifecycleRank = new Map<string, number>(
+  qaReferenceLifecycleOrder.map((id, index) => [id, index]),
+);
+
+const qaReferenceAbbreviations = [
+  ["STLC", "Software Testing Life Cycle"],
+  ["SDLC", "Software Development Life Cycle"],
+  ["EP", "Equivalence Partitioning"],
+  ["BVA", "Boundary Value Analysis"],
+  ["ATDD", "Acceptance Test-Driven Development"],
+  ["UAT", "User Acceptance Testing"],
+  ["RTM", "Requirements Traceability Matrix"],
+  ["RCA", "Root Cause Analysis"],
+  ["CI", "Continuous Integration"],
+] as const;
+
+function expandQaReferenceAbbreviations(value: string) {
+  return qaReferenceAbbreviations.reduce((expanded, [abbreviation, fullName]) => {
+    const withoutParentheticalAlias = expanded.replace(new RegExp(`\\s*\\(${abbreviation}\\)`, "g"), "");
+    return withoutParentheticalAlias.replace(new RegExp(`\\b${abbreviation}\\b`, "g"), fullName);
+  }, value);
+}
+
+function clarifyQaReferenceRow(row: ReferenceRow): ReferenceRow {
+  return {
+    ...row,
+    term: expandQaReferenceAbbreviations(row.term),
+    meaning: row.meaning ? expandQaReferenceAbbreviations(row.meaning) : undefined,
+    detail: expandQaReferenceAbbreviations(row.detail),
+  };
+}
+
+function clarifyQaReferenceCard(card: ReferenceCard): ReferenceCard {
+  return {
+    ...card,
+    title: expandQaReferenceAbbreviations(card.title),
+    summary: card.summary ? expandQaReferenceAbbreviations(card.summary) : undefined,
+    rows: card.rows?.map(clarifyQaReferenceRow),
+    moreRows: card.moreRows?.map(clarifyQaReferenceRow),
+    notes: card.notes?.map(expandQaReferenceAbbreviations),
+  };
+}
+
+function qaReferenceCardRank(card: ReferenceCard, originalIndex: number) {
+  const explicitRank = qaReferenceLifecycleRank.get(card.id);
+  if (explicitRank !== undefined) return explicitRank;
+
+  const title = card.title.toLowerCase();
+  if (title.includes("software lifecycle")) return qaReferenceLifecycleRank.get("software-lifecycle-models") ?? originalIndex;
+  if (title.includes("test design techniques")) return qaReferenceLifecycleRank.get("test-design-techniques") ?? originalIndex;
+  return qaReferenceLifecycleOrder.length + originalIndex;
+}
+
+const qaReferenceCards: ReferenceCard[] = qaReferenceCatalog.cards
+  .map(clarifyQaReferenceCard)
+  .map((card, originalIndex) => ({ card, originalIndex }))
+  .sort((left, right) => qaReferenceCardRank(left.card, left.originalIndex) - qaReferenceCardRank(right.card, right.originalIndex))
+  .map(({ card }) => card);
+
 function guidedRows(cardId: string, rows: ReferenceRow[]) {
   const explanations = pythonReferenceGuidanceCatalog.explanations[cardId] ?? {};
   return rows.map((row) => ({ ...row, meaning: row.meaning ?? explanations[row.term] }));
@@ -216,7 +316,7 @@ function placeholderCards(referenceId: string): ReferenceCard[] {
 function referenceCards(referenceId: string): ReferenceCard[] {
   if (referenceId === "programming") return pythonReferenceCards;
   if (referenceId === "data") return sqlReferenceCards;
-  if (referenceId === "qa-fundamentals") return qaReferenceCatalog.cards;
+  if (referenceId === "qa-fundamentals") return qaReferenceCards;
   return placeholderCards(referenceId);
 }
 

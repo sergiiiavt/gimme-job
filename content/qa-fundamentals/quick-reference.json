@@ -31,7 +31,7 @@
         {"term": "Defects cluster together", "detail": "A relatively small number of components often contains a large share of observed defects."}
       ],
       "moreRows": [
-        {"term": "Tests wear out", "detail": "Repeated unchanged tests become less effective; revise data, scenarios, and coverage as the product changes."},
+        {"term": "Tests wear out (Pesticide Paradox)", "detail": "Repeated unchanged tests become less effective at finding new defects. ISTQB CTFL v4 calls this principle Tests wear out; it was traditionally known as the Pesticide Paradox. Refresh data, scenarios, paths, and coverage as the product and risks evolve."},
         {"term": "Testing is context dependent", "detail": "The appropriate strategy depends on product, users, risks, lifecycle, technology, and constraints."},
         {"term": "Absence-of-errors fallacy", "detail": "A technically correct system can still fail if it does not solve the right user or business problem."}
       ]

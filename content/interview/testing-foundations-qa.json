@@ -37,15 +37,15 @@
       "level": "Junior",
       "category": "Fundamentals",
       "kind": "Theory",
-      "question": "What does the testing principle that tests wear out mean for a regression suite?",
-      "shortAnswer": "Repeatedly running unchanged tests eventually finds fewer new defects because the product, risks and known failure patterns evolve around them. Keep valuable regression checks, but review their signal, add tests for new behaviour and escaped defects, vary data and paths where useful, and retire redundant checks whose maintenance cost exceeds the evidence they provide.",
+      "question": "What does Tests wear out (formerly known as the Pesticide Paradox) mean for a regression suite?",
+      "shortAnswer": "ISTQB CTFL v4 calls this principle Tests wear out; it was traditionally known as the Pesticide Paradox. Repeatedly running unchanged tests eventually finds fewer new defects because the product, risks and known failure patterns evolve around them. Keep valuable regression checks, but review their signal, add tests for new behaviour and escaped defects, vary data and paths where useful, and retire redundant checks whose maintenance cost exceeds the evidence they provide.",
       "strongAnswerSignals": [
         "does not confuse worn-out tests with flaky tests",
         "refreshes coverage from change and production evidence",
         "retains stable checks that still protect important behaviour"
       ],
-      "questionUk": "Що означає принцип «тести зношуються» (pesticide paradox) для регресійного набору тестів?",
-      "shortAnswerUk": "Багаторазовий запуск незмінних тестів з часом знаходить дедалі менше нових дефектів, бо продукт, ризики та відомі патерни збоїв еволюціонують навколо них. Цінні регресійні перевірки варто зберігати, але потрібно періодично оцінювати їхню інформативність, додавати тести на нову поведінку та пропущені дефекти, урізноманітнювати дані й шляхи виконання там, де це доцільно, і виводити з обігу надлишкові перевірки, витрати на підтримку яких перевищують цінність доказів, які вони дають.",
+      "questionUk": "Що означає принцип «тести зношуються» (Tests wear out, раніше — Pesticide Paradox) для регресійного набору тестів?",
+      "shortAnswerUk": "В ISTQB CTFL v4 цей принцип називається Tests wear out («тести зношуються»); традиційно він був відомий як Pesticide Paradox. Багаторазовий запуск незмінних тестів з часом знаходить дедалі менше нових дефектів, бо продукт, ризики та відомі патерни збоїв еволюціонують навколо них. Цінні регресійні перевірки варто зберігати, але потрібно періодично оцінювати їхню інформативність, додавати тести на нову поведінку та пропущені дефекти, урізноманітнювати дані й шляхи виконання там, де це доцільно, і виводити з обігу надлишкові перевірки, витрати на підтримку яких перевищують цінність доказів, які вони дають.",
       "strongAnswerSignalsUk": [
         "не плутає «зношені» тести з нестабільними (flaky) тестами",
         "оновлює покриття на основі змін та даних із продакшену",

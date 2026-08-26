@@ -81,9 +81,9 @@ Finding ambiguity during refinement is usually cheaper than finding the same pro
 
 A small number of components often contain a large share of observed defects. History can guide attention, but new change, business impact and usage must still influence risk.
 
-### Tests wear out
+### Tests wear out (Pesticide Paradox)
 
-Repeatedly running unchanged tests can yield less new information as the product and failure patterns evolve. Regression checks remain useful, but coverage should be refreshed using new changes and escaped defects.
+Repeatedly running unchanged tests can yield less new information as the product and failure patterns evolve. This principle was traditionally known as the **Pesticide Paradox**; ISTQB CTFL v4 uses **Tests wear out**. Regression checks remain useful, but coverage should be refreshed using new changes, varied data and paths, and escaped defects.
 
 ### Testing is context dependent
 
