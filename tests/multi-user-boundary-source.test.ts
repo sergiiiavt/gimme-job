@@ -56,6 +56,7 @@ function fakeSessionDb(authenticated = true) {
 }
 
 test("routing helpers use canonical query-free return paths", () => {
+  const ephemeral = { "x-gimmejob-session-scope": "ephemeral" };
   assert.equal(privateNextPath(new URL("https://example.com/login")), "/vacancies");
   assert.equal(privateNextPath(new URL("https://example.com/login?next=https%3A%2F%2Fevil.example")), "/vacancies");
   assert.equal(isPrivateRequest(new Request("https://example.com/workspace"), new URL("https://example.com/workspace")), false);
@@ -64,6 +65,11 @@ test("routing helpers use canonical query-free return paths", () => {
   assert.equal(isPrivateRequest(new Request("https://example.com/workspace/learn"), new URL("https://example.com/workspace/learn")), true);
   assert.equal(isPrivateRequest(new Request("https://example.com/api/dashboard"), new URL("https://example.com/api/dashboard")), false);
   assert.equal(isPrivateRequest(new Request("https://example.com/api/jobs/1", { method: "PATCH" }), new URL("https://example.com/api/jobs/1")), true);
+  assert.equal(isPrivateRequest(new Request("https://example.com/api/ai/learning-path", { method: "POST", headers: ephemeral }), new URL("https://example.com/api/ai/learning-path")), false);
+  assert.equal(isPrivateRequest(new Request("https://example.com/api/ai/interviews", { method: "GET", headers: ephemeral }), new URL("https://example.com/api/ai/interviews")), false);
+  assert.equal(isPrivateRequest(new Request("https://example.com/api/ai/interviews", { method: "POST", headers: ephemeral }), new URL("https://example.com/api/ai/interviews")), false);
+  assert.equal(isPrivateRequest(new Request("https://example.com/api/ai/learning-path", { method: "POST" }), new URL("https://example.com/api/ai/learning-path")), true);
+  assert.equal(isPrivateRequest(new Request("https://example.com/api/jobs/1", { method: "POST", headers: ephemeral }), new URL("https://example.com/api/jobs/1")), true);
 });
 
 test("identity headers are always removed before the legacy core sees a request", async () => {
@@ -125,6 +131,25 @@ test("legacy personal URLs collapse to canonical public routes before auth", asy
   assert.equal(calls.length, 0);
 });
 
+test("QA Fundamentals topic links from Advisor resolve to the long-form learning page", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+
+  const topic = await boundary.fetch(
+    new Request("https://example.com/reference/qa-fundamentals?topic=testing-process-lifecycle"),
+    env,
+    undefined,
+  );
+  assert.equal(topic.status, 308);
+  assert.equal(topic.headers.get("location"), "/learn/qa-fundamentals?topic=testing-process-lifecycle");
+  assert.equal(calls.length, 0);
+
+  const quickReference = await boundary.fetch(new Request("https://example.com/reference/qa-fundamentals"), env, undefined);
+  assert.equal(quickReference.status, 200);
+  assert.equal(calls.length, 1);
+});
+
 test("legacy private About URL redirects to canonical About before auth", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);
@@ -133,6 +158,51 @@ test("legacy private About URL redirects to canonical About before auth", async 
   assert.equal(response.status, 308);
   assert.equal(response.headers.get("location"), "/about");
   assert.equal(calls.length, 0);
+});
+
+test("public ephemeral AI requests reach core without requiring sign-in", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+  const cases = [
+    ["/api/ai/learning-path", "POST"],
+    ["/api/ai/interviews", "GET"],
+    ["/api/ai/interviews", "POST"],
+  ] as const;
+
+  for (const [path, method] of cases) {
+    const response = await boundary.fetch(new Request(`https://example.com${path}`, {
+      method,
+      headers: { "x-gimmejob-session-scope": "ephemeral" },
+    }), env, undefined);
+    assert.equal(response.status, 200, `${method} ${path}`);
+  }
+
+  assert.equal(calls.length, 3);
+  for (const call of calls) {
+    assert.equal(call.request.headers.get("x-gimmejob-authenticated"), "0");
+    assert.equal(call.request.headers.get("x-gimmejob-user-id"), null);
+    assert.equal(call.request.headers.get("x-gimmejob-session-scope"), "ephemeral");
+  }
+});
+
+test("authenticated ephemeral AI requests still carry tenant identity for persistence", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(true).db, APP_PASSWORD: "legacy-secret" };
+  const response = await boundary.fetch(new Request("https://example.com/api/ai/interviews", {
+    method: "POST",
+    headers: {
+      cookie: "gimmejob_user_session=valid-session",
+      "x-gimmejob-session-scope": "ephemeral",
+    },
+  }), env, undefined);
+
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0]!.request.headers.get("x-gimmejob-authenticated"), "1");
+  assert.equal(calls[0]!.request.headers.get("x-gimmejob-user-id"), "user-a");
+  assert.equal(calls[0]!.request.headers.get("x-gimmejob-session-scope"), "ephemeral");
 });
 
 test("a D1 session replaces attacker headers with trusted tenant identity", async () => {
