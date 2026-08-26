@@ -497,13 +497,12 @@ export default function LearningPathAdvisor() {
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero}>
+          <header className={styles.hero} style={{ gap: 0, gridTemplateColumns: "1fr", marginBottom: 12, paddingBottom: 12 }}>
             <div>
-              <p>GimmeJob AI · Source-backed learning</p>
-              <h1>Learning Path Advisor</h1>
-              <span>Ask for a topic. A LangGraph workflow searches GimmeJob&apos;s Git-versioned knowledge, builds a connected learning map, and shows exactly how the answer was produced.</span>
+              <p style={{ marginBottom: 6 }}>GimmeJob AI</p>
+              <h1 style={{ fontSize: "clamp(24px, 2.8vw, 30px)" }}>Learning paths</h1>
+              <span style={{ lineHeight: 1.45, marginTop: 6 }}>Build a source-backed path for any topic.</span>
             </div>
-            <div className={styles.heroBadge}><span>Workflow</span><strong>Graph → knowledge → path</strong><small>Observable with Langfuse when configured</small></div>
           </header>
 
           <section aria-label="Learning Path Advisor chat" className={styles.chat}>
@@ -542,7 +541,7 @@ export default function LearningPathAdvisor() {
 
             {authRequired && (
               <div className={styles.authBanner} role="alert">
-                <div><strong>Sign in to use the Learning Path Advisor.</strong><span>The Worker keeps the AI service token private and applies your authenticated user boundary.</span></div>
+                <div><strong>Sign in to continue.</strong><span>Public access is enabled; this fallback only appears if the session cannot be authorized upstream.</span></div>
                 <Link href="/login">Sign in</Link>
               </div>
             )}
