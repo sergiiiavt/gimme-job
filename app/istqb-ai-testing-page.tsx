@@ -22,10 +22,10 @@ export default function IstqbAiTestingPage() {
   const modules = istqbAiTestingCatalog.taxonomy;
   const firstModuleId = modules[0]?.id ?? "";
   const requestedModuleId = searchParams.get("topic");
-  const activeModuleId = requestedModuleId && modules.some((module) => module.id === requestedModuleId)
+  const activeModuleId = requestedModuleId && modules.some((chapter) => chapter.id === requestedModuleId)
     ? requestedModuleId
     : firstModuleId;
-  const moduleIndex = Math.max(0, modules.findIndex((module) => module.id === activeModuleId));
+  const moduleIndex = Math.max(0, modules.findIndex((chapter) => chapter.id === activeModuleId));
   const activeModule = modules[moduleIndex] ?? modules[0];
 
   useEffect(() => {
@@ -47,21 +47,21 @@ export default function IstqbAiTestingPage() {
   const headings = activeModule.videos?.length
     ? [...markdownHeadings, { id: "recommended-videos", text: "Recommended videos" }]
     : markdownHeadings;
-  const secondaryItems: SubnavItem[] = modules.map((module) => ({
-    id: module.id,
-    label: module.navLabel,
-    count: module.count,
+  const secondaryItems: SubnavItem[] = modules.map((chapter) => ({
+    id: chapter.id,
+    label: chapter.navLabel,
+    count: chapter.count,
   }));
 
-  const selectModule = (module: IstqbAiTestingModule) => {
-    router.push(contentHref(pathname, searchParams.toString(), { topic: module.id, section: null }), { scroll: false });
+  const selectModule = (chapter: IstqbAiTestingModule) => {
+    router.push(contentHref(pathname, searchParams.toString(), { topic: chapter.id, section: null }), { scroll: false });
     setMobileNav(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const selectModuleById = (moduleId: string) => {
-    const module = modules.find((candidate) => candidate.id === moduleId);
-    if (module) selectModule(module);
+    const chapter = modules.find((candidate) => candidate.id === moduleId);
+    if (chapter) selectModule(chapter);
   };
 
   const openSection = (section: SiteSection) => {
@@ -144,7 +144,7 @@ export default function IstqbAiTestingPage() {
 
               <LearningPager
                 ariaLabel="ISTQB CT-AI chapter navigation"
-                labelFor={(module) => module?.navLabel}
+                labelFor={(chapter) => chapter?.navLabel}
                 language="en"
                 next={next}
                 onSelect={selectModule}
