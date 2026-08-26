@@ -98,6 +98,7 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.hits[1].source_path, "interview/test-design")
         self.assertEqual(result.hits[2].source_path, "python-learning/concurrency")
         self.assertEqual(captured_headers["X-gimmejob-rag-token"], "rag-token")
+        self.assertEqual(captured_headers["User-agent"], "curl/8.10.1 GimmeJob-AI/1.0")
 
     async def test_client_rejects_unallowlisted_learning_route(self) -> None:
         payload = self._payload(
@@ -135,6 +136,20 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
         http_error = HTTPError(client.url, 503, "Unavailable", hdrs=None, fp=None)
         with patch("gimmejob_ai.retrieval.urlopen", side_effect=http_error):
             with self.assertRaisesRegex(RuntimeError, "HTTP 503"):
+                await client.search("query", "en")
+
+        cloudflare_error = HTTPError(
+            client.url,
+            403,
+            "Forbidden",
+            hdrs={"cf-ray": "1234567890abcdef-KBP"},
+            fp=None,
+        )
+        with patch("gimmejob_ai.retrieval.urlopen", side_effect=cloudflare_error):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"HTTP 403 \(Cloudflare ray 1234567890abcdef-KBP\)",
+            ):
                 await client.search("query", "en")
 
         with patch("gimmejob_ai.retrieval.urlopen", side_effect=TimeoutError("timeout")):

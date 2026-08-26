@@ -209,6 +209,37 @@ jobs:
           fi
           exit 1
 
+      - name: Verify canonical RAG from Hetzner
+        shell: bash
+        run: |
+          set -euo pipefail
+          SSH=(ssh -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
+          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/gimmejob-n8n
+          set -a
+          . ./ai.env
+          set +a
+          body_file="$(mktemp)"
+          trap 'rm -f "$body_file"' EXIT
+          status="$(curl --silent --show-error --max-time 30 \
+            --request POST \
+            --user-agent 'curl/8.10.1 GimmeJob-AI/1.0' \
+            --header "x-gimmejob-rag-token: $GIMMEJOB_AI_RAG_SERVICE_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{"query":"Python parallelism","kinds":["learning","question"],"limit":1}' \
+            --output "$body_file" \
+            --write-out '%{http_code}' \
+            "$GIMMEJOB_AI_RAG_URL")"
+          if [[ "$status" != "200" ]] || ! grep -Fq '"ok":true' "$body_file"; then
+            echo "Canonical RAG request from the Hetzner host failed with HTTP $status." >&2
+            head -c 1000 "$body_file" >&2 || true
+            echo >&2
+            exit 1
+          fi
+          echo "Canonical RAG is reachable from the Hetzner host."
+          REMOTE
+
       - name: Verify Learning Advisor end to end
         shell: bash
         run: |
