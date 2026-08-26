@@ -5,24 +5,25 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Literal, Protocol
 from urllib.error import HTTPError
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, quote, urlparse
 from urllib.request import Request, urlopen
 
 from .settings import Settings
 
 RetrievalStrategy = Literal["vectorize", "lexical-fallback"]
 
-_ROUTE_SOURCE_PREFIXES = {
-    "/reference/qa-fundamentals": "qa-fundamentals",
-    "/learn/programming": "python-learning",
-    "/reference/programming": "python-learning",
-    "/learn/automation": "automation-learning",
-    "/learn/testing-tools": "testing-tools",
-    "/learn/cloud-devops": "cloud-devops",
-    "/learn/metrics-estimation": "metrics-estimation",
-    "/learn/data": "data-learning",
-    "/reference/data": "data-learning",
+_ALLOWED_LEARNING_ROUTES = {
+    "/reference/qa-fundamentals",
+    "/learn/programming",
+    "/reference/programming",
+    "/learn/automation",
+    "/learn/testing-tools",
+    "/learn/cloud-devops",
+    "/learn/metrics-estimation",
+    "/learn/data",
+    "/reference/data",
 }
+_ALLOWED_QUESTION_ROUTES = {"/interview", "/interview/python"}
 _RAG_USER_AGENT = "curl/8.10.1 GimmeJob-AI/1.0"
 
 
@@ -86,22 +87,37 @@ def _required_text(value: object, field: str, max_length: int) -> str:
     return cleaned
 
 
-def _ui_source_path(kind: str, ref_id: str, route: str | None) -> str:
-    """Translate canonical routes to the source-key format already understood by the UI.
+def _validated_learning_source_path(value: object, route_path: str) -> str:
+    source_path = _required_text(value, "sourcePath", 1_000)
+    parsed = urlparse(source_path)
+    if parsed.scheme or parsed.netloc or parsed.fragment or parsed.path != route_path:
+        raise ValueError("Canonical RAG returned an unsafe learning source path.")
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    if set(params) - {"topic", "section"}:
+        raise ValueError("Canonical RAG returned an unsupported learning source query.")
+    if not params.get("topic") and not params.get("section"):
+        raise ValueError("Canonical RAG learning source must identify a topic or section.")
+    if any(len(values) != 1 or not values[0].strip() for values in params.values()):
+        raise ValueError("Canonical RAG returned an invalid learning source query.")
+    return source_path
 
-    The Worker owns canonical product routes while the AI output contract deliberately keeps
-    opaque, non-URL source keys. This prevents the model from inventing arbitrary navigation
-    while preserving the existing allow-listed UI mapper.
+
+def _ui_source_path(kind: str, ref_id: str, route: str | None, canonical_source_path: object) -> str:
+    """Return an allow-listed, directly navigable GimmeJob content path.
+
+    Learning routes retain the canonical topic/section query produced by the Worker. Interview
+    questions receive the site's existing question deep-link query from the trusted ref id.
+    The model only sees these validated internal paths, so it never needs to invent navigation.
     """
 
     route_path = route.split("?", 1)[0] if route else ""
     if kind == "question":
-        prefix = "python-interview" if route_path == "/interview/python" else "interview"
-    else:
-        prefix = _ROUTE_SOURCE_PREFIXES.get(route_path)
-        if not prefix:
-            raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
-    return f"{prefix}/{ref_id}"
+        if route_path not in _ALLOWED_QUESTION_ROUTES:
+            raise ValueError("Canonical RAG returned a question route that the UI does not allow-list.")
+        return f"{route_path}?question={quote(ref_id, safe='')}"
+    if route_path not in _ALLOWED_LEARNING_ROUTES:
+        raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
+    return _validated_learning_source_path(canonical_source_path, route_path)
 
 
 def _parse_hit(value: object) -> RetrievalHit:
@@ -125,7 +141,7 @@ def _parse_hit(value: object) -> RetrievalHit:
         title=_required_text(value.get("title"), "title", 1_000),
         text=_required_text(value.get("text"), "text", 6_000),
         score=float(score),
-        source_path=_ui_source_path(kind, ref_id, route),
+        source_path=_ui_source_path(kind, ref_id, route, value.get("sourcePath")),
         route=route,
     )
 

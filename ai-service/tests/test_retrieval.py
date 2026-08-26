@@ -45,7 +45,7 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
             "results": results or [],
         }
 
-    async def test_client_maps_canonical_routes_to_ui_safe_source_keys(self) -> None:
+    async def test_client_preserves_direct_learning_paths_and_builds_question_deep_links(self) -> None:
         payload = self._payload(
             [
                 {
@@ -77,7 +77,7 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
                     "title": "Concurrency",
                     "text": "Compare threads, asyncio and processes.",
                     "score": 0.84,
-                    "sourcePath": "/learn/programming?topic=concurrency",
+                    "sourcePath": "/learn/programming?topic=concurrency-models",
                     "route": "/learn/programming",
                     "metadata": {"catalog": "python"},
                 },
@@ -94,32 +94,52 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
             result = await client.search("Python parallelism", "en", limit=20)
 
         self.assertEqual(result.strategy, "vectorize")
-        self.assertEqual(result.hits[0].source_path, "python-interview/parallelism")
-        self.assertEqual(result.hits[1].source_path, "interview/test-design")
-        self.assertEqual(result.hits[2].source_path, "python-learning/concurrency")
+        self.assertEqual(result.hits[0].source_path, "/interview/python?question=parallelism")
+        self.assertEqual(result.hits[1].source_path, "/interview?question=test-design")
+        self.assertEqual(result.hits[2].source_path, "/learn/programming?topic=concurrency-models")
         self.assertEqual(captured_headers["X-gimmejob-rag-token"], "rag-token")
         self.assertEqual(captured_headers["User-agent"], "curl/8.10.1 GimmeJob-AI/1.0")
 
-    async def test_client_rejects_unallowlisted_learning_route(self) -> None:
-        payload = self._payload(
-            [
-                {
-                    "id": "l:unknown",
-                    "refId": "unknown",
-                    "kind": "learning",
-                    "title": "Unknown",
-                    "text": "Unknown learning material.",
-                    "score": 0.7,
-                    "route": "/learn/not-allowed",
-                }
-            ]
-        )
+    async def test_client_rejects_unallowlisted_or_mismatched_learning_paths(self) -> None:
+        invalid_results = [
+            {
+                "id": "l:unknown",
+                "refId": "unknown",
+                "kind": "learning",
+                "title": "Unknown",
+                "text": "Unknown learning material.",
+                "score": 0.7,
+                "sourcePath": "/learn/not-allowed?topic=unknown",
+                "route": "/learn/not-allowed",
+            },
+            {
+                "id": "l:mismatch",
+                "refId": "mismatch",
+                "kind": "learning",
+                "title": "Mismatch",
+                "text": "Mismatched source route.",
+                "score": 0.7,
+                "sourcePath": "/learn/testing-tools?topic=mismatch",
+                "route": "/learn/programming",
+            },
+            {
+                "id": "l:missing-topic",
+                "refId": "missing-topic",
+                "kind": "learning",
+                "title": "Missing topic",
+                "text": "Missing direct topic identifier.",
+                "score": 0.7,
+                "sourcePath": "/learn/programming",
+                "route": "/learn/programming",
+            },
+        ]
         client = CanonicalRagClient(self._settings())
-        with (
-            patch("gimmejob_ai.retrieval.urlopen", return_value=_FakeResponse(payload)),
-            self.assertRaises(ValueError),
-        ):
-            await client.search("unknown", "en")
+        for result in invalid_results:
+            with self.subTest(result=result["id"]), patch(
+                "gimmejob_ai.retrieval.urlopen",
+                return_value=_FakeResponse(self._payload([result])),
+            ), self.assertRaises(ValueError):
+                await client.search("unknown", "en")
 
     async def test_client_rejects_invalid_json_and_unsuccessful_payloads(self) -> None:
         client = CanonicalRagClient(self._settings())

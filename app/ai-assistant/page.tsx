@@ -3,7 +3,7 @@ import LearningPathAdvisor from "./learning-path-advisor";
 
 export const metadata: Metadata = {
   title: "Learning Path Advisor | GimmeJob",
-  description: "Build a source-backed learning map from GimmeJob's Git-versioned knowledge with an observable LangGraph workflow.",
+  description: "Build a focused learning path from GimmeJob materials and relevant interview questions.",
   robots: { index: false, follow: false, nocache: true },
 };
 

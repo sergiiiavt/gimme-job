@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { SiteSidebar } from "../site-navigation";
 import {
@@ -35,30 +34,18 @@ type LearningMapNode = {
   durationMinutes: number | null;
 };
 
-type LearningMapEdge = {
-  source: string;
-  target: string;
-  label: string;
-};
-
 type LearningMap = {
   title: string;
   nodes: LearningMapNode[];
-  edges: LearningMapEdge[];
 };
 
 export type LearningPathApiResponse = {
   requestId: string;
   sessionId: string;
-  model: string;
-  langfuseTracing: boolean;
-  orchestration: "langgraph";
   retrievalMode: "repository" | "general";
-  workflowSteps: Array<{ id: string; label: string; detail: string }>;
   response: {
     answer: string;
     cards: AdvisorCard[];
-    sources: string[];
     suggestedPrompts: string[];
     learningMap: LearningMap;
   };
@@ -69,22 +56,41 @@ type DisplayMessage = RequestMessage & {
   result?: LearningPathApiResponse;
 };
 
+type Recommendation = {
+  key: string;
+  title: string;
+  summary: string;
+  href: string;
+  durationMinutes: number | null;
+};
+
 const MAX_REQUEST_MESSAGES = 20;
 const MAX_DISPLAY_MESSAGES = 24;
-const MAX_WORKFLOW_STEPS = 8;
-const MAX_CARDS = 6;
-const MAX_SOURCES = 8;
+const MAX_CARDS = 12;
 const MAX_SUGGESTED_PROMPTS = 6;
 const MAX_MAP_NODES = 8;
-const MAX_MAP_EDGES = 12;
 
 const SAMPLE_PROMPTS = [
   "Python parallelism",
-  "Build me a path from API testing to contract testing",
-  "Help me learn asyncio for test automation",
+  "API testing to contract testing",
+  "Asyncio for test automation",
 ];
 
-const SAFE_SOURCE_ROUTES: Array<{ prefix: string; href: string }> = [
+const SAFE_INTERNAL_PATHS = new Set([
+  "/reference/qa-fundamentals",
+  "/learn/programming",
+  "/reference/programming",
+  "/learn/automation",
+  "/learn/testing-tools",
+  "/learn/cloud-devops",
+  "/learn/metrics-estimation",
+  "/learn/data",
+  "/reference/data",
+  "/interview",
+  "/interview/python",
+]);
+
+const LEGACY_SOURCE_ROUTES: Array<{ prefix: string; href: string }> = [
   { prefix: "python-learning/", href: "/reference/programming" },
   { prefix: "python-interview/", href: "/interview/python" },
   { prefix: "interview/", href: "/interview" },
@@ -95,21 +101,6 @@ const SAFE_SOURCE_ROUTES: Array<{ prefix: string; href: string }> = [
   { prefix: "metrics-estimation/", href: "/learn/metrics-estimation" },
   { prefix: "data-learning/", href: "/reference/data" },
 ];
-
-const cardLabels: Record<CardKind, string> = {
-  knowledge: "Knowledge",
-  learning: "Learn",
-  interview: "Practice",
-  hint: "Hint",
-};
-
-const nodeKindClasses: Record<MapNodeKind, string> = {
-  topic: styles.nodeTopic,
-  foundation: styles.nodeFoundation,
-  concept: styles.nodeConcept,
-  practice: styles.nodePractice,
-  source: styles.nodeSource,
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -127,29 +118,18 @@ function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse
   if (!isRecord(value) || !isRecord(value.response)) return null;
   const requestId = nonEmptyString(value.requestId);
   const sessionId = nonEmptyString(value.sessionId);
-  const model = nonEmptyString(value.model);
   const answer = nonEmptyString(value.response.answer);
   const learningMap = value.response.learningMap;
   if (
     !requestId
     || !sessionId
-    || !model
     || !answer
-    || typeof value.langfuseTracing !== "boolean"
-    || value.orchestration !== "langgraph"
     || (value.retrievalMode !== "repository" && value.retrievalMode !== "general")
     || !isRecord(learningMap)
   ) return null;
 
   const cardKinds = new Set<CardKind>(["knowledge", "learning", "interview", "hint"]);
   const nodeKinds = new Set<MapNodeKind>(["topic", "foundation", "concept", "practice", "source"]);
-  const workflowSteps = Array.isArray(value.workflowSteps) ? value.workflowSteps.flatMap((item) => {
-    if (!isRecord(item)) return [];
-    const id = nonEmptyString(item.id);
-    const label = nonEmptyString(item.label);
-    const detail = nonEmptyString(item.detail);
-    return id && label && detail ? [{ id, label, detail }] : [];
-  }).slice(0, MAX_WORKFLOW_STEPS) : [];
   const cards = Array.isArray(value.response.cards) ? value.response.cards.flatMap((item) => {
     if (!isRecord(item)) return [];
     const kind = item.kind as CardKind;
@@ -159,9 +139,6 @@ function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse
       ? [{ kind, title, summary, sourcePath: optionalSourcePath(item.sourcePath) }]
       : [];
   }).slice(0, MAX_CARDS) : [];
-  const sources = Array.isArray(value.response.sources)
-    ? value.response.sources.flatMap((item) => nonEmptyString(item) ?? []).slice(0, MAX_SOURCES)
-    : [];
   const suggestedPrompts = Array.isArray(value.response.suggestedPrompts)
     ? value.response.suggestedPrompts.flatMap((item) => nonEmptyString(item) ?? []).slice(0, MAX_SUGGESTED_PROMPTS)
     : [];
@@ -172,156 +149,139 @@ function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse
     const summary = nonEmptyString(item.summary);
     const kind = item.kind as MapNodeKind;
     const duration = typeof item.durationMinutes === "number" && Number.isFinite(item.durationMinutes)
-      ? Math.max(0, Math.round(item.durationMinutes))
+      ? Math.max(1, Math.round(item.durationMinutes))
       : null;
     return id && title && summary && nodeKinds.has(kind)
       ? [{ id, title, summary, kind, sourcePath: optionalSourcePath(item.sourcePath), durationMinutes: duration }]
       : [];
   }).slice(0, MAX_MAP_NODES) : [];
-  const nodeIds = new Set(nodes.map((node) => node.id));
-  const edges = Array.isArray(learningMap.edges) ? learningMap.edges.flatMap((item) => {
-    if (!isRecord(item)) return [];
-    const source = nonEmptyString(item.source);
-    const target = nonEmptyString(item.target);
-    const label = nonEmptyString(item.label);
-    return source && target && source !== target && label && nodeIds.has(source) && nodeIds.has(target)
-      ? [{ source, target, label }]
-      : [];
-  }).slice(0, MAX_MAP_EDGES) : [];
 
   return {
     requestId,
     sessionId,
-    model,
-    langfuseTracing: value.langfuseTracing,
-    orchestration: "langgraph",
     retrievalMode: value.retrievalMode,
-    workflowSteps,
     response: {
       answer,
       cards,
-      sources,
       suggestedPrompts,
       learningMap: {
-        title: nonEmptyString(learningMap.title) ?? "Learning map",
+        title: nonEmptyString(learningMap.title) ?? "Learning path",
         nodes,
-        edges,
       },
     },
   };
 }
 
+function queryKeysAllowed(pathname: string, keys: string[]): boolean {
+  const allowed = pathname.startsWith("/interview")
+    ? new Set(["question", "topic"])
+    : new Set(["topic", "section"]);
+  return keys.every((key) => allowed.has(key));
+}
+
 export function sourcePathToHref(sourcePath: string | null): string | null {
   if (!sourcePath) return null;
-  let normalized = sourcePath.trim().replaceAll("\\", "/").replace(/^\.\/+/, "");
+  const trimmed = sourcePath.trim();
+  if (!trimmed || trimmed.includes("\\") || trimmed.includes("\0")) return null;
+
+  if (trimmed.startsWith("/")) {
+    if (trimmed.startsWith("//")) return null;
+    try {
+      const base = "https://gimme-job.invalid";
+      const url = new URL(trimmed, base);
+      if (url.origin !== base || url.hash || !SAFE_INTERNAL_PATHS.has(url.pathname)) return null;
+      const keys = [...url.searchParams.keys()];
+      if (!queryKeysAllowed(url.pathname, keys)) return null;
+      if ([...url.searchParams.values()].some((value) => !value.trim())) return null;
+      return `${url.pathname}${url.search}`;
+    } catch {
+      return null;
+    }
+  }
+
+  let normalized = trimmed.replaceAll("\\", "/").replace(/^\.\/+/, "");
   if (normalized.startsWith("content/")) normalized = normalized.slice("content/".length);
   if (!normalized || normalized.startsWith("/") || normalized.includes("..") || normalized.includes(":") || normalized.includes("//")) return null;
-  return SAFE_SOURCE_ROUTES.find((entry) => normalized.startsWith(entry.prefix))?.href ?? null;
+  return LEGACY_SOURCE_ROUTES.find((entry) => normalized.startsWith(entry.prefix))?.href ?? null;
 }
 
-function sourceLabel(sourcePath: string): string {
-  const normalized = sourcePath.replaceAll("\\", "/");
-  return normalized.split("/").findLast((segment) => segment.length > 0) ?? sourcePath;
+function isInterviewHref(href: string): boolean {
+  return href === "/interview" || href.startsWith("/interview?") || href === "/interview/python" || href.startsWith("/interview/python?");
 }
 
-function SourceLink({ sourcePath }: Readonly<{ sourcePath: string }>) {
-  const href = sourcePathToHref(sourcePath);
-  return href ? (
-    <Link className={styles.sourceLink} href={href} title={sourcePath}>
-      <span>{sourceLabel(sourcePath)}</span><b aria-hidden="true">↗</b>
-    </Link>
-  ) : <span className={styles.sourceUnavailable} title={sourcePath}>{sourceLabel(sourcePath)}</span>;
+function recommendations(result: LearningPathApiResponse) {
+  const learning: Recommendation[] = [];
+  const interview: Recommendation[] = [];
+  const seen = new Set<string>();
+
+  const add = (item: Recommendation) => {
+    const identity = `${item.href}|${item.title.toLowerCase()}`;
+    if (seen.has(identity)) return;
+    seen.add(identity);
+    (isInterviewHref(item.href) ? interview : learning).push(item);
+  };
+
+  result.response.learningMap.nodes.forEach((node) => {
+    const href = sourcePathToHref(node.sourcePath);
+    if (!href) return;
+    add({
+      key: `node-${node.id}`,
+      title: node.title,
+      summary: node.summary,
+      href,
+      durationMinutes: node.durationMinutes,
+    });
+  });
+
+  result.response.cards.forEach((card, index) => {
+    const href = sourcePathToHref(card.sourcePath);
+    if (!href) return;
+    add({
+      key: `card-${card.kind}-${index}-${href}`,
+      title: card.title,
+      summary: card.summary,
+      href,
+      durationMinutes: null,
+    });
+  });
+
+  return { learning: learning.slice(0, 8), interview: interview.slice(0, 8) };
 }
 
-function ExecutionEvidence({ result }: Readonly<{ result: LearningPathApiResponse }>) {
-  const repositoryRetrieval = result.retrievalMode === "repository";
+function ContentLink({ href, interview }: Readonly<{ href: string; interview: boolean }>) {
   return (
-    <section aria-label="AI execution evidence" className={styles.executionPanel}>
-      <div className={styles.executionHeading}>
-        <div><span>Execution</span><h3>How this answer was built</h3></div>
-        <small>{result.model}</small>
-      </div>
-      <div className={styles.technologyGrid}>
-        <article><span>01</span><strong>LangGraph</strong><small>{result.orchestration === "langgraph" ? "Workflow executed" : "Not reported"}</small></article>
-        <article><span>02</span><strong>{repositoryRetrieval ? "Git-backed retrieval" : "General model knowledge"}</strong><small>{repositoryRetrieval ? `${result.response.sources.length} repository sources` : "Repository match not used"}</small></article>
-        <article><span>03</span><strong>LangChain</strong><small>Structured output validated</small></article>
-        <article className={result.langfuseTracing ? styles.traceActive : styles.traceInactive}><span>04</span><strong>Langfuse</strong><small>{result.langfuseTracing ? "Tracing enabled" : "Not traced / not configured"}</small></article>
-      </div>
-      {result.workflowSteps.length > 0 && (
-        <ol aria-label="LangGraph workflow steps" className={styles.workflow}>
-          {result.workflowSteps.map((step, index) => (
-            <li key={step.id}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div><strong>{step.label}</strong><small>{step.detail}</small></div>
-              {index < result.workflowSteps.length - 1 && <b aria-hidden="true">→</b>}
-            </li>
-          ))}
-        </ol>
-      )}
-      <p className={styles.executionMeta}>Request {result.requestId.slice(0, 12)} · Session {result.sessionId.slice(0, 12)}</p>
-    </section>
+    <a
+      className={styles.contentLink}
+      href={href}
+      rel="noreferrer"
+      target="_blank"
+      title={interview ? "Open interview question in a new tab" : "Open learning topic in a new tab"}
+    >
+      {interview ? "Open question" : "Open topic"}
+    </a>
   );
 }
 
-function LearningMapView({ learningMap }: Readonly<{ learningMap: LearningMap }>) {
-  const nodes = learningMap.nodes.slice(0, MAX_MAP_NODES);
-  const nodeById = new Map(nodes.map((node) => [node.id, node]));
-  const edges = learningMap.edges
-    .filter((edge) => edge.source !== edge.target && nodeById.has(edge.source) && nodeById.has(edge.target))
-    .slice(0, MAX_MAP_EDGES);
-
+function RecommendationList({ interview = false, items }: Readonly<{
+  interview?: boolean;
+  items: Recommendation[];
+}>) {
   return (
-    <section aria-label={`Connected learning map: ${learningMap.title}`} className={styles.mapPanel}>
-      <header className={styles.mapHeader}>
-        <div><span>Connected learning map</span><h3>{learningMap.title}</h3></div>
-        <small>{nodes.length} nodes · {edges.length} relationships</small>
-      </header>
-
-      {edges.length > 0 && (
-        <div aria-hidden="true" className={styles.edgeCanvas}>
-          {edges.map((edge, index) => {
-            const source = nodeById.get(edge.source) as LearningMapNode;
-            const target = nodeById.get(edge.target) as LearningMapNode;
-            return (
-              <div className={styles.edgeFlow} key={`${edge.source}-${edge.target}-${index}`}>
-                <span className={styles.edgeNode}>{source.title}</span>
-                <span className={styles.edgeArrow}><small>{edge.label}</small><b>→</b></span>
-                <span className={styles.edgeNode}>{target.title}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className={styles.nodeGrid}>
-        {nodes.map((node, index) => (
-          <article className={`${styles.node} ${nodeKindClasses[node.kind]}`} key={node.id}>
-            <div className={styles.nodeTopline}>
-              <span>{String(index + 1).padStart(2, "0")} · {node.kind}</span>
-              {node.durationMinutes !== null && <small>{node.durationMinutes} min</small>}
+    <ol className={styles.recommendationList}>
+      {items.map((item, index) => (
+        <li key={item.key}>
+          <span className={styles.stepNumber}>{String(index + 1).padStart(2, "0")}</span>
+          <div className={styles.recommendationCopy}>
+            <div className={styles.recommendationTitle}>
+              <h4>{item.title}</h4>
+              {item.durationMinutes !== null && <small>{item.durationMinutes} min</small>}
             </div>
-            <h4>{node.title}</h4>
-            <p>{node.summary}</p>
-            {node.sourcePath && <SourceLink sourcePath={node.sourcePath}/>}
-          </article>
-        ))}
-      </div>
-
-      {edges.length > 0 && (
-        <details className={styles.relationships}>
-          <summary>Relationship list</summary>
-          <ol>
-            {edges.map((edge, index) => (
-              <li key={`${edge.source}-${edge.target}-accessible-${index}`}>
-                <strong>{nodeById.get(edge.source)?.title}</strong>
-                <span>{edge.label}</span>
-                <strong>{nodeById.get(edge.target)?.title}</strong>
-              </li>
-            ))}
-          </ol>
-        </details>
-      )}
-    </section>
+            <p>{item.summary}</p>
+          </div>
+          <ContentLink href={item.href} interview={interview}/>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -330,42 +290,47 @@ export function LearningPathResponseView({ busy = false, onSuggestedPrompt, resu
   onSuggestedPrompt?: (prompt: string) => void;
   result: LearningPathApiResponse;
 }>) {
-  const cards = result.response.cards.slice(0, MAX_CARDS);
-  const sources = [...new Set(result.response.sources)].slice(0, MAX_SOURCES);
+  const { learning, interview } = recommendations(result);
   const prompts = result.response.suggestedPrompts.slice(0, MAX_SUGGESTED_PROMPTS);
+
   return (
     <div className={styles.assistantResponse}>
-      <div className={styles.assistantLabel}><span aria-hidden="true">AI</span><strong>Learning Path Advisor</strong></div>
-      <p className={styles.answerText}>{result.response.answer}</p>
-      <ExecutionEvidence result={result}/>
-      <LearningMapView learningMap={result.response.learningMap}/>
+      <div className={styles.responseIntro}>
+        <span>Learning Path Advisor</span>
+        <h2>{result.response.learningMap.title}</h2>
+        <p>{result.response.answer}</p>
+      </div>
 
-      {cards.length > 0 && (
-        <section aria-label="Recommended learning cards" className={styles.cardGrid}>
-          {cards.map((card, index) => (
-            <article key={`${card.kind}-${card.title}-${index}`}>
-              <span>{cardLabels[card.kind]}</span>
-              <h3>{card.title}</h3>
-              <p>{card.summary}</p>
-              {card.sourcePath && <SourceLink sourcePath={card.sourcePath}/>}
-            </article>
-          ))}
+      {learning.length > 0 && (
+        <section aria-label="Learning path from GimmeJob materials" className={styles.recommendationSection}>
+          <header className={styles.sectionHeader}>
+            <div><span>Learning path</span><h3>GimmeJob materials</h3></div>
+            <small>{learning.length} {learning.length === 1 ? "topic" : "topics"}</small>
+          </header>
+          <RecommendationList items={learning}/>
         </section>
       )}
 
-      {sources.length > 0 && (
-        <section aria-label="GimmeJob sources" className={styles.sources}>
-          <strong>Sources used</strong>
-          <div>{sources.map((source) => <SourceLink key={source} sourcePath={source}/>)}</div>
+      {interview.length > 0 && (
+        <section aria-label="Relevant interview questions" className={styles.recommendationSection}>
+          <header className={styles.sectionHeader}>
+            <div><span>Practice</span><h3>Interview questions</h3></div>
+            <small>{interview.length} {interview.length === 1 ? "question" : "questions"}</small>
+          </header>
+          <RecommendationList interview items={interview}/>
         </section>
+      )}
+
+      {result.retrievalMode === "repository" && learning.length === 0 && interview.length === 0 && (
+        <p className={styles.noLinks}>Relevant GimmeJob material was found, but no direct topic link was returned. Try a narrower topic.</p>
       )}
 
       {prompts.length > 0 && (
         <section aria-label="Suggested follow-up prompts" className={styles.followUps}>
-          <strong>Explore next</strong>
+          <span>Continue with</span>
           <div>
             {prompts.map((prompt) => (
-              <button disabled={busy} key={prompt} onClick={() => onSuggestedPrompt?.(prompt)} type="button">{prompt}<span aria-hidden="true">→</span></button>
+              <button disabled={busy} key={prompt} onClick={() => onSuggestedPrompt?.(prompt)} type="button">{prompt}</button>
             ))}
           </div>
         </section>
@@ -410,7 +375,6 @@ export default function LearningPathAdvisor() {
   const [sessionId, setSessionId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [authRequired, setAuthRequired] = useState(false);
 
   function selectAssistantTopic(topic: string) {
     setMobileNav(false);
@@ -431,7 +395,6 @@ export default function LearningPathAdvisor() {
     setDraft("");
     setBusy(true);
     setError("");
-    setAuthRequired(false);
 
     try {
       const response = await fetch("/api/ai/learning-path", {
@@ -444,11 +407,7 @@ export default function LearningPathAdvisor() {
         body: JSON.stringify({ messages: requestMessages, ...(sessionId ? { sessionId } : {}) }),
       });
       const payload = await response.json().catch(() => null) as unknown;
-      if (!response.ok) {
-        const requestError = new Error(apiErrorMessage(payload, "The Learning Path Advisor is temporarily unavailable.")) as Error & { status?: number };
-        requestError.status = response.status;
-        throw requestError;
-      }
+      if (!response.ok) throw new Error(apiErrorMessage(payload, "The Learning Path Advisor is temporarily unavailable."));
       const result = normalizedLearningPathResponse(payload);
       if (!result) throw new Error("The Learning Path Advisor returned an invalid response.");
 
@@ -461,15 +420,9 @@ export default function LearningPathAdvisor() {
       setSessionId(result.sessionId);
       setMessages([...pendingMessages, assistantMessage].slice(-MAX_DISPLAY_MESSAGES));
     } catch (requestError) {
-      const typed = requestError as Error & { status?: number };
       setMessages(previousMessages);
       setDraft(prompt);
-      if (typed.status === 401) {
-        setAuthRequired(true);
-        setError("");
-      } else {
-        setError(typed.message || "The Learning Path Advisor is temporarily unavailable.");
-      }
+      setError(requestError instanceof Error ? requestError.message : "The Learning Path Advisor is temporarily unavailable.");
     } finally {
       setBusy(false);
     }
@@ -480,7 +433,6 @@ export default function LearningPathAdvisor() {
     setSessionId("");
     setDraft("");
     setError("");
-    setAuthRequired(false);
   }
 
   return (
@@ -500,27 +452,25 @@ export default function LearningPathAdvisor() {
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero} style={{ gap: 0, gridTemplateColumns: "1fr", marginBottom: 12, paddingBottom: 12 }}>
-            <div>
-              <p style={{ marginBottom: 6 }}>GimmeJob AI</p>
-              <h1 style={{ fontSize: "clamp(24px, 2.8vw, 30px)" }}>Learning paths</h1>
-              <span style={{ lineHeight: 1.45, marginTop: 6 }}>Build a source-backed path for any topic.</span>
-            </div>
+          <header className={styles.hero}>
+            <span>Learning</span>
+            <h1>Learning Path Advisor</h1>
+            <p>Build a focused path from materials already available on GimmeJob.</p>
           </header>
 
           <section aria-label="Learning Path Advisor chat" className={styles.chat}>
             <div className={styles.chatTopline}>
-              <div><i aria-hidden="true"/><span>{busy ? "Building your map…" : "Ready for a learning topic"}</span></div>
-              {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New conversation</button>}
+              <span>{busy ? "Building your path…" : "Ready"}</span>
+              {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New path</button>}
             </div>
 
             <div aria-live="polite" className={styles.conversation}>
               {messages.length === 0 && !busy && (
                 <section className={styles.emptyState}>
-                  <div className={styles.emptyMark} aria-hidden="true"><span/><span/><span/></div>
-                  <p>Start with a skill, concept, or gap. The result is a navigable map rather than a wall of generated text.</p>
+                  <h2>What do you want to learn?</h2>
+                  <p>Choose a topic. The advisor will organize relevant site materials first and interview practice second.</p>
                   <div>
-                    {SAMPLE_PROMPTS.map((prompt) => <button key={prompt} onClick={() => void sendPrompt(prompt)} type="button">{prompt}<span aria-hidden="true">↗</span></button>)}
+                    {SAMPLE_PROMPTS.map((prompt) => <button key={prompt} onClick={() => void sendPrompt(prompt)} type="button">{prompt}</button>)}
                   </div>
                 </section>
               )}
@@ -535,20 +485,14 @@ export default function LearningPathAdvisor() {
               ))}
 
               {busy && (
-                <output aria-label="Building a source-backed learning map" className={styles.loading}>
+                <output aria-label="Building a learning path from GimmeJob materials" className={styles.loading}>
                   <span aria-hidden="true"><i/><i/><i/></span>
-                  <div><strong>Building your connected learning map</strong><small>Running the workflow and retrieving relevant GimmeJob material…</small></div>
+                  <div><strong>Building your learning path</strong><small>Finding the most relevant GimmeJob topics and interview questions.</small></div>
                 </output>
               )}
             </div>
 
-            {authRequired && (
-              <div className={styles.authBanner} role="alert">
-                <div><strong>Sign in to continue.</strong><span>Public access is enabled; this fallback only appears if the session cannot be authorized upstream.</span></div>
-                <Link href="/login">Sign in</Link>
-              </div>
-            )}
-            {error && <div className={styles.errorBanner} role="alert"><strong>Could not build the learning map.</strong><span>{error}</span></div>}
+            {error && <div className={styles.errorBanner} role="alert"><strong>Could not build the learning path.</strong><span>{error}</span></div>}
 
             <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void sendPrompt(draft); }}>
               <label className={styles.visuallyHidden} htmlFor="learning-path-prompt">Ask the Learning Path Advisor</label>
@@ -564,13 +508,13 @@ export default function LearningPathAdvisor() {
                     event.currentTarget.form?.requestSubmit();
                   }
                 }}
-                placeholder="Ask about a topic — for example, Python parallelism"
+                placeholder="For example: Python parallelism"
                 rows={2}
                 value={draft}
               />
               <div>
                 <span id="learning-path-prompt-help">Enter to send · Shift + Enter for a new line</span>
-                <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build learning map"}<b aria-hidden="true">→</b></button>
+                <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build path"}</button>
               </div>
             </form>
           </section>
