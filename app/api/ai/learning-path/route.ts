@@ -1,5 +1,3 @@
-import { tenantRequestContext } from "../../_tenant-state.ts";
-
 type LearningPathAiEnv = {
   GIMMEJOB_AI_URL?: string;
   GIMMEJOB_AI_SERVICE_TOKEN?: string;
@@ -302,10 +300,6 @@ async function callAi(env: LearningPathAiEnv, messages: ChatMessage[], sessionId
 }
 
 export async function handleLearningPathAi(request: Request, env: LearningPathAiEnv): Promise<Response> {
-  const tenant = tenantRequestContext(request);
-  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId)) {
-    return json({ error: "Authentication required." }, 401);
-  }
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405, { allow: "POST" });
 
   let input: unknown;
