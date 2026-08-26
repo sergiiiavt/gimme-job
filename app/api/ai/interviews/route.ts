@@ -389,6 +389,10 @@ async function progressView(env: InterviewAiEnv, userId: string | null): Promise
 
 export async function handleInterviewAi(request: Request, env: InterviewAiEnv): Promise<Response> {
   const tenant = tenantRequestContext(request);
+  const ephemeral = request.headers.get("x-gimmejob-session-scope") === "ephemeral";
+  if (tenant.multiUser && (!tenant.authenticated || !tenant.userId) && !ephemeral) {
+    return json({ error: "Authentication required." }, 401);
+  }
   const userId = tenant.multiUser && tenant.authenticated && tenant.userId ? tenant.userId : null;
 
   if (request.method === "GET") return progressView(env, userId);
