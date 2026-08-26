@@ -113,8 +113,8 @@ export default function IstqbAiTestingPage() {
                 <MarkdownDocument markdown={activeModule.markdown}/>
 
                 {activeModule.videos?.length ? (
-                  <section id="recommended-videos">
-                    <h2>Recommended videos</h2>
+                  <section>
+                    <h2 id="recommended-videos">Recommended videos</h2>
                     <p>Use these as visual reinforcement after reading the chapter. The ISTQB syllabus remains the exam authority.</p>
                     {activeModule.videos.map((video) => (
                       <LearningVideo
