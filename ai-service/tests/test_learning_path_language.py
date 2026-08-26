@@ -18,7 +18,7 @@ def test_explicit_english_overrides_earlier_ukrainian_messages() -> None:
     ]
 
     assert _language_for(messages) == "en"
-    assert _contextual_query(messages) == "compare it with threads"
+    assert _contextual_query(messages) == "Поясни asyncio\nFollow-up: compare it with threads"
 
 
 def test_explicit_ukrainian_overrides_english_conversation() -> None:
