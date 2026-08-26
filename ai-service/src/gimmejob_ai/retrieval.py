@@ -23,6 +23,7 @@ _ROUTE_SOURCE_PREFIXES = {
     "/learn/data": "data-learning",
     "/reference/data": "data-learning",
 }
+_RAG_USER_AGENT = "curl/8.10.1 GimmeJob-AI/1.0"
 
 
 @dataclass(frozen=True)
@@ -155,6 +156,7 @@ class CanonicalRagClient:
             headers={
                 "content-type": "application/json",
                 "accept": "application/json",
+                "user-agent": _RAG_USER_AGENT,
                 "x-gimmejob-rag-token": self.token,
             },
         )
@@ -162,7 +164,11 @@ class CanonicalRagClient:
             with urlopen(request, timeout=self.timeout) as response:  # noqa: S310 - URL is validated/configured
                 raw = response.read(256_000)
         except HTTPError as error:
-            raise RuntimeError(f"Canonical RAG request failed with HTTP {error.code}.") from error
+            cf_ray = error.headers.get("cf-ray") if error.headers else None
+            detail = f"Canonical RAG request failed with HTTP {error.code}"
+            if cf_ray:
+                detail += f" (Cloudflare ray {cf_ray[:80]})"
+            raise RuntimeError(f"{detail}.") from error
         except OSError as error:
             raise RuntimeError("Canonical RAG service is unavailable.") from error
 
