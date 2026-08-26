@@ -7,7 +7,6 @@ import { createServer } from "vite";
 import react from "@vitejs/plugin-react";
 
 const SIDEBAR_ID = "\0learning-path-advisor-sidebar";
-const LINK_ID = "\0learning-path-advisor-link";
 const COMPONENT_SUFFIX = "/app/ai-assistant/learning-path-advisor.tsx";
 
 const testDoubles = {
@@ -16,7 +15,6 @@ const testDoubles = {
   resolveId(id, importer) {
     if (!importer?.endsWith(COMPONENT_SUFFIX)) return null;
     if (id === "../site-navigation") return SIDEBAR_ID;
-    if (id === "next/link") return LINK_ID;
     return null;
   },
   load(id) {
@@ -29,14 +27,6 @@ const testDoubles = {
             "data-active-subsection": props.activeSubsection,
             "data-secondary-labels": props.secondaryItems.map((item) => item.label).join("|"),
           });
-        }
-      `;
-    }
-    if (id === LINK_ID) {
-      return `
-        import { jsx } from "react/jsx-runtime";
-        export default function Link({ href, children, ...props }) {
-          return jsx("a", { ...props, href, children });
         }
       `;
     }
@@ -59,38 +49,51 @@ const { default: LearningPathAdvisor, LearningPathResponseView, sourcePathToHref
 const repositoryResult = {
   requestId: "request-1234567890",
   sessionId: "session-1234567890",
-  model: "gpt-test",
-  langfuseTracing: true,
-  orchestration: "langgraph",
   retrievalMode: "repository",
-  workflowSteps: [
-    { id: "understand", label: "Understand topic", detail: "Normalize the requested skill." },
-    { id: "retrieve", label: "Retrieve Git knowledge", detail: "Search repository content." },
-    { id: "compose", label: "Build learning map", detail: "Connect concepts and practice." },
-  ],
   response: {
-    answer: "Start by separating concurrency from true parallel execution.",
+    answer: "Start with the core concurrency model, then validate it with interview practice.",
     cards: [
-      { kind: "learning", title: "Concurrency models", summary: "Compare threads, processes, and asyncio.", sourcePath: "python-learning/advanced-lessons.json" },
-      { kind: "interview", title: "Practice the distinction", summary: "Explain the choice for CPU- and I/O-bound work.", sourcePath: "python-interview/concurrency-qa.json" },
-    ],
-    sources: [
-      "python-learning/advanced-lessons.json",
-      "python-interview/concurrency-qa.json",
+      {
+        kind: "learning",
+        title: "Concurrency models",
+        summary: "Compare threads, processes, and asyncio.",
+        sourcePath: "/learn/programming?topic=concurrency-models",
+      },
+      {
+        kind: "interview",
+        title: "Practice the distinction",
+        summary: "Explain the choice for CPU- and I/O-bound work.",
+        sourcePath: "/interview/python?question=py-concurrency-01",
+      },
     ],
     suggestedPrompts: ["Compare threading and multiprocessing", "Quiz me on asyncio"],
     learningMap: {
       title: "Python parallelism learning path",
       nodes: [
-        { id: "topic", title: "Concurrency vs parallelism", summary: "Learn the vocabulary first.", kind: "topic", sourcePath: "python-learning/taxonomy.json", durationMinutes: 5 },
-        { id: "gil", title: "CPython and the GIL", summary: "Understand the default runtime constraint.", kind: "foundation", sourcePath: "python-learning/expert-lessons.json", durationMinutes: 12 },
-        { id: "models", title: "Threads, processes, asyncio", summary: "Choose a model from workload behavior.", kind: "concept", sourcePath: "python-interview/concurrency-qa.json", durationMinutes: 15 },
-        { id: "practice", title: "Workload decision practice", summary: "Apply the model to real scenarios.", kind: "practice", sourcePath: "python-interview/concurrency-qa.json", durationMinutes: 10 },
-      ],
-      edges: [
-        { source: "topic", target: "gil", label: "establishes" },
-        { source: "gil", target: "models", label: "informs" },
-        { source: "models", target: "practice", label: "apply with" },
+        {
+          id: "topic",
+          title: "Concurrency vs parallelism",
+          summary: "Learn the vocabulary first.",
+          kind: "topic",
+          sourcePath: "/learn/programming?topic=concurrency-basics",
+          durationMinutes: 5,
+        },
+        {
+          id: "gil",
+          title: "CPython and the GIL",
+          summary: "Understand the default runtime constraint.",
+          kind: "foundation",
+          sourcePath: "/learn/programming?topic=gil",
+          durationMinutes: 12,
+        },
+        {
+          id: "practice",
+          title: "Parallelism interview question",
+          summary: "Apply the model to a real interview scenario.",
+          kind: "practice",
+          sourcePath: "/interview/python?question=py-parallelism-02",
+          durationMinutes: 10,
+        },
       ],
     },
   },
@@ -100,112 +103,78 @@ test.after(async () => {
   await server.close();
 });
 
-test("renders the AI Assistant shell and source-backed sample prompt", () => {
+test("renders the public AI Assistant shell and content-first prompt", () => {
   const html = renderToStaticMarkup(React.createElement(LearningPathAdvisor));
 
   assert.match(html, /Learning Path Advisor/);
+  assert.match(html, /materials already available on GimmeJob/);
   assert.match(html, /Python parallelism/);
   assert.match(html, /Ask the Learning Path Advisor/);
   assert.match(html, /data-active-external="ai-assistant"/);
   assert.match(html, /data-active-subsection="learning-path-advisor"/);
   assert.match(html, /Interactive interview\|Learning Path Advisor/);
+  assert.doesNotMatch(html, /Sign in to continue/);
 });
 
-test("renders connected graph evidence, repository sources, and observable execution", () => {
+test("renders learning materials first and interview questions second with new-tab deep links", () => {
   const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, {
     result: repositoryResult,
     onSuggestedPrompt() {},
   }));
 
-  assert.match(html, /LangGraph/);
-  assert.match(html, /Workflow executed/);
-  assert.match(html, /Git-backed retrieval/);
-  assert.match(html, /LangChain/);
-  assert.match(html, /Structured output validated/);
-  assert.match(html, /Langfuse/);
-  assert.match(html, /Tracing enabled/);
-  assert.match(html, /Understand topic/);
-  assert.match(html, /Retrieve Git knowledge/);
-  assert.match(html, /Python parallelism learning path/);
+  assert.match(html, /GimmeJob materials/);
   assert.match(html, /Concurrency vs parallelism/);
   assert.match(html, /CPython and the GIL/);
-  assert.match(html, /establishes/);
-  assert.match(html, /informs/);
-  assert.match(html, /Relationship list/);
-  assert.match(html, /href="\/reference\/programming"/);
-  assert.match(html, /href="\/interview\/python"/);
+  assert.match(html, /Interview questions/);
+  assert.match(html, /Parallelism interview question/);
+  assert.match(html, /href="\/learn\/programming\?topic=concurrency-basics"/);
+  assert.match(html, /href="\/interview\/python\?question=py-parallelism-02"/);
+  assert.match(html, /target="_blank"/);
+  assert.match(html, /rel="noreferrer"/);
+  assert.ok(html.indexOf("GimmeJob materials") < html.indexOf("Interview questions"));
   assert.match(html, /Compare threading and multiprocessing/);
 });
 
-test("labels general fallback and an untraced response honestly", () => {
-  const generalResult = {
-    ...repositoryResult,
-    langfuseTracing: false,
-    retrievalMode: "general",
-    response: { ...repositoryResult.response, sources: [] },
-  };
-  const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: generalResult }));
+test("does not expose implementation evidence or relationship arrows", () => {
+  const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: repositoryResult }));
 
-  assert.match(html, /General model knowledge/);
-  assert.match(html, /Repository match not used/);
-  assert.match(html, /Not traced \/ not configured/);
+  assert.doesNotMatch(html, /How this answer was built/);
+  assert.doesNotMatch(html, /LangGraph/);
+  assert.doesNotMatch(html, /LangChain/);
+  assert.doesNotMatch(html, /Langfuse/);
+  assert.doesNotMatch(html, /Relationship list/);
+  assert.doesNotMatch(html, /relationships/);
+  assert.doesNotMatch(html, /→/);
 });
 
-test("bounds graph rendering and maps only allowlisted repository prefixes", () => {
-  const overflowNodes = Array.from({ length: 9 }, (_, index) => ({
-    id: `node-${index + 1}`,
-    title: index === 8 ? "Hidden overflow node" : `Visible node ${index + 1}`,
-    summary: "Bounded node",
-    kind: "concept",
-    sourcePath: "python-learning/advanced-lessons.json",
-    durationMinutes: null,
-  }));
-  const overflowResult = {
-    ...repositoryResult,
-    response: {
-      ...repositoryResult.response,
-      learningMap: {
-        title: "Bounded map",
-        nodes: overflowNodes,
-        edges: [
-          ...Array.from({ length: 12 }, (_, index) => ({
-            source: `node-${(index % 7) + 1}`,
-            target: `node-${(index % 7) + 2}`,
-            label: `edge-${index + 1}`,
-          })),
-          { source: "node-1", target: "node-1", label: "self-loop-hidden" },
-        ],
-      },
-    },
-  };
-  const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: overflowResult }));
-
-  assert.doesNotMatch(html, /Hidden overflow node/);
-  assert.doesNotMatch(html, /self-loop-hidden/);
+test("accepts only allow-listed internal content links and keeps legacy sources safe", () => {
+  assert.equal(sourcePathToHref("/learn/programming?topic=concurrency"), "/learn/programming?topic=concurrency");
+  assert.equal(sourcePathToHref("/interview/python?question=py-concurrency"), "/interview/python?question=py-concurrency");
+  assert.equal(sourcePathToHref("/learn/testing-tools?section=fixtures"), "/learn/testing-tools?section=fixtures");
   assert.equal(sourcePathToHref("content/python-learning/advanced-lessons.json"), "/reference/programming");
   assert.equal(sourcePathToHref("python-interview/concurrency-qa.json"), "/interview/python");
+  assert.equal(sourcePathToHref("/learn/programming?redirect=https://evil.test"), null);
+  assert.equal(sourcePathToHref("/admin?topic=hidden"), null);
+  assert.equal(sourcePathToHref("//malicious.example/path"), null);
   assert.equal(sourcePathToHref("../private/secrets.txt"), null);
   assert.equal(sourcePathToHref("https://malicious.example/path"), null);
-  assert.equal(sourcePathToHref("unsupported/file.md"), null);
 });
 
-test("uses the camelCase learning-path contract and accessible selected subnav state", async () => {
+test("uses ephemeral public scope and keeps generated UI free from HTML injection", async () => {
   const [componentSource, sidebarSource] = await Promise.all([
     readFile(new URL("../app/ai-assistant/learning-path-advisor.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/site-navigation.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(componentSource, /fetch\("\/api\/ai\/learning-path"/);
+  assert.match(componentSource, /"x-gimmejob-session-scope": "ephemeral"/);
   assert.match(componentSource, /JSON\.stringify\(\{ messages: requestMessages, \.\.\.\(sessionId \? \{ sessionId \} : \{\}\) \}\)/);
   assert.match(componentSource, /value\.requestId/);
-  assert.match(componentSource, /payload\.learningMap|value\.response\.learningMap/);
-  assert.match(componentSource, /source !== target/);
-  assert.match(componentSource, /typed\.status === 401/);
-  assert.match(componentSource, /globalThis\.crypto\.randomUUID\(\)/);
-  assert.doesNotMatch(componentSource, /Math\.random\(\)/);
-  assert.match(componentSource, /<output aria-label="Building a source-backed learning map"/);
+  assert.match(componentSource, /value\.response\.learningMap/);
+  assert.match(componentSource, /target="_blank"/);
+  assert.doesNotMatch(componentSource, /ExecutionEvidence/);
+  assert.doesNotMatch(componentSource, /edgeArrow|edgeFlow|workflowSteps/);
   assert.doesNotMatch(componentSource, /dangerouslySetInnerHTML/);
   assert.match(sidebarSource, /aria-current=\{activeSubsection === item\.id \? "page" : undefined\}/);
   assert.match(sidebarSource, /aria-pressed=\{activeSubsection === item\.id\}/);
-  assert.match(sidebarSource, /onClick=\{\(\) => onSelectSubsection\(item\.id\)\}[\s\S]*?type="button"/);
 });
