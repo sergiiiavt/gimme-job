@@ -17,6 +17,62 @@ import {
 import { sectionNavigationHref } from "./navigation-paths";
 
 const LINKEDIN_URL = "https://www.linkedin.com/in/serhii-yavtushkevych-ba1a2686/";
+const AI_SERVICE_README_URL = `${REPO_URL}/blob/main/ai-service/README.md`;
+const AI_SERVICE_DEPENDENCIES_URL = `${REPO_URL}/blob/main/ai-service/pyproject.toml`;
+const AI_SERVICE_SOURCE_URL = `${REPO_URL}/tree/main/ai-service/src/gimmejob_ai`;
+const LANGGRAPH_WORKFLOW_URL = `${REPO_URL}/blob/main/ai-service/src/gimmejob_ai/learning_path.py`;
+const RAG_METRICS_URL = `${REPO_URL}/blob/main/ai-service/src/gimmejob_ai/rag_metrics.py`;
+const CANONICAL_RAG_URL = `${REPO_URL}/tree/main/app/internal/rag`;
+
+const AI_STACK = {
+  title: "AI orchestration & RAG",
+  description:
+    "The Python AI backend uses FastAPI, LangGraph, LangChain, OpenAI, Langfuse, and the canonical Cloudflare RAG pipeline.",
+  service: {
+    title: "FastAPI AI service",
+    description: "Authenticated Python backend for chat, learning paths, and interview evaluation.",
+    icon: "worker" as const,
+    accent: "blue" as const,
+    links: [
+      { label: "AI service", href: AI_SERVICE_SOURCE_URL, external: true },
+      { label: "Dependencies", href: AI_SERVICE_DEPENDENCIES_URL, external: true },
+      { label: "README", href: AI_SERVICE_README_URL, external: true },
+    ],
+  },
+  langgraph: {
+    title: "LangGraph",
+    description: "Owns the explicit learning-path workflow, state transitions, and orchestration.",
+    icon: "ai" as const,
+    accent: "purple" as const,
+    links: [{ label: "Workflow", href: LANGGRAPH_WORKFLOW_URL, external: true }],
+  },
+  related: [
+    {
+      title: "LangChain + langchain-openai",
+      description: "Model messages, structured output, and OpenAI integration used inside the graph.",
+      icon: "code" as const,
+    },
+    {
+      title: "OpenAI",
+      description: "Structured answer generation for the AI assistant workflows.",
+      icon: "openai" as const,
+    },
+    {
+      title: "Langfuse",
+      description: "Tracing, token/cost observability, runtime scores, and RAG evaluation support.",
+      icon: "observability" as const,
+    },
+    {
+      title: "Canonical RAG",
+      description: "Cloudflare Workers AI + Vectorize with lexical fallback in one retrieval pipeline.",
+      icon: "database" as const,
+    },
+  ],
+  links: [
+    { label: "RAG pipeline", href: CANONICAL_RAG_URL, external: true },
+    { label: "RAG metrics", href: RAG_METRICS_URL, external: true },
+  ],
+};
 
 const BRAND_ICON_SOURCES: Partial<Record<AboutIcon, string>> = {
   github: "https://cdn.simpleicons.org/github",
@@ -266,9 +322,43 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
         </div>
       </section>
 
-      <section className="about-tech-section" aria-labelledby="about-n8n-title">
+      <section className="about-tech-section" aria-labelledby="about-ai-stack-title">
         <div className="about-tech-section-heading">
           <SectionNumber>2</SectionNumber>
+          <div>
+            <h2 id="about-ai-stack-title">{AI_STACK.title}</h2>
+            <p>{AI_STACK.description}</p>
+          </div>
+        </div>
+        <div className="about-tech-section-body">
+          <div className="about-tech-observability-flow">
+            <TechNode icon={AI_STACK.service.icon} title={AI_STACK.service.title} description={AI_STACK.service.description} accent={AI_STACK.service.accent} links={AI_STACK.service.links}/>
+            <FlowArrow/>
+            <TechNode icon={AI_STACK.langgraph.icon} title={AI_STACK.langgraph.title} description={AI_STACK.langgraph.description} accent={AI_STACK.langgraph.accent} links={AI_STACK.langgraph.links}/>
+            <FlowArrow/>
+            <div className="about-tech-output-grid" role="group" aria-label="LangGraph AI stack components">
+              {AI_STACK.related.map((item) => (
+                <article key={item.title} className="about-tech-mini-node">
+                  <header>
+                    <span className="about-tech-mini-icon">
+                      <AboutIconSvg kind={item.icon}/>
+                    </span>
+                    <strong>{item.title}</strong>
+                  </header>
+                  <p>{item.description}</p>
+                </article>
+              ))}
+              <div className="about-tech-node-links">
+                {AI_STACK.links.map((link) => <TechLink key={link.label} {...link}/>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-tech-section" aria-labelledby="about-n8n-title">
+        <div className="about-tech-section-heading">
+          <SectionNumber>3</SectionNumber>
           <div>
             <h2 id="about-n8n-title">{N8N.title}</h2>
             <p>{N8N.description}</p>
@@ -303,7 +393,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-infrastructure-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>3</SectionNumber>
+          <SectionNumber>4</SectionNumber>
           <div>
             <h2 id="about-infrastructure-title">{INFRASTRUCTURE.title}</h2>
             <p>{INFRASTRUCTURE.description}</p>
@@ -336,7 +426,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-openai-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>4</SectionNumber>
+          <SectionNumber>5</SectionNumber>
           <div>
             <h2 id="about-openai-title">{OPENAI.title}</h2>
             <p>{OPENAI.description}</p>
@@ -368,7 +458,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-observability-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>5</SectionNumber>
+          <SectionNumber>6</SectionNumber>
           <div>
             <h2 id="about-observability-title">{GRAFANA.title}</h2>
             <p>{GRAFANA.description}</p>
@@ -403,7 +493,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-code-quality-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>6</SectionNumber>
+          <SectionNumber>7</SectionNumber>
           <div>
             <h2 id="about-code-quality-title">{CODE_QUALITY.title}</h2>
             <p>{CODE_QUALITY.description}</p>
@@ -434,7 +524,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
       <section className="about-tech-section" aria-labelledby="about-database-title">
         <div className="about-tech-section-heading">
-          <SectionNumber>7</SectionNumber>
+          <SectionNumber>8</SectionNumber>
           <div>
             <h2 id="about-database-title">{DATABASE.title}</h2>
             <p>{DATABASE.description}</p>
