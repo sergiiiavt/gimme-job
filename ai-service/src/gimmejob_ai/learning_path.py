@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 _CYRILLIC_RE = re.compile(r"[\u0400-\u04ff]")
 _WORD_RE = re.compile(r"[\w+#.-]+", re.UNICODE)
+_LANGUAGE_CONTROL_RE = re.compile(r"^\[\[gimmejob-language:(en|uk)\]\]$")
 
 REPOSITORY_PROMPT = """You are the GimmeJob Learning Path Advisor.
 
@@ -68,13 +69,40 @@ def _append_step(state: LearningAdvisorState, step: WorkflowStep) -> list[Workfl
     return [*state.get("workflow_steps", []), step]
 
 
+def _language_control(message: ChatMessage) -> Literal["en", "uk"] | None:
+    if message.role != "assistant":
+        return None
+    match = _LANGUAGE_CONTROL_RE.fullmatch(message.content.strip())
+    if not match:
+        return None
+    return cast(Literal["en", "uk"], match.group(1))
+
+
+def _selected_language(messages: list[ChatMessage]) -> Literal["en", "uk"] | None:
+    for message in reversed(messages):
+        language = _language_control(message)
+        if language is not None:
+            return language
+    return None
+
+
+def _language_instruction(language: Literal["en", "uk"]) -> str:
+    if language == "uk":
+        return "The selected response language is Ukrainian. Respond only in Ukrainian."
+    return "The selected response language is English. Respond only in English."
+
+
 def _conversation_messages(messages: list[ChatMessage]) -> list[BaseMessage]:
-    return [
-        HumanMessage(content=message.content)
-        if message.role == "user"
-        else AIMessage(content=message.content)
-        for message in messages
-    ]
+    conversation: list[BaseMessage] = []
+    for message in messages:
+        if _language_control(message) is not None:
+            continue
+        conversation.append(
+            HumanMessage(content=message.content)
+            if message.role == "user"
+            else AIMessage(content=message.content)
+        )
+    return conversation
 
 
 def _coerce_response(value: object) -> AssistantResponse:
@@ -138,28 +166,46 @@ def _sanitize_map(
     return sanitized, _connected(nodes, edges)
 
 
-def _repository_fallback_map(query: str, hits: list[RetrievalHit]) -> LearningMap:
+def _repository_fallback_map(
+    query: str,
+    hits: list[RetrievalHit],
+    language: Literal["en", "uk"],
+) -> LearningMap:
     nodes = [
         LearningMapNode(
             id=f"source-{index}",
-            title=hit.title[:240].strip() or f"GimmeJob source {index}",
+            title=hit.title[:240].strip()
+            or (f"Джерело GimmeJob {index}" if language == "uk" else f"GimmeJob source {index}"),
             summary=hit.excerpt,
             kind="topic" if index == 1 else "source",
             source_path=hit.source_path,
         )
         for index, hit in enumerate(hits[:8], start=1)
     ]
+    edge_label = "Далі" if language == "uk" else "Continue"
     edges = [
-        LearningMapEdge(source=nodes[index - 1].id, target=nodes[index].id, label="Continue")
+        LearningMapEdge(source=nodes[index - 1].id, target=nodes[index].id, label=edge_label)
         for index in range(1, len(nodes))
     ]
-    title = f"Learning path: {query.strip()}"[:240].strip() or "GimmeJob learning path"
+    title_prefix = "Навчальний шлях" if language == "uk" else "Learning path"
+    default_title = "Навчальний шлях GimmeJob" if language == "uk" else "GimmeJob learning path"
+    title = f"{title_prefix}: {query.strip()}"[:240].strip() or default_title
     return LearningMap(title=title, nodes=nodes, edges=edges)
 
 
-def _general_fallback_map(query: str, answer: str) -> LearningMap:
-    title = query.strip()[:240] or "General learning path"
-    summary = answer.strip()[:2_000] or "Start with the core concepts, then practise with a small project."
+def _general_fallback_map(
+    query: str,
+    answer: str,
+    language: Literal["en", "uk"],
+) -> LearningMap:
+    default_title = "Загальний навчальний шлях" if language == "uk" else "General learning path"
+    title = query.strip()[:240] or default_title
+    default_summary = (
+        "Почни з ключових понять, а потім закріпи їх невеликим практичним проєктом."
+        if language == "uk"
+        else "Start with the core concepts, then practise with a small project."
+    )
+    summary = answer.strip()[:2_000] or default_summary
     return LearningMap(
         title=title,
         nodes=[
@@ -174,6 +220,9 @@ def _general_fallback_map(query: str, answer: str) -> LearningMap:
 
 
 def _language_for(messages: list[ChatMessage]) -> Literal["en", "uk"]:
+    selected = _selected_language(messages)
+    if selected is not None:
+        return selected
     user_text = " ".join(message.content for message in messages if message.role == "user")
     return "uk" if _CYRILLIC_RE.search(user_text) else "en"
 
@@ -348,7 +397,7 @@ class LearningAdvisorGraph:
             indent=2,
         )
         prompt = [
-            SystemMessage(content=REPOSITORY_PROMPT),
+            SystemMessage(content=f"{REPOSITORY_PROMPT}\n\n{_language_instruction(state['language'])}"),
             *_conversation_messages(state["messages"]),
             HumanMessage(
                 content=(
@@ -377,7 +426,7 @@ class LearningAdvisorGraph:
         config: RunnableConfig,
     ) -> dict[str, object]:
         prompt = [
-            SystemMessage(content=GENERAL_PROMPT),
+            SystemMessage(content=f"{GENERAL_PROMPT}\n\n{_language_instruction(state['language'])}"),
             *_conversation_messages(state["messages"]),
         ]
         response = _coerce_response(await self.model.ainvoke(prompt, config=config))
@@ -397,6 +446,7 @@ class LearningAdvisorGraph:
         draft = state["draft_response"]
         hits = state.get("hits", [])
         mode = state["retrieval_mode"]
+        language = state["language"]
         allowed_paths = {hit.source_path for hit in hits} if mode == "repository" else set()
 
         sources = list(dict.fromkeys(path for path in draft.sources if path in allowed_paths))
@@ -411,7 +461,7 @@ class LearningAdvisorGraph:
         if mode == "repository":
             has_grounded_node = any(node.source_path in allowed_paths for node in learning_map.nodes)
             if not connected or not has_grounded_node:
-                learning_map = _repository_fallback_map(state["query"], hits)
+                learning_map = _repository_fallback_map(state["query"], hits, language)
             sources = list(
                 dict.fromkeys(
                     [
@@ -424,11 +474,13 @@ class LearningAdvisorGraph:
             detail = f"Kept {len(sources)} verified GimmeJob source references and a connected map."
         else:
             if not connected:
-                learning_map = _general_fallback_map(state["query"], draft.answer)
-            answer = (
-                "No matching GimmeJob material was found; this is general model guidance.\n\n"
-                f"{draft.answer}"
+                learning_map = _general_fallback_map(state["query"], draft.answer, language)
+            prefix = (
+                "Відповідних матеріалів GimmeJob не знайдено; нижче наведено загальні рекомендації моделі."
+                if language == "uk"
+                else "No matching GimmeJob material was found; this is general model guidance."
             )
+            answer = f"{prefix}\n\n{draft.answer}"
             detail = "Removed GimmeJob attribution and verified a connected general map."
 
         response = draft.model_copy(
