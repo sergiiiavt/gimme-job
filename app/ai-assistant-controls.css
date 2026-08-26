@@ -1,0 +1,92 @@
+/* Shared AI assistant controls: language selection and live dictation state. */
+
+.ai-assistant-language-selector {
+  align-items: center;
+  background: #f4f6f4;
+  border: 1px solid #e0e4e1;
+  border-radius: 7px;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+}
+
+.ai-assistant-language-selector button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: #747d78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  min-height: 25px;
+  min-width: 32px;
+  padding: 0 7px;
+}
+
+.ai-assistant-language-selector button[aria-pressed="true"] {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(31, 46, 37, 0.09);
+  color: #2f5d42;
+}
+
+.ai-assistant-language-selector button:disabled {
+  cursor: default;
+  opacity: .55;
+}
+
+.ai-assistant-topline-actions,
+.ai-assistant-composer-actions {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.ai-assistant-voice-button {
+  align-items: center;
+  background: #fff !important;
+  border: 1px solid #d9dfdb !important;
+  border-radius: 6px !important;
+  color: #53605a !important;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 32px !important;
+  min-width: 34px;
+  padding: 0 !important;
+}
+
+.ai-assistant-voice-button:hover:not(:disabled) {
+  background: #f5f8f5 !important;
+  border-color: #aab5ae !important;
+}
+
+button.ai-assistant-voice-button[aria-pressed="true"],
+button[aria-label="Stop voice input"][aria-pressed="true"] {
+  animation: aiAssistantListeningPulse 1.3s ease-in-out infinite;
+  background: #e7f4e8 !important;
+  border-color: #6f9f72 !important;
+  box-shadow: 0 0 0 3px rgba(88, 141, 92, .12);
+  color: #28733d !important;
+}
+
+/* The four interview setup labels should read as normal labels, not bold headings. */
+main:has(a[href="/interview"]) fieldset > legend,
+main:has(a[href="/interview"]) label:has(select) > span {
+  font-weight: 400 !important;
+}
+
+@keyframes aiAssistantListeningPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(88, 141, 92, .08);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(88, 141, 92, .16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.ai-assistant-voice-button[aria-pressed="true"],
+  button[aria-label="Stop voice input"][aria-pressed="true"] {
+    animation: none;
+  }
+}
