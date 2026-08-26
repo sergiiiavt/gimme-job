@@ -17,6 +17,7 @@ function rawSource(path: string) {
 const tocHeadings = [
   { id: "about-overview-title", text: "Why I created this site" },
   { id: "about-deployment-title", text: "Deployment" },
+  { id: "about-ai-stack-title", text: "AI orchestration & RAG" },
   { id: "about-n8n-title", text: "n8n email automation" },
   { id: "about-infrastructure-title", text: "Infrastructure as Code" },
   { id: "about-openai-title", text: "OpenAI integration" },
