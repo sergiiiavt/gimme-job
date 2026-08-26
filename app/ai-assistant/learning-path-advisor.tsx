@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteSidebar } from "../site-navigation";
 import {
   AI_ASSISTANT_TOPICS,
@@ -10,6 +10,7 @@ import {
 import styles from "./learning-path-advisor.module.css";
 
 type ChatRole = "user" | "assistant";
+type AdvisorLanguage = "en" | "uk";
 type CardKind = "knowledge" | "learning" | "interview" | "hint";
 type MapNodeKind = "topic" | "foundation" | "concept" | "practice" | "source";
 
@@ -62,6 +63,27 @@ type Recommendation = {
   summary: string;
   href: string;
   durationMinutes: number | null;
+};
+
+type SpeechAlternative = { transcript: string };
+type SpeechResult = { isFinal: boolean; length: number; [index: number]: SpeechAlternative };
+type SpeechResultList = { length: number; [index: number]: SpeechResult };
+type SpeechEvent = { resultIndex: number; results: SpeechResultList };
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onresult: ((event: SpeechEvent) => void) | null;
+  abort: () => void;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type SpeechWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
 };
 
 const MAX_REQUEST_MESSAGES = 20;
@@ -343,6 +365,25 @@ function messageId(role: ChatRole): string {
   return `${role}-${globalThis.crypto.randomUUID()}`;
 }
 
+function languageControlMessage(language: AdvisorLanguage): RequestMessage {
+  return { role: "assistant", content: `[[gimmejob-language:${language}]]` };
+}
+
+function speechRecognitionConstructor(): SpeechRecognitionConstructor | null {
+  if (typeof window === "undefined") return null;
+  const speechWindow = window as SpeechWindow;
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
+}
+
+function MicrophoneIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="17" viewBox="0 0 24 24" width="17">
+      <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 1 0 6 0V6a3 3 0 0 0-3-3Z" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M6.5 11.5v.5a5.5 5.5 0 0 0 11 0v-.5M12 17.5V21M9.5 21h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8"/>
+    </svg>
+  );
+}
+
 function ConversationTurn({ busy, message, onSuggestedPrompt }: Readonly<{
   busy: boolean;
   message: DisplayMessage;
@@ -373,24 +414,97 @@ export default function LearningPathAdvisor() {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [sessionId, setSessionId] = useState("");
+  const [language, setLanguage] = useState<AdvisorLanguage>("en");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [listening, setListening] = useState(false);
+  const [recognition, setRecognition] = useState<SpeechRecognitionLike | null>(null);
+
+  useEffect(() => () => {
+    recognition?.abort();
+  }, [recognition]);
 
   function selectAssistantTopic(topic: string) {
     setMobileNav(false);
     if (topic !== LEARNING_PATH_ADVISOR_TOPIC) window.location.assign(aiAssistantTopicHref(topic));
   }
 
+  function changeLanguage(nextLanguage: AdvisorLanguage) {
+    if (language === nextLanguage) return;
+    recognition?.abort();
+    setRecognition(null);
+    setListening(false);
+    setLanguage(nextLanguage);
+    setError("");
+  }
+
+  function toggleDictation() {
+    if (recognition && listening) {
+      recognition.stop();
+      return;
+    }
+
+    const Recognition = speechRecognitionConstructor();
+    if (!Recognition) {
+      setError("Voice input is not supported in this browser.");
+      return;
+    }
+
+    const instance = new Recognition();
+    instance.lang = language === "uk" ? "uk-UA" : "en-US";
+    instance.continuous = true;
+    instance.interimResults = false;
+    instance.onresult = (event) => {
+      let transcript = "";
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        if (result?.isFinal) transcript += result[0]?.transcript ?? "";
+      }
+      const cleaned = transcript.trim();
+      if (cleaned) setDraft((current) => `${current}${current.trim() ? " " : ""}${cleaned}`.slice(0, 20_000));
+    };
+    instance.onerror = (event) => {
+      setListening(false);
+      setRecognition(null);
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setError("Microphone permission was denied.");
+      }
+    };
+    instance.onend = () => {
+      setListening(false);
+      setRecognition(null);
+    };
+
+    setError("");
+    setRecognition(instance);
+    setListening(true);
+    try {
+      instance.start();
+    } catch {
+      setListening(false);
+      setRecognition(null);
+      setError("Voice input could not be started.");
+    }
+  }
+
   async function sendPrompt(rawPrompt: string) {
     const prompt = rawPrompt.trim().slice(0, 20_000);
     if (!prompt || busy) return;
 
+    recognition?.stop();
     const previousMessages = messages;
     const userMessage: DisplayMessage = { id: messageId("user"), role: "user", content: prompt };
     const pendingMessages = [...previousMessages, userMessage].slice(-MAX_DISPLAY_MESSAGES);
-    const requestMessages = pendingMessages
+    const requestHistory = pendingMessages
       .map(({ role, content }) => ({ role, content }))
-      .slice(-MAX_REQUEST_MESSAGES);
+      .slice(-(MAX_REQUEST_MESSAGES - 1));
+    const latestMessage = requestHistory.at(-1);
+    if (!latestMessage) return;
+    const requestMessages: RequestMessage[] = [
+      ...requestHistory.slice(0, -1),
+      languageControlMessage(language),
+      latestMessage,
+    ];
     setMessages(pendingMessages);
     setDraft("");
     setBusy(true);
@@ -429,6 +543,9 @@ export default function LearningPathAdvisor() {
   }
 
   function resetConversation() {
+    recognition?.abort();
+    setRecognition(null);
+    setListening(false);
     setMessages([]);
     setSessionId("");
     setDraft("");
@@ -461,7 +578,13 @@ export default function LearningPathAdvisor() {
           <section aria-label="Learning Path Advisor chat" className={styles.chat}>
             <div className={styles.chatTopline}>
               <span>{busy ? "Building your path…" : "Ready"}</span>
-              {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New path</button>}
+              <div className="ai-assistant-topline-actions">
+                <div aria-label="Response language" className="ai-assistant-language-selector" role="group">
+                  <button aria-pressed={language === "en"} disabled={busy} onClick={() => changeLanguage("en")} type="button">EN</button>
+                  <button aria-pressed={language === "uk"} disabled={busy} onClick={() => changeLanguage("uk")} type="button">UA</button>
+                </div>
+                {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New path</button>}
+              </div>
             </div>
 
             <div aria-live="polite" className={styles.conversation}>
@@ -513,8 +636,21 @@ export default function LearningPathAdvisor() {
                 value={draft}
               />
               <div>
-                <span id="learning-path-prompt-help">Enter to send · Shift + Enter for a new line</span>
-                <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build path"}</button>
+                <span id="learning-path-prompt-help">{listening ? "Listening… click the microphone to stop" : "Enter to send · Shift + Enter for a new line"}</span>
+                <div className="ai-assistant-composer-actions">
+                  <button
+                    aria-label={listening ? "Stop voice input" : "Dictate learning topic"}
+                    aria-pressed={listening}
+                    className="ai-assistant-voice-button"
+                    disabled={busy}
+                    onClick={toggleDictation}
+                    title={listening ? "Stop voice input" : `Dictate in ${language === "uk" ? "Ukrainian" : "English"}`}
+                    type="button"
+                  >
+                    <MicrophoneIcon/>
+                  </button>
+                  <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build path"}</button>
+                </div>
               </div>
             </form>
           </section>
