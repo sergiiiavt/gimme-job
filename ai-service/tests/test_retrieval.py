@@ -138,6 +138,20 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(RuntimeError, "HTTP 503"):
                 await client.search("query", "en")
 
+        cloudflare_error = HTTPError(
+            client.url,
+            403,
+            "Forbidden",
+            hdrs={"cf-ray": "1234567890abcdef-KBP"},
+            fp=None,
+        )
+        with patch("gimmejob_ai.retrieval.urlopen", side_effect=cloudflare_error):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"HTTP 403 \(Cloudflare ray 1234567890abcdef-KBP\)",
+            ):
+                await client.search("query", "en")
+
         with patch("gimmejob_ai.retrieval.urlopen", side_effect=TimeoutError("timeout")):
             with self.assertRaisesRegex(RuntimeError, "unavailable"):
                 await client.search("query", "en")
