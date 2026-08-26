@@ -26,9 +26,9 @@ test.after(async () => {
 test("renders LangGraph and the related AI stack as tech-stack section two", () => {
   const html = renderToStaticMarkup(React.createElement(AboutSite, { mode: "public" }));
 
-  const deployment = html.indexOf("Deployment");
-  const aiStack = html.indexOf("AI orchestration &amp; RAG");
-  const n8n = html.indexOf("N8N Email Automation");
+  const deployment = html.indexOf('aria-labelledby="about-deployment-title"');
+  const aiStack = html.indexOf('aria-labelledby="about-ai-stack-title"');
+  const n8n = html.indexOf('aria-labelledby="about-n8n-title"');
 
   assert.ok(deployment >= 0);
   assert.ok(aiStack > deployment);
@@ -45,9 +45,9 @@ test("renders LangGraph and the related AI stack as tech-stack section two", () 
   assert.match(html, /app\/internal\/rag/);
 });
 
-test("keeps About navigation mode-aware after the stack addition", () => {
+test("renders the AI stack in personal mode", () => {
   const html = renderToStaticMarkup(React.createElement(AboutSite, { mode: "personal" }));
 
-  assert.match(html, /href="\/me\/interview"/);
+  assert.match(html, /href="\/interview"/);
   assert.match(html, /AI orchestration &amp; RAG/);
 });
