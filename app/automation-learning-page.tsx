@@ -13,6 +13,7 @@ const trackOptions = [
   { id: "foundations", label: "Foundations", labelUk: "Основи", available: true, moduleIds: ["automation-foundations"] },
   { id: "python-setup", label: "Python Setup", labelUk: "Python Setup", available: true, moduleIds: ["project-setup"] },
   { id: "pytest", label: "pytest", labelUk: "pytest", available: true, moduleIds: ["pytest-core"] },
+  { id: "robot-framework", label: "Robot Framework", labelUk: "Robot Framework", available: true, moduleIds: ["robot-framework"] },
   { id: "automation", label: "Web / API / Mobile", labelUk: "Web / API / Mobile", available: true, moduleIds: ["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"] },
   { id: "architecture", label: "Architecture", labelUk: "Архітектура", available: true, moduleIds: ["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"] },
   { id: "reference-framework", label: "Reference Framework", labelUk: "Reference Framework", available: true, moduleIds: ["reference-framework"] },
