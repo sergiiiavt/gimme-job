@@ -237,9 +237,8 @@ function recommendations(result: LearningPathApiResponse) {
   const seen = new Set<string>();
 
   const add = (item: Recommendation) => {
-    const identity = `${item.href}|${item.title.toLowerCase()}`;
-    if (seen.has(identity)) return;
-    seen.add(identity);
+    if (seen.has(item.href)) return;
+    seen.add(item.href);
     (isInterviewHref(item.href) ? interview : learning).push(item);
   };
 
@@ -268,6 +267,14 @@ function recommendations(result: LearningPathApiResponse) {
   });
 
   return { learning: learning.slice(0, 8), interview: interview.slice(0, 8) };
+}
+
+function renderInlineMarkdown(text: string) {
+  return text.split(/(\*\*[^*\n]+\*\*)/g).map((part, index) => (
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={`strong-${index}`}>{part.slice(2, -2)}</strong>
+      : part
+  ));
 }
 
 function ContentLink({ href, interview }: Readonly<{ href: string; interview: boolean }>) {
@@ -320,7 +327,7 @@ export function LearningPathResponseView({ busy = false, onSuggestedPrompt, resu
       <div className={styles.responseIntro}>
         <span>Learning Path Advisor</span>
         <h2>{result.response.learningMap.title}</h2>
-        <p>{result.response.answer}</p>
+        <p>{renderInlineMarkdown(result.response.answer)}</p>
       </div>
 
       {learning.length > 0 && (
@@ -363,10 +370,6 @@ export function LearningPathResponseView({ busy = false, onSuggestedPrompt, resu
 
 function messageId(role: ChatRole): string {
   return `${role}-${globalThis.crypto.randomUUID()}`;
-}
-
-function languageControlMessage(language: AdvisorLanguage): RequestMessage {
-  return { role: "assistant", content: `[[gimmejob-language:${language}]]` };
 }
 
 function speechRecognitionConstructor(): SpeechRecognitionConstructor | null {
@@ -495,16 +498,10 @@ export default function LearningPathAdvisor() {
     const previousMessages = messages;
     const userMessage: DisplayMessage = { id: messageId("user"), role: "user", content: prompt };
     const pendingMessages = [...previousMessages, userMessage].slice(-MAX_DISPLAY_MESSAGES);
-    const requestHistory = pendingMessages
+    const requestMessages = pendingMessages
       .map(({ role, content }) => ({ role, content }))
-      .slice(-(MAX_REQUEST_MESSAGES - 1));
-    const latestMessage = requestHistory.at(-1);
-    if (!latestMessage) return;
-    const requestMessages: RequestMessage[] = [
-      ...requestHistory.slice(0, -1),
-      languageControlMessage(language),
-      latestMessage,
-    ];
+      .slice(-MAX_REQUEST_MESSAGES);
+    if (requestMessages.at(-1)?.role !== "user") return;
     setMessages(pendingMessages);
     setDraft("");
     setBusy(true);
@@ -518,7 +515,7 @@ export default function LearningPathAdvisor() {
           "x-gimmejob-session-scope": "ephemeral",
         },
         cache: "no-store",
-        body: JSON.stringify({ messages: requestMessages, ...(sessionId ? { sessionId } : {}) }),
+        body: JSON.stringify({ messages: requestMessages, language, ...(sessionId ? { sessionId } : {}) }),
       });
       const payload = await response.json().catch(() => null) as unknown;
       if (!response.ok) throw new Error(apiErrorMessage(payload, "The Learning Path Advisor is temporarily unavailable."));
@@ -593,7 +590,7 @@ export default function LearningPathAdvisor() {
                   <h2>What do you want to learn?</h2>
                   <p>Choose a topic. The advisor will organize relevant site materials first and interview practice second.</p>
                   <div>
-                    {SAMPLE_PROMPTS.map((prompt) => <button key={prompt} onClick={() => void sendPrompt(prompt)} type="button">{prompt}</button>)}
+                    {SAMPLE_PROMPTS.map((samplePrompt) => <button key={samplePrompt} onClick={() => void sendPrompt(samplePrompt)} type="button">{samplePrompt}</button>)}
                   </div>
                 </section>
               )}
@@ -603,7 +600,7 @@ export default function LearningPathAdvisor() {
                   busy={busy}
                   key={message.id}
                   message={message}
-                  onSuggestedPrompt={(prompt) => void sendPrompt(prompt)}
+                  onSuggestedPrompt={(suggestedPrompt) => void sendPrompt(suggestedPrompt)}
                 />
               ))}
 
