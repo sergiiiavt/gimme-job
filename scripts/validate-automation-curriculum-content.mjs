@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [beginner, intermediate, advanced, expert, taxonomy, sources, catalogSource] = await Promise.all([
+const [beginner, intermediate, advanced, expert, taxonomy, sources, catalogSource, robotSource] = await Promise.all([
   readJson("../content/automation-learning/beginner-lessons.json"),
   readJson("../content/automation-learning/intermediate-lessons.json"),
   readJson("../content/automation-learning/advanced-lessons.json"),
@@ -11,6 +11,7 @@ const [beginner, intermediate, advanced, expert, taxonomy, sources, catalogSourc
   readJson("../content/automation-learning/taxonomy.json"),
   readJson("../content/automation-learning/sources.json"),
   readFile(new URL("../content/automation-learning/catalog.ts", import.meta.url), "utf8"),
+  readFile(new URL("../content/automation-learning/robot-framework.ts", import.meta.url), "utf8"),
 ]);
 
 // catalog.ts isn't JSON, so pull referenceImplementation's string fields out with a
@@ -36,7 +37,7 @@ const lessonIds = new Set();
 const lessonTitles = new Set();
 
 assert.ok(lessons.length >= 43, "The test automation path must not regress below the current 43-lesson baseline.");
-assert.equal(modules.length, 12, "The test automation taxonomy must contain exactly 12 modules.");
+assert.equal(modules.length, 12, "The base test automation taxonomy must contain exactly 12 JSON modules.");
 
 for (const source of sources) {
   assert.match(source.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid source id: ${source.id}`);
@@ -145,4 +146,30 @@ const citedSources = new Set([
 const unusedSources = [...sourceIds].filter((id) => !citedSources.has(id));
 assert.equal(unusedSources.length, 0, `Every source must be cited by at least one lesson or module primer. Unused: ${unusedSources.join(", ")}`);
 
-console.log(`Test automation curriculum validated: ${lessons.length} lessons, ${modules.length} modules, ${sources.length} sources.`);
+// Robot Framework lives in TypeScript because it is composed into the base JSON curriculum.
+// Guard the failure mode that caused Robot snippets to be presented as runnable Python.
+const robotLessonIds = [...robotSource.matchAll(/id:\s*"(ta-lesson-robot-framework-[^"]+)"/g)].map((match) => match[1]);
+assert.equal(robotLessonIds.length, 5, "Robot Framework track must contain exactly 5 lessons.");
+assert.equal(new Set(robotLessonIds).size, robotLessonIds.length, "Robot Framework lesson ids must be unique.");
+assert.doesNotMatch(robotSource, /\n\s+code:\s*`/, "Robot Framework lessons must not use the generic Python code field; use explicit fenced languages in concept markdown.");
+assert.doesNotMatch(robotSource, /https?:\/\/\S*example\.test/i, "Robot Framework runnable examples must not use fake example.test endpoints.");
+
+for (const requiredSnippet of [
+  "python -m pip install robotframework==7.4.2",
+  "${ENV}    staging",
+  "Resource    ../resources/greetings.resource",
+  "rfbrowser init",
+  "https://robotframework-browser.org",
+  "https://jsonplaceholder.typicode.com/posts/1",
+  "Library    OrderLibrary.py",
+  "python -m robot --include smoke --outputdir results tests",
+  "if: always()",
+]) {
+  assert.ok(robotSource.includes(requiredSnippet), `Robot Framework runnable example is missing required content: ${requiredSnippet}`);
+}
+
+assert.ok(robotSource.includes("```robotframework"), "Robot Framework examples must use explicit robotframework code fences.");
+assert.ok(robotSource.includes("```bash"), "Robot Framework setup/run commands must use explicit bash code fences.");
+assert.ok(robotSource.includes("actively maintained in 2026"), "Robot Framework module must explain its current 2026 relevance without presenting it as the universal default.");
+
+console.log(`Test automation curriculum validated: ${lessons.length} base lessons, ${modules.length} base modules, ${sources.length} base sources + Robot Framework track.`);
