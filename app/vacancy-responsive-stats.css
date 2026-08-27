@@ -1,0 +1,41 @@
+/* Keep vacancy counters compact and stable on narrow screens.
+   The desktop header intentionally uses a fixed-height counter row; mobile needs
+   an intrinsic-height grid so the counters cannot wrap underneath the tab bar. */
+
+@media (max-width: 700px) {
+  .vacancy-workspace-personal .stat-line,
+  .vacancy-workspace-public .stat-line {
+    display: grid;
+    height: auto;
+    min-height: 52px;
+    overflow: hidden;
+    padding: 8px 0;
+    width: 100%;
+  }
+
+  .vacancy-workspace-personal .stat-line {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .vacancy-workspace-public .stat-line {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vacancy-workspace-personal .stat-line > div,
+  .vacancy-workspace-public .stat-line > div {
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  .vacancy-workspace-personal .stat-line strong,
+  .vacancy-workspace-public .stat-line strong {
+    line-height: 1.1;
+  }
+
+  .vacancy-workspace-personal .stat-line span,
+  .vacancy-workspace-public .stat-line span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
