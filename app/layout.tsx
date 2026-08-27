@@ -22,6 +22,7 @@ import "./navigation-current-selection.css";
 import "./navigation-scroll.css";
 import "./to-top-button.css";
 import "./ai-assistant-controls.css";
+import "./vacancy-responsive-stats.css";
 
 const homeTitle = "GimmeJob | QA Interview Questions, Learning & Career Tools";
 
