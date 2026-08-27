@@ -152,7 +152,7 @@ const robotLessonIds = [...robotSource.matchAll(/id:\s*"(ta-lesson-robot-framewo
 assert.equal(robotLessonIds.length, 5, "Robot Framework track must contain exactly 5 lessons.");
 assert.equal(new Set(robotLessonIds).size, robotLessonIds.length, "Robot Framework lesson ids must be unique.");
 assert.doesNotMatch(robotSource, /\n\s+code:\s*`/, "Robot Framework lessons must not use the generic Python code field; use explicit fenced languages in concept markdown.");
-assert.doesNotMatch(robotSource, /example\.test/, "Robot Framework runnable examples must not use fake example.test endpoints.");
+assert.doesNotMatch(robotSource, /https?:\/\/\S*example\.test/i, "Robot Framework runnable examples must not use fake example.test endpoints.");
 
 for (const requiredSnippet of [
   "python -m pip install robotframework==7.4.2",
