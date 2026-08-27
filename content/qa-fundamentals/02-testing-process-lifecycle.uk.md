@@ -11,15 +11,15 @@
 | Поширене формулювання STLC | Найближчі test activities ISTQB |
 | --- | --- |
 | Requirement analysis | Test analysis, а також ранні рев’ю test basis |
-| Test planning | Test planning + test monitoring and control |
+| Test planning | Переважно test planning; test monitoring and control триває протягом усього тестового зусилля |
 | Test case development | Test analysis + test design + test implementation |
 | Test environment setup | Переважно test implementation |
 | Test execution | Test execution |
 | Test cycle closure | Test completion |
 
-Це приблизне зіставлення, а не друга офіційна модель ISTQB. Зокрема, environment setup не є окремою test activity в ISTQB, а test case development стискає кілька різних активностей в один етап.
+Це приблизне зіставлення, а не друга офіційна модель ISTQB. Зокрема, environment setup не є окремою test activity в ISTQB, test case development стискає кілька різних активностей в один етап, а monitoring/control не можна трактувати як підетап, що відбувається лише під час planning.
 
-Ці активності **не утворюють жорсткий waterfall**. Planning, monitoring, analysis, design, implementation, execution і completion перекриваються, повторюються та впливають одна на одну. В Agile та continuous delivery ті самі активності можуть багато разів виконуватися всередині одного спринту або навіть для однієї зміни.
+Ці активності **не утворюють жорсткий waterfall**. Корисна спрощена робоча послідовність: **planning → analysis → design → implementation → execution → completion**. **Test monitoring and control є наскрізною активністю:** вона починається, коли вже існує план або інший baseline для порівняння, і триває паралельно з іншими активностями, повертаючи зміни у пріоритети, scope, ресурси, графік і планування. В Agile та continuous delivery ті самі активності можуть багато разів виконуватися всередині одного спринту або навіть для однієї зміни.
 
 ## Тестування протягом SDLC
 
@@ -53,17 +53,17 @@ Production ─ моніторинг, інциденти, відгуки кори
 
 Планування визначає очікуваний підхід до того, як виконання почне споживати значний час. Хороший план відповідає на запитання: що входить у scope, які ризики важливі, які докази потрібні, які середовища й дані необхідні, хто володіє рішеннями та які умови визначають достатнє завершення.
 
-Моніторинг порівнює реальність із планом. Контроль змінює план, коли змінюється реальність.
+Моніторинг порівнює реальність із планом. Контроль змінює план або тестову роботу, коли змінюється реальність. **Monitoring and control — не фаза між planning та analysis.** Після появи придатного baseline ця активність триває під час analysis, design, implementation, execution і completion.
 
 ```diagram
-План
- ↓
-Спостерігати прогрес і докази про продукт
- ↓
-Порівнювати з очікуваннями
- ↓
-Коригувати scope / пріоритет / середовище / графік / глибину
- ↺
+План / baseline
+      ↓
+Analysis → Design → Implementation → Execution → Completion
+   ↑          ↑            ↑             ↑          ↑
+   └──── безперервний monitoring & control ─────────┘
+                 ↓
+      коригування priority / scope / resources /
+             schedule / depth / plan
 ```
 
 План, який не можна змінювати, — це не контроль, а документація старого припущення.
@@ -118,10 +118,18 @@ Execution запускає підготовлені або exploratory пере�
 ## Підсумок
 
 - STLC — поширений загальний термін; точні назви фаз залежать від джерела.
-- Для точного пояснення використовуйте activities ISTQB: planning, monitoring/control, analysis, design, implementation, execution і completion.
+- Для практичного потоку корисно мислити як planning → analysis → design → implementation → execution → completion; test monitoring/control триває безперервно через увесь цей потік.
+- ISTQB все одно визначає monitoring/control як одну із семи test activities, але її місце у списку syllabus не слід читати як хронологічну фазу перед analysis або design.
 - Активності тестування перекриваються та повторюються, а не утворюють жорсткий waterfall.
 - Активності тестування існують протягом усього життєвого циклу, а не лише після розробки.
 - Test analysis визначає, для чого потрібні докази; test design визначає, як їх отримати.
 - Testware — це значно більше, ніж тест-кейси.
 - Завершення має повідомляти про докази, прогалини та залишковий ризик.
 - Зміни у production створюють нову тестову роботу через maintenance testing та impact analysis.
+
+## Джерела
+
+- [ISTQB CTFL v4.0](https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/)
+- [ISO/IEC/IEEE 29119-1:2022](https://www.iso.org/standard/81291.html)
+- [ISO/IEC/IEEE 29119-2:2021](https://www.iso.org/standard/79428.html)
+- [SWEBOK v4.0a](https://www.computer.org/education/bodies-of-knowledge/software-engineering/resources/)

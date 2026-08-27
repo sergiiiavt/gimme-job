@@ -7,16 +7,18 @@
       "category": "Fundamentals",
       "kind": "Theory",
       "question": "What is STLC, and what are the main activities of the software test process?",
-      "shortAnswer": "STLC (Software Testing Life Cycle) is a common umbrella term for the lifecycle of testing work. For a precise modern answer, use the ISTQB test activities: test planning; test monitoring and control; test analysis; test design; test implementation; test execution; and test completion. These activities overlap and iterate rather than forming a strict waterfall. Different interview sources may group them into fewer named STLC phases, so explain the model you are using instead of treating one six-step list as universal.",
+      "shortAnswer": "STLC (Software Testing Life Cycle) is a common umbrella term for the lifecycle of testing work. ISTQB defines seven test activities, but they must not be read as seven chronological phases. A useful simplified working flow is test planning → test analysis → test design → test implementation → test execution → test completion, while test monitoring and control runs continuously across that flow and can feed changes back into planning, priorities, scope, resources and schedule. Different interview sources may group the work into fewer named STLC phases, so explain the model you are using instead of treating one six-step list as universal.",
       "strongAnswerSignals": [
         "names the seven ISTQB test activities",
+        "places monitoring and control across the whole test effort rather than as a one-time second phase",
         "explains that activities overlap and iterate",
         "recognizes STLC as a common umbrella term whose phase grouping varies"
       ],
       "questionUk": "Що таке STLC і які основні активності процесу тестування?",
-      "shortAnswerUk": "STLC (Software Testing Life Cycle) — поширений загальний термін для життєвого циклу тестової роботи. Для точного сучасного пояснення варто використовувати test activities ISTQB: test planning; test monitoring and control; test analysis; test design; test implementation; test execution; test completion. Ці активності перекриваються та повторюються, а не утворюють жорсткий waterfall. У різних джерелах для співбесід їх можуть групувати в меншу кількість фаз STLC, тому краще явно назвати модель, яку ви використовуєте, а не подавати один шестикроковий список як універсальний стандарт.",
+      "shortAnswerUk": "STLC (Software Testing Life Cycle) — поширений загальний термін для життєвого циклу тестової роботи. ISTQB визначає сім test activities, але їх не слід читати як сім послідовних хронологічних фаз. Корисна спрощена робоча послідовність: test planning → test analysis → test design → test implementation → test execution → test completion, тоді як test monitoring and control триває безперервно через увесь цей потік і може повертати зміни у planning, priorities, scope, resources та schedule. У різних джерелах для співбесід роботу можуть групувати в меншу кількість фаз STLC, тому краще явно назвати модель, яку ви використовуєте, а не подавати один шестикроковий список як універсальний стандарт.",
       "strongAnswerSignalsUk": [
         "називає сім test activities ISTQB",
+        "розміщує monitoring and control протягом усього тестового зусилля, а не як одноразову другу фазу",
         "пояснює, що активності перекриваються та повторюються",
         "розуміє STLC як загальний термін, групування фаз якого може відрізнятися"
       ],
@@ -32,16 +34,18 @@
       "category": "Fundamentals",
       "kind": "Theory",
       "question": "How do the commonly quoted STLC phases map to the ISTQB test activities?",
-      "shortAnswer": "A common six-phase interview model maps approximately as follows: requirement analysis → test analysis and early review of the test basis; test planning → test planning plus monitoring and control; test case development → test analysis, design and implementation; test environment setup → mainly test implementation; test execution → test execution; test cycle closure → test completion. The mapping is approximate: ISTQB does not define environment setup as a separate test activity, and 'test case development' compresses several different activities.",
+      "shortAnswer": "A common six-phase interview model maps approximately as follows: requirement analysis → test analysis and early review of the test basis; test planning → mainly test planning, while monitoring and control remains cross-cutting throughout the test effort; test case development → test analysis, design and implementation; test environment setup → mainly test implementation; test execution → test execution; test cycle closure → test completion. The mapping is approximate: ISTQB does not define environment setup as a separate test activity, and 'test case development' compresses several different activities.",
       "strongAnswerSignals": [
         "maps all six common labels without presenting them as official ISTQB phases",
+        "does not confine monitoring and control to the test-planning phase",
         "places environment setup mainly under test implementation",
         "separates analysis, design and implementation instead of calling all of them test-case writing"
       ],
       "questionUk": "Як поширені фази STLC співвідносяться з test activities ISTQB?",
-      "shortAnswerUk": "Поширену шестикрокову модель для співбесід можна приблизно зіставити так: requirement analysis → test analysis і раннє рев’ю test basis; test planning → test planning плюс monitoring and control; test case development → test analysis, design та implementation; test environment setup → переважно test implementation; test execution → test execution; test cycle closure → test completion. Це приблизне зіставлення: ISTQB не визначає environment setup як окрему test activity, а 'test case development' стискає кілька різних активностей в один етап.",
+      "shortAnswerUk": "Поширену шестикрокову модель для співбесід можна приблизно зіставити так: requirement analysis → test analysis і раннє рев’ю test basis; test planning → переважно test planning, тоді як monitoring and control залишається наскрізною активністю протягом усього тестового зусилля; test case development → test analysis, design та implementation; test environment setup → переважно test implementation; test execution → test execution; test cycle closure → test completion. Це приблизне зіставлення: ISTQB не визначає environment setup як окрему test activity, а 'test case development' стискає кілька різних активностей в один етап.",
       "strongAnswerSignalsUk": [
         "зіставляє всі шість поширених назв, не називаючи їх офіційними фазами ISTQB",
+        "не обмежує monitoring and control лише фазою test planning",
         "відносить environment setup переважно до test implementation",
         "розділяє analysis, design та implementation замість зведення їх до написання тест-кейсів"
       ],
