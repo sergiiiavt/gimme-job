@@ -1,0 +1,230 @@
+{
+  "collection": "rest-api-interview-deep-dive",
+  "questions": [
+    {
+      "id": "http-status-classes-and-concrete-codes",
+      "level": "Junior",
+      "category": "Web, API and data",
+      "question": "What do the HTTP status-code classes mean, and which concrete status codes should a QA engineer recognize?",
+      "shortAnswer": "1xx is informational, 2xx successful, 3xx redirection/cache-related, 4xx a client/request-side problem, and 5xx a server/upstream problem. A QA engineer should recognize concrete codes rather than stop at the class: 200, 201, 202, 204, 301/302/307/308, 304, 400, 401, 403, 404, 405, 409, 412, 413, 415, 422, 429, 500, 501, 502, 503 and 504 are especially useful in day-to-day API testing.",
+      "strongAnswerSignals": [
+        "all five status-code classes",
+        "concrete codes rather than only 2xx/4xx",
+        "distinguishes client, server and gateway failures"
+      ],
+      "questionUk": "Що означають класи HTTP status codes і які конкретні коди повинен знати QA engineer?",
+      "shortAnswerUk": "1xx — informational, 2xx — success, 3xx — redirect/cache, 4xx — проблема request/client side, 5xx — server або upstream failure. QA має знати не лише групи, а й конкретні коди: 200, 201, 202, 204, 301/302/307/308, 304, 400, 401, 403, 404, 405, 409, 412, 413, 415, 422, 429, 500, 501, 502, 503 і 504 найчастіше потрібні в API testing.",
+      "strongAnswerSignalsUk": [
+        "усі п'ять класів status codes",
+        "конкретні коди, а не лише 2xx/4xx",
+        "відрізняє client, server та gateway failures"
+      ],
+      "example": "A POST returns 202 instead of 201. The tester does not report it immediately as wrong: 202 can be correct when the API accepts a job for asynchronous processing, while 201 would imply that resource creation has completed.",
+      "exampleUk": "POST повертає 202 замість 201. Tester не заводить bug автоматично: 202 може бути правильним для асинхронної обробки, тоді як 201 означав би, що створення resource вже завершено.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Theory",
+      "tags": ["http", "status-codes", "rest-api"]
+    },
+    {
+      "id": "http-success-code-selection",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "When would you expect 200, 201, 202 and 204 from an HTTP API?",
+      "shortAnswer": "200 means the request succeeded and commonly returns a representation or operation result. 201 means one or more resources were created. 202 means the request was accepted but processing is not complete, which is common for asynchronous jobs. 204 means the operation succeeded and intentionally returns no response content. The correct choice depends on the endpoint contract and operation semantics, not on a blanket rule that every success is 200.",
+      "strongAnswerSignals": [
+        "201 means created",
+        "202 is asynchronous/non-final acceptance",
+        "204 intentionally has no response content"
+      ],
+      "questionUk": "Коли від HTTP API логічно очікувати 200, 201, 202 та 204?",
+      "shortAnswerUk": "200 означає успішний request і часто повертає representation або результат operation. 201 означає, що resource створено. 202 — request прийнято, але processing ще не завершено, що типово для async jobs. 204 означає успіх без response content. Правильний code визначається contract та semantics endpoint, а не правилом «будь-який success = 200».",
+      "strongAnswerSignalsUk": [
+        "201 означає created",
+        "202 — async/non-final acceptance",
+        "204 навмисно без response content"
+      ],
+      "example": "Deleting a resource returns 204 and an empty body, while creating the same resource returns 201 with a Location header. Both are successful responses but communicate different outcomes.",
+      "exampleUk": "DELETE resource повертає 204 з empty body, а створення resource — 201 з Location header. Обидві відповіді успішні, але повідомляють різний результат operation.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Theory",
+      "tags": ["http", "status-codes", "rest-api"]
+    },
+    {
+      "id": "http-client-error-code-differences",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "How do 400, 401, 403, 404, 409, 415, 422 and 429 differ in an API?",
+      "shortAnswer": "400 is a generic malformed/invalid request; 401 normally means authentication is missing or invalid; 403 means the caller is not permitted; 404 means the resource is not found; 409 is a conflict with current state; 415 means the request media type is unsupported; 422 means the server understands the syntax but cannot process the content semantically; and 429 means the client exceeded a rate limit. A strong API test checks that the exact failure maps to the intended contract code.",
+      "strongAnswerSignals": [
+        "401 authentication versus 403 authorization",
+        "409 conflict versus 422 semantic validation",
+        "415 media type and 429 rate limiting"
+      ],
+      "questionUk": "Чим відрізняються 400, 401, 403, 404, 409, 415, 422 та 429 в API?",
+      "shortAnswerUk": "400 — generic malformed/invalid request; 401 зазвичай означає missing/invalid authentication; 403 — caller не має permission; 404 — resource не знайдено; 409 — conflict з current state; 415 — unsupported request media type; 422 — syntax зрозумілий, але content семантично неможливо обробити; 429 — перевищено rate limit. QA має перевіряти точну відповідність failure до API contract.",
+      "strongAnswerSignalsUk": [
+        "401 authentication проти 403 authorization",
+        "409 conflict проти 422 semantic validation",
+        "415 media type та 429 rate limiting"
+      ],
+      "example": "A request with an expired token should normally fail as 401, while the same endpoint called with a valid token for a user lacking the admin role should fail as 403 rather than being treated as the same authentication case.",
+      "exampleUk": "Request з expired token зазвичай має дати 401, а той самий endpoint з valid token користувача без admin role — 403. Це різні failure modes, а не одна authentication error.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Theory",
+      "tags": ["http", "status-codes", "rest-api", "authentication"]
+    },
+    {
+      "id": "http-server-gateway-error-differences",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "What is the practical difference between HTTP 500, 502, 503 and 504?",
+      "shortAnswer": "500 is a generic failure in the responding server. 502 means a gateway or proxy received an invalid response from an upstream service. 503 means the service is temporarily unavailable, commonly because of overload or maintenance and it may include Retry-After. 504 means a gateway or proxy timed out waiting for an upstream service. The distinction helps a tester decide whether to investigate application logic, service availability, or an upstream dependency path.",
+      "strongAnswerSignals": [
+        "500 local/general server failure",
+        "502 invalid upstream response",
+        "503 unavailable versus 504 upstream timeout"
+      ],
+      "questionUk": "Яка практична різниця між HTTP 500, 502, 503 та 504?",
+      "shortAnswerUk": "500 — generic failure сервера, що відповідає. 502 означає, що gateway/proxy отримав invalid response від upstream. 503 — service тимчасово unavailable, наприклад через overload/maintenance, і може мати Retry-After. 504 — gateway/proxy не дочекався upstream. Ця різниця допомагає локалізувати application failure, availability problem або dependency path.",
+      "strongAnswerSignalsUk": [
+        "500 local/general server failure",
+        "502 invalid upstream response",
+        "503 unavailable проти 504 upstream timeout"
+      ],
+      "example": "The public API returns 504 after exactly 30 seconds while the downstream report service shows slow requests. That points toward a gateway timeout on the dependency path rather than treating every 5xx as the same backend bug.",
+      "exampleUk": "Public API повертає 504 рівно через 30 секунд, а downstream report service має повільні requests. Це схоже на gateway timeout dependency path, а не просто на generic backend bug.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Troubleshooting",
+      "tags": ["http", "status-codes", "rest-api"]
+    },
+    {
+      "id": "http-request-response-headers-for-testing",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "Which HTTP request and response headers are especially useful when testing or debugging an API?",
+      "shortAnswer": "On the request side, inspect Accept, Content-Type, Authorization, Cookie, Origin, Host, conditional headers such as If-Match/If-None-Match, Range and tracing/correlation headers. On the response side, inspect Content-Type, Location, Set-Cookie, Cache-Control, ETag, Vary, Allow, WWW-Authenticate, Retry-After, Content-Disposition and CORS headers. Headers change semantics and often explain a failure that the JSON body alone does not reveal.",
+      "strongAnswerSignals": [
+        "request Content-Type/Accept/authentication headers",
+        "response Location/cookies/cache/auth challenge",
+        "conditional, tracing and CORS headers"
+      ],
+      "questionUk": "Які HTTP request та response headers особливо корисно перевіряти під час API testing/debugging?",
+      "shortAnswerUk": "У request дивіться Accept, Content-Type, Authorization, Cookie, Origin, Host, conditional headers If-Match/If-None-Match, Range та tracing/correlation headers. У response — Content-Type, Location, Set-Cookie, Cache-Control, ETag, Vary, Allow, WWW-Authenticate, Retry-After, Content-Disposition та CORS headers. Headers змінюють semantics і часто пояснюють failure, якого не видно лише з JSON body.",
+      "strongAnswerSignalsUk": [
+        "request Content-Type/Accept/authentication headers",
+        "response Location/cookies/cache/auth challenge",
+        "conditional, tracing та CORS headers"
+      ],
+      "example": "An API returns 415 even though the JSON text looks valid. Inspecting the request shows Content-Type: text/plain instead of application/json, so the defect is in request construction rather than the JSON fields themselves.",
+      "exampleUk": "API повертає 415, хоча JSON виглядає valid. У request видно Content-Type: text/plain замість application/json, тому проблема в request construction, а не у значеннях JSON fields.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Troubleshooting",
+      "tags": ["http", "headers", "api-testing", "rest-api"]
+    },
+    {
+      "id": "api-request-authentication-methods",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "Which authentication and authorization mechanisms can be used for API requests?",
+      "shortAnswer": "Common mechanisms include HTTP Basic over TLS, Bearer tokens such as opaque tokens or JWTs, API keys, OAuth 2.0 access tokens, session cookies, HMAC/request signing and mutual TLS. OpenID Connect commonly supplies identity/login on top of OAuth 2.0, while the access token authorizes API calls. Authentication establishes who the caller is; authorization determines which resources/actions that identity may access. Tests should cover expired or revoked credentials, wrong scope/audience and valid identities without the required permission.",
+      "strongAnswerSignals": [
+        "Basic, Bearer/JWT, API key and OAuth",
+        "session/signature/mTLS alternatives",
+        "authentication versus authorization"
+      ],
+      "questionUk": "Які механізми authentication та authorization можуть використовуватися для API requests?",
+      "shortAnswerUk": "Типові механізми: HTTP Basic через TLS, Bearer tokens (opaque або JWT), API keys, OAuth 2.0 access tokens, session cookies, HMAC/request signing та mutual TLS. OpenID Connect часто дає identity/login поверх OAuth 2.0, а access token використовується для API authorization. Authentication визначає, хто caller, authorization — що йому дозволено. Треба тестувати expired/revoked credentials, wrong scope/audience та valid identity без потрібного permission.",
+      "strongAnswerSignalsUk": [
+        "Basic, Bearer/JWT, API key та OAuth",
+        "session/signature/mTLS alternatives",
+        "authentication проти authorization"
+      ],
+      "example": "A valid JWT lets a normal user read their own profile but an attempt to call the admin endpoint returns 403. That confirms authentication succeeded and the failure is an authorization boundary, not an invalid token.",
+      "exampleUk": "Valid JWT дозволяє normal user читати власний profile, але admin endpoint повертає 403. Authentication пройшла, а failure знаходиться на authorization boundary, не в token validity.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Security",
+      "tags": ["authentication", "authorization", "rest-api", "oauth"]
+    },
+    {
+      "id": "api-file-upload-with-metadata",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "How can an API request upload a file, and can the file be sent together with other data?",
+      "shortAnswer": "An endpoint can accept a raw binary body with a specific media type or application/octet-stream. When a file must be sent together with text fields or metadata, multipart/form-data is the usual HTTP representation: each part has its own Content-Disposition and optional Content-Type, so one part can be the file and another can be text or JSON metadata. Base64 inside JSON is possible but adds size and processing overhead. Some systems instead issue a pre-signed storage URL and persist metadata separately.",
+      "strongAnswerSignals": [
+        "raw binary versus multipart/form-data",
+        "file and metadata can coexist as multipart parts",
+        "base64 and pre-signed upload trade-offs"
+      ],
+      "questionUk": "Як передати файл через API request і чи можна передати файл разом з іншими даними?",
+      "shortAnswerUk": "Endpoint може приймати raw binary body з конкретним media type або application/octet-stream. Коли разом із file треба передати text fields чи metadata, типовий варіант — multipart/form-data: кожен part має власні Content-Disposition та за потреби Content-Type, тому один part може бути file, інший — text або JSON metadata. Base64 у JSON можливий, але збільшує payload/processing. Інша схема — pre-signed storage URL і окреме збереження metadata.",
+      "strongAnswerSignalsUk": [
+        "raw binary проти multipart/form-data",
+        "file та metadata можуть бути окремими multipart parts",
+        "trade-offs base64 та pre-signed upload"
+      ],
+      "example": "A profile endpoint accepts displayName and avatar in one multipart request. The tester verifies the text part, filename, image Content-Type, zero-byte and oversized files, and that another user cannot later download the uploaded object.",
+      "exampleUk": "Profile endpoint приймає displayName та avatar одним multipart request. Tester перевіряє text part, filename, image Content-Type, zero-byte/oversized files і що інший user не може потім download цей object.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Practical",
+      "tags": ["file-upload", "multipart", "api-testing", "rest-api"]
+    },
+    {
+      "id": "http-methods-safe-idempotent-semantics",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "What do the standard HTTP methods do, and which of them are safe or idempotent?",
+      "shortAnswer": "GET reads a representation; HEAD is GET semantics without response content; POST performs resource-specific processing; PUT creates or replaces the target state; PATCH applies partial modifications; DELETE removes the target; OPTIONS describes communication options and is used for CORS preflight; CONNECT creates a tunnel; TRACE is diagnostic loop-back. GET, HEAD, OPTIONS and TRACE are safe. GET, HEAD, PUT, DELETE, OPTIONS and TRACE are idempotent by HTTP semantics. POST is not idempotent by definition, and PATCH is not guaranteed to be idempotent.",
+      "strongAnswerSignals": [
+        "covers GET/HEAD/POST/PUT/PATCH/DELETE/OPTIONS",
+        "safe versus idempotent distinction",
+        "PUT versus PATCH semantics"
+      ],
+      "questionUk": "Що роблять стандартні HTTP methods і які з них safe або idempotent?",
+      "shortAnswerUk": "GET читає representation; HEAD має GET semantics без response content; POST виконує resource-specific processing; PUT створює/замінює target state; PATCH робить partial modification; DELETE видаляє target; OPTIONS описує communication options і використовується для CORS preflight; CONNECT створює tunnel; TRACE — diagnostic loop-back. GET, HEAD, OPTIONS, TRACE — safe. GET, HEAD, PUT, DELETE, OPTIONS, TRACE — idempotent. POST не idempotent за визначенням, PATCH не гарантує idempotency.",
+      "strongAnswerSignalsUk": [
+        "покриває GET/HEAD/POST/PUT/PATCH/DELETE/OPTIONS",
+        "відрізняє safe та idempotent",
+        "PUT проти PATCH semantics"
+      ],
+      "example": "Repeating PUT /users/42 with the same complete representation should leave the resource in the same intended state, while repeating POST /orders may create a second order unless the API implements its own idempotency mechanism.",
+      "exampleUk": "Повторний PUT /users/42 з тією самою complete representation має залишити resource у тому самому intended state, тоді як повторний POST /orders може створити ще одне замовлення без окремого idempotency mechanism.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Theory",
+      "tags": ["http", "methods", "idempotency", "rest-api"]
+    },
+    {
+      "id": "cors-same-origin-and-preflight",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "What is CORS, why can an API call fail with a CORS error, and what is a preflight request?",
+      "shortAnswer": "CORS is a browser-enforced HTTP-header mechanism that relaxes the same-origin policy for approved origins. An origin is the scheme, host and port combination. When browser JavaScript calls a different origin, the browser may first send an OPTIONS preflight containing Origin, Access-Control-Request-Method and possibly Access-Control-Request-Headers. The server must return matching Access-Control-Allow-* policy headers. A call can work in curl or Postman yet fail in the browser because those clients do not enforce the browser same-origin policy. CORS is not authentication and does not replace server-side authorization.",
+      "strongAnswerSignals": [
+        "same-origin policy and scheme/host/port origin",
+        "OPTIONS preflight and Access-Control headers",
+        "browser-only enforcement is not API authorization"
+      ],
+      "questionUk": "Що таке CORS, чому API call може впасти з CORS error і що таке preflight request?",
+      "shortAnswerUk": "CORS — browser-enforced механізм на HTTP headers, який дозволяє server послабити same-origin policy для дозволених origins. Origin — це scheme + host + port. Коли browser JavaScript звертається до іншого origin, browser може спочатку відправити OPTIONS preflight з Origin, Access-Control-Request-Method і Access-Control-Request-Headers. Server має повернути відповідні Access-Control-Allow-* headers. Request може працювати в curl/Postman і падати в browser, бо ці clients не enforce same-origin policy. CORS не замінює authentication/authorization.",
+      "strongAnswerSignalsUk": [
+        "same-origin policy та scheme/host/port origin",
+        "OPTIONS preflight та Access-Control headers",
+        "browser-only enforcement не є API authorization"
+      ],
+      "example": "The frontend on app.example.com sends JSON with an Authorization header to api.example.com. The browser preflights with OPTIONS, but the API does not allow Authorization in Access-Control-Allow-Headers, so the browser blocks the real call even though the endpoint works in Postman.",
+      "exampleUk": "Frontend на app.example.com надсилає JSON з Authorization header до api.example.com. Browser робить OPTIONS preflight, але API не дозволяє Authorization в Access-Control-Allow-Headers, тому browser блокує actual call, хоча endpoint працює в Postman.",
+      "sourceIds": ["mdn-http", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Troubleshooting",
+      "tags": ["cors", "same-origin", "preflight", "rest-api"]
+    }
+  ]
+}
