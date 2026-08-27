@@ -18,6 +18,21 @@ test("certifications route renders the dedicated ISTQB CT-AI v2 page", async () 
   assert.match(route, /return <IstqbAiTestingPage\/>/);
 });
 
+test("certification catalog keeps CT-AI selected and restores under-construction tracks", async () => {
+  const page = await read("app/istqb-ai-testing-page.tsx");
+
+  assert.match(page, /const DEFAULT_TRACK_ID = "ct-ai-v2"/);
+  assert.match(page, /label: "CT-AI v2\.0", available: true/);
+  for (const track of ["ISTQB", "Cloud", "Security", "AI Engineering"]) {
+    assert.match(page, new RegExp(`label: "${track}", available: false`));
+  }
+  assert.match(page, /type SecondarySwitcher/);
+  assert.match(page, /secondarySwitcher=\{switcher\}/);
+  assert.match(page, /secondaryEmptyState=\{trackAvailable \? undefined : selectedTrack\.emptyState\}/);
+  assert.match(page, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(page, /track: activeTrackId/);
+});
+
 test("CT-AI curriculum covers all seven official syllabus chapters plus labs and exam review", () => {
   const ids = catalog.taxonomy.map((module) => module.id);
 
