@@ -138,7 +138,7 @@ function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean
     : topicTaxonomy;
 
   return {
-    version: 19,
+    version: 18,
     title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
     description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
     lastReviewedAt: "2026-08-28",
