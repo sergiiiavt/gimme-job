@@ -11,15 +11,15 @@ Testing is not a phase that begins after coding. It is a set of activities that 
 | Common STLC wording | Closest ISTQB test activities |
 | --- | --- |
 | Requirement analysis | Test analysis, supported by early reviews of the test basis |
-| Test planning | Test planning plus test monitoring and control |
+| Test planning | Mainly test planning; test monitoring and control is continuous across the whole test effort |
 | Test case development | Test analysis, test design and test implementation |
 | Test environment setup | Mainly test implementation |
 | Test execution | Test execution |
 | Test cycle closure | Test completion |
 
-The mapping is approximate, not a second official ISTQB lifecycle. In particular, environment setup is not a separate ISTQB activity, and test case development compresses several distinct activities into one label.
+The mapping is approximate, not a second official ISTQB lifecycle. In particular, environment setup is not a separate ISTQB activity, test case development compresses several distinct activities into one label, and monitoring/control must not be treated as a sub-step that happens only during planning.
 
-The activities are **not a strict waterfall**. Planning, monitoring, analysis, design, implementation, execution and completion overlap, repeat and feed one another. In Agile and continuous delivery, the same activities may occur many times inside a sprint or even for a single change.
+The activities are **not a strict waterfall**. A useful simplified working flow is **planning → analysis → design → implementation → execution → completion**. **Test monitoring and control is cross-cutting:** it starts once there is a plan or other baseline to compare against and continues while the other activities happen, feeding changes back into priorities, scope, resources, schedule and planning. In Agile and continuous delivery, the same activities may occur many times inside a sprint or even for a single change.
 
 ## Testing throughout the SDLC
 
@@ -53,17 +53,17 @@ If a requirement changes, the test basis changed. That should trigger impact ana
 
 Planning defines the intended approach before execution consumes time. Good planning answers what is in scope, which risks matter, what evidence is required, which environments and data are needed, who owns decisions and what conditions define sufficient completion.
 
-Monitoring compares reality with the plan. Control changes the plan when reality changes.
+Monitoring compares reality with the plan. Control changes the plan or the testing work when reality changes. **Monitoring and control is not a phase between planning and analysis.** Once a usable baseline exists, it continues during analysis, design, implementation, execution and completion.
 
 ```diagram
-Plan
- ↓
-Observe progress and product evidence
- ↓
-Compare with expectations
- ↓
-Adjust scope / priority / environment / schedule / depth
- ↺
+Plan / baseline
+      ↓
+Analysis → Design → Implementation → Execution → Completion
+   ↑          ↑            ↑             ↑          ↑
+   └──── continuous monitoring & control ───────────┘
+                 ↓
+      adjust priority / scope / resources /
+           schedule / depth / plan
 ```
 
 A plan that cannot change is not control; it is documentation of an old assumption.
@@ -118,7 +118,8 @@ That naturally connects confirmation testing and regression testing, covered in 
 ## Summary
 
 - STLC is a common umbrella term; the exact phase names vary by source.
-- For precise explanations, use the ISTQB activities: planning, monitoring/control, analysis, design, implementation, execution and completion.
+- For a practical flow, think planning → analysis → design → implementation → execution → completion; test monitoring/control runs continuously across that flow.
+- ISTQB still defines monitoring/control as one of the seven test activities, but its position in the syllabus list must not be read as a chronological phase before analysis or design.
 - Testing activities overlap and iterate rather than forming a strict waterfall.
 - Testing activities exist across the lifecycle, not only after development.
 - Test analysis determines what needs evidence; test design determines how to obtain it.
