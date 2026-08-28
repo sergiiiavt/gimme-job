@@ -1,5 +1,5 @@
 import httpApiDeepDive from "../testing-tools/http-api-deep-dive.json";
-import websocketGuide from "./websocket-guide.json";
+import websocketGuide from "./websocket-guide";
 
 export type ApiIntegrationTopicStatus = "under-construction" | "published";
 
