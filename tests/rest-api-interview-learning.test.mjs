@@ -5,7 +5,7 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
-test("REST API learning deep dive covers interview-critical HTTP topics in both languages", async () => {
+test("REST API learning deep dive covers core HTTP topics in both languages", async () => {
   const deepDive = await readJson("content/testing-tools/http-api-deep-dive.json");
 
   for (const markdown of [deepDive.markdown, deepDive.markdownUk]) {
@@ -155,6 +155,34 @@ test("REST and WebSocket learning are mounted under API & integration, not testi
   assert.match(interviewCatalog, /\.\.\.restApi\.questions/);
   assert.match(interviewCatalog, /\.\.\.websocket\.questions/);
   assert.match(apiPage, /ApiIntegrationPage/);
+});
+
+test("API learning presentation is training-only and collapses the long status reference", async () => {
+  const [apiCatalog, apiPage] = await Promise.all([
+    readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
+    readFile(projectFile("app/api-integration-page.tsx"), "utf8"),
+  ]);
+
+  assert.match(apiCatalog, /trainingOnlyCopy/);
+  assert.match(apiCatalog, /makeStatusCodesExpandable/);
+  assert.match(apiCatalog, /:::details/);
+  assert.match(apiCatalog, /Show full HTTP status code reference/);
+  assert.match(apiCatalog, /Показати повний довідник HTTP status codes/);
+  assert.match(apiCatalog, /Key takeaways/);
+  assert.match(apiCatalog, /Ключові висновки/);
+  assert.doesNotMatch(apiPage, /Interview and practical reference/);
+  assert.doesNotMatch(apiPage, /співбес/i);
+  assert.match(apiPage, /Training and practical reference/);
+  assert.match(apiPage, /Навчальний і практичний довідник/);
+});
+
+test("Markdown renderer treats tilde fences as code blocks", async () => {
+  const renderer = await readFile(projectFile("app/qa-markdown.tsx"), "utf8");
+  assert.match(renderer, /function parseFence/);
+  assert.match(renderer, /~\{3,/);
+  assert.match(renderer, /openingFence/);
+  assert.match(renderer, /closingFence/);
+  assert.match(renderer, /Boolean\(parseFence\(line\)\)/);
 });
 
 test("API under-construction topics remain above all published chapters", async () => {
