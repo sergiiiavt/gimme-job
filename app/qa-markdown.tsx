@@ -93,6 +93,10 @@ function parseImage(line: string) {
   return line.match(/^!\[([^\]]*)\]\(((?:https:\/\/|\/)[^\s)]+)(?:\s+"([^"]+)")?\)$/);
 }
 
+function parseFence(line: string) {
+  return line.match(/^(`{3,}|~{3,})([\w-]*)\s*$/);
+}
+
 function isTableDivider(line: string) {
   const cells = line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
   return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
@@ -107,7 +111,7 @@ function isBlockStart(lines: string[], index: number) {
   const next = lines[index + 1] ?? "";
   return !line.trim()
     || /^#{1,3}\s+/.test(line)
-    || /^```/.test(line)
+    || Boolean(parseFence(line))
     || /^:::details\s+/.test(line)
     || /^:::\s*$/.test(line)
     || /^>\s?/.test(line)
@@ -137,16 +141,19 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
       continue;
     }
 
-    const fence = line.match(/^```([\w-]*)\s*$/);
+    const fence = parseFence(line);
     if (fence) {
-      const language = fence[1] || "text";
+      const openingFence = fence[1];
+      const language = fence[2] || "text";
+      const fenceCharacter = openingFence[0];
+      const closingFence = new RegExp(`^${fenceCharacter}{${openingFence.length},}\\s*$`);
       const content: string[] = [];
       index += 1;
-      while (index < lines.length && !/^```/.test(lines[index])) {
+      while (index < lines.length && !closingFence.test(lines[index])) {
         content.push(lines[index]);
         index += 1;
       }
-      index += 1;
+      if (index < lines.length) index += 1;
       const source = content.join("\n");
       if (isRunnablePythonSource(language, source)) {
         nodes.push(<ExecutablePythonBlock code={source} key={`python-run-${nodeKey++}`} />);
