@@ -157,17 +157,19 @@ test("REST and WebSocket learning are mounted under API & integration, not testi
   assert.match(apiPage, /ApiIntegrationPage/);
 });
 
-test("API learning presentation is training-only and collapses the long status reference", async () => {
+test("API learning presentation is training-only and exposes five status-code class expanders", async () => {
   const [apiCatalog, apiPage] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("app/api-integration-page.tsx"), "utf8"),
   ]);
 
   assert.match(apiCatalog, /trainingOnlyCopy/);
-  assert.match(apiCatalog, /makeStatusCodesExpandable/);
-  assert.match(apiCatalog, /:::details/);
-  assert.match(apiCatalog, /Show full HTTP status code reference/);
-  assert.match(apiCatalog, /Показати повний довідник HTTP status codes/);
+  assert.match(apiCatalog, /makeStatusCodeGroupsExpandable/);
+  assert.match(apiCatalog, /groups\.length !== 5/);
+  assert.match(apiCatalog, /\[1-5\]xx/);
+  assert.match(apiCatalog, /:::details \$\{group\.summary\}/);
+  assert.doesNotMatch(apiCatalog, /Show full HTTP status code reference/);
+  assert.doesNotMatch(apiCatalog, /Показати повний довідник HTTP status codes/);
   assert.match(apiCatalog, /Key takeaways/);
   assert.match(apiCatalog, /Ключові висновки/);
   assert.doesNotMatch(apiPage, /Interview and practical reference/);

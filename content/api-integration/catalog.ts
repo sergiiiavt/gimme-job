@@ -40,7 +40,7 @@ function trainingOnlyCopy(markdown: string) {
     .replace("### Коротка відповідь для співбесіди", "### Ключові висновки");
 }
 
-function makeStatusCodesExpandable(markdown: string, summary: string) {
+function makeStatusCodeGroupsExpandable(markdown: string) {
   const heading = "### HTTP status codes";
   const nextHeading = "### HTTP methods";
   const headingIndex = markdown.indexOf(heading);
@@ -51,19 +51,46 @@ function makeStatusCodesExpandable(markdown: string, summary: string) {
   if (nextHeadingIndex < 0) return markdown;
 
   const before = markdown.slice(0, bodyStart);
-  const body = markdown.slice(bodyStart, nextHeadingIndex).trim();
+  const bodyLines = markdown.slice(bodyStart, nextHeadingIndex).trim().split("\n");
   const after = markdown.slice(nextHeadingIndex);
-  return `${before}\n\n:::details ${summary}\n\n${body}\n\n:::${after}`;
+  const tableHeader = bodyLines.slice(0, 2);
+  const groups: { summary: string; rows: string[] }[] = [];
+  let trailingStart = bodyLines.length;
+  let currentGroup: { summary: string; rows: string[] } | null = null;
+
+  for (let index = 2; index < bodyLines.length; index += 1) {
+    const line = bodyLines[index];
+    const groupMatch = line.match(/^\| \*\*([1-5]xx\s+—\s+.+?)\*\* \|\|$/);
+    if (groupMatch) {
+      currentGroup = { summary: groupMatch[1], rows: [] };
+      groups.push(currentGroup);
+      continue;
+    }
+
+    if (line.startsWith("|")) {
+      currentGroup?.rows.push(line);
+      continue;
+    }
+
+    if (line.trim()) {
+      trailingStart = index;
+      break;
+    }
+  }
+
+  if (groups.length !== 5) return markdown;
+
+  const expandableGroups = groups
+    .map((group) => `:::details ${group.summary}\n\n${tableHeader.join("\n")}\n${group.rows.join("\n")}\n\n:::`)
+    .join("\n\n");
+  const trailing = bodyLines.slice(trailingStart).join("\n").trim();
+  const trailingBlock = trailing ? `\n\n${trailing}` : "";
+
+  return `${before}\n\n${expandableGroups}${trailingBlock}${after}`;
 }
 
-const httpMarkdown = makeStatusCodesExpandable(
-  trainingOnlyCopy(httpApiDeepDive.markdown),
-  "Show full HTTP status code reference",
-);
-const httpMarkdownUk = makeStatusCodesExpandable(
-  trainingOnlyCopy(httpApiDeepDive.markdownUk),
-  "Показати повний довідник HTTP status codes",
-);
+const httpMarkdown = makeStatusCodeGroupsExpandable(trainingOnlyCopy(httpApiDeepDive.markdown));
+const httpMarkdownUk = makeStatusCodeGroupsExpandable(trainingOnlyCopy(httpApiDeepDive.markdownUk));
 const websocketMarkdown = trainingOnlyCopy(websocketGuide.markdown);
 const websocketMarkdownUk = trainingOnlyCopy(websocketGuide.markdownUk);
 
