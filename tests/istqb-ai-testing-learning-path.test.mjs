@@ -119,6 +119,24 @@ test("curriculum ships practical labs and a complete original 40-question mock",
   assert.match(mock?.markdown ?? "", /not ISTQB sample questions/i);
 });
 
+test("mock exam is rendered as a selectable assessment with scoring and review", async () => {
+  const page = await read("app/istqb-ai-testing-page.tsx");
+  const component = await read("app/istqb-ai-mock-exam.tsx");
+
+  assert.match(page, /import IstqbAiMockExam from "\.\/istqb-ai-mock-exam"/);
+  assert.match(page, /isMockExam\s*\? <IstqbAiMockExam markdown=\{activeModule\.markdown\}/);
+  assert.match(component, /type="radio"/);
+  assert.match(component, />Check score</);
+  assert.match(component, /Answer all \$\{exam\.questions\.length\} questions before checking the score/);
+  assert.match(component, /correct answer:/i);
+  assert.match(component, /aria-live="polite"/);
+  assert.match(component, /if \(score >= 36\)/);
+  assert.match(component, /if \(score >= 32\)/);
+  assert.match(component, /if \(score >= 28\)/);
+  assert.match(component, />Retry exam</);
+  assert.doesNotMatch(component, /localStorage|sessionStorage/);
+});
+
 test("official reference registry contains current syllabus, sample exam, glossary and quality references", () => {
   const ids = new Set(catalog.sources.map((source) => source.id));
   for (const id of [
