@@ -8,6 +8,11 @@ import react from "@vitejs/plugin-react";
 register();
 
 const { default: catalog } = await import("../content/istqb-ai-testing/catalog.ts");
+const {
+  evaluateIstqbAiMockExam,
+  parseIstqbAiMockExam,
+  scoreIstqbAiMockExam,
+} = await import("../app/istqb-ai-mock-exam-model.ts");
 const mockMarkdown = catalog.taxonomy.find((module) => module.id === "mock-exam")?.markdown ?? "";
 
 const HOOKS_SPECIFIER = "virtual:istqb-ai-mock-exam-hooks";
@@ -75,9 +80,7 @@ const server = await createServer({
   server: { middlewareMode: true },
 });
 
-const { default: IstqbAiMockExam, parseIstqbAiMockExam } = await server.ssrLoadModule(
-  "/app/istqb-ai-mock-exam.tsx",
-);
+const { default: IstqbAiMockExam } = await server.ssrLoadModule("/app/istqb-ai-mock-exam.tsx");
 
 function state(overrides = {}) {
   const values = [];
@@ -129,7 +132,7 @@ test.after(async () => {
   await server.close();
 });
 
-test("parses all mock questions, choices, answers, and explanations", () => {
+test("parses and scores the complete CT-AI mock exam model", () => {
   assert.equal(parsed.questions.length, 40);
   assert.match(parsed.introduction, /40-question original mock exam/);
   assert.deepEqual(parsed.questions[0].options.map((option) => option.key), ["A", "B", "C", "D"]);
@@ -140,6 +143,15 @@ test("parses all mock questions, choices, answers, and explanations", () => {
   const empty = parseIstqbAiMockExam("");
   assert.equal(empty.introduction, "");
   assert.deepEqual(empty.questions, []);
+
+  assert.equal(scoreIstqbAiMockExam(parsed.questions, answerMap(parsed, 40)), 40);
+  assert.equal(scoreIstqbAiMockExam(parsed.questions, answerMap(parsed, 20)), 20);
+  assert.equal(scoreIstqbAiMockExam(parsed.questions, answerMap(parsed, 0)), 0);
+
+  assert.equal(evaluateIstqbAiMockExam(36).label, "Strong");
+  assert.equal(evaluateIstqbAiMockExam(32).label, "Close");
+  assert.equal(evaluateIstqbAiMockExam(28).label, "Material gaps remain");
+  assert.equal(evaluateIstqbAiMockExam(27).label, "More preparation needed");
 });
 
 test("renders selectable questions with progress before submission", () => {
