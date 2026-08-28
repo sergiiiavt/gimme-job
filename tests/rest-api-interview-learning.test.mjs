@@ -47,6 +47,26 @@ test("REST API learning deep dive covers interview-critical HTTP topics in both 
   }
 });
 
+test("WebSocket learning guide covers build, protocol, testing and scale in both languages", async () => {
+  const websocket = await readJson("content/api-integration/websocket-guide.json");
+
+  for (const markdown of [websocket.markdown, websocket.markdownUk]) {
+    assert.match(markdown, /WebSocket/);
+    assert.match(markdown, /101 Switching Protocols/);
+    assert.match(markdown, /Sec-WebSocket-Key/);
+    assert.match(markdown, /Ping\/Pong/);
+    assert.match(markdown, /1000/);
+    assert.match(markdown, /1011/);
+    assert.match(markdown, /reconnect/i);
+    assert.match(markdown, /backpressure/i);
+    assert.match(markdown, /Origin/);
+    assert.match(markdown, /concurrent/i);
+    assert.match(markdown, /wscat/);
+    assert.match(markdown, /websockets\.connect/);
+    assert.match(markdown, /WebSocketServer/);
+  }
+});
+
 test("REST API interview collection keeps the requested topics explicit and bilingual", async () => {
   const restApi = await readJson("content/interview/rest-api-qa.json");
   assert.equal(restApi.questions.length, 9);
@@ -84,7 +104,35 @@ test("REST API interview collection keeps the requested topics explicit and bili
   assert.match(upload.shortAnswer, /JSON metadata/);
 });
 
-test("REST API learning is mounted under API & integration, not testing tools", async () => {
+test("WebSocket interview collection keeps protocol and QA scenarios explicit", async () => {
+  const websocket = await readJson("content/interview/websocket-qa.json");
+  assert.equal(websocket.questions.length, 5);
+
+  const byId = new Map(websocket.questions.map((question) => [question.id, question]));
+  for (const id of [
+    "websocket-purpose-vs-http-sse-polling",
+    "websocket-handshake-frames-lifecycle",
+    "websocket-how-would-you-test",
+    "websocket-heartbeat-close-reconnect",
+    "websocket-security-auth-origin-scale",
+  ]) {
+    assert.ok(byId.has(id), `${id} must remain an explicit WebSocket interview question`);
+  }
+
+  for (const question of websocket.questions) {
+    assert.equal(question.category, "Web, API and data");
+    assert.ok(question.tags.includes("websocket"));
+    assert.ok(question.questionUk?.trim());
+    assert.ok(question.shortAnswerUk?.trim());
+    assert.ok(question.exampleUk?.trim());
+  }
+
+  assert.match(byId.get("websocket-handshake-frames-lifecycle").shortAnswer, /101 Switching Protocols/);
+  assert.match(byId.get("websocket-how-would-you-test").shortAnswer, /reconnect/i);
+  assert.match(byId.get("websocket-security-auth-origin-scale").shortAnswer, /backpressure/i);
+});
+
+test("REST and WebSocket learning are mounted under API & integration, not testing tools", async () => {
   const [apiCatalog, testingToolsCatalog, interviewCatalog, apiPage] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/testing-tools/catalog.ts"), "utf8"),
@@ -93,14 +141,18 @@ test("REST API learning is mounted under API & integration, not testing tools", 
   ]);
 
   assert.match(apiCatalog, /http-api-deep-dive\.json/);
+  assert.match(apiCatalog, /websocket-guide\.json/);
   assert.match(apiCatalog, /HTTP, REST & CORS foundations/);
+  assert.match(apiCatalog, /WebSocket: build, test & debug/);
   assert.doesNotMatch(testingToolsCatalog, /http-api-deep-dive\.json/);
   assert.match(interviewCatalog, /rest-api-qa\.json/);
+  assert.match(interviewCatalog, /websocket-qa\.json/);
   assert.match(interviewCatalog, /\.\.\.restApi\.questions/);
+  assert.match(interviewCatalog, /\.\.\.websocket\.questions/);
   assert.match(apiPage, /ApiIntegrationPage/);
 });
 
-test("API under-construction topics remain above the published HTTP chapter", async () => {
+test("API under-construction topics remain above all published chapters", async () => {
   const apiCatalog = await readFile(projectFile("content/api-integration/catalog.ts"), "utf8");
   const placeholderIds = [
     "contracts-and-schemas",
@@ -108,13 +160,15 @@ test("API under-construction topics remain above the published HTTP chapter", as
     "messaging-and-events",
     "failure-behaviour",
   ];
-  const publishedIndex = apiCatalog.indexOf('id: "http-foundations"');
+  const firstPublishedIndex = apiCatalog.indexOf('id: "http-foundations"');
+  const websocketIndex = apiCatalog.indexOf('id: "websocket"');
 
-  assert.ok(publishedIndex > -1, "Published HTTP topic is missing");
+  assert.ok(firstPublishedIndex > -1, "Published HTTP topic is missing");
+  assert.ok(websocketIndex > firstPublishedIndex, "WebSocket must remain a published topic after HTTP foundations");
   for (const id of placeholderIds) {
     const placeholderIndex = apiCatalog.indexOf(`"${id}"`);
     assert.ok(placeholderIndex > -1, `${id} placeholder is missing`);
-    assert.ok(placeholderIndex < publishedIndex, `${id} must stay above the published HTTP topic`);
+    assert.ok(placeholderIndex < firstPublishedIndex, `${id} must stay above published API topics`);
   }
   assert.match(apiCatalog, /status: "under-construction"/);
 });
