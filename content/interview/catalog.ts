@@ -2,6 +2,7 @@ import common from "./common-qa.json";
 import canonical from "./canonical-baseline.json";
 import databaseSql from "./database-sql-qa.json";
 import restApi from "./rest-api-qa.json";
+import websocket from "./websocket-qa.json";
 import sqlPracticalInterview from "./sql-practical-interview";
 import sqlCodeExamples from "./sql-code-examples";
 import sqlDataCodeExamples from "./sql-data-code-examples";
@@ -99,6 +100,7 @@ const allQuestions = [
   ...canonical.questions,
   ...databaseSql.questions,
   ...restApi.questions,
+  ...websocket.questions,
   ...sqlPracticalInterview.questions,
   ...observabilityProduction.questions,
   ...restoredCoverage.questions,
