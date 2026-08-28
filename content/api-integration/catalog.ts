@@ -31,6 +31,42 @@ const underConstruction = (
   markdownUk: `## У розробці\n\n${descriptionUk}\n\nЦей топік залишається у learning path і буде розгорнутий у повний розділ із перевіреними джерелами.`,
 });
 
+function trainingOnlyCopy(markdown: string) {
+  return markdown
+    .replace("## REST API interview deep dive", "## HTTP, REST & CORS foundations")
+    .replace("## REST API — поглиблений блок для співбесід", "## HTTP, REST та CORS — основи")
+    .replace("**Interview distinctions:**", "**Key distinctions:**")
+    .replace("### Interview-ready summary\n\nA strong answer should mention that WebSocket provides", "### Key takeaways\n\nWebSocket provides")
+    .replace("### Коротка відповідь для співбесіди", "### Ключові висновки");
+}
+
+function makeStatusCodesExpandable(markdown: string, summary: string) {
+  const heading = "### HTTP status codes";
+  const nextHeading = "### HTTP methods";
+  const headingIndex = markdown.indexOf(heading);
+  if (headingIndex < 0) return markdown;
+
+  const bodyStart = headingIndex + heading.length;
+  const nextHeadingIndex = markdown.indexOf(`\n${nextHeading}`, bodyStart);
+  if (nextHeadingIndex < 0) return markdown;
+
+  const before = markdown.slice(0, bodyStart);
+  const body = markdown.slice(bodyStart, nextHeadingIndex).trim();
+  const after = markdown.slice(nextHeadingIndex);
+  return `${before}\n\n:::details ${summary}\n\n${body}\n\n:::${after}`;
+}
+
+const httpMarkdown = makeStatusCodesExpandable(
+  trainingOnlyCopy(httpApiDeepDive.markdown),
+  "Show full HTTP status code reference",
+);
+const httpMarkdownUk = makeStatusCodesExpandable(
+  trainingOnlyCopy(httpApiDeepDive.markdownUk),
+  "Показати повний довідник HTTP status codes",
+);
+const websocketMarkdown = trainingOnlyCopy(websocketGuide.markdown);
+const websocketMarkdownUk = trainingOnlyCopy(websocketGuide.markdownUk);
+
 export const catalog = {
   title: "API & integration testing",
   titleUk: "API та інтеграційне тестування",
@@ -69,11 +105,11 @@ export const catalog = {
       id: "http-foundations",
       label: "HTTP, REST & CORS foundations",
       labelUk: "HTTP, REST та CORS — основи",
-      description: "Interview-ready HTTP and REST reference: methods, concrete status codes, headers, authentication, file upload, multipart data, CORS and debugging.",
-      descriptionUk: "Повний interview-ready довідник з HTTP та REST: methods, конкретні status codes, headers, authentication, file upload, multipart data, CORS та debugging.",
+      description: "Training reference for HTTP and REST: methods, concrete status codes, headers, authentication, file upload, multipart data, CORS and debugging.",
+      descriptionUk: "Навчальний довідник з HTTP та REST: methods, конкретні status codes, headers, authentication, file upload, multipart data, CORS та debugging.",
       status: "published" as const,
-      markdown: httpApiDeepDive.markdown,
-      markdownUk: httpApiDeepDive.markdownUk,
+      markdown: httpMarkdown,
+      markdownUk: httpMarkdownUk,
     },
     {
       id: "websocket",
@@ -82,8 +118,8 @@ export const catalog = {
       description: "A complete QA guide to WebSocket use cases, handshake and frames, client/server implementation, reconnects, heartbeats, authentication, security, performance and test automation.",
       descriptionUk: "Повний QA guide з WebSocket: use cases, handshake і frames, client/server implementation, reconnects, heartbeats, authentication, security, performance та test automation.",
       status: "published" as const,
-      markdown: websocketGuide.markdown,
-      markdownUk: websocketGuide.markdownUk,
+      markdown: websocketMarkdown,
+      markdownUk: websocketMarkdownUk,
     },
   ],
 };
