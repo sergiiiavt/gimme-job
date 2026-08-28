@@ -12,6 +12,17 @@ import styles from "./qa-fundamentals-page.module.css";
 
 type ApiIntegrationPageProps = Readonly<{ mode: "public" | "personal" }>;
 
+const publishedTopicMeta = {
+  "http-foundations": {
+    en: ["HTTP + REST + CORS", "Statuses · headers · auth · files", "Interview and practical reference"],
+    uk: ["HTTP + REST + CORS", "Статуси · headers · auth · files", "Матеріал для співбесід і практики"],
+  },
+  websocket: {
+    en: ["Handshake · frames · lifecycle", "Client/server code · pytest · CLI", "Auth · reconnect · load · backpressure"],
+    uk: ["Handshake · frames · lifecycle", "Client/server code · pytest · CLI", "Auth · reconnect · load · backpressure"],
+  },
+} as const;
+
 export default function ApiIntegrationPage({ mode }: ApiIntegrationPageProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -49,6 +60,12 @@ export default function ApiIntegrationPage({ mode }: ApiIntegrationPageProps) {
 
   const pageTitle = language === "uk" ? apiIntegrationCatalog.titleUk : apiIntegrationCatalog.title;
   const chapterNumber = topics.findIndex((topic) => topic.id === activeTopic.id) + 1;
+  const metaByLanguage = publishedTopicMeta[activeTopic.id as keyof typeof publishedTopicMeta];
+  const meta = metaByLanguage?.[language] ?? [
+    language === "uk" ? "API та integration" : "API & integration",
+    language === "uk" ? "Практичний learning path" : "Practical learning path",
+    language === "uk" ? "Source-backed матеріал" : "Source-backed material",
+  ];
 
   return (
     <main className="kb-shell">
@@ -90,11 +107,7 @@ export default function ApiIntegrationPage({ mode }: ApiIntegrationPageProps) {
               <LearningHero
                 description={localizedDescription}
                 eyebrow={`API & integration · ${language === "uk" ? "Розділ" : "Chapter"} ${String(chapterNumber).padStart(2, "0")} / ${String(topics.length).padStart(2, "0")}`}
-                meta={[
-                  language === "uk" ? "HTTP + REST + CORS" : "HTTP + REST + CORS",
-                  language === "uk" ? "Статуси · headers · auth · files" : "Statuses · headers · auth · files",
-                  language === "uk" ? "Матеріал для співбесід і практики" : "Interview and practical reference",
-                ]}
+                meta={[...meta]}
                 title={pageTitle}
               />
 
