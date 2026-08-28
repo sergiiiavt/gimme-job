@@ -48,9 +48,13 @@ test("REST API learning deep dive covers interview-critical HTTP topics in both 
 });
 
 test("WebSocket learning guide covers build, protocol, testing and scale in both languages", async () => {
-  const websocket = await readJson("content/api-integration/websocket-guide.json");
+  const source = await readFile(projectFile("content/api-integration/websocket-guide.ts"), "utf8");
+  const ukMarker = "const markdownUk = String.raw`";
+  const ukIndex = source.indexOf(ukMarker);
+  assert.ok(ukIndex > 0, "Ukrainian WebSocket guide is missing");
 
-  for (const markdown of [websocket.markdown, websocket.markdownUk]) {
+  const documents = [source.slice(0, ukIndex), source.slice(ukIndex)];
+  for (const markdown of documents) {
     assert.match(markdown, /WebSocket/);
     assert.match(markdown, /101 Switching Protocols/);
     assert.match(markdown, /Sec-WebSocket-Key/);
@@ -141,7 +145,8 @@ test("REST and WebSocket learning are mounted under API & integration, not testi
   ]);
 
   assert.match(apiCatalog, /http-api-deep-dive\.json/);
-  assert.match(apiCatalog, /websocket-guide\.json/);
+  assert.match(apiCatalog, /\.\/websocket-guide/);
+  assert.doesNotMatch(apiCatalog, /websocket-guide\.json/);
   assert.match(apiCatalog, /HTTP, REST & CORS foundations/);
   assert.match(apiCatalog, /WebSocket: build, test & debug/);
   assert.doesNotMatch(testingToolsCatalog, /http-api-deep-dive\.json/);
