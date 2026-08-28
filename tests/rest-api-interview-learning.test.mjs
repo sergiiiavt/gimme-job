@@ -177,3 +177,10 @@ test("API under-construction topics remain above all published chapters", async 
   }
   assert.match(apiCatalog, /status: "under-construction"/);
 });
+
+test("API presentation shells follow the repository Sonar coverage policy", async () => {
+  const sonar = await readFile(projectFile("sonar-project.properties"), "utf8");
+  assert.match(sonar, /app\/api-integration-page\.tsx/);
+  assert.match(sonar, /app\/learn\/api\/page\.tsx/);
+  assert.match(sonar, /sonar\.javascript\.lcov\.reportPaths=coverage\/lcov\.info/);
+});
