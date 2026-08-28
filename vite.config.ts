@@ -3,34 +3,10 @@ import { existsSync } from "node:fs";
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import { localAgentInstanceId } from "./agent/src/identity.js";
-
-const LOCAL_PLACEHOLDER_DATABASE_ID = "00000000-0000-4000-8000-000000000000";
+import { getCloudflareViteDevMode } from "./scripts/cloudflare-vite-dev-mode.mjs";
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
-
-const localOnlyBindingConfig = {
-  main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
-  d1_databases: [
-    {
-      binding: "DB",
-      database_name: "gimmejob-db",
-      database_id: LOCAL_PLACEHOLDER_DATABASE_ID,
-    },
-  ],
-};
-
-const remoteCapableBindingConfig = {
-  ...localOnlyBindingConfig,
-  ai: { binding: "AI" },
-  vectorize: [
-    {
-      binding: "RAG_INDEX",
-      index_name: "gimmejob-rag",
-    },
-  ],
-};
 
 export default defineConfig(async () => {
   const environmentPath = path.join(process.cwd(), ".env");
@@ -45,8 +21,7 @@ export default defineConfig(async () => {
   // `npm run local:web` must be fully local and work without a Wrangler login.
   // Workers AI and Vectorize have no local simulation, so omit those bindings in
   // this explicit local workflow. RAG already degrades to lexical retrieval.
-  const isOfflineLocalWeb = process.env.npm_lifecycle_event === "local:web";
-  const bindingConfig = isOfflineLocalWeb ? localOnlyBindingConfig : remoteCapableBindingConfig;
+  const cloudflareDevMode = getCloudflareViteDevMode(process.env.npm_lifecycle_event);
 
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
@@ -76,8 +51,8 @@ export default defineConfig(async () => {
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         inspectorPort: false,
-        remoteBindings: !isOfflineLocalWeb,
-        config: bindingConfig,
+        remoteBindings: cloudflareDevMode.remoteBindings,
+        config: cloudflareDevMode.bindingConfig,
       }),
     ],
   };
