@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { register } from "tsx/esm/api";
 import { createServer } from "vite";
@@ -146,7 +145,7 @@ test("parses all mock questions, choices, answers, and explanations", () => {
 test("renders selectable questions with progress before submission", () => {
   const html = renderToStaticMarkup(build({ 0: { 1: "C", 2: "B" } }));
 
-  assert.match(html, /2<!-- --> \/ <!-- -->40<!-- --> answered/);
+  assert.match(html, /<strong>2<\/strong> \/ 40 answered/);
   assert.match(html, /type="radio"/);
   assert.match(html, /Check score/);
   assert.doesNotMatch(html, /Practice score/);
