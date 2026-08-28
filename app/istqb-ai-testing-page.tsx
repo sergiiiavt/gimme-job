@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import istqbAiTestingCatalog from "@/content/istqb-ai-testing/catalog";
 import type { IstqbAiTestingModule } from "@/content/istqb-ai-testing/modules";
 import { contentHref } from "./content-deep-links";
+import IstqbAiMockExam from "./istqb-ai-mock-exam";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry } from "./learning-document-ui";
 import LearningVideo from "./learning-video";
 import { sectionNavigationHref } from "./navigation-paths";
@@ -41,6 +42,13 @@ const certificationTrackLayout = `
 }
 `;
 
+const mockExamHeadings = [
+  { id: "questions-1-10", text: "Questions 1–10" },
+  { id: "questions-11-20", text: "Questions 11–20" },
+  { id: "questions-21-30", text: "Questions 21–30" },
+  { id: "questions-31-40", text: "Questions 31–40" },
+];
+
 export default function IstqbAiTestingPage() {
   const pathname = usePathname();
   const router = useRouter();
@@ -60,6 +68,7 @@ export default function IstqbAiTestingPage() {
     : firstModuleId;
   const moduleIndex = Math.max(0, modules.findIndex((chapter) => chapter.id === activeModuleId));
   const activeModule = trackAvailable ? modules[moduleIndex] ?? modules[0] : undefined;
+  const isMockExam = activeModule?.id === "mock-exam";
 
   useEffect(() => {
     const trackInUrl = searchParams.get("track") === activeTrackId;
@@ -85,11 +94,13 @@ export default function IstqbAiTestingPage() {
     const source = sourceMap.get(id);
     return source ? [source] : [];
   }) ?? [];
-  const markdownHeadings = activeModule
-    ? extractMarkdownHeadings(activeModule.markdown)
-      .filter((heading) => heading.level === 2)
-      .map(({ id, text }) => ({ id, text }))
-    : [];
+  const markdownHeadings = isMockExam
+    ? mockExamHeadings
+    : activeModule
+      ? extractMarkdownHeadings(activeModule.markdown)
+        .filter((heading) => heading.level === 2)
+        .map(({ id, text }) => ({ id, text }))
+      : [];
   const headings = activeModule?.videos?.length
     ? [...markdownHeadings, { id: "recommended-videos", text: "Recommended videos" }]
     : markdownHeadings;
@@ -190,7 +201,9 @@ export default function IstqbAiTestingPage() {
                 <div className={styles.layout}>
                   <div className={styles.document}>
                     <article className={styles.article}>
-                      <MarkdownDocument markdown={activeModule.markdown}/>
+                      {isMockExam
+                        ? <IstqbAiMockExam markdown={activeModule.markdown}/>
+                        : <MarkdownDocument markdown={activeModule.markdown}/>}
 
                       {activeModule.videos?.length ? (
                         <section>
