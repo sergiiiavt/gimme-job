@@ -1,0 +1,130 @@
+{
+  "collection": "websocket-interview-deep-dive",
+  "questions": [
+    {
+      "id": "websocket-purpose-vs-http-sse-polling",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "What is WebSocket, where is it used, and when would you choose it instead of ordinary HTTP, polling or Server-Sent Events?",
+      "shortAnswer": "WebSocket is a persistent full-duplex protocol that lets both client and server send messages at any time over one long-lived connection. It is useful for chats, live notifications, collaborative editing, games, dashboards, trading feeds, telemetry and other interactive low-latency features. Ordinary HTTP is better for normal request/response CRUD. Polling is simpler for infrequent updates, while SSE is often sufficient when only the server needs to push events to a browser. The choice should follow communication direction, frequency, latency and operational complexity rather than the label real-time.",
+      "strongAnswerSignals": [
+        "persistent bidirectional connection",
+        "concrete real-time use cases",
+        "compares WebSocket with polling and SSE"
+      ],
+      "questionUk": "Що таке WebSocket, де він використовується і коли його варто обирати замість звичайного HTTP, polling або Server-Sent Events?",
+      "shortAnswerUk": "WebSocket — persistent full-duplex protocol, який дозволяє client і server надсилати messages у будь-який момент через одне long-lived connection. Він підходить для chat, live notifications, collaborative editing, games, dashboards, trading feeds, telemetry та інших interactive low-latency features. Звичайний HTTP кращий для типового request/response CRUD, polling може бути простішим для рідких updates, а SSE часто достатньо, якщо events ідуть лише server → browser. Вибір залежить від напрямку, частоти, latency та operational complexity.",
+      "strongAnswerSignalsUk": [
+        "persistent bidirectional connection",
+        "конкретні real-time use cases",
+        "порівнює WebSocket з polling та SSE"
+      ],
+      "example": "A dashboard refreshes once every five minutes, so replacing a normal HTTP request with WebSocket would add connection management without much benefit. A collaborative editor receiving edits from many users continuously is a much stronger WebSocket case.",
+      "exampleUk": "Dashboard оновлюється раз на п'ять хвилин, тому WebSocket лише додасть connection management. Collaborative editor із постійними edits від багатьох users — значно кращий WebSocket use case.",
+      "sourceIds": ["mdn-http", "asyncapi-30", "dou-qa-2022"],
+      "prevalence": "Occasional",
+      "kind": "Theory",
+      "tags": ["websocket", "real-time", "sse", "polling"]
+    },
+    {
+      "id": "websocket-handshake-frames-lifecycle",
+      "level": "Middle",
+      "category": "Web, API and data",
+      "question": "How does a WebSocket connection start, and what happens after the HTTP Upgrade handshake?",
+      "shortAnswer": "In the classic HTTP/1.1 flow the client sends a GET request with Upgrade: websocket, Connection: Upgrade, Sec-WebSocket-Key and Sec-WebSocket-Version, and a browser also sends Origin. A successful server replies with 101 Switching Protocols and Sec-WebSocket-Accept. After the handshake, the application no longer exchanges ordinary HTTP request/response pairs on that connection; it exchanges WebSocket text, binary and control frames. Ping/Pong support liveness and Close frames perform a closing handshake. One logical message can be fragmented across multiple frames.",
+      "strongAnswerSignals": [
+        "HTTP Upgrade and 101 Switching Protocols",
+        "Sec-WebSocket handshake headers",
+        "text/binary/control frames after upgrade"
+      ],
+      "questionUk": "Як починається WebSocket connection і що відбувається після HTTP Upgrade handshake?",
+      "shortAnswerUk": "У класичному HTTP/1.1 flow client надсилає GET з Upgrade: websocket, Connection: Upgrade, Sec-WebSocket-Key та Sec-WebSocket-Version; browser також передає Origin. Успішний server відповідає 101 Switching Protocols і Sec-WebSocket-Accept. Після handshake це вже не звичайні HTTP request/response на цьому connection, а WebSocket text, binary та control frames. Ping/Pong використовуються для liveness, Close — для closing handshake, а logical message може бути fragmented у декілька frames.",
+      "strongAnswerSignalsUk": [
+        "HTTP Upgrade та 101 Switching Protocols",
+        "Sec-WebSocket handshake headers",
+        "text/binary/control frames після upgrade"
+      ],
+      "example": "DevTools shows a successful 101 response, but the UI still receives no chat messages. That means the transport handshake succeeded and the next investigation should move to subscriptions, message schema, authorization, server publishing and frame traffic rather than the HTTP status alone.",
+      "exampleUk": "DevTools показує успішний 101, але UI не отримує chat messages. Це означає, що transport handshake пройшов, і далі треба перевіряти subscriptions, schema, authorization, server publishing та frame traffic, а не лише HTTP status.",
+      "sourceIds": ["mdn-http", "asyncapi-30"],
+      "prevalence": "Occasional",
+      "kind": "Theory",
+      "tags": ["websocket", "handshake", "frames", "http"]
+    },
+    {
+      "id": "websocket-how-would-you-test",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "question": "How would you test a WebSocket API end to end?",
+      "shortAnswer": "Start with the connection path: endpoint, TLS, handshake, Origin, authentication and subprotocol negotiation. Then test every message type for schema, required fields, boundaries, malformed payloads, text/binary handling, acknowledgement and correct recipient or room. Add ordering, duplicate, concurrent-client and fan-out scenarios. Exercise graceful and abrupt disconnects, reconnect, restored subscriptions, missed-message behavior, heartbeat and close codes. Finally test authorization per message, rate and size limits, slow consumers, many concurrent connections, reconnect storms and observability through connection/message correlation IDs.",
+      "strongAnswerSignals": [
+        "handshake plus message-contract coverage",
+        "disconnect/reconnect/heartbeat and close-code scenarios",
+        "concurrency, security, performance and observability"
+      ],
+      "questionUk": "Як би ви протестували WebSocket API end to end?",
+      "shortAnswerUk": "Почніть із connection path: endpoint, TLS, handshake, Origin, authentication та subprotocol negotiation. Потім тестуйте кожен message type: schema, required fields, boundaries, malformed payloads, text/binary, acknowledgement і правильний recipient/room. Додайте ordering, duplicates, concurrent clients та fan-out. Перевірте graceful/abrupt disconnect, reconnect, restore subscriptions, missed messages, heartbeat та close codes. Далі — authorization per message, rate/size limits, slow consumers, багато concurrent connections, reconnect storms та observability через connection/message correlation IDs.",
+      "strongAnswerSignalsUk": [
+        "handshake плюс message-contract coverage",
+        "disconnect/reconnect/heartbeat та close-code scenarios",
+        "concurrency, security, performance та observability"
+      ],
+      "example": "For a private chat, connect two authorized users and one unrelated user. Verify ordering and acknowledgements between the first two, block the third user from subscribing to the private room, then restart the server and verify that reconnect restores the intended subscription without duplicating messages.",
+      "exampleUk": "Для private chat підключіть двох authorized users і одного стороннього. Перевірте ordering та acknowledgements між першими двома, забороніть третьому subscribe до private room, потім перезапустіть server і перевірте reconnect без duplicate messages.",
+      "sourceIds": ["mdn-http", "asyncapi-30", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Test design",
+      "tags": ["websocket", "api-testing", "real-time", "concurrency"]
+    },
+    {
+      "id": "websocket-heartbeat-close-reconnect",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "question": "What should a QA engineer verify around WebSocket Ping/Pong, close codes and reconnect behavior?",
+      "shortAnswer": "Ping/Pong control frames or an application heartbeat are used to detect dead or idle peers, but the exact heartbeat and reconnect policy is application-specific. Test the expected heartbeat interval, missing responses, slow networks, proxy idle timeouts and cleanup of dead sockets. Recognize common close codes such as 1000 normal closure, 1001 going away, 1002 protocol error, 1008 policy violation, 1009 message too big and 1011 unexpected server condition. Reconnect should use bounded backoff and usually jitter, restore required authentication/subscriptions, avoid duplicate live sockets and define how missed or in-flight messages are handled.",
+      "strongAnswerSignals": [
+        "heartbeat detects dead/idle peers",
+        "recognizes important close codes",
+        "reconnect backoff, resubscription and duplicate prevention"
+      ],
+      "questionUk": "Що QA engineer має перевірити навколо WebSocket Ping/Pong, close codes та reconnect behavior?",
+      "shortAnswerUk": "Ping/Pong control frames або application heartbeat допомагають виявляти dead/idle peers, але heartbeat/reconnect policy визначається application. Тестуйте interval, missing response, slow network, proxy idle timeout та cleanup dead sockets. Варто знати 1000 normal closure, 1001 going away, 1002 protocol error, 1008 policy violation, 1009 message too big та 1011 unexpected server condition. Reconnect має використовувати bounded backoff і зазвичай jitter, відновлювати auth/subscriptions, не створювати duplicate active sockets і мати визначену поведінку для missed/in-flight messages.",
+      "strongAnswerSignalsUk": [
+        "heartbeat виявляє dead/idle peers",
+        "знає важливі close codes",
+        "reconnect backoff, resubscription та duplicate prevention"
+      ],
+      "example": "A reverse proxy closes idle sockets after 60 seconds while the application sends a heartbeat every 90 seconds. Users see periodic disconnects even though the backend is healthy. The test should expose the timeout mismatch and verify the corrected heartbeat/reconnect behavior.",
+      "exampleUk": "Reverse proxy закриває idle sockets через 60 секунд, а application heartbeat іде раз на 90 секунд. Users бачать disconnects при здоровому backend. Тест має виявити timeout mismatch і перевірити виправлений heartbeat/reconnect behavior.",
+      "sourceIds": ["mdn-http", "asyncapi-30"],
+      "prevalence": "Occasional",
+      "kind": "Troubleshooting",
+      "tags": ["websocket", "heartbeat", "close-codes", "reconnect"]
+    },
+    {
+      "id": "websocket-security-auth-origin-scale",
+      "level": "Senior",
+      "category": "Web, API and data",
+      "question": "How would you test WebSocket authentication, Origin validation, authorization and scalability?",
+      "shortAnswer": "Treat the opening connection and each application action as separate trust boundaries. Test missing, expired and revoked credentials; token or session changes while the socket is already open; unauthorized room, object and tenant subscriptions; and server-side revocation. Browser WebSocket handshakes carry Origin, so validate the intended origin policy, especially when cookies authenticate the socket, but do not confuse Origin validation with real authorization or CORS. For scale, model concurrent open connections, connection churn, messages per second, message sizes, fan-out, reconnect storms, slow consumers/backpressure, memory per socket, CPU, file descriptors, network throughput and proxy/load-balancer limits.",
+      "strongAnswerSignals": [
+        "connection and message-level authorization boundaries",
+        "Origin validation is not a replacement for auth",
+        "models both connection count and message/fan-out load"
+      ],
+      "questionUk": "Як би ви тестували WebSocket authentication, Origin validation, authorization та scalability?",
+      "shortAnswerUk": "Розглядайте opening connection і кожну application action як окремі trust boundaries. Тестуйте missing/expired/revoked credentials, зміну token/session під час active socket, unauthorized room/object/tenant subscriptions та server-side revocation. Browser WebSocket handshake передає Origin, тому перевіряйте origin policy, особливо при cookie auth, але Origin validation не замінює authorization і не є CORS. Для scale моделюйте concurrent connections, connection churn, messages/sec, message sizes, fan-out, reconnect storms, slow consumers/backpressure, memory per socket, CPU, file descriptors, network throughput та proxy/load-balancer limits.",
+      "strongAnswerSignalsUk": [
+        "connection та message-level authorization boundaries",
+        "Origin validation не замінює auth",
+        "моделює connection count і message/fan-out load"
+      ],
+      "example": "A service handles 20,000 idle sockets successfully but crashes when one event is broadcast to all clients several times per second. A useful load test therefore varies fan-out and slow-consumer behavior instead of claiming capacity from idle connection count alone.",
+      "exampleUk": "Service тримає 20,000 idle sockets, але падає, коли один event кілька разів на секунду broadcast на всіх clients. Тому load test має змінювати fan-out та slow-consumer behavior, а не оцінювати capacity лише за idle connection count.",
+      "sourceIds": ["mdn-http", "asyncapi-30", "dou-qa-2022"],
+      "prevalence": "Common",
+      "kind": "Security",
+      "tags": ["websocket", "authentication", "authorization", "origin", "performance"]
+    }
+  ]
+}
