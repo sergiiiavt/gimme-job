@@ -4,8 +4,6 @@ The default target is the local development server. Production runs require an
 explicit acknowledgement and are capped by default to 10 users and 10 minutes.
 """
 
-from __future__ import annotations
-
 import logging
 import os
 from typing import NoReturn
