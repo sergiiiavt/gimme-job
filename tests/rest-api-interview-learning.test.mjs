@@ -84,13 +84,37 @@ test("REST API interview collection keeps the requested topics explicit and bili
   assert.match(upload.shortAnswer, /JSON metadata/);
 });
 
-test("catalogs include the REST API deep-dive sources", async () => {
-  const [learningCatalog, interviewCatalog] = await Promise.all([
+test("REST API learning is mounted under API & integration, not testing tools", async () => {
+  const [apiCatalog, testingToolsCatalog, interviewCatalog, apiPage] = await Promise.all([
+    readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/testing-tools/catalog.ts"), "utf8"),
     readFile(projectFile("content/interview/catalog.ts"), "utf8"),
+    readFile(projectFile("app/learn/api/page.tsx"), "utf8"),
   ]);
 
-  assert.match(learningCatalog, /http-api-deep-dive\.json/);
+  assert.match(apiCatalog, /http-api-deep-dive\.json/);
+  assert.match(apiCatalog, /HTTP, REST & CORS foundations/);
+  assert.doesNotMatch(testingToolsCatalog, /http-api-deep-dive\.json/);
   assert.match(interviewCatalog, /rest-api-qa\.json/);
   assert.match(interviewCatalog, /\.\.\.restApi\.questions/);
+  assert.match(apiPage, /ApiIntegrationPage/);
+});
+
+test("API under-construction topics remain above the published HTTP chapter", async () => {
+  const apiCatalog = await readFile(projectFile("content/api-integration/catalog.ts"), "utf8");
+  const placeholderIds = [
+    "contracts-and-schemas",
+    "identity-and-authorization",
+    "messaging-and-events",
+    "failure-behaviour",
+  ];
+  const publishedIndex = apiCatalog.indexOf('id: "http-foundations"');
+
+  assert.ok(publishedIndex > -1, "Published HTTP topic is missing");
+  for (const id of placeholderIds) {
+    const placeholderIndex = apiCatalog.indexOf(`"${id}"`);
+    assert.ok(placeholderIndex > -1, `${id} placeholder is missing`);
+    assert.ok(placeholderIndex < publishedIndex, `${id} must stay above the published HTTP topic`);
+  }
+  assert.match(apiCatalog, /status: "under-construction"/);
 });
