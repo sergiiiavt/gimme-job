@@ -1,40 +1,37 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import viteConfig from "../vite.config.ts";
+import {
+  LOCAL_PLACEHOLDER_DATABASE_ID,
+  getCloudflareViteDevMode,
+} from "../scripts/cloudflare-vite-dev-mode.mjs";
 
-const originalLifecycleEvent = process.env.npm_lifecycle_event;
+const expectedD1Binding = {
+  binding: "DB",
+  database_name: "gimmejob-db",
+  database_id: LOCAL_PLACEHOLDER_DATABASE_ID,
+};
 
-function restoreLifecycleEvent() {
-  if (originalLifecycleEvent === undefined) {
-    delete process.env.npm_lifecycle_event;
-    return;
-  }
-  process.env.npm_lifecycle_event = originalLifecycleEvent;
-}
+test("local:web uses local D1 and never requests remote AI or Vectorize bindings", () => {
+  const mode = getCloudflareViteDevMode("local:web");
 
-test.after(restoreLifecycleEvent);
-
-async function resolveViteConfig(lifecycleEvent) {
-  process.env.npm_lifecycle_event = lifecycleEvent;
-  return viteConfig({
-    command: "serve",
-    mode: "test",
-    isSsrBuild: false,
-    isPreview: false,
-  });
-}
-
-test("local:web resolves a fully local Cloudflare Vite configuration", async () => {
-  const config = await resolveViteConfig("local:web");
-
-  assert.equal(config.server?.port, 4173);
-  assert.equal(config.server?.strictPort, true);
-  assert.ok(Array.isArray(config.plugins));
+  assert.equal(mode.isOfflineLocalWeb, true);
+  assert.equal(mode.remoteBindings, false);
+  assert.deepEqual(mode.bindingConfig.d1_databases, [expectedD1Binding]);
+  assert.equal("ai" in mode.bindingConfig, false);
+  assert.equal("vectorize" in mode.bindingConfig, false);
 });
 
-test("normal dev still resolves the remote-capable Cloudflare configuration", async () => {
-  const config = await resolveViteConfig("dev");
+test("normal dev preserves remote AI and Vectorize bindings", () => {
+  const mode = getCloudflareViteDevMode("dev");
 
-  assert.equal(config.server?.port, 4173);
-  assert.ok(Array.isArray(config.plugins));
+  assert.equal(mode.isOfflineLocalWeb, false);
+  assert.equal(mode.remoteBindings, true);
+  assert.deepEqual(mode.bindingConfig.d1_databases, [expectedD1Binding]);
+  assert.deepEqual(mode.bindingConfig.ai, { binding: "AI" });
+  assert.deepEqual(mode.bindingConfig.vectorize, [
+    {
+      binding: "RAG_INDEX",
+      index_name: "gimmejob-rag",
+    },
+  ]);
 });
