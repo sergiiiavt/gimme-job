@@ -3,7 +3,6 @@ import sourcesData from "./sources.json";
 import requiredConceptsData from "./required-concepts.json";
 import practicalExamplesEnData from "./practical-examples.en.json";
 import practicalExamplesUkData from "./practical-examples.uk.json";
-import httpApiDeepDive from "./http-api-deep-dive.json";
 import chapter01En from "./chapter-01.en.json";
 import chapter01Uk from "./chapter-01.uk.json";
 import chapter02En from "./chapter-02.en.json";
@@ -88,12 +87,6 @@ const ukrainianDocuments = [
 const englishById = new Map(englishDocuments.map((document) => [document.id, document.markdown]));
 const ukrainianById = new Map(ukrainianDocuments.map((document) => [document.id, document.markdownUk]));
 
-function withHttpApiDeepDive(markdown: string, topicId: string, locale: "en" | "uk") {
-  if (topicId !== "http-api-tools") return markdown;
-  const addition = locale === "uk" ? httpApiDeepDive.markdownUk : httpApiDeepDive.markdown;
-  return insertPracticalExamples(markdown, addition);
-}
-
 export const catalog = {
   title: "Testing & Diagnostic Tools",
   titleUk: "Інструменти тестування та діагностики",
@@ -104,16 +97,8 @@ export const catalog = {
   requiredConcepts,
   chapters: taxonomy.map((topic): LearningChapter => ({
     ...topic,
-    markdown: withHttpApiDeepDive(
-      insertPracticalExamples(englishById.get(topic.id) ?? "", practicalExamplesEn[topic.id] ?? ""),
-      topic.id,
-      "en",
-    ),
-    markdownUk: withHttpApiDeepDive(
-      insertPracticalExamples(ukrainianById.get(topic.id) ?? "", practicalExamplesUk[topic.id] ?? ""),
-      topic.id,
-      "uk",
-    ),
+    markdown: insertPracticalExamples(englishById.get(topic.id) ?? "", practicalExamplesEn[topic.id] ?? ""),
+    markdownUk: insertPracticalExamples(ukrainianById.get(topic.id) ?? "", practicalExamplesUk[topic.id] ?? ""),
   })),
 };
 
