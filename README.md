@@ -210,6 +210,7 @@ The project currently uses or integrates:
 - ESLint
 - Node test runner + LCOV coverage
 - Python `unittest`
+- Locust read-only performance workloads
 - SonarQube Cloud
 - Grafana Cloud
 - Cloudflare Workers Logs / observability
@@ -263,6 +264,13 @@ uvicorn gimmejob_ai.main:app --reload --port 8000
 ```
 
 See [`ai-service/README.md`](ai-service/README.md) for the service-auth, canonical-RAG, OpenAI, and Langfuse configuration contract.
+
+### Performance testing
+
+The authorized read-only Locust workload for the public GimmeJob surface,
+including local commands, production safety guards, Azure Load Testing setup,
+and current VUH cost notes, lives in
+[`tests/performance/gimmejob/`](tests/performance/gimmejob/README.md).
 
 ## Quality checks
 
