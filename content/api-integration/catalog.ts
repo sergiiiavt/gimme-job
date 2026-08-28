@@ -1,4 +1,5 @@
 import httpApiDeepDive from "../testing-tools/http-api-deep-dive.json";
+import websocketGuide from "./websocket-guide.json";
 
 export type ApiIntegrationTopicStatus = "under-construction" | "published";
 
@@ -73,6 +74,16 @@ export const catalog = {
       status: "published" as const,
       markdown: httpApiDeepDive.markdown,
       markdownUk: httpApiDeepDive.markdownUk,
+    },
+    {
+      id: "websocket",
+      label: "WebSocket: build, test & debug",
+      labelUk: "WebSocket: реалізація, тестування та debug",
+      description: "A complete QA guide to WebSocket use cases, handshake and frames, client/server implementation, reconnects, heartbeats, authentication, security, performance and test automation.",
+      descriptionUk: "Повний QA guide з WebSocket: use cases, handshake і frames, client/server implementation, reconnects, heartbeats, authentication, security, performance та test automation.",
+      status: "published" as const,
+      markdown: websocketGuide.markdown,
+      markdownUk: websocketGuide.markdownUk,
     },
   ],
 };
