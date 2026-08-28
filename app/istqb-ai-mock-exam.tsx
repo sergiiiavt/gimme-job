@@ -19,8 +19,15 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const answeredCount = Object.keys(answers).length;
+  const isComplete = answeredCount === exam.questions.length;
   const score = submitted ? scoreIstqbAiMockExam(exam.questions, answers) : 0;
-  const evaluation = evaluateIstqbAiMockExam(score);
+  const scorePercent = submitted && answeredCount > 0 ? Math.round((score / answeredCount) * 100) : 0;
+  const evaluation = isComplete
+    ? evaluateIstqbAiMockExam(score)
+    : {
+      label: "Partial result",
+      text: `${answeredCount} of ${exam.questions.length} questions answered. The percentage below is calculated only from the questions you answered.`,
+    };
   const groups = Array.from(
     { length: Math.ceil(exam.questions.length / GROUP_SIZE) },
     (_, index) => exam.questions.slice(index * GROUP_SIZE, (index + 1) * GROUP_SIZE),
@@ -33,10 +40,8 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
   };
 
   const checkScore = () => {
-    if (answeredCount !== exam.questions.length) {
-      const firstUnanswered = exam.questions.find((question) => !answers[question.number]);
-      setValidationMessage(`Answer all ${exam.questions.length} questions before checking the score. ${exam.questions.length - answeredCount} remaining.`);
-      document.getElementById(`mock-question-${firstUnanswered?.number ?? 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (answeredCount === 0) {
+      setValidationMessage("Answer at least one question before checking the score.");
       return;
     }
 
@@ -78,10 +83,11 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
             <div className={styles.questionList}>
               {group.map((question) => {
                 const selectedAnswer = answers[question.number];
-                const isCorrect = submitted && selectedAnswer === question.correctAnswer;
+                const hasAnswer = Boolean(selectedAnswer);
+                const isCorrect = submitted && hasAnswer && selectedAnswer === question.correctAnswer;
                 return (
                   <fieldset
-                    className={`${styles.question} ${submitted ? (isCorrect ? styles.correctQuestion : styles.incorrectQuestion) : ""}`}
+                    className={`${styles.question} ${submitted && hasAnswer ? (isCorrect ? styles.correctQuestion : styles.incorrectQuestion) : ""}`}
                     id={`mock-question-${question.number}`}
                     key={question.number}
                   >
@@ -89,7 +95,7 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
                     <div className={styles.options}>
                       {question.options.map((option) => {
                         const selected = selectedAnswer === option.key;
-                        const correct = submitted && option.key === question.correctAnswer;
+                        const correct = submitted && hasAnswer && option.key === question.correctAnswer;
                         const wrongSelected = submitted && selected && !correct;
                         return (
                           <label
@@ -110,7 +116,7 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
                       })}
                     </div>
 
-                    {submitted ? (
+                    {submitted && hasAnswer ? (
                       <div className={styles.feedback}>
                         <strong>{isCorrect ? "Correct" : `Incorrect · correct answer: ${question.correctAnswer}`}</strong>
                         <span>{question.explanation}</span>
@@ -127,7 +133,7 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
       <div className={styles.submitPanel}>
         <div>
           <strong>Ready to evaluate?</strong>
-          <span>Your answer key stays hidden until you submit all 40 answers.</span>
+          <span>You can check a partial result at any time. Unanswered questions keep their answers hidden.</span>
         </div>
         <button onClick={checkScore} type="button">Check score</button>
       </div>
@@ -136,15 +142,17 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
       {submitted ? (
         <section className={styles.results} id="exam-results" aria-live="polite">
           <div className={styles.scoreBlock}>
-            <span>Practice score</span>
-            <strong>{score}<small> / {exam.questions.length}</small></strong>
-            <span>{Math.round((score / exam.questions.length) * 100)}%</span>
+            <span>{isComplete ? "Practice score" : "Partial score"}</span>
+            <strong>{score}<small> / {answeredCount}</small></strong>
+            <span>{scorePercent}%</span>
           </div>
           <div className={styles.evaluation}>
             <span>Evaluation</span>
             <h2>{evaluation.label}</h2>
             <p>{evaluation.text}</p>
-            <p className={styles.scoreNote}>This mock uses one question = one practice mark and is not directly convertible to the official 44-point CT-AI exam score.</p>
+            <p className={styles.scoreNote}>{isComplete
+              ? "This mock uses one question = one practice mark and is not directly convertible to the official 44-point CT-AI exam score."
+              : `Complete the remaining ${exam.questions.length - answeredCount} questions for a full-test evaluation.`}</p>
             <button onClick={retry} type="button">Retry exam</button>
           </div>
         </section>
