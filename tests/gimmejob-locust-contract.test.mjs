@@ -12,6 +12,11 @@ const requirements = readFileSync(
 );
 
 test("GimmeJob Locust workload remains production-acknowledged and bounded", () => {
+  assert.doesNotMatch(
+    locustfile,
+    /from\s+__future__\s+import/,
+    "Azure Load Testing prepends generated code, so future imports are not valid in the uploaded script",
+  );
   assert.match(locustfile, /GIMMEJOB_PRODUCTION_ACK/);
   assert.match(locustfile, /GIMMEJOB_MAX_USERS/);
   assert.match(locustfile, /GIMMEJOB_MAX_RUN_SECONDS/);
