@@ -12,8 +12,11 @@
   position: fixed;
   inset: 18px;
   z-index: 1000;
-  margin: 0;
+  display: flex;
+  height: calc(100vh - 36px);
   max-height: calc(100vh - 36px);
+  flex-direction: column;
+  margin: 0;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
 }
 
@@ -25,8 +28,9 @@
 }
 
 .expanded .grid {
-  height: 100%;
+  height: auto;
   min-height: 0;
+  flex: 1 1 auto;
 }
 
 .panel {
@@ -318,6 +322,12 @@
   color: #d4d4d4;
 }
 
+.expanded .databasePanel {
+  max-height: 42%;
+  flex: 0 1 auto;
+  overflow-y: auto;
+}
+
 .databaseHeader {
   display: flex;
   min-height: 48px;
@@ -458,10 +468,17 @@
   word-break: break-word;
 }
 
-.databaseTable th {
+.databaseTable th,
+.outputScroll table thead th {
   background: #202020;
-  color: #dcdcdc;
-  font-weight: 700;
+  color: #dcdcdc !important;
+  font-weight: 700 !important;
+}
+
+.outputScroll table thead th {
+  border-bottom: 1px solid #303030 !important;
+  padding: 7px 9px !important;
+  font-size: 11px;
 }
 
 .databaseTable th span,
@@ -508,6 +525,7 @@
 
   .expanded {
     inset: 8px;
+    height: calc(100vh - 16px);
     max-height: calc(100vh - 16px);
   }
 
