@@ -122,7 +122,17 @@ function isBlockStart(lines: string[], index: number) {
     || /^<!--/.test(line);
 }
 
-export default function MarkdownDocument({ headingIdOverrides = {}, markdown, usageByHeading = {} }: { headingIdOverrides?: Record<string, string>; markdown: string; usageByHeading?: Record<string, MarkdownUsageFrequency> }) {
+export default function MarkdownDocument({
+  flushTables = false,
+  headingIdOverrides = {},
+  markdown,
+  usageByHeading = {},
+}: {
+  flushTables?: boolean;
+  headingIdOverrides?: Record<string, string>;
+  markdown: string;
+  usageByHeading?: Record<string, MarkdownUsageFrequency>;
+}) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const nodes: ReactNode[] = [];
   let index = 0;
@@ -178,9 +188,13 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         index += 1;
       }
       if (index < lines.length) index += 1;
+      const flushTable = content.some((contentLine) => contentLine.trim() === "<!-- flush-table -->");
+      const detailsContent = flushTable
+        ? content.filter((contentLine) => contentLine.trim() !== "<!-- flush-table -->")
+        : content;
       nodes.push(
         <details
-          className="qa-md-details"
+          className={flushTable ? "qa-md-details qa-md-details-flush-table" : "qa-md-details"}
           key={`details-${nodeKey++}`}
           style={{ background: "#f8faf7", border: "1px solid #dfe5dc", borderRadius: 10, margin: "20px 0", overflow: "hidden" }}
         >
@@ -192,9 +206,15 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
           </summary>
           <div
             className="qa-md-details-body"
-            style={{ borderTop: "1px solid #e3e8e3", color: "#4e5d55", fontSize: 14, lineHeight: 1.7, padding: "16px 18px 4px" }}
+            style={{
+              borderTop: "1px solid #e3e8e3",
+              color: "#4e5d55",
+              fontSize: 14,
+              lineHeight: 1.7,
+              padding: flushTable ? 0 : "16px 18px 4px",
+            }}
           >
-            <MarkdownDocument markdown={content.join("\n")} />
+            <MarkdownDocument flushTables={flushTable} markdown={detailsContent.join("\n")} />
           </div>
         </details>,
       );
@@ -267,8 +287,12 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         index += 1;
       }
       nodes.push(
-        <div className="qa-md-table-wrap" key={`table-${nodeKey++}`}>
-          <table>
+        <div
+          className={flushTables ? "qa-md-table-wrap qa-md-table-wrap-flush" : "qa-md-table-wrap"}
+          key={`table-${nodeKey++}`}
+          style={flushTables ? { border: 0, borderRadius: 0, margin: 0 } : undefined}
+        >
+          <table style={flushTables ? { margin: 0, width: "100%" } : undefined}>
             <thead><tr>{headers.map((cell, cellIndex) => <th key={cellIndex}>{parseInline(cell)}</th>)}</tr></thead>
             <tbody>{rows.map((row, rowIndex) => <tr key={rowIndex}>{headers.map((_, cellIndex) => <td key={cellIndex}>{parseInline(row[cellIndex] ?? "")}</td>)}</tr>)}</tbody>
           </table>
