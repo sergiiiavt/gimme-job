@@ -58,6 +58,10 @@ _BLOCKED_ATTRIBUTES = {
     "modules", "open_url", "popen", "postMessage", "request", "run_sync", "spawn", "sys",
     "system", "urlopen", "WebSocket", "WebTransport", "XMLHttpRequest",
 }
+_ALLOWED_DUNDER_ATTRIBUTES = {
+    "__aenter__", "__aexit__", "__enter__", "__exit__", "__init__", "__iter__", "__len__",
+    "__next__", "__repr__", "__str__",
+}
 _BLOCKED_NAMES = {"js", "micropip", "pyodide", "pyodide_js"}
 
 
@@ -85,8 +89,8 @@ def _validate(tree):
             if isinstance(node.func, _ast.Attribute) and node.func.attr in _BLOCKED_ATTRIBUTES:
                 raise RuntimeError(f"'{node.func.attr}' is disabled in the learning runner.")
         elif isinstance(node, _ast.Attribute):
-            if node.attr.startswith("__"):
-                raise RuntimeError("Dunder attribute access is disabled in the learning runner.")
+            if node.attr.startswith("__") and node.attr not in _ALLOWED_DUNDER_ATTRIBUTES:
+                raise RuntimeError(f"Dunder attribute '{node.attr}' is disabled in the learning runner.")
             if node.attr in _BLOCKED_ATTRIBUTES:
                 raise RuntimeError(f"Attribute '{node.attr}' is disabled in the learning runner.")
         elif isinstance(node, _ast.Name) and node.id in _BLOCKED_NAMES:
