@@ -41,6 +41,10 @@ function trainingOnlyCopy(markdown: string) {
     .replace("### Коротка відповідь для співбесіди", "### Ключові висновки");
 }
 
+function normalizeInlineCode(markdown: string) {
+  return markdown.replaceAll("\\`", "`");
+}
+
 function makeStatusCodeGroupsExpandable(markdown: string) {
   const heading = "### HTTP status codes";
   const nextHeading = "### HTTP methods";
@@ -91,10 +95,10 @@ function makeStatusCodeGroupsExpandable(markdown: string) {
 }
 
 const httpMarkdown = makeStatusCodeGroupsExpandable(
-  improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdown), "en"),
+  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdown), "en")),
 );
 const httpMarkdownUk = makeStatusCodeGroupsExpandable(
-  improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdownUk), "uk"),
+  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdownUk), "uk")),
 );
 const websocketMarkdown = trainingOnlyCopy(websocketGuide.markdown);
 const websocketMarkdownUk = trainingOnlyCopy(websocketGuide.markdownUk);
