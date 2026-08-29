@@ -16,8 +16,19 @@ const trackOptions = [
   { id: "robot-framework", label: "Robot Framework", labelUk: "Robot Framework", available: true, moduleIds: ["robot-framework"] },
   { id: "automation", label: "Web / API / Mobile", labelUk: "Web / API / Mobile", available: true, moduleIds: ["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"] },
   { id: "architecture", label: "Architecture", labelUk: "Архітектура", available: true, moduleIds: ["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"] },
-  { id: "real-projects", label: "Real Projects", labelUk: "Реальні проєкти", available: true, moduleIds: ["desktop-automation-lab"] },
-  { id: "reference-framework", label: "Reference Framework", labelUk: "Reference Framework", available: true, moduleIds: ["reference-framework"] },
+  {
+    id: "real-projects",
+    label: "Desktop Automation Example",
+    labelUk: "Desktop Automation Example",
+    available: true,
+    moduleIds: [
+      "desktop-automation-overview",
+      "desktop-automation-python",
+      "desktop-automation-dotnet",
+      "desktop-automation-ci",
+    ],
+  },
+  { id: "reference-framework", label: "Framework Reference", labelUk: "Framework Reference", available: true, moduleIds: ["reference-framework"] },
 ];
 
 const automationTrackLayout = `
