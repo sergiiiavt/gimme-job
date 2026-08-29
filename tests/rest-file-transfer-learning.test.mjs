@@ -39,3 +39,29 @@ test("file-transfer guide replaces the old short upload section in both language
   assert.match(guide, /How files are transferred through a REST API/);
   assert.match(guide, /Як файли передаються через REST API/);
 });
+
+test("published file-transfer learning explains that drag-and-drop does not convert a file to binary", async () => {
+  const catalog = await readFile(projectFile("content/api-integration/catalog.ts"), "utf8");
+
+  assert.match(catalog, /function clarifyBinaryFileMeaning/);
+  assert.match(catalog, /A file does not become binary in the browser/);
+  assert.match(catalog, /Файл не стає binary у browser/);
+  assert.match(catalog, /already exists on disk as bytes/);
+  assert.match(catalog, /вже лежить на диску як bytes/);
+  assert.match(catalog, /JavaScript .*File.* object/);
+  assert.match(catalog, /File object → HTTP body → server bytes/);
+  assert.match(catalog, /File object → HTTP body → server bytes → stored file/);
+  assert.match(catalog, /FF D8 FF E0/);
+  assert.match(catalog, /Binary does not mean .*encrypted/);
+  assert.match(catalog, /Binary не означає .*зашифрований/);
+  assert.match(catalog, /text file those bytes are interpreted using an encoding/);
+  assert.match(catalog, /text file ці bytes інтерпретуються через encoding/);
+});
+
+test("four-hash file-transfer subsections are normalized into rendered titles", async () => {
+  const catalog = await readFile(projectFile("content/api-integration/catalog.ts"), "utf8");
+
+  assert.match(catalog, /function normalizeLearningMarkdown/);
+  assert.match(catalog, /replace\(\/\^####\\s\+\/gm, "### "\)/);
+  assert.match(catalog, /normalizeLearningMarkdown\(clarifyBinaryFileMeaning/);
+});
