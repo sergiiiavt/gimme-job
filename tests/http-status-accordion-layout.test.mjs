@@ -5,15 +5,15 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 test("HTTP status code accordions show only the table without changing generic details layout", async () => {
-  const [catalog, renderer, styles, layout] = await Promise.all([
-    readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
+  const [httpGuide, renderer, styles, layout] = await Promise.all([
+    readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
     readFile(projectFile("app/qa-markdown.tsx"), "utf8"),
     readFile(projectFile("app/http-status-accordion.css"), "utf8"),
     readFile(projectFile("app/layout.tsx"), "utf8"),
   ]);
 
-  assert.match(catalog, /:::details \$\{group\.summary\}/);
-  assert.match(catalog, /<!-- flush-table -->/);
+  assert.equal((httpGuide.match(/:::details [1-5]xx/g) ?? []).length, 10, "Both languages must define all five status-code accordions");
+  assert.equal((httpGuide.match(/<!-- flush-table -->/g) ?? []).length, 10, "Every status-code accordion must opt into the flush-table presentation");
 
   assert.match(renderer, /const FLUSH_TABLE_MARKER = "<!-- flush-table -->"/);
   assert.match(renderer, /function detailsPresentation/);
