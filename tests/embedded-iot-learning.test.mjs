@@ -37,7 +37,7 @@ test("embedded and IoT curriculum is bilingual, source-backed and complete", asy
     for (const markdown of documents) {
       assert.match(markdown, /## 1\./, `${file} must begin a numbered learning sequence`);
       assert.match(markdown, /## Practice|## \d+\. Practice/, `${file} must include practice`);
-      assert.match(markdown, /## Quick testing lens|## QA quick reference/, `${file} must keep testing guidance separate`);
+      assert.match(markdown, /## Quick testing lens|## (?:\d+\. )?QA quick reference/, `${file} must keep testing guidance separate`);
       assert.match(markdown, /## Sources/, `${file} must include sources`);
       assert.ok(markdown.indexOf("## Sources") > markdown.indexOf("## 1."), `${file} sources must follow learning content`);
     }
