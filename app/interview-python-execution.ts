@@ -60,82 +60,116 @@ function hasUnsupportedPythonImport(source: string) {
 function scrubPythonStringsAndComments(source: string) {
   return source
     .replace(/'''[\s\S]*?'''/g, " ")
-    .replace(/\"\"\"[\s\S]*?\"\"\"/g, " ")
+    .replace(/"""[\s\S]*?"""/g, " ")
     .replace(/'(?:\\.|[^'\\])*'/g, "''")
-    .replace(/\"(?:\\.|[^\"\\])*\"/g, '\"\"')
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
     .replace(/#.*$/gm, "");
 }
 
-function collectBoundPythonNames(source: string) {
-  const bound = new Set<string>();
-  const parameters = new Set<string>();
-
+function addRegularImportBindings(source: string, bound: Set<string>) {
   for (const match of source.matchAll(/^\s*import\s+([^#\n]+)/gm)) {
     for (const part of match[1].split(",")) {
       const imported = part.trim().match(/^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)(?:\s+as\s+([A-Za-z_]\w*))?$/);
       if (imported) bound.add(imported[2] ?? imported[1].split(".")[0]);
     }
   }
+}
 
+function addFromImportBindings(source: string, bound: Set<string>) {
   for (const match of source.matchAll(/^\s*from\s+[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*\s+import\s+([^#\n]+)/gm)) {
     for (const part of match[1].replace(/[()]/g, "").split(",")) {
       const imported = part.trim().match(/^([A-Za-z_]\w*)(?:\s+as\s+([A-Za-z_]\w*))?$/);
       if (imported) bound.add(imported[2] ?? imported[1]);
     }
   }
+}
 
+function addFunctionBindings(source: string, bound: Set<string>, parameters: Set<string>) {
   for (const match of source.matchAll(/^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)/gm)) {
     bound.add(match[1]);
-    for (const part of match[2].split(",")) {
-      const parameter = part.trim().replace(/^\*+/, "").match(/^([A-Za-z_]\w*)/);
-      if (parameter) {
-        bound.add(parameter[1]);
-        parameters.add(parameter[1]);
-      }
-    }
+    addParameterBindings(match[2], bound, parameters);
   }
+}
 
-  for (const match of source.matchAll(/^\s*class\s+([A-Za-z_]\w*)\b/gm)) bound.add(match[1]);
+function addParameterBindings(parameterSource: string, bound: Set<string>, parameters: Set<string>) {
+  for (const part of parameterSource.split(",")) {
+    const parameter = part.trim().replace(/^\*+/, "").match(/^([A-Za-z_]\w*)/);
+    if (!parameter) continue;
+    bound.add(parameter[1]);
+    parameters.add(parameter[1]);
+  }
+}
 
-  for (const match of source.matchAll(/^\s*([A-Za-z_]\w*)\s*(?::[^=\n]+)?=(?!=)/gm)) bound.add(match[1]);
+function addSingleNameBindings(source: string, bound: Set<string>) {
+  const patterns = [
+    /^\s*class\s+([A-Za-z_]\w*)\b/gm,
+    /^\s*([A-Za-z_]\w*)\s*(?::[^=\n]+)?=(?!=)/gm,
+    /\bfor\s+([A-Za-z_]\w*)\s+in\b/g,
+    /\bas\s+([A-Za-z_]\w*)\b/g,
+  ];
 
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) bound.add(match[1]);
+  }
+}
+
+function addTupleAssignmentBindings(source: string, bound: Set<string>) {
   for (const match of source.matchAll(/^\s*([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)+)\s*=/gm)) {
     for (const name of match[1].split(",")) bound.add(name.trim());
   }
+}
 
-  for (const match of source.matchAll(/\bfor\s+([A-Za-z_]\w*)\s+in\b/g)) bound.add(match[1]);
-  for (const match of source.matchAll(/\bas\s+([A-Za-z_]\w*)\b/g)) bound.add(match[1]);
-
+function collectBoundPythonNames(source: string) {
+  const bound = new Set<string>();
+  const parameters = new Set<string>();
+  addRegularImportBindings(source, bound);
+  addFromImportBindings(source, bound);
+  addFunctionBindings(source, bound, parameters);
+  addSingleNameBindings(source, bound);
+  addTupleAssignmentBindings(source, bound);
   return { bound, parameters };
+}
+
+function isPythonRuntimeReceiver(receiver: string, bound: Set<string>, parameters: Set<string>) {
+  if (receiver === "self" || receiver === "cls") return false;
+  if (!bound.has(receiver)) return true;
+  return parameters.has(receiver) && injectedRuntimeReceiverNames.has(receiver);
+}
+
+function hasUnboundDottedReceiver(source: string, bound: Set<string>, parameters: Set<string>) {
+  for (const match of source.matchAll(/\b([A-Za-z_]\w*)\s*\./g)) {
+    if (isPythonRuntimeReceiver(match[1], bound, parameters)) return true;
+  }
+  return false;
+}
+
+function isKnownPythonCall(name: string, previous: string | undefined, bound: Set<string>) {
+  if (previous === ".") return true;
+  return bound.has(name) || pythonBuiltinCallNames.has(name) || pythonCallLikeKeywords.has(name);
+}
+
+function hasUnboundCall(source: string, bound: Set<string>) {
+  for (const match of source.matchAll(/\b([A-Za-z_]\w*)\s*\(/g)) {
+    const previous = source.slice(0, match.index).trimEnd().at(-1);
+    if (!isKnownPythonCall(match[1], previous, bound)) return true;
+  }
+  return false;
+}
+
+function hasUnboundConstant(source: string, bound: Set<string>) {
+  for (const match of source.matchAll(/\b([A-Z][A-Z0-9_]+)\b/g)) {
+    const previous = source.slice(0, match.index).trimEnd().at(-1);
+    if (previous !== "." && !bound.has(match[1])) return true;
+  }
+  return false;
 }
 
 function hasExternalRuntimeDependency(source: string) {
   const scrubbed = scrubPythonStringsAndComments(source);
   const { bound, parameters } = collectBoundPythonNames(scrubbed);
-
-  for (const match of scrubbed.matchAll(/\b([A-Za-z_]\w*)\s*\./g)) {
-    const receiver = match[1];
-    if (receiver === "self" || receiver === "cls") continue;
-    if (!bound.has(receiver)) return true;
-    if (parameters.has(receiver) && injectedRuntimeReceiverNames.has(receiver)) return true;
-  }
-
-  for (const match of scrubbed.matchAll(/\b([A-Za-z_]\w*)\s*\(/g)) {
-    const name = match[1];
-    const previous = scrubbed.slice(0, match.index).trimEnd().at(-1);
-    if (previous === ".") continue;
-    if (bound.has(name) || pythonBuiltinCallNames.has(name) || pythonCallLikeKeywords.has(name)) continue;
-    return true;
-  }
-
-  for (const match of scrubbed.matchAll(/\b([A-Z][A-Z0-9_]+)\b/g)) {
-    const name = match[1];
-    const previous = scrubbed.slice(0, match.index).trimEnd().at(-1);
-    if (previous === "." || bound.has(name)) continue;
-    return true;
-  }
-
-  return false;
+  return hasUnboundDottedReceiver(scrubbed, bound, parameters)
+    || hasUnboundCall(scrubbed, bound)
+    || hasUnboundConstant(scrubbed, bound);
 }
 
 export function isRunnablePythonSource(language: string, source: string) {
