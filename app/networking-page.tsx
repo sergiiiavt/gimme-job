@@ -7,14 +7,14 @@ type NetworkingPageProps = Readonly<{ mode: "public" | "personal" }>;
 
 const publishedTopicMeta = {
   "protocols-and-transports": {
-    en: ["TCP · UDP · TLS · DNS", "HTTP/1.1 · HTTP/2 · HTTP/3 · QUIC", "WebSocket · gRPC · MQTT · AMQP"],
-    uk: ["TCP · UDP · TLS · DNS", "HTTP/1.1 · HTTP/2 · HTTP/3 · QUIC", "WebSocket · gRPC · MQTT · AMQP"],
+    en: ["IP · TCP · UDP · QUIC", "TLS · DNS · HTTP/1.1 · HTTP/2 · HTTP/3", "WebSocket · gRPC · AMQP"],
+    uk: ["IP · TCP · UDP · QUIC", "TLS · DNS · HTTP/1.1 · HTTP/2 · HTTP/3", "WebSocket · gRPC · AMQP"],
   },
 } as const;
 
 const defaultMeta = {
-  en: ["Networking", "Practical learning path", "Source-backed material"],
-  uk: ["Networking", "Практичний learning path", "Source-backed матеріал"],
+  en: ["Networking", "General learning path", "Source-backed material"],
+  uk: ["Networking", "Загальний learning path", "Source-backed матеріал"],
 } as const;
 
 export default function NetworkingPage({ mode }: NetworkingPageProps) {
