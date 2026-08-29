@@ -33,15 +33,15 @@ const underConstruction = (
 export const networkingCatalog = {
   title: "Networking",
   titleUk: "Networking",
-  description: "Protocols, transports and diagnostics for understanding how systems communicate below and around the application layer.",
-  descriptionUk: "Protocols, transports та diagnostics для розуміння того, як systems communicate нижче та навколо application layer.",
+  description: "A general learning path for Internet networking, protocol layering, transports, security, application protocols and diagnostics.",
+  descriptionUk: "Загальний learning path про Internet networking, protocol layering, transports, security, application protocols та diagnostics.",
   topics: [
     {
       id: "protocols-and-transports",
       label: "Protocols & transports",
       labelUk: "Protocols та transports",
-      description: "TCP, UDP, TLS, DNS, HTTP/1.1–3, QUIC, WebSocket, SSE, gRPC, MQTT, AMQP, email and file-transfer protocols with a QA troubleshooting model.",
-      descriptionUk: "TCP, UDP, TLS, DNS, HTTP/1.1–3, QUIC, WebSocket, SSE, gRPC, MQTT, AMQP, email та file-transfer protocols із QA troubleshooting model.",
+      description: "IP, TCP, UDP, QUIC, TLS, DNS, HTTP versions, WebSocket, SSE, gRPC, AMQP, email and file-transfer protocols, with Embedded & IoT kept as a separate scope.",
+      descriptionUk: "IP, TCP, UDP, QUIC, TLS, DNS, HTTP versions, WebSocket, SSE, gRPC, AMQP, email та file-transfer protocols; Embedded & IoT винесено в окремий scope.",
       status: "published" as const,
       markdown: protocolsGuide.markdown,
       markdownUk: protocolsGuide.markdownUk,
