@@ -71,8 +71,8 @@ Topic design affects permissions, observability and scaling.
 
 Subscription filters can include wildcards:
 
-- `+` matches one topic level;
-- `#` matches multiple remaining levels.
+- **+** matches one topic level;
+- **#** matches multiple remaining levels.
 
 A topic hierarchy is an application design convention, not a database schema automatically provided by MQTT.
 
@@ -106,7 +106,7 @@ Useful for current state, but dangerous if confused with an event stream.
 
 Example:
 
-- retained `online=true` can represent current availability;
+- retained **online=true** can represent current availability;
 - historical temperature measurements should usually not be modeled as “the one retained temperature event.”
 
 ## 7. MQTT sessions and subscriptions
@@ -168,12 +168,7 @@ CoAP is not “HTTP packets over UDP.” It is a separate protocol designed arou
 
 ## 11. HTTP/HTTPS on devices
 
-HTTP remains common for connected devices when:
-
-- bandwidth/power constraints are acceptable;
-- direct integration with web infrastructure matters;
-- request-response is natural;
-- implementation footprint is available.
+HTTP remains common for connected devices when bandwidth/power constraints are acceptable, direct web integration matters and request-response is natural.
 
 Typical uses:
 
@@ -198,37 +193,15 @@ Do not choose WebSocket just because updates are “real-time.” MQTT, CoAP Obs
 
 OMA LightweightM2M (LwM2M) is a device-management and service-enablement protocol designed for IoT devices.
 
-It defines standardized concepts for:
+It defines standardized concepts for bootstrap, registration, object/resource models, telemetry/observation, configuration, firmware update and device management.
 
-- device bootstrap;
-- registration;
-- object/resource model;
-- telemetry/observation;
-- configuration;
-- firmware update;
-- device management.
-
-LwM2M is commonly associated with CoAP-based transports and is particularly relevant to managed cellular/constrained fleets.
+LwM2M is strongly associated with constrained-device transports such as CoAP and is particularly relevant to managed cellular/constrained fleets.
 
 ## 14. Matter application model
 
 Matter defines an interoperable application layer for smart-home devices.
 
-Important concepts include:
-
-- node;
-- endpoint;
-- device type;
-- cluster;
-- attribute;
-- command;
-- event;
-- fabric;
-- commissioning.
-
-This gives interoperable semantics above IP connectivity.
-
-Example layering:
+Important concepts include node, endpoint, device type, cluster, attribute, command, event, fabric and commissioning.
 
 ~~~text
 Matter clusters / commands / attributes
@@ -256,34 +229,15 @@ A serial number alone is usually an identifier, not strong authentication.
 
 Authentication establishes identity. Authorization decides what that identity is allowed to do.
 
-Examples:
-
-- device certificate proves device 42;
-- topic ACL allows device 42 to publish only under its own telemetry topic;
-- backend policy allows a user to command devices belonging to that account.
+Example: a device certificate proves device 42, while a topic ACL allows device 42 to publish only under its own telemetry topic.
 
 Transport encryption alone does not solve authorization.
 
 ## 17. Telemetry design
 
-Telemetry payloads need explicit contracts:
+Telemetry payloads need explicit contracts for field names, types, units, timestamps, precision, optionality, schema version and missing/error values.
 
-- field name/ID;
-- type;
-- unit;
-- timestamp semantics;
-- precision;
-- optionality;
-- schema version;
-- missing/error values.
-
-Avoid ambiguous payloads such as:
-
-~~~json
-{"value": 17}
-~~~
-
-when it is unclear whether 17 means °C, °F, percent, raw ADC counts or something else.
+A payload containing only a field named **value = 17** is ambiguous when it is unclear whether 17 means °C, °F, percent or raw ADC counts.
 
 ## 18. Commands and idempotency
 
@@ -291,33 +245,17 @@ Commands should define what happens if they are duplicated or retried.
 
 Examples:
 
-- `set_target_temperature(21)` is naturally idempotent;
-- `increment_counter()` is not;
-- `dispense_dose()` can be safety-critical if repeated.
+- set target temperature to 21 is naturally idempotent;
+- increment counter is not;
+- dispense dose can be safety-critical if repeated.
 
-Useful command fields can include:
-
-- command ID;
-- issued timestamp;
-- expiry/deadline;
-- desired value;
-- correlation ID;
-- acknowledgement/result state.
+Useful command fields can include command ID, issued timestamp, expiry/deadline, desired value, correlation ID and acknowledgement/result state.
 
 ## 19. Offline buffering and replay
 
 Devices frequently lose connectivity.
 
-You need a policy for:
-
-- what gets buffered;
-- maximum storage;
-- overwrite/drop strategy;
-- message expiry;
-- event ordering;
-- timestamp source;
-- replay rate after reconnect;
-- duplicate handling.
+You need a policy for what gets buffered, maximum storage, overwrite/drop strategy, message expiry, ordering, timestamp source, replay rate and duplicate handling.
 
 A device that reconnects after a week can overload a backend if it immediately replays every measurement without rate control.
 
@@ -325,37 +263,19 @@ A device that reconnects after a week can overload a backend if it immediately r
 
 Distributed IoT data often depends on accurate time.
 
-Possible sources:
+Possible sources include RTC, NTP/SNTP, cellular network time, GNSS or gateway-provided time.
 
-- RTC;
-- NTP/SNTP;
-- cellular network time;
-- GNSS;
-- gateway-provided time.
-
-Distinguish:
-
-- event occurrence time;
-- device transmission time;
-- broker/backend receive time.
-
-Clock drift and reset can make these diverge.
+Distinguish event occurrence time, device transmission time and broker/backend receive time. Clock drift and reset can make these diverge.
 
 ## 21. Digital twins / device shadows
 
 Cloud platforms often maintain a server-side representation of device state, sometimes called a digital twin or device shadow.
 
-A common pattern distinguishes:
-
-- desired state;
-- reported state;
-- metadata/version.
+A common pattern distinguishes desired state, reported state and metadata/version.
 
 This is a cloud/application pattern, not an MQTT protocol feature by itself.
 
 ## 22. Backend architecture
-
-A typical IoT backend can include:
 
 ~~~text
 device
@@ -426,7 +346,7 @@ High-value application-layer IoT tests include:
 
 - [OASIS — MQTT Version 5.0](https://www.oasis-open.org/standard/mqtt-v5-0-os/)
 - [RFC 7252 — Constrained Application Protocol (CoAP)](https://www.rfc-editor.org/rfc/rfc7252)
-- [OMA SpecWorks — LightweightM2M](https://www.openmobilealliance.org/release/LightweightM2M/)
+- [OMA — LightweightM2M](https://oma-knowledge-base.openmobilealliance.org/specifications/lwm2m/introduction/)
 - [Connectivity Standards Alliance — Matter](https://csa-iot.org/all-solutions/matter/)
 - [RFC 8613 — Object Security for Constrained RESTful Environments (OSCORE)](https://www.rfc-editor.org/rfc/rfc8613)
 `;
@@ -437,29 +357,19 @@ const markdownUk = String.raw`Після появи connectivity device все �
 
 ## 1. Connectivity ≠ application protocol
 
-Examples:
-
-- Wi-Fi дає IP network, але application може використовувати HTTP/MQTT/WebSocket.
-- Cellular дає wide-area IP, але protocol все одно може бути MQTT/HTTPS.
-- Thread дає IPv6 mesh; Matter — application model поверх нього.
-- RS-485 — electrical layer; Modbus RTU — application messaging.
+Wi-Fi дає IP network, але application може використовувати HTTP/MQTT/WebSocket. Cellular дає wide-area IP, але protocol усе одно може бути MQTT/HTTPS. Thread дає IPv6 mesh, а Matter — application model поверх нього. RS-485 — electrical layer, Modbus RTU — application messaging.
 
 ## 2. Common IoT patterns
 
-### Telemetry
-Device → backend measurements/events.
+**Telemetry:** device → backend measurements/events.
 
-### Commands
-Backend/controller → device action.
+**Commands:** backend/controller → device action.
 
-### Reported state
-Що device каже про current state.
+**Reported state:** що device каже про current state.
 
-### Desired state
-Що controller хоче отримати.
+**Desired state:** що controller хоче отримати.
 
-### Events
-Discrete facts that happened.
+**Events:** discrete facts that happened.
 
 Не змішуй ці concepts без явної model.
 
@@ -483,10 +393,7 @@ devices/42/state/desired
 devices/42/commands
 ~~~
 
-Wildcards:
-
-- `+` — one level;
-- `#` — remaining levels.
+Wildcards: **+** = one level, **#** = remaining levels.
 
 Topic hierarchy — application design, не automatic database schema.
 
@@ -500,8 +407,6 @@ No MQTT-level delivery acknowledgement guarantee.
 
 Retries until acknowledged; **duplicates possible**.
 
-Application має бути готовий до duplicate business effects.
-
 ### QoS 2 — exactly once на MQTT delivery level
 
 Larger handshake. Це не automatic exactly-once для database/downstream business transaction.
@@ -514,111 +419,59 @@ Broker зберігає latest retained value і віддає новому subsc
 
 ## 7. Sessions
 
-Session behavior визначає, чи subscriptions/queued messages survive reconnect.
-
-Questions:
-
-- stable client ID?
-- pending QoS survives?
-- session lifetime?
-- two clients same ID?
+Session behavior визначає, чи subscriptions/queued messages survive reconnect. Важливі stable client ID, pending QoS, session lifetime та duplicate client IDs.
 
 ## 8. Keep Alive та Last Will
 
-Keep Alive допомагає detect broken connection.
-
-Last Will — broker-published message після unexpected disconnect.
-
-Корисно для presence, але треба правильно поєднати з retained/reconnect logic.
+Keep Alive допомагає detect broken connection. Last Will — broker-published message після unexpected disconnect.
 
 ## 9. MQTT 5 features
 
 Reason codes, user properties, message expiry, response topic/correlation data, topic aliases, receive limits, session expiry.
 
-Use лише те, що підтримує fleet/broker compatibility.
-
 ## 10. CoAP
 
 CoAP — web-style application protocol для constrained nodes/networks, commonly over UDP.
 
-Concepts:
-
-- resources/URI;
-- confirmable/non-confirmable;
-- message ID/token;
-- retransmission;
-- response codes;
-- Observe;
-- DTLS/OSCORE options.
+Concepts: resources/URI, confirmable/non-confirmable, message ID/token, retransmission, response codes, Observe, DTLS/OSCORE.
 
 CoAP ≠ HTTP packets over UDP.
 
 ## 11. HTTP/HTTPS on devices
 
-Use cases: provisioning, config, firmware download, telemetry batches, local API, cloud REST API.
+Use cases: provisioning, configuration, firmware download, telemetry batches, local API, cloud REST API.
 
 HTTP deep dive — у Networking/API tracks.
 
 ## 12. WebSocket on devices
 
-Long-lived bidirectional channel для capable devices/gateways.
-
-Real-time requirement не означає automatically WebSocket; MQTT/CoAP/HTTP можуть бути кращі за power/reconnect model.
+Long-lived bidirectional channel для capable devices/gateways. Real-time requirement не означає automatically WebSocket.
 
 ## 13. LwM2M
 
-OMA LightweightM2M — IoT device-management/service protocol.
-
-Concepts:
-
-- bootstrap;
-- registration;
-- object/resource model;
-- observation;
-- config;
-- firmware update;
-- device management.
-
-Часто використовується з CoAP-based transports.
+OMA LightweightM2M — IoT device-management/service protocol з bootstrap, registration, object/resource model, observation, config, firmware update та device management.
 
 ## 14. Matter application model
 
-Matter concepts:
-
-- node;
-- endpoint;
-- device type;
-- cluster;
-- attribute;
-- command;
-- event;
-- fabric;
-- commissioning.
+Matter concepts: node, endpoint, device type, cluster, attribute, command, event, fabric, commissioning.
 
 ~~~text
-Matter clusters/commands/attributes
-              ↓
-             IP
-              ↓
-      Thread / Wi-Fi / Ethernet
+Matter application
+        ↓
+IP
+        ↓
+Thread / Wi-Fi / Ethernet
 ~~~
 
 ## 15. Device identity
 
-Possible credentials:
-
-- device certificate;
-- hardware-backed key;
-- per-device secret;
-- serial + separate credential;
-- SIM/eSIM network identity.
+Possible credentials: device certificate, hardware-backed key, per-device secret, serial + separate credential, SIM/eSIM network identity.
 
 Serial number — identifier, не strong authentication сам по собі.
 
 ## 16. Authentication vs authorization
 
-Authentication = хто ти.
-Authorization = що тобі дозволено.
+Authentication = хто ти. Authorization = що тобі дозволено.
 
 Example: certificate proves device 42; topic ACL дозволяє publish лише own telemetry.
 
@@ -626,35 +479,31 @@ Example: certificate proves device 42; topic ACL дозволяє publish лиш
 
 Contract має визначати field, type, unit, timestamp, precision, optionality, version, error/missing semantics.
 
-`{"value":17}` — ambiguous без unit/meaning.
+Value 17 без unit/meaning — ambiguous.
 
 ## 18. Commands та idempotency
 
 Duplicate/retry behavior має бути defined.
 
-- `set_target(21)` — naturally idempotent;
-- `increment()` — ні;
-- `dispense_dose()` — potentially safety-critical duplicate.
+Set target = naturally idempotent; increment = not; dispense dose = dangerous duplicate.
 
 Useful fields: command ID, issued time, expiry, correlation ID, acknowledgement/result.
 
 ## 19. Offline buffering/replay
 
-Define buffer selection, max storage, drop policy, expiry, ordering, timestamp source, replay rate, duplicates.
+Define max storage, drop policy, expiry, ordering, timestamp source, replay rate, duplicates.
 
 100k buffered events після reconnect можуть overload backend.
 
 ## 20. Time synchronization
 
-Sources: RTC, NTP/SNTP, cellular, GNSS, gateway.
+RTC, NTP/SNTP, cellular, GNSS, gateway.
 
 Distinguish event time, transmission time, backend receive time.
 
 ## 21. Digital twins / shadows
 
-Cloud pattern з desired/reported state та version metadata.
-
-Це application/cloud pattern, не MQTT feature automatically.
+Cloud pattern з desired/reported state та version metadata. Це application/cloud pattern, не MQTT feature automatically.
 
 ## 22. Backend architecture
 
@@ -719,7 +568,7 @@ Why per-device credentials better than shared fleet password?
 
 - [OASIS — MQTT 5.0](https://www.oasis-open.org/standard/mqtt-v5-0-os/)
 - [RFC 7252 — CoAP](https://www.rfc-editor.org/rfc/rfc7252)
-- [OMA SpecWorks — LightweightM2M](https://www.openmobilealliance.org/release/LightweightM2M/)
+- [OMA — LightweightM2M](https://oma-knowledge-base.openmobilealliance.org/specifications/lwm2m/introduction/)
 - [Connectivity Standards Alliance — Matter](https://csa-iot.org/all-solutions/matter/)
 - [RFC 8613 — OSCORE](https://www.rfc-editor.org/rfc/rfc8613)
 `;
