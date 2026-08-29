@@ -43,8 +43,8 @@ const websocketMarkdownUk = normalizeWebsocketLearningCopy(websocketGuide.markdo
 export const catalog = {
   title: "API & integration testing",
   titleUk: "API та інтеграційне тестування",
-  description: "Protocols, contracts, authentication, data exchange, distributed state and failure handling between systems.",
-  descriptionUk: "Протоколи, контракти, authentication, обмін даними, distributed state та обробка збоїв між системами.",
+  description: "HTTP API semantics, contracts, authentication, data exchange, distributed state and failure handling between systems. Protocol and transport fundamentals live in Networking.",
+  descriptionUk: "HTTP API semantics, contracts, authentication, обмін даними, distributed state та обробка збоїв між systems. Protocol і transport fundamentals винесені в Networking.",
   topics: [
     underConstruction(
       "contracts-and-schemas",
@@ -76,10 +76,10 @@ export const catalog = {
     ),
     {
       id: "http-foundations",
-      label: "HTTP, REST & CORS foundations",
-      labelUk: "HTTP, REST та CORS — основи",
-      description: "From request/response anatomy to methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS and systematic API debugging.",
-      descriptionUk: "Від anatomy request/response до methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS та системного API debugging.",
+      label: "HTTP API semantics: REST, status codes & CORS",
+      labelUk: "HTTP API semantics: REST, status codes та CORS",
+      description: "Practical HTTP API behavior: request/response anatomy, methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS and systematic API debugging. HTTP version and transport mechanics are covered in Networking.",
+      descriptionUk: "Практична HTTP API behavior: request/response anatomy, methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS та системний API debugging. HTTP versions і transport mechanics покриті в Networking.",
       status: "published" as const,
       markdown: httpFoundations.markdown,
       markdownUk: httpFoundations.markdownUk,
