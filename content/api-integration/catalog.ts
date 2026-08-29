@@ -81,7 +81,7 @@ function makeStatusCodeGroupsExpandable(markdown: string) {
   if (groups.length !== 5) return markdown;
 
   const expandableGroups = groups
-    .map((group) => `:::details ${group.summary}\n\n${tableHeader.join("\n")}\n${group.rows.join("\n")}\n\n:::`)
+    .map((group) => `:::details ${group.summary}\n\n<!-- flush-table -->\n${tableHeader.join("\n")}\n${group.rows.join("\n")}\n\n:::`)
     .join("\n\n");
   const trailing = bodyLines.slice(trailingStart).join("\n").trim();
   const trailingBlock = trailing ? `\n\n${trailing}` : "";

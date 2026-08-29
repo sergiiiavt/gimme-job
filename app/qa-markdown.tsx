@@ -18,6 +18,8 @@ const usageBadgeLabel: Record<MarkdownUsageFrequency, string> = {
   rare: "Rare",
 };
 
+const FLUSH_TABLE_MARKER = "<!-- flush-table -->";
+
 function UsageBadge({ usage }: { usage: MarkdownUsageFrequency }) {
   return (
     <span className="qa-md-usage-badge" data-usage={usage}>
@@ -106,6 +108,15 @@ function tableCells(line: string) {
   return line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
 }
 
+function detailsPresentation(content: string[]) {
+  const flushTable = content.some((contentLine) => contentLine.trim() === FLUSH_TABLE_MARKER);
+  return {
+    className: flushTable ? "qa-md-details qa-md-details-flush-table" : "qa-md-details",
+    markdown: content.filter((contentLine) => contentLine.trim() !== FLUSH_TABLE_MARKER).join("\n"),
+    padding: flushTable ? 0 : "16px 18px 4px",
+  };
+}
+
 function isBlockStart(lines: string[], index: number) {
   const line = lines[index] ?? "";
   const next = lines[index + 1] ?? "";
@@ -178,9 +189,10 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         index += 1;
       }
       if (index < lines.length) index += 1;
+      const presentation = detailsPresentation(content);
       nodes.push(
         <details
-          className="qa-md-details"
+          className={presentation.className}
           key={`details-${nodeKey++}`}
           style={{ background: "#f8faf7", border: "1px solid #dfe5dc", borderRadius: 10, margin: "20px 0", overflow: "hidden" }}
         >
@@ -192,9 +204,9 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
           </summary>
           <div
             className="qa-md-details-body"
-            style={{ borderTop: "1px solid #e3e8e3", color: "#4e5d55", fontSize: 14, lineHeight: 1.7, padding: "16px 18px 4px" }}
+            style={{ borderTop: "1px solid #e3e8e3", color: "#4e5d55", fontSize: 14, lineHeight: 1.7, padding: presentation.padding }}
           >
-            <MarkdownDocument markdown={content.join("\n")} />
+            <MarkdownDocument markdown={presentation.markdown} />
           </div>
         </details>,
       );

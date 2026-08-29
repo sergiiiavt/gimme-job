@@ -1,0 +1,10 @@
+.qa-md-details-flush-table .qa-md-table-wrap {
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+}
+
+.qa-md-details-flush-table .qa-md-table-wrap table {
+  margin: 0;
+  width: 100%;
+}
