@@ -1,6 +1,7 @@
 "use client";
 
 import embeddedIotCatalog from "@/content/embedded-iot/catalog";
+import { waitingForReviewBannerStyle } from "./learning-review-status";
 import TopicLearningPage from "./topic-learning-page";
 
 type EmbeddedIotPageProps = Readonly<{ mode: "public" | "personal" }>;
@@ -47,14 +48,17 @@ const defaultMeta = {
 
 export default function EmbeddedIotPage({ mode }: EmbeddedIotPageProps) {
   return (
-    <TopicLearningPage
-      activeSection="embedded"
-      catalog={embeddedIotCatalog}
-      defaultMeta={defaultMeta}
-      defaultTopicId="foundations"
-      mode={mode}
-      publishedTopicMeta={publishedTopicMeta}
-      secondaryTitle="Embedded & IoT"
-    />
+    <>
+      <style>{waitingForReviewBannerStyle}</style>
+      <TopicLearningPage
+        activeSection="embedded"
+        catalog={embeddedIotCatalog}
+        defaultMeta={defaultMeta}
+        defaultTopicId="foundations"
+        mode={mode}
+        publishedTopicMeta={publishedTopicMeta}
+        secondaryTitle="Embedded & IoT"
+      />
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import sqlCurriculum from "@/content/data-learning/catalog";
 import LearningDocumentPage from "./learning-document-page";
+import { waitingForReviewBannerStyle } from "./learning-review-status";
 
 const sqlModuleIds = sqlCurriculum.taxonomy.map((module) => module.id);
 
@@ -35,10 +36,12 @@ const dataTrackLayout = `
 export default function DataLearningPage({ mode }: { mode: "public" | "personal" }) {
   const searchParams = useSearchParams();
   const requestedTopic = searchParams.get("topic") ?? undefined;
+  const requestedTrack = searchParams.get("track");
+  const showReviewBanner = !requestedTrack || requestedTrack === "sql";
 
   return (
     <>
-      <style>{dataTrackLayout}</style>
+      <style>{`${dataTrackLayout}${showReviewBanner ? waitingForReviewBannerStyle : ""}`}</style>
       <LearningDocumentPage
         curriculum={sqlCurriculum}
         defaultTrackId="sql"
