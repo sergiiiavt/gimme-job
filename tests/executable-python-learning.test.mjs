@@ -75,6 +75,7 @@ test("browser runner is isolated, bounded, and robust during runtime startup", (
   assert.match(runnerWorker, /_ALLOWED_IMPORTS/);
   assert.match(runnerWorker, /_BLOCKED_NAMES = \{"js", "micropip", "pyodide", "pyodide_js"\}/);
   assert.match(runnerWorker, /Import .* is disabled in the learning runner/);
-  assert.match(runnerWorker, /Dunder attribute access is disabled/);
+  assert.match(runnerWorker, /_ALLOWED_DUNDER_ATTRIBUTES/);
+  assert.match(runnerWorker, /Dunder attribute .* is disabled in the learning runner/);
   assert.match(runnerWorker, /_safe_builtins\["__import__"\] = _safe_import/);
 });
