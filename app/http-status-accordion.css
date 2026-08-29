@@ -1,10 +1,34 @@
+.qa-md-details-flush-table .qa-md-details-body {
+  margin: 0;
+  padding: 0;
+}
+
 .qa-md-details-flush-table .qa-md-table-wrap {
   border: 0;
   border-radius: 0;
   margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding: 0;
 }
 
 .qa-md-details-flush-table .qa-md-table-wrap table {
+  border-radius: 0;
   margin: 0;
+  min-width: 0;
+  table-layout: fixed;
   width: 100%;
+}
+
+.qa-md-details-flush-table .qa-md-table-wrap th,
+.qa-md-details-flush-table .qa-md-table-wrap td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.qa-md-details-flush-table .qa-md-table-wrap th:first-child,
+.qa-md-details-flush-table .qa-md-table-wrap td:first-child {
+  width: 84px;
 }

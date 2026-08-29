@@ -4,7 +4,7 @@ import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
-test("HTTP status code accordions use flush tables without changing generic details layout", async () => {
+test("HTTP status code accordions use flush wrapping tables without changing generic details layout", async () => {
   const [catalog, renderer, styles, layout] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("app/qa-markdown.tsx"), "utf8"),
@@ -21,8 +21,15 @@ test("HTTP status code accordions use flush tables without changing generic deta
   assert.match(renderer, /padding: flushTable \? 0 : "16px 18px 4px"/);
   assert.match(renderer, /<MarkdownDocument markdown=\{presentation\.markdown\} \/>/);
 
+  assert.match(styles, /\.qa-md-details-flush-table \.qa-md-details-body/);
   assert.match(styles, /\.qa-md-details-flush-table \.qa-md-table-wrap/);
-  assert.match(styles, /\.qa-md-details-flush-table \.qa-md-table-wrap table/);
+  assert.match(styles, /overflow-x: hidden/);
+  assert.match(styles, /table-layout: fixed/);
+  assert.match(styles, /min-width: 0/);
+  assert.match(styles, /overflow-wrap: anywhere/);
+  assert.match(styles, /white-space: normal/);
+  assert.match(styles, /word-break: break-word/);
   assert.doesNotMatch(styles, /^\.qa-md-table-wrap\s*\{/m);
+  assert.doesNotMatch(styles, /^\.qa-md-details-body\s*\{/m);
   assert.match(layout, /http-status-accordion\.css/);
 });
