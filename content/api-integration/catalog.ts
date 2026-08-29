@@ -141,6 +141,7 @@ export const catalog = {
     underConstruction(
       "messaging-and-events",
       "Messaging and events",
+      "Messaging та events",
       "Queues, delivery semantics, ordering, duplication, retries and eventual consistency.",
       "Queues, delivery semantics, ordering, duplication, retries та eventual consistency.",
     ),
