@@ -1,4 +1,5 @@
 import httpApiDeepDive from "../testing-tools/http-api-deep-dive.json";
+import { improveFileTransferGuide } from "./file-transfer-guide";
 import websocketGuide from "./websocket-guide";
 
 export type ApiIntegrationTopicStatus = "under-construction" | "published";
@@ -38,6 +39,10 @@ function trainingOnlyCopy(markdown: string) {
     .replace("**Interview distinctions:**", "**Key distinctions:**")
     .replace("### Interview-ready summary\n\nA strong answer should mention that WebSocket provides", "### Key takeaways\n\nWebSocket provides")
     .replace("### Коротка відповідь для співбесіди", "### Ключові висновки");
+}
+
+function normalizeInlineCode(markdown: string) {
+  return markdown.replaceAll("\\`", "`");
 }
 
 function makeStatusCodeGroupsExpandable(markdown: string) {
@@ -89,8 +94,12 @@ function makeStatusCodeGroupsExpandable(markdown: string) {
   return `${before}\n\n${expandableGroups}${trailingBlock}${after}`;
 }
 
-const httpMarkdown = makeStatusCodeGroupsExpandable(trainingOnlyCopy(httpApiDeepDive.markdown));
-const httpMarkdownUk = makeStatusCodeGroupsExpandable(trainingOnlyCopy(httpApiDeepDive.markdownUk));
+const httpMarkdown = makeStatusCodeGroupsExpandable(
+  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdown), "en")),
+);
+const httpMarkdownUk = makeStatusCodeGroupsExpandable(
+  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdownUk), "uk")),
+);
 const websocketMarkdown = trainingOnlyCopy(websocketGuide.markdown);
 const websocketMarkdownUk = trainingOnlyCopy(websocketGuide.markdownUk);
 
