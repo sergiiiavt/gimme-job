@@ -4,7 +4,7 @@ import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
-test("HTTP status code accordions use flush wrapping tables without changing generic details layout", async () => {
+test("HTTP status code accordions show only the table without changing generic details layout", async () => {
   const [catalog, renderer, styles, layout] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("app/qa-markdown.tsx"), "utf8"),
@@ -22,10 +22,13 @@ test("HTTP status code accordions use flush wrapping tables without changing gen
   assert.match(renderer, /<MarkdownDocument markdown=\{presentation\.markdown\} \/>/);
 
   assert.match(styles, /\.qa-md-details-flush-table \.qa-md-details-body/);
-  assert.match(styles, /\.qa-md-details-flush-table \.qa-md-table-wrap/);
-  assert.match(styles, /overflow-x: hidden/);
+  assert.match(styles, /display: contents/);
+  assert.match(styles, /margin: 0 !important/);
+  assert.match(styles, /padding: 0 !important/);
+  assert.match(styles, /border: 0 !important/);
+  assert.match(styles, /border-radius: 0 !important/);
   assert.match(styles, /table-layout: fixed/);
-  assert.match(styles, /min-width: 0/);
+  assert.match(styles, /min-width: 0 !important/);
   assert.match(styles, /overflow-wrap: anywhere/);
   assert.match(styles, /white-space: normal/);
   assert.match(styles, /word-break: break-word/);
