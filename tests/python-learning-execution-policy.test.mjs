@@ -33,13 +33,43 @@ test("Python learning runner stays enabled only for self-contained browser-safe 
       runnable: true,
     },
     {
+      name: "safe import aliases",
+      source: "import json as js, math as m\nprint(js.loads('{\\\"n\\\": 4}')['n'] + int(m.sqrt(4)))",
+      runnable: true,
+    },
+    {
+      name: "safe from import alias",
+      source: "from collections import Counter as C\ncounts = C(['qa', 'qa'])\nprint(counts['qa'])",
+      runnable: true,
+    },
+    {
       name: "local class",
       source: "class Counter:\n    def __init__(self):\n        self.value = 0\n\n    def bump(self):\n        self.value += 1\n\ncounter = Counter()\ncounter.bump()\nprint(counter.value)",
       runnable: true,
     },
     {
+      name: "class receiver and bound uppercase member",
+      source: "class Mode:\n    ACTIVE = 1\n\nprint(Mode.ACTIVE)",
+      runnable: true,
+    },
+    {
       name: "ordinary value parameter",
       source: "def normalize(text):\n    return text.strip().lower()\n\nprint(normalize('  QA  '))",
+      runnable: true,
+    },
+    {
+      name: "tuple assignment and for target",
+      source: "left, right = (1, 2)\nfor value in [left, right]:\n    print(value)",
+      runnable: true,
+    },
+    {
+      name: "with as binding",
+      source: "import contextlib\nwith contextlib.nullcontext(3) as value:\n    print(value)",
+      runnable: true,
+    },
+    {
+      name: "bound uppercase constant",
+      source: "API_URL = 'local'\nprint(API_URL)",
       runnable: true,
     },
     {
@@ -70,6 +100,11 @@ test("Python learning runner stays enabled only for self-contained browser-safe 
     {
       name: "third-party module",
       source: "import websockets\nprint(websockets)",
+      runnable: false,
+    },
+    {
+      name: "unsupported from import",
+      source: "from requests import get\nprint(get)",
       runnable: false,
     },
   ];
