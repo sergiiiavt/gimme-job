@@ -17,12 +17,12 @@ test("Python learning runner permits normal safe OOP dunder calls", async () => 
 
   assert.match(
     worker,
-    /node\.attr\.startsWith\("__"\) and node\.attr not in _ALLOWED_DUNDER_ATTRIBUTES/,
+    /node\.attr\.startswith\("__"\) and node\.attr not in _ALLOWED_DUNDER_ATTRIBUTES/,
     "dunder attributes must remain default-deny outside the safe allowlist",
   );
   assert.doesNotMatch(
     worker,
-    /if node\.attr\.startswith\("__"\\):\s*\n\s*raise RuntimeError\("Dunder attribute access is disabled/,
+    /if node\.attr\.startswith\("__"\):\s*\n\s*raise RuntimeError\("Dunder attribute access is disabled/,
     "the old blanket dunder ban must not return",
   );
 });
