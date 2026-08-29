@@ -76,8 +76,8 @@ export const catalog = {
     ),
     {
       id: "http-foundations",
-      label: "HTTP API semantics: REST, status codes & CORS",
-      labelUk: "HTTP API semantics: REST, status codes та CORS",
+      label: "HTTP, REST & CORS foundations",
+      labelUk: "HTTP, REST та CORS — основи",
       description: "Practical HTTP API behavior: request/response anatomy, methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS and systematic API debugging. HTTP version and transport mechanics are covered in Networking.",
       descriptionUk: "Практична HTTP API behavior: request/response anatomy, methods, CRUD vs REST, status codes, headers, authentication, files, caching, CORS та системний API debugging. HTTP versions і transport mechanics покриті в Networking.",
       status: "published" as const,
