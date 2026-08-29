@@ -41,8 +41,23 @@ function trainingOnlyCopy(markdown: string) {
     .replace("### Коротка відповідь для співбесіди", "### Ключові висновки");
 }
 
-function normalizeInlineCode(markdown: string) {
-  return markdown.replaceAll("\\`", "`");
+function normalizeLearningMarkdown(markdown: string) {
+  return markdown
+    .replaceAll("\\`", "`")
+    .replace(/^####\s+/gm, "### ");
+}
+
+function clarifyBinaryFileMeaning(markdown: string, language: "en" | "uk") {
+  const anchor = language === "uk"
+    ? "**REST — це не протокол передачі файлів.** REST — це архітектурний стиль. У типовому REST API реальна передача відбувається через **HTTP**, а сам файл їде як набір байтів у body HTTP request або HTTP response."
+    : "**REST is not a file-transfer protocol.** REST is an architectural style. In a typical REST API, the actual transfer happens over **HTTP**, and the file is carried as bytes in the HTTP request or response body.";
+  if (!markdown.includes(anchor)) return markdown;
+
+  const explanation = language === "uk"
+    ? `${anchor}\n\n### Що насправді означає binary і коли файл ним стає?\n\n**Файл не стає binary у browser. Він уже є bytes ще до drag-and-drop.** На SSD/HDD файл зберігається як послідовність байтів. Кожен byte — це число від 0 до 255; на рівні bits це вісім значень 0/1. Наприклад, початок JPEG може виглядати як **FF D8 FF E0 ...** у hexadecimal notation. Це не окрема «binary версія» картинки — це і є дані картинки у форматі JPEG.\n\nКоли ти перетягуєш **photo.jpg** у поле upload, відбувається приблизно так:\n\n1. **До drag-and-drop:** photo.jpg вже лежить на диску як bytes.\n2. **Drag-and-drop:** browser не конвертує файл. Він отримує доступ до нього і створює JavaScript **File object** з metadata: name, size, type та доступом до content.\n3. **До натискання Upload:** bytes зазвичай ще нікуди по мережі не відправляються. UI просто тримає selected File object.\n4. **Upload starts:** browser читає bytes файлу з File object — одразу або частинами/stream.\n5. **HTTP request:** ці bytes потрапляють у request body. У raw upload вони майже напряму є body; у **multipart/form-data** browser додає навколо них boundary та headers конкретної part.\n6. **Server:** отримує той самий byte stream, читає його та може зберегти як файл, перевірити MIME/signature, передати в object storage або обробити.\n\nТобто flow такий: **file on disk (bytes) → File object → HTTP body → server bytes → stored file**.\n\n**Binary не означає «зашифрований» або «спеціально перетворений».** Це лише означає, що дані розглядаються як raw bytes, а не як текстові символи. Навіть **hello.txt** фізично теж складається з bytes; різниця в тому, що для text file ці bytes інтерпретуються через encoding, наприклад UTF-8. Для JPEG/PDF/ZIP bytes інтерпретуються за правилами відповідного binary format. File extension і **Content-Type** допомагають сказати, **як трактувати bytes**, але не створюють їх.`
+    : `${anchor}\n\n### What does binary actually mean, and when does a file become binary?\n\n**A file does not become binary in the browser. It is already bytes before drag-and-drop.** On an SSD/HDD, a file is stored as a sequence of bytes. Each byte is a number from 0 to 255; at the bit level it is eight 0/1 values. For example, a JPEG may start with bytes shown as **FF D8 FF E0 ...** in hexadecimal notation. That is not a separate “binary version” of the image — those bytes are the JPEG data itself.\n\nWhen you drag **photo.jpg** into an upload field, the flow is roughly:\n\n1. **Before drag-and-drop:** photo.jpg already exists on disk as bytes.\n2. **Drag-and-drop:** the browser does not convert the file. It gets access to it and creates a JavaScript **File object** containing metadata such as name, size, type and access to the content.\n3. **Before Upload:** normally no file bytes have gone over the network yet. The UI simply holds the selected File object.\n4. **Upload starts:** the browser reads the file bytes from the File object, either at once or progressively as a stream.\n5. **HTTP request:** those bytes are placed into the request body. With a raw upload they are essentially the body; with **multipart/form-data** the browser surrounds them with multipart boundaries and part headers.\n6. **Server:** receives the byte stream and may store it, inspect its MIME/signature, forward it to object storage or process it.\n\nSo the flow is: **file on disk (bytes) → File object → HTTP body → server bytes → stored file**.\n\n**Binary does not mean “encrypted” or “specially converted”.** It only means the data is treated as raw bytes rather than as text characters. Even **hello.txt** is physically bytes; for a text file those bytes are interpreted using an encoding such as UTF-8. JPEG/PDF/ZIP bytes are interpreted according to their file format. The file extension and **Content-Type** help say **how to interpret the bytes**; they do not create the bytes.`;
+
+  return markdown.replace(anchor, explanation);
 }
 
 function makeStatusCodeGroupsExpandable(markdown: string) {
@@ -95,10 +110,10 @@ function makeStatusCodeGroupsExpandable(markdown: string) {
 }
 
 const httpMarkdown = makeStatusCodeGroupsExpandable(
-  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdown), "en")),
+  normalizeLearningMarkdown(clarifyBinaryFileMeaning(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdown), "en"), "en")),
 );
 const httpMarkdownUk = makeStatusCodeGroupsExpandable(
-  normalizeInlineCode(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdownUk), "uk")),
+  normalizeLearningMarkdown(clarifyBinaryFileMeaning(improveFileTransferGuide(trainingOnlyCopy(httpApiDeepDive.markdownUk), "uk"), "uk")),
 );
 const websocketMarkdown = trainingOnlyCopy(websocketGuide.markdown);
 const websocketMarkdownUk = trainingOnlyCopy(websocketGuide.markdownUk);
