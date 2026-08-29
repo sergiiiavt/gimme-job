@@ -76,5 +76,5 @@ test("networking owns general protocols while API and embedded scopes remain sep
 
   assert.doesNotMatch(apiCatalog, /protocols-guide/);
   assert.match(apiCatalog, /Protocol and transport fundamentals live in Networking/);
-  assert.match(apiCatalog, /HTTP, REST & CORS foundations/);
+  assert.match(apiCatalog, /HTTP, REST & CORS/);
 });

@@ -4,39 +4,42 @@ import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
-test("HTTP learning explains file transfer as HTTP bytes in both languages", async () => {
-  const source = await readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8");
-  const ukMarker = "const markdownUk = String.raw`";
-  const ukIndex = source.indexOf(ukMarker);
-  assert.ok(ukIndex > 0, "Ukrainian HTTP guide is missing");
+test("HTTP methodic material explains file transfer directly in both languages", async () => {
+  const [english, ukrainian] = await Promise.all([
+    readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.uk.md"), "utf8"),
+  ]);
 
-  const documents = [source.slice(0, ukIndex), source.slice(ukIndex)];
-  for (const markdown of documents) {
-    assert.match(markdown, /file on disk \(bytes\).*File object.*HTTP request body.*server byte stream/s);
+  for (const markdown of [english, ukrainian]) {
+    assert.match(markdown, /## Request bodies, forms/);
+    assert.match(markdown, /### Raw binary content/);
+    assert.match(markdown, /file bytes/);
+    assert.match(markdown, /Content-Type: application\/pdf/);
     assert.match(markdown, /multipart\/form-data/);
     assert.match(markdown, /boundary=Boundary42/);
+    assert.match(markdown, /Content-Disposition/);
     assert.match(markdown, /Base64/);
     assert.match(markdown, /pre-signed/);
     assert.match(markdown, /object storage/);
-    assert.match(markdown, /Content-Disposition/);
-    assert.match(markdown, /Range/);
-    assert.match(markdown, /MIME type/);
-    assert.match(markdown, /zero bytes/);
+    assert.doesNotMatch(markdown, /## \d+\. Files/);
+    assert.doesNotMatch(markdown, /Typical QA question|Why it matters to QA/i);
   }
 });
 
-test("HTTP learning owns file-transfer content directly without runtime section replacement", async () => {
-  const [catalog, guide] = await Promise.all([
+test("HTTP learning owns file-transfer material directly without runtime section replacement", async () => {
+  const [catalog, loader, english, ukrainian] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.uk.md"), "utf8"),
   ]);
 
   assert.match(catalog, /import httpFoundations from "\.\/http-foundations"/);
   assert.doesNotMatch(catalog, /improveFileTransferGuide/);
   assert.doesNotMatch(catalog, /clarifyBinaryFileMeaning/);
   assert.doesNotMatch(catalog, /normalizeLearningMarkdown/);
-  assert.match(guide, /## 7\. Files and multipart requests/);
-  assert.match(guide, /## 7\. Files і multipart requests/);
-  assert.match(guide, /file does not “become binary”/);
-  assert.match(guide, /Файл не “стає binary”/);
+  assert.match(loader, /http-foundations\.md\?raw/);
+  assert.match(loader, /http-foundations\.uk\.md\?raw/);
+  assert.match(english, /## Request bodies, forms and files/);
+  assert.match(ukrainian, /## Request bodies, forms та files/);
 });

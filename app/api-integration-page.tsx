@@ -7,8 +7,8 @@ type ApiIntegrationPageProps = Readonly<{ mode: "public" | "personal" }>;
 
 const publishedTopicMeta = {
   "http-foundations": {
-    en: ["HTTP + REST + CORS", "Statuses · headers · auth · files", "Training and practical reference"],
-    uk: ["HTTP + REST + CORS", "Статуси · headers · auth · files", "Навчальний і практичний довідник"],
+    en: ["HTTP · REST · CORS", "Methods · headers · status codes", "Methodical material"],
+    uk: ["HTTP · REST · CORS", "Methods · headers · status codes", "Методичний матеріал"],
   },
   websocket: {
     en: ["Handshake · frames · lifecycle", "Client/server code · pytest · CLI", "Auth · reconnect · load · backpressure"],

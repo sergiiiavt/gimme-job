@@ -5,33 +5,37 @@ import test from "node:test";
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
-test("HTTP learning chapter is structured as a learning path and covers core API semantics bilingually", async () => {
-  const source = await readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8");
-  const ukMarker = "const markdownUk = String.raw`";
-  const ukIndex = source.indexOf(ukMarker);
-  assert.ok(ukIndex > 0, "Ukrainian HTTP guide is missing");
+test("HTTP learning chapter is methodic material and covers core API semantics bilingually", async () => {
+  const [loader, english, ukrainian] = await Promise.all([
+    readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.uk.md"), "utf8"),
+  ]);
 
-  const documents = [source.slice(0, ukIndex), source.slice(ukIndex)];
+  assert.match(loader, /http-foundations\.md\?raw/);
+  assert.match(loader, /http-foundations\.uk\.md\?raw/);
+
+  const documents = [english, ukrainian];
   for (const markdown of documents) {
     const orderedSections = [
-      "## 1.",
-      "## 2.",
-      "## 3.",
-      "## 4.",
-      "## 5.",
-      "## 6.",
-      "## 7.",
-      "## 8.",
-      "## 9.",
-      "## 10.",
-      "## 11.",
-      "## 12.",
+      "## HTTP",
+      "## URLs, resources",
+      "## HTTP messages",
+      "## HTTP methods",
+      "## REST",
+      "## Headers",
+      "## HTTP status codes",
+      "## Authentication",
+      "## Request bodies",
+      "## Caching",
+      "## CORS",
+      "## Errors",
       "## Sources",
     ];
     let previousIndex = -1;
     for (const heading of orderedSections) {
       const index = markdown.indexOf(heading);
-      assert.ok(index > previousIndex, `${heading} must exist in learning order`);
+      assert.ok(index > previousIndex, `${heading} must exist in methodic order`);
       previousIndex = index;
     }
 
@@ -73,7 +77,7 @@ test("HTTP learning chapter is structured as a learning path and covers core API
     assert.match(markdown, /Basic/);
     assert.match(markdown, /Bearer/);
     assert.match(markdown, /OAuth 2\.0/);
-    assert.match(markdown, /mTLS/);
+    assert.match(markdown, /Mutual TLS/);
     assert.match(markdown, /multipart\/form-data/);
     assert.match(markdown, /pre-signed/);
     assert.match(markdown, /CORS/);
@@ -83,9 +87,14 @@ test("HTTP learning chapter is structured as a learning path and covers core API
     assert.match(markdown, /curl/);
     assert.match(markdown, /304 Not Modified/);
     assert.match(markdown, /412 Precondition Failed/);
-    assert.match(markdown, /Practical QA|Практичні QA/);
 
-    assert.equal((markdown.match(/:::details [1-5]xx/g) ?? []).length, 5, "Each language must expose five status-code class expanders");
+    assert.doesNotMatch(markdown, /## \d+\./, "Methodic material must use subject headings instead of numbered learning steps");
+    assert.doesNotMatch(markdown, /:::details/, "Status material must stay inline instead of becoming a reference expander");
+    assert.doesNotMatch(markdown, /Practical QA|Практичні QA/i);
+    assert.doesNotMatch(markdown, /Typical QA question|Why it matters to QA/i);
+    assert.doesNotMatch(markdown, /debugging workflow/i);
+    assert.doesNotMatch(markdown, /What you should be able to explain/i);
+    assert.doesNotMatch(markdown, /memorizing|memorize/i);
   }
 });
 
@@ -190,7 +199,7 @@ test("HTTP and WebSocket learning are mounted under API & integration with dedic
   assert.match(apiCatalog, /\.\/websocket-guide/);
   assert.doesNotMatch(apiCatalog, /http-api-deep-dive\.json/);
   assert.doesNotMatch(apiCatalog, /improveFileTransferGuide/);
-  assert.match(apiCatalog, /HTTP, REST & CORS foundations/);
+  assert.match(apiCatalog, /HTTP, REST & CORS/);
   assert.match(apiCatalog, /WebSocket: build, test & debug/);
   assert.doesNotMatch(testingToolsCatalog, /http-api-deep-dive\.json/);
   assert.match(interviewCatalog, /rest-api-qa\.json/);
@@ -200,10 +209,11 @@ test("HTTP and WebSocket learning are mounted under API & integration with dedic
   assert.match(apiPage, /ApiIntegrationPage/);
 });
 
-test("HTTP learning presentation uses real H2 learning sections instead of runtime content surgery", async () => {
-  const [apiCatalog, httpGuide, apiPage] = await Promise.all([
+test("HTTP learning presentation is plain methodic material without runtime content surgery", async () => {
+  const [apiCatalog, httpLoader, httpGuide, apiPage] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
+    readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
     readFile(projectFile("app/api-integration-page.tsx"), "utf8"),
   ]);
 
@@ -211,14 +221,15 @@ test("HTTP learning presentation uses real H2 learning sections instead of runti
   assert.doesNotMatch(apiCatalog, /makeStatusCodeGroupsExpandable/);
   assert.doesNotMatch(apiCatalog, /normalizeLearningMarkdown/);
   assert.doesNotMatch(apiCatalog, /clarifyBinaryFileMeaning/);
-  assert.match(httpGuide, /## 1\. HTTP mental model/);
-  assert.match(httpGuide, /## 12\./);
-  assert.match(httpGuide, /:::details 1xx/);
-  assert.match(httpGuide, /:::details 5xx/);
-  assert.doesNotMatch(apiPage, /Interview and practical reference/);
-  assert.doesNotMatch(apiPage, /співбес/i);
-  assert.match(apiPage, /Training and practical reference/);
-  assert.match(apiPage, /Навчальний і практичний довідник/);
+  assert.match(httpLoader, /http-foundations\.md\?raw/);
+  assert.match(httpGuide, /# HTTP, REST & CORS Foundations/);
+  assert.match(httpGuide, /## HTTP and HTTPS/);
+  assert.match(httpGuide, /## HTTP status codes/);
+  assert.doesNotMatch(httpGuide, /:::details/);
+  assert.doesNotMatch(apiPage, /Training and practical reference/);
+  assert.doesNotMatch(apiPage, /Навчальний і практичний довідник/);
+  assert.match(apiPage, /Methodical material/);
+  assert.match(apiPage, /Методичний матеріал/);
 });
 
 test("Markdown renderer treats tilde fences as code blocks", async () => {
