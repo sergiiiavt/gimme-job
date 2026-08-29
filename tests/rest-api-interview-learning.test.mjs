@@ -18,7 +18,7 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
   const documents = [english, ukrainian];
   for (const markdown of documents) {
     const orderedSections = [
-      "## HTTP and HTTPS",
+      "## HTTP",
       "## URLs, resources",
       "## HTTP messages",
       "## HTTP methods",
