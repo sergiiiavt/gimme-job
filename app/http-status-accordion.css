@@ -1,23 +1,21 @@
 .qa-md-details-flush-table .qa-md-details-body {
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
+/* Remove the markdown table wrapper as a visual/layout box for these accordions only. */
 .qa-md-details-flush-table .qa-md-table-wrap {
-  border: 0;
-  border-radius: 0;
-  margin: 0;
-  max-width: 100%;
-  overflow-x: hidden;
-  padding: 0;
+  display: contents;
 }
 
 .qa-md-details-flush-table .qa-md-table-wrap table {
-  border-radius: 0;
-  margin: 0;
-  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  min-width: 0 !important;
   table-layout: fixed;
-  width: 100%;
+  width: 100% !important;
 }
 
 .qa-md-details-flush-table .qa-md-table-wrap th,
