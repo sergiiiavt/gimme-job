@@ -1,819 +1,1023 @@
-const markdown = String.raw`This chapter answers a different question from the HTTP API chapter: **how do systems actually communicate, and why would one protocol be chosen instead of another?**
+const markdown = String.raw`This chapter is a **general networking and communication-protocol learning path**. It explains how systems communicate, how the major protocol families relate to one another, and how to choose and diagnose them.
 
-Use it as a map of the network/application protocol landscape. For HTTP methods, CRUD vs REST, headers, status codes, authentication, files, caching and CORS, continue with **HTTP API semantics** after this chapter.
+It is intentionally not an HTTP API chapter. For HTTP methods, CRUD vs REST, headers, status codes, authentication, file upload, caching and CORS, use **HTTP API semantics**.
 
-## 1. Start with the stack, not a protocol list
+It is also intentionally not an Embedded & IoT chapter. MQTT, CoAP, Bluetooth/BLE, Zigbee, Thread, Matter, LoRaWAN, CAN, LIN, Modbus, UART, I²C, SPI, USB and similar device-oriented technologies belong in a separate **Embedded & IoT communications** learning path where they can be explained together and at the correct layers.
 
-A useful QA mental model is to follow data from the application down to the network and back:
+## 1. Protocols are a stack, not a flat list
 
-| Layer / responsibility | Examples | What QA usually observes |
+A protocol is a set of rules that lets peers communicate. Real communication usually uses several protocols at once.
+
+A practical Internet-oriented stack looks like this:
+
+| Responsibility | Common technologies | Main question |
 |---|---|---|
-| Application communication | HTTP, WebSocket, gRPC, MQTT, AMQP, SMTP, IMAP | Requests, messages, commands, events, response/error semantics |
-| Security/session | TLS | Certificates, encryption, protocol negotiation, trust failures |
-| Transport | TCP, UDP, QUIC | Connections, streams, packets/datagrams, loss, retransmission, latency |
-| Internet/network | IP | Addressing and routing between hosts |
-| Name resolution | DNS | Mapping names such as api.example.com to addresses |
+| Application communication | HTTP, WebSocket, gRPC, AMQP, SMTP, IMAP, SSH | What are the messages and application semantics? |
+| Security | TLS | How is traffic encrypted and how is the peer authenticated? |
+| Transport | TCP, UDP, QUIC | How does data move between processes? |
+| Network | IP | How are packets addressed and routed between hosts? |
+| Link / network access | Ethernet, Wi-Fi | How does a device reach the local network? |
+| Naming | DNS | How does a human-readable name map to a service address? |
 
-This is deliberately practical rather than a full OSI-model memorization exercise. A production request often crosses several protocols in sequence. For example:
+One HTTPS request may therefore involve:
 
 ~~~text
-Browser
-  -> DNS resolves api.example.com
-  -> TCP connection or QUIC transport
-  -> TLS protects the connection
-  -> HTTP carries request/response semantics
-  -> the application returns JSON
+DNS
+  -> IP routing
+  -> TCP or QUIC
+  -> TLS
+  -> HTTP
+  -> JSON / HTML / another representation
 ~~~
 
-**A data format is not a transport protocol.** JSON, XML, Protocol Buffers and MessagePack describe data representation. They may be carried by different protocols.
+These categories are easy to mix up:
 
-**REST is not a network protocol.** REST is an architectural style commonly implemented with HTTP.
+- **JSON, XML, Protocol Buffers and MessagePack are data formats**, not network protocols.
+- **REST is an architectural style**, not a protocol.
+- **GraphQL is a query language and execution model**, not a transport protocol.
+- **gRPC is an RPC framework** that commonly uses HTTP/2.
+- **SSE is an HTTP streaming mechanism**, not a replacement transport layer.
 
-**GraphQL is not a transport protocol.** It is a query language and execution model, commonly carried over HTTP; subscriptions may use WebSocket or other transports.
+### OSI vs TCP/IP
 
-## 2. TCP, UDP, ports and connections
+The seven-layer OSI model is useful vocabulary, while the Internet protocol suite is usually the more practical model for real systems.
+
+| OSI idea | Rough Internet-stack equivalent |
+|---|---|
+| Application / presentation / session | Application protocols + formats + TLS/session mechanisms |
+| Transport | TCP, UDP, QUIC |
+| Network | IP, ICMP |
+| Data link / physical | Ethernet, Wi-Fi and physical media |
+
+Do not force every modern technology into exactly one OSI box. Layering is a model for reasoning, not a law of nature.
+
+## 2. IP, addresses, ports and sockets
+
+### IP
+
+Internet Protocol provides addressing and packet delivery across interconnected networks. IPv4 and IPv6 are the two major versions in use.
+
+IP itself does not promise that packets arrive, arrive once, or arrive in order. Higher layers provide the communication behavior an application needs.
+
+### Addresses
+
+An IP address identifies a network interface/addressable endpoint in the IP layer. A hostname such as \`api.example.com\` is not an IP address; DNS may resolve it to one or more IPv4 or IPv6 addresses.
+
+### Ports
+
+TCP and UDP use port numbers to identify services/process endpoints on a host.
+
+A default port is a convention, not proof of which application protocol is actually running.
+
+| Common default | Typical use |
+|---:|---|
+| 22 | SSH / SFTP |
+| 25 | SMTP relay |
+| 53 | DNS |
+| 80 | HTTP / ws |
+| 110 / 995 | POP3 / POP3 over TLS |
+| 143 / 993 | IMAP / IMAP over TLS |
+| 443 | HTTPS / wss / many TLS-protected services |
+| 465 / 587 | Mail submission variants |
+| 5672 / 5671 | AMQP / AMQP over TLS |
+
+### Socket
+
+A socket is an operating-system/application abstraction for network communication. A TCP connection is commonly identified by source IP, source port, destination IP and destination port.
+
+This explains how one server can serve many simultaneous connections on the same listening port: every connection has a different endpoint tuple.
+
+## 3. TCP and UDP
 
 ### TCP
 
-TCP provides an ordered, reliable byte stream between endpoints. It handles sequencing, retransmission and flow control. Applications such as HTTP/1.1, HTTP/2, SSH, SMTP and many database protocols commonly run over TCP.
+TCP provides an ordered, reliable byte stream between two endpoints.
 
-From a QA perspective, TCP matters because:
+Important properties:
 
-- a connection must normally be established before application data is exchanged;
-- lost data is retransmitted rather than silently skipped;
-- bytes are ordered, but **message boundaries are not preserved** — the application protocol defines framing;
-- one slow/lost segment can delay later bytes on the same TCP connection;
-- connection resets, idle timeouts and half-open connections create application-visible failures.
+- connection-oriented;
+- retransmits lost data;
+- preserves byte order;
+- includes flow control and congestion control;
+- exposes a byte stream, **not application message boundaries**.
+
+Because TCP is a byte stream, an application protocol must define its own framing. One application message can be split across several TCP segments, and several small messages can appear in one read operation.
+
+Common TCP-based protocols include HTTP/1.1, HTTP/2, TLS, SSH, SMTP and IMAP.
 
 ### UDP
 
-UDP sends independent datagrams without TCP-style delivery, ordering or retransmission guarantees. It has lower protocol overhead and lets an application implement the reliability model it actually needs.
+UDP provides independent datagrams. It does not add TCP-style connection establishment, delivery guarantees, ordering or retransmission.
 
-Typical uses include DNS queries, media, telemetry and transports such as QUIC.
+That does not mean every UDP-based application is unreliable. A protocol built on UDP can implement its own reliability, ordering, congestion control and connection behavior. QUIC is the most important modern example.
 
 ### TCP vs UDP
 
 | Property | TCP | UDP |
 |---|---|---|
-| Connection-oriented | Yes | No TCP-style connection |
-| Reliable delivery | Yes, or reports connection failure | Not guaranteed by UDP itself |
-| Ordering | Yes | Not guaranteed |
-| Message boundaries | No, byte stream | Yes, datagrams |
-| Built-in retransmission | Yes | No |
-| Typical QA concern | resets, timeouts, stream stalls | loss, duplicates, reordering, MTU/size |
+| Connection model | Connection-oriented | Datagram-oriented |
+| Reliable delivery | Yes, while connection remains viable | Not provided by UDP itself |
+| Ordering | Preserved | Not guaranteed |
+| Message boundaries | No | Yes, datagrams |
+| Retransmission | Built in | Not built in |
+| Typical strength | Reliable streams | Minimal transport semantics and flexibility |
 
-### Ports
+The choice is not simply “TCP is safe, UDP is fast.” The application protocol and workload determine which trade-offs matter.
 
-A port helps identify a service endpoint on a host. Default ports are conventions, not proof of which protocol is actually running.
+## 4. QUIC: modern transport over UDP
 
-| Common default | Protocol/use |
-|---:|---|
-| 22 | SSH, usually SFTP over SSH |
-| 25 / 587 | SMTP relay / message submission |
-| 53 | DNS |
-| 80 | HTTP, ws |
-| 110 / 995 | POP3 / POP3 over TLS |
-| 143 / 993 | IMAP / IMAP over TLS |
-| 443 | HTTPS, wss, often gRPC over TLS |
-| 1883 / 8883 | MQTT / MQTT over TLS |
-| 5672 / 5671 | AMQP / AMQP over TLS |
+QUIC is a secure, connection-oriented, multiplexed transport built on UDP.
 
-Services can be configured on other ports, and several protocols can share port 443 through TLS/application negotiation and routing.
+It exists partly to move transport evolution out of operating-system TCP stacks and to improve connection establishment and multiplexing behavior.
 
-## 3. TLS: security under application protocols
+Important concepts:
 
-TLS protects communication in transit. Modern HTTPS is HTTP over a TLS-protected transport. TLS can also protect MQTT, SMTP, IMAP, AMQP and other protocols.
+- QUIC integrates TLS 1.3 security into its handshake;
+- one connection can contain multiple independent streams;
+- loss affecting one stream does not impose TCP-style head-of-line blocking on unrelated streams;
+- connection identifiers can help connections survive network-path changes, such as moving from Wi-Fi to mobile data;
+- QUIC traffic is carried in UDP datagrams.
 
-TLS provides three core properties:
+HTTP/3 uses QUIC as its transport.
 
-1. **Confidentiality** — observers should not be able to read protected application data.
-2. **Integrity** — modification in transit should be detected.
-3. **Peer authentication** — normally the client validates the server certificate; with mTLS, both sides authenticate using certificates.
+**QUIC is not HTTP/3.** QUIC is the transport; HTTP/3 is an application protocol carried over it.
 
-A simplified HTTPS setup is:
+## 5. TLS: security for protocols
+
+TLS protects data in transit between peers.
+
+It provides three central properties:
+
+1. **Confidentiality** — protected traffic should not be readable by passive observers.
+2. **Integrity** — modification in transit should be detectable.
+3. **Authentication** — normally the client authenticates the server certificate; mutual TLS can authenticate both peers.
+
+A simplified HTTPS flow is:
 
 ~~~text
 DNS -> transport connection -> TLS handshake -> HTTP messages
 ~~~
 
-Important QA failures include:
+Important TLS concepts:
 
-- expired or not-yet-valid certificate;
-- hostname does not match certificate identity;
-- untrusted issuer / incomplete certificate chain;
-- unsupported TLS version or cipher configuration;
-- client certificate missing/invalid in mTLS;
-- SNI or ALPN negotiation selects the wrong virtual host/protocol;
-- certificate renewal works on one node but not another.
+- certificate;
+- certificate authority and trust chain;
+- hostname validation;
+- certificate validity period;
+- TLS version and cipher negotiation;
+- SNI for selecting the intended virtual host;
+- ALPN for negotiating an application protocol such as HTTP/2;
+- session resumption;
+- mutual TLS (mTLS).
 
-**HTTPS does not mean the user is authenticated to the API.** TLS protects/authenticates the connection; application authentication and authorization remain separate.
+**HTTPS does not mean the application user is authenticated.** TLS protects and authenticates the connection. Application authentication and authorization are separate concerns.
 
-## 4. DNS: the protocol before the connection
+TLS is not specific to HTTP. It can protect SMTP, IMAP, AMQP and many other application protocols.
 
-DNS translates names into records used to find services. A failed API call can therefore be a DNS problem before HTTP is ever attempted.
+## 6. DNS: names before connections
+
+DNS maps names to information needed to locate services.
 
 High-value record types:
 
 | Record | Purpose |
 |---|---|
-| A | Hostname -> IPv4 address |
-| AAAA | Hostname -> IPv6 address |
-| CNAME | Alias to another canonical name |
-| MX | Mail exchanger for a domain |
-| TXT | Arbitrary text; often verification/security metadata |
-| NS | Authoritative name servers |
-| SRV | Service discovery with host/port metadata |
+| A | Name -> IPv4 address |
+| AAAA | Name -> IPv6 address |
+| CNAME | Alias to another name |
+| MX | Mail exchanger |
+| TXT | Text metadata, often used for verification/security policies |
+| NS | Authoritative name server |
+| SRV | Service location including host and port metadata |
 
-QA should understand **TTL and caching**. After a DNS change, different clients/resolvers may temporarily see different answers until cached records expire.
+### Recursive and authoritative resolution
 
-Useful questions when a service is unreachable:
+A client usually asks a recursive resolver. The resolver may answer from cache or query the DNS hierarchy until it reaches authoritative data.
 
-- Does the hostname resolve at all?
-- Does it resolve to the expected IPv4/IPv6 address?
-- Is only one resolver/network affected?
-- Has a recent DNS change not propagated through caches yet?
-- Does the TLS certificate match the hostname that DNS ultimately leads to?
+### TTL and caching
 
-## 5. HTTP family: HTTP/1.1, HTTP/2 and HTTP/3
+DNS records have a TTL that influences how long answers may be cached. After a DNS change, different resolvers can temporarily return different results.
 
-All modern HTTP versions share the same core semantics: methods, resource targets, status codes and fields/headers. What changes substantially is **how messages are transported and framed**.
+### DNS is more than “hostname to IP”
+
+DNS also participates in:
+
+- mail routing through MX records;
+- service discovery through SRV records;
+- ownership/security configuration through TXT records;
+- load distribution and failover patterns through multiple records and DNS providers.
+
+DNS can use both UDP and TCP. Modern encrypted DNS variants also exist, including DNS over HTTPS and DNS over TLS.
+
+## 7. HTTP/1.1, HTTP/2 and HTTP/3
+
+All modern HTTP versions preserve the core HTTP semantics: methods, resource targets, fields/headers and status codes. The major differences are in framing and transport behavior.
 
 ### HTTP/1.1
 
-HTTP/1.1 uses a human-readable textual message syntax and normally runs over TCP. Persistent connections allow multiple requests over the same connection, but concurrent work is limited compared with later versions.
+HTTP/1.1 uses textual message syntax and normally runs over TCP. Persistent connections let several requests reuse one connection, but it does not provide HTTP-level multiplexing of many concurrent streams in the way HTTP/2 and HTTP/3 do.
 
 ### HTTP/2
 
-HTTP/2 keeps HTTP semantics but introduces binary framing, multiplexed streams and header compression over a single connection, normally TLS over TCP on the public web.
+HTTP/2 keeps HTTP semantics but adds:
 
-The practical benefit is that several HTTP requests/responses can progress concurrently without requiring one TCP connection per request. However, packet loss in the underlying TCP connection can still delay all streams at the transport layer.
+- binary framing;
+- multiplexed streams;
+- header compression;
+- stream prioritization mechanisms.
 
-### HTTP/3 and QUIC
+It normally runs over a single TCP connection on the public web. HTTP-level streams are independent, but packet loss in the shared TCP connection can still delay delivery for all streams.
 
-HTTP/3 carries HTTP semantics over QUIC. QUIC is a secure multiplexed transport built over UDP. Independent streams reduce the cross-stream transport blocking associated with a single TCP byte stream, and connection establishment can require fewer round trips in common cases.
+### HTTP/3
 
-| Version | Typical transport | Message representation | Multiplexing |
+HTTP/3 maps HTTP semantics onto QUIC instead of TCP.
+
+| Version | Typical transport | Framing | Multiplexing |
 |---|---|---|---|
-| HTTP/1.1 | TCP, often TLS | Textual HTTP/1.1 syntax | No HTTP-level multiplexing |
+| HTTP/1.1 | TCP, optionally TLS | Textual syntax | No HTTP-level multiplexing |
 | HTTP/2 | TCP + usually TLS | Binary frames | Yes |
-| HTTP/3 | QUIC over UDP | HTTP/3 frames | Yes, independent QUIC streams |
+| HTTP/3 | QUIC over UDP | HTTP/3 frames | Yes, over QUIC streams |
 
-For API functional testing, method/status/header semantics usually remain the same. For performance, proxy, firewall, packet-loss and compatibility testing, the version can matter substantially.
+The separate **HTTP API semantics** chapter covers methods, REST, headers, status codes, authentication, files, caching and CORS.
 
-The dedicated **HTTP API semantics** chapter covers methods, REST, headers, statuses, authentication, files, caching and CORS in detail.
+## 8. WebSocket, SSE and polling
 
-## 6. Real-time delivery: WebSocket, SSE and polling
-
-These mechanisms are often compared because all can deliver updates, but their communication models differ.
+These technologies solve related real-time/update problems but use different communication models.
 
 ### WebSocket
 
-WebSocket begins with an HTTP/1.1 upgrade handshake in the classic form and then switches to the WebSocket protocol. It provides a long-lived, bidirectional message channel.
+WebSocket provides a long-lived, bidirectional message channel between peers. In its classic web form, the connection starts with an HTTP Upgrade handshake and then switches to WebSocket framing.
 
-Use it when both client and server need to send messages independently with low overhead, for example collaborative applications, games, trading dashboards or interactive device control.
+Strong fits include:
 
-The separate **WebSocket: build, test & debug** chapter covers handshake, frames, ping/pong, reconnects, backpressure, authentication and automation.
+- chat;
+- collaborative editing;
+- multiplayer/game state;
+- trading/live dashboards;
+- interactive control channels.
+
+The dedicated **WebSocket: build, test & debug** chapter covers the protocol in depth.
 
 ### Server-Sent Events (SSE)
 
-SSE keeps an HTTP response open and delivers a text event stream from server to browser. It is primarily **server -> client**. Browser EventSource support includes reconnection behavior.
+SSE is an HTTP-based server-to-client event stream. A browser keeps an HTTP response open and receives text events over time.
 
-Use it when the server needs to push updates but the client can send its commands through ordinary HTTP requests.
+It is a good fit when the server needs to push updates but the client can continue sending commands using ordinary HTTP requests.
 
-### Polling / long polling
+### Polling and long polling
 
-Polling is an application pattern over HTTP, not a separate protocol. The client repeatedly asks for updates. Long polling keeps a request open until data is available or a timeout occurs, then reconnects.
+Polling is an application pattern over HTTP. The client repeatedly asks whether anything changed.
 
-| Mechanism | Direction | Connection model | Strong fit |
+Long polling keeps one request pending until an update or timeout occurs, then the client creates another request.
+
+| Mechanism | Direction | Connection behavior | Typical fit |
 |---|---|---|---|
-| Normal polling | Client requests repeatedly | Repeated HTTP requests | Simple/low-frequency updates |
-| Long polling | Server delays HTTP response | Repeated long HTTP requests | Compatibility without WebSocket |
-| SSE | Server -> client | Long-lived HTTP stream | Notifications, feeds, progress |
-| WebSocket | Both directions | Long-lived WebSocket connection | Interactive real-time traffic |
+| Polling | Client -> server requests | Repeated requests | Simple or infrequent updates |
+| Long polling | Server delays response | Repeated long requests | Compatibility-oriented server push |
+| SSE | Primarily server -> client | Long-lived HTTP response | Feeds, notifications, progress |
+| WebSocket | Bidirectional | Long-lived WebSocket connection | Interactive real-time traffic |
 
-## 7. gRPC: remote procedure calls over HTTP/2
+## 9. gRPC and RPC communication
 
-gRPC is an RPC framework rather than a replacement for TCP/IP. A service defines callable methods and strongly typed request/response messages, normally using Protocol Buffers as the interface definition and serialization format. gRPC commonly uses HTTP/2 as its transport.
+Remote Procedure Call (RPC) systems make remote operations look more like method/function calls than resource-oriented HTTP interactions.
 
-Four interaction shapes matter:
+gRPC is a modern RPC framework. Services are defined by a contract, commonly with Protocol Buffers, and gRPC usually runs over HTTP/2.
 
-1. **Unary** — one request, one response.
-2. **Server streaming** — one request, stream of responses.
-3. **Client streaming** — stream of requests, one response.
-4. **Bidirectional streaming** — both sides stream messages.
+Four gRPC interaction shapes are important:
 
-QA focus:
+1. Unary — one request, one response.
+2. Server streaming — one request, many responses.
+3. Client streaming — many requests, one response.
+4. Bidirectional streaming — both sides stream messages.
 
-- schema/contract compatibility;
-- exact field types and optional/default behavior;
-- gRPC status codes and error details, not only HTTP status;
-- deadlines/timeouts and cancellation;
-- metadata/authentication;
-- stream ordering, cancellation and partial completion;
-- backwards/forwards compatibility of Protocol Buffer changes;
-- load behavior of long-lived streams.
+Important concepts include:
 
-Do not describe gRPC as “just JSON over HTTP/2.” Its service contract, framing and common serialization model are different from a typical REST-style JSON API.
+- service and method definitions;
+- message schemas;
+- metadata;
+- deadlines;
+- cancellation;
+- gRPC status codes;
+- streaming;
+- Protocol Buffer compatibility.
 
-## 8. Messaging protocols: MQTT and AMQP
+Do not describe gRPC as “JSON over HTTP/2.” Its contract, framing and common serialization model are different from a typical JSON/REST-style API.
 
-Request/response is not the only integration model. Messaging systems decouple producers from consumers and introduce concepts such as brokers, queues/topics, acknowledgements, redelivery and eventual consistency.
+## 10. Messaging and AMQP
 
-### MQTT
+Request/response is only one communication pattern. Messaging systems decouple producers and consumers in time and topology.
 
-MQTT is a lightweight publish/subscribe messaging protocol widely used for IoT and constrained environments. Clients connect to a broker, publish messages to topics and subscribe to topic filters.
+Common messaging concepts include:
 
-Key MQTT concepts:
-
+- producer and consumer;
 - broker;
-- topic/topic filter;
-- retained message;
-- persistent/session state;
-- keep alive;
-- Last Will and Testament;
-- QoS 0 — at most once delivery;
-- QoS 1 — at least once delivery, therefore duplicates are possible;
-- QoS 2 — exactly once delivery at the MQTT protocol level through a larger handshake.
+- queue or address;
+- publish/subscribe;
+- acknowledgement / settlement;
+- redelivery;
+- retry;
+- dead-letter handling;
+- message TTL;
+- ordering guarantees;
+- backpressure;
+- eventual consistency.
 
-A QA test must not assume QoS 1 means “one message only.” Consumers should be designed/tested for duplicates when at-least-once delivery is used.
+### AMQP
 
-### AMQP 1.0
+AMQP is a binary application-layer messaging protocol family/standard used for interoperable messaging systems.
 
-AMQP 1.0 is a binary messaging protocol designed for interoperable messaging between systems. Products may expose broker abstractions such as queues/topics/exchanges, but application-visible concepts depend on the broker and API in use.
+Be careful not to equate a broker product with a single protocol. A broker may support several protocols, and product-level concepts such as exchanges, queues and routing rules can extend beyond what a protocol specification itself defines.
 
-QA focus for brokered messaging:
+### Why MQTT is not covered here in depth
 
-- delivery guarantee and acknowledgement behavior;
-- redelivery after consumer failure;
-- duplicate handling/idempotent consumers;
-- ordering guarantees and partitioning/concurrency;
-- dead-letter/error handling;
-- retry delay/backoff;
-- message expiry/TTL;
-- reconnect and session recovery;
-- authorization per topic/queue/address;
-- backpressure and broker limits.
+MQTT is a valid application-layer publish/subscribe protocol and can be used outside embedded systems. However, its most important learning context is IoT/device communication: constrained devices, brokers, intermittent connectivity, retained state, sessions and QoS. Covering MQTT deeply here while omitting BLE, CoAP, Thread, LoRaWAN and device buses creates an arbitrary curriculum boundary.
 
-## 9. Email protocols: SMTP, IMAP and POP3
+For that reason, MQTT is moved to the separate **Embedded & IoT communications** track. This chapter focuses on broadly applicable Internet/backend networking concepts.
 
-Email uses different protocols for sending and retrieving messages.
+## 11. Email protocols: SMTP, IMAP and POP3
+
+Email uses different protocols for transport and mailbox access.
 
 ### SMTP
 
-SMTP transfers/submits email. A mail client commonly submits outgoing mail to a server, and mail servers use SMTP to relay mail onward.
+SMTP is used to submit and transfer email.
+
+A simplified path is:
+
+~~~text
+mail client --SMTP--> sending server --SMTP--> receiving server
+~~~
 
 ### IMAP
 
-IMAP is designed for mailbox access while messages remain managed on the server. It supports folders/mailboxes, flags and synchronization across clients.
+IMAP is designed for mailbox access and synchronization while messages remain managed on the server. It supports mailboxes/folders, message flags and multi-client synchronization.
 
 ### POP3
 
-POP3 is a simpler retrieval model traditionally oriented around downloading messages from a mailbox.
+POP3 is a simpler retrieval protocol historically oriented around downloading messages from a mailbox.
 
-A useful mental model:
+### MIME
 
-~~~text
-Sender/client --SMTP--> sending mail server --SMTP--> receiving mail server
-                                                   |
-                                      IMAP or POP3 |
-                                                   v
-                                            recipient/client
-~~~
+MIME is not a transport protocol. It defines how email can represent structured bodies, content types, attachments and encodings.
 
-QA scenarios include TLS requirements, authentication, attachments/MIME, Unicode headers/body, large messages, duplicates, delayed delivery, spam/rejection responses, mailbox state synchronization and connection interruption.
+A complete mail flow therefore combines several standards rather than “using one email protocol.”
 
-## 10. File transfer and remote administration: FTP, SFTP and SSH
+## 12. FTP, FTPS, SSH and SFTP
 
-These names are often mixed up.
+These names are commonly confused.
 
 ### FTP
 
-FTP is a file transfer protocol with separate control/data connection behavior. Classic FTP does not provide SSH-style security by itself. FTPS means FTP protected with TLS.
+FTP is a file-transfer protocol with separate control/data connection behavior. Classic FTP does not provide modern encrypted transport by itself.
+
+### FTPS
+
+FTPS is FTP protected with TLS.
 
 ### SSH
 
-SSH provides secure remote login and other secure channel capabilities over an untrusted network.
+SSH provides a secure channel for remote login, command execution and related capabilities.
 
 ### SFTP
 
-SFTP is the **SSH File Transfer Protocol**. It runs over SSH and is not “FTP with SSH added.” Its protocol and connection model are different from FTP/FTPS.
+SFTP means **SSH File Transfer Protocol**. It runs through SSH and is not “FTP plus SSH.” It is a different protocol and connection model.
 
-| Term | What it is | Security relationship |
+| Technology | What it is | Security relationship |
 |---|---|---|
 | FTP | File Transfer Protocol | Plain unless separately protected |
-| FTPS | FTP over TLS | TLS protects FTP |
-| SSH | Secure Shell protocol | Secure remote channel/login |
-| SFTP | SSH File Transfer Protocol | Runs as an SSH subsystem/channel |
+| FTPS | FTP protected by TLS | TLS + FTP |
+| SSH | Secure Shell protocol | Secure remote channel |
+| SFTP | SSH File Transfer Protocol | Runs through SSH |
 
-QA should test authentication method, permissions/chroot boundaries, path handling, overwrite rules, partial/interrupted transfer, resume behavior if supported, file integrity/hash, large files, concurrent transfers and audit logging.
+## 13. Choosing a communication mechanism
 
-## 11. Choosing a communication mechanism
+Protocol choice should begin with the interaction model and constraints, not popularity.
 
-Do not choose by popularity alone. Start from the interaction model and failure requirements.
-
-| Need | Often appropriate | Why |
+| Need | Common choice | Why |
 |---|---|---|
-| Browser/API request-response | HTTP | Universal semantics/tooling/caching/proxies |
-| Typed internal RPC | gRPC | Strong contracts, streaming, efficient binary framing |
+| Browser/web request-response | HTTP | Broad compatibility, intermediaries, caching and tooling |
+| Typed service-to-service RPC | gRPC | Strong contracts, streaming, efficient framing |
 | Bidirectional real-time session | WebSocket | Both peers can push messages |
-| Server push to browser only | SSE | Simpler HTTP streaming model |
-| IoT publish/subscribe | MQTT | Lightweight brokered pub/sub and QoS options |
-| Enterprise brokered messaging | AMQP / broker protocol | Async delivery, settlement/routing patterns |
-| Email transfer | SMTP | Standard mail transfer/submission |
-| Mailbox synchronization | IMAP | Server-managed mailbox model |
-| Secure remote file transfer | SFTP | Secure transfer over SSH |
+| Server push to browser | SSE | Simple HTTP streaming model |
+| Asynchronous brokered messaging | AMQP or broker-specific protocol | Decoupled producers/consumers and delivery semantics |
+| Email transfer | SMTP | Standard mail submission/relay |
+| Mailbox synchronization | IMAP | Server-managed mailbox state |
+| Secure remote administration | SSH | Secure command/session channel |
+| Secure remote file transfer | SFTP | File operations through SSH |
 
-The same product can legitimately use several at once: HTTPS for its public API, WebSocket for live updates, gRPC between services, MQTT for devices and SMTP for notifications.
+Real systems frequently combine several mechanisms. A product may use HTTPS for its public API, gRPC internally, WebSocket for live updates, AMQP for asynchronous workflows and SMTP for notifications.
 
-## 12. Protocol testing: a repeatable QA workflow
+## 14. Diagnose communication layer by layer
 
-When integration fails, isolate the layer instead of immediately blaming “the API.”
+When a system cannot communicate, isolate the failing layer.
 
-1. **Name resolution** — does DNS return the expected address/service?
-2. **Reachability** — can the client reach the host/port through routing/firewall/proxy rules?
-3. **Transport** — does TCP connect, or is UDP/QUIC traffic permitted?
-4. **TLS** — does certificate validation and protocol negotiation succeed?
-5. **Application protocol** — is the peer speaking the protocol/version you expect?
-6. **Authentication/authorization** — are credentials accepted and permissions correct?
-7. **Payload/contract** — are framing, schema, encoding and semantic rules correct?
-8. **State/reliability** — retries, duplicate delivery, reconnects, ordering and timeouts.
+1. **Name resolution** — does the name resolve to the expected destination?
+2. **Network reachability** — is there a route to the destination?
+3. **Port/service reachability** — is the expected TCP/UDP service accessible?
+4. **Transport** — can the TCP/QUIC/etc. connection be established and maintained?
+5. **TLS** — does certificate validation and protocol negotiation succeed?
+6. **Application protocol** — are both peers speaking compatible protocol versions?
+7. **Authentication/authorization** — does the application accept the identity and permissions?
+8. **Payload/contract** — is the application message valid?
+9. **State and timing** — are retries, timeouts, ordering, caching or asynchronous state involved?
 
-Useful tools by layer:
+Useful tools:
 
 | Tool | Typical use |
 |---|---|
-| Browser DevTools Network | HTTP versions, requests, responses, CORS, timing, WebSocket frames |
-| curl | HTTP/HTTPS behavior and protocol/version experiments |
-| nslookup / dig | DNS records and resolver behavior |
-| openssl s_client | TLS handshake, certificate chain and negotiated protocol inspection |
-| nc / netcat | Basic TCP/UDP reachability and manual text-protocol experiments |
-| grpcurl | Explore/test gRPC services when reflection/descriptors are available |
-| wscat / websocat | Interactive WebSocket client |
-| mosquitto_pub / mosquitto_sub | MQTT publish/subscribe testing |
-| Wireshark | Packet/protocol capture when lower-layer visibility is necessary |
+| \`ping\` | Basic ICMP reachability signal; not proof that an application service works |
+| \`traceroute\` / \`tracert\` | Inspect network path hops |
+| \`nslookup\` / \`dig\` | DNS resolution and records |
+| \`curl\` | HTTP/HTTPS requests, headers and protocol negotiation |
+| \`openssl s_client\` | TLS handshake, certificates and ALPN |
+| \`nc\` / netcat | Basic TCP/UDP connectivity and manual text-protocol experiments |
+| \`grpcurl\` | Explore compatible gRPC services |
+| \`wscat\` / \`websocat\` | Interactive WebSocket communication |
+| Wireshark | Packet/protocol capture and low-level analysis |
 
-Do not use packet capture as the first tool for every defect. Start at the highest layer that can disprove a hypothesis, then move downward.
+A packet capture is powerful, but it is not the first tool for every problem. Start with the highest layer that can quickly confirm or reject the current hypothesis.
 
-## 13. Practical QA exercises
+## 15. Practice
 
-### Exercise 1 — classify the layers
+### Exercise 1 — classify the stack
 
-For an HTTPS API call, identify which part is DNS, transport, TLS, HTTP and JSON. Then explain which layer owns a certificate error, a 404, malformed JSON and a DNS NXDOMAIN result.
+For an HTTPS request returning JSON, identify the role of DNS, IP, TCP or QUIC, TLS, HTTP and JSON. Explain why JSON is not “the protocol used by the API.”
 
-### Exercise 2 — compare HTTP versions
+### Exercise 2 — TCP vs UDP
 
-Use a client that can report the negotiated HTTP version. Call the same HTTPS endpoint and inspect whether HTTP/1.1, HTTP/2 or HTTP/3 is used. Confirm that application semantics stay consistent even when transport/framing differs.
+Explain why DNS often uses UDP while HTTP/1.1 normally uses TCP, then explain why HTTP/3 can still be reliable even though QUIC runs over UDP.
 
-### Exercise 3 — reproduce a DNS failure
+### Exercise 3 — HTTP versions
 
-Query a real hostname and a deliberately invalid hostname. Distinguish DNS resolution failure from connection refusal and from an HTTP 404 response.
+Compare HTTP/1.1, HTTP/2 and HTTP/3 without discussing methods or status codes. Focus only on transport, framing and multiplexing.
 
-### Exercise 4 — TLS diagnosis
+### Exercise 4 — real-time design
 
-Inspect a public TLS endpoint. Identify certificate subject/alternative names, issuer, validity dates and negotiated protocol. Explain why a valid certificate for another hostname still fails verification.
+Choose between polling, SSE and WebSocket for:
 
-### Exercise 5 — WebSocket vs SSE
+- a build-progress screen;
+- a chat application;
+- a dashboard refreshed every five minutes.
 
-Design a live build-progress screen twice: once with SSE and once with WebSocket. State which direction each side must send data and justify which mechanism is simpler.
+Defend each choice.
 
-### Exercise 6 — MQTT duplicate handling
+### Exercise 5 — diagnose a failure
 
-Design a test where a QoS 1 message is redelivered. Verify that the consumer handles duplicate delivery without producing duplicate business effects.
+A browser reports that \`https://api.example.com\` is unavailable. Build an investigation sequence from DNS to TLS to HTTP rather than immediately assuming an application bug.
 
-### Exercise 7 — integration incident triage
+## 16. QA quick reference
 
-Given “the API is down,” write evidence checks in this order: DNS -> reachability -> TLS -> HTTP -> authentication -> application dependency. The exercise is complete only when each failure can be distinguished from the next one.
+The learning path above is intentionally general. For testing work, use this compact lens rather than treating every section as QA-specific content.
+
+| Area | High-value test questions |
+|---|---|
+| DNS | Correct records? TTL/cache behavior? IPv4/IPv6 differences? |
+| TCP/UDP/QUIC | Connection loss? timeout? retransmission/loss behavior? network change? |
+| TLS | Expired/wrong-host/untrusted certificate? protocol negotiation? mTLS? |
+| HTTP versions | Proxy/firewall compatibility? fallback? multiplexing/performance behavior? |
+| WebSocket/SSE | Reconnect? duplicate/missed events? idle timeout? backpressure? |
+| gRPC | Contract compatibility? deadlines/cancellation? stream termination? status mapping? |
+| Messaging | Duplicate/redelivery handling? ordering? retries? dead-letter flow? |
+| Email/file transfer | Authentication? encoding? large payloads? interruption/resume? permissions? |
+
+The most useful principle is **test the failure model of the protocol you actually use** rather than applying one generic network checklist to every technology.
+
+## Embedded & IoT scope boundary
+
+Embedded and IoT communication deserves its own layered curriculum rather than being mixed into this Internet/backend protocol survey.
+
+That separate track should distinguish:
+
+| Layer / family | Technologies to cover |
+|---|---|
+| Local peripheral buses | UART, I²C, SPI |
+| Wired embedded/industrial networks | CAN / CAN FD, LIN, RS-232, RS-485, Modbus |
+| Short-range wireless | Bluetooth Classic, Bluetooth LE, Zigbee, Thread |
+| IP/local connectivity | Wi-Fi, Ethernet, IPv6/6LoWPAN |
+| Long-range / wide-area | LTE/4G/5G, NB-IoT/LTE-M where relevant, LoRaWAN |
+| IoT application protocols | MQTT, CoAP |
+| Smart-home application layer | Matter |
+| Host/device connectivity | USB |
+
+These are not all peers at one protocol layer. For example, Thread is an IPv6-based low-power mesh network, Matter is an application-layer ecosystem over IP networks such as Thread/Wi-Fi/Ethernet, and MQTT/CoAP sit at the application layer. Bluetooth LE is a complete wireless stack with its own radio/link and higher-layer concepts. Treating all of them as one flat “protocol list” would repeat the same structural mistake this Networking chapter is designed to avoid.
 
 ## Sources
 
-- [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110)
+- [RFC 8200 — Internet Protocol, Version 6](https://www.rfc-editor.org/rfc/rfc8200)
+- [RFC 9293 — Transmission Control Protocol (TCP)](https://www.rfc-editor.org/rfc/rfc9293)
+- [RFC 768 — User Datagram Protocol](https://www.rfc-editor.org/rfc/rfc768)
+- [RFC 9000 — QUIC: A UDP-Based Multiplexed and Secure Transport](https://www.rfc-editor.org/rfc/rfc9000)
+- [RFC 8446 — TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446)
+- [RFC 1034 — Domain Names: Concepts and Facilities](https://www.rfc-editor.org/rfc/rfc1034)
 - [RFC 9112 — HTTP/1.1](https://www.rfc-editor.org/rfc/rfc9112)
 - [RFC 9113 — HTTP/2](https://www.rfc-editor.org/rfc/rfc9113)
 - [RFC 9114 — HTTP/3](https://www.rfc-editor.org/rfc/rfc9114)
-- [RFC 9000 — QUIC](https://www.rfc-editor.org/rfc/rfc9000)
-- [RFC 9293 — Transmission Control Protocol (TCP)](https://www.rfc-editor.org/rfc/rfc9293)
-- [RFC 768 — User Datagram Protocol](https://www.rfc-editor.org/rfc/rfc768)
-- [RFC 8446 — TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446)
-- [RFC 1034 / RFC 1035 — Domain Names / DNS](https://www.rfc-editor.org/rfc/rfc1034)
-- [RFC 6455 — WebSocket Protocol](https://www.rfc-editor.org/rfc/rfc6455)
-- [MDN — Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
-- [gRPC — Core concepts, architecture and lifecycle](https://grpc.io/docs/what-is-grpc/core-concepts/)
-- [OASIS — MQTT Version 5.0](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
-- [OASIS — AMQP Version 1.0](https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html)
+- [RFC 6455 — The WebSocket Protocol](https://www.rfc-editor.org/rfc/rfc6455)
+- [gRPC Core Concepts](https://grpc.io/docs/what-is-grpc/core-concepts/)
+- [OASIS AMQP 1.0](https://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-overview-v1.0-os.html)
 - [RFC 5321 — SMTP](https://www.rfc-editor.org/rfc/rfc5321)
 - [RFC 9051 — IMAP4rev2](https://www.rfc-editor.org/rfc/rfc9051)
 - [RFC 1939 — POP3](https://www.rfc-editor.org/rfc/rfc1939)
 - [RFC 959 — FTP](https://www.rfc-editor.org/rfc/rfc959)
 - [RFC 4251 — SSH Protocol Architecture](https://www.rfc-editor.org/rfc/rfc4251)
+- [Bluetooth SIG — Bluetooth technology overview](https://www.bluetooth.com/learn-about-bluetooth/tech-overview/)
+- [Thread Group — What is Thread?](https://threadgroup.org/)
+- [RFC 7252 — Constrained Application Protocol (CoAP)](https://www.rfc-editor.org/rfc/rfc7252)
 `;
 
-const markdownUk = String.raw`Цей розділ відповідає на інше питання, ніж HTTP API chapter: **як системи фактично спілкуються і чому обирають один protocol замість іншого?**
+const markdownUk = String.raw`Цей розділ — **загальний learning path з networking та communication protocols**. Він пояснює, як системи спілкуються, як основні protocol families пов'язані між собою, як їх обирати та як діагностувати проблеми.
 
-Використовуй його як карту network/application protocols. Для HTTP methods, CRUD vs REST, headers, status codes, authentication, files, caching та CORS переходь далі до окремого розділу **HTTP API semantics**.
+Це навмисно не HTTP API chapter. Для HTTP methods, CRUD vs REST, headers, status codes, authentication, file upload, caching та CORS використовуй **HTTP API semantics**.
 
-## 1. Починай зі stack, а не зі списку protocol names
+Також це навмисно не Embedded & IoT chapter. MQTT, CoAP, Bluetooth/BLE, Zigbee, Thread, Matter, LoRaWAN, CAN, LIN, Modbus, UART, I²C, SPI, USB та подібні device-oriented technologies мають бути в окремому **Embedded & IoT communications** learning path, де їх можна пояснювати разом і на правильних layers.
 
-Практична QA mental model — простежити дані від application до network і назад:
+## 1. Protocols — це stack, а не плоский список
 
-| Layer / responsibility | Examples | Що зазвичай бачить QA |
+Protocol — це набір правил, за якими peers можуть обмінюватися даними. Реальна комунікація зазвичай використовує кілька protocols одночасно.
+
+Практичний Internet-oriented stack:
+
+| Відповідальність | Поширені technologies | Головне питання |
 |---|---|---|
-| Application communication | HTTP, WebSocket, gRPC, MQTT, AMQP, SMTP, IMAP | Requests, messages, commands, events, response/error semantics |
-| Security/session | TLS | Certificates, encryption, protocol negotiation, trust failures |
-| Transport | TCP, UDP, QUIC | Connections, streams, packets/datagrams, loss, retransmission, latency |
-| Internet/network | IP | Addressing і routing між hosts |
-| Name resolution | DNS | Перетворення api.example.com на addresses |
+| Application communication | HTTP, WebSocket, gRPC, AMQP, SMTP, IMAP, SSH | Які messages та application semantics? |
+| Security | TLS | Як traffic шифрується та як автентифікується peer? |
+| Transport | TCP, UDP, QUIC | Як data рухається між processes? |
+| Network | IP | Як packets адресуються та маршрутизуються між hosts? |
+| Link / network access | Ethernet, Wi-Fi | Як device потрапляє у local network? |
+| Naming | DNS | Як human-readable name перетворюється на service address? |
 
-Це навмисно практична модель, а не вправа на запам'ятовування повного OSI model. Один production request часто використовує кілька protocols послідовно:
+Один HTTPS request може включати:
 
 ~~~text
-Browser
-  -> DNS resolves api.example.com
-  -> TCP connection або QUIC transport
-  -> TLS protects the connection
-  -> HTTP carries request/response semantics
-  -> application returns JSON
+DNS
+  -> IP routing
+  -> TCP або QUIC
+  -> TLS
+  -> HTTP
+  -> JSON / HTML / інше представлення
 ~~~
 
-**Data format — не transport protocol.** JSON, XML, Protocol Buffers та MessagePack описують representation даних і можуть передаватися різними protocols.
+Категорії легко переплутати:
 
-**REST — не network protocol.** Це architectural style, який дуже часто реалізується через HTTP.
+- **JSON, XML, Protocol Buffers та MessagePack — data formats**, а не network protocols.
+- **REST — architectural style**, а не protocol.
+- **GraphQL — query language та execution model**, а не transport protocol.
+- **gRPC — RPC framework**, який зазвичай використовує HTTP/2.
+- **SSE — HTTP streaming mechanism**, а не окремий transport layer.
 
-**GraphQL — не transport protocol.** Це query language та execution model, який зазвичай працює поверх HTTP; subscriptions можуть використовувати WebSocket або інші transports.
+### OSI vs TCP/IP
 
-## 2. TCP, UDP, ports та connections
+Семирівнева OSI model корисна як vocabulary, а Internet protocol suite зазвичай практичніша для реальних systems.
+
+| OSI idea | Приблизний Internet-stack equivalent |
+|---|---|
+| Application / presentation / session | Application protocols + formats + TLS/session mechanisms |
+| Transport | TCP, UDP, QUIC |
+| Network | IP, ICMP |
+| Data link / physical | Ethernet, Wi-Fi та physical media |
+
+Не треба насильно вкладати кожну modern technology рівно в один OSI box. Layering — модель для reasoning, а не закон природи.
+
+## 2. IP, addresses, ports та sockets
+
+### IP
+
+Internet Protocol дає addressing та packet delivery між interconnected networks. Основні версії — IPv4 та IPv6.
+
+IP сам по собі не гарантує, що packet буде доставлений, прийде один раз або збереже order. Поведінку, потрібну application, додають вищі layers.
+
+### Addresses
+
+IP address ідентифікує addressable endpoint/interface на IP layer. Hostname на кшталт \`api.example.com\` — не IP address; DNS може resolve його в одну або кілька IPv4/IPv6 addresses.
+
+### Ports
+
+TCP та UDP використовують port numbers, щоб ідентифікувати service/process endpoint на host.
+
+Default port — convention, а не доказ того, який application protocol реально працює.
+
+| Common default | Typical use |
+|---:|---|
+| 22 | SSH / SFTP |
+| 25 | SMTP relay |
+| 53 | DNS |
+| 80 | HTTP / ws |
+| 110 / 995 | POP3 / POP3 over TLS |
+| 143 / 993 | IMAP / IMAP over TLS |
+| 443 | HTTPS / wss / багато TLS-protected services |
+| 465 / 587 | Mail submission variants |
+| 5672 / 5671 | AMQP / AMQP over TLS |
+
+### Socket
+
+Socket — це OS/application abstraction для network communication. TCP connection зазвичай ідентифікується source IP, source port, destination IP та destination port.
+
+Тому один server може мати багато одночасних connections на одному listening port: у кожного connection свій endpoint tuple.
+
+## 3. TCP та UDP
 
 ### TCP
 
-TCP надає ordered reliable byte stream між endpoints. Він відповідає за sequencing, retransmission та flow control. HTTP/1.1, HTTP/2, SSH, SMTP і багато database protocols зазвичай працюють поверх TCP.
+TCP надає ordered, reliable byte stream між двома endpoints.
 
-Для QA важливо:
+Ключові властивості:
 
-- connection зазвичай треба встановити до обміну application data;
-- втрачені дані retransmit-яться, а не просто пропускаються;
-- bytes ordered, але **message boundaries не зберігаються** — framing визначає application protocol;
-- втрата segment може затримати наступні bytes у тому ж TCP connection;
-- resets, idle timeouts та half-open connections стають application-visible failures.
+- connection-oriented;
+- retransmission втрачених data;
+- зберігає byte order;
+- має flow control та congestion control;
+- дає byte stream, але **не application message boundaries**.
+
+Тому application protocol має сам визначити framing. Один message може бути розбитий на кілька TCP segments, а кілька маленьких messages можуть потрапити в один read.
+
+Поширені TCP-based protocols: HTTP/1.1, HTTP/2, TLS, SSH, SMTP та IMAP.
 
 ### UDP
 
-UDP передає незалежні datagrams без TCP-style гарантій delivery, ordering та retransmission. Це менший protocol overhead і більше контролю для application.
+UDP дає independent datagrams. Він не додає TCP-style connection establishment, delivery guarantees, ordering або retransmission.
 
-Типові use cases: DNS queries, media, telemetry та transports на кшталт QUIC.
+Це не означає, що кожна UDP-based application ненадійна. Protocol над UDP може реалізувати власні reliability, ordering, congestion control та connection behavior. Найважливіший modern example — QUIC.
 
 ### TCP vs UDP
 
 | Property | TCP | UDP |
 |---|---|---|
-| Connection-oriented | Так | Немає TCP-style connection |
-| Reliable delivery | Так або connection failure | UDP сам по собі не гарантує |
-| Ordering | Так | Не гарантується |
-| Message boundaries | Ні, byte stream | Так, datagrams |
-| Built-in retransmission | Так | Ні |
-| Typical QA concern | resets, timeouts, stream stalls | loss, duplicates, reordering, MTU/size |
+| Connection model | Connection-oriented | Datagram-oriented |
+| Reliable delivery | Так, поки connection viable | UDP сам не гарантує |
+| Ordering | Зберігається | Не гарантується |
+| Message boundaries | Ні | Так, datagrams |
+| Retransmission | Built in | Не built in |
+| Typical strength | Reliable streams | Мінімальні transport semantics та flexibility |
 
-### Ports
+Вибір — не просто «TCP safe, UDP fast». Вирішальними є application protocol та workload.
 
-Port допомагає визначити service endpoint на host. Default ports — convention, а не доказ того, який protocol реально працює.
+## 4. QUIC: modern transport over UDP
 
-| Common default | Protocol/use |
-|---:|---|
-| 22 | SSH, зазвичай SFTP over SSH |
-| 25 / 587 | SMTP relay / message submission |
-| 53 | DNS |
-| 80 | HTTP, ws |
-| 110 / 995 | POP3 / POP3 over TLS |
-| 143 / 993 | IMAP / IMAP over TLS |
-| 443 | HTTPS, wss, часто gRPC over TLS |
-| 1883 / 8883 | MQTT / MQTT over TLS |
-| 5672 / 5671 | AMQP / AMQP over TLS |
+QUIC — secure, connection-oriented, multiplexed transport, побудований поверх UDP.
 
-Services можуть працювати на інших ports, а кілька protocols можуть використовувати 443 завдяки TLS/application negotiation та routing.
+Важливі concepts:
 
-## 3. TLS: security під application protocols
+- QUIC інтегрує TLS 1.3 security у handshake;
+- один connection може мати багато independent streams;
+- loss в одному stream не створює TCP-style head-of-line blocking для unrelated streams;
+- connection identifiers допомагають connection пережити network-path change, наприклад Wi-Fi -> mobile data;
+- QUIC traffic передається UDP datagrams.
 
-TLS захищає communication in transit. HTTPS — це HTTP поверх TLS-protected transport. TLS також може захищати MQTT, SMTP, IMAP, AMQP та інші protocols.
+HTTP/3 використовує QUIC як transport.
 
-Три core properties:
+**QUIC — не HTTP/3.** QUIC — transport; HTTP/3 — application protocol поверх нього.
 
-1. **Confidentiality** — сторонній observer не повинен читати protected application data.
+## 5. TLS: security для protocols
+
+TLS захищає data in transit між peers.
+
+Основні властивості:
+
+1. **Confidentiality** — protected traffic не повинен бути readable passive observer.
 2. **Integrity** — modification in transit має виявлятися.
-3. **Peer authentication** — зазвичай client перевіряє server certificate; у mTLS certificates мають обидві сторони.
+3. **Authentication** — client зазвичай перевіряє server certificate; mutual TLS може authenticate обидві сторони.
 
-Спрощений HTTPS setup:
+Спрощений HTTPS flow:
 
 ~~~text
 DNS -> transport connection -> TLS handshake -> HTTP messages
 ~~~
 
-Важливі QA failures:
+Важливі TLS concepts:
 
-- certificate expired або not-yet-valid;
-- hostname не відповідає certificate identity;
-- untrusted issuer / incomplete certificate chain;
-- unsupported TLS version або cipher configuration;
-- client certificate missing/invalid у mTLS;
-- SNI або ALPN обирають не той virtual host/protocol;
-- certificate renewal працює на одному node, але не на іншому.
+- certificate;
+- certificate authority та trust chain;
+- hostname validation;
+- certificate validity period;
+- TLS version та cipher negotiation;
+- SNI;
+- ALPN;
+- session resumption;
+- mutual TLS (mTLS).
 
-**HTTPS не означає, що user authenticated в API.** TLS захищає/authenticates connection; application authentication та authorization окремі.
+**HTTPS не означає, що application user authenticated.** TLS захищає та authenticates connection. Application authentication/authorization — окрема задача.
 
-## 4. DNS: protocol до connection
+TLS не прив'язаний лише до HTTP. Він може захищати SMTP, IMAP, AMQP та інші protocols.
 
-DNS перетворює names на records, за якими знаходять services. Тому API call може впасти через DNS ще до будь-якого HTTP request.
+## 6. DNS: names before connections
 
-High-value record types:
+DNS мапить names на інформацію, потрібну для пошуку services.
+
+Основні record types:
 
 | Record | Purpose |
 |---|---|
-| A | Hostname -> IPv4 address |
-| AAAA | Hostname -> IPv6 address |
-| CNAME | Alias на canonical name |
-| MX | Mail exchanger domain |
-| TXT | Text metadata, часто verification/security |
-| NS | Authoritative name servers |
-| SRV | Service discovery з host/port metadata |
+| A | Name -> IPv4 address |
+| AAAA | Name -> IPv6 address |
+| CNAME | Alias на інше name |
+| MX | Mail exchanger |
+| TXT | Text metadata, часто verification/security policies |
+| NS | Authoritative name server |
+| SRV | Service location із host/port metadata |
 
-QA має розуміти **TTL та caching**. Після DNS change різні clients/resolvers можуть тимчасово бачити різні answers, доки cache не expire.
+### Recursive та authoritative resolution
 
-Перевіряй:
+Client зазвичай звертається до recursive resolver. Resolver може відповісти з cache або пройти DNS hierarchy до authoritative data.
 
-- hostname взагалі resolve-иться?
-- повертається правильний IPv4/IPv6?
-- проблема лише в одному resolver/network?
-- recent DNS change ще знаходиться в cache?
-- TLS certificate відповідає hostname, за яким фактично йде connection?
+### TTL та caching
 
-## 5. HTTP family: HTTP/1.1, HTTP/2 та HTTP/3
+DNS records мають TTL, який впливає на час caching. Після DNS change різні resolvers тимчасово можуть бачити різні answers.
 
-Усі modern HTTP versions мають однакові core semantics: methods, resource targets, status codes та fields/headers. Суттєво змінюється **transport і framing messages**.
+### DNS — це більше ніж «hostname -> IP»
+
+DNS також використовується для mail routing, service discovery, ownership/security metadata та деяких load-distribution/failover patterns.
+
+DNS може працювати через UDP і TCP. Існують encrypted variants, зокрема DNS over HTTPS та DNS over TLS.
+
+## 7. HTTP/1.1, HTTP/2 та HTTP/3
+
+Усі modern HTTP versions зберігають core semantics: methods, resource targets, fields/headers та status codes. Основні відмінності — framing та transport behavior.
 
 ### HTTP/1.1
 
-HTTP/1.1 використовує human-readable text message syntax і зазвичай TCP. Persistent connections дозволяють повторно використовувати connection, але concurrency обмеженіша, ніж у новіших versions.
+HTTP/1.1 використовує textual message syntax і зазвичай працює поверх TCP. Persistent connections дозволяють reuse connection, але немає HTTP-level multiplexing багатьох concurrent streams як у HTTP/2 та HTTP/3.
 
 ### HTTP/2
 
-HTTP/2 зберігає HTTP semantics, але додає binary framing, multiplexed streams та header compression поверх одного connection, зазвичай TLS over TCP у public web.
+HTTP/2 зберігає HTTP semantics, але додає binary framing, multiplexed streams та header compression.
 
-Кілька HTTP requests/responses можуть прогресувати одночасно без окремого TCP connection на кожен request. Але packet loss у underlying TCP може все одно затримати всі streams transport layer.
+На public web він зазвичай працює через один TCP connection. HTTP streams independent на application framing level, але packet loss у shared TCP connection може затримати delivery для всіх streams.
 
-### HTTP/3 та QUIC
+### HTTP/3
 
-HTTP/3 передає HTTP semantics через QUIC. QUIC — secure multiplexed transport поверх UDP. Independent streams зменшують cross-stream transport blocking одного TCP byte stream і можуть скоротити connection-establishment round trips.
+HTTP/3 переносить HTTP semantics на QUIC замість TCP.
 
-| Version | Typical transport | Message representation | Multiplexing |
+| Version | Typical transport | Framing | Multiplexing |
 |---|---|---|---|
-| HTTP/1.1 | TCP, often TLS | Textual HTTP/1.1 syntax | Немає HTTP-level multiplexing |
+| HTTP/1.1 | TCP, optionally TLS | Textual syntax | Немає HTTP-level multiplexing |
 | HTTP/2 | TCP + usually TLS | Binary frames | Так |
-| HTTP/3 | QUIC over UDP | HTTP/3 frames | Так, independent QUIC streams |
+| HTTP/3 | QUIC over UDP | HTTP/3 frames | Так, через QUIC streams |
 
-Для functional API testing methods/status/header semantics зазвичай ті самі. Для performance, proxy, firewall, packet-loss та compatibility testing HTTP version може бути суттєвим.
+Окремий **HTTP API semantics** chapter покриває methods, REST, headers, status codes, authentication, files, caching та CORS.
 
-Окремий розділ **HTTP API semantics** детально покриває methods, REST, headers, statuses, authentication, files, caching та CORS.
+## 8. WebSocket, SSE та polling
 
-## 6. Real-time delivery: WebSocket, SSE та polling
-
-Їх часто порівнюють, бо всі можуть доставляти updates, але communication models різні.
+Ці technologies вирішують схожі real-time/update problems, але мають різні communication models.
 
 ### WebSocket
 
-У класичному варіанті WebSocket починається з HTTP/1.1 upgrade handshake, після чого connection переходить на WebSocket protocol. Це long-lived bidirectional message channel.
+WebSocket дає long-lived bidirectional message channel. У classic web form connection починається HTTP Upgrade handshake, а потім переходить на WebSocket framing.
 
-Підходить, коли і client, і server мають незалежно push-ити messages: collaborative apps, games, trading dashboards, device control.
+Типові use cases: chat, collaborative editing, multiplayer/game state, trading/live dashboards, interactive control channels.
 
-Окремий розділ **WebSocket: build, test & debug** покриває handshake, frames, ping/pong, reconnects, backpressure, authentication та automation.
+Окремий **WebSocket: build, test & debug** chapter розбирає protocol детально.
 
 ### Server-Sent Events (SSE)
 
-SSE тримає HTTP response відкритим і передає text event stream від server до browser. Напрям переважно **server -> client**. Browser EventSource має reconnect behavior.
+SSE — HTTP-based server-to-client event stream. Browser тримає HTTP response open і отримує text events з часом.
 
-Добре підходить, коли server push-ить updates, а client commands може надсилати звичайними HTTP requests.
+Підходить, коли server має push updates, а client commands можна надсилати звичайними HTTP requests.
 
-### Polling / long polling
+### Polling та long polling
 
-Polling — application pattern поверх HTTP, а не окремий protocol. Client регулярно питає про updates. Long polling тримає request відкритим до появи data або timeout, після чого reconnect.
+Polling — application pattern поверх HTTP. Client періодично запитує updates.
 
-| Mechanism | Direction | Connection model | Strong fit |
+Long polling тримає request pending до update або timeout, після чого client створює наступний request.
+
+| Mechanism | Direction | Connection behavior | Typical fit |
 |---|---|---|---|
-| Normal polling | Client requests repeatedly | Repeated HTTP requests | Simple/low-frequency updates |
-| Long polling | Server delays HTTP response | Repeated long HTTP requests | Compatibility without WebSocket |
-| SSE | Server -> client | Long-lived HTTP stream | Notifications, feeds, progress |
-| WebSocket | Both directions | Long-lived WebSocket connection | Interactive real-time traffic |
+| Polling | Client -> server | Repeated requests | Simple / infrequent updates |
+| Long polling | Server delays response | Repeated long requests | Compatibility-oriented push |
+| SSE | Primarily server -> client | Long-lived HTTP response | Feeds, notifications, progress |
+| WebSocket | Bidirectional | Long-lived WebSocket | Interactive real-time traffic |
 
-## 7. gRPC: remote procedure calls over HTTP/2
+## 9. gRPC та RPC communication
 
-gRPC — RPC framework, а не replacement для TCP/IP. Service визначає callable methods і strongly typed request/response messages, зазвичай через Protocol Buffers як interface definition та serialization format. gRPC переважно використовує HTTP/2 як transport.
+Remote Procedure Call systems роблять remote operations схожими на method/function calls, а не на resource-oriented HTTP interactions.
+
+gRPC — modern RPC framework. Services задаються contract, зазвичай через Protocol Buffers, а transport найчастіше використовує HTTP/2.
 
 Чотири interaction shapes:
 
-1. **Unary** — один request, один response.
-2. **Server streaming** — один request, stream responses.
-3. **Client streaming** — stream requests, один response.
-4. **Bidirectional streaming** — обидві сторони stream-ять messages.
+1. Unary — one request, one response.
+2. Server streaming — one request, many responses.
+3. Client streaming — many requests, one response.
+4. Bidirectional streaming — обидві сторони stream messages.
 
-QA focus:
+Ключові concepts: service/method definitions, message schemas, metadata, deadlines, cancellation, gRPC status codes, streaming та Protocol Buffer compatibility.
 
-- schema/contract compatibility;
-- exact field types та optional/default behavior;
-- gRPC status codes та error details, не тільки HTTP status;
-- deadlines/timeouts і cancellation;
-- metadata/authentication;
-- stream ordering, cancellation та partial completion;
-- backwards/forwards compatibility Protocol Buffer changes;
-- load behavior long-lived streams.
+Не варто описувати gRPC як «JSON over HTTP/2». Його contract, framing та serialization model відрізняються від типового JSON/REST-style API.
 
-Не називай gRPC “просто JSON over HTTP/2”. Service contract, framing та typical serialization model інші.
+## 10. Messaging та AMQP
 
-## 8. Messaging protocols: MQTT та AMQP
+Request/response — не єдина communication pattern. Messaging systems decouple producers та consumers у часі й topology.
 
-Request/response — не єдина integration model. Messaging systems decouple producers від consumers і додають brokers, queues/topics, acknowledgements, redelivery та eventual consistency.
+Common concepts:
 
-### MQTT
-
-MQTT — lightweight publish/subscribe protocol, популярний у IoT та constrained environments. Clients connect до broker, publish messages у topics і subscribe на topic filters.
-
-Key concepts:
-
+- producer / consumer;
 - broker;
-- topic/topic filter;
-- retained message;
-- persistent/session state;
-- keep alive;
-- Last Will and Testament;
-- QoS 0 — at most once delivery;
-- QoS 1 — at least once, тому duplicates можливі;
-- QoS 2 — exactly once delivery на MQTT protocol level через більший handshake.
+- queue / address;
+- publish/subscribe;
+- acknowledgement / settlement;
+- redelivery;
+- retry;
+- dead-letter handling;
+- message TTL;
+- ordering guarantees;
+- backpressure;
+- eventual consistency.
 
-QA test не повинен припускати, що QoS 1 означає “рівно одне повідомлення”. Consumer треба тестувати на duplicates.
+### AMQP
 
-### AMQP 1.0
+AMQP — binary application-layer messaging protocol family/standard для interoperable messaging systems.
 
-AMQP 1.0 — binary messaging protocol для interoperable messaging між systems. Products можуть давати abstractions на кшталт queues/topics/exchanges, але application-visible concepts залежать від конкретного broker/API.
+Не треба ототожнювати broker product з одним protocol. Broker може підтримувати кілька protocols, а product-level concepts можуть виходити за межі specification конкретного protocol.
 
-QA focus для messaging:
+### Чому MQTT тут більше не розбирається детально
 
-- delivery guarantee та acknowledgement behavior;
-- redelivery після consumer failure;
-- duplicate handling/idempotent consumers;
-- ordering guarantees та partitioning/concurrency;
-- dead-letter/error handling;
-- retry delay/backoff;
-- message expiry/TTL;
-- reconnect і session recovery;
-- authorization per topic/queue/address;
-- backpressure та broker limits.
+MQTT — повноцінний application-layer publish/subscribe protocol і може використовуватися не лише в embedded. Але його найкорисніший learning context — IoT/device communication: constrained devices, brokers, intermittent connectivity, retained state, sessions та QoS.
 
-## 9. Email protocols: SMTP, IMAP та POP3
+Глибоко розбирати MQTT тут, але не BLE, CoAP, Thread, LoRaWAN та device buses — штучна межа curriculum. Тому MQTT переноситься до окремого **Embedded & IoT communications** track, а цей chapter залишається про broadly applicable Internet/backend networking.
 
-Email використовує різні protocols для sending та retrieving messages.
+## 11. Email protocols: SMTP, IMAP та POP3
+
+Email використовує різні protocols для transport та mailbox access.
 
 ### SMTP
 
-SMTP передає/submits email. Mail client зазвичай submit-ить outgoing mail на server, а mail servers relay-ять messages через SMTP далі.
+SMTP використовується для submit та transfer email.
+
+~~~text
+mail client --SMTP--> sending server --SMTP--> receiving server
+~~~
 
 ### IMAP
 
-IMAP призначений для mailbox access, коли messages залишаються managed на server. Підтримує folders/mailboxes, flags та synchronization між clients.
+IMAP призначений для mailbox access/synchronization, коли messages залишаються managed on server. Він підтримує mailboxes/folders, flags та multi-client synchronization.
 
 ### POP3
 
-POP3 — простіша retrieval model, історично орієнтована на downloading messages з mailbox.
+POP3 — простіший retrieval protocol, історично орієнтований на downloading messages from mailbox.
 
-~~~text
-Sender/client --SMTP--> sending mail server --SMTP--> receiving mail server
-                                                   |
-                                      IMAP or POP3 |
-                                                   v
-                                            recipient/client
-~~~
+### MIME
 
-QA scenarios: TLS requirements, authentication, attachments/MIME, Unicode headers/body, large messages, duplicates, delayed delivery, spam/rejection responses, mailbox synchronization та interrupted connections.
+MIME — не transport protocol. Він визначає structured bodies, content types, attachments та encodings.
 
-## 10. File transfer та remote administration: FTP, SFTP та SSH
+Тобто complete mail flow комбінує кілька standards.
 
-Ці names часто плутають.
+## 12. FTP, FTPS, SSH та SFTP
+
+Ці назви часто плутають.
 
 ### FTP
 
-FTP — file transfer protocol із окремою control/data connection поведінкою. Classic FTP сам по собі не дає SSH-style security. FTPS — FTP protected by TLS.
+FTP — file-transfer protocol із separate control/data connection behavior. Classic FTP сам по собі не дає modern encrypted transport.
+
+### FTPS
+
+FTPS — FTP, protected by TLS.
 
 ### SSH
 
-SSH дає secure remote login та інші secure channel capabilities через untrusted network.
+SSH дає secure channel для remote login, command execution та related capabilities.
 
 ### SFTP
 
-SFTP — **SSH File Transfer Protocol**. Він працює поверх SSH і не є “FTP + SSH”. Protocol та connection model інші.
+SFTP — **SSH File Transfer Protocol**. Він працює через SSH і не є «FTP + SSH».
 
-| Term | Що це | Security relationship |
+| Technology | What it is | Security relationship |
 |---|---|---|
-| FTP | File Transfer Protocol | Plain, якщо окремо не protected |
-| FTPS | FTP over TLS | TLS захищає FTP |
-| SSH | Secure Shell protocol | Secure remote channel/login |
-| SFTP | SSH File Transfer Protocol | SSH subsystem/channel |
+| FTP | File Transfer Protocol | Plain unless separately protected |
+| FTPS | FTP protected by TLS | TLS + FTP |
+| SSH | Secure Shell protocol | Secure remote channel |
+| SFTP | SSH File Transfer Protocol | Runs through SSH |
 
-QA: authentication method, permissions/chroot boundaries, path handling, overwrite rules, partial/interrupted transfer, resume if supported, file integrity/hash, large files, concurrent transfers та audit logging.
+## 13. Як обирати communication mechanism
 
-## 11. Як обирати communication mechanism
+Починай з interaction model та constraints, а не з popularity.
 
-Не обирай protocol лише за popularity. Почни з interaction model та failure requirements.
-
-| Need | Often appropriate | Why |
+| Need | Common choice | Why |
 |---|---|---|
-| Browser/API request-response | HTTP | Universal semantics/tooling/caching/proxies |
-| Typed internal RPC | gRPC | Strong contracts, streaming, efficient binary framing |
-| Bidirectional real-time session | WebSocket | Both peers can push messages |
-| Server push to browser only | SSE | Simpler HTTP streaming model |
-| IoT publish/subscribe | MQTT | Lightweight brokered pub/sub та QoS |
-| Enterprise brokered messaging | AMQP / broker protocol | Async delivery, settlement/routing patterns |
-| Email transfer | SMTP | Standard mail transfer/submission |
-| Mailbox synchronization | IMAP | Server-managed mailbox model |
-| Secure remote file transfer | SFTP | Secure transfer over SSH |
+| Browser/web request-response | HTTP | Compatibility, intermediaries, caching, tooling |
+| Typed service-to-service RPC | gRPC | Strong contracts, streaming, efficient framing |
+| Bidirectional real-time | WebSocket | Both peers can push messages |
+| Server push to browser | SSE | Simple HTTP streaming |
+| Async brokered messaging | AMQP / broker-specific protocol | Decoupled producers/consumers |
+| Email transfer | SMTP | Standard mail submission/relay |
+| Mailbox sync | IMAP | Server-managed mailbox state |
+| Secure remote administration | SSH | Secure command/session channel |
+| Secure remote file transfer | SFTP | File operations through SSH |
 
-Один product може одночасно використовувати HTTPS для public API, WebSocket для live updates, gRPC між services, MQTT для devices і SMTP для notifications.
+Реальна система часто використовує кілька mechanisms одночасно.
 
-## 12. Protocol testing: repeatable QA workflow
+## 14. Діагностуй communication layer by layer
 
-Коли integration падає, ізолюй layer, а не одразу кажи “API broken”.
+Коли система не може communicate, ізолюй layer:
 
-1. **Name resolution** — DNS повертає expected address/service?
-2. **Reachability** — host/port доступний через routing/firewall/proxy?
-3. **Transport** — TCP connect працює або UDP/QUIC traffic дозволений?
-4. **TLS** — certificate validation та protocol negotiation успішні?
-5. **Application protocol** — peer говорить очікуваним protocol/version?
-6. **Authentication/authorization** — credentials і permissions правильні?
-7. **Payload/contract** — framing, schema, encoding та semantic rules правильні?
-8. **State/reliability** — retries, duplicates, reconnects, ordering, timeouts.
+1. **Name resolution** — чи name resolves правильно?
+2. **Network reachability** — чи є route до destination?
+3. **Port/service reachability** — чи expected TCP/UDP service accessible?
+4. **Transport** — чи встановлюється і тримається connection?
+5. **TLS** — чи проходять certificate validation та negotiation?
+6. **Application protocol** — чи peers говорять compatible versions?
+7. **Authentication/authorization** — чи application приймає identity/permissions?
+8. **Payload/contract** — чи message valid?
+9. **State/timing** — retries, timeouts, ordering, caching, async state?
 
-Tools:
+Корисні tools:
 
 | Tool | Typical use |
 |---|---|
-| Browser DevTools Network | HTTP versions, requests, responses, CORS, timing, WebSocket frames |
-| curl | HTTP/HTTPS behavior та protocol/version experiments |
-| nslookup / dig | DNS records та resolver behavior |
-| openssl s_client | TLS handshake, certificate chain, negotiated protocol |
-| nc / netcat | Basic TCP/UDP reachability, manual text-protocol experiments |
-| grpcurl | gRPC service testing при доступних reflection/descriptors |
-| wscat / websocat | Interactive WebSocket client |
-| mosquitto_pub / mosquitto_sub | MQTT publish/subscribe |
-| Wireshark | Packet/protocol capture для lower-layer analysis |
+| \`ping\` | Basic ICMP reachability signal; не proof, що service працює |
+| \`traceroute\` / \`tracert\` | Network path hops |
+| \`nslookup\` / \`dig\` | DNS resolution/records |
+| \`curl\` | HTTP/HTTPS, headers, protocol negotiation |
+| \`openssl s_client\` | TLS handshake, certificates, ALPN |
+| \`nc\` / netcat | Basic TCP/UDP connectivity |
+| \`grpcurl\` | gRPC exploration |
+| \`wscat\` / \`websocat\` | Interactive WebSocket |
+| Wireshark | Packet/protocol capture |
 
-Packet capture не має бути першим інструментом для кожного bug. Починай з найвищого layer, де можна швидко спростувати hypothesis, і рухайся вниз лише за потреби.
+Packet capture дуже потужний, але не має бути first tool для кожної проблеми. Починай з найвищого layer, який швидко підтвердить або спростує hypothesis.
 
-## 13. Практичні QA вправи
+## 15. Practice
 
-### Exercise 1 — classify layers
+### Exercise 1 — classify the stack
 
-Для HTTPS API call визнач DNS, transport, TLS, HTTP та JSON. Потім скажи, який layer відповідає за certificate error, 404, malformed JSON та DNS NXDOMAIN.
+Для HTTPS request, який повертає JSON, визнач role DNS, IP, TCP/QUIC, TLS, HTTP та JSON. Поясни, чому JSON не є «protocol used by API».
 
-### Exercise 2 — compare HTTP versions
+### Exercise 2 — TCP vs UDP
 
-Використай client, що показує negotiated HTTP version. Виконай той самий HTTPS call через HTTP/1.1, HTTP/2 або HTTP/3 де підтримується. Перевір, що application semantics лишаються consistent.
+Поясни, чому DNS часто використовує UDP, HTTP/1.1 — TCP, але HTTP/3 усе одно може бути reliable, хоча QUIC працює over UDP.
 
-### Exercise 3 — reproduce DNS failure
+### Exercise 3 — HTTP versions
 
-Query real hostname та deliberately invalid hostname. Відрізни DNS resolution failure від connection refused та HTTP 404.
+Порівняй HTTP/1.1, HTTP/2 та HTTP/3 без methods/status codes. Тільки transport, framing та multiplexing.
 
-### Exercise 4 — TLS diagnosis
+### Exercise 4 — real-time design
 
-Inspect public TLS endpoint: certificate identities, issuer, validity dates та negotiated protocol. Поясни, чому valid certificate для іншого hostname все одно fail-ить verification.
+Обери polling, SSE або WebSocket для build-progress screen, chat application та dashboard із refresh раз на п'ять хвилин. Обґрунтуй.
 
-### Exercise 5 — WebSocket vs SSE
+### Exercise 5 — diagnose failure
 
-Спроєктуй live build-progress screen через SSE і через WebSocket. Визнач direction traffic та поясни, який mechanism простіший.
+Browser каже, що \`https://api.example.com\` unavailable. Побудуй investigation sequence від DNS до TLS та HTTP замість припущення «це bug в application».
 
-### Exercise 6 — MQTT duplicate handling
+## 16. QA quick reference
 
-Спроєктуй test, де QoS 1 message redelivered. Перевір, що consumer не створює duplicate business effect.
+Learning path вище навмисно general-purpose. Для testing використовуй компактний lens, а не будуй кожен розділ навколо QA.
 
-### Exercise 7 — integration incident triage
+| Area | High-value test questions |
+|---|---|
+| DNS | Correct records? TTL/cache? IPv4/IPv6 differences? |
+| TCP/UDP/QUIC | Connection loss? timeout? loss behavior? network change? |
+| TLS | Expired/wrong-host/untrusted certificate? negotiation? mTLS? |
+| HTTP versions | Proxy/firewall compatibility? fallback? multiplexing/performance? |
+| WebSocket/SSE | Reconnect? duplicate/missed events? idle timeout? backpressure? |
+| gRPC | Contract compatibility? deadlines/cancellation? stream termination? |
+| Messaging | Duplicates/redelivery? ordering? retries? dead-letter flow? |
+| Email/file transfer | Authentication? encoding? large payloads? interruption? permissions? |
 
-Для повідомлення “API is down” побудуй checks: DNS -> reachability -> TLS -> HTTP -> authentication -> application dependency. Для кожного failure має бути окремий observable evidence.
+Головний принцип: **тестуй failure model саме того protocol, який реально використовує system**, а не застосовуй один generic network checklist до всього.
+
+## Embedded & IoT scope boundary
+
+Embedded та IoT communication має окремий layered curriculum і не повинно бути змішане з цим Internet/backend protocol survey.
+
+Окремий track варто структурувати так:
+
+| Layer / family | Technologies |
+|---|---|
+| Local peripheral buses | UART, I²C, SPI |
+| Wired embedded/industrial | CAN / CAN FD, LIN, RS-232, RS-485, Modbus |
+| Short-range wireless | Bluetooth Classic, Bluetooth LE, Zigbee, Thread |
+| IP/local connectivity | Wi-Fi, Ethernet, IPv6/6LoWPAN |
+| Long-range / wide-area | LTE/4G/5G, NB-IoT/LTE-M where relevant, LoRaWAN |
+| IoT application protocols | MQTT, CoAP |
+| Smart-home application layer | Matter |
+| Host/device connectivity | USB |
+
+Це не peers одного protocol layer. Наприклад, Thread — IPv6-based low-power mesh network, Matter — application-layer ecosystem over IP networks such as Thread/Wi-Fi/Ethernet, MQTT/CoAP — application-layer protocols, а Bluetooth LE — повний wireless stack з radio/link та higher-layer concepts.
+
+Плоский список з усіх цих назв повторив би ту саму structural mistake, якої цей Networking chapter намагається уникнути.
 
 ## Sources
 
-- [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110)
+- [RFC 8200 — Internet Protocol, Version 6](https://www.rfc-editor.org/rfc/rfc8200)
+- [RFC 9293 — Transmission Control Protocol (TCP)](https://www.rfc-editor.org/rfc/rfc9293)
+- [RFC 768 — User Datagram Protocol](https://www.rfc-editor.org/rfc/rfc768)
+- [RFC 9000 — QUIC](https://www.rfc-editor.org/rfc/rfc9000)
+- [RFC 8446 — TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446)
+- [RFC 1034 — DNS concepts](https://www.rfc-editor.org/rfc/rfc1034)
 - [RFC 9112 — HTTP/1.1](https://www.rfc-editor.org/rfc/rfc9112)
 - [RFC 9113 — HTTP/2](https://www.rfc-editor.org/rfc/rfc9113)
 - [RFC 9114 — HTTP/3](https://www.rfc-editor.org/rfc/rfc9114)
-- [RFC 9000 — QUIC](https://www.rfc-editor.org/rfc/rfc9000)
-- [RFC 9293 — TCP](https://www.rfc-editor.org/rfc/rfc9293)
-- [RFC 768 — UDP](https://www.rfc-editor.org/rfc/rfc768)
-- [RFC 8446 — TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446)
-- [RFC 1034 / RFC 1035 — DNS](https://www.rfc-editor.org/rfc/rfc1034)
-- [RFC 6455 — WebSocket Protocol](https://www.rfc-editor.org/rfc/rfc6455)
-- [MDN — Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
-- [gRPC — Core concepts, architecture and lifecycle](https://grpc.io/docs/what-is-grpc/core-concepts/)
-- [OASIS — MQTT Version 5.0](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
-- [OASIS — AMQP Version 1.0](https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html)
+- [RFC 6455 — WebSocket](https://www.rfc-editor.org/rfc/rfc6455)
+- [gRPC Core Concepts](https://grpc.io/docs/what-is-grpc/core-concepts/)
+- [OASIS AMQP 1.0](https://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-overview-v1.0-os.html)
 - [RFC 5321 — SMTP](https://www.rfc-editor.org/rfc/rfc5321)
 - [RFC 9051 — IMAP4rev2](https://www.rfc-editor.org/rfc/rfc9051)
 - [RFC 1939 — POP3](https://www.rfc-editor.org/rfc/rfc1939)
 - [RFC 959 — FTP](https://www.rfc-editor.org/rfc/rfc959)
 - [RFC 4251 — SSH Protocol Architecture](https://www.rfc-editor.org/rfc/rfc4251)
+- [Bluetooth SIG — Bluetooth technology overview](https://www.bluetooth.com/learn-about-bluetooth/tech-overview/)
+- [Thread Group — What is Thread?](https://threadgroup.org/)
+- [RFC 7252 — CoAP](https://www.rfc-editor.org/rfc/rfc7252)
 `;
 
-const protocolsGuide = { markdown, markdownUk };
-
+export const protocolsGuide = { markdown, markdownUk };
 export default protocolsGuide;
