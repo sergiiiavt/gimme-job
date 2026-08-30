@@ -19,29 +19,29 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - name: Lint
-        continue-on-error: true
+        if: always()
         run: npm run lint
       - name: Agent typecheck
-        continue-on-error: true
+        if: always()
         run: npm run check:agent
       - name: Testing tools validator
-        continue-on-error: true
+        if: always()
         run: node scripts/validate-testing-tools-content.mjs
       - name: All content validators
-        continue-on-error: true
+        if: always()
         run: npm run check:content
       - name: Rewild assets
-        continue-on-error: true
+        if: always()
         run: npm run check:rewild-assets
       - name: Database generation check
-        continue-on-error: true
+        if: always()
         run: npm run check:db
       - name: Build
-        continue-on-error: true
+        if: always()
         run: npm run build
       - name: Coverage
-        continue-on-error: true
+        if: always()
         run: npm run test:coverage
       - name: Cloudflare dry run
-        continue-on-error: true
+        if: always()
         run: npm run check:cloudflare
