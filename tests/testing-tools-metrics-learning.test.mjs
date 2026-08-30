@@ -33,9 +33,17 @@ test("new learning paths are ordered and route through standalone document pages
 
 test("learning taxonomies stay compact while preserving the full concept scope", async () => {
   const toolsTaxonomy = JSON.parse(await read("content/testing-tools/taxonomy.json"));
-  const toolsConcepts = JSON.parse(await read("content/testing-tools/required-concepts.json"));
-  assert.equal(toolsTaxonomy.length, 8);
-  assert.equal(toolsConcepts.length, 38);
+  const toolsConcepts = [
+    ...JSON.parse(await read("content/testing-tools/required-concepts.json")),
+    ...JSON.parse(await read("content/testing-tools/required-concepts-locust.json")),
+  ];
+  assert.equal(toolsTaxonomy.length, 9);
+  assert.equal(toolsConcepts.length, 46);
+  assert.equal(toolsTaxonomy.at(-1)?.id, "locust-performance-testing");
+  assert.equal(
+    toolsConcepts.filter((concept) => concept.topicId === "locust-performance-testing").length,
+    8,
+  );
 
   const metricsTaxonomy = JSON.parse(await read("content/metrics-estimation/taxonomy.json"));
   const metricsConcepts = JSON.parse(await read("content/metrics-estimation/required-concepts.json"));
@@ -51,6 +59,21 @@ test("learning taxonomies stay compact while preserving the full concept scope",
     "risk-forecasting",
     "calibration-communication",
   ]);
+});
+
+test("Locust chapter is grounded in the real GimmeJob workload and explains scenario selection", async () => {
+  const en = JSON.parse(await read("content/testing-tools/chapter-09.en.json")).markdown;
+  const uk = JSON.parse(await read("content/testing-tools/chapter-09.uk.json")).markdownUk;
+
+  for (const markdown of [en, uk]) {
+    assert.match(markdown, /tests\/performance\/gimmejob\/locustfile\.py/);
+    assert.match(markdown, /GET \/api\/health/);
+    assert.match(markdown, /GET \/api\/public\/jobs/);
+    assert.match(markdown, /GET \/api\/dashboard/);
+    assert.match(markdown, /between\(2, 5\)/);
+    assert.match(markdown, /LOCUST_TAGS=smoke/);
+    assert.match(markdown, /2\.82/);
+  }
 });
 
 test("metrics content uses current DORA terminology and rejects magic universal targets", async () => {

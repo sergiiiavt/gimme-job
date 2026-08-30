@@ -1,0 +1,42 @@
+[
+  {
+    "id": "locust-docs",
+    "title": "Locust documentation",
+    "publisher": "Locust",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.locust.io/en/stable/",
+    "role": "HttpUser, tasks, tags, wait time, events, statistics and command-line execution",
+    "checkedAt": "2026-08-30"
+  },
+  {
+    "id": "azure-load-testing-docs",
+    "title": "Azure Load Testing documentation",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learn.microsoft.com/en-us/azure/app-testing/load-testing/",
+    "role": "Managed load execution, configuration, monitoring and result analysis",
+    "checkedAt": "2026-08-30"
+  },
+  {
+    "id": "gimmejob-locust-workload",
+    "title": "GimmeJob Locust workload",
+    "publisher": "GimmeJob",
+    "kind": "Project source",
+    "status": "verified",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/locustfile.py",
+    "role": "Exact production-safe Locust workload explained by the learning chapter",
+    "checkedAt": "2026-08-30"
+  },
+  {
+    "id": "gimmejob-locust-readme",
+    "title": "GimmeJob Locust load-test README",
+    "publisher": "GimmeJob",
+    "kind": "Project documentation",
+    "status": "verified",
+    "url": "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/README.md",
+    "role": "Workload matrix, safety defaults, local/Azure execution and interpretation",
+    "checkedAt": "2026-08-30"
+  }
+]
