@@ -13,12 +13,29 @@ test("waiting-for-review banner is yellow and reusable", async () => {
   assert.match(source, /\.kb-content::before/);
 });
 
+test("review-required banner is available for material that still needs review", async () => {
+  const source = await readFile(projectFile("app/learning-review-status.ts"), "utf8");
+
+  assert.match(source, /reviewRequiredBannerStyle/);
+  assert.match(source, /Review required/);
+  assert.match(source, /background:\s*#fff3b0/i);
+});
+
 test("Embedded and IoT shows the review banner on every topic page", async () => {
   const source = await readFile(projectFile("app/embedded-iot-page.tsx"), "utf8");
 
   assert.match(source, /waitingForReviewBannerStyle/);
   assert.match(source, /<style>\{waitingForReviewBannerStyle\}<\/style>/);
   assert.match(source, /<TopicLearningPage/);
+});
+
+test("API and Integration shows Review required on every topic page", async () => {
+  const source = await readFile(projectFile("app/api-integration-page.tsx"), "utf8");
+
+  assert.match(source, /reviewRequiredBannerStyle/);
+  assert.match(source, /<style>\{reviewRequiredBannerStyle\}<\/style>/);
+  assert.match(source, /<TopicLearningPage/);
+  assert.match(source, /secondaryTitle="API & Integration"/);
 });
 
 test("SQL shows the review banner without applying it to unfinished sibling data tracks", async () => {
