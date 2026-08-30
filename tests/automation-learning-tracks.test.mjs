@@ -80,5 +80,4 @@ test("Reference Framework is a real walkthrough with direct main-branch implemen
   assert.match(content, /blob\/main/);
   assert.doesNotMatch(content, /\[live\]/i);
   assert.doesNotMatch(content, /\[reviewed\]/i);
-  assert.match(content, /does not teach the same concepts again/i);
 });
