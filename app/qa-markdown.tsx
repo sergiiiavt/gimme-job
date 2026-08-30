@@ -66,8 +66,24 @@ export function stripMarkdownSection(markdown: string, sectionId: string) {
   return [...lines.slice(0, start), ...lines.slice(end)].join("\n").trimEnd();
 }
 
+type MarkdownLinkAttributes = Readonly<{
+  href: string;
+  rel?: "noreferrer";
+  target?: "_blank";
+}>;
+
+function markdownLinkAttributes(href: string): MarkdownLinkAttributes | null {
+  if (href.startsWith("https://") || href.startsWith("http://")) {
+    return { href, rel: "noreferrer", target: "_blank" };
+  }
+  if (href.startsWith("/") || href.startsWith("?") || href.startsWith("#")) {
+    return { href };
+  }
+  return null;
+}
+
 function parseInline(value: string): ReactNode[] {
-  const pattern = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(((?:https?:\/\/|\/|\?|#)[^)]+)\)|\*([^*]+)\*/g;
+  const pattern = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*([^*]+)\*/g;
   const output: ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -78,17 +94,16 @@ function parseInline(value: string): ReactNode[] {
     if (match[1]) output.push(<strong key={`strong-${key++}`}>{match[1]}</strong>);
     else if (match[2]) output.push(<code key={`code-${key++}`}>{match[2]}</code>);
     else if (match[3] && match[4]) {
-      const external = /^https?:\/\//.test(match[4]);
-      output.push(
-        <a
-          href={match[4]}
-          key={`link-${key++}`}
-          rel={external ? "noreferrer" : undefined}
-          target={external ? "_blank" : undefined}
-        >
-          {match[3]}
-        </a>,
-      );
+      const attributes = markdownLinkAttributes(match[4]);
+      if (attributes) {
+        output.push(
+          <a {...attributes} key={`link-${key++}`}>
+            {match[3]}
+          </a>,
+        );
+      } else {
+        output.push(value.slice(match.index, pattern.lastIndex));
+      }
     } else if (match[5]) output.push(<em key={`em-${key++}`}>{match[5]}</em>);
     lastIndex = pattern.lastIndex;
   }
