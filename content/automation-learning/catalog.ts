@@ -10,6 +10,10 @@ import {
   desktopAutomationModule,
   desktopAutomationSources,
 } from "./desktop-automation-walkthrough";
+import {
+  buildDesktopMethodicalConcept,
+  desktopAutomationMethodicalIntros,
+} from "./desktop-automation-methodology";
 
 const desktopAutomationModuleId = (order: number) => {
   if (order <= 49) return "desktop-automation-overview";
@@ -21,6 +25,8 @@ const desktopAutomationModuleId = (order: number) => {
 const desktopAutomationExampleLessons = desktopAutomationLessons.map((lesson) => ({
   ...lesson,
   moduleId: desktopAutomationModuleId(lesson.order),
+  concept: buildDesktopMethodicalConcept(lesson.concept, "en"),
+  conceptUk: buildDesktopMethodicalConcept(lesson.conceptUk, "uk"),
 }));
 
 const desktopAutomationModules = [
@@ -31,8 +37,10 @@ const desktopAutomationModules = [
     labelUk: "Desktop Automation Example: Огляд",
     navLabel: "Overview",
     navLabelUk: "Огляд",
-    description: "Start with the repository and execution map before opening the Python, .NET or CI implementations.",
-    descriptionUk: "Почніть зі структури repository та execution map перед переходом до Python, .NET або CI implementation.",
+    description: "Build the desktop-automation mental model first: execution lifecycle, Windows UI Automation, repository layers and how the two implementations correspond.",
+    descriptionUk: "Спочатку побудуйте mental model desktop automation: execution lifecycle, Windows UI Automation, repository layers і відповідність двох implementations.",
+    introMarkdown: desktopAutomationMethodicalIntros.overview.en,
+    introMarkdownUk: desktopAutomationMethodicalIntros.overview.uk,
   },
   {
     ...desktopAutomationModule,
@@ -41,10 +49,10 @@ const desktopAutomationModules = [
     labelUk: "Python + pytest + pywinauto",
     navLabel: "Python + pytest",
     navLabelUk: "Python + pytest",
-    description: "Trace the Python implementation from dependencies and pytest lifecycle through UIA discovery, input, synchronization and assertions.",
-    descriptionUk: "Простежте Python implementation від dependencies і pytest lifecycle до UIA discovery, input, synchronization та assertions.",
-    introMarkdown: undefined,
-    introMarkdownUk: undefined,
+    description: "Study the Python implementation as one lifecycle: pytest fixtures, UIA discovery, deterministic interaction, synchronization, assertions, evidence and cleanup.",
+    descriptionUk: "Розберіть Python implementation як один lifecycle: pytest fixtures, UIA discovery, deterministic interaction, synchronization, assertions, evidence і cleanup.",
+    introMarkdown: desktopAutomationMethodicalIntros.python.en,
+    introMarkdownUk: desktopAutomationMethodicalIntros.python.uk,
   },
   {
     ...desktopAutomationModule,
@@ -53,10 +61,10 @@ const desktopAutomationModules = [
     labelUk: "C# + NUnit + FlaUI",
     navLabel: "C# + NUnit",
     navLabelUk: "C# + NUnit",
-    description: "Trace the same desktop problem in .NET: project configuration, NUnit lifecycle, FlaUI/UIA3 mechanics and scenario design.",
-    descriptionUk: "Розберіть ту саму desktop задачу в .NET: project configuration, NUnit lifecycle, FlaUI/UIA3 mechanics і scenario design.",
-    introMarkdown: undefined,
-    introMarkdownUk: undefined,
+    description: "Study the same desktop-automation concepts in .NET and see how test intent is separated from reusable NUnit/FlaUI framework mechanics.",
+    descriptionUk: "Розберіть ті самі desktop-automation concepts у .NET і подивіться, як test intent відділено від reusable NUnit/FlaUI framework mechanics.",
+    introMarkdown: desktopAutomationMethodicalIntros.dotnet.en,
+    introMarkdownUk: desktopAutomationMethodicalIntros.dotnet.uk,
   },
   {
     ...desktopAutomationModule,
@@ -65,10 +73,10 @@ const desktopAutomationModules = [
     labelUk: "Execution, CI, Allure і deployment",
     navLabel: "CI + reporting",
     navLabelUk: "CI + reporting",
-    description: "Follow local PowerShell execution and GitHub Actions through environment setup, test execution, evidence, Allure aggregation and report deployment.",
-    descriptionUk: "Простежте local PowerShell execution та GitHub Actions через environment setup, test execution, evidence, Allure aggregation і deployment report.",
-    introMarkdown: undefined,
-    introMarkdownUk: undefined,
+    description: "Connect local execution to CI: environment preparation, Windows GUI execution, evidence preservation, Allure aggregation and report deployment.",
+    descriptionUk: "Зв'яжіть local execution із CI: environment preparation, Windows GUI execution, evidence preservation, Allure aggregation і deployment report.",
+    introMarkdown: desktopAutomationMethodicalIntros.ci.en,
+    introMarkdownUk: desktopAutomationMethodicalIntros.ci.uk,
   },
 ];
 
@@ -84,13 +92,13 @@ const lessons = [
 export const automationCurriculum = {
   version: 1,
   title: "Test automation learning path",
-  description: "A structured path through test automation for services, web, mobile and Windows desktop automation: foundations, framework design, runnable examples and guided implementation walkthroughs.",
+  description: "A structured path through test automation for services, web, mobile and Windows desktop automation: foundations, framework design, runnable examples and guided implementation studies.",
   lastReviewedAt: "2026-08-30",
   methodology: {
-    coverage: "Modules progress Beginner to Expert and follow the order in which a framework is actually built: foundations, then the cheap service layer, then the expensive interface layer, then hardening and strategy. Robot Framework is available as a focused parallel track. The Desktop Automation Example then dissects one implementation and its CI flow block by block so the same concepts can be traced in working code instead of only isolated examples.",
-    answers: "Every lesson's explanation and code sample is written for this path and checked against the official documentation of the tool it describes. Python-framework code samples are drawn from a runnable reference framework; Robot Framework examples include their required files and exact local run commands; the desktop-automation example maps each explanation to a concrete repository block and execution step.",
+    coverage: "Modules progress Beginner to Expert and follow the order in which a framework is actually built: foundations, then the cheap service layer, then the expensive interface layer, then hardening and strategy. Robot Framework is available as a focused parallel track. The Desktop Automation Example is a methodological study of one implementation: first the desktop-automation model, then the Python lifecycle, the equivalent .NET framework design, and finally local/CI execution and reporting.",
+    answers: "Every lesson's explanation and code sample is written for this path and checked against the official documentation of the tool it describes. Python-framework code samples are drawn from a runnable reference framework; Robot Framework examples include their required files and exact local run commands; the Desktop Automation Example keeps exact repository code but presents it as concept → project implementation → detailed execution explanation → design reasoning, with reusable key points and common pitfalls.",
     publishing: "Only production-ready lessons are kept on the public site. Git pull requests provide review and history.",
-    prevalence: "Module level reflects typical learning order rather than difficulty in isolation - later modules assume earlier ones. Robot Framework is taught as a currently maintained but specialized tool rather than the default recommendation for every new automation project. The desktop-automation example is advanced because it combines framework, operating-system, reporting and CI concepts in one execution trace.",
+    prevalence: "Module level reflects typical learning order rather than difficulty in isolation - later modules assume earlier ones. Robot Framework is taught as a currently maintained but specialized tool rather than the default recommendation for every new automation project. The desktop-automation example is advanced because it combines framework, operating-system, synchronization, reporting and CI concepts in one coherent system.",
     media: "This path currently ships as text and code samples only; diagrams can be added later using the same media schema as the interview catalog."
   },
   referenceImplementation: {
