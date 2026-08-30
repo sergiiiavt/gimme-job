@@ -27,6 +27,8 @@ const desktopAutomationExampleLessons = desktopAutomationLessons.map((lesson) =>
   moduleId: desktopAutomationModuleId(lesson.order),
   concept: buildDesktopMethodicalConcept(lesson.concept, "en"),
   conceptUk: buildDesktopMethodicalConcept(lesson.conceptUk, "uk"),
+  exercise: undefined,
+  exerciseUk: undefined,
 }));
 
 const desktopAutomationModules = [
