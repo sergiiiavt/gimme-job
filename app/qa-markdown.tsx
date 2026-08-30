@@ -67,7 +67,7 @@ export function stripMarkdownSection(markdown: string, sectionId: string) {
 }
 
 function parseInline(value: string): ReactNode[] {
-  const pattern = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\((https?:\/\/[^)]+)\)|\*([^*]+)\*/g;
+  const pattern = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(((?:https?:\/\/|\/|\?|#)[^)]+)\)|\*([^*]+)\*/g;
   const output: ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -78,8 +78,14 @@ function parseInline(value: string): ReactNode[] {
     if (match[1]) output.push(<strong key={`strong-${key++}`}>{match[1]}</strong>);
     else if (match[2]) output.push(<code key={`code-${key++}`}>{match[2]}</code>);
     else if (match[3] && match[4]) {
+      const external = /^https?:\/\//.test(match[4]);
       output.push(
-        <a href={match[4]} key={`link-${key++}`} rel="noreferrer" target="_blank">
+        <a
+          href={match[4]}
+          key={`link-${key++}`}
+          rel={external ? "noreferrer" : undefined}
+          target={external ? "_blank" : undefined}
+        >
           {match[3]}
         </a>,
       );
