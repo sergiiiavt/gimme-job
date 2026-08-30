@@ -6,14 +6,20 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
 test("HTTP learning chapter is methodic material and covers core API semantics bilingually", async () => {
-  const [loader, english, ukrainian] = await Promise.all([
+  const [loader, english, ukrainian, uriEnglish, uriUkrainian] = await Promise.all([
     readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.uk.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-uri-addressing.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-uri-addressing.uk.md"), "utf8"),
   ]);
 
   assert.match(loader, /http-foundations\.md\?raw/);
   assert.match(loader, /http-foundations\.uk\.md\?raw/);
+  assert.match(loader, /http-uri-addressing\.md\?raw/);
+  assert.match(loader, /http-uri-addressing\.uk\.md\?raw/);
+  assert.match(loader, /HTTP_MESSAGES_HEADING/);
+  assert.match(loader, /addUriAddressing/);
 
   const documents = [english, ukrainian];
   for (const markdown of documents) {
@@ -95,6 +101,113 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
     assert.doesNotMatch(markdown, /debugging workflow/i);
     assert.doesNotMatch(markdown, /What you should be able to explain/i);
     assert.doesNotMatch(markdown, /memorizing|memorize/i);
+  }
+
+  for (const addressing of [uriEnglish, uriUkrainian]) {
+    for (const concept of [
+      "URI",
+      "URL",
+      "URN",
+      "authority",
+      "absolute URI",
+      "relative reference",
+      "path parameters",
+      "query component",
+      "fragment",
+      "percent-encoding",
+      "reserved",
+      "unreserved",
+      "request target",
+      "URI templates",
+      "RFC 3986",
+      "RFC 6570",
+    ]) {
+      assert.match(addressing, new RegExp(concept, "i"), `Missing URI addressing concept ${concept}`);
+    }
+    assert.match(addressing, /fragment.*not.*HTTP request target|Fragment.*не входить.*HTTP request target/is);
+    assert.match(addressing, /\+.*space|\+.*проб/i);
+  }
+});
+
+test("Contracts and schemas is complete methodic material in both languages", async () => {
+  const [loader, english, ukrainian] = await Promise.all([
+    readFile(projectFile("content/api-integration/contracts-schemas.ts"), "utf8"),
+    readFile(projectFile("content/api-integration/contracts-schemas.md"), "utf8"),
+    readFile(projectFile("content/api-integration/contracts-schemas.uk.md"), "utf8"),
+  ]);
+
+  assert.match(loader, /contracts-schemas\.md\?raw/);
+  assert.match(loader, /contracts-schemas\.uk\.md\?raw/);
+
+  for (const markdown of [english, ukrainian]) {
+    for (const concept of [
+      "OpenAPI",
+      "JSON Schema",
+      "paths",
+      "parameters",
+      "request body",
+      "responses",
+      "components",
+      "$ref",
+      "required",
+      "nullable",
+      "enum",
+      "allOf",
+      "anyOf",
+      "oneOf",
+      "compatibility",
+      "versioning",
+      "Deprecation",
+      "business validation",
+    ]) {
+      assert.ok(markdown.toLowerCase().includes(concept.toLowerCase()), `Missing contract concept ${concept}`);
+    }
+    assert.match(markdown, /OpenAPI Specification 3\.2\.0/);
+    assert.match(markdown, /Draft 2020-12/);
+    assert.match(markdown, /RFC 9457/);
+    assert.doesNotMatch(markdown, /Typical QA question|Why it matters to QA/i);
+  }
+});
+
+test("Identity and authorization is complete methodic material in both languages", async () => {
+  const [loader, english, ukrainian] = await Promise.all([
+    readFile(projectFile("content/api-integration/identity-authorization.ts"), "utf8"),
+    readFile(projectFile("content/api-integration/identity-authorization.md"), "utf8"),
+    readFile(projectFile("content/api-integration/identity-authorization.uk.md"), "utf8"),
+  ]);
+
+  assert.match(loader, /identity-authorization\.md\?raw/);
+  assert.match(loader, /identity-authorization\.uk\.md\?raw/);
+
+  for (const markdown of [english, ukrainian]) {
+    for (const concept of [
+      "authentication",
+      "authorization",
+      "API key",
+      "Bearer",
+      "JWT",
+      "OAuth 2.0",
+      "PKCE",
+      "Client Credentials",
+      "refresh token",
+      "OpenID Connect",
+      "ID Token",
+      "scope",
+      "RBAC",
+      "ABAC",
+      "object-level authorization",
+      "multi-tenant",
+      "mTLS",
+      "401",
+      "403",
+      "server-side",
+    ]) {
+      assert.match(markdown, new RegExp(concept, "i"), `Missing identity concept ${concept}`);
+    }
+    assert.match(markdown, /RFC 9700/);
+    assert.match(markdown, /RFC 8725/);
+    assert.match(markdown, /Base64.*not encryption|Base64.*не.*encryption/is);
+    assert.doesNotMatch(markdown, /Typical QA question|Why it matters to QA/i);
   }
 });
 
@@ -187,19 +300,26 @@ test("WebSocket interview collection keeps protocol and QA scenarios explicit", 
   assert.match(byId.get("websocket-security-auth-origin-scale").shortAnswer, /backpressure/i);
 });
 
-test("HTTP and WebSocket learning are mounted under API & integration with dedicated learning sources", async () => {
-  const [apiCatalog, testingToolsCatalog, interviewCatalog, apiPage] = await Promise.all([
+test("API and Integration mounts the published learning sources", async () => {
+  const [apiCatalog, testingToolsCatalog, interviewCatalog, apiPage, shell] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/testing-tools/catalog.ts"), "utf8"),
     readFile(projectFile("content/interview/catalog.ts"), "utf8"),
     readFile(projectFile("app/learn/api/page.tsx"), "utf8"),
+    readFile(projectFile("app/api-integration-page.tsx"), "utf8"),
   ]);
 
   assert.match(apiCatalog, /\.\/http-foundations/);
+  assert.match(apiCatalog, /\.\/contracts-schemas/);
+  assert.match(apiCatalog, /\.\/identity-authorization/);
   assert.match(apiCatalog, /\.\/websocket-guide/);
+  assert.match(apiCatalog, /title: "API & Integration"/);
+  assert.doesNotMatch(apiCatalog, /API & integration testing/);
   assert.doesNotMatch(apiCatalog, /http-api-deep-dive\.json/);
   assert.doesNotMatch(apiCatalog, /improveFileTransferGuide/);
   assert.match(apiCatalog, /HTTP, REST & CORS/);
+  assert.match(apiCatalog, /Contracts & schemas/);
+  assert.match(apiCatalog, /Identity & authorization/);
   assert.match(apiCatalog, /WebSocket: build, test & debug/);
   assert.doesNotMatch(testingToolsCatalog, /http-api-deep-dive\.json/);
   assert.match(interviewCatalog, /rest-api-qa\.json/);
@@ -207,13 +327,16 @@ test("HTTP and WebSocket learning are mounted under API & integration with dedic
   assert.match(interviewCatalog, /\.\.\.restApi\.questions/);
   assert.match(interviewCatalog, /\.\.\.websocket\.questions/);
   assert.match(apiPage, /ApiIntegrationPage/);
+  assert.match(shell, /secondaryTitle="API & Integration"/);
+  assert.match(shell, /reviewRequiredBannerStyle/);
 });
 
-test("HTTP learning presentation is plain methodic material without runtime content surgery", async () => {
-  const [apiCatalog, httpLoader, httpGuide, apiPage] = await Promise.all([
+test("HTTP presentation keeps methodic material and composes URI detail into the URL section", async () => {
+  const [apiCatalog, httpLoader, httpGuide, uriGuide, apiPage] = await Promise.all([
     readFile(projectFile("content/api-integration/catalog.ts"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.ts"), "utf8"),
     readFile(projectFile("content/api-integration/http-foundations.md"), "utf8"),
+    readFile(projectFile("content/api-integration/http-uri-addressing.md"), "utf8"),
     readFile(projectFile("app/api-integration-page.tsx"), "utf8"),
   ]);
 
@@ -222,9 +345,13 @@ test("HTTP learning presentation is plain methodic material without runtime cont
   assert.doesNotMatch(apiCatalog, /normalizeLearningMarkdown/);
   assert.doesNotMatch(apiCatalog, /clarifyBinaryFileMeaning/);
   assert.match(httpLoader, /http-foundations\.md\?raw/);
+  assert.match(httpLoader, /http-uri-addressing\.md\?raw/);
+  assert.match(httpLoader, /base\.replace/);
   assert.match(httpGuide, /# HTTP, REST & CORS Foundations/);
   assert.match(httpGuide, /## HTTP and HTTPS/);
   assert.match(httpGuide, /## HTTP status codes/);
+  assert.match(uriGuide, /### URI, URL and URN/);
+  assert.match(uriGuide, /### HTTP request target/);
   assert.doesNotMatch(httpGuide, /:::details/);
   assert.doesNotMatch(apiPage, /Training and practical reference/);
   assert.doesNotMatch(apiPage, /Навчальний і практичний довідник/);
@@ -241,25 +368,52 @@ test("Markdown renderer treats tilde fences as code blocks", async () => {
   assert.match(renderer, /Boolean\(parseFence\(line\)\)/);
 });
 
-test("API under-construction topics remain above all published chapters", async () => {
+test("API and Integration catalog keeps the requested topic order and placeholders", async () => {
   const apiCatalog = await readFile(projectFile("content/api-integration/catalog.ts"), "utf8");
-  const placeholderIds = [
+  const topicIds = [
+    "http-foundations",
     "contracts-and-schemas",
     "identity-and-authorization",
+    "graphql",
+    "grpc-protobuf",
+    "soap-xml",
+    "websocket",
+    "webhooks-callbacks",
     "messaging-and-events",
-    "failure-behaviour",
+    "distributed-consistency",
+    "failure-resilience",
+    "api-gateways",
+    "contract-testing",
+    "mocks-service-virtualization",
+    "integration-observability",
   ];
-  const firstPublishedIndex = apiCatalog.indexOf('id: "http-foundations"');
-  const websocketIndex = apiCatalog.indexOf('id: "websocket"');
 
-  assert.ok(firstPublishedIndex > -1, "Published HTTP topic is missing");
-  assert.ok(websocketIndex > firstPublishedIndex, "WebSocket must remain a published topic after HTTP foundations");
-  for (const id of placeholderIds) {
-    const placeholderIndex = apiCatalog.indexOf(`"${id}"`);
-    assert.ok(placeholderIndex > -1, `${id} placeholder is missing`);
-    assert.ok(placeholderIndex < firstPublishedIndex, `${id} must stay above published API topics`);
+  let previousIndex = -1;
+  for (const id of topicIds) {
+    const index = apiCatalog.indexOf(`"${id}"`);
+    assert.ok(index > previousIndex, `${id} must exist in catalog order`);
+    previousIndex = index;
   }
+
+  for (const placeholderId of [
+    "graphql",
+    "grpc-protobuf",
+    "soap-xml",
+    "webhooks-callbacks",
+    "messaging-and-events",
+    "distributed-consistency",
+    "failure-resilience",
+    "api-gateways",
+    "contract-testing",
+    "mocks-service-virtualization",
+    "integration-observability",
+  ]) {
+    assert.match(apiCatalog, new RegExp(`underConstruction\\(\\s*"${placeholderId}"`), `${placeholderId} must remain a placeholder`);
+  }
+
   assert.match(apiCatalog, /status: "under-construction"/);
+  assert.match(apiCatalog, /id: "contracts-and-schemas"[\s\S]*?status: "published" as const/);
+  assert.match(apiCatalog, /id: "identity-and-authorization"[\s\S]*?status: "published" as const/);
 });
 
 test("API presentation shells follow the repository Sonar coverage policy", async () => {
