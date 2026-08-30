@@ -1,6 +1,8 @@
 import taxonomyData from "./taxonomy.json";
 import sourcesData from "./sources.json";
+import locustSourcesData from "./sources-locust.json";
 import requiredConceptsData from "./required-concepts.json";
+import locustRequiredConceptsData from "./required-concepts-locust.json";
 import practicalExamplesEnData from "./practical-examples.en.json";
 import practicalExamplesUkData from "./practical-examples.uk.json";
 import chapter01En from "./chapter-01.en.json";
@@ -74,8 +76,14 @@ function insertPracticalExamples(markdown: string, addition: string) {
 }
 
 const taxonomy = taxonomyData as LearningTopic[];
-const sources = sourcesData as LearningSource[];
-const requiredConcepts = requiredConceptsData as RequiredConcept[];
+const sources = [
+  ...(sourcesData as LearningSource[]),
+  ...(locustSourcesData as LearningSource[]),
+];
+const requiredConcepts = [
+  ...(requiredConceptsData as RequiredConcept[]),
+  ...(locustRequiredConceptsData as RequiredConcept[]),
+];
 const practicalExamplesEn = practicalExamplesEnData as Record<string, string>;
 const practicalExamplesUk = practicalExamplesUkData as Record<string, string>;
 const englishDocuments = [
