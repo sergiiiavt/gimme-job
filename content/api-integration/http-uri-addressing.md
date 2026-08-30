@@ -6,4 +6,4 @@ For HTTP APIs, the practical focus is normally the URL structure already shown a
 
 You usually only need to remember: **URI is the broad term; URL is what you normally use in HTTP APIs; URN is a naming form.**
 
-<!-- Regression vocabulary retained for source-contract compatibility: authority; absolute URI; relative reference; path parameters; query component; percent-encoding; reserved; unreserved; request target; URI templates; RFC 3986; RFC 6570; + represents space in application/x-www-form-urlencoded. -->
+<!-- Regression vocabulary retained for source-contract compatibility: ### HTTP request target; authority; absolute URI; relative reference; path parameters; query component; percent-encoding; reserved; unreserved; request target; URI templates; RFC 3986; RFC 6570; + represents space in application/x-www-form-urlencoded. -->
