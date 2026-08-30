@@ -4,26 +4,34 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Test Automation uses six module-scoped learning tracks", async () => {
+test("Test Automation uses eight module-scoped learning tracks", async () => {
   const page = await read("app/automation-learning-page.tsx");
 
   for (const [id, label] of [
     ["foundations", "Foundations"],
     ["python-setup", "Python Setup"],
     ["pytest", "pytest"],
+    ["robot-framework", "Robot Framework"],
     ["automation", "Web / API / Mobile"],
     ["architecture", "Architecture"],
-    ["reference-framework", "Reference Framework"],
+    ["real-projects", "Desktop Automation Example"],
+    ["reference-framework", "Framework Reference"],
   ]) {
-    assert.match(page, new RegExp(`id: "${id}"[^\\n]+label: "${label.replaceAll("/", "\\/")}"`));
+    assert.ok(page.includes(`id: "${id}"`), `Track ${id} must be present`);
+    assert.ok(page.includes(`label: "${label}"`), `Track ${id} must use label ${label}`);
   }
 
   assert.match(page, /defaultTrackId="foundations"/);
   assert.match(page, /moduleIds: \["automation-foundations"\]/);
   assert.match(page, /moduleIds: \["project-setup"\]/);
   assert.match(page, /moduleIds: \["pytest-core"\]/);
+  assert.match(page, /moduleIds: \["robot-framework"\]/);
   assert.match(page, /moduleIds: \["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"\]/);
   assert.match(page, /moduleIds: \["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
+  assert.match(page, /"desktop-automation-overview"/);
+  assert.match(page, /"desktop-automation-python"/);
+  assert.match(page, /"desktop-automation-dotnet"/);
+  assert.match(page, /"desktop-automation-ci"/);
   assert.match(page, /moduleIds: \["reference-framework"\]/);
   assert.match(page, /referenceFrameworkModule/);
 });
@@ -49,7 +57,7 @@ test("shared learning renderer filters the secondary navigation by selected trac
   assert.match(renderer, /track: trackId/);
 });
 
-test("Reference Framework is a real walkthrough with direct implementation links", async () => {
+test("Reference Framework is a real walkthrough with direct main-branch implementation links", async () => {
   const content = await read("content/automation-learning/reference-framework.ts");
 
   for (const path of [
@@ -69,7 +77,7 @@ test("Reference Framework is a real walkthrough with direct implementation links
     assert.ok(content.includes(`path: "${path}"`), `Reference walkthrough must link ${path}`);
   }
 
-  assert.match(content, /\[live\]/);
-  assert.match(content, /\[reviewed\]/);
-  assert.match(content, /does not teach the same concepts again/i);
+  assert.match(content, /blob\/main/);
+  assert.doesNotMatch(content, /\[live\]/i);
+  assert.doesNotMatch(content, /\[reviewed\]/i);
 });

@@ -49,20 +49,60 @@ test("desktop automation walkthrough stays pinned, bilingual and block-by-block"
     "HETZNER_SSH_KEY",
     "github.event_name != 'pull_request'",
   ]) {
-    assert.ok(source.includes(requiredSnippet), `Missing real-project content: ${requiredSnippet}`);
+    assert.ok(source.includes(requiredSnippet), `Missing desktop-example content: ${requiredSnippet}`);
   }
 });
 
-test("test automation UI exposes the desktop walkthrough under Real Projects", async () => {
+test("test automation UI exposes Desktop Automation Example as focused second-panel topics", async () => {
   const [catalog, page] = await Promise.all([
     readFile(projectFile("content/automation-learning/catalog.ts"), "utf8"),
     readFile(projectFile("app/automation-learning-page.tsx"), "utf8"),
   ]);
 
   assert.match(catalog, /from "\.\/desktop-automation-walkthrough"/);
-  assert.match(catalog, /\.\.\.desktopAutomationLessons/);
-  assert.match(catalog, /\.\.\.desktopAutomationSources/);
-  assert.match(catalog, /desktopAutomationModule/);
-  assert.match(page, /id: "real-projects"/);
-  assert.match(page, /moduleIds: \["desktop-automation-lab"\]/);
+  assert.match(catalog, /\.\.\.desktopAutomationExampleLessons/);
+  assert.match(catalog, /const desktopAutomationModules = \[/);
+
+  for (const moduleId of [
+    "desktop-automation-overview",
+    "desktop-automation-python",
+    "desktop-automation-dotnet",
+    "desktop-automation-ci",
+  ]) {
+    assert.ok(catalog.includes(`id: "${moduleId}"`), `Missing desktop example module ${moduleId}`);
+    assert.ok(page.includes(`"${moduleId}"`), `Desktop Automation Example track does not expose ${moduleId}`);
+  }
+
+  assert.match(page, /label: "Desktop Automation Example"/);
+  assert.doesNotMatch(page, /label: "Real Projects"/);
+  assert.match(catalog, /navLabel: "Overview"/);
+  assert.match(catalog, /navLabel: "Python \+ pytest"/);
+  assert.match(catalog, /navLabel: "C# \+ NUnit"/);
+  assert.match(catalog, /navLabel: "CI \+ reporting"/);
+});
+
+test("Framework Reference uses main-branch links and an example in every section", async () => {
+  const source = await readFile(projectFile("content/automation-learning/reference-framework.ts"), "utf8");
+  const codeLanguages = [...source.matchAll(/codeLanguage:\s*"([^"]+)"/g)].map((match) => match[1]);
+
+  assert.match(source, /label: "Framework Reference"/);
+  assert.match(source, /blob\/main/);
+  assert.match(source, /\[open on main\]/);
+  assert.doesNotMatch(source, /\[live\]/);
+  assert.doesNotMatch(source, /\[reviewed\]/);
+  assert.doesNotMatch(source, /verifiedCommit/);
+  assert.equal(codeLanguages.length, 8, "Every Framework Reference section must declare a code example");
+
+  for (const sectionTitle of [
+    "Repository shape",
+    "pytest wiring and lifecycle",
+    "Configuration architecture",
+    "Web automation layer",
+    "API and services layer",
+    "Mobile automation layer",
+    "Test data, assertions and reporting",
+    "CI and execution model",
+  ]) {
+    assert.ok(source.includes(sectionTitle), `Missing Framework Reference section: ${sectionTitle}`);
+  }
 });
