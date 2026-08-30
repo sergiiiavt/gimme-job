@@ -19,6 +19,8 @@ import chapter07En from "./chapter-07.en.json";
 import chapter07Uk from "./chapter-07.uk.json";
 import chapter08En from "./chapter-08.en.json";
 import chapter08Uk from "./chapter-08.uk.json";
+import chapter09En from "./chapter-09.en.json";
+import chapter09Uk from "./chapter-09.uk.json";
 
 export interface LearningTopic {
   id: string;
@@ -78,11 +80,11 @@ const practicalExamplesEn = practicalExamplesEnData as Record<string, string>;
 const practicalExamplesUk = practicalExamplesUkData as Record<string, string>;
 const englishDocuments = [
   chapter01En, chapter02En, chapter03En, chapter04En,
-  chapter05En, chapter06En, chapter07En, chapter08En,
+  chapter05En, chapter06En, chapter07En, chapter08En, chapter09En,
 ] as EnglishChapterDocument[];
 const ukrainianDocuments = [
   chapter01Uk, chapter02Uk, chapter03Uk, chapter04Uk,
-  chapter05Uk, chapter06Uk, chapter07Uk, chapter08Uk,
+  chapter05Uk, chapter06Uk, chapter07Uk, chapter08Uk, chapter09Uk,
 ] as UkrainianChapterDocument[];
 const englishById = new Map(englishDocuments.map((document) => [document.id, document.markdown]));
 const ukrainianById = new Map(ukrainianDocuments.map((document) => [document.id, document.markdownUk]));
