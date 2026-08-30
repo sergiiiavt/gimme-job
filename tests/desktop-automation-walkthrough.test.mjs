@@ -6,7 +6,7 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 const reviewedCommit = "005202a18108c5b287fe98467f9dabfa93d17508";
 
-test("desktop automation walkthrough stays pinned, bilingual and block-by-block", async () => {
+test("desktop automation source stays pinned, bilingual and block-by-block", async () => {
   const source = await readFile(projectFile("content/automation-learning/desktop-automation-walkthrough.ts"), "utf8");
   const lessonIds = [...source.matchAll(/id:\s*"(ta-lesson-desktop-automation-[^"]+)"/g)].map((match) => match[1]);
   const lessonOrders = [...source.matchAll(/\n\s*order:\s*(\d+),/g)].map((match) => Number(match[1]));
@@ -20,19 +20,6 @@ test("desktop automation walkthrough stays pinned, bilingual and block-by-block"
 
   for (const language of ["text", "python", "xml", "csharp", "powershell", "yaml"]) {
     assert.ok(source.includes(`codeLanguage: "${language}"`), `Missing ${language} project block`);
-  }
-
-  for (const section of [
-    "Actual project block",
-    "What happens",
-    "Why this block exists",
-    "State before → after",
-    "What breaks if you remove or change it",
-    "Реальний блок проєкту",
-    "Що відбувається",
-    "Стан до → після",
-  ]) {
-    assert.ok(source.includes(section), `Missing walkthrough section: ${section}`);
   }
 
   for (const requiredSnippet of [
@@ -51,6 +38,62 @@ test("desktop automation walkthrough stays pinned, bilingual and block-by-block"
   ]) {
     assert.ok(source.includes(requiredSnippet), `Missing desktop-example content: ${requiredSnippet}`);
   }
+});
+
+test("Desktop Automation Example is presented as methodical learning material", async () => {
+  const [catalog, methodology] = await Promise.all([
+    readFile(projectFile("content/automation-learning/catalog.ts"), "utf8"),
+    readFile(projectFile("content/automation-learning/desktop-automation-methodology.ts"), "utf8"),
+  ]);
+
+  assert.match(catalog, /buildDesktopMethodicalConcept\(lesson\.concept, "en"\)/);
+  assert.match(catalog, /buildDesktopMethodicalConcept\(lesson\.conceptUk, "uk"\)/);
+
+  for (const intro of ["overview", "python", "dotnet", "ci"]) {
+    assert.ok(
+      catalog.includes(`desktopAutomationMethodicalIntros.${intro}.en`),
+      `Missing ${intro} English methodical intro`,
+    );
+    assert.ok(
+      catalog.includes(`desktopAutomationMethodicalIntros.${intro}.uk`),
+      `Missing ${intro} Ukrainian methodical intro`,
+    );
+  }
+
+  for (const heading of [
+    "### Concept",
+    "### Code from the project",
+    "### Detailed explanation",
+    "### Design reasoning",
+    "### Концепція",
+    "### Код із проєкту",
+    "### Детальне пояснення",
+    "### Логіка рішення",
+  ]) {
+    assert.ok(methodology.includes(heading), `Missing methodical heading: ${heading}`);
+  }
+
+  for (const legacyHeading of [
+    "### Actual project block",
+    "### What happens",
+    "### State before → after",
+    "### What breaks if you remove or change it",
+    "### Реальний блок проєкту",
+    "### Стан до → після",
+  ]) {
+    assert.ok(
+      !methodology.includes(`return [\n    \"${legacyHeading}`),
+      `Legacy forensic heading must not be rendered: ${legacyHeading}`,
+    );
+  }
+
+  assert.match(methodology, /pytest \/ NUnit/);
+  assert.match(methodology, /fixture setup/);
+  assert.match(methodology, /Windows UI Automation tree/);
+  assert.match(methodology, /UI assertion \+ saved-file assertion/);
+  assert.match(methodology, /NotepadTests/);
+  assert.match(methodology, /NotepadTestBase/);
+  assert.match(methodology, /if: always\(\)/);
 });
 
 test("test automation UI exposes Desktop Automation Example as focused second-panel topics", async () => {
