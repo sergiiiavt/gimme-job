@@ -7,6 +7,7 @@ import {
   LEARNING_PATH_ADVISOR_TOPIC,
   aiAssistantTopicHref,
 } from "./assistant-navigation";
+import AssistantMarkdown from "./assistant-markdown";
 import styles from "./learning-path-advisor.module.css";
 
 type ChatRole = "user" | "assistant";
@@ -269,14 +270,6 @@ function recommendations(result: LearningPathApiResponse) {
   return { learning: learning.slice(0, 8), interview: interview.slice(0, 8) };
 }
 
-function renderInlineMarkdown(text: string) {
-  return text.split(/(\*\*[^*\n]+\*\*)/g).map((part, index) => (
-    part.startsWith("**") && part.endsWith("**")
-      ? <strong key={`strong-${index}`}>{part.slice(2, -2)}</strong>
-      : part
-  ));
-}
-
 function ContentLink({ href, interview }: Readonly<{ href: string; interview: boolean }>) {
   return (
     <a
@@ -327,7 +320,7 @@ export function LearningPathResponseView({ busy = false, onSuggestedPrompt, resu
       <div className={styles.responseIntro}>
         <span>Learning Path Advisor</span>
         <h2>{result.response.learningMap.title}</h2>
-        <p>{renderInlineMarkdown(result.response.answer)}</p>
+        <AssistantMarkdown markdown={result.response.answer}/>
       </div>
 
       {learning.length > 0 && (
