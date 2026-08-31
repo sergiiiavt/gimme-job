@@ -20,7 +20,7 @@ Server
 Client
 ```
 
-**HTTP** визначає semantics requests і responses. **HTTPS** — це HTTP поверх TLS. TLS забезпечує encryption transport, integrity protection та server authentication через certificates. Він не замінює application-level authentication або authorization.
+**HTTP** визначає semantics requests і responses. **HTTPS** — це HTTP поверх TLS. TLS забезпечує transport encryption, integrity protection та server authentication через certificates. Він не замінює application-level authentication або authorization.
 
 Request визначає target resource і виражає operation через HTTP method. Response повідомляє результат через status code та може повертати representation resource або error document.
 
@@ -57,7 +57,7 @@ Resource-oriented APIs зазвичай використовують стабі�
 
 ## HTTP messages
 
-HTTP request містить method, request target, headers та optional body.
+HTTP request містить method, request target, headers та optional content, який зазвичай називають request body.
 
 ~~~http
 POST /api/users?sendWelcome=true HTTP/1.1
@@ -69,7 +69,7 @@ Accept: application/json
 {"name":"Alice","email":"alice@example.com"}
 ~~~
 
-Відповідний response містить status code, headers та optional body.
+Відповідний response містить status code, headers та optional content.
 
 ~~~http
 HTTP/1.1 201 Created
@@ -79,37 +79,68 @@ Location: /api/users/42
 {"id":42,"name":"Alice","email":"alice@example.com"}
 ~~~
 
-Message body може містити JSON, XML, text, form fields, multipart parts, images, documents або довільні binary data. Header Content-Type описує media type цього body.
+Message content може містити JSON, XML, text, form fields, multipart parts, images, documents або довільні binary data. Header `Content-Type` описує media type цього content.
+
+**Request parameters і request content — це різні locations.** Значення в `/users/42`, `?page=2`, `Authorization: ...` і JSON body можуть бути частинами одного request, але мають різні protocol roles.
 
 ## HTTP methods та їх semantics
 
-HTTP methods описують intended semantics operation. Це не просто aliases для database CRUD operations.
+HTTP methods описують intended semantics operation. Це не просто aliases для database CRUD operations. Method semantics також впливає на safety, idempotency, caching, retries та на те, чи має request content визначене значення.
 
-| Method | Основна semantics | Safe | Idempotent |
-| --- | --- | ---: | ---: |
-| GET | Отримати representation resource | Так | Так |
-| HEAD | Та сама semantics, що GET, але без response content | Так | Так |
-| POST | Надіслати data для resource-specific processing; часто створює subordinate resource | Ні | Не гарантовано |
-| PUT | Створити або повністю замінити state target resource | Ні | Так |
-| PATCH | Застосувати partial modification | Ні | Не гарантовано |
-| DELETE | Видалити target resource | Ні | Так |
-| OPTIONS | Описати communication options resource; також використовується CORS preflight | Так | Так |
-| CONNECT | Створити tunnel через intermediary | Ні | Ні |
-| TRACE | Diagnostic loop-back отриманого request | Так | Так |
+| Method | Основна semantics | Request content | Safe | Idempotent |
+| --- | --- | --- | ---: | ---: |
+| GET | Отримати representation resource | Зазвичай відсутній; HTTP не визначає general semantics для GET content | Так | Так |
+| HEAD | Та сама semantics, що GET, але response без content | Зазвичай відсутній; HTTP не визначає general semantics для HEAD content | Так | Так |
+| POST | Надіслати data для resource-specific processing; часто створює subordinate resource | Часто є, але HTTP не вимагає body для кожного POST | Ні | Не гарантовано |
+| PUT | Створити або повністю замінити state target resource | Зазвичай desired representation/state | Ні | Так |
+| PATCH | Застосувати partial modification | Зазвичай patch/change document | Ні | Не гарантовано |
+| DELETE | Прибрати association між target URI та його current functionality | Зазвичай відсутній; HTTP не визначає general semantics для DELETE content | Ні | Так |
+| OPTIONS | Описати communication options resource; також використовується CORS preflight | Дозволений, але HTTP не визначає general use | Так | Так |
+| CONNECT | Створити tunnel через intermediary | Special-purpose method; не звичайний REST request content | Ні | Ні |
+| TRACE | Diagnostic loop-back отриманого request | **Request content заборонений** | Так | Так |
 
-### Safe methods
+### Request content залежить від method
 
-Method є **safe**, коли client не запитує зміну application state. GET і HEAD є safe, хоча server все одно може створювати logs, metrics або інші incidental side effects.
+Message framing технічно може дозволяти content незалежно від назви більшості methods, але це **не означає**, що content має корисну або interoperable semantics для кожного method. Саме definition method визначає, що означає content.
 
-Safe method не повинен використовуватися для destructive business operation. Endpoint на кшталт GET /users/42/delete суперечить semantics GET.
+Тому спрощення “GET не має body, POST має body” неточне:
 
-### Idempotent methods
+- GET request може бути framed з content, але RFC 9110 не визначає для нього general semantics і рекомендує client не надсилати його, якщо origin server явно не визначив supported purpose;
+- POST часто має content, але empty POST можливий, якщо API contract визначає meaningful operation без request data;
+- PUT і PATCH зазвичай передають state або change, який треба застосувати;
+- DELETE content не має general defined semantics і його зазвичай слід уникати, якщо client та origin server явно не погодили його meaning;
+- OPTIONS може містити content, але HTTP не визначає для нього general use;
+- TRACE прямо забороняє request content.
 
-Method є **idempotent**, якщо повторення того самого request має той самий intended effect, що й одноразове виконання.
+Frameworks, gateways, proxies та API tooling можуть вводити stricter rules, ніж сам HTTP. Тому API contract може відхиляти body навіть там, де HTTP framing технічно дозволяє content.
 
-Idempotency не означає однакові responses. Наприклад, перший DELETE може повернути 204 No Content, а повторний DELETE — 404 Not Found. Final intended state однаковий: resource не існує.
+### GET та HEAD
 
-POST не є idempotent за HTTP definition, але API може додати application-level idempotency mechanism. Payment та order APIs часто приймають Idempotency-Key, щоб retry POST не створював duplicate business operations.
+GET просить server передати current representation target resource. Filtering, sorting та pagination зазвичай передаються через URI query, а не request content.
+
+~~~http
+GET /orders?status=open&page=2 HTTP/1.1
+Accept: application/json
+~~~
+
+HEAD має ту саму request semantics, що GET, але server не повинен надсилати response content. Це корисно, коли client потрібні headers або metadata, наприклад `Content-Length`, `ETag` чи `Last-Modified`, без transfer самої representation.
+
+~~~http
+HEAD /files/report.pdf HTTP/1.1
+~~~
+
+### POST
+
+POST просить target resource обробити representation або information, надіслані client, відповідно до resource-specific semantics. Типові use cases: створення subordinate resource, form submission, запуск operation або command-style endpoint.
+
+~~~http
+POST /orders HTTP/1.1
+Content-Type: application/json
+
+{"productId":42,"quantity":2}
+~~~
+
+Successful creation часто повертає `201 Created` та `Location`, але POST ширший за “create”.
 
 ### PUT та PATCH
 
@@ -132,6 +163,36 @@ Content-Type: application/merge-patch+json
 
 {"active":false}
 ~~~
+
+Поширена API-design помилка — називати кожен update PUT, але приймати лише довільний subset fields. Якщо endpoint навмисно застосовує partial changes, PATCH зазвичай точніше описує contract.
+
+### DELETE
+
+DELETE просить прибрати association між target URI та його current functionality. Successful DELETE не означає, що underlying data обов'язково фізично erased; за resource interface можуть стояти archival, soft delete або інша implementation behavior.
+
+DELETE є idempotent за intended effect. Перший request може повернути `204 No Content`, а повторний — `404 Not Found`; final intended state однаковий: resource більше не доступний через цей target URI.
+
+### OPTIONS, CONNECT та TRACE
+
+OPTIONS запитує communication options, пов'язані з resource або server. Browsers використовують OPTIONS для CORS preflight, але OPTIONS не є виключно “CORS method”.
+
+CONNECT встановлює tunnel, часто через proxy. Він має special request-target та connection semantics і не є звичайною resource CRUD operation.
+
+TRACE — diagnostic loop-back method. Client не повинен надсилати request content у TRACE і не повинен надсилати sensitive fields, які можуть бути reflected назад.
+
+### Safe methods
+
+Method є **safe**, коли client не запитує зміну application state. GET і HEAD є safe, хоча server все одно може створювати logs, metrics або інші incidental side effects.
+
+Safe method не повинен використовуватися для destructive business operation. Endpoint на кшталт `GET /users/42/delete` суперечить semantics GET.
+
+### Idempotent methods
+
+Method є **idempotent**, якщо повторення того самого request має той самий intended effect, що й одноразове виконання.
+
+Idempotency не означає однакові responses. Наприклад, перший DELETE може повернути `204 No Content`, а повторний DELETE — `404 Not Found`.
+
+POST не є idempotent за HTTP definition, але API може додати application-level idempotency mechanism. Payment та order APIs часто приймають `Idempotency-Key`, щоб retry POST не створював duplicate business operations.
 
 ### CRUD та HTTP
 
@@ -180,9 +241,9 @@ Headers передають metadata та protocol controls. Request headers оп
 | Header | Значення |
 | --- | --- |
 | Accept | Media types, які client може прийняти в response |
-| Content-Type | Media type request body |
-| Authorization | Credentials, наприклад Basic або Bearer tokens |
-| Cookie | Cookies, які client надсилає server |
+| Content-Type | Media type request content |
+| Authorization | Credentials, передані через HTTP authentication scheme |
+| Cookie | Matching cookies, які user agent надсилає server |
 | Origin | Origin, який ініціював browser cross-origin request |
 | User-Agent | Metadata client software |
 | Accept-Language | Preferred response languages |
@@ -198,11 +259,11 @@ Headers передають metadata та protocol controls. Request headers оп
 
 | Header | Значення |
 | --- | --- |
-| Content-Type | Media type response body |
-| Content-Encoding | Encoding або compression, застосовані до body |
+| Content-Type | Media type response content |
+| Content-Encoding | Encoding або compression, застосовані до content |
 | Content-Length | Declared content length, якщо він переданий |
 | Location | URI created resource або redirect target |
-| Set-Cookie | Створює або оновлює browser cookies |
+| Set-Cookie | Створює або оновлює user-agent cookies |
 | Cache-Control | Cache policy response |
 | ETag | Entity tag для cache або concurrency validation |
 | Last-Modified | Timestamp validator для conditional requests |
@@ -230,7 +291,7 @@ Content-Type: application/json
 Accept: application/json
 ~~~
 
-Якщо server не може обробити request media type, доречний 415 Unsupported Media Type. Якщо server не може сформувати representation, прийнятний для client, може використовуватись 406 Not Acceptable.
+Якщо server не може обробити request media type, доречний `415 Unsupported Media Type`. Якщо server не може сформувати representation, прийнятний для client, може використовуватись `406 Not Acceptable`.
 
 ## HTTP status codes
 
@@ -351,48 +412,15 @@ Status code повідомляє результат processing HTTP request. П�
 
 **409 vs 412**
 
-409 означає conflict з current resource state. 412 конкретно означає, що conditional request, наприклад If-Match або If-Unmodified-Since, не пройшов precondition.
+409 означає conflict з current resource state. 412 конкретно означає, що conditional request, наприклад `If-Match` або `If-Unmodified-Since`, не пройшов precondition.
 
 **502 vs 503 vs 504**
 
 502 означає, що intermediary отримав invalid upstream response. 503 означає temporary unavailability service. 504 означає, що intermediary занадто довго чекав upstream response.
 
-## Authentication, authorization та session state
-
-**Authentication** встановлює, ким є user, client або service. **Authorization** визначає, що цій identity дозволено робити.
-
-HTTP має standard authentication fields і також використовується для передачі багатьох application-specific credential mechanisms.
-
-| Mechanism | Опис |
-| --- | --- |
-| HTTP Basic | Username/password Base64-encoded в Authorization; потрібен TLS, тому що Base64 не є encryption |
-| Bearer token | Authorization: Bearer token; token може бути opaque або structured, наприклад JWT |
-| API key | Application credential, зазвичай передається в dedicated header |
-| OAuth 2.0 access token | Delegated authorization token, часто передається як Bearer token |
-| OpenID Connect | Identity layer поверх OAuth 2.0 для authentication та identity claims |
-| Session cookie | Browser cookie представляє server-side або signed session state |
-| HMAC request signing | Вибрані request components cryptographically signed |
-| Mutual TLS | Client і server обидва authenticate через certificates |
-
-Successful authentication не означає unrestricted authorization. Authenticated user все одно може не мати доступу до resource іншого user, administrative operation або іншого tenant.
-
-### Cookies та sessions
-
-Servers створюють cookies через Set-Cookie. Browsers пізніше повертають відповідні cookies в header Cookie згідно з domain, path, expiration, SameSite та security rules.
-
-Важливі cookie attributes:
-
-- **Secure** — cookie надсилається лише через secure connections;
-- **HttpOnly** — browser JavaScript не може читати cookie;
-- **SameSite** — контролює cross-site cookie sending behavior;
-- **Domain** і **Path** — визначають scope cookie;
-- **Max-Age** або **Expires** — визначають lifetime.
-
-Cookie-based authentication створює CSRF considerations, оскільки browser може автоматично додавати cookies до requests. CSRF protection і CORS вирішують різні problems: CSRF контролює unwanted authenticated actions, а CORS — доступ browser JavaScript до cross-origin responses.
-
 ## Request bodies, forms та files
 
-HTTP message bodies можуть переносити різні media types. Формат body визначається через Content-Type.
+HTTP message content може переносити різні media types. Формат визначається через `Content-Type`.
 
 ### JSON
 
@@ -407,7 +435,7 @@ JSON часто використовується для structured API data, а�
 
 ### Form URL encoding
 
-application/x-www-form-urlencoded представляє form fields як encoded name-value pairs.
+`application/x-www-form-urlencoded` представляє form fields як encoded name-value pairs.
 
 ~~~http
 POST /login
@@ -429,7 +457,7 @@ Content-Type: application/pdf
 
 ### multipart/form-data
 
-Multipart body ділить один HTTP body на кілька parts. Кожна part має власні headers і content. Це дозволяє передавати ordinary fields, structured metadata та files в одному request.
+Multipart content ділить один HTTP message body на кілька parts. Кожна part має власні headers і content. Це дозволяє передавати ordinary fields, structured metadata та files в одному request.
 
 ~~~http
 POST /documents
@@ -471,39 +499,184 @@ Client ───────────────► Object storage
 
 Application authorizes upload і повертає short-lived pre-signed URL. Client передає file напряму в object storage, а application окремо зберігає metadata та completion state.
 
+## Cookies та browser state
+
+Cookie — це невеликий шматок state, яким керує user agent і який пов'язаний з HTTP requests. Cookies **не є самі по собі authentication mechanism**. Application може використовувати їх для session identifiers, preferences, feature state, tracking identifiers або інших application-defined values.
+
+### Cookie lifecycle
+
+Server просить browser зберегти cookie через `Set-Cookie`:
+
+~~~http
+HTTP/1.1 200 OK
+Set-Cookie: session=abc123; Path=/; Secure; HttpOnly; SameSite=Lax
+~~~
+
+User agent зберігає cookie згідно з cookie rules. Під час наступного matching request він автоматично надсилає cookie в request header `Cookie`:
+
+~~~http
+GET /account HTTP/1.1
+Cookie: session=abc123
+~~~
+
+```diagram
+Server response
+  │ Set-Cookie
+  ▼
+Browser cookie store
+  │ matching domain/path/security rules
+  ▼
+Later request
+  │ Cookie
+  ▼
+Server
+```
+
+Browser зазвичай не повертає cookie attributes `Secure`, `HttpOnly`, `SameSite`, `Path` або expiration у header `Cookie`. Він надсилає matching name-value pairs.
+
+### Cookie scope та lifetime
+
+Важливі cookie attributes:
+
+| Attribute | Effect |
+| --- | --- |
+| Secure | Надсилати cookie лише через secure connections |
+| HttpOnly | Не дозволяти browser JavaScript читати cookie через звичайні script APIs |
+| SameSite | Контролює, чи надсилається cookie у cross-site contexts |
+| Domain | Визначає host/domain scope; без Domain створюється host-only cookie |
+| Path | Обмежує request paths, для яких cookie matching |
+| Max-Age / Expires | Визначає persistent lifetime; без них cookie зазвичай session cookie |
+
+**Session cookie** зазвичай живе протягом browser session з урахуванням browser session-restore behavior. **Persistent cookie** має explicit lifetime. HTTP cookie rules визначають behavior, але не вимагають конкретної physical storage implementation: browser може використовувати memory, persistent storage або їх combination.
+
+Cross-site і third-party cookie behavior також залежить від browser privacy policy, не лише від HTTP cookie attributes.
+
+### Cookie та server-side session — не одне й те саме
+
+Cookie і session — це різні objects.
+
+Поширена architecture:
+
+```diagram
+Cookie: session=abc123
+        │
+        ▼
+Server session store
+abc123 → userId=42, roles=..., expiry=...
+```
+
+Browser зберігає лише session identifier, а application тримає actual session state на server. Інші architectures можуть використовувати signed або encrypted cookie-based session data. Сам cookie mechanism не визначає, яку model має використовувати application.
+
+Для authentication design, session security, tokens, OAuth, JWT, roles та access policies переходь до [Identity & authorization](?topic=identity-and-authorization).
+
+### Як перевіряти cookies у Chrome DevTools
+
+Щоб перевіряти cookie state, а не робити висновки лише з application behavior:
+
+1. Відкрий **DevTools → Application → Storage → Cookies** і вибери site origin.
+2. Перевір name, value, domain, path, expiration, `HttpOnly`, `Secure` та `SameSite`.
+3. У **Network** вибери конкретний request і відкрий **Cookies** або request/response headers, щоб побачити, які cookies реально були sent і які `Set-Cookie` прийшли у response.
+4. Якщо cookie не надсилається, перевір domain/path matching, expiry, `Secure`, `SameSite`, cross-site context і чи browser прийняв response `Set-Cookie`.
+
+Cookie-based authentication створює CSRF considerations, тому що browser може автоматично додавати matching cookies до requests. CSRF protection і CORS вирішують різні problems: CSRF стосується unwanted authenticated actions, а CORS — доступу browser JavaScript до cross-origin responses.
+
 ## Caching та conditional requests
 
-HTTP caching дозволяє clients, browsers, gateways і shared caches reuse responses, якщо response policy це дозволяє.
+HTTP caching дозволяє browsers, іншим clients, proxies, gateways та CDNs reuse stored responses, якщо cache policy це дозволяє. Caching може зменшувати latency, bandwidth та origin-server load.
 
-**Cache-Control** визначає caching directives, наприклад max-age, no-cache, no-store, public і private.
+### Де може знаходитися HTTP cache
 
-**ETag** — opaque validator конкретної version resource. **Last-Modified** — timestamp validator.
+```diagram
+Browser / client private cache
+          │
+          ▼
+Proxy або shared organizational cache
+          │
+          ▼
+CDN / edge cache
+          │
+          ▼
+Origin server
+```
 
-Cache revalidation через ETag:
+Тобто cache може існувати в кількох місцях. Directives `private` і `public` допомагають визначити, які cache можуть store response. HTTP визначає cache behavior, але не точну physical storage location. Browser може використовувати memory, disk або implementation-specific storage.
+
+### Freshness та revalidation
+
+Корисна mental model:
+
+```diagram
+Request
+  │
+  ▼
+Cached response існує?
+  │ no ───────────────► Origin → 200 + representation
+  │ yes
+  ▼
+Still fresh?
+  │ yes ──────────────► Reuse cached response
+  │ no
+  ▼
+Revalidate with validator
+  │
+  ├─ 304 Not Modified ─► Reuse cached representation
+  └─ 200 OK ───────────► Store/use new representation
+```
+
+Fresh response може бути reused без звернення до origin. Stale response часто потребує validation перед reuse, якщо інша directive прямо не дозволяє stale use.
+
+### Cache-Control directives
+
+Поширені directives мають суттєво різні meanings:
+
+| Directive | Значення |
+| --- | --- |
+| max-age=N | Response зазвичай можна reuse, поки його age менший за N seconds |
+| s-maxage=N | Freshness lifetime для shared caches; там overrides max-age |
+| public | Response може store shared cache навіть коли інакше це могло б бути недоступно |
+| private | Response призначений для private cache і не повинен store shared cache |
+| no-cache | Response можна store, але перед reuse його треба validate |
+| no-store | Cache не повинен store response за HTTP caching rules |
+| must-revalidate | Після того як response stale, його не можна reuse без successful validation, крім exceptions специфікації |
+
+Ключова пастка: **`no-cache` не означає “не зберігати”.** Це означає “не reuse без validation”. `no-store` — directive, яка забороняє storing response в HTTP cache.
+
+### ETag та Last-Modified validators
+
+`ETag` — opaque validator конкретної version selected representation. `Last-Modified` — timestamp validator.
+
+Response може повернути ETag:
 
 ~~~http
 HTTP/1.1 200 OK
 ETag: "v7"
-Cache-Control: max-age=0, must-revalidate
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"id":42,"name":"Alice"}
 ~~~
 
-Пізніше client може надіслати:
+Пізніше client може зробити revalidation:
 
 ~~~http
 GET /users/42
 If-None-Match: "v7"
 ~~~
 
-Якщо representation не змінилася, server може повернути:
+Якщо selected representation не змінилася, server може повернути:
 
 ~~~http
 HTTP/1.1 304 Not Modified
 ETag: "v7"
 ~~~
 
+`304 Not Modified` не надсилає normal representation content повторно; client reuse stored representation і за потреби оновлює cache metadata.
+
+`Last-Modified` працює аналогічно разом з `If-Modified-Since`, хоча ETags можуть давати точніший version validation.
+
 ### Conditional writes та optimistic concurrency
 
-ETags також можуть запобігати lost updates. Client читає version v7 і пізніше надсилає update лише якщо ця version все ще current:
+ETags корисні не лише для caching. Вони можуть запобігти lost updates. Client читає version `v7` і пізніше надсилає update лише якщо ця version все ще current:
 
 ~~~http
 PATCH /users/42
@@ -513,9 +686,47 @@ Content-Type: application/json
 {"displayName":"Alice B"}
 ~~~
 
-Якщо resource уже змінився до v8, server може повернути 412 Precondition Failed замість overwrite новіших data.
+Якщо resource уже змінився, server може повернути `412 Precondition Failed` замість overwrite новіших data.
 
-**Vary** повідомляє caches, які request headers впливають на response selection. Наприклад, Vary: Accept-Encoding означає, що compressed і uncompressed representations мають кешуватися окремо. Vary: Origin важливий, коли CORS responses відрізняються залежно від request origin.
+### Vary та cache keys
+
+`Vary` повідомляє caches, які request headers впливають на response selection. Наприклад, `Vary: Accept-Encoding` означає, що compressed і uncompressed representations треба cache окремо. `Vary: Origin` важливий, коли CORS responses відрізняються залежно від request origin.
+
+### Як перевіряти HTTP caching у Chrome DevTools
+
+Для browser HTTP cache використовуй **Network** panel:
+
+1. Reload page і перевір **Status**, **Size/Transferred**, request headers та response headers.
+2. Шукай `Cache-Control`, `ETag`, `Last-Modified`, `Age`, `Expires`, `Vary`, `If-None-Match`, `If-Modified-Since` та `304 Not Modified`, якщо вони застосовуються.
+3. Chrome може показувати в Network log, що response отриманий з memory cache або disk cache замість transfer representation з network.
+4. Використовуй **Disable cache**, поки DevTools відкритий, якщо треба порівняти behavior без normal browser HTTP-cache reuse.
+5. `304` — це не “порожній successful response API”; це означає, що stored representation успішно validated і може бути reused.
+
+**Application → Cache Storage — це не звичайний browser HTTP cache.** Cache Storage exposed через Cache API і часто використовується service workers. Chrome DevTools documentation прямо направляє debugging HTTP cache до Network log.
+
+## Authentication та authorization в HTTP
+
+У цьому chapter потрібен лише той authentication context, який пояснює HTTP fields та status codes. Самі authentication systems мають жити в dedicated identity chapter.
+
+**Authentication** встановлює, ким є user, client або service. **Authorization** визначає, що цій identity дозволено робити.
+
+HTTP визначає challenge/credentials framework. Наприклад:
+
+~~~http
+GET /account HTTP/1.1
+Authorization: Bearer <token>
+~~~
+
+Server, який вимагає authentication, може повернути challenge:
+
+~~~http
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer
+~~~
+
+`401 Unauthorized` стосується missing або unacceptable authentication credentials. `403 Forbidden` означає, що server розуміє request, але відмовляється authorize його. Applications також можуть передавати credentials через mechanisms поверх HTTP, зокрема session cookies або API-specific headers.
+
+Для Basic authentication, API keys, session authentication, Bearer tokens, JWT, OAuth 2.0, OpenID Connect, scopes, RBAC, ABAC, mTLS та service identities дивись [Identity & authorization](?topic=identity-and-authorization).
 
 ## CORS та same-origin policy
 
@@ -540,7 +751,7 @@ Same-origin policy enforced browsers. General HTTP clients, наприклад c
 
 ### Simple cross-origin requests
 
-Деякі cross-origin requests можуть бути відправлені без preflight, якщо використовують лише CORS-safelisted methods, headers та content types. Server все одно має повернути коректний Access-Control-Allow-Origin, щоб browser JavaScript міг використати response.
+Деякі cross-origin requests можуть бути відправлені без preflight, якщо використовують лише CORS-safelisted methods, headers та content types. Server все одно має повернути коректний `Access-Control-Allow-Origin`, щоб browser JavaScript міг використати response.
 
 ### Preflight requests
 
@@ -564,7 +775,7 @@ Access-Control-Max-Age: 600
 Vary: Origin
 ~~~
 
-Access-Control-Allow-* fields описують, які cross-origin operations browser може дозволити.
+`Access-Control-Allow-*` fields описують, які cross-origin operations browser може дозволити.
 
 ### Credentialed cross-origin requests
 
@@ -575,7 +786,7 @@ Access-Control-Allow-Origin: https://app.example.com
 Access-Control-Allow-Credentials: true
 ~~~
 
-Access-Control-Allow-Origin: * не може надати credentialed browser access.
+`Access-Control-Allow-Origin: *` не може надати credentialed browser access.
 
 ### Exposed response headers
 
@@ -591,7 +802,7 @@ CORS не є authentication або authorization mechanism. Він обмежу�
 
 HTTP status codes і headers можуть виражати temporary failure та retry behavior.
 
-**429 Too Many Requests** означає, що client перевищив rate limit. **503 Service Unavailable** означає temporary service unavailability. Обидва responses можуть містити Retry-After.
+**429 Too Many Requests** означає, що client перевищив rate limit. **503 Service Unavailable** означає temporary service unavailability. Обидва responses можуть містити `Retry-After`.
 
 ~~~http
 HTTP/1.1 429 Too Many Requests
@@ -612,8 +823,14 @@ Application APIs часто повертають structured error body на до
 
 - [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)
 - [RFC 9111 — HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111.html)
+- [RFC 6265 — HTTP State Management Mechanism](https://www.rfc-editor.org/rfc/rfc6265.html)
 - [RFC 5789 — PATCH Method for HTTP](https://www.rfc-editor.org/rfc/rfc5789.html)
 - [RFC 7578 — multipart/form-data](https://www.rfc-editor.org/rfc/rfc7578.html)
 - [RFC 6454 — The Web Origin Concept](https://www.rfc-editor.org/rfc/rfc6454.html)
 - [MDN — HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+- [MDN — HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+- [MDN — Set-Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
+- [Chrome DevTools — View and edit cookies](https://developer.chrome.com/docs/devtools/application/cookies/)
+- [Chrome DevTools — Network features reference](https://developer.chrome.com/docs/devtools/network/reference/)
+- [Chrome DevTools — Cache Storage versus HTTP cache](https://developer.chrome.com/docs/devtools/storage/cache)
 - [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)

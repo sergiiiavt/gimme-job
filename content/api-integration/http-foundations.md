@@ -57,7 +57,7 @@ Resource-oriented APIs normally use stable nouns for resources and relationships
 
 ## HTTP messages
 
-An HTTP request contains a method, request target, headers and an optional body.
+An HTTP request contains a method, request target, headers and optional content (commonly called a request body).
 
 ~~~http
 POST /api/users?sendWelcome=true HTTP/1.1
@@ -69,7 +69,7 @@ Accept: application/json
 {"name":"Alice","email":"alice@example.com"}
 ~~~
 
-The corresponding response contains a status code, headers and an optional body.
+The corresponding response contains a status code, headers and optional content.
 
 ~~~http
 HTTP/1.1 201 Created
@@ -79,37 +79,68 @@ Location: /api/users/42
 {"id":42,"name":"Alice","email":"alice@example.com"}
 ~~~
 
-The message body can contain JSON, XML, text, form fields, multipart parts, images, documents or arbitrary binary data. The Content-Type header describes the media type of that body.
+Message content can contain JSON, XML, text, form fields, multipart parts, images, documents or arbitrary binary data. The `Content-Type` header describes the media type of that content.
+
+**Request parameters and request content are different locations.** A value in `/users/42`, `?page=2`, `Authorization: ...` and a JSON body all travel in the same request, but they have different protocol roles.
 
 ## HTTP methods and their semantics
 
-HTTP methods describe the intended semantics of an operation. They are not merely aliases for database CRUD operations.
+HTTP methods describe the intended semantics of an operation. They are not merely aliases for database CRUD operations. Method semantics also affect safety, idempotency, caching, retry behavior and whether request content has a defined purpose.
 
-| Method | Main semantics | Safe | Idempotent |
-| --- | --- | ---: | ---: |
-| GET | Retrieve a representation of a resource | Yes | Yes |
-| HEAD | Same semantics as GET, but without response content | Yes | Yes |
-| POST | Submit data for resource-specific processing; commonly creates a subordinate resource | No | No guarantee |
-| PUT | Create or replace the state of the target resource | No | Yes |
-| PATCH | Apply a partial modification | No | No guarantee |
-| DELETE | Remove the target resource | No | Yes |
-| OPTIONS | Describe communication options for a resource; also used by CORS preflight | Yes | Yes |
-| CONNECT | Establish a tunnel through an intermediary | No | No |
-| TRACE | Diagnostic loop-back of the received request | Yes | Yes |
+| Method | Main semantics | Request content | Safe | Idempotent |
+| --- | --- | --- | ---: | ---: |
+| GET | Retrieve a representation of a resource | Normally none; HTTP defines no general semantics for GET content | Yes | Yes |
+| HEAD | Same semantics as GET, but response has no content | Normally none; HTTP defines no general semantics for HEAD content | Yes | Yes |
+| POST | Submit data for resource-specific processing; commonly creates a subordinate resource | Commonly present, but not required by HTTP | No | No guarantee |
+| PUT | Create or replace the state of the target resource | Normally the desired representation/state | No | Yes |
+| PATCH | Apply a partial modification | Normally a patch/change document | No | No guarantee |
+| DELETE | Remove the association between the target URI and its current functionality | Normally none; HTTP defines no general semantics for DELETE content | No | Yes |
+| OPTIONS | Describe communication options for a resource; also used by CORS preflight | Allowed, but HTTP defines no general use for it | Yes | Yes |
+| CONNECT | Establish a tunnel through an intermediary | Special-purpose method; not ordinary REST request content | No | No |
+| TRACE | Diagnostic loop-back of the received request | **Must not contain request content** | Yes | Yes |
 
-### Safe methods
+### Request content is method-specific
 
-A method is **safe** when the client is not requesting a change to application state. GET and HEAD are safe even though the server may still produce logs, metrics or other incidental side effects.
+A message can technically be framed with content independently of most method names, but that does **not** mean the content has useful or interoperable semantics for every method. The method definition determines what the content means.
 
-A safe method should not be used to perform a destructive business operation. An endpoint such as GET /users/42/delete contradicts GET semantics.
+This is why the shortcut “GET cannot have a body; POST has a body” is misleading:
 
-### Idempotent methods
+- a GET request can be framed with content, but RFC 9110 gives that content no generally defined semantics and advises clients not to send it unless the origin server has explicitly established a supported purpose;
+- POST commonly carries content, but an empty POST is still possible when an API contract defines a meaningful operation without request data;
+- PUT and PATCH normally carry the state or change being applied;
+- DELETE content has no generally defined semantics and should normally be avoided unless the client and origin server explicitly agree on its meaning;
+- OPTIONS can carry content, but HTTP does not define a general use for it;
+- TRACE explicitly forbids request content.
 
-A method is **idempotent** when repeating the same request has the same intended effect as sending it once.
+Frameworks, gateways, proxies and API tooling can impose stricter rules than HTTP itself. An API contract can therefore reject a request body even where HTTP framing would technically allow one.
 
-Idempotency does not require identical responses. For example, the first DELETE request can return 204 No Content while a repeated DELETE returns 404 Not Found. The final intended state is still the same: the resource does not exist.
+### GET and HEAD
 
-POST is not idempotent by HTTP definition, but an API can introduce an application-level idempotency mechanism. Payment and order APIs often accept an Idempotency-Key so a retried POST does not create duplicate business operations.
+GET asks the server to transfer a current representation of the target resource. Filtering, sorting and pagination are normally expressed through the URI query rather than request content.
+
+~~~http
+GET /orders?status=open&page=2 HTTP/1.1
+Accept: application/json
+~~~
+
+HEAD has the same request semantics as GET, but the server must not send response content. It is useful when a client needs headers or metadata such as `Content-Length`, `ETag` or `Last-Modified` without transferring the representation itself.
+
+~~~http
+HEAD /files/report.pdf HTTP/1.1
+~~~
+
+### POST
+
+POST asks the target resource to process the representation or information supplied by the client according to resource-specific semantics. Common uses include creating a subordinate resource, submitting a form, starting an operation or invoking a command-style endpoint.
+
+~~~http
+POST /orders HTTP/1.1
+Content-Type: application/json
+
+{"productId":42,"quantity":2}
+~~~
+
+A successful creation commonly returns `201 Created` and `Location`, but POST is broader than “create”.
 
 ### PUT and PATCH
 
@@ -132,6 +163,36 @@ Content-Type: application/merge-patch+json
 
 {"active":false}
 ~~~
+
+A frequent API-design mistake is to call every update PUT while accepting only arbitrary partial fields. If the endpoint intentionally applies partial changes, PATCH usually communicates that contract more accurately.
+
+### DELETE
+
+DELETE requests removal of the association between the target URI and its current functionality. A successful DELETE does not require that underlying data be physically erased; archival, soft deletion or other implementation behavior can exist behind the resource interface.
+
+DELETE is idempotent in intended effect. The first request can return `204 No Content` and a repeat can return `404 Not Found`; the final intended state is still that the resource is no longer available through that target URI.
+
+### OPTIONS, CONNECT and TRACE
+
+OPTIONS asks for communication options associated with a resource or server. Browsers use OPTIONS for CORS preflight, but OPTIONS is not “the CORS method” exclusively.
+
+CONNECT establishes a tunnel, commonly through a proxy. It has special request-target and connection semantics and is not a normal resource CRUD operation.
+
+TRACE is a diagnostic loop-back method. Clients must not send request content in TRACE and should not send sensitive fields that could be reflected back.
+
+### Safe methods
+
+A method is **safe** when the client is not requesting a change to application state. GET and HEAD are safe even though the server may still produce logs, metrics or other incidental side effects.
+
+A safe method should not be used to perform a destructive business operation. An endpoint such as `GET /users/42/delete` contradicts GET semantics.
+
+### Idempotent methods
+
+A method is **idempotent** when repeating the same request has the same intended effect as sending it once.
+
+Idempotency does not require identical responses. For example, the first DELETE request can return `204 No Content` while a repeated DELETE returns `404 Not Found`.
+
+POST is not idempotent by HTTP definition, but an API can introduce an application-level idempotency mechanism. Payment and order APIs often accept an `Idempotency-Key` so a retried POST does not create duplicate business operations.
 
 ### CRUD and HTTP
 
@@ -180,9 +241,9 @@ Headers carry metadata and protocol controls. Request headers describe client ca
 | Header | Meaning |
 | --- | --- |
 | Accept | Media types the client can accept in the response |
-| Content-Type | Media type of the request body |
-| Authorization | Credentials such as Basic or Bearer tokens |
-| Cookie | Cookies sent by the client |
+| Content-Type | Media type of the request content |
+| Authorization | Credentials carried using an HTTP authentication scheme |
+| Cookie | Matching cookies sent by the user agent |
 | Origin | Origin that initiated a browser cross-origin request |
 | User-Agent | Client software metadata |
 | Accept-Language | Preferred response languages |
@@ -198,11 +259,11 @@ Headers carry metadata and protocol controls. Request headers describe client ca
 
 | Header | Meaning |
 | --- | --- |
-| Content-Type | Media type of the response body |
-| Content-Encoding | Encoding or compression applied to the body |
+| Content-Type | Media type of the response content |
+| Content-Encoding | Encoding or compression applied to the content |
 | Content-Length | Declared content length when present |
 | Location | URI associated with a created resource or redirect |
-| Set-Cookie | Creates or updates browser cookies |
+| Set-Cookie | Creates or updates user-agent cookies |
 | Cache-Control | Cache policy for the response |
 | ETag | Entity tag used as a cache or concurrency validator |
 | Last-Modified | Timestamp validator for conditional requests |
@@ -230,7 +291,7 @@ Content-Type: application/json
 Accept: application/json
 ~~~
 
-If a server cannot process the request media type, 415 Unsupported Media Type is appropriate. If it cannot produce a representation acceptable to the client, 406 Not Acceptable can be used.
+If a server cannot process the request media type, `415 Unsupported Media Type` is appropriate. If it cannot produce a representation acceptable to the client, `406 Not Acceptable` can be used.
 
 ## HTTP status codes
 
@@ -351,48 +412,15 @@ A status code communicates the result of processing an HTTP request. The first d
 
 **409 vs 412**
 
-409 represents a conflict with current resource state. 412 specifically means a conditional request such as If-Match or If-Unmodified-Since failed its precondition.
+409 represents a conflict with current resource state. 412 specifically means a conditional request such as `If-Match` or `If-Unmodified-Since` failed its precondition.
 
 **502 vs 503 vs 504**
 
 502 means an intermediary received an invalid upstream response. 503 means a service is temporarily unavailable. 504 means an intermediary waited too long for an upstream response.
 
-## Authentication, authorization and session state
-
-**Authentication** establishes who a user, client or service is. **Authorization** determines what that identity is allowed to do.
-
-HTTP provides standard authentication fields and is also used to carry many application-specific credential mechanisms.
-
-| Mechanism | Description |
-| --- | --- |
-| HTTP Basic | Username and password are Base64-encoded in Authorization; TLS is required because Base64 is not encryption |
-| Bearer token | Authorization: Bearer token; the token can be opaque or structured such as a JWT |
-| API key | Application credential normally sent in a dedicated header |
-| OAuth 2.0 access token | Delegated authorization token, commonly carried as a Bearer token |
-| OpenID Connect | Identity layer built on OAuth 2.0 for authentication and identity claims |
-| Session cookie | Browser cookie represents server-side or signed session state |
-| HMAC request signing | Selected request components are cryptographically signed |
-| Mutual TLS | Client and server both authenticate using certificates |
-
-A successful authentication does not imply unrestricted authorization. An authenticated user can still be forbidden from accessing another user's resource, an administrative operation or a tenant outside the user's scope.
-
-### Cookies and sessions
-
-Servers create cookies through Set-Cookie. Browsers later return matching cookies in the Cookie header according to domain, path, expiration, SameSite and security rules.
-
-Important cookie attributes include:
-
-- **Secure** — cookie is sent only over secure connections;
-- **HttpOnly** — browser JavaScript cannot read the cookie;
-- **SameSite** — controls cross-site cookie sending behavior;
-- **Domain** and **Path** — define the cookie scope;
-- **Max-Age** or **Expires** — define lifetime.
-
-Cookie-based authentication introduces CSRF considerations because a browser can attach cookies automatically to requests. CSRF protection and CORS solve different problems: CSRF controls unwanted authenticated actions, while CORS controls browser JavaScript access to cross-origin responses.
-
 ## Request bodies, forms and files
 
-HTTP message bodies can carry different media types. The body format is identified by Content-Type.
+HTTP message content can carry different media types. The format is identified by `Content-Type`.
 
 ### JSON
 
@@ -407,7 +435,7 @@ JSON is common for structured API data but is not built into HTTP itself.
 
 ### Form URL encoding
 
-application/x-www-form-urlencoded represents form fields as encoded name-value pairs.
+`application/x-www-form-urlencoded` represents form fields as encoded name-value pairs.
 
 ~~~http
 POST /login
@@ -429,7 +457,7 @@ Content-Type: application/pdf
 
 ### multipart/form-data
 
-Multipart bodies divide one HTTP body into multiple parts. Each part has its own headers and content. This allows ordinary fields, structured metadata and files to travel in one request.
+Multipart content divides one HTTP message body into multiple parts. Each part has its own headers and content. This allows ordinary fields, structured metadata and files to travel in one request.
 
 ~~~http
 POST /documents
@@ -471,39 +499,184 @@ Client ───────────────► Object storage
 
 The application authorizes the upload and returns a short-lived pre-signed URL. The client then transfers the file directly to object storage, while the application records metadata and completion state separately.
 
+## Cookies and browser state
+
+A cookie is a small piece of state managed by the user agent and associated with HTTP requests. Cookies are **not inherently an authentication mechanism**. Applications can use them for session identifiers, preferences, feature state, tracking identifiers or other application-defined values.
+
+### Cookie lifecycle
+
+A server asks the browser to store a cookie with `Set-Cookie`:
+
+~~~http
+HTTP/1.1 200 OK
+Set-Cookie: session=abc123; Path=/; Secure; HttpOnly; SameSite=Lax
+~~~
+
+The user agent stores the cookie according to its cookie rules. On a later matching request it automatically sends the cookie in the `Cookie` request header:
+
+~~~http
+GET /account HTTP/1.1
+Cookie: session=abc123
+~~~
+
+```diagram
+Server response
+  │ Set-Cookie
+  ▼
+Browser cookie store
+  │ matching domain/path/security rules
+  ▼
+Later request
+  │ Cookie
+  ▼
+Server
+```
+
+The browser does not normally send cookie attributes such as `Secure`, `HttpOnly`, `SameSite`, `Path` or expiration back in the `Cookie` header. It sends the applicable name-value pairs.
+
+### Cookie scope and lifetime
+
+Important cookie attributes include:
+
+| Attribute | Effect |
+| --- | --- |
+| Secure | Send the cookie only over secure connections |
+| HttpOnly | Prevent browser JavaScript from reading the cookie through normal script APIs |
+| SameSite | Controls whether the cookie is sent in cross-site contexts |
+| Domain | Defines the host/domain scope; omitting it creates a host-only cookie |
+| Path | Restricts which request paths match the cookie |
+| Max-Age / Expires | Defines a persistent lifetime; without them the cookie is normally a session cookie |
+
+A **session cookie** normally lasts for the browser session, subject to browser session-restore behavior. A **persistent cookie** has an explicit lifetime. HTTP cookie rules define behavior, but they do not require a particular physical storage implementation: a browser may keep cookie state in memory, persistent storage or a combination.
+
+Cross-site and third-party cookie behavior is also affected by browser privacy policy in addition to the HTTP cookie attributes.
+
+### Cookie versus server-side session
+
+A cookie and a session are not the same object.
+
+A common architecture is:
+
+```diagram
+Cookie: session=abc123
+        │
+        ▼
+Server session store
+abc123 → userId=42, roles=..., expiry=...
+```
+
+The browser stores only the session identifier while the application keeps the actual session state on the server. Other architectures use signed or encrypted cookie-based session data. The cookie mechanism itself does not prescribe which model the application uses.
+
+For authentication design, session security, tokens, OAuth, JWT, roles and access policies, continue to [Identity & authorization](?topic=identity-and-authorization).
+
+### Inspecting cookies in Chrome DevTools
+
+To inspect cookie state rather than guessing from application behavior:
+
+1. Open **DevTools → Application → Storage → Cookies** and select the site origin.
+2. Inspect the cookie name, value, domain, path, expiration, `HttpOnly`, `Secure` and `SameSite` properties.
+3. In **Network**, select an individual request and inspect its **Cookies** tab or request/response headers to see which cookies were actually sent and which `Set-Cookie` values were received.
+4. When debugging a missing cookie, check domain/path matching, expiry, `Secure`, `SameSite`, cross-site context and whether the response's `Set-Cookie` was accepted by the browser.
+
+Cookie-based authentication introduces CSRF considerations because the browser can attach matching cookies automatically. CSRF protection and CORS solve different problems: CSRF addresses unwanted authenticated actions, while CORS controls browser JavaScript access to cross-origin responses.
+
 ## Caching and conditional requests
 
-HTTP caching allows clients, browsers, gateways and shared caches to reuse responses when the response policy permits it.
+HTTP caching allows browsers, other clients, proxies, gateways and CDNs to reuse stored responses when the cache policy permits it. Caching can reduce latency, bandwidth and origin-server load.
 
-**Cache-Control** defines caching directives such as max-age, no-cache, no-store, public and private.
+### Where HTTP responses can be cached
 
-**ETag** is an opaque validator representing a specific version of a resource. **Last-Modified** is a timestamp validator.
+```diagram
+Browser / client private cache
+          │
+          ▼
+Proxy or shared organizational cache
+          │
+          ▼
+CDN / edge cache
+          │
+          ▼
+Origin server
+```
 
-A cache revalidation flow with ETag looks like this:
+A cache can therefore exist in more than one place. `private` and `public` directives help define which kinds of caches may store a response. HTTP defines cache behavior, not the exact physical storage location. A browser can use memory, disk or implementation-specific storage.
+
+### Freshness and revalidation
+
+A useful mental model is:
+
+```diagram
+Request
+  │
+  ▼
+Cached response exists?
+  │ no ───────────────► Origin → 200 + representation
+  │ yes
+  ▼
+Still fresh?
+  │ yes ──────────────► Reuse cached response
+  │ no
+  ▼
+Revalidate with validator
+  │
+  ├─ 304 Not Modified ─► Reuse cached representation
+  └─ 200 OK ───────────► Store/use new representation
+```
+
+A fresh response can be reused without contacting the origin. A stale response often needs validation before reuse unless another directive permits stale use.
+
+### Cache-Control directives
+
+Common directives have importantly different meanings:
+
+| Directive | Meaning |
+| --- | --- |
+| max-age=N | Response can normally be reused while its age is less than N seconds |
+| s-maxage=N | Freshness lifetime for shared caches; overrides max-age there |
+| public | Response may be stored by shared caches even when it otherwise might not be |
+| private | Response is intended for a private cache and must not be stored by a shared cache |
+| no-cache | The response may be stored, but it must be validated before reuse |
+| no-store | A cache must not store the response under the rules defined by HTTP caching |
+| must-revalidate | Once stale, the response must not be reused without successful validation unless the specification permits an exception |
+
+The common misconception is **`no-cache` does not mean “do not store.”** It means “do not reuse without validation.” `no-store` is the directive that prohibits storing the response in an HTTP cache.
+
+### ETag and Last-Modified validators
+
+`ETag` is an opaque validator representing a version of a selected representation. `Last-Modified` is a timestamp validator.
+
+A response can provide an ETag:
 
 ~~~http
 HTTP/1.1 200 OK
 ETag: "v7"
-Cache-Control: max-age=0, must-revalidate
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"id":42,"name":"Alice"}
 ~~~
 
-The client can later send:
+The client can later revalidate it:
 
 ~~~http
 GET /users/42
 If-None-Match: "v7"
 ~~~
 
-If the representation has not changed, the server can return:
+If the selected representation has not changed, the server can return:
 
 ~~~http
 HTTP/1.1 304 Not Modified
 ETag: "v7"
 ~~~
 
+A `304 Not Modified` response does not resend the normal representation content; the client reuses the stored representation and updates cache metadata as required.
+
+`Last-Modified` works similarly with `If-Modified-Since`, though ETags can provide more precise version validation.
+
 ### Conditional writes and optimistic concurrency
 
-ETags can also prevent lost updates. A client reads version v7 and later sends an update only if that version is still current:
+ETags are also useful outside caching. They can prevent lost updates. A client reads version `v7` and later sends an update only if that version is still current:
 
 ~~~http
 PATCH /users/42
@@ -513,9 +686,47 @@ Content-Type: application/json
 {"displayName":"Alice B"}
 ~~~
 
-If the resource has already changed to v8, the server can return 412 Precondition Failed rather than overwrite newer data.
+If the resource has already changed, the server can return `412 Precondition Failed` rather than overwrite newer data.
 
-**Vary** tells caches which request headers influence response selection. For example, Vary: Accept-Encoding means compressed and uncompressed representations must be cached separately. Vary: Origin is important when CORS responses differ by request origin.
+### Vary and cache keys
+
+`Vary` tells caches which request headers influence response selection. For example, `Vary: Accept-Encoding` means compressed and uncompressed representations must be cached separately. `Vary: Origin` is important when CORS responses differ by request origin.
+
+### Inspecting HTTP caching in Chrome DevTools
+
+Use the **Network** panel for the browser HTTP cache:
+
+1. Reload the page and inspect the request's **Status**, **Size/Transferred**, request headers and response headers.
+2. Look for `Cache-Control`, `ETag`, `Last-Modified`, `Age`, `Expires`, `Vary`, `If-None-Match`, `If-Modified-Since` and `304 Not Modified` where applicable.
+3. Chrome can indicate that a response came from memory cache or disk cache in the Network log instead of transferring the representation from the network.
+4. Use **Disable cache** while DevTools is open when you need to compare behavior without normal browser HTTP-cache reuse.
+5. A `304` is not “an empty successful response from the API”; it means the stored representation was validated and can be reused.
+
+**Application → Cache Storage is not the ordinary browser HTTP cache.** Cache Storage is exposed through the Cache API and is commonly used by service workers. Chrome's own DevTools documentation explicitly directs HTTP-cache debugging to the Network log instead.
+
+## Authentication and authorization in HTTP
+
+HTTP needs enough authentication context here to explain protocol fields and status codes, but the authentication systems themselves belong in the dedicated identity chapter.
+
+**Authentication** establishes who a user, client or service is. **Authorization** determines what that identity is allowed to do.
+
+HTTP defines a challenge/credentials framework. For example:
+
+~~~http
+GET /account HTTP/1.1
+Authorization: Bearer <token>
+~~~
+
+A server that requires authentication can challenge the client:
+
+~~~http
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer
+~~~
+
+`401 Unauthorized` concerns missing or unacceptable authentication credentials. `403 Forbidden` means the server understands the request but refuses to authorize it. Applications can also carry credentials through mechanisms layered on HTTP, including session cookies and API-specific headers.
+
+For Basic authentication, API keys, session authentication, Bearer tokens, JWT, OAuth 2.0, OpenID Connect, scopes, RBAC, ABAC, mTLS and service identities, see [Identity & authorization](?topic=identity-and-authorization).
 
 ## CORS and the same-origin policy
 
@@ -540,7 +751,7 @@ This means a request can reach the API and even receive HTTP 200, while browser 
 
 ### Simple cross-origin requests
 
-Some cross-origin requests can be sent without a preflight when they use only CORS-safelisted methods, headers and content types. The server still needs to return an appropriate Access-Control-Allow-Origin header before browser JavaScript can use the response.
+Some cross-origin requests can be sent without a preflight when they use only CORS-safelisted methods, headers and content types. The server still needs to return an appropriate `Access-Control-Allow-Origin` header before browser JavaScript can use the response.
 
 ### Preflight requests
 
@@ -564,7 +775,7 @@ Access-Control-Max-Age: 600
 Vary: Origin
 ~~~
 
-The Access-Control-Allow-* fields describe which cross-origin operations the browser may permit.
+The `Access-Control-Allow-*` fields describe which cross-origin operations the browser may permit.
 
 ### Credentialed cross-origin requests
 
@@ -575,7 +786,7 @@ Access-Control-Allow-Origin: https://app.example.com
 Access-Control-Allow-Credentials: true
 ~~~
 
-Access-Control-Allow-Origin: * cannot grant credentialed browser access.
+`Access-Control-Allow-Origin: *` cannot grant credentialed browser access.
 
 ### Exposed response headers
 
@@ -591,7 +802,7 @@ CORS is not an authentication or authorization mechanism. It restricts browser J
 
 HTTP status codes and headers can express temporary failure and retry behavior.
 
-**429 Too Many Requests** indicates that the client exceeded a rate limit. **503 Service Unavailable** indicates temporary service unavailability. Either response can include Retry-After.
+**429 Too Many Requests** indicates that the client exceeded a rate limit. **503 Service Unavailable** indicates temporary service unavailability. Either response can include `Retry-After`.
 
 ~~~http
 HTTP/1.1 429 Too Many Requests
@@ -612,8 +823,14 @@ Application APIs often return a structured error body in addition to the HTTP st
 
 - [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)
 - [RFC 9111 — HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111.html)
+- [RFC 6265 — HTTP State Management Mechanism](https://www.rfc-editor.org/rfc/rfc6265.html)
 - [RFC 5789 — PATCH Method for HTTP](https://www.rfc-editor.org/rfc/rfc5789.html)
 - [RFC 7578 — multipart/form-data](https://www.rfc-editor.org/rfc/rfc7578.html)
 - [RFC 6454 — The Web Origin Concept](https://www.rfc-editor.org/rfc/rfc6454.html)
 - [MDN — HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+- [MDN — HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching)
+- [MDN — Set-Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)
+- [Chrome DevTools — View and edit cookies](https://developer.chrome.com/docs/devtools/application/cookies/)
+- [Chrome DevTools — Network features reference](https://developer.chrome.com/docs/devtools/network/reference/)
+- [Chrome DevTools — Cache Storage versus HTTP cache](https://developer.chrome.com/docs/devtools/storage/cache)
 - [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)

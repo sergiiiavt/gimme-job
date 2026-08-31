@@ -31,9 +31,10 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
       "## REST",
       "## Headers",
       "## HTTP status codes",
-      "## Authentication",
       "## Request bodies",
+      "## Cookies",
       "## Caching",
+      "## Authentication",
       "## CORS",
       "## Errors",
       "## Sources",
@@ -83,7 +84,7 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
     assert.match(markdown, /Basic/);
     assert.match(markdown, /Bearer/);
     assert.match(markdown, /OAuth 2\.0/);
-    assert.match(markdown, /Mutual TLS/);
+    assert.match(markdown, /mTLS/);
     assert.match(markdown, /multipart\/form-data/);
     assert.match(markdown, /pre-signed/);
     assert.match(markdown, /CORS/);
@@ -93,6 +94,19 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
     assert.match(markdown, /curl/);
     assert.match(markdown, /304 Not Modified/);
     assert.match(markdown, /412 Precondition Failed/);
+
+    assert.match(markdown, /GET[\s\S]*no general.*semantics|GET[\s\S]*не визначає general semantics/i);
+    assert.match(markdown, /POST[\s\S]*(not required|не вимагає)/i);
+    assert.match(markdown, /TRACE[\s\S]*(must not|заборон)/i);
+    assert.match(markdown, /session cookie/i);
+    assert.match(markdown, /persistent cookie/i);
+    assert.match(markdown, /HttpOnly/);
+    assert.match(markdown, /SameSite/);
+    assert.match(markdown, /no-cache[\s\S]*no-store/i);
+    assert.match(markdown, /memory cache/i);
+    assert.match(markdown, /disk cache/i);
+    assert.match(markdown, /Cache Storage[\s\S]*HTTP cache/i);
+    assert.match(markdown, /\[Identity & authorization\]\(\?topic=identity-and-authorization\)/);
 
     assert.doesNotMatch(markdown, /## \d+\./, "Methodic material must use subject headings instead of numbered learning steps");
     assert.doesNotMatch(markdown, /:::details/, "Status material must stay inline instead of becoming a reference expander");
@@ -359,13 +373,16 @@ test("HTTP presentation keeps methodic material and composes URI detail into the
   assert.match(apiPage, /Методичний матеріал/);
 });
 
-test("Markdown renderer treats tilde fences as code blocks", async () => {
+test("Markdown renderer treats tilde fences as code blocks and supports internal topic links", async () => {
   const renderer = await readFile(projectFile("app/qa-markdown.tsx"), "utf8");
   assert.match(renderer, /function parseFence/);
   assert.match(renderer, /~\{3,/);
   assert.match(renderer, /openingFence/);
   assert.match(renderer, /closingFence/);
   assert.match(renderer, /Boolean\(parseFence\(line\)\)/);
+  assert.match(renderer, /\\\?|#/);
+  assert.match(renderer, /const external = \/\^https\?:/);
+  assert.match(renderer, /target=\{external \? "_blank" : undefined\}/);
 });
 
 test("API and Integration catalog keeps the requested topic order and placeholders", async () => {
