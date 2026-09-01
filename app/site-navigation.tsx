@@ -5,7 +5,7 @@ import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
-export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation";
+export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground";
 
 interface SectionNavigationItem {
   id: SiteSection;
@@ -41,7 +41,7 @@ export const navigationIntroItem: SectionNavigationItem = {
 /** Valid deep-link sections that are reachable in-page (e.g. via a catalog toggle) rather than through their own nav button. */
 export const hiddenDeepLinkSections: SiteSection[] = ["python-interview"];
 
-export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label: string; items: NavigationItem[] }> = [
+export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds" | "misc"; label: string; items: NavigationItem[] }> = [
   {
     id: "career",
     label: "Career",
@@ -101,6 +101,19 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "misc"; label
         personalHref: "/workspace/learn/metrics-estimation",
       },
       { id: "strategy", label: "Strategy & leadership" },
+    ],
+  },
+  {
+    id: "playgrounds",
+    label: "Playgrounds",
+    items: [
+      {
+        id: "websocket-playground",
+        label: "WebSocket Playground",
+        external: true,
+        publicHref: "/playgrounds/websocket",
+        personalHref: "/playgrounds/websocket",
+      },
     ],
   },
   {
@@ -485,6 +498,8 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
       return <svg {...props}><path d="M5 20V12h3v8M10.5 20V7h3v13M16 20V4h3v16"/></svg>;
     case "strategy":
       return <svg {...props}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.6-4 2.5-6 5.5-6s5 2 5.5 6M14 15c3.8-.5 6 1.2 6.5 4.5"/></svg>;
+    case "websocket-playground":
+      return <svg {...props}><path d="M7 7h10a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4zM8 10l-2 2 2 2M16 10l2 2-2 2M10 15l4-6"/></svg>;
     case "news":
       return <svg {...props}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5M8 18h8"/></svg>;
     case "rewild":
