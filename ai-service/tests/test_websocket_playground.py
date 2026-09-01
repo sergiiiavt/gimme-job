@@ -98,9 +98,9 @@ class WebSocketPlaygroundTests(unittest.TestCase):
         self.assertEqual(_normalize_room("!!!"), "playground")
         self.assertEqual(len(_normalize_room("a" * 100)), 40)
 
-        with self.connected_socket("qa%20room!", expected_room="qa20room") as socket:
+        with self.connected_socket("qa.room!", expected_room="qaroom") as socket:
             identity = self.send_action(socket, "whoami")
-            self.assertEqual(identity["room"], "qa20room")
+            self.assertEqual(identity["room"], "qaroom")
 
     def test_close_action_uses_requested_reason_and_sanitizes_reserved_code(self) -> None:
         with self.connected_socket("close-normal") as socket:
