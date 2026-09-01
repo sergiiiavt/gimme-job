@@ -1,4 +1,5 @@
 import contractsSchemas from "./contracts-schemas";
+import dataFormats from "./data-formats";
 import httpFoundations from "./http-foundations";
 import identityAuthorization from "./identity-authorization";
 import websocketGuide from "./websocket-guide";
@@ -50,13 +51,24 @@ export const catalog = {
   topics: [
     {
       id: "http-foundations",
-      label: "HTTP, REST & CORS",
-      labelUk: "HTTP, REST та CORS",
-      description: "HTTP semantics for APIs: URI addressing, messages, methods, REST constraints, headers, status codes, request bodies, caching, retries and CORS.",
-      descriptionUk: "HTTP semantics для APIs: URI addressing, messages, methods, REST constraints, headers, status codes, request bodies, caching, retries і CORS.",
+      // Previous learning-path label: HTTP, REST & CORS.
+      label: "HTTP & REST APIs",
+      labelUk: "HTTP та REST APIs",
+      description: "HTTP semantics for APIs: URI addressing, messages, methods, REST constraints, headers, status codes, request bodies, caching, retries and browser CORS behavior.",
+      descriptionUk: "HTTP semantics для APIs: URI addressing, messages, methods, REST constraints, headers, status codes, request bodies, caching, retries і browser CORS behavior.",
       status: "published" as const,
       markdown: httpFoundations.markdown,
       markdownUk: httpFoundations.markdownUk,
+    },
+    {
+      id: "data-formats",
+      label: "Data formats & serialization",
+      labelUk: "Формати даних та serialization",
+      description: "JSON value types, XML basics, serialization, media types, and the difference between missing, null and empty values.",
+      descriptionUk: "JSON value types, основи XML, serialization, media types та різниця між missing, null і empty values.",
+      status: "published" as const,
+      markdown: dataFormats.markdown,
+      markdownUk: dataFormats.markdownUk,
     },
     {
       id: "contracts-and-schemas",
