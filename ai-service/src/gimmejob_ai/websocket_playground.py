@@ -74,23 +74,23 @@ rooms = RoomManager()
 
 
 def _normalize_room(value: str) -> str:
-    cleaned = "".join(character for character in value.strip() if character.isalnum() or character in "-_" )
+    cleaned = "".join(character for character in value.strip() if character.isalnum() or character in "-_")
     return (cleaned or "playground")[:40]
 
 
-async def _handle_json(room: str, client: Client, message: dict[str, object]) -> None:
+async def _handle_json(room: str, client: Client, message: dict[str, object]) -> bool:
     action = str(message.get("action", "echo")).strip().lower()
 
     if action == "echo":
         await client.websocket.send_json(_event("echo", connectionId=client.id, data=message.get("message", message.get("data"))))
-        return
+        return False
 
     if action == "broadcast":
         await rooms.broadcast(
             room,
             _event("broadcast", room=room, fromConnectionId=client.id, data=message.get("message", message.get("data"))),
         )
-        return
+        return False
 
     if action == "delay":
         raw_delay = message.get("milliseconds", 1000)
@@ -100,15 +100,15 @@ async def _handle_json(room: str, client: Client, message: dict[str, object]) ->
             delay_ms = 1000
         await asyncio.sleep(delay_ms / 1000)
         await client.websocket.send_json(_event("delayed", connectionId=client.id, delayMs=delay_ms, data=message.get("message", message.get("data"))))
-        return
+        return False
 
     if action == "heartbeat":
         await client.websocket.send_json(_event("heartbeat", connectionId=client.id, status="alive"))
-        return
+        return False
 
     if action == "whoami":
         await client.websocket.send_json(_event("identity", connectionId=client.id, room=room, roomConnections=await rooms.count(room)))
-        return
+        return False
 
     if action == "close":
         raw_code = message.get("code", 1000)
@@ -120,7 +120,7 @@ async def _handle_json(room: str, client: Client, message: dict[str, object]) ->
             code = 1000
         reason = str(message.get("reason", "Closed from playground"))[:120]
         await client.websocket.close(code=code, reason=reason)
-        return
+        return True
 
     await client.websocket.send_json(
         _event(
@@ -129,6 +129,7 @@ async def _handle_json(room: str, client: Client, message: dict[str, object]) ->
             supportedActions=["echo", "broadcast", "delay", "heartbeat", "whoami", "close"],
         )
     )
+    return False
 
 
 @router.websocket("/v1/playground/ws")
@@ -168,7 +169,8 @@ async def websocket_playground(websocket: WebSocket, room: str = Query(default="
             if not isinstance(parsed, dict):
                 await websocket.send_json(_event("error", message="JSON messages must be objects."))
                 continue
-            await _handle_json(room_name, client, parsed)
+            if await _handle_json(room_name, client, parsed):
+                break
     except WebSocketDisconnect:
         pass
     finally:
