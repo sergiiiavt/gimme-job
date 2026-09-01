@@ -11,9 +11,20 @@ const addUriAddressing = (base: string, addressing: string) =>
     `\n${addressing.trim()}\n${HTTP_MESSAGES_HEADING}`,
   );
 
+const renameChapter = (base: string, currentTitle: string, nextTitle: string) =>
+  base.replace(currentTitle, nextTitle);
+
 export const httpFoundations = {
-  markdown: addUriAddressing(markdown, uriAddressing),
-  markdownUk: addUriAddressing(markdownUk, uriAddressingUk),
+  markdown: renameChapter(
+    addUriAddressing(markdown, uriAddressing),
+    "# HTTP, REST & CORS Foundations",
+    "# HTTP & REST APIs",
+  ),
+  markdownUk: renameChapter(
+    addUriAddressing(markdownUk, uriAddressingUk),
+    "# Основи HTTP, REST та CORS",
+    "# HTTP та REST APIs",
+  ),
 };
 
 export default httpFoundations;
