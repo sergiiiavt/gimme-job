@@ -31,7 +31,7 @@ export default function ProgrammingLearningPage({ mode }: { mode: "public" | "pe
       <LearningDocumentPage
         curriculum={programmingCurriculum}
         defaultTrackId={defaultTrackId}
-        heroMeta={({ language, lessonCount, module, sourceCount }) => module.id.startsWith("csharp-")
+        heroMeta={({ language, lessonCount, module, sourceCount }) => module?.id.startsWith("csharp-")
           ? [
               language === "uk" ? "Базова тема" : "Foundational topic",
               `${sourceCount} ${language === "uk" ? "джерел" : "references"}`,
