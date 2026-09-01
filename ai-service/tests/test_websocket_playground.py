@@ -5,7 +5,8 @@ import unittest
 from contextlib import contextmanager
 from typing import Iterator
 
-from fastapi.testclient import TestClient, WebSocketTestSession
+from fastapi.testclient import TestClient
+from starlette.testclient import WebSocketTestSession
 
 from gimmejob_ai.application import app
 
