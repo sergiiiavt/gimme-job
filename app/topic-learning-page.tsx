@@ -180,7 +180,7 @@ export default function TopicLearningPage({
                   ? "Топік збережений у learning path і буде розгорнутий у повний source-backed розділ."
                   : "This topic stays in the learning path and will be expanded into a complete source-backed chapter."}</p>
               </section>
-              <LearningRail headings={[]} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage} showSourceRegistry={false}/>
+              <LearningRail headings={[]} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage}/>
             </>
           ) : (
             <>
@@ -217,7 +217,6 @@ export default function TopicLearningPage({
                   language={language}
                   languages={["en", "uk"]}
                   onLanguageChange={setLanguage}
-                  showSourceRegistry={hasSourceRegistry}
                 />
               </div>
             </>
