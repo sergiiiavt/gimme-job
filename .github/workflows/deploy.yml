@@ -147,9 +147,46 @@ jobs:
             grep -Eiq '^location: /learn/qa-fundamentals\?topic=testing-process-lifecycle' "$headers"
           }
 
+          check_websocket_playground() {
+            node --input-type=module <<'NODE'
+          const url = `wss://gimme-job.com/playgrounds/websocket/ws?room=deploy-${Date.now()}`;
+          await new Promise((resolve, reject) => {
+            const socket = new WebSocket(url);
+            const timer = setTimeout(() => {
+              socket.close();
+              reject(new Error("Timed out waiting for WebSocket echo."));
+            }, 10_000);
+
+            socket.addEventListener("error", () => {
+              clearTimeout(timer);
+              reject(new Error("Production WebSocket connection failed."));
+            }, { once: true });
+
+            socket.addEventListener("open", () => {
+              socket.send(JSON.stringify({ action: "echo", message: "deployment-smoke" }));
+            }, { once: true });
+
+            socket.addEventListener("message", (event) => {
+              try {
+                const payload = JSON.parse(String(event.data));
+                if (payload.type === "echo" && payload.data === "deployment-smoke") {
+                  clearTimeout(timer);
+                  socket.close(1000, "Deployment smoke passed");
+                  resolve();
+                }
+              } catch {
+                // Ignore non-JSON frames; the playground protocol uses JSON for this smoke test.
+              }
+            });
+          });
+          console.log("Production WebSocket playground echo passed.");
+          NODE
+          }
+
           retry check_page "https://gimme-job.com/"
           retry check_logo "https://gimme-job.com/gimmejob-logo.png"
           retry check_health "https://gimme-job.com/api/health"
+          retry check_websocket_playground
           retry check_logout
           retry check_public_interview
           retry check_public_learning_advisor
