@@ -2,6 +2,10 @@
 import coreWorker from "./core";
 import { handleForwardedEmail } from "./email-forwarding";
 import { createMultiUserBoundary } from "./multi-user-boundary";
+import {
+  isWebSocketPlaygroundRequest,
+  proxyWebSocketPlayground,
+} from "./websocket-playground-proxy";
 
 function isPublicEphemeralAiRequest(request: Request): boolean {
   if (request.headers.get("x-gimmejob-session-scope") !== "ephemeral") return false;
@@ -51,6 +55,10 @@ function preventStaleReferenceCaching(response: Response): Response {
 
 const worker = {
   async fetch(request: Request, env: HttpWorkerEnv, ctx: HttpWorkerContext): Promise<Response> {
+    if (isWebSocketPlaygroundRequest(request)) {
+      return proxyWebSocketPlayground(request);
+    }
+
     const response = await httpWorker.fetch(request, env, ctx);
     return requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response;
   },
