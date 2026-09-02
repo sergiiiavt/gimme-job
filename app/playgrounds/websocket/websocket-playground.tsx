@@ -35,7 +35,18 @@ const SCENARIO_HINTS: Partial<Record<ScenarioId, string>> = {
 };
 
 function productionSocketUrl(room: string): string {
-  const base = process.env.NEXT_PUBLIC_WEBSOCKET_PLAYGROUND_URL?.trim() || "wss://ai.gimme-job.com/v1/playground/ws";
+  const configured = process.env.NEXT_PUBLIC_WEBSOCKET_PLAYGROUND_URL?.trim();
+  let base = configured;
+
+  if (!base) {
+    if (typeof window !== "undefined") {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      base = `${protocol}//${window.location.host}/playgrounds/websocket/ws`;
+    } else {
+      base = "wss://gimme-job.com/playgrounds/websocket/ws";
+    }
+  }
+
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}room=${encodeURIComponent(room)}`;
 }
