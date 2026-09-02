@@ -43,25 +43,26 @@ jobs:
           npm init -y >/dev/null
           npm install --silent @playwright/test@1.55.0
           npx playwright install --with-deps chromium
+          google-chrome --version || true
 
-      - name: Verify live WebSocket in Chromium
+      - name: Verify live WebSocket in Chromium and Chrome
         shell: bash
         run: |
           cd /tmp/ws-browser
           cat > websocket.spec.js <<'JS'
-          const { test, expect } = require('@playwright/test');
+          const { test, expect, chromium } = require('@playwright/test');
 
-          test('live WebSocket playground connects from Chromium', async ({ page }) => {
-            page.on('console', (message) => console.log(`browser console [${message.type()}] ${message.text()}`));
-            page.on('pageerror', (error) => console.log(`browser pageerror ${error.message}`));
+          async function verify(page, label) {
+            page.on('console', (message) => console.log(`${label} console [${message.type()}] ${message.text()}`));
+            page.on('pageerror', (error) => console.log(`${label} pageerror ${error.message}`));
 
             await page.goto('https://gimme-job.com/playgrounds/websocket', { waitUntil: 'domcontentloaded' });
             await expect(page.getByRole('heading', { name: 'WebSocket Playground' })).toBeVisible({ timeout: 10000 });
 
             const directResult = await page.evaluate(() => new Promise((resolve) => {
-              const socket = new WebSocket(`wss://gimme-job.com/playgrounds/websocket/ws?room=chromium-${Date.now()}`);
+              const socket = new WebSocket(`wss://gimme-job.com/playgrounds/websocket/ws?room=browser-${Date.now()}`);
               const timer = setTimeout(() => resolve({ ok: false, reason: 'timeout' }), 10000);
-              socket.onopen = () => socket.send(JSON.stringify({ action: 'echo', message: 'chromium-smoke' }));
+              socket.onopen = () => socket.send(JSON.stringify({ action: 'echo', message: 'browser-smoke' }));
               socket.onerror = () => {
                 clearTimeout(timer);
                 resolve({ ok: false, reason: 'error' });
@@ -75,20 +76,34 @@ jobs:
               socket.onmessage = (event) => {
                 try {
                   const payload = JSON.parse(String(event.data));
-                  if (payload.type === 'echo' && payload.data === 'chromium-smoke') {
+                  if (payload.type === 'echo' && payload.data === 'browser-smoke') {
                     clearTimeout(timer);
-                    socket.close(1000, 'Chromium smoke passed');
+                    socket.close(1000, 'Browser smoke passed');
                     resolve({ ok: true });
                   }
                 } catch {}
               };
             }));
-            console.log(`directResult=${JSON.stringify(directResult)}`);
+            console.log(`${label} directResult=${JSON.stringify(directResult)}`);
             expect(directResult).toEqual({ ok: true });
 
             await page.getByRole('button', { name: 'Connect' }).click();
-            await expect(page.getByText('OPEN', { exact: true })).toBeVisible({ timeout: 10000 });
-            await expect(page.getByText(/"type":"connected"/)).toBeVisible({ timeout: 10000 });
+            await expect(page.getByText('OPEN', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+            await expect(page.getByText(/"type":"connected"/).first()).toBeVisible({ timeout: 10000 });
+          }
+
+          test('Playwright Chromium connects', async ({ page }) => {
+            await verify(page, 'chromium');
+          });
+
+          test('system Google Chrome connects', async () => {
+            const browser = await chromium.launch({ channel: 'chrome', headless: true });
+            try {
+              const page = await browser.newPage();
+              await verify(page, 'chrome');
+            } finally {
+              await browser.close();
+            }
           });
           JS
-          npx playwright test websocket.spec.js --reporter=line
+          npx playwright test websocket.spec.js --reporter=line --workers=1
