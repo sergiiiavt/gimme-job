@@ -1,0 +1,282 @@
+[
+  {
+    "id": "rfc-9110",
+    "title": "RFC 9110 — HTTP Semantics",
+    "publisher": "IETF / RFC Editor",
+    "kind": "internet-standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+    "role": "Primary reference for HTTP methods, status codes, headers, message semantics and content negotiation."
+  },
+  {
+    "id": "rfc-9111",
+    "title": "RFC 9111 — HTTP Caching",
+    "publisher": "IETF / RFC Editor",
+    "kind": "internet-standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc9111.html",
+    "role": "Primary reference for HTTP cache behavior, freshness, validation and cache-control semantics."
+  },
+  {
+    "id": "rfc-6265",
+    "title": "RFC 6265 — HTTP State Management Mechanism",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc6265.html",
+    "role": "Reference for HTTP cookie storage, matching and transmission behavior."
+  },
+  {
+    "id": "rfc-5789",
+    "title": "RFC 5789 — PATCH Method for HTTP",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc5789.html",
+    "role": "Reference for PATCH method semantics and partial modification."
+  },
+  {
+    "id": "rfc-7578",
+    "title": "RFC 7578 — multipart/form-data",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc7578.html",
+    "role": "Reference for multipart form submission and file-upload representation."
+  },
+  {
+    "id": "rfc-6454",
+    "title": "RFC 6454 — The Web Origin Concept",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc6454.html",
+    "role": "Defines the web origin model used to explain same-origin behavior and CORS."
+  },
+  {
+    "id": "rfc-3986",
+    "title": "RFC 3986 — URI Generic Syntax",
+    "publisher": "IETF / RFC Editor",
+    "kind": "internet-standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc3986.html",
+    "role": "Primary reference for URI structure, components, references and percent-encoding."
+  },
+  {
+    "id": "rfc-6570",
+    "title": "RFC 6570 — URI Template",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc6570.html",
+    "role": "Reference for URI template syntax used by API descriptions and tooling."
+  },
+  {
+    "id": "mdn-http",
+    "title": "MDN — HTTP",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+    "role": "Practical browser-oriented companion reference for HTTP concepts and headers."
+  },
+  {
+    "id": "mdn-http-caching",
+    "title": "MDN — HTTP caching",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching",
+    "role": "Practical guide to browser and shared HTTP caching behavior."
+  },
+  {
+    "id": "mdn-set-cookie",
+    "title": "MDN — Set-Cookie",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie",
+    "role": "Reference for cookie attributes and browser handling."
+  },
+  {
+    "id": "mdn-cors",
+    "title": "MDN — Cross-Origin Resource Sharing (CORS)",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS",
+    "role": "Practical reference for browser CORS requests, preflight and response headers."
+  },
+  {
+    "id": "chrome-devtools-cookies",
+    "title": "Chrome DevTools — View, edit and delete cookies",
+    "publisher": "Google Chrome for Developers",
+    "kind": "tool-documentation",
+    "url": "https://developer.chrome.com/docs/devtools/application/cookies/",
+    "role": "Browser tooling reference for inspecting cookie state."
+  },
+  {
+    "id": "chrome-devtools-network",
+    "title": "Chrome DevTools — Network features reference",
+    "publisher": "Google Chrome for Developers",
+    "kind": "tool-documentation",
+    "url": "https://developer.chrome.com/docs/devtools/network/reference/",
+    "role": "Browser tooling reference for inspecting HTTP requests, responses, headers and cache behavior."
+  },
+  {
+    "id": "chrome-devtools-cache-storage",
+    "title": "Chrome DevTools — Cache Storage versus HTTP cache",
+    "publisher": "Google Chrome for Developers",
+    "kind": "tool-documentation",
+    "url": "https://developer.chrome.com/docs/devtools/storage/cache",
+    "role": "Reference for distinguishing Cache Storage from the browser HTTP cache."
+  },
+  {
+    "id": "rfc-8259",
+    "title": "RFC 8259 — The JavaScript Object Notation (JSON) Data Interchange Format",
+    "publisher": "IETF / RFC Editor",
+    "kind": "internet-standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc8259.html",
+    "role": "Primary reference for JSON syntax, values and interoperability."
+  },
+  {
+    "id": "rfc-7303",
+    "title": "RFC 7303 — XML Media Types",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc7303.html",
+    "role": "Reference for XML media types and character encoding conventions."
+  },
+  {
+    "id": "openapi-3-2",
+    "title": "OpenAPI Specification 3.2.0",
+    "publisher": "OpenAPI Initiative",
+    "kind": "official-specification",
+    "url": "https://spec.openapis.org/oas/v3.2.0.html",
+    "role": "Primary specification for describing HTTP API operations, parameters, bodies, responses and reusable components."
+  },
+  {
+    "id": "openapi-published",
+    "title": "OpenAPI Specification — published versions",
+    "publisher": "OpenAPI Initiative",
+    "kind": "official-specification",
+    "url": "https://spec.openapis.org/oas/",
+    "role": "Version index used to distinguish behavior across OpenAPI releases."
+  },
+  {
+    "id": "json-schema-spec",
+    "title": "JSON Schema — Specification",
+    "publisher": "JSON Schema",
+    "kind": "official-specification",
+    "url": "https://json-schema.org/specification",
+    "role": "Primary entry point for JSON Schema specification documents and vocabulary."
+  },
+  {
+    "id": "json-schema-2020-12",
+    "title": "JSON Schema Draft 2020-12",
+    "publisher": "JSON Schema",
+    "kind": "official-specification",
+    "url": "https://json-schema.org/draft/2020-12",
+    "role": "Reference dialect for JSON data types, constraints, composition and references."
+  },
+  {
+    "id": "rfc-9457",
+    "title": "RFC 9457 — Problem Details for HTTP APIs",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+    "role": "Reference for machine-readable HTTP API error representations."
+  },
+  {
+    "id": "rfc-7617",
+    "title": "RFC 7617 — The Basic HTTP Authentication Scheme",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc7617.html",
+    "role": "Primary reference for HTTP Basic authentication."
+  },
+  {
+    "id": "rfc-6750",
+    "title": "RFC 6750 — OAuth 2.0 Bearer Token Usage",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc6750.html",
+    "role": "Defines Bearer token transport and related security considerations."
+  },
+  {
+    "id": "rfc-6749",
+    "title": "RFC 6749 — The OAuth 2.0 Authorization Framework",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc6749.html",
+    "role": "Core OAuth 2.0 roles, grants, access tokens and refresh tokens."
+  },
+  {
+    "id": "rfc-7636",
+    "title": "RFC 7636 — Proof Key for Code Exchange (PKCE)",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc7636.html",
+    "role": "Defines PKCE for protecting OAuth authorization-code flows."
+  },
+  {
+    "id": "rfc-9700",
+    "title": "RFC 9700 — Best Current Practice for OAuth 2.0 Security",
+    "publisher": "IETF / RFC Editor",
+    "kind": "best-current-practice",
+    "url": "https://www.rfc-editor.org/rfc/rfc9700.html",
+    "role": "Current OAuth 2.0 security guidance used for modern flow and redirect recommendations."
+  },
+  {
+    "id": "rfc-7519",
+    "title": "RFC 7519 — JSON Web Token (JWT)",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc7519.html",
+    "role": "Defines JWT structure and registered claims."
+  },
+  {
+    "id": "rfc-8725",
+    "title": "RFC 8725 — JSON Web Token Best Current Practices",
+    "publisher": "IETF / RFC Editor",
+    "kind": "best-current-practice",
+    "url": "https://www.rfc-editor.org/rfc/rfc8725.html",
+    "role": "Security guidance for validating and using JWTs safely."
+  },
+  {
+    "id": "oidc-core-1",
+    "title": "OpenID Connect Core 1.0",
+    "publisher": "OpenID Foundation",
+    "kind": "official-specification",
+    "url": "https://openid.net/specs/openid-connect-core-1_0.html",
+    "role": "Primary specification for OpenID Connect identity flows and ID Tokens."
+  },
+  {
+    "id": "rfc-6455",
+    "title": "RFC 6455 — The WebSocket Protocol",
+    "publisher": "IETF / RFC Editor",
+    "kind": "internet-standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc6455.html",
+    "role": "Primary reference for the WebSocket handshake, frames, control messages and close behavior."
+  },
+  {
+    "id": "rfc-8441",
+    "title": "RFC 8441 — Bootstrapping WebSockets with HTTP/2",
+    "publisher": "IETF / RFC Editor",
+    "kind": "rfc-reference",
+    "url": "https://www.rfc-editor.org/rfc/rfc8441.html",
+    "role": "Reference for establishing WebSocket connections over HTTP/2."
+  },
+  {
+    "id": "mdn-websocket-api",
+    "title": "MDN — WebSocket API",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
+    "role": "Browser API reference for WebSocket lifecycle, messages and client behavior."
+  },
+  {
+    "id": "mdn-websocket-client",
+    "title": "MDN — Writing WebSocket client applications",
+    "publisher": "MDN Web Docs",
+    "kind": "web-platform-docs",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications",
+    "role": "Practical browser-client guidance for connecting, sending, receiving and closing WebSockets."
+  },
+  {
+    "id": "asyncapi-3",
+    "title": "AsyncAPI Specification 3.0.0",
+    "publisher": "AsyncAPI Initiative",
+    "kind": "official-specification",
+    "url": "https://www.asyncapi.com/docs/reference/specification/v3.0.0",
+    "role": "Reference for documenting event-driven and message-oriented API contracts."
+  }
+]

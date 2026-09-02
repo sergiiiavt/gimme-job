@@ -2,9 +2,19 @@ import contractsSchemas from "./contracts-schemas";
 import dataFormats from "./data-formats";
 import httpFoundations from "./http-foundations";
 import identityAuthorization from "./identity-authorization";
+import sourcesData from "./sources.json";
 import websocketGuide from "./websocket-guide";
 
 export type ApiIntegrationTopicStatus = "under-construction" | "published";
+
+export interface ApiIntegrationSource {
+  id: string;
+  title: string;
+  publisher: string;
+  kind: string;
+  url: string;
+  role: string;
+}
 
 export interface ApiIntegrationTopic {
   id: string;
@@ -15,6 +25,7 @@ export interface ApiIntegrationTopic {
   status: ApiIntegrationTopicStatus;
   markdown: string;
   markdownUk: string;
+  sourceIds: string[];
 }
 
 const underConstruction = (
@@ -32,6 +43,7 @@ const underConstruction = (
   status: "under-construction",
   markdown: `## Under construction\n\n${description}\n\nThis topic is reserved in the learning path and will be expanded into a complete source-backed chapter.`,
   markdownUk: `## У розробці\n\n${descriptionUk}\n\nЦей топік залишається у learning path і буде розгорнутий у повний розділ із перевіреними джерелами.`,
+  sourceIds: [],
 });
 
 function normalizeWebsocketLearningCopy(markdown: string) {
@@ -42,12 +54,14 @@ function normalizeWebsocketLearningCopy(markdown: string) {
 
 const websocketMarkdown = normalizeWebsocketLearningCopy(websocketGuide.markdown);
 const websocketMarkdownUk = normalizeWebsocketLearningCopy(websocketGuide.markdownUk);
+const sources = sourcesData as ApiIntegrationSource[];
 
 export const catalog = {
   title: "API & Integration",
   titleUk: "API та інтеграції",
   description: "HTTP semantics, API contracts, identity, synchronous and asynchronous integrations, distributed state and failure handling between systems. Protocol and transport fundamentals live in Networking.",
   descriptionUk: "HTTP semantics, API contracts, identity, synchronous та asynchronous integrations, distributed state і обробка збоїв між systems. Protocol та transport fundamentals винесені в Networking.",
+  sources,
   topics: [
     {
       id: "http-foundations",
@@ -59,6 +73,23 @@ export const catalog = {
       status: "published" as const,
       markdown: httpFoundations.markdown,
       markdownUk: httpFoundations.markdownUk,
+      sourceIds: [
+        "rfc-9110",
+        "rfc-9111",
+        "rfc-6265",
+        "rfc-5789",
+        "rfc-7578",
+        "rfc-6454",
+        "rfc-3986",
+        "rfc-6570",
+        "mdn-http",
+        "mdn-http-caching",
+        "mdn-set-cookie",
+        "mdn-cors",
+        "chrome-devtools-cookies",
+        "chrome-devtools-network",
+        "chrome-devtools-cache-storage",
+      ],
     },
     {
       id: "data-formats",
@@ -69,6 +100,7 @@ export const catalog = {
       status: "published" as const,
       markdown: dataFormats.markdown,
       markdownUk: dataFormats.markdownUk,
+      sourceIds: ["rfc-8259", "rfc-7303", "rfc-9110"],
     },
     {
       id: "contracts-and-schemas",
@@ -79,6 +111,14 @@ export const catalog = {
       status: "published" as const,
       markdown: contractsSchemas.markdown,
       markdownUk: contractsSchemas.markdownUk,
+      sourceIds: [
+        "openapi-3-2",
+        "openapi-published",
+        "json-schema-spec",
+        "json-schema-2020-12",
+        "rfc-3986",
+        "rfc-9457",
+      ],
     },
     {
       id: "identity-and-authorization",
@@ -89,6 +129,16 @@ export const catalog = {
       status: "published" as const,
       markdown: identityAuthorization.markdown,
       markdownUk: identityAuthorization.markdownUk,
+      sourceIds: [
+        "rfc-7617",
+        "rfc-6750",
+        "rfc-6749",
+        "rfc-7636",
+        "rfc-9700",
+        "rfc-7519",
+        "rfc-8725",
+        "oidc-core-1",
+      ],
     },
     underConstruction(
       "graphql",
@@ -120,6 +170,7 @@ export const catalog = {
       status: "published" as const,
       markdown: websocketMarkdown,
       markdownUk: websocketMarkdownUk,
+      sourceIds: ["rfc-6455", "rfc-8441", "mdn-websocket-api", "mdn-websocket-client", "asyncapi-3"],
     },
     underConstruction(
       "webhooks-callbacks",
