@@ -109,8 +109,14 @@ export default function WebSocketPlayground() {
 
   useEffect(() => {
     const sharedRoom = new URLSearchParams(window.location.search).get("room");
-    if (sharedRoom) setRoom(normalizeRoom(sharedRoom));
-    return () => socketRef.current?.close(1000, "Leaving playground");
+    const roomTimer = sharedRoom
+      ? window.setTimeout(() => setRoom(normalizeRoom(sharedRoom)), 0)
+      : null;
+
+    return () => {
+      if (roomTimer !== null) window.clearTimeout(roomTimer);
+      socketRef.current?.close(1000, "Leaving playground");
+    };
   }, []);
 
   function pushFrame(direction: Direction, payload: string) {
