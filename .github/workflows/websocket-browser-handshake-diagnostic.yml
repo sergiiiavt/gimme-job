@@ -1,0 +1,32 @@
+name: WebSocket browser handshake diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Probe Chrome-style WebSocket upgrade
+        shell: bash
+        run: |
+          set +e
+          curl --http1.1 --include --silent --show-error --max-time 5 \
+            --header 'Connection: Upgrade' \
+            --header 'Upgrade: websocket' \
+            --header 'Origin: https://gimme-job.com' \
+            --header 'Sec-WebSocket-Version: 13' \
+            --header 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+            --header 'Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits' \
+            --header 'User-Agent: Mozilla/5.0 Chrome/151.0.0.0 Safari/537.36' \
+            'https://gimme-job.com/playgrounds/websocket/ws?room=browser-probe' \
+            > websocket-browser-handshake.txt 2>&1
+          result=$?
+          set -e
+          cat websocket-browser-handshake.txt
+          echo "curl_exit=$result"
