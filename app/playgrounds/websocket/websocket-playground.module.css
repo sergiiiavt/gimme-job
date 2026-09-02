@@ -56,7 +56,6 @@
   display: grid;
   gap: 12px;
   grid-template-columns: minmax(170px, 230px) minmax(0, 1fr) auto;
-  margin-bottom: 16px;
   padding: 10px 0;
 }
 
@@ -68,7 +67,8 @@
 }
 
 .roomField > span,
-.panelHeader span {
+.panelHeader span,
+.roomStatus span {
   color: #87918b;
   font-size: 10px;
   font-weight: 800;
@@ -91,6 +91,12 @@
   min-width: 0;
   padding: 7px 9px;
   width: 100%;
+}
+
+.roomField input:disabled {
+  background: #f5f7f4;
+  color: #68736d;
+  cursor: not-allowed;
 }
 
 .roomField input:focus,
@@ -136,7 +142,8 @@
 
 .connectionButton,
 .panelHeader button,
-.sendRow button {
+.sendRow button,
+.roomStatus button {
   border-radius: 7px;
   cursor: pointer;
   font: inherit;
@@ -154,9 +161,66 @@
 
 .connectionButton:disabled,
 .panelHeader button:disabled,
-.sendRow button:disabled {
+.sendRow button:disabled,
+.roomStatus button:disabled {
   cursor: default;
   opacity: .45;
+}
+
+.roomStatus {
+  align-items: stretch;
+  background: #f8faf7;
+  border: 1px solid #dfe6dc;
+  border-radius: 10px;
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(110px, .55fr) minmax(150px, 1fr) minmax(240px, 1.5fr) auto;
+  margin: 14px 0 16px;
+  overflow: hidden;
+}
+
+.roomStatus > div {
+  border-right: 1px solid #e3e8e1;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.roomStatus span {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.roomStatus strong {
+  color: #344139;
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.connectionId {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.broadcastCheck[data-ready="true"] {
+  background: #f1f7ec;
+}
+
+.broadcastCheck[data-ready="true"] strong {
+  color: #446c2d;
+}
+
+.roomStatus button {
+  align-self: center;
+  background: #fff;
+  border: 1px solid #ccd7c7;
+  color: #385c29;
+  margin: 8px 10px;
+  min-height: 34px;
+  padding: 7px 12px;
+  white-space: nowrap;
 }
 
 .workspace {
@@ -251,6 +315,7 @@
 }
 
 .scenarioHint,
+.rawTextHint,
 .error {
   font-size: 11px;
   line-height: 1.5;
@@ -259,9 +324,20 @@
 }
 
 .scenarioHint {
-  background: #fafbfa;
-  border-top: 1px solid #edf0ed;
-  color: #6d7972;
+  background: #f4f8f1;
+  border-top: 1px solid #e3eadf;
+  color: #52634f;
+}
+
+.rawTextHint {
+  background: #fffaf0;
+  border-top: 1px solid #eee2c8;
+  color: #6f6245;
+}
+
+.rawTextHint code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
 }
 
 .error {
@@ -352,6 +428,22 @@
 }
 
 @media (max-width: 1000px) {
+  .roomStatus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roomStatus > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .roomStatus > div:nth-child(3) {
+    border-top: 1px solid #e3e8e1;
+  }
+
+  .roomStatus button {
+    border-top: 1px solid #e3e8e1;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
   }
@@ -388,6 +480,25 @@
   .connectionButton {
     grid-column: 2;
     grid-row: 1;
+  }
+
+  .roomStatus {
+    grid-template-columns: 1fr;
+  }
+
+  .roomStatus > div {
+    border-bottom: 1px solid #e3e8e1;
+    border-right: 0;
+  }
+
+  .roomStatus > div:nth-child(2),
+  .roomStatus > div:nth-child(3),
+  .roomStatus button {
+    border-top: 0;
+  }
+
+  .roomStatus button {
+    justify-self: stretch;
   }
 
   .frame summary {
