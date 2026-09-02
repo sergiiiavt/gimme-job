@@ -104,15 +104,24 @@ export default function WebSocketPlayground() {
     const socket = new WebSocket(socketUrl);
     socketRef.current = socket;
     socket.onopen = () => {
+      setError("");
       setState("connected");
       pushFrame("system", "OPEN");
     };
     socket.onmessage = (event) => pushFrame("received", String(event.data));
-    socket.onerror = () => setError("WebSocket connection failed. Check the endpoint and browser Network → WS panel.");
+    socket.onerror = () => setError("WebSocket transport error. Waiting for close details…");
     socket.onclose = (event) => {
-      pushFrame("system", `CLOSED code=${event.code} reason=${event.reason || "—"}`);
+      pushFrame("system", `CLOSED code=${event.code} clean=${event.wasClean ? "yes" : "no"} reason=${event.reason || "—"}`);
       socketRef.current = null;
       setState("disconnected");
+
+      if (event.code === 1000) {
+        setError("");
+      } else if (event.code === 1006) {
+        setError("Abnormal close (1006): the browser did not receive a WebSocket close frame. Check DevTools → Network → WS. Try an Incognito window; if it works there, disable extensions. Also check VPN/proxy or antivirus HTTPS inspection.");
+      } else {
+        setError(`WebSocket closed with code ${event.code}${event.reason ? `: ${event.reason}` : "."}`);
+      }
     };
   }
 
