@@ -12,11 +12,11 @@ type ScenarioId = "echo" | "broadcast" | "delay" | "heartbeat" | "identity" | "c
 
 const SCENARIOS: Array<SubnavItem & { id: ScenarioId }> = [
   { id: "echo", label: "Echo" },
-  { id: "broadcast", label: "Broadcast room" },
-  { id: "delay", label: "Delayed response" },
+  { id: "broadcast", label: "Broadcast" },
+  { id: "delay", label: "Delay" },
   { id: "heartbeat", label: "Heartbeat" },
-  { id: "identity", label: "Connection identity" },
-  { id: "close", label: "Close connection" },
+  { id: "identity", label: "Identity" },
+  { id: "close", label: "Close" },
 ];
 
 const EXAMPLES: Record<ScenarioId, string> = {
@@ -26,6 +26,12 @@ const EXAMPLES: Record<ScenarioId, string> = {
   heartbeat: JSON.stringify({ action: "heartbeat" }, null, 2),
   identity: JSON.stringify({ action: "whoami" }, null, 2),
   close: JSON.stringify({ action: "close", code: 1000, reason: "Playground demo complete" }, null, 2),
+};
+
+const SCENARIO_HINTS: Partial<Record<ScenarioId, string>> = {
+  broadcast: "Open this page in another tab with the same room to verify broadcast delivery.",
+  delay: "The response should appear after the requested delay while the connection stays open.",
+  close: "This message asks the server to close the active WebSocket connection.",
 };
 
 function productionSocketUrl(room: string): string {
@@ -44,6 +50,17 @@ function frameTime(): string {
 
 function makeFrame(direction: Direction, payload: string): Frame {
   return { id: crypto.randomUUID(), direction, at: frameTime(), payload };
+}
+
+function frameLabel(direction: Direction): string {
+  if (direction === "sent") return "→";
+  if (direction === "received") return "←";
+  return "•";
+}
+
+function framePreview(payload: string): string {
+  const compact = payload.replace(/\s+/g, " ").trim();
+  return compact.length > 120 ? `${compact.slice(0, 117)}…` : compact;
 }
 
 export default function WebSocketPlayground() {
@@ -92,10 +109,15 @@ export default function WebSocketPlayground() {
     socketRef.current?.close(1000, "Disconnected from UI");
   }
 
+  function toggleConnection() {
+    if (state === "disconnected") connect();
+    else if (state === "connected") disconnect();
+  }
+
   function send() {
     const socket = socketRef.current;
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-      setError("Connect first, then send a frame.");
+      setError("Connect first, then send a message.");
       return;
     }
     const payload = draft.trim();
@@ -112,6 +134,9 @@ export default function WebSocketPlayground() {
     setDraft(EXAMPLES[nextScenario]);
     setMobileNav(false);
   }
+
+  const scenarioLabel = SCENARIOS.find((item) => item.id === scenario)?.label || "Message";
+  const scenarioHint = SCENARIO_HINTS[scenario];
 
   return (
     <main className="kb-shell">
@@ -130,69 +155,71 @@ export default function WebSocketPlayground() {
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <header className={styles.hero}>
-            <span>Playground</span>
-            <h1>WebSocket Playground</h1>
-            <p>Open a real WebSocket connection to the Python backend, send frames, broadcast between browser tabs, and inspect every event in DevTools.</p>
+          <header className={styles.header}>
+            <div>
+              <h1>WebSocket Playground</h1>
+              <p>Connect, send a message, and inspect the frames.</p>
+            </div>
+            <span className={`${styles.status} ${styles[state]}`}>{state}</span>
           </header>
 
-          <section className={styles.connectionPanel}>
-            <div>
-              <label htmlFor="ws-room">Room</label>
+          <section className={styles.connectionBar} aria-label="WebSocket connection">
+            <label className={styles.roomField} htmlFor="ws-room">
+              <span>Room</span>
               <input id="ws-room" maxLength={40} onChange={(event) => setRoom(event.target.value.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40) || "playground")} value={room}/>
-            </div>
-            <div className={styles.endpoint}>
-              <span>Endpoint</span>
+            </label>
+            <details className={styles.endpoint}>
+              <summary>Endpoint</summary>
               <code>{socketUrl}</code>
-            </div>
-            <div className={styles.connectionActions}>
-              <span className={`${styles.status} ${styles[state]}`}>{state}</span>
-              <button disabled={state !== "disconnected"} onClick={connect} type="button">Connect</button>
-              <button disabled={state === "disconnected"} onClick={disconnect} type="button">Disconnect</button>
-            </div>
+            </details>
+            <button className={styles.connectionButton} disabled={state === "connecting"} onClick={toggleConnection} type="button">
+              {state === "connecting" ? "Connecting…" : state === "connected" ? "Disconnect" : "Connect"}
+            </button>
           </section>
 
-          <div className={styles.grid}>
+          <div className={styles.workspace}>
             <section className={styles.composer}>
-              <div className={styles.sectionHeader}>
-                <div><span>Scenario</span><strong>{SCENARIOS.find((item) => item.id === scenario)?.label}</strong></div>
-                <button onClick={() => setDraft(EXAMPLES[scenario])} type="button">Reset example</button>
+              <div className={styles.panelHeader}>
+                <div>
+                  <span>Message</span>
+                  <strong>{scenarioLabel}</strong>
+                </div>
+                <button onClick={() => setDraft(EXAMPLES[scenario])} type="button">Reset</button>
               </div>
-              <label htmlFor="ws-message">Message</label>
-              <textarea id="ws-message" maxLength={16384} onChange={(event) => setDraft(event.target.value)} rows={12} value={draft}/>
+              <textarea aria-label={`${scenarioLabel} message`} id="ws-message" maxLength={16384} onChange={(event) => setDraft(event.target.value)} rows={12} value={draft}/>
               <div className={styles.sendRow}>
-                <small>{new Blob([draft]).size.toLocaleString()} / 16,384 bytes</small>
-                <button disabled={state !== "connected" || !draft.trim()} onClick={send} type="button">Send frame</button>
+                <small>{new Blob([draft]).size.toLocaleString()} B</small>
+                <button disabled={state !== "connected" || !draft.trim()} onClick={send} type="button">Send</button>
               </div>
+              {scenarioHint && <p className={styles.scenarioHint}>{scenarioHint}</p>}
               {error && <p className={styles.error} role="alert">{error}</p>}
             </section>
 
             <section className={styles.frames}>
-              <div className={styles.sectionHeader}>
-                <div><span>Frames</span><strong>{frames.length} events</strong></div>
+              <div className={styles.panelHeader}>
+                <div>
+                  <span>Frames</span>
+                  <strong>{frames.length ? `${frames.length} captured` : "No traffic yet"}</strong>
+                </div>
                 <button disabled={!frames.length} onClick={() => setFrames([])} type="button">Clear</button>
               </div>
               <div aria-live="polite" className={styles.frameList}>
-                {!frames.length && <p className={styles.empty}>Connect to start capturing WebSocket events.</p>}
+                {!frames.length && <p className={styles.empty}>Connect to start capturing traffic.</p>}
                 {frames.map((frame) => (
-                  <article className={styles.frame} data-direction={frame.direction} key={frame.id}>
-                    <div><time>{frame.at}</time><strong>{frame.direction === "sent" ? "→ SENT" : frame.direction === "received" ? "← RECEIVED" : "• SYSTEM"}</strong></div>
+                  <details className={styles.frame} data-direction={frame.direction} key={frame.id}>
+                    <summary>
+                      <time>{frame.at}</time>
+                      <strong>{frameLabel(frame.direction)}</strong>
+                      <span>{framePreview(frame.payload)}</span>
+                    </summary>
                     <pre>{frame.payload}</pre>
-                  </article>
+                  </details>
                 ))}
               </div>
             </section>
           </div>
 
-          <section className={styles.help}>
-            <h2>Try it as QA</h2>
-            <ol>
-              <li>Click <strong>Connect</strong>.</li>
-              <li>Send the current scenario and compare the sent and received frames.</li>
-              <li>Open DevTools → Network → WS and inspect the same frames there.</li>
-              <li>For broadcast, open this page in a second tab with the same room name and connect both tabs.</li>
-            </ol>
-          </section>
+          <p className={styles.devtoolsHint}>DevTools → Network → WS shows the same traffic at browser level.</p>
         </div>
       </section>
       {mobileNav && <button aria-label="Close navigation" className="kb-backdrop" onClick={() => setMobileNav(false)} type="button"/>}
