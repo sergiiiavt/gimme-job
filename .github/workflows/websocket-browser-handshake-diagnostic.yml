@@ -55,7 +55,8 @@ jobs:
             page.on('console', (message) => console.log(`browser console [${message.type()}] ${message.text()}`));
             page.on('pageerror', (error) => console.log(`browser pageerror ${error.message}`));
 
-            await page.goto('https://gimme-job.com/playgrounds/websocket', { waitUntil: 'networkidle' });
+            await page.goto('https://gimme-job.com/playgrounds/websocket', { waitUntil: 'domcontentloaded' });
+            await expect(page.getByRole('heading', { name: 'WebSocket Playground' })).toBeVisible({ timeout: 10000 });
 
             const directResult = await page.evaluate(() => new Promise((resolve) => {
               const socket = new WebSocket(`wss://gimme-job.com/playgrounds/websocket/ws?room=chromium-${Date.now()}`);
