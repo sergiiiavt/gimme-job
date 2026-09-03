@@ -22,6 +22,18 @@ Do not bundle opportunistic copy rewrites, visual redesigns, backend refactors, 
 - Public and Personal modes must continue to route correctly and must not leak private data into public HTML, client bundles, API responses, or Git.
 - Fight AI slop remains a separately loaded, client-only browser game and must not add server-side game state without an explicit request.
 
+## Learning discovery and RAG invariants
+
+- `content/learning-rag-registry.ts` is the single integration registry for Git-backed learning surfaces that participate in canonical RAG. Do not recreate that registry in the Worker, Python AI service, or Learning Advisor UI.
+- Adding lessons, topics, or Markdown `##` sections to an already registered learning surface must require no AI-specific registration change. The canonical Worker corpus must derive those materials automatically.
+- A brand-new Git-backed learning surface is registered once in `content/learning-rag-registry.ts`; consumers must validate canonical route shape rather than maintain route-by-route allow-lists.
+- Preserve canonical learning deep links. Retrieval should point to the narrowest useful material with `topic`, `section`, and, when required by the page, `track` query parameters.
+- Published Markdown `##` sections are first-class retrieval units. Do not collapse long learning chapters into one embedding when section-level links exist.
+- Explicit `under-construction` placeholders are navigation state, not retrievable learning material.
+- Changes to learning structure must be checked against both page navigation and Learning Path Advisor retrieval/linkability. A page that renders correctly but is invisible to canonical RAG is incomplete.
+- Normal production deployment owns Vectorize refresh through the existing post-deploy RAG reindex. Do not introduce a manual content-publishing reindex step.
+- Keep the architecture and invariants in `docs/LEARNING-RAG.md` synchronized when the learning discovery contract changes.
+
 ## Change-impact checks
 
 When a change affects one of these areas, inspect and test the connected surface as well:
@@ -30,7 +42,7 @@ When a change affects one of these areas, inspect and test the connected surface
 - **Auth/routes:** public/private boundaries, redirects, loading races, API consumers, and rendered Worker behavior.
 - **D1/schema:** `db/schema.ts`, generated Drizzle migrations/metadata, and migration compatibility.
 - **Worker/API:** route contracts, validation, integration tests, and Cloudflare artifact behavior.
-- **Learning/interview content:** relevant validators, stable IDs, source registries, lazy loading, and render caps.
+- **Learning/interview content:** relevant validators, stable IDs, source registries, lazy loading, render caps, canonical RAG discovery, and direct-link validity.
 - **Automation/IaC:** workflow definitions, environment contracts, operational documentation, and tests.
 - **Architecture/process changes:** inspect `README.md`, `docs/ARCHITECTURE.md`, developer tooling, and agent instructions. Ordinary narrow UI fixes do not require unrelated documentation edits.
 
