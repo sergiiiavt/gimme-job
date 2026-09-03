@@ -81,6 +81,28 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
                     "route": "/learn/programming",
                     "metadata": {"catalog": "python"},
                 },
+                {
+                    "id": "l:http-status",
+                    "refId": "http-foundations#http-status-codes",
+                    "kind": "learning",
+                    "title": "HTTP status codes",
+                    "text": "Status codes communicate request processing results.",
+                    "score": 0.82,
+                    "sourcePath": "/learn/api?topic=http-foundations&section=http-status-codes",
+                    "route": "/learn/api",
+                    "metadata": {"catalog": "api-integration"},
+                },
+                {
+                    "id": "l:csharp",
+                    "refId": "csharp-methods-parameters#ref-out-and-in",
+                    "kind": "learning",
+                    "title": "ref, out and in",
+                    "text": "C# parameter passing modes.",
+                    "score": 0.8,
+                    "sourcePath": "/learn/programming?topic=csharp-methods-parameters&section=ref-out-and-in&track=csharp",
+                    "route": "/learn/programming",
+                    "metadata": {"catalog": "csharp"},
+                },
             ]
         )
         captured_headers: dict[str, str] = {}
@@ -97,20 +119,51 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.hits[0].source_path, "/interview/python?question=parallelism")
         self.assertEqual(result.hits[1].source_path, "/interview?question=test-design")
         self.assertEqual(result.hits[2].source_path, "/learn/programming?topic=concurrency-models")
+        self.assertEqual(
+            result.hits[3].source_path,
+            "/learn/api?topic=http-foundations&section=http-status-codes",
+        )
+        self.assertEqual(
+            result.hits[4].source_path,
+            "/learn/programming?topic=csharp-methods-parameters&section=ref-out-and-in&track=csharp",
+        )
         self.assertEqual(captured_headers["X-gimmejob-rag-token"], "rag-token")
         self.assertEqual(captured_headers["User-agent"], "curl/8.10.1 GimmeJob-AI/1.0")
 
-    async def test_client_rejects_unallowlisted_or_mismatched_learning_paths(self) -> None:
+    async def test_client_accepts_future_canonical_learning_routes_without_an_ai_allowlist(self) -> None:
+        result = {
+            "id": "l:future",
+            "refId": "future-topic",
+            "kind": "learning",
+            "title": "Future topic",
+            "text": "New Git-backed material.",
+            "score": 0.7,
+            "sourcePath": "/learn/future-area?topic=future-topic&section=core-concept",
+            "route": "/learn/future-area",
+        }
+        client = CanonicalRagClient(self._settings())
+        with patch(
+            "gimmejob_ai.retrieval.urlopen",
+            return_value=_FakeResponse(self._payload([result])),
+        ):
+            response = await client.search("future", "en")
+
+        self.assertEqual(
+            response.hits[0].source_path,
+            "/learn/future-area?topic=future-topic&section=core-concept",
+        )
+
+    async def test_client_rejects_unsafe_or_mismatched_learning_paths(self) -> None:
         invalid_results = [
             {
-                "id": "l:unknown",
-                "refId": "unknown",
+                "id": "l:unsafe-route",
+                "refId": "unsafe-route",
                 "kind": "learning",
-                "title": "Unknown",
-                "text": "Unknown learning material.",
+                "title": "Unsafe route",
+                "text": "Invalid learning route.",
                 "score": 0.7,
-                "sourcePath": "/learn/not-allowed?topic=unknown",
-                "route": "/learn/not-allowed",
+                "sourcePath": "/admin?topic=unknown",
+                "route": "/admin",
             },
             {
                 "id": "l:mismatch",
@@ -129,7 +182,17 @@ class RetrievalClientTests(unittest.IsolatedAsyncioTestCase):
                 "title": "Missing topic",
                 "text": "Missing direct topic identifier.",
                 "score": 0.7,
-                "sourcePath": "/learn/programming",
+                "sourcePath": "/learn/programming?track=python",
+                "route": "/learn/programming",
+            },
+            {
+                "id": "l:unsupported-query",
+                "refId": "unsupported-query",
+                "kind": "learning",
+                "title": "Unsupported query",
+                "text": "Unsupported query key.",
+                "score": 0.7,
+                "sourcePath": "/learn/programming?topic=python&redirect=https://evil.test",
                 "route": "/learn/programming",
             },
         ]
