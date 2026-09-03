@@ -99,19 +99,8 @@ const SAMPLE_PROMPTS = [
   "Asyncio for test automation",
 ];
 
-const SAFE_INTERNAL_PATHS = new Set([
-  "/reference/qa-fundamentals",
-  "/learn/programming",
-  "/reference/programming",
-  "/learn/automation",
-  "/learn/testing-tools",
-  "/learn/cloud-devops",
-  "/learn/metrics-estimation",
-  "/learn/data",
-  "/reference/data",
-  "/interview",
-  "/interview/python",
-]);
+const CANONICAL_LEARNING_PATH = /^\/(?:learn|reference)\/[a-z0-9][a-z0-9-]*$/;
+const SAFE_INTERVIEW_PATHS = new Set(["/interview", "/interview/python"]);
 
 const LEGACY_SOURCE_ROUTES: Array<{ prefix: string; href: string }> = [
   { prefix: "python-learning/", href: "/reference/programming" },
@@ -198,8 +187,12 @@ function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse
 function queryKeysAllowed(pathname: string, keys: string[]): boolean {
   const allowed = pathname.startsWith("/interview")
     ? new Set(["question", "topic"])
-    : new Set(["topic", "section"]);
+    : new Set(["topic", "section", "track"]);
   return keys.every((key) => allowed.has(key));
+}
+
+function safeInternalPath(pathname: string): boolean {
+  return SAFE_INTERVIEW_PATHS.has(pathname) || CANONICAL_LEARNING_PATH.test(pathname);
 }
 
 export function sourcePathToHref(sourcePath: string | null): string | null {
@@ -212,7 +205,7 @@ export function sourcePathToHref(sourcePath: string | null): string | null {
     try {
       const base = "https://gimme-job.invalid";
       const url = new URL(trimmed, base);
-      if (url.origin !== base || url.hash || !SAFE_INTERNAL_PATHS.has(url.pathname)) return null;
+      if (url.origin !== base || url.hash || !safeInternalPath(url.pathname)) return null;
       const keys = [...url.searchParams.keys()];
       if (!queryKeysAllowed(url.pathname, keys)) return null;
       if ([...url.searchParams.values()].some((value) => !value.trim())) return null;
