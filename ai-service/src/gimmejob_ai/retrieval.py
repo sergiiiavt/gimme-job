@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from dataclasses import asdict, dataclass
 from typing import Literal, Protocol
 from urllib.error import HTTPError
@@ -12,17 +13,8 @@ from .settings import Settings
 
 RetrievalStrategy = Literal["vectorize", "lexical-fallback"]
 
-_ALLOWED_LEARNING_ROUTES = {
-    "/reference/qa-fundamentals",
-    "/learn/programming",
-    "/reference/programming",
-    "/learn/automation",
-    "/learn/testing-tools",
-    "/learn/cloud-devops",
-    "/learn/metrics-estimation",
-    "/learn/data",
-    "/reference/data",
-}
+_LEARNING_ROUTE_RE = re.compile(r"^/(?:learn|reference)/[a-z0-9][a-z0-9-]*$")
+_ALLOWED_LEARNING_QUERY_KEYS = {"topic", "section", "track"}
 _ALLOWED_QUESTION_ROUTES = {"/interview", "/interview/python"}
 _RAG_USER_AGENT = "curl/8.10.1 GimmeJob-AI/1.0"
 
@@ -93,7 +85,7 @@ def _validated_learning_source_path(value: object, route_path: str) -> str:
     if parsed.scheme or parsed.netloc or parsed.fragment or parsed.path != route_path:
         raise ValueError("Canonical RAG returned an unsafe learning source path.")
     params = parse_qs(parsed.query, keep_blank_values=True)
-    if set(params) - {"topic", "section"}:
+    if set(params) - _ALLOWED_LEARNING_QUERY_KEYS:
         raise ValueError("Canonical RAG returned an unsupported learning source query.")
     if not params.get("topic") and not params.get("section"):
         raise ValueError("Canonical RAG learning source must identify a topic or section.")
@@ -103,11 +95,11 @@ def _validated_learning_source_path(value: object, route_path: str) -> str:
 
 
 def _ui_source_path(kind: str, ref_id: str, route: str | None, canonical_source_path: object) -> str:
-    """Return an allow-listed, directly navigable GimmeJob content path.
+    """Return a validated, directly navigable GimmeJob content path.
 
-    Learning routes retain the canonical topic/section query produced by the Worker. Interview
-    questions receive the site's existing question deep-link query from the trusted ref id.
-    The model only sees these validated internal paths, so it never needs to invent navigation.
+    Learning routes retain the canonical topic/section/track query produced by the Worker.
+    Interview questions receive the site's existing question deep-link query from the trusted
+    ref id. The model only sees validated internal paths, so it never needs to invent navigation.
     """
 
     route_path = route.split("?", 1)[0] if route else ""
@@ -115,8 +107,8 @@ def _ui_source_path(kind: str, ref_id: str, route: str | None, canonical_source_
         if route_path not in _ALLOWED_QUESTION_ROUTES:
             raise ValueError("Canonical RAG returned a question route that the UI does not allow-list.")
         return f"{route_path}?question={quote(ref_id, safe='')}"
-    if route_path not in _ALLOWED_LEARNING_ROUTES:
-        raise ValueError("Canonical RAG returned a learning route that the UI does not allow-list.")
+    if not _LEARNING_ROUTE_RE.fullmatch(route_path):
+        raise ValueError("Canonical RAG returned an invalid learning route.")
     return _validated_learning_source_path(canonical_source_path, route_path)
 
 
