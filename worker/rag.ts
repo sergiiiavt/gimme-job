@@ -1,14 +1,6 @@
 import interviewCatalog from "../content/interview/catalog";
+import learningRagSources from "../content/learning-rag-registry";
 import pythonInterviewCatalog from "../content/python-interview/catalog";
-import automationCurriculum from "../content/automation-learning/catalog";
-import cloudDevopsCatalog from "../content/cloud-devops/catalog";
-import metricsEstimationCatalog from "../content/metrics-estimation/catalog";
-import pythonCurriculum from "../content/python-learning/catalog";
-import pythonQuickReference from "../content/python-learning/quick-reference.json";
-import qaFundamentalsCatalog from "../content/qa-fundamentals/catalog";
-import sqlPracticalTasks from "../content/data-learning/sql-practical-tasks.json";
-import sqlQuickReference from "../content/data-learning/sql-quick-reference.json";
-import testingToolsCatalog from "../content/testing-tools/catalog";
 
 type Json = Record<string, unknown>;
 export type RagKind = "job" | "learning" | "question";
@@ -81,18 +73,6 @@ const QUERY_STOP_WORDS = new Set([
   "вивчити", "допоможи", "мені", "навчи", "покажи", "поясни", "про", "стати", "хочу", "що", "як",
 ]);
 
-const learningCatalogs: Array<{ key: string; route: string; value: unknown }> = [
-  { key: "qa-fundamentals", route: "/reference/qa-fundamentals", value: qaFundamentalsCatalog },
-  { key: "python", route: "/learn/programming", value: pythonCurriculum },
-  { key: "python-quick-reference", route: "/learn/programming", value: pythonQuickReference },
-  { key: "automation", route: "/learn/automation", value: automationCurriculum },
-  { key: "testing-tools", route: "/learn/testing-tools", value: testingToolsCatalog },
-  { key: "cloud-devops", route: "/learn/cloud-devops", value: cloudDevopsCatalog },
-  { key: "metrics-estimation", route: "/learn/metrics-estimation", value: metricsEstimationCatalog },
-  { key: "sql-quick-reference", route: "/learn/data", value: sqlQuickReference },
-  { key: "sql-practical-tasks", route: "/learn/data", value: sqlPracticalTasks },
-];
-
 const questionCatalogs: Array<{ key: string; route: string; track: string; questions: Json[] }> = [
   { key: "qa-interview", route: "/interview", track: "qa", questions: interviewCatalog.questions as unknown as Json[] },
   { key: "python-interview", route: "/interview/python", track: "python", questions: pythonInterviewCatalog.questions as unknown as Json[] },
@@ -133,7 +113,7 @@ function collectStrings(value: unknown, depth = 0): string[] {
 function catalogItems(catalog: unknown): Json[] {
   if (!catalog || typeof catalog !== "object") return [];
   const value = catalog as Json;
-  for (const key of ["lessons", "chapters", "articles", "modules", "taxonomy", "cards"]) {
+  for (const key of ["lessons", "chapters", "articles", "modules", "taxonomy", "topics", "cards"]) {
     if (Array.isArray(value[key]) && (value[key] as unknown[]).length) {
       return (value[key] as unknown[]).filter((item): item is Json => Boolean(item && typeof item === "object" && !Array.isArray(item)));
     }
@@ -145,28 +125,94 @@ function learningTitle(item: Json): string {
   return clean(item.title || item.label || item.name || item.id, 500) || "Learning material";
 }
 
+function markdownPlainText(value: string): string {
+  return value
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+}
+
+function markdownSlug(value: string): string {
+  return markdownPlainText(value)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function markdownSections(markdown: string): Array<{ id: string; title: string; text: string }> {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const sections: Array<{ id: string; title: string; text: string }> = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = lines[index].match(/^##\s+(.+)$/);
+    if (!heading) continue;
+    let end = index + 1;
+    while (end < lines.length && !/^##\s+/.test(lines[end])) end += 1;
+    const title = markdownPlainText(heading[1]);
+    const id = markdownSlug(heading[1]);
+    const text = compactText([title, lines.slice(index + 1, end).join("\n")]);
+    if (id && text) sections.push({ id, title, text });
+    index = end - 1;
+  }
+  return sections;
+}
+
 function learningDocuments(): RagDocument[] {
-  return learningCatalogs.flatMap(({ key, route, value }) => catalogItems(value).map((item, index) => {
+  return learningRagSources.flatMap(({ key, route, track, value }) => catalogItems(value).flatMap((item, index) => {
+    const status = clean(item.status, 100);
+    if (status && status !== "published") return [];
+
     const refId = clean(item.id, 300) || `${key}-${index + 1}`;
     const title = learningTitle(item);
     const text = compactText([title, ...collectStrings(item)]);
     const topic = clean(item.moduleId || item.id, 300);
-    return {
-      id: compactVectorId("l", `${key}:${refId}`),
-      kind: "learning" as const,
+    const markdown = clean(item.markdown, 60_000);
+    const lessonSection = !markdown && item.moduleId ? markdownSlug(clean(item.title, 500)) : "";
+    const commonMetadata: Record<string, string | number | boolean> = {
+      kind: "learning",
+      refId,
+      title: title.slice(0, 500),
+      catalog: key,
+      route,
+      ...(topic ? { topic } : {}),
+      ...(track ? { track } : {}),
+      snippet: text.slice(0, 900),
+    };
+
+    const documents: RagDocument[] = [{
+      id: compactVectorId("l", `${key}:${refId}${lessonSection ? `:${lessonSection}` : ""}`),
+      kind: "learning",
       refId,
       title,
       text,
       metadata: {
-        kind: "learning",
-        refId,
-        title: title.slice(0, 500),
-        catalog: key,
-        route,
-        ...(topic ? { topic } : {}),
-        snippet: text.slice(0, 900),
+        ...commonMetadata,
+        ...(lessonSection ? { section: lessonSection } : {}),
       },
-    };
+    }];
+
+    for (const section of markdownSections(markdown)) {
+      const sectionRefId = `${refId}#${section.id}`;
+      const sectionText = compactText([title, section.title, section.text]);
+      documents.push({
+        id: compactVectorId("l", `${key}:${sectionRefId}`),
+        kind: "learning",
+        refId: sectionRefId,
+        title: section.title,
+        text: sectionText,
+        metadata: {
+          ...commonMetadata,
+          refId: sectionRefId,
+          title: section.title.slice(0, 500),
+          section: section.id,
+          snippet: sectionText.slice(0, 900),
+        },
+      });
+    }
+
+    return documents;
   }));
 }
 
@@ -319,8 +365,14 @@ function sourcePath(document: RagDocument): string {
   const route = clean(document.metadata.route, 1_000);
   if (!route.startsWith("/") || route.startsWith("//")) return "/";
   if (document.kind !== "learning") return route;
+  const params = new URLSearchParams();
   const topic = clean(document.metadata.topic, 300);
-  return topic ? `${route}?topic=${encodeURIComponent(topic)}` : route;
+  const section = clean(document.metadata.section, 300);
+  const track = clean(document.metadata.track, 300);
+  if (topic) params.set("topic", topic);
+  if (section) params.set("section", section);
+  if (track) params.set("track", track);
+  return params.size ? `${route}?${params.toString()}` : route;
 }
 
 function presentDocument(document: RagDocument, score: number, metadata: Record<string, unknown> = document.metadata): RagSearchResult {
