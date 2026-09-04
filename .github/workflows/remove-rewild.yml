@@ -38,55 +38,45 @@ jobs:
           def write(path, text):
               Path(path).write_text(text, encoding='utf-8')
 
-          def sub(path, pattern, replacement, *, flags=0, minimum=0):
-              text = read(path)
-              updated, count = re.subn(pattern, replacement, text, flags=flags)
-              if count < minimum:
-                  raise SystemExit(f'Expected at least {minimum} match(es) in {path}: {pattern}')
-              write(path, updated)
-              return count
-
-          candidates = []
-          for path in root.rglob('*'):
-              if '.git' in path.parts or path == workflow:
-                  continue
-              if 'rewild' in path.name.lower():
-                  candidates.append(path)
+          # Delete all feature-owned files/directories by their retired feature name,
+          # plus the old public route directory whose name did not include it.
+          candidates = [path for path in root.rglob('*') if '.git' not in path.parts and path != workflow and 'rewild' in path.name.lower()]
           candidates.append(Path('app/fight-ai-slop'))
           for path in sorted(set(candidates), key=lambda item: len(item.parts), reverse=True):
               if not path.exists():
                   continue
-              if path.is_dir():
-                  shutil.rmtree(path)
-              else:
-                  path.unlink()
+              shutil.rmtree(path) if path.is_dir() else path.unlink()
 
+          # Keep one inert, neutral placeholder where the old Misc navigation slot lived.
           nav = read('app/site-navigation.tsx')
           nav = nav.replace(' | "rewild"', '')
           nav = re.sub(r'^\s*\{ id: "rewild", label: "Fight AI slop" \},\n', '', nav, flags=re.M)
           nav = re.sub(r'^\s*case "rewild":\n\s*return <svg .*?;\n', '', nav, count=1, flags=re.M)
           marker = '                  {group.items.map((item) => renderItem(item))}\n'
-          placeholder = (
-              marker
-              + '                  {group.id === "misc" && (\n'
-              + '                    <div aria-disabled="true" className="kb-nav-link" style={{ cursor: "default", opacity: 0.55, pointerEvents: "none" }} title="Next game">\n'
-              + '                      <span aria-hidden="true" className="kb-nav-icon">○</span>\n'
-              + '                      <span className="kb-nav-label">Next game</span>\n'
-              + '                    </div>\n'
-              + '                  )}\n'
-          )
           if 'title="Next game"' not in nav:
               if marker not in nav:
-                  raise SystemExit('Could not locate Misc navigation rendering slot')
-              nav = nav.replace(marker, placeholder, 1)
+                  raise SystemExit('Could not locate the Misc navigation slot')
+              nav = nav.replace(
+                  marker,
+                  marker
+                  + '                  {group.id === "misc" && (\n'
+                  + '                    <div aria-disabled="true" className="kb-nav-link" style={{ cursor: "default", opacity: 0.55, pointerEvents: "none" }} title="Next game">\n'
+                  + '                      <span aria-hidden="true" className="kb-nav-icon">○</span>\n'
+                  + '                      <span className="kb-nav-label">Next game</span>\n'
+                  + '                    </div>\n'
+                  + '                  )}\n',
+                  1,
+              )
           write('app/site-navigation.tsx', nav)
 
+          # Remove game-specific lazy loading, section branches, and full-screen shell behavior.
           public = read('app/public-site.tsx')
           public = public.replace('import { lazy, Suspense, useEffect, useMemo, useState } from "react";', 'import { useEffect, useMemo, useState } from "react";')
-          public = re.sub(r'\nconst RewildGame = lazy\(\(\) => import\("\.\/rewild-game"\)\);\n', '\n', public, count=1)
-          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \[\n      \{ id: "all", label: "Fight AI slop" \},\n      \{ id: "guide", label: "Field guide" \},\n    \];\n  \}\n', '\n', public, count=1)
+          public = re.sub(r'\nconst RewildGame = lazy\(\(\) => import\("\.\/rewild-game"\)\);\n', '\n', public)
+          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \[\n[\s\S]*?\n    \];\n  \}\n', '\n', public)
+          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \(\n[\s\S]*?\n    \);\n  \}\n', '\n', public)
           public = public.replace(' || section === "rewild"', '')
-          public = re.sub(r'^  const isFullScreenGame = .*?;\n', '', public, count=1, flags=re.M)
+          public = re.sub(r'^  const isFullScreenGame = .*?;\n', '', public, flags=re.M)
           public = public.replace('<main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>', '<main className="kb-shell">')
           public = re.sub(r'      \{!isFullScreenGame && \(\n(?P<sidebar>        <SiteSidebar[\s\S]*?        />)\n      \)\}', lambda match: match.group('sidebar'), public, count=1)
           public = public.replace('${isFullScreenGame ? " kb-main-game" : ""}', '')
@@ -94,15 +84,26 @@ jobs:
           public = public.replace('aria-label={isFullScreenGame ? "Exit game and return to the site" : "Toggle navigation"}', 'aria-label="Toggle navigation"')
           public = public.replace('onClick={isFullScreenGame ? () => openSection("about") : () => setMobileNav((value) => !value)}', 'onClick={() => setMobileNav((value) => !value)}')
           public = public.replace('{isFullScreenGame ? "Exit game" : "☰"}', '☰')
-          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \(\n      <Suspense[\s\S]*?\n    \);\n  \}\n', '\n', public, count=1)
           write('app/public-site.tsx', public)
 
-          sub('app/globals.css', r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)', '\n', flags=re.S, minimum=1)
+          # Remove the contiguous game-only CSS block while keeping adjacent learning styles.
+          css = read('app/globals.css')
+          css, count = re.subn(r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)', '\n', css, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Could not identify game-only CSS block')
+          write('app/globals.css', css)
 
+          # Remove old route/SEO/public-boundary entries.
           for path in ['app/navigation-paths.ts', 'app/seo.ts', 'worker/multi-user-boundary.ts']:
               lines = read(path).splitlines(keepends=True)
               write(path, ''.join(line for line in lines if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()))
 
+          # Remove obsolete generated-art ignore rules.
+          ignore = read('.gitignore')
+          ignore = re.sub(r'\n# generated Rewild v4 runtime art\n[\s\S]*?(?=\n# local agent data and credentials)', '\n', ignore, count=1)
+          write('.gitignore', ignore)
+
+          # Remove all game build/check commands from the normal developer and CI path.
           package_path = Path('package.json')
           package = json.loads(package_path.read_text(encoding='utf-8'))
           scripts = package['scripts']
@@ -116,33 +117,33 @@ jobs:
           package_path.write_text(json.dumps(package, indent=2) + '\n', encoding='utf-8')
 
           ci = read('.github/workflows/ci.yml')
-          ci = re.sub(r'\n      - name: Verify Rewild visual benchmark\n        run: npm run check:rewild-visual\n\n      - name: Upload Rewild visual regression\n        if: failure\(\)\n        uses: actions/upload-artifact@v4\n        with:\n(?:          .*\n)+?', '\n', ci, count=1)
+          ci = re.sub(r'\n      - name: Verify Rewild visual benchmark[\s\S]*?(?=\n      - name: Use Python 3\.13)', '\n', ci, count=1)
           write('.github/workflows/ci.yml', ci)
 
+          # Remove deleted paths from Sonar config.
           sonar_lines = []
           for line in read('sonar-project.properties').splitlines():
               if line.startswith(('sonar.exclusions=', 'sonar.coverage.exclusions=', 'sonar.cpd.exclusions=')):
                   key, value = line.split('=', 1)
-                  items = [item for item in value.split(',') if 'rewild' not in item.lower() and 'fight-ai-slop' not in item.lower()]
-                  line = key + '=' + ','.join(items)
+                  value = ','.join(item for item in value.split(',') if 'rewild' not in item.lower() and 'fight-ai-slop' not in item.lower())
+                  line = key + '=' + value
               sonar_lines.append(line)
           write('sonar-project.properties', '\n'.join(sonar_lines) + '\n')
 
-          readme = read('README.md')
-          readme = re.sub(r'\n### Miscellaneous / experiments\n\nGimmeJob also hosts experiments.*?server-side job or learning state\.\n', '\n', readme, count=1, flags=re.S)
+          # Remove prose/process references.
+          readme = re.sub(r'\n### Miscellaneous / experiments\n\nGimmeJob also hosts experiments.*?server-side job or learning state\.\n', '\n', read('README.md'), count=1, flags=re.S)
           write('README.md', readme)
           write('AGENTS.md', ''.join(line for line in read('AGENTS.md').splitlines(keepends=True) if 'Fight AI slop' not in line))
 
-          nav_test = ''.join(line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower())
-          write('tests/navigation-paths.test.ts', nav_test)
-          catalog = read('tests/interview-catalog.test.mjs')
-          old_assertion = '  assert.ok(navigationSource.indexOf(\'id: "news"\') < navigationSource.indexOf(\'id: "rewild"\'), "Fight AI slop must be the final section above the view switch.");\n'
-          new_assertion = '  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/, "The retired slot should remain as one inert placeholder.");\n'
-          catalog = catalog.replace(old_assertion, new_assertion)
-          write('tests/interview-catalog.test.mjs', catalog)
+          # Remove legacy route assertions and verify the neutral slot independently.
+          write('tests/navigation-paths.test.ts', ''.join(line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()))
+          write('tests/interview-catalog.test.mjs', ''.join(line for line in read('tests/interview-catalog.test.mjs').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight ai slop' not in line.lower()))
+          write('tests/next-game-placeholder.test.mjs', '''import assert from "node:assert/strict";\nimport { readFileSync } from "node:fs";\nimport test from "node:test";\n\nconst navigationSource = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");\n\ntest("sidebar keeps one inert next-game placeholder", () => {\n  assert.equal((navigationSource.match(/title="Next game"/g) ?? []).length, 1);\n  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/);\n});\n''')
 
+          # The one-time cleanup workflow must not exist in the final tree.
           workflow.unlink()
 
+          # Absolute final guard: neither path names nor text content may retain old identifiers.
           banned = re.compile(r'rewild|fight[ -]ai[ -]slop|fight-ai-slop|anti-slop', re.I)
           leftovers = []
           for path in root.rglob('*'):
@@ -154,9 +155,12 @@ jobs:
                   continue
               if banned.search(str(path)) or banned.search(text):
                   leftovers.append(str(path))
+                  for number, line in enumerate(text.splitlines(), 1):
+                      if banned.search(line):
+                          print(f'{path}:{number}: {line[:300]}')
           if leftovers:
               Path('cleanup-leftovers.txt').write_text('\n'.join(sorted(set(leftovers))) + '\n', encoding='utf-8')
-              raise SystemExit('Retired game references remain; see cleanup-leftovers.txt.')
+              raise SystemExit('Retired game references remain; see diagnostics.')
           PY
           status=${PIPESTATUS[0]}
           exit "$status"
