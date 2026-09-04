@@ -1,0 +1,214 @@
+name: Remove legacy game
+
+on:
+  push:
+    branches: [remove-rewild-game]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v6
+        with:
+          ref: remove-rewild-game
+          fetch-depth: 0
+
+      - name: Remove legacy game implementation and references
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+          import shutil
+
+          root = Path('.')
+          workflow = Path('.github/workflows/remove-rewild.yml')
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          def replace(path, old, new, *, required=True):
+              text = read(path)
+              if old not in text:
+                  if required:
+                      raise SystemExit(f'Expected text not found in {path}: {old[:120]!r}')
+                  return
+              write(path, text.replace(old, new))
+
+          # Remove every path whose own name belongs to the retired Rewild implementation.
+          # Work deepest-first so directory removals do not race child traversal.
+          candidates = []
+          for path in root.rglob('*'):
+              if '.git' in path.parts or path == workflow:
+                  continue
+              if 'rewild' in path.name.lower():
+                  candidates.append(path)
+          candidates.extend([Path('app/fight-ai-slop')])
+          for path in sorted(set(candidates), key=lambda item: len(item.parts), reverse=True):
+              if not path.exists():
+                  continue
+              if path.is_dir():
+                  shutil.rmtree(path)
+              else:
+                  path.unlink()
+
+          # Sidebar: remove the old section entirely and leave one inert, neutral placeholder
+          # immediately after News in the same Misc group.
+          replace('app/site-navigation.tsx', ' | "rewild"', '')
+          replace('app/site-navigation.tsx', '      { id: "rewild", label: "Fight AI slop" },\n', '')
+          replace(
+              'app/site-navigation.tsx',
+              '    case "rewild":\n      return <svg {...props}><path d="m12 3 1.4 4.2L18 8.5l-3.5 2.7L15 16l-3-2-3 2 .5-4.8L6 8.5l4.6-1.3zM5 17l.6 1.4L7 19l-1.4.6L5 21l-.6-1.4L3 19l1.4-.6z"/></svg>;\n',
+              '',
+          )
+          replace(
+              'app/site-navigation.tsx',
+              '                  {group.items.map((item) => renderItem(item))}\n                </div>',
+              '                  {group.items.map((item) => renderItem(item))}\n                  {group.id === "misc" && (\n                    <div aria-disabled="true" className="kb-nav-link" style={{ cursor: "default", opacity: 0.55, pointerEvents: "none" }} title="Next game">\n                      <span aria-hidden="true" className="kb-nav-icon">○</span>\n                      <span className="kb-nav-label">Next game</span>\n                    </div>\n                  )}\n                </div>',
+          )
+
+          # Public shell: remove route-specific navigation, lazy loading, full-screen shell logic,
+          # and the retired content branch.
+          replace('app/public-site.tsx', 'import { lazy, Suspense, useEffect, useMemo, useState } from "react";', 'import { useEffect, useMemo, useState } from "react";')
+          replace('app/public-site.tsx', '\nconst RewildGame = lazy(() => import("./rewild-game"));\n', '\n')
+          replace(
+              'app/public-site.tsx',
+              '  if (section === "rewild") {\n    return [\n      { id: "all", label: "Fight AI slop" },\n      { id: "guide", label: "Field guide" },\n    ];\n  }\n',
+              '',
+          )
+          replace(
+              'app/public-site.tsx',
+              '  const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";\n  const isFullScreenGame = section === "rewild" && subsection === "all";\n',
+              '  const hideSecondary = section === "about" || section === "resume" || section === "jobs";\n',
+          )
+          replace(
+              'app/public-site.tsx',
+              '    <main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>\n      {!isFullScreenGame && (\n        <SiteSidebar\n          activeSection={section}\n          activeSubsection={subsection}\n          hideSecondary={hideSecondary}\n          mobileOpen={mobileNav}\n          mode={effectiveMode}\n          onSelect={openSection}\n          onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}\n          personalHref={personalHref}\n          publicHref={publicHref}\n          secondaryEmptyState={secondaryEmptyState}\n          secondaryItems={secondaryItems}\n          secondarySwitcher={secondarySwitcher}\n          secondaryTitle={activeLabel}\n        />\n      )}\n\n      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}${isFullScreenGame ? " kb-main-game" : ""}`}>\n        <button\n          aria-expanded={isFullScreenGame ? undefined : mobileNav}\n          aria-label={isFullScreenGame ? "Exit game and return to the site" : "Toggle navigation"}\n          className="kb-floating-menu"\n          onClick={isFullScreenGame ? () => openSection("about") : () => setMobileNav((value) => !value)}\n          type="button"\n        >\n          {isFullScreenGame ? "Exit game" : "☰"}\n        </button>',
+              '    <main className="kb-shell">\n      <SiteSidebar\n        activeSection={section}\n        activeSubsection={subsection}\n        hideSecondary={hideSecondary}\n        mobileOpen={mobileNav}\n        mode={effectiveMode}\n        onSelect={openSection}\n        onSelectSubsection={(next) => { setSubsection(next); setMobileNav(false); }}\n        personalHref={personalHref}\n        publicHref={publicHref}\n        secondaryEmptyState={secondaryEmptyState}\n        secondaryItems={secondaryItems}\n        secondarySwitcher={secondarySwitcher}\n        secondaryTitle={activeLabel}\n      />\n\n      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}`}>\n        <button\n          aria-expanded={mobileNav}\n          aria-label="Toggle navigation"\n          className="kb-floating-menu"\n          onClick={() => setMobileNav((value) => !value)}\n          type="button"\n        >\n          ☰\n        </button>',
+          )
+          replace(
+              'app/public-site.tsx',
+              '  if (section === "rewild") {\n    return (\n      <Suspense fallback={<div className="rw-play-page"><div className="kb-empty rw-loading"><strong>Loading the anti-slop defenses…</strong><span>The game is loaded separately from the rest of the site.</span></div></div>}>\n        <RewildGame onViewChange={onTopicChange} view={activeTopic}/>\n      </Suspense>\n    );\n  }\n\n',
+              '',
+          )
+
+          # Remove the contiguous game-only CSS block while preserving the Python-learning styles
+          # that immediately follow it.
+          css = read('app/globals.css')
+          css, count = re.subn(r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)', '\n', css, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Could not identify the game-only CSS block')
+          write('app/globals.css', css)
+
+          # Remove canonical route and public-boundary references.
+          for path in ['app/navigation-paths.ts', 'app/seo.ts', 'worker/multi-user-boundary.ts']:
+              lines = read(path).splitlines(keepends=True)
+              write(path, ''.join(line for line in lines if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()))
+
+          # Package scripts should no longer build or validate assets that do not exist.
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text(encoding='utf-8'))
+          scripts = package['scripts']
+          scripts['dev'] = 'vite'
+          scripts['local:web'] = 'vite --host 127.0.0.1 --port 4173 --strictPort'
+          scripts['build'] = 'node scripts/build-verified.mjs'
+          for key in list(scripts):
+              if key.startswith('build:rewild') or key.startswith('check:rewild'):
+                  del scripts[key]
+          scripts['verify:fast'] = scripts['verify:fast'].replace(' && npm run check:rewild-assets', '')
+          package_path.write_text(json.dumps(package, indent=2) + '\n', encoding='utf-8')
+
+          # Remove the dedicated CI visual gate/artifact block.
+          ci = read('.github/workflows/ci.yml')
+          ci, count = re.subn(
+              r'\n      - name: Verify Rewild visual benchmark\n        run: npm run check:rewild-visual\n\n      - name: Upload Rewild visual regression\n        if: failure\(\)\n        uses: actions/upload-artifact@v4\n        with:\n          name: rewild-visual-regression\n          path: artifacts/rewild-benchmark-actual\.png\n          if-no-files-found: ignore\n          retention-days: 3\n',
+              '\n',
+              ci,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit('Could not remove the dedicated visual CI gate')
+          write('.github/workflows/ci.yml', ci)
+
+          # Remove retired paths from Sonar comma-separated configuration without disturbing other exclusions.
+          sonar_lines = []
+          for line in read('sonar-project.properties').splitlines():
+              if line.startswith(('sonar.exclusions=', 'sonar.coverage.exclusions=', 'sonar.cpd.exclusions=')):
+                  key, value = line.split('=', 1)
+                  items = [item for item in value.split(',') if 'rewild' not in item.lower() and 'fight-ai-slop' not in item.lower()]
+                  line = key + '=' + ','.join(items)
+              sonar_lines.append(line)
+          write('sonar-project.properties', '\n'.join(sonar_lines) + '\n')
+
+          # Remove product/process documentation that described only the retired game.
+          replace(
+              'README.md',
+              '\n### Miscellaneous / experiments\n\nGimmeJob also hosts experiments that are deliberately separate from the core career flows, including the client-only **Fight AI slop** browser game. These are part of the technology-playground goal and must not be confused with server-side job or learning state.\n',
+              '',
+          )
+          agents = read('AGENTS.md')
+          agents = ''.join(line for line in agents.splitlines(keepends=True) if 'Fight AI slop' not in line)
+          write('AGENTS.md', agents)
+
+          # Update shared source-contract tests instead of retaining assertions for deleted behavior.
+          nav_test = read('tests/navigation-paths.test.ts')
+          nav_test = ''.join(line for line in nav_test.splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower())
+          write('tests/navigation-paths.test.ts', nav_test)
+
+          catalog_test = read('tests/interview-catalog.test.mjs')
+          old_assertion = '  assert.ok(navigationSource.indexOf(\'id: "news"\') < navigationSource.indexOf(\'id: "rewild"\'), "Fight AI slop must be the final section above the view switch.");\n'
+          if old_assertion in catalog_test:
+              catalog_test = catalog_test.replace(
+                  old_assertion,
+                  '  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/, "The retired slot should remain as one inert placeholder.");\n',
+              )
+          write('tests/interview-catalog.test.mjs', catalog_test)
+
+          # The one-time workflow must not survive in the final branch tree.
+          workflow.unlink()
+
+          # Hard stop if any unique retired-game identifier survives anywhere tracked/textual.
+          banned = re.compile(r'rewild|fight[ -]ai[ -]slop|fight-ai-slop|anti-slop', re.I)
+          leftovers = []
+          for path in root.rglob('*'):
+              if not path.is_file() or '.git' in path.parts or 'node_modules' in path.parts:
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              if banned.search(str(path)) or banned.search(text):
+                  leftovers.append(str(path))
+          if leftovers:
+              raise SystemExit('Retired game references remain:\n' + '\n'.join(sorted(set(leftovers))))
+          PY
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run repository verification
+        run: npm run verify
+
+      - name: Inspect cleanup diff
+        run: |
+          git diff --check
+          git status --short
+          git diff --stat
+
+      - name: Commit verified cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove retired game and keep neutral placeholder"
+          git push origin HEAD:remove-rewild-game
