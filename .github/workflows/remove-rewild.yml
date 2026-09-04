@@ -130,10 +130,18 @@ jobs:
 
           catalog = read('tests/interview-catalog.test.mjs')
           catalog = catalog.replace(', "Fight AI slop"]', ']')
+          catalog = catalog.replace(', gameSource, privateJobsSource] = await Promise.all([', ', privateJobsSource] = await Promise.all([')
+          catalog = catalog.replace('    readFile(projectFile("app/rewild-game.tsx"), "utf8"),\n', '')
+          catalog = ''.join(
+              line for line in catalog.splitlines(keepends=True)
+              if not (
+                  'navigationSource.indexOf(\'id: "rewild"\')' in line
+                  or 'section === "rewild"' in line
+                  or 'assert.match(gameSource' in line
+              )
+          )
           old_misc = r'  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "rewild"/);' + '\n'
           new_misc = r'  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"/);' + '\n'
-          if old_misc not in catalog:
-              raise SystemExit('Could not locate the legacy Misc navigation assertion')
           catalog = catalog.replace(old_misc, new_misc, 1)
           write('tests/interview-catalog.test.mjs', catalog)
 
