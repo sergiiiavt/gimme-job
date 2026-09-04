@@ -1,0 +1,52 @@
+name: Publish verified cleanup
+
+on:
+  push:
+    branches: [remove-rewild-game]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: remove-rewild-game
+          fetch-depth: 0
+
+      - name: Recreate verified cleanup tree
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import textwrap
+          source = Path('.github/workflows/remove-rewild.yml').read_text(encoding='utf-8')
+          start_marker = "          python - <<'PY' 2>&1 | tee cleanup-debug.log\n"
+          end_marker = "\n          PY\n"
+          start = source.index(start_marker) + len(start_marker)
+          end = source.index(end_marker, start)
+          script = textwrap.dedent(source[start:end])
+          Path('/tmp/apply_cleanup.py').write_text(script, encoding='utf-8')
+          subprocess.run(['python', '/tmp/apply_cleanup.py'], check=True)
+          catalog = Path('tests/interview-catalog.test.mjs')
+          text = catalog.read_text(encoding='utf-8')
+          catalog.write_text(''.join(line for line in text.splitlines(keepends=True) if 'rw-' not in line), encoding='utf-8')
+          PY
+
+      - name: Publish non-workflow changes
+        shell: bash
+        run: |
+          git restore --source=HEAD -- .github/workflows
+          rm -f cleanup-debug.log cleanup-leftovers.txt verify-debug.log
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "Remove retired game and keep neutral placeholder"
+          git push origin HEAD:remove-rewild-game
