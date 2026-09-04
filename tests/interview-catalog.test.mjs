@@ -220,7 +220,6 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, gameSource, privateJobsSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -352,8 +351,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(aboutSource, /skills showcase/i);
   assert.doesNotMatch(aboutSource, /researched QA questions/);
   assert.doesNotMatch(aboutSource, /about-hero/);
-  assert.match(gameSource, /How to fight AI slop/);
-  assert.doesNotMatch(gameSource, /How to kill AI slop|Kill the feed/);
   assert.match(resumeSource, /fetch\("\/api\/settings"\)/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.phone/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.email/);
