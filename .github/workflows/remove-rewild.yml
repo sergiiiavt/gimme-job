@@ -168,10 +168,25 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run repository verification
-        run: npm run verify
+        shell: bash
+        run: |
+          set +e
+          npm run verify 2>&1 | tee verify-debug.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Upload verification diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-verification
+          path: verify-debug.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Inspect cleanup diff
         run: |
+          rm -f cleanup-debug.log cleanup-leftovers.txt verify-debug.log
           git diff --check
           git status --short
           git diff --stat
