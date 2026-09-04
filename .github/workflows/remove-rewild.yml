@@ -22,7 +22,8 @@ jobs:
       - name: Remove legacy game implementation and references
         shell: bash
         run: |
-          python - <<'PY'
+          set +e
+          python - <<'PY' 2>&1 | tee cleanup-debug.log
           from pathlib import Path
           import json
           import re
@@ -45,8 +46,6 @@ jobs:
               write(path, updated)
               return count
 
-          # Delete the entire retired feature footprint: implementation, assets, docs,
-          # config, tests, visual fixtures, and build/validation scripts.
           candidates = []
           for path in root.rglob('*'):
               if '.git' in path.parts or path == workflow:
@@ -62,8 +61,6 @@ jobs:
               else:
                   path.unlink()
 
-          # Sidebar: remove the retired navigable section and keep exactly one inert slot
-          # in the same Misc position for a future game.
           nav = read('app/site-navigation.tsx')
           nav = nav.replace(' | "rewild"', '')
           nav = re.sub(r'^\s*\{ id: "rewild", label: "Fight AI slop" \},\n', '', nav, flags=re.M)
@@ -84,24 +81,19 @@ jobs:
               nav = nav.replace(marker, placeholder, 1)
           write('app/site-navigation.tsx', nav)
 
-          # Remove all retired loading/routing/full-screen behavior from the public shell.
           public = read('app/public-site.tsx')
           public = public.replace('import { lazy, Suspense, useEffect, useMemo, useState } from "react";', 'import { useEffect, useMemo, useState } from "react";')
           public = re.sub(r'\nconst RewildGame = lazy\(\(\) => import\("\.\/rewild-game"\)\);\n', '\n', public, count=1)
           public = re.sub(
               r'\n  if \(section === "rewild"\) \{\n    return \[\n      \{ id: "all", label: "Fight AI slop" \},\n      \{ id: "guide", label: "Field guide" \},\n    \];\n  \}\n',
-              '\n',
-              public,
-              count=1,
+              '\n', public, count=1,
           )
           public = public.replace(' || section === "rewild"', '')
           public = re.sub(r'^  const isFullScreenGame = .*?;\n', '', public, count=1, flags=re.M)
           public = public.replace('<main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>', '<main className="kb-shell">')
           public = re.sub(
               r'      \{!isFullScreenGame && \(\n(?P<sidebar>        <SiteSidebar[\s\S]*?        />)\n      \)\}',
-              lambda match: match.group('sidebar'),
-              public,
-              count=1,
+              lambda match: match.group('sidebar'), public, count=1,
           )
           public = public.replace('${isFullScreenGame ? " kb-main-game" : ""}', '')
           public = public.replace('aria-expanded={isFullScreenGame ? undefined : mobileNav}', 'aria-expanded={mobileNav}')
@@ -110,27 +102,16 @@ jobs:
           public = public.replace('{isFullScreenGame ? "Exit game" : "☰"}', '☰')
           public = re.sub(
               r'\n  if \(section === "rewild"\) \{\n    return \(\n      <Suspense[\s\S]*?\n    \);\n  \}\n',
-              '\n',
-              public,
-              count=1,
+              '\n', public, count=1,
           )
           write('app/public-site.tsx', public)
 
-          # Remove game-only styles as one contiguous block.
-          sub(
-              'app/globals.css',
-              r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)',
-              '\n',
-              flags=re.S,
-              minimum=1,
-          )
+          sub('app/globals.css', r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)', '\n', flags=re.S, minimum=1)
 
-          # Remove route, sitemap, and public-boundary lines that exposed the retired page.
           for path in ['app/navigation-paths.ts', 'app/seo.ts', 'worker/multi-user-boundary.ts']:
               lines = read(path).splitlines(keepends=True)
               write(path, ''.join(line for line in lines if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()))
 
-          # Build and verification no longer generate or validate game assets.
           package_path = Path('package.json')
           package = json.loads(package_path.read_text(encoding='utf-8'))
           scripts = package['scripts']
@@ -143,17 +124,13 @@ jobs:
           scripts['verify:fast'] = scripts['verify:fast'].replace(' && npm run check:rewild-assets', '')
           package_path.write_text(json.dumps(package, indent=2) + '\n', encoding='utf-8')
 
-          # Remove the dedicated visual gate from normal CI.
           ci = read('.github/workflows/ci.yml')
           ci = re.sub(
               r'\n      - name: Verify Rewild visual benchmark\n        run: npm run check:rewild-visual\n\n      - name: Upload Rewild visual regression\n        if: failure\(\)\n        uses: actions/upload-artifact@v4\n        with:\n(?:          .*\n)+?',
-              '\n',
-              ci,
-              count=1,
+              '\n', ci, count=1,
           )
           write('.github/workflows/ci.yml', ci)
 
-          # Remove deleted game paths from Sonar configuration.
           sonar_lines = []
           for line in read('sonar-project.properties').splitlines():
               if line.startswith(('sonar.exclusions=', 'sonar.coverage.exclusions=', 'sonar.cpd.exclusions=')):
@@ -163,38 +140,23 @@ jobs:
               sonar_lines.append(line)
           write('sonar-project.properties', '\n'.join(sonar_lines) + '\n')
 
-          # Remove prose/process references to the retired game.
           readme = read('README.md')
-          readme = re.sub(
-              r'\n### Miscellaneous / experiments\n\nGimmeJob also hosts experiments.*?server-side job or learning state\.\n',
-              '\n',
-              readme,
-              count=1,
-              flags=re.S,
-          )
+          readme = re.sub(r'\n### Miscellaneous / experiments\n\nGimmeJob also hosts experiments.*?server-side job or learning state\.\n', '\n', readme, count=1, flags=re.S)
           write('README.md', readme)
           write('AGENTS.md', ''.join(line for line in read('AGENTS.md').splitlines(keepends=True) if 'Fight AI slop' not in line))
 
-          # Shared route/source-contract tests should assert the neutral placeholder, not the old game.
-          nav_test = ''.join(
-              line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True)
-              if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()
-          )
+          nav_test = ''.join(line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower())
           write('tests/navigation-paths.test.ts', nav_test)
           catalog = read('tests/interview-catalog.test.mjs')
           catalog = re.sub(
               r'^\s*assert\.ok\(navigationSource\.indexOf\(\'id: "news"\'\).*?Fight AI slop.*?\);\n',
               '  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/, "The retired slot should remain as one inert placeholder.");\n',
-              catalog,
-              count=1,
-              flags=re.M,
+              catalog, count=1, flags=re.M,
           )
           write('tests/interview-catalog.test.mjs', catalog)
 
-          # Remove the temporary workflow before the final all-tree scan and commit.
           workflow.unlink()
 
-          # Final invariant: no old game identifier may survive in a text file or path.
           banned = re.compile(r'rewild|fight[ -]ai[ -]slop|fight-ai-slop|anti-slop', re.I)
           leftovers = []
           for path in root.rglob('*'):
@@ -208,8 +170,21 @@ jobs:
                   leftovers.append(str(path))
           if leftovers:
               Path('cleanup-leftovers.txt').write_text('\n'.join(sorted(set(leftovers))) + '\n', encoding='utf-8')
-              raise SystemExit('Retired game references remain; see cleanup-leftovers.txt in the runner output.')
+              raise SystemExit('Retired game references remain; see cleanup-leftovers.txt.')
           PY
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Upload cleanup diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-diagnostics
+          path: |
+            cleanup-debug.log
+            cleanup-leftovers.txt
+          if-no-files-found: ignore
+          retention-days: 1
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
