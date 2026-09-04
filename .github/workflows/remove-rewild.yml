@@ -84,26 +84,17 @@ jobs:
           public = read('app/public-site.tsx')
           public = public.replace('import { lazy, Suspense, useEffect, useMemo, useState } from "react";', 'import { useEffect, useMemo, useState } from "react";')
           public = re.sub(r'\nconst RewildGame = lazy\(\(\) => import\("\.\/rewild-game"\)\);\n', '\n', public, count=1)
-          public = re.sub(
-              r'\n  if \(section === "rewild"\) \{\n    return \[\n      \{ id: "all", label: "Fight AI slop" \},\n      \{ id: "guide", label: "Field guide" \},\n    \];\n  \}\n',
-              '\n', public, count=1,
-          )
+          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \[\n      \{ id: "all", label: "Fight AI slop" \},\n      \{ id: "guide", label: "Field guide" \},\n    \];\n  \}\n', '\n', public, count=1)
           public = public.replace(' || section === "rewild"', '')
           public = re.sub(r'^  const isFullScreenGame = .*?;\n', '', public, count=1, flags=re.M)
           public = public.replace('<main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>', '<main className="kb-shell">')
-          public = re.sub(
-              r'      \{!isFullScreenGame && \(\n(?P<sidebar>        <SiteSidebar[\s\S]*?        />)\n      \)\}',
-              lambda match: match.group('sidebar'), public, count=1,
-          )
+          public = re.sub(r'      \{!isFullScreenGame && \(\n(?P<sidebar>        <SiteSidebar[\s\S]*?        />)\n      \)\}', lambda match: match.group('sidebar'), public, count=1)
           public = public.replace('${isFullScreenGame ? " kb-main-game" : ""}', '')
           public = public.replace('aria-expanded={isFullScreenGame ? undefined : mobileNav}', 'aria-expanded={mobileNav}')
           public = public.replace('aria-label={isFullScreenGame ? "Exit game and return to the site" : "Toggle navigation"}', 'aria-label="Toggle navigation"')
           public = public.replace('onClick={isFullScreenGame ? () => openSection("about") : () => setMobileNav((value) => !value)}', 'onClick={() => setMobileNav((value) => !value)}')
           public = public.replace('{isFullScreenGame ? "Exit game" : "☰"}', '☰')
-          public = re.sub(
-              r'\n  if \(section === "rewild"\) \{\n    return \(\n      <Suspense[\s\S]*?\n    \);\n  \}\n',
-              '\n', public, count=1,
-          )
+          public = re.sub(r'\n  if \(section === "rewild"\) \{\n    return \(\n      <Suspense[\s\S]*?\n    \);\n  \}\n', '\n', public, count=1)
           write('app/public-site.tsx', public)
 
           sub('app/globals.css', r'\n/\* Fight AI slop pixel-defense game \*/\n.*?(?=\.py-filter-grid \{)', '\n', flags=re.S, minimum=1)
@@ -125,10 +116,7 @@ jobs:
           package_path.write_text(json.dumps(package, indent=2) + '\n', encoding='utf-8')
 
           ci = read('.github/workflows/ci.yml')
-          ci = re.sub(
-              r'\n      - name: Verify Rewild visual benchmark\n        run: npm run check:rewild-visual\n\n      - name: Upload Rewild visual regression\n        if: failure\(\)\n        uses: actions/upload-artifact@v4\n        with:\n(?:          .*\n)+?',
-              '\n', ci, count=1,
-          )
+          ci = re.sub(r'\n      - name: Verify Rewild visual benchmark\n        run: npm run check:rewild-visual\n\n      - name: Upload Rewild visual regression\n        if: failure\(\)\n        uses: actions/upload-artifact@v4\n        with:\n(?:          .*\n)+?', '\n', ci, count=1)
           write('.github/workflows/ci.yml', ci)
 
           sonar_lines = []
@@ -148,11 +136,9 @@ jobs:
           nav_test = ''.join(line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower())
           write('tests/navigation-paths.test.ts', nav_test)
           catalog = read('tests/interview-catalog.test.mjs')
-          catalog = re.sub(
-              r'^\s*assert\.ok\(navigationSource\.indexOf\(\'id: "news"\'\).*?Fight AI slop.*?\);\n',
-              '  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/, "The retired slot should remain as one inert placeholder.");\n',
-              catalog, count=1, flags=re.M,
-          )
+          old_assertion = '  assert.ok(navigationSource.indexOf(\'id: "news"\') < navigationSource.indexOf(\'id: "rewild"\'), "Fight AI slop must be the final section above the view switch.");\n'
+          new_assertion = '  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/, "The retired slot should remain as one inert placeholder.");\n'
+          catalog = catalog.replace(old_assertion, new_assertion)
           write('tests/interview-catalog.test.mjs', catalog)
 
           workflow.unlink()
