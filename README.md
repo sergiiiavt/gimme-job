@@ -55,9 +55,6 @@ Content maturity is intentionally not binary. A page can be available while stil
 
 Public learning/interview content is versioned in Git. Private user-specific progress, stars, application state, and other personal runtime data stay outside the public content bundle.
 
-### Miscellaneous / experiments
-
-GimmeJob also hosts experiments that are deliberately separate from the core career flows, including the client-only **Fight AI slop** browser game. These are part of the technology-playground goal and must not be confused with server-side job or learning state.
 
 ## AI Assistant and canonical RAG
 

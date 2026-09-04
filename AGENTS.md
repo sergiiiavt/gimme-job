@@ -20,7 +20,6 @@ Do not bundle opportunistic copy rewrites, visual redesigns, backend refactors, 
 - The interview catalog stays lazy-loaded and renders no more than 60 question rows simultaneously.
 - D1 contains runtime vacancy data and private user state. Public routes may expose only intentionally sanitized data; progress, application state, resume contact data, and other personal data require authentication.
 - Public and Personal modes must continue to route correctly and must not leak private data into public HTML, client bundles, API responses, or Git.
-- Fight AI slop remains a separately loaded, client-only browser game and must not add server-side game state without an explicit request.
 
 ## Learning discovery and RAG invariants
 

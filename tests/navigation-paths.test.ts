@@ -17,7 +17,6 @@ const expectedRoutes: Record<string, string> = {
   data: "/learn/data",
   devops: "/learn/cloud-devops",
   news: "/news",
-  rewild: "/fight-ai-slop",
 };
 
 const interviewDomainPaths = [
@@ -58,6 +57,5 @@ test("canonical route paths resolve directly to their site sections", () => {
   assert.equal(sectionFromPathname("/reference/automation"), null);
   assert.equal(sectionFromPathname("/learn/cloud-devops"), "devops");
   assert.equal(sectionFromPathname("/news"), "news");
-  assert.equal(sectionFromPathname("/fight-ai-slop"), "rewild");
   assert.equal(sectionFromPathname("/unknown"), null);
 });

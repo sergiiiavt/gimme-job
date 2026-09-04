@@ -26,7 +26,6 @@ const canonicalSectionPaths: Record<string, string> = {
   agentic: "/learn/agentic",
   standards: "/learn/standards",
   news: "/news",
-  rewild: "/fight-ai-slop",
 };
 
 const publishedQuickReferenceSections = new Set(["qa-fundamentals", "programming", "data"]);
@@ -51,7 +50,6 @@ export function sectionFromPathname(pathname: string): string | null {
     "/interview/python": "python-interview",
     "/trends": "trends",
     "/news": "news",
-    "/fight-ai-slop": "rewild",
   };
   if (topLevel[normalized]) return topLevel[normalized];
   if (normalized.startsWith("/interview/")) {
