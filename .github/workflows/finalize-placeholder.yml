@@ -34,6 +34,7 @@ jobs:
           end = source.index(end_marker, start)
           script = textwrap.dedent(source[start:end])
           Path('/tmp/apply_cleanup.py').write_text(script, encoding='utf-8')
+          Path('.github/workflows/finalize-placeholder.yml').unlink()
           subprocess.run(['python', '/tmp/apply_cleanup.py'], check=True)
           PY
 
@@ -49,7 +50,6 @@ jobs:
           catalog = ''.join(line for line in catalog.splitlines(keepends=True) if 'rw-' not in line)
           catalog_path.write_text(catalog, encoding='utf-8')
 
-          Path('.github/workflows/finalize-placeholder.yml').unlink(missing_ok=True)
           Path('.github/workflows/remove-rewild.yml').unlink(missing_ok=True)
 
           banned = re.compile(r'rewild|fight[ -]ai[ -]slop|fight-ai-slop|anti-slop|rw-', re.I)
