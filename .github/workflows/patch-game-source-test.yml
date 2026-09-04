@@ -1,0 +1,32 @@
+name: Patch stale test reference
+
+on:
+  push:
+    branches: [remove-rewild-game]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: remove-rewild-game
+      - name: Remove stale source assertions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/interview-catalog.test.mjs')
+          text = path.read_text(encoding='utf-8')
+          path.write_text(''.join(line for line in text.splitlines(keepends=True) if 'gameSource' not in line), encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/interview-catalog.test.mjs
+          git commit -m "Remove stale retired game source assertions"
+          git push origin HEAD:remove-rewild-game
