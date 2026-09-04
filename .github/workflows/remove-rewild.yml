@@ -127,7 +127,16 @@ jobs:
           write('AGENTS.md', ''.join(line for line in read('AGENTS.md').splitlines(keepends=True) if 'Fight AI slop' not in line))
 
           write('tests/navigation-paths.test.ts', ''.join(line for line in read('tests/navigation-paths.test.ts').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight-ai-slop' not in line.lower()))
-          write('tests/interview-catalog.test.mjs', ''.join(line for line in read('tests/interview-catalog.test.mjs').splitlines(keepends=True) if 'rewild' not in line.lower() and 'fight ai slop' not in line.lower()))
+
+          catalog = read('tests/interview-catalog.test.mjs')
+          catalog = catalog.replace(', "Fight AI slop"]', ']')
+          old_misc = r'  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "rewild"/);' + '\n'
+          new_misc = r'  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"/);' + '\n'
+          if old_misc not in catalog:
+              raise SystemExit('Could not locate the legacy Misc navigation assertion')
+          catalog = catalog.replace(old_misc, new_misc, 1)
+          write('tests/interview-catalog.test.mjs', catalog)
+
           write('tests/next-game-placeholder.test.mjs', '''import assert from "node:assert/strict";\nimport { readFileSync } from "node:fs";\nimport test from "node:test";\n\nconst navigationSource = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");\n\ntest("sidebar keeps one inert next-game placeholder", () => {\n  assert.equal((navigationSource.match(/title="Next game"/g) ?? []).length, 1);\n  assert.match(navigationSource, /aria-disabled="true"[\\s\\S]*?<span className="kb-nav-label">Next game<\\/span>/);\n});\n''')
 
           workflow.unlink()
