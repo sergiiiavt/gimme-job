@@ -32,6 +32,8 @@ jobs:
           end = source.index(end_marker, start)
           script = textwrap.dedent(source[start:end])
           Path('/tmp/apply_cleanup.py').write_text(script, encoding='utf-8')
+          Path('.github/workflows/publish-verified-cleanup.yml').unlink()
+          Path('.github/workflows/finalize-placeholder.yml').unlink(missing_ok=True)
           subprocess.run(['python', '/tmp/apply_cleanup.py'], check=True)
           catalog = Path('tests/interview-catalog.test.mjs')
           text = catalog.read_text(encoding='utf-8')
