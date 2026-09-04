@@ -220,6 +220,7 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, privateJobsSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -228,7 +229,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
     readFile(projectFile("app/resume-page.tsx"), "utf8"),
     readFile(projectFile("app/about-site.tsx"), "utf8"),
     readFile(projectFile("app/about-site-content.ts"), "utf8"),
-    readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/page.tsx"), "utf8"),
   ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
