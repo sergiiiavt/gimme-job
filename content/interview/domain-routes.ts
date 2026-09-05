@@ -56,6 +56,20 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     ],
   },
   {
+    id: "performance-testing",
+    slug: "performance",
+    label: "Performance Testing",
+    switcherLabel: "Performance",
+    path: "/interview/performance",
+    title: "Performance Testing Interview Questions & Answers",
+    description: "Research-backed performance testing interview questions covering workload modelling, load and stress testing, latency percentiles, throughput, JMeter, k6, distributed load generation, bottleneck analysis, endurance and spike testing, and CI performance gates.",
+    relatedLinks: [
+      { label: "Performance testing learning", href: "/learn/performance" },
+      { label: "Testing tools", href: "/learn/testing-tools" },
+      { label: "Observability & SRE", href: "/learn/observability" },
+    ],
+  },
+  {
     id: "mobile",
     slug: "mobile",
     label: "Mobile",

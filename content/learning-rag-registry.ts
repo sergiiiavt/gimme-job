@@ -8,6 +8,7 @@ import embeddedIotCatalog from "./embedded-iot/catalog";
 import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
 import networkingCatalog from "./networking/catalog";
+import performanceTestingCatalog from "./performance-testing/catalog";
 import pythonCurriculum from "./python-learning/catalog";
 import pythonQuickReference from "./python-learning/quick-reference.json";
 import qaFundamentalsCatalog from "./qa-fundamentals/catalog";
@@ -36,6 +37,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "testing-tools", route: "/learn/testing-tools", value: testingToolsCatalog },
   { key: "cloud-devops", route: "/learn/cloud-devops", value: cloudDevopsCatalog },
   { key: "metrics-estimation", route: "/learn/metrics-estimation", value: metricsEstimationCatalog },
+  { key: "performance-testing", route: "/learn/performance", value: performanceTestingCatalog },
   { key: "sql-quick-reference", route: "/learn/data", value: sqlQuickReference },
   { key: "sql-practical-tasks", route: "/learn/data", value: sqlPracticalTasks },
   { key: "api-integration", route: "/learn/api", value: apiIntegrationCatalog },

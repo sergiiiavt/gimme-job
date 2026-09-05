@@ -1,0 +1,305 @@
+{
+  "description": "Source-backed practical and tool-oriented performance-testing interview questions. Interview banks establish that the question is asked; official documentation is used for the technical answer.",
+  "questions": [
+    {
+      "id": "performance-jmeter-test-plan-components",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Tooling",
+      "question": "What are the main components of a JMeter test plan, and how do they work together?",
+      "shortAnswer": "A Thread Group defines the virtual-user execution context. Samplers send protocol requests. Configuration elements provide defaults, credentials, cookies or test data. Timers shape timing and pacing. Assertions validate correctness. Pre- and post-processors prepare requests or extract dynamic values. Controllers organize flow, and listeners or result writers capture evidence. For real load, keep the plan lean and avoid heavy GUI listeners.",
+      "strongAnswerSignals": [
+        "explains the role of Thread Groups, samplers, timers and assertions",
+        "includes configuration plus pre/post-processing for data and dynamic values",
+        "separates scripting/debug listeners from resource-efficient load execution"
+      ],
+      "questionUk": "Які основні компоненти JMeter Test Plan і як вони працюють разом?",
+      "shortAnswerUk": "Thread Group визначає execution context віртуальних користувачів. Samplers відправляють protocol requests. Configuration elements задають defaults, credentials, cookies або test data. Timers формують timing і pacing. Assertions перевіряють correctness. Pre- та post-processors готують requests або витягують dynamic values. Controllers організовують flow, а listeners/result writers зберігають evidence. Для реального load test план має бути легким без важких GUI listeners.",
+      "strongAnswerSignalsUk": [
+        "пояснює роль Thread Groups, samplers, timers і assertions",
+        "включає configuration та pre/post-processing для data і dynamic values",
+        "відокремлює scripting/debug listeners від resource-efficient load execution"
+      ],
+      "example": "A login-and-search plan can use a Thread Group, HTTP samplers, CSV credentials, a JSON extractor for a token, a timer for user pacing, response assertions, and a lightweight result file for later analysis.",
+      "exampleUk": "Login-and-search plan може містити Thread Group, HTTP samplers, CSV credentials, JSON extractor для token, timer для user pacing, response assertions і легкий result file для подальшого аналізу.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "qapractices-jmeter-interview-2026", "artoftesting-jmeter-interview", "jmeter-getting-started"],
+      "tags": ["jmeter", "test-plan", "thread-group", "samplers", "timers", "assertions", "listeners"]
+    },
+    {
+      "id": "performance-correlation-vs-parameterization",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Scripting",
+      "question": "What is correlation in a performance script, and how is it different from parameterization?",
+      "shortAnswer": "Correlation captures a dynamic value produced by the system, such as a session token, CSRF value or generated ID, and reuses it in later requests from the same flow. Parameterization supplies varying input data that the test controls, such as users, products or search terms. In JMeter, correlation commonly uses response extractors or post-processors, while parameterization commonly uses variables and CSV Data Set Config.",
+      "strongAnswerSignals": [
+        "dynamic server-produced value versus test-controlled input data",
+        "gives session/token and CSV examples",
+        "validates that extracted values belong to the correct user or iteration"
+      ],
+      "questionUk": "Що таке correlation у performance script і чим воно відрізняється від parameterization?",
+      "shortAnswerUk": "Correlation захоплює dynamic value, створене системою, наприклад session token, CSRF value або generated ID, і використовує його в наступних requests того самого flow. Parameterization підставляє різні input data, які контролює тест: users, products, search terms. У JMeter correlation зазвичай робиться через response extractors/post-processors, а parameterization — через variables і CSV Data Set Config.",
+      "strongAnswerSignalsUk": [
+        "розрізняє dynamic server-produced value і test-controlled input data",
+        "наводить приклади session/token і CSV",
+        "перевіряє, що extracted values належать правильному user або iteration"
+      ],
+      "example": "Read username/password pairs from CSV: parameterization. Extract the access token returned by login and send it in the next API request: correlation.",
+      "exampleUk": "Читаємо username/password pairs із CSV — parameterization. Витягуємо access token з login response і передаємо його в наступному API request — correlation.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "qapractices-jmeter-interview-2026", "artoftesting-jmeter-interview", "jmeter-recorder-correlation"],
+      "tags": ["jmeter", "correlation", "parameterization", "dynamic-data", "csv", "tokens"]
+    },
+    {
+      "id": "performance-jmeter-cli-mode",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Tooling",
+      "question": "Why should a JMeter load test run in CLI mode rather than the GUI?",
+      "shortAnswer": "The GUI is intended for building, validating and debugging a test plan. During a load run the GUI and heavy listeners consume CPU, memory and rendering resources on the injector, which can distort or cap the generated load. Apache recommends CLI mode for load execution, saving only the result data you need and generating reports from those results.",
+      "strongAnswerSignals": [
+        "GUI for authoring/debugging, CLI for load execution",
+        "protects load-generator resources from UI/listener overhead",
+        "keeps result collection deliberately lightweight"
+      ],
+      "questionUk": "Чому JMeter load test треба запускати в CLI mode, а не в GUI?",
+      "shortAnswerUk": "GUI призначений для побудови, валідації та дебагу Test Plan. Під час load run GUI і важкі listeners споживають CPU, memory та rendering resources на injector і можуть спотворити або обмежити generated load. Apache рекомендує CLI mode для load execution, зберігаючи лише потрібні results і вже з них будуючи report.",
+      "strongAnswerSignalsUk": [
+        "GUI для authoring/debugging, CLI для load execution",
+        "захищає ресурси load generator від UI/listener overhead",
+        "зберігає лише потрібний result data"
+      ],
+      "example": "Validate a small sample in View Results Tree, disable it for the real run, then execute `jmeter -n -t test.jmx -l result.jtl` and analyze the saved results or generated HTML report.",
+      "exampleUk": "Перевіряємо малий sample у View Results Tree, вимикаємо його для реального прогону, потім запускаємо `jmeter -n -t test.jmx -l result.jtl` і аналізуємо збережені results або HTML report.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "asserthired-jmeter-interview-2026", "jmeter-getting-started", "jmeter-best-practices"],
+      "tags": ["jmeter", "cli", "non-gui", "load-generator", "listeners"]
+    },
+    {
+      "id": "performance-distributed-load-generation",
+      "level": "Senior",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Architecture",
+      "question": "When do you need distributed load generation, and what can go wrong with it?",
+      "shortAnswer": "Distribute generation when one injector cannot produce the required request rate or concurrency without becoming CPU-, memory- or network-bound. Keep generators comparable, place them intentionally relative to the target, provision test data on each worker, synchronize configuration and watch the generators themselves. In JMeter remote mode each server runs the configured plan, so total load must be calculated across workers rather than assuming the controller divides one thread count automatically.",
+      "strongAnswerSignals": [
+        "scales out only after measuring injector capacity",
+        "monitors CPU, memory and network on load generators",
+        "understands that distributed topology and per-worker data affect the result"
+      ],
+      "questionUk": "Коли потрібна distributed load generation і які проблеми вона може створити?",
+      "shortAnswerUk": "Розподіляємо generation, коли один injector не може створити потрібний request rate або concurrency без упору в CPU, memory чи network. Генератори мають бути узгоджені, правильно розміщені відносно target, мати test data на кожному worker, однакову configuration і власний monitoring. У JMeter remote mode кожен server запускає configured plan, тому total load треба рахувати по всіх workers, а не припускати, що controller автоматично ділить один thread count.",
+      "strongAnswerSignalsUk": [
+        "масштабує генератори лише після вимірювання injector capacity",
+        "моніторить CPU, memory і network на load generators",
+        "розуміє вплив distributed topology та per-worker data"
+      ],
+      "example": "If six JMeter workers each execute a 1,000-thread plan, the target can see about 6,000 threads, not 1,000 split six ways. The exact traffic still depends on pacing and response time.",
+      "exampleUk": "Якщо шість JMeter workers кожен виконують plan на 1,000 threads, target може отримати приблизно 6,000 threads, а не 1,000, поділені на шість. Фактичний traffic усе одно залежить від pacing і response time.",
+      "sourceIds": ["asserthired-jmeter-interview-2026", "qapractices-jmeter-interview-2026", "artoftesting-jmeter-interview", "jmeter-distributed-testing", "jmeter-best-practices", "locust-distributed"],
+      "tags": ["distributed-testing", "load-generators", "jmeter", "locust", "capacity"]
+    },
+    {
+      "id": "performance-bottleneck-diagnosis",
+      "level": "Senior",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Scenario",
+      "question": "A system becomes slower as load increases. How do you identify the bottleneck?",
+      "shortAnswer": "First confirm the workload was generated as intended and the injector is healthy. Find the load level and timestamp where latency, errors or throughput behavior changes, then correlate that point with application and infrastructure telemetry: CPU, memory/GC, queues, worker and connection pools, database waits or slow queries, disk/network, caches and downstream services. Change one credible constraint at a time and rerun the same controlled workload to prove causality.",
+      "strongAnswerSignals": [
+        "rules out the load generator and workload model first",
+        "correlates client symptoms with server-side telemetry by time and load level",
+        "uses controlled reruns to prove the suspected bottleneck"
+      ],
+      "questionUk": "Система сповільнюється зі зростанням load. Як ви знаходите bottleneck?",
+      "shortAnswerUk": "Спочатку підтверджуємо, що потрібний workload справді генерується і injector не є bottleneck. Знаходимо load level та timestamp, де змінюються latency, errors або throughput, і корелюємо цю точку з application/infrastructure telemetry: CPU, memory/GC, queues, worker/connection pools, database waits або slow queries, disk/network, caches та downstream services. Потім змінюємо один обґрунтований constraint і повторюємо той самий контрольований workload, щоб довести причинність.",
+      "strongAnswerSignalsUk": [
+        "спочатку виключає load generator і помилку workload model",
+        "корелює client symptoms із server-side telemetry за часом і load level",
+        "доводить bottleneck контрольованим rerun"
+      ],
+      "example": "If throughput stops growing at 700 RPS while p95 rises, and the database pool is continuously full with wait time increasing at the same point, that is a stronger bottleneck hypothesis than a high CPU graph observed at some unrelated time.",
+      "exampleUk": "Якщо throughput перестає рости на 700 RPS, p95 зростає, а database pool у той самий момент постійно повний і його wait time росте, це сильніша bottleneck hypothesis, ніж просто високий CPU на іншому часовому відрізку.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "qapractices-jmeter-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["bottleneck", "diagnostics", "telemetry", "database", "saturation", "root-cause"]
+    },
+    {
+      "id": "performance-endurance-soak-test",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Scenario",
+      "question": "What is an endurance or soak test, and what problems are you looking for?",
+      "shortAnswer": "An endurance test holds a representative workload for a period long enough to expose time-dependent degradation. Look for upward resource trends and exhaustion: memory leaks, heap or GC deterioration, connection or thread-pool leakage, file handles, queues, cache growth, database growth effects and scheduled/background work. A stable average at the beginning does not prove the system will remain stable for hours.",
+      "strongAnswerSignals": [
+        "focuses on long-running stability rather than peak capacity",
+        "looks for resource trends and leaks over time",
+        "uses a representative steady workload and sufficient duration"
+      ],
+      "questionUk": "Що таке endurance або soak test і які проблеми ви шукаєте?",
+      "shortAnswerUk": "Endurance test утримує репрезентативний workload достатньо довго, щоб проявилася time-dependent degradation. Шукаємо висхідні resource trends і exhaustion: memory leaks, погіршення heap/GC, leakage connection/thread pools, file handles, queues, cache growth, вплив росту database та scheduled/background work. Нормальний average на початку прогону не доводить стабільність протягом кількох годин.",
+      "strongAnswerSignalsUk": [
+        "фокусується на long-running stability, а не peak capacity",
+        "шукає resource trends і leaks у часі",
+        "використовує representative steady workload і достатню duration"
+      ],
+      "example": "Hold normal peak traffic for several hours and watch whether memory returns to a steady range after GC, connection pools release resources, queue depth stays bounded and latency distribution remains stable.",
+      "exampleUk": "Тримаємо normal peak traffic кілька годин і дивимося, чи memory повертається до steady range після GC, connection pools звільняють ресурси, queue depth не росте безмежно, а latency distribution залишається стабільним.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["endurance-testing", "soak-testing", "memory-leak", "resource-leak", "stability"]
+    },
+    {
+      "id": "performance-spike-test-design",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Scenario",
+      "question": "How would you design a spike test?",
+      "shortAnswer": "Start from a known steady workload, increase arrivals sharply to the risk level you want to simulate, hold long enough to observe the system, then reduce load and measure recovery. Define success for both the burst and the return to steady state: latency, errors, queue depth, rejected work, autoscaling or throttling behavior, data correctness and whether resources recover without manual intervention.",
+      "strongAnswerSignals": [
+        "models a sudden transition rather than a slow stress ramp",
+        "defines expected overload behavior and recovery",
+        "checks correctness and queues as well as latency"
+      ],
+      "questionUk": "Як ви спроєктуєте spike test?",
+      "shortAnswerUk": "Починаємо з відомого steady workload, різко піднімаємо arrivals до рівня ризику, тримаємо достатньо для спостереження, потім знижуємо load і вимірюємо recovery. Success criteria задаємо і для burst, і для повернення до steady state: latency, errors, queue depth, rejected work, autoscaling/throttling behavior, data correctness і відновлення ресурсів без ручного втручання.",
+      "strongAnswerSignalsUk": [
+        "моделює sudden transition, а не повільний stress ramp",
+        "визначає очікувану overload behavior і recovery",
+        "перевіряє correctness та queues разом із latency"
+      ],
+      "example": "A ticket sale opens at 10:00. Run five minutes at normal traffic, jump rapidly to the expected opening burst, then return to normal traffic and verify the service drains queues and returns to its original latency and resource levels.",
+      "exampleUk": "Продаж квитків відкривається о 10:00. П'ять хвилин тримаємо normal traffic, різко стрибаємо до expected opening burst, потім повертаємо normal traffic і перевіряємо, що service drains queues та повертається до початкових latency і resource levels.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["spike-testing", "burst", "recovery", "autoscaling", "queues"]
+    },
+    {
+      "id": "performance-k6-thresholds",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Tooling",
+      "question": "What are k6 thresholds, and how do they help automate performance testing?",
+      "shortAnswer": "k6 thresholds are explicit pass/fail conditions over metrics, for example a maximum error rate and p95 or p99 response-time limit. A breached threshold makes the run fail, so a performance objective or SLO can become an automated quality gate rather than a graph someone must inspect manually. Thresholds should come from real requirements or an agreed baseline, not arbitrary numbers chosen to make CI green.",
+      "strongAnswerSignals": [
+        "defines thresholds as metric pass/fail criteria",
+        "uses percentile latency and error-rate examples",
+        "derives limits from SLOs, requirements or a controlled baseline"
+      ],
+      "questionUk": "Що таке k6 thresholds і як вони допомагають автоматизувати performance testing?",
+      "shortAnswerUk": "k6 thresholds — це явні pass/fail conditions для metrics, наприклад maximum error rate та p95/p99 response-time limit. Порушений threshold робить run failed, тому performance objective або SLO можна перетворити на автоматичний quality gate, а не графік для ручного перегляду. Межі треба виводити з реальних requirements або узгодженого baseline, а не вибирати довільні числа, щоб CI був green.",
+      "strongAnswerSignalsUk": [
+        "визначає thresholds як metric pass/fail criteria",
+        "наводить приклади percentile latency та error rate",
+        "виводить limits із SLO, requirements або controlled baseline"
+      ],
+      "example": "A checkout gate might require `http_req_failed` below 1% and `p(95)` under the agreed latency budget. The pipeline then fails automatically if either objective is breached.",
+      "exampleUk": "Checkout gate може вимагати `http_req_failed` нижче 1% і `p(95)` менше узгодженого latency budget. Pipeline автоматично падає, якщо порушена будь-яка з цих цілей.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "k6-thresholds"],
+      "tags": ["k6", "thresholds", "slo", "ci-cd", "p95", "error-rate"]
+    },
+    {
+      "id": "performance-ci-cd-integration",
+      "level": "Senior",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Delivery",
+      "question": "How do you integrate performance testing into CI/CD without making the pipeline slow or unreliable?",
+      "shortAnswer": "Use layers. Keep a small deterministic performance smoke or regression check in frequent CI with a controlled environment, fixed workload and explicit thresholds. Run larger load, endurance or capacity tests on an appropriate schedule or pre-release environment. Store baselines and results so regressions can be compared over time, and investigate noisy environments instead of weakening gates. A binary pass/fail alone is not enough for large tests; preserve the metrics and telemetry needed for diagnosis.",
+      "strongAnswerSignals": [
+        "uses different test sizes and cadences rather than running full load on every commit",
+        "requires stable workload, environment and automated thresholds for frequent checks",
+        "stores trends and diagnostic evidence instead of relying only on a pipeline status"
+      ],
+      "questionUk": "Як інтегрувати performance testing у CI/CD, не зробивши pipeline повільним і нестабільним?",
+      "shortAnswerUk": "Використовуємо шари. У частому CI залишаємо малий deterministic performance smoke/regression check із контрольованим environment, fixed workload і explicit thresholds. Великі load, endurance або capacity tests запускаємо за доречним schedule чи в pre-release environment. Зберігаємо baselines і results для порівняння регресій у часі, а noisy environment досліджуємо замість послаблення gates. Для великих тестів одного pass/fail недостатньо — потрібні metrics і telemetry для diagnosis.",
+      "strongAnswerSignalsUk": [
+        "розділяє test sizes і cadence, а не запускає full load на кожен commit",
+        "вимагає stable workload, environment і automated thresholds для frequent checks",
+        "зберігає trends та diagnostic evidence, а не тільки pipeline status"
+      ],
+      "example": "Run a two-minute API performance regression in pull-request CI against an isolated environment, then run a representative peak-load suite nightly and an endurance test before major releases. Keep their objectives separate.",
+      "exampleUk": "Запускаємо двохвилинний API performance regression у pull-request CI на isolated environment, representative peak-load suite — nightly, а endurance test — перед major releases. Для них задаємо різні objectives.",
+      "sourceIds": ["asserthired-jmeter-interview-2026", "softwaretestpilot-performance-interview-2026", "qapractices-jmeter-interview-2026", "k6-thresholds"],
+      "tags": ["ci-cd", "performance-regression", "thresholds", "baseline", "quality-gate"]
+    },
+    {
+      "id": "performance-tool-selection",
+      "level": "Senior",
+      "prevalence": "Occasional",
+      "category": "Performance Testing",
+      "kind": "Strategy",
+      "question": "How do you choose a performance-testing tool?",
+      "shortAnswer": "Start with the system and test objective, not popularity. Check protocol support, workload model, expected scale, scripting and correlation needs, test-data handling, distributed execution, CI integration, result export and observability integration, team skills, licensing and operational constraints. Prove the candidate with a representative script and measure the injector's own capacity before committing to it.",
+      "strongAnswerSignals": [
+        "selects from protocol, workload and scale requirements",
+        "considers scripting, CI, reporting, distributed execution and team constraints",
+        "runs a proof of concept and measures generator capacity"
+      ],
+      "questionUk": "Як ви обираєте performance-testing tool?",
+      "shortAnswerUk": "Починаємо із system і test objective, а не популярності. Перевіряємо protocol support, workload model, expected scale, scripting і correlation needs, test-data handling, distributed execution, CI integration, result export та observability integration, team skills, licensing і operational constraints. Перед остаточним вибором робимо representative proof of concept і вимірюємо capacity самого injector.",
+      "strongAnswerSignalsUk": [
+        "обирає за protocol, workload та scale requirements",
+        "враховує scripting, CI, reporting, distributed execution і team constraints",
+        "робить proof of concept і вимірює generator capacity"
+      ],
+      "example": "For a Python-heavy team testing HTTP APIs with user-behavior tasks, Locust may fit well; for a code-first JavaScript workflow with arrival-rate executors and native thresholds, k6 may fit better; for a mature JMeter estate with broad protocol needs, replacing it may add no value. The decision comes from requirements.",
+      "exampleUk": "Для Python-heavy команди, яка тестує HTTP APIs через user-behavior tasks, може добре підійти Locust; для code-first JavaScript workflow з arrival-rate executors і native thresholds — k6; для mature JMeter estate з широкими protocol needs заміна може не мати сенсу. Рішення йде від requirements.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "istqb-performance-testing-2018", "jmeter-best-practices", "k6-scenarios", "locust-configuration"],
+      "tags": ["tool-selection", "jmeter", "k6", "locust", "strategy"]
+    },
+    {
+      "id": "performance-load-generator-bottleneck",
+      "level": "Senior",
+      "prevalence": "Occasional",
+      "category": "Performance Testing",
+      "kind": "Scenario",
+      "question": "How do you prove that the load generator is not the bottleneck?",
+      "shortAnswer": "Monitor generator CPU, memory, network, process limits and achieved request rate while increasing load. Use lightweight execution modes and remove expensive listeners or script work. If the injector saturates before the target, scale it vertically or horizontally and repeat. A healthy target with an injector pinned at CPU or unable to reach the requested arrival rate is an invalid capacity conclusion about the system under test.",
+      "strongAnswerSignals": [
+        "monitors injector resources and achieved traffic",
+        "uses efficient CLI/headless execution",
+        "scales generators and reruns before blaming the target"
+      ],
+      "questionUk": "Як довести, що load generator не є bottleneck?",
+      "shortAnswerUk": "Моніторимо generator CPU, memory, network, process limits і фактичний request rate під час росту load. Використовуємо lightweight execution mode і прибираємо дорогі listeners або зайву роботу в script. Якщо injector saturates раніше за target, масштабуємо його vertical/horizontal і повторюємо тест. Healthy target при injector, який уперся в CPU або не досягає requested arrival rate, не дає валідного висновку про capacity SUT.",
+      "strongAnswerSignalsUk": [
+        "моніторить injector resources і achieved traffic",
+        "використовує efficient CLI/headless execution",
+        "масштабує generators і повторює тест до висновку про target"
+      ],
+      "example": "If requested traffic rises from 1,000 to 1,500 RPS but actual traffic stays at 1,050 RPS while generator CPU is near saturation, add generator capacity before concluding that the application tops out at 1,050 RPS.",
+      "exampleUk": "Якщо requested traffic росте з 1,000 до 1,500 RPS, але actual traffic залишається 1,050 RPS, а generator CPU біля saturation, спочатку додаємо generator capacity і лише потім робимо висновок про application limit.",
+      "sourceIds": ["asserthired-jmeter-interview-2026", "artoftesting-jmeter-interview", "jmeter-best-practices", "jmeter-distributed-testing", "locust-distributed"],
+      "tags": ["load-generator", "injector", "capacity", "distributed-testing", "validity"]
+    },
+    {
+      "id": "performance-entry-exit-criteria",
+      "level": "Senior",
+      "prevalence": "Occasional",
+      "category": "Performance Testing",
+      "kind": "Planning",
+      "question": "What entry and exit criteria would you define for a performance test?",
+      "shortAnswer": "Entry criteria establish that the test can produce trustworthy evidence: a deployable build, stable and understood environment, representative data, validated scripts, known workload profile, monitoring, synchronized clocks where needed and sufficient load-generator capacity. Exit criteria are measurable objectives such as percentile latency, throughput, error rate, resource or saturation limits, stability and recovery expectations, plus a rule for unresolved anomalies. The numbers must come from requirements, SLOs, risk or an agreed baseline.",
+      "strongAnswerSignals": [
+        "entry criteria protect test validity and observability",
+        "exit criteria are quantitative and tied to an explicit workload",
+        "does not invent SLA numbers without a source"
+      ],
+      "questionUk": "Які entry та exit criteria ви визначите для performance test?",
+      "shortAnswerUk": "Entry criteria підтверджують, що тест може дати довірливі evidence: deployable build, stable і зрозумілий environment, representative data, validated scripts, відомий workload profile, monitoring, synchronized clocks за потреби та достатня load-generator capacity. Exit criteria — вимірювані objectives: percentile latency, throughput, error rate, resource/saturation limits, stability і recovery expectations, а також правило для unresolved anomalies. Числа мають походити з requirements, SLO, risk або agreed baseline.",
+      "strongAnswerSignalsUk": [
+        "entry criteria захищають validity тесту та observability",
+        "exit criteria кількісні й прив'язані до explicit workload",
+        "не вигадує SLA numbers без джерела"
+      ],
+      "example": "Do not state 'p95 under 500 ms' unless that 500 ms is an actual requirement or agreed baseline-derived gate. The criterion is meaningful only together with the traffic level and scenario it applies to.",
+      "exampleUk": "Не заявляємо 'p95 under 500 ms', якщо 500 ms не є реальною requirement або agreed baseline-derived gate. Criterion має сенс лише разом із traffic level і scenario, до яких він застосовується.",
+      "sourceIds": ["gfg-performance-interview-2026", "asserthired-jmeter-interview-2026", "istqb-performance-testing-2018", "k6-thresholds"],
+      "tags": ["entry-criteria", "exit-criteria", "slo", "requirements", "test-plan"]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 import common from "./common-qa.json";
 import canonical from "./canonical-baseline.json";
+import performanceTestingCore from "./performance-testing-core-qa.json";
+import performanceTestingPractical from "./performance-testing-practical-qa.json";
 import databaseSql from "./database-sql-qa.json";
 import restApi from "./rest-api-qa.json";
 import websocket from "./websocket-qa.json";
@@ -19,10 +21,12 @@ import expanded from "./expanded-qa.json";
 import sourceRefresh from "./source-refresh-qa.json";
 import baseSources from "./sources.json";
 import sourceRefreshSources from "./source-refresh-sources.json";
+import performanceTestingSources from "./performance-testing-sources.json";
 import sourceEvidence from "./source-evidence-overrides.json";
 import topicTaxonomy from "./taxonomy.json";
 import domains from "./domains.json";
 import subtopics from "./subtopics.json";
+import performanceTestingSubtopics from "./performance-testing-subtopics.json";
 import { interviewDomainRouteFromPathname } from "./domain-routes";
 
 const sourceEvidenceById = new Map(sourceEvidence.map((item) => [item.id, item]));
@@ -47,7 +51,19 @@ type SubtopicConfig = {
   fallback: string;
 };
 
-const subtopicDomains = subtopics.domains as Record<string, SubtopicConfig>;
+const subtopicDomains: Record<string, SubtopicConfig> = {
+  ...(subtopics.domains as Record<string, SubtopicConfig>),
+  "Performance Testing": performanceTestingSubtopics as SubtopicConfig,
+};
+
+// The authored files remain a self-contained Performance Testing source set, while the
+// assembled interview catalog keeps the project's canonical 20-topic taxonomy intact.
+// The existing Performance and resilience topic is routed to the dedicated top-level
+// Performance Testing domain in domains.json.
+const researchedPerformanceQuestions = [
+  ...performanceTestingCore.questions,
+  ...performanceTestingPractical.questions,
+].map((question) => ({ ...question, category: "Performance and resilience" }));
 
 function applySourceEvidence<T extends { id: string; sourceIds: string[]; prevalence: string }>(question: T): T {
   const evidence = sourceEvidenceById.get(question.id);
@@ -98,6 +114,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
 const allQuestions = [
   ...common.questions,
   ...canonical.questions,
+  ...researchedPerformanceQuestions,
   ...databaseSql.questions,
   ...restApi.questions,
   ...websocket.questions,
@@ -113,7 +130,7 @@ const allQuestions = [
   ...sourceRefresh.questions,
 ].map(applySourceEvidence).map(applySqlCodeExamples).map(applySqlInterviewAudit);
 
-const sources = [...baseSources, ...sourceRefreshSources];
+const sources = [...baseSources, ...sourceRefreshSources, ...performanceTestingSources];
 
 function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean) {
   const selectedDomain = domains.taxonomy.find((item) => item.id === requestedDomainId && item.category)
@@ -140,15 +157,15 @@ function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean
     : topicTaxonomy;
 
   return {
-    version: 18,
+    version: 19,
     title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
     description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
-    lastReviewedAt: "2026-08-24",
+    lastReviewedAt: "2026-09-05",
     methodology: {
-      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
-      answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
+      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. Performance-testing coverage additionally cross-checks current GeeksforGeeks, SoftwareTestPilot, AssertHired, QAPractices and ArtOfTesting question banks before an interview intent is promoted to the canonical catalog. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
+      answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Performance-testing answers are validated against the ISTQB Performance Testing syllabus and current Apache JMeter, Grafana k6 and Locust documentation where relevant. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
       publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
-      prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple DOU collections or several specialist pages from one publisher cannot inflate prevalence. Very common remains reserved for repeatedly recurring foundations; generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
+      prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple pages from one publisher cannot inflate prevalence. Performance-testing Very common questions are limited to intents repeatedly visible across independent current banks; tool-specific or narrower questions remain Common or Occasional unless recurrence justifies promotion. Generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
       media: "Original diagrams and properly licensed images are stored with the site. Every image requires alternative text, a caption and source credit."
     },
     taxonomy: scopedTopicTaxonomy,

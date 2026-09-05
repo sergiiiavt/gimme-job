@@ -15,6 +15,7 @@ const interviewDomains = [
   { id: "automation-qa", label: routeById.get("automation-qa")?.switcherLabel ?? "Automation", href: routeById.get("automation-qa")?.path ?? "/interview/automation" },
   { id: "sql-databases", label: routeById.get("sql-databases")?.switcherLabel ?? "SQL / DB", href: routeById.get("sql-databases")?.path ?? "/interview/sql" },
   { id: "web-api", label: routeById.get("web-api")?.switcherLabel ?? "Web / API", href: routeById.get("web-api")?.path ?? "/interview/web-api" },
+  { id: "performance-testing", label: routeById.get("performance-testing")?.switcherLabel ?? "Performance", href: routeById.get("performance-testing")?.path ?? "/interview/performance" },
   { id: "mobile", label: routeById.get("mobile")?.switcherLabel ?? "Mobile", href: routeById.get("mobile")?.path ?? "/interview/mobile" },
   { id: "embedded-iot", label: routeById.get("embedded-iot")?.switcherLabel ?? "Embedded", href: routeById.get("embedded-iot")?.path ?? "/interview/embedded-iot" },
   { id: "ai-llm", label: routeById.get("ai-llm")?.switcherLabel ?? "AI / LLM", href: routeById.get("ai-llm")?.path ?? "/interview/ai-llm" },
