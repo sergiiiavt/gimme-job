@@ -38,6 +38,11 @@ const UK_DOMAIN_COPY = {
     title: "Web та API Testing: питання для співбесіди",
     description: "Практичні питання з Web та API testing українською: HTTP, REST, contracts, authentication, integrations, browser behavior, service failures і data flows.",
   },
+  performance: {
+    label: "Performance Testing",
+    title: "Performance Testing: питання для співбесіди",
+    description: "Практичні питання з performance testing українською: workload modelling, load і stress testing, percentiles, throughput, JMeter, k6, distributed load generation, bottleneck analysis, endurance, spike testing і CI performance gates.",
+  },
   mobile: {
     label: "Mobile",
     title: "Mobile Testing: питання для співбесіди",
