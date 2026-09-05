@@ -4,7 +4,7 @@ import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
-export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news" | "rewild";
+export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
 export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground";
 
 interface SectionNavigationItem {
@@ -121,7 +121,6 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
     label: "Misc",
     items: [
       { id: "news", label: "News" },
-      { id: "rewild", label: "Fight AI slop" },
     ],
   },
 ];
@@ -502,8 +501,6 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
       return <svg {...props}><path d="M7 7h10a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4zM8 10l-2 2 2 2M16 10l2 2-2 2M10 15l4-6"/></svg>;
     case "news":
       return <svg {...props}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5M8 18h8"/></svg>;
-    case "rewild":
-      return <svg {...props}><path d="m12 3 1.4 4.2L18 8.5l-3.5 2.7L15 16l-3-2-3 2 .5-4.8L6 8.5l4.6-1.3zM5 17l.6 1.4L7 19l-1.4.6L5 21l-.6-1.4L3 19l1.4-.6z"/></svg>;
     default:
       return <svg {...props}><circle cx="12" cy="12" r="8"/></svg>;
   }
@@ -569,6 +566,12 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
               {group.id === "learning" ? renderLearningItems(group.items) : (
                 <div>
                   {group.items.map((item) => renderItem(item))}
+                  {group.id === "misc" && (
+                    <div aria-disabled="true" className="kb-nav-link" style={{ cursor: "default", opacity: 0.55, pointerEvents: "none" }} title="Next game">
+                      <span aria-hidden="true" className="kb-nav-icon">○</span>
+                      <span className="kb-nav-label">Next game</span>
+                    </div>
+                  )}
                 </div>
               )}
             </section>

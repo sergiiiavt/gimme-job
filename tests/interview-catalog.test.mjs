@@ -220,7 +220,7 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, gameSource, privateJobsSource] = await Promise.all([
+  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, privateJobsSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/site-navigation.tsx"), "utf8"),
@@ -229,7 +229,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
     readFile(projectFile("app/resume-page.tsx"), "utf8"),
     readFile(projectFile("app/about-site.tsx"), "utf8"),
     readFile(projectFile("app/about-site-content.ts"), "utf8"),
-    readFile(projectFile("app/rewild-game.tsx"), "utf8"),
     readFile(projectFile("app/page.tsx"), "utf8"),
   ]);
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
@@ -288,21 +287,18 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(routeSource, /interview-stars/);
   assert.match(stylesSource, /\.iq-star-icon\.active \{/);
 
-  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Fight AI slop"]) {
+  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
   assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "ai-assistant"[\s\S]*?id: "trends"/);
   assert.match(navigationSource, /id: "learning",[\s\S]*?label: "Learning path"/);
-  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "rewild"/);
+  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"/);
   assert.match(stylesSource, /\.kb-area-group-career/);
   assert.match(stylesSource, /\.kb-area-group-learning/);
   assert.match(stylesSource, /\.kb-area-group-misc/);
   assert.match(stylesSource, /\.kb-nav-intro/);
   assert.match(stylesSource, /\.kb-navigation \.kb-nav-list \.kb-nav-link \{[^}]*font-size: 12px/);
   assert.match(stylesSource, /\.about-tech-purpose-card p \{[^}]*font-size: 11px/);
-  assert.match(stylesSource, /\.rw-controls p \{[^}]*font-size: 12px/);
-  assert.match(stylesSource, /\.rw-guide-grid p \{[^}]*font-size: 12px/);
-  assert.match(stylesSource, /\.rw-guide-list p \{[^}]*font-size: 11px/);
   assert.doesNotMatch(privateJobsSource, /company-mark/);
   assert.doesNotMatch(uiSource, /kb-company-mark/);
   assert.doesNotMatch(stylesSource, /\.job-card\s*\{[^}]*grid-template-columns:\s*\d+px/);
@@ -328,10 +324,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.ok(navigationSource.indexOf('id: "certifications"') < navigationSource.indexOf('id: "llm"'), "Certs & Trainings must lead the Learning path.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
   assert.ok(navigationSource.indexOf('id: "standards"') < navigationSource.indexOf('id: "strategy"'), "Strategy & leadership must be the final Learning path item.");
-  assert.ok(navigationSource.indexOf('id: "news"') < navigationSource.indexOf('id: "rewild"'), "Fight AI slop must be the final section above the view switch.");
   assert.match(uiSource, /if \(section === "about"\) return <AboutSite mode=\{mode\}\/>/);
   assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
-  assert.match(uiSource, /const hideSecondary = section === "about" \|\| section === "resume" \|\| section === "rewild"/);
   assert.match(uiSource, /const section = useMemo\(\(\) => resolveSection\(pathname, hash\), \[pathname, hash\]\)/);
   assert.match(aboutSource, /View source on GitHub/);
   assert.match(aboutSource, /const interviewHref = sectionNavigationHref\("interview", mode\)/);
@@ -352,8 +346,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(aboutSource, /skills showcase/i);
   assert.doesNotMatch(aboutSource, /researched QA questions/);
   assert.doesNotMatch(aboutSource, /about-hero/);
-  assert.match(gameSource, /How to fight AI slop/);
-  assert.doesNotMatch(gameSource, /How to kill AI slop|Kill the feed/);
   assert.match(resumeSource, /fetch\("\/api\/settings"\)/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.phone/);
   assert.match(resumeSource, /mode === "personal" && contact\?\.email/);

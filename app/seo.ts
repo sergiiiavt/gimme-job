@@ -152,7 +152,6 @@ export const PUBLIC_SITEMAP_PATHS = [
   "/interview/ai-llm",
   "/trends",
   "/news",
-  "/fight-ai-slop",
   ...UKRAINIAN_SITEMAP_PATHS,
   ...Object.values(LEARNING_SEO).map((page) => page.path),
   ...Object.values(REFERENCE_SEO).map((page) => page.path),

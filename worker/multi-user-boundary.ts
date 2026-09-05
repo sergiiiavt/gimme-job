@@ -47,7 +47,6 @@ const CANONICAL_RETURN_PATHS = new Set([
   "/interview/python",
   "/trends",
   "/news",
-  "/fight-ai-slop",
 ]);
 
 function readCookie(request: Request, name: string): string | null {
@@ -112,7 +111,6 @@ function legacyCanonicalPath(url: URL): string | null {
     "/learn/interview": "/interview",
     "/learn/trends": "/trends",
     "/learn/news": "/news",
-    "/learn/rewild": "/fight-ai-slop",
     "/workspace/learn/qa-fundamentals": "/learn/qa-fundamentals",
     "/workspace/learn/programming": "/learn/programming",
     "/workspace/learn/automation": "/learn/automation",
@@ -147,7 +145,6 @@ function legacyCanonicalPath(url: URL): string | null {
     agentic: "/learn/agentic",
     standards: "/learn/standards",
     news: "/news",
-    rewild: "/fight-ai-slop",
   };
   return section ? sectionRoutes[section] ?? "/about" : "/about";
 }

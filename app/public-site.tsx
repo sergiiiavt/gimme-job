@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import AboutSite from "./about-site";
@@ -8,7 +8,6 @@ import ResumePage from "./resume-page";
 import { sectionFromPathname, sectionNavigationHref } from "./navigation-paths";
 import { hiddenDeepLinkSections, navigationItems, type SecondarySwitcher, SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 
-const RewildGame = lazy(() => import("./rewild-game"));
 
 type PublicSection = SiteSection;
 type SiteMode = "public" | "personal";
@@ -293,7 +292,7 @@ function StructuredAnswer({ value }: { value: string }) {
   );
 }
 
-const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "rewild" | "programming" | "python-interview" | "automation">, {
+const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "programming" | "python-interview" | "automation">, {
   title: string;
   description: string;
   items: Array<{ title: string; copy: string; tags: string[] }>;
@@ -523,12 +522,6 @@ function curriculumSubnav(curriculum: LearningCurriculum | null): SubnavItem[] {
 function secondaryNavigation(section: PublicSection, interviewCatalog: InterviewCatalog | null, pythonInterviewCatalog: InterviewCatalog | null, pythonCurriculum: LearningCurriculum | null, automationCurriculum: LearningCurriculum | null, programmingTrack: ProgrammingTrack, automationTrack: AutomationTrack): SubnavItem[] {
   if (section === "about" || section === "resume" || section === "jobs") return [];
 
-  if (section === "rewild") {
-    return [
-      { id: "all", label: "Fight AI slop" },
-      { id: "guide", label: "Field guide" },
-    ];
-  }
 
   if (section === "interview") {
     if (!interviewCatalog) return [{ id: "all", label: "Loading catalog…" }];
@@ -712,14 +705,12 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
     : section === "automation" && automationTrack === "test-architecture"
       ? "Test Architecture track"
       : undefined;
-  const hideSecondary = section === "about" || section === "resume" || section === "rewild" || section === "jobs";
-  const isFullScreenGame = section === "rewild" && subsection === "all";
+  const hideSecondary = section === "about" || section === "resume" || section === "jobs";
   const publicHref = sectionNavigationHref(section, "public");
   const personalHref = sectionNavigationHref(section, "personal");
 
   return (
-    <main className={`kb-shell${isFullScreenGame ? " kb-shell-game" : ""}`}>
-      {!isFullScreenGame && (
+    <main className="kb-shell">
         <SiteSidebar
           activeSection={section}
           activeSubsection={subsection}
@@ -735,17 +726,16 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
           secondarySwitcher={secondarySwitcher}
           secondaryTitle={activeLabel}
         />
-      )}
 
-      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}${isFullScreenGame ? " kb-main-game" : ""}`}>
+      <section className={`kb-main${hideSecondary ? " kb-main-compact-nav" : ""}`}>
         <button
-          aria-expanded={isFullScreenGame ? undefined : mobileNav}
-          aria-label={isFullScreenGame ? "Exit game and return to the site" : "Toggle navigation"}
+          aria-expanded={mobileNav}
+          aria-label="Toggle navigation"
           className="kb-floating-menu"
-          onClick={isFullScreenGame ? () => openSection("about") : () => setMobileNav((value) => !value)}
+          onClick={() => setMobileNav((value) => !value)}
           type="button"
         >
-          {isFullScreenGame ? "Exit game" : "☰"}
+          ☰
         </button>
 
         {section === "jobs" ? (
@@ -864,13 +854,6 @@ function KnowledgeSection({ activeTopic, automationCurriculum, automationCurricu
     return <LearningPath activeTopic={activeTopic} curriculum={automationCurriculum} onTopicChange={onTopicChange} title="Test automation learning path"/>;
   }
 
-  if (section === "rewild") {
-    return (
-      <Suspense fallback={<div className="rw-play-page"><div className="kb-empty rw-loading"><strong>Loading the anti-slop defenses…</strong><span>The game is loaded separately from the rest of the site.</span></div></div>}>
-        <RewildGame onViewChange={onTopicChange} view={activeTopic}/>
-      </Suspense>
-    );
-  }
 
   const content = knowledge[section];
   const visibleItems = activeTopic === "all" ? content.items : content.items.filter((item) => topicId(item.title) === activeTopic);
