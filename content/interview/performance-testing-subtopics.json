@@ -1,0 +1,30 @@
+{
+  "taxonomy": [
+    { "id": "performance-fundamentals", "label": "Fundamentals & test types", "category": "Fundamentals & test types", "description": "Performance-testing purpose, load, stress, spike, endurance, scalability, volume and performance engineering." },
+    { "id": "performance-workload", "label": "Workload modelling", "category": "Workload modelling", "description": "Operational profiles, concurrency, arrival rates, throughput, ramp-up, pacing, think time and realistic traffic mixes." },
+    { "id": "performance-metrics", "label": "Metrics & objectives", "category": "Metrics & objectives", "description": "Latency, percentiles, throughput, errors, baselines, SLOs, thresholds and quantitative acceptance criteria." },
+    { "id": "performance-scripting", "label": "Scripting & test data", "category": "Scripting & test data", "description": "Parameterization, correlation, dynamic values, unique data, correctness checks and reusable performance flows." },
+    { "id": "performance-tools", "label": "JMeter, k6 & Locust", "category": "JMeter, k6 & Locust", "description": "Load-generator structure, CLI execution, scenarios, executors, thresholds and practical tool usage." },
+    { "id": "performance-distributed", "label": "Distributed load generation", "category": "Distributed load generation", "description": "Injector capacity, controller/worker topology, scaling generators and validating produced load." },
+    { "id": "performance-diagnostics", "label": "Bottlenecks & diagnosis", "category": "Bottlenecks & diagnosis", "description": "Correlating client results with CPU, memory, pools, queues, databases, networks and downstream telemetry." },
+    { "id": "performance-reliability", "label": "Reliability & recovery", "category": "Reliability & recovery", "description": "Long-running stability, overload behavior, failover, graceful degradation, recovery and resource leaks." },
+    { "id": "performance-client", "label": "Client & browser performance", "category": "Client & browser performance", "description": "Browser and client-side performance, Core Web Vitals, lab measurement and field telemetry." },
+    { "id": "performance-delivery", "label": "CI/CD & regression", "category": "CI/CD & regression", "description": "Performance regression checks, automated gates, trend baselines, repeatability and release evidence." }
+  ],
+  "rules": [
+    { "target": "Client & browser performance", "any": ["core web vitals", "lcp", "inp", "cls", "browser performance", "client-side", "real user monitoring", "rum"] },
+    { "target": "Distributed load generation", "any": ["distributed", "load generator", "load-generator", "injector", "worker", "master", "controller node", "remote mode"] },
+    { "target": "JMeter, k6 & Locust", "any": ["jmeter", "k6", "locust", "thread group", "sampler", "listener", "non-gui", "cli mode", "executor"] },
+    { "target": "Scripting & test data", "any": ["correlation", "parameterization", "parameterisation", "csv", "dynamic value", "token", "test data", "script", "extractor", "session id"] },
+    { "target": "CI/CD & regression", "any": ["ci/cd", "pipeline", "performance regression", "quality gate", "regression gate", "nightly", "release gate"] },
+    { "target": "Reliability & recovery", "any": ["resilien", "recovery", "failover", "fault", "chaos", "circuit breaker", "degradation", "endurance", "soak", "memory leak", "resource leak", "spike", "breaking point"] },
+    { "target": "Bottlenecks & diagnosis", "any": ["bottleneck", "profil", "tuning", "cpu", "memory", "garbage collection", "database", "connection pool", "thread pool", "queue", "disk", "network", "saturation", "root cause"] },
+    { "target": "Metrics & objectives", "any": ["metric", "percentile", "p90", "p95", "p99", "latency", "response time", "error rate", "slo", "sla", "threshold", "baseline", "benchmark"] },
+    { "target": "Workload modelling", "any": ["workload", "operational profile", "traffic mix", "concurrent", "virtual user", "vus", "arrival rate", "throughput", "rps", "tps", "ramp-up", "ramp up", "think time", "pacing", "session duration"] }
+  ],
+  "fallbackByCategory": {
+    "Performance and resilience": "Fundamentals & test types",
+    "Performance Testing": "Fundamentals & test types"
+  },
+  "fallback": "Fundamentals & test types"
+}
