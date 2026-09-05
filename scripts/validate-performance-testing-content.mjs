@@ -55,15 +55,15 @@ for (const question of questions) {
 const technicallyValidated = questions.filter((question) => question.sourceIds.some((sourceId) => officialSources.has(sourceId)));
 assert.ok(technicallyValidated.length >= 21, `At least 21 of 22 performance questions must cite a primary technical source; found ${technicallyValidated.length}.`);
 
-assert.equal(domains.categoryToDomain["Performance and resilience"], "Performance Testing", "Existing performance/resilience questions must move into the dedicated performance domain.");
-assert.equal(domains.categoryToDomain["Performance Testing"], "Performance Testing", "Authored performance questions must resolve to the performance domain before canonical topic normalization.");
+assert.equal(domains.categoryToDomain["Performance and resilience"], "Performance Testing", "The canonical performance/resilience topic must route into the dedicated performance domain.");
+assert.equal(Object.prototype.hasOwnProperty.call(domains.categoryToDomain, "Performance Testing"), false, "Top-level interview domains must not create an extra canonical topic category.");
 assert.ok(domains.taxonomy.some((domain) => domain.id === "performance-testing" && domain.category === "Performance Testing"), "Performance Testing must be a top-level interview domain.");
 assert.ok(subtopics.taxonomy.length >= 8, "Performance interview navigation needs methodical subtopic coverage.");
 
 assert.equal(learning.chapters.length, 8, "Performance learning path must contain the eight reviewed methodical chapters.");
 assert.ok(learning.sources.length >= 10, "Performance learning path must use a broad primary-source set.");
 assert.ok(learning.sources.every((source) => source.kind.startsWith("Official")), "Learning-path sources must be primary official documentation or an official syllabus.");
-const learningSourceIds = new Set(learning.sources.map((source) => source.id));
+const learningSourceIds = new Set(learning.sources.map((source) => [source.id, source]));
 const combinedMarkdown = learning.chapters.map((chapter) => chapter.markdown).join("\n\n");
 for (const chapter of learning.chapters) {
   assert.ok(chapter.markdown?.trim().length >= 1500, `Performance learning chapter is too shallow: ${chapter.id}`);
