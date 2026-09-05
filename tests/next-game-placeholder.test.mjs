@@ -4,7 +4,9 @@ import test from "node:test";
 
 const navigationSource = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");
 
-test("sidebar keeps one inert next-game placeholder", () => {
-  assert.equal((navigationSource.match(/title="Next game"/g) ?? []).length, 1);
-  assert.match(navigationSource, /aria-disabled="true"[\s\S]*?<span className="kb-nav-label">Next game<\/span>/);
+test("sidebar replaces the inert next-game placeholder with one Games link", () => {
+  assert.doesNotMatch(navigationSource, /title="Next game"/);
+  assert.doesNotMatch(navigationSource, /aria-disabled="true"[\s\S]*?Next game/);
+  assert.equal((navigationSource.match(/id: "games"/g) ?? []).length, 1);
+  assert.match(navigationSource, /label: "Games"[\s\S]*?publicHref: "\/games"[\s\S]*?personalHref: "\/games"/);
 });
