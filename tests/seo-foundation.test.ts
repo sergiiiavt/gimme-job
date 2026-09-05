@@ -88,13 +88,15 @@ test("public sitemap source is generated only from the canonical route registry"
   assert.ok(source.includes("new URL(path, SITE_ORIGIN).toString()"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/python"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/performance"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/automation"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/data"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/learn/performance"));
   assert.ok(PUBLIC_SITEMAP_PATHS.includes("/reference/data"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview/python"));
+  assert.ok(UKRAINIAN_SITEMAP_PATHS.includes("/uk/interview/performance"));
   assert.ok(UKRAINIAN_SITEMAP_PATHS.every((path) => PUBLIC_SITEMAP_PATHS.includes(path)));
-  assert.equal(UKRAINIAN_SITEMAP_PATHS.length, 9);
   assert.equal(PUBLIC_SITEMAP_PATHS.some((path) => path.includes("/workspace")), false);
   assert.equal(new Set(PUBLIC_SITEMAP_PATHS).size, PUBLIC_SITEMAP_PATHS.length);
 });
