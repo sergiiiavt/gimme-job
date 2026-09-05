@@ -63,7 +63,7 @@ assert.ok(subtopics.taxonomy.length >= 8, "Performance interview navigation need
 assert.equal(learning.chapters.length, 8, "Performance learning path must contain the eight reviewed methodical chapters.");
 assert.ok(learning.sources.length >= 10, "Performance learning path must use a broad primary-source set.");
 assert.ok(learning.sources.every((source) => source.kind.startsWith("Official")), "Learning-path sources must be primary official documentation or an official syllabus.");
-const learningSourceIds = new Set(learning.sources.map((source) => [source.id, source]));
+const learningSourceIds = new Set(learning.sources.map((source) => source.id));
 const combinedMarkdown = learning.chapters.map((chapter) => chapter.markdown).join("\n\n");
 for (const chapter of learning.chapters) {
   assert.ok(chapter.markdown?.trim().length >= 1500, `Performance learning chapter is too shallow: ${chapter.id}`);
