@@ -1,0 +1,255 @@
+{
+  "description": "Canonical performance-testing interview questions retained only when the interview intent is present in independent published question banks and the answer can be checked against primary technical sources.",
+  "questions": [
+    {
+      "id": "performance-testing-purpose",
+      "level": "Junior",
+      "prevalence": "Very common",
+      "category": "Performance Testing",
+      "kind": "Theory",
+      "question": "What is performance testing, and what are you trying to learn from it?",
+      "shortAnswer": "Performance testing evaluates how a system behaves under a defined workload. The useful outcome is not merely a response-time number: it is evidence about responsiveness, throughput, stability, resource use and capacity against explicit objectives, together with enough telemetry to explain where limits or regressions come from.",
+      "strongAnswerSignals": [
+        "defines a workload and measurable objectives",
+        "covers responsiveness, throughput, stability and capacity",
+        "treats diagnosis as part of the result rather than reporting a single average"
+      ],
+      "questionUk": "Що таке performance testing і що саме ми намагаємося з нього дізнатися?",
+      "shortAnswerUk": "Performance testing перевіряє, як система поводиться під визначеним навантаженням. Корисний результат — не просто одне число response time, а докази щодо швидкодії, throughput, стабільності, використання ресурсів і місткості системи відносно явних цілей, плюс телеметрія, яка допомагає пояснити причину обмеження або регресії.",
+      "strongAnswerSignalsUk": [
+        "визначає workload і вимірювані цілі",
+        "охоплює responsiveness, throughput, stability і capacity",
+        "розглядає діагностику як частину результату, а не звіт лише про середнє"
+      ],
+      "example": "For a checkout API, define the expected traffic mix and require p95 latency below the agreed limit with an acceptable error rate. During the run, collect application, database and infrastructure telemetry so a failed target can be explained rather than merely observed.",
+      "exampleUk": "Для checkout API задаємо очікуваний traffic mix і вимогу, щоб p95 latency залишався нижче узгодженої межі при прийнятному error rate. Під час прогону збираємо application, database та infrastructure telemetry, щоб порушення цілі можна було пояснити, а не лише зафіксувати.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["performance-testing", "responsiveness", "throughput", "capacity", "fundamentals"]
+    },
+    {
+      "id": "performance-test-types",
+      "level": "Junior",
+      "prevalence": "Very common",
+      "category": "Performance Testing",
+      "kind": "Theory",
+      "question": "What types of performance testing do you use, and what question does each type answer?",
+      "shortAnswer": "Load testing checks behavior under anticipated realistic load. Stress testing pushes to or beyond expected limits to expose the breaking point and behavior under scarcity. Spike testing checks sudden bursts and recovery to a steady state. Endurance or soak testing checks long-running stability and resource leaks. Scalability testing checks whether the system can grow while meeting requirements. Volume testing focuses on large data volumes where data size itself is the pressure.",
+      "strongAnswerSignals": [
+        "distinguishes the objective of each test type",
+        "includes load, stress, spike, endurance and scalability",
+        "chooses a test type from risk rather than treating the names as synonyms"
+      ],
+      "questionUk": "Які типи performance testing ви використовуєте і на яке питання відповідає кожен тип?",
+      "shortAnswerUk": "Load testing перевіряє поведінку під очікуваним реалістичним навантаженням. Stress testing доводить систему до межі або за неї, щоб знайти breaking point і поведінку при дефіциті ресурсів. Spike testing перевіряє різкі стрибки навантаження та повернення до steady state. Endurance або soak testing перевіряє довготривалу стабільність і витоки ресурсів. Scalability testing перевіряє здатність системи масштабуватися без порушення вимог. Volume testing робить великий обсяг даних основним фактором навантаження.",
+      "strongAnswerSignalsUk": [
+        "розрізняє ціль кожного типу тесту",
+        "включає load, stress, spike, endurance і scalability",
+        "вибирає тип тесту за ризиком, а не вважає назви синонімами"
+      ],
+      "example": "A Black Friday checkout may need a normal peak-load test, a spike test for a flash promotion, and an endurance test for the sustained sale window. Those are separate questions even if the same script participates in all three runs.",
+      "exampleUk": "Для checkout на Black Friday можуть бути потрібні окремо normal peak-load test, spike test для flash promotion і endurance test на всю тривалість розпродажу. Це різні питання, навіть якщо в усіх трьох прогонах використовується той самий базовий скрипт.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["load-testing", "stress-testing", "spike-testing", "endurance-testing", "scalability-testing", "volume-testing"]
+    },
+    {
+      "id": "performance-load-vs-stress",
+      "level": "Junior",
+      "prevalence": "Very common",
+      "category": "Performance Testing",
+      "kind": "Comparison",
+      "question": "What is the difference between load testing and stress testing?",
+      "shortAnswer": "A load test asks whether the system meets its performance objectives under an anticipated realistic workload. A stress test deliberately approaches or exceeds expected limits, or reduces available resources, to discover the failure threshold, degradation behavior and recovery characteristics. The workload and the success question are therefore different even when the same transaction scripts are reused.",
+      "strongAnswerSignals": [
+        "expected workload versus limit or beyond-limit workload",
+        "SLO validation versus failure-threshold and recovery discovery",
+        "does not define stress testing as merely a bigger load test without a failure objective"
+      ],
+      "questionUk": "У чому різниця між load testing і stress testing?",
+      "shortAnswerUk": "Load test відповідає на питання, чи виконує система performance objectives під очікуваним реалістичним workload. Stress test навмисно наближає або перевищує очікувані межі чи зменшує доступні ресурси, щоб знайти поріг відмови, характер деградації та відновлення. Тому відрізняється не лише кількість користувачів, а й саме питання, на яке відповідає тест.",
+      "strongAnswerSignalsUk": [
+        "очікуваний workload проти навантаження на межі або за межею",
+        "перевірка SLO проти пошуку failure threshold і recovery",
+        "не зводить stress testing просто до більшого числа користувачів"
+      ],
+      "example": "Run checkout at the forecast peak to verify p95 and error-rate goals: load test. Then keep increasing the arrival rate until queues grow, errors rise or the service saturates, and verify that it recovers after pressure is removed: stress test.",
+      "exampleUk": "Запускаємо checkout на прогнозованому піку й перевіряємо p95 та error-rate goals — це load test. Потім підвищуємо arrival rate, доки ростуть черги, помилки або saturation, і перевіряємо recovery після зняття навантаження — це stress test.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "artoftesting-jmeter-interview", "istqb-performance-testing-2018"],
+      "tags": ["load-testing", "stress-testing", "breaking-point", "recovery"]
+    },
+    {
+      "id": "performance-key-metrics",
+      "level": "Middle",
+      "prevalence": "Very common",
+      "category": "Performance Testing",
+      "kind": "Practical",
+      "question": "Which metrics do you monitor during a performance test?",
+      "shortAnswer": "Start with user-visible outcomes: response-time distribution, throughput or request/transaction rate, and errors. Then correlate them with saturation and resource signals such as CPU, memory, garbage collection, thread or connection pools, disk and network, plus database and dependency metrics. The exact set follows the architecture and the performance objective; a client-side graph without server telemetry cannot explain the bottleneck.",
+      "strongAnswerSignals": [
+        "uses latency distribution, throughput and error rate as outcome metrics",
+        "adds resource and saturation metrics from the system under test",
+        "correlates metrics across layers instead of reading one graph in isolation"
+      ],
+      "questionUk": "Які метрики ви моніторите під час performance test?",
+      "shortAnswerUk": "Починаємо з user-visible outcomes: розподілу response time, throughput або request/transaction rate і errors. Потім корелюємо їх із saturation та resource signals: CPU, memory, garbage collection, thread/connection pools, disk, network, а також database і dependency metrics. Конкретний набір залежить від архітектури й performance objective; графік load-generator без server telemetry не пояснює bottleneck.",
+      "strongAnswerSignalsUk": [
+        "використовує latency distribution, throughput і error rate як outcome metrics",
+        "додає resource та saturation metrics системи під тестом",
+        "корелює метрики між шарами, а не читає один графік ізольовано"
+      ],
+      "example": "If p95 rises while throughput plateaus, look at application CPU, worker/thread pools, database connection pools, slow queries and downstream latency at the same timestamp. The timing correlation is what turns a symptom into a hypothesis.",
+      "exampleUk": "Якщо p95 зростає, а throughput виходить на plateau, дивимося в той самий часовий інтервал на application CPU, worker/thread pools, database connection pools, slow queries і downstream latency. Саме кореляція в часі перетворює симптом на гіпотезу.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "istqb-performance-testing-2018", "k6-thresholds"],
+      "tags": ["metrics", "latency", "throughput", "error-rate", "cpu", "memory", "saturation"]
+    },
+    {
+      "id": "performance-percentiles-vs-average",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Analysis",
+      "question": "Why do performance reports use percentiles such as p90, p95 or p99 instead of relying on average response time?",
+      "shortAnswer": "An average compresses the distribution and can hide a minority of very slow requests. A percentile answers a different question: p95 is the response-time value at or below which 95% of observations completed, while the slowest 5% are above it. Percentiles therefore make tail behavior visible and are useful for explicit service objectives, but they should still be read with throughput, error rate, sample size and the workload model.",
+      "strongAnswerSignals": [
+        "explains the percentile as a distribution boundary",
+        "recognizes that averages can hide slow tails",
+        "does not interpret p95 without workload, errors and sample context"
+      ],
+      "questionUk": "Чому в performance reports використовують percentiles на кшталт p90, p95 або p99, а не покладаються лише на average response time?",
+      "shortAnswerUk": "Average стискає весь розподіл в одне число й може приховати невелику частку дуже повільних запитів. Percentile відповідає на інше питання: p95 — це значення response time, не вище якого завершилися 95% спостережень, а 5% були повільнішими. Тому percentiles показують tail behavior і зручні для явних service objectives, але їх усе одно треба читати разом із throughput, error rate, sample size і workload model.",
+      "strongAnswerSignalsUk": [
+        "пояснює percentile як межу розподілу",
+        "розуміє, що average може приховувати повільний tail",
+        "не інтерпретує p95 без контексту workload, errors і sample size"
+      ],
+      "example": "Ten very slow requests can be diluted by thousands of fast ones in the average. A p99 target exposes whether the slow tail violates an agreed latency budget even when the mean still looks healthy.",
+      "exampleUk": "Десять дуже повільних запитів можуть майже не змінити average серед тисяч швидких. p99 target показує, чи slow tail порушує узгоджений latency budget, навіть коли mean виглядає нормально.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "artoftesting-jmeter-interview", "k6-thresholds"],
+      "tags": ["percentiles", "p90", "p95", "p99", "tail-latency", "average"]
+    },
+    {
+      "id": "performance-latency-vs-response-time",
+      "level": "Junior",
+      "prevalence": "Occasional",
+      "category": "Performance Testing",
+      "kind": "Comparison",
+      "question": "How do latency and response time differ in a performance test?",
+      "shortAnswer": "Use the tool's metric definition rather than assuming every product uses the words identically. Conceptually, latency usually refers to delay before useful response data begins to arrive, while end-to-end response time covers the full measured request-to-response interval. For an interview answer, define the measurement boundary explicitly and then name the actual metric your tool records.",
+      "strongAnswerSignals": [
+        "defines the measurement boundary instead of using vague synonyms",
+        "recognizes tool-specific terminology",
+        "connects the metric to what the user or protocol actually experiences"
+      ],
+      "questionUk": "Чим latency відрізняється від response time у performance test?",
+      "shortAnswerUk": "Треба дивитися на точне визначення метрики в конкретному інструменті, а не припускати, що всі продукти однаково використовують ці слова. Концептуально latency зазвичай описує затримку до початку надходження корисної відповіді, а end-to-end response time — повний виміряний інтервал request-to-response. На співбесіді варто явно назвати measurement boundary і конкретну метрику інструмента.",
+      "strongAnswerSignalsUk": [
+        "визначає measurement boundary, а не використовує нечіткі синоніми",
+        "враховує tool-specific terminology",
+        "пов'язує метрику з тим, що реально відчуває користувач або протокол"
+      ],
+      "example": "If a tool separates time-to-first-byte from total HTTP duration, say exactly which one you are discussing. That prevents a team from comparing two numbers with different start or end points.",
+      "exampleUk": "Якщо інструмент окремо показує time-to-first-byte і total HTTP duration, прямо називаємо, про яку метрику йдеться. Це не дає команді порівнювати два числа з різними початковими або кінцевими точками вимірювання.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "gfg-performance-interview-2026"],
+      "tags": ["latency", "response-time", "measurement"]
+    },
+    {
+      "id": "performance-realistic-workload-model",
+      "level": "Senior",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Test design",
+      "question": "How do you design a realistic load-test workload?",
+      "shortAnswer": "Derive the model from production or business evidence: important user journeys, their traffic mix, arrival or transaction rates, concurrency, session length, think time or pacing, data distribution, peak shape and test duration. Represent ramp-up, steady state and ramp-down intentionally, and decide whether a user-count model or an arrival-rate model matches the real traffic. Validate the generated throughput during the run; configured virtual users alone do not prove that the intended workload was produced.",
+      "strongAnswerSignals": [
+        "starts from operational traffic and business journeys",
+        "models traffic mix, timing, data and load shape",
+        "validates achieved request or transaction rate rather than trusting configured VUs"
+      ],
+      "questionUk": "Як ви проєктуєте реалістичний workload для load test?",
+      "shortAnswerUk": "Модель виводимо з production або business evidence: важливі user journeys, їхній traffic mix, arrival/transaction rates, concurrency, session length, think time або pacing, data distribution, форма піку й тривалість тесту. Окремо задаємо ramp-up, steady state і ramp-down та вибираємо user-count чи arrival-rate model відповідно до реального трафіку. Під час прогону перевіряємо фактичний throughput: сама кількість configured virtual users не доводить, що потрібний workload справді створено.",
+      "strongAnswerSignalsUk": [
+        "починає з operational traffic і business journeys",
+        "моделює traffic mix, timing, data та load shape",
+        "перевіряє фактичний request/transaction rate, а не довіряє лише configured VUs"
+      ],
+      "example": "If production shows 60% browse, 25% search and 15% checkout at a known peak arrival rate, preserve that mix and timing in the test rather than making every VU loop through every action as fast as possible.",
+      "exampleUk": "Якщо production показує 60% browse, 25% search і 15% checkout при відомому peak arrival rate, зберігаємо цей mix і timing у тесті, а не змушуємо кожен VU без пауз безкінечно проходити всі дії.",
+      "sourceIds": ["asserthired-jmeter-interview-2026", "qapractices-jmeter-interview-2026", "gfg-performance-interview-2026", "istqb-performance-testing-2018", "k6-scenarios", "k6-open-closed-models"],
+      "tags": ["workload-model", "operational-profile", "traffic-mix", "ramp-up", "think-time", "arrival-rate", "virtual-users"]
+    },
+    {
+      "id": "performance-concurrent-users-from-traffic",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Practical",
+      "question": "How do you decide how many concurrent users to simulate?",
+      "shortAnswer": "Do not guess a round number. Use production analytics, forecasts or business volumes together with session duration and transaction rates to estimate simultaneous activity, then cross-check the model against observed peak throughput. Concurrency is an input only when the workload model is user-based; for an open workload it can be more faithful to specify arrivals per second and let the required concurrency emerge from response time and iteration duration.",
+      "strongAnswerSignals": [
+        "uses production or business evidence instead of an arbitrary VU count",
+        "connects concurrency to session duration and transaction rate",
+        "distinguishes user-count and arrival-rate workload models"
+      ],
+      "questionUk": "Як ви визначаєте, скільки concurrent users треба симулювати?",
+      "shortAnswerUk": "Не беремо кругле число навмання. Використовуємо production analytics, прогноз або business volumes разом із session duration і transaction rates, щоб оцінити одночасну активність, а потім звіряємо модель із фактичним peak throughput. Concurrency є прямим input лише в user-based workload; для open workload реалістичніше інколи задати arrivals per second, а необхідна concurrency виникне з response time та iteration duration.",
+      "strongAnswerSignalsUk": [
+        "використовує production або business evidence, а не довільний VU count",
+        "пов'язує concurrency із session duration та transaction rate",
+        "розрізняє user-count і arrival-rate workload models"
+      ],
+      "example": "For a service receiving a known peak number of completed sessions per minute, use session length and transaction frequency to estimate active users, then verify that the resulting script actually reproduces the expected endpoint rates.",
+      "exampleUk": "Для сервісу з відомою peak кількістю завершених sessions per minute використовуємо session length і transaction frequency для оцінки active users, а потім перевіряємо, що скрипт реально відтворює очікувані endpoint rates.",
+      "sourceIds": ["softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "gfg-performance-interview-2026", "istqb-performance-testing-2018", "k6-open-closed-models"],
+      "tags": ["concurrency", "virtual-users", "arrival-rate", "throughput", "capacity-planning"]
+    },
+    {
+      "id": "performance-concurrency-vs-throughput",
+      "level": "Middle",
+      "prevalence": "Common",
+      "category": "Performance Testing",
+      "kind": "Comparison",
+      "question": "What is the difference between concurrent users, requests or hits, and throughput?",
+      "shortAnswer": "Concurrent users describe how many simulated or real users are active at the same time. A request or hit is one unit of traffic generated by those users. Throughput is a rate, such as requests or business transactions completed per second. The numbers are related but not interchangeable: think time, response time, parallel requests and the business journey determine how much throughput a given concurrency actually produces.",
+      "strongAnswerSignals": [
+        "distinguishes a population count from an event count and an event rate",
+        "explains why the same VU count can produce different throughput",
+        "uses business transaction rate where that is more meaningful than raw HTTP requests"
+      ],
+      "questionUk": "У чому різниця між concurrent users, requests/hits і throughput?",
+      "shortAnswerUk": "Concurrent users показує, скільки симульованих або реальних користувачів активні одночасно. Request або hit — це окрема одиниця трафіку, створена цими користувачами. Throughput — це rate, наприклад requests або business transactions per second. Ці числа пов'язані, але не взаємозамінні: think time, response time, parallel requests і структура journey визначають, який throughput фактично дає конкретна concurrency.",
+      "strongAnswerSignalsUk": [
+        "розрізняє population count, event count і event rate",
+        "пояснює, чому однакова кількість VU може давати різний throughput",
+        "використовує business transaction rate, коли він змістовніший за raw HTTP requests"
+      ],
+      "example": "One hundred users who wait 20 seconds between actions generate far less traffic than one hundred users in a tight loop. Reporting only '100 users' without the achieved request or transaction rate hides that difference.",
+      "exampleUk": "Сто користувачів, які чекають 20 секунд між діями, створюють значно менше трафіку, ніж сто користувачів у tight loop. Звіт лише '100 users' без фактичного request/transaction rate приховує цю різницю.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "asserthired-jmeter-interview-2026", "istqb-performance-testing-2018"],
+      "tags": ["concurrent-users", "requests", "hits", "throughput", "tps", "rps"]
+    },
+    {
+      "id": "performance-testing-vs-engineering",
+      "level": "Senior",
+      "prevalence": "Occasional",
+      "category": "Performance Testing",
+      "kind": "Comparison",
+      "question": "How is performance testing different from performance engineering?",
+      "shortAnswer": "Performance testing is the measurement-and-evaluation activity: model workload, execute tests, collect evidence and compare behavior with objectives. Performance engineering is broader and continuous; it includes architecture, observability, profiling, capacity choices, code and database optimization, infrastructure tuning and design changes intended to achieve performance goals throughout the lifecycle. Testing supplies evidence to that engineering loop.",
+      "strongAnswerSignals": [
+        "testing measures and evaluates while engineering also changes the system",
+        "places performance work across the lifecycle rather than only before release",
+        "connects test evidence to profiling, tuning and architecture decisions"
+      ],
+      "questionUk": "Чим performance testing відрізняється від performance engineering?",
+      "shortAnswerUk": "Performance testing — це activity з вимірювання й оцінювання: змоделювати workload, виконати тести, зібрати evidence і порівняти поведінку з objectives. Performance engineering ширше й безперервніше: воно включає architecture, observability, profiling, capacity decisions, code/database optimization, infrastructure tuning і design changes для досягнення performance goals протягом усього lifecycle. Тестування постачає evidence для цього engineering loop.",
+      "strongAnswerSignalsUk": [
+        "testing вимірює й оцінює, а engineering також змінює систему",
+        "розміщує performance work по всьому lifecycle, а не лише перед release",
+        "пов'язує test evidence з profiling, tuning і architecture decisions"
+      ],
+      "example": "A load test reveals connection-pool saturation. Performance engineering then changes pool sizing or request behavior, profiles the service, adjusts infrastructure if justified and reruns the same controlled workload to prove the effect.",
+      "exampleUk": "Load test показує saturation connection pool. Performance engineering далі змінює pool sizing або request behavior, профілює сервіс, за потреби коригує infrastructure і повторює той самий контрольований workload, щоб довести ефект.",
+      "sourceIds": ["gfg-performance-interview-2026", "softwaretestpilot-performance-interview-2026", "istqb-performance-testing-2018"],
+      "tags": ["performance-engineering", "profiling", "tuning", "lifecycle"]
+    }
+  ]
+}
