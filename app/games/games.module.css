@@ -1,0 +1,141 @@
+.page {
+  max-width: 1120px;
+  padding-bottom: 40px;
+}
+
+.header {
+  align-items: flex-end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.header h1 {
+  color: #17231d;
+  font-size: 24px;
+  letter-spacing: -.025em;
+  margin: 0;
+}
+
+.header p {
+  color: #7c8780;
+  font-size: 12px;
+  margin: 5px 0 0;
+}
+
+.selector {
+  background: #f1f4f1;
+  border: 1px solid #dfe5df;
+  border-radius: 9px;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+}
+
+.selector button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #667169;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  min-height: 30px;
+  padding: 6px 11px;
+}
+
+.selector button:hover {
+  color: #2c3831;
+}
+
+.selector .active {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 35, 29, .08);
+  color: #28352d;
+}
+
+.gameCard {
+  background: #fff;
+  border: 1px solid #dfe5df;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.canvasFrame {
+  background: #0d131d;
+  line-height: 0;
+  width: 100%;
+}
+
+.canvas {
+  aspect-ratio: 16 / 9;
+  display: block;
+  height: auto;
+  max-height: calc(100vh - 185px);
+  width: 100%;
+}
+
+.controls {
+  align-items: center;
+  background: #fbfcfb;
+  border-top: 1px solid #e6ebe6;
+  color: #758078;
+  display: flex;
+  font-size: 10.5px;
+  gap: 12px;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 9px 12px 9px 15px;
+}
+
+.controls button {
+  background: #fff;
+  border: 1px solid #d8dfd8;
+  border-radius: 7px;
+  color: #46534b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 650;
+  min-height: 28px;
+  padding: 4px 10px;
+}
+
+.controls button:hover {
+  background: #f3f6f3;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 0 10px 20px;
+  }
+
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header h1 {
+    font-size: 21px;
+  }
+
+  .selector {
+    align-self: flex-start;
+  }
+
+  .gameCard {
+    border-radius: 10px;
+  }
+
+  .canvas {
+    max-height: none;
+  }
+
+  .controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
