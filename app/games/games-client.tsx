@@ -2,10 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SiteSidebar } from "../site-navigation";
+import {
+  TERRAIN_CELL,
+  TERRAIN_COLUMNS,
+  TERRAIN_ROWS,
+  WORLD_HEIGHT as HEIGHT,
+  WORLD_WIDTH as WIDTH,
+  carveTerrain,
+  createTerrain,
+  isTerrainSolid,
+  rectsOverlap,
+  terrainIndex,
+  terrainSurfaceRow,
+  type Rect,
+} from "./game-engine";
 import styles from "./games.module.css";
 
 type GameId = "platformer" | "gravity";
-type Rect = { x: number; y: number; w: number; h: number };
 type Bullet = { x: number; y: number; vx: number; vy: number };
 
 type PlatformEnemy = Rect & {
@@ -15,12 +28,7 @@ type PlatformEnemy = Rect & {
   vx: number;
 };
 
-const WIDTH = 960;
-const HEIGHT = 540;
-
-function overlaps(a: Rect, b: Rect) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
+type SpaceEnemy = { x: number; y: number; radius: number; alive: boolean };
 
 function drawPlatformerPlayer(ctx: CanvasRenderingContext2D, player: Rect) {
   ctx.fillStyle = "#edf5ff";
@@ -151,7 +159,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           enemy.x = Math.max(enemy.minX, Math.min(enemy.maxX - enemy.w, enemy.x));
           enemy.vx *= -1;
         }
-        if (overlaps(player, enemy)) respawn();
+        if (rectsOverlap(player, enemy)) respawn();
       }
 
       for (let index = bullets.length - 1; index >= 0; index -= 1) {
@@ -214,12 +222,6 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
   return <canvas aria-label="Platformer game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>;
 }
 
-const TERRAIN_CELL = 10;
-const TERRAIN_COLUMNS = WIDTH / TERRAIN_CELL;
-const TERRAIN_ROWS = HEIGHT / TERRAIN_CELL;
-
-type SpaceEnemy = { x: number; y: number; radius: number; alive: boolean };
-
 function GravityGame({ resetToken }: { resetToken: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -230,7 +232,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     if (!ctx) return;
 
     const keys = new Set<string>();
-    const terrain = new Uint8Array(TERRAIN_COLUMNS * TERRAIN_ROWS);
+    const terrain = createTerrain();
     const bullets: Bullet[] = [];
     const enemies: SpaceEnemy[] = [];
     const ship = { x: 225, y: 145, vx: 0, vy: 0, angle: -Math.PI / 2 };
@@ -238,49 +240,13 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     let lastTime = performance.now();
     let frame = 0;
 
-    function terrainIndex(column: number, row: number) {
-      return row * TERRAIN_COLUMNS + column;
-    }
-
-    function surfaceRow(column: number) {
-      return Math.floor(35 + Math.sin(column * 0.14) * 3 + Math.sin(column * 0.045) * 5);
-    }
-
-    for (let column = 0; column < TERRAIN_COLUMNS; column += 1) {
-      const surface = surfaceRow(column);
-      for (let row = surface; row < TERRAIN_ROWS; row += 1) terrain[terrainIndex(column, row)] = 1;
-    }
-
     for (const column of [46, 66, 84]) {
       enemies.push({
         x: column * TERRAIN_CELL + TERRAIN_CELL / 2,
-        y: surfaceRow(column) * TERRAIN_CELL - 12,
+        y: terrainSurfaceRow(column) * TERRAIN_CELL - 12,
         radius: 11,
         alive: true,
       });
-    }
-
-    function isSolid(x: number, y: number) {
-      if (x < 0 || x >= WIDTH || y >= HEIGHT) return true;
-      if (y < 0) return false;
-      const column = Math.floor(x / TERRAIN_CELL);
-      const row = Math.floor(y / TERRAIN_CELL);
-      return terrain[terrainIndex(column, row)] === 1;
-    }
-
-    function carve(x: number, y: number, radius: number) {
-      const minColumn = Math.max(0, Math.floor((x - radius) / TERRAIN_CELL));
-      const maxColumn = Math.min(TERRAIN_COLUMNS - 1, Math.floor((x + radius) / TERRAIN_CELL));
-      const minRow = Math.max(0, Math.floor((y - radius) / TERRAIN_CELL));
-      const maxRow = Math.min(TERRAIN_ROWS - 1, Math.floor((y + radius) / TERRAIN_CELL));
-      const radiusSquared = radius * radius;
-      for (let row = minRow; row <= maxRow; row += 1) {
-        for (let column = minColumn; column <= maxColumn; column += 1) {
-          const cellX = column * TERRAIN_CELL + TERRAIN_CELL / 2;
-          const cellY = row * TERRAIN_CELL + TERRAIN_CELL / 2;
-          if ((cellX - x) ** 2 + (cellY - y) ** 2 <= radiusSquared) terrain[terrainIndex(column, row)] = 0;
-        }
-      }
     }
 
     function respawn() {
@@ -338,7 +304,14 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       const leftY = ship.y + Math.sin(sideAngle) * 9;
       const rightX = ship.x - Math.cos(sideAngle) * 9;
       const rightY = ship.y - Math.sin(sideAngle) * 9;
-      if (isSolid(ship.x, ship.y) || isSolid(noseX, noseY) || isSolid(leftX, leftY) || isSolid(rightX, rightY)) respawn();
+      if (
+        isTerrainSolid(terrain, ship.x, ship.y)
+        || isTerrainSolid(terrain, noseX, noseY)
+        || isTerrainSolid(terrain, leftX, leftY)
+        || isTerrainSolid(terrain, rightX, rightY)
+      ) {
+        respawn();
+      }
       if (ship.x < -30 || ship.x > WIDTH + 30 || ship.y < -100 || ship.y > HEIGHT + 40) respawn();
 
       for (let index = bullets.length - 1; index >= 0; index -= 1) {
@@ -358,8 +331,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
           }
         }
 
-        if (!remove && isSolid(bullet.x, bullet.y)) {
-          carve(bullet.x, bullet.y, 31);
+        if (!remove && isTerrainSolid(terrain, bullet.x, bullet.y)) {
+          carveTerrain(terrain, bullet.x, bullet.y, 31);
           remove = true;
         }
         if (remove) bullets.splice(index, 1);
@@ -384,7 +357,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       if (keys.has("ArrowUp") || keys.has("KeyW")) {
         ctx.beginPath();
         ctx.moveTo(-8, -5);
-        ctx.lineTo(-22 - Math.random() * 8, 0);
+        ctx.lineTo(-28, 0);
         ctx.lineTo(-8, 5);
         ctx.strokeStyle = "#f2b45b";
         ctx.stroke();
@@ -407,7 +380,9 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ctx.fillStyle = "#26382f";
       for (let row = 0; row < TERRAIN_ROWS; row += 1) {
         for (let column = 0; column < TERRAIN_COLUMNS; column += 1) {
-          if (terrain[terrainIndex(column, row)]) ctx.fillRect(column * TERRAIN_CELL, row * TERRAIN_CELL, TERRAIN_CELL + 0.5, TERRAIN_CELL + 0.5);
+          if (terrain[terrainIndex(column, row)]) {
+            ctx.fillRect(column * TERRAIN_CELL, row * TERRAIN_CELL, TERRAIN_CELL + 0.5, TERRAIN_CELL + 0.5);
+          }
         }
       }
 
@@ -448,14 +423,12 @@ function GravityGame({ resetToken }: { resetToken: number }) {
   return <canvas aria-label="Gravity game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>;
 }
 
-const GAME_INFO: Record<GameId, { title: string; description: string; controls: string }> = {
+const GAME_INFO: Record<GameId, { description: string; controls: string }> = {
   platformer: {
-    title: "Platformer",
     description: "Jump between platforms and clear the moving targets.",
     controls: "A/D or ←/→ move · W/↑/Space jump · F/J shoot · R respawn",
   },
   gravity: {
-    title: "Gravity",
     description: "Fly with thrust and gravity. Shots remove terrain and open new paths.",
     controls: "A/D or ←/→ rotate · W/↑ thrust · F/Space shoot · R respawn",
   },
@@ -475,6 +448,7 @@ export default function GamesClient() {
   return (
     <main className="kb-shell">
       <SiteSidebar
+        activeExternalId="games"
         activeSection={null}
         activeSubsection=""
         hideSecondary
