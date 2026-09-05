@@ -1,0 +1,122 @@
+[
+  {
+    "id": "gfg-performance-interview-2026",
+    "title": "Performance Testing Interview Questions with Answers",
+    "url": "https://www.geeksforgeeks.org/software-testing/performance-testing-interview-questions/",
+    "publisher": "GeeksforGeeks",
+    "kind": "Interview question bank",
+    "role": "Current recurrence signal for performance-testing fundamentals, test types, workload design, metrics, bottlenecks, test process and tool selection"
+  },
+  {
+    "id": "softwaretestpilot-performance-interview-2026",
+    "title": "Performance Testing Interview Questions: JMeter, k6 & LoadRunner (2026)",
+    "url": "https://softwaretestpilot.com/blog/performance-testing/performance-testing-interview-questions-jmeter-k6-loadrunner",
+    "publisher": "SoftwareTestPilot",
+    "kind": "Interview question bank",
+    "role": "Current recurrence signal for load versus stress, performance metrics, JMeter, k6, correlation, CI/CD, baselines and bottleneck analysis"
+  },
+  {
+    "id": "asserthired-jmeter-interview-2026",
+    "title": "JMeter Interview Questions",
+    "url": "https://www.asserthired.com/interview-questions/jmeter",
+    "publisher": "AssertHired",
+    "kind": "Interview question bank",
+    "role": "Independent interview-pattern signal for realistic load design, test-plan structure, correlation, distributed testing, percentiles, SLOs and CI/CD"
+  },
+  {
+    "id": "qapractices-jmeter-interview-2026",
+    "title": "Top 20 JMeter Interview Questions",
+    "url": "https://qapractices.com/documentation/jmeter-interview-questions/",
+    "publisher": "QAPractices",
+    "kind": "Interview question bank",
+    "role": "Independent scenario-based signal for JMeter components, timers, assertions, correlation, distributed testing and result analysis"
+  },
+  {
+    "id": "artoftesting-jmeter-interview",
+    "title": "Top 50 JMeter Interview Questions",
+    "url": "https://artoftesting.com/jmeter-interview-questions",
+    "publisher": "ArtOfTesting",
+    "kind": "Interview question bank",
+    "role": "Independent recurrence signal for performance test types, activities, parameterization, correlation, ramp-up, CLI mode, percentiles, distributed load and troubleshooting scenarios"
+  },
+  {
+    "id": "istqb-performance-testing-2018",
+    "title": "ISTQB Certified Tester Foundation Level Specialist Syllabus — Performance Testing",
+    "url": "https://istqb.org/wp-content/uploads/2024/11/ISTQB-CT-PT_Syllabus_v1.0_2018.pdf",
+    "publisher": "ISTQB",
+    "kind": "Official syllabus",
+    "role": "Authoritative performance-testing terminology, test types, metrics, load generation, operational profiles, planning, execution and result analysis"
+  },
+  {
+    "id": "jmeter-best-practices",
+    "title": "Apache JMeter User's Manual — Best Practices",
+    "url": "https://jmeter.apache.org/usermanual/best-practices.html",
+    "publisher": "Apache JMeter",
+    "kind": "Official documentation",
+    "role": "Technical authority for load-generator sizing, coordinated omission, CLI execution, listener cost, CSV data and large-scale execution"
+  },
+  {
+    "id": "jmeter-getting-started",
+    "title": "Apache JMeter User's Manual — Getting Started",
+    "url": "https://jmeter.apache.org/usermanual/get-started.html",
+    "publisher": "Apache JMeter",
+    "kind": "Official documentation",
+    "role": "Technical authority for GUI versus CLI use, injector sizing, execution and HTML result analysis"
+  },
+  {
+    "id": "jmeter-recorder-correlation",
+    "title": "Apache JMeter HTTP(S) Test Script Recorder",
+    "url": "https://jmeter.apache.org/usermanual/jmeter_proxy_step_by_step.html",
+    "publisher": "Apache JMeter",
+    "kind": "Official documentation",
+    "role": "Technical authority for script validation, parameterization, dynamic correlation and command-line execution"
+  },
+  {
+    "id": "jmeter-distributed-testing",
+    "title": "Apache JMeter User's Manual — Remote (Distributed) Testing",
+    "url": "https://jmeter.apache.org/usermanual/remote-test.html",
+    "publisher": "Apache JMeter",
+    "kind": "Official documentation",
+    "role": "Technical authority for distributed load generation, controller/worker behavior, data files and generator-side bottlenecks"
+  },
+  {
+    "id": "k6-thresholds",
+    "title": "Grafana k6 documentation — Thresholds",
+    "url": "https://grafana.com/docs/k6/latest/using-k6/thresholds/",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "role": "Technical authority for percentile/error-rate pass-fail criteria, SLO encoding and automated performance gates"
+  },
+  {
+    "id": "k6-scenarios",
+    "title": "Grafana k6 documentation — Scenarios",
+    "url": "https://grafana.com/docs/k6/latest/using-k6/scenarios/",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "role": "Technical authority for VU-based and arrival-rate workload executors and multi-scenario tests"
+  },
+  {
+    "id": "k6-open-closed-models",
+    "title": "Grafana k6 documentation — Open and closed models",
+    "url": "https://grafana.com/docs/k6/latest/using-k6/scenarios/concepts/open-vs-closed/",
+    "publisher": "Grafana Labs",
+    "kind": "Official documentation",
+    "role": "Technical authority for open versus closed workload models and coordinated-omission implications"
+  },
+  {
+    "id": "locust-configuration",
+    "title": "Locust documentation — Configuration",
+    "url": "https://docs.locust.io/en/latest/configuration.html",
+    "publisher": "Locust",
+    "kind": "Official documentation",
+    "role": "Technical authority for concurrent users, spawn rate, run time and headless execution"
+  },
+  {
+    "id": "locust-distributed",
+    "title": "Locust documentation — Distributed load generation",
+    "url": "https://docs.locust.io/en/2.40.2/running-distributed.html",
+    "publisher": "Locust",
+    "kind": "Official documentation",
+    "role": "Technical authority for master/worker load generation and generator CPU constraints"
+  }
+]
