@@ -5,7 +5,7 @@ import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
-export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground";
+export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground" | "games";
 
 interface SectionNavigationItem {
   id: SiteSection;
@@ -121,6 +121,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
     label: "Misc",
     items: [
       { id: "news", label: "News" },
+      {
+        id: "games",
+        label: "Games",
+        external: true,
+        publicHref: "/games",
+        personalHref: "/games",
+      },
     ],
   },
 ];
@@ -499,6 +506,8 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
       return <svg {...props}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.6-4 2.5-6 5.5-6s5 2 5.5 6M14 15c3.8-.5 6 1.2 6.5 4.5"/></svg>;
     case "websocket-playground":
       return <svg {...props}><path d="M7 7h10a4 4 0 0 1 4 4v2a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-2a4 4 0 0 1 4-4zM8 10l-2 2 2 2M16 10l2 2-2 2M10 15l4-6"/></svg>;
+    case "games":
+      return <svg {...props}><path d="M7 8h10a4 4 0 0 1 3.8 5.2l-1.2 3.6a2 2 0 0 1-3.2.9L14.5 16h-5l-1.9 1.7a2 2 0 0 1-3.2-.9l-1.2-3.6A4 4 0 0 1 7 8zM8 11v4M6 13h4M16.5 12h.01M18 14h.01"/></svg>;
     case "news":
       return <svg {...props}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5M8 18h8"/></svg>;
     default:
@@ -564,15 +573,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
             <section className={`kb-area-group kb-area-group-${group.id}`} aria-labelledby={`kb-area-${group.id}`} key={group.id}>
               <h2 id={`kb-area-${group.id}`}>{group.label}</h2>
               {group.id === "learning" ? renderLearningItems(group.items) : (
-                <div>
-                  {group.items.map((item) => renderItem(item))}
-                  {group.id === "misc" && (
-                    <div aria-disabled="true" className="kb-nav-link" style={{ cursor: "default", opacity: 0.55, pointerEvents: "none" }} title="Next game">
-                      <span aria-hidden="true" className="kb-nav-icon">○</span>
-                      <span className="kb-nav-label">Next game</span>
-                    </div>
-                  )}
-                </div>
+                <div>{group.items.map((item) => renderItem(item))}</div>
               )}
             </section>
           ))}
