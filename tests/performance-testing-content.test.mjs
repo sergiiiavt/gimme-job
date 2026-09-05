@@ -6,7 +6,7 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
 test("publishes a dedicated source-backed performance interview domain", async () => {
-  const [core, practical, domains, subtopics, catalogSource, routeSource, ukRouteSource, navigationSource, seoSource] = await Promise.all([
+  const [core, practical, domains, subtopics, catalogSource, routeSource, ukRouteSource, navigationSource, seoSource, switcherSource] = await Promise.all([
     readJson("content/interview/performance-testing-core-qa.json"),
     readJson("content/interview/performance-testing-practical-qa.json"),
     readJson("content/interview/domains.json"),
@@ -16,6 +16,7 @@ test("publishes a dedicated source-backed performance interview domain", async (
     readFile(projectFile("content/interview/ukrainian-routes.ts"), "utf8"),
     readFile(projectFile("app/navigation-paths.ts"), "utf8"),
     readFile(projectFile("app/seo.ts"), "utf8"),
+    readFile(projectFile("app/interview-domain-switcher-overlay.tsx"), "utf8"),
   ]);
 
   const questions = [...core.questions, ...practical.questions];
@@ -24,7 +25,7 @@ test("publishes a dedicated source-backed performance interview domain", async (
   assert.ok(questions.every((question) => question.category === "Performance Testing"));
 
   assert.equal(domains.categoryToDomain["Performance and resilience"], "Performance Testing");
-  assert.equal(domains.categoryToDomain["Performance Testing"], "Performance Testing");
+  assert.equal(Object.prototype.hasOwnProperty.call(domains.categoryToDomain, "Performance Testing"), false);
   assert.ok(domains.taxonomy.some((domain) => domain.id === "performance-testing" && domain.category === "Performance Testing"));
   assert.ok(subtopics.taxonomy.length >= 8);
 
@@ -39,6 +40,8 @@ test("publishes a dedicated source-backed performance interview domain", async (
   assert.match(navigationSource, /"web-api", "performance", "mobile"/);
   assert.match(seoSource, /"\/interview\/performance"/);
   assert.match(seoSource, /"\/uk\/interview\/performance"/);
+  assert.match(switcherSource, /id: "performance-testing"/);
+  assert.match(switcherSource, /"\/interview\/performance"/);
 });
 
 test("publishes the methodical performance learning path and retrieval registration", async () => {
