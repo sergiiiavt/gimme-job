@@ -56,6 +56,15 @@ const subtopicDomains: Record<string, SubtopicConfig> = {
   "Performance Testing": performanceTestingSubtopics as SubtopicConfig,
 };
 
+// The authored files remain a self-contained Performance Testing source set, while the
+// assembled interview catalog keeps the project's canonical 20-topic taxonomy intact.
+// The existing Performance and resilience topic is routed to the dedicated top-level
+// Performance Testing domain in domains.json.
+const researchedPerformanceQuestions = [
+  ...performanceTestingCore.questions,
+  ...performanceTestingPractical.questions,
+].map((question) => ({ ...question, category: "Performance and resilience" }));
+
 function applySourceEvidence<T extends { id: string; sourceIds: string[]; prevalence: string }>(question: T): T {
   const evidence = sourceEvidenceById.get(question.id);
   if (!evidence) return question;
@@ -105,8 +114,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
 const allQuestions = [
   ...common.questions,
   ...canonical.questions,
-  ...performanceTestingCore.questions,
-  ...performanceTestingPractical.questions,
+  ...researchedPerformanceQuestions,
   ...databaseSql.questions,
   ...restApi.questions,
   ...websocket.questions,
