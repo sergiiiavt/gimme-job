@@ -136,7 +136,7 @@ class GimmeJobPublicReader(HttpUser):
             if marker not in response.text:
                 response.failure(f"expected page marker {marker!r}")
 
-    @tag("smoke", "api", "worker")
+    @tag("health", "smoke", "api", "worker")
     @task(4)
     def health(self) -> None:
         with self.client.get("/api/health", name="GET /api/health", catch_response=True) as response:
@@ -155,12 +155,12 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("health response does not match the public contract")
 
-    @tag("edge", "html")
+    @tag("home", "public-read", "edge", "html")
     @task(3)
     def home_page(self) -> None:
         self._expect_html("/", "Why I created this site", "GET / [public home]")
 
-    @tag("worker", "html")
+    @tag("reference", "public-read", "worker", "html")
     @task(2)
     def uncached_reference_page(self) -> None:
         self._expect_html(
@@ -169,7 +169,7 @@ class GimmeJobPublicReader(HttpUser):
             "GET /reference/qa-fundamentals [uncached]",
         )
 
-    @tag("d1", "api")
+    @tag("jobs", "public-read", "d1", "api")
     @task(2)
     def public_jobs(self) -> None:
         with self.client.get(
@@ -192,7 +192,7 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("public jobs response does not match the public contract")
 
-    @tag("d1", "api", "heavy")
+    @tag("dashboard", "public-read", "d1", "api", "heavy")
     @task(1)
     def public_dashboard(self) -> None:
         with self.client.get(
