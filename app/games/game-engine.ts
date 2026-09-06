@@ -28,6 +28,13 @@ export function normalizedDirection(fromX: number, fromY: number, toX: number, t
   return { x: dx / length, y: dy / length };
 }
 
+export function directionInsideCone(shipAngle: number, direction: Vector, halfAngle: number): boolean {
+  const forwardX = Math.cos(shipAngle);
+  const forwardY = Math.sin(shipAngle);
+  const dot = forwardX * direction.x + forwardY * direction.y;
+  return dot >= Math.cos(halfAngle);
+}
+
 export function gravityAtPoint(x: number, y: number, planets: readonly PlanetPhysics[]): Vector {
   let ax = 0;
   let ay = 0;
@@ -63,15 +70,39 @@ export function findSolidPlanetIndex(planets: readonly PlanetPhysics[], x: numbe
   return planets.findIndex((planet) => isPlanetSolidAtPoint(planet, x, y));
 }
 
-export function screenToWorld(screenX: number, screenY: number, camera: Camera): Vector {
-  return { x: screenX + camera.x, y: screenY + camera.y };
+export function screenToWorld(screenX: number, screenY: number, camera: Camera, zoom = 1): Vector {
+  return { x: screenX / zoom + camera.x, y: screenY / zoom + camera.y };
 }
 
-export function clampCamera(targetX: number, targetY: number, viewportWidth: number, viewportHeight: number): Camera {
+export function clampCameraPosition(x: number, y: number, viewportWidth: number, viewportHeight: number): Camera {
   const maxX = Math.max(0, SPACE_WORLD_WIDTH - viewportWidth);
   const maxY = Math.max(0, SPACE_WORLD_HEIGHT - viewportHeight);
   return {
-    x: Math.max(0, Math.min(maxX, targetX - viewportWidth / 2)),
-    y: Math.max(0, Math.min(maxY, targetY - viewportHeight / 2)),
+    x: Math.max(0, Math.min(maxX, x)),
+    y: Math.max(0, Math.min(maxY, y)),
   };
+}
+
+export function clampCamera(targetX: number, targetY: number, viewportWidth: number, viewportHeight: number): Camera {
+  return clampCameraPosition(targetX - viewportWidth / 2, targetY - viewportHeight / 2, viewportWidth, viewportHeight);
+}
+
+export function cameraForZoomAnchor(
+  camera: Camera,
+  screenX: number,
+  screenY: number,
+  currentZoom: number,
+  nextZoom: number,
+  canvasWidth: number,
+  canvasHeight: number,
+): Camera {
+  const worldPoint = screenToWorld(screenX, screenY, camera, currentZoom);
+  const viewportWidth = canvasWidth / nextZoom;
+  const viewportHeight = canvasHeight / nextZoom;
+  return clampCameraPosition(
+    worldPoint.x - screenX / nextZoom,
+    worldPoint.y - screenY / nextZoom,
+    viewportWidth,
+    viewportHeight,
+  );
 }
