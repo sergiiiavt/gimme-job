@@ -2,7 +2,7 @@
   align-items: start;
   display: grid;
   gap: 14px;
-  grid-template-columns: minmax(0, 1.65fr) minmax(290px, .75fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr);
 }
 
 .panel {
@@ -103,6 +103,30 @@
   white-space: nowrap;
 }
 
+.langfuseLink {
+  border-bottom: 1px solid #273029;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px;
+}
+
+.langfuseLink a {
+  color: #b8c8be;
+  font-size: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.langfuseLink a:hover {
+  text-decoration: underline;
+}
+
+.langfuseLink small {
+  color: #66746c;
+  font-size: 7px;
+}
+
 .timeline {
   list-style: none;
   margin: 0;
@@ -182,9 +206,9 @@
 }
 
 .timeline summary code {
-  color: #66756c;
+  color: #7d8c83;
   font-size: 7px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .stepBody {
@@ -192,7 +216,10 @@
   min-width: 0;
 }
 
-.stepBody > span {
+.stepBody > span,
+.traceFields > span,
+.retrievalBlock > span,
+.tokenUsage > span {
   color: #607067;
   display: block;
   font-size: 7px;
@@ -218,8 +245,135 @@
 
 .stepBody pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  max-height: 120px;
+  max-height: 150px;
   overflow: auto;
+}
+
+.stepMeta {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.stepMeta > code {
+  color: #728178;
+  font-size: 7px;
+}
+
+.traceFields,
+.retrievalBlock,
+.tokenUsage {
+  margin-top: 8px;
+}
+
+.traceFields dl,
+.tokenUsage dl {
+  background: #151d19;
+  border: 1px solid #252f29;
+  border-radius: 6px;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.traceFields dl > div,
+.tokenUsage dl > div {
+  align-items: baseline;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(90px, .8fr) minmax(0, 1.2fr);
+  padding: 5px 7px;
+}
+
+.traceFields dl > div + div,
+.tokenUsage dl > div + div {
+  border-top: 1px solid #222b25;
+}
+
+.traceFields dt,
+.tokenUsage dt {
+  color: #69776f;
+  font-size: 7px;
+  text-transform: capitalize;
+}
+
+.traceFields dd,
+.tokenUsage dd {
+  color: #c3cec7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.retrievalBlock ol {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.retrievalBlock li {
+  background: #151d19;
+  border: 1px solid #252f29;
+  border-radius: 6px;
+  padding: 7px;
+}
+
+.retrievalBlock header {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.retrievalBlock strong {
+  color: #cbd5cf;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.retrievalBlock header code {
+  color: #9bb0a2;
+  font-size: 7px;
+}
+
+.retrievalBlock small {
+  color: #69776f;
+  display: block;
+  font-size: 7px;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.retrievalBlock pre {
+  background: #101613;
+  border-color: #202923;
+  margin-top: 6px;
+  max-height: 110px;
+}
+
+.tokenUsage dl {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.tokenUsage dl > div {
+  display: block;
+  padding: 6px;
+  text-align: center;
+}
+
+.tokenUsage dl > div + div {
+  border-left: 1px solid #222b25;
+  border-top: 0;
+}
+
+.tokenUsage dd {
+  margin-top: 2px;
+  text-align: center;
 }
 
 .disclaimer {
@@ -262,7 +416,7 @@
   }
 
   .panel {
-    max-height: 520px;
+    max-height: 620px;
     min-height: 320px;
     position: static;
   }
