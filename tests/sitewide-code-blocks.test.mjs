@@ -33,19 +33,19 @@ test("markdown fences preserve their language and syntax highlighting when they 
 });
 
 test("static code renderer produces language metadata and highlighted React nodes", async () => {
-  const module = await import("../app/static-code-block.ts");
+  const staticCodeModule = await import("../app/static-code-block.ts");
 
-  assert.deepEqual(module.staticCodeLanguage(" PYTHON "), { label: "Python", normalized: "python" });
-  assert.deepEqual(module.staticCodeLanguage(""), { label: "Text", normalized: "text" });
-  assert.deepEqual(module.staticCodeLanguage("kotlin"), { label: "KOTLIN", normalized: "kotlin" });
+  assert.deepEqual(staticCodeModule.staticCodeLanguage(" PYTHON "), { label: "Python", normalized: "python" });
+  assert.deepEqual(staticCodeModule.staticCodeLanguage(""), { label: "Text", normalized: "text" });
+  assert.deepEqual(staticCodeModule.staticCodeLanguage("kotlin"), { label: "KOTLIN", normalized: "kotlin" });
 
-  const highlighted = module.staticCodeContent("def answer():\n    return 42", "python");
+  const highlighted = staticCodeModule.staticCodeContent("def answer():\n    return 42", "python");
   assert.ok(highlighted.some((node) => typeof node === "object" && node?.props?.style?.color));
 
-  const plain = module.staticCodeContent("val answer = 42", "kotlin");
+  const plain = staticCodeModule.staticCodeContent("val answer = 42", "kotlin");
   assert.deepEqual(plain, ["val answer = 42"]);
 
-  const rendered = module.default({ language: "sql", source: "SELECT 1" });
+  const rendered = staticCodeModule.default({ language: "sql", source: "SELECT 1" });
   assert.equal(rendered.type, "div");
   assert.equal(rendered.props.className, "qa-md-static-code");
   assert.equal(rendered.props["data-language"], "sql");
