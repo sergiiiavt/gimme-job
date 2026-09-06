@@ -6,6 +6,7 @@ import istqbAiTestingCatalog from "@/content/istqb-ai-testing/catalog";
 import type { IstqbAiTestingModule } from "@/content/istqb-ai-testing/modules";
 import { contentHref } from "./content-deep-links";
 import IstqbAiMockExam from "./istqb-ai-mock-exam";
+import IstqbAiOfficialSampleCompanion from "./istqb-ai-official-sample-companion";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import LearningVideo from "./learning-video";
 import { sectionNavigationHref } from "./navigation-paths";
@@ -261,9 +262,11 @@ export default function IstqbAiTestingPage() {
                 <div className={styles.layout}>
                   <div className={styles.document}>
                     <article className={styles.article}>
-                      {isMockExam
-                        ? <IstqbAiMockExam markdown={localizedMarkdown}/>
-                        : <MarkdownDocument markdown={localizedMarkdown}/>}
+                      {isOfficialSampleExam
+                        ? <IstqbAiOfficialSampleCompanion language={effectiveLanguage} markdown={localizedMarkdown}/>
+                        : isMockExam
+                          ? <IstqbAiMockExam markdown={localizedMarkdown}/>
+                          : <MarkdownDocument markdown={localizedMarkdown}/>}
 
                       {activeModule.videos?.length ? (
                         <section>
