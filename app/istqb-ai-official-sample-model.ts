@@ -73,8 +73,9 @@ export function sameSelection(actual: readonly string[] = [], expected: readonly
   if (actual.length !== expected.length) return false;
   const isLetterAnswerSet = expected.every((value) => /^[a-e]$/.test(value));
   if (!isLetterAnswerSet) return sameOrderedSelection(actual, expected);
-  const normalizedActual = [...actual].sort();
-  const normalizedExpected = [...expected].sort();
+  const compareAlphabetically = (left: string, right: string) => left.localeCompare(right);
+  const normalizedActual = [...actual].sort(compareAlphabetically);
+  const normalizedExpected = [...expected].sort(compareAlphabetically);
   return normalizedActual.every((value, index) => value === normalizedExpected[index]);
 }
 
