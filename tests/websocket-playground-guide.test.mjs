@@ -12,8 +12,9 @@ test("WebSocket playground uses the same outer geometry as the Games playfield",
   assert.match(styles, /\.workspace[\s\S]*grid-template-columns:/);
 });
 
-test("WebSocket guide and chat have matching heights and tabbed guide content", () => {
-  assert.match(styles, /\.chat,\s*\.guide\s*\{\s*height: min\(720px, calc\(100vh - 72px\)\);/);
+test("WebSocket guide and chat fill the desktop viewport together and use tabbed guide content", () => {
+  assert.match(styles, /\.chat,\s*\.guide\s*\{\s*height: calc\(100vh - 58px\);\s*min-height: 620px;/);
+  assert.doesNotMatch(styles, /height: min\(720px/);
   assert.match(source, /role="tablist"/);
   assert.match(source, />Test & inspect<\/button>/);
   assert.match(source, />Hints & links<\/button>/);
