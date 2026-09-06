@@ -101,6 +101,7 @@ export default function IstqbAiTestingPage() {
   const isMockExam = activeModule?.id === "mock-exam";
   const isOfficialSampleExam = activeModule?.id === "official-sample-exam";
   const activeModuleHasUkrainian = Boolean(activeModule && hasUkrainian(activeModule));
+  const effectiveLanguage: LearningLanguage = language === "uk" && activeModuleHasUkrainian ? "uk" : "en";
 
   useEffect(() => {
     const trackInUrl = searchParams.get("track") === activeTrackId;
@@ -118,12 +119,6 @@ export default function IstqbAiTestingPage() {
     router.replace(contentHref(pathname, searchParams.toString(), { topic: activeModuleId, track: activeTrackId }), { scroll: false });
   }, [activeModuleId, activeTrackId, pathname, router, searchParams, trackAvailable]);
 
-  useEffect(() => {
-    if (language === "uk" && activeModule && !hasUkrainian(activeModule)) {
-      setLanguage("en");
-    }
-  }, [activeModule, language]);
-
   const sourceMap = useMemo(
     () => new Map(istqbAiTestingCatalog.sources.map((source) => [source.id, source])),
     [],
@@ -132,15 +127,15 @@ export default function IstqbAiTestingPage() {
     const source = sourceMap.get(id);
     return source ? [source] : [];
   }) ?? [];
-  const localizedMarkdown = activeModule && language === "uk" && hasUkrainian(activeModule)
+  const localizedMarkdown = activeModule && effectiveLanguage === "uk" && hasUkrainian(activeModule)
     ? activeModule.markdownUk
     : activeModule?.markdown ?? "";
-  const localizedLevel = activeModule && language === "uk" && hasUkrainian(activeModule)
+  const localizedLevel = activeModule && effectiveLanguage === "uk" && hasUkrainian(activeModule)
     ? activeModule.levelUk
     : activeModule?.level ?? "";
   const localizedNavLabel = (chapter: IstqbAiTestingModule | undefined) => {
     if (!chapter) return undefined;
-    return language === "uk" && hasUkrainian(chapter) ? chapter.navLabelUk : chapter.navLabel;
+    return effectiveLanguage === "uk" && hasUkrainian(chapter) ? chapter.navLabelUk : chapter.navLabel;
   };
   const markdownHeadings = isMockExam
     ? mockExamHeadings
@@ -150,7 +145,7 @@ export default function IstqbAiTestingPage() {
         .map(({ id, text }) => ({ id, text }))
       : [];
   const headings = activeModule?.videos?.length
-    ? [...markdownHeadings, { id: "recommended-videos", text: language === "uk" ? "Рекомендовані відео" : "Recommended videos" }]
+    ? [...markdownHeadings, { id: "recommended-videos", text: effectiveLanguage === "uk" ? "Рекомендовані відео" : "Recommended videos" }]
     : markdownHeadings;
   const secondaryItems: SubnavItem[] = trackAvailable ? modules.map((chapter) => ({
     id: chapter.id,
@@ -199,7 +194,7 @@ export default function IstqbAiTestingPage() {
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
   const next = moduleIndex < modules.length - 1 ? modules[moduleIndex + 1] : undefined;
   const activeModuleCountLabel = activeModule
-    ? language === "uk"
+    ? effectiveLanguage === "uk"
       ? isOfficialSampleExam
         ? `${activeModule.count} офіційних прикладів запитань`
         : isMockExam
@@ -211,8 +206,8 @@ export default function IstqbAiTestingPage() {
           ? `${activeModule.count} original practice questions`
           : `${activeModule.count} exam concepts / activities`
     : "";
-  const catalogTitle = language === "uk" ? istqbAiTestingCatalog.titleUk : istqbAiTestingCatalog.title;
-  const catalogDescription = language === "uk" ? istqbAiTestingCatalog.descriptionUk : istqbAiTestingCatalog.description;
+  const catalogTitle = effectiveLanguage === "uk" ? istqbAiTestingCatalog.titleUk : istqbAiTestingCatalog.title;
+  const catalogDescription = effectiveLanguage === "uk" ? istqbAiTestingCatalog.descriptionUk : istqbAiTestingCatalog.description;
 
   return (
     <>
@@ -230,7 +225,7 @@ export default function IstqbAiTestingPage() {
           secondaryEmptyState={trackAvailable ? undefined : selectedTrack.emptyState}
           secondaryItems={secondaryItems}
           secondarySwitcher={switcher}
-          secondaryTitle={language === "uk" ? "Сертифікації" : "Certifications"}
+          secondaryTitle={effectiveLanguage === "uk" ? "Сертифікації" : "Certifications"}
         />
 
         <section className="kb-main">
@@ -254,11 +249,11 @@ export default function IstqbAiTestingPage() {
               <>
                 <LearningHero
                   description={catalogDescription}
-                  eyebrow={`${language === "uk" ? "Навчальний шлях для сертифікації" : "Certification learning path"} · ${selectedTrack.label}`}
+                  eyebrow={`${effectiveLanguage === "uk" ? "Навчальний шлях для сертифікації" : "Certification learning path"} · ${selectedTrack.label}`}
                   meta={[
                     localizedLevel,
                     activeModuleCountLabel,
-                    `${moduleSources.length} ${language === "uk" ? "джерела розділу" : "chapter references"}`,
+                    `${moduleSources.length} ${effectiveLanguage === "uk" ? "джерела розділу" : "chapter references"}`,
                   ]}
                   title={catalogTitle}
                 />
@@ -272,8 +267,8 @@ export default function IstqbAiTestingPage() {
 
                       {activeModule.videos?.length ? (
                         <section>
-                          <h2 id="recommended-videos">{language === "uk" ? "Рекомендовані відео" : "Recommended videos"}</h2>
-                          <p>{language === "uk"
+                          <h2 id="recommended-videos">{effectiveLanguage === "uk" ? "Рекомендовані відео" : "Recommended videos"}</h2>
+                          <p>{effectiveLanguage === "uk"
                             ? "Використовуй їх як візуальне закріплення після читання розділу. Офіційний syllabus ISTQB залишається головним джерелом для іспиту."
                             : "Use these as visual reinforcement after reading the chapter. The ISTQB syllabus remains the exam authority."}</p>
                           {activeModule.videos.map((video) => (
@@ -290,24 +285,24 @@ export default function IstqbAiTestingPage() {
                     </article>
 
                     <LearningSourceRegistry
-                      language={language}
+                      language={effectiveLanguage}
                       sources={moduleSources.map((source) => ({
                         id: source.id,
-                        meta: language === "uk" ? sourceMetaUk[source.kind] ?? source.kind.replaceAll("-", " ") : source.kind.replaceAll("-", " "),
+                        meta: effectiveLanguage === "uk" ? sourceMetaUk[source.kind] ?? source.kind.replaceAll("-", " ") : source.kind.replaceAll("-", " "),
                         publisher: source.publisher,
-                        role: language === "uk" ? sourceRoleUk[source.id] ?? source.role : source.role,
+                        role: effectiveLanguage === "uk" ? sourceRoleUk[source.id] ?? source.role : source.role,
                         title: source.title,
                         url: source.url,
                       }))}
-                      statusLabel={language === "uk"
+                      statusLabel={effectiveLanguage === "uk"
                         ? `Перевірено ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} джерела розділу`
                         : `Reviewed ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} chapter references`}
                     />
 
                     <LearningPager
-                      ariaLabel={language === "uk" ? "Навігація розділами ISTQB CT-AI" : "ISTQB CT-AI chapter navigation"}
+                      ariaLabel={effectiveLanguage === "uk" ? "Навігація розділами ISTQB CT-AI" : "ISTQB CT-AI chapter navigation"}
                       labelFor={localizedNavLabel}
-                      language={language}
+                      language={effectiveLanguage}
                       next={next}
                       onSelect={selectModule}
                       previous={previous}
@@ -316,7 +311,7 @@ export default function IstqbAiTestingPage() {
 
                   <LearningRail
                     headings={headings}
-                    language={language}
+                    language={effectiveLanguage}
                     languages={activeModuleHasUkrainian ? ["en", "uk"] : ["en"]}
                     onLanguageChange={setLanguage}
                   />
