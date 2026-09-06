@@ -8,6 +8,11 @@ import type { LiveTraceEvent } from "../app/ai-assistant/learning-path-stream-ev
 
 const BASE = "https://gimme-job.com/ai-assistant";
 
+function browserRequest(input: RequestInfo | URL, init?: RequestInit): Request {
+  if (input instanceof Request) return new Request(input, init);
+  return new Request(new URL(input.toString(), BASE), init);
+}
+
 function sse(frames: unknown[], status = 200): Response {
   return new Response(frames.map((frame) => `data: ${JSON.stringify(frame)}\n\n`).join(""), {
     status,
@@ -19,7 +24,7 @@ test("stream client emits normalized live events and returns the final JSON cont
   const calls: Array<{ url: string; accept: string | null }> = [];
   const events: LiveTraceEvent[] = [];
   const originalFetch: typeof fetch = async (input, init) => {
-    const request = new Request(input, init);
+    const request = browserRequest(input, init);
     calls.push({ url: request.url, accept: request.headers.get("accept") });
     return sse([
       { type: "trace.start", sequence: 1, elapsed_ms: 0.5, request_id: "request-1" },
@@ -48,7 +53,7 @@ test("stream client emits normalized live events and returns the final JSON cont
 test("stream client falls back to the existing JSON endpoint during rolling deployment", async () => {
   const urls: string[] = [];
   const originalFetch: typeof fetch = async (input, init) => {
-    const request = new Request(input, init);
+    const request = browserRequest(input, init);
     urls.push(request.url);
     if (request.url.endsWith("/stream")) return Response.json({ error: "not deployed" }, { status: 404 });
     return Response.json({ requestId: "fallback-request" });
@@ -67,7 +72,7 @@ test("stream client falls back to the existing JSON endpoint during rolling depl
 test("stream client leaves unrelated and non-POST requests untouched", async () => {
   const urls: string[] = [];
   const originalFetch: typeof fetch = async (input, init) => {
-    const request = new Request(input, init);
+    const request = browserRequest(input, init);
     urls.push(request.url);
     return Response.json({ ok: true });
   };
