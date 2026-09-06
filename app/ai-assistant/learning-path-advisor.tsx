@@ -8,6 +8,8 @@ import {
   aiAssistantTopicHref,
 } from "./assistant-navigation";
 import AssistantMarkdown from "./assistant-markdown";
+import ExecutionTrace, { type ExecutionTraceData } from "./execution-trace";
+import traceStyles from "./execution-trace.module.css";
 import styles from "./learning-path-advisor.module.css";
 
 type ChatRole = "user" | "assistant";
@@ -41,10 +43,7 @@ type LearningMap = {
   nodes: LearningMapNode[];
 };
 
-export type LearningPathApiResponse = {
-  requestId: string;
-  sessionId: string;
-  retrievalMode: "repository" | "general";
+export type LearningPathApiResponse = ExecutionTraceData & {
   response: {
     answer: string;
     cards: AdvisorCard[];
@@ -56,6 +55,7 @@ export type LearningPathApiResponse = {
 type DisplayMessage = RequestMessage & {
   id: string;
   result?: LearningPathApiResponse;
+  sourcePrompt?: string;
 };
 
 type Recommendation = {
@@ -92,6 +92,7 @@ const MAX_DISPLAY_MESSAGES = 24;
 const MAX_CARDS = 12;
 const MAX_SUGGESTED_PROMPTS = 6;
 const MAX_MAP_NODES = 8;
+const MAX_WORKFLOW_STEPS = 16;
 
 const SAMPLE_PROMPTS = [
   "Python parallelism",
@@ -126,16 +127,28 @@ function optionalSourcePath(value: unknown): string | null {
   return value === null ? null : nonEmptyString(value);
 }
 
-function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse | null {
+export function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse | null {
   if (!isRecord(value) || !isRecord(value.response)) return null;
   const requestId = nonEmptyString(value.requestId);
   const sessionId = nonEmptyString(value.sessionId);
+  const model = nonEmptyString(value.model);
   const answer = nonEmptyString(value.response.answer);
   const learningMap = value.response.learningMap;
+  const workflowSteps = Array.isArray(value.workflowSteps) ? value.workflowSteps.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = nonEmptyString(item.id);
+    const label = nonEmptyString(item.label);
+    const detail = nonEmptyString(item.detail);
+    return id && label && detail ? [{ id, label, detail }] : [];
+  }).slice(0, MAX_WORKFLOW_STEPS) : [];
   if (
     !requestId
     || !sessionId
+    || !model
     || !answer
+    || typeof value.langfuseTracing !== "boolean"
+    || value.orchestration !== "langgraph"
+    || workflowSteps.length < 1
     || (value.retrievalMode !== "repository" && value.retrievalMode !== "general")
     || !isRecord(learningMap)
   ) return null;
@@ -171,7 +184,11 @@ function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse
   return {
     requestId,
     sessionId,
+    model,
+    langfuseTracing: value.langfuseTracing,
+    orchestration: "langgraph",
     retrievalMode: value.retrievalMode,
+    workflowSteps,
     response: {
       answer,
       cards,
@@ -373,10 +390,12 @@ function MicrophoneIcon() {
   );
 }
 
-function ConversationTurn({ busy, message, onSuggestedPrompt }: Readonly<{
+function ConversationTurn({ busy, message, onInspectTrace, onSuggestedPrompt, selectedForTrace }: Readonly<{
   busy: boolean;
   message: DisplayMessage;
+  onInspectTrace: () => void;
   onSuggestedPrompt: (prompt: string) => void;
+  selectedForTrace: boolean;
 }>) {
   if (message.role === "user") {
     return (
@@ -389,6 +408,16 @@ function ConversationTurn({ busy, message, onSuggestedPrompt }: Readonly<{
   return (
     <article className={styles.assistantTurn}>
       <LearningPathResponseView busy={busy} onSuggestedPrompt={onSuggestedPrompt} result={message.result}/>
+      <div className={traceStyles.turnTraceAction}>
+        <button
+          aria-pressed={selectedForTrace}
+          className={traceStyles.selectButton}
+          onClick={onInspectTrace}
+          type="button"
+        >
+          {selectedForTrace ? "Trace selected" : "Inspect trace"}
+        </button>
+      </div>
     </article>
   );
 }
@@ -408,6 +437,7 @@ export default function LearningPathAdvisor() {
   const [error, setError] = useState("");
   const [listening, setListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognitionLike | null>(null);
+  const [traceMessageId, setTraceMessageId] = useState("");
 
   useEffect(() => () => {
     recognition?.abort();
@@ -513,8 +543,10 @@ export default function LearningPathAdvisor() {
         role: "assistant",
         content: result.response.answer,
         result,
+        sourcePrompt: prompt,
       };
       setSessionId(result.sessionId);
+      setTraceMessageId(assistantMessage.id);
       setMessages([...pendingMessages, assistantMessage].slice(-MAX_DISPLAY_MESSAGES));
     } catch (requestError) {
       setMessages(previousMessages);
@@ -533,7 +565,11 @@ export default function LearningPathAdvisor() {
     setSessionId("");
     setDraft("");
     setError("");
+    setTraceMessageId("");
   }
+
+  const selectedTraceMessage = messages.find((message) => message.id === traceMessageId && message.result)
+    ?? [...messages].reverse().find((message) => message.role === "assistant" && message.result);
 
   return (
     <main className="kb-shell">
@@ -558,85 +594,94 @@ export default function LearningPathAdvisor() {
             <p>Build a focused path from materials already available on GimmeJob.</p>
           </header>
 
-          <section aria-label="Learning Path Advisor chat" className={styles.chat}>
-            <div className={styles.chatTopline}>
-              <span>{busy ? "Building your path…" : "Ready"}</span>
-              <div className="ai-assistant-topline-actions">
-                <div aria-label="Response language" className="ai-assistant-language-selector" role="group">
-                  <button aria-pressed={language === "en"} disabled={busy} onClick={() => changeLanguage("en")} type="button">EN</button>
-                  <button aria-pressed={language === "uk"} disabled={busy} onClick={() => changeLanguage("uk")} type="button">UA</button>
-                </div>
-                {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New path</button>}
-              </div>
-            </div>
-
-            <div aria-live="polite" className={styles.conversation}>
-              {messages.length === 0 && !busy && (
-                <section className={styles.emptyState}>
-                  <h2>What do you want to learn?</h2>
-                  <p>Choose a topic. The advisor will organize relevant site materials first and interview practice second.</p>
-                  <div>
-                    {SAMPLE_PROMPTS.map((samplePrompt) => <button key={samplePrompt} onClick={() => void sendPrompt(samplePrompt)} type="button">{samplePrompt}</button>)}
+          <div className={traceStyles.workspace}>
+            <section aria-label="Learning Path Advisor chat" className={styles.chat}>
+              <div className={styles.chatTopline}>
+                <span>{busy ? "Building your path…" : "Ready"}</span>
+                <div className="ai-assistant-topline-actions">
+                  <div aria-label="Response language" className="ai-assistant-language-selector" role="group">
+                    <button aria-pressed={language === "en"} disabled={busy} onClick={() => changeLanguage("en")} type="button">EN</button>
+                    <button aria-pressed={language === "uk"} disabled={busy} onClick={() => changeLanguage("uk")} type="button">UA</button>
                   </div>
-                </section>
-              )}
-
-              {messages.map((message) => (
-                <ConversationTurn
-                  busy={busy}
-                  key={message.id}
-                  message={message}
-                  onSuggestedPrompt={(suggestedPrompt) => void sendPrompt(suggestedPrompt)}
-                />
-              ))}
-
-              {busy && (
-                <output aria-label="Building a learning path from GimmeJob materials" className={styles.loading}>
-                  <span aria-hidden="true"><i/><i/><i/></span>
-                  <div><strong>Building your learning path</strong><small>Finding the most relevant GimmeJob topics and interview questions.</small></div>
-                </output>
-              )}
-            </div>
-
-            {error && <div className={styles.errorBanner} role="alert"><strong>Could not build the learning path.</strong><span>{error}</span></div>}
-
-            <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void sendPrompt(draft); }}>
-              <label className={styles.visuallyHidden} htmlFor="learning-path-prompt">Ask the Learning Path Advisor</label>
-              <textarea
-                aria-describedby="learning-path-prompt-help"
-                disabled={busy}
-                id="learning-path-prompt"
-                maxLength={20_000}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-                    event.preventDefault();
-                    event.currentTarget.form?.requestSubmit();
-                  }
-                }}
-                placeholder="For example: Python parallelism"
-                rows={2}
-                value={draft}
-              />
-              <div>
-                <span id="learning-path-prompt-help">{listening ? "Listening… click the microphone to stop" : "Enter to send · Shift + Enter for a new line"}</span>
-                <div className="ai-assistant-composer-actions">
-                  <button
-                    aria-label={listening ? "Stop voice input" : "Dictate learning topic"}
-                    aria-pressed={listening}
-                    className="ai-assistant-voice-button"
-                    disabled={busy}
-                    onClick={toggleDictation}
-                    title={listening ? "Stop voice input" : `Dictate in ${language === "uk" ? "Ukrainian" : "English"}`}
-                    type="button"
-                  >
-                    <MicrophoneIcon/>
-                  </button>
-                  <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build path"}</button>
+                  {messages.length > 0 && <button disabled={busy} onClick={resetConversation} type="button">New path</button>}
                 </div>
               </div>
-            </form>
-          </section>
+
+              <div aria-live="polite" className={styles.conversation}>
+                {messages.length === 0 && !busy && (
+                  <section className={styles.emptyState}>
+                    <h2>What do you want to learn?</h2>
+                    <p>Choose a topic. The advisor will organize relevant site materials first and interview practice second.</p>
+                    <div>
+                      {SAMPLE_PROMPTS.map((samplePrompt) => <button key={samplePrompt} onClick={() => void sendPrompt(samplePrompt)} type="button">{samplePrompt}</button>)}
+                    </div>
+                  </section>
+                )}
+
+                {messages.map((message) => (
+                  <ConversationTurn
+                    busy={busy}
+                    key={message.id}
+                    message={message}
+                    onInspectTrace={() => setTraceMessageId(message.id)}
+                    onSuggestedPrompt={(suggestedPrompt) => void sendPrompt(suggestedPrompt)}
+                    selectedForTrace={message.id === selectedTraceMessage?.id}
+                  />
+                ))}
+
+                {busy && (
+                  <output aria-label="Building a learning path from GimmeJob materials" className={styles.loading}>
+                    <span aria-hidden="true"><i/><i/><i/></span>
+                    <div><strong>Building your learning path</strong><small>Finding the most relevant GimmeJob topics and interview questions.</small></div>
+                  </output>
+                )}
+              </div>
+
+              {error && <div className={styles.errorBanner} role="alert"><strong>Could not build the learning path.</strong><span>{error}</span></div>}
+
+              <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void sendPrompt(draft); }}>
+                <label className={styles.visuallyHidden} htmlFor="learning-path-prompt">Ask the Learning Path Advisor</label>
+                <textarea
+                  aria-describedby="learning-path-prompt-help"
+                  disabled={busy}
+                  id="learning-path-prompt"
+                  maxLength={20_000}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  placeholder="For example: Python parallelism"
+                  rows={2}
+                  value={draft}
+                />
+                <div>
+                  <span id="learning-path-prompt-help">{listening ? "Listening… click the microphone to stop" : "Enter to send · Shift + Enter for a new line"}</span>
+                  <div className="ai-assistant-composer-actions">
+                    <button
+                      aria-label={listening ? "Stop voice input" : "Dictate learning topic"}
+                      aria-pressed={listening}
+                      className="ai-assistant-voice-button"
+                      disabled={busy}
+                      onClick={toggleDictation}
+                      title={listening ? "Stop voice input" : `Dictate in ${language === "uk" ? "Ukrainian" : "English"}`}
+                      type="button"
+                    >
+                      <MicrophoneIcon/>
+                    </button>
+                    <button disabled={busy || !draft.trim()} type="submit">{busy ? "Working…" : "Build path"}</button>
+                  </div>
+                </div>
+              </form>
+            </section>
+
+            <ExecutionTrace
+              prompt={selectedTraceMessage?.sourcePrompt ?? ""}
+              result={selectedTraceMessage?.result ?? null}
+            />
+          </div>
         </div>
       </section>
       {mobileNav && <button aria-label="Close navigation" className="kb-backdrop" onClick={() => setMobileNav(false)} type="button"/>}
