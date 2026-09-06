@@ -50,7 +50,7 @@
   justify-content: flex-end;
 }
 
-.sourceActions a,
+.companion .sourceActions a,
 .actionBar button,
 .timer button {
   align-items: center;
@@ -69,11 +69,13 @@
   text-decoration: none;
 }
 
-.sourceActions a:hover,
+.companion .sourceActions a:hover,
 .actionBar button:hover,
 .timer button:hover {
   background: #255d40;
   border-color: #255d40;
+  color: #fff;
+  text-decoration: none;
 }
 
 .secondaryButton {
@@ -444,7 +446,7 @@
   margin: 24px 2px 0;
 }
 
-.sourceActions a:focus-visible,
+.companion .sourceActions a:focus-visible,
 .actionBar button:focus-visible,
 .timer button:focus-visible,
 .optionButtons button:focus-visible,
