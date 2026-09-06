@@ -21,7 +21,8 @@
 
 .chat,
 .guide {
-  height: min(720px, calc(100vh - 72px));
+  height: calc(100vh - 58px);
+  min-height: 620px;
 }
 
 .chat {
@@ -516,6 +517,7 @@
   .chat,
   .guide {
     height: 620px;
+    min-height: 620px;
   }
 }
 
