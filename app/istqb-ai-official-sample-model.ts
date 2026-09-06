@@ -65,15 +65,17 @@ export const OFFICIAL_ADDITIONAL_KEYS = {
 export type OfficialMainAnswers = Record<number, string[]>;
 export type OfficialAdditionalAnswers = Partial<Record<keyof typeof OFFICIAL_ADDITIONAL_KEYS, string[]>>;
 
+export function sameOrderedSelection(actual: readonly string[] = [], expected: readonly string[] = []): boolean {
+  return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
 export function sameSelection(actual: readonly string[] = [], expected: readonly string[] = []): boolean {
   if (actual.length !== expected.length) return false;
+  const isLetterAnswerSet = expected.every((value) => /^[a-e]$/.test(value));
+  if (!isLetterAnswerSet) return sameOrderedSelection(actual, expected);
   const normalizedActual = [...actual].sort();
   const normalizedExpected = [...expected].sort();
   return normalizedActual.every((value, index) => value === normalizedExpected[index]);
-}
-
-export function sameOrderedSelection(actual: readonly string[] = [], expected: readonly string[] = []): boolean {
-  return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
 }
 
 export function scoreOfficialMain(answers: OfficialMainAnswers): { points: number; correctQuestions: number } {
