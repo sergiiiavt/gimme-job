@@ -37,16 +37,11 @@ type WorkflowStep = {
   id: string;
   label: string;
   detail: string;
-  durationMs?: number;
-  input?: Record<string, TraceScalar>;
-  output?: Record<string, TraceScalar>;
-  retrievalResults?: TraceRetrievalResult[];
-  tokenUsage?: TraceTokenUsage | null;
-};
-
-type ParsedWorkflow = {
-  steps: WorkflowStep[];
-  rich: boolean;
+  durationMs: number;
+  input: Record<string, TraceScalar>;
+  output: Record<string, TraceScalar>;
+  retrievalResults: TraceRetrievalResult[];
+  tokenUsage: TraceTokenUsage | null;
 };
 
 type AssistantCardKind = "knowledge" | "learning" | "interview" | "hint";
@@ -142,7 +137,7 @@ function validDuration(value: unknown): value is number {
 }
 
 function parseTraceUrl(value: unknown): string | null | undefined {
-  if (value === null) return null;
+  if (value === undefined || value === null) return null;
   const text = requiredText(value, MAX_TRACE_URL_LENGTH);
   if (!text) return undefined;
   try {
@@ -215,10 +210,9 @@ function parseMessages(value: unknown): ChatMessage[] | null {
   return messages;
 }
 
-function parseWorkflowSteps(value: unknown): ParsedWorkflow | null {
+function parseWorkflowSteps(value: unknown): WorkflowStep[] | null {
   if (!Array.isArray(value) || value.length < 1 || value.length > MAX_WORKFLOW_STEPS) return null;
   const steps: WorkflowStep[] = [];
-  let rich = false;
   for (const item of value) {
     if (!isJsonObject(item)) return null;
     const id = requiredText(item.id, MAX_ID_LENGTH);
@@ -226,10 +220,19 @@ function parseWorkflowSteps(value: unknown): ParsedWorkflow | null {
     const detail = requiredText(item.detail, MAX_DETAIL_LENGTH);
     if (!id || !label || !detail) return null;
 
-    const hasRichFields = ["duration_ms", "input", "output", "retrieval_results", "token_usage"]
-      .some((key) => Object.hasOwn(item, key));
-    if (!hasRichFields) {
-      steps.push({ id, label, detail });
+    const richKeys = ["duration_ms", "input", "output", "retrieval_results", "token_usage"];
+    const hasRichField = richKeys.some((key) => Object.hasOwn(item, key));
+    if (!hasRichField) {
+      steps.push({
+        id,
+        label,
+        detail,
+        durationMs: 0,
+        input: {},
+        output: {},
+        retrievalResults: [],
+        tokenUsage: null,
+      });
       continue;
     }
 
@@ -238,9 +241,12 @@ function parseWorkflowSteps(value: unknown): ParsedWorkflow | null {
     const retrievalResults = parseTraceRetrievalResults(item.retrieval_results);
     const tokenUsage = parseTraceTokenUsage(item.token_usage);
     if (
-      !validDuration(item.duration_ms) || !input || !output || !retrievalResults || tokenUsage === undefined
+      !validDuration(item.duration_ms)
+      || !input
+      || !output
+      || !retrievalResults
+      || tokenUsage === undefined
     ) return null;
-    rich = true;
     steps.push({
       id,
       label,
@@ -252,7 +258,7 @@ function parseWorkflowSteps(value: unknown): ParsedWorkflow | null {
       tokenUsage,
     });
   }
-  return { steps, rich };
+  return steps;
 }
 
 function parseCards(value: unknown): AssistantCard[] | null {
@@ -327,16 +333,19 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
   const requestId = requiredText(payload.request_id, MAX_REQUEST_ID_LENGTH);
   const sessionId = requiredText(payload.session_id, MAX_SESSION_ID_LENGTH);
   const model = requiredText(payload.model, MAX_MODEL_LENGTH);
-  const parsedWorkflow = parseWorkflowSteps(payload.workflow_steps);
-  const hasRichSummary = Object.hasOwn(payload, "langfuse_trace_url") || Object.hasOwn(payload, "total_duration_ms");
-  const langfuseTraceUrl = hasRichSummary ? parseTraceUrl(payload.langfuse_trace_url) : null;
+  const workflowSteps = parseWorkflowSteps(payload.workflow_steps);
+  const langfuseTraceUrl = parseTraceUrl(payload.langfuse_trace_url);
+  const totalDurationMs = payload.total_duration_ms === undefined
+    ? workflowSteps?.reduce((sum, step) => sum + step.durationMs, 0) ?? 0
+    : payload.total_duration_ms;
   if (
     !requestId || !sessionId || !validSessionId(sessionId) || !model
     || typeof payload.langfuse_tracing !== "boolean"
+    || langfuseTraceUrl === undefined
     || payload.orchestration !== "langgraph"
     || (payload.retrieval_mode !== "repository" && payload.retrieval_mode !== "general")
-    || !parsedWorkflow
-    || (hasRichSummary && (langfuseTraceUrl === undefined || !validDuration(payload.total_duration_ms)))
+    || !validDuration(totalDurationMs)
+    || !workflowSteps
     || !isJsonObject(payload.response)
   ) return null;
 
@@ -359,13 +368,11 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
     sessionId,
     model,
     langfuseTracing: payload.langfuse_tracing,
+    langfuseTraceUrl,
     orchestration: "langgraph",
     retrievalMode: payload.retrieval_mode,
-    ...(hasRichSummary ? {
-      langfuseTraceUrl,
-      totalDurationMs: payload.total_duration_ms,
-    } : {}),
-    workflowSteps: parsedWorkflow.steps,
+    totalDurationMs,
+    workflowSteps,
     response: {
       answer,
       cards,
