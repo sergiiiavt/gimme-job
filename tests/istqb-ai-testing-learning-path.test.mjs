@@ -144,7 +144,7 @@ test("mock exam is rendered as a selectable assessment with scoring and review",
   const model = await read("app/istqb-ai-mock-exam-model.ts");
 
   assert.match(page, /import IstqbAiMockExam from "\.\/istqb-ai-mock-exam"/);
-  assert.match(page, /isMockExam\s*\? <IstqbAiMockExam markdown=\{activeModule\.markdown\}/);
+  assert.match(page, /isMockExam\s*\? <IstqbAiMockExam markdown=\{localizedMarkdown\}/);
   assert.match(page, /isOfficialSampleExam = activeModule\?\.id === "official-sample-exam"/);
   assert.match(page, /official sample questions/);
   assert.match(page, /original practice questions/);
