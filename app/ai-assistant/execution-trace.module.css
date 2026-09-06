@@ -468,3 +468,139 @@
     min-height: 560px;
   }
 }
+
+/* Readability pass: trace data should remain dense, but never microscopic. */
+.header {
+  min-height: 58px;
+  padding: 11px 14px;
+}
+
+.header > div > span {
+  font-size: 10px;
+}
+
+.header h2 {
+  font-size: 17px;
+}
+
+.header small {
+  font-size: 10px;
+  padding: 5px 8px;
+}
+
+.empty {
+  padding: 26px;
+}
+
+.empty strong {
+  font-size: 13px;
+}
+
+.empty p {
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.metadata,
+.langfuseLink {
+  padding-inline: 14px;
+}
+
+.metadata dt {
+  font-size: 9px;
+}
+
+.metadata dd {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.langfuseLink a {
+  font-size: 10px;
+}
+
+.langfuseLink small {
+  font-size: 9px;
+}
+
+.timeline {
+  padding: 12px 14px 6px;
+}
+
+.timeline > li {
+  gap: 10px;
+  grid-template-columns: 12px minmax(0, 1fr);
+}
+
+.timeline summary {
+  gap: 8px;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  min-height: 34px;
+}
+
+.timeline summary > span,
+.timeline summary code,
+.stepMeta > code {
+  font-size: 9px;
+}
+
+.timeline summary strong {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.stepBody {
+  margin-left: 32px;
+}
+
+.stepBody > span,
+.traceFields > span,
+.retrievalBlock > span,
+.tokenUsage > span {
+  font-size: 9px;
+  margin-bottom: 5px;
+}
+
+.stepBody p,
+.stepBody pre {
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 9px 10px;
+}
+
+.traceFields dl > div,
+.tokenUsage dl > div {
+  padding: 7px 9px;
+}
+
+.traceFields dt,
+.traceFields dd,
+.tokenUsage dt,
+.tokenUsage dd {
+  font-size: 9px;
+}
+
+.retrievalBlock li {
+  padding: 9px;
+}
+
+.retrievalBlock strong {
+  font-size: 10px;
+}
+
+.retrievalBlock header code,
+.retrievalBlock small {
+  font-size: 9px;
+}
+
+.disclaimer {
+  font-size: 9px;
+  line-height: 1.6;
+  margin-inline: 14px;
+}
+
+.selectButton {
+  font-size: 10px;
+  min-height: 32px;
+  padding-inline: 10px;
+}

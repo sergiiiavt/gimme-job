@@ -556,3 +556,107 @@
     min-height: 560px;
   }
 }
+
+/* Readability pass: keep the compact assistant layout, but avoid sub-10px working text. */
+.hero > span {
+  font-size: 11px;
+}
+
+.hero p {
+  font-size: 14px;
+}
+
+.chatTopline > span {
+  font-size: 12px;
+}
+
+.chatTopline button {
+  font-size: 11px;
+  min-height: 34px;
+}
+
+.emptyState h2 {
+  font-size: 20px;
+}
+
+.emptyState p {
+  font-size: 14px;
+}
+
+.emptyState button {
+  font-size: 12px;
+  min-height: 38px;
+  padding-inline: 13px;
+}
+
+.userTurn > span,
+.responseIntro > span,
+.sectionHeader > div > span,
+.followUps > span {
+  font-size: 10px;
+}
+
+.userTurn p,
+.responseIntro p {
+  font-size: 14px;
+}
+
+.responseIntro h2 {
+  font-size: 22px;
+}
+
+.sectionHeader h3 {
+  font-size: 16px;
+}
+
+.sectionHeader > small,
+.stepNumber {
+  font-size: 11px;
+}
+
+.recommendationTitle h4 {
+  font-size: 14px;
+}
+
+.recommendationTitle small {
+  font-size: 10px;
+}
+
+.recommendationCopy p,
+.noLinks {
+  font-size: 12px;
+}
+
+.contentLink,
+.followUps button {
+  font-size: 11px;
+}
+
+.followUps button {
+  min-height: 34px;
+  padding-inline: 11px;
+}
+
+.loading strong,
+.errorBanner {
+  font-size: 12px;
+}
+
+.loading small {
+  font-size: 11px;
+}
+
+.composer textarea {
+  font-size: 14px;
+  min-height: 58px;
+}
+
+.composer > div > span {
+  font-size: 10px;
+}
+
+.composer button {
+  font-size: 12px;
+  min-height: 36px;
+  padding-inline: 14px;
+}
