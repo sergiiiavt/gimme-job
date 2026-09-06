@@ -5,11 +5,13 @@ import secrets
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi.responses import StreamingResponse
 
 from . import __version__
 from .agent import AssistantAgent
 from .interview import InterviewEvaluator, find_interview_question, select_interview_questions
 from .learning_path import LearningAdvisorGraph
+from .learning_path_stream import encode_sse, stream_learning_advisor
 from .schemas import (
     AssistantResponse,
     ChatRequest,
@@ -231,6 +233,71 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             total_duration_ms=total_duration_ms,
             workflow_steps=workflow_steps,
             response=response,
+        )
+
+    @app.post(
+        "/v1/learning-path/stream",
+        dependencies=[Depends(require_auth)],
+    )
+    async def learning_path_stream(request: ChatRequest) -> StreamingResponse:
+        require_rag_ai(learning_advisor)
+        if request.messages[-1].role != "user":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="The final message must have role 'user'.",
+            )
+
+        request_id = uuid4().hex
+        session_id = request.session_id or uuid4().hex
+
+        async def event_source():
+            try:
+                async for event in stream_learning_advisor(
+                    learning_advisor,
+                    messages=request.messages,
+                    session_id=session_id,
+                    request_id=request_id,
+                ):
+                    yield encode_sse(event)
+            except Exception:
+                logger.exception("Live learning path workflow failed; returning deterministic fallback")
+                response, workflow_steps = _learning_path_fallback(request)
+                fallback = LearningAdvisorResponse(
+                    request_id=request_id,
+                    session_id=session_id,
+                    model=runtime.openai_model,
+                    langfuse_tracing=False,
+                    langfuse_trace_url=None,
+                    retrieval_mode="general",
+                    total_duration_ms=0.0,
+                    workflow_steps=workflow_steps,
+                    response=response,
+                )
+                yield encode_sse(
+                    {
+                        "type": "trace.error",
+                        "sequence": 2_147_483_646,
+                        "elapsed_ms": 0.0,
+                        "detail": "The live AI workflow failed safely; a deterministic fallback was returned.",
+                    }
+                )
+                yield encode_sse(
+                    {
+                        "type": "result",
+                        "sequence": 2_147_483_647,
+                        "elapsed_ms": 0.0,
+                        "payload": fallback.model_dump(),
+                    }
+                )
+
+        return StreamingResponse(
+            event_source(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-store",
+                "X-Accel-Buffering": "no",
+                "X-Content-Type-Options": "nosniff",
+            },
         )
 
     @app.post(

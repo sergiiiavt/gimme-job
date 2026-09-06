@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LearningPathAdvisor from "./learning-path-advisor";
+import StreamingLearningPathAdvisor from "./learning-path-advisor-streaming";
 
 export const metadata: Metadata = {
   title: "Learning Path Advisor | GimmeJob",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function LearningPathAdvisorPage() {
-  return <LearningPathAdvisor/>;
+  return <StreamingLearningPathAdvisor/>;
 }
