@@ -287,13 +287,13 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.match(routeSource, /interview-stars/);
   assert.match(stylesSource, /\.iq-star-icon\.active \{/);
 
-  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News"]) {
+  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Games"]) {
     assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
   }
   assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "trends"/);
-  assert.match(navigationSource, /id: "playgrounds",[\s\S]*?label: "Playgrounds",[\s\S]*?id: "ai-assistant"[\s\S]*?id: "websocket-playground"[\s\S]*?id: "games"/);
+  assert.match(navigationSource, /id: "playgrounds",[\s\S]*?label: "Playgrounds",[\s\S]*?id: "ai-assistant"[\s\S]*?id: "websocket-playground"/);
   assert.match(navigationSource, /id: "learning",[\s\S]*?label: "Learning path"/);
-  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"/);
+  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "games"/);
   assert.match(stylesSource, /\.kb-area-group-career/);
   assert.match(stylesSource, /\.kb-area-group-learning/);
   assert.match(stylesSource, /\.kb-area-group-misc/);
@@ -320,7 +320,8 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
   assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "playgrounds"'), "The Career group must come before Playgrounds.");
   assert.ok(navigationSource.indexOf('id: "playgrounds"') < navigationSource.indexOf('id: "ai-assistant"'), "AI Assistant must be inside Playgrounds.");
-  assert.ok(navigationSource.indexOf('id: "games"') < navigationSource.indexOf('id: "learning"'), "All playgrounds must come before the Learning path.");
+  assert.ok(navigationSource.indexOf('id: "websocket-playground"') < navigationSource.indexOf('id: "learning"'), "Playgrounds must come before the Learning path.");
+  assert.ok(navigationSource.indexOf('id: "misc"') < navigationSource.indexOf('id: "games"'), "Games must remain inside Misc.");
   assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "trends"'), "Trends must remain the final Career item.");
   assert.ok(navigationSource.indexOf('id: "certifications"') < navigationSource.indexOf('id: "llm"'), "Certs & Trainings must lead the Learning path.");
   assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
