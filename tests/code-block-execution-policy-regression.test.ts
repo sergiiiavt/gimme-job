@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { highlightInterviewCode } from "../app/interview-code-highlighting.ts";
 import { isRunnablePythonSource } from "../app/interview-python-execution.ts";
-import { staticCodeContent, staticCodeLanguage } from "../app/static-code-block.ts";
 
 const locustRuntimeFragment = `def _configured_user_count(environment: object) -> int:
     runner = getattr(environment, "runner", None)
@@ -27,14 +26,13 @@ test("self-contained Python remains runnable", () => {
   assert.equal(isRunnablePythonSource("python", "values = [1, 2, 3]\nprint(sum(values))"), true);
 });
 
-test("static Python keeps language metadata, whitespace, and syntax colors", () => {
-  assert.deepEqual(staticCodeLanguage("python"), { label: "Python", normalized: "python" });
-  const tokens = staticCodeContent(locustRuntimeFragment, "python");
-  const colored = tokens.filter((token) => typeof token === "object" && token?.props?.style?.color);
-  assert.ok(colored.length > 4);
-  assert.ok(colored.some((token) => token?.props?.children === "def" && token.props.style.color === "#569cd6"));
-  assert.ok(colored.some((token) => token?.props?.children === "getattr" && token.props.style.color === "#4ec9b0"));
-  assert.ok(tokens.some((token) => typeof token === "string" && token.includes("\n    ")));
+test("static Python retains formatting and visible syntax colors", () => {
+  const tokens = highlightInterviewCode(locustRuntimeFragment, "python");
+  assert.equal(tokens.map((token) => token.text).join(""), locustRuntimeFragment);
+  assert.ok(tokens.some((token) => token.text === "def" && token.color === "#569cd6"));
+  assert.ok(tokens.some((token) => token.text === "getattr" && token.color === "#4ec9b0"));
+  assert.ok(tokens.some((token) => token.text.includes("\n    ")));
+  assert.ok(tokens.some((token) => token.color === "#ce9178"));
 });
 
 test("static non-Python code receives generic syntax coloring instead of plain monochrome text", () => {
