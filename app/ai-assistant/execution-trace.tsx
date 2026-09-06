@@ -298,12 +298,9 @@ export function ExecutionTrace({ prompt, result }: Readonly<{
     return () => window.removeEventListener(LEARNING_PATH_TRACE_EVENT, onTraceEvent);
   }, []);
 
-  useEffect(() => {
-    if (live?.requestId && result?.requestId === live.requestId) setLive(null);
-  }, [live?.requestId, result?.requestId]);
-
-  const headerDuration = live
-    ? `Live · ${formatDuration(live.events.at(-1)?.elapsedMs ?? 0)}`
+  const visibleLive = live && result?.requestId !== live.requestId ? live : null;
+  const headerDuration = visibleLive
+    ? `Live · ${formatDuration(visibleLive.events.at(-1)?.elapsedMs ?? 0)}`
     : result
       ? formatDuration(result.totalDurationMs)
       : "Idle";
@@ -318,8 +315,8 @@ export function ExecutionTrace({ prompt, result }: Readonly<{
         <small>{headerDuration}</small>
       </header>
 
-      {live ? (
-        <LiveExecutionTrace live={live}/>
+      {visibleLive ? (
+        <LiveExecutionTrace live={visibleLive}/>
       ) : !result ? (
         <div className={styles.empty}>
           <strong>No execution yet</strong>
