@@ -70,14 +70,5 @@
     "description": "Recognize when to hand off to performance, security, accessibility, automation or integration tooling without duplicating those curricula.",
     "descriptionUk": "Розпізнавайте момент handoff до performance, security, accessibility, automation або integration tooling без дублювання окремих curricula.",
     "sourceIds": ["k6-docs", "jmeter-docs", "owasp-zap-docs", "burp-suite-docs", "axe-core-docs", "lighthouse-docs", "appium-inspector-docs", "grpcurl-docs", "mdn-websockets", "kafka-docs"]
-  },
-  {
-    "id": "locust-performance-testing",
-    "order": 9,
-    "label": "Performance & load testing with Locust",
-    "labelUk": "Performance та load testing з Locust",
-    "description": "Learn Locust from the real GimmeJob workload: virtual users, task weights and tags, pacing, RPS, response validation, production safety, thresholds and scenario expansion.",
-    "descriptionUk": "Вивчіть Locust на реальному workload GimmeJob: virtual users, task weights і tags, pacing, RPS, response validation, production safety, thresholds та розширення scenarios.",
-    "sourceIds": ["locust-docs", "azure-load-testing-docs", "gimmejob-locust-workload", "gimmejob-locust-readme"]
   }
 ]
