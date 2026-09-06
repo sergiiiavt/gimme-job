@@ -65,10 +65,32 @@ class ChatResponse(BaseModel):
     response: AssistantResponse
 
 
+TraceScalar = str | int | float | bool | None
+
+
+class TraceRetrievalResult(BaseModel):
+    title: str = Field(min_length=1, max_length=1_000)
+    kind: Literal["learning", "question"]
+    score: float = Field(ge=0, le=1.5)
+    source_path: str = Field(min_length=1, max_length=1_000)
+    excerpt: str = Field(min_length=1, max_length=2_000)
+
+
+class TraceTokenUsage(BaseModel):
+    input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(default=0, ge=0)
+    total_tokens: int = Field(default=0, ge=0)
+
+
 class WorkflowStep(BaseModel):
     id: str = Field(min_length=1, max_length=120)
     label: str = Field(min_length=1, max_length=240)
     detail: str = Field(min_length=1, max_length=1_000)
+    duration_ms: float = Field(default=0, ge=0, le=300_000)
+    input: dict[str, TraceScalar] = Field(default_factory=dict, max_length=20)
+    output: dict[str, TraceScalar] = Field(default_factory=dict, max_length=20)
+    retrieval_results: list[TraceRetrievalResult] = Field(default_factory=list, max_length=8)
+    token_usage: TraceTokenUsage | None = None
 
 
 class LearningAdvisorResponse(BaseModel):
@@ -76,8 +98,10 @@ class LearningAdvisorResponse(BaseModel):
     session_id: str
     model: str
     langfuse_tracing: bool
+    langfuse_trace_url: str | None = Field(default=None, max_length=2_000)
     orchestration: Literal["langgraph"] = "langgraph"
     retrieval_mode: Literal["repository", "general"]
+    total_duration_ms: float = Field(default=0, ge=0, le=300_000)
     workflow_steps: list[WorkflowStep]
     response: AssistantResponse
 

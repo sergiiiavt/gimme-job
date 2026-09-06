@@ -8,7 +8,13 @@ import {
   aiAssistantTopicHref,
 } from "./assistant-navigation";
 import AssistantMarkdown from "./assistant-markdown";
-import ExecutionTrace, { type ExecutionTraceData } from "./execution-trace";
+import ExecutionTrace, {
+  type ExecutionStep,
+  type ExecutionTraceData,
+  type TraceRetrievalResult,
+  type TraceScalar,
+  type TraceTokenUsage,
+} from "./execution-trace";
 import traceStyles from "./execution-trace.module.css";
 import styles from "./learning-path-advisor.module.css";
 
@@ -93,6 +99,10 @@ const MAX_CARDS = 12;
 const MAX_SUGGESTED_PROMPTS = 6;
 const MAX_MAP_NODES = 8;
 const MAX_WORKFLOW_STEPS = 16;
+const MAX_TRACE_RESULTS = 8;
+const MAX_TRACE_FIELDS = 20;
+const MAX_TRACE_FIELD_LENGTH = 4_000;
+const MAX_TRACE_DURATION_MS = 300_000;
 
 const SAMPLE_PROMPTS = [
   "Python parallelism",
@@ -127,6 +137,87 @@ function optionalSourcePath(value: unknown): string | null {
   return value === null ? null : nonEmptyString(value);
 }
 
+function validTraceDuration(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= MAX_TRACE_DURATION_MS;
+}
+
+function safeTraceUrl(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  const text = nonEmptyString(value);
+  if (!text || text.length > 2_000) return undefined;
+  try {
+    const url = new URL(text);
+    if (url.protocol !== "https:" || url.username || url.password) return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
+function traceRecord(value: unknown): Record<string, TraceScalar> | null {
+  if (!isRecord(value) || Object.keys(value).length > MAX_TRACE_FIELDS) return null;
+  const parsed: Record<string, TraceScalar> = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (!key.trim() || key.length > 120) return null;
+    if (raw === null || typeof raw === "boolean") parsed[key] = raw;
+    else if (typeof raw === "number" && Number.isFinite(raw)) parsed[key] = raw;
+    else if (typeof raw === "string" && raw.length <= MAX_TRACE_FIELD_LENGTH) parsed[key] = raw;
+    else return null;
+  }
+  return parsed;
+}
+
+function traceTokenUsage(value: unknown): TraceTokenUsage | null | undefined {
+  if (value === null) return null;
+  if (!isRecord(value)) return undefined;
+  const inputTokens = value.inputTokens;
+  const outputTokens = value.outputTokens;
+  const totalTokens = value.totalTokens;
+  if (
+    typeof inputTokens !== "number" || !Number.isInteger(inputTokens) || inputTokens < 0
+    || typeof outputTokens !== "number" || !Number.isInteger(outputTokens) || outputTokens < 0
+    || typeof totalTokens !== "number" || !Number.isInteger(totalTokens) || totalTokens < 0
+  ) return undefined;
+  return { inputTokens, outputTokens, totalTokens };
+}
+
+function traceRetrievalResults(value: unknown): TraceRetrievalResult[] | null {
+  if (!Array.isArray(value) || value.length > MAX_TRACE_RESULTS) return null;
+  return value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const title = nonEmptyString(item.title);
+    const sourcePath = nonEmptyString(item.sourcePath);
+    const excerpt = nonEmptyString(item.excerpt);
+    const score = item.score;
+    if (
+      !title || !sourcePath || !excerpt
+      || (item.kind !== "learning" && item.kind !== "question")
+      || typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1.5
+    ) return [];
+    return [{ title, kind: item.kind, score, sourcePath, excerpt }];
+  });
+}
+
+function traceWorkflowSteps(value: unknown): ExecutionStep[] | null {
+  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_WORKFLOW_STEPS) return null;
+  const steps = value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = nonEmptyString(item.id);
+    const label = nonEmptyString(item.label);
+    const detail = nonEmptyString(item.detail);
+    const input = traceRecord(item.input);
+    const output = traceRecord(item.output);
+    const retrievalResults = traceRetrievalResults(item.retrievalResults);
+    const tokenUsage = traceTokenUsage(item.tokenUsage);
+    if (
+      !id || !label || !detail || !validTraceDuration(item.durationMs)
+      || !input || !output || !retrievalResults || tokenUsage === undefined
+    ) return [];
+    return [{ id, label, detail, durationMs: item.durationMs, input, output, retrievalResults, tokenUsage }];
+  });
+  return steps.length === value.length ? steps : null;
+}
+
 export function normalizedLearningPathResponse(value: unknown): LearningPathApiResponse | null {
   if (!isRecord(value) || !isRecord(value.response)) return null;
   const requestId = nonEmptyString(value.requestId);
@@ -134,22 +225,19 @@ export function normalizedLearningPathResponse(value: unknown): LearningPathApiR
   const model = nonEmptyString(value.model);
   const answer = nonEmptyString(value.response.answer);
   const learningMap = value.response.learningMap;
-  const workflowSteps = Array.isArray(value.workflowSteps) ? value.workflowSteps.flatMap((item) => {
-    if (!isRecord(item)) return [];
-    const id = nonEmptyString(item.id);
-    const label = nonEmptyString(item.label);
-    const detail = nonEmptyString(item.detail);
-    return id && label && detail ? [{ id, label, detail }] : [];
-  }).slice(0, MAX_WORKFLOW_STEPS) : [];
+  const workflowSteps = traceWorkflowSteps(value.workflowSteps);
+  const langfuseTraceUrl = safeTraceUrl(value.langfuseTraceUrl);
   if (
     !requestId
     || !sessionId
     || !model
     || !answer
     || typeof value.langfuseTracing !== "boolean"
+    || langfuseTraceUrl === undefined
     || value.orchestration !== "langgraph"
-    || workflowSteps.length < 1
+    || !workflowSteps
     || (value.retrievalMode !== "repository" && value.retrievalMode !== "general")
+    || !validTraceDuration(value.totalDurationMs)
     || !isRecord(learningMap)
   ) return null;
 
@@ -186,8 +274,10 @@ export function normalizedLearningPathResponse(value: unknown): LearningPathApiR
     sessionId,
     model,
     langfuseTracing: value.langfuseTracing,
+    langfuseTraceUrl,
     orchestration: "langgraph",
     retrievalMode: value.retrievalMode,
+    totalDurationMs: value.totalDurationMs,
     workflowSteps,
     response: {
       answer,

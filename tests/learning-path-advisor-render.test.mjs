@@ -56,13 +56,57 @@ const repositoryResult = {
   sessionId: "session-1234567890",
   model: "gpt-test",
   langfuseTracing: true,
+  langfuseTraceUrl: "https://cloud.langfuse.com/project/demo/traces/trace-123",
   orchestration: "langgraph",
   retrievalMode: "repository",
+  totalDurationMs: 842,
   workflowSteps: [
-    { id: "contextualize", label: "Contextualize query", detail: "Used the current prompt as the retrieval query." },
-    { id: "retrieve", label: "Retrieve canonical RAG context", detail: "Found 3 canonical RAG materials using vectorize." },
-    { id: "compose_repository", label: "Compose grounded path", detail: "LangChain produced structured advice from canonical RAG context." },
-    { id: "verify", label: "Verify grounding and map", detail: "Kept 3 verified GimmeJob source references and a connected map." },
+    {
+      id: "contextualize",
+      label: "Contextualize query",
+      detail: "Used the current prompt as the retrieval query.",
+      durationMs: 2,
+      input: { messageCount: 1 },
+      output: { query: "Python parallelism", language: "en" },
+      retrievalResults: [],
+      tokenUsage: null,
+    },
+    {
+      id: "retrieve",
+      label: "Retrieve canonical RAG context",
+      detail: "Found 3 canonical RAG materials using vectorize.",
+      durationMs: 76,
+      input: { query: "Python parallelism", language: "en", limit: 8 },
+      output: { strategy: "vectorize", embeddingModel: "@cf/baai/bge-m3", resultCount: 3, topScore: 0.94 },
+      retrievalResults: [{
+        title: "Python parallelism",
+        kind: "question",
+        score: 0.94,
+        sourcePath: "/interview/python?question=py-parallelism-02",
+        excerpt: "Processes provide CPU parallelism while asyncio targets cooperative I/O concurrency.",
+      }],
+      tokenUsage: null,
+    },
+    {
+      id: "compose_repository",
+      label: "Compose grounded path",
+      detail: "LangChain produced structured advice from canonical RAG context.",
+      durationMs: 754,
+      input: { retrievalCount: 3, promptMessages: 3 },
+      output: { answerCharacters: 180, cardCount: 2, mapNodeCount: 3 },
+      retrievalResults: [],
+      tokenUsage: { inputTokens: 520, outputTokens: 190, totalTokens: 710 },
+    },
+    {
+      id: "verify",
+      label: "Verify grounding and map",
+      detail: "Kept 3 verified GimmeJob source references and a connected map.",
+      durationMs: 10,
+      input: { retrievalMode: "repository", candidateSourceCount: 3 },
+      output: { verifiedSourceCount: 3, connectedMap: true },
+      retrievalResults: [],
+      tokenUsage: null,
+    },
   ],
   response: {
     answer: "Start with the **core concurrency model**, then validate it with interview practice.",
@@ -160,9 +204,13 @@ test("normalizes the real workflow trace returned by the AI proxy", () => {
   assert.ok(normalized);
   assert.equal(normalized.model, "gpt-test");
   assert.equal(normalized.langfuseTracing, true);
+  assert.equal(normalized.langfuseTraceUrl, repositoryResult.langfuseTraceUrl);
   assert.equal(normalized.orchestration, "langgraph");
   assert.equal(normalized.retrievalMode, "repository");
+  assert.equal(normalized.totalDurationMs, 842);
   assert.deepEqual(normalized.workflowSteps, repositoryResult.workflowSteps);
+  assert.equal(normalized.workflowSteps[1].retrievalResults[0].score, 0.94);
+  assert.equal(normalized.workflowSteps[2].tokenUsage?.totalTokens, 710);
 });
 
 test("rejects a response that has no observable workflow steps", () => {

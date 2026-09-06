@@ -12,16 +12,36 @@ type LearningPathAiEnv = {
 };
 
 type JsonObject = Record<string, unknown>;
+type TraceScalar = string | number | boolean | null;
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
 
+type TraceRetrievalResult = {
+  title: string;
+  kind: "learning" | "question";
+  score: number;
+  sourcePath: string;
+  excerpt: string;
+};
+
+type TraceTokenUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+};
+
 type WorkflowStep = {
   id: string;
   label: string;
   detail: string;
+  durationMs: number;
+  input: Record<string, TraceScalar>;
+  output: Record<string, TraceScalar>;
+  retrievalResults: TraceRetrievalResult[];
+  tokenUsage: TraceTokenUsage | null;
 };
 
 type AssistantCardKind = "knowledge" | "learning" | "interview" | "hint";
@@ -71,6 +91,11 @@ const MAX_SUMMARY_LENGTH = 4_000;
 const MAX_PATH_LENGTH = 1_000;
 const MAX_PROMPT_LENGTH = 2_000;
 const MAX_DURATION_MINUTES = 240;
+const MAX_TRACE_FIELDS = 20;
+const MAX_TRACE_FIELD_LENGTH = 4_000;
+const MAX_TRACE_DURATION_MS = 300_000;
+const MAX_TRACE_RESULTS = 8;
+const MAX_TRACE_URL_LENGTH = 2_000;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const CARD_KINDS = new Set<AssistantCardKind>(["knowledge", "learning", "interview", "hint"]);
 const MAP_NODE_KINDS = new Set<LearningMapNodeKind>(["topic", "foundation", "concept", "practice", "source"]);
@@ -107,6 +132,69 @@ function validSessionId(value: string): boolean {
   return value.length <= MAX_SESSION_ID_LENGTH && SESSION_ID_PATTERN.test(value);
 }
 
+function validDuration(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= MAX_TRACE_DURATION_MS;
+}
+
+function parseTraceUrl(value: unknown): string | null | undefined {
+  if (value === undefined || value === null) return null;
+  const text = requiredText(value, MAX_TRACE_URL_LENGTH);
+  if (!text) return undefined;
+  try {
+    const url = new URL(text);
+    if (url.protocol !== "https:" || url.username || url.password) return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseTraceRecord(value: unknown): Record<string, TraceScalar> | null {
+  if (!isJsonObject(value) || Object.keys(value).length > MAX_TRACE_FIELDS) return null;
+  const parsed: Record<string, TraceScalar> = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (!key.trim() || key.length > 120) return null;
+    if (raw === null || typeof raw === "boolean") parsed[key] = raw;
+    else if (typeof raw === "number" && Number.isFinite(raw)) parsed[key] = raw;
+    else if (typeof raw === "string" && raw.length <= MAX_TRACE_FIELD_LENGTH) parsed[key] = raw;
+    else return null;
+  }
+  return parsed;
+}
+
+function parseTraceTokenUsage(value: unknown): TraceTokenUsage | null | undefined {
+  if (value === null) return null;
+  if (!isJsonObject(value)) return undefined;
+  const inputTokens = value.input_tokens;
+  const outputTokens = value.output_tokens;
+  const totalTokens = value.total_tokens;
+  if (
+    typeof inputTokens !== "number" || !Number.isInteger(inputTokens) || inputTokens < 0
+    || typeof outputTokens !== "number" || !Number.isInteger(outputTokens) || outputTokens < 0
+    || typeof totalTokens !== "number" || !Number.isInteger(totalTokens) || totalTokens < 0
+  ) return undefined;
+  return { inputTokens, outputTokens, totalTokens };
+}
+
+function parseTraceRetrievalResults(value: unknown): TraceRetrievalResult[] | null {
+  if (!Array.isArray(value) || value.length > MAX_TRACE_RESULTS) return null;
+  const results: TraceRetrievalResult[] = [];
+  for (const item of value) {
+    if (!isJsonObject(item)) return null;
+    const title = requiredText(item.title, 1_000);
+    const sourcePath = requiredText(item.source_path, MAX_PATH_LENGTH);
+    const excerpt = requiredText(item.excerpt, 2_000);
+    const score = item.score;
+    if (
+      !title || !sourcePath || !excerpt
+      || (item.kind !== "learning" && item.kind !== "question")
+      || typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1.5
+    ) return null;
+    results.push({ title, kind: item.kind, score, sourcePath, excerpt });
+  }
+  return results;
+}
+
 function parseMessages(value: unknown): ChatMessage[] | null {
   if (!Array.isArray(value) || value.length < 1 || value.length > MAX_MESSAGES) return null;
   const messages: ChatMessage[] = [];
@@ -131,7 +219,44 @@ function parseWorkflowSteps(value: unknown): WorkflowStep[] | null {
     const label = requiredText(item.label, MAX_LABEL_LENGTH);
     const detail = requiredText(item.detail, MAX_DETAIL_LENGTH);
     if (!id || !label || !detail) return null;
-    steps.push({ id, label, detail });
+
+    const richKeys = ["duration_ms", "input", "output", "retrieval_results", "token_usage"];
+    const hasRichField = richKeys.some((key) => Object.hasOwn(item, key));
+    if (!hasRichField) {
+      steps.push({
+        id,
+        label,
+        detail,
+        durationMs: 0,
+        input: {},
+        output: {},
+        retrievalResults: [],
+        tokenUsage: null,
+      });
+      continue;
+    }
+
+    const input = parseTraceRecord(item.input);
+    const output = parseTraceRecord(item.output);
+    const retrievalResults = parseTraceRetrievalResults(item.retrieval_results);
+    const tokenUsage = parseTraceTokenUsage(item.token_usage);
+    if (
+      !validDuration(item.duration_ms)
+      || !input
+      || !output
+      || !retrievalResults
+      || tokenUsage === undefined
+    ) return null;
+    steps.push({
+      id,
+      label,
+      detail,
+      durationMs: item.duration_ms,
+      input,
+      output,
+      retrievalResults,
+      tokenUsage,
+    });
   }
   return steps;
 }
@@ -209,11 +334,17 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
   const sessionId = requiredText(payload.session_id, MAX_SESSION_ID_LENGTH);
   const model = requiredText(payload.model, MAX_MODEL_LENGTH);
   const workflowSteps = parseWorkflowSteps(payload.workflow_steps);
+  const langfuseTraceUrl = parseTraceUrl(payload.langfuse_trace_url);
+  const totalDurationMs = payload.total_duration_ms === undefined
+    ? workflowSteps?.reduce((sum, step) => sum + step.durationMs, 0) ?? 0
+    : payload.total_duration_ms;
   if (
     !requestId || !sessionId || !validSessionId(sessionId) || !model
     || typeof payload.langfuse_tracing !== "boolean"
+    || langfuseTraceUrl === undefined
     || payload.orchestration !== "langgraph"
     || (payload.retrieval_mode !== "repository" && payload.retrieval_mode !== "general")
+    || !validDuration(totalDurationMs)
     || !workflowSteps
     || !isJsonObject(payload.response)
   ) return null;
@@ -237,8 +368,10 @@ function sanitizeProviderPayload(payload: unknown): JsonObject | null {
     sessionId,
     model,
     langfuseTracing: payload.langfuse_tracing,
+    langfuseTraceUrl,
     orchestration: "langgraph",
     retrievalMode: payload.retrieval_mode,
+    totalDurationMs,
     workflowSteps,
     response: {
       answer,

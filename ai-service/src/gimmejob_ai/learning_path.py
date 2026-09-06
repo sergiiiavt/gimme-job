@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from contextlib import nullcontext
+from time import perf_counter
 from typing import Any, Literal, TypedDict, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
@@ -20,6 +21,8 @@ from .schemas import (
     LearningMap,
     LearningMapEdge,
     LearningMapNode,
+    TraceRetrievalResult,
+    TraceTokenUsage,
     WorkflowStep,
 )
 from .settings import Settings, langfuse_configured
@@ -69,6 +72,10 @@ def _append_step(state: LearningAdvisorState, step: WorkflowStep) -> list[Workfl
     return [*state.get("workflow_steps", []), step]
 
 
+def _elapsed_ms(started: float) -> float:
+    return round(max(0.0, (perf_counter() - started) * 1_000), 2)
+
+
 def _language_control(message: ChatMessage) -> Literal["en", "uk"] | None:
     if message.role != "assistant":
         return None
@@ -109,6 +116,43 @@ def _coerce_response(value: object) -> AssistantResponse:
     if isinstance(value, AssistantResponse):
         return value
     return AssistantResponse.model_validate(value)
+
+
+def _token_usage_from_raw(raw: object) -> TraceTokenUsage | None:
+    usage = getattr(raw, "usage_metadata", None)
+    if isinstance(usage, dict):
+        input_tokens = int(usage.get("input_tokens", 0) or 0)
+        output_tokens = int(usage.get("output_tokens", 0) or 0)
+        total_tokens = int(usage.get("total_tokens", input_tokens + output_tokens) or 0)
+        return TraceTokenUsage(
+            input_tokens=max(0, input_tokens),
+            output_tokens=max(0, output_tokens),
+            total_tokens=max(0, total_tokens),
+        )
+
+    metadata = getattr(raw, "response_metadata", None)
+    if isinstance(metadata, dict):
+        provider_usage = metadata.get("token_usage") or metadata.get("usage")
+        if isinstance(provider_usage, dict):
+            input_tokens = int(provider_usage.get("prompt_tokens", provider_usage.get("input_tokens", 0)) or 0)
+            output_tokens = int(provider_usage.get("completion_tokens", provider_usage.get("output_tokens", 0)) or 0)
+            total_tokens = int(provider_usage.get("total_tokens", input_tokens + output_tokens) or 0)
+            return TraceTokenUsage(
+                input_tokens=max(0, input_tokens),
+                output_tokens=max(0, output_tokens),
+                total_tokens=max(0, total_tokens),
+            )
+    return None
+
+
+def _coerce_model_result(value: object) -> tuple[AssistantResponse, TraceTokenUsage | None]:
+    if isinstance(value, dict) and "parsed" in value:
+        parsed = value.get("parsed")
+        if parsed is None:
+            parsing_error = value.get("parsing_error")
+            raise ValueError(f"Structured model response could not be parsed: {type(parsing_error).__name__}")
+        return _coerce_response(parsed), _token_usage_from_raw(value.get("raw"))
+    return _coerce_response(value), None
 
 
 def _connected(nodes: list[LearningMapNode], edges: list[LearningMapEdge]) -> bool:
@@ -263,7 +307,7 @@ class LearningAdvisorGraph:
                 api_key=settings.openai_api_key.get_secret_value(),
                 timeout=settings.request_timeout_seconds,
             )
-            structured_model = model.with_structured_output(AssistantResponse)
+            structured_model = model.with_structured_output(AssistantResponse, include_raw=True)
         self.model = structured_model
         self.graph = self._build_graph()
 
@@ -302,21 +346,30 @@ class LearningAdvisorGraph:
             return None
 
     def _contextualize_query(self, state: LearningAdvisorState) -> dict[str, object]:
+        started = perf_counter()
+        current_prompt = state["messages"][-1].content.strip()
         query = _contextual_query(state["messages"])
         language = _language_for(state["messages"])
-        detail = "Used the current prompt as the retrieval query."
-        if query != state["messages"][-1].content.strip():
-            detail = "Expanded a short follow-up with the previous user topic before retrieval."
+        expanded = query != current_prompt
+        detail = "Expanded a short follow-up with the previous user topic before retrieval." if expanded else "Used the current prompt as the retrieval query."
         return {
             "query": query,
             "language": language,
             "workflow_steps": _append_step(
                 state,
-                WorkflowStep(id="contextualize", label="Contextualize query", detail=detail),
+                WorkflowStep(
+                    id="contextualize",
+                    label="Contextualize query",
+                    detail=detail,
+                    duration_ms=_elapsed_ms(started),
+                    input={"current_prompt": current_prompt, "message_count": len(state["messages"])},
+                    output={"retrieval_query": query, "language": language, "expanded_follow_up": expanded},
+                ),
             ),
         }
 
     async def _retrieve_canonical_rag(self, state: LearningAdvisorState) -> dict[str, object]:
+        started = perf_counter()
         query = state["query"]
         language = state["language"]
         result: RetrievalResult | None = None
@@ -369,6 +422,16 @@ class LearningAdvisorGraph:
             if hits
             else f"No relevant canonical RAG material found using {result.strategy}."
         )
+        retrieval_results = [
+            TraceRetrievalResult(
+                title=hit.title,
+                kind=hit.kind,
+                score=hit.score,
+                source_path=hit.source_path,
+                excerpt=hit.excerpt,
+            )
+            for hit in hits[:8]
+        ]
         return {
             "hits": hits,
             "retrieval_mode": retrieval_mode,
@@ -378,7 +441,21 @@ class LearningAdvisorGraph:
             "retrieval_top_score": top_score,
             "workflow_steps": _append_step(
                 state,
-                WorkflowStep(id="retrieve", label="Retrieve canonical RAG context", detail=detail),
+                WorkflowStep(
+                    id="retrieve",
+                    label="Retrieve canonical RAG context",
+                    detail=detail,
+                    duration_ms=_elapsed_ms(started),
+                    input={"query": query, "language": language, "limit": 8},
+                    output={
+                        "strategy": result.strategy,
+                        "embedding_model": result.embedding_model,
+                        "result_count": len(hits),
+                        "top_score": round(top_score, 4),
+                        "route": retrieval_mode,
+                    },
+                    retrieval_results=retrieval_results,
+                ),
             ),
         }
 
@@ -391,6 +468,7 @@ class LearningAdvisorGraph:
         state: LearningAdvisorState,
         config: RunnableConfig,
     ) -> dict[str, object]:
+        started = perf_counter()
         materials = json.dumps(
             [hit.as_dict() for hit in state["hits"]],
             ensure_ascii=False,
@@ -407,7 +485,7 @@ class LearningAdvisorGraph:
                 )
             ),
         ]
-        response = _coerce_response(await self.model.ainvoke(prompt, config=config))
+        response, token_usage = _coerce_model_result(await self.model.ainvoke(prompt, config=config))
         return {
             "draft_response": response,
             "workflow_steps": _append_step(
@@ -416,6 +494,20 @@ class LearningAdvisorGraph:
                     id="compose_repository",
                     label="Compose grounded path",
                     detail="LangChain produced structured advice from canonical RAG context.",
+                    duration_ms=_elapsed_ms(started),
+                    input={
+                        "mode": "repository",
+                        "language": state["language"],
+                        "conversation_messages": len(_conversation_messages(state["messages"])),
+                        "rag_excerpt_count": len(state["hits"]),
+                    },
+                    output={
+                        "answer_chars": len(response.answer),
+                        "cards": len(response.cards),
+                        "declared_sources": len(response.sources),
+                        "map_nodes": len(response.learning_map.nodes),
+                    },
+                    token_usage=token_usage,
                 ),
             ),
         }
@@ -425,11 +517,12 @@ class LearningAdvisorGraph:
         state: LearningAdvisorState,
         config: RunnableConfig,
     ) -> dict[str, object]:
+        started = perf_counter()
         prompt = [
             SystemMessage(content=f"{GENERAL_PROMPT}\n\n{_language_instruction(state['language'])}"),
             *_conversation_messages(state["messages"]),
         ]
-        response = _coerce_response(await self.model.ainvoke(prompt, config=config))
+        response, token_usage = _coerce_model_result(await self.model.ainvoke(prompt, config=config))
         return {
             "draft_response": response,
             "workflow_steps": _append_step(
@@ -438,16 +531,32 @@ class LearningAdvisorGraph:
                     id="compose_general",
                     label="Compose general path",
                     detail="LangChain produced structured general guidance without GimmeJob attribution.",
+                    duration_ms=_elapsed_ms(started),
+                    input={
+                        "mode": "general",
+                        "language": state["language"],
+                        "conversation_messages": len(_conversation_messages(state["messages"])),
+                        "rag_excerpt_count": 0,
+                    },
+                    output={
+                        "answer_chars": len(response.answer),
+                        "cards": len(response.cards),
+                        "declared_sources": len(response.sources),
+                        "map_nodes": len(response.learning_map.nodes),
+                    },
+                    token_usage=token_usage,
                 ),
             ),
         }
 
     def _verify_grounding_and_map(self, state: LearningAdvisorState) -> dict[str, object]:
+        started = perf_counter()
         draft = state["draft_response"]
         hits = state.get("hits", [])
         mode = state["retrieval_mode"]
         language = state["language"]
         allowed_paths = {hit.source_path for hit in hits} if mode == "repository" else set()
+        declared_source_count = len(draft.sources)
 
         sources = list(dict.fromkeys(path for path in draft.sources if path in allowed_paths))
         cards = [
@@ -457,11 +566,13 @@ class LearningAdvisorGraph:
             for card in draft.cards
         ]
         learning_map, connected = _sanitize_map(draft.learning_map, allowed_paths)
+        fallback_used = False
 
         if mode == "repository":
             has_grounded_node = any(node.source_path in allowed_paths for node in learning_map.nodes)
             if not connected or not has_grounded_node:
                 learning_map = _repository_fallback_map(state["query"], hits, language)
+                fallback_used = True
             sources = list(
                 dict.fromkeys(
                     [
@@ -475,6 +586,7 @@ class LearningAdvisorGraph:
         else:
             if not connected:
                 learning_map = _general_fallback_map(state["query"], draft.answer, language)
+                fallback_used = True
             prefix = (
                 "Відповідних матеріалів GimmeJob не знайдено; нижче наведено загальні рекомендації моделі."
                 if language == "uk"
@@ -495,7 +607,24 @@ class LearningAdvisorGraph:
             "response": response,
             "workflow_steps": _append_step(
                 state,
-                WorkflowStep(id="verify", label="Verify grounding and map", detail=detail),
+                WorkflowStep(
+                    id="verify",
+                    label="Verify grounding and map",
+                    detail=detail,
+                    duration_ms=_elapsed_ms(started),
+                    input={
+                        "retrieval_mode": mode,
+                        "declared_sources": declared_source_count,
+                        "draft_map_nodes": len(draft.learning_map.nodes),
+                    },
+                    output={
+                        "verified_sources": len(sources),
+                        "removed_sources": max(0, declared_source_count - len(sources)),
+                        "verified_map_nodes": len(learning_map.nodes),
+                        "connected": _connected(learning_map.nodes, learning_map.edges),
+                        "fallback_map_used": fallback_used,
+                    },
+                ),
             ),
         }
 
@@ -534,7 +663,10 @@ class LearningAdvisorGraph:
         bool,
         Literal["repository", "general"],
         list[WorkflowStep],
+        float,
+        str | None,
     ]:
+        overall_started = perf_counter()
         handler = self._langfuse_handler()
         tags = ["gimmejob-ai", "learning-path-advisor", "langgraph", self.settings.environment]
         config: RunnableConfig = {
@@ -554,6 +686,7 @@ class LearningAdvisorGraph:
 
         root_context = nullcontext(None)
         attribute_context = nullcontext()
+        trace_url: str | None = None
         if handler is not None:
             try:
                 langfuse = get_client()
@@ -564,6 +697,10 @@ class LearningAdvisorGraph:
                     trace_context={"trace_id": trace_id},
                     input={"messages": [message.model_dump() for message in messages]},
                 )
+                try:
+                    trace_url = langfuse.get_trace_url(trace_id=trace_id)
+                except Exception:
+                    logger.warning("Langfuse trace URL generation failed; trace remains active.")
                 attribute_context = propagate_attributes(
                     trace_name="Learning Path Advisor",
                     session_id=session_id,
@@ -579,6 +716,7 @@ class LearningAdvisorGraph:
                 logger.warning("Langfuse root trace initialization failed; callback tracing may be partial.")
                 root_context = nullcontext(None)
                 attribute_context = nullcontext()
+                trace_url = None
 
         with root_context as root_span:
             with attribute_context:
@@ -613,4 +751,4 @@ class LearningAdvisorGraph:
             step if isinstance(step, WorkflowStep) else WorkflowStep.model_validate(step)
             for step in result["workflow_steps"]
         ]
-        return response, handler is not None, mode, steps
+        return response, handler is not None, mode, steps, _elapsed_ms(overall_started), trace_url
