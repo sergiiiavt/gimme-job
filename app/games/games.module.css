@@ -1,8 +1,17 @@
 .page {
   box-sizing: border-box;
+  margin: 0 auto;
   max-width: 1580px;
-  padding-bottom: 22px;
+  padding: 36px 34px 22px;
   width: 100%;
+}
+
+/* Games has no secondary navigation, so its main column must use the same
+   compact-sidebar geometry as the vacancy workspace. Keeping this here also
+   prevents the generic .kb-content/.kb-main rules from pushing the canvas
+   farther right than the vacancy table. */
+:global(.kb-main):has(> .page) {
+  margin-left: 220px;
 }
 
 .header {
@@ -111,9 +120,24 @@
   background: #f3f6f3;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1100px) {
+  :global(.kb-main):has(> .page) {
+    margin-left: 154px;
+  }
+
   .page {
-    padding: 0 10px 20px;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+
+@media (max-width: 700px) {
+  :global(.kb-main):has(> .page) {
+    margin-left: 0;
+  }
+
+  .page {
+    padding: 26px 18px 20px;
   }
 
   .header {
