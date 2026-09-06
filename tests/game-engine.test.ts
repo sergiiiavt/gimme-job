@@ -13,6 +13,7 @@ import {
   pointInsideCrater,
   rectsOverlap,
   screenToWorld,
+  wrapCoordinate,
   type PlanetPhysics,
 } from "../app/games/game-engine.ts";
 
@@ -43,6 +44,14 @@ test("firing cone accepts front aim and rejects side or rear aim", () => {
   assert.equal(directionInsideCone(0, normalizedDirection(0, 0, 10, 4), halfAngle), true);
   assert.equal(directionInsideCone(0, { x: 0, y: 1 }, halfAngle), false);
   assert.equal(directionInsideCone(0, { x: -1, y: 0 }, halfAngle), false);
+});
+
+test("cyclic coordinates re-enter from the opposite world edge", () => {
+  assert.equal(wrapCoordinate(25, 100), 25);
+  assert.equal(wrapCoordinate(105, 100), 5);
+  assert.equal(wrapCoordinate(-5, 100), 95);
+  assert.equal(wrapCoordinate(205, 100), 5);
+  assert.equal(wrapCoordinate(5, 0), 0);
 });
 
 test("planet gravity points toward planets and becomes stronger near the surface", () => {
