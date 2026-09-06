@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { SiteSidebar } from "../../site-navigation";
 import styles from "./websocket-playground.module.css";
@@ -257,10 +258,10 @@ export default function WebSocketPlayground() {
               </div>
 
               <nav aria-label="WebSocket learning links" className={styles.resources}>
-                <a href="/learn/api?topic=websocket"><span>Full WebSocket learning topic</span><b>→</b></a>
-                <a href="/learn/networking?topic=protocols-and-transports"><span>Networking: protocols & transports</span><b>→</b></a>
-                <a href="/interview/web-api?question=websocket-how-would-you-test"><span>Interview: test WebSocket end to end</span><b>→</b></a>
-                <a href="/interview/web-api?question=websocket-security-auth-origin-scale"><span>Interview: auth, Origin & scale</span><b>→</b></a>
+                <Link href="/learn/api?topic=websocket"><span>Full WebSocket learning topic</span><b>→</b></Link>
+                <Link href="/learn/networking?topic=protocols-and-transports"><span>Networking: protocols & transports</span><b>→</b></Link>
+                <Link href="/interview/web-api?question=websocket-how-would-you-test"><span>Interview: test WebSocket end to end</span><b>→</b></Link>
+                <Link href="/interview/web-api?question=websocket-security-auth-origin-scale"><span>Interview: auth, Origin & scale</span><b>→</b></Link>
               </nav>
             </aside>
           </div>
