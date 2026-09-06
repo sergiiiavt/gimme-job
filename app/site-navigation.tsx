@@ -70,13 +70,6 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
         publicHref: "/playgrounds/websocket",
         personalHref: "/playgrounds/websocket",
       },
-      {
-        id: "games",
-        label: "Games",
-        external: true,
-        publicHref: "/games",
-        personalHref: "/games",
-      },
     ],
   },
   {
@@ -128,6 +121,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
     label: "Misc",
     items: [
       { id: "news", label: "News" },
+      {
+        id: "games",
+        label: "Games",
+        external: true,
+        publicHref: "/games",
+        personalHref: "/games",
+      },
     ],
   },
 ];
