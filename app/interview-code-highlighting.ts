@@ -18,12 +18,21 @@ const pythonKeywords = new Set([
 ]);
 
 const pythonBuiltins = new Set([
-  "all", "any", "bool", "dict", "enumerate", "filter", "float", "int", "iter", "len", "list", "map", "max", "min", "next",
-  "print", "range", "repr", "set", "sorted", "str", "sum", "tuple", "type", "zip",
+  "all", "any", "bool", "dict", "enumerate", "filter", "float", "getattr", "hasattr", "int", "isinstance", "issubclass", "iter",
+  "len", "list", "map", "max", "min", "next", "object", "print", "range", "repr", "set", "setattr", "sorted", "str", "sum",
+  "tuple", "type", "vars", "zip",
+]);
+
+const genericKeywords = new Set([
+  "abstract", "and", "as", "async", "await", "break", "case", "catch", "class", "const", "continue", "default", "def", "delete",
+  "do", "else", "enum", "export", "extends", "false", "finally", "for", "from", "function", "if", "implements", "import", "in",
+  "interface", "internal", "is", "let", "new", "not", "null", "or", "override", "private", "protected", "public", "readonly", "return",
+  "static", "switch", "this", "throw", "true", "try", "typeof", "using", "var", "virtual", "void", "while", "with", "yield",
 ]);
 
 const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
 const pythonTokenPattern = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
+const genericTokenPattern = /(\/\*[^]*?\*\/|\/\/[^\n]*|#[^\n]*|["'`][^"'`\n]*["'`]?|\b\d+(?:\.\d+)?\b|\b\w+\b)/g;
 
 function tokenize(source: string, pattern: RegExp, colorForToken: (token: string) => string): InterviewCodeToken[] {
   const tokens: InterviewCodeToken[] = [];
@@ -59,6 +68,14 @@ function pythonColor(token: string) {
   return "#d4d4d4";
 }
 
+function genericColor(token: string) {
+  if (token.startsWith("//") || token.startsWith("/*") || token.startsWith("#")) return "#6a9955";
+  if (token.startsWith("\"") || token.startsWith("'") || token.startsWith("`")) return "#ce9178";
+  if (/^\d/.test(token)) return "#b5cea8";
+  if (genericKeywords.has(token.toLowerCase())) return "#569cd6";
+  return "#d4d4d4";
+}
+
 export function highlightInterviewCode(source: string, language: string): InterviewCodeToken[] {
   const normalizedLanguage = language.toLowerCase();
   if (normalizedLanguage === "python" || normalizedLanguage === "py") {
@@ -67,5 +84,8 @@ export function highlightInterviewCode(source: string, language: string): Interv
   if (normalizedLanguage === "sql") {
     return tokenize(source, sqlTokenPattern, sqlColor);
   }
-  return [{ text: source }];
+  if (normalizedLanguage === "text" || normalizedLanguage === "plain" || normalizedLanguage === "plaintext") {
+    return [{ text: source }];
+  }
+  return tokenize(source, genericTokenPattern, genericColor);
 }
