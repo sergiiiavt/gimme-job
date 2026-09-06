@@ -108,16 +108,13 @@ async function api<T>(input: RequestInit = {}): Promise<T> {
     ...input,
     headers: {
       "content-type": "application/json",
-      "x-gimmejob-session-scope": "ephemeral",
       ...(input.headers ?? {}),
     },
     cache: "no-store",
   });
   const body = await response.json().catch(() => ({})) as { error?: string } & T;
   if (!response.ok) {
-    const error = new Error(body.error || "Interview request failed.") as Error & { status?: number };
-    error.status = response.status;
-    throw error;
+    throw new Error(body.error || "Interview request failed.");
   }
   return body;
 }
@@ -171,7 +168,6 @@ export default function InterviewSimulator() {
   const [progressLoading, setProgressLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [authRequired, setAuthRequired] = useState(false);
   const [stopped, setStopped] = useState(false);
   const [listening, setListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognitionLike | null>(null);
@@ -183,12 +179,9 @@ export default function InterviewSimulator() {
         const view = await api<ProgressView>({ method: "GET", headers: {} });
         if (cancelled) return;
         setProgress(view);
-        setAuthRequired(false);
       } catch (requestError) {
         if (cancelled) return;
-        const typed = requestError as Error & { status?: number };
-        if (typed.status === 401) setAuthRequired(true);
-        else setError(typed.message);
+        setError((requestError as Error).message);
         setProgress(emptyProgress);
       } finally {
         if (!cancelled) setProgressLoading(false);
@@ -203,11 +196,8 @@ export default function InterviewSimulator() {
     try {
       const view = await api<ProgressView>({ method: "GET", headers: {} });
       setProgress(view);
-      setAuthRequired(false);
     } catch (requestError) {
-      const typed = requestError as Error & { status?: number };
-      if (typed.status === 401) setAuthRequired(true);
-      else setError(typed.message);
+      setError((requestError as Error).message);
       setProgress(emptyProgress);
     } finally {
       setProgressLoading(false);
@@ -259,13 +249,10 @@ export default function InterviewSimulator() {
       setResults([]);
       setStopped(false);
       setStage("question");
-      setAuthRequired(false);
       setProgress((current) => ({ ...current, persistent: response.persistent || current.persistent }));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (requestError) {
-      const typed = requestError as Error & { status?: number };
-      if (typed.status === 401) setAuthRequired(true);
-      setError(typed.message);
+      setError((requestError as Error).message);
     } finally {
       setBusy(false);
     }
@@ -290,9 +277,7 @@ export default function InterviewSimulator() {
       setEvaluation(response.evaluation);
       setResults((current) => [...current, response.evaluation]);
     } catch (requestError) {
-      const typed = requestError as Error & { status?: number };
-      if (typed.status === 401) setAuthRequired(true);
-      setError(typed.message);
+      setError((requestError as Error).message);
     } finally {
       setBusy(false);
     }
@@ -334,9 +319,7 @@ export default function InterviewSimulator() {
       await refreshProgress();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (requestError) {
-      const typed = requestError as Error & { status?: number };
-      if (typed.status === 401) setAuthRequired(true);
-      setError(typed.message);
+      setError((requestError as Error).message);
     } finally {
       setBusy(false);
     }
@@ -445,15 +428,6 @@ export default function InterviewSimulator() {
             </header>
           )}
 
-          {authRequired && (
-            <div className={styles.authBanner}>
-              <div>
-                <strong>Sign in to run an AI interview.</strong>
-                <span>Public session access could not be established. Signing in also saves your progress.</span>
-              </div>
-              <Link href="/login">Sign in</Link>
-            </div>
-          )}
           {error && <div className={styles.errorBanner} role="alert">{error}</div>}
 
           {stage === "setup" && (
@@ -490,7 +464,7 @@ export default function InterviewSimulator() {
                     </div>
                   </fieldset>
                 </div>
-                <button className={styles.primaryButton} disabled={busy || authRequired} onClick={() => void start()} type="button">
+                <button className={styles.primaryButton} disabled={busy} onClick={() => void start()} type="button">
                   {busy ? "Starting…" : `Start ${questionCount}-question interview`}
                 </button>
                 {!progress.persistent && <p className={styles.helper}>Public session · results disappear when the session ends. Sign in to keep progress.</p>}
