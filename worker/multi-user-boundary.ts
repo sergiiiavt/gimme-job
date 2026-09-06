@@ -159,7 +159,7 @@ export function privateNextPath(_url: URL): string {
 
 function isPublicEphemeralAiRequest(request: Request, url: URL): boolean {
   if (request.headers.get("x-gimmejob-session-scope") !== "ephemeral") return false;
-  if (url.pathname === "/api/ai/learning-path") return request.method === "POST";
+  if (url.pathname === "/api/ai/learning-path" || url.pathname === "/api/ai/learning-path/stream") return request.method === "POST";
   if (url.pathname === "/api/ai/interviews") return request.method === "GET" || request.method === "POST";
   return false;
 }
