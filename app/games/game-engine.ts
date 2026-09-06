@@ -35,6 +35,11 @@ export function directionInsideCone(shipAngle: number, direction: Vector, halfAn
   return dot >= Math.cos(halfAngle);
 }
 
+export function wrapCoordinate(value: number, size: number): number {
+  if (size <= 0) return 0;
+  return ((value % size) + size) % size;
+}
+
 export function gravityAtPoint(x: number, y: number, planets: readonly PlanetPhysics[]): Vector {
   let ax = 0;
   let ay = 0;
