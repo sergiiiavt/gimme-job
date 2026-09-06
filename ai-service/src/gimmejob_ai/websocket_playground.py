@@ -11,9 +11,16 @@ from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
 router = APIRouter()
 
-MAX_MESSAGE_BYTES = 16_384
+MAX_MESSAGE_BYTES = 700_000
+MAX_TEXT_MESSAGE_CHARS = 4_000
+MAX_IMAGE_DATA_URL_CHARS = 520_000
 MAX_ROOM_CONNECTIONS = 32
 MAX_DELAY_MS = 5_000
+IMAGE_DATA_URL_PREFIXES = (
+    "data:image/jpeg;base64,",
+    "data:image/png;base64,",
+    "data:image/webp;base64,",
+)
 
 
 def _timestamp() -> str:
@@ -78,6 +85,30 @@ def _normalize_room(value: str) -> str:
     return (cleaned or "playground")[:40]
 
 
+def _image_payload_error(payload: dict[str, object]) -> str | None:
+    data_url = payload.get("dataUrl")
+    if not isinstance(data_url, str) or not data_url.startswith(IMAGE_DATA_URL_PREFIXES):
+        return "Image payload must be a JPEG, PNG or WebP data URL."
+    if len(data_url) > MAX_IMAGE_DATA_URL_CHARS:
+        return f"Image payload exceeds {MAX_IMAGE_DATA_URL_CHARS} characters."
+
+    width = payload.get("width")
+    height = payload.get("height")
+    if not isinstance(width, (int, float)) or not isinstance(height, (int, float)) or width <= 0 or height <= 0:
+        return "Image payload must include positive width and height."
+    if width > 4096 or height > 4096:
+        return "Image dimensions must not exceed 4096 pixels."
+
+    name = payload.get("name")
+    if name is not None and (not isinstance(name, str) or len(name) > 180):
+        return "Image name must be at most 180 characters."
+
+    caption = payload.get("caption")
+    if caption is not None and (not isinstance(caption, str) or len(caption) > MAX_TEXT_MESSAGE_CHARS):
+        return f"Image caption must be at most {MAX_TEXT_MESSAGE_CHARS} characters."
+    return None
+
+
 async def _handle_json(room: str, client: Client, message: dict[str, object]) -> bool:
     action = str(message.get("action", "echo")).strip().lower()
 
@@ -86,9 +117,18 @@ async def _handle_json(room: str, client: Client, message: dict[str, object]) ->
         return False
 
     if action == "broadcast":
+        payload = message.get("message", message.get("data"))
+        if isinstance(payload, str) and len(payload) > MAX_TEXT_MESSAGE_CHARS:
+            await client.websocket.send_json(_event("error", message=f"Chat text exceeds {MAX_TEXT_MESSAGE_CHARS} characters."))
+            return False
+        if isinstance(payload, dict) and payload.get("kind") == "image":
+            image_error = _image_payload_error(payload)
+            if image_error:
+                await client.websocket.send_json(_event("error", message=image_error))
+                return False
         await rooms.broadcast(
             room,
-            _event("broadcast", room=room, fromConnectionId=client.id, data=message.get("message", message.get("data"))),
+            _event("broadcast", room=room, fromConnectionId=client.id, data=payload),
         )
         return False
 
