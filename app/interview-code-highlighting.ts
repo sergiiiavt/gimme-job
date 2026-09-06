@@ -32,7 +32,7 @@ const genericKeywords = new Set([
 
 const sqlTokenPattern = /(--[^\n]*|'(?:''|[^'])*'|\b[A-Za-z_]+\b)/g;
 const pythonTokenPattern = /(#[^\n]*|"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|@[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
-const genericTokenPattern = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#[^\n]*|`(?:\\.|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
+const genericTokenPattern = /(\/\*[^]*?\*\/|\/\/[^\n]*|#[^\n]*|["'`][^"'`\n]*["'`]?|\b\d+(?:\.\d+)?\b|\b\w+\b)/g;
 
 function tokenize(source: string, pattern: RegExp, colorForToken: (token: string) => string): InterviewCodeToken[] {
   const tokens: InterviewCodeToken[] = [];
