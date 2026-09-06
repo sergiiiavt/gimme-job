@@ -33,7 +33,7 @@ test("certification catalog keeps CT-AI selected and restores under-construction
   assert.match(page, /track: activeTrackId/);
 });
 
-test("CT-AI curriculum covers all seven official syllabus chapters plus labs and exam review", () => {
+test("CT-AI curriculum covers all seven official syllabus chapters plus labs and both exam-practice sets", () => {
   const ids = catalog.taxonomy.map((module) => module.id);
 
   assert.deepEqual(ids, [
@@ -46,6 +46,7 @@ test("CT-AI curriculum covers all seven official syllabus chapters plus labs and
     "model-testing",
     "ml-development-testing",
     "hands-on-labs",
+    "official-sample-exam",
     "mock-exam",
     "final-review",
   ]);
@@ -64,7 +65,7 @@ test("CT-AI curriculum covers all seven official syllabus chapters plus labs and
   }
 });
 
-test("exam map uses current CT-AI v2 exam structure and version distinction", () => {
+test("exam map uses current CT-AI v2 exam structure and prioritizes the official sample", () => {
   const exam = catalog.taxonomy.find((module) => module.id === "exam-plan")?.markdown ?? "";
 
   assert.match(exam, /40 multiple-choice questions/);
@@ -76,6 +77,7 @@ test("exam map uses current CT-AI v2 exam structure and version distinction", ()
   assert.match(exam, /17 April 2026/);
   assert.match(exam, /CT-GenAI/);
   assert.match(exam, /1,170 minutes \(19\.5 hours\)/);
+  assert.match(exam, /official ISTQB v2\.2 sample exam with 46 published questions/);
 });
 
 test("classification section contains worked calculations and model-testing techniques", () => {
@@ -103,6 +105,22 @@ test("classification section contains worked calculations and model-testing tech
   assert.match(markdown, /Accuracy = \(36 \+ 51\) \/ 100 = \*\*0\.87\*\*/);
 });
 
+test("official CT-AI practice exposes all 46 ISTQB v2.2 sample questions before the original mock", () => {
+  const official = catalog.taxonomy.find((module) => module.id === "official-sample-exam");
+  const officialIndex = catalog.taxonomy.findIndex((module) => module.id === "official-sample-exam");
+  const mockIndex = catalog.taxonomy.findIndex((module) => module.id === "mock-exam");
+
+  assert.ok(official);
+  assert.equal(official.count, 46);
+  assert.ok(officialIndex >= 0 && officialIndex < mockIndex);
+  assert.match(official.label, /Official ISTQB sample exam — 46 questions/);
+  assert.match(official.markdown, /Main official sample exam \| 1–40 \| 40/);
+  assert.match(official.markdown, /Additional official questions \| A1–A6 \| 6/);
+  assert.match(official.markdown, /download_id=9561/);
+  assert.match(official.markdown, /download_id=9564/);
+  assert.match(official.markdown, /cannot be used as-is in an official examination/i);
+});
+
 test("curriculum ships practical labs and a complete original 40-question mock", () => {
   const labs = catalog.taxonomy.find((module) => module.id === "hands-on-labs");
   const mock = catalog.taxonomy.find((module) => module.id === "mock-exam");
@@ -113,6 +131,7 @@ test("curriculum ships practical labs and a complete original 40-question mock",
   assert.match(labs?.markdown ?? "", /Capstone — one complete AI test strategy/);
 
   assert.equal(mock?.count, 40);
+  assert.match(mock?.label ?? "", /Original mock exam — 40 questions/);
   const questionNumbers = [...(mock?.markdown ?? "").matchAll(/\*\*(\d+)\.\*\*/g)].map((match) => Number(match[1]));
   assert.deepEqual(questionNumbers, Array.from({ length: 40 }, (_, index) => index + 1));
   assert.match(mock?.markdown ?? "", /Answer key with explanations/);
@@ -126,6 +145,9 @@ test("mock exam is rendered as a selectable assessment with scoring and review",
 
   assert.match(page, /import IstqbAiMockExam from "\.\/istqb-ai-mock-exam"/);
   assert.match(page, /isMockExam\s*\? <IstqbAiMockExam markdown=\{activeModule\.markdown\}/);
+  assert.match(page, /isOfficialSampleExam = activeModule\?\.id === "official-sample-exam"/);
+  assert.match(page, /official sample questions/);
+  assert.match(page, /original practice questions/);
   assert.match(component, /type="radio"/);
   assert.match(component, />Check score</);
   assert.match(component, /Answer all \$\{exam\.questions\.length\} questions before checking the score/);
