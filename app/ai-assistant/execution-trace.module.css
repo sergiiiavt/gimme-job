@@ -425,3 +425,46 @@
     min-height: 230px;
   }
 }
+
+/* Use the same two-panel proportions and gap as the WebSocket playground. */
+.workspace {
+  align-items: stretch;
+  flex: 1;
+  gap: 24px;
+  grid-template-columns: minmax(560px, 1.65fr) minmax(300px, .85fr);
+  min-height: 0;
+  width: 100%;
+}
+
+.panel {
+  height: 100%;
+  max-height: none;
+  min-height: 620px;
+  position: static;
+  top: auto;
+}
+
+@media (max-width: 1400px) {
+  .workspace {
+    gap: 18px;
+    grid-template-columns: minmax(500px, 1.45fr) minmax(280px, .8fr);
+  }
+}
+
+@media (max-width: 1320px) {
+  .workspace {
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    height: 620px;
+  }
+}
+
+@media (max-width: 700px) {
+  .panel {
+    height: 560px;
+    min-height: 560px;
+  }
+}
