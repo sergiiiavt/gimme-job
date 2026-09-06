@@ -3,6 +3,7 @@ export type PythonInterviewExecution = "python" | "static";
 const unsupportedRunnablePythonPatterns = [
   /^\s*>>>/m,
   /\b(?:input|open)\s*\(/,
+  /\b(?:__import__|breakpoint|compile|delattr|eval|exec|getattr|setattr|vars)\s*\(/,
   /\bPath\s*\(/,
   /\b(?:pytest|unittest|requests|httpx|aiohttp|selenium|playwright)\b/,
   /\b(?:subprocess|multiprocessing|threading|socket|ThreadPoolExecutor|ProcessPoolExecutor)\b/,
@@ -21,11 +22,11 @@ const runnablePythonImports = new Set([
 
 const pythonBuiltinCallNames = new Set([
   "abs", "all", "any", "bin", "bool", "bytearray", "bytes", "callable", "chr", "classmethod",
-  "dict", "divmod", "enumerate", "filter", "float", "format", "frozenset", "getattr", "hasattr",
+  "dict", "divmod", "enumerate", "filter", "float", "format", "frozenset", "hasattr",
   "hash", "hex", "id", "int", "isinstance", "issubclass", "iter", "len", "list", "map", "max",
   "memoryview", "min", "next", "object", "oct", "ord", "pow", "print", "property", "range", "repr",
-  "reversed", "round", "set", "setattr", "slice", "sorted", "staticmethod", "str", "sum", "super",
-  "tuple", "type", "vars", "zip",
+  "reversed", "round", "set", "slice", "sorted", "staticmethod", "str", "sum", "super",
+  "tuple", "type", "zip",
   "AssertionError", "AttributeError", "EOFError", "Exception", "IndexError", "KeyError", "LookupError",
   "NotImplementedError", "OSError", "OverflowError", "RuntimeError", "StopIteration", "TimeoutError",
   "TypeError", "ValueError", "ZeroDivisionError",
