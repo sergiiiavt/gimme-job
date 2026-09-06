@@ -69,6 +69,7 @@ export default function IstqbAiTestingPage() {
   const moduleIndex = Math.max(0, modules.findIndex((chapter) => chapter.id === activeModuleId));
   const activeModule = trackAvailable ? modules[moduleIndex] ?? modules[0] : undefined;
   const isMockExam = activeModule?.id === "mock-exam";
+  const isOfficialSampleExam = activeModule?.id === "official-sample-exam";
 
   useEffect(() => {
     const trackInUrl = searchParams.get("track") === activeTrackId;
@@ -148,6 +149,13 @@ export default function IstqbAiTestingPage() {
 
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
   const next = moduleIndex < modules.length - 1 ? modules[moduleIndex + 1] : undefined;
+  const activeModuleCountLabel = activeModule
+    ? isOfficialSampleExam
+      ? `${activeModule.count} official sample questions`
+      : isMockExam
+        ? `${activeModule.count} original practice questions`
+        : `${activeModule.count} exam concepts / activities`
+    : "";
 
   return (
     <>
@@ -192,7 +200,7 @@ export default function IstqbAiTestingPage() {
                   eyebrow={`Certification learning path · ${selectedTrack.label}`}
                   meta={[
                     activeModule.level,
-                    `${activeModule.count} ${activeModule.id === "mock-exam" ? "practice questions" : "exam concepts / activities"}`,
+                    activeModuleCountLabel,
                     `${moduleSources.length} chapter references`,
                   ]}
                   title={istqbAiTestingCatalog.title}
