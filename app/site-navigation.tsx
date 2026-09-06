@@ -49,6 +49,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
       { id: "jobs", label: "Vacancies" },
       { id: "resume", label: "My Resume" },
       { id: "interview", label: "Interview questions" },
+      { id: "trends", label: "Trends" },
+    ],
+  },
+  {
+    id: "playgrounds",
+    label: "Playgrounds",
+    items: [
       {
         id: "ai-assistant",
         label: "AI Assistant",
@@ -56,7 +63,20 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
         publicHref: "/ai-assistant",
         personalHref: "/ai-assistant",
       },
-      { id: "trends", label: "Trends" },
+      {
+        id: "websocket-playground",
+        label: "WebSocket Playground",
+        external: true,
+        publicHref: "/playgrounds/websocket",
+        personalHref: "/playgrounds/websocket",
+      },
+      {
+        id: "games",
+        label: "Games",
+        external: true,
+        publicHref: "/games",
+        personalHref: "/games",
+      },
     ],
   },
   {
@@ -104,30 +124,10 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
     ],
   },
   {
-    id: "playgrounds",
-    label: "Playgrounds",
-    items: [
-      {
-        id: "websocket-playground",
-        label: "WebSocket Playground",
-        external: true,
-        publicHref: "/playgrounds/websocket",
-        personalHref: "/playgrounds/websocket",
-      },
-    ],
-  },
-  {
     id: "misc",
     label: "Misc",
     items: [
       { id: "news", label: "News" },
-      {
-        id: "games",
-        label: "Games",
-        external: true,
-        publicHref: "/games",
-        personalHref: "/games",
-      },
     ],
   },
 ];
