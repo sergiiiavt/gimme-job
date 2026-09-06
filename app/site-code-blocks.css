@@ -24,8 +24,28 @@ pre:has(> code) > code {
 }
 
 /* Markdown code fences carry their real language on the code element. */
+.qa-md-static-code {
+  background: #1e1e1e;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  margin: 22px 0;
+  overflow: hidden;
+}
+
+.qa-md-static-code-label {
+  border-bottom: 1px solid #303030;
+  color: #a7a7a7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 8px 14px;
+}
+
 .qa-md-static-code pre:has(> code) {
   border: 0 !important;
   border-radius: 0 !important;
+  line-height: 1.65;
   margin: 0 !important;
+  padding: 16px 18px;
 }
