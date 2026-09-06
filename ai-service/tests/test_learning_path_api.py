@@ -13,6 +13,8 @@ from gimmejob_ai.schemas import (
     AssistantResponse,
     LearningMap,
     LearningMapNode,
+    TraceRetrievalResult,
+    TraceTokenUsage,
     WorkflowStep,
 )
 from gimmejob_ai.settings import Settings
@@ -48,8 +50,27 @@ class _FakeLearningAdvisor:
                     id="retrieve",
                     label="Retrieve canonical RAG context",
                     detail="Found one material.",
+                    duration_ms=12.5,
+                    input={"query": "Python parallelism", "limit": 8},
+                    output={"strategy": "vectorize", "result_count": 1},
+                    retrieval_results=[
+                        TraceRetrievalResult(
+                            title="Python parallelism",
+                            kind="question",
+                            score=0.92,
+                            source_path="python-interview/python-parallelism",
+                            excerpt="Processes provide CPU parallelism.",
+                        )
+                    ],
+                    token_usage=TraceTokenUsage(
+                        input_tokens=100,
+                        output_tokens=25,
+                        total_tokens=125,
+                    ),
                 )
             ],
+            48.25,
+            "https://cloud.langfuse.com/project/example/traces/trace-1",
         )
 
 
@@ -101,7 +122,7 @@ class LearningPathApiTests(unittest.TestCase):
             self.assertEqual(response.status_code, 422)
             self.assertEqual(response.json()["detail"], "The final message must have role 'user'.")
 
-    def test_learning_path_returns_snake_case_workflow_and_map_contract(self) -> None:
+    def test_learning_path_returns_rich_snake_case_trace_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             settings = self._settings(Path(temporary_directory))
             with patch("gimmejob_ai.main.LearningAdvisorGraph", _FakeLearningAdvisor):
@@ -121,7 +142,20 @@ class LearningPathApiTests(unittest.TestCase):
             self.assertEqual(body["session_id"], "learning-session")
             self.assertEqual(body["orchestration"], "langgraph")
             self.assertEqual(body["retrieval_mode"], "repository")
-            self.assertEqual(body["workflow_steps"][0]["id"], "retrieve")
+            self.assertEqual(body["total_duration_ms"], 48.25)
+            self.assertEqual(
+                body["langfuse_trace_url"],
+                "https://cloud.langfuse.com/project/example/traces/trace-1",
+            )
+
+            step = body["workflow_steps"][0]
+            self.assertEqual(step["id"], "retrieve")
+            self.assertEqual(step["duration_ms"], 12.5)
+            self.assertEqual(step["input"]["query"], "Python parallelism")
+            self.assertEqual(step["output"]["strategy"], "vectorize")
+            self.assertEqual(step["retrieval_results"][0]["score"], 0.92)
+            self.assertEqual(step["token_usage"]["total_tokens"], 125)
+
             node = body["response"]["learning_map"]["nodes"][0]
             self.assertEqual(node["source_path"], "python-interview/python-parallelism")
             self.assertEqual(node["duration_minutes"], 30)
@@ -143,6 +177,8 @@ class LearningPathApiTests(unittest.TestCase):
             body = response.json()
             self.assertEqual(body["retrieval_mode"], "general")
             self.assertFalse(body["langfuse_tracing"])
+            self.assertIsNone(body["langfuse_trace_url"])
+            self.assertEqual(body["total_duration_ms"], 0.0)
             self.assertEqual(body["workflow_steps"][0]["id"], "runtime_fallback")
             self.assertEqual(body["response"]["learning_map"]["title"], "Python parallelism")
             self.assertEqual(len(body["response"]["learning_map"]["nodes"]), 1)
