@@ -44,12 +44,26 @@ const server = await createServer({
 });
 
 const advisorModule = await server.ssrLoadModule(COMPONENT_SUFFIX);
-const { default: LearningPathAdvisor, LearningPathResponseView, sourcePathToHref } = advisorModule;
+const {
+  default: LearningPathAdvisor,
+  LearningPathResponseView,
+  normalizedLearningPathResponse,
+  sourcePathToHref,
+} = advisorModule;
 
 const repositoryResult = {
   requestId: "request-1234567890",
   sessionId: "session-1234567890",
+  model: "gpt-test",
+  langfuseTracing: true,
+  orchestration: "langgraph",
   retrievalMode: "repository",
+  workflowSteps: [
+    { id: "contextualize", label: "Contextualize query", detail: "Used the current prompt as the retrieval query." },
+    { id: "retrieve", label: "Retrieve canonical RAG context", detail: "Found 3 canonical RAG materials using vectorize." },
+    { id: "compose_repository", label: "Compose grounded path", detail: "LangChain produced structured advice from canonical RAG context." },
+    { id: "verify", label: "Verify grounding and map", detail: "Kept 3 verified GimmeJob source references and a connected map." },
+  ],
   response: {
     answer: "Start with the **core concurrency model**, then validate it with interview practice.",
     cards: [
@@ -103,13 +117,15 @@ test.after(async () => {
   await server.close();
 });
 
-test("renders the public AI Assistant shell and content-first prompt", () => {
+test("renders the public AI Assistant shell, content-first prompt, and runtime inspector", () => {
   const html = renderToStaticMarkup(React.createElement(LearningPathAdvisor));
 
   assert.match(html, /Learning Path Advisor/);
   assert.match(html, /materials already available on GimmeJob/);
   assert.match(html, /Python parallelism/);
   assert.match(html, /Ask the Learning Path Advisor/);
+  assert.match(html, /Execution trace/);
+  assert.match(html, /No execution yet/);
   assert.match(html, /data-active-external="ai-assistant"/);
   assert.match(html, /data-active-subsection="learning-path-advisor"/);
   assert.match(html, /Interactive interview\|Learning Path Advisor/);
@@ -136,6 +152,23 @@ test("renders learning materials first and interview questions second with new-t
   assert.match(html, /rel="noreferrer"/);
   assert.ok(html.indexOf("GimmeJob materials") < html.indexOf("Interview questions"));
   assert.match(html, /Compare threading and multiprocessing/);
+});
+
+test("normalizes the real workflow trace returned by the AI proxy", () => {
+  const normalized = normalizedLearningPathResponse(repositoryResult);
+
+  assert.ok(normalized);
+  assert.equal(normalized.model, "gpt-test");
+  assert.equal(normalized.langfuseTracing, true);
+  assert.equal(normalized.orchestration, "langgraph");
+  assert.equal(normalized.retrievalMode, "repository");
+  assert.deepEqual(normalized.workflowSteps, repositoryResult.workflowSteps);
+});
+
+test("rejects a response that has no observable workflow steps", () => {
+  const payload = structuredClone(repositoryResult);
+  payload.workflowSteps = [];
+  assert.equal(normalizedLearningPathResponse(payload), null);
 });
 
 test("renders supported bold markdown without exposing markdown markers", () => {
@@ -181,7 +214,7 @@ test("deduplicates recommendations that resolve to the same real destination", (
   assert.equal((html.match(/>Open topic<\/a>/g) ?? []).length, 1);
 });
 
-test("does not expose implementation evidence or relationship arrows", () => {
+test("keeps implementation evidence out of the answer body", () => {
   const html = renderToStaticMarkup(React.createElement(LearningPathResponseView, { result: repositoryResult }));
 
   assert.doesNotMatch(html, /How this answer was built/);
@@ -217,9 +250,10 @@ test("uses ephemeral public scope, forwards language, and keeps generated UI fre
   assert.match(componentSource, /JSON\.stringify\(\{ messages: requestMessages, language, \.\.\.\(sessionId \? \{ sessionId \} : \{\}\) \}\)/);
   assert.match(componentSource, /value\.requestId/);
   assert.match(componentSource, /value\.response\.learningMap/);
+  assert.match(componentSource, /value\.workflowSteps/);
+  assert.match(componentSource, /ExecutionTrace/);
   assert.match(componentSource, /target="_blank"/);
   assert.doesNotMatch(componentSource, /ExecutionEvidence/);
-  assert.doesNotMatch(componentSource, /edgeArrow|edgeFlow|workflowSteps/);
   assert.doesNotMatch(componentSource, /dangerouslySetInnerHTML/);
   assert.match(sidebarSource, /aria-current=\{activeSubsection === item\.id \? "page" : undefined\}/);
   assert.match(sidebarSource, /aria-pressed=\{activeSubsection === item\.id\}/);
