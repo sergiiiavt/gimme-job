@@ -1,5 +1,5 @@
-import GamesClient from "./games-client";
+import GamesPlayground from "./games-playground";
 
 export default function GamesPage() {
-  return <GamesClient/>;
+  return <GamesPlayground/>;
 }
