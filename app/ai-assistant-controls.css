@@ -17,11 +17,11 @@
   color: #747d78;
   cursor: pointer;
   font: inherit;
-  font-size: 9px;
-  font-weight: 600;
-  min-height: 25px;
-  min-width: 32px;
-  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 650;
+  min-height: 30px;
+  min-width: 36px;
+  padding: 0 8px;
 }
 
 .ai-assistant-language-selector button[aria-pressed="true"] {
@@ -39,7 +39,7 @@
 .ai-assistant-composer-actions {
   align-items: center;
   display: flex;
-  gap: 7px;
+  gap: 8px;
 }
 
 .ai-assistant-voice-button {
@@ -50,8 +50,8 @@
   color: #53605a !important;
   display: inline-flex;
   justify-content: center;
-  min-height: 32px !important;
-  min-width: 34px;
+  min-height: 36px !important;
+  min-width: 38px;
   padding: 0 !important;
 }
 
