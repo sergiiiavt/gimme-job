@@ -10,6 +10,10 @@ const requirements = readFileSync(
   new URL("./performance/gimmejob/requirements.txt", import.meta.url),
   "utf8",
 );
+const readme = readFileSync(
+  new URL("./performance/gimmejob/README.md", import.meta.url),
+  "utf8",
+);
 
 test("GimmeJob Locust workload remains production-acknowledged and bounded", () => {
   assert.doesNotMatch(
@@ -41,16 +45,32 @@ test("GimmeJob Locust workload remains read-only and avoids cost-generating rout
   }
 });
 
+test("GimmeJob Locust exposes the non-health public workload as one selectable scenario", () => {
+  for (const selector of ["home", "reference", "jobs", "dashboard"]) {
+    assert.match(locustfile, new RegExp(`@tag\\([^\\n]*"${selector}"`));
+  }
+  assert.equal((locustfile.match(/"public-read"/g) ?? []).length, 4);
+  assert.match(locustfile, /@tag\("health", "smoke", "api", "worker"\)/);
+  assert.match(readme, /LOCUST_TAGS=public-read/);
+  assert.match(readme, /Azure Load Testing engine/);
+  assert.match(readme, /Worker: gimmejob/);
+  assert.match(readme, /D1: gimmejob-db/);
+});
+
 test("GimmeJob Locust version is pinned for reproducible local and Azure runs", () => {
   assert.match(requirements, /^locust==\d+\.\d+\.\d+\s*$/);
 });
 
 test("GimmeJob Locust documentation states Azure's per-run billing minimum", () => {
-  const readme = readFileSync(
-    new URL("./performance/gimmejob/README.md", import.meta.url),
-    "utf8",
-  );
-
   assert.match(readme, /minimum billable usage of 1\.67 VUH/);
   assert.match(readme, /budgets notify and do not stop/);
+});
+
+test("GimmeJob Locust documentation separates client-side and Cloudflare observability", () => {
+  assert.match(readme, /Azure Load Testing: client\/load-generator view/);
+  assert.match(readme, /Cloudflare: server\/platform view/);
+  assert.match(readme, /Workers & Pages -> gimmejob/);
+  assert.match(readme, /gimmejob-db/);
+  assert.match(readme, /Cloudflare Workers metrics and analytics/);
+  assert.match(readme, /Cloudflare D1 metrics and analytics/);
 });
