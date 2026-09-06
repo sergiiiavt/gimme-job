@@ -5,6 +5,7 @@ import LearningDocumentPage, { type StructuredLearningCurriculum } from "./learn
 
 const curriculum: StructuredLearningCurriculum = {
   title: performanceTestingCatalog.title,
+  titleUk: performanceTestingCatalog.titleUk,
   description: performanceTestingCatalog.description,
   taxonomy: performanceTestingCatalog.chapters,
   sources: performanceTestingCatalog.sources,
@@ -17,18 +18,18 @@ export default function PerformanceTestingPage({ mode }: PerformanceTestingPageP
   return (
     <LearningDocumentPage
       curriculum={curriculum}
-      heroMeta={({ sourceCount }) => [
-        `${performanceTestingCatalog.chapters.length} methodical chapters`,
-        `${sourceCount} primary references`,
-        "Workload · metrics · tooling · diagnosis",
+      heroMeta={({ language, sourceCount }) => [
+        `${performanceTestingCatalog.chapters.length} ${language === "uk" ? "методичних розділів" : "methodical chapters"}`,
+        `${sourceCount} ${language === "uk" ? "джерел розділу" : "chapter references"}`,
+        language === "uk" ? "Навантаження · метрики · інструменти · діагностика" : "Workload · metrics · tooling · diagnosis",
       ]}
-      languages={["en"]}
+      languages={["en", "uk"]}
       mode={mode}
       personalHref="/workspace/learn/performance"
       publicHref="/learn/performance"
       secondaryTitle="Performance testing"
       section="performance"
-      sourceStatusLabel={() => "Primary references verified 5 Sep 2026"}
+      sourceStatusLabel={({ language }) => language === "uk" ? "Джерела розділу перевірені" : "Chapter references verified"}
     />
   );
 }
