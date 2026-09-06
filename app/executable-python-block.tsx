@@ -35,16 +35,45 @@ function highlightPython(source: string): ReactNode[] {
   return nodes;
 }
 
-function formatPythonResult(message: WorkerRunnerMessage) {
+function compactPythonSignature(parameters: string) {
+  return parameters.replace(/\s+/g, " ").trim();
+}
+
+function silentPythonRunSummary(source: string) {
+  const functionDetails = [...source.matchAll(/^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*(?:->[^:]+)?\s*:\s*(?:\n\s+(?:"""([\s\S]*?)"""|'''([\s\S]*?)'''))?/gm)]
+    .map((match) => {
+      const signature = `${match[1]}(${compactPythonSignature(match[2])})`;
+      const docstring = (match[3] ?? match[4] ?? "").trim().replace(/\s+/g, " ");
+      return docstring ? `${signature} — ${docstring}` : signature;
+    });
+  const classes = [...source.matchAll(/^\s*class\s+([A-Za-z_]\w*)\b/gm)].map((match) => match[1]);
+
+  if (functionDetails.length || classes.length) {
+    const lines = ["Executed successfully."];
+    if (functionDetails.length) lines.push(`Defined function${functionDetails.length === 1 ? "" : "s"}: ${functionDetails.join("; ")}`);
+    if (classes.length) lines.push(`Defined class${classes.length === 1 ? "" : "es"}: ${classes.join(", ")}`);
+    lines.push("This example defines reusable code, so it does not print a value until that code is called.");
+    return lines.join("\n");
+  }
+
+  const assignments = [...source.matchAll(/^([A-Za-z_]\w*)\s*=(?!=)/gm)].map((match) => match[1]);
+  if (assignments.length) {
+    return `Executed successfully.\nCreated value${assignments.length === 1 ? "" : "s"}: ${assignments.join(", ")}.\nThis example stores values but does not print them.`;
+  }
+
+  return "Executed successfully. This example has no printed or expression result.";
+}
+
+function formatPythonResult(message: WorkerRunnerMessage, source: string) {
   if (message.error) return [message.output, message.error].filter(Boolean).join("\n");
-  return message.output || "No output. Add print(...) or leave an expression on the last line.";
+  return message.output || silentPythonRunSummary(source);
 }
 
 export default function ExecutablePythonBlock({ code }: { code: string }) {
   return (
     <ExecutableCodeRunner
       code={code}
-      formatResult={formatPythonResult}
+      formatResult={(message) => formatPythonResult(message, code)}
       highlight={highlightPython}
       initialMessage="Run the code to see the result."
       key={code}
