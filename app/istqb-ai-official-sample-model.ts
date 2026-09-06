@@ -72,6 +72,10 @@ export function sameSelection(actual: readonly string[] = [], expected: readonly
   return normalizedActual.every((value, index) => value === normalizedExpected[index]);
 }
 
+export function sameOrderedSelection(actual: readonly string[] = [], expected: readonly string[] = []): boolean {
+  return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
 export function scoreOfficialMain(answers: OfficialMainAnswers): { points: number; correctQuestions: number } {
   return OFFICIAL_MAIN_QUESTIONS.reduce(
     (score, question) => {
@@ -87,6 +91,6 @@ export function scoreOfficialMain(answers: OfficialMainAnswers): { points: numbe
 
 export function scoreOfficialAdditional(answers: OfficialAdditionalAnswers): number {
   return (Object.entries(OFFICIAL_ADDITIONAL_KEYS) as [keyof typeof OFFICIAL_ADDITIONAL_KEYS, readonly string[]][])
-    .filter(([id, expected]) => sameSelection(answers[id], expected))
+    .filter(([id, expected]) => sameOrderedSelection(answers[id], expected))
     .length;
 }
