@@ -1,6 +1,6 @@
+import { z } from "zod";
 import { tenantRequestContext } from "../../../_tenant-state.ts";
 import {
-  parseAdvisorLanguage,
   selectedLegacyLanguage,
   withLanguageControl,
   type AdvisorLanguage,
@@ -11,15 +11,22 @@ type LearningPathAiEnv = {
   GIMMEJOB_AI_SERVICE_TOKEN?: string;
 };
 
-type JsonObject = Record<string, unknown>;
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const MAX_MESSAGES = 30;
-const MAX_MESSAGE_LENGTH = 20_000;
 const MAX_TOTAL_MESSAGE_LENGTH = 80_000;
-const MAX_SESSION_ID_LENGTH = 200;
 const MAX_STREAM_EVENT_BYTES = 128_000;
-const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+const messageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().trim().min(1).max(20_000),
+});
+
+const requestSchema = z.object({
+  messages: z.array(messageSchema).min(1).max(MAX_MESSAGES),
+  sessionId: z.string().trim().min(1).max(200).regex(/^[A-Za-z0-9_-]+$/).nullable().optional(),
+  language: z.enum(["en", "uk"]).optional(),
+});
 
 const RESPONSE_HEADERS = {
   "cache-control": "no-store",
@@ -27,50 +34,26 @@ const RESPONSE_HEADERS = {
   "x-robots-tag": "noindex, nofollow, noarchive",
 } as const;
 
-function json(payload: unknown, status = 200, headers: HeadersInit = {}): Response {
-  return Response.json(payload, { status, headers: { ...RESPONSE_HEADERS, ...headers } });
+function errorResponse(error: string, status: number, headers: HeadersInit = {}): Response {
+  return Response.json({ error }, { status, headers: { ...RESPONSE_HEADERS, ...headers } });
 }
 
-function isJsonObject(value: unknown): value is JsonObject {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
-}
+function serviceTarget(env: LearningPathAiEnv): { endpoint: URL; token: string } | null {
+  const rawUrl = env.GIMMEJOB_AI_URL?.trim();
+  const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
+  if (!rawUrl || !token) return null;
 
-function requiredText(value: unknown, maxLength: number): string | null {
-  if (typeof value !== "string" || value.length > maxLength) return null;
-  const cleaned = value.trim();
-  return cleaned || null;
-}
-
-function parseMessages(value: unknown): ChatMessage[] | null {
-  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_MESSAGES) return null;
-  const messages: ChatMessage[] = [];
-  let totalLength = 0;
-  for (const item of value) {
-    if (!isJsonObject(item) || (item.role !== "user" && item.role !== "assistant")) return null;
-    const content = requiredText(item.content, MAX_MESSAGE_LENGTH);
-    if (!content) return null;
-    totalLength += content.length;
-    if (totalLength > MAX_TOTAL_MESSAGE_LENGTH) return null;
-    messages.push({ role: item.role, content });
-  }
-  return messages;
-}
-
-function validSessionId(value: string): boolean {
-  return value.length <= MAX_SESSION_ID_LENGTH && SESSION_ID_PATTERN.test(value);
-}
-
-function aiBaseUrl(env: LearningPathAiEnv): URL | null {
-  const configured = env.GIMMEJOB_AI_URL?.trim();
-  if (!configured) return null;
   try {
-    const url = new URL(configured);
-    const localDevelopment = url.hostname === "127.0.0.1" || url.hostname === "localhost" || url.hostname === "[::1]";
-    if (url.username || url.password || (url.protocol !== "https:" && !(localDevelopment && url.protocol === "http:"))) return null;
-    url.search = "";
-    url.hash = "";
-    while (url.pathname.length > 1 && url.pathname.endsWith("/")) url.pathname = url.pathname.slice(0, -1);
-    return url;
+    const base = new URL(rawUrl);
+    const local = ["127.0.0.1", "localhost", "[::1]"].includes(base.hostname);
+    if (base.username || base.password || (base.protocol !== "https:" && !(local && base.protocol === "http:"))) {
+      return null;
+    }
+    base.search = "";
+    base.hash = "";
+    if (!base.pathname.endsWith("/")) base.pathname += "/";
+    const endpoint = new URL("v1/learning-path/stream", base);
+    return endpoint.origin === base.origin ? { endpoint, token } : null;
   } catch {
     return null;
   }
@@ -81,31 +64,26 @@ function boundedSseBody(body: ReadableStream<Uint8Array>): ReadableStream<Uint8A
   const encoder = new TextEncoder();
   let buffered = "";
 
+  const emit = (frame: string, controller: TransformStreamDefaultController<Uint8Array>) => {
+    const bytes = encoder.encode(frame);
+    if (bytes.byteLength > MAX_STREAM_EVENT_BYTES) throw new Error("AI learning path stream event exceeded the safety limit.");
+    if (frame.startsWith("data: ")) controller.enqueue(bytes);
+  };
+
   return body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
     transform(chunk, controller) {
       buffered += decoder.decode(chunk, { stream: true });
-      if (buffered.length > MAX_STREAM_EVENT_BYTES * 2) {
-        throw new Error("AI learning path stream exceeded the safety limit.");
-      }
+      if (buffered.length > MAX_STREAM_EVENT_BYTES * 2) throw new Error("AI learning path stream exceeded the safety limit.");
 
-      let boundary = buffered.indexOf("\n\n");
-      while (boundary >= 0) {
+      for (let boundary = buffered.indexOf("\n\n"); boundary >= 0; boundary = buffered.indexOf("\n\n")) {
         const frame = buffered.slice(0, boundary + 2);
         buffered = buffered.slice(boundary + 2);
-        if (encoder.encode(frame).byteLength > MAX_STREAM_EVENT_BYTES) {
-          throw new Error("AI learning path stream event exceeded the safety limit.");
-        }
-        if (frame.startsWith("data: ")) controller.enqueue(encoder.encode(frame));
-        boundary = buffered.indexOf("\n\n");
+        emit(frame, controller);
       }
     },
     flush(controller) {
       buffered += decoder.decode();
-      if (!buffered.trim()) return;
-      if (encoder.encode(buffered).byteLength > MAX_STREAM_EVENT_BYTES) {
-        throw new Error("AI learning path stream event exceeded the safety limit.");
-      }
-      if (buffered.startsWith("data: ")) controller.enqueue(encoder.encode(buffered));
+      if (buffered.trim()) emit(buffered, controller);
     },
   }));
 }
@@ -116,20 +94,16 @@ async function callAiStream(
   sessionId: string | null,
   language: AdvisorLanguage | null,
 ): Promise<Response> {
-  const base = aiBaseUrl(env);
-  const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
-  if (!base || !token) return json({ error: "AI learning path service is not configured." }, 503);
-
-  const endpoint = new URL("v1/learning-path/stream", base.href.endsWith("/") ? base : new URL(`${base.href}/`));
-  if (endpoint.origin !== base.origin) return json({ error: "AI learning path service configuration is invalid." }, 503);
+  const target = serviceTarget(env);
+  if (!target) return errorResponse("AI learning path service is not configured.", 503);
 
   let upstream: Response;
   try {
-    upstream = await fetch(endpoint, {
+    upstream = await fetch(target.endpoint, {
       method: "POST",
       headers: {
         accept: "text/event-stream",
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${target.token}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
@@ -138,20 +112,20 @@ async function callAiStream(
       }),
     });
   } catch {
-    return json({ error: "AI learning path service is temporarily unavailable." }, 502);
+    return errorResponse("AI learning path service is temporarily unavailable.", 502);
   }
 
   if (!upstream.ok) {
-    if (upstream.status === 404) return json({ error: "AI learning path live stream is not available yet." }, 404);
-    if (upstream.status === 429 || upstream.status === 503 || upstream.status === 504) {
-      return json({ error: "AI learning path service is temporarily unavailable." }, 503);
+    if (upstream.status === 404) return errorResponse("AI learning path live stream is not available yet.", 404);
+    if ([429, 503, 504].includes(upstream.status)) {
+      return errorResponse("AI learning path service is temporarily unavailable.", 503);
     }
-    return json({ error: "AI learning path service failed to start a live response." }, 502);
+    return errorResponse("AI learning path service failed to start a live response.", 502);
   }
 
-  const contentType = upstream.headers.get("content-type") ?? "";
-  if (!upstream.body || !contentType.toLowerCase().includes("text/event-stream")) {
-    return json({ error: "AI learning path service returned an invalid live response." }, 502);
+  const contentType = upstream.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!upstream.body || !contentType.includes("text/event-stream")) {
+    return errorResponse("AI learning path service returned an invalid live response.", 502);
   }
 
   return new Response(boundedSseBody(upstream.body), {
@@ -168,35 +142,27 @@ export async function handleLearningPathAiStream(request: Request, env: Learning
   const tenant = tenantRequestContext(request);
   const ephemeral = request.headers.get("x-gimmejob-session-scope") === "ephemeral";
   if (tenant.multiUser && (!tenant.authenticated || !tenant.userId) && !ephemeral) {
-    return json({ error: "Authentication required." }, 401);
+    return errorResponse("Authentication required.", 401);
   }
-  if (request.method !== "POST") return json({ error: "Method not allowed." }, 405, { allow: "POST" });
+  if (request.method !== "POST") return errorResponse("Method not allowed.", 405, { allow: "POST" });
 
-  let input: unknown;
+  let rawInput: unknown;
   try {
-    input = await request.json();
+    rawInput = await request.json();
   } catch {
-    return json({ error: "Invalid request body." }, 400);
-  }
-  if (!isJsonObject(input)) return json({ error: "Invalid request body." }, 400);
-
-  const messages = parseMessages(input.messages);
-  if (!messages) return json({ error: "Provide between 1 and 30 valid messages." }, 400);
-  if (messages.at(-1)?.role !== "user") return json({ error: "The final message must be from the user." }, 400);
-
-  const explicitLanguage = input.language === undefined ? null : parseAdvisorLanguage(input.language);
-  if (input.language !== undefined && !explicitLanguage) {
-    return json({ error: "Response language must be 'en' or 'uk'." }, 400);
-  }
-  const language = explicitLanguage ?? selectedLegacyLanguage(messages);
-
-  let sessionId: string | null = null;
-  if (input.sessionId !== undefined && input.sessionId !== null) {
-    const parsedSessionId = requiredText(input.sessionId, MAX_SESSION_ID_LENGTH);
-    if (!parsedSessionId || !validSessionId(parsedSessionId)) return json({ error: "Invalid session identifier." }, 400);
-    sessionId = parsedSessionId;
+    return errorResponse("Invalid request body.", 400);
   }
 
+  const parsed = requestSchema.safeParse(rawInput);
+  if (!parsed.success) return errorResponse("Invalid learning path stream request.", 400);
+
+  const { messages, sessionId = null } = parsed.data;
+  if (messages.reduce((total, message) => total + message.content.length, 0) > MAX_TOTAL_MESSAGE_LENGTH) {
+    return errorResponse("Learning path messages are too large.", 400);
+  }
+  if (messages.at(-1)?.role !== "user") return errorResponse("The final message must be from the user.", 400);
+
+  const language = (parsed.data.language as AdvisorLanguage | undefined) ?? selectedLegacyLanguage(messages);
   return callAiStream(env, messages, sessionId, language);
 }
 
