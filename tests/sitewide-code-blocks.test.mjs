@@ -20,16 +20,37 @@ test("all static pre/code examples receive the shared dark presentation", async 
 test("markdown fences preserve their language and syntax highlighting when they are static", async () => {
   const [renderer, staticBlock] = await Promise.all([
     read("app/qa-markdown.tsx"),
-    read("app/static-code-block.tsx"),
+    read("app/static-code-block.ts"),
   ]);
 
   assert.match(renderer, /const language = fence\[2\] \|\| "text"/);
   assert.match(renderer, /<StaticCodeBlock[^>]+language=\{language\}[^>]+source=\{source\}/);
-  assert.match(staticBlock, /highlightInterviewCode\(source, normalized\)/);
-  assert.match(staticBlock, /className=\{`language-\$\{normalized\}`\}/);
+  assert.match(staticBlock, /highlightInterviewCode\(source, language\)/);
+  assert.match(staticBlock, /className: `language-\$\{metadata\.normalized\}`/);
   for (const language of ["Python", "SQL", "JavaScript", "TypeScript", "C#", "Bash", "PowerShell", "YAML", "JSON", "XML", "Robot Framework"]) {
     assert.ok(staticBlock.includes(`: "${language}"`) || staticBlock.includes(`: \"${language}\"`) || staticBlock.includes(`"${language}"`), `Missing static-code label for ${language}`);
   }
+});
+
+test("static code renderer produces language metadata and highlighted React nodes", async () => {
+  const module = await import("../app/static-code-block.ts");
+
+  assert.deepEqual(module.staticCodeLanguage(" PYTHON "), { label: "Python", normalized: "python" });
+  assert.deepEqual(module.staticCodeLanguage(""), { label: "Text", normalized: "text" });
+  assert.deepEqual(module.staticCodeLanguage("kotlin"), { label: "KOTLIN", normalized: "kotlin" });
+
+  const highlighted = module.staticCodeContent("def answer():\n    return 42", "python");
+  assert.ok(highlighted.some((node) => typeof node === "object" && node?.props?.style?.color));
+
+  const plain = module.staticCodeContent("val answer = 42", "kotlin");
+  assert.deepEqual(plain, ["val answer = 42"]);
+
+  const rendered = module.default({ language: "sql", source: "SELECT 1" });
+  assert.equal(rendered.type, "div");
+  assert.equal(rendered.props.className, "qa-md-static-code");
+  assert.equal(rendered.props["data-language"], "sql");
+  assert.equal(rendered.props.children[0].props.children, "SQL");
+  assert.equal(rendered.props.children[1].props.children.props.className, "language-sql");
 });
 
 test("a successful Python Run never ends with the old empty-result dead end", async () => {
