@@ -38,7 +38,7 @@ function envFor(db) {
 
 const context = { waitUntil() {}, passThroughOnException() {} };
 
-test("built Worker allows only explicit ephemeral public interview progress", async () => {
+test("built Worker keeps the AI Assistant public without client auth or session headers", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("public-ai-core-gate-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
@@ -49,21 +49,26 @@ test("built Worker allows only explicit ephemeral public interview progress", as
   cloudflareEnv.DB = db;
   cloudflareEnv.MULTI_USER_ENABLED = "true";
 
-  const publicResponse = await worker.fetch(new Request("https://gimmejob.example/api/ai/interviews", {
-    headers: { "x-gimmejob-session-scope": "ephemeral" },
-  }), env, context);
-  assert.equal(publicResponse.status, 200);
-  assert.deepEqual(await publicResponse.json(), {
+  const interviewResponse = await worker.fetch(
+    new Request("https://gimmejob.example/api/ai/interviews"),
+    env,
+    context,
+  );
+  assert.equal(interviewResponse.status, 200);
+  assert.deepEqual(await interviewResponse.json(), {
     persistent: false,
     recentSessions: [],
     areas: [],
   });
 
-  const privateResponse = await worker.fetch(
-    new Request("https://gimmejob.example/api/ai/interviews"),
-    env,
-    context,
-  );
-  assert.equal(privateResponse.status, 401);
-  assert.deepEqual(await privateResponse.json(), { error: "Authentication required." });
+  const streamResponse = await worker.fetch(new Request("https://gimmejob.example/api/ai/learning-path/stream", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      messages: [{ role: "user", content: "Teach me test isolation" }],
+      language: "en",
+    }),
+  }), env, context);
+  assert.equal(streamResponse.status, 503);
+  assert.deepEqual(await streamResponse.json(), { error: "AI learning path service is not configured." });
 });
