@@ -21,3 +21,10 @@ test("AI Assistant chat and execution trace use the playground two-panel sizing"
   assert.match(traceStyles, /\.panel\s*\{[\s\S]*?height:\s*100%;[\s\S]*?min-height:\s*620px;/);
   assert.match(advisorStyles, /\.conversation\s*\{[\s\S]*?flex:\s*1;[\s\S]*?overflow-y:\s*auto;/);
 });
+
+test("AI Assistant keeps chat and execution details readable at normal browser zoom", () => {
+  assert.match(advisorStyles, /Readability pass[\s\S]*?\.userTurn p,[\s\S]*?\.responseIntro p[\s\S]*?font-size:\s*14px;/);
+  assert.match(advisorStyles, /\.composer textarea[\s\S]*?font-size:\s*14px;/);
+  assert.match(traceStyles, /Readability pass[\s\S]*?\.timeline summary strong[\s\S]*?font-size:\s*12px;/);
+  assert.match(traceStyles, /\.stepBody p,[\s\S]*?\.stepBody pre[\s\S]*?font-size:\s*10px;/);
+});
