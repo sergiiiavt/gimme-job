@@ -137,7 +137,7 @@ test.after(async () => {
   await server.close();
 });
 
-test("renders setup, auth, errors, progress memory, and recent sessions", () => {
+test("renders setup, errors, progress memory, and recent sessions without auth gating", () => {
   const html = renderWith(state({
     12: {
       persistent: true,
@@ -154,11 +154,10 @@ test("renders setup, auth, errors, progress memory, and recent sessions", () => 
     },
     13: false,
     15: "Temporary provider error",
-    16: true,
   }));
 
   assert.match(html, /Configure interview/);
-  assert.match(html, /Sign in to run an AI interview/);
+  assert.doesNotMatch(html, /Sign in to run an AI interview/);
   assert.match(html, /Temporary provider error/);
   assert.match(html, /Areas to practice/);
   assert.match(html, /API/);
@@ -247,7 +246,7 @@ test("renders completed interview summaries for mixed, all-strong, and all-weak 
   assert.match(allWeak, /No area reached 65% in this session/);
 });
 
-test("moves the simulator into the AI Assistant workspace without changing its hook order", async () => {
+test("moves the simulator into the AI Assistant workspace without auth-dependent UI", async () => {
   const [simulatorSource, assistantNavigation, legacyPage, assistantPage, interviewCatalogPage] = await Promise.all([
     readFile(new URL("../app/interview/simulator/interview-simulator.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ai-assistant/assistant-navigation.ts", import.meta.url), "utf8"),
@@ -259,6 +258,7 @@ test("moves the simulator into the AI Assistant workspace without changing its h
   assert.match(simulatorSource, /activeExternalId="ai-assistant"/);
   assert.match(simulatorSource, /activeSubsection=\{INTERACTIVE_INTERVIEW_TOPIC\}/);
   assert.doesNotMatch(simulatorSource, /hideSecondary/);
+  assert.doesNotMatch(simulatorSource, /authRequired|Sign in to run an AI interview/);
   assert.ok(
     assistantNavigation.indexOf('label: "Interactive interview"') < assistantNavigation.indexOf('label: "Learning Path Advisor"'),
     "Interactive interview must be the first AI Assistant topic.",
