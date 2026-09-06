@@ -33,9 +33,11 @@ const taxonomy = mockExamIndex >= 0
   : [...baseTaxonomy, istqbAiOfficialSampleExam];
 
 export const istqbAiTestingCatalog = {
-  version: 3,
+  version: 4,
   title: "ISTQB CT-AI v2.0 Exam Preparation",
+  titleUk: "Підготовка до іспиту ISTQB CT-AI v2.0",
   description: "A complete self-study path for ISTQB Certified Tester AI Testing v2.0: every syllabus chapter, exam-focused theory, worked examples, hands-on labs, all 46 official ISTQB v2.2 sample questions, a separate original mock exam, official references, and selected video explanations.",
+  descriptionUk: "Повний self-study learning path для ISTQB Certified Tester AI Testing v2.0: усі розділи syllabus, теорія з фокусом на іспит, розібрані приклади, практичні лабораторні, усі 46 офіційних sample questions ISTQB v2.2, окремий авторський mock exam, офіційні джерела та вибрані відеопояснення.",
   lastReviewedAt: "2026-09-06",
   taxonomy,
   sources: istqbAiTestingSources,
