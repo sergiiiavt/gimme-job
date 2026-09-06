@@ -1,6 +1,8 @@
 .page {
-  max-width: 1540px;
+  box-sizing: border-box;
+  max-width: 1580px;
   padding-bottom: 22px;
+  width: 100%;
 }
 
 .header {
@@ -65,6 +67,7 @@
 }
 
 .canvasFrame {
+  aspect-ratio: 2 / 1;
   background: #0d131d;
   line-height: 0;
   width: 100%;
@@ -74,7 +77,7 @@
   aspect-ratio: 2 / 1;
   cursor: crosshair;
   display: block;
-  height: auto;
+  height: 100%;
   width: 100%;
 }
 
