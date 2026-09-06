@@ -1,0 +1,31 @@
+/* Static code examples use one dark presentation everywhere on the site.
+   Runnable editors keep their dedicated runner styles. */
+pre:has(> code) {
+  background: #1e1e1e !important;
+  border: 1px solid #303030 !important;
+  border-radius: 8px !important;
+  color: #d4d4d4 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  overflow-wrap: normal !important;
+  white-space: pre !important;
+}
+
+pre:has(> code) > code {
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0 !important;
+  white-space: inherit;
+}
+
+/* Markdown code fences carry their real language on the code element. */
+.qa-md-static-code pre:has(> code) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
