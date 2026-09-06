@@ -99,6 +99,8 @@ def _learning_path_fallback(request: ChatRequest) -> tuple[AssistantResponse, li
                 id="runtime_fallback",
                 label="Use safe runtime fallback",
                 detail=step_detail,
+                input={"topic": title},
+                output={"fallback": True, "map_nodes": 1},
             )
         ],
     )
@@ -206,7 +208,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         request_id = uuid4().hex
         session_id = request.session_id or uuid4().hex
         try:
-            response, traced, retrieval_mode, workflow_steps = await learning_advisor.answer(
+            response, traced, retrieval_mode, workflow_steps, total_duration_ms, trace_url = await learning_advisor.answer(
                 messages=request.messages,
                 session_id=session_id,
                 request_id=request_id,
@@ -216,13 +218,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             response, workflow_steps = _learning_path_fallback(request)
             traced = False
             retrieval_mode = "general"
+            total_duration_ms = 0.0
+            trace_url = None
 
         return LearningAdvisorResponse(
             request_id=request_id,
             session_id=session_id,
             model=runtime.openai_model,
             langfuse_tracing=traced,
+            langfuse_trace_url=trace_url,
             retrieval_mode=retrieval_mode,
+            total_duration_ms=total_duration_ms,
             workflow_steps=workflow_steps,
             response=response,
         )
