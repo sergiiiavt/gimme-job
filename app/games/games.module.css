@@ -185,6 +185,18 @@
   background: #f3f6f3;
 }
 
+@media (min-width: 701px) {
+  .page {
+    max-width: min(1580px, calc(200vh - 284px));
+  }
+
+  @supports (height: 100dvh) {
+    .page {
+      max-width: min(1580px, calc(200dvh - 284px));
+    }
+  }
+}
+
 @media (max-width: 1100px) {
   :global(.kb-main):has(> .page) {
     margin-left: 154px;

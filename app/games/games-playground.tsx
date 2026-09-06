@@ -54,6 +54,7 @@ const GRAVITY_BASE_ZOOM = 0.4;
 const GRAVITY_MIN_ZOOM = 0.24;
 const GRAVITY_MAX_ZOOM = 2.4;
 const FIRE_HALF_ANGLE = Math.PI * 32 / 180;
+const RESPAWN_DELAY_MS = 900;
 
 const WEAPON_LABELS: Record<WeaponId, string> = {
   blaster: "Blaster",
@@ -238,6 +239,8 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     };
     const aim: AimPoint = { x: 260, y: 820, inside: false };
     let score = 0;
+    let deaths = 0;
+    let deadUntil = 0;
     let spawnSerial = 0;
     let nextSpawnAt = performance.now() + 2800;
     let lastShot = -Infinity;
@@ -267,6 +270,20 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       player.vy = 0;
       player.onGround = false;
       player.jumpsRemaining = 2;
+      deadUntil = 0;
+      jumpQueued = false;
+      pointerHeld = false;
+    }
+
+    function die(now: number) {
+      if (deadUntil !== 0) return;
+      deaths += 1;
+      deadUntil = now + RESPAWN_DELAY_MS;
+      player.vx = 0;
+      player.vy = 0;
+      player.onGround = false;
+      jumpQueued = false;
+      pointerHeld = false;
     }
 
     function weaponCooldown() {
@@ -276,7 +293,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     }
 
     function shootAtAim(now: number) {
-      if (!aim.inside || now - lastShot < weaponCooldown()) return;
+      if (deadUntil !== 0 || !aim.inside || now - lastShot < weaponCooldown()) return;
       const originX = player.x + player.w / 2;
       const originY = player.y + player.h * 0.45;
       const direction = normalizedDirection(originX, originY, aim.x, aim.y);
@@ -334,6 +351,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
+      if (deadUntil !== 0) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -355,7 +373,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
         setWeapon(nextWeapon);
       }
       if (["ArrowUp", "KeyW", "Space"].includes(event.code) && !event.repeat) jumpQueued = true;
-      if (event.code === "KeyR") respawn();
+      if (event.code === "KeyR" && deadUntil === 0) respawn();
     }
 
     function onKeyUp(event: KeyboardEvent) {
@@ -371,48 +389,54 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     window.addEventListener("keyup", onKeyUp);
 
     function update(dt: number, now: number) {
+      if (deadUntil !== 0 && now >= deadUntil) respawn();
+      const dead = deadUntil !== 0;
       const left = keys.has("ArrowLeft") || keys.has("KeyA");
       const right = keys.has("ArrowRight") || keys.has("KeyD");
       const keyboardShoot = keys.has("KeyF") || keys.has("KeyJ");
 
-      player.vx = left === right ? 0 : left ? -360 : 360;
-      if (jumpQueued) {
-        if (player.jumpsRemaining > 0) {
-          player.vy = -650;
-          player.onGround = false;
-          player.jumpsRemaining -= 1;
+      if (!dead) {
+        player.vx = left === right ? 0 : left ? -360 : 360;
+        if (jumpQueued) {
+          if (player.jumpsRemaining > 0) {
+            player.vy = -650;
+            player.onGround = false;
+            player.jumpsRemaining -= 1;
+          }
+          jumpQueued = false;
         }
-        jumpQueued = false;
-      }
-      if (keyboardShoot || pointerHeld) shootAtAim(now);
+        if (keyboardShoot || pointerHeld) shootAtAim(now);
 
-      const previousBottom = player.y + player.h;
-      player.vy += 1580 * dt;
-      player.x += player.vx * dt;
-      player.y += player.vy * dt;
+        const previousBottom = player.y + player.h;
+        player.vy += 1580 * dt;
+        player.x += player.vx * dt;
+        player.y += player.vy * dt;
 
-      const wrappedCenterX = wrapCoordinate(player.x + player.w / 2, PLATFORM_WORLD_WIDTH);
-      player.x = wrappedCenterX - player.w / 2;
-      player.onGround = false;
+        const wrappedCenterX = wrapCoordinate(player.x + player.w / 2, PLATFORM_WORLD_WIDTH);
+        player.x = wrappedCenterX - player.w / 2;
+        player.onGround = false;
 
-      if (player.vy >= 0) {
-        for (const platform of platforms) {
-          const nextBottom = player.y + player.h;
-          const horizontal = player.x + player.w > platform.x && player.x < platform.x + platform.w;
-          if (horizontal && previousBottom <= platform.y && nextBottom >= platform.y) {
-            player.y = platform.y - player.h;
-            player.vy = 0;
-            player.onGround = true;
-            player.jumpsRemaining = 2;
-            break;
+        if (player.vy >= 0) {
+          for (const platform of platforms) {
+            const nextBottom = player.y + player.h;
+            const horizontal = player.x + player.w > platform.x && player.x < platform.x + platform.w;
+            if (horizontal && previousBottom <= platform.y && nextBottom >= platform.y) {
+              player.y = platform.y - player.h;
+              player.vy = 0;
+              player.onGround = true;
+              player.jumpsRemaining = 2;
+              break;
+            }
           }
         }
-      }
 
-      const centerY = player.y + player.h / 2;
-      if (centerY < 0 || centerY >= PLATFORM_WORLD_HEIGHT) {
-        player.y = wrapCoordinate(centerY, PLATFORM_WORLD_HEIGHT) - player.h / 2;
-        player.onGround = false;
+        const centerY = player.y + player.h / 2;
+        if (centerY < 0 || centerY >= PLATFORM_WORLD_HEIGHT) {
+          player.y = wrapCoordinate(centerY, PLATFORM_WORLD_HEIGHT) - player.h / 2;
+          player.onGround = false;
+        }
+      } else {
+        jumpQueued = false;
       }
 
       if (now >= nextSpawnAt) {
@@ -427,7 +451,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           enemy.x = Math.max(enemy.minX, Math.min(enemy.maxX - enemy.w, enemy.x));
           enemy.vx *= -1;
         }
-        if (rectsOverlap(player, enemy)) respawn();
+        if (!dead && rectsOverlap(player, enemy)) die(now);
 
         if (now >= enemy.nextFireAt) {
           const originX = enemy.x + enemy.w / 2;
@@ -481,9 +505,9 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
         projectile.x += projectile.vx * dt;
         projectile.y += projectile.vy * dt;
         let remove = projectile.x < -50 || projectile.x > PLATFORM_WORLD_WIDTH + 50 || projectile.y < -50 || projectile.y > PLATFORM_WORLD_HEIGHT + 50;
-        if (!remove && rectsOverlap(player, { x: projectile.x - 4, y: projectile.y - 4, w: 8, h: 8 })) {
+        if (!remove && !dead && rectsOverlap(player, { x: projectile.x - 4, y: projectile.y - 4, w: 8, h: 8 })) {
           remove = true;
-          respawn();
+          die(now);
         }
         if (!remove && platforms.some((platform) => pointInsideRect(projectile.x, projectile.y, platform))) remove = true;
         if (remove) enemyProjectiles.splice(index, 1);
@@ -520,19 +544,32 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile));
       drawExplosions(ctx, explosions, now);
 
-      ctx.fillStyle = "#edf5ff";
+      const dead = deadUntil !== 0;
+      ctx.save();
+      if (dead) ctx.globalAlpha = 0.58 + Math.sin(now / 85) * 0.18;
+      ctx.fillStyle = dead ? "#d96c62" : "#edf5ff";
       ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.strokeStyle = "#6f8197";
+      ctx.strokeStyle = dead ? "#ffd0c8" : "#6f8197";
       ctx.lineWidth = 2;
       ctx.strokeRect(player.x, player.y, player.w, player.h);
-      drawCrosshair(ctx, aim);
+      if (dead) {
+        ctx.beginPath();
+        ctx.lineWidth = 4;
+        ctx.moveTo(player.x + 6, player.y + 8);
+        ctx.lineTo(player.x + player.w - 6, player.y + player.h - 8);
+        ctx.moveTo(player.x + player.w - 6, player.y + 8);
+        ctx.lineTo(player.x + 6, player.y + player.h - 8);
+        ctx.stroke();
+      }
+      ctx.restore();
+      drawCrosshair(ctx, aim, !dead);
       ctx.restore();
 
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Score ${score} · Enemies ${enemies.length} · Jumps ${player.jumpsRemaining}`, 20, 30);
-      ctx.fillStyle = "#9eaaa3";
-      ctx.fillText("Hold mouse to fire · edges wrap to the opposite side", 20, 52);
+      ctx.fillText(`Score ${score} · Deaths ${deaths} · Enemies ${enemies.length} · Jumps ${player.jumpsRemaining}`, 20, 30);
+      ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
+      ctx.fillText(dead ? "Respawning…" : "Hold mouse to fire · edges wrap to the opposite side", 20, 52);
     }
 
     function loop(now: number) {
@@ -605,6 +642,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     const aim: AimPoint = { x: WIDTH * 0.72, y: HEIGHT * 0.5, inside: false };
     let zoom = GRAVITY_BASE_ZOOM;
     const camera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
+    let deaths = 0;
+    let deadUntil = 0;
     let lastShot = -Infinity;
     let lastTime = performance.now();
     let pointerHeld = false;
@@ -616,9 +655,20 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ship.vx = 0;
       ship.vy = 0;
       ship.angle = -Math.PI / 2;
+      deadUntil = 0;
+      pointerHeld = false;
       const resetCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
       camera.x = resetCamera.x;
       camera.y = resetCamera.y;
+    }
+
+    function die(now: number) {
+      if (deadUntil !== 0) return;
+      deaths += 1;
+      deadUntil = now + RESPAWN_DELAY_MS;
+      ship.vx = 0;
+      ship.vy = 0;
+      pointerHeld = false;
     }
 
     function aimWorldPoint() {
@@ -639,7 +689,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function shootAtAim(now: number) {
-      if (now - lastShot < weaponCooldown()) return;
+      if (deadUntil !== 0 || now - lastShot < weaponCooldown()) return;
       const direction = currentFireDirection();
       if (!direction) return;
       const currentWeapon = weaponRef.current;
@@ -677,6 +727,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
+      if (deadUntil !== 0) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -709,7 +760,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         weaponRef.current = nextWeapon;
         setWeapon(nextWeapon);
       }
-      if (event.code === "KeyR") respawn();
+      if (event.code === "KeyR" && deadUntil === 0) respawn();
     }
 
     function onKeyUp(event: KeyboardEvent) {
@@ -740,39 +791,44 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function update(dt: number, now: number) {
+      if (deadUntil !== 0 && now >= deadUntil) respawn();
+      const dead = deadUntil !== 0;
       const left = keys.has("ArrowLeft") || keys.has("KeyA");
       const right = keys.has("ArrowRight") || keys.has("KeyD");
       const thrust = keys.has("ArrowUp") || keys.has("KeyW");
       const keyboardShoot = keys.has("KeyF") || keys.has("Space");
+      let wrapped = false;
 
-      if (left !== right) ship.angle += (left ? -1 : 1) * 2.55 * dt;
-      if (thrust) {
-        ship.vx += Math.cos(ship.angle) * 390 * dt;
-        ship.vy += Math.sin(ship.angle) * 390 * dt;
+      if (!dead) {
+        if (left !== right) ship.angle += (left ? -1 : 1) * 2.55 * dt;
+        if (thrust) {
+          ship.vx += Math.cos(ship.angle) * 390 * dt;
+          ship.vy += Math.sin(ship.angle) * 390 * dt;
+        }
+
+        const gravity = gravityAtPoint(ship.x, ship.y, planets);
+        ship.vx += gravity.x * dt;
+        ship.vy += gravity.y * dt;
+        ship.vx *= Math.pow(0.9993, dt * 60);
+        ship.vy *= Math.pow(0.9993, dt * 60);
+        ship.x += ship.vx * dt;
+        ship.y += ship.vy * dt;
+
+        const wrappedX = wrapCoordinate(ship.x, SPACE_WORLD_WIDTH);
+        const wrappedY = wrapCoordinate(ship.y, SPACE_WORLD_HEIGHT);
+        wrapped = wrappedX !== ship.x || wrappedY !== ship.y;
+        ship.x = wrappedX;
+        ship.y = wrappedY;
+
+        if (wrapped) {
+          const wrappedCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
+          camera.x = wrappedCamera.x;
+          camera.y = wrappedCamera.y;
+        }
+
+        if (keyboardShoot || pointerHeld) shootAtAim(now);
+        if (shipCollidesWithPlanet()) die(now);
       }
-
-      const gravity = gravityAtPoint(ship.x, ship.y, planets);
-      ship.vx += gravity.x * dt;
-      ship.vy += gravity.y * dt;
-      ship.vx *= Math.pow(0.9993, dt * 60);
-      ship.vy *= Math.pow(0.9993, dt * 60);
-      ship.x += ship.vx * dt;
-      ship.y += ship.vy * dt;
-
-      const wrappedX = wrapCoordinate(ship.x, SPACE_WORLD_WIDTH);
-      const wrappedY = wrapCoordinate(ship.y, SPACE_WORLD_HEIGHT);
-      const wrapped = wrappedX !== ship.x || wrappedY !== ship.y;
-      ship.x = wrappedX;
-      ship.y = wrappedY;
-
-      if (wrapped) {
-        const wrappedCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
-        camera.x = wrappedCamera.x;
-        camera.y = wrappedCamera.y;
-      }
-
-      if (keyboardShoot || pointerHeld) shootAtAim(now);
-      if (shipCollidesWithPlanet()) respawn();
 
       for (let index = projectiles.length - 1; index >= 0; index -= 1) {
         const projectile = projectiles[index];
@@ -829,22 +885,33 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       }
     }
 
-    function drawShip() {
+    function drawShip(now: number) {
+      const dead = deadUntil !== 0;
       ctx.save();
       ctx.translate(ship.x, ship.y);
       ctx.rotate(ship.angle);
+      if (dead) ctx.globalAlpha = 0.58 + Math.sin(now / 85) * 0.18;
       ctx.beginPath();
       ctx.moveTo(20, 0);
       ctx.lineTo(-14, -11);
       ctx.lineTo(-8, 0);
       ctx.lineTo(-14, 11);
       ctx.closePath();
-      ctx.fillStyle = "#d9ecff";
+      ctx.fillStyle = dead ? "#d96c62" : "#d9ecff";
       ctx.fill();
-      ctx.strokeStyle = "#7290aa";
+      ctx.strokeStyle = dead ? "#ffd0c8" : "#7290aa";
       ctx.lineWidth = 2 / zoom;
       ctx.stroke();
-      if (keys.has("ArrowUp") || keys.has("KeyW")) {
+      if (dead) {
+        ctx.beginPath();
+        ctx.lineWidth = 4 / zoom;
+        ctx.moveTo(-11, -11);
+        ctx.lineTo(13, 11);
+        ctx.moveTo(13, -11);
+        ctx.lineTo(-11, 11);
+        ctx.stroke();
+      }
+      if (!dead && (keys.has("ArrowUp") || keys.has("KeyW"))) {
         ctx.beginPath();
         ctx.moveTo(-9, -5);
         ctx.lineTo(-31, 0);
@@ -856,6 +923,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function drawFireCone() {
+      if (deadUntil !== 0) return;
       const length = 270 / zoom;
       ctx.save();
       ctx.strokeStyle = "rgba(166, 198, 224, .38)";
@@ -924,22 +992,23 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       projectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
       drawExplosions(ctx, explosions, now, zoom);
       drawFireCone();
-      drawShip();
+      drawShip(now);
       ctx.restore();
 
       const remaining = enemies.filter((enemy) => enemy.alive).length;
-      const aimDirection = currentFireDirection();
+      const dead = deadUntil !== 0;
+      const aimDirection = dead ? null : currentFireDirection();
       const displayZoom = Math.round(zoom / GRAVITY_BASE_ZOOM * 100);
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Targets ${enemies.length - remaining}/${enemies.length} · Zoom ${displayZoom}%`, 20, 30);
-      ctx.fillStyle = "#9eaaa3";
-      ctx.fillText(`World ${Math.round(ship.x)}, ${Math.round(ship.y)} · edges wrap to the opposite side`, 20, 52);
-      if (aim.inside && !aimDirection) {
+      ctx.fillText(`Targets ${enemies.length - remaining}/${enemies.length} · Deaths ${deaths} · Zoom ${displayZoom}%`, 20, 30);
+      ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
+      ctx.fillText(dead ? "Respawning…" : `World ${Math.round(ship.x)}, ${Math.round(ship.y)} · edges wrap to the opposite side`, 20, 52);
+      if (!dead && aim.inside && !aimDirection) {
         ctx.fillStyle = "#e89083";
         ctx.fillText("Aim outside firing arc", 20, 74);
       }
-      drawCrosshair(ctx, aim, Boolean(aimDirection));
+      drawCrosshair(ctx, aim, !dead && Boolean(aimDirection));
     }
 
     function loop(now: number) {
