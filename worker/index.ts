@@ -7,19 +7,27 @@ import {
   proxyWebSocketPlayground,
 } from "./websocket-playground-proxy";
 
+function isAiAssistantApiRequest(request: Request): boolean {
+  return new URL(request.url).pathname.startsWith("/api/ai/");
+}
+
+function withPublicAiSessionScope(request: Request): Request {
+  if (!isAiAssistantApiRequest(request)) return request;
+  const headers = new Headers(request.headers);
+  headers.set("x-gimmejob-session-scope", "ephemeral");
+  return new Request(request, { headers });
+}
+
 function isPublicEphemeralAiRequest(request: Request): boolean {
-  if (request.headers.get("x-gimmejob-session-scope") !== "ephemeral") return false;
-  const pathname = new URL(request.url).pathname;
-  if (pathname === "/api/ai/learning-path") return request.method === "POST";
-  if (pathname === "/api/ai/interviews") return request.method === "GET" || request.method === "POST";
-  return false;
+  return request.headers.get("x-gimmejob-session-scope") === "ephemeral" && isAiAssistantApiRequest(request);
 }
 
 // The multi-user boundary is the source of truth for browser authorization, but coreWorker still
-// contains the legacy single-user password gate. Public ephemeral AI requests have already been
-// explicitly admitted by the outer boundary; give only those requests the per-request bridge
-// credential so the legacy core gate cannot reject them a second time. The trusted multi-user
-// identity headers remain unchanged, so downstream routes still see anonymous users as anonymous.
+// contains the legacy single-user password gate. AI Assistant requests are public by design, so the
+// outer worker supplies an ephemeral session marker before the auth boundary and gives only those
+// requests the per-request bridge credential required by the legacy core gate. Trusted multi-user
+// identity headers remain unchanged, so signed-in interview users can still persist progress while
+// anonymous users stay anonymous.
 const boundaryAwareCore = {
   async fetch(
     request: Request,
@@ -59,7 +67,8 @@ const worker = {
       return proxyWebSocketPlayground(request);
     }
 
-    const response = await httpWorker.fetch(request, env, ctx);
+    const routedRequest = withPublicAiSessionScope(request);
+    const response = await httpWorker.fetch(routedRequest, env, ctx);
     return requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response;
   },
   email: handleForwardedEmail,
