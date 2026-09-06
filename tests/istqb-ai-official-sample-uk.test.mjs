@@ -37,12 +37,13 @@ test("certification page enables Ukrainian only for localized modules", async ()
   assert.match(page, /useState<LearningLanguage>\("en"\)/);
   assert.match(page, /function hasUkrainian/);
   assert.match(page, /activeModuleHasUkrainian/);
+  assert.match(page, /const effectiveLanguage: LearningLanguage = language === "uk" && activeModuleHasUkrainian \? "uk" : "en"/);
   assert.match(page, /languages=\{activeModuleHasUkrainian \? \["en", "uk"\] : \["en"\]\}/);
-  assert.match(page, /language === "uk" && activeModule && !hasUkrainian\(activeModule\)/);
   assert.match(page, /language === "uk" && !hasUkrainian\(chapter\)/);
   assert.match(page, /activeModule\.markdownUk/);
-  assert.match(page, /language=\{language\}/);
+  assert.match(page, /language=\{effectiveLanguage\}/);
   assert.match(page, /Сертифікації/);
   assert.match(page, /офіційних прикладів запитань/);
   assert.match(page, /Навігація розділами ISTQB CT-AI/);
+  assert.doesNotMatch(page, /\[activeModule, language\]/);
 });
