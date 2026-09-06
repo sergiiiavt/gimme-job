@@ -1,5 +1,4 @@
-import { createElement, type ReactNode } from "react";
-import { highlightInterviewCode } from "./interview-code-highlighting";
+import { createElement } from "react";
 
 const LANGUAGE_LABELS: Record<string, string> = {
   bash: "Bash",
@@ -41,17 +40,6 @@ export function staticCodeLanguage(language: string) {
   };
 }
 
-export function staticCodeContent(source: string, language: string): ReactNode[] {
-  return highlightInterviewCode(source, language).map((token, index) => {
-    if (!token.color) return token.text;
-    return createElement(
-      "span",
-      { key: `static-token-${index}`, style: { color: token.color } },
-      token.text,
-    );
-  });
-}
-
 export default function StaticCodeBlock({ language, source }: { language: string; source: string }) {
   const metadata = staticCodeLanguage(language);
   return createElement(
@@ -61,11 +49,7 @@ export default function StaticCodeBlock({ language, source }: { language: string
     createElement(
       "pre",
       { className: "qa-md-code" },
-      createElement(
-        "code",
-        { className: `language-${metadata.normalized}` },
-        ...staticCodeContent(source, metadata.normalized),
-      ),
+      createElement("code", { className: `language-${metadata.normalized}` }, source),
     ),
   );
 }
