@@ -44,9 +44,14 @@ test("publishes a dedicated source-backed performance interview domain", async (
   assert.match(switcherSource, /"\/interview\/performance"/);
 });
 
-test("publishes the methodical performance learning path and retrieval registration", async () => {
-  const [learning, pageSource, publicRouteSource, privateRouteSource, ragSource, packageSource] = await Promise.all([
+test("publishes the methodical performance learning path with Ukrainian localization and the real GimmeJob Locust walkthrough", async () => {
+  const [learning, localization, locustEn, locustUk, locustSources, catalogSource, pageSource, publicRouteSource, privateRouteSource, ragSource, packageSource] = await Promise.all([
     readJson("content/performance-testing/catalog.json"),
+    readJson("content/performance-testing/localization.uk.json"),
+    readJson("content/performance-testing/gimmejob-locust.en.json"),
+    readJson("content/performance-testing/gimmejob-locust.uk.json"),
+    readJson("content/performance-testing/sources-gimmejob-locust.json"),
+    readFile(projectFile("content/performance-testing/catalog.ts"), "utf8"),
     readFile(projectFile("app/performance-testing-page.tsx"), "utf8"),
     readFile(projectFile("app/learn/performance/page.tsx"), "utf8"),
     readFile(projectFile("app/workspace/learn/performance/page.tsx"), "utf8"),
@@ -71,9 +76,38 @@ test("publishes the methodical performance learning path and retrieval registrat
   assert.ok(learning.sources.every((source) => source.kind.startsWith("Official")));
   assert.doesNotMatch(learning.chapters.map((chapter) => chapter.markdown).join("\n"), /practice exercise/i);
 
+  assert.equal(localization.chapters.length, 9);
+  assert.equal(localization.chapters.at(-1)?.id, "locust-performance-testing");
+  assert.ok(localization.title.includes("продуктивності"));
+
+  const ukChapterFiles = await Promise.all(
+    Array.from({ length: 8 }, (_, index) => readJson(`content/performance-testing/chapter-${String(index + 1).padStart(2, "0")}.uk.json`)),
+  );
+  assert.deepEqual(ukChapterFiles.map((chapter) => chapter.id), learning.chapters.map((chapter) => chapter.id));
+  assert.ok(ukChapterFiles.every((chapter) => chapter.markdownUk?.trim().length >= 1500));
+
+  for (const markdown of [locustEn.markdown, locustUk.markdownUk]) {
+    assert.match(markdown, /tests\/performance\/gimmejob\/locustfile\.py/);
+    assert.match(markdown, /GET \/api\/health/);
+    assert.match(markdown, /GET \/api\/public\/jobs/);
+    assert.match(markdown, /GET \/api\/dashboard/);
+    assert.match(markdown, /between\(2, 5\)/);
+    assert.match(markdown, /LOCUST_TAGS=smoke/);
+    assert.match(markdown, /2\.82/);
+  }
+  assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/locustfile.py"));
+  assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/README.md"));
+
+  assert.match(catalogSource, /gimmejob-locust\.en\.json/);
+  assert.match(catalogSource, /gimmejob-locust\.uk\.json/);
+  assert.match(catalogSource, /repoPathPattern/);
+  assert.match(catalogSource, /github\.com\/\$\{GIMMEJOB_REPO\}\/blob\/main\/\$\{path\}/);
+  assert.match(catalogSource, /chapters: \[\.\.\.localizedBaseChapters, gimmeJobLocustChapter\]/);
+
   assert.match(pageSource, /LearningDocumentPage/);
   assert.match(pageSource, /section="performance"/);
-  assert.match(pageSource, /languages=\{\["en"\]\}/);
+  assert.match(pageSource, /titleUk: performanceTestingCatalog\.titleUk/);
+  assert.match(pageSource, /languages=\{\["en", "uk"\]\}/);
   assert.match(publicRouteSource, /PerformanceTestingPage mode="public"/);
   assert.match(privateRouteSource, /PerformanceTestingPage mode="personal"/);
   assert.match(ragSource, /key: "performance-testing", route: "\/learn\/performance"/);

@@ -9,14 +9,8 @@ const fail = (message) => { throw new Error(`[testing-tools] ${message}`); };
 const assert = (condition, message) => { if (!condition) fail(message); };
 
 const taxonomy = await readJson("taxonomy.json");
-const sources = [
-  ...(await readJson("sources.json")),
-  ...(await readJson("sources-locust.json")),
-];
-const requiredConcepts = [
-  ...(await readJson("required-concepts.json")),
-  ...(await readJson("required-concepts-locust.json")),
-];
+const sources = await readJson("sources.json");
+const requiredConcepts = await readJson("required-concepts.json");
 const chapters = await Promise.all(Array.from({ length: taxonomy.length }, async (_, index) => {
   const number = String(index + 1).padStart(2, "0");
   const english = await readJson(`chapter-${number}.en.json`);
@@ -25,10 +19,11 @@ const chapters = await Promise.all(Array.from({ length: taxonomy.length }, async
   return { id: english.id, markdown: english.markdown, markdownUk: ukrainian.markdownUk };
 }));
 
-assert(Array.isArray(taxonomy) && taxonomy.length === 9, "taxonomy must contain exactly 9 top-level topics");
+assert(Array.isArray(taxonomy) && taxonomy.length === 8, "taxonomy must contain exactly 8 top-level diagnostic-tool topics");
 assert(Array.isArray(chapters) && chapters.length === taxonomy.length, "chapter documents must match taxonomy topics");
-assert(Array.isArray(sources) && sources.length >= 34, "source registry is unexpectedly small");
-assert(Array.isArray(requiredConcepts) && requiredConcepts.length === 46, "required-concepts count must remain exactly 46");
+assert(Array.isArray(sources) && sources.length >= 30, "source registry is unexpectedly small");
+assert(Array.isArray(requiredConcepts) && requiredConcepts.length === 38, "required-concepts count must remain exactly 38");
+assert(!taxonomy.some((topic) => topic.id === "locust-performance-testing"), "performance testing belongs in the Performance Testing learning path, not Testing Tools");
 
 const unique = (items, field, label) => {
   const values = items.map((item) => item[field]);
@@ -104,8 +99,6 @@ for (const topic of taxonomy) {
   }
 }
 
-for (const source of sources) {
-  assert(citedSources.has(source.id), `source ${source.id} is registered but unused`);
-}
+for (const source of sources) assert(citedSources.has(source.id), `source ${source.id} is registered but unused`);
 
 console.log(`Testing tools content valid: ${taxonomy.length} topics, ${requiredConcepts.length} required concepts, ${sources.length} verified sources.`);

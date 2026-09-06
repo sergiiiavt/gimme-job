@@ -1,0 +1,51 @@
+{
+  "title": "Тестування продуктивності",
+  "description": "Методичний навчальний шлях від моделювання навантаження та performance-метрик до JMeter, k6, Locust, distributed load generation, діагностики bottleneck-ів і performance regression testing у CI.",
+  "chapters": [
+    {
+      "id": "foundations",
+      "labelUk": "1. Основи та типи тестування",
+      "descriptionUk": "Що вимірює performance testing, чим відрізняються його типи та як перетворити нечітку вимогу «має бути швидко» на перевірювану ціль."
+    },
+    {
+      "id": "workload-model",
+      "labelUk": "2. Моделювання навантаження",
+      "descriptionUk": "Operational profiles, concurrency, arrivals, throughput, think time, pacing, open/closed models і реалістичні форми навантаження."
+    },
+    {
+      "id": "metrics-objectives",
+      "labelUk": "3. Метрики, percentiles та цілі",
+      "descriptionUk": "Latency distributions, throughput, errors, saturation, p95/p99, baselines і автоматизовані pass/fail thresholds."
+    },
+    {
+      "id": "environment-scripts-data",
+      "labelUk": "4. Environment, scripts і test data",
+      "descriptionUk": "Валідність performance test: порівнюваність environment, correctness checks, parameterization, correlation, ізоляція даних і warm-up state."
+    },
+    {
+      "id": "jmeter-workflow",
+      "labelUk": "5. JMeter: від script до load run",
+      "descriptionUk": "Практичний workflow JMeter: Test Plan, дані/correlation, timers, assertions, CLI execution, reports і distributed mode."
+    },
+    {
+      "id": "k6-locust",
+      "labelUk": "6. k6 та Locust",
+      "descriptionUk": "Code-first load testing через k6 scenarios/thresholds та Locust user/task modelling, headless runs і distributed execution."
+    },
+    {
+      "id": "diagnosis-resilience",
+      "labelUk": "7. Bottlenecks, scalability та recovery",
+      "descriptionUk": "Як перейти від графіка «повільно» до підтвердженої bottleneck hypothesis, знайти limits, перевірити scaling і recovery."
+    },
+    {
+      "id": "ci-reporting",
+      "labelUk": "8. CI/CD, regression та reporting",
+      "descriptionUk": "Багаторівневі performance checks, відтворювані baselines, automated gates, trend comparison і decision-oriented reports."
+    },
+    {
+      "id": "locust-performance-testing",
+      "labelUk": "9. GimmeJob Locust: розбір реального проєкту",
+      "descriptionUk": "Розбір реального GimmeJob workload: virtual users, task weights/tags, pacing, RPS, response validation, production safety, thresholds і сценарії поза health endpoint."
+    }
+  ]
+}
