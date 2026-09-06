@@ -9,7 +9,12 @@ from fastapi.testclient import TestClient
 from starlette.testclient import WebSocketTestSession
 
 from gimmejob_ai.application import app
-from gimmejob_ai.websocket_playground import MAX_MESSAGE_BYTES, _normalize_room
+from gimmejob_ai.websocket_playground import (
+    MAX_IMAGE_DATA_URL_CHARS,
+    MAX_MESSAGE_BYTES,
+    MAX_TEXT_MESSAGE_CHARS,
+    _normalize_room,
+)
 
 
 class WebSocketPlaygroundTests(unittest.TestCase):
@@ -54,6 +59,55 @@ class WebSocketPlaygroundTests(unittest.TestCase):
                 self.assertEqual(second_broadcast["data"], "room message")
                 self.assertEqual(second_broadcast["room"], "broadcast")
 
+    def test_image_broadcast_reaches_room_and_preserves_caption(self) -> None:
+        image = {
+            "kind": "image",
+            "dataUrl": "data:image/webp;base64,AAAA",
+            "name": "sample.webp",
+            "width": 320,
+            "height": 180,
+            "caption": "image caption",
+        }
+        with self.connected_socket("image") as first:
+            with self.connected_socket("image") as second:
+                first.receive_json()  # presence after second client joins
+                first_broadcast = self.send_action(first, "broadcast", message=image)
+                second_broadcast = second.receive_json()
+
+                self.assertEqual(first_broadcast["data"], image)
+                self.assertEqual(second_broadcast["data"], image)
+                self.assertEqual(second_broadcast["type"], "broadcast")
+
+    def test_invalid_and_oversized_image_payloads_are_rejected(self) -> None:
+        with self.connected_socket("image-validation") as socket:
+            invalid_type = self.send_action(
+                socket,
+                "broadcast",
+                message={
+                    "kind": "image",
+                    "dataUrl": "data:image/svg+xml;base64,PHN2Zz4=",
+                    "name": "unsafe.svg",
+                    "width": 10,
+                    "height": 10,
+                },
+            )
+            self.assertEqual(invalid_type["type"], "error")
+            self.assertIn("JPEG, PNG or WebP", invalid_type["message"])
+
+            oversized = self.send_action(
+                socket,
+                "broadcast",
+                message={
+                    "kind": "image",
+                    "dataUrl": "data:image/webp;base64," + ("A" * MAX_IMAGE_DATA_URL_CHARS),
+                    "name": "large.webp",
+                    "width": 100,
+                    "height": 100,
+                },
+            )
+            self.assertEqual(oversized["type"], "error")
+            self.assertIn(str(MAX_IMAGE_DATA_URL_CHARS), oversized["message"])
+
     def test_identity_and_heartbeat(self) -> None:
         with self.connected_socket("identity") as socket:
             identity = self.send_action(socket, "whoami")
@@ -87,6 +141,10 @@ class WebSocketPlaygroundTests(unittest.TestCase):
             self.assertEqual(unknown["type"], "error")
             self.assertIn("does-not-exist", unknown["message"])
             self.assertIn("echo", unknown["supportedActions"])
+
+            too_long = self.send_action(socket, "broadcast", message="x" * (MAX_TEXT_MESSAGE_CHARS + 1))
+            self.assertEqual(too_long["type"], "error")
+            self.assertIn(str(MAX_TEXT_MESSAGE_CHARS), too_long["message"])
 
             socket.send_text("x" * (MAX_MESSAGE_BYTES + 1))
             oversized = socket.receive_json()
