@@ -7,7 +7,7 @@
     "status": "verified",
     "url": "https://docs.locust.io/en/stable/",
     "role": "HttpUser, tasks, tags, wait time, events, statistics and command-line execution",
-    "checkedAt": "2026-08-30"
+    "checkedAt": "2026-09-06"
   },
   {
     "id": "azure-load-testing-docs",
@@ -16,8 +16,28 @@
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://learn.microsoft.com/en-us/azure/app-testing/load-testing/",
-    "role": "Managed load execution, configuration, monitoring and result analysis",
-    "checkedAt": "2026-08-30"
+    "role": "Managed load execution, client-side metrics, run dashboards and result analysis",
+    "checkedAt": "2026-09-06"
+  },
+  {
+    "id": "cloudflare-workers-metrics",
+    "title": "Cloudflare Workers metrics and analytics",
+    "publisher": "Cloudflare",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developers.cloudflare.com/workers/observability/metrics-and-analytics/",
+    "role": "Worker request, invocation status, CPU time, wall time, memory and runtime metrics",
+    "checkedAt": "2026-09-06"
+  },
+  {
+    "id": "cloudflare-d1-metrics",
+    "title": "Cloudflare D1 metrics and analytics",
+    "publisher": "Cloudflare",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developers.cloudflare.com/d1/observability/metrics-analytics/",
+    "role": "D1 read and write query rates, rows read, response bytes, storage and query latency",
+    "checkedAt": "2026-09-06"
   },
   {
     "id": "gimmejob-locust-workload",
@@ -27,7 +47,7 @@
     "status": "verified",
     "url": "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/locustfile.py",
     "role": "Exact production-safe Locust workload explained by the learning chapter",
-    "checkedAt": "2026-08-30"
+    "checkedAt": "2026-09-06"
   },
   {
     "id": "gimmejob-locust-readme",
@@ -36,7 +56,7 @@
     "kind": "Project documentation",
     "status": "verified",
     "url": "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/README.md",
-    "role": "Workload matrix, safety defaults, local/Azure execution and interpretation",
-    "checkedAt": "2026-08-30"
+    "role": "Workload matrix, safety defaults, Azure execution topology and cross-platform result interpretation",
+    "checkedAt": "2026-09-06"
   }
 ]
