@@ -3,6 +3,7 @@ import ExecutablePythonBlock from "./executable-python-block";
 import ExecutableSqlBlock from "./executable-sql-block";
 import { isRunnablePythonSource } from "./interview-python-execution";
 import { isRunnableSqlSource } from "./interview-sql-execution";
+import StaticCodeBlock from "./static-code-block";
 
 export interface MarkdownHeading {
   id: string;
@@ -184,12 +185,14 @@ export default function MarkdownDocument({ headingIdOverrides = {}, markdown, us
         nodes.push(<ExecutablePythonBlock code={source} key={`python-run-${nodeKey++}`} />);
       } else if (isRunnableSqlSource(language, source)) {
         nodes.push(<ExecutableSqlBlock code={source} key={`sql-run-${nodeKey++}`} />);
-      } else {
+      } else if (language === "diagram") {
         nodes.push(
-          <pre className={language === "diagram" ? "qa-md-diagram" : "qa-md-code"} key={`pre-${nodeKey++}`}>
+          <pre className="qa-md-diagram" key={`diagram-${nodeKey++}`}>
             <code>{source}</code>
           </pre>,
         );
+      } else {
+        nodes.push(<StaticCodeBlock key={`static-code-${nodeKey++}`} language={language} source={source} />);
       }
       continue;
     }
