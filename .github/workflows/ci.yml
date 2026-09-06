@@ -79,7 +79,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Diagnose SonarQube Cloud failure
-        if: always()
+        if: failure()
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -103,29 +103,6 @@ jobs:
               with urllib.request.urlopen(req, timeout=30) as response:
                   return json.load(response)
 
-          def print_issues(issue_type, label):
-              payload = request(
-                  "issues/search",
-                  {
-                      "componentKeys": project_key,
-                      "pullRequest": pr_number,
-                      "resolved": "false",
-                      "types": issue_type,
-                      "ps": 100,
-                  },
-              )
-              issues = payload.get("issues", [])
-              print(f"Open {label}: {len(issues)}")
-              for issue in issues:
-                  print(
-                      f"{label}: "
-                      f"rule={issue.get('rule')} "
-                      f"severity={issue.get('severity')} "
-                      f"component={issue.get('component')} "
-                      f"line={issue.get('line')} "
-                      f"message={issue.get('message')}"
-                  )
-
           try:
               status_payload = request(
                   "qualitygates/project_status",
@@ -143,15 +120,55 @@ jobs:
                           f"threshold={condition.get('errorThreshold')}"
                       )
 
-              print_issues("VULNERABILITY", "vulnerabilities")
-              print_issues("BUG", "reliability bugs")
-              print_issues("CODE_SMELL", "maintainability issues")
+              issues_payload = request(
+                  "issues/search",
+                  {
+                      "componentKeys": project_key,
+                      "pullRequest": pr_number,
+                      "resolved": "false",
+                      "types": "VULNERABILITY",
+                      "ps": 100,
+                  },
+              )
+              issues = issues_payload.get("issues", [])
+              print(f"Open vulnerabilities: {len(issues)}")
+              for issue in issues:
+                  print(
+                      "Vulnerability: "
+                      f"rule={issue.get('rule')} "
+                      f"severity={issue.get('severity')} "
+                      f"component={issue.get('component')} "
+                      f"line={issue.get('line')} "
+                      f"message={issue.get('message')}"
+                  )
+
+              bugs_payload = request(
+                  "issues/search",
+                  {
+                      "componentKeys": project_key,
+                      "pullRequest": pr_number,
+                      "resolved": "false",
+                      "types": "BUG",
+                      "ps": 100,
+                  },
+              )
+              bugs = bugs_payload.get("issues", [])
+              print(f"Open reliability bugs: {len(bugs)}")
+              for issue in bugs:
+                  print(
+                      "Reliability bug: "
+                      f"rule={issue.get('rule')} "
+                      f"severity={issue.get('severity')} "
+                      f"component={issue.get('component')} "
+                      f"line={issue.get('line')} "
+                      f"message={issue.get('message')}"
+                  )
           except Exception as error:
               print(f"Sonar diagnostics unavailable: {type(error).__name__}: {error}")
           PY
 
       - name: Upload Sonar diagnostics
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: sonar-diagnostics
