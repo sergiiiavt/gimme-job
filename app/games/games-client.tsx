@@ -157,7 +157,6 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       player.vy = 0;
       player.onGround = false;
       player.jumpsRemaining = 2;
-      enemyBullets.length = 0;
     }
 
     function shootAtAim(now: number) {
