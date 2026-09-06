@@ -32,3 +32,19 @@ test("both games expose blaster rocket and bomb weapons", () => {
   assert.match(source, /Digit3/);
   assert.match(source, /craterRadius = projectile\.kind === "rocket" \? 110 : projectile\.kind === "bomb" \? 155 : 46/);
 });
+
+test("both games show a visible clickable weapon selector", () => {
+  assert.match(source, /aria-label="Weapon selector"/);
+  assert.match(source, /aria-pressed=\{weapon === option\.id\}/);
+  assert.match(source, /icon: "🚀"/);
+  assert.match(source, /icon: "💣"/);
+  assert.equal((source.match(/<WeaponSelector onSelect=\{chooseWeapon\} weapon=\{weapon\}\/>/g) ?? []).length, 2);
+});
+
+test("both player-controlled worlds wrap at every edge", () => {
+  assert.match(source, /wrapCoordinate\(player\.x \+ player\.w \/ 2, PLATFORM_WORLD_WIDTH\)/);
+  assert.match(source, /wrapCoordinate\(centerY, PLATFORM_WORLD_HEIGHT\)/);
+  assert.match(source, /wrapCoordinate\(ship\.x, SPACE_WORLD_WIDTH\)/);
+  assert.match(source, /wrapCoordinate\(ship\.y, SPACE_WORLD_HEIGHT\)/);
+  assert.doesNotMatch(source, /ship\.x < 0 \|\| ship\.x > SPACE_WORLD_WIDTH/);
+});

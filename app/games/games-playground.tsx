@@ -15,6 +15,7 @@ import {
   normalizedDirection,
   rectsOverlap,
   screenToWorld,
+  wrapCoordinate,
   type PlanetPhysics,
   type Rect,
 } from "./game-engine";
@@ -33,7 +34,6 @@ type Projectile = {
   bornAt: number;
 };
 type Explosion = { x: number; y: number; radius: number; bornAt: number; duration: number };
-
 type PlatformEnemy = Rect & {
   alive: boolean;
   minX: number;
@@ -60,6 +60,33 @@ const WEAPON_LABELS: Record<WeaponId, string> = {
   rocket: "Rocket",
   bomb: "Bomb",
 };
+
+const WEAPON_OPTIONS: readonly { id: WeaponId; icon: string; key: string; label: string }[] = [
+  { id: "blaster", icon: "●", key: "1", label: "Blaster" },
+  { id: "rocket", icon: "🚀", key: "2", label: "Rocket" },
+  { id: "bomb", icon: "💣", key: "3", label: "Bomb" },
+];
+
+function WeaponSelector({ weapon, onSelect }: { weapon: WeaponId; onSelect: (weapon: WeaponId) => void }) {
+  return (
+    <div aria-label="Weapon selector" className={styles.weaponSelector} role="group">
+      {WEAPON_OPTIONS.map((option) => (
+        <button
+          aria-label={`${option.label} weapon`}
+          aria-pressed={weapon === option.id}
+          className={weapon === option.id ? styles.weaponActive : ""}
+          key={option.id}
+          onClick={() => onSelect(option.id)}
+          title={`${option.key} · ${option.label}`}
+          type="button"
+        >
+          <span aria-hidden="true" className={styles.weaponIcon}>{option.icon}</span>
+          <small>{option.key}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function canvasPoint(canvas: HTMLCanvasElement, event: ClientPoint): { x: number; y: number } {
   const rect = canvas.getBoundingClientRect();
@@ -94,11 +121,11 @@ function drawProjectile(ctx: CanvasRenderingContext2D, projectile: Projectile, s
   ctx.fill();
 
   if (projectile.kind === "rocket") {
+    const speed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
     ctx.beginPath();
     ctx.strokeStyle = "rgba(255, 205, 126, .72)";
     ctx.lineWidth = 3 / scale;
     ctx.moveTo(projectile.x, projectile.y);
-    const speed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
     ctx.lineTo(
       projectile.x - projectile.vx / speed * 16 / scale,
       projectile.y - projectile.vy / speed * 16 / scale,
@@ -142,6 +169,13 @@ function drawExplosions(ctx: CanvasRenderingContext2D, explosions: readonly Expl
 
 function PlatformerGame({ resetToken }: { resetToken: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const weaponRef = useRef<WeaponId>("blaster");
+  const [weapon, setWeapon] = useState<WeaponId>("blaster");
+
+  function chooseWeapon(nextWeapon: WeaponId) {
+    weaponRef.current = nextWeapon;
+    setWeapon(nextWeapon);
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -149,9 +183,14 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    weaponRef.current = "blaster";
+    setWeapon("blaster");
+
     const keys = new Set<string>();
     const platforms: Rect[] = [
-      { x: 0, y: 915, w: PLATFORM_WORLD_WIDTH, h: 45 },
+      { x: 0, y: 915, w: 520, h: 45 },
+      { x: 650, y: 915, w: 500, h: 45 },
+      { x: 1280, y: 915, w: 640, h: 45 },
       { x: 115, y: 790, w: 250, h: 16 },
       { x: 420, y: 715, w: 220, h: 16 },
       { x: 720, y: 820, w: 245, h: 16 },
@@ -205,7 +244,6 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     let lastTime = performance.now();
     let jumpQueued = false;
     let pointerHeld = false;
-    let weapon: WeaponId = "blaster";
     let frame = 0;
 
     function createEnemy(spawnIndex: number, now: number): PlatformEnemy {
@@ -232,8 +270,8 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     }
 
     function weaponCooldown() {
-      if (weapon === "rocket") return 650;
-      if (weapon === "bomb") return 900;
+      if (weaponRef.current === "rocket") return 650;
+      if (weaponRef.current === "bomb") return 900;
       return 120;
     }
 
@@ -242,13 +280,14 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       const originX = player.x + player.w / 2;
       const originY = player.y + player.h * 0.45;
       const direction = normalizedDirection(originX, originY, aim.x, aim.y);
-      const speed = weapon === "rocket" ? 660 : weapon === "bomb" ? 470 : 1040;
+      const currentWeapon = weaponRef.current;
+      const speed = currentWeapon === "rocket" ? 660 : currentWeapon === "bomb" ? 470 : 1040;
       projectiles.push({
         x: originX + direction.x * 24,
         y: originY + direction.y * 24,
         vx: direction.x * speed,
         vy: direction.y * speed,
-        kind: weapon,
+        kind: currentWeapon,
         bornAt: now,
       });
       lastShot = now;
@@ -310,7 +349,11 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     function onKeyDown(event: KeyboardEvent) {
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space"].includes(event.code)) event.preventDefault();
       keys.add(event.code);
-      weapon = selectWeapon(event.code, weapon);
+      const nextWeapon = selectWeapon(event.code, weaponRef.current);
+      if (nextWeapon !== weaponRef.current) {
+        weaponRef.current = nextWeapon;
+        setWeapon(nextWeapon);
+      }
       if (["ArrowUp", "KeyW", "Space"].includes(event.code) && !event.repeat) jumpQueued = true;
       if (event.code === "KeyR") respawn();
     }
@@ -333,7 +376,6 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       const keyboardShoot = keys.has("KeyF") || keys.has("KeyJ");
 
       player.vx = left === right ? 0 : left ? -360 : 360;
-
       if (jumpQueued) {
         if (player.jumpsRemaining > 0) {
           player.vy = -650;
@@ -348,7 +390,9 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       player.vy += 1580 * dt;
       player.x += player.vx * dt;
       player.y += player.vy * dt;
-      player.x = Math.max(0, Math.min(PLATFORM_WORLD_WIDTH - player.w, player.x));
+
+      const wrappedCenterX = wrapCoordinate(player.x + player.w / 2, PLATFORM_WORLD_WIDTH);
+      player.x = wrappedCenterX - player.w / 2;
       player.onGround = false;
 
       if (player.vy >= 0) {
@@ -364,7 +408,12 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           }
         }
       }
-      if (player.y > PLATFORM_WORLD_HEIGHT + 100) respawn();
+
+      const centerY = player.y + player.h / 2;
+      if (centerY < 0 || centerY >= PLATFORM_WORLD_HEIGHT) {
+        player.y = wrapCoordinate(centerY, PLATFORM_WORLD_HEIGHT) - player.h / 2;
+        player.onGround = false;
+      }
 
       if (now >= nextSpawnAt) {
         spawnEnemy(now);
@@ -383,9 +432,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
         if (now >= enemy.nextFireAt) {
           const originX = enemy.x + enemy.w / 2;
           const originY = enemy.y + enemy.h * 0.45;
-          const targetX = player.x + player.w / 2;
-          const targetY = player.y + player.h * 0.45;
-          const direction = normalizedDirection(originX, originY, targetX, targetY);
+          const direction = normalizedDirection(originX, originY, player.x + player.w / 2, player.y + player.h * 0.45);
           enemyProjectiles.push({
             x: originX + direction.x * 18,
             y: originY + direction.y * 18,
@@ -422,12 +469,10 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           if (projectile.kind !== "blaster") detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 115 : 155, now);
           remove = true;
         }
-
         if (!remove && projectile.kind === "bomb" && now - projectile.bornAt >= 1250) {
           detonate(projectile.x, projectile.y, 155, now);
           remove = true;
         }
-
         if (remove) projectiles.splice(index, 1);
       }
 
@@ -465,31 +510,29 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
 
       ctx.fillStyle = "#314338";
       for (const platform of platforms) ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
-
       for (const enemy of enemies) {
         ctx.fillStyle = "#d75a4a";
         ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
         ctx.fillStyle = "rgba(255, 207, 191, .85)";
         ctx.fillRect(enemy.x + 5, enemy.y + 8, 5, 5);
       }
-
-      projectiles.forEach((projectile) => drawProjectile(ctx, projectile, 1));
-      enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile, 1));
-      drawExplosions(ctx, explosions, now, 1);
+      projectiles.forEach((projectile) => drawProjectile(ctx, projectile));
+      enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile));
+      drawExplosions(ctx, explosions, now);
 
       ctx.fillStyle = "#edf5ff";
       ctx.fillRect(player.x, player.y, player.w, player.h);
       ctx.strokeStyle = "#6f8197";
       ctx.lineWidth = 2;
       ctx.strokeRect(player.x, player.y, player.w, player.h);
-      drawCrosshair(ctx, aim, true, 1);
+      drawCrosshair(ctx, aim);
       ctx.restore();
 
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Score ${score} · Enemies ${enemies.length} · Jumps ${player.jumpsRemaining} · ${WEAPON_LABELS[weapon]}`, 20, 30);
+      ctx.fillText(`Score ${score} · Enemies ${enemies.length} · Jumps ${player.jumpsRemaining}`, 20, 30);
       ctx.fillStyle = "#9eaaa3";
-      ctx.fillText("1 Blaster · 2 Rocket · 3 Bomb · hold left mouse to keep firing", 20, 52);
+      ctx.fillText("Hold mouse to fire · edges wrap to the opposite side", 20, 52);
     }
 
     function loop(now: number) {
@@ -513,17 +556,32 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     };
   }, [resetToken]);
 
-  return <canvas aria-label="Platformer game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>;
+  return (
+    <div className={styles.gameSurface}>
+      <canvas aria-label="Platformer game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>
+      <WeaponSelector onSelect={chooseWeapon} weapon={weapon}/>
+    </div>
+  );
 }
 
 function GravityGame({ resetToken }: { resetToken: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const weaponRef = useRef<WeaponId>("blaster");
+  const [weapon, setWeapon] = useState<WeaponId>("blaster");
+
+  function chooseWeapon(nextWeapon: WeaponId) {
+    weaponRef.current = nextWeapon;
+    setWeapon(nextWeapon);
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    weaponRef.current = "blaster";
+    setWeapon("blaster");
 
     const keys = new Set<string>();
     const projectiles: Projectile[] = [];
@@ -550,7 +608,6 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     let lastShot = -Infinity;
     let lastTime = performance.now();
     let pointerHeld = false;
-    let weapon: WeaponId = "blaster";
     let frame = 0;
 
     function respawn() {
@@ -576,8 +633,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function weaponCooldown() {
-      if (weapon === "rocket") return 700;
-      if (weapon === "bomb") return 980;
+      if (weaponRef.current === "rocket") return 700;
+      if (weaponRef.current === "bomb") return 980;
       return 145;
     }
 
@@ -585,13 +642,14 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       if (now - lastShot < weaponCooldown()) return;
       const direction = currentFireDirection();
       if (!direction) return;
-      const speed = weapon === "rocket" ? 560 : weapon === "bomb" ? 310 : 780;
+      const currentWeapon = weaponRef.current;
+      const speed = currentWeapon === "rocket" ? 560 : currentWeapon === "bomb" ? 310 : 780;
       projectiles.push({
         x: ship.x + direction.x * 26,
         y: ship.y + direction.y * 26,
         vx: ship.vx + direction.x * speed,
         vy: ship.vy + direction.y * speed,
-        kind: weapon,
+        kind: currentWeapon,
         bornAt: now,
       });
       lastShot = now;
@@ -646,7 +704,11 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     function onKeyDown(event: KeyboardEvent) {
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space"].includes(event.code)) event.preventDefault();
       keys.add(event.code);
-      weapon = selectWeapon(event.code, weapon);
+      const nextWeapon = selectWeapon(event.code, weaponRef.current);
+      if (nextWeapon !== weaponRef.current) {
+        weaponRef.current = nextWeapon;
+        setWeapon(nextWeapon);
+      }
       if (event.code === "KeyR") respawn();
     }
 
@@ -697,9 +759,20 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ship.x += ship.vx * dt;
       ship.y += ship.vy * dt;
 
+      const wrappedX = wrapCoordinate(ship.x, SPACE_WORLD_WIDTH);
+      const wrappedY = wrapCoordinate(ship.y, SPACE_WORLD_HEIGHT);
+      const wrapped = wrappedX !== ship.x || wrappedY !== ship.y;
+      ship.x = wrappedX;
+      ship.y = wrappedY;
+
+      if (wrapped) {
+        const wrappedCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
+        camera.x = wrappedCamera.x;
+        camera.y = wrappedCamera.y;
+      }
+
       if (keyboardShoot || pointerHeld) shootAtAim(now);
       if (shipCollidesWithPlanet()) respawn();
-      if (ship.x < 0 || ship.x > SPACE_WORLD_WIDTH || ship.y < 0 || ship.y > SPACE_WORLD_HEIGHT) respawn();
 
       for (let index = projectiles.length - 1; index >= 0; index -= 1) {
         const projectile = projectiles[index];
@@ -726,9 +799,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
             const craterRadius = projectile.kind === "rocket" ? 110 : projectile.kind === "bomb" ? 155 : 46;
             planets[planetIndex].craters.push({ x: projectile.x, y: projectile.y, radius: craterRadius });
             if (planets[planetIndex].craters.length > 180) planets[planetIndex].craters.shift();
-            if (projectile.kind !== "blaster") {
-              detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
-            }
+            if (projectile.kind !== "blaster") detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
             remove = true;
           }
         }
@@ -741,7 +812,6 @@ function GravityGame({ resetToken }: { resetToken: number }) {
           detonate(projectile.x, projectile.y, 130, now);
           remove = true;
         }
-
         if (remove) projectiles.splice(index, 1);
       }
 
@@ -749,12 +819,14 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         if (now - explosions[index].bornAt > explosions[index].duration) explosions.splice(index, 1);
       }
 
-      const viewportWidth = WIDTH / zoom;
-      const viewportHeight = HEIGHT / zoom;
-      const nextCamera = clampCamera(ship.x, ship.y, viewportWidth, viewportHeight);
-      const follow = Math.min(1, dt * 5.5);
-      camera.x += (nextCamera.x - camera.x) * follow;
-      camera.y += (nextCamera.y - camera.y) * follow;
+      if (!wrapped) {
+        const viewportWidth = WIDTH / zoom;
+        const viewportHeight = HEIGHT / zoom;
+        const nextCamera = clampCamera(ship.x, ship.y, viewportWidth, viewportHeight);
+        const follow = Math.min(1, dt * 5.5);
+        camera.x += (nextCamera.x - camera.x) * follow;
+        camera.y += (nextCamera.y - camera.y) * follow;
+      }
     }
 
     function drawShip() {
@@ -830,7 +902,6 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ctx.save();
       ctx.scale(zoom, zoom);
       ctx.translate(-camera.x, -camera.y);
-
       ctx.fillStyle = "rgba(255,255,255,.43)";
       for (let index = 0; index < 240; index += 1) {
         const x = (index * 379 + 97) % SPACE_WORLD_WIDTH;
@@ -850,7 +921,6 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         ctx.lineWidth = 2 / zoom;
         ctx.stroke();
       }
-
       projectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
       drawExplosions(ctx, explosions, now, zoom);
       drawFireCone();
@@ -862,9 +932,9 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       const displayZoom = Math.round(zoom / GRAVITY_BASE_ZOOM * 100);
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Targets ${enemies.length - remaining}/${enemies.length} · Zoom ${displayZoom}% · ${WEAPON_LABELS[weapon]}`, 20, 30);
+      ctx.fillText(`Targets ${enemies.length - remaining}/${enemies.length} · Zoom ${displayZoom}%`, 20, 30);
       ctx.fillStyle = "#9eaaa3";
-      ctx.fillText(`World ${Math.round(ship.x)}, ${Math.round(ship.y)} · 1 Blaster · 2 Rocket · 3 Bomb · hold mouse to fire`, 20, 52);
+      ctx.fillText(`World ${Math.round(ship.x)}, ${Math.round(ship.y)} · edges wrap to the opposite side`, 20, 52);
       if (aim.inside && !aimDirection) {
         ctx.fillStyle = "#e89083";
         ctx.fillText("Aim outside firing arc", 20, 74);
@@ -894,17 +964,22 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     };
   }, [resetToken]);
 
-  return <canvas aria-label="Gravity game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>;
+  return (
+    <div className={styles.gameSurface}>
+      <canvas aria-label="Gravity game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>
+      <WeaponSelector onSelect={chooseWeapon} weapon={weapon}/>
+    </div>
+  );
 }
 
 const GAME_INFO: Record<GameId, { description: string; controls: string }> = {
   platformer: {
-    description: "A wider arena with smaller actors, double jump, returning enemies and three weapons.",
-    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · 1 blaster · 2 rocket · 3 bomb · R respawn",
+    description: "A wide wrap-around arena with double jump, returning enemies and three weapons.",
+    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · 1/2/3 weapons · cross any edge to wrap · R respawn",
   },
   gravity: {
-    description: "Planetary gravity, destructible worlds, rebased zoom and a forward-only three-weapon arsenal.",
-    controls: "A/D or ←/→ rotate · W/↑ thrust · wheel zoom · hold mouse to fire · 1 blaster · 2 rocket · 3 bomb · R respawn",
+    description: "Planetary gravity, destructible worlds, wrap-around space and a forward-only three-weapon arsenal.",
+    controls: "A/D or ←/→ rotate · W/↑ thrust · wheel zoom · hold mouse to fire · 1/2/3 weapons · cross any edge to wrap · R respawn",
   },
 };
 
