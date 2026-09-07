@@ -109,7 +109,7 @@ class RetrievalResult:
     strategy: RetrievalStrategy
     embedding_model: str
     hits: tuple[RetrievalHit, ...]
-    diagnostics: RetrievalDiagnostics
+    diagnostics: RetrievalDiagnostics | None = None
 
 
 class LearningRetriever(Protocol):
@@ -344,11 +344,12 @@ class CanonicalRagClient:
         results = value.get("results")
         if not isinstance(results, list) or len(results) > 12:
             raise RuntimeError("Canonical RAG returned an invalid result list.")
+        diagnostics_value = value.get("diagnostics")
         return RetrievalResult(
             strategy=strategy,
             embedding_model=embedding_model,
             hits=tuple(_parse_hit(item) for item in results),
-            diagnostics=_parse_diagnostics(value.get("diagnostics")),
+            diagnostics=_parse_diagnostics(diagnostics_value) if diagnostics_value is not None else None,
         )
 
     async def search(
