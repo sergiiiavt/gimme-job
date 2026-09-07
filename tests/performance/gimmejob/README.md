@@ -81,7 +81,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r tests/performance/gimmejob/requirements.txt
 ```
 
-## Local real-UI smoke
+## Local smoke
 
 Start the app with `npm run local`, then:
 
@@ -89,13 +89,13 @@ Start the app with `npm run local`, then:
 .\.venv\Scripts\python.exe -m locust `
   -f tests/performance/gimmejob/locustfile.py `
   --host http://127.0.0.1:4173 `
-  --headless --users 1 --spawn-rate 1 --run-time 30s --tags vacancies-ui
+  --headless --users 1 --spawn-rate 1 --run-time 30s --tags smoke
 ```
 
-On localhost `/api/auth-state` intentionally reports an authenticated trusted
-development host, so the strict anonymous-production auth-state assertion is
-intended for the Azure production benchmark. Use `--tags smoke` for a purely
-local smoke if needed.
+The production `vacancies-ui` benchmark expects an anonymous `/api/auth-state`
+response (`401`, `authenticated=false`). Localhost is intentionally trusted by
+the application, so use the production Azure target for that strict anonymous
+flow.
 
 ## Azure benchmark configuration
 
@@ -127,9 +127,12 @@ Run matrix:
 | Medium | 50 | 5 users/s | 10 min | 8.33 |
 | High | 100 | 10 users/s | 10 min | 16.67 |
 
-At USD 0.15/VUH this matrix is approximately USD 4.00 before taxes or
-agreement-specific pricing. A 40-VUH monthly resource limit gives room for this
-matrix plus limited retries while remaining bounded.
+At USD 0.15/VUH this fresh matrix is approximately USD 4.00 before taxes or
+agreement-specific pricing. Because the account already has the earlier
+10-user smoke and 100-user synthetic run, the known usage plus this complete
+matrix is about 45.2 VUH. Set the Azure Load Testing monthly resource limit to
+**50 VUH** for this comparison: enough to finish the planned matrix, but still
+bounded against accidental larger runs.
 
 The earlier 100-user synthetic mixed-route run is useful diagnostic history,
 but it is **not** directly comparable with this benchmark because its request
