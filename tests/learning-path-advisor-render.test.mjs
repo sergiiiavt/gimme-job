@@ -78,12 +78,24 @@ const repositoryResult = {
       durationMs: 76,
       input: { query: "Python parallelism", language: "en", limit: 8 },
       output: { strategy: "vectorize", embeddingModel: "@cf/baai/bge-m3", resultCount: 3, topScore: 0.94 },
+      decisions: [
+        { label: "Vector threshold", detail: "Candidates below 0.45 were removed.", status: "pass", value: 0.45 },
+      ],
+      payloads: [
+        { label: "Retrieval query", kind: "text", content: "Python parallelism", truncated: false },
+      ],
       retrievalResults: [{
         title: "Python parallelism",
         kind: "question",
         score: 0.94,
         sourcePath: "/interview/python?question=py-parallelism-02",
         excerpt: "Processes provide CPU parallelism while asyncio targets cooperative I/O concurrency.",
+        rank: 1,
+        rawRank: 2,
+        threshold: 0.45,
+        matchedTokens: [],
+        titleMatchedTokens: [],
+        scoreExplanation: "Vector similarity 0.9400; accepted because it is >= 0.45.",
       }],
       tokenUsage: null,
     },
@@ -94,6 +106,12 @@ const repositoryResult = {
       durationMs: 754,
       input: { retrievalCount: 3, promptMessages: 3 },
       output: { answerCharacters: 180, cardCount: 2, mapNodeCount: 3 },
+      decisions: [
+        { label: "Structured output", detail: "The model was constrained to AssistantResponse.", status: "info", value: true },
+      ],
+      payloads: [
+        { label: "System prompt", kind: "prompt", content: "Use canonical RAG excerpts.", truncated: false },
+      ],
       retrievalResults: [],
       tokenUsage: { inputTokens: 520, outputTokens: 190, totalTokens: 710 },
     },
@@ -104,6 +122,8 @@ const repositoryResult = {
       durationMs: 10,
       input: { retrievalMode: "repository", candidateSourceCount: 3 },
       output: { verifiedSourceCount: 3, connectedMap: true },
+      decisions: [],
+      payloads: [],
       retrievalResults: [],
       tokenUsage: null,
     },
@@ -209,8 +229,35 @@ test("normalizes the real workflow trace returned by the AI proxy", () => {
   assert.equal(normalized.retrievalMode, "repository");
   assert.equal(normalized.totalDurationMs, 842);
   assert.deepEqual(normalized.workflowSteps, repositoryResult.workflowSteps);
-  assert.equal(normalized.workflowSteps[1].retrievalResults[0].score, 0.94);
+  assert.equal(normalized.workflowSteps[1].decisions[0].value, 0.45);
+  assert.equal(normalized.workflowSteps[1].payloads[0].content, "Python parallelism");
+  assert.equal(normalized.workflowSteps[1].retrievalResults[0].rawRank, 2);
+  assert.match(normalized.workflowSteps[1].retrievalResults[0].scoreExplanation, /0\.9400/);
   assert.equal(normalized.workflowSteps[2].tokenUsage?.totalTokens, 710);
+});
+
+test("normalizes legacy rich trace steps with safe deep-debugger defaults", () => {
+  const payload = structuredClone(repositoryResult);
+  for (const step of payload.workflowSteps) {
+    delete step.decisions;
+    delete step.payloads;
+    for (const result of step.retrievalResults) {
+      delete result.rank;
+      delete result.rawRank;
+      delete result.threshold;
+      delete result.matchedTokens;
+      delete result.titleMatchedTokens;
+      delete result.scoreExplanation;
+    }
+  }
+  const normalized = normalizedLearningPathResponse(payload);
+  assert.ok(normalized);
+  assert.deepEqual(normalized.workflowSteps[0].decisions, []);
+  assert.deepEqual(normalized.workflowSteps[0].payloads, []);
+  assert.equal(normalized.workflowSteps[1].retrievalResults[0].rank, 1);
+  assert.equal(normalized.workflowSteps[1].retrievalResults[0].rawRank, null);
+  assert.equal(normalized.workflowSteps[1].retrievalResults[0].threshold, null);
+  assert.deepEqual(normalized.workflowSteps[1].retrievalResults[0].matchedTokens, []);
 });
 
 test("rejects a response that has no observable workflow steps", () => {
