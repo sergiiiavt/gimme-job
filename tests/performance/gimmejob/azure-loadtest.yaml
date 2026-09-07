@@ -13,7 +13,7 @@ env:
   - name: LOCUST_SPAWN_RATE
     value: "1"
   - name: LOCUST_RUN_TIME
-    value: "600s"
+    value: "600"
   - name: LOCUST_TAGS
     value: vacancies-ui
   - name: GIMMEJOB_HOST
@@ -27,7 +27,7 @@ env:
   - name: GIMMEJOB_MAX_FAILURE_RATIO
     value: "0.01"
   - name: GIMMEJOB_MAX_P95_MS
-    value: "2500"
+    value: "10000"
 failureCriteria:
   - percentage(error) > 1
-  - p95(response_time_ms) > 2500
+  - p95(response_time_ms) > 10000

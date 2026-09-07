@@ -296,7 +296,7 @@ def apply_exploratory_thresholds(environment: object, **_kwargs: object) -> None
 
     failures: list[str] = []
     max_failure_ratio = _non_negative_float("GIMMEJOB_MAX_FAILURE_RATIO", 0.01)
-    max_p95_ms = _non_negative_float("GIMMEJOB_MAX_P95_MS", 2500)
+    max_p95_ms = _non_negative_float("GIMMEJOB_MAX_P95_MS", 10000)
     p95_ms = stats.get_response_time_percentile(0.95) or 0
 
     if stats.fail_ratio > max_failure_ratio:

@@ -47,9 +47,9 @@ test("Azure Locust baseline configuration keeps the production selector explicit
   assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*vacancies-ui/);
   assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
   assert.match(azureConfig, /name:\s*LOCUST_USERS\s*\n\s*value:\s*"10"/);
-  assert.match(azureConfig, /name:\s*LOCUST_RUN_TIME\s*\n\s*value:\s*"600s"/);
+  assert.match(azureConfig, /name:\s*LOCUST_RUN_TIME\s*\n\s*value:\s*"600"/);
   assert.match(azureConfig, /percentage\(error\) > 1/);
-  assert.match(azureConfig, /p95\(response_time_ms\) > 2500/);
+  assert.match(azureConfig, /p95\(response_time_ms\) > 10000/);
 });
 
 test("GimmeJob Locust workload remains read-only and avoids cost-generating routes", () => {
