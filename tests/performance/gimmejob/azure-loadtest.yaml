@@ -1,7 +1,7 @@
 version: v0.1
 testId: gimmejob-prod-smoke
-displayName: GimmeJob production Vacancies baseline
-description: 10-user anonymous Vacancies UI baseline against production
+displayName: GimmeJob production full read-only baseline
+description: 10-user full read-only production baseline across all defined Locust tasks
 testPlan: locustfile.py
 testType: Locust
 engineInstances: 1
@@ -15,7 +15,7 @@ env:
   - name: LOCUST_RUN_TIME
     value: "600"
   - name: LOCUST_TAGS
-    value: vacancies-ui
+    value: full-readonly
   - name: GIMMEJOB_HOST
     value: https://gimme-job.com
   - name: GIMMEJOB_PRODUCTION_ACK

@@ -42,14 +42,30 @@ test("untagged production Locust runs safely default to the Vacancies scenario",
   assert.match(readme, /defaults to `vacancies-ui`/);
 });
 
-test("Azure Locust baseline configuration keeps the production selector explicit", () => {
+test("Azure Locust baseline configuration selects the complete read-only workload", () => {
   assert.match(azureConfig, /testType:\s*Locust/);
-  assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*vacancies-ui/);
+  assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*full-readonly/);
   assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
   assert.match(azureConfig, /name:\s*LOCUST_USERS\s*\n\s*value:\s*"10"/);
   assert.match(azureConfig, /name:\s*LOCUST_RUN_TIME\s*\n\s*value:\s*"600"/);
   assert.match(azureConfig, /percentage\(error\) > 1/);
   assert.match(azureConfig, /p95\(response_time_ms\) > 10000/);
+  assert.match(readme, /primary Azure baseline runs every defined read-only Locust task with 10 total virtual users/i);
+});
+
+test("full-readonly tag covers every defined read-only Locust task", () => {
+  for (const decorator of [
+    '@tag("vacancies-ui", "full-readonly", "real-ui", "d1")',
+    '@tag("health", "smoke", "full-readonly", "api", "worker")',
+    '@tag("home", "full-readonly", "diagnostic", "edge", "html")',
+    '@tag("reference", "full-readonly", "diagnostic", "worker", "html")',
+    '@tag("jobs-api", "infra", "full-readonly", "d1", "api")',
+    '@tag("dashboard", "full-readonly", "diagnostic", "d1", "api", "heavy")',
+  ]) {
+    assert.ok(locustfile.includes(decorator), `Missing full-readonly coverage: ${decorator}`);
+  }
+  assert.match(readme, /`full-readonly` \| Vacancies UI flow/);
+  assert.match(readme, /10 total virtual users, not 10 users per endpoint/);
 });
 
 test("GimmeJob Locust workload remains read-only and avoids cost-generating routes", () => {
@@ -70,20 +86,19 @@ test("GimmeJob Locust workload remains read-only and avoids cost-generating rout
 });
 
 test("GimmeJob Locust exposes a real anonymous Vacancies UI benchmark", () => {
-  assert.match(locustfile, /@tag\("vacancies-ui", "real-ui", "d1"\)/);
+  assert.match(locustfile, /@tag\("vacancies-ui", "full-readonly", "real-ui", "d1"\)/);
   assert.match(locustfile, /GET \/vacancies \[UI page\]/);
   assert.match(locustfile, /GET \/api\/auth-state \[vacancies UI\]/);
   assert.match(locustfile, /GET \/api\/dashboard \[vacancies UI\]/);
   assert.match(locustfile, /response\.status_code != 401/);
   assert.match(locustfile, /response\.success\(\)/);
   assert.doesNotMatch(locustfile, /payload\.get\("authenticated"\) is not False/);
-  assert.match(readme, /LOCUST_TAGS` \| `vacancies-ui`/);
-  assert.match(readme, /10\/50\/100-user benchmark/);
-  assert.match(readme, /Mark the 10-user run as the baseline/);
+  assert.match(readme, /LOCUST_TAGS` \| `full-readonly`/);
+  assert.match(readme, /fresh 10-user `full-readonly` baseline/);
 });
 
 test("public jobs stays available only as an infrastructure diagnostic", () => {
-  assert.match(locustfile, /@tag\("jobs-api", "infra", "d1", "api"\)/);
+  assert.match(locustfile, /@tag\("jobs-api", "infra", "full-readonly", "d1", "api"\)/);
   assert.match(locustfile, /GET \/api\/public\/jobs \[infra D1\]/);
   assert.match(readme, /not a current frontend consumer/);
   assert.doesNotMatch(readme, /`public-read`/);
