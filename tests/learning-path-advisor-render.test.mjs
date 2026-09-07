@@ -68,6 +68,8 @@ const repositoryResult = {
       durationMs: 2,
       input: { messageCount: 1 },
       output: { query: "Python parallelism", language: "en" },
+      decisions: [],
+      payloads: [],
       retrievalResults: [],
       tokenUsage: null,
     },
