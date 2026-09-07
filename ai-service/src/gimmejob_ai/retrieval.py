@@ -12,6 +12,13 @@ from urllib.request import Request, urlopen
 from .settings import Settings
 
 RetrievalStrategy = Literal["vectorize", "lexical-fallback"]
+FallbackReason = Literal[
+    "none",
+    "empty-query",
+    "bindings-unavailable",
+    "semantic-error",
+    "no-matches-above-threshold",
+]
 
 _LEARNING_ROUTE_RE = re.compile(r"^/(?:learn|reference)/[a-z0-9][a-z0-9-]*$")
 _ALLOWED_LEARNING_QUERY_KEYS = {"topic", "section", "track"}
@@ -45,10 +52,64 @@ class RetrievalHit:
 
 
 @dataclass(frozen=True)
+class RetrievalHitDiagnostics:
+    id: str
+    rank: int
+    raw_rank: int | None
+    score: float
+    threshold: float | None
+    matched_tokens: tuple[str, ...]
+    title_matched_tokens: tuple[str, ...]
+    coverage: float | None
+    title_coverage: float | None
+    phrase_bonus: float | None
+    minimum_matches: int | None
+
+    def score_explanation(self) -> str:
+        if self.threshold is not None:
+            return f"Vector similarity {self.score:.4f}; accepted because it is >= {self.threshold:.2f}."
+        if self.coverage is not None and self.title_coverage is not None and self.phrase_bonus is not None:
+            return (
+                f"Lexical score = {self.coverage:.4f}×0.65 + "
+                f"{self.title_coverage:.4f}×0.20 + {self.phrase_bonus:.2f} = {self.score:.4f}."
+            )
+        return f"Retriever score {self.score:.4f}."
+
+
+@dataclass(frozen=True)
+class RetrievalDiagnostics:
+    selected_kinds: tuple[str, ...]
+    requested_limit: int
+    corpus_document_count: int
+    semantic_available: bool
+    semantic_attempted: bool
+    embedding_input_chars: int
+    embedding_dimension: int | None
+    embedding_duration_ms: float
+    vector_top_k: int | None
+    vector_query_duration_ms: float
+    raw_vector_match_count: int
+    kind_filtered_match_count: int
+    score_threshold: float
+    threshold_passed_match_count: int
+    fallback_reason: FallbackReason
+    lexical_tokens: tuple[str, ...]
+    removed_stop_words: tuple[str, ...]
+    lexical_candidate_count: int
+    lexical_scored_count: int
+    lexical_duration_ms: float
+    result_diagnostics: tuple[RetrievalHitDiagnostics, ...]
+
+    def by_id(self) -> dict[str, RetrievalHitDiagnostics]:
+        return {item.id: item for item in self.result_diagnostics}
+
+
+@dataclass(frozen=True)
 class RetrievalResult:
     strategy: RetrievalStrategy
     embedding_model: str
     hits: tuple[RetrievalHit, ...]
+    diagnostics: RetrievalDiagnostics
 
 
 class LearningRetriever(Protocol):
@@ -79,6 +140,39 @@ def _required_text(value: object, field: str, max_length: int) -> str:
     return cleaned
 
 
+def _bounded_int(value: object, field: str, maximum: int, *, minimum: int = 0) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < minimum or value > maximum:
+        raise ValueError(f"Canonical RAG response field {field} is invalid.")
+    return value
+
+
+def _bounded_number(value: object, field: str, maximum: float, *, minimum: float = 0) -> float:
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        raise ValueError(f"Canonical RAG response field {field} is invalid.")
+    number = float(value)
+    if number < minimum or number > maximum:
+        raise ValueError(f"Canonical RAG response field {field} is invalid.")
+    return number
+
+
+def _nullable_int(value: object, field: str, maximum: int, *, minimum: int = 0) -> int | None:
+    if value is None:
+        return None
+    return _bounded_int(value, field, maximum, minimum=minimum)
+
+
+def _nullable_number(value: object, field: str, maximum: float) -> float | None:
+    if value is None:
+        return None
+    return _bounded_number(value, field, maximum)
+
+
+def _string_list(value: object, field: str, *, max_items: int = 24, max_length: int = 200) -> tuple[str, ...]:
+    if not isinstance(value, list) or len(value) > max_items:
+        raise ValueError(f"Canonical RAG response field {field} is invalid.")
+    return tuple(_required_text(item, field, max_length) for item in value)
+
+
 def _validated_learning_source_path(value: object, route_path: str) -> str:
     source_path = _required_text(value, "sourcePath", 1_000)
     parsed = urlparse(source_path)
@@ -95,12 +189,7 @@ def _validated_learning_source_path(value: object, route_path: str) -> str:
 
 
 def _ui_source_path(kind: str, ref_id: str, route: str | None, canonical_source_path: object) -> str:
-    """Return a validated, directly navigable GimmeJob content path.
-
-    Learning routes retain the canonical topic/section/track query produced by the Worker.
-    Interview questions receive the site's existing question deep-link query from the trusted
-    ref id. The model only sees validated internal paths, so it never needs to invent navigation.
-    """
+    """Return a validated, directly navigable GimmeJob content path."""
 
     route_path = route.split("?", 1)[0] if route else ""
     if kind == "question":
@@ -135,6 +224,68 @@ def _parse_hit(value: object) -> RetrievalHit:
         score=float(score),
         source_path=_ui_source_path(kind, ref_id, route, value.get("sourcePath")),
         route=route,
+    )
+
+
+def _parse_result_diagnostic(value: object) -> RetrievalHitDiagnostics:
+    if not isinstance(value, dict):
+        raise ValueError("Canonical RAG result diagnostic must be an object.")
+    return RetrievalHitDiagnostics(
+        id=_required_text(value.get("id"), "diagnostics.result.id", 200),
+        rank=_bounded_int(value.get("rank"), "diagnostics.result.rank", 100, minimum=1),
+        raw_rank=_nullable_int(value.get("rawRank"), "diagnostics.result.rawRank", 1_000, minimum=1),
+        score=_bounded_number(value.get("score"), "diagnostics.result.score", 1.5),
+        threshold=_nullable_number(value.get("threshold"), "diagnostics.result.threshold", 1.5),
+        matched_tokens=_string_list(value.get("matchedTokens"), "diagnostics.result.matchedTokens"),
+        title_matched_tokens=_string_list(value.get("titleMatchedTokens"), "diagnostics.result.titleMatchedTokens"),
+        coverage=_nullable_number(value.get("coverage"), "diagnostics.result.coverage", 1.0),
+        title_coverage=_nullable_number(value.get("titleCoverage"), "diagnostics.result.titleCoverage", 1.0),
+        phrase_bonus=_nullable_number(value.get("phraseBonus"), "diagnostics.result.phraseBonus", 1.0),
+        minimum_matches=_nullable_int(value.get("minimumMatches"), "diagnostics.result.minimumMatches", 24, minimum=1),
+    )
+
+
+def _parse_diagnostics(value: object) -> RetrievalDiagnostics:
+    if not isinstance(value, dict):
+        raise ValueError("Canonical RAG diagnostics must be an object.")
+    fallback_reason = value.get("fallbackReason")
+    allowed_reasons = {
+        "none",
+        "empty-query",
+        "bindings-unavailable",
+        "semantic-error",
+        "no-matches-above-threshold",
+    }
+    if fallback_reason not in allowed_reasons:
+        raise ValueError("Canonical RAG returned an invalid fallback reason.")
+    selected_kinds = _string_list(value.get("selectedKinds"), "diagnostics.selectedKinds", max_items=3, max_length=30)
+    if any(kind not in {"job", "learning", "question"} for kind in selected_kinds):
+        raise ValueError("Canonical RAG returned invalid selected kinds.")
+    raw_results = value.get("resultDiagnostics")
+    if not isinstance(raw_results, list) or len(raw_results) > 12:
+        raise ValueError("Canonical RAG result diagnostics are invalid.")
+    return RetrievalDiagnostics(
+        selected_kinds=selected_kinds,
+        requested_limit=_bounded_int(value.get("requestedLimit"), "diagnostics.requestedLimit", 25, minimum=1),
+        corpus_document_count=_bounded_int(value.get("corpusDocumentCount"), "diagnostics.corpusDocumentCount", 100_000),
+        semantic_available=value.get("semanticAvailable") is True,
+        semantic_attempted=value.get("semanticAttempted") is True,
+        embedding_input_chars=_bounded_int(value.get("embeddingInputChars"), "diagnostics.embeddingInputChars", 2_000),
+        embedding_dimension=_nullable_int(value.get("embeddingDimension"), "diagnostics.embeddingDimension", 100_000, minimum=1),
+        embedding_duration_ms=_bounded_number(value.get("embeddingDurationMs"), "diagnostics.embeddingDurationMs", 300_000),
+        vector_top_k=_nullable_int(value.get("vectorTopK"), "diagnostics.vectorTopK", 50, minimum=1),
+        vector_query_duration_ms=_bounded_number(value.get("vectorQueryDurationMs"), "diagnostics.vectorQueryDurationMs", 300_000),
+        raw_vector_match_count=_bounded_int(value.get("rawVectorMatchCount"), "diagnostics.rawVectorMatchCount", 50),
+        kind_filtered_match_count=_bounded_int(value.get("kindFilteredMatchCount"), "diagnostics.kindFilteredMatchCount", 50),
+        score_threshold=_bounded_number(value.get("scoreThreshold"), "diagnostics.scoreThreshold", 1.5),
+        threshold_passed_match_count=_bounded_int(value.get("thresholdPassedMatchCount"), "diagnostics.thresholdPassedMatchCount", 50),
+        fallback_reason=fallback_reason,
+        lexical_tokens=_string_list(value.get("lexicalTokens"), "diagnostics.lexicalTokens"),
+        removed_stop_words=_string_list(value.get("removedStopWords"), "diagnostics.removedStopWords"),
+        lexical_candidate_count=_bounded_int(value.get("lexicalCandidateCount"), "diagnostics.lexicalCandidateCount", 100_000),
+        lexical_scored_count=_bounded_int(value.get("lexicalScoredCount"), "diagnostics.lexicalScoredCount", 100_000),
+        lexical_duration_ms=_bounded_number(value.get("lexicalDurationMs"), "diagnostics.lexicalDurationMs", 300_000),
+        result_diagnostics=tuple(_parse_result_diagnostic(item) for item in raw_results),
     )
 
 
@@ -197,6 +348,7 @@ class CanonicalRagClient:
             strategy=strategy,
             embedding_model=embedding_model,
             hits=tuple(_parse_hit(item) for item in results),
+            diagnostics=_parse_diagnostics(value.get("diagnostics")),
         )
 
     async def search(
