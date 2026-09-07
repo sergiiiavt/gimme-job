@@ -11,6 +11,10 @@ import AssistantMarkdown from "./assistant-markdown";
 import ExecutionTrace, {
   type ExecutionStep,
   type ExecutionTraceData,
+  type TraceDecision,
+  type TraceDecisionStatus,
+  type TracePayload,
+  type TracePayloadKind,
   type TraceRetrievalResult,
   type TraceScalar,
   type TraceTokenUsage,
@@ -103,6 +107,12 @@ const MAX_TRACE_RESULTS = 8;
 const MAX_TRACE_FIELDS = 20;
 const MAX_TRACE_FIELD_LENGTH = 4_000;
 const MAX_TRACE_DURATION_MS = 300_000;
+const MAX_TRACE_DECISIONS = 32;
+const MAX_TRACE_PAYLOADS = 8;
+const MAX_TRACE_PAYLOAD_LENGTH = 12_000;
+const MAX_TRACE_TOKEN_ITEMS = 24;
+const TRACE_DECISION_STATUSES = new Set<TraceDecisionStatus>(["info", "pass", "fail", "branch", "skip"]);
+const TRACE_PAYLOAD_KINDS = new Set<TracePayloadKind>(["text", "json", "prompt", "list"]);
 
 const SAMPLE_PROMPTS = [
   "Python parallelism",
@@ -154,15 +164,21 @@ function safeTraceUrl(value: unknown): string | null | undefined {
   }
 }
 
+function traceScalar(value: unknown): TraceScalar | undefined {
+  if (value === null || typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.length <= MAX_TRACE_FIELD_LENGTH) return value;
+  return undefined;
+}
+
 function traceRecord(value: unknown): Record<string, TraceScalar> | null {
   if (!isRecord(value) || Object.keys(value).length > MAX_TRACE_FIELDS) return null;
   const parsed: Record<string, TraceScalar> = {};
   for (const [key, raw] of Object.entries(value)) {
     if (!key.trim() || key.length > 120) return null;
-    if (raw === null || typeof raw === "boolean") parsed[key] = raw;
-    else if (typeof raw === "number" && Number.isFinite(raw)) parsed[key] = raw;
-    else if (typeof raw === "string" && raw.length <= MAX_TRACE_FIELD_LENGTH) parsed[key] = raw;
-    else return null;
+    const scalar = traceScalar(raw);
+    if (scalar === undefined) return null;
+    parsed[key] = scalar;
   }
   return parsed;
 }
@@ -181,21 +197,105 @@ function traceTokenUsage(value: unknown): TraceTokenUsage | null | undefined {
   return { inputTokens, outputTokens, totalTokens };
 }
 
+function traceStringArray(value: unknown, maxItems = MAX_TRACE_TOKEN_ITEMS): string[] | null {
+  if (!Array.isArray(value) || value.length > maxItems) return null;
+  const values: string[] = [];
+  for (const item of value) {
+    const text = nonEmptyString(item);
+    if (!text || text.length > 200) return null;
+    values.push(text);
+  }
+  return values;
+}
+
+function traceDecisions(value: unknown): TraceDecision[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_TRACE_DECISIONS) return null;
+  const decisions: TraceDecision[] = [];
+  for (const item of value) {
+    if (!isRecord(item)) return null;
+    const label = nonEmptyString(item.label);
+    const detail = nonEmptyString(item.detail);
+    const status = item.status as TraceDecisionStatus;
+    const scalar = traceScalar(item.value);
+    if (!label || label.length > 240 || !detail || detail.length > 2_000 || !TRACE_DECISION_STATUSES.has(status) || scalar === undefined) return null;
+    decisions.push({ label, detail, status, value: scalar });
+  }
+  return decisions;
+}
+
+function tracePayloads(value: unknown): TracePayload[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_TRACE_PAYLOADS) return null;
+  const payloads: TracePayload[] = [];
+  for (const item of value) {
+    if (!isRecord(item)) return null;
+    const label = nonEmptyString(item.label);
+    const content = nonEmptyString(item.content);
+    const kind = item.kind as TracePayloadKind;
+    if (
+      !label || label.length > 240
+      || !content || content.length > MAX_TRACE_PAYLOAD_LENGTH
+      || !TRACE_PAYLOAD_KINDS.has(kind)
+      || typeof item.truncated !== "boolean"
+    ) return null;
+    payloads.push({ label, kind, content, truncated: item.truncated });
+  }
+  return payloads;
+}
+
+function optionalTraceInteger(value: unknown, minimum: number, maximum: number): number | null | undefined {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < minimum || value > maximum) return undefined;
+  return value;
+}
+
+function optionalTraceNumber(value: unknown, minimum: number, maximum: number): number | null | undefined {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < minimum || value > maximum) return undefined;
+  return value;
+}
+
 function traceRetrievalResults(value: unknown): TraceRetrievalResult[] | null {
   if (!Array.isArray(value) || value.length > MAX_TRACE_RESULTS) return null;
-  return value.flatMap((item) => {
-    if (!isRecord(item)) return [];
+  const results: TraceRetrievalResult[] = [];
+  for (const [index, item] of value.entries()) {
+    if (!isRecord(item)) return null;
     const title = nonEmptyString(item.title);
     const sourcePath = nonEmptyString(item.sourcePath);
     const excerpt = nonEmptyString(item.excerpt);
     const score = item.score;
+    const rank = item.rank === undefined ? index + 1 : optionalTraceInteger(item.rank, 1, 100);
+    const rawRank = optionalTraceInteger(item.rawRank, 1, 1_000);
+    const threshold = optionalTraceNumber(item.threshold, 0, 1.5);
+    const matchedTokens = item.matchedTokens === undefined ? [] : traceStringArray(item.matchedTokens);
+    const titleMatchedTokens = item.titleMatchedTokens === undefined ? [] : traceStringArray(item.titleMatchedTokens);
+    const scoreExplanation = item.scoreExplanation === undefined || item.scoreExplanation === null
+      ? null
+      : nonEmptyString(item.scoreExplanation);
     if (
       !title || !sourcePath || !excerpt
       || (item.kind !== "learning" && item.kind !== "question")
       || typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1.5
-    ) return [];
-    return [{ title, kind: item.kind, score, sourcePath, excerpt }];
-  });
+      || rank === undefined || rank === null || rawRank === undefined || threshold === undefined
+      || !matchedTokens || !titleMatchedTokens
+      || (scoreExplanation !== null && scoreExplanation.length > 1_000)
+    ) return null;
+    results.push({
+      title,
+      kind: item.kind,
+      score,
+      sourcePath,
+      excerpt,
+      rank,
+      rawRank,
+      threshold,
+      matchedTokens,
+      titleMatchedTokens,
+      scoreExplanation,
+    });
+  }
+  return results;
 }
 
 function traceWorkflowSteps(value: unknown): ExecutionStep[] | null {
@@ -207,13 +307,26 @@ function traceWorkflowSteps(value: unknown): ExecutionStep[] | null {
     const detail = nonEmptyString(item.detail);
     const input = traceRecord(item.input);
     const output = traceRecord(item.output);
+    const decisions = traceDecisions(item.decisions);
+    const payloads = tracePayloads(item.payloads);
     const retrievalResults = traceRetrievalResults(item.retrievalResults);
     const tokenUsage = traceTokenUsage(item.tokenUsage);
     if (
       !id || !label || !detail || !validTraceDuration(item.durationMs)
-      || !input || !output || !retrievalResults || tokenUsage === undefined
+      || !input || !output || !decisions || !payloads || !retrievalResults || tokenUsage === undefined
     ) return [];
-    return [{ id, label, detail, durationMs: item.durationMs, input, output, retrievalResults, tokenUsage }];
+    return [{
+      id,
+      label,
+      detail,
+      durationMs: item.durationMs,
+      input,
+      output,
+      decisions,
+      payloads,
+      retrievalResults,
+      tokenUsage,
+    }];
   });
   return steps.length === value.length ? steps : null;
 }

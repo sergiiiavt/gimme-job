@@ -68,12 +68,32 @@ class ChatResponse(BaseModel):
 TraceScalar = str | int | float | bool | None
 
 
+class TraceDecision(BaseModel):
+    label: str = Field(min_length=1, max_length=240)
+    detail: str = Field(min_length=1, max_length=2_000)
+    status: Literal["info", "pass", "fail", "branch", "skip"] = "info"
+    value: TraceScalar = None
+
+
+class TracePayload(BaseModel):
+    label: str = Field(min_length=1, max_length=240)
+    kind: Literal["text", "json", "prompt", "list"] = "text"
+    content: str = Field(min_length=1, max_length=12_000)
+    truncated: bool = False
+
+
 class TraceRetrievalResult(BaseModel):
     title: str = Field(min_length=1, max_length=1_000)
     kind: Literal["learning", "question"]
     score: float = Field(ge=0, le=1.5)
     source_path: str = Field(min_length=1, max_length=1_000)
     excerpt: str = Field(min_length=1, max_length=2_000)
+    rank: int = Field(default=1, ge=1, le=100)
+    raw_rank: int | None = Field(default=None, ge=1, le=1_000)
+    threshold: float | None = Field(default=None, ge=0, le=1.5)
+    matched_tokens: list[str] = Field(default_factory=list, max_length=24)
+    title_matched_tokens: list[str] = Field(default_factory=list, max_length=24)
+    score_explanation: str | None = Field(default=None, max_length=1_000)
 
 
 class TraceTokenUsage(BaseModel):
@@ -89,6 +109,8 @@ class WorkflowStep(BaseModel):
     duration_ms: float = Field(default=0, ge=0, le=300_000)
     input: dict[str, TraceScalar] = Field(default_factory=dict, max_length=20)
     output: dict[str, TraceScalar] = Field(default_factory=dict, max_length=20)
+    decisions: list[TraceDecision] = Field(default_factory=list, max_length=32)
+    payloads: list[TracePayload] = Field(default_factory=list, max_length=8)
     retrieval_results: list[TraceRetrievalResult] = Field(default_factory=list, max_length=8)
     token_usage: TraceTokenUsage | None = None
 

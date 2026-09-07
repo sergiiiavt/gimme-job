@@ -13,10 +13,26 @@ type LearningPathAiEnv = {
 
 type JsonObject = Record<string, unknown>;
 type TraceScalar = string | number | boolean | null;
+type TraceDecisionStatus = "info" | "pass" | "fail" | "branch" | "skip";
+type TracePayloadKind = "text" | "json" | "prompt" | "list";
 
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+};
+
+type TraceDecision = {
+  label: string;
+  detail: string;
+  status: TraceDecisionStatus;
+  value: TraceScalar;
+};
+
+type TracePayload = {
+  label: string;
+  kind: TracePayloadKind;
+  content: string;
+  truncated: boolean;
 };
 
 type TraceRetrievalResult = {
@@ -25,6 +41,12 @@ type TraceRetrievalResult = {
   score: number;
   sourcePath: string;
   excerpt: string;
+  rank: number;
+  rawRank: number | null;
+  threshold: number | null;
+  matchedTokens: string[];
+  titleMatchedTokens: string[];
+  scoreExplanation: string | null;
 };
 
 type TraceTokenUsage = {
@@ -40,6 +62,8 @@ type WorkflowStep = {
   durationMs: number;
   input: Record<string, TraceScalar>;
   output: Record<string, TraceScalar>;
+  decisions: TraceDecision[];
+  payloads: TracePayload[];
   retrievalResults: TraceRetrievalResult[];
   tokenUsage: TraceTokenUsage | null;
 };
@@ -95,10 +119,16 @@ const MAX_TRACE_FIELDS = 20;
 const MAX_TRACE_FIELD_LENGTH = 4_000;
 const MAX_TRACE_DURATION_MS = 300_000;
 const MAX_TRACE_RESULTS = 8;
+const MAX_TRACE_DECISIONS = 32;
+const MAX_TRACE_PAYLOADS = 8;
+const MAX_TRACE_PAYLOAD_LENGTH = 12_000;
+const MAX_TRACE_TOKEN_ITEMS = 24;
 const MAX_TRACE_URL_LENGTH = 2_000;
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const CARD_KINDS = new Set<AssistantCardKind>(["knowledge", "learning", "interview", "hint"]);
 const MAP_NODE_KINDS = new Set<LearningMapNodeKind>(["topic", "foundation", "concept", "practice", "source"]);
+const TRACE_DECISION_STATUSES = new Set<TraceDecisionStatus>(["info", "pass", "fail", "branch", "skip"]);
+const TRACE_PAYLOAD_KINDS = new Set<TracePayloadKind>(["text", "json", "prompt", "list"]);
 
 const RESPONSE_HEADERS = {
   "cache-control": "no-store",
@@ -149,15 +179,21 @@ function parseTraceUrl(value: unknown): string | null | undefined {
   }
 }
 
+function parseTraceScalar(value: unknown): TraceScalar | undefined {
+  if (value === null || typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.length <= MAX_TRACE_FIELD_LENGTH) return value;
+  return undefined;
+}
+
 function parseTraceRecord(value: unknown): Record<string, TraceScalar> | null {
   if (!isJsonObject(value) || Object.keys(value).length > MAX_TRACE_FIELDS) return null;
   const parsed: Record<string, TraceScalar> = {};
   for (const [key, raw] of Object.entries(value)) {
     if (!key.trim() || key.length > 120) return null;
-    if (raw === null || typeof raw === "boolean") parsed[key] = raw;
-    else if (typeof raw === "number" && Number.isFinite(raw)) parsed[key] = raw;
-    else if (typeof raw === "string" && raw.length <= MAX_TRACE_FIELD_LENGTH) parsed[key] = raw;
-    else return null;
+    const scalar = parseTraceScalar(raw);
+    if (scalar === undefined) return null;
+    parsed[key] = scalar;
   }
   return parsed;
 }
@@ -176,21 +212,98 @@ function parseTraceTokenUsage(value: unknown): TraceTokenUsage | null | undefine
   return { inputTokens, outputTokens, totalTokens };
 }
 
+function parseTraceStringArray(value: unknown, maxItems = MAX_TRACE_TOKEN_ITEMS): string[] | null {
+  if (!Array.isArray(value) || value.length > maxItems) return null;
+  const parsed: string[] = [];
+  for (const item of value) {
+    const text = requiredText(item, 200);
+    if (!text) return null;
+    parsed.push(text);
+  }
+  return parsed;
+}
+
+function optionalInteger(value: unknown, minimum: number, maximum: number): number | null | undefined {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < minimum || value > maximum) return undefined;
+  return value;
+}
+
+function optionalNumber(value: unknown, minimum: number, maximum: number): number | null | undefined {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < minimum || value > maximum) return undefined;
+  return value;
+}
+
+function parseTraceDecisions(value: unknown): TraceDecision[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_TRACE_DECISIONS) return null;
+  const decisions: TraceDecision[] = [];
+  for (const item of value) {
+    if (!isJsonObject(item)) return null;
+    const label = requiredText(item.label, 240);
+    const detail = requiredText(item.detail, 2_000);
+    const status = item.status as TraceDecisionStatus;
+    const scalar = parseTraceScalar(item.value);
+    if (!label || !detail || !TRACE_DECISION_STATUSES.has(status) || scalar === undefined) return null;
+    decisions.push({ label, detail, status, value: scalar });
+  }
+  return decisions;
+}
+
+function parseTracePayloads(value: unknown): TracePayload[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_TRACE_PAYLOADS) return null;
+  const payloads: TracePayload[] = [];
+  for (const item of value) {
+    if (!isJsonObject(item)) return null;
+    const label = requiredText(item.label, 240);
+    const kind = item.kind as TracePayloadKind;
+    const content = requiredText(item.content, MAX_TRACE_PAYLOAD_LENGTH);
+    if (!label || !TRACE_PAYLOAD_KINDS.has(kind) || !content || typeof item.truncated !== "boolean") return null;
+    payloads.push({ label, kind, content, truncated: item.truncated });
+  }
+  return payloads;
+}
+
 function parseTraceRetrievalResults(value: unknown): TraceRetrievalResult[] | null {
   if (!Array.isArray(value) || value.length > MAX_TRACE_RESULTS) return null;
   const results: TraceRetrievalResult[] = [];
-  for (const item of value) {
+  for (const [index, item] of value.entries()) {
     if (!isJsonObject(item)) return null;
     const title = requiredText(item.title, 1_000);
     const sourcePath = requiredText(item.source_path, MAX_PATH_LENGTH);
     const excerpt = requiredText(item.excerpt, 2_000);
     const score = item.score;
+    const rank = item.rank === undefined ? index + 1 : optionalInteger(item.rank, 1, 100);
+    const rawRank = optionalInteger(item.raw_rank, 1, 1_000);
+    const threshold = optionalNumber(item.threshold, 0, 1.5);
+    const matchedTokens = item.matched_tokens === undefined ? [] : parseTraceStringArray(item.matched_tokens);
+    const titleMatchedTokens = item.title_matched_tokens === undefined ? [] : parseTraceStringArray(item.title_matched_tokens);
+    const scoreExplanation = item.score_explanation === undefined
+      ? null
+      : nullableText(item.score_explanation, 1_000);
     if (
       !title || !sourcePath || !excerpt
       || (item.kind !== "learning" && item.kind !== "question")
       || typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1.5
+      || rank === undefined || rank === null
+      || rawRank === undefined || threshold === undefined
+      || !matchedTokens || !titleMatchedTokens || scoreExplanation === undefined
     ) return null;
-    results.push({ title, kind: item.kind, score, sourcePath, excerpt });
+    results.push({
+      title,
+      kind: item.kind,
+      score,
+      sourcePath,
+      excerpt,
+      rank,
+      rawRank,
+      threshold,
+      matchedTokens,
+      titleMatchedTokens,
+      scoreExplanation,
+    });
   }
   return results;
 }
@@ -230,6 +343,8 @@ function parseWorkflowSteps(value: unknown): WorkflowStep[] | null {
         durationMs: 0,
         input: {},
         output: {},
+        decisions: [],
+        payloads: [],
         retrievalResults: [],
         tokenUsage: null,
       });
@@ -238,12 +353,16 @@ function parseWorkflowSteps(value: unknown): WorkflowStep[] | null {
 
     const input = parseTraceRecord(item.input);
     const output = parseTraceRecord(item.output);
+    const decisions = parseTraceDecisions(item.decisions);
+    const payloads = parseTracePayloads(item.payloads);
     const retrievalResults = parseTraceRetrievalResults(item.retrieval_results);
     const tokenUsage = parseTraceTokenUsage(item.token_usage);
     if (
       !validDuration(item.duration_ms)
       || !input
       || !output
+      || !decisions
+      || !payloads
       || !retrievalResults
       || tokenUsage === undefined
     ) return null;
@@ -254,6 +373,8 @@ function parseWorkflowSteps(value: unknown): WorkflowStep[] | null {
       durationMs: item.duration_ms,
       input,
       output,
+      decisions,
+      payloads,
       retrievalResults,
       tokenUsage,
     });
