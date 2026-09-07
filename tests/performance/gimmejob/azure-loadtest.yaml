@@ -1,0 +1,5 @@
+version: v0.1
+testId: gimmejob-prod-smoke
+displayName: GimmeJob production Vacancies baseline
+description: 10-user anonymous Vacancies UI baseline against production
+ testPlan: locustfile.py
