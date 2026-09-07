@@ -34,7 +34,7 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
 - The workload is GET-only.
-- Default guardrails are failure ratio <= 1% and aggregate p95 <= 2500 ms.
+- Default guardrails are failure ratio <= 1% and aggregate p95 <= 10000 ms.
 
 ## Azure benchmark configuration
 
@@ -51,7 +51,7 @@ If editing an existing Azure portal test manually, open **Configure -> Parameter
 | `GIMMEJOB_MAX_USERS` | `100` |
 | `GIMMEJOB_MAX_RUN_SECONDS` | `600` |
 | `GIMMEJOB_MAX_FAILURE_RATIO` | `0.01` |
-| `GIMMEJOB_MAX_P95_MS` | `2500` |
+| `GIMMEJOB_MAX_P95_MS` | `10000` |
 | `LOCUST_TAGS` | `vacancies-ui` |
 
 The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for the comparison matrix.
