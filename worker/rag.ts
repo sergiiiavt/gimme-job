@@ -5,6 +5,7 @@ import pythonInterviewCatalog from "../content/python-interview/catalog";
 type Json = Record<string, unknown>;
 export type RagKind = "job" | "learning" | "question";
 export type RagRetrievalMode = "vectorize" | "lexical-fallback";
+export type RagFallbackReason = "none" | "empty-query" | "bindings-unavailable" | "semantic-error" | "no-matches-above-threshold";
 
 export type RagDocument = {
   id: string;
@@ -19,6 +20,7 @@ export type RagMatch = {
   id: string;
   score: number;
   metadata: Record<string, unknown>;
+  rawRank?: number;
 };
 
 export type RagSearchResult = {
@@ -33,17 +35,76 @@ export type RagSearchResult = {
   metadata: Record<string, unknown>;
 };
 
+export type RagResultDiagnostics = {
+  id: string;
+  rank: number;
+  rawRank: number | null;
+  score: number;
+  threshold: number | null;
+  matchedTokens: string[];
+  titleMatchedTokens: string[];
+  coverage: number | null;
+  titleCoverage: number | null;
+  phraseBonus: number | null;
+  minimumMatches: number | null;
+};
+
+export type RagSearchDiagnostics = {
+  selectedKinds: RagKind[];
+  requestedLimit: number;
+  corpusDocumentCount: number;
+  semanticAvailable: boolean;
+  semanticAttempted: boolean;
+  embeddingInputChars: number;
+  embeddingDimension: number | null;
+  embeddingDurationMs: number;
+  vectorTopK: number | null;
+  vectorQueryDurationMs: number;
+  rawVectorMatchCount: number;
+  kindFilteredMatchCount: number;
+  scoreThreshold: number;
+  thresholdPassedMatchCount: number;
+  fallbackReason: RagFallbackReason;
+  lexicalTokens: string[];
+  removedStopWords: string[];
+  lexicalCandidateCount: number;
+  lexicalScoredCount: number;
+  lexicalDurationMs: number;
+  resultDiagnostics: RagResultDiagnostics[];
+};
+
 export type RagSearchResponse = {
   query: string;
   retrieval: RagRetrievalMode;
   embeddingModel: string;
   count: number;
   results: RagSearchResult[];
+  diagnostics: RagSearchDiagnostics;
 };
 
 type AiEmbeddingResponse = { data?: number[][] };
 type VectorizeQueryResponse = {
   matches?: Array<{ id?: string; score?: number; metadata?: Record<string, unknown> }>;
+};
+
+type SemanticSearchDiagnostics = {
+  embeddingInputChars: number;
+  embeddingDimension: number | null;
+  embeddingDurationMs: number;
+  vectorTopK: number | null;
+  vectorQueryDurationMs: number;
+  rawVectorMatchCount: number;
+  kindFilteredMatchCount: number;
+};
+
+type LexicalScore = {
+  score: number;
+  matchedTokens: string[];
+  titleMatchedTokens: string[];
+  coverage: number;
+  titleCoverage: number;
+  phraseBonus: number;
+  minimumMatches: number;
 };
 
 export type RagEnv = {
@@ -305,17 +366,53 @@ export function ragAvailable(env: RagEnv): boolean {
   return Boolean(env.AI && env.RAG_INDEX);
 }
 
-export async function semanticSearch(env: RagEnv, query: string, kinds: RagKind[], limit = 10): Promise<RagMatch[]> {
+async function semanticSearchDetailed(env: RagEnv, query: string, kinds: RagKind[], limit = 10): Promise<{ matches: RagMatch[]; diagnostics: SemanticSearchDiagnostics }> {
   const text = query.trim();
-  if (!text || !env.AI || !env.RAG_INDEX) return [];
+  const emptyDiagnostics: SemanticSearchDiagnostics = {
+    embeddingInputChars: text.length,
+    embeddingDimension: null,
+    embeddingDurationMs: 0,
+    vectorTopK: null,
+    vectorQueryDurationMs: 0,
+    rawVectorMatchCount: 0,
+    kindFilteredMatchCount: 0,
+  };
+  if (!text || !env.AI || !env.RAG_INDEX) return { matches: [], diagnostics: emptyDiagnostics };
+
+  const embeddingStarted = performance.now();
   const [vector] = await embed(env, [text]);
+  const embeddingDurationMs = Math.max(0, performance.now() - embeddingStarted);
   const topK = Math.min(50, Math.max(limit * 4, 20));
+  const vectorStarted = performance.now();
   const raw = await env.RAG_INDEX.query(vector, { topK, returnMetadata: "all" }) as VectorizeQueryResponse;
+  const vectorQueryDurationMs = Math.max(0, performance.now() - vectorStarted);
+  const rawMatches = raw.matches ?? [];
   const allowed = new Set(kinds);
-  return (raw.matches ?? [])
-    .filter((match) => allowed.has(clean(match.metadata?.kind) as RagKind))
-    .map((match) => ({ id: clean(match.id), score: typeof match.score === "number" ? match.score : 0, metadata: match.metadata ?? {} }))
-    .slice(0, Math.max(1, limit));
+  const filtered = rawMatches
+    .map((match, index) => ({
+      id: clean(match.id),
+      score: typeof match.score === "number" ? match.score : 0,
+      metadata: match.metadata ?? {},
+      rawRank: index + 1,
+    }))
+    .filter((match) => allowed.has(clean(match.metadata?.kind) as RagKind));
+
+  return {
+    matches: filtered.slice(0, Math.max(1, limit)),
+    diagnostics: {
+      embeddingInputChars: text.length,
+      embeddingDimension: Array.isArray(vector) ? vector.length : null,
+      embeddingDurationMs,
+      vectorTopK: topK,
+      vectorQueryDurationMs,
+      rawVectorMatchCount: rawMatches.length,
+      kindFilteredMatchCount: filtered.length,
+    },
+  };
+}
+
+export async function semanticSearch(env: RagEnv, query: string, kinds: RagKind[], limit = 10): Promise<RagMatch[]> {
+  return (await semanticSearchDetailed(env, query, kinds, limit)).matches;
 }
 
 function trimTokenPunctuation(token: string): string {
@@ -326,32 +423,47 @@ function trimTokenPunctuation(token: string): string {
   return token.slice(start, end);
 }
 
-function queryTokens(query: string): string[] {
+function queryTokenDetails(query: string): { tokens: string[]; removedStopWords: string[] } {
   const raw = query.toLowerCase().match(QUERY_TOKEN_RE) ?? [];
   const unique = [...new Set(raw.map(trimTokenPunctuation).filter((token) => token.length >= 2))];
   const meaningful = unique.filter((token) => !QUERY_STOP_WORDS.has(token));
-  return (meaningful.length ? meaningful : unique).slice(0, 24);
+  const removedStopWords = unique.filter((token) => QUERY_STOP_WORDS.has(token));
+  return {
+    tokens: (meaningful.length ? meaningful : unique).slice(0, 24),
+    removedStopWords: removedStopWords.slice(0, 24),
+  };
 }
 
-function lexicalDocumentScore(document: RagDocument, query: string): number | null {
-  const tokens = queryTokens(query);
+function queryTokens(query: string): string[] {
+  return queryTokenDetails(query).tokens;
+}
+
+function lexicalDocumentScore(document: RagDocument, query: string, tokens = queryTokens(query)): LexicalScore | null {
   if (!tokens.length) return null;
   const title = document.title.toLowerCase();
   const text = document.text.toLowerCase();
-  const matched = tokens.filter((token) => title.includes(token) || text.includes(token));
+  const matchedTokens = tokens.filter((token) => title.includes(token) || text.includes(token));
   let minimumMatches = 1;
   if (tokens.length > 4) {
     minimumMatches = Math.min(3, Math.ceil(tokens.length / 4));
   } else if (tokens.length > 1) {
     minimumMatches = 2;
   }
-  if (matched.length < minimumMatches) return null;
-  const titleMatches = matched.filter((token) => title.includes(token)).length;
-  const coverage = matched.length / tokens.length;
-  const titleCoverage = titleMatches / tokens.length;
+  if (matchedTokens.length < minimumMatches) return null;
+  const titleMatchedTokens = matchedTokens.filter((token) => title.includes(token));
+  const coverage = matchedTokens.length / tokens.length;
+  const titleCoverage = titleMatchedTokens.length / tokens.length;
   const phrase = query.trim().toLowerCase();
   const phraseBonus = phrase && (title.includes(phrase) || text.includes(phrase)) ? 0.15 : 0;
-  return Math.min(1, coverage * 0.65 + titleCoverage * 0.2 + phraseBonus);
+  return {
+    score: Math.min(1, coverage * 0.65 + titleCoverage * 0.2 + phraseBonus),
+    matchedTokens,
+    titleMatchedTokens,
+    coverage,
+    titleCoverage,
+    phraseBonus,
+    minimumMatches,
+  };
 }
 
 async function documentsForKinds(env: RagEnv, kinds: RagKind[]): Promise<RagDocument[]> {
@@ -390,26 +502,88 @@ function presentDocument(document: RagDocument, score: number, metadata: Record<
   };
 }
 
-function materializeSemanticResults(matches: RagMatch[], documents: RagDocument[], limit: number): RagSearchResult[] {
+function materializeSemanticResults(matches: RagMatch[], documents: RagDocument[], limit: number): { results: RagSearchResult[]; accepted: RagResultDiagnostics[]; thresholdPassed: number } {
   const byId = new Map(documents.map((document) => [document.id, document]));
   const results: RagSearchResult[] = [];
+  const accepted: RagResultDiagnostics[] = [];
+  let thresholdPassed = 0;
   for (const match of matches) {
     if (match.score < MIN_VECTOR_SCORE) continue;
+    thresholdPassed += 1;
     const document = byId.get(match.id);
     if (!document) continue;
+    const rank = results.length + 1;
     results.push(presentDocument(document, match.score, match.metadata));
+    accepted.push({
+      id: document.id,
+      rank,
+      rawRank: match.rawRank ?? null,
+      score: match.score,
+      threshold: MIN_VECTOR_SCORE,
+      matchedTokens: [],
+      titleMatchedTokens: [],
+      coverage: null,
+      titleCoverage: null,
+      phraseBonus: null,
+      minimumMatches: null,
+    });
     if (results.length >= limit) break;
   }
-  return results;
+  return { results, accepted, thresholdPassed };
 }
 
-function lexicalSearch(documents: RagDocument[], query: string, limit: number): RagSearchResult[] {
-  return documents
-    .map((document) => ({ document, score: lexicalDocumentScore(document, query) }))
-    .filter((item): item is { document: RagDocument; score: number } => item.score !== null)
-    .sort((left, right) => right.score - left.score || left.document.title.localeCompare(right.document.title))
-    .slice(0, limit)
-    .map(({ document, score }) => presentDocument(document, score));
+function lexicalSearch(documents: RagDocument[], query: string, limit: number): { results: RagSearchResult[]; diagnostics: RagResultDiagnostics[]; tokens: string[]; removedStopWords: string[]; scoredCount: number } {
+  const { tokens, removedStopWords } = queryTokenDetails(query);
+  const scored = documents
+    .map((document) => ({ document, score: lexicalDocumentScore(document, query, tokens) }))
+    .filter((item): item is { document: RagDocument; score: LexicalScore } => item.score !== null)
+    .sort((left, right) => right.score.score - left.score.score || left.document.title.localeCompare(right.document.title));
+  const selected = scored.slice(0, limit);
+  return {
+    results: selected.map(({ document, score }) => presentDocument(document, score.score)),
+    diagnostics: selected.map(({ document, score }, index) => ({
+      id: document.id,
+      rank: index + 1,
+      rawRank: null,
+      score: score.score,
+      threshold: null,
+      matchedTokens: score.matchedTokens.slice(0, 24),
+      titleMatchedTokens: score.titleMatchedTokens.slice(0, 24),
+      coverage: score.coverage,
+      titleCoverage: score.titleCoverage,
+      phraseBonus: score.phraseBonus,
+      minimumMatches: score.minimumMatches,
+    })),
+    tokens,
+    removedStopWords,
+    scoredCount: scored.length,
+  };
+}
+
+function baseDiagnostics(selectedKinds: RagKind[], limit: number, corpusDocumentCount: number, semanticAvailable: boolean): RagSearchDiagnostics {
+  return {
+    selectedKinds,
+    requestedLimit: limit,
+    corpusDocumentCount,
+    semanticAvailable,
+    semanticAttempted: false,
+    embeddingInputChars: 0,
+    embeddingDimension: null,
+    embeddingDurationMs: 0,
+    vectorTopK: null,
+    vectorQueryDurationMs: 0,
+    rawVectorMatchCount: 0,
+    kindFilteredMatchCount: 0,
+    scoreThreshold: MIN_VECTOR_SCORE,
+    thresholdPassedMatchCount: 0,
+    fallbackReason: "none",
+    lexicalTokens: [],
+    removedStopWords: [],
+    lexicalCandidateCount: 0,
+    lexicalScoredCount: 0,
+    lexicalDurationMs: 0,
+    resultDiagnostics: [],
+  };
 }
 
 export async function searchRagDocuments(
@@ -423,21 +597,44 @@ export async function searchRagDocuments(
   const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
   const selectedKinds = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
   const documents = await documentsForKinds(env, selectedKinds);
+  const semanticAvailable = ragAvailable(env);
+  const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
 
-  if (normalizedQuery && ragAvailable(env)) {
+  if (normalizedQuery && semanticAvailable) {
+    diagnostics.semanticAttempted = true;
     try {
-      const matches = await semanticSearch(env, normalizedQuery, selectedKinds, Math.min(50, limit * 3));
-      const results = materializeSemanticResults(matches, documents, limit);
-      if (results.length) {
-        return { query: normalizedQuery, retrieval: "vectorize", embeddingModel: EMBEDDING_MODEL, count: results.length, results };
+      const semantic = await semanticSearchDetailed(env, normalizedQuery, selectedKinds, Math.min(50, limit * 3));
+      Object.assign(diagnostics, semantic.diagnostics);
+      const materialized = materializeSemanticResults(semantic.matches, documents, limit);
+      diagnostics.thresholdPassedMatchCount = materialized.thresholdPassed;
+      if (materialized.results.length) {
+        diagnostics.resultDiagnostics = materialized.accepted;
+        return { query: normalizedQuery, retrieval: "vectorize", embeddingModel: EMBEDDING_MODEL, count: materialized.results.length, results: materialized.results, diagnostics };
       }
-    } catch {
-      // One canonical pipeline owns degradation. Consumers never maintain their own fallback retrieval.
+      diagnostics.fallbackReason = "no-matches-above-threshold";
+    } catch (error) {
+      diagnostics.fallbackReason = "semantic-error";
+      diagnostics.embeddingInputChars = normalizedQuery.length;
+      diagnostics.semanticAttempted = true;
+      void error;
     }
+  } else if (!normalizedQuery) {
+    diagnostics.fallbackReason = "empty-query";
+  } else {
+    diagnostics.fallbackReason = "bindings-unavailable";
   }
 
-  const results = normalizedQuery ? lexicalSearch(documents, normalizedQuery, limit) : [];
-  return { query: normalizedQuery, retrieval: "lexical-fallback", embeddingModel: EMBEDDING_MODEL, count: results.length, results };
+  const lexicalStarted = performance.now();
+  const lexical = normalizedQuery
+    ? lexicalSearch(documents, normalizedQuery, limit)
+    : { results: [], diagnostics: [], tokens: [], removedStopWords: [], scoredCount: 0 };
+  diagnostics.lexicalDurationMs = Math.max(0, performance.now() - lexicalStarted);
+  diagnostics.lexicalTokens = lexical.tokens;
+  diagnostics.removedStopWords = lexical.removedStopWords;
+  diagnostics.lexicalCandidateCount = documents.length;
+  diagnostics.lexicalScoredCount = lexical.scoredCount;
+  diagnostics.resultDiagnostics = lexical.diagnostics;
+  return { query: normalizedQuery, retrieval: "lexical-fallback", embeddingModel: EMBEDDING_MODEL, count: lexical.results.length, results: lexical.results, diagnostics };
 }
 
 export async function handleRagSearchRequest(request: Request, env: RagEnv): Promise<Response> {
