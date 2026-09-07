@@ -213,7 +213,7 @@ class GimmeJobPublicReader(HttpUser):
             if not isinstance(payload, dict) or not isinstance(payload.get("jobs"), list):
                 response.failure("dashboard response does not match the vacancy UI contract")
 
-    @tag("vacancies-ui", "real-ui", "d1")
+    @tag("vacancies-ui", "full-readonly", "real-ui", "d1")
     @task(6)
     def vacancies_ui(self) -> None:
         """Model the actual anonymous /vacancies request sequence used by the frontend."""
@@ -222,7 +222,7 @@ class GimmeJobPublicReader(HttpUser):
         self._expect_public_auth_state()
         self._expect_dashboard("GET /api/dashboard [vacancies UI]")
 
-    @tag("health", "smoke", "api", "worker")
+    @tag("health", "smoke", "full-readonly", "api", "worker")
     @task(1)
     def health(self) -> None:
         with self.client.get("/api/health", name="GET /api/health", catch_response=True) as response:
@@ -241,12 +241,12 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("health response does not match the public contract")
 
-    @tag("home", "diagnostic", "edge", "html")
+    @tag("home", "full-readonly", "diagnostic", "edge", "html")
     @task(1)
     def home_page(self) -> None:
         self._expect_html("/", "Why I created this site", "GET / [public home]")
 
-    @tag("reference", "diagnostic", "worker", "html")
+    @tag("reference", "full-readonly", "diagnostic", "worker", "html")
     @task(1)
     def uncached_reference_page(self) -> None:
         self._expect_html(
@@ -255,7 +255,7 @@ class GimmeJobPublicReader(HttpUser):
             "GET /reference/qa-fundamentals [uncached]",
         )
 
-    @tag("jobs-api", "infra", "d1", "api")
+    @tag("jobs-api", "infra", "full-readonly", "d1", "api")
     @task(1)
     def public_jobs(self) -> None:
         with self.client.get(
@@ -278,7 +278,7 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("public jobs response does not match the public contract")
 
-    @tag("dashboard", "diagnostic", "d1", "api", "heavy")
+    @tag("dashboard", "full-readonly", "diagnostic", "d1", "api", "heavy")
     @task(1)
     def public_dashboard(self) -> None:
         self._expect_dashboard("GET /api/dashboard [diagnostic D1 heavy]")
