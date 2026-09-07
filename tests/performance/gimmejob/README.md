@@ -30,7 +30,7 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 
 - `GIMMEJOB_PRODUCTION_ACK=gimme-job.com` is required.
 - HTTPS and an explicit bounded run time are required.
-- `LOCUST_TAGS` is required in production. If it is missing, the script stops instead of accidentally running every task.
+- An explicit `LOCUST_TAGS` selector is supported and is preferred for reproducible saved configurations. If it is omitted on a production run, the script safely defaults to `vacancies-ui` before Locust filters the task list; it does not run every diagnostic route.
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
 - The workload is GET-only.
@@ -38,9 +38,11 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 
 ## Azure benchmark configuration
 
-Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, `LOCUST_TAGS=vacancies-ui`, acknowledgement, and failure criteria so the Azure test cannot silently drift from the script requirements.
+Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=vacancies-ui`, acknowledgement, and failure criteria so the saved benchmark remains reproducible.
 
-If editing an existing Azure portal test manually, open **Configure -> Parameters -> Environment variables** and make sure the following variables are present before rerunning:
+The current `locustfile.py` also handles an older Azure portal test that has no `LOCUST_TAGS`: once that script version is uploaded, an untagged production run selects only `vacancies-ui` instead of failing or executing every task.
+
+If editing an existing Azure portal test manually, open **Configure -> Parameters -> Environment variables**. The checked-in benchmark uses:
 
 | Name | Value |
 | --- | --- |
