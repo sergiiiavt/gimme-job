@@ -8,6 +8,22 @@ import {
 import styles from "./execution-trace.module.css";
 
 export type TraceScalar = string | number | boolean | null;
+export type TraceDecisionStatus = "info" | "pass" | "fail" | "branch" | "skip";
+export type TracePayloadKind = "text" | "json" | "prompt" | "list";
+
+export type TraceDecision = {
+  label: string;
+  detail: string;
+  status: TraceDecisionStatus;
+  value: TraceScalar;
+};
+
+export type TracePayload = {
+  label: string;
+  kind: TracePayloadKind;
+  content: string;
+  truncated: boolean;
+};
 
 export type TraceRetrievalResult = {
   title: string;
@@ -15,6 +31,12 @@ export type TraceRetrievalResult = {
   score: number;
   sourcePath: string;
   excerpt: string;
+  rank: number;
+  rawRank: number | null;
+  threshold: number | null;
+  matchedTokens: string[];
+  titleMatchedTokens: string[];
+  scoreExplanation: string | null;
 };
 
 export type TraceTokenUsage = {
@@ -30,6 +52,8 @@ export type ExecutionStep = {
   durationMs: number;
   input: Record<string, TraceScalar>;
   output: Record<string, TraceScalar>;
+  decisions: TraceDecision[];
+  payloads: TracePayload[];
   retrievalResults: TraceRetrievalResult[];
   tokenUsage: TraceTokenUsage | null;
 };
@@ -159,19 +183,75 @@ function TraceFields({ label, values }: Readonly<{
   );
 }
 
+function DecisionPath({ decisions }: Readonly<{ decisions: TraceDecision[] }>) {
+  if (decisions.length === 0) return null;
+  return (
+    <section className={styles.decisionPath}>
+      <span>Decision path · how / why</span>
+      <ol>
+        {decisions.map((decision, index) => (
+          <li data-status={decision.status} key={`${decision.label}-${index}`}>
+            <div className={styles.decisionIndex}>{String(index + 1).padStart(2, "0")}</div>
+            <div className={styles.decisionCopy}>
+              <header>
+                <strong>{decision.label}</strong>
+                <code>{decision.status}</code>
+              </header>
+              <p>{decision.detail}</p>
+              {decision.value !== null && <small>Runtime value: <code>{formatTraceValue(decision.value)}</code></small>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function TracePayloads({ payloads }: Readonly<{ payloads: TracePayload[] }>) {
+  if (payloads.length === 0) return null;
+  return (
+    <section className={styles.payloads}>
+      <span>Payloads · exact application data</span>
+      <div>
+        {payloads.map((payload, index) => (
+          <details key={`${payload.label}-${index}`}>
+            <summary>
+              <strong>{payload.label}</strong>
+              <code>{payload.kind}{payload.truncated ? " · truncated" : ""}</code>
+            </summary>
+            <pre>{payload.content}</pre>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RetrievalResults({ results }: Readonly<{ results: TraceRetrievalResult[] }>) {
   if (results.length === 0) return null;
   return (
     <section className={styles.retrievalBlock}>
-      <span>Retrieved context</span>
+      <span>Retrieved context · why each result survived</span>
       <ol>
         {results.map((result, index) => (
           <li key={`${result.sourcePath}-${index}`}>
             <header>
-              <strong>{result.title}</strong>
+              <strong>#{result.rank} · {result.title}</strong>
               <code>{result.score.toFixed(4)}</code>
             </header>
-            <small>{result.kind} · {result.sourcePath}</small>
+            <small>
+              {result.kind}
+              {result.rawRank !== null ? ` · raw vector rank ${result.rawRank}` : ""}
+              {result.threshold !== null ? ` · threshold ${result.threshold.toFixed(2)}` : ""}
+              {` · ${result.sourcePath}`}
+            </small>
+            {result.scoreExplanation && <p className={styles.scoreExplanation}>{result.scoreExplanation}</p>}
+            {(result.matchedTokens.length > 0 || result.titleMatchedTokens.length > 0) && (
+              <div className={styles.matchDetails}>
+                {result.matchedTokens.length > 0 && <span>Matched: <code>{result.matchedTokens.join(", ")}</code></span>}
+                {result.titleMatchedTokens.length > 0 && <span>Title matches: <code>{result.titleMatchedTokens.join(", ")}</code></span>}
+              </div>
+            )}
             <pre>{result.excerpt}</pre>
           </li>
         ))}
@@ -192,6 +272,103 @@ function TokenUsage({ usage }: Readonly<{ usage: TraceTokenUsage | null }>) {
       </dl>
     </section>
   );
+}
+
+function StepDebuggerContent({ step }: Readonly<{ step: ExecutionStep }>) {
+  return (
+    <div className={styles.stepBody}>
+      <div className={styles.stepMeta}>
+        <code>{step.id}</code>
+        <p>{step.detail}</p>
+      </div>
+      <TraceFields label="Input" values={step.input}/>
+      <DecisionPath decisions={step.decisions}/>
+      <TracePayloads payloads={step.payloads}/>
+      <RetrievalResults results={step.retrievalResults}/>
+      <TraceFields label="Output" values={step.output}/>
+      <TokenUsage usage={step.tokenUsage}/>
+    </div>
+  );
+}
+
+function liveStep(event: LiveTraceEvent): ExecutionStep | null {
+  if (event.type !== "node.complete" || !isRecord(event.step)) return null;
+  const step = event.step;
+  if (
+    typeof step.id !== "string"
+    || typeof step.label !== "string"
+    || typeof step.detail !== "string"
+    || typeof step.durationMs !== "number"
+    || !isRecord(step.input)
+    || !isRecord(step.output)
+  ) return null;
+  const scalarRecord = (value: Record<string, unknown>): Record<string, TraceScalar> => Object.fromEntries(
+    Object.entries(value).filter(([, item]) => item === null || ["string", "number", "boolean"].includes(typeof item)),
+  ) as Record<string, TraceScalar>;
+  const decisions: TraceDecision[] = Array.isArray(step.decisions)
+    ? step.decisions.flatMap((item) => isRecord(item)
+      && typeof item.label === "string"
+      && typeof item.detail === "string"
+      && ["info", "pass", "fail", "branch", "skip"].includes(String(item.status))
+      ? [{
+          label: item.label,
+          detail: item.detail,
+          status: item.status as TraceDecisionStatus,
+          value: (item.value === null || ["string", "number", "boolean"].includes(typeof item.value)) ? item.value as TraceScalar : null,
+        }]
+      : [])
+    : [];
+  const payloads: TracePayload[] = Array.isArray(step.payloads)
+    ? step.payloads.flatMap((item) => isRecord(item)
+      && typeof item.label === "string"
+      && typeof item.content === "string"
+      && ["text", "json", "prompt", "list"].includes(String(item.kind))
+      ? [{ label: item.label, kind: item.kind as TracePayloadKind, content: item.content, truncated: item.truncated === true }]
+      : [])
+    : [];
+  const retrievalResults: TraceRetrievalResult[] = Array.isArray(step.retrievalResults)
+    ? step.retrievalResults.flatMap((item, index) => isRecord(item)
+      && typeof item.title === "string"
+      && (item.kind === "learning" || item.kind === "question")
+      && typeof item.score === "number"
+      && typeof item.sourcePath === "string"
+      && typeof item.excerpt === "string"
+      ? [{
+          title: item.title,
+          kind: item.kind,
+          score: item.score,
+          sourcePath: item.sourcePath,
+          excerpt: item.excerpt,
+          rank: typeof item.rank === "number" ? item.rank : index + 1,
+          rawRank: typeof item.rawRank === "number" ? item.rawRank : null,
+          threshold: typeof item.threshold === "number" ? item.threshold : null,
+          matchedTokens: Array.isArray(item.matchedTokens) ? item.matchedTokens.filter((token): token is string => typeof token === "string") : [],
+          titleMatchedTokens: Array.isArray(item.titleMatchedTokens) ? item.titleMatchedTokens.filter((token): token is string => typeof token === "string") : [],
+          scoreExplanation: typeof item.scoreExplanation === "string" ? item.scoreExplanation : null,
+        }]
+      : [])
+    : [];
+  let tokenUsage: TraceTokenUsage | null = null;
+  if (isRecord(step.tokenUsage)) {
+    const inputTokens = step.tokenUsage.inputTokens;
+    const outputTokens = step.tokenUsage.outputTokens;
+    const totalTokens = step.tokenUsage.totalTokens;
+    if (typeof inputTokens === "number" && typeof outputTokens === "number" && typeof totalTokens === "number") {
+      tokenUsage = { inputTokens, outputTokens, totalTokens };
+    }
+  }
+  return {
+    id: step.id,
+    label: step.label,
+    detail: step.detail,
+    durationMs: step.durationMs,
+    input: scalarRecord(step.input),
+    output: scalarRecord(step.output),
+    decisions,
+    payloads,
+    retrievalResults,
+    tokenUsage,
+  };
 }
 
 function LiveExecutionTrace({ live }: Readonly<{ live: LiveTraceState }>) {
@@ -233,6 +410,7 @@ function LiveExecutionTrace({ live }: Readonly<{ live: LiveTraceState }>) {
         {live.events.filter((event) => event.type !== "trace.start" && event.type !== "result").map((event, index, events) => {
           const duration = liveEventDuration(event);
           const active = index === events.length - 1 && !traceComplete && event.type.endsWith(".start");
+          const completedStep = liveStep(event);
           return (
             <li key={`${event.sequence}-${event.type}-${index}`}>
               <TraceIcon active={active}/>
@@ -242,19 +420,23 @@ function LiveExecutionTrace({ live }: Readonly<{ live: LiveTraceState }>) {
                   <strong>{liveEventLabel(event)}</strong>
                   <code>{duration === null ? formatDuration(event.elapsedMs) : formatDuration(duration)}</code>
                 </summary>
-                <div className={styles.stepBody}>
-                  <div className={styles.stepMeta}>
-                    {typeof event.nodeId === "string" && <code>{event.nodeId}</code>}
-                    <p>{liveEventDetail(event)}</p>
+                {completedStep ? (
+                  <StepDebuggerContent step={completedStep}/>
+                ) : (
+                  <div className={styles.stepBody}>
+                    <div className={styles.stepMeta}>
+                      {typeof event.nodeId === "string" && <code>{event.nodeId}</code>}
+                      <p>{liveEventDetail(event)}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </details>
             </li>
           );
         })}
       </ol>
 
-      <p className={styles.disclaimer}>This live view is fed by the running LangGraph request. It shows observable application execution and model-call metadata, not private model chain-of-thought.</p>
+      <p className={styles.disclaimer}>This live view is fed by the running LangGraph request. It shows observable application decisions, payloads and model-call metadata, not private model chain-of-thought.</p>
     </>
   );
 }
@@ -363,16 +545,7 @@ export function ExecutionTrace({ prompt, result }: Readonly<{
                     <strong>{step.label}</strong>
                     <code>{formatDuration(step.durationMs)}</code>
                   </summary>
-                  <div className={styles.stepBody}>
-                    <div className={styles.stepMeta}>
-                      <code>{step.id}</code>
-                      <p>{step.detail}</p>
-                    </div>
-                    <TraceFields label="Input" values={step.input}/>
-                    <TraceFields label="Output" values={step.output}/>
-                    <RetrievalResults results={step.retrievalResults}/>
-                    <TokenUsage usage={step.tokenUsage}/>
-                  </div>
+                  <StepDebuggerContent step={step}/>
                 </details>
               </li>
             ))}
@@ -393,7 +566,7 @@ export function ExecutionTrace({ prompt, result }: Readonly<{
             </li>
           </ol>
 
-          <p className={styles.disclaimer}>This is observable application execution: actual graph nodes, retrieval query and results, routing, model-call metrics and verification output. It does not expose or invent private model chain-of-thought.</p>
+          <p className={styles.disclaimer}>This is observable application execution: actual graph nodes, deterministic decisions, canonical retrieval mechanics, bounded model inputs, routing, model-call metrics and verification output. It does not expose or invent private model chain-of-thought.</p>
         </>
       )}
     </aside>
