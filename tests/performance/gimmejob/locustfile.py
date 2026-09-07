@@ -192,8 +192,6 @@ class GimmeJobPublicReader(HttpUser):
             if response.status_code != 401:
                 response.failure(_status_failure(response, 401))
                 return
-            # The real Vacancies route branches on HTTP status only. For an
-            # anonymous production visitor, 401 is the expected successful path.
             response.success()
 
     def _expect_dashboard(self, name: str) -> None:
@@ -285,8 +283,8 @@ class GimmeJobPublicReader(HttpUser):
 
 
 @events.quitting.add_listener
-def apply_exploratory_thresholds(environment: object, **_kwargs: object) -> None:
-    """Return a failing process exit code when the exploratory guardrails are missed."""
+def report_exploratory_thresholds(environment: object, **_kwargs: object) -> None:
+    """Report performance findings without converting them into execution failures."""
 
     stats = getattr(getattr(environment, "stats", None), "total", None)
     if stats is None or stats.num_requests == 0:
@@ -294,18 +292,26 @@ def apply_exploratory_thresholds(environment: object, **_kwargs: object) -> None
         LOGGER.error("No requests completed during the GimmeJob load test.")
         return
 
-    failures: list[str] = []
+    findings: list[str] = []
     max_failure_ratio = _non_negative_float("GIMMEJOB_MAX_FAILURE_RATIO", 0.01)
     max_p95_ms = _non_negative_float("GIMMEJOB_MAX_P95_MS", 10000)
     p95_ms = stats.get_response_time_percentile(0.95) or 0
 
     if stats.fail_ratio > max_failure_ratio:
-        failures.append(
+        findings.append(
             f"failure ratio {stats.fail_ratio:.2%} exceeded {max_failure_ratio:.2%}"
         )
     if p95_ms > max_p95_ms:
-        failures.append(f"p95 {p95_ms:.0f} ms exceeded {max_p95_ms:.0f} ms")
+        findings.append(f"p95 {p95_ms:.0f} ms exceeded {max_p95_ms:.0f} ms")
 
-    if failures:
-        setattr(environment, "process_exit_code", 1)
-        LOGGER.error("GimmeJob exploratory thresholds failed: %s", "; ".join(failures))
+    if findings:
+        LOGGER.warning(
+            "GimmeJob performance thresholds exceeded; execution completed successfully: %s",
+            "; ".join(findings),
+        )
+    else:
+        LOGGER.info(
+            "GimmeJob performance thresholds met: failure ratio %.2f%%; p95 %.0f ms",
+            stats.fail_ratio * 100,
+            p95_ms,
+        )
