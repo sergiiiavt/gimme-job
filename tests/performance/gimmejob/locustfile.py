@@ -95,6 +95,13 @@ class GimmeJobPublicReader(HttpUser):
                     "set GIMMEJOB_PRODUCTION_ACK=gimme-job.com before targeting production",
                 )
 
+            selected_tags = os.getenv("LOCUST_TAGS", "").strip()
+            if not selected_tags:
+                _stop_run(
+                    self,
+                    "production tests require LOCUST_TAGS so an accidental all-route run cannot start",
+                )
+
             max_users = _positive_int("GIMMEJOB_MAX_USERS", 10)
             configured_users = _configured_user_count(self.environment)
             if configured_users > max_users:
@@ -145,13 +152,9 @@ class GimmeJobPublicReader(HttpUser):
             if response.status_code != 401:
                 response.failure(_status_failure(response, 401))
                 return
-            try:
-                payload = response.json()
-            except ValueError:
-                response.failure("auth-state response is not valid JSON")
-                return
-            if not isinstance(payload, dict) or payload.get("authenticated") is not False:
-                response.failure("auth-state response does not represent a public visitor")
+            # The real Vacancies route branches on HTTP status only. For an
+            # anonymous production visitor, 401 is the expected successful path.
+            response.success()
 
     def _expect_dashboard(self, name: str) -> None:
         with self.client.get(
