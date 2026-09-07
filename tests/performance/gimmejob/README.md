@@ -38,9 +38,9 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 
 ## Azure benchmark configuration
 
-Upload the current `locustfile.py` and `requirements.txt`.
+Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, `LOCUST_TAGS=vacancies-ui`, acknowledgement, and failure criteria so the Azure test cannot silently drift from the script requirements.
 
-Use these environment variables for every benchmark run:
+If editing an existing Azure portal test manually, open **Configure -> Parameters -> Environment variables** and make sure the following variables are present before rerunning:
 
 | Name | Value |
 | --- | --- |
@@ -51,6 +51,8 @@ Use these environment variables for every benchmark run:
 | `GIMMEJOB_MAX_FAILURE_RATIO` | `0.01` |
 | `GIMMEJOB_MAX_P95_MS` | `2500` |
 | `LOCUST_TAGS` | `vacancies-ui` |
+
+The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for the comparison matrix.
 
 Run matrix:
 

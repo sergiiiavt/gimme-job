@@ -1,0 +1,33 @@
+version: v0.1
+testId: gimmejob-prod-smoke
+displayName: GimmeJob production Vacancies baseline
+description: 10-user anonymous Vacancies UI baseline against production
+testPlan: locustfile.py
+testType: Locust
+engineInstances: 1
+env:
+  - name: LOCUST_HOST
+    value: https://gimme-job.com
+  - name: LOCUST_USERS
+    value: "10"
+  - name: LOCUST_SPAWN_RATE
+    value: "1"
+  - name: LOCUST_RUN_TIME
+    value: "600s"
+  - name: LOCUST_TAGS
+    value: vacancies-ui
+  - name: GIMMEJOB_HOST
+    value: https://gimme-job.com
+  - name: GIMMEJOB_PRODUCTION_ACK
+    value: gimme-job.com
+  - name: GIMMEJOB_MAX_USERS
+    value: "100"
+  - name: GIMMEJOB_MAX_RUN_SECONDS
+    value: "600"
+  - name: GIMMEJOB_MAX_FAILURE_RATIO
+    value: "0.01"
+  - name: GIMMEJOB_MAX_P95_MS
+    value: "2500"
+failureCriteria:
+  - percentage(error) > 1
+  - p95(response_time_ms) > 2500
