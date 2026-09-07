@@ -5,6 +5,7 @@ description: 10-user full read-only production baseline across all defined Locus
 testPlan: locustfile.py
 testType: Locust
 engineInstances: 1
+autoStop: disable
 env:
   - name: LOCUST_HOST
     value: https://gimme-job.com
