@@ -32,6 +32,7 @@ test("AI Assistant keeps chat and execution details readable at normal browser z
   assert.match(traceStyles, /\.metadata dd\s*\{[\s\S]*?font-size:\s*12px;/);
 });
 
-test("execution trace shows newest activity first", () => {
-  assert.match(traceStyles, /\.timeline\s*\{[\s\S]*?flex-direction:\s*column-reverse;/);
+test("execution trace shows step 01 first", () => {
+  assert.match(traceStyles, /\.timeline\s*\{[\s\S]*?flex-direction:\s*column;/);
+  assert.doesNotMatch(traceStyles, /\.timeline\s*\{[\s\S]*?flex-direction:\s*column-reverse;/);
 });
