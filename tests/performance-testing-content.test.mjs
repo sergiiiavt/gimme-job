@@ -45,11 +45,12 @@ test("publishes a dedicated source-backed performance interview domain", async (
 });
 
 test("publishes the methodical performance learning path with Ukrainian localization and the real GimmeJob Locust walkthrough", async () => {
-  const [learning, localization, locustEn, locustUk, locustSources, catalogSource, pageSource, publicRouteSource, privateRouteSource, ragSource, packageSource] = await Promise.all([
+  const [learning, localization, locustEn, locustUk, locustExecution, locustSources, catalogSource, pageSource, publicRouteSource, privateRouteSource, ragSource, packageSource] = await Promise.all([
     readJson("content/performance-testing/catalog.json"),
     readJson("content/performance-testing/localization.uk.json"),
     readJson("content/performance-testing/gimmejob-locust.en.json"),
     readJson("content/performance-testing/gimmejob-locust.uk.json"),
+    readJson("content/performance-testing/gimmejob-locust-execution.json"),
     readJson("content/performance-testing/sources-gimmejob-locust.json"),
     readFile(projectFile("content/performance-testing/catalog.ts"), "utf8"),
     readFile(projectFile("app/performance-testing-page.tsx"), "utf8"),
@@ -95,11 +96,24 @@ test("publishes the methodical performance learning path with Ukrainian localiza
     assert.match(markdown, /LOCUST_TAGS=smoke/);
     assert.match(markdown, /2\.82/);
   }
+
+  for (const markdown of [locustExecution.en, locustExecution.uk]) {
+    assert.match(markdown, /Azure Load Testing engine/);
+    assert.match(markdown, /LOCUST_TAGS=public-read/);
+    assert.match(markdown, /gimmejob-db/);
+    assert.match(markdown, /Cloudflare/);
+  }
+
   assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/locustfile.py"));
   assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/README.md"));
+  assert.ok(locustSources.some((source) => source.url === "https://developers.cloudflare.com/workers/observability/metrics-and-analytics/"));
+  assert.ok(locustSources.some((source) => source.url === "https://developers.cloudflare.com/d1/observability/metrics-analytics/"));
 
   assert.match(catalogSource, /gimmejob-locust\.en\.json/);
   assert.match(catalogSource, /gimmejob-locust\.uk\.json/);
+  assert.match(catalogSource, /gimmejob-locust-execution\.json/);
+  assert.match(catalogSource, /obsoleteLocustSectionsPattern/);
+  assert.match(catalogSource, /prepareGimmeJobLocustMarkdown/);
   assert.match(catalogSource, /repoPathPattern/);
   assert.match(catalogSource, /github\.com\/\$\{GIMMEJOB_REPO\}\/blob\/main\/\$\{path\}/);
   assert.match(catalogSource, /chapters: \[\.\.\.localizedBaseChapters, gimmeJobLocustChapter\]/);

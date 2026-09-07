@@ -10,6 +10,7 @@ import chapter07Uk from "./chapter-07.uk.json";
 import chapter08Uk from "./chapter-08.uk.json";
 import gimmeJobLocustEn from "./gimmejob-locust.en.json";
 import gimmeJobLocustUk from "./gimmejob-locust.uk.json";
+import gimmeJobLocustExecutionData from "./gimmejob-locust-execution.json";
 import gimmeJobLocustSourcesData from "./sources-gimmejob-locust.json";
 
 export interface PerformanceLearningSource {
@@ -78,6 +79,11 @@ interface GimmeJobLocustEnglishDocument {
   markdown: string;
 }
 
+interface GimmeJobLocustExecutionDocument {
+  en: string;
+  uk: string;
+}
+
 const baseCatalog = catalogData as BasePerformanceCatalog;
 const ukrainianMetadata = localizationUkData as UkrainianMetadata;
 const ukMetadataById = new Map(ukrainianMetadata.chapters.map((chapter) => [chapter.id, chapter]));
@@ -95,14 +101,35 @@ const ukrainianDocuments = [
 const ukrainianMarkdownById = new Map(ukrainianDocuments.map((document) => [document.id, document.markdownUk]));
 const gimmeJobLocustSources = gimmeJobLocustSourcesData as PerformanceLearningSource[];
 const gimmeJobLocustEnglish = gimmeJobLocustEn as GimmeJobLocustEnglishDocument;
+const gimmeJobLocustExecution = gimmeJobLocustExecutionData as GimmeJobLocustExecutionDocument;
 
 const GIMMEJOB_REPO = "sergiiiavt/gimme-job";
 const repoPathPattern = /`((?:app|content|scripts|tests|\.github)\/[^`\n]+)`/g;
+const obsoleteLocustSectionsPattern = /\n## 17\.[\s\S]*?(?=\n## Summary)/;
 
 function linkGimmeJobRepoPaths(markdown: string) {
   return markdown.replace(repoPathPattern, (_match, path: string) => (
     `[\`${path}\`](https://github.com/${GIMMEJOB_REPO}/blob/main/${path})`
   ));
+}
+
+function syncCurrentLocustTags(markdown: string) {
+  return markdown
+    .replace('@tag("smoke", "api", "worker")', '@tag("health", "smoke", "api", "worker")')
+    .replace('@tag("edge", "html")', '@tag("home", "public-read", "edge", "html")')
+    .replace('@tag("worker", "html")', '@tag("reference", "public-read", "worker", "html")')
+    .replace('@tag("d1", "api")', '@tag("jobs", "public-read", "d1", "api")')
+    .replace('@tag("d1", "api", "heavy")', '@tag("dashboard", "public-read", "d1", "api", "heavy")');
+}
+
+function prepareGimmeJobLocustMarkdown(markdown: string, executionMaterial: string) {
+  const withoutObsoleteSections = markdown.replace(obsoleteLocustSectionsPattern, "");
+  const currentCode = syncCurrentLocustTags(withoutObsoleteSections);
+  const withExecutionMaterial = currentCode.replace(
+    "\n## Summary",
+    `\n\n${executionMaterial.trim()}\n\n## Summary`,
+  );
+  return linkGimmeJobRepoPaths(withExecutionMaterial);
 }
 
 const localizedBaseChapters: PerformanceLearningChapter[] = baseCatalog.chapters.map((chapter) => {
@@ -130,11 +157,11 @@ const gimmeJobLocustChapter: PerformanceLearningChapter = {
   label: "9. GimmeJob Locust: real project walkthrough",
   labelUk: locustMetadata.labelUk,
   level: "article",
-  description: "Learn Locust from the real GimmeJob workload: virtual users, task weights and tags, pacing, RPS, response validation, production safety, thresholds and scenario expansion beyond the health endpoint.",
+  description: "Learn Locust from the real GimmeJob workload: virtual users, task weights and tags, pacing, RPS, response validation, production safety, thresholds and cross-platform observability.",
   descriptionUk: locustMetadata.descriptionUk,
   sourceIds: gimmeJobLocustSources.map((source) => source.id),
-  markdown: linkGimmeJobRepoPaths(gimmeJobLocustEnglish.markdown),
-  markdownUk: linkGimmeJobRepoPaths(locustMarkdownUk),
+  markdown: prepareGimmeJobLocustMarkdown(gimmeJobLocustEnglish.markdown, gimmeJobLocustExecution.en),
+  markdownUk: prepareGimmeJobLocustMarkdown(locustMarkdownUk, gimmeJobLocustExecution.uk),
 };
 
 export const performanceTestingCatalog: PerformanceLearningCatalog = {

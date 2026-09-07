@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [core, practical, sources, subtopics, learning, localizationUk, locustEn, locustUk, locustSources, domains] = await Promise.all([
+const [core, practical, sources, subtopics, learning, localizationUk, locustEn, locustUk, locustExecution, locustSources, domains] = await Promise.all([
   readJson("../content/interview/performance-testing-core-qa.json"),
   readJson("../content/interview/performance-testing-practical-qa.json"),
   readJson("../content/interview/performance-testing-sources.json"),
@@ -12,6 +12,7 @@ const [core, practical, sources, subtopics, learning, localizationUk, locustEn, 
   readJson("../content/performance-testing/localization.uk.json"),
   readJson("../content/performance-testing/gimmejob-locust.en.json"),
   readJson("../content/performance-testing/gimmejob-locust.uk.json"),
+  readJson("../content/performance-testing/gimmejob-locust-execution.json"),
   readJson("../content/performance-testing/sources-gimmejob-locust.json"),
   readJson("../content/interview/domains.json"),
 ]);
@@ -92,8 +93,27 @@ for (const markdown of [locustEn.markdown, locustUk.markdownUk]) {
     "2.82",
   ]) assert.ok(markdown.includes(marker), `GimmeJob Locust walkthrough is missing ${marker}`);
 }
+
+for (const [language, markdown] of [["English", locustExecution.en], ["Ukrainian", locustExecution.uk]]) {
+  assert.ok(markdown?.trim().length >= 1800, `${language} Locust execution/observability material is too shallow.`);
+  for (const marker of [
+    "Azure Load Testing engine",
+    "LOCUST_TAGS=public-read",
+    "gimmejob-db",
+    "Cloudflare",
+  ]) assert.ok(markdown.includes(marker), `${language} Locust execution material is missing ${marker}`);
+}
+
+for (const source of locustSources) {
+  assert.match(source.url, /^https:\/\//, `Locust source URL must use HTTPS: ${source.id}`);
+  assert.ok(source.title?.trim(), `Missing Locust source title: ${source.id}`);
+  assert.ok(source.publisher?.trim(), `Missing Locust source publisher: ${source.id}`);
+  assert.ok(source.role?.trim(), `Missing Locust source role: ${source.id}`);
+}
 assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/locustfile.py"), "Locust workload must have a live repository source link.");
 assert.ok(locustSources.some((source) => source.url === "https://github.com/sergiiiavt/gimme-job/blob/main/tests/performance/gimmejob/README.md"), "Locust README must have a live repository source link.");
+assert.ok(locustSources.some((source) => source.url === "https://developers.cloudflare.com/workers/observability/metrics-and-analytics/"), "Locust learning material must cite Cloudflare Workers metrics.");
+assert.ok(locustSources.some((source) => source.url === "https://developers.cloudflare.com/d1/observability/metrics-analytics/"), "Locust learning material must cite Cloudflare D1 metrics.");
 
 for (const concept of ["load testing", "stress testing", "spike testing", "endurance", "scalability", "workload", "concurrent users", "throughput", "p95", "p99", "parameterization", "correlation", "JMeter", "k6", "Locust", "distributed", "bottleneck", "CI/CD"]) {
   assert.match(combinedMarkdown, new RegExp(concept.replace("/", "\\/"), "i"), `Performance learning path is missing ${concept}.`);

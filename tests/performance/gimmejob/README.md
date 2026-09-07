@@ -1,21 +1,48 @@
 # GimmeJob Locust load test
 
 This directory contains an authorized, read-only load test for the public
-GimmeJob production surface. It exercises four distinct layers without
-creating or changing application data:
+GimmeJob production surface. It exercises several layers without creating or
+changing application data.
 
-| Tag | Route | What it measures |
+| Selector | Route | What it measures |
 | --- | --- | --- |
-| `smoke` | `GET /api/health` | Lightweight Worker/API availability |
-| `edge` | `GET /` | Normal public page delivery, including edge caching |
-| `worker` | `GET /reference/qa-fundamentals` | Uncached Worker-rendered HTML |
-| `d1` | `GET /api/public/jobs` | Public D1 read path |
-| `d1`, `heavy` | `GET /api/dashboard` | Heavier D1 dashboard read path |
+| `smoke` or `health` | `GET /api/health` | Lightweight Worker/API availability |
+| `home` | `GET /` | Normal public page delivery, including edge caching |
+| `reference` | `GET /reference/qa-fundamentals` | Worker-rendered HTML |
+| `jobs` | `GET /api/public/jobs` | Public D1 read path |
+| `dashboard` | `GET /api/dashboard` | Heavier D1 dashboard read path |
+| `public-read` | all four non-health routes above | Mixed read-only public workload |
+| `d1` | jobs + dashboard | Both D1-backed read paths |
 
 The script deliberately excludes authentication, writes, vacancy sync,
 analysis, AI/RAG endpoints, observability endpoints, email processing, and
 external integrations. It therefore does not test a complete browser session
 or the authenticated multi-tenant experience.
+
+## Where the test actually runs
+
+The repository stores the script, but GitHub does not execute the production
+load test. When the test is started in Azure Load Testing, Azure provisions a
+load-generator engine and runs the uploaded `locustfile.py` there. The request
+path is:
+
+```text
+Azure Load Testing engine
+  -> Locust virtual users
+  -> HTTPS requests to https://gimme-job.com
+  -> Cloudflare edge
+  -> Worker: gimmejob
+  -> D1: gimmejob-db, when the selected route reads D1
+  -> HTTP response back to Locust
+```
+
+For a local run the Locust process runs on the developer machine instead of an
+Azure engine. The target application path is otherwise the same when the host
+is production.
+
+This distinction matters because two different systems observe the same test:
+Azure/Locust observes the request from the client/load-generator side, while
+Cloudflare observes what happens inside the platform serving the request.
 
 ## Safety defaults
 
@@ -80,8 +107,9 @@ single-user smoke test in another terminal:
   --headless --users 1 --spawn-rate 1 --run-time 30s
 ```
 
-Add `--tags smoke` to call only `/api/health`, or `--tags d1` to isolate the
-public D1 read paths.
+Use `--tags smoke` to call only `/api/health`, `--tags public-read` to exercise
+all four non-health public reads, `--tags d1` for both D1 paths, or one of the
+route-specific selectors: `home`, `reference`, `jobs`, `dashboard`.
 
 ## Run a minimal authorized production smoke
 
@@ -131,29 +159,106 @@ Remove-Item Env:GIMMEJOB_MAX_RUN_SECONDS
    | `GIMMEJOB_MAX_RUN_SECONDS` | `600` |
    | `GIMMEJOB_MAX_FAILURE_RATIO` | `0.01` |
    | `GIMMEJOB_MAX_P95_MS` | `2500` |
+   | `LOCUST_TAGS` | scenario selector, for example `smoke` or `public-read` |
 
 7. Review the estimated VUH and start the test manually.
-8. Watch the Azure test dashboard and, at the same timestamps, Cloudflare
-   Workers **Requests / CPU / Errors** and D1 **Rows read / Query latency**.
-
-Keep Azure's automatic stop enabled for excessive error rates. It limits a
-failing run sooner, while the script's user, duration, failure-ratio, and p95
-guards remain the final test contract.
+8. Keep Azure's automatic stop enabled for excessive error rates.
 
 Azure copies uploaded Locust artifacts into one flat directory, so the script
 has no repository-relative runtime dependencies.
 
-## Interpret the first run
+## Next run: exercise the real public read paths
 
-The first 10-user run is a tool and telemetry validation, not a capacity
-claim. Record at least:
+The first Azure run intentionally used:
+
+```text
+LOCUST_TAGS=smoke
+```
+
+which makes only `GET /api/health` eligible. To run the four implemented
+non-health calls in one read-only workload, upload the current `locustfile.py`
+and use:
+
+```text
+LOCUST_TAGS=public-read
+```
+
+That run will select among:
+
+- `GET /`
+- `GET /reference/qa-fundamentals`
+- `GET /api/public/jobs`
+- `GET /api/dashboard`
+
+with their configured task weights and the same 2-5 second per-user wait.
+For diagnosis, a later run can isolate one route by setting `LOCUST_TAGS` to
+`home`, `reference`, `jobs`, or `dashboard`.
+
+## Where to see the results
+
+### Azure Load Testing: client/load-generator view
+
+Open the Azure Load Testing resource, select the test, then open the specific
+test run. Azure is the primary place for the metrics Locust measures from the
+requester's side:
+
+- total requests and throughput/RPS;
+- response-time percentiles such as p50, p90, p95 and p99;
+- failures/error percentage and response codes;
+- per-request statistics for the named Locust routes;
+- the time-series graphs for the run.
+
+This answers **what the simulated user experienced**.
+
+### Cloudflare: server/platform view
+
+For the same test timestamps, inspect Cloudflare as well.
+
+**Worker `gimmejob`:** open **Workers & Pages -> gimmejob** and inspect its
+Metrics/Observability data. Important signals are request count, invocation
+errors/status, CPU time, wall/execution time, memory when relevant, and logs or
+traces when a request needs investigation.
+
+**D1 `gimmejob-db`:** inspect D1 analytics for read query rate, rows read, query
+latency and response volume. D1 metrics matter mainly for the `jobs` and
+`dashboard` scenarios; the health request does not prove D1 performance.
+
+Cloudflare's current official metric definitions are documented here:
+
+- [Workers metrics and analytics](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/)
+- [Workers observability](https://developers.cloudflare.com/workers/observability/)
+- [D1 metrics and analytics](https://developers.cloudflare.com/d1/observability/metrics-analytics/)
+
+## Which dashboard is authoritative?
+
+Do not choose only one for a meaningful performance investigation.
+
+| Question | Look at |
+| --- | --- |
+| Did users get slow responses? | Azure/Locust latency percentiles |
+| Did throughput stay at the generated rate? | Azure/Locust RPS and request count |
+| Did requests fail functionally or over HTTP? | Azure/Locust failures/errors |
+| Did the Worker approach CPU/runtime limits? | Cloudflare Worker metrics |
+| Did Worker exceptions/resource errors appear? | Cloudflare Worker metrics/logs |
+| Did D1 queries become slow or scan many rows? | Cloudflare D1 analytics |
+| What component probably caused the slowdown? | Correlate Azure and Cloudflare at the same timestamps |
+
+For the first smoke run, Azure was enough to confirm that Locust generated the
+expected traffic and received correct health responses. For the next D1/public
+read run, Azure alone is insufficient for diagnosis: monitor Azure and
+Cloudflare together.
+
+## Interpret a run
+
+Record at least:
 
 - total and successful requests/second;
 - p50, p95, and p99 by named route;
 - error ratio and response codes;
-- Cloudflare Worker requests, CPU time, and exceptions;
-- D1 rows read, query latency, and overload errors;
-- the exact user count, duration, region, deployment commit, and test time.
+- Cloudflare Worker requests, CPU time, execution/wall time and exceptions;
+- D1 read query rate, rows read and query latency for D1-backed routes;
+- the exact user count, duration, region, deployment commit, scenario tags and
+  test start/end time.
 
 Because GimmeJob runs on Cloudflare Workers and D1, this test is useful for
 learning Locust/Azure Load Testing and assessing GimmeJob itself. It is not a
