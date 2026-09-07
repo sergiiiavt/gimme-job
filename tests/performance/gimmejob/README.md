@@ -46,6 +46,21 @@ For an anonymous production visitor, `/api/auth-state` returning HTTP `401` is t
 
 Locust does not launch a browser or automatically execute React, JS, CSS, images, or browser-generated XHR/fetch traffic. A browser performance test requires Playwright or another real-browser tool.
 
+## Execution status vs performance findings
+
+Performance numbers do not decide whether the load test executed successfully.
+
+A run is an execution failure when the workload cannot run correctly, for example because the production safety guard stops it, configuration is invalid, the test crashes, or no requests complete. Those conditions may use an `ERROR` log and a non-zero process exit code.
+
+A run that starts, sends requests, reaches the configured duration, and shuts down normally is considered successfully executed even when the application performs badly. High request failure ratio or high p95 are performance findings. The script records them as `WARNING` messages and keeps the run exit code successful.
+
+The reporting thresholds remain:
+
+- failure ratio > 1%;
+- aggregate p95 > 10000 ms.
+
+Crossing either threshold does not fail the execution. It tells us that the application did not meet the expected performance level for that run.
+
 ## Production safety
 
 - `GIMMEJOB_PRODUCTION_ACK=gimme-job.com` is required.
@@ -55,11 +70,13 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
 - The workload is GET-only.
-- Default guardrails are failure ratio <= 1% and aggregate p95 <= 10000 ms.
+- Default reporting thresholds are failure ratio <= 1% and aggregate p95 <= 10000 ms; they are observations, not execution-failure criteria.
 
 ## Azure benchmark configuration
 
-Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and failure criteria so the saved benchmark remains reproducible.
+Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and reporting thresholds so the saved benchmark remains reproducible.
+
+The checked-in Azure configuration deliberately contains no `failureCriteria`. Azure therefore does not convert a slow or error-heavy but otherwise completed load run into a failed execution result.
 
 The current `locustfile.py` also handles an older Azure portal test that has no `LOCUST_TAGS`: once that script version is uploaded, an untagged production run selects only `vacancies-ui` instead of failing or executing every task.
 
@@ -74,6 +91,8 @@ If editing an existing Azure portal test manually, open **Configure -> Parameter
 | `GIMMEJOB_MAX_FAILURE_RATIO` | `0.01` |
 | `GIMMEJOB_MAX_P95_MS` | `10000` |
 | `LOCUST_TAGS` | `full-readonly` |
+
+In the Azure portal, remove any existing entries under **Configure -> Test criteria** if you want the portal status to represent execution success only. Otherwise Azure can still mark a completed run as failed based on those saved criteria even though the Locust process exits successfully.
 
 The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for a future comparison matrix.
 
