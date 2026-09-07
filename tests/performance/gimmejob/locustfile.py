@@ -67,16 +67,16 @@ def _stop_run(user: HttpUser, reason: str) -> NoReturn:
     raise StopUser()
 
 
-def _status_failure(response: object) -> str:
+def _status_failure(response: object, expected_status: int = 200) -> str:
     error = getattr(response, "error", None)
     status_code = getattr(response, "status_code", 0)
     if status_code == 0 and error:
         return f"request failed before receiving an HTTP response: {error}"
-    return f"expected HTTP 200, received {status_code}"
+    return f"expected HTTP {expected_status}, received {status_code}"
 
 
 class GimmeJobPublicReader(HttpUser):
-    """A realistic public visitor that never sends a mutating request."""
+    """Read-only public scenarios, including the real Vacancies UI request flow."""
 
     host = os.getenv("GIMMEJOB_HOST", LOCAL_HOST).rstrip("/")
     wait_time = between(2, 5)
@@ -125,7 +125,7 @@ class GimmeJobPublicReader(HttpUser):
             }
         )
 
-    def _expect_html(self, path: str, marker: str, name: str) -> None:
+    def _expect_html(self, path: str, marker: str | None, name: str) -> None:
         with self.client.get(path, name=name, catch_response=True) as response:
             if response.status_code != 200:
                 response.failure(_status_failure(response))
@@ -133,11 +133,54 @@ class GimmeJobPublicReader(HttpUser):
             if "text/html" not in response.headers.get("content-type", ""):
                 response.failure("expected an HTML response")
                 return
-            if marker not in response.text:
+            if marker and marker not in response.text:
                 response.failure(f"expected page marker {marker!r}")
 
+    def _expect_public_auth_state(self) -> None:
+        with self.client.get(
+            "/api/auth-state",
+            name="GET /api/auth-state [vacancies UI]",
+            catch_response=True,
+        ) as response:
+            if response.status_code != 401:
+                response.failure(_status_failure(response, 401))
+                return
+            try:
+                payload = response.json()
+            except ValueError:
+                response.failure("auth-state response is not valid JSON")
+                return
+            if not isinstance(payload, dict) or payload.get("authenticated") is not False:
+                response.failure("auth-state response does not represent a public visitor")
+
+    def _expect_dashboard(self, name: str) -> None:
+        with self.client.get(
+            "/api/dashboard",
+            name=name,
+            catch_response=True,
+        ) as response:
+            if response.status_code != 200:
+                response.failure(_status_failure(response))
+                return
+            try:
+                payload = response.json()
+            except ValueError:
+                response.failure("dashboard response is not valid JSON")
+                return
+            if not isinstance(payload, dict) or not isinstance(payload.get("jobs"), list):
+                response.failure("dashboard response does not match the vacancy UI contract")
+
+    @tag("vacancies-ui", "real-ui", "d1")
+    @task(6)
+    def vacancies_ui(self) -> None:
+        """Model the actual anonymous /vacancies request sequence used by the frontend."""
+
+        self._expect_html("/vacancies", None, "GET /vacancies [UI page]")
+        self._expect_public_auth_state()
+        self._expect_dashboard("GET /api/dashboard [vacancies UI]")
+
     @tag("health", "smoke", "api", "worker")
-    @task(4)
+    @task(1)
     def health(self) -> None:
         with self.client.get("/api/health", name="GET /api/health", catch_response=True) as response:
             if response.status_code != 200:
@@ -155,13 +198,13 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("health response does not match the public contract")
 
-    @tag("home", "public-read", "edge", "html")
-    @task(3)
+    @tag("home", "diagnostic", "edge", "html")
+    @task(1)
     def home_page(self) -> None:
         self._expect_html("/", "Why I created this site", "GET / [public home]")
 
-    @tag("reference", "public-read", "worker", "html")
-    @task(2)
+    @tag("reference", "diagnostic", "worker", "html")
+    @task(1)
     def uncached_reference_page(self) -> None:
         self._expect_html(
             "/reference/qa-fundamentals",
@@ -169,12 +212,12 @@ class GimmeJobPublicReader(HttpUser):
             "GET /reference/qa-fundamentals [uncached]",
         )
 
-    @tag("jobs", "public-read", "d1", "api")
-    @task(2)
+    @tag("jobs-api", "infra", "d1", "api")
+    @task(1)
     def public_jobs(self) -> None:
         with self.client.get(
             "/api/public/jobs",
-            name="GET /api/public/jobs [D1]",
+            name="GET /api/public/jobs [infra D1]",
             catch_response=True,
         ) as response:
             if response.status_code != 200:
@@ -192,28 +235,10 @@ class GimmeJobPublicReader(HttpUser):
             ):
                 response.failure("public jobs response does not match the public contract")
 
-    @tag("dashboard", "public-read", "d1", "api", "heavy")
+    @tag("dashboard", "diagnostic", "d1", "api", "heavy")
     @task(1)
     def public_dashboard(self) -> None:
-        with self.client.get(
-            "/api/dashboard",
-            name="GET /api/dashboard [D1 heavy]",
-            catch_response=True,
-        ) as response:
-            if response.status_code != 200:
-                response.failure(_status_failure(response))
-                return
-            try:
-                payload = response.json()
-            except ValueError:
-                response.failure("dashboard response is not valid JSON")
-                return
-            if (
-                not isinstance(payload, dict)
-                or not isinstance(payload.get("jobs"), list)
-                or not isinstance(payload.get("market"), dict)
-            ):
-                response.failure("dashboard response does not match the public contract")
+        self._expect_dashboard("GET /api/dashboard [diagnostic D1 heavy]")
 
 
 @events.quitting.add_listener

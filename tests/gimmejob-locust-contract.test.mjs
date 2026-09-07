@@ -36,34 +36,45 @@ test("GimmeJob Locust workload remains read-only and avoids cost-generating rout
   assert.doesNotMatch(locustfile, /\/api\/observability\//);
 
   for (const route of [
+    "/vacancies",
+    "/api/auth-state",
     "/api/health",
     "/api/public/jobs",
     "/api/dashboard",
-    "/reference/qa-fundamentals",
   ]) {
     assert.match(locustfile, new RegExp(route.replaceAll("/", "\\/")));
   }
 });
 
-test("GimmeJob Locust exposes the non-health public workload as one selectable scenario", () => {
-  for (const selector of ["home", "reference", "jobs", "dashboard"]) {
-    assert.match(locustfile, new RegExp(`@tag\\([^\\n]*"${selector}"`));
-  }
-  assert.equal((locustfile.match(/"public-read"/g) ?? []).length, 4);
-  assert.match(locustfile, /@tag\("health", "smoke", "api", "worker"\)/);
-  assert.match(readme, /LOCUST_TAGS=public-read/);
-  assert.match(readme, /Azure Load Testing engine/);
-  assert.match(readme, /Worker: gimmejob/);
-  assert.match(readme, /D1: gimmejob-db/);
+test("GimmeJob Locust exposes a real anonymous Vacancies UI benchmark", () => {
+  assert.match(locustfile, /@tag\("vacancies-ui", "real-ui", "d1"\)/);
+  assert.match(locustfile, /GET \/vacancies \[UI page\]/);
+  assert.match(locustfile, /GET \/api\/auth-state \[vacancies UI\]/);
+  assert.match(locustfile, /GET \/api\/dashboard \[vacancies UI\]/);
+  assert.match(locustfile, /response\.status_code != 401/);
+  assert.match(locustfile, /payload\.get\("authenticated"\) is not False/);
+  assert.match(readme, /LOCUST_TAGS` \| `vacancies-ui`/);
+  assert.match(readme, /10\/50\/100-user benchmark/);
+  assert.match(readme, /Mark the 10-user run as the baseline/);
+});
+
+test("public jobs stays available only as an infrastructure diagnostic", () => {
+  assert.match(locustfile, /@tag\("jobs-api", "infra", "d1", "api"\)/);
+  assert.match(locustfile, /GET \/api\/public\/jobs \[infra D1\]/);
+  assert.match(readme, /not a current frontend consumer/);
+  assert.doesNotMatch(readme, /`public-read`/);
 });
 
 test("GimmeJob Locust version is pinned for reproducible local and Azure runs", () => {
   assert.match(requirements, /^locust==\d+\.\d+\.\d+\s*$/);
 });
 
-test("GimmeJob Locust documentation states Azure's per-run billing minimum", () => {
-  assert.match(readme, /minimum billable usage of 1\.67 VUH/);
-  assert.match(readme, /budgets notify and do not stop/);
+test("GimmeJob Locust documentation states benchmark VUH and bounded monthly limit", () => {
+  assert.match(readme, /1\.67/);
+  assert.match(readme, /8\.33/);
+  assert.match(readme, /16\.67/);
+  assert.match(readme, /approximately USD 4\.00/);
+  assert.match(readme, /40-VUH monthly resource limit/);
 });
 
 test("GimmeJob Locust documentation separates client-side and Cloudflare observability", () => {
