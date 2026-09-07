@@ -28,6 +28,3 @@ env:
     value: "0.01"
   - name: GIMMEJOB_MAX_P95_MS
     value: "10000"
-failureCriteria:
-  - percentage(error) > 1
-  - p95(response_time_ms) > 10000
