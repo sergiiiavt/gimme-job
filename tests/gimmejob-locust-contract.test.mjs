@@ -42,8 +42,9 @@ test("untagged production Locust runs safely default to the Vacancies scenario",
   assert.match(readme, /defaults to `vacancies-ui`/);
 });
 
-test("Azure Locust baseline selects the complete read-only workload without performance failure criteria", () => {
+test("Azure Locust baseline selects the complete read-only workload without performance-driven failure or autostop", () => {
   assert.match(azureConfig, /testType:\s*Locust/);
+  assert.match(azureConfig, /autoStop:\s*disable/);
   assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*full-readonly/);
   assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
   assert.match(azureConfig, /name:\s*LOCUST_USERS\s*\n\s*value:\s*"10"/);
@@ -54,6 +55,7 @@ test("Azure Locust baseline selects the complete read-only workload without perf
   assert.doesNotMatch(azureConfig, /percentage\(error\)/);
   assert.doesNotMatch(azureConfig, /p95\(response_time_ms\)/);
   assert.match(readme, /primary Azure baseline runs every defined read-only Locust task with 10 total virtual users/i);
+  assert.match(readme, /sets `autoStop: disable`/);
 });
 
 test("performance findings do not turn a completed load run into an execution failure", () => {
@@ -120,8 +122,10 @@ test("public jobs stays available only as an infrastructure diagnostic", () => {
   assert.doesNotMatch(readme, /`public-read`/);
 });
 
-test("GimmeJob Locust version is pinned for reproducible local and Azure runs", () => {
+test("GimmeJob Locust version pin is local-only because Azure supplies its managed runtime", () => {
   assert.match(requirements, /^locust==\d+\.\d+\.\d+\s*$/);
+  assert.match(readme, /Azure Load Testing supplies its own managed Locust runtime/);
+  assert.match(readme, /may report a different Locust version/);
 });
 
 test("GimmeJob Locust documentation states benchmark VUH and bounded monthly limit", () => {
