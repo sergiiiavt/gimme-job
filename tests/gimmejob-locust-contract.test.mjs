@@ -74,7 +74,8 @@ test("GimmeJob Locust documentation states benchmark VUH and bounded monthly lim
   assert.match(readme, /8\.33/);
   assert.match(readme, /16\.67/);
   assert.match(readme, /approximately USD 4\.00/);
-  assert.match(readme, /40-VUH monthly resource limit/);
+  assert.match(readme, /about 45\.2 VUH/);
+  assert.match(readme, /50 VUH/);
 });
 
 test("GimmeJob Locust documentation separates client-side and Cloudflare observability", () => {
