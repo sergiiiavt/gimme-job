@@ -71,6 +71,6 @@ test("GimmeJob Locust documentation separates client-side and Cloudflare observa
   assert.match(readme, /Cloudflare: server\/platform view/);
   assert.match(readme, /Workers & Pages -> gimmejob/);
   assert.match(readme, /gimmejob-db/);
-  assert.match(readme, /Cloudflare Workers metrics and analytics/);
-  assert.match(readme, /Cloudflare D1 metrics and analytics/);
+  assert.match(readme, /https:\/\/developers\.cloudflare\.com\/workers\/observability\/metrics-and-analytics\//);
+  assert.match(readme, /https:\/\/developers\.cloudflare\.com\/d1\/observability\/metrics-analytics\//);
 });
