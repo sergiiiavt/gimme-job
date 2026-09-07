@@ -13,10 +13,11 @@ test("execution trace gives the debugger more width while keeping equal panel he
   assert.match(css, /\.panel \{[\s\S]*?height:\s*100%/);
 });
 
-test("execution trace is readable and shows newest activity first", async () => {
+test("execution trace is readable and shows step 01 first", async () => {
   const css = await readFile(traceCssUrl, "utf8");
 
-  assert.match(css, /\.timeline \{[\s\S]*?flex-direction:\s*column-reverse/);
+  assert.match(css, /\.timeline \{[\s\S]*?flex-direction:\s*column/);
+  assert.doesNotMatch(css, /\.timeline \{[\s\S]*?flex-direction:\s*column-reverse/);
   assert.match(css, /\.timeline summary strong \{[\s\S]*?font-size:\s*14px/);
   assert.match(css, /\.stepBody p,[\s\S]*?\.stepBody pre \{[\s\S]*?font-size:\s*13px/);
   assert.match(css, /\.metadata dd \{[\s\S]*?font-size:\s*12px/);
