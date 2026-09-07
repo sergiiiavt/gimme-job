@@ -240,6 +240,8 @@
 
 .stepBody > span,
 .traceFields > span,
+.decisionPath > span,
+.payloads > span,
 .retrievalBlock > span,
 .tokenUsage > span {
   color: #84948a;
@@ -267,7 +269,7 @@
 
 .stepBody pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  max-height: 180px;
+  max-height: 220px;
   overflow: auto;
 }
 
@@ -283,9 +285,11 @@
 }
 
 .traceFields,
+.decisionPath,
+.payloads,
 .retrievalBlock,
 .tokenUsage {
-  margin-top: 11px;
+  margin-top: 13px;
 }
 
 .traceFields dl,
@@ -327,6 +331,128 @@
   margin: 0;
   overflow-wrap: anywhere;
   text-align: right;
+}
+
+.decisionPath ol {
+  display: grid;
+  gap: 7px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.decisionPath li {
+  background: #101713;
+  border: 1px solid #2b382f;
+  border-left: 3px solid #56675d;
+  border-radius: 7px;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  padding: 9px 10px;
+}
+
+.decisionPath li[data-status="pass"] {
+  border-left-color: #739681;
+}
+
+.decisionPath li[data-status="fail"] {
+  border-left-color: #a97d72;
+}
+
+.decisionPath li[data-status="branch"] {
+  border-left-color: #8b9270;
+}
+
+.decisionPath li[data-status="skip"] {
+  opacity: .78;
+}
+
+.decisionIndex {
+  color: #6f7f75;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  padding-top: 2px;
+}
+
+.decisionCopy {
+  min-width: 0;
+}
+
+.decisionCopy header {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.decisionCopy strong {
+  color: #d8e0da;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.decisionCopy header code {
+  color: #8fa097;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.decisionCopy p {
+  background: transparent;
+  border: 0;
+  color: #aebbb3;
+  font-size: 12px;
+  line-height: 1.55;
+  margin-top: 4px;
+  padding: 0;
+}
+
+.decisionCopy small {
+  color: #7f9086;
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.decisionCopy small code {
+  color: #c1cec5;
+}
+
+.payloads > div {
+  display: grid;
+  gap: 7px;
+}
+
+.payloads details {
+  background: #0e1511;
+  border: 1px solid #29362d;
+  border-radius: 7px;
+  padding: 0;
+}
+
+.payloads summary {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.payloads summary strong {
+  font-size: 12px;
+}
+
+.payloads summary code {
+  color: #819087;
+  font-size: 10px;
+}
+
+.payloads pre {
+  border: 0;
+  border-top: 1px solid #263129;
+  border-radius: 0 0 7px 7px;
+  font-size: 12px;
+  max-height: 280px;
+  padding: 11px;
 }
 
 .retrievalBlock ol {
@@ -371,12 +497,37 @@
   overflow-wrap: anywhere;
 }
 
+.scoreExplanation {
+  background: #131d17 !important;
+  border-color: #304036 !important;
+  color: #b5c5ba !important;
+  font-size: 12px !important;
+  margin-top: 8px !important;
+  padding: 7px 9px !important;
+}
+
+.matchDetails {
+  display: grid;
+  gap: 3px;
+  margin-top: 7px;
+}
+
+.matchDetails span {
+  color: #83948a;
+  font-size: 11px;
+}
+
+.matchDetails code {
+  color: #c1cec5;
+  overflow-wrap: anywhere;
+}
+
 .retrievalBlock pre {
   background: #0c120f;
   border-color: #222c26;
   font-size: 12px;
   margin-top: 8px;
-  max-height: 150px;
+  max-height: 180px;
 }
 
 .tokenUsage dl {
@@ -491,5 +642,9 @@
   .traceFields dl > div,
   .tokenUsage dl > div {
     grid-template-columns: minmax(95px, .85fr) minmax(0, 1.15fr);
+  }
+
+  .decisionPath li {
+    grid-template-columns: 24px minmax(0, 1fr);
   }
 }
