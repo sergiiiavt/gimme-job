@@ -1,16 +1,36 @@
 # GimmeJob Locust load test
 
 This directory contains the authorized read-only production workload for GimmeJob.
-The primary benchmark is the real anonymous Vacancies UI request flow.
+The primary Azure baseline runs every defined read-only Locust task with 10 total virtual users.
 
 | Selector | Request flow | Purpose |
 | --- | --- | --- |
-| `vacancies-ui` | `GET /vacancies` -> `GET /api/auth-state` -> `GET /api/dashboard` | Real public Vacancies UI flow; use for the 10/50/100-user benchmark |
+| `full-readonly` | Vacancies UI flow + `GET /api/health` + `GET /` + `GET /reference/qa-fundamentals` + `GET /api/public/jobs` + standalone `GET /api/dashboard` | Full production read-only baseline used by the saved Azure test |
+| `vacancies-ui` | `GET /vacancies` -> `GET /api/auth-state` -> `GET /api/dashboard` | Focused real public Vacancies UI flow |
 | `smoke` / `health` | `GET /api/health` | Worker/API smoke |
 | `home` | `GET /` | Home HTML diagnostic |
 | `reference` | `GET /reference/qa-fundamentals` | Reference HTML diagnostic |
 | `dashboard` | `GET /api/dashboard` | Isolated D1/dashboard diagnostic |
 | `jobs-api` / `infra` | `GET /api/public/jobs` | Infrastructure-only diagnostic; not a current frontend consumer |
+
+## Full read-only baseline
+
+`LOCUST_TAGS=full-readonly` selects every GET-only task currently defined in `locustfile.py`:
+
+```text
+GET /vacancies
+GET /api/auth-state
+GET /api/dashboard
+GET /api/health
+GET /
+GET /reference/qa-fundamentals
+GET /api/public/jobs
+GET /api/dashboard
+```
+
+The two dashboard rows are intentional: one belongs to the real Vacancies UI flow and the other is the standalone diagnostic task. The Locust user count is shared across the selected workload; `LOCUST_USERS=10` means 10 total virtual users, not 10 users per endpoint.
+
+Task weights remain part of the workload model. `vacancies_ui` has weight 6 and each diagnostic task has weight 1, so the real Vacancies flow receives more traffic while every defined read-only task remains eligible in the same run.
 
 ## Real UI scenario
 
@@ -30,7 +50,8 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 
 - `GIMMEJOB_PRODUCTION_ACK=gimme-job.com` is required.
 - HTTPS and an explicit bounded run time are required.
-- An explicit `LOCUST_TAGS` selector is supported and is preferred for reproducible saved configurations. If it is omitted on a production run, the script safely defaults to `vacancies-ui` before Locust filters the task list; it does not run every diagnostic route.
+- The saved Azure baseline explicitly uses `LOCUST_TAGS=full-readonly` so it exercises all defined read-only tasks.
+- If `LOCUST_TAGS` is omitted on a production run, the script still safely defaults to `vacancies-ui` before Locust filters the task list; an accidental untagged run does not broaden itself to every diagnostic route.
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
 - The workload is GET-only.
@@ -38,7 +59,7 @@ Locust does not launch a browser or automatically execute React, JS, CSS, images
 
 ## Azure benchmark configuration
 
-Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=vacancies-ui`, acknowledgement, and failure criteria so the saved benchmark remains reproducible.
+Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and failure criteria so the saved benchmark remains reproducible.
 
 The current `locustfile.py` also handles an older Azure portal test that has no `LOCUST_TAGS`: once that script version is uploaded, an untagged production run selects only `vacancies-ui` instead of failing or executing every task.
 
@@ -52,9 +73,9 @@ If editing an existing Azure portal test manually, open **Configure -> Parameter
 | `GIMMEJOB_MAX_RUN_SECONDS` | `600` |
 | `GIMMEJOB_MAX_FAILURE_RATIO` | `0.01` |
 | `GIMMEJOB_MAX_P95_MS` | `10000` |
-| `LOCUST_TAGS` | `vacancies-ui` |
+| `LOCUST_TAGS` | `full-readonly` |
 
-The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for the comparison matrix.
+The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for a future comparison matrix.
 
 Run matrix:
 
@@ -66,7 +87,7 @@ Run matrix:
 
 At USD 0.15/VUH, the fresh matrix is approximately USD 4.00 before taxes or agreement-specific pricing. Including the earlier known smoke and synthetic 100-user run, the known usage plus this matrix is about 45.2 VUH. Use a 50 VUH monthly resource limit for this comparison.
 
-The earlier synthetic 100-user run is not directly comparable because it used a different request mix. Run a fresh 100-user `vacancies-ui` test.
+Earlier runs that used a different selector are not directly comparable. Establish a fresh 10-user `full-readonly` baseline before comparing 50/100-user runs.
 
 ## Results
 
@@ -79,9 +100,14 @@ Record:
 - error ratio;
 - `GET /vacancies [UI page]`;
 - `GET /api/auth-state [vacancies UI]`;
-- `GET /api/dashboard [vacancies UI]`.
+- `GET /api/dashboard [vacancies UI]`;
+- `GET /api/health`;
+- `GET / [public home]`;
+- `GET /reference/qa-fundamentals [uncached]`;
+- `GET /api/public/jobs [infra D1]`;
+- `GET /api/dashboard [diagnostic D1 heavy]`.
 
-Mark the 10-user run as the baseline, then compare 10/50/100 with the same script, tag, engine count, region, and duration.
+Mark the fresh 10-user `full-readonly` run as the baseline, then compare later runs only when the script, selector, engine count, region, and duration match.
 
 ### Cloudflare: server/platform view
 
