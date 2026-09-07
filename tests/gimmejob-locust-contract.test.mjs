@@ -14,6 +14,10 @@ const readme = readFileSync(
   new URL("./performance/gimmejob/README.md", import.meta.url),
   "utf8",
 );
+const azureConfig = readFileSync(
+  new URL("./performance/gimmejob/azure-loadtest.yaml", import.meta.url),
+  "utf8",
+);
 
 test("GimmeJob Locust workload remains production-acknowledged and bounded", () => {
   assert.doesNotMatch(
@@ -28,6 +32,16 @@ test("GimmeJob Locust workload remains production-acknowledged and bounded", () 
   assert.match(locustfile, /production tests require an https:\/\/ host/);
   assert.match(locustfile, /production tests require LOCUST_TAGS/);
   assert.match(locustfile, /between\(2, 5\)/);
+});
+
+test("Azure Locust baseline configuration cannot omit the production selector", () => {
+  assert.match(azureConfig, /testType:\s*Locust/);
+  assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*vacancies-ui/);
+  assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
+  assert.match(azureConfig, /name:\s*LOCUST_USERS\s*\n\s*value:\s*"10"/);
+  assert.match(azureConfig, /name:\s*LOCUST_RUN_TIME\s*\n\s*value:\s*"600s"/);
+  assert.match(azureConfig, /percentage\(error\) > 1/);
+  assert.match(azureConfig, /p95\(response_time_ms\) > 2500/);
 });
 
 test("GimmeJob Locust workload remains read-only and avoids cost-generating routes", () => {
