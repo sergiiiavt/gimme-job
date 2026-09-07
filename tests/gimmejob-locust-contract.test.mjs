@@ -42,15 +42,31 @@ test("untagged production Locust runs safely default to the Vacancies scenario",
   assert.match(readme, /defaults to `vacancies-ui`/);
 });
 
-test("Azure Locust baseline configuration selects the complete read-only workload", () => {
+test("Azure Locust baseline selects the complete read-only workload without performance failure criteria", () => {
   assert.match(azureConfig, /testType:\s*Locust/);
   assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*full-readonly/);
   assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
   assert.match(azureConfig, /name:\s*LOCUST_USERS\s*\n\s*value:\s*"10"/);
   assert.match(azureConfig, /name:\s*LOCUST_RUN_TIME\s*\n\s*value:\s*"600"/);
-  assert.match(azureConfig, /percentage\(error\) > 1/);
-  assert.match(azureConfig, /p95\(response_time_ms\) > 10000/);
+  assert.match(azureConfig, /name:\s*GIMMEJOB_MAX_FAILURE_RATIO\s*\n\s*value:\s*"0\.01"/);
+  assert.match(azureConfig, /name:\s*GIMMEJOB_MAX_P95_MS\s*\n\s*value:\s*"10000"/);
+  assert.doesNotMatch(azureConfig, /failureCriteria:/);
+  assert.doesNotMatch(azureConfig, /percentage\(error\)/);
+  assert.doesNotMatch(azureConfig, /p95\(response_time_ms\)/);
   assert.match(readme, /primary Azure baseline runs every defined read-only Locust task with 10 total virtual users/i);
+});
+
+test("performance findings do not turn a completed load run into an execution failure", () => {
+  assert.match(locustfile, /def report_exploratory_thresholds/);
+  assert.match(locustfile, /performance thresholds exceeded; execution completed successfully/);
+  assert.match(locustfile, /LOGGER\.warning/);
+  assert.equal(
+    (locustfile.match(/process_exit_code/g) ?? []).length,
+    1,
+    "Only the no-requests execution failure may set process_exit_code",
+  );
+  assert.match(locustfile, /No requests completed during the GimmeJob load test/);
+  assert.match(readme, /Performance numbers do not decide whether the load test executed successfully/);
 });
 
 test("full-readonly tag covers every defined read-only Locust task", () => {
