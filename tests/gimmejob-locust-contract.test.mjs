@@ -26,6 +26,7 @@ test("GimmeJob Locust workload remains production-acknowledged and bounded", () 
   assert.match(locustfile, /GIMMEJOB_MAX_RUN_SECONDS/);
   assert.match(locustfile, /production tests require an explicit --run-time/);
   assert.match(locustfile, /production tests require an https:\/\/ host/);
+  assert.match(locustfile, /production tests require LOCUST_TAGS/);
   assert.match(locustfile, /between\(2, 5\)/);
 });
 
@@ -52,7 +53,8 @@ test("GimmeJob Locust exposes a real anonymous Vacancies UI benchmark", () => {
   assert.match(locustfile, /GET \/api\/auth-state \[vacancies UI\]/);
   assert.match(locustfile, /GET \/api\/dashboard \[vacancies UI\]/);
   assert.match(locustfile, /response\.status_code != 401/);
-  assert.match(locustfile, /payload\.get\("authenticated"\) is not False/);
+  assert.match(locustfile, /response\.success\(\)/);
+  assert.doesNotMatch(locustfile, /payload\.get\("authenticated"\) is not False/);
   assert.match(readme, /LOCUST_TAGS` \| `vacancies-ui`/);
   assert.match(readme, /10\/50\/100-user benchmark/);
   assert.match(readme, /Mark the 10-user run as the baseline/);
