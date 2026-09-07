@@ -76,7 +76,7 @@ Crossing either threshold does not fail the execution. It tells us that the appl
 
 Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and reporting thresholds so the saved benchmark remains reproducible.
 
-The checked-in Azure configuration deliberately contains no `failureCriteria`. Azure therefore does not convert a slow or error-heavy but otherwise completed load run into a failed execution result.
+The checked-in Azure configuration deliberately contains no `failureCriteria` and sets `autoStop: disable`. A slow or error-heavy run is therefore allowed to continue to its configured duration and is not converted into an execution failure merely because of performance numbers.
 
 The current `locustfile.py` also handles an older Azure portal test that has no `LOCUST_TAGS`: once that script version is uploaded, an untagged production run selects only `vacancies-ui` instead of failing or executing every task.
 
@@ -92,7 +92,9 @@ If editing an existing Azure portal test manually, open **Configure -> Parameter
 | `GIMMEJOB_MAX_P95_MS` | `10000` |
 | `LOCUST_TAGS` | `full-readonly` |
 
-In the Azure portal, remove any existing entries under **Configure -> Test criteria** if you want the portal status to represent execution success only. Otherwise Azure can still mark a completed run as failed based on those saved criteria even though the Locust process exits successfully.
+For an existing Azure portal test, also remove saved entries under **Configure -> Test criteria** and disable **AutoStop**. Otherwise Azure itself can still mark or stop a run based on performance numbers even though the Locust script now treats those numbers as findings only.
+
+`requirements.txt` pins Locust for local/repository-controlled execution. Azure Load Testing supplies its own managed Locust runtime, so the Azure log may report a different Locust version even when `requirements.txt` is uploaded. The workload must remain compatible with the Azure-managed runtime actually shown in the run log.
 
 The baseline file is configured for 10 users, 1 user/s, 600 seconds, and one engine. Keep every setting identical except user count and spawn rate for a future comparison matrix.
 
