@@ -2,6 +2,8 @@
 
 The default target is the local development server. Production runs require an
 explicit acknowledgement and are capped by default to 10 users and 10 minutes.
+If no task selector is supplied for production, the workload safely defaults to
+the real anonymous Vacancies UI scenario instead of running every diagnostic.
 """
 
 import logging
@@ -17,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 LOCAL_HOST = "http://127.0.0.1:4173"
 PRODUCTION_HOSTS = {"gimme-job.com", "www.gimme-job.com"}
 PRODUCTION_ACKNOWLEDGEMENT = "gimme-job.com"
+DEFAULT_PRODUCTION_TAG = "vacancies-ui"
 
 
 def _positive_int(name: str, default: int) -> int:
@@ -59,6 +62,22 @@ def _configured_run_seconds(environment: object) -> float | None:
     return None
 
 
+def _effective_host(environment: object) -> str:
+    environment_host = getattr(environment, "host", None)
+    if isinstance(environment_host, str) and environment_host.strip():
+        return environment_host.rstrip("/")
+    return os.getenv("GIMMEJOB_HOST", LOCAL_HOST).rstrip("/")
+
+
+def _selected_tags(environment: object) -> list[str] | tuple[str, ...] | set[str] | None:
+    environment_tags = getattr(environment, "tags", None)
+    if environment_tags:
+        return environment_tags
+    parsed_options = getattr(environment, "parsed_options", None)
+    parsed_tags = getattr(parsed_options, "tags", None)
+    return parsed_tags or None
+
+
 def _stop_run(user: HttpUser, reason: str) -> NoReturn:
     LOGGER.error("GimmeJob load-test safety guard stopped the run: %s", reason)
     runner = getattr(user.environment, "runner", None)
@@ -75,6 +94,28 @@ def _status_failure(response: object, expected_status: int = 200) -> str:
     return f"expected HTTP {expected_status}, received {status_code}"
 
 
+@events.init.add_listener
+def select_safe_default_production_scenario(environment: object, **_kwargs: object) -> None:
+    """Default an untagged production run to the real Vacancies UI workload.
+
+    Locust fires ``init`` before it filters tasks by tags. Setting
+    ``environment.tags`` here therefore gives Azure portal runs a deterministic,
+    safe default even when the portal test configuration omitted LOCUST_TAGS.
+    Explicit selectors still win and can be used for isolated diagnostics.
+    """
+
+    parsed_host = urlparse(_effective_host(environment))
+    hostname = (parsed_host.hostname or "").lower()
+    if hostname not in PRODUCTION_HOSTS or _selected_tags(environment):
+        return
+
+    setattr(environment, "tags", [DEFAULT_PRODUCTION_TAG])
+    LOGGER.warning(
+        "No task selector supplied for production; defaulting to %s.",
+        DEFAULT_PRODUCTION_TAG,
+    )
+
+
 class GimmeJobPublicReader(HttpUser):
     """Read-only public scenarios, including the real Vacancies UI request flow."""
 
@@ -82,7 +123,7 @@ class GimmeJobPublicReader(HttpUser):
     wait_time = between(2, 5)
 
     def on_start(self) -> None:
-        parsed_host = urlparse(self.host)
+        parsed_host = urlparse(_effective_host(self.environment))
         hostname = (parsed_host.hostname or "").lower()
         if hostname in PRODUCTION_HOSTS:
             if parsed_host.scheme != "https":
@@ -95,11 +136,10 @@ class GimmeJobPublicReader(HttpUser):
                     "set GIMMEJOB_PRODUCTION_ACK=gimme-job.com before targeting production",
                 )
 
-            selected_tags = os.getenv("LOCUST_TAGS", "").strip()
-            if not selected_tags:
+            if not _selected_tags(self.environment):
                 _stop_run(
                     self,
-                    "production tests require LOCUST_TAGS so an accidental all-route run cannot start",
+                    "production scenario selection failed before users started",
                 )
 
             max_users = _positive_int("GIMMEJOB_MAX_USERS", 10)
