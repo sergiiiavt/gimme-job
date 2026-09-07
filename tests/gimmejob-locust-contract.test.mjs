@@ -30,11 +30,19 @@ test("GimmeJob Locust workload remains production-acknowledged and bounded", () 
   assert.match(locustfile, /GIMMEJOB_MAX_RUN_SECONDS/);
   assert.match(locustfile, /production tests require an explicit --run-time/);
   assert.match(locustfile, /production tests require an https:\/\/ host/);
-  assert.match(locustfile, /production tests require LOCUST_TAGS/);
   assert.match(locustfile, /between\(2, 5\)/);
 });
 
-test("Azure Locust baseline configuration cannot omit the production selector", () => {
+test("untagged production Locust runs safely default to the Vacancies scenario", () => {
+  assert.match(locustfile, /DEFAULT_PRODUCTION_TAG = "vacancies-ui"/);
+  assert.match(locustfile, /@events\.init\.add_listener/);
+  assert.match(locustfile, /setattr\(environment, "tags", \[DEFAULT_PRODUCTION_TAG\]\)/);
+  assert.match(locustfile, /No task selector supplied for production/);
+  assert.doesNotMatch(locustfile, /production tests require LOCUST_TAGS/);
+  assert.match(readme, /defaults to `vacancies-ui`/);
+});
+
+test("Azure Locust baseline configuration keeps the production selector explicit", () => {
   assert.match(azureConfig, /testType:\s*Locust/);
   assert.match(azureConfig, /name:\s*LOCUST_TAGS\s*\n\s*value:\s*vacancies-ui/);
   assert.match(azureConfig, /name:\s*GIMMEJOB_PRODUCTION_ACK\s*\n\s*value:\s*gimme-job\.com/);
