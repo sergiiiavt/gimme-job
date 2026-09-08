@@ -22,6 +22,7 @@ import {
 import styles from "./games.module.css";
 
 type GameId = "platformer" | "gravity";
+type DifficultyId = "easy" | "normal" | "hard";
 type WeaponId = "blaster" | "rocket" | "bomb";
 type AimPoint = { x: number; y: number; inside: boolean };
 type ClientPoint = { clientX: number; clientY: number };
@@ -44,7 +45,35 @@ type PlatformEnemy = Rect & {
   spawnIndex: number;
 };
 type EnemySpawn = Omit<PlatformEnemy, "alive" | "fireEvery" | "nextFireAt" | "spawnIndex">;
-type SpaceEnemy = { x: number; y: number; radius: number; alive: boolean };
+type SpaceEnemy = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  alive: boolean;
+  fireEvery: number;
+  nextFireAt: number;
+};
+type SpaceStation = {
+  x: number;
+  y: number;
+  radius: number;
+  alive: boolean;
+  health: number;
+  maxHealth: number;
+  fireEvery: number;
+  nextFireAt: number;
+};
+type EnemyBase = {
+  x: number;
+  y: number;
+  radius: number;
+  alive: boolean;
+  health: number;
+  maxHealth: number;
+  planetIndex: number;
+};
 type VisualPlanet = PlanetPhysics & { fill: string; edge: string };
 
 const PLATFORM_WORLD_WIDTH = 1920;
@@ -56,10 +85,10 @@ const GRAVITY_MAX_ZOOM = 2.4;
 const FIRE_HALF_ANGLE = Math.PI * 32 / 180;
 const RESPAWN_DELAY_MS = 900;
 
-const WEAPON_LABELS: Record<WeaponId, string> = {
-  blaster: "Blaster",
-  rocket: "Rocket",
-  bomb: "Bomb",
+const DIFFICULTIES: Record<DifficultyId, { label: string; spawnEvery: number }> = {
+  easy: { label: "Easy", spawnEvery: 4700 },
+  normal: { label: "Normal", spawnEvery: 2800 },
+  hard: { label: "Hard", spawnEvery: 1550 },
 };
 
 const WEAPON_OPTIONS: readonly { id: WeaponId; icon: string; key: string; label: string }[] = [
@@ -85,6 +114,32 @@ function WeaponSelector({ weapon, onSelect }: { weapon: WeaponId; onSelect: (wea
           <small>{option.key}</small>
         </button>
       ))}
+    </div>
+  );
+}
+
+function DifficultyPicker({ onSelect }: { onSelect: (difficulty: DifficultyId) => void }) {
+  return (
+    <div
+      className={styles.gameSurface}
+      style={{ alignItems: "center", background: "#101722", display: "flex", justifyContent: "center" }}
+    >
+      <div style={{ color: "#dfe8e2", lineHeight: 1.5, maxWidth: 520, padding: 24, textAlign: "center" }}>
+        <h2 style={{ fontSize: 22, margin: "0 0 6px" }}>Choose difficulty</h2>
+        <p style={{ color: "#9eaaa3", fontSize: 13, margin: "0 0 18px" }}>
+          Reinforcements keep arriving until you clear every enemy before the next wave reaches the arena.
+        </p>
+        <div aria-label="Select platformer difficulty" className={styles.selector} role="group">
+          {(Object.keys(DIFFICULTIES) as DifficultyId[]).map((difficulty) => (
+            <button key={difficulty} onClick={() => onSelect(difficulty)} type="button">
+              {DIFFICULTIES[difficulty].label}
+            </button>
+          ))}
+        </div>
+        <p style={{ color: "#718078", fontSize: 11, margin: "14px 0 0" }}>
+          Easy 4.7s · Normal 2.8s · Hard 1.55s between reinforcements
+        </p>
+      </div>
     </div>
   );
 }
@@ -168,7 +223,7 @@ function drawExplosions(ctx: CanvasRenderingContext2D, explosions: readonly Expl
   }
 }
 
-function PlatformerGame({ resetToken }: { resetToken: number }) {
+function PlatformerGame({ resetToken, difficulty }: { resetToken: number; difficulty: DifficultyId }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const weaponRef = useRef<WeaponId>("blaster");
   const [weapon, setWeapon] = useState<WeaponId>("blaster");
@@ -238,15 +293,17 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       jumpsRemaining: 2,
     };
     const aim: AimPoint = { x: 260, y: 820, inside: false };
+    const difficultyConfig = DIFFICULTIES[difficulty];
     let score = 0;
     let deaths = 0;
     let deadUntil = 0;
     let spawnSerial = 0;
-    let nextSpawnAt = performance.now() + 2800;
+    let nextSpawnAt = performance.now() + difficultyConfig.spawnEvery;
     let lastShot = -Infinity;
     let lastTime = performance.now();
     let jumpQueued = false;
     let pointerHeld = false;
+    let won = false;
     let frame = 0;
 
     function createEnemy(spawnIndex: number, now: number): PlatformEnemy {
@@ -276,7 +333,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     }
 
     function die(now: number) {
-      if (deadUntil !== 0) return;
+      if (deadUntil !== 0 || won) return;
       deaths += 1;
       deadUntil = now + RESPAWN_DELAY_MS;
       player.vx = 0;
@@ -293,7 +350,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     }
 
     function shootAtAim(now: number) {
-      if (deadUntil !== 0 || !aim.inside || now - lastShot < weaponCooldown()) return;
+      if (won || deadUntil !== 0 || !aim.inside || now - lastShot < weaponCooldown()) return;
       const originX = player.x + player.w / 2;
       const originY = player.y + player.h * 0.45;
       const direction = normalizedDirection(originX, originY, aim.x, aim.y);
@@ -311,11 +368,11 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     }
 
     function spawnEnemy(now: number) {
-      if (enemies.filter((enemy) => enemy.alive).length >= 10) return;
+      if (won || enemies.length >= 10) return;
       let spawnIndex = spawnSerial % spawnTemplates.length;
       for (let offset = 0; offset < spawnTemplates.length; offset += 1) {
         const candidate = (spawnIndex + offset) % spawnTemplates.length;
-        if (!enemies.some((enemy) => enemy.alive && enemy.spawnIndex === candidate)) {
+        if (!enemies.some((enemy) => enemy.spawnIndex === candidate)) {
           spawnIndex = candidate;
           break;
         }
@@ -324,16 +381,19 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       spawnSerial += 1;
     }
 
+    function defeatEnemy(enemy: PlatformEnemy) {
+      if (!enemy.alive) return;
+      enemy.alive = false;
+      score += 1;
+    }
+
     function detonate(x: number, y: number, radius: number, now: number) {
       explosions.push({ x, y, radius, bornAt: now, duration: 360 });
       for (const enemy of enemies) {
         if (!enemy.alive) continue;
         const enemyX = enemy.x + enemy.w / 2;
         const enemyY = enemy.y + enemy.h / 2;
-        if (Math.hypot(enemyX - x, enemyY - y) <= radius) {
-          enemy.alive = false;
-          score += 1;
-        }
+        if (Math.hypot(enemyX - x, enemyY - y) <= radius) defeatEnemy(enemy);
       }
     }
 
@@ -351,7 +411,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0) return;
+      if (deadUntil !== 0 || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -395,7 +455,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       const right = keys.has("ArrowRight") || keys.has("KeyD");
       const keyboardShoot = keys.has("KeyF") || keys.has("KeyJ");
 
-      if (!dead) {
+      if (!dead && !won) {
         player.vx = left === right ? 0 : left ? -360 : 360;
         if (jumpQueued) {
           if (player.jumpsRemaining > 0) {
@@ -406,7 +466,12 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           jumpQueued = false;
         }
         if (keyboardShoot || pointerHeld) shootAtAim(now);
+      } else {
+        player.vx = 0;
+        jumpQueued = false;
+      }
 
+      if (!dead) {
         const previousBottom = player.y + player.h;
         player.vy += 1580 * dt;
         player.x += player.vx * dt;
@@ -435,13 +500,11 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           player.y = wrapCoordinate(centerY, PLATFORM_WORLD_HEIGHT) - player.h / 2;
           player.onGround = false;
         }
-      } else {
-        jumpQueued = false;
       }
 
-      if (now >= nextSpawnAt) {
+      if (!won && now >= nextSpawnAt) {
         spawnEnemy(now);
-        nextSpawnAt = now + 2600;
+        nextSpawnAt = now + difficultyConfig.spawnEvery;
       }
 
       for (const enemy of enemies) {
@@ -451,9 +514,9 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
           enemy.x = Math.max(enemy.minX, Math.min(enemy.maxX - enemy.w, enemy.x));
           enemy.vx *= -1;
         }
-        if (!dead && rectsOverlap(player, enemy)) die(now);
+        if (!dead && !won && rectsOverlap(player, enemy)) die(now);
 
-        if (now >= enemy.nextFireAt) {
+        if (!dead && !won && now >= enemy.nextFireAt) {
           const originX = enemy.x + enemy.w / 2;
           const originY = enemy.y + enemy.h * 0.45;
           const direction = normalizedDirection(originX, originY, player.x + player.w / 2, player.y + player.h * 0.45);
@@ -479,12 +542,8 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
         for (const enemy of enemies) {
           if (!enemy.alive || remove) continue;
           if (pointInsideRect(projectile.x, projectile.y, enemy)) {
-            if (projectile.kind === "blaster") {
-              enemy.alive = false;
-              score += 1;
-            } else {
-              detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 115 : 155, now);
-            }
+            if (projectile.kind === "blaster") defeatEnemy(enemy);
+            else detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 115 : 155, now);
             remove = true;
           }
         }
@@ -504,8 +563,12 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
         const projectile = enemyProjectiles[index];
         projectile.x += projectile.vx * dt;
         projectile.y += projectile.vy * dt;
-        let remove = projectile.x < -50 || projectile.x > PLATFORM_WORLD_WIDTH + 50 || projectile.y < -50 || projectile.y > PLATFORM_WORLD_HEIGHT + 50;
-        if (!remove && !dead && rectsOverlap(player, { x: projectile.x - 4, y: projectile.y - 4, w: 8, h: 8 })) {
+        let remove = now - projectile.bornAt > 4200
+          || projectile.x < -50
+          || projectile.x > PLATFORM_WORLD_WIDTH + 50
+          || projectile.y < -50
+          || projectile.y > PLATFORM_WORLD_HEIGHT + 50;
+        if (!remove && !dead && !won && rectsOverlap(player, { x: projectile.x - 4, y: projectile.y - 4, w: 8, h: 8 })) {
           remove = true;
           die(now);
         }
@@ -518,6 +581,12 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       }
       for (let index = explosions.length - 1; index >= 0; index -= 1) {
         if (now - explosions[index].bornAt > explosions[index].duration) explosions.splice(index, 1);
+      }
+
+      if (!won && enemies.length === 0) {
+        won = true;
+        pointerHeld = false;
+        enemyProjectiles.length = 0;
       }
     }
 
@@ -552,24 +621,35 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       ctx.strokeStyle = dead ? "#ffd0c8" : "#6f8197";
       ctx.lineWidth = 2;
       ctx.strokeRect(player.x, player.y, player.w, player.h);
-      if (dead) {
-        ctx.beginPath();
-        ctx.lineWidth = 4;
-        ctx.moveTo(player.x + 6, player.y + 8);
-        ctx.lineTo(player.x + player.w - 6, player.y + player.h - 8);
-        ctx.moveTo(player.x + player.w - 6, player.y + 8);
-        ctx.lineTo(player.x + 6, player.y + player.h - 8);
-        ctx.stroke();
-      }
       ctx.restore();
-      drawCrosshair(ctx, aim, !dead);
+      drawCrosshair(ctx, aim, !dead && !won);
       ctx.restore();
 
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Score ${score} · Deaths ${deaths} · Enemies ${enemies.length} · Jumps ${player.jumpsRemaining}`, 20, 30);
+      ctx.fillText(`Difficulty ${difficultyConfig.label} · Score ${score} · Deaths ${deaths} · Enemies ${enemies.length}`, 20, 30);
       ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
-      ctx.fillText(dead ? "Respawning…" : "Hold mouse to fire · edges wrap to the opposite side", 20, 52);
+      ctx.fillText(
+        dead
+          ? "Respawning…"
+          : won
+            ? "Arena cleared · all reinforcements stopped"
+            : `Next reinforcement in ${Math.max(0, (nextSpawnAt - now) / 1000).toFixed(1)}s`,
+        20,
+        52,
+      );
+      if (won) {
+        ctx.fillStyle = "rgba(7, 11, 20, .76)";
+        ctx.fillRect(WIDTH / 2 - 225, HEIGHT / 2 - 54, 450, 108);
+        ctx.fillStyle = "#d7f65a";
+        ctx.font = "700 27px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Arena cleared", WIDTH / 2, HEIGHT / 2 - 5);
+        ctx.fillStyle = "#dfe8e2";
+        ctx.font = "14px system-ui, sans-serif";
+        ctx.fillText("You eliminated everyone before the next reinforcement.", WIDTH / 2, HEIGHT / 2 + 25);
+        ctx.textAlign = "start";
+      }
     }
 
     function loop(now: number) {
@@ -591,7 +671,7 @@ function PlatformerGame({ resetToken }: { resetToken: number }) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [resetToken]);
+  }, [difficulty, resetToken]);
 
   return (
     <div className={styles.gameSurface}>
@@ -622,6 +702,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 
     const keys = new Set<string>();
     const projectiles: Projectile[] = [];
+    const enemyProjectiles: Projectile[] = [];
     const explosions: Explosion[] = [];
     const planets: VisualPlanet[] = [
       { x: 1200, y: 1600, radius: 270, surfaceGravity: 250, craters: [], fill: "#36505d", edge: "#79929d" },
@@ -630,13 +711,33 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       { x: 4450, y: 1180, radius: 235, surfaceGravity: 220, craters: [], fill: "#5b463d", edge: "#9c7768" },
       { x: 1900, y: 2820, radius: 255, surfaceGravity: 235, craters: [], fill: "#3d5364", edge: "#718da2" },
     ];
+    const baseAngles = [-0.85, 0.45, -2.2, 2.55, -1.4];
+    const bases: EnemyBase[] = planets.map((planet, planetIndex) => {
+      const angle = baseAngles[planetIndex];
+      const distance = planet.radius + 30;
+      return {
+        x: planet.x + Math.cos(angle) * distance,
+        y: planet.y + Math.sin(angle) * distance,
+        radius: 28,
+        alive: true,
+        health: 3,
+        maxHealth: 3,
+        planetIndex,
+      };
+    });
     const enemies: SpaceEnemy[] = [
-      { x: 1220, y: 1120, radius: 14, alive: true },
-      { x: 1580, y: 1510, radius: 14, alive: true },
-      { x: 2520, y: 510, radius: 14, alive: true },
-      { x: 3600, y: 2030, radius: 14, alive: true },
-      { x: 4270, y: 810, radius: 14, alive: true },
-      { x: 2030, y: 2430, radius: 14, alive: true },
+      { x: 980, y: 1080, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1750, nextFireAt: 0 },
+      { x: 1580, y: 1290, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 2050, nextFireAt: 0 },
+      { x: 2500, y: 460, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1650, nextFireAt: 0 },
+      { x: 3550, y: 1940, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1850, nextFireAt: 0 },
+      { x: 4250, y: 840, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1950, nextFireAt: 0 },
+      { x: 2050, y: 2450, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1700, nextFireAt: 0 },
+    ];
+    const stations: SpaceStation[] = [
+      { x: 1535, y: 1600, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1550, nextFireAt: 0 },
+      { x: 3250, y: 1710, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1450, nextFireAt: 0 },
+      { x: 4450, y: 830, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1650, nextFireAt: 0 },
+      { x: 1900, y: 2460, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1500, nextFireAt: 0 },
     ];
     const ship = { x: 700, y: 650, vx: 0, vy: 0, angle: -Math.PI / 2 };
     const aim: AimPoint = { x: WIDTH * 0.72, y: HEIGHT * 0.5, inside: false };
@@ -647,7 +748,15 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     let lastShot = -Infinity;
     let lastTime = performance.now();
     let pointerHeld = false;
+    let won = false;
     let frame = 0;
+
+    enemies.forEach((enemy, index) => {
+      enemy.nextFireAt = lastTime + 900 + index * 170;
+    });
+    stations.forEach((station, index) => {
+      station.nextFireAt = lastTime + 700 + index * 230;
+    });
 
     function respawn() {
       ship.x = 700;
@@ -657,13 +766,14 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ship.angle = -Math.PI / 2;
       deadUntil = 0;
       pointerHeld = false;
+      enemyProjectiles.length = 0;
       const resetCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
       camera.x = resetCamera.x;
       camera.y = resetCamera.y;
     }
 
     function die(now: number) {
-      if (deadUntil !== 0) return;
+      if (deadUntil !== 0 || won) return;
       deaths += 1;
       deadUntil = now + RESPAWN_DELAY_MS;
       ship.vx = 0;
@@ -689,7 +799,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function shootAtAim(now: number) {
-      if (deadUntil !== 0 || now - lastShot < weaponCooldown()) return;
+      if (won || deadUntil !== 0 || now - lastShot < weaponCooldown()) return;
       const direction = currentFireDirection();
       if (!direction) return;
       const currentWeapon = weaponRef.current;
@@ -705,12 +815,38 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       lastShot = now;
     }
 
+    function applyDamage(target: SpaceStation | EnemyBase, amount: number) {
+      if (!target.alive) return;
+      target.health -= amount;
+      if (target.health <= 0) {
+        target.health = 0;
+        target.alive = false;
+      }
+    }
+
     function detonate(x: number, y: number, radius: number, now: number) {
       explosions.push({ x, y, radius, bornAt: now, duration: 420 });
       for (const enemy of enemies) {
-        if (!enemy.alive) continue;
-        if (Math.hypot(enemy.x - x, enemy.y - y) <= radius + enemy.radius) enemy.alive = false;
+        if (enemy.alive && Math.hypot(enemy.x - x, enemy.y - y) <= radius + enemy.radius) enemy.alive = false;
       }
+      for (const station of stations) {
+        if (station.alive && Math.hypot(station.x - x, station.y - y) <= radius + station.radius) applyDamage(station, 2);
+      }
+      for (const base of bases) {
+        if (base.alive && Math.hypot(base.x - x, base.y - y) <= radius + base.radius) applyDamage(base, 2);
+      }
+    }
+
+    function fireEnemyProjectile(originX: number, originY: number, speed: number, now: number) {
+      const direction = normalizedDirection(originX, originY, ship.x, ship.y);
+      enemyProjectiles.push({
+        x: originX + direction.x * 24,
+        y: originY + direction.y * 24,
+        vx: direction.x * speed,
+        vy: direction.y * speed,
+        kind: "blaster",
+        bornAt: now,
+      });
     }
 
     function updateAim(event: PointerEvent) {
@@ -727,7 +863,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0) return;
+      if (deadUntil !== 0 || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -790,6 +926,38 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ].some(([x, y]) => findSolidPlanetIndex(planets, x, y) >= 0);
     }
 
+    function updateThreats(dt: number, now: number, dead: boolean) {
+      if (dead || won) return;
+
+      for (const enemy of enemies) {
+        if (!enemy.alive) continue;
+        const direction = normalizedDirection(enemy.x, enemy.y, ship.x, ship.y);
+        enemy.vx += direction.x * 92 * dt;
+        enemy.vy += direction.y * 92 * dt;
+        const speed = Math.hypot(enemy.vx, enemy.vy);
+        if (speed > 185) {
+          enemy.vx = enemy.vx / speed * 185;
+          enemy.vy = enemy.vy / speed * 185;
+        }
+        enemy.x = wrapCoordinate(enemy.x + enemy.vx * dt, SPACE_WORLD_WIDTH);
+        enemy.y = wrapCoordinate(enemy.y + enemy.vy * dt, SPACE_WORLD_HEIGHT);
+
+        if (Math.hypot(enemy.x - ship.x, enemy.y - ship.y) <= enemy.radius + 18) die(now);
+        if (now >= enemy.nextFireAt && Math.hypot(enemy.x - ship.x, enemy.y - ship.y) < 1250) {
+          fireEnemyProjectile(enemy.x, enemy.y, 390, now);
+          enemy.nextFireAt = now + enemy.fireEvery;
+        }
+      }
+
+      for (const station of stations) {
+        if (!station.alive) continue;
+        if (now >= station.nextFireAt && Math.hypot(station.x - ship.x, station.y - ship.y) < 1750) {
+          fireEnemyProjectile(station.x, station.y, 455, now);
+          station.nextFireAt = now + station.fireEvery;
+        }
+      }
+    }
+
     function update(dt: number, now: number) {
       if (deadUntil !== 0 && now >= deadUntil) respawn();
       const dead = deadUntil !== 0;
@@ -799,7 +967,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       const keyboardShoot = keys.has("KeyF") || keys.has("Space");
       let wrapped = false;
 
-      if (!dead) {
+      if (!dead && !won) {
         if (left !== right) ship.angle += (left ? -1 : 1) * 2.55 * dt;
         if (thrust) {
           ship.vx += Math.cos(ship.angle) * 390 * dt;
@@ -830,6 +998,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         if (shipCollidesWithPlanet()) die(now);
       }
 
+      updateThreats(dt, now, dead);
+
       for (let index = projectiles.length - 1; index >= 0; index -= 1) {
         const projectile = projectiles[index];
         const projectileGravity = gravityAtPoint(projectile.x, projectile.y, planets);
@@ -837,13 +1007,37 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         projectile.vy += projectileGravity.y * dt;
         projectile.x += projectile.vx * dt;
         projectile.y += projectile.vy * dt;
-        let remove = projectile.x < -100 || projectile.x > SPACE_WORLD_WIDTH + 100 || projectile.y < -100 || projectile.y > SPACE_WORLD_HEIGHT + 100;
+        let remove = now - projectile.bornAt > 5200
+          || projectile.x < -100
+          || projectile.x > SPACE_WORLD_WIDTH + 100
+          || projectile.y < -100
+          || projectile.y > SPACE_WORLD_HEIGHT + 100;
 
         for (const enemy of enemies) {
           if (!enemy.alive || remove) continue;
           const hitRadius = enemy.radius + projectileStyle(projectile).radius;
           if ((projectile.x - enemy.x) ** 2 + (projectile.y - enemy.y) ** 2 <= hitRadius ** 2) {
             if (projectile.kind === "blaster") enemy.alive = false;
+            else detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
+            remove = true;
+          }
+        }
+
+        for (const station of stations) {
+          if (!station.alive || remove) continue;
+          const hitRadius = station.radius + projectileStyle(projectile).radius;
+          if ((projectile.x - station.x) ** 2 + (projectile.y - station.y) ** 2 <= hitRadius ** 2) {
+            if (projectile.kind === "blaster") applyDamage(station, 1);
+            else detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
+            remove = true;
+          }
+        }
+
+        for (const base of bases) {
+          if (!base.alive || remove) continue;
+          const hitRadius = base.radius + projectileStyle(projectile).radius;
+          if ((projectile.x - base.x) ** 2 + (projectile.y - base.y) ** 2 <= hitRadius ** 2) {
+            if (projectile.kind === "blaster") applyDamage(base, 1);
             else detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
             remove = true;
           }
@@ -871,8 +1065,34 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         if (remove) projectiles.splice(index, 1);
       }
 
+      for (let index = enemyProjectiles.length - 1; index >= 0; index -= 1) {
+        const projectile = enemyProjectiles[index];
+        const projectileGravity = gravityAtPoint(projectile.x, projectile.y, planets);
+        projectile.vx += projectileGravity.x * dt * 0.45;
+        projectile.vy += projectileGravity.y * dt * 0.45;
+        projectile.x += projectile.vx * dt;
+        projectile.y += projectile.vy * dt;
+        let remove = now - projectile.bornAt > 4800
+          || projectile.x < -100
+          || projectile.x > SPACE_WORLD_WIDTH + 100
+          || projectile.y < -100
+          || projectile.y > SPACE_WORLD_HEIGHT + 100;
+        if (!remove && !dead && !won && Math.hypot(projectile.x - ship.x, projectile.y - ship.y) <= 18) {
+          remove = true;
+          die(now);
+        }
+        if (!remove && findSolidPlanetIndex(planets, projectile.x, projectile.y) >= 0) remove = true;
+        if (remove) enemyProjectiles.splice(index, 1);
+      }
+
       for (let index = explosions.length - 1; index >= 0; index -= 1) {
         if (now - explosions[index].bornAt > explosions[index].duration) explosions.splice(index, 1);
+      }
+
+      if (!won && bases.every((base) => !base.alive)) {
+        won = true;
+        pointerHeld = false;
+        enemyProjectiles.length = 0;
       }
 
       if (!wrapped) {
@@ -902,15 +1122,6 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ctx.strokeStyle = dead ? "#ffd0c8" : "#7290aa";
       ctx.lineWidth = 2 / zoom;
       ctx.stroke();
-      if (dead) {
-        ctx.beginPath();
-        ctx.lineWidth = 4 / zoom;
-        ctx.moveTo(-11, -11);
-        ctx.lineTo(13, 11);
-        ctx.moveTo(13, -11);
-        ctx.lineTo(-11, 11);
-        ctx.stroke();
-      }
       if (!dead && (keys.has("ArrowUp") || keys.has("KeyW"))) {
         ctx.beginPath();
         ctx.moveTo(-9, -5);
@@ -923,7 +1134,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function drawFireCone() {
-      if (deadUntil !== 0) return;
+      if (deadUntil !== 0 || won) return;
       const length = 270 / zoom;
       ctx.save();
       ctx.strokeStyle = "rgba(166, 198, 224, .38)";
@@ -962,6 +1173,67 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       }
     }
 
+    function drawBase(base: EnemyBase) {
+      if (!base.alive) return;
+      const planet = planets[base.planetIndex];
+      const angle = Math.atan2(base.y - planet.y, base.x - planet.x);
+      ctx.save();
+      ctx.translate(base.x, base.y);
+      ctx.rotate(angle);
+      ctx.fillStyle = "#b9443a";
+      ctx.fillRect(-22, -16, 44, 32);
+      ctx.fillStyle = "#ffb15b";
+      ctx.fillRect(4, -5, 18, 10);
+      ctx.strokeStyle = "#ff8e80";
+      ctx.lineWidth = 3 / zoom;
+      ctx.strokeRect(-22, -16, 44, 32);
+      ctx.restore();
+
+      const ratio = base.health / base.maxHealth;
+      ctx.fillStyle = "rgba(7,11,20,.72)";
+      ctx.fillRect(base.x - 28, base.y - 38, 56, 6);
+      ctx.fillStyle = "#d7f65a";
+      ctx.fillRect(base.x - 28, base.y - 38, 56 * ratio, 6);
+    }
+
+    function drawStation(station: SpaceStation) {
+      if (!station.alive) return;
+      ctx.save();
+      ctx.translate(station.x, station.y);
+      ctx.strokeStyle = "#ff9a8d";
+      ctx.lineWidth = 4 / zoom;
+      ctx.beginPath();
+      ctx.arc(0, 0, station.radius, 0, Math.PI * 2);
+      ctx.moveTo(-station.radius - 14, 0);
+      ctx.lineTo(station.radius + 14, 0);
+      ctx.moveTo(0, -station.radius - 14);
+      ctx.lineTo(0, station.radius + 14);
+      ctx.stroke();
+      ctx.fillStyle = "#8d403c";
+      ctx.fillRect(-9, -9, 18, 18);
+      ctx.restore();
+    }
+
+    function drawEnemyShip(enemy: SpaceEnemy) {
+      if (!enemy.alive) return;
+      const angle = Math.atan2(enemy.vy, enemy.vx);
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(Number.isFinite(angle) ? angle : 0);
+      ctx.beginPath();
+      ctx.moveTo(18, 0);
+      ctx.lineTo(-12, -10);
+      ctx.lineTo(-7, 0);
+      ctx.lineTo(-12, 10);
+      ctx.closePath();
+      ctx.fillStyle = "#d75a4a";
+      ctx.fill();
+      ctx.strokeStyle = "#ff9a8d";
+      ctx.lineWidth = 2 / zoom;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     function render(now: number) {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.fillStyle = "#070b14";
@@ -979,36 +1251,52 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       }
 
       planets.forEach((planet) => drawPlanet(planet));
-      for (const enemy of enemies) {
-        if (!enemy.alive) continue;
-        ctx.beginPath();
-        ctx.fillStyle = "#d75a4a";
-        ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#ff9a8d";
-        ctx.lineWidth = 2 / zoom;
-        ctx.stroke();
-      }
+      bases.forEach((base) => drawBase(base));
+      stations.forEach((station) => drawStation(station));
+      enemies.forEach((enemy) => drawEnemyShip(enemy));
       projectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
+      enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
       drawExplosions(ctx, explosions, now, zoom);
       drawFireCone();
       drawShip(now);
       ctx.restore();
 
-      const remaining = enemies.filter((enemy) => enemy.alive).length;
+      const basesRemaining = bases.filter((base) => base.alive).length;
+      const threatsRemaining = enemies.filter((enemy) => enemy.alive).length + stations.filter((station) => station.alive).length;
       const dead = deadUntil !== 0;
-      const aimDirection = dead ? null : currentFireDirection();
+      const aimDirection = dead || won ? null : currentFireDirection();
       const displayZoom = Math.round(zoom / GRAVITY_BASE_ZOOM * 100);
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Targets ${enemies.length - remaining}/${enemies.length} · Deaths ${deaths} · Zoom ${displayZoom}%`, 20, 30);
+      ctx.fillText(`Bases ${bases.length - basesRemaining}/${bases.length} · Threats ${threatsRemaining} · Deaths ${deaths} · Zoom ${displayZoom}%`, 20, 30);
       ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
-      ctx.fillText(dead ? "Respawning…" : `World ${Math.round(ship.x)}, ${Math.round(ship.y)} · edges wrap to the opposite side`, 20, 52);
-      if (!dead && aim.inside && !aimDirection) {
+      ctx.fillText(
+        dead
+          ? "Respawning…"
+          : won
+            ? "All planetary bases destroyed"
+            : `Enemy ships pursue you · orbital stations fire on approach · World ${Math.round(ship.x)}, ${Math.round(ship.y)}`,
+        20,
+        52,
+      );
+      if (!dead && !won && aim.inside && !aimDirection) {
         ctx.fillStyle = "#e89083";
         ctx.fillText("Aim outside firing arc", 20, 74);
       }
-      drawCrosshair(ctx, aim, !dead && Boolean(aimDirection));
+      drawCrosshair(ctx, aim, !dead && !won && Boolean(aimDirection));
+
+      if (won) {
+        ctx.fillStyle = "rgba(7, 11, 20, .80)";
+        ctx.fillRect(WIDTH / 2 - 250, HEIGHT / 2 - 58, 500, 116);
+        ctx.fillStyle = "#d7f65a";
+        ctx.font = "700 27px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("System secured", WIDTH / 2, HEIGHT / 2 - 7);
+        ctx.fillStyle = "#dfe8e2";
+        ctx.font = "14px system-ui, sans-serif";
+        ctx.fillText("Every enemy base on every planet has been destroyed.", WIDTH / 2, HEIGHT / 2 + 25);
+        ctx.textAlign = "start";
+      }
     }
 
     function loop(now: number) {
@@ -1043,23 +1331,30 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 
 const GAME_INFO: Record<GameId, { description: string; controls: string }> = {
   platformer: {
-    description: "A wide wrap-around arena with double jump, returning enemies and three weapons.",
-    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · 1/2/3 weapons · cross any edge to wrap · R respawn",
+    description: "Choose a difficulty, then clear every enemy before the next reinforcement arrives.",
+    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · 1/2/3 weapons · clear all enemies to win · R respawn",
   },
   gravity: {
-    description: "Planetary gravity, destructible worlds, wrap-around space and a forward-only three-weapon arsenal.",
-    controls: "A/D or ←/→ rotate · W/↑ thrust · wheel zoom · hold mouse to fire · 1/2/3 weapons · cross any edge to wrap · R respawn",
+    description: "Fight pursuing ships and firing orbital stations while destroying the enemy base on every planet.",
+    controls: "A/D or ←/→ rotate · W/↑ thrust · wheel zoom · hold mouse to fire · 1/2/3 weapons · destroy all planetary bases to win · R respawn",
   },
 };
 
 export default function GamesPlayground() {
   const [mobileNav, setMobileNav] = useState(false);
   const [game, setGame] = useState<GameId>("platformer");
+  const [difficulty, setDifficulty] = useState<DifficultyId | null>(null);
   const [resetToken, setResetToken] = useState(0);
   const info = GAME_INFO[game];
 
   function selectGame(next: GameId) {
     setGame(next);
+    if (next === "platformer") setDifficulty(null);
+    setResetToken((value) => value + 1);
+  }
+
+  function selectDifficulty(next: DifficultyId) {
+    setDifficulty(next);
     setResetToken((value) => value + 1);
   }
 
@@ -1094,11 +1389,22 @@ export default function GamesPlayground() {
 
           <section className={styles.gameCard}>
             <div className={styles.canvasFrame}>
-              {game === "platformer" ? <PlatformerGame resetToken={resetToken}/> : <GravityGame resetToken={resetToken}/>}
+              {game === "platformer"
+                ? difficulty
+                  ? <PlatformerGame difficulty={difficulty} resetToken={resetToken}/>
+                  : <DifficultyPicker onSelect={selectDifficulty}/>
+                : <GravityGame resetToken={resetToken}/>}
             </div>
             <footer className={styles.controls}>
-              <span>{info.controls}</span>
-              <button onClick={() => setResetToken((value) => value + 1)} type="button">Reset</button>
+              <span>{game === "platformer" && !difficulty ? "Select difficulty to start." : info.controls}</span>
+              <div style={{ display: "flex", gap: 7 }}>
+                {game === "platformer" && difficulty && (
+                  <button onClick={() => setDifficulty(null)} type="button">Difficulty</button>
+                )}
+                {(game === "gravity" || difficulty) && (
+                  <button onClick={() => setResetToken((value) => value + 1)} type="button">Reset</button>
+                )}
+              </div>
             </footer>
           </section>
         </div>
