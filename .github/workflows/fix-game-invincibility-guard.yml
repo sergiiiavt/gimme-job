@@ -1,0 +1,45 @@
+name: Fix game invincibility guard
+
+on:
+  push:
+    branches: ["feature/game-phase-balance-invincibility"]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/game-phase-balance-invincibility
+      - name: Fix input guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("app/games/games-playground.tsx")
+          text = path.read_text()
+          old = '''    function onPointerDown(event: PointerEvent) {
+      if (event.button !== 0) return;
+      updateAim(event);
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
+      pointerHeld = true;'''
+          new = '''    function onPointerDown(event: PointerEvent) {
+      if (event.button !== 0) return;
+      updateAim(event);
+      if (deadUntil !== 0 || won) return;
+      pointerHeld = true;'''
+          if text.count(old) != 2:
+              raise SystemExit(f"Expected two pointer guards, found {text.count(old)}")
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Remove temporary workflow
+        run: rm .github/workflows/fix-game-invincibility-guard.yml
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Keep controls active during respawn invincibility"
+          git push origin HEAD:feature/game-phase-balance-invincibility
