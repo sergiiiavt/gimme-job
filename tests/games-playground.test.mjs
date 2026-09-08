@@ -64,12 +64,56 @@ test("platformer wins when the player clears the arena before reinforcement", ()
   assert.match(source, /all reinforcements stopped/);
 });
 
+test("platformer victory dialog can immediately start a new game or change difficulty", () => {
+  assert.match(source, /function VictoryOverlay/);
+  assert.match(source, /primaryLabel="Start new game"/);
+  assert.match(source, /secondaryLabel="Change difficulty"/);
+  assert.match(source, /onPlayAgain=\{\(\) => setResetToken/);
+  assert.match(source, /onChangeDifficulty=\{\(\) => setDifficulty\(null\)\}/);
+});
+
+test("platformer phase shooters fire slower bolts that pass through platforms", () => {
+  assert.match(source, /function platformEnemyShotMode/);
+  assert.match(source, /enemy\.spawnIndex % 3 === 2 \? "phase" : "standard"/);
+  assert.match(source, /const speed = enemyMode === "phase" \? 290 : 470/);
+  assert.match(source, /projectile\.enemyMode !== "phase"/);
+  assert.match(source, /purple enemies fire phase bolts through platforms/);
+});
+
+test("player and enemy projectiles use separate team styling in both games", () => {
+  assert.match(source, /type ProjectileTeam = "player" \| "enemy";/);
+  assert.equal((source.match(/team: "player"/g) ?? []).length, 2);
+  assert.equal((source.match(/team: "enemy"/g) ?? []).length, 2);
+  assert.match(source, /return \{ fill: "#ff665d", radius: 5 \}/);
+  assert.match(source, /return \{ fill: "#c58cff", radius: 6 \}/);
+  assert.match(source, /return \{ fill: "#76e8ff", radius: 4 \}/);
+});
+
 test("gravity adds hostile ships and orbital stations", () => {
   assert.match(source, /const enemies: SpaceEnemy\[\] = \[/);
   assert.match(source, /const stations: SpaceStation\[\] = \[/);
   assert.match(source, /function fireEnemyProjectile/);
   assert.match(source, /fireEnemyProjectile\(station\.x, station\.y, 455, now\)/);
   assert.match(source, /enemy\.vx \+= direction\.x \* 92 \* dt/);
+});
+
+test("gravity orbital stations render as station silhouettes instead of target markers", () => {
+  assert.match(source, /const stationAngle = \(station\.x \+ station\.y\) \* 0\.0007/);
+  assert.match(source, /ctx\.fillStyle = "#315d82"/);
+  assert.match(source, /ctx\.fillRect\(-70, -16, 32, 32\)/);
+  assert.match(source, /ctx\.fillRect\(38, -16, 32, 32\)/);
+  assert.match(source, /station\.health \/ station\.maxHealth/);
+});
+
+test("gravity ship has faster steering, passive damping, braking, and a speed cap", () => {
+  assert.match(source, /const GRAVITY_TURN_SPEED = 3\.45;/);
+  assert.match(source, /const GRAVITY_THRUST = 440;/);
+  assert.match(source, /const GRAVITY_PASSIVE_DRAG = 0\.996;/);
+  assert.match(source, /const GRAVITY_BRAKE_DRAG = 0\.94;/);
+  assert.match(source, /const GRAVITY_MAX_SPEED = 520;/);
+  assert.match(source, /const brake = keys\.has\("ArrowDown"\) \|\| keys\.has\("KeyS"\)/);
+  assert.match(source, /const drag = brake \? GRAVITY_BRAKE_DRAG : GRAVITY_PASSIVE_DRAG/);
+  assert.match(source, /shipSpeed > GRAVITY_MAX_SPEED/);
 });
 
 test("gravity victory requires destroying one base on every planet", () => {
