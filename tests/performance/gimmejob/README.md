@@ -71,7 +71,7 @@ Crossing either threshold does not fail the execution. It tells us that the appl
 - `GIMMEJOB_PRODUCTION_ACK=gimme-job.com` is required.
 - HTTPS and an explicit bounded run time are required.
 - The saved Azure baseline explicitly uses `LOCUST_TAGS=full-readonly` so it exercises all defined read-only tasks.
-- If a selector is omitted on a production run, both implementations default to `vacancies-ui` rather than broadening to every diagnostic route.
+- If a selector is omitted on a production run, the workload defaults to `vacancies-ui` rather than broadening to every diagnostic route in either implementation.
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
 - The workloads are GET-only.
