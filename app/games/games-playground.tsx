@@ -535,7 +535,7 @@ function PlatformerGame({
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0 || now < invincibleUntil || won) return;
+      if (deadUntil !== 0 || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -1022,7 +1022,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0 || now < invincibleUntil || won) return;
+      if (deadUntil !== 0 || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
