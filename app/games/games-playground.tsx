@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { SiteSidebar } from "../site-navigation";
 import {
+  generateGravityBattlefield,
+  generatePlatformBattlefield,
+  randomBattlefieldSeed,
+} from "./battlefield-generation.mjs";
+import {
   GAME_HEIGHT as HEIGHT,
   GAME_WIDTH as WIDTH,
   SPACE_WORLD_HEIGHT,
@@ -115,6 +120,10 @@ const WEAPON_OPTIONS: readonly { id: WeaponId; icon: string; key: string; label:
   { id: "bomb", icon: "💣", key: "3", label: "Bomb" },
 ];
 
+function battlefieldId(seed: number): string {
+  return seed.toString(16).padStart(8, "0").slice(-8);
+}
+
 function WeaponSelector({ weapon, onSelect }: { weapon: WeaponId; onSelect: (weapon: WeaponId) => void }) {
   return (
     <div aria-label="Weapon selector" className={styles.weaponSelector} role="group">
@@ -145,7 +154,7 @@ function DifficultyPicker({ onSelect }: { onSelect: (difficulty: DifficultyId) =
       <div style={{ color: "#dfe8e2", lineHeight: 1.5, maxWidth: 520, padding: 24, textAlign: "center" }}>
         <h2 style={{ fontSize: 22, margin: "0 0 6px" }}>Choose difficulty</h2>
         <p style={{ color: "#9eaaa3", fontSize: 13, margin: "0 0 18px" }}>
-          Reinforcements keep arriving until you clear every enemy before the next wave reaches the arena.
+          Every game generates a new reachable battlefield. Reinforcements keep arriving until you clear every enemy.
         </p>
         <div aria-label="Select platformer difficulty" className={styles.selector} role="group">
           {(Object.keys(DIFFICULTIES) as DifficultyId[]).map((difficulty) => (
@@ -191,6 +200,7 @@ function VictoryOverlay({
         display: "flex",
         flexDirection: "column",
         left: "50%",
+        lineHeight: 1.35,
         minWidth: 360,
         padding: "24px 28px 22px",
         position: "absolute",
@@ -200,8 +210,8 @@ function VictoryOverlay({
         zIndex: 5,
       }}
     >
-      <h2 style={{ color: "#d7f65a", fontSize: 27, margin: "0 0 8px" }}>{title}</h2>
-      <p style={{ color: "#c8d3cc", fontSize: 13, margin: "0 0 18px", maxWidth: 430 }}>{message}</p>
+      <h2 style={{ color: "#d7f65a", fontSize: 27, lineHeight: 1.1, margin: "0 0 10px" }}>{title}</h2>
+      <p style={{ color: "#c8d3cc", fontSize: 13, lineHeight: 1.45, margin: "0 0 18px", maxWidth: 430 }}>{message}</p>
       <div className={styles.selector} role="group" aria-label={`${title} actions`}>
         <button onClick={onPrimary} type="button">{primaryLabel}</button>
         {secondaryLabel && onSecondary && (
@@ -363,49 +373,23 @@ function PlatformerGame({
     setWeapon("blaster");
     setVictoryVisible(false);
 
+    const battlefield = generatePlatformBattlefield(
+      randomBattlefieldSeed(resetToken),
+      PLATFORM_WORLD_WIDTH,
+      PLATFORM_WORLD_HEIGHT,
+    );
+    const mapId = battlefieldId(battlefield.seed);
     const keys = new Set<string>();
-    const platforms: Rect[] = [
-      { x: 0, y: 915, w: 520, h: 45 },
-      { x: 650, y: 915, w: 500, h: 45 },
-      { x: 1280, y: 915, w: 640, h: 45 },
-      { x: 115, y: 790, w: 250, h: 16 },
-      { x: 420, y: 715, w: 220, h: 16 },
-      { x: 720, y: 820, w: 245, h: 16 },
-      { x: 1025, y: 735, w: 225, h: 16 },
-      { x: 1340, y: 805, w: 270, h: 16 },
-      { x: 1650, y: 680, w: 190, h: 16 },
-      { x: 1510, y: 535, w: 235, h: 16 },
-      { x: 1190, y: 475, w: 250, h: 16 },
-      { x: 855, y: 545, w: 210, h: 16 },
-      { x: 535, y: 430, w: 245, h: 16 },
-      { x: 205, y: 525, w: 220, h: 16 },
-      { x: 70, y: 335, w: 220, h: 16 },
-      { x: 390, y: 265, w: 205, h: 16 },
-      { x: 760, y: 315, w: 225, h: 16 },
-      { x: 1090, y: 235, w: 230, h: 16 },
-      { x: 1450, y: 300, w: 245, h: 16 },
-    ];
-    const spawnTemplates: EnemySpawn[] = [
-      { x: 170, y: 758, w: 26, h: 32, minX: 125, maxX: 340, vx: 72 },
-      { x: 790, y: 788, w: 26, h: 32, minX: 735, maxX: 940, vx: -78 },
-      { x: 1080, y: 703, w: 26, h: 32, minX: 1035, maxX: 1230, vx: 70 },
-      { x: 1390, y: 773, w: 26, h: 32, minX: 1350, maxX: 1585, vx: -74 },
-      { x: 1570, y: 503, w: 26, h: 32, minX: 1520, maxX: 1720, vx: 68 },
-      { x: 1240, y: 443, w: 26, h: 32, minX: 1200, maxX: 1410, vx: -66 },
-      { x: 900, y: 513, w: 26, h: 32, minX: 865, maxX: 1040, vx: 72 },
-      { x: 585, y: 398, w: 26, h: 32, minX: 545, maxX: 755, vx: -70 },
-      { x: 250, y: 493, w: 26, h: 32, minX: 215, maxX: 405, vx: 67 },
-      { x: 425, y: 233, w: 26, h: 32, minX: 400, maxX: 575, vx: -64 },
-      { x: 805, y: 283, w: 26, h: 32, minX: 770, maxX: 955, vx: 70 },
-      { x: 1490, y: 268, w: 26, h: 32, minX: 1460, maxX: 1670, vx: -72 },
-    ];
+    const platforms: Rect[] = battlefield.platforms;
+    const spawnTemplates: EnemySpawn[] = battlefield.spawnTemplates;
+    const playerSpawn = battlefield.playerSpawn;
     const enemies: PlatformEnemy[] = [];
     const projectiles: Projectile[] = [];
     const enemyProjectiles: Projectile[] = [];
     const explosions: Explosion[] = [];
     const player = {
-      x: 45,
-      y: 865,
+      x: playerSpawn.x,
+      y: playerSpawn.y,
       w: 30,
       h: 42,
       vx: 0,
@@ -443,8 +427,8 @@ function PlatformerGame({
     spawnSerial = enemies.length;
 
     function respawn(now = performance.now(), grantInvincibility = false) {
-      player.x = 45;
-      player.y = 865;
+      player.x = playerSpawn.x;
+      player.y = playerSpawn.y;
       player.vx = 0;
       player.vy = 0;
       player.onGround = false;
@@ -643,7 +627,12 @@ function PlatformerGame({
         if (!dead && !won && now >= enemy.nextFireAt) {
           const originX = enemy.x + enemy.w / 2;
           const originY = enemy.y + enemy.h * 0.45;
-          const direction = normalizedDirection(originX, originY, player.x + player.w / 2, player.y + player.h * 0.45);
+          const direction = normalizedDirection(
+            originX,
+            originY,
+            player.x + player.w / 2,
+            player.y + player.h * 0.45,
+          );
           const enemyMode = platformEnemyShotMode(enemy, difficulty);
           const speed = enemyMode === "phase" ? 290 : 470;
           enemyProjectiles.push({
@@ -665,7 +654,10 @@ function PlatformerGame({
         if (projectile.kind === "bomb") projectile.vy += 560 * dt;
         projectile.x += projectile.vx * dt;
         projectile.y += projectile.vy * dt;
-        let remove = projectile.x < -60 || projectile.x > PLATFORM_WORLD_WIDTH + 60 || projectile.y < -60 || projectile.y > PLATFORM_WORLD_HEIGHT + 60;
+        let remove = projectile.x < -60
+          || projectile.x > PLATFORM_WORLD_WIDTH + 60
+          || projectile.y < -60
+          || projectile.y > PLATFORM_WORLD_HEIGHT + 60;
 
         for (const enemy of enemies) {
           if (!enemy.alive || remove) continue;
@@ -677,7 +669,9 @@ function PlatformerGame({
         }
 
         if (!remove && platforms.some((platform) => pointInsideRect(projectile.x, projectile.y, platform))) {
-          if (projectile.kind !== "blaster") detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 115 : 155, now);
+          if (projectile.kind !== "blaster") {
+            detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 115 : 155, now);
+          }
           remove = true;
         }
         if (!remove && projectile.kind === "bomb" && now - projectile.bornAt >= 1250) {
@@ -781,7 +775,11 @@ function PlatformerGame({
 
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Difficulty ${difficultyConfig.label} · Score ${score} · Deaths ${deaths} · Enemies ${enemies.length}`, 20, 30);
+      ctx.fillText(
+        `Difficulty ${difficultyConfig.label} · Score ${score} · Deaths ${deaths} · Enemies ${enemies.length} · Map ${mapId}`,
+        20,
+        30,
+      );
       ctx.fillStyle = dead ? "#e89083" : invincible ? "#76e8ff" : "#9eaaa3";
       ctx.fillText(
         dead
@@ -854,18 +852,20 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     weaponRef.current = "blaster";
     setWeapon("blaster");
 
+    const battlefield = generateGravityBattlefield(
+      randomBattlefieldSeed(resetToken),
+      SPACE_WORLD_WIDTH,
+      SPACE_WORLD_HEIGHT,
+    );
+    const mapId = battlefieldId(battlefield.seed);
+    const starOffsetX = battlefield.seed % 997;
+    const starOffsetY = Math.floor(battlefield.seed / 997) % 991;
     const keys = new Set<string>();
     const projectiles: Projectile[] = [];
     const enemyProjectiles: Projectile[] = [];
     const explosions: Explosion[] = [];
-    const planets: VisualPlanet[] = [
-      { x: 1200, y: 1600, radius: 270, surfaceGravity: 250, craters: [], fill: "#36505d", edge: "#79929d" },
-      { x: 2450, y: 820, radius: 185, surfaceGravity: 175, craters: [], fill: "#594c62", edge: "#9b879f" },
-      { x: 3250, y: 2150, radius: 325, surfaceGravity: 300, craters: [], fill: "#4c5740", edge: "#85956d" },
-      { x: 4450, y: 1180, radius: 235, surfaceGravity: 220, craters: [], fill: "#5b463d", edge: "#9c7768" },
-      { x: 1900, y: 2820, radius: 255, surfaceGravity: 235, craters: [], fill: "#3d5364", edge: "#718da2" },
-    ];
-    const baseAngles = [-0.85, 0.45, -2.2, 2.55, -1.4];
+    const planets: VisualPlanet[] = battlefield.planets.map((planet) => ({ ...planet, craters: [] }));
+    const baseAngles = battlefield.baseAngles;
     const bases: EnemyBase[] = planets.map((planet, planetIndex) => {
       const angle = baseAngles[planetIndex];
       const distance = planet.radius + 30;
@@ -879,21 +879,25 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         planetIndex,
       };
     });
-    const enemies: SpaceEnemy[] = [
-      { x: 980, y: 1080, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1750, nextFireAt: 0 },
-      { x: 1580, y: 1290, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 2050, nextFireAt: 0 },
-      { x: 2500, y: 460, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1650, nextFireAt: 0 },
-      { x: 3550, y: 1940, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1850, nextFireAt: 0 },
-      { x: 4250, y: 840, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1950, nextFireAt: 0 },
-      { x: 2050, y: 2450, vx: 0, vy: 0, radius: 16, alive: true, fireEvery: 1700, nextFireAt: 0 },
-    ];
-    const stations: SpaceStation[] = [
-      { x: 1535, y: 1600, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1550, nextFireAt: 0 },
-      { x: 3250, y: 1710, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1450, nextFireAt: 0 },
-      { x: 4450, y: 830, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1650, nextFireAt: 0 },
-      { x: 1900, y: 2460, radius: 27, alive: true, health: 4, maxHealth: 4, fireEvery: 1500, nextFireAt: 0 },
-    ];
-    const ship = { x: 700, y: 650, vx: 0, vy: 0, angle: -Math.PI / 2 };
+    const enemies: SpaceEnemy[] = battlefield.enemies.map((enemy) => ({
+      ...enemy,
+      vx: 0,
+      vy: 0,
+      alive: true,
+      nextFireAt: 0,
+    }));
+    const stations: SpaceStation[] = battlefield.stations.map((station) => ({
+      ...station,
+      alive: true,
+      nextFireAt: 0,
+    }));
+    const ship = {
+      x: battlefield.shipSpawn.x,
+      y: battlefield.shipSpawn.y,
+      vx: 0,
+      vy: 0,
+      angle: battlefield.shipSpawn.angle,
+    };
     const aim: AimPoint = { x: WIDTH * 0.72, y: HEIGHT * 0.5, inside: false };
     let zoom = GRAVITY_BASE_ZOOM;
     const camera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
@@ -914,11 +918,11 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     });
 
     function respawn(now = performance.now(), grantInvincibility = false) {
-      ship.x = 700;
-      ship.y = 650;
+      ship.x = battlefield.shipSpawn.x;
+      ship.y = battlefield.shipSpawn.y;
       ship.vx = 0;
       ship.vy = 0;
-      ship.angle = -Math.PI / 2;
+      ship.angle = battlefield.shipSpawn.angle;
       deadUntil = 0;
       invincibleUntil = grantInvincibility ? now + INVINCIBILITY_AFTER_RESPAWN_MS : 0;
       pointerHeld = false;
@@ -1215,7 +1219,9 @@ function GravityGame({ resetToken }: { resetToken: number }) {
             const craterRadius = projectile.kind === "rocket" ? 110 : projectile.kind === "bomb" ? 155 : 46;
             planets[planetIndex].craters.push({ x: projectile.x, y: projectile.y, radius: craterRadius });
             if (planets[planetIndex].craters.length > 180) planets[planetIndex].craters.shift();
-            if (projectile.kind !== "blaster") detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
+            if (projectile.kind !== "blaster") {
+              detonate(projectile.x, projectile.y, projectile.kind === "rocket" ? 130 : 185, now);
+            }
             remove = true;
           }
         }
@@ -1318,7 +1324,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ctx.restore();
     }
 
-    function drawFireCone() {
+    function drawFireCone(now: number) {
       if (deadUntil !== 0 || now < invincibleUntil || won) return;
       const length = 270 / zoom;
       ctx.save();
@@ -1472,8 +1478,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       ctx.translate(-camera.x, -camera.y);
       ctx.fillStyle = "rgba(255,255,255,.43)";
       for (let index = 0; index < 240; index += 1) {
-        const x = (index * 379 + 97) % SPACE_WORLD_WIDTH;
-        const y = (index * 211 + 53) % SPACE_WORLD_HEIGHT;
+        const x = (index * 379 + 97 + starOffsetX) % SPACE_WORLD_WIDTH;
+        const y = (index * 211 + 53 + starOffsetY) % SPACE_WORLD_HEIGHT;
         const size = index % 11 === 0 ? 2 : 1;
         ctx.fillRect(x, y, size / zoom, size / zoom);
       }
@@ -1485,19 +1491,24 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       projectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
       enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile, zoom));
       drawExplosions(ctx, explosions, now, zoom);
-      drawFireCone();
+      drawFireCone(now);
       drawShip(now);
       ctx.restore();
 
       const basesRemaining = bases.filter((base) => base.alive).length;
-      const threatsRemaining = enemies.filter((enemy) => enemy.alive).length + stations.filter((station) => station.alive).length;
+      const threatsRemaining = enemies.filter((enemy) => enemy.alive).length
+        + stations.filter((station) => station.alive).length;
       const dead = deadUntil !== 0;
       const invincible = now < invincibleUntil;
       const aimDirection = dead || won ? null : currentFireDirection();
       const displayZoom = Math.round(zoom / GRAVITY_BASE_ZOOM * 100);
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
-      ctx.fillText(`Bases ${bases.length - basesRemaining}/${bases.length} · Threats ${threatsRemaining} · Deaths ${deaths} · Zoom ${displayZoom}%`, 20, 30);
+      ctx.fillText(
+        `Bases ${bases.length - basesRemaining}/${bases.length} · Threats ${threatsRemaining} · Deaths ${deaths} · Zoom ${displayZoom}% · Map ${mapId}`,
+        20,
+        30,
+      );
       ctx.fillStyle = dead ? "#e89083" : invincible ? "#76e8ff" : "#9eaaa3";
       ctx.fillText(
         dead
@@ -1562,11 +1573,11 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 
 const GAME_INFO: Record<GameId, { description: string; controls: string }> = {
   platformer: {
-    description: "Choose a difficulty, then clear every enemy before the next reinforcement arrives.",
+    description: "Each game builds a new reachable platform battlefield; clear every enemy before the next reinforcement arrives.",
     controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · purple enemies fire phase bolts through platforms · 1/2/3 weapons · clear all enemies to win · R respawn",
   },
   gravity: {
-    description: "Fight pursuing ships and firing orbital stations while destroying the enemy base on every planet.",
+    description: "Each game builds a new planetary battlefield with safe spacing, hostile ships, stations, and one base per planet.",
     controls: "A/D or ←/→ rotate · W/↑ thrust · S/↓ brake · assisted drag and speed cap · wheel zoom · hold mouse to fire · 1/2/3 weapons · destroy all planetary bases to win · R respawn",
   },
 };
@@ -1605,7 +1616,13 @@ export default function GamesPlayground() {
       />
 
       <section className="kb-main">
-        <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
+        <button
+          aria-expanded={mobileNav}
+          aria-label="Toggle navigation"
+          className="kb-floating-menu"
+          onClick={() => setMobileNav((value) => !value)}
+          type="button"
+        >☰</button>
         <div className={`kb-content ${styles.page}`}>
           <header className={styles.header}>
             <div>
@@ -1613,8 +1630,16 @@ export default function GamesPlayground() {
               <p>{info.description}</p>
             </div>
             <div aria-label="Select game" className={styles.selector} role="group">
-              <button className={game === "platformer" ? styles.active : ""} onClick={() => selectGame("platformer")} type="button">Platformer</button>
-              <button className={game === "gravity" ? styles.active : ""} onClick={() => selectGame("gravity")} type="button">Gravity</button>
+              <button
+                className={game === "platformer" ? styles.active : ""}
+                onClick={() => selectGame("platformer")}
+                type="button"
+              >Platformer</button>
+              <button
+                className={game === "gravity" ? styles.active : ""}
+                onClick={() => selectGame("gravity")}
+                type="button"
+              >Gravity</button>
             </div>
           </header>
 
@@ -1640,14 +1665,21 @@ export default function GamesPlayground() {
                   <button onClick={() => setDifficulty(null)} type="button">Difficulty</button>
                 )}
                 {(game === "gravity" || difficulty) && (
-                  <button onClick={() => setResetToken((value) => value + 1)} type="button">Reset</button>
+                  <button onClick={() => setResetToken((value) => value + 1)} type="button">New battlefield</button>
                 )}
               </div>
             </footer>
           </section>
         </div>
       </section>
-      {mobileNav && <button aria-label="Close navigation" className="kb-backdrop" onClick={() => setMobileNav(false)} type="button"/>}
+      {mobileNav && (
+        <button
+          aria-label="Close navigation"
+          className="kb-backdrop"
+          onClick={() => setMobileNav(false)}
+          type="button"
+        />
+      )}
     </main>
   );
 }
