@@ -22,7 +22,7 @@ import {
 import styles from "./games.module.css";
 
 type GameId = "platformer" | "gravity";
-type DifficultyId = "easy" | "normal" | "hard";
+type DifficultyId = "easy" | "normal" | "hard" | "impossible";
 type WeaponId = "blaster" | "rocket" | "bomb";
 type ProjectileTeam = "player" | "enemy";
 type EnemyProjectileMode = "standard" | "phase";
@@ -93,11 +93,20 @@ const GRAVITY_BRAKE_DRAG = 0.94;
 const GRAVITY_MAX_SPEED = 520;
 const FIRE_HALF_ANGLE = Math.PI * 32 / 180;
 const RESPAWN_DELAY_MS = 900;
+const INVINCIBILITY_AFTER_RESPAWN_MS = 2000;
 
 const DIFFICULTIES: Record<DifficultyId, { label: string; spawnEvery: number }> = {
   easy: { label: "Easy", spawnEvery: 4700 },
   normal: { label: "Normal", spawnEvery: 2800 },
   hard: { label: "Hard", spawnEvery: 1550 },
+  impossible: { label: "Impossible", spawnEvery: 1050 },
+};
+
+const PHASE_SHOOTER_INDEXES: Record<DifficultyId, readonly number[]> = {
+  easy: [2],
+  normal: [1, 3, 5],
+  hard: [0, 2, 4, 6, 8, 10],
+  impossible: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
 };
 
 const WEAPON_OPTIONS: readonly { id: WeaponId; icon: string; key: string; label: string }[] = [
@@ -146,7 +155,7 @@ function DifficultyPicker({ onSelect }: { onSelect: (difficulty: DifficultyId) =
           ))}
         </div>
         <p style={{ color: "#718078", fontSize: 11, margin: "14px 0 0" }}>
-          Easy 4.7s · Normal 2.8s · Hard 1.55s between reinforcements
+          Easy 4.7s / 1 phase · Normal 2.8s / 3 phase · Hard 1.55s / 6 phase · Impossible 1.05s / all phase
         </p>
       </div>
     </div>
@@ -215,8 +224,8 @@ function pointInsideRect(x: number, y: number, rect: Rect): boolean {
   return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
 }
 
-function platformEnemyShotMode(enemy: PlatformEnemy): EnemyProjectileMode {
-  return enemy.spawnIndex % 3 === 2 ? "phase" : "standard";
+function platformEnemyShotMode(enemy: PlatformEnemy, difficulty: DifficultyId): EnemyProjectileMode {
+  return PHASE_SHOOTER_INDEXES[difficulty].includes(enemy.spawnIndex) ? "phase" : "standard";
 }
 
 function selectWeapon(code: string, current: WeaponId): WeaponId {
@@ -409,6 +418,7 @@ function PlatformerGame({
     let score = 0;
     let deaths = 0;
     let deadUntil = 0;
+    let invincibleUntil = 0;
     let spawnSerial = 0;
     let nextSpawnAt = performance.now() + difficultyConfig.spawnEvery;
     let lastShot = -Infinity;
@@ -432,7 +442,7 @@ function PlatformerGame({
     for (let index = 0; index < 7; index += 1) enemies.push(createEnemy(index, lastTime));
     spawnSerial = enemies.length;
 
-    function respawn() {
+    function respawn(now = performance.now(), grantInvincibility = false) {
       player.x = 45;
       player.y = 865;
       player.vx = 0;
@@ -440,12 +450,13 @@ function PlatformerGame({
       player.onGround = false;
       player.jumpsRemaining = 2;
       deadUntil = 0;
+      invincibleUntil = grantInvincibility ? now + INVINCIBILITY_AFTER_RESPAWN_MS : 0;
       jumpQueued = false;
       pointerHeld = false;
     }
 
     function die(now: number) {
-      if (deadUntil !== 0 || won) return;
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
       deaths += 1;
       deadUntil = now + RESPAWN_DELAY_MS;
       player.vx = 0;
@@ -524,7 +535,7 @@ function PlatformerGame({
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0 || won) return;
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -546,7 +557,7 @@ function PlatformerGame({
         setWeapon(nextWeapon);
       }
       if (["ArrowUp", "KeyW", "Space"].includes(event.code) && !event.repeat) jumpQueued = true;
-      if (event.code === "KeyR" && deadUntil === 0) respawn();
+      if (event.code === "KeyR" && deadUntil === 0) respawn(performance.now());
     }
 
     function onKeyUp(event: KeyboardEvent) {
@@ -562,7 +573,7 @@ function PlatformerGame({
     window.addEventListener("keyup", onKeyUp);
 
     function update(dt: number, now: number) {
-      if (deadUntil !== 0 && now >= deadUntil) respawn();
+      if (deadUntil !== 0 && now >= deadUntil) respawn(now, true);
       const dead = deadUntil !== 0;
       const left = keys.has("ArrowLeft") || keys.has("KeyA");
       const right = keys.has("ArrowRight") || keys.has("KeyD");
@@ -633,7 +644,7 @@ function PlatformerGame({
           const originX = enemy.x + enemy.w / 2;
           const originY = enemy.y + enemy.h * 0.45;
           const direction = normalizedDirection(originX, originY, player.x + player.w / 2, player.y + player.h * 0.45);
-          const enemyMode = platformEnemyShotMode(enemy);
+          const enemyMode = platformEnemyShotMode(enemy, difficulty);
           const speed = enemyMode === "phase" ? 290 : 470;
           enemyProjectiles.push({
             x: originX + direction.x * 18,
@@ -732,7 +743,7 @@ function PlatformerGame({
       ctx.fillStyle = "#314338";
       for (const platform of platforms) ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
       for (const enemy of enemies) {
-        const shotMode = platformEnemyShotMode(enemy);
+        const shotMode = platformEnemyShotMode(enemy, difficulty);
         ctx.fillStyle = shotMode === "phase" ? "#7751b8" : "#d75a4a";
         ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
         ctx.fillStyle = shotMode === "phase" ? "#e0bdff" : "rgba(255, 207, 191, .85)";
@@ -748,13 +759,22 @@ function PlatformerGame({
       drawExplosions(ctx, explosions, now);
 
       const dead = deadUntil !== 0;
+      const invincible = now < invincibleUntil;
       ctx.save();
       if (dead) ctx.globalAlpha = 0.58 + Math.sin(now / 85) * 0.18;
-      ctx.fillStyle = dead ? "#d96c62" : "#edf5ff";
+      else if (invincible) ctx.globalAlpha = 0.68 + Math.sin(now / 90) * 0.24;
+      ctx.fillStyle = dead ? "#d96c62" : invincible ? "#d7fbff" : "#edf5ff";
       ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.strokeStyle = dead ? "#ffd0c8" : "#6f8197";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = dead ? "#ffd0c8" : invincible ? "#76e8ff" : "#6f8197";
+      ctx.lineWidth = invincible ? 4 : 2;
       ctx.strokeRect(player.x, player.y, player.w, player.h);
+      if (invincible) {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(118, 232, 255, .72)";
+        ctx.lineWidth = 3;
+        ctx.arc(player.x + player.w / 2, player.y + player.h / 2, 31, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
       drawCrosshair(ctx, aim, !dead && !won);
       ctx.restore();
@@ -762,13 +782,15 @@ function PlatformerGame({
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
       ctx.fillText(`Difficulty ${difficultyConfig.label} · Score ${score} · Deaths ${deaths} · Enemies ${enemies.length}`, 20, 30);
-      ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
+      ctx.fillStyle = dead ? "#e89083" : invincible ? "#76e8ff" : "#9eaaa3";
       ctx.fillText(
         dead
           ? "Respawning…"
-          : won
-            ? "Arena cleared · all reinforcements stopped"
-            : `Next reinforcement in ${Math.max(0, (nextSpawnAt - now) / 1000).toFixed(1)}s`,
+          : invincible
+            ? `Invincible for ${Math.max(0, (invincibleUntil - now) / 1000).toFixed(1)}s`
+            : won
+              ? "Arena cleared · all reinforcements stopped"
+              : `Next reinforcement in ${Math.max(0, (nextSpawnAt - now) / 1000).toFixed(1)}s`,
         20,
         52,
       );
@@ -877,6 +899,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     const camera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
     let deaths = 0;
     let deadUntil = 0;
+    let invincibleUntil = 0;
     let lastShot = -Infinity;
     let lastTime = performance.now();
     let pointerHeld = false;
@@ -890,13 +913,14 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       station.nextFireAt = lastTime + 700 + index * 230;
     });
 
-    function respawn() {
+    function respawn(now = performance.now(), grantInvincibility = false) {
       ship.x = 700;
       ship.y = 650;
       ship.vx = 0;
       ship.vy = 0;
       ship.angle = -Math.PI / 2;
       deadUntil = 0;
+      invincibleUntil = grantInvincibility ? now + INVINCIBILITY_AFTER_RESPAWN_MS : 0;
       pointerHeld = false;
       enemyProjectiles.length = 0;
       const resetCamera = clampCamera(ship.x, ship.y, WIDTH / zoom, HEIGHT / zoom);
@@ -905,7 +929,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function die(now: number) {
-      if (deadUntil !== 0 || won) return;
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
       deaths += 1;
       deadUntil = now + RESPAWN_DELAY_MS;
       ship.vx = 0;
@@ -998,7 +1022,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     function onPointerDown(event: PointerEvent) {
       if (event.button !== 0) return;
       updateAim(event);
-      if (deadUntil !== 0 || won) return;
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
       pointerHeld = true;
       shootAtAim(performance.now());
     }
@@ -1031,7 +1055,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         weaponRef.current = nextWeapon;
         setWeapon(nextWeapon);
       }
-      if (event.code === "KeyR" && deadUntil === 0) respawn();
+      if (event.code === "KeyR" && deadUntil === 0) respawn(performance.now());
     }
 
     function onKeyUp(event: KeyboardEvent) {
@@ -1094,7 +1118,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function update(dt: number, now: number) {
-      if (deadUntil !== 0 && now >= deadUntil) respawn();
+      if (deadUntil !== 0 && now >= deadUntil) respawn(now, true);
       const dead = deadUntil !== 0;
       const left = keys.has("ArrowLeft") || keys.has("KeyA");
       const right = keys.has("ArrowRight") || keys.has("KeyD");
@@ -1249,10 +1273,19 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 
     function drawShip(now: number) {
       const dead = deadUntil !== 0;
+      const invincible = now < invincibleUntil;
       ctx.save();
       ctx.translate(ship.x, ship.y);
       ctx.rotate(ship.angle);
       if (dead) ctx.globalAlpha = 0.58 + Math.sin(now / 85) * 0.18;
+      else if (invincible) ctx.globalAlpha = 0.7 + Math.sin(now / 90) * 0.22;
+      if (invincible) {
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(118, 232, 255, .76)";
+        ctx.lineWidth = 2.5 / zoom;
+        ctx.arc(0, 0, 29, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.beginPath();
       ctx.moveTo(20, 0);
       ctx.lineTo(-14, -11);
@@ -1286,7 +1319,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function drawFireCone() {
-      if (deadUntil !== 0 || won) return;
+      if (deadUntil !== 0 || now < invincibleUntil || won) return;
       const length = 270 / zoom;
       ctx.save();
       ctx.strokeStyle = "rgba(166, 198, 224, .38)";
@@ -1459,18 +1492,21 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       const basesRemaining = bases.filter((base) => base.alive).length;
       const threatsRemaining = enemies.filter((enemy) => enemy.alive).length + stations.filter((station) => station.alive).length;
       const dead = deadUntil !== 0;
+      const invincible = now < invincibleUntil;
       const aimDirection = dead || won ? null : currentFireDirection();
       const displayZoom = Math.round(zoom / GRAVITY_BASE_ZOOM * 100);
       ctx.fillStyle = "#dfe8e2";
       ctx.font = "14px system-ui, sans-serif";
       ctx.fillText(`Bases ${bases.length - basesRemaining}/${bases.length} · Threats ${threatsRemaining} · Deaths ${deaths} · Zoom ${displayZoom}%`, 20, 30);
-      ctx.fillStyle = dead ? "#e89083" : "#9eaaa3";
+      ctx.fillStyle = dead ? "#e89083" : invincible ? "#76e8ff" : "#9eaaa3";
       ctx.fillText(
         dead
           ? "Respawning…"
-          : won
-            ? "All planetary bases destroyed"
-            : `Enemy ships pursue you · orbital stations fire on approach · World ${Math.round(ship.x)}, ${Math.round(ship.y)}`,
+          : invincible
+            ? `Invincible for ${Math.max(0, (invincibleUntil - now) / 1000).toFixed(1)}s`
+            : won
+              ? "All planetary bases destroyed"
+              : `Enemy ships pursue you · orbital stations fire on approach · World ${Math.round(ship.x)}, ${Math.round(ship.y)}`,
         20,
         52,
       );

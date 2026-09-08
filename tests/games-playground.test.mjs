@@ -50,10 +50,11 @@ test("both player-controlled worlds wrap at every edge", () => {
 });
 
 test("platformer requires difficulty selection and changes reinforcement cadence", () => {
-  assert.match(source, /type DifficultyId = "easy" \| "normal" \| "hard";/);
+  assert.match(source, /type DifficultyId = "easy" \| "normal" \| "hard" \| "impossible";/);
   assert.match(source, /easy: \{ label: "Easy", spawnEvery: 4700 \}/);
   assert.match(source, /normal: \{ label: "Normal", spawnEvery: 2800 \}/);
   assert.match(source, /hard: \{ label: "Hard", spawnEvery: 1550 \}/);
+  assert.match(source, /impossible: \{ label: "Impossible", spawnEvery: 1050 \}/);
   assert.match(source, /aria-label="Select platformer difficulty"/);
   assert.match(source, /nextSpawnAt = now \+ difficultyConfig\.spawnEvery/);
 });
@@ -72,12 +73,15 @@ test("platformer victory dialog can immediately start a new game or change diffi
   assert.match(source, /onChangeDifficulty=\{\(\) => setDifficulty\(null\)\}/);
 });
 
-test("platformer phase shooters fire slower bolts that pass through platforms", () => {
+test("platformer phase shooters scale by difficulty and phase bolts pass through platforms", () => {
   assert.match(source, /function platformEnemyShotMode/);
-  assert.match(source, /enemy\.spawnIndex % 3 === 2 \? "phase" : "standard"/);
+  assert.match(source, /easy: \[2\]/);
+  assert.match(source, /normal: \[1, 3, 5\]/);
+  assert.match(source, /hard: \[0, 2, 4, 6, 8, 10\]/);
+  assert.match(source, /impossible: \[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]/);
+  assert.match(source, /platformEnemyShotMode\(enemy, difficulty\)/);
   assert.match(source, /const speed = enemyMode === "phase" \? 290 : 470/);
   assert.match(source, /projectile\.enemyMode !== "phase"/);
-  assert.match(source, /purple enemies fire phase bolts through platforms/);
 });
 
 test("player and enemy projectiles use separate team styling in both games", () => {
@@ -121,4 +125,13 @@ test("gravity victory requires destroying one base on every planet", () => {
   assert.match(source, /bases\.every\(\(base\) => !base\.alive\)/);
   assert.match(source, /All planetary bases destroyed/);
   assert.match(source, /Every enemy base on every planet has been destroyed/);
+});
+
+
+test("both games grant two seconds of invincibility after automatic respawn", () => {
+  assert.match(source, /const INVINCIBILITY_AFTER_RESPAWN_MS = 2000;/);
+  assert.equal((source.match(/let invincibleUntil = 0;/g) ?? []).length, 2);
+  assert.equal((source.match(/respawn\(now, true\)/g) ?? []).length, 2);
+  assert.equal((source.match(/now < invincibleUntil/g) ?? []).length >= 4, true);
+  assert.equal((source.match(/Invincible for/g) ?? []).length, 2);
 });
