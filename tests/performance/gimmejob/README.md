@@ -1,7 +1,10 @@
-# GimmeJob Locust load test
+# GimmeJob performance load tests
 
-This directory contains the authorized read-only production workload for GimmeJob.
+This directory contains the authorized read-only production workloads for GimmeJob.
+`locustfile.py` is the Locust implementation and `k6.js` is the equivalent k6 implementation of the same request model.
 The primary Azure baseline runs every defined read-only Locust task with 10 total virtual users.
+
+The k6-specific setup, commands, safety model, and Locust-to-k6 mapping are documented in [`K6.md`](K6.md).
 
 | Selector | Request flow | Purpose |
 | --- | --- | --- |
@@ -28,6 +31,8 @@ GET /api/public/jobs
 GET /api/dashboard
 ```
 
+The same routes and weights are implemented by `GIMMEJOB_SCENARIO=full-readonly` in `k6.js`.
+
 The two dashboard rows are intentional: one belongs to the real Vacancies UI flow and the other is the standalone diagnostic task. The Locust user count is shared across the selected workload; `LOCUST_USERS=10` means 10 total virtual users, not 10 users per endpoint.
 
 Task weights remain part of the workload model. `vacancies_ui` has weight 6 and each diagnostic task has weight 1, so the real Vacancies flow receives more traffic while every defined read-only task remains eligible in the same run.
@@ -42,9 +47,9 @@ GET /api/auth-state
 GET /api/dashboard
 ```
 
-For an anonymous production visitor, `/api/auth-state` returning HTTP `401` is the expected frontend branch. The frontend decides public vs personal mode from the HTTP status, so Locust treats that `401` as a successful request.
+For an anonymous production visitor, `/api/auth-state` returning HTTP `401` is the expected frontend branch. The frontend decides public vs personal mode from the HTTP status, so both Locust and k6 treat that `401` as a successful request.
 
-Locust does not launch a browser or automatically execute React, JS, CSS, images, or browser-generated XHR/fetch traffic. A browser performance test requires Playwright or another real-browser tool.
+These protocol workloads do not launch a browser or automatically execute React, JS, CSS, images, or browser-generated XHR/fetch traffic. A browser performance test requires Playwright, k6 browser, or another real-browser tool.
 
 ## Execution status vs performance findings
 
@@ -52,7 +57,7 @@ Performance numbers do not decide whether the load test executed successfully.
 
 A run is an execution failure when the workload cannot run correctly, for example because the production safety guard stops it, configuration is invalid, the test crashes, or no requests complete. Those conditions may use an `ERROR` log and a non-zero process exit code.
 
-A run that starts, sends requests, reaches the configured duration, and shuts down normally is considered successfully executed even when the application performs badly. High request failure ratio or high p95 are performance findings. The script records them as `WARNING` messages and keeps the run exit code successful.
+A run that starts, sends requests, reaches the configured duration, and shuts down normally is considered successfully executed even when the application performs badly. High request failure ratio or high p95 are performance findings. The scripts report them without converting the run into a threshold-driven execution failure.
 
 The reporting thresholds remain:
 
@@ -66,15 +71,15 @@ Crossing either threshold does not fail the execution. It tells us that the appl
 - `GIMMEJOB_PRODUCTION_ACK=gimme-job.com` is required.
 - HTTPS and an explicit bounded run time are required.
 - The saved Azure baseline explicitly uses `LOCUST_TAGS=full-readonly` so it exercises all defined read-only tasks.
-- If `LOCUST_TAGS` is omitted on a production run, the script still safely defaults to `vacancies-ui` before Locust filters the task list; an accidental untagged run does not broaden itself to every diagnostic route.
+- If a selector is omitted on a production run, both implementations safely default to `vacancies-ui` rather than broadening to every diagnostic route.
 - `GIMMEJOB_MAX_USERS` defaults to 10.
 - `GIMMEJOB_MAX_RUN_SECONDS` defaults to 600.
-- The workload is GET-only.
+- The workloads are GET-only.
 - Default reporting thresholds are failure ratio <= 1% and aggregate p95 <= 10000 ms; they are observations, not execution-failure criteria.
 
 ## Azure benchmark configuration
 
-Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and reporting thresholds so the saved benchmark remains reproducible.
+Use the checked-in `azure-loadtest.yaml` as the source of truth for Azure Load Testing with Locust. It contains the production host, bounded load, explicit `LOCUST_TAGS=full-readonly`, acknowledgement, and reporting thresholds so the saved benchmark remains reproducible.
 
 The checked-in Azure configuration deliberately contains no `failureCriteria` and sets `autoStop: disable`. A slow or error-heavy run is therefore allowed to continue to its configured duration and is not converted into an execution failure merely because of performance numbers.
 
@@ -152,7 +157,7 @@ Cloudflare references:
 - https://developers.cloudflare.com/workers/observability/metrics-and-analytics/
 - https://developers.cloudflare.com/d1/observability/metrics-analytics/
 
-## Local smoke
+## Local Locust smoke
 
 Use the smoke selector locally because localhost is intentionally trusted by the application:
 
@@ -162,3 +167,17 @@ Use the smoke selector locally because localhost is intentionally trusted by the
   --host http://127.0.0.1:4173 `
   --headless --users 1 --spawn-rate 1 --run-time 30s --tags smoke
 ```
+
+## Local k6 smoke
+
+```powershell
+k6 run `
+  -e GIMMEJOB_HOST=http://127.0.0.1:4173 `
+  -e GIMMEJOB_SCENARIO=health `
+  -e GIMMEJOB_USERS=1 `
+  -e GIMMEJOB_SPAWN_RATE=1 `
+  -e GIMMEJOB_DURATION=30s `
+  tests/performance/gimmejob/k6.js
+```
+
+See [`K6.md`](K6.md) for the full production commands and the detailed Locust-to-k6 concept mapping.
