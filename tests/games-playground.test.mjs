@@ -48,3 +48,33 @@ test("both player-controlled worlds wrap at every edge", () => {
   assert.match(source, /wrapCoordinate\(ship\.y, SPACE_WORLD_HEIGHT\)/);
   assert.doesNotMatch(source, /ship\.x < 0 \|\| ship\.x > SPACE_WORLD_WIDTH/);
 });
+
+test("platformer requires difficulty selection and changes reinforcement cadence", () => {
+  assert.match(source, /type DifficultyId = "easy" \| "normal" \| "hard";/);
+  assert.match(source, /easy: \{ label: "Easy", spawnEvery: 4700 \}/);
+  assert.match(source, /normal: \{ label: "Normal", spawnEvery: 2800 \}/);
+  assert.match(source, /hard: \{ label: "Hard", spawnEvery: 1550 \}/);
+  assert.match(source, /aria-label="Select platformer difficulty"/);
+  assert.match(source, /nextSpawnAt = now \+ difficultyConfig\.spawnEvery/);
+});
+
+test("platformer wins when the player clears the arena before reinforcement", () => {
+  assert.match(source, /if \(!won && enemies\.length === 0\)/);
+  assert.match(source, /Arena cleared/);
+  assert.match(source, /all reinforcements stopped/);
+});
+
+test("gravity adds hostile ships and orbital stations", () => {
+  assert.match(source, /const enemies: SpaceEnemy\[\] = \[/);
+  assert.match(source, /const stations: SpaceStation\[\] = \[/);
+  assert.match(source, /function fireEnemyProjectile/);
+  assert.match(source, /fireEnemyProjectile\(station\.x, station\.y, 455, now\)/);
+  assert.match(source, /enemy\.vx \+= direction\.x \* 92 \* dt/);
+});
+
+test("gravity victory requires destroying one base on every planet", () => {
+  assert.match(source, /const bases: EnemyBase\[\] = planets\.map/);
+  assert.match(source, /bases\.every\(\(base\) => !base\.alive\)/);
+  assert.match(source, /All planetary bases destroyed/);
+  assert.match(source, /Every enemy base on every planet has been destroyed/);
+});
