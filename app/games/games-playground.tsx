@@ -24,6 +24,8 @@ import styles from "./games.module.css";
 type GameId = "platformer" | "gravity";
 type DifficultyId = "easy" | "normal" | "hard";
 type WeaponId = "blaster" | "rocket" | "bomb";
+type ProjectileTeam = "player" | "enemy";
+type EnemyProjectileMode = "standard" | "phase";
 type AimPoint = { x: number; y: number; inside: boolean };
 type ClientPoint = { clientX: number; clientY: number };
 type Projectile = {
@@ -33,6 +35,8 @@ type Projectile = {
   vy: number;
   kind: WeaponId;
   bornAt: number;
+  team: ProjectileTeam;
+  enemyMode?: EnemyProjectileMode;
 };
 type Explosion = { x: number; y: number; radius: number; bornAt: number; duration: number };
 type PlatformEnemy = Rect & {
@@ -82,6 +86,11 @@ const PLATFORM_SCALE = WIDTH / PLATFORM_WORLD_WIDTH;
 const GRAVITY_BASE_ZOOM = 0.4;
 const GRAVITY_MIN_ZOOM = 0.24;
 const GRAVITY_MAX_ZOOM = 2.4;
+const GRAVITY_TURN_SPEED = 3.45;
+const GRAVITY_THRUST = 440;
+const GRAVITY_PASSIVE_DRAG = 0.996;
+const GRAVITY_BRAKE_DRAG = 0.94;
+const GRAVITY_MAX_SPEED = 520;
 const FIRE_HALF_ANGLE = Math.PI * 32 / 180;
 const RESPAWN_DELAY_MS = 900;
 
@@ -144,6 +153,56 @@ function DifficultyPicker({ onSelect }: { onSelect: (difficulty: DifficultyId) =
   );
 }
 
+function VictoryOverlay({
+  title,
+  message,
+  primaryLabel,
+  onPrimary,
+  secondaryLabel,
+  onSecondary,
+}: {
+  title: string;
+  message: string;
+  primaryLabel: string;
+  onPrimary: () => void;
+  secondaryLabel?: string;
+  onSecondary?: () => void;
+}) {
+  return (
+    <div
+      aria-label={`${title} dialog`}
+      role="dialog"
+      style={{
+        alignItems: "center",
+        background: "rgba(7, 11, 20, .84)",
+        border: "1px solid rgba(215, 246, 90, .34)",
+        borderRadius: 14,
+        boxShadow: "0 18px 50px rgba(0, 0, 0, .34)",
+        color: "#dfe8e2",
+        display: "flex",
+        flexDirection: "column",
+        left: "50%",
+        minWidth: 360,
+        padding: "24px 28px 22px",
+        position: "absolute",
+        textAlign: "center",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        zIndex: 5,
+      }}
+    >
+      <h2 style={{ color: "#d7f65a", fontSize: 27, margin: "0 0 8px" }}>{title}</h2>
+      <p style={{ color: "#c8d3cc", fontSize: 13, margin: "0 0 18px", maxWidth: 430 }}>{message}</p>
+      <div className={styles.selector} role="group" aria-label={`${title} actions`}>
+        <button onClick={onPrimary} type="button">{primaryLabel}</button>
+        {secondaryLabel && onSecondary && (
+          <button onClick={onSecondary} type="button">{secondaryLabel}</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function canvasPoint(canvas: HTMLCanvasElement, event: ClientPoint): { x: number; y: number } {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -156,6 +215,10 @@ function pointInsideRect(x: number, y: number, rect: Rect): boolean {
   return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
 }
 
+function platformEnemyShotMode(enemy: PlatformEnemy): EnemyProjectileMode {
+  return enemy.spawnIndex % 3 === 2 ? "phase" : "standard";
+}
+
 function selectWeapon(code: string, current: WeaponId): WeaponId {
   if (code === "Digit1") return "blaster";
   if (code === "Digit2") return "rocket";
@@ -164,17 +227,54 @@ function selectWeapon(code: string, current: WeaponId): WeaponId {
 }
 
 function projectileStyle(projectile: Projectile): { fill: string; radius: number } {
+  if (projectile.team === "enemy") {
+    if (projectile.enemyMode === "phase") return { fill: "#c58cff", radius: 6 };
+    return { fill: "#ff665d", radius: 5 };
+  }
   if (projectile.kind === "rocket") return { fill: "#ffb25b", radius: 7 };
-  if (projectile.kind === "bomb") return { fill: "#e9825e", radius: 9 };
-  return { fill: "#ffd166", radius: 4 };
+  if (projectile.kind === "bomb") return { fill: "#d7f65a", radius: 9 };
+  return { fill: "#76e8ff", radius: 4 };
 }
 
 function drawProjectile(ctx: CanvasRenderingContext2D, projectile: Projectile, scale = 1) {
   const style = projectileStyle(projectile);
+
+  if (projectile.team === "enemy") {
+    ctx.save();
+    ctx.translate(projectile.x, projectile.y);
+    if (projectile.enemyMode === "phase") {
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(197, 140, 255, .22)";
+      ctx.arc(0, 0, 10 / scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.strokeStyle = "#d8a8ff";
+      ctx.lineWidth = 2.4 / scale;
+      ctx.arc(0, 0, style.radius / scale, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = style.fill;
+      ctx.arc(0, 0, 2.3 / scale, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = style.fill;
+      ctx.fillRect(-style.radius / scale, -style.radius / scale, style.radius * 2 / scale, style.radius * 2 / scale);
+      ctx.strokeStyle = "#ffd0ca";
+      ctx.lineWidth = 1.2 / scale;
+      ctx.strokeRect(-style.radius / scale, -style.radius / scale, style.radius * 2 / scale, style.radius * 2 / scale);
+    }
+    ctx.restore();
+    return;
+  }
+
   ctx.beginPath();
   ctx.fillStyle = style.fill;
   ctx.arc(projectile.x, projectile.y, style.radius / scale, 0, Math.PI * 2);
   ctx.fill();
+  ctx.strokeStyle = "rgba(220, 249, 255, .88)";
+  ctx.lineWidth = 1.4 / scale;
+  ctx.stroke();
 
   if (projectile.kind === "rocket") {
     const speed = Math.max(1, Math.hypot(projectile.vx, projectile.vy));
@@ -223,10 +323,21 @@ function drawExplosions(ctx: CanvasRenderingContext2D, explosions: readonly Expl
   }
 }
 
-function PlatformerGame({ resetToken, difficulty }: { resetToken: number; difficulty: DifficultyId }) {
+function PlatformerGame({
+  resetToken,
+  difficulty,
+  onPlayAgain,
+  onChangeDifficulty,
+}: {
+  resetToken: number;
+  difficulty: DifficultyId;
+  onPlayAgain: () => void;
+  onChangeDifficulty: () => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const weaponRef = useRef<WeaponId>("blaster");
   const [weapon, setWeapon] = useState<WeaponId>("blaster");
+  const [victoryVisible, setVictoryVisible] = useState(false);
 
   function chooseWeapon(nextWeapon: WeaponId) {
     weaponRef.current = nextWeapon;
@@ -241,6 +352,7 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
 
     weaponRef.current = "blaster";
     setWeapon("blaster");
+    setVictoryVisible(false);
 
     const keys = new Set<string>();
     const platforms: Rect[] = [
@@ -363,6 +475,7 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
         vy: direction.y * speed,
         kind: currentWeapon,
         bornAt: now,
+        team: "player",
       });
       lastShot = now;
     }
@@ -520,13 +633,17 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
           const originX = enemy.x + enemy.w / 2;
           const originY = enemy.y + enemy.h * 0.45;
           const direction = normalizedDirection(originX, originY, player.x + player.w / 2, player.y + player.h * 0.45);
+          const enemyMode = platformEnemyShotMode(enemy);
+          const speed = enemyMode === "phase" ? 290 : 470;
           enemyProjectiles.push({
             x: originX + direction.x * 18,
             y: originY + direction.y * 18,
-            vx: direction.x * 470,
-            vy: direction.y * 470,
+            vx: direction.x * speed,
+            vy: direction.y * speed,
             kind: "blaster",
             bornAt: now,
+            team: "enemy",
+            enemyMode,
           });
           enemy.nextFireAt = now + enemy.fireEvery;
         }
@@ -568,11 +685,21 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
           || projectile.x > PLATFORM_WORLD_WIDTH + 50
           || projectile.y < -50
           || projectile.y > PLATFORM_WORLD_HEIGHT + 50;
-        if (!remove && !dead && !won && rectsOverlap(player, { x: projectile.x - 4, y: projectile.y - 4, w: 8, h: 8 })) {
+        const hitRadius = projectileStyle(projectile).radius;
+        if (!remove && !dead && !won && rectsOverlap(player, {
+          x: projectile.x - hitRadius,
+          y: projectile.y - hitRadius,
+          w: hitRadius * 2,
+          h: hitRadius * 2,
+        })) {
           remove = true;
           die(now);
         }
-        if (!remove && platforms.some((platform) => pointInsideRect(projectile.x, projectile.y, platform))) remove = true;
+        if (
+          !remove
+          && projectile.enemyMode !== "phase"
+          && platforms.some((platform) => pointInsideRect(projectile.x, projectile.y, platform))
+        ) remove = true;
         if (remove) enemyProjectiles.splice(index, 1);
       }
 
@@ -587,6 +714,7 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
         won = true;
         pointerHeld = false;
         enemyProjectiles.length = 0;
+        setVictoryVisible(true);
       }
     }
 
@@ -604,10 +732,16 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
       ctx.fillStyle = "#314338";
       for (const platform of platforms) ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
       for (const enemy of enemies) {
-        ctx.fillStyle = "#d75a4a";
+        const shotMode = platformEnemyShotMode(enemy);
+        ctx.fillStyle = shotMode === "phase" ? "#7751b8" : "#d75a4a";
         ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
-        ctx.fillStyle = "rgba(255, 207, 191, .85)";
+        ctx.fillStyle = shotMode === "phase" ? "#e0bdff" : "rgba(255, 207, 191, .85)";
         ctx.fillRect(enemy.x + 5, enemy.y + 8, 5, 5);
+        if (shotMode === "phase") {
+          ctx.strokeStyle = "#c58cff";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(enemy.x - 2, enemy.y - 2, enemy.w + 4, enemy.h + 4);
+        }
       }
       projectiles.forEach((projectile) => drawProjectile(ctx, projectile));
       enemyProjectiles.forEach((projectile) => drawProjectile(ctx, projectile));
@@ -638,18 +772,6 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
         20,
         52,
       );
-      if (won) {
-        ctx.fillStyle = "rgba(7, 11, 20, .76)";
-        ctx.fillRect(WIDTH / 2 - 225, HEIGHT / 2 - 54, 450, 108);
-        ctx.fillStyle = "#d7f65a";
-        ctx.font = "700 27px system-ui, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("Arena cleared", WIDTH / 2, HEIGHT / 2 - 5);
-        ctx.fillStyle = "#dfe8e2";
-        ctx.font = "14px system-ui, sans-serif";
-        ctx.fillText("You eliminated everyone before the next reinforcement.", WIDTH / 2, HEIGHT / 2 + 25);
-        ctx.textAlign = "start";
-      }
     }
 
     function loop(now: number) {
@@ -677,6 +799,16 @@ function PlatformerGame({ resetToken, difficulty }: { resetToken: number; diffic
     <div className={styles.gameSurface}>
       <canvas aria-label="Platformer game" className={styles.canvas} height={HEIGHT} ref={canvasRef} width={WIDTH}/>
       <WeaponSelector onSelect={chooseWeapon} weapon={weapon}/>
+      {victoryVisible && (
+        <VictoryOverlay
+          message="You eliminated everyone before the next reinforcement."
+          onPrimary={onPlayAgain}
+          onSecondary={onChangeDifficulty}
+          primaryLabel="Start new game"
+          secondaryLabel="Change difficulty"
+          title="Arena cleared"
+        />
+      )}
     </div>
   );
 }
@@ -811,6 +943,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         vy: ship.vy + direction.y * speed,
         kind: currentWeapon,
         bornAt: now,
+        team: "player",
       });
       lastShot = now;
     }
@@ -846,6 +979,8 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         vy: direction.y * speed,
         kind: "blaster",
         bornAt: now,
+        team: "enemy",
+        enemyMode: "standard",
       });
     }
 
@@ -889,7 +1024,7 @@ function GravityGame({ resetToken }: { resetToken: number }) {
     }
 
     function onKeyDown(event: KeyboardEvent) {
-      if (["ArrowLeft", "ArrowRight", "ArrowUp", "Space"].includes(event.code)) event.preventDefault();
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(event.code)) event.preventDefault();
       keys.add(event.code);
       const nextWeapon = selectWeapon(event.code, weaponRef.current);
       if (nextWeapon !== weaponRef.current) {
@@ -964,21 +1099,28 @@ function GravityGame({ resetToken }: { resetToken: number }) {
       const left = keys.has("ArrowLeft") || keys.has("KeyA");
       const right = keys.has("ArrowRight") || keys.has("KeyD");
       const thrust = keys.has("ArrowUp") || keys.has("KeyW");
+      const brake = keys.has("ArrowDown") || keys.has("KeyS");
       const keyboardShoot = keys.has("KeyF") || keys.has("Space");
       let wrapped = false;
 
       if (!dead && !won) {
-        if (left !== right) ship.angle += (left ? -1 : 1) * 2.55 * dt;
+        if (left !== right) ship.angle += (left ? -1 : 1) * GRAVITY_TURN_SPEED * dt;
         if (thrust) {
-          ship.vx += Math.cos(ship.angle) * 390 * dt;
-          ship.vy += Math.sin(ship.angle) * 390 * dt;
+          ship.vx += Math.cos(ship.angle) * GRAVITY_THRUST * dt;
+          ship.vy += Math.sin(ship.angle) * GRAVITY_THRUST * dt;
         }
 
         const gravity = gravityAtPoint(ship.x, ship.y, planets);
         ship.vx += gravity.x * dt;
         ship.vy += gravity.y * dt;
-        ship.vx *= Math.pow(0.9993, dt * 60);
-        ship.vy *= Math.pow(0.9993, dt * 60);
+        const drag = brake ? GRAVITY_BRAKE_DRAG : GRAVITY_PASSIVE_DRAG;
+        ship.vx *= Math.pow(drag, dt * 60);
+        ship.vy *= Math.pow(drag, dt * 60);
+        const shipSpeed = Math.hypot(ship.vx, ship.vy);
+        if (shipSpeed > GRAVITY_MAX_SPEED) {
+          ship.vx = ship.vx / shipSpeed * GRAVITY_MAX_SPEED;
+          ship.vy = ship.vy / shipSpeed * GRAVITY_MAX_SPEED;
+        }
         ship.x += ship.vx * dt;
         ship.y += ship.vy * dt;
 
@@ -1130,6 +1272,16 @@ function GravityGame({ resetToken }: { resetToken: number }) {
         ctx.strokeStyle = "#f2b45b";
         ctx.stroke();
       }
+      if (!dead && (keys.has("ArrowDown") || keys.has("KeyS"))) {
+        ctx.beginPath();
+        ctx.strokeStyle = "#76e8ff";
+        ctx.lineWidth = 2 / zoom;
+        ctx.moveTo(-7, -8);
+        ctx.lineTo(-20, -8);
+        ctx.moveTo(-7, 8);
+        ctx.lineTo(-20, 8);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -1198,20 +1350,63 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 
     function drawStation(station: SpaceStation) {
       if (!station.alive) return;
+      const stationAngle = (station.x + station.y) * 0.0007;
       ctx.save();
       ctx.translate(station.x, station.y);
-      ctx.strokeStyle = "#ff9a8d";
-      ctx.lineWidth = 4 / zoom;
+      ctx.rotate(stationAngle);
+
+      ctx.strokeStyle = "#9eafbf";
+      ctx.lineWidth = 3 / zoom;
       ctx.beginPath();
-      ctx.arc(0, 0, station.radius, 0, Math.PI * 2);
-      ctx.moveTo(-station.radius - 14, 0);
-      ctx.lineTo(station.radius + 14, 0);
-      ctx.moveTo(0, -station.radius - 14);
-      ctx.lineTo(0, station.radius + 14);
+      ctx.moveTo(-72, 0);
+      ctx.lineTo(72, 0);
       ctx.stroke();
-      ctx.fillStyle = "#8d403c";
-      ctx.fillRect(-9, -9, 18, 18);
+
+      ctx.fillStyle = "#315d82";
+      ctx.fillRect(-70, -16, 32, 32);
+      ctx.fillRect(38, -16, 32, 32);
+      ctx.strokeStyle = "#78a4c4";
+      ctx.lineWidth = 1.4 / zoom;
+      for (const panelX of [-70, 38]) {
+        ctx.strokeRect(panelX, -16, 32, 32);
+        ctx.beginPath();
+        ctx.moveTo(panelX + 16, -16);
+        ctx.lineTo(panelX + 16, 16);
+        ctx.moveTo(panelX, 0);
+        ctx.lineTo(panelX + 32, 0);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#c8d1d8";
+      ctx.fillRect(-23, -12, 46, 24);
+      ctx.fillStyle = "#8f9ca8";
+      ctx.fillRect(-8, -21, 16, 42);
+      ctx.beginPath();
+      ctx.fillStyle = "#6f7e89";
+      ctx.arc(0, 0, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#dce5eb";
+      ctx.lineWidth = 2 / zoom;
+      ctx.stroke();
+
+      ctx.strokeStyle = "#b7c4ce";
+      ctx.beginPath();
+      ctx.moveTo(0, -21);
+      ctx.lineTo(0, -38);
+      ctx.moveTo(0, -38);
+      ctx.lineTo(12, -45);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = "#ff665d";
+      ctx.arc(13, -46, 4 / zoom, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
+
+      const ratio = station.health / station.maxHealth;
+      ctx.fillStyle = "rgba(7,11,20,.72)";
+      ctx.fillRect(station.x - 34, station.y + 38, 68, 6);
+      ctx.fillStyle = "#d7f65a";
+      ctx.fillRect(station.x - 34, station.y + 38, 68 * ratio, 6);
     }
 
     function drawEnemyShip(enemy: SpaceEnemy) {
@@ -1332,11 +1527,11 @@ function GravityGame({ resetToken }: { resetToken: number }) {
 const GAME_INFO: Record<GameId, { description: string; controls: string }> = {
   platformer: {
     description: "Choose a difficulty, then clear every enemy before the next reinforcement arrives.",
-    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · 1/2/3 weapons · clear all enemies to win · R respawn",
+    controls: "A/D or ←/→ move · W/↑/Space double jump · hold mouse to fire · purple enemies fire phase bolts through platforms · 1/2/3 weapons · clear all enemies to win · R respawn",
   },
   gravity: {
     description: "Fight pursuing ships and firing orbital stations while destroying the enemy base on every planet.",
-    controls: "A/D or ←/→ rotate · W/↑ thrust · wheel zoom · hold mouse to fire · 1/2/3 weapons · destroy all planetary bases to win · R respawn",
+    controls: "A/D or ←/→ rotate · W/↑ thrust · S/↓ brake · assisted drag and speed cap · wheel zoom · hold mouse to fire · 1/2/3 weapons · destroy all planetary bases to win · R respawn",
   },
 };
 
@@ -1391,7 +1586,14 @@ export default function GamesPlayground() {
             <div className={styles.canvasFrame}>
               {game === "platformer"
                 ? difficulty
-                  ? <PlatformerGame difficulty={difficulty} resetToken={resetToken}/>
+                  ? (
+                    <PlatformerGame
+                      difficulty={difficulty}
+                      onChangeDifficulty={() => setDifficulty(null)}
+                      onPlayAgain={() => setResetToken((value) => value + 1)}
+                      resetToken={resetToken}
+                    />
+                  )
                   : <DifficultyPicker onSelect={selectDifficulty}/>
                 : <GravityGame resetToken={resetToken}/>}
             </div>
