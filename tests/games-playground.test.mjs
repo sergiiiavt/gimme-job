@@ -49,6 +49,14 @@ test("both player-controlled worlds wrap at every edge", () => {
   assert.doesNotMatch(source, /ship\.x < 0 \|\| ship\.x > SPACE_WORLD_WIDTH/);
 });
 
+test("both games request a fresh seeded battlefield when a new game starts", () => {
+  assert.match(source, /generatePlatformBattlefield\(/);
+  assert.match(source, /generateGravityBattlefield\(/);
+  assert.equal((source.match(/randomBattlefieldSeed\(resetToken\)/g) ?? []).length, 2);
+  assert.match(source, /const mapId = battlefieldId\(battlefield\.seed\)/);
+  assert.match(source, /New battlefield/);
+});
+
 test("platformer requires difficulty selection and changes reinforcement cadence", () => {
   assert.match(source, /type DifficultyId = "easy" \| "normal" \| "hard" \| "impossible";/);
   assert.match(source, /easy: \{ label: "Easy", spawnEvery: 4700 \}/);
@@ -65,8 +73,11 @@ test("platformer wins when the player clears the arena before reinforcement", ()
   assert.match(source, /all reinforcements stopped/);
 });
 
-test("platformer victory dialog can immediately start a new game or change difficulty", () => {
+test("platformer victory dialog has independent line height and new-game actions", () => {
   assert.match(source, /function VictoryOverlay/);
+  assert.match(source, /lineHeight: 1\.35/);
+  assert.match(source, /lineHeight: 1\.1/);
+  assert.match(source, /lineHeight: 1\.45/);
   assert.match(source, /primaryLabel="Start new game"/);
   assert.match(source, /secondaryLabel="Change difficulty"/);
   assert.match(source, /onPlayAgain=\{\(\) => setResetToken/);
@@ -93,9 +104,9 @@ test("player and enemy projectiles use separate team styling in both games", () 
   assert.match(source, /return \{ fill: "#76e8ff", radius: 4 \}/);
 });
 
-test("gravity adds hostile ships and orbital stations", () => {
-  assert.match(source, /const enemies: SpaceEnemy\[\] = \[/);
-  assert.match(source, /const stations: SpaceStation\[\] = \[/);
+test("gravity builds hostile ships and orbital stations from the generated battlefield", () => {
+  assert.match(source, /const enemies: SpaceEnemy\[\] = battlefield\.enemies\.map/);
+  assert.match(source, /const stations: SpaceStation\[\] = battlefield\.stations\.map/);
   assert.match(source, /function fireEnemyProjectile/);
   assert.match(source, /fireEnemyProjectile\(station\.x, station\.y, 455, now\)/);
   assert.match(source, /enemy\.vx \+= direction\.x \* 92 \* dt/);
@@ -120,13 +131,12 @@ test("gravity ship has faster steering, passive damping, braking, and a speed ca
   assert.match(source, /shipSpeed > GRAVITY_MAX_SPEED/);
 });
 
-test("gravity victory requires destroying one base on every planet", () => {
+test("gravity victory requires destroying one base on every generated planet", () => {
   assert.match(source, /const bases: EnemyBase\[\] = planets\.map/);
   assert.match(source, /bases\.every\(\(base\) => !base\.alive\)/);
   assert.match(source, /All planetary bases destroyed/);
   assert.match(source, /Every enemy base on every planet has been destroyed/);
 });
-
 
 test("both games grant two seconds of invincibility after automatic respawn", () => {
   assert.match(source, /const INVINCIBILITY_AFTER_RESPAWN_MS = 2000;/);
