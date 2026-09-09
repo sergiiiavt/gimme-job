@@ -6,14 +6,14 @@ on:
       - main
     paths:
       - .github/workflows/hetzner-n8n.yml
-      - ops/hetzner/**
+      - ops/hetzner/provision.mjs
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ai-image-${{ github.ref }}
+  group: hetzner-provision-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
