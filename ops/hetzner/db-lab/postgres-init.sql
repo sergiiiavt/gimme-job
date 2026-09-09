@@ -75,4 +75,8 @@ SELECT
   TIMESTAMP '2026-01-01 09:00:00' + (((n - 1) % 240) * INTERVAL '1 day')
 FROM generate_series(1, 50000) AS n;
 
+ANALYZE users;
+ANALYZE products;
+ANALYZE orders;
+
 RESET ROLE;
