@@ -5,9 +5,54 @@ const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 const SERVER_NAME = "gimmejob-n8n";
 const FIREWALL_NAME = "gimmejob-n8n-fw";
 const SERVER_TYPE = "cx23";
-const HOSTNAME = "n8n.gimme-job.com";
+const N8N_HOSTNAME = "n8n.gimme-job.com";
+const DB_HOSTNAME = "db.gimme-job.com";
 const ZONE_NAME = "gimme-job.com";
 const PREFERRED_LOCATIONS = ["nbg1", "fsn1", "hel1"];
+const FIREWALL_RULES = [
+  {
+    direction: "in",
+    protocol: "tcp",
+    port: "22",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "SSH (public-key authentication only)",
+  },
+  {
+    direction: "in",
+    protocol: "tcp",
+    port: "80",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "HTTP for HTTPS redirect and ACME",
+  },
+  {
+    direction: "in",
+    protocol: "tcp",
+    port: "443",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "HTTPS",
+  },
+  {
+    direction: "in",
+    protocol: "udp",
+    port: "443",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "HTTP/3",
+  },
+  {
+    direction: "in",
+    protocol: "tcp",
+    port: "3306",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "Public disposable MySQL test lab",
+  },
+  {
+    direction: "in",
+    protocol: "tcp",
+    port: "5432",
+    source_ips: ["0.0.0.0/0", "::/0"],
+    description: "Public disposable PostgreSQL test lab",
+  },
+];
 
 // Public key only. The corresponding private key never leaves the user's machine.
 const SSH_PUBLIC_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDNrULrj7iwoTCT8ld4YDekf7r0ljiqg+zLhh3BlyNwBkX6NrMSbxMcz8xqwFFyEtGp9zmAzU+p8rI0XJV8h9AnezHtS82WaQm8fkeBOpNfT+fj2XVg/HKJVtidIFL4DJ6EhHmFbbrwppAfXuxbyYr8YTv56DDmzY6gdQabk2K/PefW098RKVea/XTOkoc8r1H2qmIGPA8fBKQZCIqHzputhDA7+/NOFwXx6m94vdmZb9csLLub4SUKHorh/v31JPsZpGZCmOgYkW/5zW97rYcETF7VarVEtOkXU8eNnKf/fzhCp2/ztokFmlJzES0RQJwmUZ4Y4yJGgp6nb3ctC3WX ssh-key-2026-08-15";
@@ -67,6 +112,18 @@ function hcloud(path, options = {}) {
   });
 }
 
+async function waitForAction(actionId, timeoutMs = 120000) {
+  if (!actionId) return;
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const { action } = await hcloud(`/actions/${actionId}`);
+    if (action?.status === "success") return;
+    if (action?.status === "error") throw new Error(`Hetzner action ${actionId} failed`);
+    await sleep(2000);
+  }
+  throw new Error(`Timed out waiting for Hetzner action ${actionId}`);
+}
+
 function cloudInit() {
   return `#cloud-config
 ssh_pwauth: false
@@ -89,8 +146,14 @@ runcmd:
 async function ensureFirewall() {
   const existing = await hcloud(`/firewalls?name=${encodeURIComponent(FIREWALL_NAME)}`);
   if (existing.firewalls?.length) {
-    console.log(`Reusing firewall ${FIREWALL_NAME}`);
-    return existing.firewalls[0];
+    const firewall = existing.firewalls[0];
+    const updated = await hcloud(`/firewalls/${firewall.id}/actions/set_rules`, {
+      method: "POST",
+      body: { rules: FIREWALL_RULES },
+    });
+    await waitForAction(updated.action?.id);
+    console.log(`Reconciled firewall ${FIREWALL_NAME}`);
+    return firewall;
   }
 
   const created = await hcloud("/firewalls", {
@@ -102,36 +165,7 @@ async function ensureFirewall() {
         service: "n8n",
         managed_by: "github-actions",
       },
-      rules: [
-        {
-          direction: "in",
-          protocol: "tcp",
-          port: "22",
-          source_ips: ["0.0.0.0/0", "::/0"],
-          description: "SSH (public-key authentication only)",
-        },
-        {
-          direction: "in",
-          protocol: "tcp",
-          port: "80",
-          source_ips: ["0.0.0.0/0", "::/0"],
-          description: "HTTP for HTTPS redirect and ACME",
-        },
-        {
-          direction: "in",
-          protocol: "tcp",
-          port: "443",
-          source_ips: ["0.0.0.0/0", "::/0"],
-          description: "HTTPS",
-        },
-        {
-          direction: "in",
-          protocol: "udp",
-          port: "443",
-          source_ips: ["0.0.0.0/0", "::/0"],
-          description: "HTTP/3",
-        },
-      ],
+      rules: FIREWALL_RULES,
     },
   });
 
@@ -217,12 +251,13 @@ async function ensureFirewallApplied(firewall, server) {
   }
 
   try {
-    await hcloud(`/firewalls/${firewall.id}/actions/apply_to_resources`, {
+    const appliedResult = await hcloud(`/firewalls/${firewall.id}/actions/apply_to_resources`, {
       method: "POST",
       body: {
         apply_to: [{ type: "server", server: { id: server.id } }],
       },
     });
+    await waitForAction(appliedResult.action?.id);
     console.log(`Applied firewall ${FIREWALL_NAME} to ${SERVER_NAME}`);
   } catch (error) {
     if (error instanceof ApiError && error.code === "firewall_already_applied") return;
@@ -234,6 +269,35 @@ function serverIpv4(server) {
   const ip = server?.public_net?.ipv4?.ip;
   if (!ip) throw new Error(`${SERVER_NAME} does not have a public IPv4 address`);
   return ip;
+}
+
+async function upsertCloudflareARecord(cf, zoneId, hostname, ipv4, comment) {
+  const records = await cf(
+    `/zones/${zoneId}/dns_records?type=A&name=${encodeURIComponent(hostname)}`,
+  );
+  const record = records.result?.[0];
+  const desired = {
+    type: "A",
+    name: hostname,
+    content: ipv4,
+    ttl: 1,
+    proxied: false,
+    comment,
+  };
+
+  if (record) {
+    await cf(`/zones/${zoneId}/dns_records/${record.id}`, {
+      method: "PATCH",
+      body: desired,
+    });
+    console.log(`Updated ${hostname} -> ${ipv4}`);
+  } else {
+    await cf(`/zones/${zoneId}/dns_records`, {
+      method: "POST",
+      body: desired,
+    });
+    console.log(`Created ${hostname} -> ${ipv4}`);
+  }
 }
 
 async function configureCloudflareDns(ipv4) {
@@ -257,32 +321,20 @@ async function configureCloudflareDns(ipv4) {
     const zone = zones.result?.find((item) => item.name === ZONE_NAME);
     if (!zone) throw new Error(`Cloudflare zone ${ZONE_NAME} was not found`);
 
-    const records = await cf(
-      `/zones/${zone.id}/dns_records?type=A&name=${encodeURIComponent(HOSTNAME)}`,
+    await upsertCloudflareARecord(
+      cf,
+      zone.id,
+      N8N_HOSTNAME,
+      ipv4,
+      "GimmeJob n8n runtime on Hetzner; managed by GitHub Actions",
     );
-    const record = records.result?.[0];
-    const desired = {
-      type: "A",
-      name: HOSTNAME,
-      content: ipv4,
-      ttl: 1,
-      proxied: false,
-      comment: "GimmeJob n8n runtime on Hetzner; managed by GitHub Actions",
-    };
-
-    if (record) {
-      await cf(`/zones/${zone.id}/dns_records/${record.id}`, {
-        method: "PATCH",
-        body: desired,
-      });
-      console.log(`Updated ${HOSTNAME} -> ${ipv4}`);
-    } else {
-      await cf(`/zones/${zone.id}/dns_records`, {
-        method: "POST",
-        body: desired,
-      });
-      console.log(`Created ${HOSTNAME} -> ${ipv4}`);
-    }
+    await upsertCloudflareARecord(
+      cf,
+      zone.id,
+      DB_HOSTNAME,
+      ipv4,
+      "GimmeJob public disposable database labs; managed by GitHub Actions",
+    );
     return true;
   } catch {
     console.warn("Cloudflare DNS automation skipped; configure DNS manually if needed");
@@ -312,17 +364,19 @@ const dnsConfigured = await configureCloudflareDns(ipv4);
 setOutput("server_id", server.id);
 setOutput("server_ip", ipv4);
 setOutput("dns_configured", dnsConfigured ? "true" : "false");
-setOutput("n8n_url", `https://${HOSTNAME}`);
+setOutput("n8n_url", `https://${N8N_HOSTNAME}`);
+setOutput("db_host", DB_HOSTNAME);
 
 addSummary([
-  "## Hetzner n8n runtime",
+  "## Hetzner runtime",
   "",
   `- Server: \`${SERVER_NAME}\` (ID ${server.id})`,
   `- IPv4: \`${ipv4}\``,
-  `- n8n: https://${HOSTNAME}`,
+  `- n8n: https://${N8N_HOSTNAME}`,
+  `- Public DB host: \`${DB_HOSTNAME}\``,
   `- Cloudflare DNS updated: ${dnsConfigured ? "yes" : "no"}`,
-  "- Ports exposed by Hetzner firewall: 22/tcp, 80/tcp, 443/tcp, 443/udp",
-  "- PostgreSQL and n8n port 5678 are Docker-internal only",
+  "- Public ports: 22/tcp, 80/tcp, 443/tcp, 443/udp, 3306/tcp (MySQL lab), 5432/tcp (PostgreSQL lab)",
+  "- n8n PostgreSQL and n8n port 5678 remain Docker-internal only",
 ]);
 
 console.log(`Server ready for bootstrap: ${SERVER_NAME} ${ipv4}`);
