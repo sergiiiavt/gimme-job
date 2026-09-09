@@ -60,6 +60,56 @@ services:
     networks:
       - n8n_internal
 
+  mysql-lab:
+    image: mysql:8.0
+    restart: unless-stopped
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --max-connections=80
+      - --innodb-buffer-pool-size=256M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_LAB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    ports:
+      - "0.0.0.0:3306:3306"
+    volumes:
+      - mysql_lab_data:/var/lib/mysql
+      - ./db-lab/mysql-init.sql:/docker-entrypoint-initdb.d/10-gimmejob-lab.sql:ro
+    networks:
+      - db_lab_internal
+
+  postgres-lab:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - max_connections=80
+      - -c
+      - shared_buffers=128MB
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_LAB_ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - postgres_lab_data:/var/lib/postgresql/data
+      - ./db-lab/postgres-init.sql:/docker-entrypoint-initdb.d/10-gimmejob-lab.sql:ro
+    networks:
+      - db_lab_internal
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -79,9 +129,13 @@ services:
 volumes:
   n8n_postgres_data:
   n8n_data:
+  mysql_lab_data:
+  postgres_lab_data:
   caddy_data:
   caddy_config:
 
 networks:
   n8n_internal:
+    driver: bridge
+  db_lab_internal:
     driver: bridge
