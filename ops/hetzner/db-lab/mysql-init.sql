@@ -2,6 +2,8 @@
 -- The lab password is intentionally not stored in plaintext in Git.
 -- mysql_native_password is used here only so the strong shared lab password can be
 -- represented by a one-way verifier in this public repository.
+-- Intentionally no index exists on orders.user_id/product_id so EXPLAIN + CREATE INDEX
+-- exercises have a real before/after plan to inspect.
 
 CREATE DATABASE IF NOT EXISTS gimmejob_lab
   CHARACTER SET utf8mb4
@@ -100,3 +102,5 @@ FROM (
   CROSS JOIN digits d4
 ) AS seq
 WHERE seq.n < 50000;
+
+ANALYZE TABLE users, products, orders;
