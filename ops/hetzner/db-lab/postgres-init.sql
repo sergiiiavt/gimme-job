@@ -1,5 +1,7 @@
 -- Public disposable PostgreSQL lab for GimmeJob database testing.
 -- The strong shared lab password is stored only as a SCRAM verifier, never plaintext.
+-- Intentionally no index exists on orders.user_id/product_id so EXPLAIN + CREATE INDEX
+-- exercises have a real before/after plan to inspect.
 
 CREATE ROLE gimmejob_lab
   LOGIN
@@ -48,8 +50,8 @@ INSERT INTO users (id, email, region, status, created_at)
 SELECT
   n,
   'user' || LPAD(n::text, 5, '0') || '@example.test',
-  (ARRAY['EU', 'UA', 'US', 'APAC', 'LATAM'])[((n - 1) % 5) + 1],
-  (ARRAY['active', 'active', 'active', 'inactive'])[((n - 1) % 4) + 1],
+  (ARRAY['EU', 'UA', 'US', 'APAC', 'LATAM'])[((n - 1) % 5 + 1)::int],
+  (ARRAY['active', 'active', 'active', 'inactive'])[((n - 1) % 4 + 1)::int],
   TIMESTAMP '2025-01-01 08:00:00' + (((n - 1) % 600) * INTERVAL '1 day')
 FROM generate_series(1, 10000) AS n;
 
@@ -57,7 +59,7 @@ INSERT INTO products (id, sku, category, price, active)
 SELECT
   n,
   'SKU-' || LPAD(n::text, 4, '0'),
-  (ARRAY['hardware', 'software', 'books', 'office', 'training'])[((n - 1) % 5) + 1],
+  (ARRAY['hardware', 'software', 'books', 'office', 'training'])[((n - 1) % 5 + 1)::int],
   ROUND((5 + (((n - 1) * 137) % 49500) / 100.0)::numeric, 2),
   ((n - 1) % 10) <> 0
 FROM generate_series(1, 200) AS n;
@@ -67,8 +69,8 @@ SELECT
   n,
   (((n - 1) * 17) % 10000) + 1,
   (((n - 1) * 13) % 200) + 1,
-  (ARRAY['new', 'paid', 'paid', 'shipped', 'cancelled'])[((n - 1) % 5) + 1],
-  (ARRAY['web', 'mobile', 'api', 'partner'])[((n - 1) % 4) + 1],
+  (ARRAY['new', 'paid', 'paid', 'shipped', 'cancelled'])[((n - 1) % 5 + 1)::int],
+  (ARRAY['web', 'mobile', 'api', 'partner'])[((n - 1) % 4 + 1)::int],
   ROUND((10 + (((n - 1) * 37) % 99000) / 100.0)::numeric, 2),
   TIMESTAMP '2026-01-01 09:00:00' + (((n - 1) % 240) * INTERVAL '1 day')
 FROM generate_series(1, 50000) AS n;
