@@ -10,11 +10,12 @@ CREATE ROLE gimmejob_lab
   CONNECTION LIMIT 12
   PASSWORD 'SCRAM-SHA-256$4096:nNGGxra+RtkCqZ67LPUTTw==$bOhRl2pJuBug3jTVadF66aOf0zSc9mP0KbBuqrt1V40=:egRqxuyZBG0+YC21nlIhy6ajIV0OGRfHMxNnWjSCF44=';
 
-CREATE DATABASE gimmejob_lab OWNER gimmejob_lab;
-REVOKE CONNECT ON DATABASE postgres FROM PUBLIC;
+CREATE DATABASE gimmejob_lab;
+GRANT CONNECT, TEMPORARY ON DATABASE gimmejob_lab TO gimmejob_lab;
 
 \connect gimmejob_lab
 
+GRANT ALL ON SCHEMA public TO gimmejob_lab;
 SET ROLE gimmejob_lab;
 
 CREATE TABLE users (
