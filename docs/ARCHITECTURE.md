@@ -80,12 +80,16 @@ The code-quality workflow also refreshes SonarQube Cloud's `main` baseline after
 
 Production deployments are serialized and are not cancelled by newer `main` pushes. Vacancy synchronization remains a separate scheduled operational workflow rather than part of code deployment. Pull requests never deploy, and the deployment script rejects production use outside GitHub Actions.
 
-The production Hetzner VM is managed by the files under `ops/hetzner/`. n8n and the Python AI service share the private Docker network but expose no application ports directly on the host; Caddy publishes only HTTP/HTTPS and proxies `n8n.gimme-job.com` to n8n and `ai.gimme-job.com` to `gimmejob-ai:8000`. The trusted `ai-image.yml` workflow builds and publishes the AI image to GHCR. On `main` pushes or a manual dispatch, its deployment job then copies the protected AI runtime environment to the VM over SSH, pulls the public GHCR image, starts the Compose `ai` profile, reloads Caddy, and verifies `/health`. Pull-request runs build the image only and never receive production deployment secrets. The initial activation requires the deployment SSH key and AI/Langfuse secrets to be configured in GitHub. The Worker uses `GIMMEJOB_AI_URL=https://ai.gimme-job.com` and its independent service token to reach the service.
+The production Hetzner VM is managed by the files under `ops/hetzner/`. n8n, its PostgreSQL database, and the Python AI service use private Docker networking; Caddy publishes HTTP/HTTPS and proxies `n8n.gimme-job.com` to n8n and `ai.gimme-job.com` to `gimmejob-ai:8000`. Two separate disposable database-lab containers are intentionally public for testing: MySQL on `db.gimme-job.com:3306` and PostgreSQL on `db.gimme-job.com:5432`. Their synthetic fixture volumes and Docker network are separate from the private n8n database and from GimmeJob application state.
+
+Hetzner runtime changes are deployed from `main`: provisioning reconciles the VM, firewall, and DNS, while the runtime-refresh workflow uses Hetzner rescue access to install the current version-controlled bootstrap on the VM, reboot into Ubuntu, recreate the Compose runtime, and verify n8n plus the public database ports. The trusted `ai-image.yml` workflow separately builds and publishes the AI image to GHCR. On `main` pushes or a manual dispatch, its deployment job copies the protected AI runtime environment to the VM over SSH, pulls the public GHCR image, starts the Compose `ai` profile, reloads Caddy, and verifies `/health`. Pull-request runs build the image only and never receive production deployment secrets. The initial AI activation requires the deployment SSH key and AI/Langfuse secrets to be configured in GitHub. The Worker uses `GIMMEJOB_AI_URL=https://ai.gimme-job.com` and its independent service token to reach the service.
 
 ## Security boundaries
 
-- no secrets in Git;
-- production data remains in the private database;
+- no production secrets in Git;
+- production data remains in private D1/private service databases;
+- the public MySQL/PostgreSQL labs contain synthetic disposable data only and are isolated from production state;
+- the public lab login is not a production credential and its plaintext password is not stored in Git;
 - external Workers traffic requires a provider-managed password secret;
 - the n8n internal email API uses its own `N8N_INGEST_TOKEN`, not the workspace password;
 - the forwarding workflow needs no Gmail OAuth credentials in n8n;
@@ -98,4 +102,4 @@ The production Hetzner VM is managed by the files under `ops/hetzner/`. n8n and 
 - canonical RAG search uses a separate service token from AI-service browser proxy authentication and MCP authentication;
 - Langfuse credentials stay in runtime secrets and are never returned by health or AI responses;
 - GitHub Actions has read-only repository permissions;
-- hosted credentials belong in provider-managed secrets.
+- hosted production credentials belong in provider-managed secrets.
