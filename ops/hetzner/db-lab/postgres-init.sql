@@ -1,7 +1,5 @@
 -- Public disposable PostgreSQL lab for GimmeJob database testing.
 -- The strong shared lab password is stored only as a SCRAM verifier, never plaintext.
--- Intentionally no index exists on orders.user_id/product_id so EXPLAIN + CREATE INDEX
--- exercises have a real before/after plan to inspect.
 
 CREATE ROLE gimmejob_lab
   LOGIN
