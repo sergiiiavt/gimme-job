@@ -15,6 +15,8 @@ on:
 permissions:
   contents: read
 
+# Share this lock only with the AI SSH deployment: both mutate/reboot the live runtime.
+# Provider-only Hetzner reconciliation uses a separate concurrency group.
 concurrency:
   group: ai-image-${{ github.ref }}
   cancel-in-progress: false
