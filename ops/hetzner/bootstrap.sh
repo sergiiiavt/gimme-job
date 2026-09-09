@@ -10,6 +10,21 @@ log() {
   printf '[gimmejob-bootstrap] %s\n' "$*"
 }
 
+ensure_env_value() {
+  local key="$1"
+  local value="$2"
+  if ! grep -q "^${key}=" "$RUNTIME_DIR/.env"; then
+    printf '%s=%s\n' "$key" "$value" >>"$RUNTIME_DIR/.env"
+  fi
+}
+
+ensure_env_secret() {
+  local key="$1"
+  if ! grep -q "^${key}=" "$RUNTIME_DIR/.env"; then
+    printf '%s=%s\n' "$key" "$(openssl rand -hex 32)" >>"$RUNTIME_DIR/.env"
+  fi
+}
+
 log "Updating base system"
 apt-get update
 apt-get install -y ca-certificates curl openssl
@@ -45,35 +60,43 @@ if ! swapon --show --noheadings | grep -q .; then
 fi
 
 install -d -m 700 "$RUNTIME_DIR"
+install -d -m 755 "$RUNTIME_DIR/db-lab"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/docker-compose.yml" -o "$RUNTIME_DIR/docker-compose.yml"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/Caddyfile" -o "$RUNTIME_DIR/Caddyfile"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/db-lab/mysql-init.sql" -o "$RUNTIME_DIR/db-lab/mysql-init.sql"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/db-lab/postgres-init.sql" -o "$RUNTIME_DIR/db-lab/postgres-init.sql"
+chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql"
 
 if [[ ! -f "$RUNTIME_DIR/.env" ]]; then
-  log "Generating persistent n8n and PostgreSQL secrets"
+  log "Creating persistent runtime environment"
   umask 077
-  POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-  N8N_ENCRYPTION_KEY="$(openssl rand -hex 32)"
-  cat >"$RUNTIME_DIR/.env" <<EOF
-POSTGRES_DB=n8n
-POSTGRES_USER=n8n
-POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-N8N_ENCRYPTION_KEY=$N8N_ENCRYPTION_KEY
-N8N_HOST=n8n.gimme-job.com
-EOF
+  : >"$RUNTIME_DIR/.env"
 fi
 chmod 600 "$RUNTIME_DIR/.env"
 
+ensure_env_value POSTGRES_DB n8n
+ensure_env_value POSTGRES_USER n8n
+ensure_env_value N8N_HOST n8n.gimme-job.com
+ensure_env_secret POSTGRES_PASSWORD
+ensure_env_secret N8N_ENCRYPTION_KEY
+ensure_env_secret MYSQL_LAB_ROOT_PASSWORD
+ensure_env_secret POSTGRES_LAB_ADMIN_PASSWORD
+chmod 600 "$RUNTIME_DIR/.env"
+
 cd "$RUNTIME_DIR"
+docker compose config --quiet
 if [[ -f "$RUNTIME_DIR/ai.env" ]]; then
   chmod 600 "$RUNTIME_DIR/ai.env"
-  log "Starting PostgreSQL, n8n, GimmeJob AI, and Caddy"
+  log "Starting n8n stack, GimmeJob AI, MySQL lab, PostgreSQL lab, and Caddy"
   docker compose --profile ai pull
   docker compose --profile ai up -d --remove-orphans
   docker compose --profile ai ps
 else
-  log "Starting PostgreSQL, n8n, and Caddy (AI runtime not configured yet)"
+  log "Starting n8n stack, MySQL lab, PostgreSQL lab, and Caddy (AI runtime not configured yet)"
   docker compose pull
   docker compose up -d --remove-orphans
   docker compose ps
