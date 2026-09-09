@@ -140,10 +140,12 @@ The Hetzner environment hosts containerized supporting services, including:
 
 - the Python `gimmejob-ai` FastAPI service;
 - n8n;
-- PostgreSQL for n8n;
+- private PostgreSQL for n8n;
+- a disposable MySQL test lab;
+- a separate disposable PostgreSQL test lab;
 - Caddy as the public HTTP/HTTPS reverse proxy.
 
-Application/database container ports remain private to the Docker network. Caddy exposes the public HTTPS boundaries such as `ai.gimme-job.com` and `n8n.gimme-job.com`.
+The n8n PostgreSQL database and application-service ports remain private to Docker. The database labs are an intentional exception for QA/database practice: `db.gimme-job.com:3306` exposes MySQL and `db.gimme-job.com:5432` exposes PostgreSQL directly to the Internet. They contain synthetic/disposable data only and are isolated from the private n8n database and GimmeJob production state.
 
 The infrastructure is reproducible from repository code and GitHub Actions rather than being treated as a manually configured server.
 
@@ -159,7 +161,7 @@ Key directories/files:
 - `db/schema.ts` — D1/Drizzle schema;
 - `drizzle/` — ordered database migrations;
 - `ops/n8n/` — versioned n8n workflows;
-- `ops/hetzner/` — production VM provisioning, Compose, and runtime configuration;
+- `ops/hetzner/` — production VM provisioning, Compose, database-lab fixtures, and runtime configuration;
 - `.github/workflows/` — CI, deployment, AI image, infrastructure, and operational workflows;
 - `.vscode/` — recommended settings/tasks/debug profiles;
 - `AGENTS.md` — repository-wide instructions for coding agents;
@@ -196,6 +198,7 @@ The project currently uses or integrates:
 
 - n8n
 - PostgreSQL
+- MySQL
 - Docker / Docker Compose
 - Caddy
 - Hetzner Cloud
@@ -335,15 +338,15 @@ Pull-request AI-image jobs build/test without receiving production deployment se
 
 ### n8n / Hetzner infrastructure
 
-Infrastructure and n8n runtime configuration are versioned under `ops/hetzner/` and `ops/n8n/`. Provisioning/deployment workflows configure the VM, firewall, Cloudflare DNS, Docker runtime, and versioned workflows from repository-controlled definitions.
+Infrastructure and n8n runtime configuration are versioned under `ops/hetzner/` and `ops/n8n/`. Provisioning/deployment workflows configure the VM, reconcile the firewall and Cloudflare DNS, refresh the version-controlled Compose runtime, and verify the public service boundaries after changes reach `main`.
 
-Production credentials belong in GitHub/Cloudflare/provider-managed secret stores, never in source control.
+Production credentials belong in GitHub/Cloudflare/provider-managed secret stores, never in source control. The public database-lab login is intentionally separate from all production credentials; only its one-way database verifier is committed with the disposable fixture.
 
 ## Security boundaries
 
 Important project invariants include:
 
-- no secrets in Git;
+- no production secrets in Git;
 - public content must not expose private user state;
 - public interview/learning content remains in Git;
 - private vacancy/application/progress data stays behind authenticated runtime boundaries;
@@ -351,6 +354,7 @@ Important project invariants include:
 - canonical RAG uses an independent service credential;
 - n8n receives no D1 or OpenAI master credentials;
 - n8n does not own GimmeJob business state;
+- the public MySQL/PostgreSQL labs contain synthetic disposable data only and have no network/database path to production state;
 - forwarded email storage is bounded and raw MIME/attachments are not treated as application content;
 - external fetches are restricted to safe public sources by the application boundary;
 - vacancy sync/analysis does not automatically send job applications;
