@@ -143,12 +143,11 @@ function mysqlArgs({ user, database, sql, skipHeaders = false }) {
     "--batch",
     "--binary-mode",
     "--raw",
-    "--silent",
     "--local-infile=0",
     "--connect-timeout=3",
     "--default-character-set=utf8mb4",
   ];
-  if (skipHeaders) args.push("--skip-column-names");
+  args.push(skipHeaders ? "--skip-column-names" : "--column-names");
   if (database) args.push(database);
   args.push("--execute", sql);
   return args;
@@ -569,4 +568,4 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   });
 }
 
-export { createLabServer, handle, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor };
+export { createLabServer, handle, mysqlArgs, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor };
