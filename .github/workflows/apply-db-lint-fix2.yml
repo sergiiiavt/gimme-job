@@ -1,0 +1,82 @@
+name: Apply database lint fix 2
+
+on:
+  push:
+    branches:
+      - agent/database-playground
+    paths:
+      - .github/workflows/apply-db-lint-fix2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/database-playground
+
+      - name: Patch lint failures
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          ui = Path('app/playgrounds/databases/database-playground.tsx')
+          text = ui.read_text()
+          old = '''  useEffect(() => {
+            const existing = localStorage.getItem(SESSION_KEY);
+            const nextSession = existing && /^[A-Za-z0-9_-]{8,200}$/.test(existing) ? existing : newSessionId();
+            localStorage.setItem(SESSION_KEY, nextSession);
+            setSessionId(nextSession);
+            const savedEngine = localStorage.getItem(ENGINE_KEY);
+            const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
+            setEngine(nextEngine);
+            setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
+            setHistory(readHistory());
+          }, []);'''.replace('          ', '')
+          new = '''  useEffect(() => {
+            const timer = window.setTimeout(() => {
+              const existing = localStorage.getItem(SESSION_KEY);
+              const nextSession = existing && /^[A-Za-z0-9_-]{8,200}$/.test(existing) ? existing : newSessionId();
+              localStorage.setItem(SESSION_KEY, nextSession);
+              setSessionId(nextSession);
+              const savedEngine = localStorage.getItem(ENGINE_KEY);
+              const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
+              setEngine(nextEngine);
+              setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
+              setHistory(readHistory());
+            }, 0);
+            return () => window.clearTimeout(timer);
+          }, []);'''.replace('          ', '')
+          if old not in text:
+              raise SystemExit('initialization effect anchor missing')
+          text = text.replace(old, new, 1)
+          old2 = '''  useEffect(() => {
+            if (sessionId) void refreshSchema();
+          }, [refreshSchema, sessionId]);'''.replace('          ', '')
+          new2 = '''  useEffect(() => {
+            if (!sessionId) return;
+            const timer = window.setTimeout(() => void refreshSchema(), 0);
+            return () => window.clearTimeout(timer);
+          }, [refreshSchema, sessionId]);'''.replace('          ', '')
+          if old2 not in text:
+              raise SystemExit('schema effect anchor missing')
+          ui.write_text(text.replace(old2, new2, 1))
+
+          sidecar = Path('ops/hetzner/db-lab-api/server.mjs')
+          text = sidecar.read_text()
+          old3 = 'function readLike(kind) {\n  return ["SELECT", "SHOW", "DESCRIBE", "DESC", "EXPLAIN"].includes(kind);\n}\n\n'
+          if old3 in text:
+              sidecar.write_text(text.replace(old3, '', 1))
+          PY
+
+      - name: Commit fixes
+        shell: bash
+        run: |
+          git config user.name "gimmejob-agent"
+          git config user.email "77669556+sergiiiavt@users.noreply.github.com"
+          git add app/playgrounds/databases/database-playground.tsx ops/hetzner/db-lab-api/server.mjs
+          git commit -m "Fix database playground lint failures"
+          git push origin HEAD:agent/database-playground
