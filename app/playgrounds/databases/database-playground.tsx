@@ -82,15 +82,18 @@ export default function DatabasePlayground() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const existing = localStorage.getItem(SESSION_KEY);
-    const nextSession = existing && /^[A-Za-z0-9_-]{8,200}$/.test(existing) ? existing : newSessionId();
-    localStorage.setItem(SESSION_KEY, nextSession);
-    setSessionId(nextSession);
-    const savedEngine = localStorage.getItem(ENGINE_KEY);
-    const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
-    setEngine(nextEngine);
-    setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
-    setHistory(readHistory());
+    const timer = window.setTimeout(() => {
+      const existing = localStorage.getItem(SESSION_KEY);
+      const nextSession = existing && /^[A-Za-z0-9_-]{8,200}$/.test(existing) ? existing : newSessionId();
+      localStorage.setItem(SESSION_KEY, nextSession);
+      setSessionId(nextSession);
+      const savedEngine = localStorage.getItem(ENGINE_KEY);
+      const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
+      setEngine(nextEngine);
+      setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
+      setHistory(readHistory());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const refreshSchema = useCallback(async () => {
@@ -112,7 +115,9 @@ export default function DatabasePlayground() {
   }, [engine, sessionId]);
 
   useEffect(() => {
-    if (sessionId) void refreshSchema();
+    if (!sessionId) return;
+    const timer = window.setTimeout(() => void refreshSchema(), 0);
+    return () => window.clearTimeout(timer);
   }, [refreshSchema, sessionId]);
 
   const selectedStructure = useMemo(

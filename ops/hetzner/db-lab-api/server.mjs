@@ -86,10 +86,6 @@ function statementKind(sql) {
   return first || "SQL";
 }
 
-function readLike(kind) {
-  return ["SELECT", "SHOW", "DESCRIBE", "DESC", "EXPLAIN"].includes(kind);
-}
-
 async function runProcess(command, args, { env = {}, timeoutMs = QUERY_TIMEOUT_MS, input = "" } = {}) {
   return await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
