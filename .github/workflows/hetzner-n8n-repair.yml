@@ -10,6 +10,7 @@ on:
       - ops/hetzner/docker-compose.yml
       - ops/hetzner/Caddyfile
       - ops/hetzner/db-lab/**
+      - ops/hetzner/db-lab-api/**
   workflow_dispatch:
 
 permissions:
@@ -176,3 +177,15 @@ jobs:
 
           check_port 3306 "MySQL lab"
           check_port 5432 "PostgreSQL lab"
+
+      - name: Verify database lab API health
+        shell: bash
+        run: |
+          body="$(curl --fail --silent --show-error --max-time 20 \
+            --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
+            https://ai.gimme-job.com/db-lab/health)"
+          if ! grep -Fq '"status":"ok"' <<<"$body"; then
+            echo "Database lab API health check failed: $body" >&2
+            exit 1
+          fi
+          echo "Database lab API is healthy behind Caddy."
