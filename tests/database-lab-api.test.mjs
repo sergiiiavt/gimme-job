@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { request as httpRequest } from "node:http";
 import test from "node:test";
-import { createLabServer, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor } from "../ops/hetzner/db-lab-api/server.mjs";
+import { createLabServer, mysqlArgs, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor } from "../ops/hetzner/db-lab-api/server.mjs";
 
 test("HTTP adapter keeps request targets local and requires authorization on every SQL route", async (t) => {
   const server = createLabServer().listen(0, "127.0.0.1");
@@ -47,10 +47,35 @@ test("statementKind skips comments and identifies common SQL statements", () => 
   assert.equal(statementKind("/* setup */ CREATE INDEX x ON orders(user_id)"), "CREATE");
 });
 
+test("MySQL client preserves query headers and skips them only for scalar admin reads", () => {
+  const withHeaders = mysqlArgs({
+    user: "gjws_0",
+    database: "gimmejob_ws_0",
+    sql: "SELECT 1 AS ok;",
+  });
+  assert.ok(withHeaders.includes("--column-names"));
+  assert.ok(!withHeaders.includes("--skip-column-names"));
+  assert.ok(!withHeaders.includes("--silent"));
+
+  const withoutHeaders = mysqlArgs({
+    user: "root",
+    database: "",
+    sql: "SELECT 1;",
+    skipHeaders: true,
+  });
+  assert.ok(withoutHeaders.includes("--skip-column-names"));
+  assert.ok(!withoutHeaders.includes("--column-names"));
+});
+
 test("TSV parser preserves headers, nulls and row values", () => {
   assert.deepEqual(parseTsv("id\tname\tnote\n1\tAlice\tNULL\n2\tBob\tok\n"), {
     columns: ["id", "name", "note"],
     rows: [["1", "Alice", null], ["2", "Bob", "ok"]],
+    truncated: false,
+  });
+  assert.deepEqual(parseTsv("ok\n1\n"), {
+    columns: ["ok"],
+    rows: [["1"]],
     truncated: false,
   });
 });
