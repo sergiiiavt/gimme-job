@@ -23,6 +23,21 @@ jobs:
       - name: Apply wiring patch
         run: python scripts/agent-database-patch.py
 
+      - name: Fix generated Compose service indentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("ops/hetzner/docker-compose.yml")
+          text = path.read_text()
+          start = text.index("db-lab-api:\n")
+          end = text.index("  caddy:\n", start)
+          block = text[start:end]
+          if not block.startswith("  "):
+              block = "\n".join(("  " + line) if line else line for line in block.splitlines()) + "\n"
+              text = text[:start] + block + text[end:]
+              path.write_text(text)
+          PY
+
       - name: Validate generated runtime config
         run: |
           node --check ops/hetzner/db-lab-api/server.mjs
