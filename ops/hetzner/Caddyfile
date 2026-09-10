@@ -1,6 +1,15 @@
 n8n.gimme-job.com {
   encode zstd gzip
-  reverse_proxy n8n:5678
+
+  # Stable same-runtime bridge used by the public Worker and deployment smoke
+  # checks. The prefix is stripped before requests reach the AI service.
+  handle_path /_gimmejob/ai/* {
+    reverse_proxy gimmejob-ai:8000
+  }
+
+  handle {
+    reverse_proxy n8n:5678
+  }
 }
 
 ai.gimme-job.com {
