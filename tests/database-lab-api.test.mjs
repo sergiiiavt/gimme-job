@@ -65,7 +65,7 @@ test("deployment smoke sessions cover every bounded workspace shard", () => {
 
 test("MySQL base fixture and workspace marker are versioned for seeded data", () => {
   assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000");
-  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v2");
+  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v3");
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.users/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.products/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.orders/);
