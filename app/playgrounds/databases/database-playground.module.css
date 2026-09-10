@@ -61,6 +61,8 @@
   background: #f3f6f3;
   border: 1px solid #dce3dc;
   border-radius: 9px;
+  margin: 0;
+  min-width: 0;
   padding: 3px;
 }
 
@@ -113,7 +115,7 @@
   align-items: center;
   background: #f8faf8;
   border-bottom: 1px solid #e7ece7;
-  color: #7a857e;
+  color: #59665e;
   display: flex;
   flex: 0 0 auto;
   font-size: 10.5px;

@@ -89,7 +89,7 @@ function statementKind(sql) {
 async function runProcess(command, args, { env = {}, timeoutMs = QUERY_TIMEOUT_MS, input = "" } = {}) {
   return await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
-      env: { ...process.env, ...env },
+      env: { PATH: process.env.PATH, LANG: "C.UTF-8", ...env },
       stdio: ["pipe", "pipe", "pipe"],
     });
     let stdout = "";
@@ -141,6 +141,7 @@ function mysqlArgs({ user, database, sql, skipHeaders = false }) {
     `--port=${MYSQL_PORT}`,
     `--user=${user}`,
     "--batch",
+    "--binary-mode",
     "--raw",
     "--silent",
     "--local-infile=0",
@@ -171,7 +172,8 @@ function postgresArgs({ user, database, sql }) {
     "--csv",
     "--quiet",
     "--pset", "footer=off",
-    "--command", sql,
+    // A SQL prefix prevents psql from treating input as a client-side meta-command.
+    "--command", `/* Database Playground SQL */\n${sql}`,
   ];
 }
 
@@ -502,35 +504,38 @@ async function health() {
   }
 }
 
-async function handle(request) {
-  const url = new URL(request.url);
-  if (request.method === "GET" && url.pathname === "/health") return health();
-  if (request.method !== "POST" || !["/v1/query", "/v1/schema", "/v1/reset"].includes(url.pathname)) {
+async function handleAction(request, pathname) {
+  const input = await readJson(request);
+  const engine = input?.engine;
+  const sessionId = input?.sessionId;
+  if (engine !== "mysql" && engine !== "postgres") throw new LabError("Unsupported database engine.", 400);
+  if (!validSessionId(sessionId)) throw new LabError("Invalid database lab session.", 400);
+  const workspace = workspaceFor(sessionId);
+  await ensureWorkspace(engine, workspace);
+
+  if (pathname === "/v1/reset") {
+    await resetWorkspace(engine, workspace);
+    return json({ ok: true, engine, workspace: workspace.label });
+  }
+  if (pathname === "/v1/schema") return json(await loadSchema(engine, workspace));
+
+  const sql = typeof input.sql === "string" ? input.sql.trim() : "";
+  if (!sql || sql.length > MAX_SQL_CHARS || sql.includes("\u0000")) throw new LabError("SQL must be between 1 and 20,000 characters.", 400);
+  const kind = statementKind(sql);
+  if (["GRANT", "REVOKE"].includes(kind)) throw new LabError("Account and privilege administration is not available in the playground.", 403);
+  return json(await executeUserQuery(engine, workspace, sql));
+}
+
+async function handle(request, pathname = new URL(request.url).pathname) {
+  if (request.method === "GET" && pathname === "/health") return health();
+  if (request.method !== "POST" || !["/v1/query", "/v1/schema", "/v1/reset"].includes(pathname)) {
     return json({ error: "Not found." }, 404);
   }
   if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
   if (activeRequests >= MAX_ACTIVE_REQUESTS) return json({ error: "Database lab is busy. Retry shortly." }, 429);
   activeRequests += 1;
   try {
-    const input = await readJson(request);
-    const engine = input?.engine;
-    const sessionId = input?.sessionId;
-    if (engine !== "mysql" && engine !== "postgres") throw new LabError("Unsupported database engine.", 400);
-    if (!validSessionId(sessionId)) throw new LabError("Invalid database lab session.", 400);
-    const workspace = workspaceFor(sessionId);
-    await ensureWorkspace(engine, workspace);
-
-    if (url.pathname === "/v1/reset") {
-      await resetWorkspace(engine, workspace);
-      return json({ ok: true, engine, workspace: workspace.label });
-    }
-    if (url.pathname === "/v1/schema") return json(await loadSchema(engine, workspace));
-
-    const sql = typeof input.sql === "string" ? input.sql.trim() : "";
-    if (!sql || sql.length > MAX_SQL_CHARS || sql.includes("\u0000")) throw new LabError("SQL must be between 1 and 20,000 characters.", 400);
-    const kind = statementKind(sql);
-    if (["GRANT", "REVOKE", "CREATE USER", "ALTER USER"].includes(kind)) throw new LabError("Account and privilege administration is not available in the playground.", 403);
-    return json(await executeUserQuery(engine, workspace, sql));
+    return await handleAction(request, pathname);
   } catch (error) {
     const status = error instanceof LabError ? error.status : 500;
     const message = error instanceof Error ? error.message : "Database lab request failed.";
@@ -540,22 +545,28 @@ async function handle(request) {
   }
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
-  if (!SERVICE_TOKEN) throw new Error("GIMMEJOB_AI_SERVICE_TOKEN is required");
-  createServer(async (request, response) => {
+function createLabServer() {
+  return createServer(async (request, response) => {
     const body = request.method === "GET" || request.method === "HEAD" ? undefined : request;
-    const webRequest = new Request(`http://db-lab-api${request.url || "/"}`, {
+    // The incoming target is only a route selector, never a request destination.
+    const pathname = (request.url || "/").split("?", 1)[0];
+    const webRequest = new Request("http://db-lab-api/", {
       method: request.method,
       headers: request.headers,
       body,
       duplex: body ? "half" : undefined,
     });
-    const webResponse = await handle(webRequest);
+    const webResponse = await handle(webRequest, pathname);
     response.writeHead(webResponse.status, Object.fromEntries(webResponse.headers));
     response.end(Buffer.from(await webResponse.arrayBuffer()));
-  }).listen(PORT, "0.0.0.0", () => {
+  });
+}
+
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+  if (!SERVICE_TOKEN) throw new Error("GIMMEJOB_AI_SERVICE_TOKEN is required");
+  createLabServer().listen(PORT, "0.0.0.0", () => {
     console.log(`Database lab API listening on :${PORT}`);
   });
 }
 
-export { handle, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor };
+export { createLabServer, handle, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor };

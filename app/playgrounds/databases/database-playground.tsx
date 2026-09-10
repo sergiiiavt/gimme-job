@@ -225,10 +225,10 @@ export default function DatabasePlayground() {
             <header className={styles.toolbar}>
               <div><h1>Database Playground</h1><p>Real MySQL and PostgreSQL · persistent test workspace</p></div>
               <div className={styles.toolbarActions}>
-                <div aria-label="Database engine" className={styles.engineSwitch} role="group">
+                <fieldset aria-label="Database engine" className={styles.engineSwitch}>
                   <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
                   <button className={engine === "postgres" ? styles.activeEngine : ""} onClick={() => changeEngine("postgres")} type="button">PostgreSQL 16</button>
-                </div>
+                </fieldset>
                 <button className={styles.ghostButton} disabled={schemaLoading} onClick={() => void refreshSchema()} type="button">Refresh</button>
                 <button className={styles.dangerButton} disabled={loading} onClick={() => void resetWorkspace()} type="button">Reset</button>
               </div>
@@ -285,7 +285,7 @@ export default function DatabasePlayground() {
                   {tab === "data" && !error && (
                     <div className={styles.dataView}>
                       {result?.columns.length ? (
-                        <div className={styles.gridWrap}><table className={styles.grid}><thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{visibleRows.map((row, rowIndex) => <tr key={`${page}-${rowIndex}`}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell === null ? "NULL" : cell}</td>)}</tr>)}</tbody></table></div>
+                        <div className={styles.gridWrap}><table className={styles.grid}><thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{visibleRows.map((row, rowIndex) => <tr key={`${page}-${rowIndex}`}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell ?? "NULL"}</td>)}</tr>)}</tbody></table></div>
                       ) : <div className={styles.emptyResult}>{result?.message || "Run a query to see real database results."}</div>}
                       {result?.columns.length ? <div className={styles.pagination}><span>Page {page + 1} of {totalPages}</span><div><button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} type="button">Previous</button><button disabled={page + 1 >= totalPages} onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} type="button">Next</button></div></div> : null}
                     </div>

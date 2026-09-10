@@ -4,7 +4,7 @@ ENV NODE_ENV=production \
     PORT=8080
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends default-mysql-client postgresql-client ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates default-mysql-client postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

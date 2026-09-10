@@ -2,6 +2,7 @@
 import coreWorker from "./core";
 import { handleForwardedEmail } from "./email-forwarding";
 import { createMultiUserBoundary } from "./multi-user-boundary";
+import { handleDatabasePlayground } from "../app/api/playgrounds/databases/route";
 import {
   isWebSocketPlaygroundRequest,
   proxyWebSocketPlayground,
@@ -46,7 +47,7 @@ const boundaryAwareCore = {
 
 const httpWorker = createMultiUserBoundary(boundaryAwareCore);
 type HttpWorkerFetch = typeof httpWorker.fetch;
-type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1];
+type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1] & Parameters<typeof handleDatabasePlayground>[1];
 type HttpWorkerContext = Parameters<HttpWorkerFetch>[2];
 
 function requiresFreshReferenceDocument(request: Request): boolean {
@@ -65,6 +66,10 @@ const worker = {
   async fetch(request: Request, env: HttpWorkerEnv, ctx: HttpWorkerContext): Promise<Response> {
     if (isWebSocketPlaygroundRequest(request)) {
       return proxyWebSocketPlayground(request);
+    }
+
+    if (new URL(request.url).pathname === "/api/playgrounds/databases") {
+      return handleDatabasePlayground(request, env);
     }
 
     const routedRequest = withPublicAiSessionScope(request);

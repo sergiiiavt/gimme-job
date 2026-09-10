@@ -1,6 +1,35 @@
 import assert from "node:assert/strict";
+import { once } from "node:events";
+import { request as httpRequest } from "node:http";
 import test from "node:test";
-import { parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor } from "../ops/hetzner/db-lab-api/server.mjs";
+import { createLabServer, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor } from "../ops/hetzner/db-lab-api/server.mjs";
+
+test("HTTP adapter keeps request targets local and requires authorization on every SQL route", async (t) => {
+  const server = createLabServer().listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const port = server.address().port;
+
+  async function send(path) {
+    return new Promise((resolve, reject) => {
+      const request = httpRequest({ hostname: "127.0.0.1", port, method: "POST", path }, (response) => {
+        let body = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => { body += chunk; });
+        response.on("end", () => resolve({ status: response.statusCode, body: JSON.parse(body) }));
+      });
+      request.on("error", reject);
+      request.end("{}");
+    });
+  }
+
+  for (const path of ["/v1/query", "/v1/schema", "/v1/reset", "/v1/query?source=browser"]) {
+    assert.deepEqual(await send(path), { status: 401, body: { error: "Unauthorized." } });
+  }
+  for (const path of ["//example.invalid/v1/query", "http://example.invalid/v1/query", "/missing"]) {
+    assert.deepEqual(await send(path), { status: 404, body: { error: "Not found." } });
+  }
+});
 
 test("database lab assigns the same session to a bounded workspace", () => {
   const first = workspaceFor("db_session_repeatable_123");

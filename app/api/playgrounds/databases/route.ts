@@ -35,7 +35,9 @@ function aiBaseUrl(env: DatabasePlaygroundEnv): URL | null {
     if (url.protocol !== "https:" && !(local && url.protocol === "http:")) return null;
     url.search = "";
     url.hash = "";
-    url.pathname = url.pathname.replace(/\/+$/, "") || "/";
+    let end = url.pathname.length;
+    while (end > 0 && url.pathname[end - 1] === "/") end -= 1;
+    url.pathname = url.pathname.slice(0, end) || "/";
     return url;
   } catch {
     return null;
@@ -56,6 +58,29 @@ async function parseInput(request: Request): Promise<JsonObject | null> {
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as JsonObject : null;
   } catch {
     return null;
+  }
+}
+
+async function proxyRequest(endpoint: URL, token: string, body: JsonObject): Promise<Response> {
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const raw = await response.json().catch(() => null) as unknown;
+    const payload = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as JsonObject : {};
+    if (!response.ok) {
+      const detail = text(payload.error, 2_000) || "Database playground request failed.";
+      const status = response.status >= 400 && response.status < 600 ? response.status : 502;
+      return json({ error: detail }, status);
+    }
+    return json(payload, response.status);
+  } catch {
+    return json({ error: "Database playground is temporarily unavailable." }, 502);
   }
 }
 
@@ -84,26 +109,7 @@ export async function handleDatabasePlayground(request: Request, env: DatabasePl
   const endpoint = new URL(upstreamPath(action).replace(/^\/+/, ""), base.href.endsWith("/") ? base : `${base.href}/`);
   if (endpoint.origin !== base.origin) return json({ error: "Database playground service configuration is invalid." }, 503);
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ engine, sessionId, ...(action === "query" ? { sql } : {}) }),
-    });
-    const raw = await response.json().catch(() => null) as unknown;
-    const payload = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as JsonObject : {};
-    if (!response.ok) {
-      const detail = text(payload.error, 2_000) || "Database playground request failed.";
-      const status = response.status >= 400 && response.status < 600 ? response.status : 502;
-      return json({ error: detail }, status);
-    }
-    return json(payload, response.status);
-  } catch {
-    return json({ error: "Database playground is temporarily unavailable." }, 502);
-  }
+  return proxyRequest(endpoint, token, { engine, sessionId, ...(action === "query" ? { sql } : {}) });
 }
 
 export async function POST(request: Request): Promise<Response> {
