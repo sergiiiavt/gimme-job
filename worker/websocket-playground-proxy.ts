@@ -1,5 +1,5 @@
 export const WEBSOCKET_PLAYGROUND_PATH = "/playgrounds/websocket/ws";
-const AI_WEBSOCKET_PLAYGROUND_URL = "https://ai.gimme-job.com/v1/playground/ws";
+const AI_WEBSOCKET_PLAYGROUND_URL = "https://n8n.gimme-job.com/_gimmejob/websocket";
 
 type Fetcher = (request: Request) => Promise<Response>;
 
