@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import { readFileSync } from "node:fs";
 import { request as httpRequest } from "node:http";
 import test from "node:test";
 import {
@@ -68,6 +69,14 @@ test("MySQL base fixture and workspace marker are versioned for seeded data", ()
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.users/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.products/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.orders/);
+});
+
+test("MySQL fixture seed uses a reusable helper table instead of a temporary self-join", () => {
+  const seedSql = readFileSync(new URL("../ops/hetzner/db-lab/mysql-init.sql", import.meta.url), "utf8");
+  assert.doesNotMatch(seedSql, /CREATE\s+TEMPORARY\s+TABLE\s+digits/i);
+  assert.match(seedSql, /CREATE\s+TABLE\s+__gimmejob_seed_digits/i);
+  assert.match(seedSql, /CROSS\s+JOIN\s+__gimmejob_seed_digits\s+d4/i);
+  assert.match(seedSql, /DROP\s+TABLE\s+__gimmejob_seed_digits/i);
 });
 
 test("statementKind skips comments and identifies common SQL statements", () => {

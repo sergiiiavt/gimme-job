@@ -48,8 +48,13 @@ CREATE TABLE orders (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
-CREATE TEMPORARY TABLE digits (n TINYINT UNSIGNED NOT NULL PRIMARY KEY);
-INSERT INTO digits (n) VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+-- MySQL cannot reference the same TEMPORARY table more than once in a statement
+-- (ERROR 1137: Can't reopen table). A normal helper table is safe to self-join and
+-- is dropped immediately after the deterministic fixture rows are generated.
+CREATE TABLE __gimmejob_seed_digits (
+  n TINYINT UNSIGNED NOT NULL PRIMARY KEY
+) ENGINE=InnoDB;
+INSERT INTO __gimmejob_seed_digits (n) VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
 
 INSERT INTO users (id, email, region, status, created_at)
 SELECT
@@ -60,10 +65,10 @@ SELECT
   DATE_ADD('2025-01-01 08:00:00', INTERVAL MOD(seq.n, 600) DAY)
 FROM (
   SELECT d0.n + d1.n * 10 + d2.n * 100 + d3.n * 1000 AS n
-  FROM digits d0
-  CROSS JOIN digits d1
-  CROSS JOIN digits d2
-  CROSS JOIN digits d3
+  FROM __gimmejob_seed_digits d0
+  CROSS JOIN __gimmejob_seed_digits d1
+  CROSS JOIN __gimmejob_seed_digits d2
+  CROSS JOIN __gimmejob_seed_digits d3
 ) AS seq
 WHERE seq.n < 10000;
 
@@ -76,9 +81,9 @@ SELECT
   MOD(seq.n, 10) <> 0
 FROM (
   SELECT d0.n + d1.n * 10 + d2.n * 100 AS n
-  FROM digits d0
-  CROSS JOIN digits d1
-  CROSS JOIN digits d2
+  FROM __gimmejob_seed_digits d0
+  CROSS JOIN __gimmejob_seed_digits d1
+  CROSS JOIN __gimmejob_seed_digits d2
 ) AS seq
 WHERE seq.n < 200;
 
@@ -93,12 +98,14 @@ SELECT
   DATE_ADD('2026-01-01 09:00:00', INTERVAL MOD(seq.n, 240) DAY)
 FROM (
   SELECT d0.n + d1.n * 10 + d2.n * 100 + d3.n * 1000 + d4.n * 10000 AS n
-  FROM digits d0
-  CROSS JOIN digits d1
-  CROSS JOIN digits d2
-  CROSS JOIN digits d3
-  CROSS JOIN digits d4
+  FROM __gimmejob_seed_digits d0
+  CROSS JOIN __gimmejob_seed_digits d1
+  CROSS JOIN __gimmejob_seed_digits d2
+  CROSS JOIN __gimmejob_seed_digits d3
+  CROSS JOIN __gimmejob_seed_digits d4
 ) AS seq
 WHERE seq.n < 50000;
+
+DROP TABLE __gimmejob_seed_digits;
 
 ANALYZE TABLE users, products, orders;
