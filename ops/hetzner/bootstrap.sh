@@ -25,6 +25,52 @@ ensure_env_secret() {
   fi
 }
 
+mysql_seed_counts() {
+  docker compose exec -T mysql-lab sh -lc \
+    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --batch --skip-column-names -e "SELECT CONCAT_WS(CHAR(58),(SELECT COUNT(*) FROM gimmejob_lab.users),(SELECT COUNT(*) FROM gimmejob_lab.products),(SELECT COUNT(*) FROM gimmejob_lab.orders));"' \
+    2>/dev/null
+}
+
+reconcile_mysql_seed() {
+  local ready=false
+  local counts=""
+
+  for attempt in $(seq 1 60); do
+    if docker compose exec -T mysql-lab sh -lc \
+      'mysqladmin ping -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --silent' >/dev/null 2>&1; then
+      ready=true
+      break
+    fi
+    log "Waiting for MySQL lab before fixture reconciliation ($attempt/60)"
+    sleep 2
+  done
+
+  if [[ "$ready" != true ]]; then
+    echo "MySQL lab did not become ready for fixture reconciliation." >&2
+    exit 1
+  fi
+
+  counts="$(mysql_seed_counts || true)"
+  if [[ "$counts" == "10000:200:50000" ]]; then
+    log "MySQL lab fixture seed is current ($counts)"
+    return
+  fi
+
+  log "MySQL lab fixture seed is missing or stale (${counts:-unavailable}); rebuilding the base fixture"
+  docker compose exec -T mysql-lab sh -lc \
+    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS gimmejob_lab;"'
+  docker compose exec -T mysql-lab sh -lc \
+    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"' \
+    <"$RUNTIME_DIR/db-lab/mysql-init.sql"
+
+  counts="$(mysql_seed_counts || true)"
+  if [[ "$counts" != "10000:200:50000" ]]; then
+    echo "MySQL lab fixture reconciliation failed; expected 10000:200:50000, got ${counts:-unavailable}." >&2
+    exit 1
+  fi
+  log "MySQL lab fixture seed reconciled ($counts)"
+}
+
 log "Updating base system"
 apt-get update
 apt-get install -y ca-certificates curl openssl
@@ -101,13 +147,14 @@ if [[ -f "$RUNTIME_DIR/ai.env" ]]; then
   docker compose --profile ai pull --ignore-buildable
   docker compose --profile ai build db-lab-api
   docker compose --profile ai up -d --remove-orphans
-  docker compose --profile ai ps
 else
   log "Starting n8n stack, MySQL lab, PostgreSQL lab, and Caddy (AI runtime not configured yet)"
   docker compose pull
   docker compose up -d --remove-orphans
-  docker compose ps
 fi
+
+reconcile_mysql_seed
+docker compose --profile ai ps 2>/dev/null || docker compose ps
 
 install -m 600 /dev/null "$RUNTIME_DIR/.bootstrap-complete"
 date -u +%FT%TZ >"$RUNTIME_DIR/.bootstrap-complete"

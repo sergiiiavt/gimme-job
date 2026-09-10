@@ -212,8 +212,15 @@ jobs:
       - name: Verify public database playground end to end
         shell: bash
         run: |
-          for engine in mysql postgres; do
-            payload="$(printf '{"action":"query","engine":"%s","sessionId":"deploy-smoke-%s","sql":"SELECT 1 AS ok;"}' "$engine" "$GITHUB_RUN_ID")"
+          mysql_sessions=(
+            deploy-smoke-shard-0
+            deploy-smoke-shard-1
+            deploy-smoke-shard-2
+            deploy-smoke-shard-3
+          )
+
+          for session_id in "${mysql_sessions[@]}"; do
+            payload="$(printf '{"action":"query","engine":"mysql","sessionId":"%s","sql":"SELECT id, status FROM orders ORDER BY id LIMIT 1;"}' "$session_id")"
             body=""
             passed=false
             for attempt in $(seq 1 30); do
@@ -221,16 +228,39 @@ jobs:
                 -H 'Content-Type: application/json' \
                 -d "$payload" \
                 https://gimme-job.com/api/playgrounds/databases 2>/dev/null || true)"
-              if grep -Fq '"rowCount":1' <<<"$body" && grep -Fq '"ok"' <<<"$body"; then
-                echo "$engine database playground query passed."
+              if grep -Fq '"rowCount":1' <<<"$body" \
+                && grep -Fq '"columns":["id","status"]' <<<"$body" \
+                && grep -Fq '"rows":[["1","new"]]' <<<"$body"; then
+                echo "MySQL seeded-row query passed for $session_id."
                 passed=true
                 break
               fi
-              echo "Waiting for $engine public database playground ($attempt/30)..."
+              echo "Waiting for MySQL seeded rows in $session_id ($attempt/30)..."
               sleep 5
             done
             if [[ "$passed" != true ]]; then
-              echo "$engine database playground query failed. Last response: ${body:-no response}" >&2
+              echo "MySQL database playground seeded-row query failed for $session_id. Last response: ${body:-no response}" >&2
               exit 1
             fi
           done
+
+          payload="$(printf '{"action":"query","engine":"postgres","sessionId":"deploy-smoke-%s","sql":"SELECT 1 AS ok;"}' "$GITHUB_RUN_ID")"
+          body=""
+          passed=false
+          for attempt in $(seq 1 30); do
+            body="$(curl --silent --show-error --max-time 30 \
+              -H 'Content-Type: application/json' \
+              -d "$payload" \
+              https://gimme-job.com/api/playgrounds/databases 2>/dev/null || true)"
+            if grep -Fq '"rowCount":1' <<<"$body" && grep -Fq '"ok"' <<<"$body"; then
+              echo "PostgreSQL database playground query passed."
+              passed=true
+              break
+            fi
+            echo "Waiting for PostgreSQL public database playground ($attempt/30)..."
+            sleep 5
+          done
+          if [[ "$passed" != true ]]; then
+            echo "PostgreSQL database playground query failed. Last response: ${body:-no response}" >&2
+            exit 1
+          fi

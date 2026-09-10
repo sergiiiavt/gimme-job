@@ -2,7 +2,18 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { request as httpRequest } from "node:http";
 import test from "node:test";
-import { createLabServer, mysqlArgs, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor } from "../ops/hetzner/db-lab-api/server.mjs";
+import {
+  createLabServer,
+  MYSQL_BASE_FIXTURE_COUNTS,
+  MYSQL_WORKSPACE_MARKER,
+  mysqlArgs,
+  mysqlBaseFixtureCountSql,
+  parseCsv,
+  parseTsv,
+  postgresGrid,
+  statementKind,
+  workspaceFor,
+} from "../ops/hetzner/db-lab-api/server.mjs";
 
 test("HTTP adapter keeps request targets local and requires authorization on every SQL route", async (t) => {
   const server = createLabServer().listen(0, "127.0.0.1");
@@ -39,6 +50,24 @@ test("database lab assigns the same session to a bounded workspace", () => {
   assert.match(first.mysqlDatabase, /^gimmejob_ws_[0-3]$/);
   assert.match(first.postgresSchema, /^ws_[0-3]$/);
   assert.equal(first.mysqlUser, first.postgresUser);
+});
+
+test("deployment smoke sessions cover every bounded workspace shard", () => {
+  const sessions = [
+    "deploy-smoke-shard-0",
+    "deploy-smoke-shard-1",
+    "deploy-smoke-shard-2",
+    "deploy-smoke-shard-3",
+  ];
+  assert.deepEqual(sessions.map((sessionId) => workspaceFor(sessionId).shard).sort(), [0, 1, 2, 3]);
+});
+
+test("MySQL base fixture and workspace marker are versioned for seeded data", () => {
+  assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000");
+  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v2");
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.users/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.products/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.orders/);
 });
 
 test("statementKind skips comments and identifies common SQL statements", () => {
