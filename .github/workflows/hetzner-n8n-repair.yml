@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/hetzner-n8n-repair.yml
       - ops/hetzner/bootstrap.sh
+      - ops/hetzner/boot-local.mjs
       - ops/hetzner/docker-compose.yml
       - ops/hetzner/Caddyfile
       - ops/hetzner/db-lab/**
@@ -134,10 +135,11 @@ jobs:
           rm -f /mnt/opt/gimmejob-n8n/.bootstrap-complete
           sync
           umount /mnt
-
-          echo "Runtime refresh installed. Rebooting into Ubuntu..."
-          nohup sh -c 'sleep 2; reboot' >/dev/null 2>&1 &
+          echo "Runtime refresh installed; rescue shell can exit cleanly."
           REMOTE
+
+      - name: Boot installed Ubuntu from local disk
+        run: node ops/hetzner/boot-local.mjs
 
       - name: Wait for n8n HTTPS
         shell: bash
@@ -154,6 +156,22 @@ jobs:
             sleep 10
           done
           echo "n8n HTTPS did not become healthy within 15 minutes." >&2
+          exit 1
+
+      - name: Verify GimmeJob AI bridge
+        shell: bash
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error --max-time 10 \
+              --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
+              https://n8n.gimme-job.com/_gimmejob/ai-health >/dev/null; then
+              echo "GimmeJob AI bridge is healthy"
+              exit 0
+            fi
+            echo "Waiting for GimmeJob AI bridge ($attempt/60)..."
+            sleep 10
+          done
+          echo "GimmeJob AI bridge did not become healthy within 10 minutes." >&2
           exit 1
 
       - name: Verify public database ports
@@ -176,3 +194,47 @@ jobs:
 
           check_port 3306 "MySQL lab"
           check_port 5432 "PostgreSQL lab"
+
+      - name: Set up Node for WebSocket smoke
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+
+      - name: Verify public WebSocket playground
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const room = `runtime-refresh-${Date.now()}`;
+          const payload = `runtime-refresh-smoke-${Date.now()}`;
+          const ws = new WebSocket(`wss://gimme-job.com/playgrounds/websocket/ws?room=${room}`);
+
+          const result = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error("WebSocket smoke timed out")), 20_000);
+            ws.addEventListener("open", () => ws.send(payload));
+            ws.addEventListener("message", (event) => {
+              if (String(event.data) !== payload) return;
+              clearTimeout(timeout);
+              ws.close();
+              resolve(true);
+            });
+            ws.addEventListener("error", () => {
+              clearTimeout(timeout);
+              reject(new Error("WebSocket connection failed"));
+            });
+          });
+
+          if (!result) process.exit(1);
+          console.log("Public WebSocket playground echo is healthy");
+          NODE
+
+      - name: Stabilize and recheck runtime boundary
+        shell: bash
+        run: |
+          sleep 30
+          curl --fail --silent --show-error --max-time 10 \
+            --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
+            https://n8n.gimme-job.com/ >/dev/null
+          curl --fail --silent --show-error --max-time 10 \
+            --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
+            https://n8n.gimme-job.com/_gimmejob/ai-health >/dev/null
+          echo "Hetzner runtime remained healthy after stabilization window"
