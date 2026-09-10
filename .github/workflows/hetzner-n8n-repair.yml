@@ -168,6 +168,24 @@ jobs:
             echo "Database service port $port is not publicly reachable."
           done
 
+      - name: Wait for database lab API health
+        shell: bash
+        run: |
+          body=""
+          for attempt in $(seq 1 60); do
+            body="$(curl --silent --show-error --max-time 20 \
+              --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
+              https://ai.gimme-job.com/db-lab/health 2>/dev/null || true)"
+            if grep -Fq '"status":"ok"' <<<"$body"; then
+              echo "Database lab API is healthy behind Caddy."
+              exit 0
+            fi
+            echo "Waiting for database lab API ($attempt/60)..."
+            sleep 5
+          done
+          echo "Database lab API did not become healthy. Last response: ${body:-no response}" >&2
+          exit 1
+
       - name: Verify database lab requires service authentication
         shell: bash
         run: |
@@ -183,14 +201,28 @@ jobs:
             fi
           done
 
-      - name: Verify database lab API health
+      - name: Verify public database playground end to end
         shell: bash
         run: |
-          body="$(curl --fail --silent --show-error --max-time 20 \
-            --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
-            https://ai.gimme-job.com/db-lab/health)"
-          if ! grep -Fq '"status":"ok"' <<<"$body"; then
-            echo "Database lab API health check failed: $body" >&2
-            exit 1
-          fi
-          echo "Database lab API is healthy behind Caddy."
+          for engine in mysql postgres; do
+            payload="$(printf '{"action":"query","engine":"%s","sessionId":"deploy-smoke-%s","sql":"SELECT 1 AS ok;"}' "$engine" "$GITHUB_RUN_ID")"
+            body=""
+            passed=false
+            for attempt in $(seq 1 30); do
+              body="$(curl --silent --show-error --max-time 30 \
+                -H 'Content-Type: application/json' \
+                -d "$payload" \
+                https://gimme-job.com/api/playgrounds/databases 2>/dev/null || true)"
+              if grep -Fq '"rowCount":1' <<<"$body" && grep -Fq '"ok"' <<<"$body"; then
+                echo "$engine database playground query passed."
+                passed=true
+                break
+              fi
+              echo "Waiting for $engine public database playground ($attempt/30)..."
+              sleep 5
+            done
+            if [[ "$passed" != true ]]; then
+              echo "$engine database playground query failed. Last response: ${body:-no response}" >&2
+              exit 1
+            fi
+          done
