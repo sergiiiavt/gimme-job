@@ -56,16 +56,24 @@ jobs:
 
       - name: Wait for rescue SSH
         shell: bash
+        env:
+          SSHPASS: ${{ env.HETZNER_RESCUE_PASSWORD }}
         run: |
           for attempt in $(seq 1 60); do
-            if timeout 3 bash -c "</dev/tcp/$HETZNER_SERVER_IP/22" 2>/dev/null; then
-              echo "Hetzner rescue SSH is reachable"
+            if sshpass -e ssh \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=5 \
+              -o ConnectionAttempts=1 \
+              root@$HETZNER_SERVER_IP 'true' >/dev/null 2>&1; then
+              echo "Hetzner rescue SSH accepts authenticated sessions"
+              sleep 2
               exit 0
             fi
-            echo "Waiting for rescue SSH ($attempt/60)..."
+            echo "Waiting for authenticated rescue SSH ($attempt/60)..."
             sleep 5
           done
-          echo "Rescue SSH did not become reachable." >&2
+          echo "Rescue SSH did not become ready for authenticated sessions." >&2
           exit 1
 
       - name: Install current runtime bootstrap from rescue system
