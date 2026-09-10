@@ -11,7 +11,7 @@ const MYSQL_ADMIN_PASSWORD = process.env.MYSQL_LAB_ROOT_PASSWORD || "";
 const POSTGRES_ADMIN_PASSWORD = process.env.POSTGRES_LAB_ADMIN_PASSWORD || "";
 const SERVICE_TOKEN = process.env.GIMMEJOB_AI_SERVICE_TOKEN || "";
 const WORKSPACE_COUNT = 4;
-const MYSQL_WORKSPACE_MARKER = "__gimmejob_workspace_v2";
+const MYSQL_WORKSPACE_MARKER = "__gimmejob_workspace_v3";
 const MYSQL_BASE_FIXTURE_COUNTS = "10000:200:50000";
 const MAX_SQL_CHARS = 20_000;
 const MAX_BODY_BYTES = 32_000;
@@ -227,7 +227,7 @@ async function ensureMysqlWorkspace(workspace) {
     admin: true,
     sql: `
       DROP TABLE IF EXISTS \`${database}\`.orders, \`${database}\`.products, \`${database}\`.users,
-        \`${database}\`.__gimmejob_workspace, \`${database}\`.${MYSQL_WORKSPACE_MARKER};
+        \`${database}\`.__gimmejob_workspace, \`${database}\`.__gimmejob_workspace_v2, \`${database}\`.${MYSQL_WORKSPACE_MARKER};
       CREATE TABLE \`${database}\`.users LIKE gimmejob_lab.users;
       INSERT INTO \`${database}\`.users SELECT * FROM gimmejob_lab.users;
       CREATE TABLE \`${database}\`.products LIKE gimmejob_lab.products;
