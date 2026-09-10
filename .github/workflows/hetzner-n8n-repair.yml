@@ -164,7 +164,7 @@ jobs:
           for attempt in $(seq 1 60); do
             if curl --fail --silent --show-error --max-time 10 \
               --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
-              https://n8n.gimme-job.com/_gimmejob/ai-health >/dev/null; then
+              https://n8n.gimme-job.com/_gimmejob/ai/health >/dev/null; then
               echo "GimmeJob AI bridge is healthy"
               exit 0
             fi
@@ -236,5 +236,5 @@ jobs:
             https://n8n.gimme-job.com/ >/dev/null
           curl --fail --silent --show-error --max-time 10 \
             --resolve n8n.gimme-job.com:443:$HETZNER_SERVER_IP \
-            https://n8n.gimme-job.com/_gimmejob/ai-health >/dev/null
+            https://n8n.gimme-job.com/_gimmejob/ai/health >/dev/null
           echo "Hetzner runtime remained healthy after stabilization window"
