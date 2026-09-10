@@ -10,6 +10,7 @@ on:
       - ops/hetzner/docker-compose.yml
       - ops/hetzner/Caddyfile
       - ops/hetzner/db-lab/**
+      - ops/hetzner/db-lab-api/**
   workflow_dispatch:
 
 permissions:
@@ -156,23 +157,40 @@ jobs:
           echo "n8n HTTPS did not become healthy within 15 minutes." >&2
           exit 1
 
-      - name: Verify public database ports
+      - name: Verify database ports are private
         shell: bash
         run: |
-          check_port() {
-            local port="$1"
-            local label="$2"
-            for attempt in $(seq 1 30); do
-              if timeout 3 bash -c "</dev/tcp/$HETZNER_SERVER_IP/$port" 2>/dev/null; then
-                echo "$label is reachable on $HETZNER_SERVER_IP:$port"
-                return 0
-              fi
-              echo "Waiting for $label ($attempt/30)..."
-              sleep 5
-            done
-            echo "$label did not become reachable on port $port." >&2
-            return 1
-          }
+          for port in 3306 5432 8080; do
+            if timeout 3 bash -c "</dev/tcp/$HETZNER_SERVER_IP/$port" 2>/dev/null; then
+              echo "Database service is unexpectedly public on port $port." >&2
+              exit 1
+            fi
+            echo "Database service port $port is not publicly reachable."
+          done
 
-          check_port 3306 "MySQL lab"
-          check_port 5432 "PostgreSQL lab"
+      - name: Verify database lab requires service authentication
+        shell: bash
+        run: |
+          for action in query schema reset; do
+            status="$(curl --silent --show-error --max-time 20 \
+              --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
+              -o /dev/null -w '%{http_code}' \
+              -H 'Content-Type: application/json' -d '{}' \
+              "https://ai.gimme-job.com/db-lab/v1/$action")"
+            if [[ "$status" != "401" ]]; then
+              echo "Database lab $action returned $status instead of 401 without a service token." >&2
+              exit 1
+            fi
+          done
+
+      - name: Verify database lab API health
+        shell: bash
+        run: |
+          body="$(curl --fail --silent --show-error --max-time 20 \
+            --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
+            https://ai.gimme-job.com/db-lab/health)"
+          if ! grep -Fq '"status":"ok"' <<<"$body"; then
+            echo "Database lab API health check failed: $body" >&2
+            exit 1
+          fi
+          echo "Database lab API is healthy behind Caddy."

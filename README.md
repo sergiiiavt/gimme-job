@@ -145,7 +145,7 @@ The Hetzner environment hosts containerized supporting services, including:
 - a separate disposable PostgreSQL test lab;
 - Caddy as the public HTTP/HTTPS reverse proxy.
 
-The n8n PostgreSQL database and application-service ports remain private to Docker. The database labs are an intentional exception for QA/database practice: `db.gimme-job.com:3306` exposes MySQL and `db.gimme-job.com:5432` exposes PostgreSQL directly to the Internet. They contain synthetic/disposable data only and are isolated from the private n8n database and GimmeJob production state.
+All database and application-service ports remain private to Docker. The Database Playground at `/playgrounds/databases` sends queries to the Worker API, which authenticates to the database-lab service behind Caddy using a server-only service token. MySQL (3306), PostgreSQL (5432), and the lab API (8080) are not published on the host and are blocked by the provider firewall. The labs contain synthetic data, isolated from the private n8n database and GimmeJob production state. Named volumes preserve lab data across normal deployments and restarts; only an explicit workspace reset recreates its data. Sessions map to four shared practice workspaces per engine, so these workspaces must not contain private data.
 
 The infrastructure is reproducible from repository code and GitHub Actions rather than being treated as a manually configured server.
 
@@ -340,7 +340,7 @@ Pull-request AI-image jobs build/test without receiving production deployment se
 
 Infrastructure and n8n runtime configuration are versioned under `ops/hetzner/` and `ops/n8n/`. Provisioning/deployment workflows configure the VM, reconcile the firewall and Cloudflare DNS, refresh the version-controlled Compose runtime, and verify the public service boundaries after changes reach `main`.
 
-Production credentials belong in GitHub/Cloudflare/provider-managed secret stores, never in source control. The public database-lab login is intentionally separate from all production credentials; only its one-way database verifier is committed with the disposable fixture.
+Production credentials belong in GitHub/Cloudflare/provider-managed secret stores, never in source control. Database-lab credentials are separate from production credentials and are never sent to the browser. Legacy fixture login verifiers remain confined to the private lab databases.
 
 ## Security boundaries
 
@@ -354,7 +354,7 @@ Important project invariants include:
 - canonical RAG uses an independent service credential;
 - n8n receives no D1 or OpenAI master credentials;
 - n8n does not own GimmeJob business state;
-- the public MySQL/PostgreSQL labs contain synthetic disposable data only and have no network/database path to production state;
+- the MySQL/PostgreSQL labs contain synthetic data only; direct database ports are private and browser access goes through the service-authenticated Worker proxy;
 - forwarded email storage is bounded and raw MIME/attachments are not treated as application content;
 - external fetches are restricted to safe public sources by the application boundary;
 - vacancy sync/analysis does not automatically send job applications;

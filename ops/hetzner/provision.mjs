@@ -38,20 +38,6 @@ const FIREWALL_RULES = [
     source_ips: ["0.0.0.0/0", "::/0"],
     description: "HTTP/3",
   },
-  {
-    direction: "in",
-    protocol: "tcp",
-    port: "3306",
-    source_ips: ["0.0.0.0/0", "::/0"],
-    description: "Public disposable MySQL test lab",
-  },
-  {
-    direction: "in",
-    protocol: "tcp",
-    port: "5432",
-    source_ips: ["0.0.0.0/0", "::/0"],
-    description: "Public disposable PostgreSQL test lab",
-  },
 ];
 
 // Public key only. The corresponding private key never leaves the user's machine.
@@ -373,10 +359,10 @@ addSummary([
   `- Server: \`${SERVER_NAME}\` (ID ${server.id})`,
   `- IPv4: \`${ipv4}\``,
   `- n8n: https://${N8N_HOSTNAME}`,
-  `- Public DB host: \`${DB_HOSTNAME}\``,
+  "- Database labs: protected Database Playground API only",
   `- Cloudflare DNS updated: ${dnsConfigured ? "yes" : "no"}`,
-  "- Public ports: 22/tcp, 80/tcp, 443/tcp, 443/udp, 3306/tcp (MySQL lab), 5432/tcp (PostgreSQL lab)",
-  "- n8n PostgreSQL and n8n port 5678 remain Docker-internal only",
+  "- Public ports: 22/tcp, 80/tcp, 443/tcp, 443/udp",
+  "- MySQL, PostgreSQL, database-lab API and n8n port 5678 remain Docker-internal only",
 ]);
 
 console.log(`Server ready for bootstrap: ${SERVER_NAME} ${ipv4}`);

@@ -5,5 +5,12 @@ n8n.gimme-job.com {
 
 ai.gimme-job.com {
   encode zstd gzip
-  reverse_proxy gimmejob-ai:8000
+
+  handle_path /db-lab/* {
+    reverse_proxy db-lab-api:8080
+  }
+
+  handle {
+    reverse_proxy gimmejob-ai:8000
+  }
 }

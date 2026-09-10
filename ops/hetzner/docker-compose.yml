@@ -75,8 +75,6 @@ services:
       timeout: 5s
       retries: 20
       start_period: 20s
-    ports:
-      - "0.0.0.0:3306:3306"
     volumes:
       - mysql_lab_data:/var/lib/mysql
       - ./db-lab/mysql-init.sql:/docker-entrypoint-initdb.d/10-gimmejob-lab.sql:ro
@@ -102,12 +100,36 @@ services:
       timeout: 5s
       retries: 20
       start_period: 10s
-    ports:
-      - "0.0.0.0:5432:5432"
     volumes:
       - postgres_lab_data:/var/lib/postgresql/data
       - ./db-lab/postgres-init.sql:/docker-entrypoint-initdb.d/10-gimmejob-lab.sql:ro
     networks:
+      - db_lab_internal
+
+  db-lab-api:
+    build:
+      context: ./db-lab-api
+    restart: unless-stopped
+    profiles:
+      - ai
+    depends_on:
+      mysql-lab:
+        condition: service_healthy
+      postgres-lab:
+        condition: service_healthy
+    env_file:
+      - ./ai.env
+    environment:
+      MYSQL_LAB_HOST: mysql-lab
+      MYSQL_LAB_PORT: 3306
+      MYSQL_LAB_ROOT_PASSWORD: ${MYSQL_LAB_ROOT_PASSWORD}
+      POSTGRES_LAB_HOST: postgres-lab
+      POSTGRES_LAB_PORT: 5432
+      POSTGRES_LAB_ADMIN_PASSWORD: ${POSTGRES_LAB_ADMIN_PASSWORD}
+    expose:
+      - "8080"
+    networks:
+      - n8n_internal
       - db_lab_internal
 
   caddy:

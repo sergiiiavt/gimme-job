@@ -5,7 +5,7 @@ import AuthStatusControl from "./auth-status-control";
 import { sectionNavigationHref } from "./navigation-paths";
 
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
-export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground" | "games";
+export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground" | "database-playground" | "games";
 
 interface SectionNavigationItem {
   id: SiteSection;
@@ -69,6 +69,13 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
         external: true,
         publicHref: "/playgrounds/websocket",
         personalHref: "/playgrounds/websocket",
+      },
+      {
+        id: "database-playground",
+        label: "Database Playground",
+        external: true,
+        publicHref: "/playgrounds/databases",
+        personalHref: "/playgrounds/databases",
       },
     ],
   },
