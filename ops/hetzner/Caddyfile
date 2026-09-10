@@ -1,6 +1,22 @@
 n8n.gimme-job.com {
   encode zstd gzip
-  reverse_proxy n8n:5678
+
+  # Stable same-runtime bridge used by the public Worker. Keeping this on the
+  # direct n8n hostname avoids making the playground depend on the separate
+  # ai.gimme-job.com Cloudflare edge certificate.
+  handle /_gimmejob/websocket {
+    rewrite * /v1/playground/ws
+    reverse_proxy gimmejob-ai:8000
+  }
+
+  handle /_gimmejob/ai-health {
+    rewrite * /health
+    reverse_proxy gimmejob-ai:8000
+  }
+
+  handle {
+    reverse_proxy n8n:5678
+  }
 }
 
 ai.gimme-job.com {
