@@ -26,7 +26,7 @@ test("requires a WebSocket GET upgrade", async () => {
   assert.equal(response.headers.get("upgrade"), "websocket");
 });
 
-test("proxies the handshake to the AI service without site credentials", async () => {
+test("proxies the handshake to the stable runtime bridge without site credentials", async () => {
   let forwarded: Request | null = null;
   const source = new Request(`https://gimme-job.com${WEBSOCKET_PLAYGROUND_PATH}?room=qa-room`, {
     headers: {
@@ -48,7 +48,7 @@ test("proxies the handshake to the AI service without site credentials", async (
 
   assert.equal(response.status, 200);
   assert.ok(forwarded);
-  assert.equal(forwarded.url, "https://ai.gimme-job.com/v1/playground/ws?room=qa-room");
+  assert.equal(forwarded.url, "https://n8n.gimme-job.com/_gimmejob/websocket?room=qa-room");
   assert.equal(forwarded.headers.get("upgrade"), "websocket");
   assert.equal(forwarded.headers.get("sec-websocket-version"), "13");
   assert.equal(forwarded.headers.get("authorization"), null);
