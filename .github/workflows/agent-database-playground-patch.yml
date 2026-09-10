@@ -1,0 +1,295 @@
+name: Agent database playground patch
+
+on:
+  push:
+    branches:
+      - agent/database-playground
+    paths:
+      - .github/workflows/agent-database-playground-patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/database-playground
+
+      - name: Patch navigation and runtime wiring
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path, old, new):
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Expected patch anchor missing in {path}: {old[:100]!r}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace(
+              "app/site-navigation.tsx",
+              'export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground" | "games";',
+              'export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "metrics-estimation" | "websocket-playground" | "database-playground" | "games";',
+          )
+          websocket = '''      {
+                  id: "websocket-playground",
+                  label: "WebSocket Playground",
+                  external: true,
+                  publicHref: "/playgrounds/websocket",
+                  personalHref: "/playgrounds/websocket",
+                },'''
+          # The repository uses six-space indentation for playground item properties.
+          actual = '''      {
+                  id: "websocket-playground",
+                  label: "WebSocket Playground",
+                  external: true,
+                  publicHref: "/playgrounds/websocket",
+                  personalHref: "/playgrounds/websocket",
+                },'''
+          nav = Path("app/site-navigation.tsx")
+          text = nav.read_text()
+          if actual not in text:
+              actual = '''      {
+                id: "websocket-playground",
+                label: "WebSocket Playground",
+                external: true,
+                publicHref: "/playgrounds/websocket",
+                personalHref: "/playgrounds/websocket",
+              },'''
+          if actual not in text:
+              raise SystemExit("WebSocket navigation item anchor missing")
+          database_item = actual + '''
+              {
+                id: "database-playground",
+                label: "Database Playground",
+                external: true,
+                publicHref: "/playgrounds/databases",
+                personalHref: "/playgrounds/databases",
+              },'''
+          nav.write_text(text.replace(actual, database_item, 1))
+
+          compose = Path("ops/hetzner/docker-compose.yml")
+          text = compose.read_text()
+          marker = "  caddy:\n"
+          if marker not in text:
+              raise SystemExit("Caddy compose anchor missing")
+          service = '''  db-lab-api:
+                build:
+                  context: ./db-lab-api
+                restart: unless-stopped
+                profiles:
+                  - ai
+                depends_on:
+                  mysql-lab:
+                    condition: service_healthy
+                  postgres-lab:
+                    condition: service_healthy
+                env_file:
+                  - ./ai.env
+                environment:
+                  MYSQL_LAB_HOST: mysql-lab
+                  MYSQL_LAB_PORT: 3306
+                  MYSQL_LAB_ROOT_PASSWORD: ${MYSQL_LAB_ROOT_PASSWORD}
+                  POSTGRES_LAB_HOST: postgres-lab
+                  POSTGRES_LAB_PORT: 5432
+                  POSTGRES_LAB_ADMIN_PASSWORD: ${POSTGRES_LAB_ADMIN_PASSWORD}
+                expose:
+                  - "8080"
+                networks:
+                  - n8n_internal
+                  - db_lab_internal
+
+              '''
+          # normalize indentation from the embedded YAML string
+          import textwrap
+          service = textwrap.dedent(service)
+          compose.write_text(text.replace(marker, service + marker, 1))
+
+          caddy = Path("ops/hetzner/Caddyfile")
+          text = caddy.read_text()
+          old = '''ai.gimme-job.com {
+            encode zstd gzip
+            reverse_proxy gimmejob-ai:8000
+          }
+          '''
+          old = textwrap.dedent(old)
+          new = '''ai.gimme-job.com {
+            encode zstd gzip
+
+            handle_path /db-lab/* {
+              reverse_proxy db-lab-api:8080
+            }
+
+            handle {
+              reverse_proxy gimmejob-ai:8000
+            }
+          }
+          '''
+          new = textwrap.dedent(new)
+          if old not in text:
+              raise SystemExit("AI Caddy block anchor missing")
+          caddy.write_text(text.replace(old, new, 1))
+
+          bootstrap = Path("ops/hetzner/bootstrap.sh")
+          text = bootstrap.read_text()
+          text = text.replace(
+              'install -d -m 755 "$RUNTIME_DIR/db-lab"\n',
+              'install -d -m 755 "$RUNTIME_DIR/db-lab"\ninstall -d -m 755 "$RUNTIME_DIR/db-lab-api"\n',
+              1,
+          )
+          anchor = 'chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql"'
+          downloads = '''curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \\
+            "$REPO_RAW/db-lab-api/Dockerfile" -o "$RUNTIME_DIR/db-lab-api/Dockerfile"
+          curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \\
+            "$REPO_RAW/db-lab-api/server.mjs" -o "$RUNTIME_DIR/db-lab-api/server.mjs"
+          chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql" \\
+            "$RUNTIME_DIR/db-lab-api/Dockerfile" "$RUNTIME_DIR/db-lab-api/server.mjs"'''
+          downloads = textwrap.dedent(downloads)
+          if anchor not in text:
+              raise SystemExit("Bootstrap seed chmod anchor missing")
+          text = text.replace(anchor, downloads, 1)
+          old_ai = '''  docker compose --profile ai pull
+            docker compose --profile ai up -d --remove-orphans
+            docker compose --profile ai ps'''
+          old_ai = textwrap.dedent(old_ai).rstrip()
+          if old_ai not in text:
+              old_ai = '  docker compose --profile ai pull\n  docker compose --profile ai up -d --remove-orphans\n  docker compose --profile ai ps'
+          new_ai = '  docker compose --profile ai pull --ignore-buildable\n  docker compose --profile ai build db-lab-api\n  docker compose --profile ai up -d --remove-orphans\n  docker compose --profile ai ps'
+          if old_ai not in text:
+              raise SystemExit("Bootstrap AI compose anchor missing")
+          bootstrap.write_text(text.replace(old_ai, new_ai, 1))
+
+          ai = Path(".github/workflows/ai-image.yml")
+          text = ai.read_text()
+          replace_text = text.replace(
+              "            'install -d -m 700 /opt/gimmejob-n8n'",
+              "            'install -d -m 700 /opt/gimmejob-n8n /opt/gimmejob-n8n/db-lab-api'",
+              1,
+          )
+          if replace_text == text:
+              raise SystemExit("AI deploy runtime-dir anchor missing")
+          text = replace_text
+          upload_anchor = '''          "${SCP[@]}" \\
+                    ops/hetzner/docker-compose.yml \\
+                    ops/hetzner/Caddyfile \\
+                    "$RUNNER_TEMP/gimmejob-ai.env" \\
+                    "$DEPLOY_USER@$DEPLOY_HOST:/opt/gimmejob-n8n/"
+          '''
+          upload_anchor = textwrap.dedent(upload_anchor).rstrip()
+          if upload_anchor not in text:
+              upload_anchor = '''          "${SCP[@]}" \\
+            ops/hetzner/docker-compose.yml \\
+            ops/hetzner/Caddyfile \\
+            "$RUNNER_TEMP/gimmejob-ai.env" \\
+            "$DEPLOY_USER@$DEPLOY_HOST:/opt/gimmejob-n8n/"'''
+          if upload_anchor not in text:
+              raise SystemExit("AI deploy SCP anchor missing")
+          extra_upload = upload_anchor + '''
+
+          "${SCP[@]}" \\
+            ops/hetzner/db-lab-api/Dockerfile \\
+            ops/hetzner/db-lab-api/server.mjs \\
+            "$DEPLOY_USER@$DEPLOY_HOST:/opt/gimmejob-n8n/db-lab-api/"'''
+          text = text.replace(upload_anchor, extra_upload, 1)
+          old_remote = '''          chmod 600 ai.env
+                    chmod 644 docker-compose.yml Caddyfile
+                    docker compose --profile ai pull gimmejob-ai caddy
+                    docker compose --profile ai up -d gimmejob-ai caddy'''
+          old_remote = textwrap.dedent(old_remote).rstrip()
+          if old_remote not in text:
+              old_remote = '          chmod 600 ai.env\n          chmod 644 docker-compose.yml Caddyfile\n          docker compose --profile ai pull gimmejob-ai caddy\n          docker compose --profile ai up -d gimmejob-ai caddy'
+          new_remote = '          chmod 600 ai.env\n          chmod 644 docker-compose.yml Caddyfile db-lab-api/Dockerfile db-lab-api/server.mjs\n          docker compose --profile ai pull gimmejob-ai caddy\n          docker compose --profile ai build db-lab-api\n          docker compose --profile ai up -d gimmejob-ai db-lab-api caddy'
+          if old_remote not in text:
+              raise SystemExit("AI deploy compose anchor missing")
+          text = text.replace(old_remote, new_remote, 1)
+          smoke_anchor = '      - name: Verify canonical RAG from Hetzner\n'
+          if smoke_anchor not in text:
+              raise SystemExit("AI deploy RAG smoke anchor missing")
+          db_smoke = '''      - name: Verify database playground API
+                shell: bash
+                run: |
+                  set -euo pipefail
+                  for engine in mysql postgres; do
+                    body="$(curl --fail --silent --show-error --max-time 30 \\
+                      --request POST \\
+                      --header "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \\
+                      --header 'Content-Type: application/json' \\
+                      --data "{\\"engine\\":\\"$engine\\",\\"sessionId\\":\\"production-db-smoke\\"}" \\
+                      "$AI_URL/db-lab/v1/schema")"
+                    if ! grep -Fq '"tables"' <<<"$body" || ! grep -Fq '"users"' <<<"$body"; then
+                      echo "$engine database playground schema smoke failed." >&2
+                      echo "$body" >&2
+                      exit 1
+                    fi
+                    echo "$engine database playground API is healthy."
+                  done
+
+              '''
+          db_smoke = textwrap.dedent(db_smoke)
+          ai.write_text(text.replace(smoke_anchor, db_smoke + smoke_anchor, 1))
+
+          repair = Path(".github/workflows/hetzner-n8n-repair.yml")
+          text = repair.read_text()
+          trigger = '      - ops/hetzner/db-lab/**\n'
+          if trigger not in text:
+              raise SystemExit("Refresh trigger anchor missing")
+          text = text.replace(trigger, trigger + '      - ops/hetzner/db-lab-api/**\n', 1)
+          ports = '          check_port 3306 "MySQL lab"\n          check_port 5432 "PostgreSQL lab"\n'
+          if ports not in text:
+              raise SystemExit("Refresh DB port smoke anchor missing")
+          health = ports + '''
+      - name: Verify database lab API health
+        shell: bash
+        run: |
+          body="$(curl --fail --silent --show-error --max-time 20 \\
+            --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \\
+            https://ai.gimme-job.com/db-lab/health)"
+          if ! grep -Fq '"status":"ok"' <<<"$body"; then
+            echo "Database lab API health check failed: $body" >&2
+            exit 1
+          fi
+          echo "Database lab API is healthy behind Caddy."
+'''
+          repair.write_text(text.replace(ports, health, 1))
+
+          ci = Path(".github/workflows/ci.yml")
+          text = ci.read_text()
+          verify = '      - name: Verify repository\n        run: npm run verify\n'
+          if verify not in text:
+              raise SystemExit("CI repository verification anchor missing")
+          docker = verify + '''
+      - name: Build database lab API image
+        run: docker build ops/hetzner/db-lab-api
+'''
+          ci.write_text(text.replace(verify, docker, 1))
+
+          sonar = Path("sonar-project.properties")
+          text = sonar.read_text()
+          anchor = 'ops/hetzner/provision.mjs,worker/core.ts'
+          replacement = 'ops/hetzner/provision.mjs,ops/hetzner/db-lab-api/server.mjs,app/playgrounds/databases/page.tsx,app/playgrounds/databases/database-playground.tsx,worker/core.ts'
+          if anchor not in text:
+              raise SystemExit("Sonar coverage anchor missing")
+          sonar.write_text(text.replace(anchor, replacement, 1))
+          PY
+
+      - name: Validate generated wiring
+        shell: bash
+        run: |
+          node --check ops/hetzner/db-lab-api/server.mjs
+          docker compose -f ops/hetzner/docker-compose.yml config --quiet
+          docker build ops/hetzner/db-lab-api
+
+      - name: Commit generated patch
+        shell: bash
+        run: |
+          git config user.name "gimmejob-agent"
+          git config user.email "77669556+sergiiiavt@users.noreply.github.com"
+          git rm .github/workflows/agent-database-playground-patch.yml
+          git add app/site-navigation.tsx ops/hetzner .github/workflows/ai-image.yml .github/workflows/hetzner-n8n-repair.yml .github/workflows/ci.yml sonar-project.properties
+          git commit -m "Wire database playground runtime"
+          git push origin HEAD:agent/database-playground
