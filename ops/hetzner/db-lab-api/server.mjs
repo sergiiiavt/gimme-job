@@ -550,7 +550,7 @@ function createLabServer() {
     const body = request.method === "GET" || request.method === "HEAD" ? undefined : request;
     // The incoming target is only a route selector, never a request destination.
     const pathname = (request.url || "/").split("?", 1)[0];
-    const webRequest = new Request("http://db-lab-api/", {
+    const webRequest = new Request("https://ai.gimme-job.com/", {
       method: request.method,
       headers: request.headers,
       body,
