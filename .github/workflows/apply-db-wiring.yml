@@ -1,0 +1,39 @@
+name: Apply database playground wiring
+
+on:
+  push:
+    branches:
+      - agent/database-playground
+    paths:
+      - .github/workflows/apply-db-wiring.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/database-playground
+
+      - name: Apply wiring patch
+        run: python scripts/agent-database-patch.py
+
+      - name: Validate generated runtime config
+        run: |
+          node --check ops/hetzner/db-lab-api/server.mjs
+          docker compose -f ops/hetzner/docker-compose.yml config --quiet
+          docker build ops/hetzner/db-lab-api
+
+      - name: Commit generated wiring
+        run: |
+          git config user.name "gimmejob-agent"
+          git config user.email "77669556+sergiiiavt@users.noreply.github.com"
+          git rm .github/workflows/apply-db-wiring.yml .github/workflows/agent-database-playground-patch.yml scripts/agent-database-patch.py
+          git add app/site-navigation.tsx ops/hetzner .github/workflows/ai-image.yml .github/workflows/hetzner-n8n-repair.yml .github/workflows/ci.yml sonar-project.properties
+          git commit -m "Wire database playground runtime"
+          git push origin HEAD:agent/database-playground
