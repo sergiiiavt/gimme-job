@@ -44,11 +44,11 @@ jobs:
           docker compose -f ops/hetzner/docker-compose.yml config --quiet
           docker build ops/hetzner/db-lab-api
 
-      - name: Commit generated wiring
+      - name: Commit non-workflow wiring
         run: |
           git config user.name "gimmejob-agent"
           git config user.email "77669556+sergiiiavt@users.noreply.github.com"
-          git rm .github/workflows/apply-db-wiring.yml .github/workflows/agent-database-playground-patch.yml scripts/agent-database-patch.py
-          git add app/site-navigation.tsx ops/hetzner .github/workflows/ai-image.yml .github/workflows/hetzner-n8n-repair.yml .github/workflows/ci.yml sonar-project.properties
+          git checkout -- .github/workflows/ai-image.yml .github/workflows/hetzner-n8n-repair.yml .github/workflows/ci.yml
+          git add app/site-navigation.tsx ops/hetzner/docker-compose.yml ops/hetzner/Caddyfile ops/hetzner/bootstrap.sh sonar-project.properties
           git commit -m "Wire database playground runtime"
           git push origin HEAD:agent/database-playground
