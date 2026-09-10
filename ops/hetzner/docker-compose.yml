@@ -110,6 +110,32 @@ services:
     networks:
       - db_lab_internal
 
+  db-lab-api:
+    build:
+      context: ./db-lab-api
+    restart: unless-stopped
+    profiles:
+      - ai
+    depends_on:
+      mysql-lab:
+        condition: service_healthy
+      postgres-lab:
+        condition: service_healthy
+    env_file:
+      - ./ai.env
+    environment:
+      MYSQL_LAB_HOST: mysql-lab
+      MYSQL_LAB_PORT: 3306
+      MYSQL_LAB_ROOT_PASSWORD: ${MYSQL_LAB_ROOT_PASSWORD}
+      POSTGRES_LAB_HOST: postgres-lab
+      POSTGRES_LAB_PORT: 5432
+      POSTGRES_LAB_ADMIN_PASSWORD: ${POSTGRES_LAB_ADMIN_PASSWORD}
+    expose:
+      - "8080"
+    networks:
+      - n8n_internal
+      - db_lab_internal
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped

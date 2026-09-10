@@ -61,6 +61,7 @@ fi
 
 install -d -m 700 "$RUNTIME_DIR"
 install -d -m 755 "$RUNTIME_DIR/db-lab"
+install -d -m 755 "$RUNTIME_DIR/db-lab-api"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/docker-compose.yml" -o "$RUNTIME_DIR/docker-compose.yml"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
@@ -69,7 +70,12 @@ curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir
   "$REPO_RAW/db-lab/mysql-init.sql" -o "$RUNTIME_DIR/db-lab/mysql-init.sql"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/db-lab/postgres-init.sql" -o "$RUNTIME_DIR/db-lab/postgres-init.sql"
-chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/db-lab-api/Dockerfile" -o "$RUNTIME_DIR/db-lab-api/Dockerfile"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/db-lab-api/server.mjs" -o "$RUNTIME_DIR/db-lab-api/server.mjs"
+chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql" \
+  "$RUNTIME_DIR/db-lab-api/Dockerfile" "$RUNTIME_DIR/db-lab-api/server.mjs"
 
 if [[ ! -f "$RUNTIME_DIR/.env" ]]; then
   log "Creating persistent runtime environment"
@@ -92,7 +98,8 @@ docker compose config --quiet
 if [[ -f "$RUNTIME_DIR/ai.env" ]]; then
   chmod 600 "$RUNTIME_DIR/ai.env"
   log "Starting n8n stack, GimmeJob AI, MySQL lab, PostgreSQL lab, and Caddy"
-  docker compose --profile ai pull
+  docker compose --profile ai pull --ignore-buildable
+  docker compose --profile ai build db-lab-api
   docker compose --profile ai up -d --remove-orphans
   docker compose --profile ai ps
 else
