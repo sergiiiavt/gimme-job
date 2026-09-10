@@ -11,6 +11,8 @@ const MYSQL_ADMIN_PASSWORD = process.env.MYSQL_LAB_ROOT_PASSWORD || "";
 const POSTGRES_ADMIN_PASSWORD = process.env.POSTGRES_LAB_ADMIN_PASSWORD || "";
 const SERVICE_TOKEN = process.env.GIMMEJOB_AI_SERVICE_TOKEN || "";
 const WORKSPACE_COUNT = 4;
+const MYSQL_WORKSPACE_MARKER = "__gimmejob_workspace_v2";
+const MYSQL_BASE_FIXTURE_COUNTS = "10000:200:50000";
 const MAX_SQL_CHARS = 20_000;
 const MAX_BODY_BYTES = 32_000;
 const MAX_OUTPUT_BYTES = 512 * 1024;
@@ -160,6 +162,13 @@ async function mysqlRun({ user, password, database = "", sql, skipHeaders = fals
   });
 }
 
+function mysqlBaseFixtureCountSql() {
+  return `SELECT CONCAT_WS(CHAR(58),
+    (SELECT COUNT(*) FROM gimmejob_lab.users),
+    (SELECT COUNT(*) FROM gimmejob_lab.products),
+    (SELECT COUNT(*) FROM gimmejob_lab.orders));`;
+}
+
 function postgresArgs({ user, database, sql }) {
   return [
     "--host", POSTGRES_HOST,
@@ -209,7 +218,7 @@ async function ensureMysqlWorkspace(workspace) {
     password: MYSQL_ADMIN_PASSWORD,
     admin: true,
     skipHeaders: true,
-    sql: `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${database}' AND table_name='__gimmejob_workspace';`,
+    sql: `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${database}' AND table_name='${MYSQL_WORKSPACE_MARKER}';`,
   });
   if (Number(marker.stdout.trim()) > 0) return;
   await mysqlRun({
@@ -217,15 +226,16 @@ async function ensureMysqlWorkspace(workspace) {
     password: MYSQL_ADMIN_PASSWORD,
     admin: true,
     sql: `
-      DROP TABLE IF EXISTS \`${database}\`.orders, \`${database}\`.products, \`${database}\`.users, \`${database}\`.__gimmejob_workspace;
+      DROP TABLE IF EXISTS \`${database}\`.orders, \`${database}\`.products, \`${database}\`.users,
+        \`${database}\`.__gimmejob_workspace, \`${database}\`.${MYSQL_WORKSPACE_MARKER};
       CREATE TABLE \`${database}\`.users LIKE gimmejob_lab.users;
       INSERT INTO \`${database}\`.users SELECT * FROM gimmejob_lab.users;
       CREATE TABLE \`${database}\`.products LIKE gimmejob_lab.products;
       INSERT INTO \`${database}\`.products SELECT * FROM gimmejob_lab.products;
       CREATE TABLE \`${database}\`.orders LIKE gimmejob_lab.orders;
       INSERT INTO \`${database}\`.orders SELECT * FROM gimmejob_lab.orders;
-      CREATE TABLE \`${database}\`.__gimmejob_workspace (created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
-      INSERT INTO \`${database}\`.__gimmejob_workspace VALUES (CURRENT_TIMESTAMP);
+      CREATE TABLE \`${database}\`.${MYSQL_WORKSPACE_MARKER} (created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
+      INSERT INTO \`${database}\`.${MYSQL_WORKSPACE_MARKER} VALUES (CURRENT_TIMESTAMP);
       ANALYZE TABLE \`${database}\`.users, \`${database}\`.products, \`${database}\`.orders;
     `,
   });
@@ -493,10 +503,13 @@ async function health() {
     return json({ status: "degraded", mysql: false, postgres: false }, 503);
   }
   try {
-    await Promise.all([
-      mysqlRun({ user: "root", password: MYSQL_ADMIN_PASSWORD, admin: true, skipHeaders: true, sql: "SELECT 1;" }),
+    const [mysqlFixture] = await Promise.all([
+      mysqlRun({ user: "root", password: MYSQL_ADMIN_PASSWORD, admin: true, skipHeaders: true, sql: mysqlBaseFixtureCountSql() }),
       postgresRun({ user: "postgres", password: POSTGRES_ADMIN_PASSWORD, database: "postgres", admin: true, sql: "SELECT 1;" }),
     ]);
+    if (mysqlFixture.stdout.trim() !== MYSQL_BASE_FIXTURE_COUNTS) {
+      throw new LabError("MySQL base fixture is not seeded.", 503);
+    }
     return json({ status: "ok", mysql: true, postgres: true });
   } catch {
     return json({ status: "degraded", mysql: false, postgres: false }, 503);
@@ -568,4 +581,16 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   });
 }
 
-export { createLabServer, handle, mysqlArgs, parseCsv, parseTsv, postgresGrid, statementKind, workspaceFor };
+export {
+  createLabServer,
+  handle,
+  MYSQL_BASE_FIXTURE_COUNTS,
+  MYSQL_WORKSPACE_MARKER,
+  mysqlArgs,
+  mysqlBaseFixtureCountSql,
+  parseCsv,
+  parseTsv,
+  postgresGrid,
+  statementKind,
+  workspaceFor,
+};
