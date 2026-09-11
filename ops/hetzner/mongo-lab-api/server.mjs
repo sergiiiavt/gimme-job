@@ -299,7 +299,7 @@ async function loadSchema(workspace) {
     samples.forEach((document) => collectFields(document, fields));
     const columns = [...fields.entries()].map(([field, types]) => ({
       name: field,
-      type: [...types].sort().join(" | "),
+      type: [...types].sort((a, b) => a.localeCompare(b)).join(" | "),
       nullable: true,
       default: null,
       key: field === "_id" ? "PK" : null,
