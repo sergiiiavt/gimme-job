@@ -11,6 +11,7 @@ on:
       - ops/hetzner/Caddyfile
       - ops/hetzner/db-lab/**
       - ops/hetzner/db-lab-api/**
+      - ops/hetzner/mongo-lab-api/**
   workflow_dispatch:
 
 permissions:
@@ -107,7 +108,7 @@ jobs:
           echo "--- previous bootstrap log (sanitized tail) ---"
           if [[ -f /mnt/var/log/gimmejob-bootstrap.log ]]; then
             tail -n 120 /mnt/var/log/gimmejob-bootstrap.log \
-              | sed -E 's/(POSTGRES_PASSWORD|N8N_ENCRYPTION_KEY|MYSQL_LAB_ROOT_PASSWORD|POSTGRES_LAB_ADMIN_PASSWORD)=.*/\1=[REDACTED]/g'
+              | sed -E 's/(POSTGRES_PASSWORD|N8N_ENCRYPTION_KEY|MYSQL_LAB_ROOT_PASSWORD|POSTGRES_LAB_ADMIN_PASSWORD|MONGO_LAB_ADMIN_PASSWORD)=.*/\1=[REDACTED]/g'
           else
             echo "No previous gimmejob-bootstrap.log found"
           fi
@@ -168,7 +169,7 @@ jobs:
       - name: Verify database ports are private
         shell: bash
         run: |
-          for port in 3306 5432 8080; do
+          for port in 3306 5432 27017 8080 8081; do
             if timeout 3 bash -c "</dev/tcp/$HETZNER_SERVER_IP/$port" 2>/dev/null; then
               echo "Database service is unexpectedly public on port $port." >&2
               exit 1
@@ -176,7 +177,7 @@ jobs:
             echo "Database service port $port is not publicly reachable."
           done
 
-      - name: Wait for database lab API health
+      - name: Wait for SQL database lab API health
         shell: bash
         run: |
           body=""
@@ -185,28 +186,48 @@ jobs:
               --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
               https://ai.gimme-job.com/db-lab/health 2>/dev/null || true)"
             if grep -Fq '"status":"ok"' <<<"$body"; then
-              echo "Database lab API is healthy behind Caddy."
+              echo "SQL database lab API is healthy behind Caddy."
               exit 0
             fi
-            echo "Waiting for database lab API ($attempt/60)..."
+            echo "Waiting for SQL database lab API ($attempt/60)..."
             sleep 5
           done
-          echo "Database lab API did not become healthy. Last response: ${body:-no response}" >&2
+          echo "SQL database lab API did not become healthy. Last response: ${body:-no response}" >&2
           exit 1
 
-      - name: Verify database lab requires service authentication
+      - name: Wait for MongoDB lab API health
         shell: bash
         run: |
-          for action in query schema reset; do
-            status="$(curl --silent --show-error --max-time 20 \
+          body=""
+          for attempt in $(seq 1 60); do
+            body="$(curl --silent --show-error --max-time 20 \
               --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
-              -o /dev/null -w '%{http_code}' \
-              -H 'Content-Type: application/json' -d '{}' \
-              "https://ai.gimme-job.com/db-lab/v1/$action")"
-            if [[ "$status" != "401" ]]; then
-              echo "Database lab $action returned $status instead of 401 without a service token." >&2
-              exit 1
+              https://ai.gimme-job.com/mongo-lab/health 2>/dev/null || true)"
+            if grep -Fq '"status":"ok"' <<<"$body" && grep -Fq '"mongodb":true' <<<"$body"; then
+              echo "MongoDB lab API is healthy behind Caddy."
+              exit 0
             fi
+            echo "Waiting for MongoDB lab API ($attempt/60)..."
+            sleep 5
+          done
+          echo "MongoDB lab API did not become healthy. Last response: ${body:-no response}" >&2
+          exit 1
+
+      - name: Verify database labs require service authentication
+        shell: bash
+        run: |
+          for base in db-lab mongo-lab; do
+            for action in query schema reset; do
+              status="$(curl --silent --show-error --max-time 20 \
+                --resolve ai.gimme-job.com:443:$HETZNER_SERVER_IP \
+                -o /dev/null -w '%{http_code}' \
+                -H 'Content-Type: application/json' -d '{}' \
+                "https://ai.gimme-job.com/$base/v1/$action")"
+              if [[ "$status" != "401" ]]; then
+                echo "$base $action returned $status instead of 401 without a service token." >&2
+                exit 1
+              fi
+            done
           done
 
       - name: Verify public database playground end to end
@@ -262,5 +283,28 @@ jobs:
           done
           if [[ "$passed" != true ]]; then
             echo "PostgreSQL database playground query failed. Last response: ${body:-no response}" >&2
+            exit 1
+          fi
+
+          mongo_payload="$(printf '{"action":"query","engine":"mongodb","sessionId":"deploy-mongo-%s","sql":"db.orders.find({\\"orderId\\":1},{\\"orderId\\":1,\\"status\\":1,\\"_id\\":0}).limit(1);"}' "$GITHUB_RUN_ID")"
+          body=""
+          passed=false
+          for attempt in $(seq 1 30); do
+            body="$(curl --silent --show-error --max-time 30 \
+              -H 'Content-Type: application/json' \
+              -d "$mongo_payload" \
+              https://gimme-job.com/api/playgrounds/databases 2>/dev/null || true)"
+            if grep -Fq '"statementType":"FIND"' <<<"$body" \
+              && grep -Fq '"rowCount":1' <<<"$body" \
+              && grep -Fq '"orderId":1' <<<"$body"; then
+              echo "MongoDB database playground query passed."
+              passed=true
+              break
+            fi
+            echo "Waiting for MongoDB public database playground ($attempt/30)..."
+            sleep 5
+          done
+          if [[ "$passed" != true ]]; then
+            echo "MongoDB database playground query failed. Last response: ${body:-no response}" >&2
             exit 1
           fi
