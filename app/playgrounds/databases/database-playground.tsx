@@ -1,11 +1,11 @@
 "use client";
 
-import { KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { SiteSidebar } from "../../site-navigation";
 import styles from "./database-playground.module.css";
 
 type Engine = "mysql" | "postgres";
-type ResultTab = "data" | "structure" | "history";
+type LeftTab = "database" | "examples";
 type ColumnInfo = { name: string; type: string; nullable: boolean; default: string | null; key: string | null };
 type TableInfo = { name: string; columns: ColumnInfo[] };
 type SchemaResponse = { engine: Engine; workspace: string; tables: TableInfo[] };
@@ -20,10 +20,9 @@ type QueryResponse = {
   durationMs: number;
   message: string | null;
 };
-type HistoryItem = { id: string; engine: Engine; sql: string; durationMs: number | null; ok: boolean; at: string };
+type QueryExample = { title: string; description: string; sql: string };
 
 const SESSION_KEY = "gimmejob-db-lab-session-v1";
-const HISTORY_KEY = "gimmejob-db-lab-history-v1";
 const ENGINE_KEY = "gimmejob-db-lab-engine-v1";
 const SQL_KEY = "gimmejob-db-lab-sql-v1";
 const PAGE_SIZE = 25;
@@ -34,20 +33,6 @@ const STARTER_SQL: Record<Engine, string> = {
 
 function newSessionId(): string {
   return `db_${crypto.randomUUID().replaceAll("-", "")}`;
-}
-
-function readHistory(): HistoryItem[] {
-  try {
-    const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]") as unknown;
-    if (!Array.isArray(value)) return [];
-    return value.filter((item): item is HistoryItem => {
-      if (!item || typeof item !== "object" || Array.isArray(item)) return false;
-      const candidate = item as Partial<HistoryItem>;
-      return typeof candidate.sql === "string" && (candidate.engine === "mysql" || candidate.engine === "postgres");
-    }).slice(0, 50);
-  } catch {
-    return [];
-  }
 }
 
 async function api<T>(body: Record<string, unknown>): Promise<T> {
@@ -65,6 +50,43 @@ function quoteIdentifier(value: string, engine: Engine): string {
   return engine === "mysql" ? `\`${value.replaceAll("`", "``")}\`` : `"${value.replaceAll('"', '""')}"`;
 }
 
+function examplesFor(engine: Engine): QueryExample[] {
+  return [
+    {
+      title: "Select rows",
+      description: "Read recent rows from a table.",
+      sql: "SELECT *\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
+    },
+    {
+      title: "Filter rows",
+      description: "Return only rows matching a condition.",
+      sql: "SELECT id, user_id, status, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY id DESC\nLIMIT 20;",
+    },
+    {
+      title: "JOIN tables",
+      description: "Combine orders with their related users.",
+      sql: "SELECT o.id, u.email, u.region, o.status, o.total_amount\nFROM orders o\nJOIN users u ON u.id = o.user_id\nORDER BY o.id DESC\nLIMIT 20;",
+    },
+    {
+      title: "GROUP BY",
+      description: "Aggregate rows and compare groups.",
+      sql: "SELECT channel, COUNT(*) AS orders_count, ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nGROUP BY channel\nORDER BY revenue DESC;",
+    },
+    {
+      title: "EXPLAIN",
+      description: "Inspect how the database plans a query.",
+      sql: engine === "mysql"
+        ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;"
+        : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;",
+    },
+    {
+      title: "CREATE INDEX",
+      description: "Add an index, then compare the query plan.",
+      sql: "CREATE INDEX idx_orders_user_id ON orders(user_id);",
+    },
+  ];
+}
+
 export default function DatabasePlayground() {
   const [mobileNav, setMobileNav] = useState(false);
   const [sessionId, setSessionId] = useState("");
@@ -72,14 +94,14 @@ export default function DatabasePlayground() {
   const [schema, setSchema] = useState<TableInfo[]>([]);
   const [workspace, setWorkspace] = useState("Workspace");
   const [selectedTable, setSelectedTable] = useState("orders");
+  const [leftTab, setLeftTab] = useState<LeftTab>("database");
   const [sql, setSql] = useState(STARTER_SQL.mysql);
   const [result, setResult] = useState<QueryResponse | null>(null);
-  const [tab, setTab] = useState<ResultTab>("data");
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [error, setError] = useState("");
+  const editorRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -91,7 +113,6 @@ export default function DatabasePlayground() {
       const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
       setEngine(nextEngine);
       setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
-      setHistory(readHistory());
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -120,19 +141,6 @@ export default function DatabasePlayground() {
     return () => window.clearTimeout(timer);
   }, [refreshSchema, sessionId]);
 
-  const selectedStructure = useMemo(
-    () => schema.find((table) => table.name === selectedTable)?.columns || [],
-    [schema, selectedTable],
-  );
-
-  const addHistory = useCallback((item: HistoryItem) => {
-    setHistory((current) => {
-      const next = [item, ...current].slice(0, 50);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
-
   const runSql = useCallback(async (override?: string) => {
     const statement = (override ?? sql).trim();
     if (!sessionId || !statement || loading) return;
@@ -145,16 +153,13 @@ export default function DatabasePlayground() {
       const payload = await api<QueryResponse>({ action: "query", engine, sessionId, sql: statement });
       setResult(payload);
       setWorkspace(payload.workspace || workspace);
-      setTab("data");
-      addHistory({ id: crypto.randomUUID(), engine, sql: statement, durationMs: payload.durationMs, ok: true, at: new Date().toISOString() });
       if (!["SELECT", "SHOW", "DESCRIBE", "DESC", "EXPLAIN"].includes(payload.statementType)) void refreshSchema();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Query failed.");
-      addHistory({ id: crypto.randomUUID(), engine, sql: statement, durationMs: null, ok: false, at: new Date().toISOString() });
     } finally {
       setLoading(false);
     }
-  }, [addHistory, engine, loading, refreshSchema, sessionId, sql, workspace]);
+  }, [engine, loading, refreshSchema, sessionId, sql, workspace]);
 
   function changeEngine(next: Engine) {
     if (next === engine) return;
@@ -167,12 +172,32 @@ export default function DatabasePlayground() {
     setError("");
   }
 
-  function openTable(table: string) {
-    setSelectedTable(table);
-    const name = quoteIdentifier(table, engine);
-    const statement = `SELECT * FROM ${name} LIMIT 100;`;
+  function useQuery(statement: string) {
     setSql(statement);
+    setError("");
+    editorRef.current?.focus();
+  }
+
+  function previewTable(table: string) {
+    setSelectedTable(table);
+    setLeftTab("database");
+    const statement = `SELECT * FROM ${quoteIdentifier(table, engine)} LIMIT 100;`;
     void runSql(statement);
+  }
+
+  function insertIdentifier(identifier: string) {
+    const value = quoteIdentifier(identifier, engine);
+    const editor = editorRef.current;
+    const start = editor?.selectionStart ?? sql.length;
+    const end = editor?.selectionEnd ?? sql.length;
+    const next = `${sql.slice(0, start)}${value}${sql.slice(end)}`;
+    setSql(next);
+    window.requestAnimationFrame(() => {
+      if (!editor) return;
+      const cursor = start + value.length;
+      editor.focus();
+      editor.setSelectionRange(cursor, cursor);
+    });
   }
 
   async function resetWorkspace() {
@@ -202,6 +227,7 @@ export default function DatabasePlayground() {
 
   const totalPages = result ? Math.max(1, Math.ceil(result.rows.length / PAGE_SIZE)) : 1;
   const visibleRows = result?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) || [];
+  const queryExamples = examplesFor(engine);
 
   return (
     <main className="kb-shell">
@@ -223,7 +249,10 @@ export default function DatabasePlayground() {
         <div className={`kb-content ${styles.page}`}>
           <section className={styles.client}>
             <header className={styles.toolbar}>
-              <div><h1>Database Playground</h1><p>Real MySQL and PostgreSQL · persistent test workspace</p></div>
+              <div>
+                <h1>Database Playground</h1>
+                <p>Explore the database, write SQL, and inspect the result.</p>
+              </div>
               <div className={styles.toolbarActions}>
                 <fieldset aria-label="Database engine" className={styles.engineSwitch}>
                   <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
@@ -234,71 +263,117 @@ export default function DatabasePlayground() {
               </div>
             </header>
 
-            <div className={styles.statusBar}>
-              <span className={styles.liveDot}/><strong>{workspace}</strong><span>isolated test data</span><span>50k orders · 10k users · 200 products</span><span>7s query limit</span>
-            </div>
-
             <div className={styles.body}>
-              <aside className={styles.schemaPane}>
-                <div className={styles.paneHeading}><strong>Schema</strong><span>{schemaLoading ? "loading…" : `${schema.length} tables`}</span></div>
-                <div className={styles.tables}>
-                  {schema.map((table) => (
-                    <div className={`${styles.tableCard} ${selectedTable === table.name ? styles.selectedTable : ""}`} key={table.name}>
-                      <button onClick={() => setSelectedTable(table.name)} type="button"><span className={styles.tableIcon}>▦</span><strong>{table.name}</strong><span>{table.columns.length}</span></button>
-                      {selectedTable === table.name && (
-                        <div className={styles.columnList}>
-                          {table.columns.map((column) => <button key={column.name} onClick={() => setTab("structure")} type="button"><span>{column.name}</span><small>{column.type}</small></button>)}
-                          <button className={styles.openTable} onClick={() => openTable(table.name)} type="button">Open table</button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {!schemaLoading && !schema.length && <p className={styles.empty}>Schema unavailable.</p>}
+              <aside className={styles.sidePane}>
+                <div className={styles.sideTabs} role="tablist" aria-label="Database sidebar">
+                  <button aria-selected={leftTab === "database"} className={leftTab === "database" ? styles.activeSideTab : ""} onClick={() => setLeftTab("database")} role="tab" type="button">Database</button>
+                  <button aria-selected={leftTab === "examples"} className={leftTab === "examples" ? styles.activeSideTab : ""} onClick={() => setLeftTab("examples")} role="tab" type="button">Examples</button>
                 </div>
+
+                {leftTab === "database" ? (
+                  <div className={styles.databaseView}>
+                    <div className={styles.paneHeading}>
+                      <div><strong>{workspace}</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"}</span></div>
+                      <span>{schemaLoading ? "loading…" : `${schema.length} tables`}</span>
+                    </div>
+                    <div className={styles.tables}>
+                      {schema.map((table) => (
+                        <div className={`${styles.tableCard} ${selectedTable === table.name ? styles.selectedTable : ""}`} key={table.name}>
+                          <button className={styles.tableButton} onClick={() => setSelectedTable(table.name)} type="button">
+                            <span className={styles.chevron}>{selectedTable === table.name ? "⌄" : "›"}</span>
+                            <strong>{table.name}</strong>
+                            <span>{table.columns.length}</span>
+                          </button>
+                          {selectedTable === table.name && (
+                            <div className={styles.columnList}>
+                              {table.columns.map((column) => (
+                                <button key={column.name} onClick={() => insertIdentifier(column.name)} title={`Insert ${column.name} into the query`} type="button">
+                                  <span className={styles.columnName}>{column.name}{column.key ? <em>{column.key}</em> : null}</span>
+                                  <small>{column.type}</small>
+                                </button>
+                              ))}
+                              <button className={styles.previewButton} onClick={() => previewTable(table.name)} type="button">Preview rows</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
+                    </div>
+                    <p className={styles.sideHint}>Select a table to see its columns. Click a column to insert it into the query.</p>
+                  </div>
+                ) : (
+                  <div className={styles.examplesView}>
+                    <div className={styles.paneHeading}>
+                      <div><strong>Typical queries</strong><span>Start from a working example</span></div>
+                    </div>
+                    <div className={styles.examplesList}>
+                      {queryExamples.map((example) => (
+                        <article className={styles.exampleCard} key={example.title}>
+                          <h2>{example.title}</h2>
+                          <p>{example.description}</p>
+                          <pre><code>{example.sql}</code></pre>
+                          <button onClick={() => useQuery(example.sql)} type="button">Use query</button>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </aside>
 
               <div className={styles.workPane}>
                 <section className={styles.editorPane}>
-                  <div className={styles.editorHeader}>
-                    <div className={styles.quickQueries}>
-                      <button onClick={() => setSql(`SELECT * FROM ${quoteIdentifier(selectedTable || "orders", engine)} LIMIT 20;`)} type="button">SELECT</button>
-                      <button onClick={() => setSql("SELECT u.region, COUNT(*) AS orders_count, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN users u ON u.id = o.user_id\nGROUP BY u.region\nORDER BY revenue DESC;")} type="button">JOIN + GROUP BY</button>
-                      <button onClick={() => setSql(engine === "mysql" ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;" : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;")} type="button">EXPLAIN</button>
-                      <button onClick={() => setSql("CREATE INDEX idx_orders_user_id ON orders(user_id);")} type="button">CREATE INDEX</button>
-                    </div>
+                  <div className={styles.sectionHeader}>
+                    <div><strong>Query</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"} · {workspace}</span></div>
                     <span>Ctrl/Cmd + Enter</span>
                   </div>
-                  <textarea aria-label="SQL editor" className={styles.editor} onChange={(event) => setSql(event.target.value)} onKeyDown={handleEditorKey} spellCheck={false} value={sql}/>
-                  <div className={styles.editorFooter}><span>{engine === "mysql" ? "database workspace" : "schema workspace"}</span><button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runSql()} type="button">{loading ? "Running…" : "Run SQL"}</button></div>
+                  <textarea
+                    aria-label="SQL editor"
+                    className={styles.editor}
+                    onChange={(event) => setSql(event.target.value)}
+                    onKeyDown={handleEditorKey}
+                    ref={editorRef}
+                    spellCheck={false}
+                    value={sql}
+                  />
+                  <div className={styles.editorFooter}>
+                    <span>Queries run against your persistent test workspace.</span>
+                    <button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runSql()} type="button">{loading ? "Running…" : "Run SQL"}</button>
+                  </div>
                 </section>
 
                 <section className={styles.resultsPane}>
-                  <div className={styles.resultTabs}>
-                    <button className={tab === "data" ? styles.activeTab : ""} onClick={() => setTab("data")} type="button">Data</button>
-                    <button className={tab === "structure" ? styles.activeTab : ""} onClick={() => setTab("structure")} type="button">Structure</button>
-                    <button className={tab === "history" ? styles.activeTab : ""} onClick={() => setTab("history")} type="button">History <span>{history.length}</span></button>
-                    <div className={styles.resultMeta}>{result && <><span>{result.rowCount} rows</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</>}</div>
+                  <div className={styles.sectionHeader}>
+                    <div><strong>Results</strong><span>{result ? result.statementType : "Query output"}</span></div>
+                    <div className={styles.resultMeta}>
+                      {result && !error ? <><span>{result.rowCount} rows</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</> : null}
+                    </div>
                   </div>
 
-                  {error && <div className={styles.error} role="alert"><strong>Query error</strong><pre>{error}</pre></div>}
-
-                  {tab === "data" && !error && (
+                  {error ? (
+                    <div className={styles.error} role="alert"><strong>Query error</strong><pre>{error}</pre></div>
+                  ) : (
                     <div className={styles.dataView}>
                       {result?.columns.length ? (
-                        <div className={styles.gridWrap}><table className={styles.grid}><thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{visibleRows.map((row, rowIndex) => <tr key={`${page}-${rowIndex}`}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell ?? "NULL"}</td>)}</tr>)}</tbody></table></div>
-                      ) : <div className={styles.emptyResult}>{result?.message || "Run a query to see real database results."}</div>}
-                      {result?.columns.length ? <div className={styles.pagination}><span>Page {page + 1} of {totalPages}</span><div><button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} type="button">Previous</button><button disabled={page + 1 >= totalPages} onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} type="button">Next</button></div></div> : null}
-                    </div>
-                  )}
-
-                  {tab === "structure" && (
-                    <div className={styles.structureView}><h2>{selectedTable || "Table"}</h2><table className={styles.structureTable}><thead><tr><th>Column</th><th>Type</th><th>Nullable</th><th>Default</th><th>Key</th></tr></thead><tbody>{selectedStructure.map((column) => <tr key={column.name}><td>{column.name}</td><td><code>{column.type}</code></td><td>{column.nullable ? "YES" : "NO"}</td><td>{column.default || "—"}</td><td>{column.key || "—"}</td></tr>)}</tbody></table></div>
-                  )}
-
-                  {tab === "history" && (
-                    <div className={styles.historyView}>
-                      {history.map((item) => <button key={item.id} onClick={() => { changeEngine(item.engine); setSql(item.sql); }} type="button"><div><strong>{item.ok ? "OK" : "ERROR"}</strong><span>{item.engine === "mysql" ? "MySQL" : "PostgreSQL"}</span><span>{item.durationMs === null ? "—" : `${item.durationMs} ms`}</span><time>{new Date(item.at).toLocaleString()}</time></div><code>{item.sql}</code></button>)}
-                      {!history.length && <div className={styles.emptyResult}>Query history is stored in this browser.</div>}
+                        <div className={styles.gridWrap}>
+                          <table className={styles.grid}>
+                            <thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>
+                            <tbody>{visibleRows.map((row, rowIndex) => <tr key={`${page}-${rowIndex}`}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell ?? "NULL"}</td>)}</tr>)}</tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className={result ? styles.successResult : styles.emptyResult}>
+                          {result?.message || "Run a query to see the result."}
+                        </div>
+                      )}
+                      {result?.columns.length ? (
+                        <div className={styles.pagination}>
+                          <span>Page {page + 1} of {totalPages}</span>
+                          <div>
+                            <button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} type="button">Previous</button>
+                            <button disabled={page + 1 >= totalPages} onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} type="button">Next</button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </section>
