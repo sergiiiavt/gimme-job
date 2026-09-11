@@ -95,6 +95,10 @@ test("database lab APIs are isolated behind Caddy and bridge only intended netwo
   assert.match(bootstrap, /mongo-lab-api\/server\.mjs/);
   assert.match(bootstrap, /db-lab\/mongo-init\.js/);
   assert.match(bootstrap, /MONGO_LAB_ADMIN_PASSWORD/);
+  assert.match(bootstrap, /MONGO_BASE_FIXTURE_COUNTS='1000:120:8000:1'/);
+  assert.match(bootstrap, /mongo_seed_counts/);
+  assert.match(bootstrap, /reconcile_mongo_seed/);
+  assert.match(bootstrap, /mongosh --quiet --host 127\.0\.0\.1/);
   assert.match(bootstrap, /caddy validate --config \/etc\/caddy\/Caddyfile --adapter caddyfile/);
   assert.match(bootstrap, /caddy reload --config \/etc\/caddy\/Caddyfile --adapter caddyfile/);
   assert.match(sqlServer, /MAX_ACTIVE_REQUESTS = 4/);
