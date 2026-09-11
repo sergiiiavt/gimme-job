@@ -106,6 +106,29 @@ services:
     networks:
       - db_lab_internal
 
+  mongo-lab:
+    image: mongo:8.0
+    restart: unless-stopped
+    command:
+      - mongod
+      - --wiredTigerCacheSizeGB
+      - "0.25"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_LAB_ADMIN_PASSWORD}
+      MONGO_INITDB_DATABASE: gimmejob_lab
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 --username root --password '$${MONGO_INITDB_ROOT_PASSWORD}' --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1"]
+      interval: 10s
+      timeout: 8s
+      retries: 20
+      start_period: 20s
+    volumes:
+      - mongo_lab_data:/data/db
+      - ./db-lab/mongo-init.js:/docker-entrypoint-initdb.d/10-gimmejob-lab.js:ro
+    networks:
+      - db_lab_internal
+
   db-lab-api:
     build:
       context: ./db-lab-api
@@ -132,6 +155,28 @@ services:
       - n8n_internal
       - db_lab_internal
 
+  mongo-lab-api:
+    build:
+      context: ./mongo-lab-api
+    restart: unless-stopped
+    profiles:
+      - ai
+    depends_on:
+      mongo-lab:
+        condition: service_healthy
+    env_file:
+      - ./ai.env
+    environment:
+      MONGO_LAB_HOST: mongo-lab
+      MONGO_LAB_PORT: 27017
+      MONGO_LAB_ADMIN_USER: root
+      MONGO_LAB_ADMIN_PASSWORD: ${MONGO_LAB_ADMIN_PASSWORD}
+    expose:
+      - "8081"
+    networks:
+      - n8n_internal
+      - db_lab_internal
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -153,6 +198,7 @@ volumes:
   n8n_data:
   mysql_lab_data:
   postgres_lab_data:
+  mongo_lab_data:
   caddy_data:
   caddy_config:
 
