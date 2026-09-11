@@ -95,6 +95,8 @@ test("database lab APIs are isolated behind Caddy and bridge only intended netwo
   assert.match(bootstrap, /mongo-lab-api\/server\.mjs/);
   assert.match(bootstrap, /db-lab\/mongo-init\.js/);
   assert.match(bootstrap, /MONGO_LAB_ADMIN_PASSWORD/);
+  assert.match(bootstrap, /caddy validate --config \/etc\/caddy\/Caddyfile --adapter caddyfile/);
+  assert.match(bootstrap, /caddy reload --config \/etc\/caddy\/Caddyfile --adapter caddyfile/);
   assert.match(sqlServer, /MAX_ACTIVE_REQUESTS = 4/);
   assert.match(sqlServer, /QUERY_TIMEOUT_MS = 7_000/);
   assert.match(sqlServer, /MAX_OUTPUT_BYTES = 512 \* 1024/);
