@@ -4,8 +4,8 @@ ENV NODE_ENV=production \
     PORT=8081
 
 WORKDIR /app
-COPY package.json /app/package.json
-RUN npm install --omit=dev --no-audit --no-fund \
+COPY package.json package-lock.json /app/
+RUN npm ci --ignore-scripts --omit=dev --no-audit --no-fund \
     && npm cache clean --force
 COPY server.mjs /app/server.mjs
 
