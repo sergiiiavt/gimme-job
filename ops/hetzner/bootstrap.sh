@@ -71,6 +71,12 @@ reconcile_mysql_seed() {
   log "MySQL lab fixture seed reconciled ($counts)"
 }
 
+reload_caddy() {
+  log "Validating and reloading Caddy configuration"
+  docker compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+}
+
 log "Updating base system"
 apt-get update
 apt-get install -y ca-certificates curl openssl
@@ -167,6 +173,7 @@ else
   docker compose up -d --remove-orphans
 fi
 
+reload_caddy
 reconcile_mysql_seed
 docker compose --profile ai ps 2>/dev/null || docker compose ps
 
