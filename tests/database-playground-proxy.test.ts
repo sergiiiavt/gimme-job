@@ -72,6 +72,43 @@ test("database playground proxies a real query without exposing the service toke
   });
 });
 
+test("MongoDB requests use the dedicated protected adapter", async () => {
+  let upstream: Request | null = null;
+  await withFetch(async (input, init) => {
+    upstream = new Request(input, init);
+    return Response.json({
+      engine: "mongodb",
+      statementType: "FIND",
+      columns: ["document"],
+      rows: [["{\"orderId\":1}"]],
+      documents: [{ orderId: 1 }],
+      rowCount: 1,
+      truncated: false,
+      durationMs: 3.1,
+      message: null,
+    });
+  }, async () => {
+    const mongoQuery = "db.orders.find({\"status\":\"paid\"}).limit(1);";
+    const response = await handleDatabasePlayground(request({
+      action: "query",
+      engine: "mongodb",
+      sessionId: "db_session_12345",
+      sql: mongoQuery,
+    }), env());
+
+    assert.equal(response.status, 200);
+    assert.ok(upstream);
+    assert.equal(upstream.url, "https://ai.gimme-job.internal/mongo-lab/v1/query");
+    assert.equal(upstream.headers.get("authorization"), `Bearer ${SERVICE_TOKEN}`);
+    assert.deepEqual(await upstream.json(), {
+      engine: "mongodb",
+      sessionId: "db_session_12345",
+      sql: mongoQuery,
+    });
+    assert.deepEqual((await response.json() as { documents: unknown[] }).documents, [{ orderId: 1 }]);
+  });
+});
+
 test("database playground proxies schema and reset actions", async () => {
   const urls: string[] = [];
   await withFetch(async (input, init) => {
@@ -86,10 +123,20 @@ test("database playground proxies schema and reset actions", async () => {
       }), env());
       assert.equal(response.status, 200);
     }
+    for (const action of ["schema", "reset"] as const) {
+      const response = await handleDatabasePlayground(request({
+        action,
+        engine: "mongodb",
+        sessionId: "db_session_12345",
+      }), env());
+      assert.equal(response.status, 200);
+    }
   });
   assert.deepEqual(urls, [
     "https://ai.gimme-job.internal/db-lab/v1/schema",
     "https://ai.gimme-job.internal/db-lab/v1/reset",
+    "https://ai.gimme-job.internal/mongo-lab/v1/schema",
+    "https://ai.gimme-job.internal/mongo-lab/v1/reset",
   ]);
 });
 
@@ -101,7 +148,7 @@ test("database playground rejects invalid client input before contacting upstrea
   }, async () => {
     assert.equal((await handleDatabasePlayground(request({ action: "query", engine: "sqlite", sessionId: "db_session_12345", sql: "SELECT 1" }), env())).status, 400);
     assert.equal((await handleDatabasePlayground(request({ action: "query", engine: "mysql", sessionId: "bad space", sql: "SELECT 1" }), env())).status, 400);
-    assert.equal((await handleDatabasePlayground(request({ action: "query", engine: "mysql", sessionId: "db_session_12345", sql: "" }), env())).status, 400);
+    assert.equal((await handleDatabasePlayground(request({ action: "query", engine: "mongodb", sessionId: "db_session_12345", sql: "" }), env())).status, 400);
     assert.equal((await handleDatabasePlayground(request({}, "GET"), env())).status, 405);
   });
   assert.equal(calls, 0);

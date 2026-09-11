@@ -4,13 +4,13 @@ type DatabasePlaygroundEnv = {
 };
 
 type JsonObject = Record<string, unknown>;
-type Engine = "mysql" | "postgres";
+type Engine = "mysql" | "postgres" | "mongodb";
 type Action = "query" | "schema" | "reset";
 
 const MAX_SESSION_ID_LENGTH = 200;
-const MAX_SQL_LENGTH = 20_000;
+const MAX_QUERY_LENGTH = 20_000;
 const ALLOWED_ACTIONS = new Set<Action>(["query", "schema", "reset"]);
-const ALLOWED_ENGINES = new Set<Engine>(["mysql", "postgres"]);
+const ALLOWED_ENGINES = new Set<Engine>(["mysql", "postgres", "mongodb"]);
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 const RESPONSE_HEADERS = {
   "cache-control": "no-store",
@@ -48,8 +48,8 @@ function validSessionId(value: string): boolean {
   return value.length >= 8 && value.length <= MAX_SESSION_ID_LENGTH && SESSION_ID_PATTERN.test(value);
 }
 
-function upstreamPath(action: Action): string {
-  return `/db-lab/v1/${action}`;
+function upstreamPath(action: Action, engine: Engine): string {
+  return engine === "mongodb" ? `/mongo-lab/v1/${action}` : `/db-lab/v1/${action}`;
 }
 
 async function parseInput(request: Request): Promise<JsonObject | null> {
@@ -97,19 +97,19 @@ export async function handleDatabasePlayground(request: Request, env: DatabasePl
   if (!ALLOWED_ENGINES.has(engine)) return json({ error: "Unsupported database engine." }, 400);
   if (!validSessionId(sessionId)) return json({ error: "Invalid database lab session." }, 400);
 
-  const sql = action === "query" ? text(input.sql, MAX_SQL_LENGTH + 1) : "";
-  if (action === "query" && (!sql || sql.length > MAX_SQL_LENGTH)) {
-    return json({ error: "SQL must be between 1 and 20,000 characters." }, 400);
+  const query = action === "query" ? text(input.sql, MAX_QUERY_LENGTH + 1) : "";
+  if (action === "query" && (!query || query.length > MAX_QUERY_LENGTH)) {
+    return json({ error: "Query must be between 1 and 20,000 characters." }, 400);
   }
 
   const base = aiBaseUrl(env);
   const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
   if (!base || !token) return json({ error: "Database playground service is not configured." }, 503);
 
-  const endpoint = new URL(upstreamPath(action).replace(/^\/+/, ""), base.href.endsWith("/") ? base : `${base.href}/`);
+  const endpoint = new URL(upstreamPath(action, engine).replace(/^\/+/, ""), base.href.endsWith("/") ? base : `${base.href}/`);
   if (endpoint.origin !== base.origin) return json({ error: "Database playground service configuration is invalid." }, 503);
 
-  return proxyRequest(endpoint, token, { engine, sessionId, ...(action === "query" ? { sql } : {}) });
+  return proxyRequest(endpoint, token, { engine, sessionId, ...(action === "query" ? { sql: query } : {}) });
 }
 
 export async function POST(request: Request): Promise<Response> {

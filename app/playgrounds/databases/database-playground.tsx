@@ -4,9 +4,9 @@ import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { SiteSidebar } from "../../site-navigation";
 import styles from "./database-playground.module.css";
 
-type Engine = "mysql" | "postgres";
+type Engine = "mysql" | "postgres" | "mongodb";
 type LeftTab = "database" | "examples";
-type ExampleCategory = "basics" | "joins" | "aggregation" | "engine" | "indexes";
+type ExampleCategory = "basics" | "joins" | "aggregation" | "engine" | "indexes" | "filtering" | "documents" | "writes";
 type ColumnInfo = { name: string; type: string; nullable: boolean; default: string | null; key: string | null };
 type TableInfo = { name: string; columns: ColumnInfo[] };
 type SchemaResponse = { tables: TableInfo[] };
@@ -14,6 +14,7 @@ type QueryResponse = {
   statementType: string;
   columns: string[];
   rows: Array<Array<string | null>>;
+  documents?: unknown[];
   rowCount: number;
   truncated: boolean;
   durationMs: number;
@@ -27,12 +28,21 @@ const SQL_KEY = "gimmejob-db-lab-sql-v1";
 const STARTER_SQL: Record<Engine, string> = {
   mysql: "SELECT id, user_id, status, total_amount, created_at\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
   postgres: "SELECT id, user_id, status, total_amount, created_at\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
+  mongodb: "db.orders.find({\"status\":\"paid\"}).sort({\"createdAt\":-1}).limit(20);",
 };
-const EXAMPLE_CATEGORIES: Array<{ id: ExampleCategory; label: string }> = [
+const SQL_CATEGORIES: Array<{ id: ExampleCategory; label: string }> = [
   { id: "basics", label: "Basics" },
   { id: "joins", label: "Joins" },
   { id: "aggregation", label: "Aggregation" },
   { id: "engine", label: "Engine differences" },
+  { id: "indexes", label: "Indexes & plans" },
+];
+const MONGO_CATEGORIES: Array<{ id: ExampleCategory; label: string }> = [
+  { id: "basics", label: "Basics" },
+  { id: "filtering", label: "Filtering" },
+  { id: "documents", label: "Documents & arrays" },
+  { id: "aggregation", label: "Aggregation" },
+  { id: "writes", label: "Updates" },
   { id: "indexes", label: "Indexes & plans" },
 ];
 
@@ -55,7 +65,46 @@ function queryExample(category: ExampleCategory, title: string, description: str
   return { category, title, description, sql };
 }
 
-function examplesFor(engine: Engine): QueryExample[] {
+function engineLabel(engine: Engine): string {
+  if (engine === "mysql") return "MySQL 8";
+  if (engine === "postgres") return "PostgreSQL 16";
+  return "MongoDB 8";
+}
+
+function categoriesFor(engine: Engine) {
+  return engine === "mongodb" ? MONGO_CATEGORIES : SQL_CATEGORIES;
+}
+
+function mongoExamples(): QueryExample[] {
+  return [
+    queryExample("basics", "Find recent paid orders", "Read matching documents, sort them, and limit the result.",
+      "db.orders.find({\"status\":\"paid\"}).sort({\"createdAt\":-1}).limit(20);"),
+    queryExample("basics", "Find one user", "Return the first document matching a filter.",
+      "db.users.findOne({\"userId\":42});"),
+    queryExample("filtering", "Projection", "Return only selected fields from matching documents.",
+      "db.orders.find({\"status\":\"shipped\"},{\"orderId\":1,\"status\":1,\"totalAmount\":1,\"_id\":0}).limit(20);"),
+    queryExample("filtering", "Nested field filter", "Filter directly on an embedded document field.",
+      "db.orders.find({\"user.region\":\"EU\",\"totalAmount\":{\"$gt\":100}}).limit(20);"),
+    queryExample("documents", "Match an array element", "Use $elemMatch against embedded item documents.",
+      "db.orders.find({\"items\":{\"$elemMatch\":{\"category\":\"audio\",\"quantity\":{\"$gte\":2}}}}).limit(20);"),
+    queryExample("documents", "Nested user and shipping data", "Query two embedded objects without a SQL JOIN.",
+      "db.orders.find({\"user.tier\":\"pro\",\"shipping.expedited\":true}).limit(20);"),
+    queryExample("aggregation", "Revenue by channel", "Group documents and calculate order count and revenue.",
+      "db.orders.aggregate([{\"$group\":{\"_id\":\"$channel\",\"orders\":{\"$sum\":1},\"revenue\":{\"$sum\":\"$totalAmount\"}}},{\"$sort\":{\"revenue\":-1}}]);"),
+    queryExample("aggregation", "Items by category", "Unwind the items array before grouping its embedded documents.",
+      "db.orders.aggregate([{\"$unwind\":\"$items\"},{\"$group\":{\"_id\":\"$items.category\",\"quantity\":{\"$sum\":\"$items.quantity\"}}},{\"$sort\":{\"quantity\":-1}}]);"),
+    queryExample("writes", "Update one document", "Use $set without replacing the full document.",
+      "db.orders.updateOne({\"orderId\":42},{\"$set\":{\"status\":\"paid\",\"shipping.expedited\":true}});"),
+    queryExample("writes", "Increment stock", "Atomically increment one numeric field.",
+      "db.products.updateOne({\"productId\":10},{\"$inc\":{\"stock\":5}});"),
+    queryExample("indexes", "Create an index", "Create a compound index on nested and top-level fields.",
+      "db.orders.createIndex({\"user.region\":1,\"createdAt\":-1});"),
+    queryExample("indexes", "Explain a query", "Inspect the MongoDB execution plan for a filtered find.",
+      "db.orders.find({\"status\":\"paid\"}).explain(\"executionStats\");"),
+  ];
+}
+
+function sqlExamples(engine: Engine): QueryExample[] {
   const mysql = engine === "mysql";
   return [
     queryExample("basics", "Select recent orders", "Read rows and control their order and count.",
@@ -87,6 +136,10 @@ function examplesFor(engine: Engine): QueryExample[] {
   ];
 }
 
+function examplesFor(engine: Engine): QueryExample[] {
+  return engine === "mongodb" ? mongoExamples() : sqlExamples(engine);
+}
+
 export default function DatabasePlayground() {
   const [mobileNav, setMobileNav] = useState(false);
   const [sessionId, setSessionId] = useState("");
@@ -109,7 +162,7 @@ export default function DatabasePlayground() {
       localStorage.setItem(SESSION_KEY, nextSession);
       setSessionId(nextSession);
       const savedEngine = localStorage.getItem(ENGINE_KEY);
-      const nextEngine: Engine = savedEngine === "postgres" ? "postgres" : "mysql";
+      const nextEngine: Engine = savedEngine === "postgres" || savedEngine === "mongodb" ? savedEngine : "mysql";
       setEngine(nextEngine);
       setSql(localStorage.getItem(`${SQL_KEY}:${nextEngine}`) || STARTER_SQL[nextEngine]);
     }, 0);
@@ -128,7 +181,7 @@ export default function DatabasePlayground() {
     } catch (reason) {
       setSchema([]);
       setSelectedTable("");
-      setError(reason instanceof Error ? reason.message : "Could not load database schema.");
+      setError(reason instanceof Error ? reason.message : "Could not load database structure.");
     } finally {
       setSchemaLoading(false);
     }
@@ -140,7 +193,7 @@ export default function DatabasePlayground() {
     return () => window.clearTimeout(timer);
   }, [refreshSchema, sessionId]);
 
-  const runSql = useCallback(async () => {
+  const runQuery = useCallback(async () => {
     const statement = sql.trim();
     if (!sessionId || !statement || loading) return;
     localStorage.setItem(`${SQL_KEY}:${engine}`, statement);
@@ -149,7 +202,8 @@ export default function DatabasePlayground() {
     try {
       const payload = await api<QueryResponse>({ action: "query", engine, sessionId, sql: statement });
       setResult(payload);
-      if (!["SELECT", "SHOW", "DESCRIBE", "DESC", "EXPLAIN"].includes(payload.statementType)) void refreshSchema();
+      const readOnly = ["SELECT", "SHOW", "DESCRIBE", "DESC", "EXPLAIN", "FIND", "FINDONE", "COUNTDOCUMENTS", "AGGREGATE", "GETINDEXES"];
+      if (!readOnly.includes(payload.statementType)) void refreshSchema();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Query failed.");
     } finally {
@@ -163,6 +217,7 @@ export default function DatabasePlayground() {
     localStorage.setItem(ENGINE_KEY, next);
     setEngine(next);
     setSelectedTable("");
+    setExampleCategory("basics");
     setSql(localStorage.getItem(`${SQL_KEY}:${next}`) || STARTER_SQL[next]);
     setResult(null);
     setError("");
@@ -176,8 +231,8 @@ export default function DatabasePlayground() {
 
   async function resetDatabase() {
     if (!sessionId || loading) return;
-    const engineName = engine === "mysql" ? "MySQL" : "PostgreSQL";
-    if (!window.confirm(`Reset ${engineName} database? All changes made in this playground database will be deleted.`)) return;
+    const name = engineLabel(engine);
+    if (!window.confirm(`Reset ${name} database? All changes made in this playground database will be deleted.`)) return;
     setLoading(true);
     setError("");
     try {
@@ -197,11 +252,13 @@ export default function DatabasePlayground() {
   function handleEditorKey(event: KeyboardEvent<HTMLTextAreaElement>) {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
-      void runSql();
+      void runQuery();
     }
   }
 
+  const categories = categoriesFor(engine);
   const queryExamples = examplesFor(engine).filter((example) => example.category === exampleCategory);
+  const mongo = engine === "mongodb";
 
   return (
     <main className="kb-shell">
@@ -235,6 +292,7 @@ export default function DatabasePlayground() {
                     <fieldset aria-label="Database engine" className={styles.engineSwitch}>
                       <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
                       <button className={engine === "postgres" ? styles.activeEngine : ""} onClick={() => changeEngine("postgres")} type="button">PostgreSQL 16</button>
+                      <button className={engine === "mongodb" ? styles.activeEngine : ""} onClick={() => changeEngine("mongodb")} type="button">MongoDB 8</button>
                     </fieldset>
                   </section>
 
@@ -264,12 +322,12 @@ export default function DatabasePlayground() {
                     {schemaLoading && !schema.length && <p className={styles.empty}>Loading database…</p>}
                     {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
                   </div>
-                  <p className={styles.sideHint}>Click a table to expand or collapse its columns.</p>
+                  <p className={styles.sideHint}>Click a {mongo ? "collection" : "table"} to expand or collapse its fields.</p>
                 </div>
               ) : (
                 <div className={styles.examplesView}>
-                  <div className={styles.exampleCategories} role="tablist" aria-label="SQL example categories">
-                    {EXAMPLE_CATEGORIES.map((category) => (
+                  <div className={styles.exampleCategories} role="tablist" aria-label="Database example categories">
+                    {categories.map((category) => (
                       <button
                         aria-selected={exampleCategory === category.id}
                         className={exampleCategory === category.id ? styles.activeCategory : ""}
@@ -297,11 +355,11 @@ export default function DatabasePlayground() {
             <section className={styles.workbench}>
               <section className={styles.editorPane}>
                 <div className={styles.sectionHeader}>
-                  <div><strong>Query</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"}</span></div>
+                  <div><strong>Query</strong><span>{engineLabel(engine)}</span></div>
                   <span>Ctrl/Cmd + Enter</span>
                 </div>
                 <textarea
-                  aria-label="SQL editor"
+                  aria-label={mongo ? "MongoDB query editor" : "SQL editor"}
                   className={styles.editor}
                   onChange={(event) => setSql(event.target.value)}
                   onKeyDown={handleEditorKey}
@@ -313,7 +371,7 @@ export default function DatabasePlayground() {
                   <div className={styles.editorActions}>
                     <button className={styles.ghostButton} disabled={schemaLoading} onClick={() => void refreshSchema()} type="button">Refresh</button>
                     <button className={styles.dangerButton} disabled={loading} onClick={() => void resetDatabase()} type="button">Reset</button>
-                    <button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runSql()} type="button">{loading ? "Running…" : "Run SQL"}</button>
+                    <button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runQuery()} type="button">{loading ? "Running…" : mongo ? "Run query" : "Run SQL"}</button>
                   </div>
                 </div>
               </section>
@@ -322,7 +380,7 @@ export default function DatabasePlayground() {
                 <div className={styles.sectionHeader}>
                   <div><strong>Results</strong><span>{result ? result.statementType : "Query output"}</span></div>
                   <div className={styles.resultMeta}>
-                    {result && !error ? <><span>{result.rows.length} rows</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</> : null}
+                    {result && !error ? <><span>{result.rowCount} results</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</> : null}
                   </div>
                 </div>
 
@@ -330,7 +388,11 @@ export default function DatabasePlayground() {
                   <div className={styles.error} role="alert"><strong>Query error</strong><pre>{error}</pre></div>
                 ) : (
                   <div className={styles.dataView}>
-                    {result?.columns.length ? (
+                    {mongo && result?.documents?.length ? (
+                      <div className={styles.mongoDocuments}>
+                        {result.documents.map((document, index) => <pre key={index}>{JSON.stringify(document, null, 2)}</pre>)}
+                      </div>
+                    ) : result?.columns.length ? (
                       <div className={styles.gridWrap}>
                         <table className={styles.grid}>
                           <thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>

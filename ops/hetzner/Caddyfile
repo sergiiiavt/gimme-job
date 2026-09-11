@@ -10,6 +10,10 @@ ai.gimme-job.com {
     reverse_proxy db-lab-api:8080
   }
 
+  handle_path /mongo-lab/* {
+    reverse_proxy mongo-lab-api:8081
+  }
+
   handle {
     reverse_proxy gimmejob-ai:8000
   }

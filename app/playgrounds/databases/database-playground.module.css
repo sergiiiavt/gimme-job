@@ -98,7 +98,7 @@
   border: 1px solid #dce3dc;
   border-radius: 9px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 3px;
   width: 100%;
@@ -109,9 +109,9 @@
   border: 0;
   border-radius: 6px;
   color: #667269;
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 750;
-  padding: 9px 8px;
+  padding: 9px 4px;
 }
 
 .engineSwitch .activeEngine {
@@ -406,11 +406,32 @@
   min-height: 0;
 }
 
-.gridWrap {
+.gridWrap,
+.mongoDocuments {
   flex: 1;
   min-height: 0;
   overflow: auto;
 }
+
+.mongoDocuments {
+  background: #fafbfa;
+  padding: 10px;
+}
+
+.mongoDocuments pre {
+  background: #121715;
+  border-radius: 7px;
+  color: #dfe7e1;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10.5px;
+  line-height: 1.45;
+  margin: 0 0 8px;
+  overflow: auto;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+}
+
+.mongoDocuments pre:last-child { margin-bottom: 0; }
 
 .grid {
   border-collapse: separate;
