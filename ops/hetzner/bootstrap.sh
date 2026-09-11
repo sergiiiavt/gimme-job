@@ -5,6 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 RUNTIME_DIR=/opt/gimmejob-n8n
 REPO_RAW=https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner
 HTTPS_ONLY='=https'
+MONGO_BASE_FIXTURE_COUNTS='1000:120:8000:1'
 
 log() {
   printf '[gimmejob-bootstrap] %s\n' "$*"
@@ -69,6 +70,51 @@ reconcile_mysql_seed() {
     exit 1
   fi
   log "MySQL lab fixture seed reconciled ($counts)"
+}
+
+mongo_seed_counts() {
+  docker compose exec -T mongo-lab sh -lc \
+    'mongosh --quiet --host 127.0.0.1 --username root --password "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "const lab = db.getSiblingDB(\"gimmejob_lab\"); print([lab.users.countDocuments({}), lab.products.countDocuments({}), lab.orders.countDocuments({}), lab.getCollection(\"__gimmejob_meta\").countDocuments({fixtureVersion: 1})].join(\":\"));"' \
+    2>/dev/null | tail -n 1
+}
+
+reconcile_mongo_seed() {
+  local ready=false
+  local counts=""
+
+  for attempt in $(seq 1 60); do
+    if docker compose exec -T mongo-lab sh -lc \
+      'mongosh --quiet --host 127.0.0.1 --username root --password "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand({ ping: 1 }).ok"' \
+      >/dev/null 2>&1; then
+      ready=true
+      break
+    fi
+    log "Waiting for MongoDB lab before fixture reconciliation ($attempt/60)"
+    sleep 2
+  done
+
+  if [[ "$ready" != true ]]; then
+    echo "MongoDB lab did not become ready for fixture reconciliation." >&2
+    exit 1
+  fi
+
+  counts="$(mongo_seed_counts || true)"
+  if [[ "$counts" == "$MONGO_BASE_FIXTURE_COUNTS" ]]; then
+    log "MongoDB lab fixture seed is current ($counts)"
+    return
+  fi
+
+  log "MongoDB lab fixture seed is missing or stale (${counts:-unavailable}); rebuilding the base fixture"
+  docker compose exec -T mongo-lab sh -lc \
+    'mongosh --quiet --host 127.0.0.1 --username root --password "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin' \
+    <"$RUNTIME_DIR/db-lab/mongo-init.js"
+
+  counts="$(mongo_seed_counts || true)"
+  if [[ "$counts" != "$MONGO_BASE_FIXTURE_COUNTS" ]]; then
+    echo "MongoDB lab fixture reconciliation failed; expected $MONGO_BASE_FIXTURE_COUNTS, got ${counts:-unavailable}." >&2
+    exit 1
+  fi
+  log "MongoDB lab fixture seed reconciled ($counts)"
 }
 
 reload_caddy() {
@@ -175,6 +221,7 @@ fi
 
 reload_caddy
 reconcile_mysql_seed
+reconcile_mongo_seed
 docker compose --profile ai ps 2>/dev/null || docker compose ps
 
 install -m 600 /dev/null "$RUNTIME_DIR/.bootstrap-complete"
