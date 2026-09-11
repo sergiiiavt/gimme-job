@@ -7,9 +7,10 @@ async function source(path) {
 }
 
 test("database playground is present in navigation and uses the real proxy", async () => {
-  const [navigation, client, proxy] = await Promise.all([
+  const [navigation, client, styles, proxy] = await Promise.all([
     source("app/site-navigation.tsx"),
     source("app/playgrounds/databases/database-playground.tsx"),
+    source("app/playgrounds/databases/database-playground.module.css"),
     source("app/api/playgrounds/databases/route.ts"),
   ]);
 
@@ -20,7 +21,6 @@ test("database playground is present in navigation and uses the real proxy", asy
   assert.match(client, /PostgreSQL 16/);
   assert.match(client, /\/api\/playgrounds\/databases/);
   assert.match(client, /type LeftTab = "database" \| "examples"/);
-  assert.match(client, /Typical queries/);
   assert.match(client, /Use query/);
   assert.match(client, /JOIN tables/);
   assert.match(client, /CREATE INDEX/);
@@ -28,10 +28,19 @@ test("database playground is present in navigation and uses the real proxy", asy
   assert.match(client, /Results/);
   assert.match(client, /insertIdentifier/);
   assert.match(client, /Preview rows/);
+  assert.match(client, /styles\.technicalPanel/);
+  assert.match(client, /styles\.workbench/);
+  assert.match(client, /result\.rows\.map/);
+  assert.doesNotMatch(client, /PAGE_SIZE/);
+  assert.doesNotMatch(client, /visibleRows/);
+  assert.doesNotMatch(client, /pagination/);
   assert.doesNotMatch(client, /type ResultTab/);
   assert.doesNotMatch(client, />Structure</);
   assert.doesNotMatch(client, />History/);
   assert.match(client, /Reset/);
+  assert.match(styles, /grid-template-columns: minmax\(300px, \.85fr\) minmax\(560px, 1\.65fr\)/);
+  assert.match(styles, /grid-template-rows: minmax\(0, 1fr\) minmax\(0, 1fr\)/);
+  assert.doesNotMatch(styles, /\.pagination/);
   assert.doesNotMatch(client, /GIMMEJOB_AI_SERVICE_TOKEN/);
   assert.match(proxy, /authorization: `Bearer \$\{token\}`/);
   assert.match(proxy, /\/db-lab\/v1\//);
