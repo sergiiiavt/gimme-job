@@ -108,6 +108,7 @@ fi
 install -d -m 700 "$RUNTIME_DIR"
 install -d -m 755 "$RUNTIME_DIR/db-lab"
 install -d -m 755 "$RUNTIME_DIR/db-lab-api"
+install -d -m 755 "$RUNTIME_DIR/mongo-lab-api"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/docker-compose.yml" -o "$RUNTIME_DIR/docker-compose.yml"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
@@ -117,11 +118,20 @@ curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/db-lab/postgres-init.sql" -o "$RUNTIME_DIR/db-lab/postgres-init.sql"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/db-lab/mongo-init.js" -o "$RUNTIME_DIR/db-lab/mongo-init.js"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/db-lab-api/Dockerfile" -o "$RUNTIME_DIR/db-lab-api/Dockerfile"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/db-lab-api/server.mjs" -o "$RUNTIME_DIR/db-lab-api/server.mjs"
-chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql" \
-  "$RUNTIME_DIR/db-lab-api/Dockerfile" "$RUNTIME_DIR/db-lab-api/server.mjs"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/mongo-lab-api/Dockerfile" -o "$RUNTIME_DIR/mongo-lab-api/Dockerfile"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/mongo-lab-api/package.json" -o "$RUNTIME_DIR/mongo-lab-api/package.json"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/mongo-lab-api/server.mjs" -o "$RUNTIME_DIR/mongo-lab-api/server.mjs"
+chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql" "$RUNTIME_DIR/db-lab/mongo-init.js" \
+  "$RUNTIME_DIR/db-lab-api/Dockerfile" "$RUNTIME_DIR/db-lab-api/server.mjs" \
+  "$RUNTIME_DIR/mongo-lab-api/Dockerfile" "$RUNTIME_DIR/mongo-lab-api/package.json" "$RUNTIME_DIR/mongo-lab-api/server.mjs"
 
 if [[ ! -f "$RUNTIME_DIR/.env" ]]; then
   log "Creating persistent runtime environment"
@@ -137,18 +147,19 @@ ensure_env_secret POSTGRES_PASSWORD
 ensure_env_secret N8N_ENCRYPTION_KEY
 ensure_env_secret MYSQL_LAB_ROOT_PASSWORD
 ensure_env_secret POSTGRES_LAB_ADMIN_PASSWORD
+ensure_env_secret MONGO_LAB_ADMIN_PASSWORD
 chmod 600 "$RUNTIME_DIR/.env"
 
 cd "$RUNTIME_DIR"
 docker compose config --quiet
 if [[ -f "$RUNTIME_DIR/ai.env" ]]; then
   chmod 600 "$RUNTIME_DIR/ai.env"
-  log "Starting n8n stack, GimmeJob AI, MySQL lab, PostgreSQL lab, and Caddy"
+  log "Starting n8n stack, GimmeJob AI, MySQL lab, PostgreSQL lab, MongoDB lab, and Caddy"
   docker compose --profile ai pull --ignore-buildable
-  docker compose --profile ai build db-lab-api
+  docker compose --profile ai build db-lab-api mongo-lab-api
   docker compose --profile ai up -d --remove-orphans
 else
-  log "Starting n8n stack, MySQL lab, PostgreSQL lab, and Caddy (AI runtime not configured yet)"
+  log "Starting n8n stack, MySQL lab, PostgreSQL lab, MongoDB lab, and Caddy (AI runtime not configured yet)"
   docker compose pull
   docker compose up -d --remove-orphans
 fi
