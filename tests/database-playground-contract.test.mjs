@@ -123,5 +123,7 @@ test("database lab APIs are isolated behind Caddy and bridge only intended netwo
   assert.match(mongoSeed, /lab\.orders\.insertMany/);
   assert.match(mongoSeed, /items/);
   assert.match(mongoSeed, /shipping/);
+  assert.match(mongoSeed, /lab\.getCollection\("__gimmejob_meta"\)\.insertOne/);
+  assert.doesNotMatch(mongoSeed, /lab\.__gimmejob_meta\.insertOne/);
   assert.doesNotMatch(sqlServer, /5f74c260-c3f7-4119-b26f-fa5e8cadcc00/);
 });
