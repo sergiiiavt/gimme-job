@@ -92,4 +92,4 @@ lab.orders.createIndex({ status: 1, createdAt: -1 });
 lab.orders.createIndex({ "user.userId": 1 });
 lab.orders.createIndex({ "items.sku": 1 });
 
-lab.__gimmejob_meta.insertOne({ fixtureVersion: 1, createdAt: new Date() });
+lab.getCollection("__gimmejob_meta").insertOne({ fixtureVersion: 1, createdAt: new Date() });
