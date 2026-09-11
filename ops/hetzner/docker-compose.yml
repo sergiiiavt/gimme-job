@@ -118,7 +118,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_LAB_ADMIN_PASSWORD}
       MONGO_INITDB_DATABASE: gimmejob_lab
     healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 --username root --password '$${MONGO_INITDB_ROOT_PASSWORD}' --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1"]
+      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 --username root --password \"$${MONGO_INITDB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1"]
       interval: 10s
       timeout: 8s
       retries: 20
