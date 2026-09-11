@@ -51,78 +51,39 @@ async function api<T>(body: Record<string, unknown>): Promise<T> {
   return payload;
 }
 
+function queryExample(category: ExampleCategory, title: string, description: string, sql: string): QueryExample {
+  return { category, title, description, sql };
+}
+
 function examplesFor(engine: Engine): QueryExample[] {
+  const mysql = engine === "mysql";
   return [
-    {
-      category: "basics",
-      title: "Select recent orders",
-      description: "Read rows and control their order and count.",
-      sql: "SELECT *\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
-    },
-    {
-      category: "basics",
-      title: "Filter paid orders",
-      description: "Return only rows matching a WHERE condition.",
-      sql: "SELECT id, user_id, status, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY id DESC\nLIMIT 20;",
-    },
-    {
-      category: "joins",
-      title: "Orders with users",
-      description: "Join orders to users through user_id.",
-      sql: "SELECT o.id, u.email, u.region, o.status, o.total_amount\nFROM orders o\nJOIN users u ON u.id = o.user_id\nORDER BY o.id DESC\nLIMIT 20;",
-    },
-    {
-      category: "joins",
-      title: "Orders with products",
-      description: "Join orders to products through product_id.",
-      sql: "SELECT o.id, p.sku, p.category, o.status, o.total_amount\nFROM orders o\nJOIN products p ON p.id = o.product_id\nORDER BY o.id DESC\nLIMIT 20;",
-    },
-    {
-      category: "aggregation",
-      title: "Revenue by channel",
-      description: "Group orders and calculate count and revenue.",
-      sql: "SELECT channel, COUNT(*) AS orders_count, ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nGROUP BY channel\nORDER BY revenue DESC;",
-    },
-    {
-      category: "aggregation",
-      title: "Orders by region",
-      description: "Combine JOIN and GROUP BY in one query.",
-      sql: "SELECT u.region, COUNT(*) AS orders_count, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN users u ON u.id = o.user_id\nGROUP BY u.region\nORDER BY revenue DESC;",
-    },
-    {
-      category: "engine",
-      title: "String concatenation",
-      description: engine === "mysql"
-        ? "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator."
-        : "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().",
-      sql: engine === "mysql"
+    queryExample("basics", "Select recent orders", "Read rows and control their order and count.",
+      "SELECT *\nFROM orders\nORDER BY id DESC\nLIMIT 20;"),
+    queryExample("basics", "Filter paid orders", "Return only rows matching a WHERE condition.",
+      "SELECT id, user_id, status, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY id DESC\nLIMIT 20;"),
+    queryExample("joins", "Orders with users", "Join orders to users through user_id.",
+      "SELECT o.id, u.email, u.region, o.status, o.total_amount\nFROM orders o\nJOIN users u ON u.id = o.user_id\nORDER BY o.id DESC\nLIMIT 20;"),
+    queryExample("joins", "Orders with products", "Join orders to products through product_id.",
+      "SELECT o.id, p.sku, p.category, o.status, o.total_amount\nFROM orders o\nJOIN products p ON p.id = o.product_id\nORDER BY o.id DESC\nLIMIT 20;"),
+    queryExample("aggregation", "Revenue by channel", "Group orders and calculate count and revenue.",
+      "SELECT channel, COUNT(*) AS orders_count, ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nGROUP BY channel\nORDER BY revenue DESC;"),
+    queryExample("aggregation", "Orders by region", "Combine JOIN and GROUP BY in one query.",
+      "SELECT u.region, COUNT(*) AS orders_count, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN users u ON u.id = o.user_id\nGROUP BY u.region\nORDER BY revenue DESC;"),
+    queryExample("engine", "String concatenation",
+      mysql ? "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator." : "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().",
+      mysql
         ? "SELECT id, CONCAT(email, ' · ', region) AS user_label\nFROM users\nORDER BY id\nLIMIT 10;"
-        : "SELECT id, email || ' · ' || region AS user_label\nFROM users\nORDER BY id\nLIMIT 10;",
-    },
-    {
-      category: "engine",
-      title: "JSON value extraction",
-      description: engine === "mysql"
-        ? "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction."
-        : "PostgreSQL supports JSONB operators such as ->> for text extraction.",
-      sql: engine === "mysql"
+        : "SELECT id, email || ' · ' || region AS user_label\nFROM users\nORDER BY id\nLIMIT 10;"),
+    queryExample("engine", "JSON value extraction",
+      mysql ? "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction." : "PostgreSQL supports JSONB operators such as ->> for text extraction.",
+      mysql
         ? "SELECT JSON_UNQUOTE(JSON_EXTRACT('{\"status\":\"paid\",\"channel\":\"web\"}', '$.status')) AS status;"
-        : "SELECT '{\"status\":\"paid\",\"channel\":\"web\"}'::jsonb ->> 'status' AS status;",
-    },
-    {
-      category: "indexes",
-      title: "Inspect a query plan",
-      description: "See how the selected database engine plans the query.",
-      sql: engine === "mysql"
-        ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;"
-        : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;",
-    },
-    {
-      category: "indexes",
-      title: "Create an index",
-      description: "Add an index on orders.user_id, then run EXPLAIN again to compare.",
-      sql: "CREATE INDEX idx_orders_user_id ON orders(user_id);",
-    },
+        : "SELECT '{\"status\":\"paid\",\"channel\":\"web\"}'::jsonb ->> 'status' AS status;"),
+    queryExample("indexes", "Inspect a query plan", "See how the selected database engine plans the query.",
+      mysql ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;" : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;"),
+    queryExample("indexes", "Create an index", "Add an index on orders.user_id, then run EXPLAIN again to compare.",
+      "CREATE INDEX idx_orders_user_id ON orders(user_id);"),
   ];
 }
 
