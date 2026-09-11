@@ -172,7 +172,7 @@ export default function DatabasePlayground() {
     setError("");
   }
 
-  function useQuery(statement: string) {
+  function loadQuery(statement: string) {
     setSql(statement);
     setError("");
     editorRef.current?.focus();
@@ -312,7 +312,7 @@ export default function DatabasePlayground() {
                           <h2>{example.title}</h2>
                           <p>{example.description}</p>
                           <pre><code>{example.sql}</code></pre>
-                          <button onClick={() => useQuery(example.sql)} type="button">Use query</button>
+                          <button onClick={() => loadQuery(example.sql)} type="button">Use query</button>
                         </article>
                       ))}
                     </div>
