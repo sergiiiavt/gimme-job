@@ -25,7 +25,6 @@ type QueryExample = { title: string; description: string; sql: string };
 const SESSION_KEY = "gimmejob-db-lab-session-v1";
 const ENGINE_KEY = "gimmejob-db-lab-engine-v1";
 const SQL_KEY = "gimmejob-db-lab-sql-v1";
-const PAGE_SIZE = 25;
 const STARTER_SQL: Record<Engine, string> = {
   mysql: "SELECT id, user_id, status, total_amount, created_at\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
   postgres: "SELECT id, user_id, status, total_amount, created_at\nFROM orders\nORDER BY id DESC\nLIMIT 20;",
@@ -97,7 +96,6 @@ export default function DatabasePlayground() {
   const [leftTab, setLeftTab] = useState<LeftTab>("database");
   const [sql, setSql] = useState(STARTER_SQL.mysql);
   const [result, setResult] = useState<QueryResponse | null>(null);
-  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [error, setError] = useState("");
@@ -126,7 +124,7 @@ export default function DatabasePlayground() {
       const tables = payload.tables || [];
       setSchema(tables);
       setWorkspace(payload.workspace || "Workspace");
-      setSelectedTable((current) => tables.some((table) => table.name === current) ? current : (tables[0]?.name || ""));
+      setSelectedTable((current) => tables.some((table) => table.name === current ? true : false) ? current : (tables[0]?.name || ""));
     } catch (reason) {
       setSchema([]);
       setError(reason instanceof Error ? reason.message : "Could not load database schema.");
@@ -148,7 +146,6 @@ export default function DatabasePlayground() {
     localStorage.setItem(`${SQL_KEY}:${engine}`, statement);
     setLoading(true);
     setError("");
-    setPage(0);
     try {
       const payload = await api<QueryResponse>({ action: "query", engine, sessionId, sql: statement });
       setResult(payload);
@@ -168,7 +165,6 @@ export default function DatabasePlayground() {
     setEngine(next);
     setSql(localStorage.getItem(`${SQL_KEY}:${next}`) || STARTER_SQL[next]);
     setResult(null);
-    setPage(0);
     setError("");
   }
 
@@ -181,8 +177,7 @@ export default function DatabasePlayground() {
   function previewTable(table: string) {
     setSelectedTable(table);
     setLeftTab("database");
-    const statement = `SELECT * FROM ${quoteIdentifier(table, engine)} LIMIT 100;`;
-    void runSql(statement);
+    void runSql(`SELECT * FROM ${quoteIdentifier(table, engine)};`);
   }
 
   function insertIdentifier(identifier: string) {
@@ -225,8 +220,6 @@ export default function DatabasePlayground() {
     }
   }
 
-  const totalPages = result ? Math.max(1, Math.ceil(result.rows.length / PAGE_SIZE)) : 1;
-  const visibleRows = result?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) || [];
   const queryExamples = examplesFor(engine);
 
   return (
@@ -247,139 +240,129 @@ export default function DatabasePlayground() {
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <section className={styles.client}>
-            <header className={styles.toolbar}>
-              <div>
-                <h1>Database Playground</h1>
-                <p>Explore the database, write SQL, and inspect the result.</p>
-              </div>
-              <div className={styles.toolbarActions}>
+          <div className={styles.workspaceLayout}>
+            <aside className={styles.technicalPanel}>
+              <header className={styles.technicalHeader}>
+                <div>
+                  <h1>Database Playground</h1>
+                  <p>Real database workspace</p>
+                </div>
+              </header>
+
+              <section className={styles.engineSection}>
+                <span className={styles.sectionLabel}>Database type</span>
                 <fieldset aria-label="Database engine" className={styles.engineSwitch}>
                   <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
                   <button className={engine === "postgres" ? styles.activeEngine : ""} onClick={() => changeEngine("postgres")} type="button">PostgreSQL 16</button>
                 </fieldset>
-                <button className={styles.ghostButton} disabled={schemaLoading} onClick={() => void refreshSchema()} type="button">Refresh</button>
-                <button className={styles.dangerButton} disabled={loading} onClick={() => void resetWorkspace()} type="button">Reset</button>
-              </div>
-            </header>
+                <div className={styles.workspaceMeta}>
+                  <div><span>Workspace</span><strong>{workspace}</strong></div>
+                  <div><span>Tables</span><strong>{schemaLoading ? "…" : schema.length}</strong></div>
+                </div>
+                <div className={styles.panelActions}>
+                  <button className={styles.ghostButton} disabled={schemaLoading} onClick={() => void refreshSchema()} type="button">Refresh</button>
+                  <button className={styles.dangerButton} disabled={loading} onClick={() => void resetWorkspace()} type="button">Reset</button>
+                </div>
+              </section>
 
-            <div className={styles.body}>
-              <aside className={styles.sidePane}>
-                <div className={styles.sideTabs} role="tablist" aria-label="Database sidebar">
-                  <button aria-selected={leftTab === "database"} className={leftTab === "database" ? styles.activeSideTab : ""} onClick={() => setLeftTab("database")} role="tab" type="button">Database</button>
-                  <button aria-selected={leftTab === "examples"} className={leftTab === "examples" ? styles.activeSideTab : ""} onClick={() => setLeftTab("examples")} role="tab" type="button">Examples</button>
+              <div className={styles.sideTabs} role="tablist" aria-label="Database details">
+                <button aria-selected={leftTab === "database"} className={leftTab === "database" ? styles.activeSideTab : ""} onClick={() => setLeftTab("database")} role="tab" type="button">Database</button>
+                <button aria-selected={leftTab === "examples"} className={leftTab === "examples" ? styles.activeSideTab : ""} onClick={() => setLeftTab("examples")} role="tab" type="button">Examples</button>
+              </div>
+
+              {leftTab === "database" ? (
+                <div className={styles.databaseView}>
+                  <div className={styles.tables}>
+                    {schema.map((table) => (
+                      <div className={`${styles.tableCard} ${selectedTable === table.name ? styles.selectedTable : ""}`} key={table.name}>
+                        <button className={styles.tableButton} onClick={() => setSelectedTable(table.name)} type="button">
+                          <span className={styles.chevron}>{selectedTable === table.name ? "⌄" : "›"}</span>
+                          <strong>{table.name}</strong>
+                          <span>{table.columns.length}</span>
+                        </button>
+                        {selectedTable === table.name && (
+                          <div className={styles.columnList}>
+                            {table.columns.map((column) => (
+                              <button key={column.name} onClick={() => insertIdentifier(column.name)} title={`Insert ${column.name} into the query`} type="button">
+                                <span className={styles.columnName}>{column.name}{column.key ? <em>{column.key}</em> : null}</span>
+                                <small>{column.type}</small>
+                              </button>
+                            ))}
+                            <button className={styles.previewButton} onClick={() => previewTable(table.name)} type="button">Preview rows</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
+                  </div>
+                  <p className={styles.sideHint}>Select a table to inspect columns. Click a column to insert it into the query.</p>
+                </div>
+              ) : (
+                <div className={styles.examplesView}>
+                  <div className={styles.examplesList}>
+                    {queryExamples.map((example) => (
+                      <article className={styles.exampleCard} key={example.title}>
+                        <h2>{example.title}</h2>
+                        <p>{example.description}</p>
+                        <pre><code>{example.sql}</code></pre>
+                        <button onClick={() => loadQuery(example.sql)} type="button">Use query</button>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
+
+            <section className={styles.workbench}>
+              <section className={styles.editorPane}>
+                <div className={styles.sectionHeader}>
+                  <div><strong>Query</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"} · {workspace}</span></div>
+                  <span>Ctrl/Cmd + Enter</span>
+                </div>
+                <textarea
+                  aria-label="SQL editor"
+                  className={styles.editor}
+                  onChange={(event) => setSql(event.target.value)}
+                  onKeyDown={handleEditorKey}
+                  ref={editorRef}
+                  spellCheck={false}
+                  value={sql}
+                />
+                <div className={styles.editorFooter}>
+                  <span>Queries run against your persistent test workspace.</span>
+                  <button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runSql()} type="button">{loading ? "Running…" : "Run SQL"}</button>
+                </div>
+              </section>
+
+              <section className={styles.resultsPane}>
+                <div className={styles.sectionHeader}>
+                  <div><strong>Results</strong><span>{result ? result.statementType : "Query output"}</span></div>
+                  <div className={styles.resultMeta}>
+                    {result && !error ? <><span>{result.rows.length} rows</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</> : null}
+                  </div>
                 </div>
 
-                {leftTab === "database" ? (
-                  <div className={styles.databaseView}>
-                    <div className={styles.paneHeading}>
-                      <div><strong>{workspace}</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"}</span></div>
-                      <span>{schemaLoading ? "loading…" : `${schema.length} tables`}</span>
-                    </div>
-                    <div className={styles.tables}>
-                      {schema.map((table) => (
-                        <div className={`${styles.tableCard} ${selectedTable === table.name ? styles.selectedTable : ""}`} key={table.name}>
-                          <button className={styles.tableButton} onClick={() => setSelectedTable(table.name)} type="button">
-                            <span className={styles.chevron}>{selectedTable === table.name ? "⌄" : "›"}</span>
-                            <strong>{table.name}</strong>
-                            <span>{table.columns.length}</span>
-                          </button>
-                          {selectedTable === table.name && (
-                            <div className={styles.columnList}>
-                              {table.columns.map((column) => (
-                                <button key={column.name} onClick={() => insertIdentifier(column.name)} title={`Insert ${column.name} into the query`} type="button">
-                                  <span className={styles.columnName}>{column.name}{column.key ? <em>{column.key}</em> : null}</span>
-                                  <small>{column.type}</small>
-                                </button>
-                              ))}
-                              <button className={styles.previewButton} onClick={() => previewTable(table.name)} type="button">Preview rows</button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
-                    </div>
-                    <p className={styles.sideHint}>Select a table to see its columns. Click a column to insert it into the query.</p>
-                  </div>
+                {error ? (
+                  <div className={styles.error} role="alert"><strong>Query error</strong><pre>{error}</pre></div>
                 ) : (
-                  <div className={styles.examplesView}>
-                    <div className={styles.paneHeading}>
-                      <div><strong>Typical queries</strong><span>Start from a working example</span></div>
-                    </div>
-                    <div className={styles.examplesList}>
-                      {queryExamples.map((example) => (
-                        <article className={styles.exampleCard} key={example.title}>
-                          <h2>{example.title}</h2>
-                          <p>{example.description}</p>
-                          <pre><code>{example.sql}</code></pre>
-                          <button onClick={() => loadQuery(example.sql)} type="button">Use query</button>
-                        </article>
-                      ))}
-                    </div>
+                  <div className={styles.dataView}>
+                    {result?.columns.length ? (
+                      <div className={styles.gridWrap}>
+                        <table className={styles.grid}>
+                          <thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>
+                          <tbody>{result.rows.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell ?? "NULL"}</td>)}</tr>)}</tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className={result ? styles.successResult : styles.emptyResult}>
+                        {result?.message || "Run a query to see the result."}
+                      </div>
+                    )}
                   </div>
                 )}
-              </aside>
-
-              <div className={styles.workPane}>
-                <section className={styles.editorPane}>
-                  <div className={styles.sectionHeader}>
-                    <div><strong>Query</strong><span>{engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"} · {workspace}</span></div>
-                    <span>Ctrl/Cmd + Enter</span>
-                  </div>
-                  <textarea
-                    aria-label="SQL editor"
-                    className={styles.editor}
-                    onChange={(event) => setSql(event.target.value)}
-                    onKeyDown={handleEditorKey}
-                    ref={editorRef}
-                    spellCheck={false}
-                    value={sql}
-                  />
-                  <div className={styles.editorFooter}>
-                    <span>Queries run against your persistent test workspace.</span>
-                    <button className={styles.runButton} disabled={!sessionId || loading || !sql.trim()} onClick={() => void runSql()} type="button">{loading ? "Running…" : "Run SQL"}</button>
-                  </div>
-                </section>
-
-                <section className={styles.resultsPane}>
-                  <div className={styles.sectionHeader}>
-                    <div><strong>Results</strong><span>{result ? result.statementType : "Query output"}</span></div>
-                    <div className={styles.resultMeta}>
-                      {result && !error ? <><span>{result.rowCount} rows</span><span>{result.durationMs} ms</span>{result.truncated && <span>truncated</span>}</> : null}
-                    </div>
-                  </div>
-
-                  {error ? (
-                    <div className={styles.error} role="alert"><strong>Query error</strong><pre>{error}</pre></div>
-                  ) : (
-                    <div className={styles.dataView}>
-                      {result?.columns.length ? (
-                        <div className={styles.gridWrap}>
-                          <table className={styles.grid}>
-                            <thead><tr>{result.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>
-                            <tbody>{visibleRows.map((row, rowIndex) => <tr key={`${page}-${rowIndex}`}>{row.map((cell, cellIndex) => <td className={cell === null ? styles.nullCell : ""} key={`${rowIndex}-${cellIndex}`}>{cell ?? "NULL"}</td>)}</tr>)}</tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className={result ? styles.successResult : styles.emptyResult}>
-                          {result?.message || "Run a query to see the result."}
-                        </div>
-                      )}
-                      {result?.columns.length ? (
-                        <div className={styles.pagination}>
-                          <span>Page {page + 1} of {totalPages}</span>
-                          <div>
-                            <button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} type="button">Previous</button>
-                            <button disabled={page + 1 >= totalPages} onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} type="button">Next</button>
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </section>
-              </div>
-            </div>
-          </section>
+              </section>
+            </section>
+          </div>
         </div>
       </section>
       {mobileNav && <button aria-label="Close navigation" className="kb-backdrop" onClick={() => setMobileNav(false)} type="button"/>}
