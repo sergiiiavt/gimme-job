@@ -110,6 +110,12 @@ test("database lab APIs are isolated behind Caddy and bridge only intended netwo
   assert.match(mongoServer, /MongoClient/);
   assert.match(mongoServer, /MAX_ROWS = 200/);
   assert.match(mongoServer, /MAX_OUTPUT_BYTES = 512 \* 1024/);
+  assert.match(mongoServer, /collection\("users"\)\.countDocuments/);
+  assert.match(mongoServer, /collection\("products"\)\.countDocuments/);
+  assert.match(mongoServer, /collection\("orders"\)\.countDocuments/);
+  assert.match(mongoServer, /reason: "fixture"/);
+  assert.match(mongoServer, /reason: "connection"/);
+  assert.doesNotMatch(mongoServer, /estimatedDocumentCount/);
   assert.match(mongoServer, /\$where/);
   assert.match(mongoServer, /\$function/);
   assert.match(mongoServer, /parseInvocation/);
