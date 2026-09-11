@@ -6,7 +6,7 @@ import styles from "./database-playground.module.css";
 
 type Engine = "mysql" | "postgres" | "mongodb";
 type LeftTab = "database" | "examples";
-type ExampleCategory = "basics" | "joins" | "aggregation" | "engine" | "indexes" | "filtering" | "documents" | "writes";
+type ExampleCategory = "basics" | "schema" | "joins" | "aggregation" | "constraints" | "engine" | "indexes" | "filtering" | "documents" | "writes";
 type ColumnInfo = { name: string; type: string; nullable: boolean; default: string | null; key: string | null };
 type TableInfo = { name: string; columns: ColumnInfo[] };
 type SchemaResponse = { tables: TableInfo[] };
@@ -20,7 +20,7 @@ type QueryResponse = {
   durationMs: number;
   message: string | null;
 };
-type QueryExample = { category: ExampleCategory; title: string; description: string; sql: string };
+type DatabaseExample = { category: ExampleCategory; title: string; description: string; sql: string };
 
 const SESSION_KEY = "gimmejob-db-lab-session-v1";
 const ENGINE_KEY = "gimmejob-db-lab-engine-v1";
@@ -32,17 +32,19 @@ const STARTER_SQL: Record<Engine, string> = {
 };
 const SQL_CATEGORIES: Array<{ id: ExampleCategory; label: string }> = [
   { id: "basics", label: "Basics" },
+  { id: "schema", label: "Tables & data" },
   { id: "joins", label: "Joins" },
   { id: "aggregation", label: "Aggregation" },
-  { id: "engine", label: "Engine differences" },
+  { id: "constraints", label: "Keys & constraints" },
   { id: "indexes", label: "Indexes & plans" },
+  { id: "engine", label: "Engine differences" },
 ];
 const MONGO_CATEGORIES: Array<{ id: ExampleCategory; label: string }> = [
   { id: "basics", label: "Basics" },
   { id: "filtering", label: "Filtering" },
   { id: "documents", label: "Documents & arrays" },
   { id: "aggregation", label: "Aggregation" },
-  { id: "writes", label: "Updates" },
+  { id: "writes", label: "Writes" },
   { id: "indexes", label: "Indexes & plans" },
 ];
 
@@ -61,7 +63,7 @@ async function api<T>(body: Record<string, unknown>): Promise<T> {
   return payload;
 }
 
-function queryExample(category: ExampleCategory, title: string, description: string, sql: string): QueryExample {
+function example(category: ExampleCategory, title: string, description: string, sql: string): DatabaseExample {
   return { category, title, description, sql };
 }
 
@@ -75,68 +77,203 @@ function categoriesFor(engine: Engine) {
   return engine === "mongodb" ? MONGO_CATEGORIES : SQL_CATEGORIES;
 }
 
-function mongoExamples(): QueryExample[] {
+function defaultExpandedTables(engine: Engine, tables: TableInfo[]): string[] {
+  return engine === "mongodb" ? [] : tables.map((table) => table.name);
+}
+
+function mongoExamples(): DatabaseExample[] {
   return [
-    queryExample("basics", "Find recent paid orders", "Read matching documents, sort them, and limit the result.",
-      "db.orders.find({\"status\":\"paid\"}).sort({\"createdAt\":-1}).limit(20);"),
-    queryExample("basics", "Find one user", "Return the first document matching a filter.",
-      "db.users.findOne({\"userId\":42});"),
-    queryExample("filtering", "Projection", "Return only selected fields from matching documents.",
-      "db.orders.find({\"status\":\"shipped\"},{\"orderId\":1,\"status\":1,\"totalAmount\":1,\"_id\":0}).limit(20);"),
-    queryExample("filtering", "Nested field filter", "Filter directly on an embedded document field.",
-      "db.orders.find({\"user.region\":\"EU\",\"totalAmount\":{\"$gt\":100}}).limit(20);"),
-    queryExample("documents", "Match an array element", "Use $elemMatch against embedded item documents.",
-      "db.orders.find({\"items\":{\"$elemMatch\":{\"category\":\"audio\",\"quantity\":{\"$gte\":2}}}}).limit(20);"),
-    queryExample("documents", "Nested user and shipping data", "Query two embedded objects without a SQL JOIN.",
-      "db.orders.find({\"user.tier\":\"pro\",\"shipping.expedited\":true}).limit(20);"),
-    queryExample("aggregation", "Revenue by channel", "Group documents and calculate order count and revenue.",
-      "db.orders.aggregate([{\"$group\":{\"_id\":\"$channel\",\"orders\":{\"$sum\":1},\"revenue\":{\"$sum\":\"$totalAmount\"}}},{\"$sort\":{\"revenue\":-1}}]);"),
-    queryExample("aggregation", "Items by category", "Unwind the items array before grouping its embedded documents.",
-      "db.orders.aggregate([{\"$unwind\":\"$items\"},{\"$group\":{\"_id\":\"$items.category\",\"quantity\":{\"$sum\":\"$items.quantity\"}}},{\"$sort\":{\"quantity\":-1}}]);"),
-    queryExample("writes", "Update one document", "Use $set without replacing the full document.",
-      "db.orders.updateOne({\"orderId\":42},{\"$set\":{\"status\":\"paid\",\"shipping.expedited\":true}});"),
-    queryExample("writes", "Increment stock", "Atomically increment one numeric field.",
-      "db.products.updateOne({\"productId\":10},{\"$inc\":{\"stock\":5}});"),
-    queryExample("indexes", "Create an index", "Create a compound index on nested and top-level fields.",
-      "db.orders.createIndex({\"user.region\":1,\"createdAt\":-1});"),
-    queryExample("indexes", "Explain a query", "Inspect the MongoDB execution plan for a filtered find.",
-      "db.orders.find({\"status\":\"paid\"}).explain(\"executionStats\");"),
+    example("basics", "Find recent paid orders", "Read matching documents, sort them, and limit the result.", `db.orders.find({
+  "status": "paid"
+}).sort({
+  "createdAt": -1
+}).limit(20);`),
+    example("basics", "Find one user", "Return the first document matching a filter.", `db.users.findOne({
+  "userId": 42
+});`),
+    example("filtering", "Projection", "Return only selected fields from matching documents.", `db.orders.find(
+  { "status": "shipped" },
+  {
+    "orderId": 1,
+    "status": 1,
+    "totalAmount": 1,
+    "_id": 0
+  }
+).limit(20);`),
+    example("filtering", "Nested field filter", "Filter directly on an embedded document field.", `db.orders.find({
+  "user.region": "EU",
+  "totalAmount": { "$gt": 100 }
+}).limit(20);`),
+    example("documents", "Match an array element", "Use $elemMatch against embedded item documents.", `db.orders.find({
+  "items": {
+    "$elemMatch": {
+      "category": "audio",
+      "quantity": { "$gte": 2 }
+    }
+  }
+}).limit(20);`),
+    example("documents", "Nested user and shipping data", "Query two embedded objects without a SQL JOIN.", `db.orders.find({
+  "user.tier": "pro",
+  "shipping.expedited": true
+}).limit(20);`),
+    example("aggregation", "Revenue by channel", "Group documents and calculate order count and revenue.", `db.orders.aggregate([
+  {
+    "$group": {
+      "_id": "$channel",
+      "orders": { "$sum": 1 },
+      "revenue": { "$sum": "$totalAmount" }
+    }
+  },
+  { "$sort": { "revenue": -1 } }
+]);`),
+    example("aggregation", "Items by category", "Unwind the items array before grouping its embedded documents.", `db.orders.aggregate([
+  { "$unwind": "$items" },
+  {
+    "$group": {
+      "_id": "$items.category",
+      "quantity": { "$sum": "$items.quantity" }
+    }
+  },
+  { "$sort": { "quantity": -1 } }
+]);`),
+    example("writes", "Insert a document", "Insert a document; MongoDB creates qa_notes automatically if it does not exist.", `db.qa_notes.insertOne({
+  "title": "Checkout regression",
+  "severity": "high",
+  "tags": ["checkout", "regression"]
+});`),
+    example("writes", "Update one document", "Use $set without replacing the full document.", `db.orders.updateOne(
+  { "orderId": 42 },
+  {
+    "$set": {
+      "status": "paid",
+      "shipping.expedited": true
+    }
+  }
+);`),
+    example("writes", "Increment stock", "Atomically increment one numeric field.", `db.products.updateOne(
+  { "productId": 10 },
+  { "$inc": { "stock": 5 } }
+);`),
+    example("writes", "Delete one document", "Delete one matching document from the sandbox collection.", `db.qa_notes.deleteOne({
+  "title": "Checkout regression"
+});`),
+    example("indexes", "Create an index", "Create a compound index on nested and top-level fields.", `db.orders.createIndex({
+  "user.region": 1,
+  "createdAt": -1
+});`),
+    example("indexes", "List indexes", "Inspect indexes currently defined on the collection.", "db.orders.getIndexes();"),
+    example("indexes", "Explain a query", "Inspect the MongoDB execution plan for a filtered find.", `db.orders.find({
+  "status": "paid"
+}).explain("executionStats");`),
   ];
 }
 
-function sqlExamples(engine: Engine): QueryExample[] {
+function sqlExamples(engine: Engine): DatabaseExample[] {
   const mysql = engine === "mysql";
+  const createNotes = mysql
+    ? `CREATE TABLE IF NOT EXISTS qa_notes (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(120) NOT NULL,
+  severity VARCHAR(20) NOT NULL DEFAULT 'medium',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);`
+    : `CREATE TABLE IF NOT EXISTS qa_notes (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  severity VARCHAR(20) NOT NULL DEFAULT 'medium',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);`;
+  const createRunsWithForeignKey = mysql
+    ? `CREATE TABLE IF NOT EXISTS qa_runs (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_qa_runs_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);`
+    : `CREATE TABLE IF NOT EXISTS qa_runs (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id),
+  status VARCHAR(32) NOT NULL
+);`;
+
   return [
-    queryExample("basics", "Select recent orders", "Read rows and control their order and count.",
-      "SELECT *\nFROM orders\nORDER BY id DESC\nLIMIT 20;"),
-    queryExample("basics", "Filter paid orders", "Return only rows matching a WHERE condition.",
-      "SELECT id, user_id, status, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY id DESC\nLIMIT 20;"),
-    queryExample("joins", "Orders with users", "Join orders to users through user_id.",
-      "SELECT o.id, u.email, u.region, o.status, o.total_amount\nFROM orders o\nJOIN users u ON u.id = o.user_id\nORDER BY o.id DESC\nLIMIT 20;"),
-    queryExample("joins", "Orders with products", "Join orders to products through product_id.",
-      "SELECT o.id, p.sku, p.category, o.status, o.total_amount\nFROM orders o\nJOIN products p ON p.id = o.product_id\nORDER BY o.id DESC\nLIMIT 20;"),
-    queryExample("aggregation", "Revenue by channel", "Group orders and calculate count and revenue.",
-      "SELECT channel, COUNT(*) AS orders_count, ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nGROUP BY channel\nORDER BY revenue DESC;"),
-    queryExample("aggregation", "Orders by region", "Combine JOIN and GROUP BY in one query.",
-      "SELECT u.region, COUNT(*) AS orders_count, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN users u ON u.id = o.user_id\nGROUP BY u.region\nORDER BY revenue DESC;"),
-    queryExample("engine", "String concatenation",
+    example("basics", "Select recent orders", "Read rows and control their order and count.", `SELECT *
+FROM orders
+ORDER BY id DESC
+LIMIT 20;`),
+    example("basics", "Filter paid orders", "Return only rows matching a WHERE condition.", `SELECT id, user_id, status, total_amount
+FROM orders
+WHERE status = 'paid'
+ORDER BY id DESC
+LIMIT 20;`),
+    example("schema", "Create a table", "Create a sandbox table with a generated primary key, defaults, and required fields.", createNotes),
+    example("schema", "Insert a row", "Insert one row into qa_notes after creating the table.", `INSERT INTO qa_notes (title, severity)
+VALUES ('Checkout regression', 'high');`),
+    example("schema", "Update rows", "Change existing data with an UPDATE statement.", `UPDATE qa_notes
+SET severity = 'low'
+WHERE title = 'Checkout regression';`),
+    example("schema", "Delete rows", "Delete matching data while keeping the table itself.", `DELETE FROM qa_notes
+WHERE title = 'Checkout regression';`),
+    example("schema", "Drop a table", "Remove the sandbox table and its data.", "DROP TABLE IF EXISTS qa_notes;"),
+    example("joins", "Orders with users", "Join orders to users through user_id.", `SELECT o.id, u.email, u.region, o.status, o.total_amount
+FROM orders o
+JOIN users u ON u.id = o.user_id
+ORDER BY o.id DESC
+LIMIT 20;`),
+    example("joins", "Orders with products", "Join orders to products through product_id.", `SELECT o.id, p.sku, p.category, o.status, o.total_amount
+FROM orders o
+JOIN products p ON p.id = o.product_id
+ORDER BY o.id DESC
+LIMIT 20;`),
+    example("aggregation", "Revenue by channel", "Group orders and calculate count and revenue.", `SELECT channel,
+       COUNT(*) AS orders_count,
+       ROUND(SUM(total_amount), 2) AS revenue
+FROM orders
+GROUP BY channel
+ORDER BY revenue DESC;`),
+    example("aggregation", "Orders by region", "Combine JOIN and GROUP BY in one query.", `SELECT u.region,
+       COUNT(*) AS orders_count,
+       ROUND(SUM(o.total_amount), 2) AS revenue
+FROM orders o
+JOIN users u ON u.id = o.user_id
+GROUP BY u.region
+ORDER BY revenue DESC;`),
+    example("constraints", "Primary key", "Create a small table whose id column is the primary key and whose name must be unique.", `CREATE TABLE IF NOT EXISTS qa_suites (
+  id BIGINT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE
+);`),
+    example("constraints", "Foreign key", "Create qa_runs with a foreign key that must reference an existing user.", createRunsWithForeignKey),
+    example("constraints", "Unique index", "Enforce unique qa_notes titles with a unique index.", "CREATE UNIQUE INDEX uq_qa_notes_title ON qa_notes(title);"),
+    example("engine", "String concatenation",
       mysql ? "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator." : "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().",
       mysql
-        ? "SELECT id, CONCAT(email, ' · ', region) AS user_label\nFROM users\nORDER BY id\nLIMIT 10;"
-        : "SELECT id, email || ' · ' || region AS user_label\nFROM users\nORDER BY id\nLIMIT 10;"),
-    queryExample("engine", "JSON value extraction",
+        ? `SELECT id, CONCAT(email, ' · ', region) AS user_label
+FROM users
+ORDER BY id
+LIMIT 10;`
+        : `SELECT id, email || ' · ' || region AS user_label
+FROM users
+ORDER BY id
+LIMIT 10;`),
+    example("engine", "JSON value extraction",
       mysql ? "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction." : "PostgreSQL supports JSONB operators such as ->> for text extraction.",
       mysql
-        ? "SELECT JSON_UNQUOTE(JSON_EXTRACT('{\"status\":\"paid\",\"channel\":\"web\"}', '$.status')) AS status;"
-        : "SELECT '{\"status\":\"paid\",\"channel\":\"web\"}'::jsonb ->> 'status' AS status;"),
-    queryExample("indexes", "Inspect a query plan", "See how the selected database engine plans the query.",
+        ? `SELECT JSON_UNQUOTE(
+  JSON_EXTRACT('{"status":"paid","channel":"web"}', '$.status')
+) AS status;`
+        : `SELECT '{"status":"paid","channel":"web"}'::jsonb
+  ->> 'status' AS status;`),
+    example("indexes", "Inspect a query plan", "See how the selected database engine plans the query.",
       mysql ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;" : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;"),
-    queryExample("indexes", "Create an index", "Add an index on orders.user_id, then run EXPLAIN again to compare.",
+    example("indexes", "Create an index", "Add an index on orders.user_id, then run EXPLAIN again to compare.",
       "CREATE INDEX idx_orders_user_id ON orders(user_id);"),
   ];
 }
 
-function examplesFor(engine: Engine): QueryExample[] {
+function examplesFor(engine: Engine): DatabaseExample[] {
   return engine === "mongodb" ? mongoExamples() : sqlExamples(engine);
 }
 
@@ -145,7 +282,7 @@ export default function DatabasePlayground() {
   const [sessionId, setSessionId] = useState("");
   const [engine, setEngine] = useState<Engine>("mysql");
   const [schema, setSchema] = useState<TableInfo[]>([]);
-  const [selectedTable, setSelectedTable] = useState("");
+  const [expandedTables, setExpandedTables] = useState<string[] | null>(null);
   const [leftTab, setLeftTab] = useState<LeftTab>("database");
   const [exampleCategory, setExampleCategory] = useState<ExampleCategory>("basics");
   const [sql, setSql] = useState(STARTER_SQL.mysql);
@@ -177,10 +314,13 @@ export default function DatabasePlayground() {
       const payload = await api<SchemaResponse>({ action: "schema", engine, sessionId });
       const tables = payload.tables || [];
       setSchema(tables);
-      setSelectedTable((current) => tables.some((table) => table.name === current) ? current : "");
+      setExpandedTables((current) => {
+        if (current === null) return defaultExpandedTables(engine, tables);
+        return current.filter((name) => tables.some((table) => table.name === name));
+      });
     } catch (reason) {
       setSchema([]);
-      setSelectedTable("");
+      setExpandedTables(null);
       setError(reason instanceof Error ? reason.message : "Could not load database structure.");
     } finally {
       setSchemaLoading(false);
@@ -216,14 +356,21 @@ export default function DatabasePlayground() {
     localStorage.setItem(`${SQL_KEY}:${engine}`, sql);
     localStorage.setItem(ENGINE_KEY, next);
     setEngine(next);
-    setSelectedTable("");
+    setExpandedTables(null);
     setExampleCategory("basics");
     setSql(localStorage.getItem(`${SQL_KEY}:${next}`) || STARTER_SQL[next]);
     setResult(null);
     setError("");
   }
 
-  function loadQuery(statement: string) {
+  function toggleTable(name: string) {
+    setExpandedTables((current) => {
+      const expanded = current || [];
+      return expanded.includes(name) ? expanded.filter((entry) => entry !== name) : [...expanded, name];
+    });
+  }
+
+  function loadExample(statement: string) {
     setSql(statement);
     setError("");
     editorRef.current?.focus();
@@ -238,7 +385,7 @@ export default function DatabasePlayground() {
     try {
       await api({ action: "reset", engine, sessionId });
       setResult(null);
-      setSelectedTable("");
+      setExpandedTables(null);
       setSql(STARTER_SQL[engine]);
       localStorage.setItem(`${SQL_KEY}:${engine}`, STARTER_SQL[engine]);
       await refreshSchema();
@@ -257,7 +404,7 @@ export default function DatabasePlayground() {
   }
 
   const categories = categoriesFor(engine);
-  const queryExamples = examplesFor(engine).filter((example) => example.category === exampleCategory);
+  const queryExamples = examplesFor(engine).filter((entry) => entry.category === exampleCategory);
   const mongo = engine === "mongodb";
 
   return (
@@ -279,78 +426,79 @@ export default function DatabasePlayground() {
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
           <div className={styles.workspaceLayout}>
-            <aside className={styles.technicalPanel}>
-              <div className={styles.sideTabs} role="tablist" aria-label="Database playground sections">
-                <button aria-selected={leftTab === "database"} className={leftTab === "database" ? styles.activeSideTab : ""} onClick={() => setLeftTab("database")} role="tab" type="button">Database</button>
-                <button aria-selected={leftTab === "examples"} className={leftTab === "examples" ? styles.activeSideTab : ""} onClick={() => setLeftTab("examples")} role="tab" type="button">Examples</button>
-              </div>
-
-              {leftTab === "database" ? (
-                <div className={styles.databaseView}>
-                  <section className={styles.engineSection}>
-                    <span className={styles.sectionLabel}>Database type</span>
-                    <fieldset aria-label="Database engine" className={styles.engineSwitch}>
-                      <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
-                      <button className={engine === "postgres" ? styles.activeEngine : ""} onClick={() => changeEngine("postgres")} type="button">PostgreSQL 16</button>
-                      <button className={engine === "mongodb" ? styles.activeEngine : ""} onClick={() => changeEngine("mongodb")} type="button">MongoDB 8</button>
-                    </fieldset>
-                  </section>
-
-                  <div className={styles.tables}>
-                    {schema.map((table) => {
-                      const expanded = selectedTable === table.name;
-                      return (
-                        <div className={`${styles.tableCard} ${expanded ? styles.selectedTable : ""}`} key={table.name}>
-                          <button className={styles.tableButton} onClick={() => setSelectedTable((current) => current === table.name ? "" : table.name)} type="button">
-                            <span className={styles.chevron}>{expanded ? "⌄" : "›"}</span>
-                            <strong>{table.name}</strong>
-                            <span>{table.columns.length}</span>
-                          </button>
-                          {expanded && (
-                            <div className={styles.columnList}>
-                              {table.columns.map((column) => (
-                                <div className={styles.columnRow} key={column.name}>
-                                  <span className={styles.columnName}>{column.name}{column.key ? <em>{column.key}</em> : null}</span>
-                                  <small>{column.type}</small>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {schemaLoading && !schema.length && <p className={styles.empty}>Loading database…</p>}
-                    {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
-                  </div>
-                  <p className={styles.sideHint}>Click a {mongo ? "collection" : "table"} to expand or collapse its fields.</p>
+            <div className={styles.leftRail}>
+              <section aria-label="Database engine" className={styles.enginePanel}>
+                <div className={styles.engineSwitch} role="group" aria-label="Database engine">
+                  <button className={engine === "mysql" ? styles.activeEngine : ""} onClick={() => changeEngine("mysql")} type="button">MySQL 8</button>
+                  <button className={engine === "postgres" ? styles.activeEngine : ""} onClick={() => changeEngine("postgres")} type="button">PostgreSQL 16</button>
+                  <button className={engine === "mongodb" ? styles.activeEngine : ""} onClick={() => changeEngine("mongodb")} type="button">MongoDB 8</button>
                 </div>
-              ) : (
-                <div className={styles.examplesView}>
-                  <div className={styles.exampleCategories} role="tablist" aria-label="Database example categories">
-                    {categories.map((category) => (
-                      <button
-                        aria-selected={exampleCategory === category.id}
-                        className={exampleCategory === category.id ? styles.activeCategory : ""}
-                        key={category.id}
-                        onClick={() => setExampleCategory(category.id)}
-                        role="tab"
-                        type="button"
-                      >{category.label}</button>
-                    ))}
-                  </div>
-                  <div className={styles.examplesList}>
-                    {queryExamples.map((example) => (
-                      <article className={styles.exampleCard} key={example.title}>
-                        <h2>{example.title}</h2>
-                        <p>{example.description}</p>
-                        <pre><code>{example.sql}</code></pre>
-                        <button onClick={() => loadQuery(example.sql)} type="button">Use query</button>
-                      </article>
-                    ))}
-                  </div>
+              </section>
+
+              <aside className={styles.technicalPanel}>
+                <div className={styles.sideTabs} role="tablist" aria-label="Database playground sections">
+                  <button aria-selected={leftTab === "database"} className={leftTab === "database" ? styles.activeSideTab : ""} onClick={() => setLeftTab("database")} role="tab" type="button">Database</button>
+                  <button aria-selected={leftTab === "examples"} className={leftTab === "examples" ? styles.activeSideTab : ""} onClick={() => setLeftTab("examples")} role="tab" type="button">Examples</button>
                 </div>
-              )}
-            </aside>
+
+                {leftTab === "database" ? (
+                  <div className={styles.databaseView}>
+                    <div className={styles.tables}>
+                      {schema.map((table) => {
+                        const expanded = expandedTables?.includes(table.name) ?? false;
+                        return (
+                          <div className={`${styles.tableCard} ${expanded ? styles.selectedTable : ""}`} key={table.name}>
+                            <button aria-expanded={expanded} className={styles.tableButton} onClick={() => toggleTable(table.name)} type="button">
+                              <span className={styles.chevron}>{expanded ? "⌄" : "›"}</span>
+                              <strong>{table.name}</strong>
+                              <span>{table.columns.length}</span>
+                            </button>
+                            {expanded && (
+                              <div className={styles.columnList}>
+                                {table.columns.map((column) => (
+                                  <div className={styles.columnRow} key={column.name}>
+                                    <span className={styles.columnName}>{column.name}{column.key ? <em>{column.key}</em> : null}</span>
+                                    <small>{column.type}</small>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {schemaLoading && !schema.length && <p className={styles.empty}>Loading database…</p>}
+                      {!schemaLoading && !schema.length && <p className={styles.empty}>Database structure is unavailable.</p>}
+                    </div>
+                    <p className={styles.sideHint}>Each {mongo ? "collection" : "table"} expands or collapses independently.</p>
+                  </div>
+                ) : (
+                  <div className={styles.examplesView}>
+                    <div className={styles.exampleCategories} role="tablist" aria-label="Database example categories">
+                      {categories.map((category) => (
+                        <button
+                          aria-selected={exampleCategory === category.id}
+                          className={exampleCategory === category.id ? styles.activeCategory : ""}
+                          key={category.id}
+                          onClick={() => setExampleCategory(category.id)}
+                          role="tab"
+                          type="button"
+                        >{category.label}</button>
+                      ))}
+                    </div>
+                    <div className={styles.examplesList}>
+                      {queryExamples.map((entry) => (
+                        <article className={styles.exampleCard} key={entry.title}>
+                          <h2>{entry.title}</h2>
+                          <p>{entry.description}</p>
+                          <pre><code>{entry.sql}</code></pre>
+                          <button onClick={() => loadExample(entry.sql)} type="button">Use example</button>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </aside>
+            </div>
 
             <section className={styles.workbench}>
               <section className={styles.editorPane}>
