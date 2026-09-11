@@ -128,10 +128,13 @@ curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/mongo-lab-api/package.json" -o "$RUNTIME_DIR/mongo-lab-api/package.json"
 curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
+  "$REPO_RAW/mongo-lab-api/package-lock.json" -o "$RUNTIME_DIR/mongo-lab-api/package-lock.json"
+curl --fail --silent --show-error --location --proto "$HTTPS_ONLY" --proto-redir "$HTTPS_ONLY" \
   "$REPO_RAW/mongo-lab-api/server.mjs" -o "$RUNTIME_DIR/mongo-lab-api/server.mjs"
 chmod 644 "$RUNTIME_DIR/db-lab/mysql-init.sql" "$RUNTIME_DIR/db-lab/postgres-init.sql" "$RUNTIME_DIR/db-lab/mongo-init.js" \
   "$RUNTIME_DIR/db-lab-api/Dockerfile" "$RUNTIME_DIR/db-lab-api/server.mjs" \
-  "$RUNTIME_DIR/mongo-lab-api/Dockerfile" "$RUNTIME_DIR/mongo-lab-api/package.json" "$RUNTIME_DIR/mongo-lab-api/server.mjs"
+  "$RUNTIME_DIR/mongo-lab-api/Dockerfile" "$RUNTIME_DIR/mongo-lab-api/package.json" \
+  "$RUNTIME_DIR/mongo-lab-api/package-lock.json" "$RUNTIME_DIR/mongo-lab-api/server.mjs"
 
 if [[ ! -f "$RUNTIME_DIR/.env" ]]; then
   log "Creating persistent runtime environment"
