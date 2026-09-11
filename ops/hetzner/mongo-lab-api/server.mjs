@@ -445,21 +445,26 @@ async function readJson(request) {
 }
 
 async function health() {
-  if (!SERVICE_TOKEN || !MONGO_ADMIN_PASSWORD) return json({ status: "degraded", mongodb: false }, 503);
+  if (!SERVICE_TOKEN || !MONGO_ADMIN_PASSWORD) {
+    return json({ status: "degraded", mongodb: false, reason: "configuration" }, 503);
+  }
   try {
     const client = await mongoClient();
     await client.db("admin").command({ ping: 1 });
     const base = client.db(BASE_DATABASE);
     const [users, products, orders, marker] = await Promise.all([
-      base.collection("users").estimatedDocumentCount(),
-      base.collection("products").estimatedDocumentCount(),
-      base.collection("orders").estimatedDocumentCount(),
-      base.collection(MARKER_COLLECTION).findOne({ fixtureVersion: FIXTURE_VERSION }),
+      base.collection("users").countDocuments({}, { maxTimeMS: MAX_TIME_MS }),
+      base.collection("products").countDocuments({}, { maxTimeMS: MAX_TIME_MS }),
+      base.collection("orders").countDocuments({}, { maxTimeMS: MAX_TIME_MS }),
+      base.collection(MARKER_COLLECTION).countDocuments({ fixtureVersion: FIXTURE_VERSION }, { maxTimeMS: MAX_TIME_MS }),
     ]);
-    if (users !== 1000 || products !== 120 || orders !== 8000 || !marker) throw new Error("MongoDB fixture is stale.");
-    return json({ status: "ok", mongodb: true });
+    const counts = { users, products, orders, marker };
+    if (users !== 1000 || products !== 120 || orders !== 8000 || marker !== 1) {
+      return json({ status: "degraded", mongodb: true, fixture: false, reason: "fixture", counts }, 503);
+    }
+    return json({ status: "ok", mongodb: true, fixture: true });
   } catch {
-    return json({ status: "degraded", mongodb: false }, 503);
+    return json({ status: "degraded", mongodb: false, reason: "connection" }, 503);
   }
 }
 
