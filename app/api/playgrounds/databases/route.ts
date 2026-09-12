@@ -1,3 +1,5 @@
+import { stripDatabaseGuideComments } from "../../../playgrounds/databases/database-code-guide";
+
 type DatabasePlaygroundEnv = {
   GIMMEJOB_AI_URL?: string;
   GIMMEJOB_AI_SERVICE_TOKEN?: string;
@@ -97,10 +99,12 @@ export async function handleDatabasePlayground(request: Request, env: DatabasePl
   if (!ALLOWED_ENGINES.has(engine)) return json({ error: "Unsupported database engine." }, 400);
   if (!validSessionId(sessionId)) return json({ error: "Invalid database lab session." }, 400);
 
-  const query = action === "query" ? text(input.sql, MAX_QUERY_LENGTH + 1) : "";
-  if (action === "query" && (!query || query.length > MAX_QUERY_LENGTH)) {
+  const rawQuery = action === "query" ? text(input.sql, MAX_QUERY_LENGTH + 1) : "";
+  if (action === "query" && (!rawQuery || rawQuery.length > MAX_QUERY_LENGTH)) {
     return json({ error: "Query must be between 1 and 20,000 characters." }, 400);
   }
+  const query = action === "query" ? stripDatabaseGuideComments(rawQuery) : "";
+  if (action === "query" && !query) return json({ error: "Query must contain an executable statement." }, 400);
 
   const base = aiBaseUrl(env);
   const token = env.GIMMEJOB_AI_SERVICE_TOKEN?.trim();
