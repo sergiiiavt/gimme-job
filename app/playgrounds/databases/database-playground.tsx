@@ -21,14 +21,7 @@ type QueryResponse = {
   message: string | null;
 };
 type DatabaseExample = { category: ExampleCategory; title: string; description: string; sql: string };
-type QueryTab = {
-  id: string;
-  title: string;
-  engine: Engine;
-  query: string;
-  result: QueryResponse | null;
-  error: string;
-};
+type QueryTab = { id: string; title: string; engine: Engine; query: string; result: QueryResponse | null; error: string };
 
 const SESSION_KEY = "gimmejob-db-lab-session-v1";
 const TABS_KEY = "gimmejob-db-lab-tabs-v1";
@@ -73,6 +66,18 @@ function isEngine(value: unknown): value is Engine {
   return value === "mysql" || value === "postgres" || value === "mongodb";
 }
 
+function engineLabel(engine: Engine): string {
+  if (engine === "mysql") return "MySQL 8";
+  if (engine === "postgres") return "PostgreSQL 16";
+  return "MongoDB 8";
+}
+
+function shortEngineLabel(engine: Engine): string {
+  if (engine === "mysql") return "MySQL";
+  if (engine === "postgres") return "PG";
+  return "Mongo";
+}
+
 function starterTab(engine: Engine, id = newTabId()): QueryTab {
   return { id, title: `New ${engineLabel(engine)}`, engine, query: STARTER_SQL[engine], result: null, error: "" };
 }
@@ -115,18 +120,6 @@ function example(category: ExampleCategory, title: string, description: string, 
   return { category, title, description, sql };
 }
 
-function engineLabel(engine: Engine): string {
-  if (engine === "mysql") return "MySQL 8";
-  if (engine === "postgres") return "PostgreSQL 16";
-  return "MongoDB 8";
-}
-
-function shortEngineLabel(engine: Engine): string {
-  if (engine === "mysql") return "MySQL";
-  if (engine === "postgres") return "PG";
-  return "Mongo";
-}
-
 function categoriesFor(engine: Engine) {
   return engine === "mongodb" ? MONGO_CATEGORIES : SQL_CATEGORIES;
 }
@@ -157,12 +150,7 @@ function mongoExamples(): DatabaseExample[] {
 });`),
     example("filtering", "Projection", "Return only selected fields from matching documents.", `db.orders.find(
   { "status": "shipped" },
-  {
-    "orderId": 1,
-    "status": 1,
-    "totalAmount": 1,
-    "_id": 0
-  }
+  { "orderId": 1, "status": 1, "totalAmount": 1, "_id": 0 }
 ).limit(20);`),
     example("filtering", "Nested field filter", "Filter directly on an embedded document field.", `db.orders.find({
   "user.region": "EU",
@@ -207,12 +195,7 @@ function mongoExamples(): DatabaseExample[] {
 });`),
     example("writes", "Update one document", "Use $set without replacing the full document.", `db.orders.updateOne(
   { "orderId": 42 },
-  {
-    "$set": {
-      "status": "paid",
-      "shipping.expedited": true
-    }
-  }
+  { "$set": { "status": "paid", "shipping.expedited": true } }
 );`),
     example("writes", "Increment stock", "Atomically increment one numeric field.", `db.products.updateOne(
   { "productId": 10 },
@@ -277,10 +260,7 @@ function mongoExamples(): DatabaseExample[] {
       "orderId": 1,
       "pricing": {
         "$let": {
-          "vars": {
-            "taxRate": 0.2,
-            "subtotal": "$totalAmount"
-          },
+          "vars": { "taxRate": 0.2, "subtotal": "$totalAmount" },
           "in": {
             "subtotal": "$$subtotal",
             "tax": { "$multiply": ["$$subtotal", "$$taxRate"] },
@@ -468,24 +448,20 @@ SELECT s.n, o.status, o.total_amount
 FROM sequence s
 LEFT JOIN orders o ON o.id = s.n
 ORDER BY s.n;`),
-    example("engine", "String concatenation",
-      mysql ? "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator." : "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().",
-      mysql
-        ? `SELECT id, CONCAT(email, ' · ', region) AS user_label
+    example("engine", "String concatenation", mysql ? "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator." : "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().", mysql
+      ? `SELECT id, CONCAT(email, ' · ', region) AS user_label
 FROM users
 ORDER BY id
 LIMIT 10;`
-        : `SELECT id, email || ' · ' || region AS user_label
+      : `SELECT id, email || ' · ' || region AS user_label
 FROM users
 ORDER BY id
 LIMIT 10;`),
-    example("engine", "JSON value extraction",
-      mysql ? "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction." : "PostgreSQL supports JSONB operators such as ->> for text extraction.",
-      mysql
-        ? `SELECT JSON_UNQUOTE(
+    example("engine", "JSON value extraction", mysql ? "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction." : "PostgreSQL supports JSONB operators such as ->> for text extraction.", mysql
+      ? `SELECT JSON_UNQUOTE(
   JSON_EXTRACT('{"status":"paid","channel":"web"}', '$.status')
 ) AS status;`
-        : `SELECT '{"status":"paid","channel":"web"}'::jsonb
+      : `SELECT '{"status":"paid","channel":"web"}'::jsonb
   ->> 'status' AS status;`),
     example("indexes", "Inspect a query plan", "See how the selected database engine plans the query.", mysql ? "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;" : "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;"),
     example("indexes", "Create an index", "Add an index on orders.user_id, then run EXPLAIN again to compare.", "CREATE INDEX idx_orders_user_id ON orders(user_id);"),
@@ -578,22 +554,33 @@ export default function DatabasePlayground() {
   }, [engine, sessionId]);
 
   useEffect(() => {
-    setSchema([]);
-    setExpandedTables(null);
-    setExampleCategory("basics");
     if (!sessionId) return;
     const timer = window.setTimeout(() => void refreshSchema(), 0);
     return () => window.clearTimeout(timer);
   }, [refreshSchema, sessionId]);
 
+  function clearEngineView() {
+    setSchema([]);
+    setExpandedTables(null);
+    setExampleCategory("basics");
+    setPageError("");
+  }
+
   function updateTab(tabId: string, patch: Partial<QueryTab>) {
     setTabs((current) => current.map((tab) => tab.id === tabId ? { ...tab, ...patch } : tab));
+  }
+
+  function activateTab(tabId: string) {
+    const next = tabs.find((tab) => tab.id === tabId);
+    if (next && next.engine !== engine) clearEngineView();
+    setActiveTabId(tabId);
   }
 
   function addTab(nextEngine: Engine, query: string, title: string): string {
     const id = newTabId();
     const tab: QueryTab = { id, title, engine: nextEngine, query, result: null, error: "" };
     setTabs((current) => [...current, tab].slice(-MAX_QUERY_TABS));
+    if (nextEngine !== engine) clearEngineView();
     setActiveTabId(id);
     return id;
   }
@@ -612,9 +599,13 @@ export default function DatabasePlayground() {
       return;
     }
     const index = tabs.findIndex((tab) => tab.id === tabId);
-    const next = tabs.filter((tab) => tab.id !== tabId);
-    setTabs(next);
-    if (activeTabId === tabId) setActiveTabId(next[Math.max(0, index - 1)]?.id || next[0].id);
+    const nextTabs = tabs.filter((tab) => tab.id !== tabId);
+    setTabs(nextTabs);
+    if (activeTabId === tabId) {
+      const replacement = nextTabs[Math.max(0, index - 1)] || nextTabs[0];
+      if (replacement.engine !== engine) clearEngineView();
+      setActiveTabId(replacement.id);
+    }
   }
 
   async function executeStatement(tabId: string, runEngine: Engine, statement: string) {
@@ -642,6 +633,7 @@ export default function DatabasePlayground() {
 
   function changeEngine(next: Engine) {
     if (!activeTab || next === activeTab.engine) return;
+    clearEngineView();
     updateTab(activeTab.id, {
       engine: next,
       title: `New ${engineLabel(next)}`,
@@ -649,9 +641,6 @@ export default function DatabasePlayground() {
       result: null,
       error: "",
     });
-    setExpandedTables(null);
-    setExampleCategory("basics");
-    setPageError("");
   }
 
   function toggleTable(name: string) {
@@ -807,7 +796,7 @@ export default function DatabasePlayground() {
                 <div className={styles.queryTabsScroll}>
                   {tabs.map((tab) => (
                     <div className={`${styles.queryTab} ${tab.id === activeTabId ? styles.activeQueryTab : ""}`} key={tab.id}>
-                      <button aria-selected={tab.id === activeTabId} className={styles.queryTabSelect} onClick={() => setActiveTabId(tab.id)} role="tab" title={tab.title} type="button">
+                      <button aria-selected={tab.id === activeTabId} className={styles.queryTabSelect} onClick={() => activateTab(tab.id)} role="tab" title={tab.title} type="button">
                         <small>{shortEngineLabel(tab.engine)}</small>
                         <span>{tab.title}</span>
                       </button>
