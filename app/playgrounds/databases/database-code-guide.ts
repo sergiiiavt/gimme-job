@@ -1,7 +1,7 @@
-export type DatabaseGuideDialect = "sql" | "mongodb";
+import { stripDatabaseGuideComments } from "./database-guide-comments.mjs";
 
-const LEGACY_GUIDE_LINE_PATTERN = /^\s*(?:--|\/\/)\s*\[Guide\]\s*/;
-const LEADING_COMMENT_PATTERN = /^\s*(?:--|\/\/)\s*/;
+export { stripDatabaseGuideComments } from "./database-guide-comments.mjs";
+export type DatabaseGuideDialect = "sql" | "mongodb";
 
 function has(source: string, pattern: RegExp): boolean {
   return pattern.test(source);
@@ -226,32 +226,6 @@ function mongoDetails(source: string): string[] {
   if (has(source, /\.find\s*\(/) && has(source, /"status"\s*:\s*"paid"/)) notes.push("find keeps only documents whose status is paid.");
   if (has(source, /\.sort\s*\([\s\S]*"createdAt"\s*:\s*-1/) && has(source, /\.limit\s*\(20\)/)) notes.push("sort({ createdAt: -1 }) puts newest documents first; limit(20) returns only the first 20.");
   return notes.slice(0, 3);
-}
-
-/**
- * Remove the generated leading explanation comments before execution.
- * Legacy [Guide] comments from previously saved tabs are also removed.
- */
-export function stripDatabaseGuideComments(source: string): string {
-  const lines = source.split(/\r?\n/);
-  let index = 0;
-  let sawComment = false;
-
-  while (index < lines.length) {
-    const line = lines[index];
-    if (LEGACY_GUIDE_LINE_PATTERN.test(line) || LEADING_COMMENT_PATTERN.test(line)) {
-      sawComment = true;
-      index += 1;
-      continue;
-    }
-    if (sawComment && !line.trim()) {
-      index += 1;
-      continue;
-    }
-    break;
-  }
-
-  return lines.slice(index).join("\n").trim();
 }
 
 export function buildDatabaseGuide(source: string, title: string, description: string, dialect: DatabaseGuideDialect): string {
