@@ -20,182 +20,300 @@ async function withFetch(mock: typeof fetch, run: () => Promise<void>): Promise<
   }
 }
 
-test("SQL guides deeply explain clauses while preserving the executable statement", () => {
-  const sql = "SELECT id, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY total_amount DESC\nLIMIT 20;";
-  const guided = buildDatabaseGuide(sql, "Paid orders", "Return the highest-value paid orders.", "sql");
+function assertConciseGuide(statement: string, description: string, dialect: "sql" | "mongodb") {
+  const guided = buildDatabaseGuide(statement, "Example title", description, dialect);
+  const prefix = dialect === "mongodb" ? "//" : "--";
+  const commentLines = guided.split(/\r?\n/).filter((line) => line.startsWith(prefix));
+  assert.ok(commentLines.length >= 1 && commentLines.length <= 4, `Expected 1-4 concise comments, got ${commentLines.length}`);
+  assert.ok(guided.startsWith(`${prefix} ${description}`));
+  assert.doesNotMatch(guided, /\[Guide\]/);
+  assert.doesNotMatch(guided, /executable statement starts below/i);
+  assert.doesNotMatch(guided, /Logical reading order/i);
+  assert.equal(stripDatabaseGuideComments(guided), statement);
+  return guided;
+}
 
-  assert.match(guided, /-- \[Guide\] Paid orders/);
-  assert.match(guided, /Purpose: Return the highest-value paid orders/);
-  assert.match(guided, /SELECT is the projection step/);
-  assert.match(guided, /FROM establishes the source rows/);
-  assert.match(guided, /WHERE filters individual source rows/);
-  assert.match(guided, /ORDER BY sorts/);
-  assert.match(guided, /LIMIT is applied at the end/);
-  assert.match(guided, /Logical reading order is FROM\/JOIN → WHERE → SELECT\/window expressions → ORDER BY → LIMIT/);
-  assert.equal(stripDatabaseGuideComments(guided), sql);
+test("simple SQL examples explain only the script that is actually present", () => {
+  const recent = `SELECT *\nFROM orders\nORDER BY id DESC\nLIMIT 20;`;
+  const recentGuided = assertConciseGuide(recent, "Read rows and control their order and count.", "sql");
+  assert.match(recentGuided, /ORDER BY id DESC puts the highest order ids first/);
+  assert.doesNotMatch(recentGuided, /JOIN/i);
+  assert.doesNotMatch(recentGuided, /SELECT is|FROM establishes|projection step/i);
+
+  const paid = `SELECT id, user_id, status, total_amount\nFROM orders\nWHERE status = 'paid'\nORDER BY id DESC\nLIMIT 20;`;
+  const paidGuided = assertConciseGuide(paid, "Return only rows matching a WHERE condition.", "sql");
+  assert.match(paidGuided, /WHERE status = 'paid' removes every non-paid order/);
+  assert.match(paidGuided, /ORDER BY id DESC/);
+  assert.doesNotMatch(paidGuided, /JOIN/i);
 });
 
-test("SQL guide generator covers advanced DDL, DML, transaction, CTE, window, and expression semantics", () => {
-  const statements = [
-    `WITH RECURSIVE sequence AS (
-  SELECT 1 AS n
-  UNION ALL
-  SELECT n + 1 FROM sequence WHERE n < 5
-)
-SELECT
-  ROW_NUMBER() OVER (PARTITION BY o.status ORDER BY o.total_amount DESC) AS rank_in_status,
-  CASE WHEN o.total_amount >= 250 THEN 'high' ELSE 'standard' END AS value_band,
-  CONCAT(u.first_name, ' ', u.last_name) AS customer,
-  JSON_EXTRACT(o.metadata, '$.channel') AS channel
-FROM orders o
-LEFT JOIN users u ON u.id = o.user_id
-WHERE EXISTS (SELECT 1 FROM products p WHERE p.id = o.id)
-GROUP BY o.status, o.total_amount, u.first_name, u.last_name, o.metadata
-HAVING COUNT(*) > 0
-ORDER BY o.total_amount DESC
-LIMIT 10;`,
-    `WITH params AS (SELECT 250 AS min_total)
-SELECT o.id FROM orders o CROSS JOIN params p WHERE o.total_amount >= p.min_total;`,
-    `SET @min_total = 250;
-SELECT id FROM orders WHERE total_amount >= @min_total;`,
-    `CREATE OR REPLACE VIEW paid_order_summary AS
-SELECT user_id, SUM(total_amount) AS revenue FROM orders WHERE status = 'paid' GROUP BY user_id;`,
-    `CREATE TABLE qa_runs (
-  id BIGINT PRIMARY KEY,
-  user_id BIGINT NOT NULL,
-  CONSTRAINT fk_run_user FOREIGN KEY (user_id) REFERENCES users(id)
-);`,
-    "CREATE UNIQUE INDEX uq_qa_notes_title ON qa_notes(title);",
-    "CREATE INDEX idx_orders_status_created ON orders(status, created_at);",
-    "EXPLAIN SELECT * FROM orders WHERE status = 'paid';",
-    "INSERT INTO qa_notes (title, severity) VALUES ('Checkout regression', 'high');",
-    "UPDATE qa_notes SET severity = 'low' WHERE title = 'Checkout regression';",
-    "DELETE FROM qa_notes WHERE title = 'Checkout regression';",
-    "DROP TABLE IF EXISTS qa_notes;",
-    "BEGIN; UPDATE orders SET status = 'paid' WHERE id = 1; ROLLBACK; COMMIT;",
+test("SQL comments stay focused across DDL, joins, aggregation, advanced SQL, engine differences, and indexes", () => {
+  const cases = [
+    {
+      sql: `CREATE TABLE IF NOT EXISTS qa_notes (\n  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,\n  title VARCHAR(120) NOT NULL,\n  severity VARCHAR(20) NOT NULL DEFAULT 'medium',\n  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (id)\n);`,
+      description: "Create a sandbox table with a generated primary key, defaults, and required fields.",
+      expected: /id value is generated by the database/,
+    },
+    {
+      sql: `CREATE TABLE IF NOT EXISTS qa_suites (\n  id BIGINT PRIMARY KEY,\n  name VARCHAR(100) NOT NULL UNIQUE\n);`,
+      description: "Create a small table whose id column is the primary key and whose name must be unique.",
+      expected: /UNIQUE prevents two rows/,
+    },
+    {
+      sql: `CREATE TABLE IF NOT EXISTS qa_runs (\n  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n  user_id BIGINT NOT NULL REFERENCES users(id),\n  status VARCHAR(32) NOT NULL\n);`,
+      description: "Create qa_runs with a foreign key that must reference an existing user.",
+      expected: /user_id must match an existing users\.id/,
+    },
+    {
+      sql: "INSERT INTO qa_notes (title, severity)\nVALUES ('Checkout regression', 'high');",
+      description: "Insert one row into qa_notes after creating the table.",
+      expected: /id and created_at use the table defaults/,
+    },
+    {
+      sql: "UPDATE qa_notes\nSET severity = 'low'\nWHERE title = 'Checkout regression';",
+      description: "Change existing data with an UPDATE statement.",
+      expected: /WHERE selects the matching note/,
+    },
+    {
+      sql: "DELETE FROM qa_notes\nWHERE title = 'Checkout regression';",
+      description: "Delete matching data while keeping the table itself.",
+      expected: /table itself remains/,
+    },
+    {
+      sql: "DROP TABLE IF EXISTS qa_notes;",
+      description: "Remove the sandbox table and its data.",
+      expected: /IF EXISTS avoids an error/,
+    },
+    {
+      sql: `SELECT o.id, u.email, u.region, o.status, o.total_amount\nFROM orders o\nJOIN users u ON u.id = o.user_id\nORDER BY o.id DESC\nLIMIT 20;`,
+      description: "Join orders to users through user_id.",
+      expected: /matches each order's user_id to users\.id/,
+    },
+    {
+      sql: `SELECT o.id, p.sku, p.category, o.status, o.total_amount\nFROM orders o\nJOIN products p ON p.id = o.product_id\nORDER BY o.id DESC\nLIMIT 20;`,
+      description: "Join orders to products through product_id.",
+      expected: /product_id to products\.id/,
+    },
+    {
+      sql: `SELECT channel, COUNT(*) AS orders_count, ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nGROUP BY channel\nORDER BY revenue DESC;`,
+      description: "Group orders and calculate count and revenue.",
+      expected: /one result row per channel/,
+    },
+    {
+      sql: `SELECT u.region, COUNT(*) AS orders_count, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN users u ON u.id = o.user_id\nGROUP BY u.region\nORDER BY revenue DESC;`,
+      description: "Combine JOIN and GROUP BY in one query.",
+      expected: /one group per region/,
+    },
+    {
+      sql: `WITH ranked_orders AS (\n  SELECT id, user_id, total_amount,\n         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total_amount DESC, id DESC) AS order_rank\n  FROM orders\n)\nSELECT id, user_id, total_amount, order_rank\nFROM ranked_orders\nWHERE order_rank <= 3\nORDER BY user_id, order_rank\nLIMIT 100;`,
+      description: "Use a common table expression and a window function to rank orders inside each user.",
+      expected: /at most three orders per user/,
+    },
+    {
+      sql: `WITH RECURSIVE sequence(n) AS (\n  SELECT 1\n  UNION ALL\n  SELECT n + 1 FROM sequence WHERE n < 10\n)\nSELECT s.n, o.status, o.total_amount\nFROM sequence s\nLEFT JOIN orders o ON o.id = s.n\nORDER BY s.n;`,
+      description: "Generate a small sequence recursively and join it to real order IDs.",
+      expected: /numbers 1 through 10/,
+    },
+    {
+      sql: `SELECT u.id, u.email, u.region\nFROM users u\nWHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id AND o.status = 'paid' AND o.total_amount >= 250)\nORDER BY u.id\nLIMIT 50;`,
+      description: "Find users for whom at least one qualifying order exists without returning duplicate users.",
+      expected: /multiple qualifying orders still produce only one row per user/,
+    },
+    {
+      sql: `CREATE OR REPLACE VIEW paid_order_summary AS\nSELECT user_id, COUNT(*) AS paid_orders, ROUND(SUM(total_amount), 2) AS paid_revenue\nFROM orders\nWHERE status = 'paid'\nGROUP BY user_id;`,
+      description: "Persist a read-only query shape inside the sandbox for later SELECTs.",
+      expected: /stores this SELECT definition/,
+    },
+    {
+      sql: `SET @min_total = 250;\n\nSELECT id, user_id, total_amount\nFROM orders\nWHERE total_amount >= @min_total\nORDER BY total_amount DESC\nLIMIT 20;`,
+      description: "Set a session variable and reuse it in the following statement.",
+      expected: /session variable/,
+    },
+    {
+      sql: `WITH params AS (SELECT 250::numeric AS min_total)\nSELECT o.id, o.user_id, o.total_amount\nFROM orders o\nCROSS JOIN params p\nWHERE o.total_amount >= p.min_total\nORDER BY o.total_amount DESC\nLIMIT 20;`,
+      description: "Model a reusable query parameter with a one-row CTE.",
+      expected: /one-row CTE/,
+    },
+    {
+      sql: `SELECT channel, COUNT(*) AS all_orders, SUM(status = 'paid') AS paid_orders, SUM(status = 'cancelled') AS cancelled_orders, ROUND(AVG(total_amount), 2) AS average_value\nFROM orders\nGROUP BY channel\nORDER BY all_orders DESC;`,
+      description: "Calculate several business metrics in one grouped scan.",
+      expected: /boolean comparisons evaluate to 1 or 0/,
+    },
+    {
+      sql: `SELECT channel, COUNT(*) AS all_orders, COUNT(*) FILTER (WHERE status = 'paid') AS paid_orders, COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled_orders, ROUND(AVG(total_amount), 2) AS average_value\nFROM orders\nGROUP BY channel\nORDER BY all_orders DESC;`,
+      description: "Calculate several business metrics in one grouped scan.",
+      expected: /PostgreSQL FILTER counts paid and cancelled rows separately/,
+    },
+    {
+      sql: `SELECT id, CONCAT(email, ' · ', region) AS user_label\nFROM users\nORDER BY id\nLIMIT 10;`,
+      description: "MySQL commonly uses CONCAT(); PostgreSQL can use the || operator.",
+      expected: /CONCAT combines email/,
+    },
+    {
+      sql: `SELECT id, email || ' · ' || region AS user_label\nFROM users\nORDER BY id\nLIMIT 10;`,
+      description: "PostgreSQL can concatenate with ||; MySQL commonly uses CONCAT().",
+      expected: /\|\| operator joins email/,
+    },
+    {
+      sql: `SELECT JSON_UNQUOTE(JSON_EXTRACT('{"status":"paid","channel":"web"}', '$.status')) AS status;`,
+      description: "MySQL uses JSON_EXTRACT / JSON_UNQUOTE for this form of extraction.",
+      expected: /JSON_EXTRACT reads the status field/,
+    },
+    {
+      sql: `SELECT '{"status":"paid","channel":"web"}'::jsonb ->> 'status' AS status;`,
+      description: "PostgreSQL supports JSONB operators such as ->> for text extraction.",
+      expected: /->> returns the status field as text/,
+    },
+    {
+      sql: "EXPLAIN SELECT * FROM orders WHERE user_id = 1234;",
+      description: "See how the selected database engine plans the query.",
+      expected: /plan MySQL intends to use/,
+    },
+    {
+      sql: "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 1234;",
+      description: "See how the selected database engine plans the query.",
+      expected: /real plan and timings/,
+    },
+    {
+      sql: "CREATE UNIQUE INDEX uq_qa_notes_title ON qa_notes(title);",
+      description: "Enforce unique qa_notes titles with a unique index.",
+      expected: /rejects duplicate qa_notes\.title values/,
+    },
+    {
+      sql: "CREATE INDEX idx_orders_user_id ON orders(user_id);",
+      description: "Add an index on orders.user_id, then run EXPLAIN again to compare.",
+      expected: /avoid scanning every order row/,
+    },
   ];
 
-  const explanation = statements
-    .map((statement, index) => buildDatabaseGuide(statement, `SQL ${index}`, "Explain this SQL feature.", "sql"))
-    .join("\n");
+  for (const entry of cases) {
+    const guided = assertConciseGuide(entry.sql, entry.description, "sql");
+    assert.match(guided, entry.expected);
+  }
 
-  for (const phrase of [
-    "WITH RECURSIVE builds a temporary result iteratively",
-    "WITH defines a CTE",
-    "SET stores a MySQL session variable",
-    "CREATE VIEW saves the SELECT definition",
-    "CREATE TABLE defines the schema first",
-    "PRIMARY KEY makes the key unique and non-null",
-    "FOREIGN KEY / REFERENCES enforces referential integrity",
-    "A UNIQUE INDEX is both an access path and a uniqueness rule",
-    "CREATE INDEX builds a secondary access path",
-    "EXPLAIN asks the database for its execution plan",
-    "INSERT maps the listed values",
-    "UPDATE first finds rows that satisfy WHERE",
-    "DELETE removes rows that satisfy WHERE",
-    "DROP TABLE removes the table object itself",
-    "BEGIN / START TRANSACTION groups the following changes",
-    "ROLLBACK discards the uncommitted changes",
-    "COMMIT makes all changes",
-    "JOIN combines rows from two sources",
-    "GROUP BY collapses rows",
-    "HAVING filters groups after aggregation",
-    "A window function uses OVER",
-    "ROW_NUMBER assigns 1, 2, 3",
-    "EXISTS is a boolean test",
-    "CASE evaluates conditions in order",
-    "The JSON expression reads a value",
-    "The concatenation expression combines text values",
-  ]) assert.match(explanation, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-
-  assert.equal(buildDatabaseGuide("   ", "Empty", "Nothing to run.", "sql"), "");
+  assert.equal(buildDatabaseGuide("   ", "Empty", "", "sql"), "");
+  assert.match(buildDatabaseGuide("SELECT 1;", "Fallback title", "", "sql"), /^-- Fallback title/);
 });
 
-test("MongoDB guides explain collection operations and aggregation stages", () => {
-  const query = `db.orders.aggregate([\n  { "$match": { "status": "paid" } },\n  { "$group": { "_id": "$channel", "revenue": { "$sum": "$totalAmount" } } },\n  { "$sort": { "revenue": -1 } }\n]);`;
-  const guided = buildDatabaseGuide(query, "Revenue by channel", "Calculate paid revenue for each sales channel.", "mongodb");
-
-  assert.match(guided, /\/\/ \[Guide\] Revenue by channel/);
-  assert.match(guided, /db\.orders selects the 'orders' collection and aggregate\(\) is the operation/);
-  assert.match(guided, /aggregate\(\) runs a pipeline/);
-  assert.match(guided, /\$match filters pipeline documents/);
-  assert.match(guided, /\$group creates one output document/);
-  assert.equal(stripDatabaseGuideComments(guided), query);
-});
-
-test("MongoDB guide generator covers reads, arrays, pipelines, writes, and index operations", () => {
-  const statements = [
-    `db.orders.find(
-  { "user.region": "EU", "items": { "$elemMatch": { "quantity": { "$gte": 2 } } } },
-  { "orderId": 1, "totalAmount": 1, "_id": 0 }
-).sort({ "totalAmount": -1 }).limit(20);`,
-    `db.users.findOne({ "userId": 42 });`,
-    `db.orders.countDocuments({ "status": "paid" });`,
-    `db.orders.aggregate([
-  { "$match": { "status": "paid" } },
-  { "$unwind": "$items" },
-  { "$group": { "_id": "$items.category", "quantity": { "$sum": "$items.quantity" } } },
-  { "$lookup": { "from": "users", "localField": "user.userId", "foreignField": "userId", "as": "userRecord" } },
-  { "$facet": { "top": [{ "$limit": 3 }], "count": [{ "$count": "orders" }] } },
-  { "$set": { "valueBand": { "$cond": [{ "$gte": ["$totalAmount", 250] }, "high", "standard"] } } },
-  { "$project": { "_id": 0, "pricing": { "$let": { "vars": { "tax": 0.2 }, "in": "$$tax" } } } }
-]);`,
-    `db.qa_notes.insertOne({ "title": "Checkout regression" });`,
-    `db.orders.updateOne({ "orderId": 42 }, { "$set": { "status": "paid" }, "$inc": { "retryCount": 1 } });`,
-    `db.qa_notes.deleteOne({ "title": "Checkout regression" });`,
-    `db.orders.createIndex({ "user.region": 1, "createdAt": -1 });`,
-    `db.orders.getIndexes();`,
-    `db.orders.find({ "status": "paid" }).explain("executionStats");`,
+test("MongoDB comments explain only the operations used by each example", () => {
+  const cases = [
+    {
+      query: `db.orders.find({\n  "status": "paid"\n}).sort({\n  "createdAt": -1\n}).limit(20);`,
+      description: "Read matching documents, sort them, and limit the result.",
+      expected: /sort\(\{ createdAt: -1 \}\) puts newest documents first/,
+    },
+    {
+      query: `db.users.findOne({ "userId": 42 });`,
+      description: "Return the first document matching a filter.",
+      expected: /returns the first matching user document/,
+    },
+    {
+      query: `db.orders.find(\n  { "status": "shipped" },\n  { "orderId": 1, "status": 1, "totalAmount": 1, "_id": 0 }\n).limit(20);`,
+      description: "Return only selected fields from matching documents.",
+      expected: /second object keeps orderId, status, and totalAmount while hiding _id/,
+    },
+    {
+      query: `db.orders.find({ "user.region": "EU", "totalAmount": { "$gt": 100 } }).limit(20);`,
+      description: "Filter directly on an embedded document field.",
+      expected: /both region = EU and totalAmount > 100 must be true/,
+    },
+    {
+      query: `db.orders.find({ "items": { "$elemMatch": { "category": "audio", "quantity": { "$gte": 2 } } } }).limit(20);`,
+      description: "Use $elemMatch against embedded item documents.",
+      expected: /same item to have category audio and quantity at least 2/,
+    },
+    {
+      query: `db.orders.find({ "user.tier": "pro", "shipping.expedited": true }).limit(20);`,
+      description: "Query two embedded objects without a SQL JOIN.",
+      expected: /both values are inside the order document/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$group": { "_id": "$channel", "orders": { "$sum": 1 }, "revenue": { "$sum": "$totalAmount" } } }, { "$sort": { "revenue": -1 } }]);`,
+      description: "Group documents and calculate order count and revenue.",
+      expected: /one result per channel/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$unwind": "$items" }, { "$group": { "_id": "$items.category", "quantity": { "$sum": "$items.quantity" } } }, { "$sort": { "quantity": -1 } }]);`,
+      description: "Unwind the items array before grouping its embedded documents.",
+      expected: /one pipeline document per item/,
+    },
+    {
+      query: `db.qa_notes.insertOne({ "title": "Checkout regression" });`,
+      description: "Insert a document; MongoDB creates qa_notes automatically if it does not exist.",
+      expected: /creates the collection automatically/,
+    },
+    {
+      query: `db.orders.updateOne({ "orderId": 42 }, { "$set": { "status": "paid", "shipping.expedited": true } });`,
+      description: "Use $set without replacing the full document.",
+      expected: /leaving every other field untouched/,
+    },
+    {
+      query: `db.products.updateOne({ "productId": 10 }, { "$inc": { "stock": 5 } });`,
+      description: "Atomically increment one numeric field.",
+      expected: /adds 5 to stock atomically/,
+    },
+    {
+      query: `db.qa_notes.deleteOne({ "title": "Checkout regression" });`,
+      description: "Delete one matching document from the sandbox collection.",
+      expected: /removes at most one qa_notes document/,
+    },
+    {
+      query: `db.orders.createIndex({ "user.region": 1, "createdAt": -1 });`,
+      description: "Create a compound index on nested and top-level fields.",
+      expected: /compound index orders user\.region ascending and createdAt descending/,
+    },
+    {
+      query: `db.orders.getIndexes();`,
+      description: "Inspect indexes currently defined on the collection.",
+      expected: /index definitions currently attached to orders/,
+    },
+    {
+      query: `db.orders.find({ "status": "paid" }).explain("executionStats");`,
+      description: "Inspect the MongoDB execution plan for a filtered find.",
+      expected: /actual execution counters/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$match": { "status": "paid" } }, { "$limit": 20 }, { "$lookup": { "from": "users", "localField": "user.userId", "foreignField": "userId", "as": "userRecord" } }, { "$unwind": "$userRecord" }, { "$project": { "_id": 0, "email": "$userRecord.email" } }]);`,
+      description: "Join order documents to the users collection using an aggregation lookup.",
+      expected: /matches order user\.userId to users\.userId/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$match": { "status": { "$ne": "cancelled" } } }, { "$facet": { "byChannel": [{ "$group": { "_id": "$channel", "orders": { "$sum": 1 } } }], "highValue": [{ "$count": "orders" }], "averageValue": [{ "$group": { "_id": null, "average": { "$avg": "$totalAmount" } } }] } }]);`,
+      description: "Run several aggregations over the same matching set in one pipeline.",
+      expected: /three independent calculations/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$project": { "pricing": { "$let": { "vars": { "taxRate": 0.2, "subtotal": "$totalAmount" }, "in": { "subtotal": "$$subtotal" } } } } }]);`,
+      description: "Define reusable expression variables inside a projection.",
+      expected: /defines taxRate and subtotal only for this expression/,
+    },
+    {
+      query: `db.orders.aggregate([{ "$set": { "itemCount": { "$size": "$items" }, "valueBand": { "$cond": [{ "$gte": ["$totalAmount", 250] }, "high", "standard"] } } }, { "$project": { "_id": 0, "orderId": 1, "itemCount": 1, "valueBand": 1 } }, { "$limit": 20 }]);`,
+      description: "Derive values without modifying stored documents.",
+      expected: /stored orders are not modified/,
+    },
   ];
 
-  const explanation = statements
-    .map((statement, index) => buildDatabaseGuide(statement, `Mongo ${index}`, "Explain this MongoDB feature.", "mongodb"))
-    .join("\n");
-
-  for (const phrase of [
-    "find() uses its first object as the filter",
-    "The second find() object is a projection",
-    "findOne() applies the filter",
-    "countDocuments() applies the filter",
-    "$elemMatch requires one array element",
-    "Dot notation addresses a nested field directly",
-    "aggregate() runs a pipeline",
-    "$match filters pipeline documents",
-    "$group creates one output document",
-    "$unwind expands an array",
-    "$lookup reads matching documents from another collection",
-    "$facet sends the same incoming document set",
-    "$let creates expression-local variables",
-    "$project reshapes the output document",
-    "Pipeline $set adds or replaces computed fields",
-    "$cond is MongoDB's conditional expression",
-    "sort() orders the matching documents",
-    "limit() caps the cursor",
-    "insertOne() stores exactly one new document",
-    "updateOne() first finds one document",
-    "Update operator $set changes only the named fields",
-    "$inc performs an atomic numeric increment",
-    "deleteOne() removes at most one document",
-    "createIndex() builds an ordered index",
-    "getIndexes() returns index definitions",
-    "explain('executionStats') returns the execution plan",
-  ]) assert.ok(explanation.includes(phrase), `Expected Mongo guide phrase: ${phrase}`);
+  for (const entry of cases) {
+    const guided = assertConciseGuide(entry.query, entry.description, "mongodb");
+    assert.match(guided, entry.expected);
+  }
 });
 
-test("guide stripping removes generated notes but preserves ordinary user comments", () => {
-  const source = `-- user's SQL comment
--- [Guide] generated explanation
-SELECT 1;
-// user's Mongo-style note
-// [Guide] generated Mongo explanation`;
-  assert.equal(stripDatabaseGuideComments(source), `-- user's SQL comment
-SELECT 1;
-// user's Mongo-style note`);
+test("comment stripping accepts new plain comments and old saved Guide comments", () => {
+  const plain = `-- Read recent orders.\n-- ORDER BY id DESC puts newest ids first.\n\nSELECT 1;\n-- a normal SQL comment after executable code`;
+  assert.equal(stripDatabaseGuideComments(plain), `SELECT 1;\n-- a normal SQL comment after executable code`);
+
+  const mongo = `// Read one paid order.\n\ndb.orders.find({"status":"paid"}).limit(1);`;
+  assert.equal(stripDatabaseGuideComments(mongo), `db.orders.find({"status":"paid"}).limit(1);`);
+
+  const legacy = `-- [Guide] old explanation\nSELECT 1;`;
+  assert.equal(stripDatabaseGuideComments(legacy), "SELECT 1;");
 });
 
-test("database proxy removes only generated guide comments before execution", async () => {
+test("database proxy removes explanatory comments before real database execution", async () => {
   const executable = 'db.orders.find({"status":"paid"}).limit(1);';
-  const guided = buildDatabaseGuide(executable, "Paid order", "Return one paid order.", "mongodb");
+  const commented = buildDatabaseGuide(executable, "Paid order", "Return one paid order.", "mongodb");
   let upstreamBody: Record<string, unknown> | null = null;
 
   await withFetch(async (_input, init) => {
@@ -215,7 +333,7 @@ test("database proxy removes only generated guide comments before execution", as
     const response = await handleDatabasePlayground(new Request("https://gimme-job.com/api/playgrounds/databases", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "query", engine: "mongodb", sessionId: "db_session_guide", sql: guided }),
+      body: JSON.stringify({ action: "query", engine: "mongodb", sessionId: "db_session_comments", sql: commented }),
     }), {
       GIMMEJOB_AI_URL: "https://ai.gimme-job.internal",
       GIMMEJOB_AI_SERVICE_TOKEN: SERVICE_TOKEN,
@@ -226,7 +344,7 @@ test("database proxy removes only generated guide comments before execution", as
   assert.equal(upstreamBody?.sql, executable);
 });
 
-test("Database Playground uses the shared Learning Path highlighter for examples and the live editor", async () => {
+test("Database Playground uses Learning Path colors, vacancy-style tabs, close-all, and hard wrapping", async () => {
   const [enhancer, page, styles] = await Promise.all([
     source("app/playgrounds/databases/database-code-enhancer.tsx"),
     source("app/playgrounds/databases/page.tsx"),
@@ -237,7 +355,14 @@ test("Database Playground uses the shared Learning Path highlighter for examples
   assert.match(enhancer, /highlightLanguage\(dialect\)/);
   assert.match(enhancer, /textContent\?\.trim\(\) === "Use example"/);
   assert.match(enhancer, /setControlledTextareaValue/);
+  assert.match(enhancer, /db-query-close-all/);
+  assert.match(enhancer, /Close all query tabs/);
+  assert.match(enhancer, /closeAllQueryTabs/);
   assert.match(page, /DatabaseCodeEnhancer/);
   assert.match(styles, /\.db-query-highlight/);
   assert.match(styles, /textarea\.db-query-editor-overlay/);
+  assert.match(styles, /background:\s*#e6eddf\s*!important/);
+  assert.match(styles, /background:\s*#f3f5f2\s*!important/);
+  assert.match(styles, /overflow-wrap:\s*anywhere\s*!important/);
+  assert.match(styles, /word-break:\s*break-word\s*!important/);
 });
