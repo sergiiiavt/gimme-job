@@ -1,4 +1,5 @@
 import "./database-workbench.css";
+import "./database-compact-editor.css";
 import DatabaseCodeEnhancer from "./database-code-enhancer";
 import DatabasePlayground from "./database-playground";
 

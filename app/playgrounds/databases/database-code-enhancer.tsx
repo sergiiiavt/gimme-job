@@ -9,6 +9,7 @@ const clickBound = new WeakSet<HTMLButtonElement>();
 const editorOverlayByTextarea = new WeakMap<HTMLTextAreaElement, HTMLPreElement>();
 const editorValueByTextarea = new WeakMap<HTMLTextAreaElement, string>();
 const editorLanguageByTextarea = new WeakMap<HTMLTextAreaElement, string>();
+const EXAMPLE_AUTO_RUN_DELAY_MS = 30;
 
 function dialectForSource(source: string): DatabaseGuideDialect {
   return /^\s*db\./.test(stripDatabaseGuideComments(source)) ? "mongodb" : "sql";
@@ -41,6 +42,13 @@ function setControlledTextareaValue(textarea: HTMLTextAreaElement, value: string
 
 function activeEditor(): HTMLTextAreaElement | null {
   return document.querySelector<HTMLTextAreaElement>('textarea[aria-label="SQL editor"], textarea[aria-label="MongoDB query editor"]');
+}
+
+function activeRunButton(textarea: HTMLTextAreaElement): HTMLButtonElement | null {
+  const editorPane = textarea.closest("section");
+  if (!editorPane) return null;
+  return [...editorPane.querySelectorAll<HTMLButtonElement>("button")]
+    .find((button) => button.textContent?.trim() === "Run SQL" || button.textContent?.trim() === "Run query") ?? null;
 }
 
 function exampleSource(card: HTMLElement): string {
@@ -86,6 +94,11 @@ function decorateExample(button: HTMLButtonElement) {
       if (!textarea) return;
       setControlledTextareaValue(textarea, currentAnnotated);
       textarea.focus();
+      window.setTimeout(() => {
+        const runButton = activeRunButton(textarea);
+        if (!runButton || runButton.disabled) return;
+        runButton.click();
+      }, EXAMPLE_AUTO_RUN_DELAY_MS);
     }, 0);
   }, true);
 }
