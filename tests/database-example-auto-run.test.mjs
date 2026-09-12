@@ -13,7 +13,7 @@ test("Database Playground auto-runs Use example through the normal run control",
   ]);
 
   assert.match(autoRun, /USE_EXAMPLE_LABEL = "Use example"/);
-  assert.match(autoRun, /button\.click\(\)/);
+  assert.match(autoRun, /runButton\.click\(\)/);
   assert.match(autoRun, /Run SQL/);
   assert.match(autoRun, /Run query/);
   assert.match(autoRun, /runButton\.disabled/);
