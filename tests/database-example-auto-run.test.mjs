@@ -7,17 +7,19 @@ async function source(path) {
 }
 
 test("Database Playground auto-runs Use example through the normal run control", async () => {
-  const [autoRun, page] = await Promise.all([
-    source("app/playgrounds/databases/database-example-auto-run.tsx"),
+  const [enhancer, page] = await Promise.all([
+    source("app/playgrounds/databases/database-code-enhancer.tsx"),
     source("app/playgrounds/databases/page.tsx"),
   ]);
 
-  assert.match(autoRun, /USE_EXAMPLE_LABEL = "Use example"/);
-  assert.match(autoRun, /runButton\.click\(\)/);
-  assert.match(autoRun, /Run SQL/);
-  assert.match(autoRun, /Run query/);
-  assert.match(autoRun, /runButton\.disabled/);
-  assert.match(page, /DatabaseExampleAutoRun/);
+  assert.match(enhancer, /textContent\?\.trim\(\) === "Use example"/);
+  assert.match(enhancer, /function activeRunButton/);
+  assert.match(enhancer, /Run SQL/);
+  assert.match(enhancer, /Run query/);
+  assert.match(enhancer, /runButton\.disabled/);
+  assert.match(enhancer, /runButton\.click\(\)/);
+  assert.match(enhancer, /EXAMPLE_AUTO_RUN_DELAY_MS/);
+  assert.match(page, /DatabaseCodeEnhancer/);
 });
 
 test("Database Playground editor no longer reserves an empty action row", async () => {
