@@ -1,0 +1,25 @@
+/* Keep Database Playground actions floating without reserving a full empty row. */
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section textarea {
+  padding: 14px 28px 14px 16px !important;
+}
+
+main:has([aria-label="Database engine"]) .db-query-highlight {
+  padding: 14px 28px 14px 16px !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
+  bottom: auto;
+  left: auto;
+  max-width: calc(100% - 48px);
+  right: 24px;
+  top: 8px;
+  width: max-content;
+}
+
+@media (max-width: 700px) {
+  main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
+    max-width: calc(100% - 32px);
+    right: 16px;
+    top: 6px;
+  }
+}
