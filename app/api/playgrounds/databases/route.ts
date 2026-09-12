@@ -1,4 +1,4 @@
-import { stripDatabaseGuideComments } from "../../../playgrounds/databases/database-code-guide";
+import { stripDatabaseGuideComments } from "../../../playgrounds/databases/database-guide-comments.mjs";
 
 type DatabasePlaygroundEnv = {
   GIMMEJOB_AI_URL?: string;
