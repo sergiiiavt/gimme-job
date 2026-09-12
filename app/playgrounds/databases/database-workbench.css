@@ -1,0 +1,34 @@
+/* Database Playground right-side workbench: keep only tabs, editor, and output. */
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] {
+  background: transparent;
+  border-bottom: 0;
+  min-height: 0;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div:first-child {
+  padding: 0 5px;
+}
+
+/* Query and result descriptor rows are intentionally removed from the visual UI. */
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:first-child,
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section + section > div:first-child {
+  display: none;
+}
+
+/* Reserve the editor's top edge for its floating actions and keep them clear of the scrollbar. */
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section textarea {
+  padding: 54px 28px 14px 16px;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
+  bottom: auto;
+  right: 24px;
+  top: 10px;
+}
+
+@media (max-width: 700px) {
+  main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
+    right: 18px;
+    top: 8px;
+  }
+}
