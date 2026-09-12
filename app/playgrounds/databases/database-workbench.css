@@ -26,6 +26,57 @@ main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > d
   top: 10px;
 }
 
+/*
+ * The textarea stays the real editable control. A synchronized <pre> behind it
+ * renders the same tokenizer/colors used by the Learning Path SQL examples.
+ */
+main:has([aria-label="Database engine"]) .db-query-highlight {
+  background: #121715 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #d4d4d4 !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace !important;
+  font-size: 12.5px !important;
+  inset: 0;
+  line-height: 1.55 !important;
+  margin: 0 !important;
+  overflow: auto !important;
+  padding: 54px 28px 14px 16px !important;
+  pointer-events: none;
+  position: absolute;
+  scrollbar-width: none;
+  tab-size: 2;
+  white-space: pre-wrap !important;
+  word-break: normal !important;
+  z-index: 0;
+}
+
+main:has([aria-label="Database engine"]) .db-query-highlight::-webkit-scrollbar {
+  display: none;
+}
+
+main:has([aria-label="Database engine"]) .db-query-highlight > code {
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit;
+  font: inherit;
+  padding: 0 !important;
+  white-space: inherit;
+}
+
+main:has([aria-label="Database engine"]) textarea.db-query-editor-overlay {
+  -webkit-text-fill-color: transparent;
+  background: transparent !important;
+  caret-color: #e6ece7;
+  color: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+main:has([aria-label="Database engine"]) textarea.db-query-editor-overlay::selection {
+  background: rgba(86, 156, 214, .32);
+}
+
 @media (max-width: 700px) {
   main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
     right: 18px;
