@@ -1,12 +1,164 @@
 /* Database Playground right-side workbench: keep only tabs, editor, and output. */
 main:has([aria-label="Database engine"]) [aria-label="Query tabs"] {
-  background: transparent;
-  border-bottom: 0;
-  min-height: 0;
+  align-items: center !important;
+  background: transparent !important;
+  border-bottom: 0 !important;
+  gap: 4px;
+  min-height: 36px !important;
+  padding: 2px 0;
 }
 
-main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div:first-child {
-  padding: 0 5px;
+/* Match the soft-green vacancy workspace tab treatment. */
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div {
+  align-items: center !important;
+  display: flex;
+  flex: 1;
+  gap: 4px !important;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 !important;
+  scrollbar-width: thin;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div {
+  align-items: center;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  display: flex;
+  flex: 0 0 auto;
+  max-width: 220px !important;
+  min-width: 0 !important;
+  transition: background .12s ease;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div:hover {
+  background: #f3f5f2 !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div:has(> button[aria-selected="true"]) {
+  background: #e6eddf !important;
+  box-shadow: none !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div > button:first-child {
+  align-items: center;
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--muted) !important;
+  display: inline-flex;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  height: 32px;
+  min-width: 0;
+  padding: 0 4px 0 10px !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div:has(> button[aria-selected="true"]) > button:first-child {
+  color: #284d37 !important;
+  font-weight: 400 !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div > button:first-child small {
+  background: #dfe7dc !important;
+  border-radius: 4px;
+  color: #63735d !important;
+  flex: 0 0 auto;
+  font-size: 7.5px !important;
+  font-weight: 800 !important;
+  line-height: 1;
+  padding: 3px 4px;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div > button:first-child span {
+  font-size: 10px !important;
+  font-weight: inherit !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] button[title="Close query tab"] {
+  align-items: center;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 5px;
+  color: var(--faint) !important;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 14px !important;
+  height: 24px;
+  justify-content: center;
+  margin-right: 3px;
+  padding: 0 !important;
+  width: 24px;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] button[title="Close query tab"]:hover {
+  background: rgba(40, 77, 55, .08) !important;
+  color: #284d37 !important;
+}
+
+main:has([aria-label="Database engine"]) .db-query-close-all,
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > button[title="New query tab"] {
+  align-items: center;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px;
+  color: var(--muted) !important;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 32px !important;
+  justify-content: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 32px !important;
+}
+
+main:has([aria-label="Database engine"]) .db-query-close-all {
+  font-size: 21px;
+  margin-left: 2px !important;
+}
+
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > button[title="New query tab"] {
+  font-size: 18px !important;
+  margin-right: 2px !important;
+}
+
+main:has([aria-label="Database engine"]) .db-query-close-all:hover,
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > button[title="New query tab"]:hover {
+  background: #f3f5f2 !important;
+  color: #284d37 !important;
+}
+
+main:has([aria-label="Database engine"]) .db-query-close-all:focus-visible,
+main:has([aria-label="Database engine"]) [aria-label="Query tabs"] button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+/* Long comments and code must remain inside the narrow Examples rail. */
+main:has([aria-label="Database engine"]) article {
+  min-width: 0;
+  overflow: hidden;
+}
+
+main:has([aria-label="Database engine"]) article pre,
+main:has([aria-label="Database engine"]) article pre.db-example-highlight {
+  box-sizing: border-box;
+  max-width: 100% !important;
+  min-width: 0;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+main:has([aria-label="Database engine"]) article pre code {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
 }
 
 /* Query and result descriptor rows are intentionally removed from the visual UI. */
@@ -81,5 +233,9 @@ main:has([aria-label="Database engine"]) textarea.db-query-editor-overlay::selec
   main:has([aria-label="Database engine"]) [aria-label="Query tabs"] + section > div:last-child > div:last-child {
     right: 18px;
     top: 8px;
+  }
+
+  main:has([aria-label="Database engine"]) [aria-label="Query tabs"] > div > div {
+    max-width: 145px !important;
   }
 }

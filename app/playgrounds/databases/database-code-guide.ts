@@ -1,6 +1,7 @@
-export type DatabaseGuideDialect = "sql" | "mongodb";
+import { stripDatabaseGuideComments } from "./database-guide-comments.mjs";
 
-export const DATABASE_GUIDE_MARKER = "[Guide]";
+export { stripDatabaseGuideComments } from "./database-guide-comments.mjs";
+export type DatabaseGuideDialect = "sql" | "mongodb";
 
 function has(source: string, pattern: RegExp): boolean {
   return pattern.test(source);
@@ -10,219 +11,231 @@ function unique(notes: string[]): string[] {
   return [...new Set(notes)];
 }
 
-function sqlNotes(source: string, description: string): string[] {
-  const notes = [`Purpose: ${description}`];
-
-  if (has(source, /\bWITH\s+RECURSIVE\b/i)) {
-    notes.push("WITH RECURSIVE builds a temporary result iteratively: the non-recursive SELECT creates the seed rows, then the recursive SELECT keeps adding rows until its stop condition is false.");
-  } else if (has(source, /\bWITH\b/i)) {
-    notes.push("WITH defines a CTE: a named intermediate result that can be read by the main statement without creating a permanent table.");
-  }
-  if (has(source, /\bSET\s+@[A-Za-z_]/i)) {
-    notes.push("SET stores a MySQL session variable. The later statement reads the same @variable, so one value can be reused without hard-coding it in several places.");
-  }
-  if (has(source, /\bCREATE\s+(?:OR\s+REPLACE\s+)?VIEW\b/i)) {
-    notes.push("CREATE VIEW saves the SELECT definition as a reusable virtual table; the view stores the query definition, not a separate copy of these result rows.");
-  }
-  if (has(source, /\bCREATE\s+TABLE\b/i)) {
-    notes.push("CREATE TABLE defines the schema first: each column gets a data type and constraints describe what values are allowed and how rows are identified.");
-  }
-  if (has(source, /\bPRIMARY\s+KEY\b/i)) {
-    notes.push("PRIMARY KEY makes the key unique and non-null, giving every row a stable identity that other tables can reference.");
-  }
-  if (has(source, /\bFOREIGN\s+KEY\b|\bREFERENCES\b/i)) {
-    notes.push("FOREIGN KEY / REFERENCES enforces referential integrity: a child row can point only to a parent key that actually exists.");
-  }
-  if (has(source, /\bCREATE\s+UNIQUE\s+INDEX\b/i)) {
-    notes.push("A UNIQUE INDEX is both an access path and a uniqueness rule: duplicate indexed values are rejected while lookups can use the index structure.");
-  } else if (has(source, /\bCREATE\s+INDEX\b/i)) {
-    notes.push("CREATE INDEX builds a secondary access path ordered by the indexed columns. It can avoid scanning every table row for matching lookups, at the cost of extra storage and write work.");
-  }
-  if (has(source, /\bEXPLAIN\b/i)) {
-    notes.push("EXPLAIN asks the database for its execution plan so you can inspect scans, indexes, join order, and estimated work instead of judging performance only from the SQL text.");
-  }
-  if (has(source, /\bINSERT\s+INTO\b/i)) {
-    notes.push("INSERT maps the listed values to the listed columns and creates a new row; omitted columns use their default value or NULL when the schema allows it.");
-  }
-  if (has(source, /\bUPDATE\b/i)) {
-    notes.push("UPDATE first finds rows that satisfy WHERE, then SET changes only the named columns on those rows. The WHERE clause is therefore the safety boundary for the modification.");
-  }
-  if (has(source, /\bDELETE\s+FROM\b/i)) {
-    notes.push("DELETE removes rows that satisfy WHERE. Without a WHERE clause, every row in the target table would be eligible for deletion.");
-  }
-  if (has(source, /\bDROP\s+TABLE\b/i)) {
-    notes.push("DROP TABLE removes the table object itself, including its data and table-level indexes; IF EXISTS makes the cleanup safe when the table is already absent.");
-  }
-  if (has(source, /\bBEGIN\b|\bSTART\s+TRANSACTION\b/i)) {
-    notes.push("BEGIN / START TRANSACTION groups the following changes into one transaction so they can be committed together or rolled back together.");
-  }
-  if (has(source, /\bROLLBACK\b/i)) {
-    notes.push("ROLLBACK discards the uncommitted changes made in this transaction, which makes the example safe for experimenting with writes.");
-  }
-  if (has(source, /\bCOMMIT\b/i)) {
-    notes.push("COMMIT makes all changes in the current transaction durable as one logical unit.");
-  }
-  if (has(source, /\bSELECT\b/i)) {
-    notes.push("SELECT is the projection step: it controls which expressions or columns are returned to the result set; aliases rename calculated output columns only.");
-  }
-  if (has(source, /\bFROM\b/i)) {
-    notes.push("FROM establishes the source rows. Any table aliases introduced here are short names used by the remaining clauses to disambiguate columns.");
-  }
-  if (has(source, /\b(?:INNER|LEFT|RIGHT|FULL)?\s*JOIN\b/i)) {
-    notes.push("JOIN combines rows from two sources. The ON condition defines which rows match; with a LEFT JOIN, unmatched left-side rows still survive with NULL values from the right side.");
-  }
-  if (has(source, /\bWHERE\b/i) && !has(source, /\bUPDATE\b|\bDELETE\s+FROM\b/i)) {
-    notes.push("WHERE filters individual source rows before grouping and final projection, so rows that fail the predicate do not participate in later aggregation.");
-  }
-  if (has(source, /\bGROUP\s+BY\b/i)) {
-    notes.push("GROUP BY collapses rows with the same grouping key into one group; aggregate functions such as COUNT, SUM, AVG, MIN, or MAX then calculate one value per group.");
-  }
-  if (has(source, /\bHAVING\b/i)) {
-    notes.push("HAVING filters groups after aggregation. Use it for conditions on aggregate results; WHERE cannot filter a value that has not been aggregated yet.");
-  }
-  if (has(source, /\bOVER\s*\(/i)) {
-    notes.push("A window function uses OVER(...) to calculate across related rows without collapsing them. PARTITION BY creates independent windows while ORDER BY defines the row order inside each window.");
-  }
-  if (has(source, /\bROW_NUMBER\s*\(/i)) {
-    notes.push("ROW_NUMBER assigns 1, 2, 3… inside each window partition, which is useful for ranking or selecting the first row per group while keeping row-level detail.");
-  }
-  if (has(source, /\bEXISTS\s*\(/i)) {
-    notes.push("EXISTS is a boolean test: it becomes true as soon as the correlated subquery finds one matching row, so the subquery does not need to return or count all matches.");
-  }
-  if (has(source, /\bCASE\b/i)) {
-    notes.push("CASE evaluates conditions in order and returns the value from the first matching WHEN branch, allowing conditional values inside a normal SELECT or aggregate.");
-  }
-  if (has(source, /JSON_|->>|->\s*'|::json/i)) {
-    notes.push("The JSON expression reads a value stored inside a JSON document. The exact operator differs by engine, but the result can then be filtered, projected, or compared like another SQL expression.");
-  }
-  if (has(source, /CONCAT\s*\(|\|\|/i)) {
-    notes.push("The concatenation expression combines text values into one result; MySQL commonly uses CONCAT(...) while PostgreSQL also supports the || operator.");
-  }
-  if (has(source, /\bORDER\s+BY\b/i)) {
-    notes.push("ORDER BY sorts the final candidate rows by the listed expressions; DESC means largest/newest first and ASC means smallest/oldest first.");
-  }
-  if (has(source, /\bLIMIT\b/i)) {
-    notes.push("LIMIT is applied at the end to cap how many rows are returned, which keeps an exploratory playground query small and readable.");
-  }
-  if (has(source, /\bSELECT\b/i) && has(source, /\bFROM\b/i)) {
-    const logical: string[] = ["FROM/JOIN"];
-    if (has(source, /\bWHERE\b/i)) logical.push("WHERE");
-    if (has(source, /\bGROUP\s+BY\b/i)) logical.push("GROUP BY");
-    if (has(source, /\bHAVING\b/i)) logical.push("HAVING");
-    logical.push("SELECT/window expressions");
-    if (has(source, /\bORDER\s+BY\b/i)) logical.push("ORDER BY");
-    if (has(source, /\bLIMIT\b/i)) logical.push("LIMIT");
-    notes.push(`Logical reading order is ${logical.join(" → ")}. That order explains where filtering, aggregation, calculation, sorting, and limiting actually happen.`);
+function sqlDetails(source: string): string[] {
+  if (has(source, /WITH\s+ranked_orders\s+AS/i) && has(source, /ROW_NUMBER\s*\(/i)) {
+    return [
+      "ranked_orders is a temporary result used only by this query.",
+      "ROW_NUMBER restarts for each user_id and ranks that user's orders by total_amount, then id, descending.",
+      "The outer WHERE keeps ranks 1–3, so the result contains at most three orders per user.",
+    ];
   }
 
-  return unique(notes);
+  if (has(source, /WITH\s+RECURSIVE\s+sequence/i)) {
+    return [
+      "The CTE starts with n = 1 and repeatedly adds 1 while n < 10, producing the numbers 1 through 10.",
+      "LEFT JOIN then looks for an order whose id matches each generated number; missing orders remain as NULL values.",
+    ];
+  }
+
+  if (has(source, /CREATE\s+TABLE/i)) {
+    const notes: string[] = [];
+    if (has(source, /AUTO_INCREMENT|GENERATED\s+BY\s+DEFAULT\s+AS\s+IDENTITY/i)) notes.push("The id value is generated by the database, so INSERT statements do not need to provide it.");
+    if (has(source, /PRIMARY\s+KEY/i)) notes.push("PRIMARY KEY uniquely identifies each row; NOT NULL fields must always have a value.");
+    if (has(source, /FOREIGN\s+KEY|REFERENCES\s+users/i)) notes.push("user_id must match an existing users.id value, so invalid references are rejected.");
+    if (has(source, /\bUNIQUE\b/i)) notes.push("UNIQUE prevents two rows from using the same value for that column.");
+    return unique(notes).slice(0, 3);
+  }
+
+  if (has(source, /INSERT\s+INTO\s+qa_notes/i)) {
+    return ["The values are inserted into title and severity; id and created_at use the table defaults."];
+  }
+
+  if (has(source, /UPDATE\s+qa_notes/i)) {
+    return ["WHERE selects the matching note; SET changes only its severity column."];
+  }
+
+  if (has(source, /DELETE\s+FROM\s+qa_notes/i)) {
+    return ["WHERE limits the deletion to notes with this title; the table itself remains."];
+  }
+
+  if (has(source, /DROP\s+TABLE\s+IF\s+EXISTS\s+qa_notes/i)) {
+    return ["DROP TABLE removes qa_notes and its data; IF EXISTS avoids an error when the table is already absent."];
+  }
+
+  if (has(source, /JOIN\s+users\s+u\s+ON\s+u\.id\s*=\s*o\.user_id/i)) {
+    const notes = ["JOIN matches each order's user_id to users.id so user fields can be returned with the order."];
+    if (has(source, /GROUP\s+BY\s+u\.region/i)) notes.push("GROUP BY u.region creates one group per region; COUNT and SUM are calculated inside each group.");
+    if (has(source, /ORDER\s+BY\s+o\.id\s+DESC/i)) notes.push("ORDER BY o.id DESC shows the highest order ids first; LIMIT keeps only the first 20 rows.");
+    return notes;
+  }
+
+  if (has(source, /JOIN\s+products\s+p\s+ON\s+p\.id\s*=\s*o\.product_id/i)) {
+    return [
+      "JOIN matches each order's product_id to products.id so product fields can be returned with the order.",
+      "ORDER BY o.id DESC shows the highest order ids first; LIMIT keeps only the first 20 rows.",
+    ];
+  }
+
+  if (has(source, /GROUP\s+BY\s+channel/i)) {
+    const notes = ["GROUP BY channel creates one result row per channel; COUNT counts orders and SUM/AVG calculate values inside each channel."];
+    if (has(source, /FILTER\s*\(WHERE/i)) notes.push("PostgreSQL FILTER counts paid and cancelled rows separately without running separate queries.");
+    if (has(source, /SUM\s*\(status\s*=\s*'paid'\)/i)) notes.push("In MySQL the boolean comparisons evaluate to 1 or 0, so SUM counts paid and cancelled rows.");
+    return notes;
+  }
+
+  if (has(source, /WHERE\s+EXISTS\s*\(/i)) {
+    return [
+      "EXISTS keeps a user as soon as one order for that user is both paid and at least 250.",
+      "Because the outer query returns users, multiple qualifying orders still produce only one row per user.",
+    ];
+  }
+
+  if (has(source, /CREATE\s+OR\s+REPLACE\s+VIEW\s+paid_order_summary/i)) {
+    return [
+      "The view stores this SELECT definition under paid_order_summary; it does not copy the result rows into a new table.",
+      "Each future SELECT from the view recalculates paid order count and revenue from the current orders data.",
+    ];
+  }
+
+  if (has(source, /SET\s+@min_total/i)) {
+    return ["@min_total is a MySQL session variable; the following WHERE reuses its value instead of repeating 250."];
+  }
+
+  if (has(source, /WITH\s+params\s+AS/i)) {
+    return ["params is a one-row CTE containing min_total; CROSS JOIN makes that value available to the main query's WHERE condition."];
+  }
+
+  if (has(source, /JSON_EXTRACT|::jsonb|->>/i)) {
+    return [has(source, /JSON_EXTRACT/i)
+      ? "JSON_EXTRACT reads the status field from the JSON value; JSON_UNQUOTE returns it as normal text."
+      : "::jsonb converts the literal to JSONB and ->> returns the status field as text."];
+  }
+
+  if (has(source, /CONCAT\s*\(/i)) {
+    return ["CONCAT combines email, a separator, and region into the single user_label value."];
+  }
+
+  if (has(source, /\|\|/)) {
+    return ["PostgreSQL's || operator joins email, a separator, and region into the single user_label value."];
+  }
+
+  if (has(source, /^\s*EXPLAIN\b/i)) {
+    return [has(source, /ANALYZE/i)
+      ? "EXPLAIN ANALYZE executes the query and shows the real plan and timings; BUFFERS also reports buffer usage."
+      : "EXPLAIN shows the plan MySQL intends to use, including whether it can use an index or must scan rows."];
+  }
+
+  if (has(source, /CREATE\s+UNIQUE\s+INDEX/i)) {
+    return ["The index speeds matching lookups and also rejects duplicate qa_notes.title values."];
+  }
+
+  if (has(source, /CREATE\s+INDEX\s+idx_orders_user_id/i)) {
+    return ["The index stores orders by user_id so lookups on that column can avoid scanning every order row."];
+  }
+
+  const notes: string[] = [];
+  if (has(source, /WHERE\s+status\s*=\s*'paid'/i)) notes.push("WHERE status = 'paid' removes every non-paid order before the result is returned.");
+  if (has(source, /ORDER\s+BY\s+id\s+DESC/i) && has(source, /LIMIT\s+20/i)) notes.push("ORDER BY id DESC puts the highest order ids first; LIMIT 20 keeps the first 20 rows.");
+  else if (has(source, /ORDER\s+BY/i) && has(source, /LIMIT/i)) notes.push("ORDER BY determines which rows come first, then LIMIT caps how many of those rows are returned.");
+  return notes.slice(0, 3);
 }
 
-function mongoNotes(source: string, description: string): string[] {
-  const notes = [`Purpose: ${description}`];
-  const invocation = source.match(/db\.([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)\s*\(/);
-  if (invocation) {
-    notes.push(`db.${invocation[1]} selects the '${invocation[1]}' collection and ${invocation[2]}() is the operation executed against that collection.`);
-  }
-  if (has(source, /\.find\s*\(/)) {
-    notes.push("find() uses its first object as the filter. Every returned document must satisfy that filter; an empty {} filter intentionally matches every document.");
-    if (has(source, /\.find\s*\([\s\S]*?,[\s\S]*?\)/)) {
-      notes.push("The second find() object is a projection: fields set to 1 are included and _id can be explicitly suppressed with 0.");
-    }
-  }
-  if (has(source, /\.findOne\s*\(/)) {
-    notes.push("findOne() applies the filter and stops after the first matching document, so the result is one document or no document rather than a cursor of many rows.");
-  }
-  if (has(source, /\.countDocuments\s*\(/)) {
-    notes.push("countDocuments() applies the filter and returns a count instead of materializing the matching documents themselves.");
-  }
-  if (has(source, /\$elemMatch/)) {
-    notes.push("$elemMatch requires one array element to satisfy all nested conditions together; different array elements cannot each satisfy only part of the condition.");
-  }
-  if (has(source, /"[A-Za-z0-9_]+\.[A-Za-z0-9_.]+"\s*:/)) {
-    notes.push("Dot notation addresses a nested field directly, so MongoDB can filter embedded objects without first flattening them into separate tables.");
-  }
-  if (has(source, /\.aggregate\s*\(/)) {
-    notes.push("aggregate() runs a pipeline. Stages execute from top to bottom, and each stage receives the documents produced by the previous stage.");
-  }
-  if (has(source, /"\$match"/)) {
-    notes.push("$match filters pipeline documents. Putting a selective $match early usually reduces the amount of work later stages must perform.");
-  }
-  if (has(source, /"\$group"/)) {
-    notes.push("$group creates one output document per _id grouping key. Accumulators such as $sum or $avg calculate values across all documents in each group.");
-  }
-  if (has(source, /"\$unwind"/)) {
-    notes.push("$unwind expands an array so each array element becomes its own pipeline document, allowing later stages to group or filter individual elements.");
-  }
+function mongoDetails(source: string): string[] {
   if (has(source, /"\$lookup"/)) {
-    notes.push("$lookup reads matching documents from another collection and stores them in an array field. localField is read from the current document and matched against foreignField in the target collection.");
+    return [
+      "$match keeps paid orders and $limit keeps the working set small before the join-like stage.",
+      "$lookup matches order user.userId to users.userId and stores the matches in userRecord.",
+      "$unwind turns that one-element array into an object; $project keeps only the fields shown in the final result.",
+    ];
   }
+
   if (has(source, /"\$facet"/)) {
-    notes.push("$facet sends the same incoming document set through several independent sub-pipelines, then returns all of their outputs together in one document.");
+    return [
+      "$match removes cancelled orders first.",
+      "$facet sends that same remaining set through three independent calculations: orders by channel, high-value count, and average value.",
+    ];
   }
+
   if (has(source, /"\$let"/)) {
-    notes.push("$let creates expression-local variables under vars and uses them inside in. These variables exist only while that expression is evaluated; stored documents are not changed.");
+    return [
+      "$let defines taxRate and subtotal only for this expression; it does not change stored documents.",
+      "The in expression returns subtotal, calculated tax, and the total including tax for each projected order.",
+    ];
   }
-  if (has(source, /"\$project"/)) {
-    notes.push("$project reshapes the output document: it can keep fields, remove fields such as _id, rename values, or calculate new expressions without modifying stored data.");
+
+  if (has(source, /"\$set"/) && has(source, /"\$cond"/) && has(source, /\.aggregate\s*\(/)) {
+    return [
+      "$set computes itemCount and valueBand for documents flowing through the pipeline; stored orders are not modified.",
+      "$cond labels totals of 250 or more as high and everything else as standard; $project returns only the displayed fields.",
+    ];
   }
-  if (has(source, /"\$set"\s*:/) && has(source, /\.aggregate\s*\(/)) {
-    notes.push("Pipeline $set adds or replaces computed fields on documents flowing through the pipeline; it changes the pipeline output, not the stored collection.");
+
+  if (has(source, /"\$unwind"\s*:\s*"\$items"/)) {
+    return [
+      "$unwind creates one pipeline document per item in each order.",
+      "$group then totals item quantities by category, and $sort puts the largest quantity first.",
+    ];
   }
-  if (has(source, /"\$cond"/)) {
-    notes.push("$cond is MongoDB's conditional expression: evaluate a condition, return the second value when true, otherwise return the third value.");
+
+  if (has(source, /"\$group"/) && has(source, /"\$channel"/)) {
+    return [
+      "$group creates one result per channel; $sum counts orders and adds totalAmount values inside each channel.",
+      "$sort by revenue -1 puts the highest-revenue channel first.",
+    ];
   }
-  if (has(source, /\.sort\s*\(/)) {
-    notes.push("sort() orders the matching documents; 1 means ascending and -1 means descending for the specified field.");
+
+  if (has(source, /\.findOne\s*\(/)) {
+    return ["findOne filters by userId and returns the first matching user document instead of a cursor of many documents."];
   }
-  if (has(source, /\.limit\s*\(/)) {
-    notes.push("limit() caps the cursor after filtering/sorting so an exploratory query returns only a small, readable sample.");
+
+  if (has(source, /\$elemMatch/)) {
+    return ["$elemMatch requires the same item to have category audio and quantity at least 2; two different items cannot satisfy the conditions separately."];
   }
+
+  if (has(source, /\.find\s*\([\s\S]*?,[\s\S]*?\)/) && has(source, /"_id"\s*:\s*0/)) {
+    return ["The first object filters shipped orders; the second object keeps orderId, status, and totalAmount while hiding _id."];
+  }
+
+  if (has(source, /"user\.region"/) && has(source, /"\$gt"\s*:\s*100/)) {
+    return ["Dot notation reads the embedded user.region field; both region = EU and totalAmount > 100 must be true."];
+  }
+
+  if (has(source, /"user\.tier"/) && has(source, /"shipping\.expedited"/)) {
+    return ["Dot notation filters embedded user and shipping fields directly; no separate join is needed because both values are inside the order document."];
+  }
+
   if (has(source, /\.insertOne\s*\(/)) {
-    notes.push("insertOne() stores exactly one new document. MongoDB creates the collection automatically when it does not already exist and generates _id when one is not supplied.");
+    return ["insertOne creates one qa_notes document; MongoDB also creates the collection automatically if it does not exist."];
   }
+
+  if (has(source, /\.updateOne\s*\(/) && has(source, /"\$inc"/)) {
+    return ["updateOne finds productId 10; $inc adds 5 to stock atomically without replacing the rest of the document."];
+  }
+
   if (has(source, /\.updateOne\s*\(/)) {
-    notes.push("updateOne() first finds one document with the filter object, then applies the update operators from the second object instead of replacing the whole document.");
+    return ["updateOne finds orderId 42; $set changes only status and shipping.expedited, leaving every other field untouched."];
   }
-  if (has(source, /"\$set"\s*:/) && has(source, /\.updateOne\s*\(/)) {
-    notes.push("Update operator $set changes only the named fields, including nested fields addressed with dot notation; all other fields remain untouched.");
-  }
-  if (has(source, /"\$inc"\s*:/)) {
-    notes.push("$inc performs an atomic numeric increment on the matched document, avoiding a read-modify-write sequence in client code.");
-  }
+
   if (has(source, /\.deleteOne\s*\(/)) {
-    notes.push("deleteOne() removes at most one document that matches the filter, so the filter is the safety boundary for the deletion.");
+    return ["deleteOne removes at most one qa_notes document whose title matches Checkout regression."];
   }
+
   if (has(source, /\.createIndex\s*\(/)) {
-    notes.push("createIndex() builds an ordered index using the listed key directions. Compound index field order matters because queries can efficiently use its leftmost prefix.");
+    return ["This compound index orders user.region ascending and createdAt descending; queries using the leading region field can benefit from it."];
   }
+
   if (has(source, /\.getIndexes\s*\(/)) {
-    notes.push("getIndexes() returns index definitions for the collection so you can see which access paths and uniqueness rules currently exist.");
-  }
-  if (has(source, /\.explain\s*\(/)) {
-    notes.push("explain('executionStats') returns the execution plan plus observed execution counters, which lets you see whether MongoDB used an index or scanned documents.");
+    return ["getIndexes returns the index definitions currently attached to orders."];
   }
 
-  return unique(notes);
-}
+  if (has(source, /\.explain\s*\("executionStats"\)/)) {
+    return ["executionStats shows the chosen plan plus actual execution counters, so you can see whether MongoDB scanned documents or used an index."];
+  }
 
-export function stripDatabaseGuideComments(source: string): string {
-  return source
-    .split(/\r?\n/)
-    .filter((line) => !/^\s*(?:--|\/\/)\s*\[Guide\]\s*/.test(line))
-    .join("\n")
-    .trim();
+  const notes: string[] = [];
+  if (has(source, /\.find\s*\(/) && has(source, /"status"\s*:\s*"paid"/)) notes.push("find keeps only documents whose status is paid.");
+  if (has(source, /\.sort\s*\([\s\S]*"createdAt"\s*:\s*-1/) && has(source, /\.limit\s*\(20\)/)) notes.push("sort({ createdAt: -1 }) puts newest documents first; limit(20) returns only the first 20.");
+  return notes.slice(0, 3);
 }
 
 export function buildDatabaseGuide(source: string, title: string, description: string, dialect: DatabaseGuideDialect): string {
   const clean = stripDatabaseGuideComments(source).trim();
   if (!clean) return clean;
+
   const prefix = dialect === "mongodb" ? "//" : "--";
-  const notes = dialect === "mongodb" ? mongoNotes(clean, description) : sqlNotes(clean, description);
-  const header = [
-    `${prefix} ${DATABASE_GUIDE_MARKER} ${title}`,
-    ...notes.map((note, index) => `${prefix} ${DATABASE_GUIDE_MARKER} ${index + 1}. ${note}`),
-    `${prefix} ${DATABASE_GUIDE_MARKER} The executable statement starts below; these guide comments are removed by the playground proxy before execution.`,
-  ];
-  return `${header.join("\n")}\n\n${clean}`;
+  const summary = description.trim() || title.trim();
+  const details = dialect === "mongodb" ? mongoDetails(clean) : sqlDetails(clean);
+  const comments = unique([summary, ...details].filter(Boolean)).slice(0, 4);
+
+  return `${comments.map((note) => `${prefix} ${note}`).join("\n")}\n\n${clean}`;
 }

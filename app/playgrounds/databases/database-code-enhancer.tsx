@@ -70,7 +70,7 @@ function decorateExample(button: HTMLButtonElement) {
   const raw = exampleSource(card);
   if (!raw) return;
   const title = card.querySelector("h2")?.textContent?.trim() || "Database example";
-  const description = card.querySelector("p")?.textContent?.trim() || "Read the statement from top to bottom and observe how each clause transforms the data.";
+  const description = card.querySelector("p")?.textContent?.trim() || title;
   const dialect = dialectForSource(raw);
   const annotated = buildDatabaseGuide(raw, title, description, dialect);
   annotatedByButton.set(button, annotated);
@@ -94,6 +94,36 @@ function syncExamples() {
   for (const button of document.querySelectorAll<HTMLButtonElement>("button")) {
     if (button.textContent?.trim() === "Use example") decorateExample(button);
   }
+}
+
+function closeAllQueryTabs(tabList: HTMLElement) {
+  let remaining = tabList.querySelectorAll<HTMLButtonElement>('button[title="Close query tab"]').length;
+  if (!remaining) return;
+
+  const closeNext = () => {
+    if (remaining <= 0) return;
+    const close = tabList.querySelector<HTMLButtonElement>('button[title="Close query tab"]');
+    if (!close) return;
+    remaining -= 1;
+    close.click();
+    if (remaining > 0) window.setTimeout(closeNext, 0);
+  };
+
+  closeNext();
+}
+
+function ensureCloseAllTabsButton() {
+  const tabList = document.querySelector<HTMLElement>('[aria-label="Query tabs"]');
+  if (!tabList || tabList.querySelector(".db-query-close-all")) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "db-query-close-all";
+  button.setAttribute("aria-label", "Close all query tabs");
+  button.title = "Close all query tabs";
+  button.textContent = "×";
+  button.addEventListener("click", () => closeAllQueryTabs(tabList));
+  tabList.insertBefore(button, tabList.firstChild);
 }
 
 function editorDialect(textarea: HTMLTextAreaElement): DatabaseGuideDialect {
@@ -141,6 +171,7 @@ function syncEditor(textarea: HTMLTextAreaElement) {
 
 function syncPlaygroundCode() {
   syncExamples();
+  ensureCloseAllTabsButton();
   const textarea = activeEditor();
   if (textarea) ensureEditorOverlay(textarea);
 }
@@ -159,7 +190,7 @@ export default function DatabaseCodeEnhancer() {
       for (const textarea of document.querySelectorAll<HTMLTextAreaElement>("textarea.db-query-editor-overlay")) {
         textarea.classList.remove("db-query-editor-overlay");
       }
-      for (const overlay of document.querySelectorAll(".db-query-highlight, .db-example-highlight")) overlay.remove();
+      for (const overlay of document.querySelectorAll(".db-query-highlight, .db-example-highlight, .db-query-close-all")) overlay.remove();
       for (const original of document.querySelectorAll<HTMLElement>("article pre[hidden]")) original.hidden = false;
     };
   }, []);
