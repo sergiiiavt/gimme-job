@@ -237,6 +237,7 @@ const brandWordmarkStyle = {
 const brandJobStyle = {
   color: "#1769ff",
 } as const;
+
 const responsiveAccountStyle = `
 .kb-mobile-brand { display: none; }
 
