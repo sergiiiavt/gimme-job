@@ -54,7 +54,7 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
   },
   {
     id: "playgrounds",
-    label: "Playgrounds",
+    label: "Playground",
     items: [
       {
         id: "ai-assistant",
@@ -65,14 +65,14 @@ export const navigationGroups: Array<{ id: "career" | "learning" | "playgrounds"
       },
       {
         id: "websocket-playground",
-        label: "WebSocket Playground",
+        label: "WebSocket",
         external: true,
         publicHref: "/playgrounds/websocket",
         personalHref: "/playgrounds/websocket",
       },
       {
         id: "database-playground",
-        label: "Database Playground",
+        label: "Database",
         external: true,
         publicHref: "/playgrounds/databases",
         personalHref: "/playgrounds/databases",
