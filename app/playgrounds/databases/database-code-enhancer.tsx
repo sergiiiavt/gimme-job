@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { highlightInterviewCode } from "../../interview-code-highlighting";
 import { buildDatabaseGuide, stripDatabaseGuideComments, type DatabaseGuideDialect } from "./database-code-guide";
 
-const annotatedByCode = new WeakMap<HTMLElement, string>();
+const annotatedByButton = new WeakMap<HTMLButtonElement, string>();
 const clickBound = new WeakSet<HTMLButtonElement>();
 const editorOverlayByTextarea = new WeakMap<HTMLTextAreaElement, HTMLPreElement>();
 const editorValueByTextarea = new WeakMap<HTMLTextAreaElement, string>();
@@ -43,28 +43,43 @@ function activeEditor(): HTMLTextAreaElement | null {
   return document.querySelector<HTMLTextAreaElement>('textarea[aria-label="SQL editor"], textarea[aria-label="MongoDB query editor"]');
 }
 
+function exampleSource(card: HTMLElement): string {
+  const original = card.querySelector<HTMLElement>("pre:not(.db-example-highlight) code");
+  return stripDatabaseGuideComments(original?.textContent || "");
+}
+
+function ensureExampleOverlay(card: HTMLElement, annotated: string, dialect: DatabaseGuideDialect) {
+  const originalPre = card.querySelector<HTMLElement>("pre:not(.db-example-highlight)");
+  if (!originalPre) return;
+  let overlay = card.querySelector<HTMLPreElement>("pre.db-example-highlight");
+  if (!overlay) {
+    overlay = document.createElement("pre");
+    overlay.className = "db-example-highlight";
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.appendChild(document.createElement("code"));
+    originalPre.insertAdjacentElement("beforebegin", overlay);
+    originalPre.hidden = true;
+  }
+  const code = overlay.querySelector<HTMLElement>("code");
+  if (code?.textContent !== annotated) appendHighlighted(code!, annotated, dialect);
+}
+
 function decorateExample(button: HTMLButtonElement) {
   const card = button.closest<HTMLElement>("article");
-  const code = card?.querySelector<HTMLElement>("pre code");
-  if (!card || !code) return;
-
-  const raw = stripDatabaseGuideComments(code.textContent || "");
+  if (!card) return;
+  const raw = exampleSource(card);
   if (!raw) return;
   const title = card.querySelector("h2")?.textContent?.trim() || "Database example";
   const description = card.querySelector("p")?.textContent?.trim() || "Read the statement from top to bottom and observe how each clause transforms the data.";
   const dialect = dialectForSource(raw);
   const annotated = buildDatabaseGuide(raw, title, description, dialect);
-
-  if (annotatedByCode.get(code) !== annotated || code.textContent !== annotated) {
-    appendHighlighted(code, annotated, dialect);
-    annotatedByCode.set(code, annotated);
-  }
+  annotatedByButton.set(button, annotated);
+  ensureExampleOverlay(card, annotated, dialect);
 
   if (clickBound.has(button)) return;
   clickBound.add(button);
   button.addEventListener("click", () => {
-    const currentCode = card.querySelector<HTMLElement>("pre code");
-    const currentAnnotated = currentCode ? annotatedByCode.get(currentCode) : undefined;
+    const currentAnnotated = annotatedByButton.get(button);
     if (!currentAnnotated) return;
     window.setTimeout(() => {
       const textarea = activeEditor();
@@ -144,7 +159,8 @@ export default function DatabaseCodeEnhancer() {
       for (const textarea of document.querySelectorAll<HTMLTextAreaElement>("textarea.db-query-editor-overlay")) {
         textarea.classList.remove("db-query-editor-overlay");
       }
-      for (const overlay of document.querySelectorAll(".db-query-highlight")) overlay.remove();
+      for (const overlay of document.querySelectorAll(".db-query-highlight, .db-example-highlight")) overlay.remove();
+      for (const original of document.querySelectorAll<HTMLElement>("article pre[hidden]")) original.hidden = false;
     };
   }, []);
 
