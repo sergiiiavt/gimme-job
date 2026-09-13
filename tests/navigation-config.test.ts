@@ -23,6 +23,7 @@ test("navigation keeps the intended group and item structure", () => {
   assert.equal(navigationIntroItem.id, "about");
   assert.deepEqual(navigationGroups.map((entry) => entry.id), ["career", "playgrounds", "learning", "misc"]);
   assert.deepEqual(group("career").items.map((entry) => entry.id), ["jobs", "resume", "interview", "trends"]);
+  assert.equal(group("playgrounds").label, "Playground");
   assert.deepEqual(group("playgrounds").items.map((entry) => entry.id), ["ai-assistant", "websocket-playground", "database-playground"]);
   assert.deepEqual(group("misc").items.map((entry) => entry.id), ["news", "games"]);
 
