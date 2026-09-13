@@ -11,15 +11,20 @@ test("Test Automation uses eight module-scoped learning tracks", async () => {
     ["foundations", "Foundations"],
     ["python-setup", "Python Setup"],
     ["pytest", "pytest"],
-    ["robot-framework", "Robot Framework"],
     ["automation", "Web / API / Mobile"],
     ["architecture", "Architecture"],
     ["real-projects", "Desktop Automation Example"],
     ["reference-framework", "Framework Reference"],
+    ["robot-framework", "Specific"],
   ]) {
     assert.ok(page.includes(`id: "${id}"`), `Track ${id} must be present`);
     assert.ok(page.includes(`label: "${label}"`), `Track ${id} must use label ${label}`);
   }
+
+  assert.ok(
+    page.indexOf('id: "reference-framework"') < page.indexOf('id: "robot-framework"'),
+    "Specific must be the last track, after Framework Reference",
+  );
 
   assert.match(page, /defaultTrackId="foundations"/);
   assert.match(page, /moduleIds: \["automation-foundations"\]/);
