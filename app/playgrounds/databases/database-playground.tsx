@@ -337,6 +337,22 @@ CROSS JOIN params p
 WHERE o.total_amount >= p.min_total
 ORDER BY o.total_amount DESC
 LIMIT 20;`;
+  const mysqlWeatherFixture = `WITH Weather AS (
+  SELECT 1 AS id, DATE('2026-01-01') AS recordDate, 10 AS temperature
+  UNION ALL SELECT 2, DATE('2026-01-02'), 15
+  UNION ALL SELECT 3, DATE('2026-01-03'), 13
+  UNION ALL SELECT 4, DATE('2026-01-04'), 18
+)`;
+  const mysqlActivityFixture = `WITH Activity AS (
+  SELECT 0 AS machine_id, 0 AS process_id, 'start' AS activity_type, 0.712 AS event_time
+  UNION ALL SELECT 0, 0, 'end',   1.520
+  UNION ALL SELECT 0, 1, 'start', 3.140
+  UNION ALL SELECT 0, 1, 'end',   4.120
+  UNION ALL SELECT 1, 0, 'start', 0.550
+  UNION ALL SELECT 1, 0, 'end',   1.550
+  UNION ALL SELECT 1, 1, 'start', 2.000
+  UNION ALL SELECT 1, 1, 'end',   2.800
+)`;
 
   return [
     example("basics", "Select recent orders", "Read rows and control their order and count.", `SELECT *
@@ -367,6 +383,116 @@ FROM orders o
 JOIN products p ON p.id = o.product_id
 ORDER BY o.id DESC
 LIMIT 20;`),
+    ...(mysql ? [
+      example("joins", "Weather self-join · 1 · all pairs", "Start with every possible today/previous pair. Run it and inspect how CROSS JOIN combines rows before adding a relationship.", `${mysqlWeatherFixture}
+SELECT today.id AS today_id,
+       today.recordDate AS today_date,
+       today.temperature AS today_temp,
+       previous.id AS previous_id,
+       previous.recordDate AS previous_date,
+       previous.temperature AS previous_temp
+FROM Weather today
+CROSS JOIN Weather previous
+ORDER BY today.id, previous.id;`),
+      example("joins", "Weather self-join · 2 · consecutive days", "Add the relationship between the two roles: previous must be exactly one day before today.", `${mysqlWeatherFixture}
+SELECT today.id AS today_id,
+       today.recordDate AS today_date,
+       today.temperature AS today_temp,
+       previous.id AS previous_id,
+       previous.recordDate AS previous_date,
+       previous.temperature AS previous_temp
+FROM Weather today
+JOIN Weather previous
+  ON today.recordDate = DATE_ADD(previous.recordDate, INTERVAL 1 DAY)
+ORDER BY today.recordDate;`),
+      example("joins", "Weather self-join · 3 · warmer than yesterday", "Now filter the already-correct day pairs and keep only days whose temperature is higher than the previous day.", `${mysqlWeatherFixture}
+SELECT today.id AS today_id,
+       today.recordDate AS today_date,
+       today.temperature AS today_temp,
+       previous.temperature AS previous_temp
+FROM Weather today
+JOIN Weather previous
+  ON today.recordDate = DATE_ADD(previous.recordDate, INTERVAL 1 DAY)
+WHERE today.temperature > previous.temperature
+ORDER BY today.recordDate;`),
+      example("joins", "Weather self-join · 4 · final answer", "After the pairing and filter are understood, reduce SELECT to the output the task actually asks for.", `${mysqlWeatherFixture}
+SELECT today.id
+FROM Weather today
+JOIN Weather previous
+  ON today.recordDate = DATE_ADD(previous.recordDate, INTERVAL 1 DAY)
+WHERE today.temperature > previous.temperature
+ORDER BY today.id;`),
+      example("joins", "Process duration · 1 · all pairs", "Give the same Activity rows two roles and inspect every possible start-side/end-side combination before adding conditions.", `${mysqlActivityFixture}
+SELECT s.machine_id AS s_machine,
+       s.process_id AS s_process,
+       s.activity_type AS s_type,
+       s.event_time AS s_time,
+       e.machine_id AS e_machine,
+       e.process_id AS e_process,
+       e.activity_type AS e_type,
+       e.event_time AS e_time
+FROM Activity s
+CROSS JOIN Activity e
+ORDER BY s.machine_id, s.process_id, s.event_time, e.machine_id, e.process_id, e.event_time;`),
+      example("joins", "Process duration · 2 · same machine", "Add the first ON condition so rows can pair only inside the same machine.", `${mysqlActivityFixture}
+SELECT s.machine_id AS s_machine,
+       s.process_id AS s_process,
+       s.activity_type AS s_type,
+       e.process_id AS e_process,
+       e.activity_type AS e_type
+FROM Activity s
+JOIN Activity e
+  ON s.machine_id = e.machine_id
+ORDER BY s.machine_id, s.process_id, e.process_id;`),
+      example("joins", "Process duration · 3 · same process", "Add process_id. Now each process is isolated, but you can still see start/start, start/end, end/start, and end/end pairs.", `${mysqlActivityFixture}
+SELECT s.machine_id,
+       s.process_id,
+       s.activity_type AS s_type,
+       s.event_time AS s_time,
+       e.activity_type AS e_type,
+       e.event_time AS e_time
+FROM Activity s
+JOIN Activity e
+  ON s.machine_id = e.machine_id
+ AND s.process_id = e.process_id
+ORDER BY s.machine_id, s.process_id, s.event_time, e.event_time;`),
+      example("joins", "Process duration · 4 · start to end", "Assign the two aliases their real roles: s must be the start row and e must be the end row.", `${mysqlActivityFixture}
+SELECT s.machine_id,
+       s.process_id,
+       s.event_time AS start_time,
+       e.event_time AS end_time
+FROM Activity s
+JOIN Activity e
+  ON s.machine_id = e.machine_id
+ AND s.process_id = e.process_id
+WHERE s.activity_type = 'start'
+  AND e.activity_type = 'end'
+ORDER BY s.machine_id, s.process_id;`),
+      example("joins", "Process duration · 5 · calculate duration", "Once every output row contains the correct start and end side by side, the duration is simply end minus start.", `${mysqlActivityFixture}
+SELECT s.machine_id,
+       s.process_id,
+       s.event_time AS start_time,
+       e.event_time AS end_time,
+       e.event_time - s.event_time AS duration
+FROM Activity s
+JOIN Activity e
+  ON s.machine_id = e.machine_id
+ AND s.process_id = e.process_id
+WHERE s.activity_type = 'start'
+  AND e.activity_type = 'end'
+ORDER BY s.machine_id, s.process_id;`),
+      example("joins", "Process duration · 6 · average per machine", "Only after the row pairing and duration are correct, aggregate the process durations for each machine.", `${mysqlActivityFixture}
+SELECT s.machine_id,
+       ROUND(AVG(e.event_time - s.event_time), 3) AS processing_time
+FROM Activity s
+JOIN Activity e
+  ON s.machine_id = e.machine_id
+ AND s.process_id = e.process_id
+WHERE s.activity_type = 'start'
+  AND e.activity_type = 'end'
+GROUP BY s.machine_id
+ORDER BY s.machine_id;`),
+    ] : []),
     example("aggregation", "Revenue by channel", "Group orders and calculate count and revenue.", `SELECT channel,
        COUNT(*) AS orders_count,
        ROUND(SUM(total_amount), 2) AS revenue
