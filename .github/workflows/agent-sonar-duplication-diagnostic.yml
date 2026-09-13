@@ -25,9 +25,9 @@ jobs:
           from pathlib import Path
           p = Path("app/navigation-config.ts")
           text = p.read_text()
-          marker = '''export type NavigationItem = SectionNavigationItem | ExternalNavigationItem;\n\n'''
-          helper = '''function sectionItem(id: SiteSection, label: string): SectionNavigationItem {\n  return { id, label };\n}\n\n'''
-          if helper not in text:
+          marker = 'export type NavigationItem = SectionNavigationItem | ExternalNavigationItem;\n'
+          helper = '''\nfunction sectionItem(id: SiteSection, label: string): SectionNavigationItem {\n  return { id, label };\n}\n'''
+          if helper.strip() not in text:
               if marker not in text:
                   raise SystemExit("NavigationItem marker not found")
               text = text.replace(marker, marker + helper, 1)
