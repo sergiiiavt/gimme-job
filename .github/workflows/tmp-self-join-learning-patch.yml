@@ -19,8 +19,9 @@ jobs:
           fetch-depth: 0
 
       - name: Integrate learning examples into DatabaseExample source
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
           import re
 
@@ -100,6 +101,7 @@ LIMIT 20;`),\n'''
               raise SystemExit('Old CTE-backed examples remain in source')
 
           path.write_text(source)
+          PY
 
       - name: Commit source integration
         shell: bash
