@@ -1,0 +1,69 @@
+name: Agent Sonar duplication diagnostic
+
+on:
+  push:
+    branches:
+      - agent/navigation-followup-a
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Sonar duplication metrics
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          python - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          base = "https://sonarcloud.io/api"
+          project = "sergiiiavt_gimme-job"
+          pr = "458"
+          auth = base64.b64encode(f"{os.environ['SONAR_TOKEN']}:".encode()).decode()
+
+          def get(path, params):
+              url = f"{base}/{path}?{urllib.parse.urlencode(params)}"
+              request = urllib.request.Request(url, headers={"Authorization": f"Basic {auth}"})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          payload = get("measures/component_tree", {
+              "component": project,
+              "pullRequest": pr,
+              "metricKeys": "new_duplicated_lines_density,new_duplicated_lines,new_lines,duplicated_lines_density,duplicated_lines",
+              "qualifiers": "FIL",
+              "ps": 500,
+          })
+          rows = []
+          for component in payload.get("components", []):
+              measures = {}
+              for measure in component.get("measures", []):
+                  value = measure.get("value")
+                  if value is None and measure.get("period"):
+                      value = measure["period"].get("value")
+                  measures[measure["metric"]] = value
+              new_dup = float(measures.get("new_duplicated_lines_density") or 0)
+              new_lines = float(measures.get("new_lines") or 0)
+              if new_dup or new_lines:
+                  rows.append((new_dup, new_lines, component.get("path"), component.get("key"), measures))
+          for row in sorted(rows, reverse=True):
+              print(json.dumps({"path": row[2], "key": row[3], **row[4]}, sort_keys=True))
+
+          print("--- duplication blocks for files with new duplication ---")
+          for new_dup, _, path, key, _ in sorted(rows, reverse=True):
+              if not new_dup:
+                  continue
+              try:
+                  dup = get("duplications/show", {"key": key, "pullRequest": pr})
+                  print(path)
+                  print(json.dumps(dup, sort_keys=True))
+              except Exception as exc:
+                  print(f"{path}: duplication detail unavailable: {exc}")
+          PY
