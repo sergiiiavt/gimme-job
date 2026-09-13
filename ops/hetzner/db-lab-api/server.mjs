@@ -566,25 +566,6 @@ async function handle(request, pathname = new URL(request.url).pathname) {
   }
 }
 
-async function handle(request, pathname = new URL(request.url).pathname) {
-  if (request.method === "GET" && pathname === "/health") return health();
-  if (request.method !== "POST" || !["/v1/query", "/v1/schema", "/v1/reset"].includes(pathname)) {
-    return json({ error: "Not found." }, 404);
-  }
-  if (!authorized(request)) return json({ error: "Unauthorized." }, 401);
-  if (activeRequests >= MAX_ACTIVE_REQUESTS) return json({ error: "Database lab is busy. Retry shortly." }, 429);
-  activeRequests += 1;
-  try {
-    return await handleAction(request, pathname);
-  } catch (error) {
-    const status = error instanceof LabError ? error.status : 500;
-    const message = error instanceof Error ? error.message : "Database lab request failed.";
-    return json({ error: message }, status);
-  } finally {
-    activeRequests -= 1;
-  }
-}
-
 function createLabServer() {
   return createServer(async (request, response) => {
     const body = request.method === "GET" || request.method === "HEAD" ? undefined : request;
