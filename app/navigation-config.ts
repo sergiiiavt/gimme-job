@@ -16,6 +16,10 @@ export interface ExternalNavigationItem {
 }
 
 export type NavigationItem = SectionNavigationItem | ExternalNavigationItem;
+
+function sectionItem(id: SiteSection, label: string): SectionNavigationItem {
+  return { id, label };
+}
 export interface NavigationGroup {
   id: NavigationGroupId;
   label: string;
@@ -94,8 +98,8 @@ export const navigationGroups: NavigationGroup[] = [
       { id: "certifications", label: "Certs & Trainings" },
       { id: "llm", label: "Generative AI & LLM" },
       { id: "agentic", label: "AI agents & MCP" },
-      { id: "programming", label: "Programming" },
-      { id: "automation", label: "Test automation" },
+      sectionItem("programming", "Programming"),
+      sectionItem("automation", "Test automation"),
       {
         id: "testing-tools",
         label: "Testing tools",
@@ -108,7 +112,7 @@ export const navigationGroups: NavigationGroup[] = [
       { id: "embedded", label: "Embedded & IoT QA" },
       { id: "performance", label: "Performance & reliability" },
       { id: "security", label: "Security testing" },
-      { id: "devops", label: "Cloud & DevOps" },
+      sectionItem("devops", "Cloud & DevOps"),
       { id: "observability", label: "Observability & SRE" },
       { id: "networking", label: "Networking" },
       { id: "linux", label: "Linux & shell" },
