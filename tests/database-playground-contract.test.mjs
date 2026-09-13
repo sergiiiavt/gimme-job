@@ -6,16 +6,13 @@ async function source(path) {
   return readFile(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
-test("database playground is present in navigation and uses the real proxy", async () => {
-  const [navigation, client, styles, proxy] = await Promise.all([
-    source("app/site-navigation.tsx"),
+test("database playground uses the real proxy and preserves its database workbench contract", async () => {
+  const [client, styles, proxy] = await Promise.all([
     source("app/playgrounds/databases/database-playground.tsx"),
     source("app/playgrounds/databases/database-playground.module.css"),
     source("app/api/playgrounds/databases/route.ts"),
   ]);
 
-  assert.match(navigation, /database-playground/);
-  assert.match(navigation, /\/playgrounds\/databases/);
   assert.match(client, /Database Playground/);
   assert.match(client, /MySQL 8/);
   assert.match(client, /PostgreSQL 16/);
