@@ -1,0 +1,115 @@
+name: Temporary self-join learning source patch
+
+on:
+  push:
+    branches:
+      - fix/mysql-self-join-learning-flow
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: fix/mysql-self-join-learning-flow
+          fetch-depth: 0
+
+      - name: Integrate learning examples into DatabaseExample source
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('app/playgrounds/databases/database-playground.tsx')
+          source = path.read_text()
+
+          import_anchor = 'import styles from "./database-playground.module.css";\n'
+          learning_import = 'import { MYSQL_SELF_JOIN_LEARNING_EXAMPLES } from "./mysql-self-join-learning";\n'
+          if learning_import not in source:
+              source = source.replace(import_anchor, import_anchor + learning_import, 1)
+
+          source = source.replace(
+              'type DatabaseExample = { category: ExampleCategory; title: string; description: string; sql: string };',
+              'type DatabaseExample = { category: ExampleCategory; title: string; description: string; sql: string; reasoning?: string[] };',
+              1,
+          )
+
+          source = source.replace(
+              'function example(category: ExampleCategory, title: string, description: string, sql: string): DatabaseExample {\n  return { category, title, description, sql };\n}',
+              'function example(category: ExampleCategory, title: string, description: string, sql: string, reasoning: string[] = []): DatabaseExample {\n  return { category, title, description, sql, reasoning };\n}',
+              1,
+          )
+
+          source, fixture_replacements = re.subn(
+              r'\n  const mysqlWeatherFixture = `[\s\S]*?\n\)`;\n  const mysqlActivityFixture = `[\s\S]*?\n\)`;\n',
+              '\n',
+              source,
+              count=1,
+          )
+          if fixture_replacements != 1:
+              raise SystemExit(f'Expected to remove one CTE fixture block, removed {fixture_replacements}')
+
+          old_learning_pattern = re.compile(
+              r'\n    \.\.\.\(mysql \? \[\n      example\("joins", "Weather self-join · 1 · all pairs"[\s\S]*?\n    \] : \[\]\),',
+          )
+          source, old_learning_replacements = old_learning_pattern.subn('', source, count=1)
+          if old_learning_replacements != 1:
+              raise SystemExit(f'Expected to remove one old self-join example block, removed {old_learning_replacements}')
+
+          schema_anchor = '    example("schema", "Drop a table", "Remove the sandbox table and its data.", "DROP TABLE IF EXISTS qa_notes;"),\n'
+          schema_insert = '''    ...(mysql ? MYSQL_SELF_JOIN_LEARNING_EXAMPLES
+      .filter((entry) => entry.category === "Tables & data")
+      .map((entry) => example("schema", entry.title, entry.description, entry.sql, entry.reasoning)) : []),\n'''
+          if schema_insert not in source:
+              if schema_anchor not in source:
+                  raise SystemExit('Schema insertion anchor not found')
+              source = source.replace(schema_anchor, schema_anchor + schema_insert, 1)
+
+          joins_anchor = '''    example("joins", "Orders with products", "Join orders to products through product_id.", `SELECT o.id, p.sku, p.category, o.status, o.total_amount
+FROM orders o
+JOIN products p ON p.id = o.product_id
+ORDER BY o.id DESC
+LIMIT 20;`),\n'''
+          joins_insert = '''    ...(mysql ? MYSQL_SELF_JOIN_LEARNING_EXAMPLES
+      .filter((entry) => entry.category === "Joins")
+      .map((entry) => example("joins", entry.title, entry.description, entry.sql, entry.reasoning)) : []),\n'''
+          if joins_insert not in source:
+              if joins_anchor not in source:
+                  raise SystemExit('Joins insertion anchor not found')
+              source = source.replace(joins_anchor, joins_anchor + joins_insert, 1)
+
+          render_anchor = '''                          <p>{entry.description}</p>
+                          <pre><code>{entry.sql}</code></pre>'''
+          render_replacement = '''                          <p>{entry.description}</p>
+                          {entry.reasoning?.map((note) => (
+                            <p data-db-learning-note key={note}>Think: {note}</p>
+                          ))}
+                          <pre><code>{entry.sql}</code></pre>'''
+          if render_replacement not in source:
+              if render_anchor not in source:
+                  raise SystemExit('Example rendering anchor not found')
+              source = source.replace(render_anchor, render_replacement, 1)
+
+          if 'mysqlWeatherFixture' in source or 'mysqlActivityFixture' in source:
+              raise SystemExit('Old CTE fixtures remain in source')
+          if '${mysqlWeatherFixture}' in source or '${mysqlActivityFixture}' in source:
+              raise SystemExit('Old CTE-backed examples remain in source')
+
+          path.write_text(source)
+
+      - name: Commit source integration
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No source changes required"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/playgrounds/databases/database-playground.tsx
+          git commit -m "Integrate MySQL self-join learning examples"
+          git push origin HEAD:fix/mysql-self-join-learning-flow
