@@ -34,36 +34,41 @@ jobs:
               with urllib.request.urlopen(request, timeout=30) as response:
                   return json.load(response)
 
-          payload = get("measures/component_tree", {
+          metrics = "new_duplicated_lines_density,new_duplicated_lines,new_duplicated_blocks,new_lines,duplicated_lines_density,duplicated_lines,duplicated_blocks,lines,ncloc"
+
+          print("--- project measures ---")
+          print(json.dumps(get("measures/component", {
               "component": project,
               "pullRequest": pr,
-              "metricKeys": "new_duplicated_lines_density,new_duplicated_lines,new_lines,duplicated_lines_density,duplicated_lines",
+              "metricKeys": metrics,
+          }), sort_keys=True))
+
+          for path in ["app/navigation-config.ts", "app/site-navigation.tsx"]:
+              key = f"{project}:{path}"
+              print(f"--- measures: {path} ---")
+              try:
+                  print(json.dumps(get("measures/component", {
+                      "component": key,
+                      "pullRequest": pr,
+                      "metricKeys": metrics,
+                  }), sort_keys=True))
+              except Exception as exc:
+                  print(f"measure error: {exc}")
+              print(f"--- duplications: {path} ---")
+              try:
+                  print(json.dumps(get("duplications/show", {"key": key, "pullRequest": pr}), sort_keys=True))
+              except Exception as exc:
+                  print(f"duplication error: {exc}")
+
+          print("--- raw changed-file tree sample ---")
+          tree = get("measures/component_tree", {
+              "component": project,
+              "pullRequest": pr,
+              "metricKeys": metrics,
               "qualifiers": "FIL",
               "ps": 500,
           })
-          rows = []
-          for component in payload.get("components", []):
-              measures = {}
-              for measure in component.get("measures", []):
-                  value = measure.get("value")
-                  if value is None and measure.get("period"):
-                      value = measure["period"].get("value")
-                  measures[measure["metric"]] = value
-              new_dup = float(measures.get("new_duplicated_lines_density") or 0)
-              new_lines = float(measures.get("new_lines") or 0)
-              if new_dup or new_lines:
-                  rows.append((new_dup, new_lines, component.get("path"), component.get("key"), measures))
-          for row in sorted(rows, reverse=True):
-              print(json.dumps({"path": row[2], "key": row[3], **row[4]}, sort_keys=True))
-
-          print("--- duplication blocks for files with new duplication ---")
-          for new_dup, _, path, key, _ in sorted(rows, reverse=True):
-              if not new_dup:
-                  continue
-              try:
-                  dup = get("duplications/show", {"key": key, "pullRequest": pr})
-                  print(path)
-                  print(json.dumps(dup, sort_keys=True))
-              except Exception as exc:
-                  print(f"{path}: duplication detail unavailable: {exc}")
+          for component in tree.get("components", []):
+              if component.get("path") in {"app/navigation-config.ts", "app/site-navigation.tsx"}:
+                  print(json.dumps(component, sort_keys=True))
           PY
