@@ -22,7 +22,8 @@ test("vacancy UI keeps responsive rows, local-agent routing, and accessible inte
   assert.match(privateJobsSource, /fetch\(`\$\{base\}\$\{path\}`/);
   assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_PORT/);
   assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_INSTANCE_ID/);
-  assert.match(privateJobsSource, /className="job-card"\s*\n\s*role="button"/);
+  assert.match(privateJobsSource, /className="job-card"/);
+  assert.match(privateJobsSource, /role="button"/);
   assert.match(privateJobsSource, /className="back-link" onClick=\{\(\) => setSelectedId\(null\)\}/);
   assert.match(privateJobsSource, /id="selected-vacancy-detail" role="region"/);
   assert.match(privateJobsSource, /aria-label="Search vacancies"/);

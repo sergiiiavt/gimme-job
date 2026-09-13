@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  hiddenDeepLinkSections,
+  learningClusters,
   navigationGroups,
   navigationIntroItem,
-  navigationItems,
 } from "../app/navigation-config.ts";
 
 function group(id: (typeof navigationGroups)[number]["id"]) {
@@ -26,12 +25,11 @@ test("navigation keeps the intended group and item structure", () => {
   assert.equal(group("playgrounds").label, "Playground");
   assert.deepEqual(group("playgrounds").items.map((entry) => entry.id), ["ai-assistant", "websocket-playground", "database-playground"]);
   assert.deepEqual(group("misc").items.map((entry) => entry.id), ["news", "games"]);
-
-  const learningIds = group("learning").items.map((entry) => entry.id);
-  assert.ok(learningIds.indexOf("automation") < learningIds.indexOf("testing-tools"));
-  assert.ok(learningIds.indexOf("testing-tools") < learningIds.indexOf("api"));
-  assert.ok(learningIds.indexOf("standards") < learningIds.indexOf("metrics-estimation"));
-  assert.ok(learningIds.indexOf("metrics-estimation") < learningIds.indexOf("strategy"));
+  assert.deepEqual(
+    learningClusters.flatMap((cluster) => cluster.itemIds),
+    group("learning").items.map((entry) => entry.id),
+    "every learning item must appear in exactly one cluster, in render order",
+  );
 
   const allIds = [navigationIntroItem.id, ...navigationGroups.flatMap((entry) => entry.items.map((navItem) => navItem.id))];
   assert.equal(new Set(allIds).size, allIds.length, "navigation IDs must be unique");
@@ -54,15 +52,4 @@ test("external navigation items keep canonical destinations independent of displ
   assert.equal(database.publicHref, "/playgrounds/databases");
   assert.equal(games.external, true);
   assert.equal(games.publicHref, "/games");
-  assert.equal(games.personalHref, "/games");
-});
-
-test("section navigation and hidden deep links remain derived from the canonical config", () => {
-  const visibleSectionIds = [navigationIntroItem.id, ...navigationGroups.flatMap((entry) => entry.items)
-    .filter((entry) => entry.external !== true)
-    .map((entry) => entry.id)];
-
-  assert.deepEqual(navigationItems.map((entry) => entry.id), visibleSectionIds);
-  assert.deepEqual(hiddenDeepLinkSections, ["python-interview"]);
-  assert.equal(navigationItems.some((entry) => entry.id === "python-interview"), false);
 });

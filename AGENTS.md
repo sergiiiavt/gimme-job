@@ -57,7 +57,7 @@ When adding, removing, nesting, or reordering a rendered element:
 
 ## Test design and ownership
 
-- Prefer testing exported functions, configuration, rendered output, API responses, or generated artifacts over regex-matching implementation source.
+- Prefer testing exported functions, configuration, rendered output, API responses, or generated artifacts over regex-matching implementation source. This applies to new tests; existing source contracts migrate opportunistically when their area is touched.
 - Use raw source inspection only when the source itself is the contract and there is no practical runtime or structured representation to test. Keep those assertions local to that component or artifact.
 - Give each invariant one obvious test owner. Do not duplicate navigation, copy, ordering, auth, or routing contracts inside unrelated feature suites.
 - A display-copy change must not fail an unrelated behavior test. Assert exact wording only in a dedicated copy/content contract when the wording itself is intentionally protected.

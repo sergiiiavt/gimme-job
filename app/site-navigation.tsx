@@ -3,6 +3,7 @@
 import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
 import {
+  learningClusters,
   navigationGroups,
   navigationIntroItem,
   type ExternalNavigationId,
@@ -13,22 +14,6 @@ import { sectionNavigationHref } from "./navigation-paths";
 
 export { hiddenDeepLinkSections, navigationGroups, navigationIntroItem, navigationItems } from "./navigation-config";
 export type { ExternalNavigationId, SiteSection } from "./navigation-config";
-
-type LearningClusterTone = "foundation" | "ai" | "build" | "systems" | "infra" | "governance";
-
-interface LearningCluster {
-  tone: LearningClusterTone;
-  itemIds: Array<NavigationItem["id"]>;
-}
-
-const learningClusters: LearningCluster[] = [
-  { tone: "foundation", itemIds: ["qa-fundamentals", "certifications"] },
-  { tone: "ai", itemIds: ["llm", "agentic"] },
-  { tone: "build", itemIds: ["programming", "automation", "testing-tools"] },
-  { tone: "systems", itemIds: ["api", "data", "mobile", "embedded"] },
-  { tone: "infra", itemIds: ["performance", "security", "devops", "observability", "networking", "linux"] },
-  { tone: "governance", itemIds: ["standards", "metrics-estimation", "strategy"] },
-];
 
 export interface SubnavItem {
   id: string;
