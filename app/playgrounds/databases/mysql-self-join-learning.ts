@@ -4,71 +4,30 @@ export type MysqlLearningExample = {
   description: string;
   reasoning: string[];
   sql: string;
-  injected?: boolean;
 };
 
 export const MYSQL_SELF_JOIN_LEARNING_EXAMPLES: MysqlLearningExample[] = [
   {
     category: "Tables & data",
-    title: "Setup · Weather comparison data",
-    description: "Create the real Weather table used by the step-by-step previous-day comparison examples.",
+    title: "Inspect · Weather comparison data",
+    description: "Look at the seeded Weather rows before building the previous-day self-join.",
     reasoning: [
-      "Run this once before the Weather join steps. It creates normal sandbox data, not a CTE hidden inside the solution.",
-      "Each date has one temperature. The later query must place two different Weather rows side by side before it can compare their temperatures.",
+      "The answer will depend on two different Weather rows: one current day and one previous day.",
+      "Before writing a JOIN, identify the columns that define the relationship: recordDate tells us which rows are consecutive, and temperature is the value we will compare.",
     ],
-    injected: true,
-    sql: `DROP TABLE IF EXISTS Weather;
-
-CREATE TABLE Weather (
-  id INT NOT NULL PRIMARY KEY,
-  recordDate DATE NOT NULL,
-  temperature INT NOT NULL
-);
-
-INSERT INTO Weather (id, recordDate, temperature) VALUES
-  (1, '2015-01-01', 10),
-  (2, '2015-01-02', 25),
-  (3, '2015-01-03', 20),
-  (4, '2015-01-04', 30);
-
-SELECT *
+    sql: `SELECT id, recordDate, temperature
 FROM Weather
 ORDER BY recordDate;`,
   },
   {
     category: "Tables & data",
-    title: "Setup · Activity process data",
-    description: "Create the real Activity table used by the step-by-step process-duration examples.",
+    title: "Inspect · Activity process data",
+    description: "Look at the seeded Activity rows before building the start/end self-join.",
     reasoning: [
-      "Run this once before the Activity join steps. Every process is stored as two rows: one start row and one end row.",
-      "The later query must first pair those two rows for the same machine and process; only then does end minus start make sense.",
+      "Each process is represented by two rows: one start event and one end event.",
+      "The columns machine_id + process_id identify the process; activity_type tells us which row is start or end; timestamp is the value we eventually subtract.",
     ],
-    injected: true,
-    sql: `DROP TABLE IF EXISTS Activity;
-
-CREATE TABLE Activity (
-  machine_id INT NOT NULL,
-  process_id INT NOT NULL,
-  activity_type ENUM('start', 'end') NOT NULL,
-  timestamp DECIMAL(10,3) NOT NULL,
-  PRIMARY KEY (machine_id, process_id, activity_type)
-);
-
-INSERT INTO Activity (machine_id, process_id, activity_type, timestamp) VALUES
-  (0, 0, 'start', 0.712),
-  (0, 0, 'end',   1.520),
-  (0, 1, 'start', 3.140),
-  (0, 1, 'end',   4.120),
-  (1, 0, 'start', 0.550),
-  (1, 0, 'end',   1.550),
-  (1, 1, 'start', 0.430),
-  (1, 1, 'end',   1.420),
-  (2, 0, 'start', 4.100),
-  (2, 0, 'end',   4.512),
-  (2, 1, 'start', 2.500),
-  (2, 1, 'end',   5.000);
-
-SELECT *
+    sql: `SELECT machine_id, process_id, activity_type, timestamp
 FROM Activity
 ORDER BY machine_id, process_id, timestamp;`,
   },
@@ -165,7 +124,7 @@ ORDER BY s.machine_id, s.process_id, s.timestamp,
   {
     category: "Joins",
     title: "Process duration · 2 · same machine",
-    description: "Add the first relationship: a start-side row may pair only with an end-side row from the same machine.",
+    description: "Add the first relationship: the two candidate rows may pair only when they belong to the same machine.",
     reasoning: [
       "This condition removes combinations across different machines, but it is intentionally not enough yet.",
       "You should still see process 0 mixed with process 1 inside one machine; that visible mistake tells us the next condition we need.",
