@@ -5,6 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 RUNTIME_DIR=/opt/gimmejob-n8n
 REPO_RAW=https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner
 HTTPS_ONLY='=https'
+MYSQL_BASE_FIXTURE_COUNTS='10000:200:50000:4:12'
 MONGO_BASE_FIXTURE_COUNTS='1000:120:8000:1'
 
 log() {
@@ -28,7 +29,7 @@ ensure_env_secret() {
 
 mysql_seed_counts() {
   docker compose exec -T mysql-lab sh -lc \
-    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --batch --skip-column-names -e "SELECT CONCAT_WS(CHAR(58),(SELECT COUNT(*) FROM gimmejob_lab.users),(SELECT COUNT(*) FROM gimmejob_lab.products),(SELECT COUNT(*) FROM gimmejob_lab.orders));"' \
+    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --batch --skip-column-names -e "SELECT CONCAT_WS(CHAR(58),(SELECT COUNT(*) FROM gimmejob_lab.users),(SELECT COUNT(*) FROM gimmejob_lab.products),(SELECT COUNT(*) FROM gimmejob_lab.orders),(SELECT COUNT(*) FROM gimmejob_lab.Weather),(SELECT COUNT(*) FROM gimmejob_lab.Activity));"' \
     2>/dev/null
 }
 
@@ -52,7 +53,7 @@ reconcile_mysql_seed() {
   fi
 
   counts="$(mysql_seed_counts || true)"
-  if [[ "$counts" == "10000:200:50000" ]]; then
+  if [[ "$counts" == "$MYSQL_BASE_FIXTURE_COUNTS" ]]; then
     log "MySQL lab fixture seed is current ($counts)"
     return
   fi
@@ -65,8 +66,8 @@ reconcile_mysql_seed() {
     <"$RUNTIME_DIR/db-lab/mysql-init.sql"
 
   counts="$(mysql_seed_counts || true)"
-  if [[ "$counts" != "10000:200:50000" ]]; then
-    echo "MySQL lab fixture reconciliation failed; expected 10000:200:50000, got ${counts:-unavailable}." >&2
+  if [[ "$counts" != "$MYSQL_BASE_FIXTURE_COUNTS" ]]; then
+    echo "MySQL lab fixture reconciliation failed; expected $MYSQL_BASE_FIXTURE_COUNTS, got ${counts:-unavailable}." >&2
     exit 1
   fi
   log "MySQL lab fixture seed reconciled ($counts)"
