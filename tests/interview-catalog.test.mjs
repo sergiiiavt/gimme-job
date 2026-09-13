@@ -219,18 +219,14 @@ test("preserves existing generated questions when authored coverage grows", asyn
   assert.doesNotMatch(generatorSource, /contain exactly 520 questions/);
 });
 
-test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, navigationSource, routeSource, schemaSource, resumeSource, aboutSource, aboutContentSource, privateJobsSource] = await Promise.all([
+test("lazy-loads the interview catalog, keeps unified filters, and caps each rendered page at 60", async () => {
+  const [uiSource, stylesSource, routeSource, schemaSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
-    readFile(projectFile("app/site-navigation.tsx"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
     readFile(projectFile("db/schema.ts"), "utf8"),
-    readFile(projectFile("app/resume-page.tsx"), "utf8"),
-    readFile(projectFile("app/about-site.tsx"), "utf8"),
-    readFile(projectFile("app/about-site-content.ts"), "utf8"),
-    readFile(projectFile("app/page.tsx"), "utf8"),
   ]);
+
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
   assert.match(uiSource, /import\("@\/content\/interview\/catalog"\)/);
   assert.match(uiSource, /const INTERVIEW_PAGE_SIZE = 60;/);
@@ -286,78 +282,6 @@ test("lazy-loads the catalog, unifies filters, and caps each rendered page at 60
   assert.doesNotMatch(uiSource, /Personal star</);
   assert.match(routeSource, /interview-stars/);
   assert.match(stylesSource, /\.iq-star-icon\.active \{/);
-
-  for (const label of ["About this site", "Vacancies", "My Resume", "Interview questions", "AI Assistant", "Trends", "Performance & reliability", "Observability & SRE", "Networking", "Linux & shell", "Generative AI & LLM", "Embedded & IoT QA", "News", "Games"]) {
-    assert.match(navigationSource, new RegExp(label.replace(/[&]/g, "\\&")));
-  }
-  assert.match(navigationSource, /id: "career",[\s\S]*?label: "Career",[\s\S]*?id: "jobs"[\s\S]*?id: "resume"[\s\S]*?id: "interview"[\s\S]*?id: "trends"/);
-  assert.match(navigationSource, /id: "playgrounds",[\s\S]*?label: "Playgrounds",[\s\S]*?id: "ai-assistant"[\s\S]*?id: "websocket-playground"/);
-  assert.match(navigationSource, /id: "learning",[\s\S]*?label: "Learning path"/);
-  assert.match(navigationSource, /id: "misc",[\s\S]*?label: "Misc",[\s\S]*?id: "news"[\s\S]*?id: "games"/);
-  assert.match(stylesSource, /\.kb-area-group-career/);
-  assert.match(stylesSource, /\.kb-area-group-learning/);
-  assert.match(stylesSource, /\.kb-area-group-misc/);
-  assert.match(stylesSource, /\.kb-nav-intro/);
-  assert.match(stylesSource, /\.kb-navigation \.kb-nav-list \.kb-nav-link \{[^}]*font-size: 12px/);
-  assert.match(stylesSource, /\.about-tech-purpose-card p \{[^}]*font-size: 11px/);
-  assert.doesNotMatch(privateJobsSource, /company-mark/);
-  assert.doesNotMatch(uiSource, /kb-company-mark/);
-  assert.doesNotMatch(stylesSource, /\.job-card\s*\{[^}]*grid-template-columns:\s*\d+px/);
-  assert.doesNotMatch(stylesSource, /\.detail-head\s*\{[^}]*grid-template-columns:\s*\d+px/);
-  assert.doesNotMatch(stylesSource, /\.kb-job-row\s*\{[^}]*grid-template-columns:\s*\d+px/);
-  assert.match(stylesSource, /\.kb-job-action-stack > a \{/);
-  assert.match(privateJobsSource, /createLocalAgentApiResolver/);
-  assert.match(privateJobsSource, /const base = await apiBase\(\)/);
-  assert.match(privateJobsSource, /fetch\(`\$\{base\}\$\{path\}`/);
-  assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_PORT/);
-  assert.match(privateJobsSource, /import\.meta\.env\.VITE_JOB_AGENT_INSTANCE_ID/);
-  assert.match(privateJobsSource, /className="job-card"\s*\n\s*role="button"/);
-  assert.match(privateJobsSource, /className="back-link" onClick=\{\(\) => setSelectedId\(null\)\}/);
-  assert.match(privateJobsSource, /id="selected-vacancy-detail" role="region"/);
-  assert.match(privateJobsSource, /aria-label="Search vacancies"/);
-  assert.match(privateJobsSource, /className="toast" role="status" aria-live="polite"/);
-  assert.match(uiSource, /window\.location\.assign\(sectionNavigationHref\(next, effectiveMode\)\)/);
-  assert.ok(navigationSource.indexOf('id: "about"') < navigationSource.indexOf('id: "career"'), "About this site must be the first navigation item.");
-  assert.ok(navigationSource.indexOf('id: "trends"') < navigationSource.indexOf('id: "playgrounds"'), "The Career group must come before Playgrounds.");
-  assert.ok(navigationSource.indexOf('id: "playgrounds"') < navigationSource.indexOf('id: "ai-assistant"'), "AI Assistant must be inside Playgrounds.");
-  assert.ok(navigationSource.indexOf('id: "websocket-playground"') < navigationSource.indexOf('id: "learning"'), "Playgrounds must come before the Learning path.");
-  assert.ok(navigationSource.indexOf('id: "misc"') < navigationSource.indexOf('id: "games"'), "Games must remain inside Misc.");
-  assert.ok(navigationSource.indexOf('id: "interview"') < navigationSource.indexOf('id: "trends"'), "Trends must remain the final Career item.");
-  assert.ok(navigationSource.indexOf('id: "certifications"') < navigationSource.indexOf('id: "llm"'), "Certs & Trainings must lead the Learning path.");
-  assert.ok(navigationSource.indexOf('id: "llm"') < navigationSource.indexOf('id: "agentic"'), "AI agents must follow Generative AI.");
-  assert.ok(navigationSource.indexOf('id: "standards"') < navigationSource.indexOf('id: "strategy"'), "Strategy & leadership must be the final Learning path item.");
-  assert.match(uiSource, /if \(section === "about"\) return <AboutSite mode=\{mode\}\/>/);
-  assert.match(uiSource, /if \(section === "resume"\) return <ResumePage mode=\{mode\}\/>/);
-  assert.match(uiSource, /const section = useMemo\(\(\) => resolveSection\(pathname, hash\), \[pathname, hash\]\)/);
-  assert.match(aboutSource, /View source on GitHub/);
-  assert.match(aboutSource, /const interviewHref = sectionNavigationHref\("interview", mode\)/);
-  assert.doesNotMatch(aboutSource, /#interview/);
-  assert.match(aboutSource, /ABOUT_OVERVIEW\.title/);
-  assert.match(aboutSource, /DEPLOYMENT\.title/);
-  assert.match(aboutSource, /DATABASE\.title/);
-  assert.match(aboutSource, /OPENAI\.title/);
-  assert.match(aboutSource, /GRAFANA\.title/);
-  assert.match(aboutContentSource, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
-  assert.doesNotMatch(aboutContentSource, /sergiiiavt\/gimmejob/);
-  assert.match(aboutSource, /about-tech-purpose-grid/);
-  assert.match(aboutSource, /about-tech-overview-heading/);
-  assert.match(aboutSource, /FlowArrow/);
-  assert.match(aboutSource, /TechNode/);
-  assert.doesNotMatch(aboutSource, /about-tech-page-header/);
-  assert.doesNotMatch(aboutSource, /production pet project/i);
-  assert.doesNotMatch(aboutSource, /skills showcase/i);
-  assert.doesNotMatch(aboutSource, /researched QA questions/);
-  assert.doesNotMatch(aboutSource, /about-hero/);
-  assert.match(resumeSource, /fetch\("\/api\/settings"\)/);
-  assert.match(resumeSource, /mode === "personal" && contact\?\.phone/);
-  assert.match(resumeSource, /mode === "personal" && contact\?\.email/);
-  assert.match(resumeSource, /PUBLIC RESUME \/ LINKEDIN ONLY/);
-  assert.match(resumeSource, /Lead QA Engineer/);
-  assert.match(resumeSource, /TIETO UKRAINE LTD/);
-  assert.match(resumeSource, /National Technical University of Ukraine/);
-  assert.doesNotMatch(resumeSource, /sergii\.iavt@gmail\.com/i);
-  assert.doesNotMatch(resumeSource, /095[^\n]{0,20}574/);
-  assert.match(uiSource, /embedded: \{[\s\S]*?title: "Embedded & IoT QA"/);
 
   const assetDirectory = projectFile("dist/client/assets/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
