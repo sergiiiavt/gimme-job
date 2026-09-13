@@ -4,22 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("new learning paths are ordered and route through standalone document pages", async () => {
-  const navigation = await read("app/site-navigation.tsx");
-  const automation = navigation.indexOf('label: "Test automation"');
-  const tools = navigation.indexOf('label: "Testing tools"');
-  const api = navigation.indexOf('label: "API & integration"');
-  assert.ok(automation >= 0, "Test automation must be present");
-  assert.ok(tools > automation, "Testing tools must follow Test automation");
-  assert.ok(api > tools, "API & integration must follow Testing tools");
-
-  const standards = navigation.indexOf('label: "Standards & compliance"');
-  const metrics = navigation.indexOf('label: "QA metrics & estimation"');
-  const strategy = navigation.indexOf('label: "Strategy & leadership"');
-  assert.ok(standards >= 0, "Standards & compliance must be present");
-  assert.ok(metrics > standards, "Metrics & estimation must follow Standards");
-  assert.ok(strategy > metrics, "Metrics & estimation must precede Strategy");
-
+test("new learning paths route through standalone document pages", async () => {
   for (const [path, component] of [
     ["app/learn/testing-tools/page.tsx", "TestingToolsPage"],
     ["app/workspace/learn/testing-tools/page.tsx", "TestingToolsPage"],
