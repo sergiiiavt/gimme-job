@@ -48,7 +48,7 @@ export const navigationGroups: NavigationGroup[] = [
   },
   {
     id: "playgrounds",
-    label: "Playgrounds",
+    label: "Playground",
     items: [
       {
         id: "ai-assistant",
