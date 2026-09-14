@@ -36,6 +36,12 @@ test("price-history lesson adds one idea at a time", () => {
   assert.match(learningSource, /sql: `SELECT current_price\.product_id,\n       current_price\.price_date/);
 });
 
+test("price-history examples avoid MySQL reserved date aliases", () => {
+  assert.doesNotMatch(learningSource, /\bAS\s+current_date\b/i);
+  assert.match(learningSource, /current_price\.price_date AS current_price_date/);
+  assert.match(learningSource, /previous_price\.price_date AS previous_price_date/);
+});
+
 test("order-processing lesson builds pairing before arithmetic, business context, and aggregation", () => {
   for (const step of [
     "Processing time · 1 · all event pairs",
