@@ -144,7 +144,7 @@ Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
   apt-get update
-  apt-get install -y docker-ce docker-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 
 systemctl enable --now docker
