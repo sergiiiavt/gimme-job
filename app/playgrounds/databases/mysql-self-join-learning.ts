@@ -51,12 +51,12 @@ ORDER BY e.order_id, e.event_at;`,
       "CROSS JOIN intentionally includes wrong combinations, including rows from different products.",
       "Expected result: 64 rows because 8 current rows × 8 previous rows = 64 candidate pairs.",
     ],
-    sql: `SELECT current_price.product_id AS current_product,
-       current_price.price_date AS current_date,
-       current_price.price AS current_price,
-       previous_price.product_id AS previous_product,
-       previous_price.price_date AS previous_date,
-       previous_price.price AS previous_price
+    sql: `SELECT current_price.product_id AS current_product_id,
+       current_price.price_date AS current_price_date,
+       current_price.price AS current_product_price,
+       previous_price.product_id AS previous_product_id,
+       previous_price.price_date AS previous_price_date,
+       previous_price.price AS previous_product_price
 FROM product_price_history AS current_price
 CROSS JOIN product_price_history AS previous_price
 ORDER BY current_price.product_id, current_price.price_date,
@@ -72,10 +72,10 @@ ORDER BY current_price.product_id, current_price.price_date,
       "Expected result: 6 rows: each product contributes three consecutive-day pairs because its first history row has no previous day in the table.",
     ],
     sql: `SELECT current_price.product_id,
-       current_price.price_date AS current_date,
-       current_price.price AS current_price,
-       previous_price.price_date AS previous_date,
-       previous_price.price AS previous_price
+       current_price.price_date AS current_price_date,
+       current_price.price AS current_product_price,
+       previous_price.price_date AS previous_price_date,
+       previous_price.price AS previous_product_price
 FROM product_price_history AS current_price
 JOIN product_price_history AS previous_price
   ON current_price.product_id = previous_price.product_id
