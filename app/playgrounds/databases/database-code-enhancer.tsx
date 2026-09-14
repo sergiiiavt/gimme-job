@@ -10,6 +10,7 @@ const editorOverlayByTextarea = new WeakMap<HTMLTextAreaElement, HTMLPreElement>
 const editorValueByTextarea = new WeakMap<HTMLTextAreaElement, string>();
 const editorLanguageByTextarea = new WeakMap<HTMLTextAreaElement, string>();
 const EXAMPLE_AUTO_RUN_DELAY_MS = 30;
+const LEARNING_NOTE_ATTRIBUTE = "data-db-learning-note";
 
 function dialectForSource(source: string): DatabaseGuideDialect {
   return /^\s*db\./.test(stripDatabaseGuideComments(source)) ? "mongodb" : "sql";
@@ -56,6 +57,20 @@ function exampleSource(card: HTMLElement): string {
   return stripDatabaseGuideComments(original?.textContent || "");
 }
 
+function learningNotes(card: HTMLElement): string[] {
+  return [...card.querySelectorAll<HTMLElement>(`[${LEARNING_NOTE_ATTRIBUTE}]`)]
+    .map((note) => note.textContent?.trim() || "")
+    .filter(Boolean);
+}
+
+function annotatedExample(card: HTMLElement, raw: string, title: string, description: string, dialect: DatabaseGuideDialect): string {
+  const notes = learningNotes(card);
+  if (!notes.length) return buildDatabaseGuide(raw, title, description, dialect);
+  const prefix = dialect === "mongodb" ? "//" : "--";
+  const comments = [description, ...notes].filter(Boolean).map((note) => `${prefix} ${note}`);
+  return `${comments.join("\n")}\n\n${stripDatabaseGuideComments(raw).trim()}`;
+}
+
 function ensureExampleOverlay(card: HTMLElement, annotated: string, dialect: DatabaseGuideDialect) {
   const originalPre = card.querySelector<HTMLElement>("pre:not(.db-example-highlight)");
   if (!originalPre) return;
@@ -78,9 +93,9 @@ function decorateExample(button: HTMLButtonElement) {
   const raw = exampleSource(card);
   if (!raw) return;
   const title = card.querySelector("h2")?.textContent?.trim() || "Database example";
-  const description = card.querySelector("p")?.textContent?.trim() || title;
+  const description = card.querySelector("p:not([data-db-learning-note])")?.textContent?.trim() || title;
   const dialect = dialectForSource(raw);
-  const annotated = buildDatabaseGuide(raw, title, description, dialect);
+  const annotated = annotatedExample(card, raw, title, description, dialect);
   annotatedByButton.set(button, annotated);
   ensureExampleOverlay(card, annotated, dialect);
 

@@ -64,11 +64,21 @@ test("deployment smoke sessions cover every bounded workspace shard", () => {
 });
 
 test("MySQL base fixture and workspace marker are versioned for seeded data", () => {
-  assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000");
-  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v3");
+  assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000:4:12");
+  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v4");
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.users/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.products/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.orders/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.Weather/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.Activity/);
+});
+
+test("MySQL fixture seed includes deterministic self-join learning tables", () => {
+  const seedSql = readFileSync(new URL("../ops/hetzner/db-lab/mysql-init.sql", import.meta.url), "utf8");
+  assert.match(seedSql, /CREATE\s+TABLE\s+Weather/i);
+  assert.match(seedSql, /INSERT\s+INTO\s+Weather/i);
+  assert.match(seedSql, /CREATE\s+TABLE\s+Activity/i);
+  assert.match(seedSql, /INSERT\s+INTO\s+Activity/i);
 });
 
 test("MySQL fixture seed uses a reusable helper table instead of a temporary self-join", () => {

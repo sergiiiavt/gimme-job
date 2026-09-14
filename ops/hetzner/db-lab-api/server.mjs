@@ -11,8 +11,8 @@ const MYSQL_ADMIN_PASSWORD = process.env.MYSQL_LAB_ROOT_PASSWORD || "";
 const POSTGRES_ADMIN_PASSWORD = process.env.POSTGRES_LAB_ADMIN_PASSWORD || "";
 const SERVICE_TOKEN = process.env.GIMMEJOB_AI_SERVICE_TOKEN || "";
 const WORKSPACE_COUNT = 4;
-const MYSQL_WORKSPACE_MARKER = "__gimmejob_workspace_v3";
-const MYSQL_BASE_FIXTURE_COUNTS = "10000:200:50000";
+const MYSQL_WORKSPACE_MARKER = "__gimmejob_workspace_v4";
+const MYSQL_BASE_FIXTURE_COUNTS = "10000:200:50000:4:12";
 const MAX_SQL_CHARS = 20_000;
 const MAX_BODY_BYTES = 32_000;
 const MAX_OUTPUT_BYTES = 512 * 1024;
@@ -166,7 +166,9 @@ function mysqlBaseFixtureCountSql() {
   return `SELECT CONCAT_WS(CHAR(58),
     (SELECT COUNT(*) FROM gimmejob_lab.users),
     (SELECT COUNT(*) FROM gimmejob_lab.products),
-    (SELECT COUNT(*) FROM gimmejob_lab.orders));`;
+    (SELECT COUNT(*) FROM gimmejob_lab.orders),
+    (SELECT COUNT(*) FROM gimmejob_lab.Weather),
+    (SELECT COUNT(*) FROM gimmejob_lab.Activity));`;
 }
 
 function postgresArgs({ user, database, sql }) {
@@ -226,17 +228,24 @@ async function ensureMysqlWorkspace(workspace) {
     password: MYSQL_ADMIN_PASSWORD,
     admin: true,
     sql: `
-      DROP TABLE IF EXISTS \`${database}\`.orders, \`${database}\`.products, \`${database}\`.users,
-        \`${database}\`.__gimmejob_workspace, \`${database}\`.__gimmejob_workspace_v2, \`${database}\`.${MYSQL_WORKSPACE_MARKER};
+      DROP TABLE IF EXISTS \`${database}\`.Activity, \`${database}\`.Weather,
+        \`${database}\`.orders, \`${database}\`.products, \`${database}\`.users,
+        \`${database}\`.__gimmejob_workspace, \`${database}\`.__gimmejob_workspace_v2,
+        \`${database}\`.__gimmejob_workspace_v3, \`${database}\`.${MYSQL_WORKSPACE_MARKER};
       CREATE TABLE \`${database}\`.users LIKE gimmejob_lab.users;
       INSERT INTO \`${database}\`.users SELECT * FROM gimmejob_lab.users;
       CREATE TABLE \`${database}\`.products LIKE gimmejob_lab.products;
       INSERT INTO \`${database}\`.products SELECT * FROM gimmejob_lab.products;
       CREATE TABLE \`${database}\`.orders LIKE gimmejob_lab.orders;
       INSERT INTO \`${database}\`.orders SELECT * FROM gimmejob_lab.orders;
+      CREATE TABLE \`${database}\`.Weather LIKE gimmejob_lab.Weather;
+      INSERT INTO \`${database}\`.Weather SELECT * FROM gimmejob_lab.Weather;
+      CREATE TABLE \`${database}\`.Activity LIKE gimmejob_lab.Activity;
+      INSERT INTO \`${database}\`.Activity SELECT * FROM gimmejob_lab.Activity;
       CREATE TABLE \`${database}\`.${MYSQL_WORKSPACE_MARKER} (created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
       INSERT INTO \`${database}\`.${MYSQL_WORKSPACE_MARKER} VALUES (CURRENT_TIMESTAMP);
-      ANALYZE TABLE \`${database}\`.users, \`${database}\`.products, \`${database}\`.orders;
+      ANALYZE TABLE \`${database}\`.users, \`${database}\`.products, \`${database}\`.orders,
+        \`${database}\`.Weather, \`${database}\`.Activity;
     `,
   });
 }

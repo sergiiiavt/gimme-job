@@ -48,6 +48,43 @@ CREATE TABLE orders (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+-- Small, deterministic learning fixtures for progressive self-join examples.
+CREATE TABLE Weather (
+  id INT NOT NULL,
+  recordDate DATE NOT NULL,
+  temperature INT NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_weather_record_date (recordDate)
+) ENGINE=InnoDB;
+
+CREATE TABLE Activity (
+  machine_id INT NOT NULL,
+  process_id INT NOT NULL,
+  activity_type ENUM('start', 'end') NOT NULL,
+  `timestamp` DECIMAL(10,3) NOT NULL,
+  PRIMARY KEY (machine_id, process_id, activity_type)
+) ENGINE=InnoDB;
+
+INSERT INTO Weather (id, recordDate, temperature) VALUES
+  (1, '2015-01-01', 10),
+  (2, '2015-01-02', 25),
+  (3, '2015-01-03', 20),
+  (4, '2015-01-04', 30);
+
+INSERT INTO Activity (machine_id, process_id, activity_type, `timestamp`) VALUES
+  (0, 0, 'start', 0.712),
+  (0, 0, 'end',   1.520),
+  (0, 1, 'start', 3.140),
+  (0, 1, 'end',   4.120),
+  (1, 0, 'start', 0.550),
+  (1, 0, 'end',   1.550),
+  (1, 1, 'start', 0.430),
+  (1, 1, 'end',   1.420),
+  (2, 0, 'start', 4.100),
+  (2, 0, 'end',   4.512),
+  (2, 1, 'start', 2.500),
+  (2, 1, 'end',   5.000);
+
 -- MySQL cannot reference the same TEMPORARY table more than once in a statement
 -- (ERROR 1137: Can't reopen table). A normal helper table is safe to self-join and
 -- is dropped immediately after the deterministic fixture rows are generated.
@@ -108,4 +145,4 @@ WHERE seq.n < 50000;
 
 DROP TABLE __gimmejob_seed_digits;
 
-ANALYZE TABLE users, products, orders;
+ANALYZE TABLE users, products, orders, Weather, Activity;
