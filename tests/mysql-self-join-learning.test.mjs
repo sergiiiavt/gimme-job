@@ -11,44 +11,47 @@ const playgroundSource = readFileSync(
   "utf8",
 );
 
-test("self-join lessons use real seeded tables instead of hidden CTE fixtures", () => {
-  assert.doesNotMatch(learningSource, /\bWITH\s+(?:Weather|Activity)\b/i);
-  assert.match(learningSource, /FROM Weather\s+AS today/);
-  assert.match(learningSource, /FROM Activity\s+AS s/);
-  assert.match(learningSource, /Inspect · Weather comparison data/);
-  assert.match(learningSource, /Inspect · Activity process data/);
+test("self-join lessons use real commerce tables instead of isolated exercise fixtures", () => {
+  assert.match(learningSource, /FROM product_price_history AS current_price/);
+  assert.match(learningSource, /FROM order_processing_events AS s/);
+  assert.match(learningSource, /JOIN products AS p ON p\.id = h\.product_id/);
+  assert.match(learningSource, /JOIN orders AS o\n  ON o\.id = s\.order_id/);
+  assert.match(learningSource, /Inspect · Product price history/);
+  assert.match(learningSource, /Inspect · Order processing events/);
+  assert.doesNotMatch(learningSource, /\bWeather\b|\bActivity\b/);
 });
 
-test("Weather lesson adds one idea at a time", () => {
+test("price-history lesson adds one idea at a time", () => {
   for (const step of [
-    "Weather self-join · 1 · all pairs",
-    "Weather self-join · 2 · consecutive days",
-    "Weather self-join · 3 · warmer than yesterday",
-    "Weather self-join · 4 · final answer",
+    "Price history self-join · 1 · all pairs",
+    "Price history self-join · 2 · previous day",
+    "Price history self-join · 3 · price increased",
+    "Price history self-join · 4 · final answer",
   ]) assert.match(learningSource, new RegExp(step.replaceAll("·", "\\u00b7")));
 
-  assert.match(learningSource, /CROSS JOIN Weather AS previous/);
-  assert.match(learningSource, /DATEDIFF\(today\.recordDate, previous\.recordDate\) = 1/);
-  assert.match(learningSource, /WHERE today\.temperature > previous\.temperature/);
-  assert.match(learningSource, /sql: `SELECT today\.id\nFROM Weather AS today/);
-  assert.match(learningSource, /If the requirement were 'compare with every earlier day'/);
+  assert.match(learningSource, /CROSS JOIN product_price_history AS previous_price/);
+  assert.match(learningSource, /current_price\.product_id = previous_price\.product_id/);
+  assert.match(learningSource, /DATEDIFF\(current_price\.price_date, previous_price\.price_date\) = 1/);
+  assert.match(learningSource, /WHERE current_price\.price > previous_price\.price/);
+  assert.match(learningSource, /sql: `SELECT current_price\.product_id,\n       current_price\.price_date/);
 });
 
-test("Activity lesson builds pairing before arithmetic and aggregation", () => {
+test("order-processing lesson builds pairing before arithmetic, business context, and aggregation", () => {
   for (const step of [
-    "Process duration · 1 · all pairs",
-    "Process duration · 2 · same machine",
-    "Process duration · 3 · same process",
-    "Process duration · 4 · start to end",
-    "Process duration · 5 · calculate duration",
-    "Process duration · 6 · average per machine",
+    "Processing time · 1 · all event pairs",
+    "Processing time · 2 · same order",
+    "Processing time · 3 · start to end",
+    "Processing time · 4 · calculate duration",
+    "Processing time · 5 · attach order context",
+    "Processing time · 6 · average per channel",
   ]) assert.match(learningSource, new RegExp(step.replaceAll("·", "\\u00b7")));
 
-  assert.match(learningSource, /ON s\.machine_id = e\.machine_id/);
-  assert.match(learningSource, /AND s\.process_id = e\.process_id/);
-  assert.match(learningSource, /WHERE s\.activity_type = 'start'\n  AND e\.activity_type = 'end'/);
-  assert.match(learningSource, /e\.timestamp - s\.timestamp AS duration/);
-  assert.match(learningSource, /ROUND\(AVG\(e\.timestamp - s\.timestamp\), 3\) AS processing_time/);
+  assert.match(learningSource, /ON s\.order_id = e\.order_id/);
+  assert.match(learningSource, /WHERE s\.event_type = 'start'\n  AND e\.event_type = 'end'/);
+  assert.match(learningSource, /TIMESTAMPDIFF\(MICROSECOND, s\.event_at, e\.event_at\) \/ 1000000\.0 AS processing_seconds/);
+  assert.match(learningSource, /JOIN orders AS o\n  ON o\.id = s\.order_id/);
+  assert.match(learningSource, /GROUP BY o\.channel/);
+  assert.match(learningSource, /mobile = 1\.456 s, partner = 0\.894 s, web = 0\.995 s/);
 });
 
 test("playground renders reasoning with the learning query and keeps it MySQL-only", () => {

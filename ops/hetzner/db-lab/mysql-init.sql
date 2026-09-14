@@ -45,45 +45,28 @@ CREATE TABLE orders (
   channel VARCHAR(20) NOT NULL,
   total_amount DECIMAL(10,2) NOT NULL,
   created_at DATETIME NOT NULL,
-  PRIMARY KEY (id)
-) ENGINE=InnoDB;
-
--- Small, deterministic learning fixtures for progressive self-join examples.
-CREATE TABLE Weather (
-  id INT NOT NULL,
-  recordDate DATE NOT NULL,
-  temperature INT NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_weather_record_date (recordDate)
+  CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_orders_product FOREIGN KEY (product_id) REFERENCES products(id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE Activity (
-  machine_id INT NOT NULL,
-  process_id INT NOT NULL,
-  activity_type ENUM('start', 'end') NOT NULL,
-  `timestamp` DECIMAL(10,3) NOT NULL,
-  PRIMARY KEY (machine_id, process_id, activity_type)
+-- Small deterministic learning data extends the same commerce domain instead of
+-- introducing unrelated interview-only tables.
+CREATE TABLE product_price_history (
+  product_id BIGINT UNSIGNED NOT NULL,
+  price_date DATE NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (product_id, price_date),
+  CONSTRAINT fk_price_history_product FOREIGN KEY (product_id) REFERENCES products(id)
 ) ENGINE=InnoDB;
 
-INSERT INTO Weather (id, recordDate, temperature) VALUES
-  (1, '2015-01-01', 10),
-  (2, '2015-01-02', 25),
-  (3, '2015-01-03', 20),
-  (4, '2015-01-04', 30);
-
-INSERT INTO Activity (machine_id, process_id, activity_type, `timestamp`) VALUES
-  (0, 0, 'start', 0.712),
-  (0, 0, 'end',   1.520),
-  (0, 1, 'start', 3.140),
-  (0, 1, 'end',   4.120),
-  (1, 0, 'start', 0.550),
-  (1, 0, 'end',   1.550),
-  (1, 1, 'start', 0.430),
-  (1, 1, 'end',   1.420),
-  (2, 0, 'start', 4.100),
-  (2, 0, 'end',   4.512),
-  (2, 1, 'start', 2.500),
-  (2, 1, 'end',   5.000);
+CREATE TABLE order_processing_events (
+  order_id BIGINT UNSIGNED NOT NULL,
+  event_type ENUM('start', 'end') NOT NULL,
+  event_at DATETIME(3) NOT NULL,
+  PRIMARY KEY (order_id, event_type),
+  CONSTRAINT fk_processing_event_order FOREIGN KEY (order_id) REFERENCES orders(id)
+) ENGINE=InnoDB;
 
 -- MySQL cannot reference the same TEMPORARY table more than once in a statement
 -- (ERROR 1137: Can't reopen table). A normal helper table is safe to self-join and
@@ -143,6 +126,34 @@ FROM (
 ) AS seq
 WHERE seq.n < 50000;
 
+-- The latest history rows intentionally match products.price for product 1 (5.00)
+-- and product 2 (6.37), so the history and current product state agree.
+INSERT INTO product_price_history (product_id, price_date, price) VALUES
+  (1, '2026-08-25', 4.50),
+  (1, '2026-08-26', 4.80),
+  (1, '2026-08-27', 4.70),
+  (1, '2026-08-28', 5.00),
+  (2, '2026-08-25', 5.80),
+  (2, '2026-08-26', 6.10),
+  (2, '2026-08-27', 6.00),
+  (2, '2026-08-28', 6.37);
+
+-- Orders 4, 9, 14, 24, 29, and 34 are shipped orders from the generated fixture.
+-- Two orders per channel keep the final AVG example small and deterministic.
+INSERT INTO order_processing_events (order_id, event_type, event_at) VALUES
+  (4,  'start', '2026-01-04 09:00:01.000'),
+  (4,  'end',   '2026-01-04 09:00:01.808'),
+  (24, 'start', '2026-01-24 09:00:01.000'),
+  (24, 'end',   '2026-01-24 09:00:01.980'),
+  (9,  'start', '2026-01-09 09:00:01.000'),
+  (9,  'end',   '2026-01-09 09:00:02.000'),
+  (29, 'start', '2026-01-29 09:00:01.000'),
+  (29, 'end',   '2026-01-29 09:00:01.990'),
+  (14, 'start', '2026-01-14 09:00:01.000'),
+  (14, 'end',   '2026-01-14 09:00:01.412'),
+  (34, 'start', '2026-02-03 09:00:01.000'),
+  (34, 'end',   '2026-02-03 09:00:03.500');
+
 DROP TABLE __gimmejob_seed_digits;
 
-ANALYZE TABLE users, products, orders, Weather, Activity;
+ANALYZE TABLE users, products, orders, product_price_history, order_processing_events;

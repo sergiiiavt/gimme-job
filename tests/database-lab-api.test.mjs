@@ -64,21 +64,29 @@ test("deployment smoke sessions cover every bounded workspace shard", () => {
 });
 
 test("MySQL base fixture and workspace marker are versioned for seeded data", () => {
-  assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000:4:12");
-  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v4");
+  assert.equal(MYSQL_BASE_FIXTURE_COUNTS, "10000:200:50000:8:12");
+  assert.equal(MYSQL_WORKSPACE_MARKER, "__gimmejob_workspace_v5");
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.users/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.products/);
   assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.orders/);
-  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.Weather/);
-  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.Activity/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.product_price_history/);
+  assert.match(mysqlBaseFixtureCountSql(), /gimmejob_lab\.order_processing_events/);
+  assert.doesNotMatch(mysqlBaseFixtureCountSql(), /gimmejob_lab\.(?:Weather|Activity)/);
 });
 
-test("MySQL fixture seed includes deterministic self-join learning tables", () => {
+test("MySQL learning fixtures extend the commerce schema with real relationships", () => {
   const seedSql = readFileSync(new URL("../ops/hetzner/db-lab/mysql-init.sql", import.meta.url), "utf8");
-  assert.match(seedSql, /CREATE\s+TABLE\s+Weather/i);
-  assert.match(seedSql, /INSERT\s+INTO\s+Weather/i);
-  assert.match(seedSql, /CREATE\s+TABLE\s+Activity/i);
-  assert.match(seedSql, /INSERT\s+INTO\s+Activity/i);
+  assert.match(seedSql, /CREATE\s+TABLE\s+product_price_history/i);
+  assert.match(seedSql, /FOREIGN\s+KEY\s*\(product_id\)\s+REFERENCES\s+products\s*\(id\)/i);
+  assert.match(seedSql, /INSERT\s+INTO\s+product_price_history/i);
+  assert.match(seedSql, /\(1,\s*'2026-08-28',\s*5\.00\)/);
+  assert.match(seedSql, /\(2,\s*'2026-08-28',\s*6\.37\)/);
+  assert.match(seedSql, /CREATE\s+TABLE\s+order_processing_events/i);
+  assert.match(seedSql, /FOREIGN\s+KEY\s*\(order_id\)\s+REFERENCES\s+orders\s*\(id\)/i);
+  assert.match(seedSql, /INSERT\s+INTO\s+order_processing_events/i);
+  assert.match(seedSql, /FOREIGN\s+KEY\s*\(user_id\)\s+REFERENCES\s+users\s*\(id\)/i);
+  assert.match(seedSql, /FOREIGN\s+KEY\s*\(product_id\)\s+REFERENCES\s+products\s*\(id\)/i);
+  assert.doesNotMatch(seedSql, /CREATE\s+TABLE\s+(?:Weather|Activity)\b/i);
 });
 
 test("MySQL fixture seed uses a reusable helper table instead of a temporary self-join", () => {

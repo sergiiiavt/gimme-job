@@ -9,226 +9,235 @@ export type MysqlLearningExample = {
 export const MYSQL_SELF_JOIN_LEARNING_EXAMPLES: MysqlLearningExample[] = [
   {
     category: "Tables & data",
-    title: "Inspect · Weather comparison data",
-    description: "Look at the seeded Weather rows before building the previous-day self-join.",
+    title: "Inspect · Product price history",
+    description: "Inspect price history that belongs to real products before comparing each date with the previous day.",
     reasoning: [
-      "The answer will depend on two different Weather rows: one current day and one previous day.",
-      "Before writing a JOIN, identify the columns that define the relationship: recordDate tells us which rows are consecutive, and temperature is the value we will compare.",
-      "Expected result: 4 source rows. Keep those four dates in mind while you watch the JOIN reduce possible pairs in the next steps.",
+      "product_price_history is not a standalone exercise table: product_id references products.id.",
+      "Two products have four consecutive history rows each, so the self-join must match both the product and the date relationship.",
+      "Expected result: 8 rows. The latest prices are 5.00 for product 1 and 6.37 for product 2, matching products.price.",
     ],
-    sql: `SELECT id, recordDate, temperature
-FROM Weather
-ORDER BY recordDate;`,
+    sql: `SELECT h.product_id,
+       p.sku,
+       h.price_date,
+       h.price
+FROM product_price_history AS h
+JOIN products AS p ON p.id = h.product_id
+ORDER BY h.product_id, h.price_date;`,
   },
   {
     category: "Tables & data",
-    title: "Inspect · Activity process data",
-    description: "Look at the seeded Activity rows before building the start/end self-join.",
+    title: "Inspect · Order processing events",
+    description: "Inspect start/end events that belong to real shipped orders before pairing each order's two events.",
     reasoning: [
-      "Each process is represented by two rows: one start event and one end event.",
-      "The columns machine_id + process_id identify the process; activity_type tells us which row is start or end; timestamp is the value we eventually subtract.",
-      "Expected result: 12 source rows = 3 machines × 2 processes × 2 events. The target is eventually one duration per process, then one average per machine.",
+      "order_processing_events.order_id references orders.id, so every event belongs to an order already present in the playground.",
+      "Each selected shipped order has exactly two rows: one start event and one end event.",
+      "Expected result: 12 rows = 6 orders × 2 events. The final example will reuse orders.channel to calculate an average per channel.",
     ],
-    sql: `SELECT machine_id, process_id, activity_type, timestamp
-FROM Activity
-ORDER BY machine_id, process_id, timestamp;`,
+    sql: `SELECT e.order_id,
+       o.channel,
+       o.status,
+       e.event_type,
+       e.event_at
+FROM order_processing_events AS e
+JOIN orders AS o ON o.id = e.order_id
+ORDER BY e.order_id, e.event_at;`,
   },
   {
     category: "Joins",
-    title: "Weather self-join · 1 · all pairs",
-    description: "Start by giving the same Weather table two roles and inspect the candidate row pairs before deciding which pair is meaningful.",
+    title: "Price history self-join · 1 · all pairs",
+    description: "Read the same price-history table twice and inspect every candidate current/previous pair before defining the relationship.",
     reasoning: [
-      "The answer depends on two different rows: a current day and a previous day. Because both rows live in Weather, read Weather twice with two aliases.",
-      "CROSS JOIN intentionally shows every possible pair. Most pairs are wrong; seeing them makes the purpose of the next ON condition obvious.",
-      "Expected result: 16 rows because 4 possible today rows × 4 possible previous rows = 16 candidate pairs.",
+      "The comparison needs two different history rows at once, so product_price_history receives the aliases current_price and previous_price.",
+      "CROSS JOIN intentionally includes wrong combinations, including rows from different products.",
+      "Expected result: 64 rows because 8 current rows × 8 previous rows = 64 candidate pairs.",
     ],
-    sql: `SELECT today.id AS today_id,
-       today.recordDate AS today_date,
-       today.temperature AS today_temp,
-       previous.id AS previous_id,
-       previous.recordDate AS previous_date,
-       previous.temperature AS previous_temp
-FROM Weather AS today
-CROSS JOIN Weather AS previous
-ORDER BY today.recordDate, previous.recordDate;`,
+    sql: `SELECT current_price.product_id AS current_product,
+       current_price.price_date AS current_date,
+       current_price.price AS current_price,
+       previous_price.product_id AS previous_product,
+       previous_price.price_date AS previous_date,
+       previous_price.price AS previous_price
+FROM product_price_history AS current_price
+CROSS JOIN product_price_history AS previous_price
+ORDER BY current_price.product_id, current_price.price_date,
+         previous_price.product_id, previous_price.price_date;`,
   },
   {
     category: "Joins",
-    title: "Weather self-join · 2 · consecutive days",
-    description: "Now define the relationship between the aliases: the previous row must be exactly one calendar day before the current row.",
+    title: "Price history self-join · 2 · previous day",
+    description: "Define which two history rows belong together: same product, with the previous row exactly one calendar day earlier.",
     reasoning: [
-      "The task says the previous day, not any earlier date. DATEDIFF = 1 deliberately keeps only yesterday for each current day.",
-      "If the requirement were 'compare with every earlier day', the relationship would instead be previous.recordDate < today.recordDate.",
-      "Expected result: 3 rows: Jan 2 ↔ Jan 1, Jan 3 ↔ Jan 2, and Jan 4 ↔ Jan 3. Jan 1 has no previous day in the table.",
+      "current_price.product_id = previous_price.product_id prevents product 1 from being compared with product 2.",
+      "DATEDIFF = 1 means the immediately previous calendar day, not any earlier date.",
+      "Expected result: 6 rows: each product contributes three consecutive-day pairs because its first history row has no previous day in the table.",
     ],
-    sql: `SELECT today.id AS today_id,
-       today.recordDate AS today_date,
-       today.temperature AS today_temp,
-       previous.recordDate AS previous_date,
-       previous.temperature AS previous_temp
-FROM Weather AS today
-JOIN Weather AS previous
-  ON DATEDIFF(today.recordDate, previous.recordDate) = 1
-ORDER BY today.recordDate;`,
+    sql: `SELECT current_price.product_id,
+       current_price.price_date AS current_date,
+       current_price.price AS current_price,
+       previous_price.price_date AS previous_date,
+       previous_price.price AS previous_price
+FROM product_price_history AS current_price
+JOIN product_price_history AS previous_price
+  ON current_price.product_id = previous_price.product_id
+ AND DATEDIFF(current_price.price_date, previous_price.price_date) = 1
+ORDER BY current_price.product_id, current_price.price_date;`,
   },
   {
     category: "Joins",
-    title: "Weather self-join · 3 · warmer than yesterday",
-    description: "Only after the correct day pairs exist, add the actual business condition: today's temperature must be higher than yesterday's.",
+    title: "Price history self-join · 3 · price increased",
+    description: "After the correct day pairs exist, keep only dates where the product price is higher than on the previous day.",
     reasoning: [
-      "ON answers 'which two rows belong together?'. WHERE answers 'which of those valid pairs satisfy the requirement?'.",
-      "Keeping the pairing rule and the temperature rule separate makes the query much easier to reason about and debug.",
-      "Expected result: 2 rows. Jan 2 is warmer than Jan 1, Jan 3 is not warmer than Jan 2, and Jan 4 is warmer than Jan 3.",
+      "ON defines the valid row pair; WHERE applies the actual business condition to those pairs.",
+      "Keeping pairing and filtering separate makes it easy to see whether a wrong result comes from the relationship or the comparison.",
+      "Expected result: 4 rows. Both products increased on Aug 26 and Aug 28, but not on Aug 27.",
     ],
-    sql: `SELECT today.id AS today_id,
-       today.recordDate AS today_date,
-       today.temperature AS today_temp,
-       previous.temperature AS previous_temp
-FROM Weather AS today
-JOIN Weather AS previous
-  ON DATEDIFF(today.recordDate, previous.recordDate) = 1
-WHERE today.temperature > previous.temperature
-ORDER BY today.recordDate;`,
+    sql: `SELECT current_price.product_id,
+       current_price.price_date,
+       current_price.price,
+       previous_price.price AS previous_price
+FROM product_price_history AS current_price
+JOIN product_price_history AS previous_price
+  ON current_price.product_id = previous_price.product_id
+ AND DATEDIFF(current_price.price_date, previous_price.price_date) = 1
+WHERE current_price.price > previous_price.price
+ORDER BY current_price.product_id, current_price.price_date;`,
   },
   {
     category: "Joins",
-    title: "Weather self-join · 4 · final answer",
-    description: "The logic is already complete; now return only the column requested by the task.",
+    title: "Price history self-join · 4 · final answer",
+    description: "Return only the product and date requested after the self-join logic has already been verified.",
     reasoning: [
-      "Do not start by trying to SELECT only id. During construction, keep the diagnostic columns visible so you can verify the pairs and comparison.",
-      "Once the result rows are correct, reducing SELECT to today.id is just output formatting, not new logic.",
-      "Expected final result: ids 2 and 4. The row count does not change from step 3; only the displayed columns change.",
+      "During construction, diagnostic price columns help verify the comparison; remove them only after the rows are correct.",
+      "This is the same self-join pattern as the classic previous-day comparison exercise, but the data now belongs to the playground's commerce model.",
+      "Expected final result: product 1 on Aug 26/Aug 28 and product 2 on Aug 26/Aug 28.",
     ],
-    sql: `SELECT today.id
-FROM Weather AS today
-JOIN Weather AS previous
-  ON DATEDIFF(today.recordDate, previous.recordDate) = 1
-WHERE today.temperature > previous.temperature
-ORDER BY today.id;`,
+    sql: `SELECT current_price.product_id,
+       current_price.price_date
+FROM product_price_history AS current_price
+JOIN product_price_history AS previous_price
+  ON current_price.product_id = previous_price.product_id
+ AND DATEDIFF(current_price.price_date, previous_price.price_date) = 1
+WHERE current_price.price > previous_price.price
+ORDER BY current_price.product_id, current_price.price_date;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 1 · all pairs",
-    description: "Read Activity twice so one alias can eventually represent start and the other end; first inspect the unfiltered combinations.",
+    title: "Processing time · 1 · all event pairs",
+    description: "Read order_processing_events twice so one alias can eventually be start and the other end; first inspect all combinations.",
     reasoning: [
-      "A duration needs two different rows at the same time: one start timestamp and one end timestamp.",
-      "Both rows are in Activity, so use a self-join. CROSS JOIN exposes the raw combinations before we teach SQL which rows belong together.",
-      "Expected result: 144 rows because the 12 Activity rows can pair with all 12 Activity rows: 12 × 12.",
+      "A duration needs two rows at once: the start event and the end event.",
+      "Both rows live in order_processing_events, so this is another self-join.",
+      "Expected result: 144 rows because 12 event rows × 12 event rows = 144 candidate pairs.",
     ],
-    sql: `SELECT s.machine_id AS s_machine,
-       s.process_id AS s_process,
-       s.activity_type AS s_type,
-       s.timestamp AS s_time,
-       e.machine_id AS e_machine,
-       e.process_id AS e_process,
-       e.activity_type AS e_type,
-       e.timestamp AS e_time
-FROM Activity AS s
-CROSS JOIN Activity AS e
-ORDER BY s.machine_id, s.process_id, s.timestamp,
-         e.machine_id, e.process_id, e.timestamp;`,
+    sql: `SELECT s.order_id AS s_order,
+       s.event_type AS s_type,
+       s.event_at AS s_time,
+       e.order_id AS e_order,
+       e.event_type AS e_type,
+       e.event_at AS e_time
+FROM order_processing_events AS s
+CROSS JOIN order_processing_events AS e
+ORDER BY s.order_id, s.event_at, e.order_id, e.event_at;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 2 · same machine",
-    description: "Add the first relationship: the two candidate rows may pair only when they belong to the same machine.",
+    title: "Processing time · 2 · same order",
+    description: "Add the relationship key so candidate rows can pair only when both events belong to the same order.",
     reasoning: [
-      "This condition removes combinations across different machines, but it is intentionally not enough yet.",
-      "You should still see process 0 mixed with process 1 inside one machine; that visible mistake tells us the next condition we need.",
-      "Expected result: 48 rows. Each machine has 4 Activity rows, so it contributes 4 × 4 = 16 pairs; 3 machines produce 48.",
+      "order_id is the entity relationship we need: events from different orders can never form one processing duration.",
+      "Each order still has start/start, start/end, end/start and end/end combinations because the alias roles are not fixed yet.",
+      "Expected result: 24 rows = 6 orders × 4 event-role combinations per order.",
     ],
-    sql: `SELECT s.machine_id,
-       s.process_id AS s_process,
-       s.activity_type AS s_type,
-       e.process_id AS e_process,
-       e.activity_type AS e_type
-FROM Activity AS s
-JOIN Activity AS e
-  ON s.machine_id = e.machine_id
-ORDER BY s.machine_id, s.process_id, e.process_id;`,
+    sql: `SELECT s.order_id,
+       s.event_type AS s_type,
+       s.event_at AS s_time,
+       e.event_type AS e_type,
+       e.event_at AS e_time
+FROM order_processing_events AS s
+JOIN order_processing_events AS e
+  ON s.order_id = e.order_id
+ORDER BY s.order_id, s.event_at, e.event_at;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 3 · same process",
-    description: "Add process_id so the two aliases now refer to rows from the same machine and the same process.",
+    title: "Processing time · 3 · start to end",
+    description: "Assign the two aliases their real roles: s is the start event and e is the end event for the same order.",
     reasoning: [
-      "machine_id + process_id identifies the process whose two event rows we want to combine.",
-      "The result still contains start/start, start/end, end/start and end/end. That is expected: row identity is fixed, but alias roles are not fixed yet.",
-      "Expected result: 24 rows. There are 6 processes, and each process still produces 2 × 2 = 4 event-role combinations.",
+      "The ON condition says which entity the rows belong to; the WHERE conditions say which event role each alias represents.",
+      "After this step every result row has exactly one order with its correct start and end timestamps side by side.",
+      "Expected result: 6 rows = one valid event pair for each seeded order.",
     ],
-    sql: `SELECT s.machine_id,
-       s.process_id,
-       s.activity_type AS s_type,
-       s.timestamp AS s_time,
-       e.activity_type AS e_type,
-       e.timestamp AS e_time
-FROM Activity AS s
-JOIN Activity AS e
-  ON s.machine_id = e.machine_id
- AND s.process_id = e.process_id
-ORDER BY s.machine_id, s.process_id, s.timestamp, e.timestamp;`,
+    sql: `SELECT s.order_id,
+       s.event_at AS start_time,
+       e.event_at AS end_time
+FROM order_processing_events AS s
+JOIN order_processing_events AS e
+  ON s.order_id = e.order_id
+WHERE s.event_type = 'start'
+  AND e.event_type = 'end'
+ORDER BY s.order_id;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 4 · start to end",
-    description: "Now assign the aliases their intended roles: s is the start row and e is the end row.",
+    title: "Processing time · 4 · calculate duration",
+    description: "Once each row contains the correct start and end, calculate the order's processing duration in seconds.",
     reasoning: [
-      "The join keys answer which process the rows belong to; these filters answer which event each alias represents.",
-      "After this step, every result row should contain exactly one process with its correct start and end timestamps side by side.",
-      "Expected result: 6 rows = one start/end pair for each of the 6 processes. The unwanted start/start, end/start and end/end combinations disappear.",
+      "TIMESTAMPDIFF calculates the interval between the paired timestamps; using microseconds preserves the millisecond fixture precision.",
+      "Do arithmetic only after row pairing is correct, otherwise a valid number can still be calculated from the wrong events.",
+      "Expected result: still 6 rows. Only a calculated processing_seconds column is added.",
     ],
-    sql: `SELECT s.machine_id,
-       s.process_id,
-       s.timestamp AS start_time,
-       e.timestamp AS end_time
-FROM Activity AS s
-JOIN Activity AS e
-  ON s.machine_id = e.machine_id
- AND s.process_id = e.process_id
-WHERE s.activity_type = 'start'
-  AND e.activity_type = 'end'
-ORDER BY s.machine_id, s.process_id;`,
+    sql: `SELECT s.order_id,
+       s.event_at AS start_time,
+       e.event_at AS end_time,
+       TIMESTAMPDIFF(MICROSECOND, s.event_at, e.event_at) / 1000000.0 AS processing_seconds
+FROM order_processing_events AS s
+JOIN order_processing_events AS e
+  ON s.order_id = e.order_id
+WHERE s.event_type = 'start'
+  AND e.event_type = 'end'
+ORDER BY s.order_id;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 5 · calculate duration",
-    description: "With the correct start and end already on one row, calculate each process duration with a simple subtraction.",
+    title: "Processing time · 5 · attach order context",
+    description: "Join each correctly paired duration back to orders so the existing commerce data supplies channel and status.",
     reasoning: [
-      "Do the arithmetic only after the row pairing is correct. Otherwise SQL can calculate a perfectly valid number from the wrong two events.",
-      "Keeping start_time and end_time in SELECT while learning lets you verify that duration = end - start for every row.",
-      "Expected result: still 6 rows. We are adding a calculated column, not filtering or grouping rows.",
+      "The self-join solves the event-pair problem; JOIN orders adds business context instead of duplicating channel inside the event table.",
+      "This is why order_processing_events stores order_id rather than unrelated machine/process identifiers.",
+      "Expected result: 6 shipped orders across partner, web, and mobile channels.",
     ],
-    sql: `SELECT s.machine_id,
-       s.process_id,
-       s.timestamp AS start_time,
-       e.timestamp AS end_time,
-       e.timestamp - s.timestamp AS duration
-FROM Activity AS s
-JOIN Activity AS e
-  ON s.machine_id = e.machine_id
- AND s.process_id = e.process_id
-WHERE s.activity_type = 'start'
-  AND e.activity_type = 'end'
-ORDER BY s.machine_id, s.process_id;`,
+    sql: `SELECT o.id AS order_id,
+       o.channel,
+       o.status,
+       TIMESTAMPDIFF(MICROSECOND, s.event_at, e.event_at) / 1000000.0 AS processing_seconds
+FROM order_processing_events AS s
+JOIN order_processing_events AS e
+  ON s.order_id = e.order_id
+JOIN orders AS o
+  ON o.id = s.order_id
+WHERE s.event_type = 'start'
+  AND e.event_type = 'end'
+ORDER BY o.channel, o.id;`,
   },
   {
     category: "Joins",
-    title: "Process duration · 6 · average per machine",
-    description: "Only after each process has a correct duration, group those process rows by machine and average them.",
+    title: "Processing time · 6 · average per channel",
+    description: "Only after each order has one correct duration, group those durations by the channel already stored on orders.",
     reasoning: [
-      "GROUP BY is the last step because AVG should receive one correct duration per process, not the raw Activity event rows.",
-      "ROUND(..., 3) changes display precision only; AVG(e.timestamp - s.timestamp) is the actual calculation.",
-      "Expected final result: 3 rows — machine 0 = 0.894, machine 1 = 0.995, machine 2 = 1.456.",
+      "GROUP BY comes last because AVG should receive one correct duration per order, not the raw event rows.",
+      "The event table stays normalized: channel belongs to orders, so the final query joins to orders instead of copying channel into every event.",
+      "Expected final result: mobile = 1.456 s, partner = 0.894 s, web = 0.995 s.",
     ],
-    sql: `SELECT s.machine_id,
-       ROUND(AVG(e.timestamp - s.timestamp), 3) AS processing_time
-FROM Activity AS s
-JOIN Activity AS e
-  ON s.machine_id = e.machine_id
- AND s.process_id = e.process_id
-WHERE s.activity_type = 'start'
-  AND e.activity_type = 'end'
-GROUP BY s.machine_id
-ORDER BY s.machine_id;`,
+    sql: `SELECT o.channel,
+       ROUND(AVG(TIMESTAMPDIFF(MICROSECOND, s.event_at, e.event_at) / 1000000.0), 3) AS processing_seconds
+FROM order_processing_events AS s
+JOIN order_processing_events AS e
+  ON s.order_id = e.order_id
+JOIN orders AS o
+  ON o.id = s.order_id
+WHERE s.event_type = 'start'
+  AND e.event_type = 'end'
+GROUP BY o.channel
+ORDER BY o.channel;`,
   },
 ];

@@ -5,7 +5,7 @@ export DEBIAN_FRONTEND=noninteractive
 RUNTIME_DIR=/opt/gimmejob-n8n
 REPO_RAW=https://raw.githubusercontent.com/sergiiiavt/gimme-job/main/ops/hetzner
 HTTPS_ONLY='=https'
-MYSQL_BASE_FIXTURE_COUNTS='10000:200:50000:4:12'
+MYSQL_BASE_FIXTURE_COUNTS='10000:200:50000:8:12'
 MONGO_BASE_FIXTURE_COUNTS='1000:120:8000:1'
 
 log() {
@@ -29,7 +29,7 @@ ensure_env_secret() {
 
 mysql_seed_counts() {
   docker compose exec -T mysql-lab sh -lc \
-    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --batch --skip-column-names -e "SELECT CONCAT_WS(CHAR(58),(SELECT COUNT(*) FROM gimmejob_lab.users),(SELECT COUNT(*) FROM gimmejob_lab.products),(SELECT COUNT(*) FROM gimmejob_lab.orders),(SELECT COUNT(*) FROM gimmejob_lab.Weather),(SELECT COUNT(*) FROM gimmejob_lab.Activity));"' \
+    'mysql --protocol=TCP -h127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD" --batch --skip-column-names -e "SELECT CONCAT_WS(CHAR(58),(SELECT COUNT(*) FROM gimmejob_lab.users),(SELECT COUNT(*) FROM gimmejob_lab.products),(SELECT COUNT(*) FROM gimmejob_lab.orders),(SELECT COUNT(*) FROM gimmejob_lab.product_price_history),(SELECT COUNT(*) FROM gimmejob_lab.order_processing_events));"' \
     2>/dev/null
 }
 
