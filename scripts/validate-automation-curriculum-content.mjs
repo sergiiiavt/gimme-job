@@ -147,29 +147,42 @@ const unusedSources = [...sourceIds].filter((id) => !citedSources.has(id));
 assert.equal(unusedSources.length, 0, `Every source must be cited by at least one lesson or module primer. Unused: ${unusedSources.join(", ")}`);
 
 // Robot Framework lives in TypeScript because it is composed into the base JSON curriculum.
-// Guard the failure mode that caused Robot snippets to be presented as runnable Python.
+// Keep the dedicated track comprehensive and make sure examples are rendered with explicit languages.
 const robotLessonIds = [...robotSource.matchAll(/id:\s*"(ta-lesson-robot-framework-[^"]+)"/g)].map((match) => match[1]);
-assert.equal(robotLessonIds.length, 5, "Robot Framework track must contain exactly 5 lessons.");
+assert.equal(robotLessonIds.length, 19, "Robot Framework complete guide must contain exactly 19 lessons.");
 assert.equal(new Set(robotLessonIds).size, robotLessonIds.length, "Robot Framework lesson ids must be unique.");
 assert.doesNotMatch(robotSource, /\n\s+code:\s*`/, "Robot Framework lessons must not use the generic Python code field; use explicit fenced languages in concept markdown.");
 assert.doesNotMatch(robotSource, /https?:\/\/\S*example\.test/i, "Robot Framework runnable examples must not use fake example.test endpoints.");
 
 for (const requiredSnippet of [
-  "python -m pip install robotframework==7.4.2",
+  "python -m pip install robotframework==7.5",
   "${ENV}    staging",
+  "*** Comments ***",
+  "${API_TOKEN: Secret}    %{API_TOKEN}",
+  "TRY/EXCEPT/ELSE/FINALLY",
+  "Suite Setup       Start Environment",
   "Resource    ../resources/greetings.resource",
+  "Library    Collections",
+  "Test Template    Addition Should Work",
+  "[Metadata]    Issue    QA-123",
   "rfbrowser init",
+  "Wait For Condition",
   "https://robotframework-browser.org",
   "https://jsonplaceholder.typicode.com/posts/1",
   "Library    OrderLibrary.py",
-  "python -m robot --include smoke --outputdir results tests",
+  "python -m libdoc OrderLibrary.py OrderLibrary.html",
+  "python -m rebot --outputdir merged results/output.xml",
+  "pabot --processes 4 --outputdir results tests",
+  "python -m robot --include smoke --exclude slow tests",
   "if: always()",
 ]) {
-  assert.ok(robotSource.includes(requiredSnippet), `Robot Framework runnable example is missing required content: ${requiredSnippet}`);
+  assert.ok(robotSource.includes(requiredSnippet), `Robot Framework complete guide is missing required content: ${requiredSnippet}`);
 }
 
 assert.ok(robotSource.includes("```robotframework"), "Robot Framework examples must use explicit robotframework code fences.");
 assert.ok(robotSource.includes("```bash"), "Robot Framework setup/run commands must use explicit bash code fences.");
+assert.ok(robotSource.includes("```yaml"), "Robot Framework CI examples must use explicit yaml code fences.");
 assert.ok(robotSource.includes("actively maintained in 2026"), "Robot Framework module must explain its current 2026 relevance without presenting it as the universal default.");
+assert.ok(robotSource.includes("Robot Framework 7.5 was released on September 14, 2026"), "Robot Framework module must identify the current stable release used by the guide.");
 
-console.log(`Test automation curriculum validated: ${lessons.length} base lessons, ${modules.length} base modules, ${sources.length} base sources + Robot Framework track.`);
+console.log(`Test automation curriculum validated: ${lessons.length} base lessons, ${modules.length} base modules, ${sources.length} base sources + Robot Framework complete guide.`);
