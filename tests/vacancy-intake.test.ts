@@ -105,6 +105,7 @@ test("publicHttpsUrl permits public HTTPS and blocks local/private sources", () 
 test("buildVacancySources constructs cloud-safe configured sources and excludes direct Work.ua HTML", () => {
   const config = {
     rss: [{ name: "dou", url: "https://jobs.dou.ua/vacancies/feeds/?search=QA" }],
+    djinni: [{ name: "djinni", query: "QA" }],
     greenhouse: [{ name: "Acme", board: "acme" }],
     lever: [{ name: "LeverCo", board: "leverco" }],
     ashby: [{ name: "AshbyCo", board: "ashbyco" }],
@@ -114,7 +115,7 @@ test("buildVacancySources constructs cloud-safe configured sources and excludes 
   };
   const sources = buildVacancySources(config);
   assert.deepEqual(sources.map((source) => source.name), [
-    "rss:dou", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
+    "rss:dou", "djinni:djinni", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
   ]);
   assert.deepEqual(skippedCloudSources(config), [{
     source: "workua:work",
@@ -190,14 +191,14 @@ test("publicVacancies returns sanitized stored rows", async () => {
 
 test("empty configured source lists make production sync deterministic without external fetches", async () => {
   const db = new FakeD1();
-  db.sourceSetting = { value_json: JSON.stringify({ rss: [], greenhouse: [], lever: [], ashby: [], workUa: [], robotaUa: [], lobbyX: [] }) };
+  db.sourceSetting = { value_json: JSON.stringify({ rss: [], djinni: [], greenhouse: [], lever: [], ashby: [], workUa: [], robotaUa: [], lobbyX: [] }) };
   const result = await syncVacancySources(db);
   assert.deepEqual(result, { seen: 0, relevant: 0, rejected: 0, duplicates: 0, inserted: 0, updated: 0, accepted: 0, errors: [], skipped: [] });
 });
 
 test("configured Work.ua is reported as skipped rather than failing cloud sync", async () => {
   const db = new FakeD1();
-  db.sourceSetting = { value_json: JSON.stringify({ rss: [], greenhouse: [], lever: [], ashby: [], workUa: [{ name: "work", query: "QA" }], robotaUa: [], lobbyX: [] }) };
+  db.sourceSetting = { value_json: JSON.stringify({ rss: [], djinni: [], greenhouse: [], lever: [], ashby: [], workUa: [{ name: "work", query: "QA" }], robotaUa: [], lobbyX: [] }) };
   const result = await syncVacancySources(db);
   assert.equal(result.errors.length, 0);
   assert.equal(result.skipped.length, 1);

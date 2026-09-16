@@ -7,6 +7,7 @@ import {
   type IntakeJob,
 } from "../../agent/src/job-intake.js";
 import { AshbySource, GreenhouseSource, LeverSource } from "../../agent/src/sources/ats.js";
+import { DjinniListingSource } from "../../agent/src/sources/djinni.js";
 import { LobbyXSource } from "../../agent/src/sources/lobbyx.js";
 import { RobotaUaSource } from "../../agent/src/sources/robotaua.js";
 import { RssJobSource } from "../../agent/src/sources/rss.js";
@@ -52,13 +53,16 @@ export interface VacancySyncResult {
 
 export const DEFAULT_VACANCY_SOURCES = {
   rss: [
-    { name: "dou-qa", url: "https://jobs.dou.ua/vacancies/feeds/?search=QA" },
-    { name: "djinni-qa", url: "https://djinni.co/jobs/rss/?primary_keyword=QA" },
+    { name: "dou-qa", url: "https://jobs.dou.ua/vacancies/?category=QA" },
   ],
+  djinni: [{ name: "djinni-qa", query: "QA" }],
   greenhouse: [] as Json[],
   lever: [] as Json[],
   ashby: [] as Json[],
-  workUa: [{ name: "workua-qa", query: "QA Engineer" }],
+  // Work.ua answers every automated request with HTTP 403, from cloud runners
+  // and from residential networks alike. It stays out of the default set until
+  // partner access exists; configuring it explicitly still reports it skipped.
+  workUa: [] as Json[],
   robotaUa: [{ name: "robotaua-qa", query: "QA Engineer" }],
   lobbyX: [{ name: "lobbyx-qa", query: "QA Engineer" }],
 };
@@ -112,6 +116,7 @@ async function sourceConfig(databaseOverride?: D1DatabaseLike): Promise<Json> {
   return {
     ...configured,
     rss: sourceArray(configured, "rss", DEFAULT_VACANCY_SOURCES.rss),
+    djinni: sourceArray(configured, "djinni", DEFAULT_VACANCY_SOURCES.djinni),
     greenhouse: sourceArray(configured, "greenhouse", DEFAULT_VACANCY_SOURCES.greenhouse),
     lever: sourceArray(configured, "lever", DEFAULT_VACANCY_SOURCES.lever),
     ashby: sourceArray(configured, "ashby", DEFAULT_VACANCY_SOURCES.ashby),
@@ -121,36 +126,36 @@ async function sourceConfig(databaseOverride?: D1DatabaseLike): Promise<Json> {
   };
 }
 
+type BoardSource = new (name: string, board: string) => JobSource;
+type QuerySource = new (name: string, query: string) => JobSource;
+
+/** An ATS board is only usable when both the company label and the board slug are configured. */
+function boardSources(config: Json, key: string, Source: BoardSource): JobSource[] {
+  return sourceArray(config, key, []).flatMap((source) => {
+    const name = cleanText(source.name);
+    const board = cleanText(source.board);
+    return name && board ? [new Source(name, board)] : [];
+  });
+}
+
+function querySources(config: Json, key: string, fallback: Json[], Source: QuerySource, defaults: { name: string; query: string }): JobSource[] {
+  return sourceArray(config, key, fallback)
+    .map((source) => new Source(cleanText(source.name, defaults.name), cleanText(source.query, defaults.query)));
+}
+
 export function buildVacancySources(config: Json): JobSource[] {
-  const sources: JobSource[] = [];
+  const rss = sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)
+    .map((source) => new RssJobSource(cleanText(source.name, "rss"), publicHttpsUrl(source.url)));
 
-  for (const source of sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)) {
-    const name = cleanText(source.name, "rss");
-    sources.push(new RssJobSource(name, publicHttpsUrl(source.url)));
-  }
-  for (const source of sourceArray(config, "greenhouse", [])) {
-    const name = cleanText(source.name);
-    const board = cleanText(source.board);
-    if (name && board) sources.push(new GreenhouseSource(name, board));
-  }
-  for (const source of sourceArray(config, "lever", [])) {
-    const name = cleanText(source.name);
-    const board = cleanText(source.board);
-    if (name && board) sources.push(new LeverSource(name, board));
-  }
-  for (const source of sourceArray(config, "ashby", [])) {
-    const name = cleanText(source.name);
-    const board = cleanText(source.board);
-    if (name && board) sources.push(new AshbySource(name, board));
-  }
-  for (const source of sourceArray(config, "robotaUa", DEFAULT_VACANCY_SOURCES.robotaUa)) {
-    sources.push(new RobotaUaSource(cleanText(source.name, "robotaua-qa"), cleanText(source.query, "QA Engineer")));
-  }
-  for (const source of sourceArray(config, "lobbyX", DEFAULT_VACANCY_SOURCES.lobbyX)) {
-    sources.push(new LobbyXSource(cleanText(source.name, "lobbyx-qa"), cleanText(source.query, "QA Engineer")));
-  }
-
-  return sources;
+  return [
+    ...rss,
+    ...querySources(config, "djinni", DEFAULT_VACANCY_SOURCES.djinni, DjinniListingSource, { name: "djinni-qa", query: "QA" }),
+    ...boardSources(config, "greenhouse", GreenhouseSource),
+    ...boardSources(config, "lever", LeverSource),
+    ...boardSources(config, "ashby", AshbySource),
+    ...querySources(config, "robotaUa", DEFAULT_VACANCY_SOURCES.robotaUa, RobotaUaSource, { name: "robotaua-qa", query: "QA Engineer" }),
+    ...querySources(config, "lobbyX", DEFAULT_VACANCY_SOURCES.lobbyX, LobbyXSource, { name: "lobbyx-qa", query: "QA Engineer" }),
+  ];
 }
 
 export function skippedCloudSources(config: Json): VacancySourceSkip[] {
@@ -400,6 +405,7 @@ export function mergeVacancySourceDefaults(value: unknown): Json {
     ...settings,
     sources: {
       ...sources,
+      djinni: sourceArray(sources, "djinni", DEFAULT_VACANCY_SOURCES.djinni),
       robotaUa: sourceArray(sources, "robotaUa", DEFAULT_VACANCY_SOURCES.robotaUa),
     },
   };

@@ -1,0 +1,152 @@
+{
+ "took": 18,
+ "start": 0,
+ "count": 3,
+ "total": 105,
+ "hasGeoCount": 103,
+ "errorMessage": null,
+ "documents": [
+  {
+   "id": 11096446,
+   "name": "Intern QA Engineer",
+   "logo": "15216249_20250204154606.jpeg",
+   "designBannerUrl": "",
+   "designBannerFullUrl": "",
+   "publicationType": 2,
+   "date": "2026-09-16T00:01:00.547",
+   "dateTxt": "",
+   "hot": true,
+   "salary": 22000,
+   "salaryFrom": 0,
+   "salaryTo": 0,
+   "salaryComment": "",
+   "cityName": "Киев",
+   "cityId": 1,
+   "metroName": "",
+   "metroId": 0,
+   "districtName": "",
+   "districtId": 0,
+   "notebookId": 15216249,
+   "companyName": "King Group",
+   "formApplyCustomUrl": "",
+   "isLiked": false,
+   "isApply": false,
+   "applyDate": null,
+   "lastViewDate": null,
+   "distanceText": "",
+   "latitude": 50.4500351,
+   "longitude": 30.5241356,
+   "shortDescription": "\t\t\t\t\t\t\t\t\t\tВітаємо в King Group — місці, де зустрічаються найкращі люди з IT- та гемблінг-індустрії, щоб разом робити дивовижні речі. Ми ведемо численні iGaming-проєкти в Україні, Європі та США, інвестуємо у венчурні стартапи, сміливі ідеї та таланови…",
+   "badges": [
+    {
+     "id": 4882646,
+     "name": "Бесплатные обеды"
+    },
+    {
+     "id": 4882647,
+     "name": "Офис в центре"
+    },
+    {
+     "id": 4882648,
+     "name": "Холодильник с едой"
+    },
+    {
+     "id": 4882649,
+     "name": "Медпункт / корпоративный врач"
+    }
+   ]
+  },
+  {
+   "id": 11128148,
+   "name": "Manual QA Engineer (Middle)",
+   "logo": "2010537_20260209124014.png",
+   "designBannerUrl": "",
+   "designBannerFullUrl": "",
+   "publicationType": 1,
+   "date": "2026-09-16T14:28:19.2",
+   "dateTxt": "",
+   "hot": false,
+   "salary": 0,
+   "salaryFrom": 0,
+   "salaryTo": 0,
+   "salaryComment": "",
+   "cityName": "Киев",
+   "cityId": 1,
+   "metroName": "",
+   "metroId": 0,
+   "districtName": "",
+   "districtId": 0,
+   "notebookId": 2010537,
+   "companyName": "DefTech Agency",
+   "formApplyCustomUrl": "",
+   "isLiked": false,
+   "isApply": false,
+   "applyDate": null,
+   "lastViewDate": null,
+   "distanceText": "",
+   "latitude": 50.4500351,
+   "longitude": 30.5241356,
+   "shortDescription": "DefTech Agency — нішеве рекрутингове агентство, що допомагає продуктовим компаніям у сфері оборонних і deeptech-технологій формувати сильні інженерні команди. Ми співпрацюємо з компаніями, що розробляють безпілотні літальні апарати (БПЛА) з фіксовани…",
+   "badges": [
+    {
+     "id": 4901976,
+     "name": "Бронирование сотрудников"
+    },
+    {
+     "id": 4901977,
+     "name": "Медицинская страховка"
+    },
+    {
+     "id": 4901978,
+     "name": "Курсы иностранного языка"
+    }
+   ]
+  },
+  {
+   "id": 11343353,
+   "name": "Аналітик довідникових даних та якості даних",
+   "logo": "defaultlogo.gif",
+   "designBannerUrl": "",
+   "designBannerFullUrl": "",
+   "publicationType": 1,
+   "date": "2026-09-16T11:36:31.993",
+   "dateTxt": "",
+   "hot": false,
+   "salary": 0,
+   "salaryFrom": 0,
+   "salaryTo": 0,
+   "salaryComment": "",
+   "cityName": "Киев",
+   "cityId": 1,
+   "metroName": "",
+   "metroId": 0,
+   "districtName": "",
+   "districtId": 0,
+   "notebookId": 16691947,
+   "companyName": "BraveTech",
+   "formApplyCustomUrl": "",
+   "isLiked": false,
+   "isApply": false,
+   "applyDate": null,
+   "lastViewDate": null,
+   "distanceText": "",
+   "latitude": 50.4500351,
+   "longitude": 30.5241356,
+   "shortDescription": "Ми шукаємо Junior / Strong Junior аналітика довідникових даних та якості даних — спеціаліста, який наведе порядок у номенклатурі та даних, щоб аналітика й звіти керівництва будувались на перевіреній основі.Компанія працює з міжнародними закупівлями, …",
+   "badges": [
+    {
+     "id": 5149739,
+     "name": "Бесплатное обучение"
+    },
+    {
+     "id": 5149740,
+     "name": "Бонусы / премии"
+    },
+    {
+     "id": 5149741,
+     "name": "Бронирование сотрудников"
+    }
+   ]
+  }
+ ]
+}

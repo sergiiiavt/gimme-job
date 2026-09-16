@@ -17,6 +17,7 @@ export interface IntakeJob {
 export type RelevanceReason =
   | "explicit_software_qa_role"
   | "generic_test_role_with_software_context"
+  | "generic_test_role_pending_context"
   | "non_software_testing_role"
   | "conflicting_primary_role"
   | "generic_test_role_without_software_context"
@@ -167,7 +168,19 @@ export function normalizeVacancyText(value: string): string {
     .trim();
 }
 
-export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description" | "company" | "location">): RelevanceDecision {
+/**
+ * A source that can only publish a truncated teaser gives the classifier no
+ * software context to find, which silently rejected genuine software-QA
+ * vacancies such as "Тестувальник QA (CRM Siebel)". Adapters mark those rows so
+ * a missing signal is treated as unknown rather than as a negative.
+ */
+export function hasCompleteDescription(job: Pick<IntakeJob, "raw">): boolean {
+  const raw = job.raw;
+  if (!raw || typeof raw !== "object") return true;
+  return (raw as Record<string, unknown>).descriptionComplete !== false;
+}
+
+export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description" | "company" | "location"> & Partial<Pick<IntakeJob, "raw">>): RelevanceDecision {
   const title = normalizeVacancyText(job.title);
   const body = normalizeVacancyText(`${job.title}\n${job.description}\n${job.company}\n${job.location}`);
   const explicitQaRole = matchesAny(title, ENGLISH_SOFTWARE_QA_PATTERNS)
@@ -189,11 +202,14 @@ export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description
   if (explicitQaRole || (contextualQaLeadership && softwareContext)) {
     return { accepted: true, score: 100, reason: "explicit_software_qa_role" };
   }
+  const contextUnavailable = !hasCompleteDescription(job);
   if (contextualQaLeadership) {
+    if (contextUnavailable) return { accepted: true, score: 50, reason: "generic_test_role_pending_context" };
     return { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
   }
   if (matchesAny(title, GENERIC_TEST_ROLE_PATTERNS)) {
     if (softwareContext) return { accepted: true, score: 80, reason: "generic_test_role_with_software_context" };
+    if (contextUnavailable) return { accepted: true, score: 50, reason: "generic_test_role_pending_context" };
     return { accepted: false, score: 15, reason: "generic_test_role_without_software_context" };
   }
   return { accepted: false, score: 0, reason: "no_software_qa_role_signal" };

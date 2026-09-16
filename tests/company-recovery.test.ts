@@ -87,7 +87,7 @@ test("company extraction supports Djinni's current company-slug route", () => {
   assert.equal(extractCompanyFromHtml("https://djinni.co/jobs/841628-qa-engineer-with-ai/", html), "Dataforest");
 });
 
-test("company recovery uses title and description before another network request", async () => {
+test("company recovery uses structural evidence and never description prose", async () => {
   const common = {
     source: "rss:test",
     externalId: "1",
@@ -113,5 +113,16 @@ test("company recovery uses title and description before another network request
     ...common,
     description: "Occam Industries is a European defence technology company.\nRequirements\n- API testing",
   });
-  assert.equal(fromDescription.company, "Occam Industries");
+  assert.equal(fromDescription.company, "Unknown");
+});
+
+test("company extraction does not fall back to prose on the vacancy page", () => {
+  const html = `
+    <main>
+      <h1>QA Engineer</h1>
+      <p>The project is a large media platform.</p>
+      <ul><li>- Hands-on experience with Playwright</li></ul>
+    </main>
+  `;
+  assert.equal(extractCompanyFromHtml("https://example.com/jobs/1", html), "");
 });

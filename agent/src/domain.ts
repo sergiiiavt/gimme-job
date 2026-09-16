@@ -48,6 +48,7 @@ export const QuerySourceSchema = z.object({
 
 export const SourcesConfigSchema = z.object({
   rss: z.array(RssSourceSchema).default([]),
+  djinni: z.array(QuerySourceSchema).default([]),
   greenhouse: z.array(BoardSourceSchema).default([]),
   lever: z.array(BoardSourceSchema).default([]),
   ashby: z.array(BoardSourceSchema).default([]),

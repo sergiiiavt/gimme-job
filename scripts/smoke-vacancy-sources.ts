@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { filterRelevantVacancies } from "../agent/src/job-intake.js";
 import { extractCompanyFromHtml, inferCompanyFromText, isUsableCompany } from "../agent/src/sources/company.js";
+import { parseDjinniListing } from "../agent/src/sources/djinni.js";
 import { parseLobbyXDescription, parseLobbyXListing } from "../agent/src/sources/lobbyx.js";
-import { parseRobotaUaDescription, parseRobotaUaResponse } from "../agent/src/sources/robotaua.js";
-import { parseRssDetailDescription } from "../agent/src/sources/rss.js";
+import { parseRobotaUaResponse } from "../agent/src/sources/robotaua.js";
+import { parseDouVacancyListing, parseRssDetailDescription } from "../agent/src/sources/rss.js";
 import { parseWorkUaDescription, parseWorkUaListing } from "../agent/src/sources/workua.js";
 
 const headers = {
@@ -23,23 +24,6 @@ async function json<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-function xmlValue(block: string, name: string): string {
-  return block.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${name}>`, "i"))?.[1]
-    ?.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .trim() ?? "";
-}
-
-function rssFirstLink(xml: string): string {
-  const item = xml.match(/<(?:item|entry)\b[^>]*>([\s\S]*?)<\/(?:item|entry)>/i)?.[1] ?? "";
-  const direct = xmlValue(item, "link");
-  const href = item.match(/<link[^>]+href=["']([^"']+)/i)?.[1] ?? "";
-  const result = direct || href;
-  assert.ok(result.startsWith("http"), "RSS feed did not expose a vacancy link");
-  return result;
-}
-
 function assertFullDescription(source: string, description: string): void {
   assert.ok(description.length >= 120, `${source} detail description is unexpectedly short (${description.length} chars)`);
   assert.doesNotMatch(description, /<\/?(?:div|p|li|ul|ol|h[1-6])\b/i, `${source} description still contains presentation HTML`);
@@ -51,8 +35,27 @@ function assertCompany(source: string, company: string): void {
   console.log(`${source}: company OK — ${company}`);
 }
 
+const PROSE_COMPANY = /^[-–—]\s*|\s(?:is|are|was|were|provides|provide|seeking)\s|^(?:we|our|the|this)\s/i;
+
+function assertStructuredField(source: string, field: string, present: number, total: number, minimum: number): void {
+  const coverage = total === 0 ? 0 : present / total;
+  assert.ok(
+    coverage >= minimum,
+    `${source} ${field} coverage ${(coverage * 100).toFixed(1)}% is below ${(minimum * 100).toFixed(0)}% (${present}/${total})`,
+  );
+  console.log(`${source}: ${field} coverage ${(coverage * 100).toFixed(1)}% (${present}/${total})`);
+}
+
 function assertCompanyCoverage(source: string, companies: string[], minimum: number): void {
   assert.ok(companies.length > 0, `${source} did not return company candidates`);
+  // A company that reads like prose ("- Hands", "We provides e") is a defect,
+  // not coverage: the old assertion counted those as resolved employers.
+  const fabricated = companies.filter((company) => PROSE_COMPANY.test(company));
+  assert.equal(
+    fabricated.length,
+    0,
+    `${source} produced ${fabricated.length} company names that look like description prose: ${JSON.stringify(fabricated.slice(0, 5))}`,
+  );
   const known = companies.filter(isUsableCompany).length;
   const coverage = known / companies.length;
   assert.ok(
@@ -62,13 +65,33 @@ function assertCompanyCoverage(source: string, companies: string[], minimum: num
   console.log(`${source}: company coverage ${(coverage * 100).toFixed(1)}% (${known}/${companies.length})`);
 }
 
-async function smokeRss(source: "DOU" | "Djinni", feed: string): Promise<void> {
-  const xml = await text(feed);
-  const url = rssFirstLink(xml);
-  const html = await text(url);
-  const description = parseRssDetailDescription(url, html);
-  assertFullDescription(source, description);
-  assertCompany(source, extractCompanyFromHtml(url, html) || inferCompanyFromText(description));
+async function smokeDou(): Promise<void> {
+  const listing = await text("https://jobs.dou.ua/vacancies/?category=QA");
+  const jobs = parseDouVacancyListing(listing, "rss:dou-qa");
+  assert.ok(jobs.length >= 15, `DOU listing returned only ${jobs.length} parseable vacancies`);
+
+  // The whole page is sampled, not just its first card: a selector that breaks
+  // for every card but one would otherwise pass unnoticed.
+  assertCompanyCoverage("DOU", jobs.map((job) => job.company), 0.98);
+  assertStructuredField("DOU", "posted date", jobs.filter((job) => job.postedAt).length, jobs.length, 0.95);
+  assertStructuredField("DOU", "numeric external id", jobs.filter((job) => /^\d+$/.test(String(job.externalId))).length, jobs.length, 1);
+
+  const vacancy = jobs[0];
+  assertFullDescription("DOU", parseRssDetailDescription(vacancy.url, await text(vacancy.url)));
+  assertCompany("DOU", vacancy.company);
+}
+
+async function smokeDjinni(): Promise<void> {
+  const listing = await text("https://djinni.co/jobs/?primary_keyword=QA");
+  const jobs = parseDjinniListing(listing, "djinni:djinni-qa");
+  assert.ok(jobs.length >= 10, `Djinni listing returned only ${jobs.length} parseable vacancies`);
+
+  assertCompanyCoverage("Djinni", jobs.map((job) => job.company), 1);
+  assertStructuredField("Djinni", "posted date", jobs.filter((job) => job.postedAt).length, jobs.length, 1);
+  assertStructuredField("Djinni", "location", jobs.filter((job) => job.location !== "Unknown").length, jobs.length, 0.95);
+  assertStructuredField("Djinni", "full description", jobs.filter((job) => job.description.length >= 400).length, jobs.length, 0.95);
+  assertFullDescription("Djinni", jobs[0].description);
+  assertCompany("Djinni", jobs[0].company);
 }
 
 async function smokeWorkUa(): Promise<void> {
@@ -94,12 +117,12 @@ async function smokeRobotaUa(): Promise<void> {
   assertCompanyCoverage("Robota.ua", jobs.map((job) => job.company), 0.9);
   const relevant = filterRelevantVacancies(jobs).jobs;
   assert.ok(relevant.length > 0, "Robota.ua API returned no relevant software-QA vacancy in the smoke sample");
+  // Robota.ua publishes no long-form body and blocks its detail pages, so the
+  // contract is a complete teaser with a real employer, not a full description.
   const vacancy = relevant[0];
-  const detailHtml = await text(vacancy.url);
-  const detail = parseRobotaUaDescription(detailHtml, vacancy.description);
-  assertFullDescription("Robota.ua", detail);
-  assert.ok(detail.length >= vacancy.description.length, "Robota.ua detail extraction is shorter than its search/API description");
-  assertCompany("Robota.ua detail", vacancy.company || extractCompanyFromHtml(vacancy.url, detailHtml));
+  assertCompany("Robota.ua", vacancy.company);
+  assert.ok(vacancy.description.length > 0, "Robota.ua returned an empty teaser");
+  console.log(`Robota.ua: OK, teaser-only source (${vacancy.description.length} chars), detail pages remain blocked`);
 }
 
 async function smokeLobbyX(): Promise<void> {
@@ -128,8 +151,8 @@ async function smokeLobbyX(): Promise<void> {
 async function main(): Promise<void> {
   const includeLocalWorkUa = process.argv.includes("--include-local-workua");
   const checks: Array<[string, () => Promise<void>]> = [
-    ["DOU", () => smokeRss("DOU", "https://jobs.dou.ua/vacancies/feeds/?search=QA")],
-    ["Djinni", () => smokeRss("Djinni", "https://djinni.co/jobs/rss/?primary_keyword=QA")],
+    ["DOU", smokeDou],
+    ["Djinni", smokeDjinni],
     ["Robota.ua", smokeRobotaUa],
     ["Lobby X", smokeLobbyX],
   ];

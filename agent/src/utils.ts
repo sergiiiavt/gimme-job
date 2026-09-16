@@ -177,3 +177,31 @@ export function clamp(value: number, minimum: number, maximum: number): number {
 export function roundShare(numerator: number, denominator: number): number {
   return denominator === 0 ? 0 : Math.round((numerator / denominator) * 1000) / 10;
 }
+
+/**
+ * Runs `worker` over every item with a bounded number of in-flight calls.
+ *
+ * Detail-page enrichment must cover the whole catalogue rather than an
+ * arbitrary prefix, so the concurrency ceiling — not an item cap — is what
+ * keeps a source polite.
+ */
+export async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  const limit = Math.max(1, Math.trunc(concurrency));
+  let cursor = 0;
+
+  async function run(): Promise<void> {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await worker(items[index], index);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
+  return results;
+}

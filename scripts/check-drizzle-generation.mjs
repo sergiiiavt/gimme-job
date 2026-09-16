@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { readdir, readFile, stat } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const trackedRoots = [path.join(projectRoot, "db", "schema.ts"), path.join(projectRoot, "drizzle")];
@@ -34,8 +37,13 @@ async function snapshot() {
 }
 
 function runGeneration() {
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  const result = spawnSync(npmCommand, ["run", "db:generate"], {
+  // Run drizzle-kit with this process's own Node binary and an absolute entry
+  // point, rather than looking up `npm` on PATH. That keeps the spawn free of
+  // PATH resolution, and it sidesteps Windows, where Node refuses to spawn
+  // npm's .cmd shim directly (CVE-2024-27980) and `npm run db:generate` failed
+  // with EINVAL — leaving `npm run verify` unrunnable there.
+  const drizzleKitBin = path.join(path.dirname(require.resolve("drizzle-kit")), "bin.cjs");
+  const result = spawnSync(process.execPath, [drizzleKitBin, "generate"], {
     cwd: projectRoot,
     stdio: "inherit",
   });

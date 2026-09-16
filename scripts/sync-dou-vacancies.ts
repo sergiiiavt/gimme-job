@@ -1,7 +1,7 @@
 import { RssJobSource } from "../agent/src/sources/rss.js";
 
 const DEFAULT_APP_URL = "https://gimmejob.gimmejob.workers.dev";
-const DOU_RSS_URL = "https://jobs.dou.ua/vacancies/feeds/?search=QA";
+const DOU_LISTING_URL = "https://jobs.dou.ua/vacancies/?category=QA";
 const MIN_EXPECTED_VACANCIES = 100;
 const REPORTED_REGRESSION_IDS = new Set(["368919", "368979", "364050"]);
 
@@ -48,7 +48,7 @@ async function verifyReportedVacancies(appUrl: string, collected: Array<{ extern
 async function main(): Promise<void> {
   const token = requiredEnvironment("N8N_INGEST_TOKEN");
   const appUrl = new URL(process.env.GIMMEJOB_URL?.trim() || DEFAULT_APP_URL).origin;
-  const source = new RssJobSource("dou-qa", DOU_RSS_URL);
+  const source = new RssJobSource("dou-qa", DOU_LISTING_URL);
   const jobs = await source.collect();
 
   if (jobs.length < MIN_EXPECTED_VACANCIES) {
