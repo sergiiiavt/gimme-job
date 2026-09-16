@@ -6,7 +6,7 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
 // The structural assertions below match on "\n". A Windows checkout
 // (core.autocrlf) delivers CRLF, so sources are normalized before matching.
-const readSource = async (path) => (await readFile(projectFile(path), "utf8")).replace(/\r\n/g, "\n");
+const readSource = async (path) => (await readFile(projectFile(path), "utf8")).replaceAll("\r\n", "\n");
 
 test("publishes practical SQL tasks and code-aware interview rendering", async () => {
   const [catalog, practical, examples, dataExamples, expandedExamples, page, overlay, highlighter, deepLink, linkOverlay, styles, packageJson] = await Promise.all([

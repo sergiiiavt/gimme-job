@@ -6,7 +6,7 @@ const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relat
 // (core.autocrlf) delivers CRLF, which made every regex find nothing and left
 // this validator — and therefore `npm run verify` — unrunnable off Linux.
 const readText = async (relativePath) =>
-  (await readFile(new URL(relativePath, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
+  (await readFile(new URL(relativePath, import.meta.url), "utf8")).replaceAll("\r\n", "\n");
 
 const [
   common,

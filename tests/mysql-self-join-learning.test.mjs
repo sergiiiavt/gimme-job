@@ -5,7 +5,7 @@ import test from "node:test";
 // The SQL assertions below are newline-exact. A Windows checkout (core.autocrlf)
 // delivers CRLF, so the source is normalized before matching.
 const readSource = (relativePath) =>
-  readFileSync(new URL(relativePath, import.meta.url), "utf8").replace(/\r\n/g, "\n");
+  readFileSync(new URL(relativePath, import.meta.url), "utf8").replaceAll("\r\n", "\n");
 
 const learningSource = readSource("../app/playgrounds/databases/mysql-self-join-learning.ts");
 const playgroundSource = readSource("../app/playgrounds/databases/database-playground.tsx");

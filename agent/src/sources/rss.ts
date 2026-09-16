@@ -145,6 +145,11 @@ function douExternalId(url: string): string | null {
  * authoritative name; the slug is a deterministic fallback for the rare card
  * that omits it.
  */
+function douCompanySource(anchorCompany: string, blockCompany: string): string {
+  if (anchorCompany) return "listing-anchor";
+  return blockCompany ? "listing-block" : "url-slug";
+}
+
 function douCompanyFromUrl(url: string): string {
   const slug = /\/companies\/([^/]+)\//i.exec(url)?.[1] ?? "";
   if (!slug) return "";
@@ -200,7 +205,7 @@ export function parseDouVacancyListing(html: string, source: string): JobInput[]
       const anchorCompany = companyAnchor ? companyAnchor.text.replace(/^в\s+/iu, "").trim() : "";
       const blockCompany = htmlText(companyBlock).replace(/^в\s+/iu, "").trim();
       const company = anchorCompany || blockCompany || douCompanyFromUrl(url) || "Unknown";
-      const companySource = anchorCompany ? "listing-anchor" : blockCompany ? "listing-block" : "url-slug";
+      const companySource = douCompanySource(anchorCompany, blockCompany);
       const cityBlock = extractElementByClass(block, "span", "cities") || extractElementByClass(block, "div", "cities");
       const location = htmlText(cityBlock) || "Unknown";
       const postedAt = parseDouCardDate(htmlText(extractDivByClass(block, "date")));
@@ -335,7 +340,7 @@ async function enrichDouDetails(jobs: JobInput[]): Promise<JobInput[]> {
       const detailHtml = await fetchText(job.url);
       const detail = parseRssDetail(job.url, detailHtml);
       const description = detail.description.length > job.description.length ? detail.description : job.description;
-      const raw = { ...(job.raw as Record<string, unknown> ?? {}) };
+      const raw = { ...(job.raw as Record<string, unknown>) };
       if (detail.description.length > job.description.length) raw.descriptionSource = "detail-page";
       if (!isDouUsableCompany(job.company) && detail.company) raw.companySource = "detail-metadata";
       return {
