@@ -6,6 +6,17 @@
   font-weight: 400 !important;
 }
 
+/* Learning headings can be long. Never inherit a generic one-line/ellipsis
+   treatment from surrounding navigation styles: keep the full title visible
+   and allow it to wrap naturally inside the right-hand TOC. */
+:global(aside[aria-label="Learning material navigation"] section[aria-label="On this page"] a),
+:global(aside[aria-label="Навігація навчального матеріалу"] section[aria-label="На цій сторінці"] a) {
+  overflow: visible !important;
+  overflow-wrap: anywhere;
+  text-overflow: clip !important;
+  white-space: normal !important;
+}
+
 .linkableHeading {
   align-items: center;
   display: flex;
