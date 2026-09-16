@@ -636,9 +636,14 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     clearVacancyWorkspace();
     setBusy("sync");
     try {
-      const result = await api<{ dashboard: DashboardData }>("/sync", "POST", {});
+      const result = await api<{ dashboard: DashboardData; result?: { accepted?: number; errors?: Array<{ source: string; error: string }> } }>("/sync", "POST", {});
       applyDashboard(result.dashboard);
-      setNotice("Job sources synced. Nothing was sent.");
+      // A partially failed sync looked identical to a healthy one, which hid
+      // sources that had been failing for weeks.
+      const failures = result.result?.errors ?? [];
+      setNotice(failures.length
+        ? `Synced with ${failures.length} failing source${failures.length === 1 ? "" : "s"}: ${failures.map((entry) => `${entry.source} (${entry.error})`).join("; ")}`
+        : "Job sources synced. Nothing was sent.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error));
     } finally { setBusy(null); }

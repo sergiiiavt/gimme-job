@@ -48,7 +48,10 @@ async function verifyReportedVacancies(appUrl: string, collected: Array<{ extern
 async function main(): Promise<void> {
   const token = requiredEnvironment("N8N_INGEST_TOKEN");
   const appUrl = new URL(process.env.GIMMEJOB_URL?.trim() || DEFAULT_APP_URL).origin;
-  const source = new RssJobSource("dou-qa", DOU_LISTING_URL);
+  // This runner is a plain Node process on a GitHub-hosted machine: no
+  // subrequest ceiling and a ten-minute budget, so it enriches the whole
+  // catalogue. The Worker-hosted sync keeps the bounded default.
+  const source = new RssJobSource("dou-qa", DOU_LISTING_URL, { detailBudget: Number.POSITIVE_INFINITY });
   const jobs = await source.collect();
 
   if (jobs.length < MIN_EXPECTED_VACANCIES) {

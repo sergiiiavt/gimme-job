@@ -24,7 +24,24 @@ export async function handleVacancySync(
     return authenticationRequired();
   }
 
-  const result = await syncVacancies();
-  const dashboard = await loadDashboard(request);
-  return Response.json({ ok: true, result, dashboard });
+  try {
+    const result = await syncVacancies();
+    const dashboard = await loadDashboard(request);
+    return Response.json({ ok: true, result, dashboard });
+  } catch (error) {
+    // A sync that collected nothing must not read as success. The per-source
+    // reasons are the only diagnostic there is, so they travel to the caller.
+    const message = error instanceof Error ? error.message : String(error);
+    console.error({
+      schemaVersion: 1,
+      service: "gimmejob",
+      event: "vacancy_sync_request",
+      outcome: "failure",
+      error: message,
+    });
+    return Response.json(
+      { ok: false, error: message },
+      { status: 502, headers: { "cache-control": "no-store" } },
+    );
+  }
 }
