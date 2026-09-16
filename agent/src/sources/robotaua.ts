@@ -6,14 +6,13 @@ import {
   normalizeVacancyDescription,
 } from "../vacancy-content.js";
 import { isRemoteText, safeIsoDate } from "../utils.js";
-import { fetchJson, fetchText } from "./http.js";
+import { fetchJson } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const API_URL = "https://api.rabota.ua/vacancy/search";
 const PUBLIC_URL = "https://robota.ua";
 const PAGE_SIZE = 50;
 const MAX_PAGES = 3;
-const MAX_DETAIL_FETCHES = 50;
 
 interface RobotaUaDocument {
   id?: string | number;
@@ -90,7 +89,10 @@ export function parseRobotaUaResponse(payload: unknown, sourceName = "robotaua-q
     const url = vacancyUrl(document);
     const title = text(document.name);
     if (!url || !title) return [];
-    const description = normalizeVacancyDescription(text(document.description) || text(document.shortDescription));
+    // The search API exposes no long-form body: `shortDescription` is hard
+    // truncated at 251 characters and there is no `description` field, so every
+    // Robota.ua vacancy is a teaser that links out for the full text.
+    const description = normalizeVacancyDescription(text(document.shortDescription));
     const company = text(document.companyName) || "Unknown";
     const location = normalizeUkrainianLocation(document.cityName) || "Unknown";
     const combined = `${title}\n${description}\n${location}`;
@@ -108,7 +110,12 @@ export function parseRobotaUaResponse(payload: unknown, sourceName = "robotaua-q
       salaryText: salaryText(document),
       postedAt: safeIsoDate(document.date) ?? null,
       contactEmail: null,
-      raw: document,
+      raw: {
+        ...document,
+        companySource: "api",
+        descriptionSource: "api-teaser",
+        descriptionComplete: false,
+      },
     }];
   });
 }
@@ -136,21 +143,9 @@ export class RobotaUaSource implements JobSource {
       if (pageJobs.length === 0) break;
     }
 
-    return Promise.all(jobs.map(async (job, index) => {
-      if (index >= MAX_DETAIL_FETCHES) return job;
-      try {
-        const description = parseRobotaUaDescription(await fetchText(job.url), job.description);
-        if (description.length > job.description.length) {
-          return {
-            ...job,
-            description,
-            remote: job.remote || isRemoteText(`${job.title}\n${description}\n${job.location}`),
-          };
-        }
-      } catch {
-        // Search API data remains usable if an individual detail request fails.
-      }
-      return job;
-    }));
+    // Detail pages sit behind a Cloudflare managed challenge and answer every
+    // request with HTTP 403, so enrichment is not attempted. `parseRobotaUaDescription`
+    // stays exported for the day an authorised feed makes those bodies reachable.
+    return jobs;
   }
 }

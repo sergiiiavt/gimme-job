@@ -136,12 +136,19 @@ test("Greenhouse, Lever, and Ashby adapters normalize live-shaped API payloads",
   }
 });
 
-test("RSS adapter follows DOU detail pages and keeps structured full descriptions", { concurrency: false }, async () => {
+test("RSS adapter falls back to the feed when DOU listing discovery is unavailable", { concurrency: false }, async () => {
   const originalFetch = globalThis.fetch;
   const feedUrl = "https://jobs.dou.ua/vacancies/feeds/?category=QA";
   const detailUrl = "https://jobs.dou.ua/companies/acme/vacancies/123";
+  const listingAttempts: string[] = [];
   globalThis.fetch = (async (input) => {
     const url = String(input);
+    if (url === "https://jobs.dou.ua/vacancies/?category=QA") {
+      // Listing discovery is preferred; the feed must still carry the source
+      // when that page is unreachable.
+      listingAttempts.push(url);
+      return new Response("unavailable", { status: 503, statusText: "Service Unavailable" });
+    }
     if (url === feedUrl) {
       return new Response(`<?xml version="1.0" encoding="UTF-8"?>
         <rss><channel><item>
@@ -164,6 +171,7 @@ test("RSS adapter follows DOU detail pages and keeps structured full description
 
   try {
     const jobs = await new RssJobSource("dou-qa", feedUrl).collect();
+    assert.equal(listingAttempts.length, 1);
     assert.equal(jobs.length, 1);
     assert.equal(jobs[0].source, "rss:dou-qa");
     assert.equal(jobs[0].title, "QA Engineer");
@@ -179,11 +187,13 @@ test("RSS adapter follows DOU detail pages and keeps structured full description
   }
 });
 
-test("Robota.ua adapter enriches search results from vacancy detail pages", { concurrency: false }, async () => {
+test("Robota.ua adapter maps the search API and leaves blocked detail pages alone", { concurrency: false }, async () => {
   const originalFetch = globalThis.fetch;
   const detailUrl = "https://robota.ua/company99/vacancy777";
+  const requested: string[] = [];
   globalThis.fetch = (async (input) => {
     const url = String(input);
+    requested.push(url);
     if (url.startsWith("https://api.rabota.ua/vacancy/search?")) {
       return jsonResponse({
         total: 1,
@@ -194,20 +204,15 @@ test("Robota.ua adapter enriches search results from vacancy detail pages", { co
           companyName: "Acme Ukraine",
           cityName: "Kyiv",
           date: "2026-08-15T12:00:00Z",
-          shortDescription: "Short QA teaser.",
+          shortDescription: "Short QA teaser for a remote web testing role.",
           salaryFrom: 3000,
           salaryTo: 4000,
         }],
       });
     }
-    if (url === detailUrl) {
-      return new Response(`<html><head><script type="application/ld+json">${JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "JobPosting",
-        description: "<h2>Requirements</h2><ul><li>API, SQL, Playwright, and test automation experience.</li></ul><h2>Responsibilities</h2><ul><li>Build regression coverage and investigate production defects.</li></ul><h2>Benefits</h2><p>Remote work in Ukraine and a learning budget.</p>",
-      })}</script></head><body></body></html>`, { status: 200 });
-    }
-    return new Response("not found", { status: 404, statusText: "Not Found" });
+    // Robota.ua answers every detail request with a Cloudflare challenge, so
+    // reaching this branch means the adapter is spending requests on 403s.
+    return new Response("Just a moment...", { status: 403, statusText: "Forbidden" });
   }) as typeof fetch;
 
   try {
@@ -221,8 +226,9 @@ test("Robota.ua adapter enriches search results from vacancy detail pages", { co
     assert.equal(jobs[0].postedAt, "2026-08-15T12:00:00.000Z");
     assert.equal(jobs[0].url, detailUrl);
     assert.equal(jobs[0].remote, true);
-    assert.match(jobs[0].description, /Requirements/);
-    assert.match(jobs[0].description, /Remote work/);
+    assert.match(jobs[0].description, /Short QA teaser/);
+    assert.equal((jobs[0].raw as { descriptionComplete?: boolean }).descriptionComplete, false);
+    assert.equal(requested.some((url) => url === detailUrl), false);
   } finally {
     globalThis.fetch = originalFetch;
   }

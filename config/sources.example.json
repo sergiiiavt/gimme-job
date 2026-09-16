@@ -2,22 +2,19 @@
   "rss": [
     {
       "name": "dou-qa",
-      "url": "https://jobs.dou.ua/vacancies/feeds/?search=QA"
-    },
+      "url": "https://jobs.dou.ua/vacancies/?category=QA"
+    }
+  ],
+  "djinni": [
     {
       "name": "djinni-qa",
-      "url": "https://djinni.co/jobs/rss/?primary_keyword=QA"
+      "query": "QA"
     }
   ],
   "greenhouse": [],
   "lever": [],
   "ashby": [],
-  "workUa": [
-    {
-      "name": "workua-qa",
-      "query": "QA Engineer"
-    }
-  ],
+  "workUa": [],
   "robotaUa": [
     {
       "name": "robotaua-qa",
@@ -27,7 +24,7 @@
   "lobbyX": [
     {
       "name": "lobbyx-qa",
-      "query": "QA Engineer"
+      "query": "QA"
     }
   ],
   "gmail": {

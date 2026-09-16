@@ -124,9 +124,6 @@ export function extractCompanyFromHtml(url: string, html: string): string {
     if (candidate) return candidate;
   }
 
-  const inferredFromPage = inferCompanyFromText(htmlToVacancyText(html));
-  if (inferredFromPage) return inferredFromPage;
-
   try {
     const hostname = new URL(url).hostname.toLowerCase();
     if (hostname.endsWith("dou.ua")) {
@@ -141,14 +138,22 @@ export function extractCompanyFromHtml(url: string, html: string): string {
   return "";
 }
 
+/**
+ * Recovers an employer from structural evidence only: the `Role at Company`
+ * title convention, then the vacancy page's own metadata.
+ *
+ * Inference over description prose is deliberately absent. It produced names
+ * such as `- Hands`, `We provides e` and `The project is a large`, and because
+ * it ran before the page lookup it also suppressed the request that would have
+ * found the real employer. `Unknown` is honest; an invented name is
+ * indistinguishable from collected data and corrupts deduplication, which keys
+ * on the company.
+ */
 export async function recoverJobCompany(job: JobInput): Promise<JobInput> {
   if (isUsableCompany(job.company)) return job;
 
   const fromTitle = usable(inferCompany(job.title, ""));
   if (fromTitle) return { ...job, company: fromTitle };
-
-  const fromDescription = inferCompanyFromText(job.description);
-  if (fromDescription) return { ...job, company: fromDescription };
 
   if (!job.url) return { ...job, company: "Unknown" };
   try {

@@ -3,6 +3,7 @@ import type { AppPaths } from "../config.js";
 import type { SourcesConfig } from "../domain.js";
 import { authorizeGmail, GmailJobSource } from "../gmail.js";
 import { AshbySource, GreenhouseSource, LeverSource } from "./ats.js";
+import { DjinniListingSource } from "./djinni.js";
 import { LobbyXSource } from "./lobbyx.js";
 import { ManualJobSource } from "./manual.js";
 import { RobotaUaSource } from "./robotaua.js";
@@ -23,6 +24,7 @@ export async function buildSources(
 
   const sources: JobSource[] = [
     ...config.rss.map((entry) => new RssJobSource(entry.name, entry.url)),
+    ...config.djinni.map((entry) => new DjinniListingSource(entry.name, entry.query)),
     ...config.greenhouse.map((entry) => new GreenhouseSource(entry.name, entry.board)),
     ...config.lever.map((entry) => new LeverSource(entry.name, entry.board)),
     ...config.ashby.map((entry) => new AshbySource(entry.name, entry.board)),

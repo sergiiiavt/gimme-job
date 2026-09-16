@@ -1,8 +1,9 @@
-export async function fetchText(url: string): Promise<string> {
+export async function fetchText(url: string, headers: Record<string, string> = {}): Promise<string> {
   const response = await fetch(url, {
     headers: {
       accept: "application/json, application/rss+xml, application/atom+xml, text/xml, */*",
       "user-agent": "JobSearchAgent/0.1 (+personal job-search assistant)",
+      ...headers,
     },
     signal: AbortSignal.timeout(20_000),
   });
