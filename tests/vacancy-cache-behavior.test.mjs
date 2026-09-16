@@ -65,7 +65,7 @@ test("manual sync closes all opened vacancy tabs", () => {
   assert.match(syncBlock, /setOpenTabIds\(\[\]\);/);
   assert.match(syncBlock, /setSelectedId\(null\);/);
   assert.match(syncBlock, /clearVacancyWorkspace\(\);/);
-  assert.match(syncBlock, /api<\{ dashboard: DashboardData \}>\("\/sync", "POST", \{\}\)/);
+  assert.match(syncBlock, /api<\{ dashboard: DashboardData;[\s\S]*?\}>\("\/sync", "POST", \{\}\)/);
 });
 
 test("background refresh keeps tabs while only manual sync clears them", () => {

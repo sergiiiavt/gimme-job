@@ -12,5 +12,5 @@ test("sync route delegates to the authenticated vacancy sync handler", () => {
 });
 
 test("vacancies workspace still targets the authenticated sync API", () => {
-  assert.match(workspace, /api<\{ dashboard: DashboardData \}>\("\/sync", "POST", \{\}\)/);
+  assert.match(workspace, /api<\{ dashboard: DashboardData;[\s\S]*?\}>\("\/sync", "POST", \{\}\)/);
 });

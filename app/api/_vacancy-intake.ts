@@ -39,6 +39,18 @@ export interface VacancySourceSkip {
   reason: string;
 }
 
+/** Raised when no configured source could be collected, so the run wrote nothing. */
+export class VacancySyncFailure extends Error {
+  readonly errors: VacancySourceError[];
+
+  constructor(errors: VacancySourceError[]) {
+    const detail = errors.map((entry) => `${entry.source}: ${entry.error}`).join("; ");
+    super(`Every vacancy source failed, so nothing was collected. ${detail}`);
+    this.name = "VacancySyncFailure";
+    this.errors = errors;
+  }
+}
+
 export interface VacancySyncResult {
   seen: number;
   relevant: number;
@@ -315,13 +327,41 @@ export async function upsertVacancies(
 
 export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Promise<VacancySyncResult> {
   const config = await sourceConfig(databaseOverride);
-  const results = await collectAllSources(buildVacancySources(config));
+  const attempted = buildVacancySources(config);
+  const results = await collectAllSources(attempted);
   const intake = results.find((result) => result.source === "intake");
   const errors = results
     .filter((result) => result.error)
     .map((result) => ({ source: result.source, error: result.error ?? "Unknown source failure" }));
   const jobs = intake?.jobs ?? [];
   const stored = await upsertVacancies(jobs, databaseOverride);
+
+  // A run where every configured source failed collected nothing and wrote
+  // nothing. Reporting that as a success told the operator the catalogue had
+  // been refreshed while the real per-source errors went unread, so it is
+  // surfaced as a failure instead.
+  if (attempted.length > 0 && errors.length === attempted.length) {
+    console.error({
+      schemaVersion: 1,
+      service: "gimmejob",
+      event: "vacancy_sync_sources_failed",
+      outcome: "failure",
+      attempted: attempted.length,
+      errors,
+    });
+    throw new VacancySyncFailure(errors);
+  }
+
+  if (errors.length > 0) {
+    console.warn({
+      schemaVersion: 1,
+      service: "gimmejob",
+      event: "vacancy_sync_source_degraded",
+      outcome: "degraded",
+      attempted: attempted.length,
+      errors,
+    });
+  }
 
   return {
     ...stored,

@@ -21,7 +21,15 @@ import type { JobSource } from "./types.js";
 type XmlNode = Record<string, unknown>;
 type DouLoadPayload = { html?: unknown; last?: unknown };
 
-const MAX_DETAIL_FETCHES = 40;
+/**
+ * Detail-page budget for one `collect()` call.
+ *
+ * A Cloudflare Worker invocation is bounded in subrequests and CPU, so a
+ * Worker-hosted sync must not try to fetch a whole catalogue's detail pages.
+ * The Node runner that syncs DOU hourly has no such ceiling and passes
+ * `Number.POSITIVE_INFINITY` to enrich every discovered vacancy.
+ */
+export const DEFAULT_DETAIL_BUDGET = 40;
 const DETAIL_CONCURRENCY = 6;
 const DOU_PAGE_SIZE = 20;
 const DOU_MAX_PAGES = 30;
@@ -330,12 +338,15 @@ async function fetchDouMore(query: string, count: number, csrf: string, cookie: 
 }
 
 /**
- * Enriches every discovered vacancy rather than an arbitrary prefix. A capped
- * prefix left the rest of the catalogue on a ~200-character listing teaser
- * permanently, because nothing ever revisited them.
+ * Enriches discovered vacancies up to `budget`. Where the budget allows the
+ * whole catalogue, nothing is left on a ~200-character listing teaser; where it
+ * does not, the remainder keeps its teaser and is enriched by the run that owns
+ * the larger budget.
  */
-async function enrichDouDetails(jobs: JobInput[]): Promise<JobInput[]> {
-  return mapWithConcurrency(jobs, DETAIL_CONCURRENCY, async (job) => {
+async function enrichDouDetails(jobs: JobInput[], budget: number): Promise<JobInput[]> {
+  const enriched = jobs.slice(0, budget);
+  const remainder = jobs.slice(enriched.length);
+  const detailed = await mapWithConcurrency(enriched, DETAIL_CONCURRENCY, async (job) => {
     try {
       const detailHtml = await fetchText(job.url);
       const detail = parseRssDetail(job.url, detailHtml);
@@ -355,13 +366,15 @@ async function enrichDouDetails(jobs: JobInput[]): Promise<JobInput[]> {
       return job;
     }
   });
+
+  return [...detailed, ...remainder];
 }
 
 function isDouUsableCompany(value: string): boolean {
   return Boolean(value) && value !== "Unknown";
 }
 
-async function collectDouQaVacancies(source: string, query: string): Promise<JobInput[]> {
+async function collectDouQaVacancies(source: string, query: string, budget: number): Promise<JobInput[]> {
   const first = await fetchDouListingPage(query);
   const jobs = parseDouVacancyListing(first.html, source);
   const seenUrls = new Set(jobs.map((job) => job.url));
@@ -382,7 +395,7 @@ async function collectDouQaVacancies(source: string, query: string): Promise<Job
     if (loaded.last || rawBatchCount === 0 || added === 0 || rawBatchCount < DOU_PAGE_SIZE) break;
   }
 
-  return enrichDouDetails(jobs);
+  return enrichDouDetails(jobs, budget);
 }
 
 export interface RssDetail {
@@ -425,14 +438,22 @@ export function parseRssDetailDescription(url: string, html: string): string {
   return parseRssDetail(url, html).description;
 }
 
+export interface RssSourceOptions {
+  /** Detail pages fetched per collect(). Pass Infinity where no runtime ceiling applies. */
+  detailBudget?: number;
+}
+
 export class RssJobSource implements JobSource {
   readonly name: string;
+  private readonly detailBudget: number;
 
   constructor(
     name: string,
     private readonly url: string,
+    options: RssSourceOptions = {},
   ) {
     this.name = `rss:${name}`;
+    this.detailBudget = options.detailBudget ?? DEFAULT_DETAIL_BUDGET;
   }
 
   async collect(): Promise<JobInput[]> {
@@ -441,7 +462,7 @@ export class RssJobSource implements JobSource {
     const douQuery = douListingQuery(this.url);
     if (douQuery) {
       try {
-        return await collectDouQaVacancies(this.name, douQuery);
+        return await collectDouQaVacancies(this.name, douQuery, this.detailBudget);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.warn(`DOU full discovery failed for ${this.name}; falling back to RSS: ${message}`);
@@ -497,8 +518,8 @@ export class RssJobSource implements JobSource {
       })
       .filter((job): job is JobInput => job !== null);
 
-    const enriched = jobs.slice(0, MAX_DETAIL_FETCHES);
-    const remainder = jobs.slice(MAX_DETAIL_FETCHES);
+    const enriched = jobs.slice(0, this.detailBudget);
+    const remainder = jobs.slice(enriched.length);
 
     const detailed = await mapWithConcurrency(enriched, DETAIL_CONCURRENCY, async (job) => {
       try {
