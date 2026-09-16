@@ -4,19 +4,23 @@ import test from "node:test";
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
+// The structural assertions below match on "\n". A Windows checkout
+// (core.autocrlf) delivers CRLF, so sources are normalized before matching.
+const readSource = async (path) => (await readFile(projectFile(path), "utf8")).replace(/\r\n/g, "\n");
+
 test("publishes practical SQL tasks and code-aware interview rendering", async () => {
   const [catalog, practical, examples, dataExamples, expandedExamples, page, overlay, highlighter, deepLink, linkOverlay, styles, packageJson] = await Promise.all([
-    readFile(projectFile("content/interview/catalog.ts"), "utf8"),
-    readFile(projectFile("content/interview/sql-practical-interview.ts"), "utf8"),
-    readFile(projectFile("content/interview/sql-code-examples.ts"), "utf8"),
-    readFile(projectFile("content/interview/sql-data-code-examples.ts"), "utf8"),
-    readFile(projectFile("content/interview/sql-expanded-code-examples.ts"), "utf8"),
-    readFile(projectFile("app/interview/interview-domain-page-client.tsx"), "utf8"),
-    readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
-    readFile(projectFile("app/interview-code-highlighting.ts"), "utf8"),
-    readFile(projectFile("app/interview-question-deep-link.tsx"), "utf8"),
-    readFile(projectFile("app/interview-question-link-overlay.tsx"), "utf8"),
-    readFile(projectFile("app/interview-question-deep-link.module.css"), "utf8"),
+    readSource("content/interview/catalog.ts"),
+    readSource("content/interview/sql-practical-interview.ts"),
+    readSource("content/interview/sql-code-examples.ts"),
+    readSource("content/interview/sql-data-code-examples.ts"),
+    readSource("content/interview/sql-expanded-code-examples.ts"),
+    readSource("app/interview/interview-domain-page-client.tsx"),
+    readSource("app/interview-question-code-overlay.tsx"),
+    readSource("app/interview-code-highlighting.ts"),
+    readSource("app/interview-question-deep-link.tsx"),
+    readSource("app/interview-question-link-overlay.tsx"),
+    readSource("app/interview-question-deep-link.module.css"),
     readFile(projectFile("package.json"), "utf8").then(JSON.parse),
   ]);
 

@@ -2,14 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const learningSource = readFileSync(
-  new URL("../app/playgrounds/databases/mysql-self-join-learning.ts", import.meta.url),
-  "utf8",
-);
-const playgroundSource = readFileSync(
-  new URL("../app/playgrounds/databases/database-playground.tsx", import.meta.url),
-  "utf8",
-);
+// The SQL assertions below are newline-exact. A Windows checkout (core.autocrlf)
+// delivers CRLF, so the source is normalized before matching.
+const readSource = (relativePath) =>
+  readFileSync(new URL(relativePath, import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+const learningSource = readSource("../app/playgrounds/databases/mysql-self-join-learning.ts");
+const playgroundSource = readSource("../app/playgrounds/databases/database-playground.tsx");
 
 test("self-join lessons use real commerce tables instead of isolated exercise fixtures", () => {
   assert.match(learningSource, /FROM product_price_history AS current_price/);

@@ -34,11 +34,14 @@ async function snapshot() {
 }
 
 function runGeneration() {
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  const result = spawnSync(npmCommand, ["run", "db:generate"], {
-    cwd: projectRoot,
-    stdio: "inherit",
-  });
+  const options = { cwd: projectRoot, stdio: "inherit" };
+  // Node refuses to spawn a .cmd shim directly on Windows (CVE-2024-27980) and
+  // fails with EINVAL, so npm has to go through the shell there. The command is
+  // passed as one fixed string rather than as arguments, which is what the
+  // shell option expects and avoids DEP0190.
+  const result = process.platform === "win32"
+    ? spawnSync("npm run db:generate", { ...options, shell: true })
+    : spawnSync("npm", ["run", "db:generate"], options);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }

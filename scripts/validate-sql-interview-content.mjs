@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
-const readText = async (relativePath) => readFile(new URL(relativePath, import.meta.url), "utf8");
+// The structural assertions below match on "\n". A Windows checkout
+// (core.autocrlf) delivers CRLF, which made every regex find nothing and left
+// this validator — and therefore `npm run verify` — unrunnable off Linux.
+const readText = async (relativePath) =>
+  (await readFile(new URL(relativePath, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 
 const [
   common,
