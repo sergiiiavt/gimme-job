@@ -151,6 +151,7 @@ const CONFLICTING_PRIMARY_ROLE_PATTERNS = [
 
 const BARE_QA_TITLE = /^(?:qa|qa\/aqa|senior qa|sr qa|middle qa|mid qa|junior qa|jr qa|lead qa|principal qa|staff qa|manual qa|automation qa|head qa|director qa)$/iu;
 const COMPANY_SUFFIXES = /\b(?:llc|ltd|limited|inc|incorporated|corp|corporation|gmbh|plc|company|co|тов|тзов|пат|ат|фоп)\b/giu;
+const PROSE_LIKE_COMPANY = /^[-–—]\s*|^(?:we|our|this)\s|\s(?:is|are|was|were|provides|provide|seeking)\s/iu;
 const TITLE_STOP_WORDS = new Set(["a", "an", "and", "the", "for", "of", "to", "with", "in", "on", "at", "та", "і", "й", "в", "у", "з", "із", "зі", "для", "на"]);
 const DESCRIPTION_STOP_WORDS = new Set([...TITLE_STOP_WORDS, "we", "you", "our", "your", "is", "are", "be", "will", "this", "that", "as", "or", "by", "from", "ми", "ви", "наш", "ваш", "це", "що", "як", "або", "від", "до", "про", "робота", "роботи"]);
 
@@ -215,7 +216,12 @@ export function classifyJobRelevance(job: Pick<IntakeJob, "title" | "description
   return { accepted: false, score: 0, reason: "no_software_qa_role_signal" };
 }
 
+function looksLikeDescriptionProse(value: string): boolean {
+  return PROSE_LIKE_COMPANY.test(String(value ?? "").trim());
+}
+
 function canonicalCompany(value: string): string {
+  if (looksLikeDescriptionProse(value)) return "";
   const normalized = normalizeVacancyText(value).replace(COMPANY_SUFFIXES, " ").replace(/\s+/g, " ").trim();
   return /^(?:unknown|company is hidden|hidden company|невідома компанія|компанію приховано|компания скрыта|n a|none)$/.test(normalized) ? "" : normalized;
 }
@@ -361,11 +367,13 @@ function rawRecord(value: unknown): Record<string, unknown> {
 }
 
 function companyEvidencePriority(job: IntakeJob): number {
+  if (looksLikeDescriptionProse(job.company)) return -1;
   if (!canonicalCompany(job.company)) return 0;
   const source = String(rawRecord(job.raw).companySource ?? "").toLowerCase();
-  if (["jsonld", "api", "listing-anchor", "detail-metadata", "page-structure"].includes(source)) return 100;
+  if (["jsonld", "api", "listing-anchor", "detail-metadata", "page-structure", "detail-structure"].includes(source)) return 100;
   if (source === "listing-block") return 90;
   if (source === "url-slug") return 80;
+  if (source === "title-derived") return 70;
   if (source === "inferred") return 10;
   if (source === "missing") return 0;
   return 50;
@@ -377,6 +385,8 @@ function selectCompany(primary: IntakeJob, secondary: IntakeJob): { company: str
   if (secondaryPriority > primaryPriority) return { company: secondary.company, owner: secondary };
   if (primaryPriority > 0) return { company: primary.company, owner: primary };
   if (secondaryPriority > 0) return { company: secondary.company, owner: secondary };
+  if (primaryPriority < 0 && secondaryPriority === 0) return { company: secondary.company || "Unknown", owner: secondary };
+  if (secondaryPriority < 0 && primaryPriority === 0) return { company: primary.company || "Unknown", owner: primary };
   return { company: primary.company || secondary.company || "Unknown", owner: primary };
 }
 
