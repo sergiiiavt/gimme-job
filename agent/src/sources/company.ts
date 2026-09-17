@@ -7,6 +7,7 @@ const UNKNOWN_COMPANY = /^(?:unknown|company is hidden|hidden company|невід
 const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|greenhouse|lever|ashby|companies|компанії|компании)$/iu;
 const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job description|responsibilities|requirements|nice to have|what we offer|benefits|conditions|обов[’'ʼ]?язки|вимоги|умови|про компанію|про нас|опис вакансії|задачі|требования|условия)$)|(?:\b(?:full[- ]?time|part[- ]?time|work experience|досвід роботи|повна зайнятість)\b)/iu;
 const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
+const PROSE_LIKE_COMPANY = /^[-–—]\s*|^(?:we|our|this)\s|\s(?:is|are|was|were|provides|provide|seeking)\s/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
 const COMPANY_GAP = `[ \\t]+`;
 const OPTIONAL_GAP = `[ \\t]*`;
@@ -29,7 +30,8 @@ export function isUsableCompany(value: unknown): boolean {
       && !UNKNOWN_COMPANY.test(company)
       && !BOARD_NAMES.test(company)
       && !NON_COMPANY_TEXT.test(company)
-      && !ROLE_LIKE_NAME.test(company),
+      && !ROLE_LIKE_NAME.test(company)
+      && !PROSE_LIKE_COMPANY.test(company),
   );
 }
 
