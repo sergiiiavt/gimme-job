@@ -1,0 +1,505 @@
+{
+  "collection": "os-command-line-interview",
+  "questions": [
+    {
+      "id": "windows-command-prompt-versus-powershell",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Theory",
+      "question": "What is the practical difference between Windows Command Prompt and PowerShell?",
+      "shortAnswer": "Command Prompt mainly runs traditional console programs and batch commands and passes text between commands. PowerShell is an automation shell and scripting language built around cmdlets and structured .NET objects, so filtering, selecting properties, error handling and automation are usually more reliable than parsing formatted text.",
+      "strongAnswerSignals": [
+        "CMD is primarily text-oriented and batch-compatible",
+        "PowerShell pipelines pass structured objects between cmdlets",
+        "chooses the shell based on task and available tooling"
+      ],
+      "questionUk": "Яка практична різниця між Windows Command Prompt і PowerShell?",
+      "shortAnswerUk": "Command Prompt переважно запускає традиційні console programs і batch commands та передає між командами текст. PowerShell є automation shell і scripting language на основі cmdlets та структурованих .NET objects, тому filtering, вибір properties, error handling і автоматизація зазвичай надійніші, ніж parsing форматованого тексту.",
+      "strongAnswerSignalsUk": [
+        "CMD переважно text-oriented і сумісний з batch scripts",
+        "PowerShell pipeline передає структуровані objects між cmdlets",
+        "вибір shell залежить від задачі й доступних tools"
+      ],
+      "example": "To find a Windows process, `tasklist | findstr java` parses text, while `Get-Process java | Select-Object Name,Id,CPU` works with process objects and explicit properties.",
+      "exampleUk": "Щоб знайти Windows process, `tasklist | findstr java` парсить текст, а `Get-Process java | Select-Object Name,Id,CPU` працює з process objects та явними properties.",
+      "sourceIds": ["microsoft-windows-commands", "microsoft-powershell-docs", "wecreateproblems-powershell-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["windows", "powershell", "cmd", "command-line"]
+    },
+    {
+      "id": "linux-navigation-and-file-listing",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "Which Linux commands do you use to understand where you are and inspect files in a directory?",
+      "shortAnswer": "Use `pwd` to print the current directory, `cd` to change directories and `ls` to list entries. In troubleshooting, `ls -la` is especially useful because it includes hidden entries plus ownership and permission information. Use absolute or relative paths deliberately and quote paths that contain spaces.",
+      "strongAnswerSignals": [
+        "pwd, cd and ls have distinct roles",
+        "ls -la exposes hidden files and permissions",
+        "understands absolute versus relative paths"
+      ],
+      "questionUk": "Які Linux commands використовують, щоб зрозуміти поточний location і переглянути files у directory?",
+      "shortAnswerUk": "Використовуйте `pwd`, щоб показати current directory, `cd` для переходу між directories і `ls` для списку entries. Для troubleshooting особливо корисний `ls -la`: він показує hidden entries, ownership і permissions. Треба розрізняти absolute та relative paths і брати paths із пробілами в quotes.",
+      "strongAnswerSignalsUk": [
+        "pwd, cd і ls мають різні ролі",
+        "ls -la показує hidden files та permissions",
+        "розуміє absolute і relative paths"
+      ],
+      "example": "After SSHing to a test server, run `pwd`, then `ls -la`, and inspect the expected deployment directory before changing or deleting anything. That quickly catches a wrong working directory or missing artifact.",
+      "exampleUk": "Після SSH на test server виконайте `pwd`, потім `ls -la` і перевірте очікуваний deployment directory перед будь-якими змінами. Це швидко виявляє неправильний working directory або відсутній artifact.",
+      "sourceIds": ["gnu-coreutils", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "filesystem", "command-line"]
+    },
+    {
+      "id": "windows-files-and-text-search",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "How do you list files, read a text file and search its contents from Windows command line?",
+      "shortAnswer": "In Command Prompt, `dir` lists files, `type file.log` prints a text file and `findstr` searches text or simple regular-expression patterns. In PowerShell, the common equivalents are `Get-ChildItem`, `Get-Content` and `Select-String`, which integrate with PowerShell objects and its pipeline.",
+      "strongAnswerSignals": [
+        "dir and Get-ChildItem list filesystem entries",
+        "type or Get-Content reads text",
+        "findstr or Select-String filters matching lines"
+      ],
+      "questionUk": "Як у Windows command line переглянути files, прочитати text file і знайти потрібний text усередині?",
+      "shortAnswerUk": "У Command Prompt `dir` показує files, `type file.log` друкує text file, а `findstr` шукає текст або прості regular-expression patterns. У PowerShell типовими equivalents є `Get-ChildItem`, `Get-Content` і `Select-String`, які працюють у PowerShell pipeline та з його objects.",
+      "strongAnswerSignalsUk": [
+        "dir і Get-ChildItem показують filesystem entries",
+        "type або Get-Content читає text",
+        "findstr або Select-String фільтрує matching lines"
+      ],
+      "example": "For a failed Windows test run, `findstr /i /n \"error exception\" app.log` can find matching log lines quickly; in PowerShell, `Select-String -Path app.log -Pattern 'error|exception'` gives richer match objects.",
+      "exampleUk": "Після failed Windows test run команда `findstr /i /n \"error exception\" app.log` швидко знаходить matching lines; у PowerShell `Select-String -Path app.log -Pattern 'error|exception'` повертає richer match objects.",
+      "sourceIds": ["microsoft-windows-commands", "microsoft-powershell-docs", "wecreateproblems-powershell-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["windows", "findstr", "powershell", "logs"]
+    },
+    {
+      "id": "linux-find-and-grep",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "What is the difference between `find` and `grep` on Linux?",
+      "shortAnswer": "`find` searches filesystem entries using criteria such as name, path, type, size or modification time. `grep` searches text content for matching lines or patterns. They are often combined: use `find` to select files and `grep` to inspect their content, or use recursive `grep -R` when content search is the main task.",
+      "strongAnswerSignals": [
+        "find searches filesystem metadata and paths",
+        "grep searches file or stream content",
+        "knows when to combine them safely"
+      ],
+      "questionUk": "У чому різниця між `find` і `grep` у Linux?",
+      "shortAnswerUk": "`find` шукає filesystem entries за критеріями на кшталт name, path, type, size або modification time. `grep` шукає matching lines чи patterns у text content. Їх часто комбінують: `find` відбирає files, а `grep` перевіряє content; або застосовують recursive `grep -R`, якщо потрібен саме content search.",
+      "strongAnswerSignalsUk": [
+        "find шукає paths і filesystem metadata",
+        "grep шукає content files або streams",
+        "знає, коли безпечно комбінувати ці commands"
+      ],
+      "example": "To locate JSON logs changed today and inspect them for a correlation ID, first use `find /var/log/app -name '*.json' -mtime 0`, then search the selected files with `grep -n 'abc-123'`.",
+      "exampleUk": "Щоб знайти JSON logs, змінені сьогодні, і перевірити correlation ID, спочатку використайте `find /var/log/app -name '*.json' -mtime 0`, а потім шукайте `grep -n 'abc-123'` у вибраних files.",
+      "sourceIds": ["gnu-grep", "linux-man-pages", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "find", "grep", "filesystem"]
+    },
+    {
+      "id": "linux-read-and-follow-logs",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "Which Linux commands are useful for reading a large log file and watching new lines appear?",
+      "shortAnswer": "Use `less` for interactive reading without loading the entire file into an editor, `head` or `tail` for a limited number of lines, and `tail -f` to follow appended lines. For systemd-managed services, `journalctl -u <service>` is often more appropriate than assuming the service writes a plain text file.",
+      "strongAnswerSignals": [
+        "less for interactive large-file inspection",
+        "tail -f follows appended lines",
+        "journalctl is relevant for systemd service logs"
+      ],
+      "questionUk": "Які Linux commands корисні для читання великого log file і спостереження за новими lines?",
+      "shortAnswerUk": "Використовуйте `less` для interactive читання без відкриття всього file в editor, `head` або `tail` для обмеженої кількості lines і `tail -f`, щоб стежити за appended lines. Для services під systemd часто правильніше використати `journalctl -u <service>`, а не очікувати звичайний text log file.",
+      "strongAnswerSignalsUk": [
+        "less зручний для великих files",
+        "tail -f показує appended lines",
+        "journalctl доречний для systemd service logs"
+      ],
+      "example": "While reproducing an API failure on a Linux host, run `tail -f /var/log/app/app.log` in one terminal and the test in another. If the app is managed by systemd, use `journalctl -u app.service -f` instead.",
+      "exampleUk": "Під час відтворення API failure на Linux host запустіть `tail -f /var/log/app/app.log` в одному terminal, а test — в іншому. Якщо app керується systemd, використайте `journalctl -u app.service -f`.",
+      "sourceIds": ["gnu-coreutils", "systemd-docs", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "logs", "tail", "journalctl"]
+    },
+    {
+      "id": "shell-pipes-and-redirection",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Theory",
+      "question": "What do pipes and output redirection do in a command shell?",
+      "shortAnswer": "A pipe sends one command's standard output to another command's standard input, while redirection sends standard output or standard error to a file or another target. In common Unix shells, `>` overwrites a file, `>>` appends, `2>` redirects standard error and `|` creates a pipeline. The exact syntax differs in PowerShell because its pipeline normally transports objects.",
+      "strongAnswerSignals": [
+        "pipe connects producer output to consumer input",
+        "distinguishes overwrite, append and stderr redirection",
+        "does not assume every shell pipeline has identical semantics"
+      ],
+      "questionUk": "Що роблять pipes і output redirection у command shell?",
+      "shortAnswerUk": "Pipe передає standard output однієї command у standard input іншої, а redirection направляє standard output або standard error у file чи іншу ціль. У типових Unix shells `>` перезаписує file, `>>` додає в кінець, `2>` redirect-ить stderr, а `|` створює pipeline. У PowerShell semantics відрізняються, бо pipeline зазвичай передає objects.",
+      "strongAnswerSignalsUk": [
+        "pipe з'єднує output producer з input consumer",
+        "розрізняє overwrite, append і stderr redirection",
+        "не переносить semantics одного shell на всі інші"
+      ],
+      "example": "`grep -i error app.log | tail -n 20 > latest-errors.txt` filters matching lines, keeps the last twenty, and writes the result to a file instead of only displaying it in the terminal.",
+      "exampleUk": "`grep -i error app.log | tail -n 20 > latest-errors.txt` відбирає matching lines, залишає останні двадцять і записує результат у file замість простого display у terminal.",
+      "sourceIds": ["gnu-coreutils", "gnu-grep", "microsoft-powershell-docs"],
+      "prevalence": "Occasional",
+      "tags": ["shell", "pipeline", "redirection", "command-line"]
+    },
+    {
+      "id": "linux-file-permissions-chmod-chown",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Theory",
+      "question": "How do Linux file permissions work, and what do `chmod` and `chown` change?",
+      "shortAnswer": "Linux permissions are evaluated for file owner, group and others, with read, write and execute bits. `chmod` changes permission bits, while `chown` changes ownership. Numeric modes such as 644 and 755 are compact representations: 644 is typically read/write for owner and read-only for others; 755 additionally gives execute permission to group and others.",
+      "strongAnswerSignals": [
+        "owner, group and others are separate permission classes",
+        "chmod changes mode while chown changes ownership",
+        "can explain common numeric modes without recommending 777"
+      ],
+      "questionUk": "Як працюють Linux file permissions і що змінюють `chmod` та `chown`?",
+      "shortAnswerUk": "Linux permissions оцінюються окремо для file owner, group та others і мають read, write та execute bits. `chmod` змінює permission bits, а `chown` — ownership. Numeric modes на кшталт 644 і 755 є компактним записом: 644 зазвичай дає owner read/write, іншим read-only; 755 додатково дає execute group та others.",
+      "strongAnswerSignalsUk": [
+        "owner, group та others мають окремі permission classes",
+        "chmod змінює mode, chown змінює ownership",
+        "пояснює common numeric modes без поради chmod 777"
+      ],
+      "example": "If a deployed script exists but returns `Permission denied`, inspect `ls -l` first. A correct fix may be `chmod u+x run-tests.sh`; blindly using `chmod -R 777` changes far more permissions than the problem requires.",
+      "exampleUk": "Якщо deployed script існує, але повертає `Permission denied`, спочатку перевірте `ls -l`. Правильним fix може бути `chmod u+x run-tests.sh`; сліпий `chmod -R 777` змінює набагато більше permissions, ніж потрібно.",
+      "sourceIds": ["gnu-coreutils", "linux-man-pages", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "permissions", "chmod", "chown"]
+    },
+    {
+      "id": "linux-process-inspection",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "How do you inspect running processes on Linux?",
+      "shortAnswer": "Use `ps` for a process snapshot, often `ps aux` or `ps -ef`, and `top` for an interactive changing view of CPU and memory usage. `pgrep` can locate PIDs by process name. For a specific service, combine process inspection with the service manager rather than treating a matching process name as proof that the service is healthy.",
+      "strongAnswerSignals": [
+        "ps is a snapshot while top is interactive",
+        "can locate a PID with pgrep or ps filtering",
+        "process existence is not the same as application health"
+      ],
+      "questionUk": "Як переглядати running processes у Linux?",
+      "shortAnswerUk": "Використовуйте `ps` для snapshot processes, часто `ps aux` або `ps -ef`, і `top` для interactive змінного view CPU та memory usage. `pgrep` допомагає знайти PID за process name. Для конкретного service треба також перевіряти service manager, бо сам факт існування process ще не доводить health application.",
+      "strongAnswerSignalsUk": [
+        "ps дає snapshot, top — interactive view",
+        "може знайти PID через pgrep або filtering ps",
+        "process existence не дорівнює application health"
+      ],
+      "example": "When a test server becomes slow, `top` may show one Java process consuming a CPU core. Then `ps -fp <pid>` confirms its command line before anyone restarts or kills the wrong process.",
+      "exampleUk": "Коли test server стає повільним, `top` може показати Java process, що забирає CPU core. Потім `ps -fp <pid>` підтверджує його command line перед restart або kill неправильного process.",
+      "sourceIds": ["linux-man-pages", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "processes", "ps", "top"]
+    },
+    {
+      "id": "linux-process-signals",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "What is the difference between a normal `kill` and `kill -9` on Linux?",
+      "shortAnswer": "`kill <pid>` sends SIGTERM by default, asking the process to terminate and allowing it to run cleanup handlers. `kill -9 <pid>` sends SIGKILL, which the process cannot catch or ignore. SIGKILL is therefore a last resort after a graceful stop fails, because it can interrupt cleanup and leave external state unfinished.",
+      "strongAnswerSignals": [
+        "default kill sends SIGTERM",
+        "SIGKILL cannot be handled by the target process",
+        "uses force only after graceful termination fails"
+      ],
+      "questionUk": "У чому різниця між звичайним `kill` і `kill -9` у Linux?",
+      "shortAnswerUk": "`kill <pid>` за замовчуванням надсилає SIGTERM, тобто просить process завершитися і дає йому можливість виконати cleanup handlers. `kill -9 <pid>` надсилає SIGKILL, який process не може перехопити чи ігнорувати. Тому SIGKILL — last resort після невдалого graceful stop, бо cleanup може не завершитися.",
+      "strongAnswerSignalsUk": [
+        "default kill надсилає SIGTERM",
+        "SIGKILL не може бути оброблений target process",
+        "force застосовується лише після невдалого graceful termination"
+      ],
+      "example": "If a local test service hangs, first stop it through `systemctl stop` or `kill <pid>` and wait briefly. Use `kill -9` only when the process remains stuck and the consequences are understood.",
+      "exampleUk": "Якщо local test service завис, спочатку зупиніть його через `systemctl stop` або `kill <pid>` і трохи зачекайте. `kill -9` використовуйте лише якщо process не завершується і наслідки зрозумілі.",
+      "sourceIds": ["linux-man-pages", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "processes", "signals", "kill"]
+    },
+    {
+      "id": "windows-process-inspection-and-termination",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "How do you list and stop processes from Windows command line?",
+      "shortAnswer": "In Command Prompt, `tasklist` lists processes and `taskkill` can terminate them by PID or image name. In PowerShell, `Get-Process` returns process objects and `Stop-Process` terminates selected processes. Prefer identifying the exact PID and verifying the process before using force, especially on shared test machines.",
+      "strongAnswerSignals": [
+        "tasklist and taskkill are CMD-native tools",
+        "Get-Process and Stop-Process are PowerShell cmdlets",
+        "verifies PID or process identity before termination"
+      ],
+      "questionUk": "Як у Windows command line показати й зупинити processes?",
+      "shortAnswerUk": "У Command Prompt `tasklist` показує processes, а `taskkill` може завершити їх за PID або image name. У PowerShell `Get-Process` повертає process objects, а `Stop-Process` завершує вибрані processes. Перед force termination варто перевірити точний PID та process identity, особливо на shared test machines.",
+      "strongAnswerSignalsUk": [
+        "tasklist і taskkill є CMD-native tools",
+        "Get-Process і Stop-Process є PowerShell cmdlets",
+        "перевіряє PID або process identity перед termination"
+      ],
+      "example": "Use `tasklist /fi \"IMAGENAME eq java.exe\"` to narrow candidates, then `taskkill /PID 4321` for the confirmed process. In PowerShell, `Get-Process java` provides object properties before `Stop-Process -Id 4321`.",
+      "exampleUk": "Використайте `tasklist /fi \"IMAGENAME eq java.exe\"`, щоб звузити candidates, а потім `taskkill /PID 4321` для підтвердженого process. У PowerShell `Get-Process java` дає properties перед `Stop-Process -Id 4321`.",
+      "sourceIds": ["microsoft-windows-commands", "microsoft-powershell-docs", "wecreateproblems-powershell-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["windows", "processes", "tasklist", "powershell"]
+    },
+    {
+      "id": "linux-systemd-service-troubleshooting",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "How do you check and troubleshoot a systemd service on Linux?",
+      "shortAnswer": "Start with `systemctl status <unit>` to inspect the unit state and recent messages. Use `systemctl start`, `stop` or `restart` only when appropriate, and use `journalctl -u <unit>` for service logs. Also distinguish `enable`, which affects start-at-boot configuration, from `start`, which changes the current runtime state.",
+      "strongAnswerSignals": [
+        "systemctl status before blindly restarting",
+        "journalctl -u for unit logs",
+        "distinguishes start from enable"
+      ],
+      "questionUk": "Як перевірити й troubleshoot-ити systemd service у Linux?",
+      "shortAnswerUk": "Почніть із `systemctl status <unit>`, щоб побачити unit state і recent messages. `systemctl start`, `stop` або `restart` використовуйте лише за потреби, а `journalctl -u <unit>` — для service logs. Також треба відрізняти `enable`, який налаштовує start at boot, від `start`, що змінює current runtime state.",
+      "strongAnswerSignalsUk": [
+        "спочатку systemctl status, а не blind restart",
+        "journalctl -u для unit logs",
+        "відрізняє start від enable"
+      ],
+      "example": "If `api.service` is down after deployment, `systemctl status api.service` may reveal an exit code, and `journalctl -u api.service -n 100 --no-pager` provides the startup error without restarting away useful evidence.",
+      "exampleUk": "Якщо `api.service` не працює після deployment, `systemctl status api.service` може показати exit code, а `journalctl -u api.service -n 100 --no-pager` дасть startup error без restart, який може стерти корисний evidence.",
+      "sourceIds": ["systemd-docs", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "systemd", "services", "journalctl"]
+    },
+    {
+      "id": "windows-service-troubleshooting",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "How do you inspect and control Windows services from the command line?",
+      "shortAnswer": "Command Prompt can use `sc query <service>` to inspect service state and `sc start` or `sc stop` to control it. PowerShell provides `Get-Service`, `Start-Service`, `Stop-Service` and `Restart-Service`. A service reported as Running is only one signal; verify the process, listener, dependency and application health before concluding the service works.",
+      "strongAnswerSignals": [
+        "knows sc query and PowerShell service cmdlets",
+        "service state is not equivalent to endpoint health",
+        "checks dependencies and logs before unnecessary restarts"
+      ],
+      "questionUk": "Як із command line перевіряти й керувати Windows services?",
+      "shortAnswerUk": "Command Prompt може використати `sc query <service>` для перевірки service state і `sc start` або `sc stop` для керування. PowerShell має `Get-Service`, `Start-Service`, `Stop-Service` та `Restart-Service`. Статус Running — лише один signal: треба ще перевірити process, listener, dependency та application health.",
+      "strongAnswerSignalsUk": [
+        "знає sc query та PowerShell service cmdlets",
+        "service state не дорівнює endpoint health",
+        "перевіряє dependencies і logs перед зайвим restart"
+      ],
+      "example": "A Windows API service shows Running, but tests get connection refused. Check the service, then verify whether its process is actually listening on the expected port and inspect Event Log or application logs before restarting it.",
+      "exampleUk": "Windows API service має status Running, але tests отримують connection refused. Перевірте service, потім чи process реально listening на expected port, і Event Log або application logs перед restart.",
+      "sourceIds": ["microsoft-windows-commands", "microsoft-powershell-docs", "wecreateproblems-powershell-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["windows", "services", "powershell", "troubleshooting"]
+    },
+    {
+      "id": "linux-network-configuration-commands",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "Which Linux commands help inspect local network configuration and routes?",
+      "shortAnswer": "`ip addr` shows interface addresses and state, while `ip route` shows routing decisions including the default route. `hostname` identifies the local host name. Older `ifconfig` and `route` commands still exist on some systems, but modern Linux troubleshooting normally uses the iproute2 `ip` command family.",
+      "strongAnswerSignals": [
+        "ip addr for interfaces and addresses",
+        "ip route for routing table and default route",
+        "recognizes iproute2 as the modern default"
+      ],
+      "questionUk": "Які Linux commands допомагають перевірити local network configuration і routes?",
+      "shortAnswerUk": "`ip addr` показує interface addresses та state, а `ip route` — routing decisions, включно з default route. `hostname` показує local host name. Старі `ifconfig` і `route` ще трапляються, але modern Linux troubleshooting зазвичай використовує family commands `ip` з iproute2.",
+      "strongAnswerSignalsUk": [
+        "ip addr для interfaces та addresses",
+        "ip route для routing table і default route",
+        "розуміє, що iproute2 є сучасним default"
+      ],
+      "example": "If a VM cannot reach an API subnet, inspect `ip addr` to confirm the expected address and `ip route` to confirm there is a usable route before blaming DNS or the remote service.",
+      "exampleUk": "Якщо VM не може reach API subnet, перевірте `ip addr`, щоб підтвердити expected address, і `ip route`, щоб побачити usable route, перш ніж звинувачувати DNS або remote service.",
+      "sourceIds": ["linux-man-pages", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "networking", "iproute2", "troubleshooting"]
+    },
+    {
+      "id": "windows-ipconfig-network-configuration",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "What information does `ipconfig` provide on Windows, and when is `ipconfig /all` useful?",
+      "shortAnswer": "`ipconfig` shows core TCP/IP configuration such as IPv4/IPv6 addresses, subnet masks and default gateways. `ipconfig /all` adds detailed adapter information such as DHCP and DNS configuration. Options such as `/flushdns`, `/release` and `/renew` change state, so they should not be used merely to inspect a machine.",
+      "strongAnswerSignals": [
+        "basic ipconfig shows address, mask and gateway",
+        "/all adds adapter, DHCP and DNS details",
+        "distinguishes inspection from state-changing options"
+      ],
+      "questionUk": "Яку інформацію показує `ipconfig` у Windows і коли корисний `ipconfig /all`?",
+      "shortAnswerUk": "`ipconfig` показує core TCP/IP configuration: IPv4/IPv6 addresses, subnet masks та default gateways. `ipconfig /all` додає детальну adapter information, включно з DHCP і DNS configuration. Options `/flushdns`, `/release` та `/renew` змінюють state, тому їх не слід запускати лише для inspection.",
+      "strongAnswerSignalsUk": [
+        "basic ipconfig показує address, mask і gateway",
+        "/all додає adapter, DHCP та DNS details",
+        "відрізняє inspection від state-changing options"
+      ],
+      "example": "When a Windows test agent cannot reach an internal service, `ipconfig /all` can reveal that it received the wrong DNS server or gateway, which is more informative than repeatedly retrying the application.",
+      "exampleUk": "Коли Windows test agent не reach-ить internal service, `ipconfig /all` може показати неправильний DNS server або gateway, що набагато корисніше за повторні application retries.",
+      "sourceIds": ["microsoft-windows-commands"],
+      "prevalence": "Occasional",
+      "tags": ["windows", "networking", "ipconfig"]
+    },
+    {
+      "id": "port-to-process-troubleshooting",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "How do you determine which process is listening on a TCP port in Linux and Windows?",
+      "shortAnswer": "On Linux, `ss -lntp` is a common way to list listening TCP sockets and associated processes when permissions allow; `lsof -i` may also help where installed. On Windows, `netstat -ano` shows listening connections with PIDs, which can be mapped with `tasklist`; PowerShell can use `Get-NetTCPConnection` plus process inspection.",
+      "strongAnswerSignals": [
+        "Linux ss can map listeners to processes",
+        "Windows netstat -ano exposes PIDs",
+        "maps the PID to the owning process before taking action"
+      ],
+      "questionUk": "Як визначити, який process listening на TCP port у Linux і Windows?",
+      "shortAnswerUk": "У Linux типовий варіант — `ss -lntp`, який показує listening TCP sockets і пов'язані processes, якщо вистачає permissions; також інколи використовують `lsof -i`. У Windows `netstat -ano` показує connections/listeners із PID, який можна зіставити через `tasklist`; у PowerShell є `Get-NetTCPConnection` плюс process inspection.",
+      "strongAnswerSignalsUk": [
+        "Linux ss може пов'язати listeners із processes",
+        "Windows netstat -ano показує PID",
+        "спочатку зіставляє PID з owner process, потім діє"
+      ],
+      "example": "If port 8080 is unexpectedly occupied, use `ss -lntp | grep ':8080'` on Linux or `netstat -ano | findstr :8080` on Windows, then identify the PID before stopping anything.",
+      "exampleUk": "Якщо port 8080 неочікувано зайнятий, використайте `ss -lntp | grep ':8080'` у Linux або `netstat -ano | findstr :8080` у Windows, а потім визначте PID перед будь-яким stop.",
+      "sourceIds": ["linux-man-pages", "microsoft-windows-commands", "microsoft-powershell-docs"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "windows", "networking", "ports", "processes"]
+    },
+    {
+      "id": "dns-and-connectivity-command-line",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "Which command-line tools help separate a DNS problem from a general connectivity problem?",
+      "shortAnswer": "Use `nslookup` or `dig` to query DNS and compare the resolved address with expectations. Use `ping` only as a limited ICMP reachability signal because hosts may block ICMP. Use `traceroute` or `tracert` for path clues and a TCP-aware check such as `curl` or Windows `Test-NetConnection -Port` to verify the protocol and port that actually matter.",
+      "strongAnswerSignals": [
+        "DNS resolution and network reachability are separate checks",
+        "ping failure does not prove the host is unavailable",
+        "tests the real TCP port or application protocol"
+      ],
+      "questionUk": "Які command-line tools допомагають відрізнити DNS problem від загальної connectivity problem?",
+      "shortAnswerUk": "Використовуйте `nslookup` або `dig`, щоб query-ити DNS і порівняти resolved address з очікуваним. `ping` дає лише обмежений ICMP reachability signal, бо ICMP може бути blocked. `traceroute` або `tracert` дають clues про path, а `curl` чи Windows `Test-NetConnection -Port` перевіряють саме потрібний protocol і port.",
+      "strongAnswerSignalsUk": [
+        "DNS resolution і network reachability перевіряються окремо",
+        "failed ping не доводить, що host unavailable",
+        "перевіряє реальний TCP port або application protocol"
+      ],
+      "example": "If `api.internal` fails in a test, first resolve it with `nslookup api.internal`. If the address is correct, test TCP 443 with `Test-NetConnection api.internal -Port 443` or request the URL with `curl`.",
+      "exampleUk": "Якщо `api.internal` падає в test, спочатку resolve-ніть його через `nslookup api.internal`. Якщо address правильний, перевірте TCP 443 через `Test-NetConnection api.internal -Port 443` або URL через `curl`.",
+      "sourceIds": ["microsoft-windows-commands", "microsoft-powershell-docs", "curl-docs", "linux-man-pages"],
+      "prevalence": "Occasional",
+      "tags": ["dns", "networking", "windows", "linux", "troubleshooting"]
+    },
+    {
+      "id": "curl-http-troubleshooting",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Practical",
+      "question": "How can `curl` help when an HTTP service fails outside the browser or test framework?",
+      "shortAnswer": "`curl` can make a direct HTTP request and expose status, headers, redirects, TLS errors and response content without browser UI or test-framework abstractions. Useful options include `-v` for verbose connection details, `-I` for headers-only style checks, `-H` for request headers and `-d` for request data. It is a diagnostic client, not proof of full application correctness.",
+      "strongAnswerSignals": [
+        "curl isolates HTTP from browser or framework behavior",
+        "uses verbose output and headers deliberately",
+        "does not treat one successful curl request as complete testing"
+      ],
+      "questionUk": "Як `curl` допомагає, коли HTTP service не працює через browser або test framework?",
+      "shortAnswerUk": "`curl` може зробити direct HTTP request і показати status, headers, redirects, TLS errors та response content без browser UI чи abstractions test framework. Корисні options: `-v` для verbose connection details, `-I` для headers, `-H` для request headers і `-d` для request data. Це diagnostic client, а не доказ повної correctness application.",
+      "strongAnswerSignalsUk": [
+        "curl ізолює HTTP від browser або framework behavior",
+        "свідомо використовує verbose output і headers",
+        "не вважає один successful curl повним testing"
+      ],
+      "example": "When an automated API test reports a generic connection failure, `curl -v https://service/health` can reveal whether DNS, TCP/TLS setup, redirects or the HTTP response itself is the first failing layer.",
+      "exampleUk": "Коли automated API test показує generic connection failure, `curl -v https://service/health` може показати, де перший failure: DNS, TCP/TLS setup, redirect чи сам HTTP response.",
+      "sourceIds": ["curl-docs", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["curl", "http", "linux", "windows", "troubleshooting"]
+    },
+    {
+      "id": "command-line-resource-usage",
+      "level": "Middle",
+      "category": "Infrastructure",
+      "kind": "Troubleshooting",
+      "question": "Which command-line checks help when a test machine is slow or running out of resources?",
+      "shortAnswer": "On Linux, `top` or `ps` help inspect CPU and memory consumers, `free -h` summarizes memory and `df -h` plus `du` help distinguish filesystem capacity from directory usage. On Windows, PowerShell can inspect processes with `Get-Process` and available drives with `Get-PSDrive` or storage-specific cmdlets. Start by measuring before killing processes or deleting files.",
+      "strongAnswerSignals": [
+        "separates CPU, memory and disk investigation",
+        "df and du answer different disk questions",
+        "measures first before destructive remediation"
+      ],
+      "questionUk": "Які command-line checks корисні, коли test machine повільна або закінчуються resources?",
+      "shortAnswerUk": "У Linux `top` або `ps` допомагають знайти CPU/memory consumers, `free -h` показує memory summary, а `df -h` разом із `du` відрізняють filesystem capacity від directory usage. У Windows PowerShell можна перевірити processes через `Get-Process`, а drives через `Get-PSDrive` або storage cmdlets. Спочатку вимірюйте, а вже потім видаляйте чи kill-те.",
+      "strongAnswerSignalsUk": [
+        "окремо досліджує CPU, memory і disk",
+        "df та du відповідають на різні disk questions",
+        "спочатку вимірювання, потім destructive remediation"
+      ],
+      "example": "If CI starts failing with `No space left on device`, `df -h` confirms which filesystem is full and `du -sh` on candidate directories finds where space is consumed before logs or artifacts are removed.",
+      "exampleUk": "Якщо CI падає з `No space left on device`, `df -h` підтверджує, який filesystem full, а `du -sh` по candidate directories показує, де витрачено space, перш ніж видаляти logs чи artifacts.",
+      "sourceIds": ["gnu-coreutils", "linux-man-pages", "microsoft-powershell-docs", "toolmingo-linux-interviews"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "windows", "resources", "disk", "memory"]
+    },
+    {
+      "id": "environment-variables-and-path",
+      "level": "Junior",
+      "category": "Infrastructure",
+      "kind": "Theory",
+      "question": "What are environment variables, and why is `PATH` important for command-line tools?",
+      "shortAnswer": "Environment variables are named values inherited by processes and commonly used for configuration such as endpoints, credentials references, modes and tool locations. `PATH` is a list of directories the shell searches when a command is invoked without a full path. A tool can be installed correctly yet appear unavailable if its directory is absent from PATH or the shell has stale environment state.",
+      "strongAnswerSignals": [
+        "environment variables are process-visible configuration",
+        "PATH controls executable lookup",
+        "understands shell/session inheritance and stale state"
+      ],
+      "questionUk": "Що таке environment variables і чому `PATH` важливий для command-line tools?",
+      "shortAnswerUk": "Environment variables — це named values, які бачать processes і які часто використовуються для configuration: endpoints, credential references, modes та tool locations. `PATH` — список directories, у яких shell шукає executable, якщо command викликана без full path. Tool може бути встановлений правильно, але не знаходитися через відсутній directory у PATH або stale shell state.",
+      "strongAnswerSignalsUk": [
+        "environment variables є process-visible configuration",
+        "PATH керує executable lookup",
+        "розуміє inheritance між process/session і stale state"
+      ],
+      "example": "If `k6` works in one terminal but not another, compare PATH and command resolution before reinstalling it. On PowerShell use `$env:PATH` and `Get-Command k6`; on Linux use `echo \"$PATH\"` and `command -v k6`.",
+      "exampleUk": "Якщо `k6` працює в одному terminal, але не в іншому, порівняйте PATH і command resolution перед reinstall. У PowerShell використайте `$env:PATH` та `Get-Command k6`, у Linux — `echo \"$PATH\"` і `command -v k6`.",
+      "sourceIds": ["gnu-coreutils", "microsoft-powershell-docs"],
+      "prevalence": "Occasional",
+      "tags": ["environment-variables", "path", "linux", "windows", "command-line"]
+    },
+    {
+      "id": "service-unreachable-command-line-triage",
+      "level": "Senior",
+      "category": "Infrastructure",
+      "kind": "Scenario",
+      "question": "A service is reported as running, but clients cannot reach it. What command-line checks do you perform before restarting it?",
+      "shortAnswer": "Work from the client path inward: resolve the hostname, verify the intended IP and route, test the actual TCP port, confirm the service is listening on the expected interface, map the listener to the correct process, inspect service state and logs, and then check local firewall or proxy configuration if needed. Preserve evidence before restart because restarting may hide the original failure.",
+      "strongAnswerSignals": [
+        "follows DNS to network to listener to process to application logs",
+        "checks the actual port rather than relying only on ping",
+        "preserves evidence before restart or force termination"
+      ],
+      "questionUk": "Service має status running, але clients не можуть до нього підключитися. Які command-line checks виконати перед restart?",
+      "shortAnswerUk": "Рухайтеся від client path усередину: resolve hostname, перевірте intended IP і route, протестуйте потрібний TCP port, переконайтеся, що service listening на expected interface, зіставте listener з правильним process, перевірте service state та logs, а потім local firewall або proxy configuration. Збережіть evidence до restart, бо restart може приховати original failure.",
+      "strongAnswerSignalsUk": [
+        "йде від DNS до network, listener, process і application logs",
+        "перевіряє actual port, а не лише ping",
+        "зберігає evidence перед restart або force termination"
+      ],
+      "example": "For HTTPS on port 8443, resolve the host, test TCP 8443, inspect `ss -lntp` or `netstat -ano`, identify the owner process, then read `journalctl` or Windows Event Log. Restart only after the failing layer is understood.",
+      "exampleUk": "Для HTTPS на port 8443 resolve-ніть host, перевірте TCP 8443, подивіться `ss -lntp` або `netstat -ano`, визначте owner process, а потім `journalctl` чи Windows Event Log. Restart робіть після локалізації failure.",
+      "sourceIds": ["linux-man-pages", "systemd-docs", "microsoft-windows-commands", "microsoft-powershell-docs", "curl-docs"],
+      "prevalence": "Occasional",
+      "tags": ["linux", "windows", "troubleshooting", "networking", "services"]
+    }
+  ]
+}

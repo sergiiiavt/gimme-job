@@ -1,0 +1,74 @@
+[
+  {
+    "id": "gnu-coreutils",
+    "title": "GNU Coreutils manual",
+    "url": "https://www.gnu.org/software/coreutils/manual/coreutils.html",
+    "publisher": "GNU Project",
+    "kind": "Official documentation",
+    "role": "Linux and Unix-like filesystem, text, disk-usage and shell utility behavior"
+  },
+  {
+    "id": "gnu-grep",
+    "title": "GNU grep manual",
+    "url": "https://www.gnu.org/software/grep/manual/grep.html",
+    "publisher": "GNU Project",
+    "kind": "Official documentation",
+    "role": "Text search, matching options, recursive search and grep command semantics"
+  },
+  {
+    "id": "linux-man-pages",
+    "title": "Linux man-pages project",
+    "url": "https://man7.org/linux/man-pages/",
+    "publisher": "man7.org / Linux man-pages project",
+    "kind": "Technical reference",
+    "role": "Linux processes, signals, networking and system-call-facing command behavior"
+  },
+  {
+    "id": "systemd-docs",
+    "title": "systemd manual",
+    "url": "https://www.freedesktop.org/software/systemd/man/latest/",
+    "publisher": "systemd project",
+    "kind": "Official documentation",
+    "role": "systemctl, journalctl, service units and systemd operational behavior"
+  },
+  {
+    "id": "curl-docs",
+    "title": "curl documentation",
+    "url": "https://curl.se/docs/",
+    "publisher": "curl project",
+    "kind": "Official documentation",
+    "role": "HTTP and network diagnostics with curl, including request, response and verbose connection inspection"
+  },
+  {
+    "id": "microsoft-windows-commands",
+    "title": "Windows commands reference",
+    "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "Command Prompt utilities including ipconfig, netstat, tasklist, taskkill, sc, findstr, ping, tracert and nslookup"
+  },
+  {
+    "id": "microsoft-powershell-docs",
+    "title": "PowerShell documentation",
+    "url": "https://learn.microsoft.com/en-us/powershell/",
+    "publisher": "Microsoft",
+    "kind": "Official documentation",
+    "role": "PowerShell cmdlets, object pipeline, processes, services, networking, event logs and environment handling"
+  },
+  {
+    "id": "toolmingo-linux-interviews",
+    "title": "50 Linux Interview Questions (With Answers)",
+    "url": "https://www.toolmingo.com/blog/linux-interview-questions",
+    "publisher": "Toolmingo",
+    "kind": "Current interview question bank",
+    "role": "Recurrence signal for Linux filesystem, permissions, processes, systemd, networking and shell-command interview topics"
+  },
+  {
+    "id": "wecreateproblems-powershell-interviews",
+    "title": "PowerShell Interview Questions",
+    "url": "https://www.wecreateproblems.com/interview-questions/powershell-interview-questions",
+    "publisher": "WeCP",
+    "kind": "Current interview question bank",
+    "role": "Recurrence signal for PowerShell fundamentals, cmdlets, services, processes, pipelines and troubleshooting questions"
+  }
+]

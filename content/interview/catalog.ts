@@ -1,5 +1,6 @@
 import common from "./common-qa.json";
 import canonical from "./canonical-baseline.json";
+import osCommandLine from "./os-commandline-qa.json";
 import performanceTestingCore from "./performance-testing-core-qa.json";
 import performanceTestingPractical from "./performance-testing-practical-qa.json";
 import databaseSql from "./database-sql-qa.json";
@@ -20,6 +21,7 @@ import coreFoundations from "./core-foundations-qa.json";
 import expanded from "./expanded-qa.json";
 import sourceRefresh from "./source-refresh-qa.json";
 import baseSources from "./sources.json";
+import osCommandLineSources from "./os-commandline-sources.json";
 import sourceRefreshSources from "./source-refresh-sources.json";
 import performanceTestingSources from "./performance-testing-sources.json";
 import sourceEvidence from "./source-evidence-overrides.json";
@@ -35,6 +37,7 @@ const sqlCodeExamplesById = new Map(
     .map((item) => [item.id, item.codeExamples]),
 );
 const sqlPracticalQuestionIds = new Set(sqlPracticalInterview.questions.map((question) => question.id));
+const osCommandLineQuestionIds = new Set(osCommandLine.questions.map((question) => question.id));
 const categoryToDomain = domains.categoryToDomain as Record<string, string>;
 
 type SubtopicRule = {
@@ -51,8 +54,28 @@ type SubtopicConfig = {
   fallback: string;
 };
 
+const authoredSubtopicDomains = subtopics.domains as Record<string, SubtopicConfig>;
+const genericQaSubtopics = authoredSubtopicDomains["Generic QA"];
+const osCommandLineSubtopic = {
+  id: "os-command-line",
+  label: "OS & command line",
+  category: "OS & command line",
+  description: "Practical Linux, Windows Command Prompt and PowerShell commands for QA/SDET troubleshooting.",
+};
 const subtopicDomains: Record<string, SubtopicConfig> = {
-  ...(subtopics.domains as Record<string, SubtopicConfig>),
+  ...authoredSubtopicDomains,
+  ...(genericQaSubtopics
+    ? {
+        "Generic QA": {
+          ...genericQaSubtopics,
+          taxonomy: [
+            ...genericQaSubtopics.taxonomy.slice(0, 5),
+            osCommandLineSubtopic,
+            ...genericQaSubtopics.taxonomy.slice(5),
+          ],
+        },
+      }
+    : {}),
   "Performance Testing": performanceTestingSubtopics as SubtopicConfig,
 };
 
@@ -97,6 +120,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
   const config = subtopicDomains[domainCategory];
   if (!config) return question.category;
   if (domainCategory === "SQL & Databases" && sqlPracticalQuestionIds.has(question.id)) return "Practical SQL";
+  if (domainCategory === "Generic QA" && osCommandLineQuestionIds.has(question.id)) return "OS & command line";
 
   const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
@@ -114,6 +138,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
 const allQuestions = [
   ...common.questions,
   ...canonical.questions,
+  ...osCommandLine.questions,
   ...researchedPerformanceQuestions,
   ...databaseSql.questions,
   ...restApi.questions,
@@ -130,7 +155,7 @@ const allQuestions = [
   ...sourceRefresh.questions,
 ].map(applySourceEvidence).map(applySqlCodeExamples).map(applySqlInterviewAudit);
 
-const sources = [...baseSources, ...sourceRefreshSources, ...performanceTestingSources];
+const sources = [...baseSources, ...osCommandLineSources, ...sourceRefreshSources, ...performanceTestingSources];
 
 function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean) {
   const selectedDomain = domains.taxonomy.find((item) => item.id === requestedDomainId && item.category)
@@ -157,12 +182,12 @@ function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean
     : topicTaxonomy;
 
   return {
-    version: 19,
+    version: 20,
     title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
     description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
-    lastReviewedAt: "2026-09-05",
+    lastReviewedAt: "2026-09-17",
     methodology: {
-      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. Performance-testing coverage additionally cross-checks current GeeksforGeeks, SoftwareTestPilot, AssertHired, QAPractices and ArtOfTesting question banks before an interview intent is promoted to the canonical catalog. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
+      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. Performance-testing coverage additionally cross-checks current GeeksforGeeks, SoftwareTestPilot, AssertHired, QAPractices and ArtOfTesting question banks before an interview intent is promoted to the canonical catalog. OS and command-line coverage focuses on practical QA/SDET troubleshooting across Linux, Windows Command Prompt and PowerShell, with interview recurrence checked against current Linux and PowerShell question banks and technical details validated against GNU, Linux man-pages, systemd, curl and Microsoft documentation. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
       answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Performance-testing answers are validated against the ISTQB Performance Testing syllabus and current Apache JMeter, Grafana k6 and Locust documentation where relevant. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
       publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
       prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple pages from one publisher cannot inflate prevalence. Performance-testing Very common questions are limited to intents repeatedly visible across independent current banks; tool-specific or narrower questions remain Common or Occasional unless recurrence justifies promotion. Generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",

@@ -128,7 +128,7 @@ assert.match(catalogSource, /import domains from "\.\/domains\.json"/);
 assert.match(catalogSource, /\[\.\.\.sqlCodeExamples, \.\.\.sqlDataCodeExamples, \.\.\.sqlExpandedCodeExamples\]/);
 assert.match(catalogSource, /\.\.\.sqlPracticalInterview\.questions/);
 assert.match(catalogSource, /\.map\(applySourceEvidence\)\.map\(applySqlCodeExamples\)\.map\(applySqlInterviewAudit\)/);
-assert.match(catalogSource, /version: 19/);
-assert.match(catalogSource, /lastReviewedAt: "2026-09-05"/);
+assert.match(catalogSource, /version: 20/);
+assert.match(catalogSource, /lastReviewedAt: "2026-09-17"/);
 
 console.log(`SQL interview content validated: ${existingSqlQuestions.length} existing + ${practicalIds.length} practical questions, all covered by dialect/runtime audit metadata.`);
