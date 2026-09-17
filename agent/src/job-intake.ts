@@ -354,10 +354,53 @@ function mergedSources(...values: string[]): string {
   return result.join(",");
 }
 
-function mergedCompany(primary: string, secondary: string): string {
-  if (canonicalCompany(primary)) return primary;
-  if (canonicalCompany(secondary)) return secondary;
-  return primary || secondary || "Unknown";
+function rawRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function companyEvidencePriority(job: IntakeJob): number {
+  if (!canonicalCompany(job.company)) return 0;
+  const source = String(rawRecord(job.raw).companySource ?? "").toLowerCase();
+  if (["jsonld", "api", "listing-anchor", "detail-metadata", "page-structure"].includes(source)) return 100;
+  if (source === "listing-block") return 90;
+  if (source === "url-slug") return 80;
+  if (source === "inferred") return 10;
+  if (source === "missing") return 0;
+  return 50;
+}
+
+function selectCompany(primary: IntakeJob, secondary: IntakeJob): { company: string; owner: IntakeJob } {
+  const primaryPriority = companyEvidencePriority(primary);
+  const secondaryPriority = companyEvidencePriority(secondary);
+  if (secondaryPriority > primaryPriority) return { company: secondary.company, owner: secondary };
+  if (primaryPriority > 0) return { company: primary.company, owner: primary };
+  if (secondaryPriority > 0) return { company: secondary.company, owner: secondary };
+  return { company: primary.company || secondary.company || "Unknown", owner: primary };
+}
+
+function mergeRawMetadata(
+  primary: IntakeJob,
+  secondary: IntakeJob,
+  descriptionOwner: IntakeJob,
+  companyOwner: IntakeJob,
+  sources: string,
+): Record<string, unknown> {
+  const primaryRaw = rawRecord(primary.raw);
+  const secondaryRaw = rawRecord(secondary.raw);
+  const descriptionRaw = rawRecord(descriptionOwner.raw);
+  const companyRaw = rawRecord(companyOwner.raw);
+  return {
+    ...secondaryRaw,
+    ...primaryRaw,
+    descriptionComplete: descriptionRaw.descriptionComplete !== false,
+    descriptionSource: descriptionRaw.descriptionSource ?? primaryRaw.descriptionSource ?? secondaryRaw.descriptionSource,
+    companySource: companyRaw.companySource ?? primaryRaw.companySource ?? secondaryRaw.companySource,
+    validThrough: primaryRaw.validThrough ?? secondaryRaw.validThrough,
+    primary: primary.raw ?? null,
+    duplicateSources: sources.split(","),
+  };
 }
 
 export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T): T {
@@ -365,23 +408,21 @@ export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T):
   const rightScore = statePriority(right) + sourcePriority(right.source);
   const primary = leftScore >= rightScore ? left : right;
   const secondary = primary === left ? right : left;
-  const description = (secondary.description?.length ?? 0) > (primary.description?.length ?? 0)
-    ? secondary.description
-    : primary.description;
+  const useSecondaryDescription = (secondary.description?.length ?? 0) > (primary.description?.length ?? 0);
+  const descriptionOwner = useSecondaryDescription ? secondary : primary;
+  const company = selectCompany(primary, secondary);
+  const sources = mergedSources(left.source, right.source);
 
   return {
     ...primary,
-    source: mergedSources(left.source, right.source),
-    company: mergedCompany(primary.company, secondary.company),
+    source: sources,
+    company: company.company,
     remote: left.remote || right.remote,
-    description,
+    description: descriptionOwner.description,
     salaryText: primary.salaryText ?? secondary.salaryText,
     postedAt: primary.postedAt ?? secondary.postedAt,
     contactEmail: primary.contactEmail ?? secondary.contactEmail,
-    raw: {
-      primary: primary.raw ?? null,
-      duplicateSources: mergedSources(left.source, right.source).split(","),
-    },
+    raw: mergeRawMetadata(primary, secondary, descriptionOwner, company.owner, sources),
   } as T;
 }
 
