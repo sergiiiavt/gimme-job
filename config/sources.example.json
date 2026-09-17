@@ -9,6 +9,10 @@
     {
       "name": "djinni-qa",
       "query": "QA"
+    },
+    {
+      "name": "djinni-qa-automation",
+      "query": "QA Automation"
     }
   ],
   "greenhouse": [],
