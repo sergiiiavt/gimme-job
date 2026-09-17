@@ -14,6 +14,20 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     ],
   },
   {
+    id: "os-command-line",
+    slug: "os-command-line",
+    label: "OS & Command Line",
+    switcherLabel: "OS / CLI",
+    path: "/interview/os-command-line",
+    title: "Windows & Linux Command Line Interview Questions",
+    description: "Practical OS and command-line interview questions for QA and automation engineers covering Windows Command Prompt, PowerShell, Linux commands, files, logs, permissions, processes, services, networking, resource inspection, and troubleshooting.",
+    relatedLinks: [
+      { label: "Linux for QA", href: "/learn/linux" },
+      { label: "Cloud & DevOps for QA", href: "/learn/cloud-devops" },
+      { label: "Networking for QA", href: "/learn/networking" },
+    ],
+  },
+  {
     id: "automation-qa",
     slug: "automation",
     label: "Automation QA",
