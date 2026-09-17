@@ -1,4 +1,4 @@
-import { INTERVIEW_DOMAIN_ROUTES } from "@/content/interview/domain-routes";
+import { INTERVIEW_DOMAIN_ROUTES } from "../content/interview/domain-routes.ts";
 
 export type NavigationMode = "public" | "personal";
 
