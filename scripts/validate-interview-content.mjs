@@ -4,9 +4,10 @@ import { reviewInterviewPrevalence } from "./interview-prevalence-policy.mjs";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [common, canonical, databaseSql, restApi, websocket, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded, sources, taxonomy] = await Promise.all([
+const [common, canonical, osCommandLine, databaseSql, restApi, websocket, observabilityProduction, restoredCoverage, testingFoundations, embedded, modernSdet, coreFoundations, expanded, baseSources, osCommandLineSources, taxonomy] = await Promise.all([
   readJson("../content/interview/common-qa.json"),
   readJson("../content/interview/canonical-baseline.json"),
+  readJson("../content/interview/os-commandline-qa.json"),
   readJson("../content/interview/database-sql-qa.json"),
   readJson("../content/interview/rest-api-qa.json"),
   readJson("../content/interview/websocket-qa.json"),
@@ -18,10 +19,12 @@ const [common, canonical, databaseSql, restApi, websocket, observabilityProducti
   readJson("../content/interview/core-foundations-qa.json"),
   readJson("../content/interview/expanded-qa.json"),
   readJson("../content/interview/sources.json"),
+  readJson("../content/interview/os-commandline-sources.json"),
   readJson("../content/interview/taxonomy.json"),
 ]);
 
-const questions = [...common.questions, ...canonical.questions, ...databaseSql.questions, ...restApi.questions, ...websocket.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...coreFoundations.questions, ...expanded.questions];
+const questions = [...common.questions, ...canonical.questions, ...osCommandLine.questions, ...databaseSql.questions, ...restApi.questions, ...websocket.questions, ...observabilityProduction.questions, ...restoredCoverage.questions, ...testingFoundations.questions, ...embedded.questions, ...modernSdet.questions, ...coreFoundations.questions, ...expanded.questions];
+const sources = [...baseSources, ...osCommandLineSources];
 const levels = new Set(["Junior", "Middle", "Senior", "Lead"]);
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Test design", "Scenario", "Security", "Strategy", "Risk analysis", "Release decision", "Leadership", "Behavioral", "Performance", "Integration", "Operations", "Reliability", "Automation"]);
@@ -37,6 +40,7 @@ assert.ok(questions.length >= 672, "The public collection must not regress below
 assert.ok(sources.length >= 67, "The source catalog must contain at least 67 researched sources.");
 assert.equal(categories.size, 20, "The taxonomy must contain exactly 20 question topics.");
 assert.equal(canonical.questions.length, 31, "The explicit canonical baseline must contain 31 audited questions.");
+assert.equal(osCommandLine.questions.length, 20, "The explicit OS and command-line set must contain 20 audited questions.");
 assert.equal(databaseSql.questions.length, 25, "The explicit database and SQL set must contain 25 audited questions.");
 assert.equal(restApi.questions.length, 9, "The explicit REST API interview set must contain 9 audited questions.");
 assert.equal(websocket.questions.length, 5, "The explicit WebSocket interview set must contain 5 audited questions.");
@@ -108,6 +112,15 @@ for (const question of questions) {
 
 for (const question of canonical.questions) {
   assert.ok(!question.id.startsWith("expanded-"), `Canonical baseline question must have a stable explicit id: ${question.id}`);
+}
+
+for (const question of osCommandLine.questions) {
+  assert.ok(!question.id.startsWith("expanded-"), `OS and command-line question must have a stable explicit id: ${question.id}`);
+  assert.equal(question.category, "Infrastructure", `OS and command-line question has the wrong topic: ${question.id}`);
+  assert.ok(
+    question.tags?.some((tag) => ["linux", "windows", "shell", "command-line"].includes(tag)),
+    `OS and command-line question must keep an OS or shell tag: ${question.id}`,
+  );
 }
 
 for (const question of databaseSql.questions) {
