@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { sectionFromPathname, sectionNavigationHref } from "../app/navigation-paths.ts";
+import { INTERVIEW_DOMAIN_ROUTES } from "../content/interview/domain-routes.ts";
 
 const expectedRoutes: Record<string, string> = {
   about: "/about",
@@ -19,15 +20,7 @@ const expectedRoutes: Record<string, string> = {
   news: "/news",
 };
 
-const interviewDomainPaths = [
-  "/interview/generic-qa",
-  "/interview/automation",
-  "/interview/sql",
-  "/interview/web-api",
-  "/interview/mobile",
-  "/interview/embedded-iot",
-  "/interview/ai-llm",
-] as const;
+const interviewDomainPaths = INTERVIEW_DOMAIN_ROUTES.map((route) => route.path);
 
 test("public and authenticated navigation share canonical query-free routes", () => {
   for (const [section, expected] of Object.entries(expectedRoutes)) {

@@ -1,3 +1,5 @@
+import { INTERVIEW_DOMAIN_ROUTES } from "../content/interview/domain-routes.ts";
+
 export type NavigationMode = "public" | "personal";
 
 const canonicalSectionPaths: Record<string, string> = {
@@ -29,7 +31,7 @@ const canonicalSectionPaths: Record<string, string> = {
 };
 
 const publishedQuickReferenceSections = new Set(["qa-fundamentals", "programming", "data"]);
-const publishedInterviewDomainSlugs = new Set(["generic-qa", "automation", "sql", "web-api", "performance", "mobile", "embedded-iot", "ai-llm"]);
+const publishedInterviewDomainSlugs = new Set(INTERVIEW_DOMAIN_ROUTES.map((route) => route.slug));
 
 /**
  * Public and signed-in users share one canonical URL for each content surface.

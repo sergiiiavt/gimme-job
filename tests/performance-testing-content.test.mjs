@@ -37,7 +37,7 @@ test("publishes a dedicated source-backed performance interview domain", async (
   assert.match(routeSource, /id: "performance-testing"/);
   assert.match(routeSource, /path: "\/interview\/performance"/);
   assert.match(ukRouteSource, /performance:\s*\{/);
-  assert.match(navigationSource, /"web-api", "performance", "mobile"/);
+  assert.match(navigationSource, /INTERVIEW_DOMAIN_ROUTES\.map\(\(route\) => route\.slug\)/);
   assert.match(seoSource, /"\/interview\/performance"/);
   assert.match(seoSource, /"\/uk\/interview\/performance"/);
   assert.match(switcherSource, /id: "performance-testing"/);
