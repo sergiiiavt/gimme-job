@@ -168,6 +168,56 @@ test("duplicate merge treats hidden-company placeholders as missing", () => {
   assert.equal(merged.company, "Ajax Systems");
 });
 
+test("duplicate merge replaces a legacy guessed company with structured employer data", () => {
+  const url = "https://djinni.co/jobs/841628-qa-engineer-with-ai/";
+  const existing = job({
+    source: "rss:djinni-qa",
+    externalId: url,
+    title: "QA Engineer with AI",
+    company: "- Hands",
+    url,
+    applyUrl: url,
+    raw: {},
+  });
+  const incoming = job({
+    source: "djinni:djinni-qa",
+    externalId: url,
+    title: "QA Engineer with AI",
+    company: "Mind Studios",
+    url,
+    applyUrl: url,
+    raw: { companySource: "jsonld", descriptionSource: "jsonld" },
+  });
+
+  const merged = mergeDuplicateVacancies(existing, incoming);
+  assert.equal(merged.company, "Mind Studios");
+  assert.equal((merged.raw as Record<string, unknown>).companySource, "jsonld");
+});
+
+test("duplicate merge keeps completeness metadata aligned with the selected description", () => {
+  const url = "https://jobs.example/shared";
+  const teaser = job({
+    source: "robotaua:robotaua-qa",
+    url,
+    applyUrl: url,
+    description: "Short QA teaser.",
+    raw: { descriptionComplete: false, descriptionSource: "api-teaser" },
+  });
+  const full = job({
+    source: "rss:dou-qa",
+    url,
+    applyUrl: url,
+    description: "Full software QA vacancy description with web application, REST API, SQL, Jira and regression testing responsibilities.",
+    raw: { descriptionSource: "detail-page" },
+  });
+
+  const merged = mergeDuplicateVacancies(teaser, full);
+  const raw = merged.raw as Record<string, unknown>;
+  assert.equal(merged.description, full.description);
+  assert.equal(raw.descriptionComplete, true);
+  assert.equal(raw.descriptionSource, "detail-page");
+});
+
 test("same company and title are not blindly merged when descriptions differ", () => {
   const webTeam = job({ description: "QA for the customer web portal using Playwright, REST API and PostgreSQL." });
   const firmwareTeam = job({
