@@ -55,27 +55,20 @@ type SubtopicConfig = {
 };
 
 const authoredSubtopicDomains = subtopics.domains as Record<string, SubtopicConfig>;
-const genericQaSubtopics = authoredSubtopicDomains["Generic QA"];
-const osCommandLineSubtopic = {
-  id: "os-command-line",
-  label: "OS & command line",
-  category: "OS & command line",
-  description: "Practical Linux, Windows Command Prompt and PowerShell commands for QA/SDET troubleshooting.",
+const osCommandLineSubtopics: SubtopicConfig = {
+  taxonomy: [
+    {
+      id: "os-command-line",
+      label: "Commands & troubleshooting",
+      category: "OS & command line",
+      description: "Windows Command Prompt, PowerShell and Linux commands used for QA/SDET environment work and troubleshooting.",
+    },
+  ],
+  fallback: "OS & command line",
 };
 const subtopicDomains: Record<string, SubtopicConfig> = {
   ...authoredSubtopicDomains,
-  ...(genericQaSubtopics
-    ? {
-        "Generic QA": {
-          ...genericQaSubtopics,
-          taxonomy: [
-            ...genericQaSubtopics.taxonomy.slice(0, 5),
-            osCommandLineSubtopic,
-            ...genericQaSubtopics.taxonomy.slice(5),
-          ],
-        },
-      }
-    : {}),
+  "OS & Command Line": osCommandLineSubtopics,
   "Performance Testing": performanceTestingSubtopics as SubtopicConfig,
 };
 
@@ -120,7 +113,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
   const config = subtopicDomains[domainCategory];
   if (!config) return question.category;
   if (domainCategory === "SQL & Databases" && sqlPracticalQuestionIds.has(question.id)) return "Practical SQL";
-  if (domainCategory === "Generic QA" && osCommandLineQuestionIds.has(question.id)) return "OS & command line";
+  if (domainCategory === "OS & Command Line" && osCommandLineQuestionIds.has(question.id)) return "OS & command line";
 
   const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
@@ -133,6 +126,11 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
   });
 
   return matchedRule?.target ?? config.fallbackByCategory?.[question.category] ?? config.fallback;
+}
+
+function domainCategoryForQuestion(question: { id: string; category: string }) {
+  if (osCommandLineQuestionIds.has(question.id)) return "OS & Command Line";
+  return categoryToDomain[question.category];
 }
 
 const allQuestions = [
@@ -164,7 +162,7 @@ function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean
   const selectedSubtopics = subtopicDomains[selectedDomainCategory];
   const scopedQuestions = scopeToDomain
     ? allQuestions
-        .filter((question) => categoryToDomain[question.category] === selectedDomainCategory)
+        .filter((question) => domainCategoryForQuestion(question) === selectedDomainCategory)
         .map((question) => ({ ...question, category: classifySubtopic(question, selectedDomainCategory) }))
     : allQuestions;
   const populatedScopedCategories = new Set(scopedQuestions.map((question) => question.category));
@@ -182,14 +180,14 @@ function buildInterviewCatalog(requestedDomainId: string, scopeToDomain: boolean
     : topicTaxonomy;
 
   return {
-    version: 20,
+    version: 21,
     title: scopeToDomain ? `${selectedDomain?.label ?? "Generic QA"} interview questions` : "QA interview knowledge base",
     description: "Canonical interview questions organized by a top-level interview domain and logical subtopics, with original answers, practical signals, tags and traceable technical sources.",
     lastReviewedAt: "2026-09-17",
     methodology: {
-      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. Performance-testing coverage additionally cross-checks current GeeksforGeeks, SoftwareTestPilot, AssertHired, QAPractices and ArtOfTesting question banks before an interview intent is promoted to the canonical catalog. OS and command-line coverage focuses on practical QA/SDET troubleshooting across Linux, Windows Command Prompt and PowerShell, with interview recurrence checked against current Linux and PowerShell question banks and technical details validated against GNU, Linux man-pages, systemd, curl and Microsoft documentation. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
+      coverage: "Ukrainian and international interview evidence is reviewed together. DOU 250+/400+ and current Hillel guidance retain local-market context, while Katalon, Indeed, GeeksforGeeks, Testsigma, BugBug, KORE1 and AssertHired provide independent current signals. Performance-testing coverage additionally cross-checks current GeeksforGeeks, SoftwareTestPilot, AssertHired, QAPractices and ArtOfTesting question banks before an interview intent is promoted to the canonical catalog. OS and command-line coverage is published as a dedicated interview domain and focuses on practical QA/SDET troubleshooting across Linux, Windows Command Prompt and PowerShell, with interview recurrence checked against current Linux and PowerShell question banks and technical details validated against GNU, Linux man-pages, systemd, curl and Microsoft documentation. New wording is merged into an existing canonical question unless the interview intent is materially distinct. SQL coverage also includes a maintained practical task layer with executable query examples for data-validation and SDET-style interviews. SQL questions are classified independently from code dialect: a generic SQL/database question can use a PostgreSQL-specific example without becoming a PostgreSQL-only question.",
       answers: "Every answer is written for this knowledge base and checked against official syllabi, standards, specifications or product documentation where available. Interview banks support recurrence and interview intent; they are not treated as technical authorities by themselves. Performance-testing answers are validated against the ISTQB Performance Testing syllabus and current Apache JMeter, Grafana k6 and Locust documentation where relevant. Every SQL/DB/BI code example carries explicit dialect and runtime metadata. Portable/standard SQL, PostgreSQL-specific syntax, DBMS-dependent multi-session behavior and the SQLite browser fixture are kept distinct instead of treating the documentation source or playground engine as the SQL language itself.",
-      publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
+      publishing: "Only production-ready content is kept on the public site. Git pull requests provide review and history; D1 stores only private progress, notes and bookmarks. Domain selection scopes the assembled client catalog and assigns presentation-only subtopics without changing question IDs. The dedicated OS & Command Line domain is selected by its audited question IDs so unrelated Infrastructure questions such as Git, containers and cloud remain in Generic QA. SQL correctness/dialect audit overrides are applied during catalog assembly so fixes, scope labels and runner contracts stay centralized and testable. Empty presentation groups are omitted instead of showing zero-count navigation entries.",
       prevalence: "Every published question follows the maintained full-catalog review policy. Recurrence is counted by independent source family rather than raw URL count, so multiple pages from one publisher cannot inflate prevalence. Performance-testing Very common questions are limited to intents repeatedly visible across independent current banks; tool-specific or narrower questions remain Common or Occasional unless recurrence justifies promotion. Generated scenario variants cannot become Very common automatically; Embedded/IoT, AI/ML/LLM and regulated-domain questions remain Specialist. Personal stars are private user state and never affect prevalence.",
       media: "Original diagrams and properly licensed images are stored with the site. Every image requires alternative text, a caption and source credit."
     },
