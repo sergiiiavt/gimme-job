@@ -37,6 +37,7 @@ const sqlCodeExamplesById = new Map(
     .map((item) => [item.id, item.codeExamples]),
 );
 const sqlPracticalQuestionIds = new Set(sqlPracticalInterview.questions.map((question) => question.id));
+const osCommandLineQuestionIds = new Set(osCommandLine.questions.map((question) => question.id));
 const categoryToDomain = domains.categoryToDomain as Record<string, string>;
 
 type SubtopicRule = {
@@ -53,8 +54,28 @@ type SubtopicConfig = {
   fallback: string;
 };
 
+const authoredSubtopicDomains = subtopics.domains as Record<string, SubtopicConfig>;
+const genericQaSubtopics = authoredSubtopicDomains["Generic QA"];
+const osCommandLineSubtopic = {
+  id: "os-command-line",
+  label: "OS & command line",
+  category: "OS & command line",
+  description: "Practical Linux, Windows Command Prompt and PowerShell commands for QA/SDET troubleshooting.",
+};
 const subtopicDomains: Record<string, SubtopicConfig> = {
-  ...(subtopics.domains as Record<string, SubtopicConfig>),
+  ...authoredSubtopicDomains,
+  ...(genericQaSubtopics
+    ? {
+        "Generic QA": {
+          ...genericQaSubtopics,
+          taxonomy: [
+            ...genericQaSubtopics.taxonomy.slice(0, 5),
+            osCommandLineSubtopic,
+            ...genericQaSubtopics.taxonomy.slice(5),
+          ],
+        },
+      }
+    : {}),
   "Performance Testing": performanceTestingSubtopics as SubtopicConfig,
 };
 
@@ -99,6 +120,7 @@ function classifySubtopic(question: { id: string; category: string; kind?: strin
   const config = subtopicDomains[domainCategory];
   if (!config) return question.category;
   if (domainCategory === "SQL & Databases" && sqlPracticalQuestionIds.has(question.id)) return "Practical SQL";
+  if (domainCategory === "Generic QA" && osCommandLineQuestionIds.has(question.id)) return "OS & command line";
 
   const searchable = [question.id, question.kind ?? "", question.question, ...(question.tags ?? [])]
     .join(" ")
