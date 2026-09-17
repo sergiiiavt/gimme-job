@@ -55,6 +55,7 @@ test("maps every detailed QA interview topic to exactly one public domain", asyn
   const mappedDomains = Object.values(domains.categoryToDomain);
   const expectedPublicDomains = [
     "Generic QA",
+    "OS & Command Line",
     "Automation QA",
     "SQL & Databases",
     "Web & API",
@@ -82,7 +83,9 @@ test("maps every detailed QA interview topic to exactly one public domain", asyn
   assert.equal(domains.categoryToDomain["Embedded and IoT"], "Embedded & IoT");
   assert.equal(domains.categoryToDomain["AI, ML and LLM"], "AI & LLM QA");
   assert.equal(domains.categoryToDomain["Automation and CI"], "Automation QA");
+  assert.equal(domains.categoryToDomain.Infrastructure, "Generic QA");
   assert.equal(domains.categoryToDomain.Fundamentals, "Generic QA");
+  assert.ok(!mappedDomains.includes("OS & Command Line"), "OS & Command Line must be carved out by audited question IDs, not by moving every Infrastructure question.");
 });
 
 test("audits every current QA question into a valid logical subtopic", async () => {
@@ -170,7 +173,7 @@ test("renders equal two-column domain buttons and logical topics underneath", as
     readText("app/interview/python/page.tsx"),
   ]);
 
-  for (const label of ["Generic QA", "Python", "Automation", "SQL / DB", "Web / API", "Performance", "Mobile", "Embedded", "AI / LLM"]) {
+  for (const label of ["Generic QA", "OS / CLI", "Python", "Automation", "SQL / DB", "Web / API", "Performance", "Mobile", "Embedded", "AI / LLM"]) {
     assert.match(overlay, new RegExp(label.replace("/", "\\/")));
   }
 
@@ -188,6 +191,9 @@ test("renders equal two-column domain buttons and logical topics underneath", as
 
   assert.match(catalog, /import subtopics from "\.\/subtopics\.json"/);
   assert.match(catalog, /sqlPracticalQuestionIds\.has\(question\.id\)/);
+  assert.match(catalog, /osCommandLineQuestionIds\.has\(question\.id\).*return "OS & Command Line"/s);
+  assert.match(catalog, /function domainCategoryForQuestion/);
+  assert.match(catalog, /domainCategoryForQuestion\(question\) === selectedDomainCategory/);
   assert.match(catalog, /classifySubtopic\(question, selectedDomainCategory\)/);
   assert.match(catalog, /selectedSubtopics\?\.taxonomy\.filter/);
   assert.match(pythonCatalog, /interviewSubtopics\.domains/);
