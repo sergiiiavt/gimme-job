@@ -23,6 +23,11 @@ const UK_DOMAIN_COPY = {
     title: "Загальні питання QA для співбесіди",
     description: "Практичні загальні QA-питання та відповіді українською: основи тестування, test design, дефекти, delivery, метрики, стратегія, leadership, reliability і quality engineering.",
   },
+  "os-command-line": {
+    label: "OS та Command Line",
+    title: "Windows, Linux та Command Line: питання для співбесіди",
+    description: "Практичні питання українською про Windows Command Prompt, PowerShell, Linux commands, files, logs, permissions, processes, services, networking, resources і troubleshooting для QA/SDET.",
+  },
   automation: {
     label: "Automation QA",
     title: "Питання QA Automation для співбесіди",
