@@ -1,7 +1,7 @@
 import type { JobInput } from "../domain.js";
 import { htmlToVacancyText, normalizeVacancyDescription } from "../vacancy-content.js";
 import { canonicalizeUrl, decodeHtmlEntities, isRemoteText, safeIsoDate } from "../utils.js";
-import { inferCompanyFromText } from "./company.js";
+import { extractCompanyFromHtml } from "./company.js";
 import { fetchJson, fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
@@ -33,10 +33,6 @@ function extractDivByClass(html: string, className: string): string {
   return html.slice(cursor);
 }
 
-export function inferCompanyFromDescription(description: string): string {
-  return inferCompanyFromText(description) || "Unknown";
-}
-
 export interface LobbyXListing {
   id: number;
   url: string;
@@ -59,6 +55,15 @@ export function parseLobbyXDescription(html: string): string {
   return normalizeVacancyDescription(htmlToVacancyText(extractDivByClass(html, "vacancy-description")));
 }
 
+/**
+ * Lobby X does not expose an employer in its listing API. Only accept structural
+ * evidence from the detail page; description prose is deliberately not used as
+ * an identity source because headings and bullets previously became fake names.
+ */
+export function parseLobbyXCompany(url: string, html: string): string {
+  return extractCompanyFromHtml(url, html) || "Unknown";
+}
+
 export class LobbyXSource implements JobSource {
   readonly name: string;
 
@@ -76,10 +81,9 @@ export class LobbyXSource implements JobSource {
 
     return Promise.all(
       listings.map(async (listing): Promise<JobInput> => {
-        const description = await fetchText(listing.url)
-          .then(parseLobbyXDescription)
-          .catch(() => "");
-        const company = inferCompanyFromDescription(description);
+        const html = await fetchText(listing.url).catch(() => "");
+        const description = html ? parseLobbyXDescription(html) : "";
+        const company = html ? parseLobbyXCompany(listing.url, html) : "Unknown";
         const combined = `${listing.title}\n${description}`;
 
         return {
@@ -95,7 +99,11 @@ export class LobbyXSource implements JobSource {
           salaryText: null,
           postedAt: listing.postedAt,
           contactEmail: null,
-          raw: listing,
+          raw: {
+            ...listing,
+            companySource: company === "Unknown" ? "missing" : "page-structure",
+            descriptionSource: description ? "detail-page" : "missing",
+          },
         };
       }),
     );
