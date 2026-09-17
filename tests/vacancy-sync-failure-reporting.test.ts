@@ -5,15 +5,13 @@ import { register } from "tsx/esm/api";
 register();
 
 const { handleVacancySync } = await import("../app/api/_vacancy-sync-route.ts");
-const { RssJobSource, DEFAULT_DETAIL_BUDGET } = await import("../agent/src/sources/rss.ts");
+const { buildVacancySources } = await import("../app/api/_vacancy-intake.ts");
+const { RssJobSource } = await import("../agent/src/sources/rss.ts");
 
 const openTenant = { multiUser: false, authenticated: false, userId: null };
 
 test("a sync whose sources all failed is reported as a failure, with the reasons", async () => {
-  // Every source failing collects nothing and writes nothing. Reporting that as
-  // success told the operator the catalogue was refreshed while the real
-  // per-source errors went unread — Djinni silently stopped updating for weeks.
-  const failure = Object.assign(new Error("Every vacancy source failed, so nothing was collected. rss:dou-qa: 403 Forbidden"), {
+  const failure = Object.assign(new Error("Vacancy sync collected nothing. rss:dou-qa: 403 Forbidden"), {
     name: "VacancySyncFailure",
   });
   const response = await handleVacancySync(
@@ -26,7 +24,7 @@ test("a sync whose sources all failed is reported as a failure, with the reasons
   assert.equal(response.status, 502);
   const payload = await response.json() as { ok: boolean; error: string };
   assert.equal(payload.ok, false);
-  assert.match(payload.error, /Every vacancy source failed/);
+  assert.match(payload.error, /Vacancy sync collected nothing/);
   assert.match(payload.error, /403 Forbidden/);
 });
 
@@ -57,13 +55,14 @@ test("multi-user authentication is still enforced before any collection runs", a
   assert.equal(collected, false);
 });
 
-test("the Worker-hosted sync keeps a bounded detail budget", { concurrency: false }, async () => {
+test("Worker DOU sync spends no subrequests on details while the Node runner can enrich all", { concurrency: false }, async () => {
   const originalFetch = globalThis.fetch;
+  const total = 65;
   const card = (id: number) => `<li class="l-vacancy"><div class="date">16 вересня</div><div class="title">`
     + `<a class="vt" href="https://jobs.dou.ua/companies/acme/vacancies/${id}/">QA Engineer ${id}</a>`
     + `<strong>в&nbsp;<a class="company" href="https://jobs.dou.ua/companies/acme/vacancies/">Acme</a></strong>`
     + `<span class="cities">Київ</span></div><div class="sh-info">Teaser.</div></li>`;
-  const listing = Array.from({ length: DEFAULT_DETAIL_BUDGET + 25 }, (_, index) => card(1000 + index)).join("");
+  const listing = Array.from({ length: total }, (_, index) => card(1000 + index)).join("");
   let detailRequests = 0;
 
   globalThis.fetch = (async (input: RequestInfo | URL) => {
@@ -79,18 +78,27 @@ test("the Worker-hosted sync keeps a bounded detail budget", { concurrency: fals
   }) as typeof fetch;
 
   try {
-    // The default is what a Cloudflare Worker invocation uses; exceeding it is
-    // what made every source fail inside one request.
-    const jobs = await new RssJobSource("dou-qa", "https://jobs.dou.ua/vacancies/?category=QA").collect();
-    assert.equal(jobs.length, DEFAULT_DETAIL_BUDGET + 25);
-    assert.equal(detailRequests, DEFAULT_DETAIL_BUDGET);
+    const [workerSource] = buildVacancySources({
+      rss: [{ name: "dou-qa", url: "https://jobs.dou.ua/vacancies/?category=QA" }],
+      djinni: [],
+      greenhouse: [],
+      lever: [],
+      ashby: [],
+      workUa: [],
+      robotaUa: [],
+      lobbyX: [],
+    });
+    assert.ok(workerSource);
+    const jobs = await workerSource.collect();
+    assert.equal(jobs.length, total);
+    assert.equal(detailRequests, 0);
 
     detailRequests = 0;
     const all = await new RssJobSource("dou-qa", "https://jobs.dou.ua/vacancies/?category=QA", {
       detailBudget: Number.POSITIVE_INFINITY,
     }).collect();
-    assert.equal(all.length, DEFAULT_DETAIL_BUDGET + 25);
-    assert.equal(detailRequests, DEFAULT_DETAIL_BUDGET + 25);
+    assert.equal(all.length, total);
+    assert.equal(detailRequests, total);
   } finally {
     globalThis.fetch = originalFetch;
   }
