@@ -196,6 +196,31 @@ test("empty configured source lists make production sync deterministic without e
   assert.deepEqual(result, { seen: 0, relevant: 0, rejected: 0, duplicates: 0, inserted: 0, updated: 0, accepted: 0, errors: [], skipped: [] });
 });
 
+test("configured sources returning zero parseable vacancies fail the sync", { concurrency: false }, async () => {
+  const db = new FakeD1();
+  db.sourceSetting = { value_json: JSON.stringify({
+    rss: [],
+    djinni: [{ name: "empty-djinni", query: "QA" }],
+    greenhouse: [],
+    lever: [],
+    ashby: [],
+    workUa: [],
+    robotaUa: [],
+    lobbyX: [],
+  }) };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response("<html><body>No job metadata</body></html>", { status: 200 })) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () => syncVacancySources(db),
+      /Vacancy sync collected nothing.*zero parseable vacancies/i,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("configured Work.ua is reported as skipped rather than failing cloud sync", async () => {
   const db = new FakeD1();
   db.sourceSetting = { value_json: JSON.stringify({ rss: [], djinni: [], greenhouse: [], lever: [], ashby: [], workUa: [{ name: "work", query: "QA" }], robotaUa: [], lobbyX: [] }) };
@@ -213,10 +238,29 @@ test("ensureVacancyCatalog does not resync a non-empty catalog", async () => {
   assert.equal(db.jobs.length, 1);
 });
 
-test("mergeVacancySourceDefaults adds Robota.ua without overwriting configured arrays", () => {
+test("mergeVacancySourceDefaults adds current source defaults without overwriting unrelated configured arrays", () => {
   const result = mergeVacancySourceDefaults({ sources: { workUa: [{ name: "custom", query: "SDET" }] } }) as {
-    sources: { workUa: unknown[]; robotaUa: Array<{ name: string; query: string }> };
+    sources: {
+      workUa: unknown[];
+      djinni: Array<{ name: string; query: string }>;
+      robotaUa: Array<{ name: string; query: string }>;
+    };
   };
   assert.deepEqual(result.sources.workUa, [{ name: "custom", query: "SDET" }]);
+  assert.deepEqual(result.sources.djinni, [
+    { name: "djinni-qa", query: "QA" },
+    { name: "djinni-qa-automation", query: "QA Automation" },
+  ]);
   assert.deepEqual(result.sources.robotaUa, [{ name: "robotaua-qa", query: "QA Engineer" }]);
+});
+
+test("mergeVacancySourceDefaults upgrades the legacy one-query Djinni default", () => {
+  const result = mergeVacancySourceDefaults({
+    sources: { djinni: [{ name: "djinni-qa", query: "QA" }] },
+  }) as { sources: { djinni: Array<{ name: string; query: string }> } };
+
+  assert.deepEqual(result.sources.djinni, [
+    { name: "djinni-qa", query: "QA" },
+    { name: "djinni-qa-automation", query: "QA Automation" },
+  ]);
 });
