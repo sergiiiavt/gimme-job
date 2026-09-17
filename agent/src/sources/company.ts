@@ -50,6 +50,20 @@ function textFromAnchorBody(value: string): string {
   return cleanCompany(htmlToVacancyText(value));
 }
 
+function rawRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function withCompany(job: JobInput, company: string, companySource: string): JobInput {
+  return {
+    ...job,
+    company,
+    raw: { ...rawRecord(job.raw), companySource },
+  };
+}
+
 export function inferCompanyFromText(value: string): string {
   const text = String(value ?? "").replace(/\r/g, "");
   const prefix = text.slice(0, 2_000);
@@ -153,12 +167,18 @@ export async function recoverJobCompany(job: JobInput): Promise<JobInput> {
   if (isUsableCompany(job.company)) return job;
 
   const fromTitle = usable(inferCompany(job.title, ""));
-  if (fromTitle) return { ...job, company: fromTitle };
+  if (fromTitle) return withCompany(job, fromTitle, "title-derived");
+
+  const raw = rawRecord(job.raw);
+  // An adapter that records `missing` has already exhausted its structural
+  // extraction path. Re-fetching the same page wastes Worker subrequests and
+  // cannot produce a better answer.
+  if (raw.companySource === "missing") return { ...job, company: "Unknown" };
 
   if (!job.url) return { ...job, company: "Unknown" };
   try {
     const fromHtml = extractCompanyFromHtml(job.url, await fetchText(job.url));
-    if (fromHtml) return { ...job, company: fromHtml };
+    if (fromHtml) return withCompany(job, fromHtml, "detail-structure");
   } catch {
     // A temporary detail-page failure must not fail the entire source.
   }
