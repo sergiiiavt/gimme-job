@@ -1,5 +1,5 @@
 import Link from "next/link";
-import interviewCatalog from "@/content/interview/catalog";
+import interviewCatalog, { interviewCatalogForDomain } from "@/content/interview/catalog";
 import pythonInterviewCatalog from "@/content/python-interview/catalog";
 import { INTERVIEW_DOMAIN_ROUTES } from "@/content/interview/domain-routes";
 import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW } from "@/content/interview/ukrainian-routes";
@@ -53,6 +53,7 @@ const CATEGORY_UK: Record<string, string> = {
   "Automation and CI": "Автоматизація та CI",
   Programming: "Програмування",
   Infrastructure: "Інфраструктура",
+  "OS & command line": "OS та command line",
   "Performance and resilience": "Performance та стійкість",
   "Security and accessibility": "Безпека та accessibility",
   "Agile and delivery": "Agile та delivery",
@@ -175,19 +176,10 @@ export default function UkrainianInterviewPage({
   questionId?: string;
   title: string;
 }) {
-  const baseQuestions = (python ? pythonInterviewCatalog.questions : interviewCatalog.questions) as InterviewQuestion[];
-  const sourceList = (python ? pythonInterviewCatalog.sources : interviewCatalog.sources) as InterviewSource[];
+  const qaCatalog = !python && domainId ? interviewCatalogForDomain(domainId) : interviewCatalog;
+  const questions = (python ? pythonInterviewCatalog.questions : qaCatalog.questions) as InterviewQuestion[];
+  const sourceList = (python ? pythonInterviewCatalog.sources : qaCatalog.sources) as InterviewSource[];
   const sources = new Map(sourceList.map((source) => [source.id, source]));
-
-  let questions = baseQuestions;
-  if (!python) {
-    const domains = interviewCatalog.domains as Array<{ id: string; category?: string }>;
-    const selectedDomain = domains.find((item) => item.id === domainId);
-    const categoryToDomain = interviewCatalog.categoryToDomain as Record<string, string>;
-    questions = selectedDomain?.category
-      ? baseQuestions.filter((question) => categoryToDomain[question.category] === selectedDomain.category)
-      : [];
-  }
 
   const selectedQuestion = questionId ? questions.find((question) => question.id === questionId) : undefined;
   const visibleQuestions = questionId ? (selectedQuestion ? [selectedQuestion] : []) : questions;

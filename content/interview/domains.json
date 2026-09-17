@@ -12,6 +12,12 @@
       "description": "Testing fundamentals, test design, defects, delivery, metrics, strategy, leadership, security and cross-cutting QA practice."
     },
     {
+      "id": "os-command-line",
+      "label": "OS & Command Line",
+      "category": "OS & Command Line",
+      "description": "Practical Windows, PowerShell and Linux command-line knowledge for QA/SDET troubleshooting and environment work."
+    },
+    {
       "id": "automation-qa",
       "label": "Automation QA",
       "category": "Automation QA",

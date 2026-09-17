@@ -11,6 +11,7 @@ import { rememberInterviewPath } from "./interview-navigation-memory";
 const routeById = new Map(INTERVIEW_DOMAIN_ROUTES.map((route) => [route.id, route]));
 const interviewDomains = [
   { id: "generic-qa", label: routeById.get("generic-qa")?.switcherLabel ?? "Generic QA", href: routeById.get("generic-qa")?.path ?? "/interview/generic-qa" },
+  { id: "os-command-line", label: routeById.get("os-command-line")?.switcherLabel ?? "OS / CLI", href: routeById.get("os-command-line")?.path ?? "/interview/os-command-line" },
   { id: "python", label: "Python", href: "/interview/python" },
   { id: "automation-qa", label: routeById.get("automation-qa")?.switcherLabel ?? "Automation", href: routeById.get("automation-qa")?.path ?? "/interview/automation" },
   { id: "sql-databases", label: routeById.get("sql-databases")?.switcherLabel ?? "SQL / DB", href: routeById.get("sql-databases")?.path ?? "/interview/sql" },
