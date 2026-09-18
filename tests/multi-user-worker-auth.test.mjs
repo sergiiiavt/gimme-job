@@ -170,6 +170,20 @@ test("multi-user Worker preserves n8n bearer auth only for scoped internal servi
   assert.equal(authorized.status, 200);
   assert.deepEqual(await authorized.json(), { events: [] });
 
+  const resolver = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-resolve", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer n8n-service-token",
+      "content-type": "application/json",
+      "x-gimmejob-auth-mode": "multi-user",
+      "x-gimmejob-authenticated": "1",
+      "x-gimmejob-user-id": "attacker-controlled-user",
+    },
+    body: JSON.stringify({}),
+  }), env, context);
+  assert.equal(resolver.status, 200);
+  assert.equal((await resolver.json()).processed, 0);
+
   const classifier = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/email-classify", {
     method: "POST",
     headers: {
