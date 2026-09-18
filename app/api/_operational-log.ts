@@ -50,6 +50,8 @@ export type OperationalLogFields = {
 
   itemsSeen?: number;
   itemsProcessed?: number;
+  rejected?: number;
+  duplicates?: number;
 
   sourceCount?: number;
   sourceSuccessCount?: number;
@@ -95,6 +97,8 @@ const NON_NEGATIVE_NUMBER_FIELDS: Array<keyof OperationalLogFields> = [
   "dbDurationMs",
   "itemsSeen",
   "itemsProcessed",
+  "rejected",
+  "duplicates",
   "sourceCount",
   "sourceSuccessCount",
   "sourceFailureCount",
