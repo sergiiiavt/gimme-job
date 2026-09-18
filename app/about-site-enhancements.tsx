@@ -400,7 +400,7 @@ function AboutToc() {
     const updateActiveSection = () => {
       frame = 0;
       const marker = Math.max(90, Math.min(150, window.innerHeight * 0.18));
-      let nextActiveId = tocHeadings[0].id;
+      let nextActiveId: string = tocHeadings[0].id;
 
       for (const heading of tocHeadings) {
         const element = document.getElementById(heading.id);

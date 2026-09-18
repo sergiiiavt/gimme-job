@@ -266,7 +266,7 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
 
         <div className="about-tech-purpose-grid">
           {PURPOSE_CARDS.map((card) => {
-            const link = card.linkKey === "interview"
+            const link: AboutLink | undefined = card.linkKey === "interview" && card.link
               ? { ...card.link, href: interviewHref, external: false }
               : card.link;
 

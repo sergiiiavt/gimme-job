@@ -1,18 +1,30 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  isPrivateRequest,
+  withPublicAiSessionScope,
+} from "../worker/request-policy.ts";
 
-const [workerEntry, authBoundary] = await Promise.all([
-  readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
-  readFile(new URL("../worker/multi-user-boundary.ts", import.meta.url), "utf8"),
-]);
-
-test("AI Assistant requests are promoted to public ephemeral sessions before auth", () => {
-  assert.match(workerEntry, /pathname\.startsWith\("\/api\/ai\/"\)/);
-  assert.match(workerEntry, /headers\.set\("x-gimmejob-session-scope", "ephemeral"\)/);
-  assert.match(workerEntry, /const routedRequest = withPublicAiSessionScope\(request\);/);
+test("AI Assistant public routes receive ephemeral scope and stay outside auth", () => {
+  for (const [path, method] of [
+    ["/api/ai/learning-path", "POST"],
+    ["/api/ai/learning-path/stream", "POST"],
+    ["/api/ai/interviews", "GET"],
+    ["/api/ai/interviews", "POST"],
+  ]) {
+    const scoped = withPublicAiSessionScope(new Request(`https://gimmejob.example${path}`, { method }));
+    assert.equal(scoped.headers.get("x-gimmejob-session-scope"), "ephemeral");
+    assert.equal(isPrivateRequest(scoped), false);
+  }
 });
 
-test("the public auth boundary includes the Learning Advisor live stream", () => {
-  assert.match(authBoundary, /\/api\/ai\/learning-path\/stream/);
+test("unknown AI routes and unsupported methods remain private", () => {
+  for (const request of [
+    new Request("https://gimmejob.example/api/ai/unknown", { method: "POST" }),
+    new Request("https://gimmejob.example/api/ai/learning-path", { method: "GET" }),
+  ]) {
+    const scoped = withPublicAiSessionScope(request);
+    assert.equal(scoped.headers.get("x-gimmejob-session-scope"), null);
+    assert.equal(isPrivateRequest(scoped), true);
+  }
 });

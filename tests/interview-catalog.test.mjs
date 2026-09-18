@@ -220,11 +220,11 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the interview catalog, keeps unified filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, routeSource, schemaSource] = await Promise.all([
+  const [uiSource, stylesSource, routeSource, migrationSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
-    readFile(projectFile("db/schema.ts"), "utf8"),
+    readFile(projectFile("drizzle/0002_wet_loa.sql"), "utf8"),
   ]);
 
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
@@ -276,7 +276,7 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
   assert.doesNotMatch(filterGrid.match(/label="Prevalence"[^\n]+/)?.[0] ?? "", /selectionMode="single"/);
   assert.match(uiSource, /Personal progress/);
   assert.match(routeSource, /interview-progress/);
-  assert.match(schemaSource, /sqliteTable\("interview_progress"/);
+  assert.match(migrationSource, /CREATE TABLE `interview_progress`/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
   assert.match(uiSource, /aria-label=\{stars\[item\.id\] \? "Remove your star" : "Star this question"\}/);
   assert.doesNotMatch(uiSource, /Personal star</);

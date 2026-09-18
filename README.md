@@ -125,7 +125,7 @@ The main web application is deployed from GitHub Actions to Cloudflare and conta
 - Cloudflare Worker runtime and same-origin API routes;
 - static assets deployed with the Worker;
 - Cloudflare D1 for application/runtime state;
-- Drizzle schema and ordered migrations;
+- ordered SQL migrations as the canonical D1 schema history;
 - canonical RAG endpoints;
 - Workers AI / Vectorize integration when configured;
 - Cloudflare Email Routing integration for forwarded vacancy/job emails.
@@ -158,8 +158,7 @@ Key directories/files:
 - `content/` — Git-versioned QA/interview/learning material;
 - `ai-service/` — FastAPI + LangGraph/LangChain AI backend and tests;
 - `agent/` — local vacancy collection/analysis agent;
-- `db/schema.ts` — D1/Drizzle schema;
-- `drizzle/` — ordered database migrations;
+- `drizzle/` — canonical ordered D1 schema migrations;
 - `ops/n8n/` — versioned n8n workflows;
 - `ops/hetzner/` — production VM provisioning, Compose, database-lab fixtures, and runtime configuration;
 - `.github/workflows/` — CI, deployment, AI image, infrastructure, and operational workflows;
@@ -179,7 +178,6 @@ The project currently uses or integrates:
 - Vite
 - Cloudflare Workers
 - Cloudflare D1
-- Drizzle ORM / Drizzle Kit
 - Cloudflare Workers AI
 - Cloudflare Vectorize
 - Cloudflare Email Routing
@@ -286,7 +284,7 @@ Before publishing a completed change:
 npm run verify
 ```
 
-`npm run verify` is the deterministic validation contract for the TypeScript/Worker application. It covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation.
+`npm run verify` is the deterministic validation contract for the TypeScript/Worker application. It covers linting, shipped-application and local-agent type checking, content and asset validators, the D1 migration contract, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation.
 
 The Python AI service has its own tests:
 
@@ -301,13 +299,9 @@ Pull-request CI runs the canonical repository checks, the Python AI-service test
 
 ## Database changes
 
-Edit [`db/schema.ts`](db/schema.ts), then generate and inspect a migration:
+Production D1 schema history is owned by the ordered SQL files in [`drizzle/`](drizzle/). Add every schema change as the next sequential `NNNN_description.sql` migration and inspect the SQL directly.
 
-```bash
-npm run db:generate
-```
-
-Every schema change must be represented by an ordered migration so local, test, and production databases can be reproduced safely.
+Already-applied migration filenames and contents are immutable. Historical duplicate prefixes remain in place for compatibility, while the repository validator rejects any new duplicate prefix or sequence gap.
 
 Never commit `.env`, OAuth credentials, API keys, tokens, or other runtime secrets.
 

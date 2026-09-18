@@ -54,6 +54,10 @@ jobs:
           N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          PUBLIC_AI_DAILY_GLOBAL_LIMIT: ${{ vars.PUBLIC_AI_DAILY_GLOBAL_LIMIT }}
+          PUBLIC_AI_HOURLY_IP_LIMIT: ${{ vars.PUBLIC_AI_HOURLY_IP_LIMIT }}
+          PUBLIC_DB_DAILY_GLOBAL_LIMIT: ${{ vars.PUBLIC_DB_DAILY_GLOBAL_LIMIT }}
+          PUBLIC_DB_HOURLY_IP_LIMIT: ${{ vars.PUBLIC_DB_HOURLY_IP_LIMIT }}
         run: node scripts/deploy-cloudflare.mjs
 
       - name: Verify production

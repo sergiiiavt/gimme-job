@@ -122,7 +122,7 @@ export async function GET(request: Request, context: RouteContext) {
         pdf = await resumePdf(resumeMatch[1]);
       }
       if (!pdf) return Response.json({ error: "No resume PDF has been generated for this job yet." }, { status: 404 });
-      return new Response(pdf, {
+      return new Response(Uint8Array.from(pdf).buffer, {
         headers: {
           "cache-control": "no-store",
           "content-disposition": `attachment; filename="${resumeMatch[1]}-resume.pdf"`,

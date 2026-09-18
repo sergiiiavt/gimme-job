@@ -267,7 +267,7 @@ These are conceptual groups for the About page. They do not have to correspond o
 
 Prefer links to project source:
 
-- Schema: `https://github.com/sergiiiavt/gimme-job/blob/main/db/schema.ts`
+- Schema: `https://github.com/sergiiiavt/gimme-job/tree/main/drizzle`
 - Migrations: `https://github.com/sergiiiavt/gimme-job/tree/main/drizzle`
 
 If the schema changes, verify that the About page description is still true.
@@ -444,9 +444,9 @@ Before editing page copy, verify it against the relevant project source.
 | Repository | `https://github.com/sergiiiavt/gimme-job` |
 | Deployment | `.github/workflows/ci.yml`, Cloudflare deployment scripts/config |
 | Runtime | Worker/deployment code under `worker/` and app build/deploy scripts |
-| Database | `db/schema.ts`, `drizzle/` |
+| Database | `drizzle/` |
 | OpenAI integration | `app/api/_jobpilot.ts`, `agent/src/analyst.ts` |
-| Observability tables | `db/schema.ts`, `drizzle/` |
+| Observability tables | `drizzle/` |
 | Observability API | `worker/index.ts` |
 | About page content | `app/about-site.tsx` and its content/config module if present |
 | Site navigation | `app/site-navigation.tsx` |
@@ -615,7 +615,7 @@ Recommended shared constants:
 const PROJECT_URL = "https://gimme-job.com";
 const REPO_URL = "https://github.com/sergiiiavt/gimme-job";
 const ACTIONS_URL = `${REPO_URL}/actions`;
-const SCHEMA_URL = `${REPO_URL}/blob/main/db/schema.ts`;
+const SCHEMA_URL = `${REPO_URL}/tree/main/drizzle`;
 const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;

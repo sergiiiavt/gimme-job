@@ -19,7 +19,7 @@
 
 ## Runtime
 
-The hosted application is a React/Vinext worker with same-origin API routes. Public knowledge content is versioned as JSON in Git and lazy-loaded as a separate client chunk. Private, user-specific state is persisted in D1 through prepared SQL statements. Drizzle owns the schema and versioned migrations.
+The hosted application is a React/Vinext worker with same-origin API routes. Public knowledge content is versioned as JSON in Git and lazy-loaded as a separate client chunk. Private, user-specific state is persisted in D1 through prepared SQL statements. Ordered SQL files in `drizzle/` are the canonical production schema history and are applied by Wrangler during deployment; applied migration filenames are immutable.
 
 The local agent remains separate so source collection and experimentation can run from VS Code without weakening the hosted application's approval-first behaviour.
 
@@ -59,6 +59,7 @@ User Gmail filter
        -> OpenAI structured classification when configured
        -> deterministic fallback on provider failure
   -> PATCH /internal/n8n/email-events
+  -> POST /internal/n8n/email-resolve
   -> tenant-scoped structured result in D1
 ```
 
@@ -72,7 +73,7 @@ The old direct-Gmail n8n ingest endpoint remains available for backward compatib
 
 ## Delivery
 
-`AGENTS.md` is the cross-agent repository policy. Tool-specific entrypoints such as `CLAUDE.md` and `.github/copilot-instructions.md` defer to it instead of maintaining independent copies. `package.json` is the executable validation source of truth for the existing TypeScript/Worker application: `npm run verify:fast` is intended for iteration and `npm run verify` mirrors all deterministic CI checks that can run without repository secrets. The Python AI service has its own `unittest` suite under `ai-service/tests`; pull-request CI installs the service and runs that suite in addition to `npm run verify`.
+`AGENTS.md` is the cross-agent repository policy. Tool-specific entrypoints such as `CLAUDE.md` and `.github/copilot-instructions.md` defer to it instead of maintaining independent copies. `package.json` is the executable validation source of truth for the TypeScript/Worker application: `npm run verify:fast` includes the shipped application typecheck and is intended for iteration, while `npm run verify` mirrors all deterministic CI checks that can run without repository secrets. The Python AI service has its own `unittest` suite under `ai-service/tests`; pull-request CI installs the service and runs that suite in addition to `npm run verify`.
 
 Delivery has two intentionally separate workflows. Pull requests run `npm run verify`, the Python AI-service tests, and then the credentialed SonarQube Cloud quality gate. After a validated PR is merged, the production workflow builds the actual `main` commit, applies D1 migrations, uploads the Worker and runtime secrets in one Wrangler deployment, and performs lightweight production smoke checks. Production deployment does not repeat lint, tests, coverage, the Cloudflare dry run, or Sonar analysis.
 

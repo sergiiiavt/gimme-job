@@ -595,7 +595,7 @@ export async function searchRagDocuments(
   const normalizedQuery = query.trim().slice(0, 2_000);
   const limit = Math.max(1, Math.min(25, Math.trunc(requestedLimit) || 8));
   const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
-  const selectedKinds = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
+  const selectedKinds: RagKind[] = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
   const documents = await documentsForKinds(env, selectedKinds);
   const semanticAvailable = ragAvailable(env);
   const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
