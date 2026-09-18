@@ -159,11 +159,13 @@ function presentQuestion(question: Json, track: "qa" | "python", result?: RagSea
   };
 }
 
+type MatchedQuestion = { question: Json; track: "qa" | "python"; result?: RagSearchResult };
+
 async function getInterviewQuestions(env: McpEnv, raw: unknown) {
   const input = InterviewQuestionsInput.parse(raw ?? {});
   const query = input.query?.trim() ?? "";
   const rag = query ? await searchRagDocuments(env, query, ["question"], input.limit) : null;
-  const matched = rag
+  const matched: MatchedQuestion[] = rag
     ? rag.results.flatMap((result) => {
         const resolved = questionForResult(result);
         return resolved ? [{ ...resolved, result }] : [];
