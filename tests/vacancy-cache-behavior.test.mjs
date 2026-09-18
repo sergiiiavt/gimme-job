@@ -15,7 +15,7 @@ test("vacancy dashboard cache uses 10 minute freshness and 1 hour GC", () => {
 });
 
 test("vacancy data cache survives route changes and refreshes within the same view", () => {
-  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v1";/);
+  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v2";/);
   assert.match(source, /window\.sessionStorage\.getItem\(VACANCY_CACHE_KEY\)/);
   assert.match(source, /window\.sessionStorage\.setItem\(VACANCY_CACHE_KEY, JSON\.stringify\(snapshot\)\)/);
   assert.match(source, /const memoryCache = readClientVacancyCache\(\)/);
