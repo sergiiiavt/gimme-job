@@ -276,7 +276,7 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
   assert.doesNotMatch(filterGrid.match(/label="Prevalence"[^\n]+/)?.[0] ?? "", /selectionMode="single"/);
   assert.match(uiSource, /Personal progress/);
   assert.match(routeSource, /interview-progress/);
-  assert.match(schemaSource, /sqliteTable\("interview_progress"/);
+  assert.match(migrationSource, /CREATE TABLE `interview_progress`/);
   assert.doesNotMatch(uiSource, /Manage statuses & feedback/);
   assert.match(uiSource, /aria-label=\{stars\[item\.id\] \? "Remove your star" : "Star this question"\}/);
   assert.doesNotMatch(uiSource, /Personal star</);
