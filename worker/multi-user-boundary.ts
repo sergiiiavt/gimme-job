@@ -10,6 +10,14 @@ import {
   handlePasswordRegister,
   type PasswordAuthEnv,
 } from "../app/auth/password-auth.ts";
+import {
+  N8N_SERVICE_PATHS,
+  isPrivateRequest,
+  isPublicEphemeralAiRequest,
+  isWorkspaceSurface,
+} from "./request-policy.ts";
+
+export { isPrivateRequest } from "./request-policy.ts";
 
 type BoundaryEnv = PasswordAuthEnv;
 
@@ -26,12 +34,6 @@ type AccessContext = {
 const BASIC_AUTH_USERNAME = "gimmejob";
 const AUTH_RETURN_COOKIE = "gimmejob_auth_return";
 const AUTH_RETURN_SECONDS = 10 * 60;
-const N8N_SERVICE_PATHS = new Set([
-  "/internal/n8n/email-events",
-  "/internal/n8n/email-classify",
-  "/internal/n8n/email-stats",
-  "/internal/n8n/vacancies-sync",
-]);
 const TRUSTED_AUTH_HEADERS = [
   "x-gimmejob-auth-mode",
   "x-gimmejob-user-id",
@@ -155,29 +157,6 @@ function redirectCanonical(location: string, status = 308): Response {
 
 export function privateNextPath(_url: URL): string {
   return "/vacancies";
-}
-
-function isPublicEphemeralAiRequest(request: Request, url: URL): boolean {
-  if (request.headers.get("x-gimmejob-session-scope") !== "ephemeral") return false;
-  if (url.pathname === "/api/ai/learning-path" || url.pathname === "/api/ai/learning-path/stream") return request.method === "POST";
-  if (url.pathname === "/api/ai/interviews") return request.method === "GET" || request.method === "POST";
-  return false;
-}
-
-export function isPrivateRequest(request: Request, url: URL): boolean {
-  if (url.pathname === "/workspace") return false;
-  if (["/login", "/register", "/workspace/login", "/workspace/register"].includes(url.pathname)) return false;
-  if (url.pathname.startsWith("/workspace/")) return true;
-  if (!url.pathname.startsWith("/api/")) return false;
-  if (isPublicEphemeralAiRequest(request, url)) return false;
-
-  const isRead = request.method === "GET" || request.method === "HEAD";
-  const isPublicApi = url.pathname === "/api/health" || url.pathname === "/api/public/jobs" || url.pathname === "/api/dashboard";
-  return !(isRead && isPublicApi);
-}
-
-function isWorkspaceSurface(url: URL): boolean {
-  return url.pathname === "/workspace" || url.pathname.startsWith("/workspace/");
 }
 
 export function sanitizeIdentityHeaders(request: Request): Request {
