@@ -1,8 +1,18 @@
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
 
+type PublicJob = {
+  id?: unknown;
+  remote?: unknown;
+  salaryText?: unknown;
+  title?: unknown;
+  description?: unknown;
+  source?: unknown;
+  location?: unknown;
+};
+
 type PublicJobsPayload = {
-  jobs: Json[];
+  jobs: PublicJob[];
   generatedAt?: string;
 };
 
