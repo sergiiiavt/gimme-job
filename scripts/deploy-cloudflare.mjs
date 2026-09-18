@@ -138,6 +138,10 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
     EMAIL_AI_ENABLED: optionalEnvironment("EMAIL_AI_ENABLED") || "true",
     EMAIL_AI_DAILY_USER_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50",
     EMAIL_AI_DAILY_GLOBAL_LIMIT: optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500",
+    PUBLIC_AI_HOURLY_IP_LIMIT: optionalEnvironment("PUBLIC_AI_HOURLY_IP_LIMIT") || "30",
+    PUBLIC_AI_DAILY_GLOBAL_LIMIT: optionalEnvironment("PUBLIC_AI_DAILY_GLOBAL_LIMIT") || "1000",
+    PUBLIC_DB_HOURLY_IP_LIMIT: optionalEnvironment("PUBLIC_DB_HOURLY_IP_LIMIT") || "120",
+    PUBLIC_DB_DAILY_GLOBAL_LIMIT: optionalEnvironment("PUBLIC_DB_DAILY_GLOBAL_LIMIT") || "5000",
     ...(aiService.configured ? { GIMMEJOB_AI_URL: aiService.url } : {}),
   };
   deployConfig.d1_databases = [{
