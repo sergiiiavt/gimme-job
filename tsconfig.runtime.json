@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "allowImportingTsExtensions": true,
+    "incremental": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": [
+    "types/cloudflare-runtime.d.ts",
+    "worker/**/*.ts",
+    "app/api/**/*.ts",
+    "app/auth/**/*.ts",
+    "app/internal/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", ".next", "tests", "examples"]
+}
