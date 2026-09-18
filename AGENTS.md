@@ -39,7 +39,7 @@ When a change affects one of these areas, inspect and test the connected surface
 
 - **UI structure:** related CSS selectors, grid placement, responsive layouts, accessibility, navigation, and overflow.
 - **Auth/routes:** public/private boundaries, redirects, loading races, API consumers, and rendered Worker behavior.
-- **D1/schema:** `db/schema.ts`, generated Drizzle migrations/metadata, and migration compatibility.
+- **D1/schema:** canonical ordered SQL migrations in `drizzle/*.sql`, already-applied filename immutability, and migration compatibility.
 - **Worker/API:** route contracts, validation, integration tests, and Cloudflare artifact behavior.
 - **Learning/interview content:** relevant validators, stable IDs, source registries, lazy loading, render caps, canonical RAG discovery, and direct-link validity.
 - **Automation/IaC:** workflow definitions, environment contracts, operational documentation, and tests.
@@ -85,9 +85,11 @@ Before publishing a completed change, run the canonical local CI-equivalent veri
 npm run verify
 ```
 
-`npm run verify` covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
+`npm run verify` covers linting, shipped-application and local-agent type checking, content and asset validators, the canonical D1 migration contract, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
 
 SonarQube remains a remote CI gate because it requires repository credentials and the generated coverage report.
+
+Production D1 schema history is owned by `drizzle/*.sql`. Add schema changes as the next sequential migration; never rename, regenerate, or rewrite an already-applied migration. Historical duplicate prefixes are preserved for compatibility, but new duplicate prefixes are forbidden.
 
 Also perform focused browser verification for user-visible changes. Before committing, inspect `git diff --check`, `git diff --stat`, and the complete diff, and confirm no unexpected files changed.
 
