@@ -224,7 +224,7 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
-    readFile(projectFile("drizzle/0000_colossal_spencer_smythe.sql"), "utf8"),
+    readFile(projectFile("drizzle/0002_wet_loa.sql"), "utf8"),
   ]);
 
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
