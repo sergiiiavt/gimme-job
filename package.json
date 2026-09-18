@@ -21,7 +21,7 @@
     "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-performance-testing-content.mjs && node scripts/validate-sql-interview-content.mjs && node scripts/validate-interview-source-refresh.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-python-quick-reference.mjs && node scripts/validate-sql-quick-reference.mjs && node scripts/validate-automation-curriculum-content.mjs && node scripts/validate-qa-fundamentals-content.mjs && node scripts/validate-cloud-devops-content.mjs && node scripts/validate-testing-tools-content.mjs && node scripts/validate-metrics-estimation-content.mjs && npm run check:about-links",
     "check:agent": "tsc -p tsconfig.agent.json",
     "check:db": "node scripts/check-d1-migrations.mjs",
-    "verify:fast": "npm run lint && npm run check:agent && npm run check:content",
+    "verify:fast": "npm run lint && npm run check:agent && npm run check:runtime && npm run check:content",
     "verify": "npm run verify:fast && npm run check:db && npm run build && npm run test:coverage && npm run check:cloudflare",
     "check": "npm run lint && npm run check:agent",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
@@ -30,7 +30,8 @@
     "agent:analyze": "node --import tsx agent/src/cli.ts analyze",
     "agent:market": "node --import tsx agent/src/cli.ts market",
     "agent:queue": "node --import tsx agent/src/cli.ts queue",
-    "gmail:connect": "node --import tsx agent/src/cli.ts gmail-auth"
+    "gmail:connect": "node --import tsx agent/src/cli.ts gmail-auth",
+    "check:runtime": "tsc -p tsconfig.runtime.json"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
