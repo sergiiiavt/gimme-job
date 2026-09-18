@@ -342,6 +342,12 @@ function drawExplosions(ctx: CanvasRenderingContext2D, explosions: readonly Expl
   }
 }
 
+function canvasSurface(canvas: HTMLCanvasElement | null): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null {
+  if (!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  return ctx ? { canvas, ctx } : null;
+}
+
 function PlatformerGame({
   resetToken,
   difficulty,
@@ -364,10 +370,9 @@ function PlatformerGame({
   }
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const surface = canvasSurface(canvasRef.current);
+    if (!surface) return;
+    const { canvas, ctx } = surface;
 
     weaponRef.current = "blaster";
     setWeapon("blaster");
@@ -844,10 +849,9 @@ function GravityGame({ resetToken }: { resetToken: number }) {
   }
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const surface = canvasSurface(canvasRef.current);
+    if (!surface) return;
+    const { canvas, ctx } = surface;
 
     weaponRef.current = "blaster";
     setWeapon("blaster");
