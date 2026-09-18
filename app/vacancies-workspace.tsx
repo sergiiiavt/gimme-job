@@ -46,6 +46,8 @@ interface Job {
   url: string;
   applyUrl: string;
   description: string;
+  descriptionComplete?: boolean;
+  reservation?: boolean;
   salaryText: string | null;
   postedAt: string | null;
   discoveredAt: string;
@@ -102,7 +104,7 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v1";
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v2";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 const VACANCY_STALE_MS = 10 * 60 * 1000;
@@ -236,7 +238,7 @@ function compareJobs(left: Job, right: Job, sortOrder: JobSort) {
 }
 
 function hasReservation(job: Job) {
-  return /бронюванн/i.test(job.description);
+  return job.reservation ?? /бронюванн/i.test(job.description);
 }
 
 function matchesCondition(job: Job, condition: JobCondition) {
@@ -586,6 +588,34 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, jobs, query, sortOrder, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
+
+  useEffect(() => {
+    if (!selected || selected.descriptionComplete !== false) return;
+    const jobId = selected.id;
+    let active = true;
+    void api<Job>(`/public/jobs/${encodeURIComponent(jobId)}`)
+      .then((detail) => {
+        if (!active) return;
+        setJobs((current) => current.map((item) => item.id === jobId
+          ? {
+              ...item,
+              ...detail,
+              status: item.status,
+              analysis: item.analysis,
+              resume: item.resume,
+              resumePdf: item.resumePdf,
+              draft: item.draft,
+              reservation: item.reservation ?? /бронюванн/i.test(detail.description),
+              descriptionComplete: true,
+            }
+          : item));
+      })
+      .catch(() => {
+        // Keep the compact preview usable if a detail refresh fails.
+      });
+    return () => { active = false; };
+  }, [selected?.id, selected?.descriptionComplete]);
+
   const openTabs = openTabIds
     .map((id) => jobs.find((job) => job.id === id))
     .filter((job): job is Job => Boolean(job));
