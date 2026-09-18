@@ -171,3 +171,15 @@ test("vacancy-specific stylesheet does not replace global typography", () => {
   assert.match(filterStyles, /@media \(max-width: 980px\)/);
   assert.match(filterStyles, /@media \(max-width: 700px\)/);
 });
+
+
+test("vacancy dashboard lazy-loads full descriptions without overwriting private state", () => {
+  assert.match(source, /descriptionComplete\?: boolean/);
+  assert.match(source, /reservation\?: boolean/);
+  assert.match(source, /return job\.reservation \?\? \/бронюванн\/i\.test\(job\.description\)/);
+  assert.match(source, /api<Job>\(\`\/public\/jobs\/\$\{encodeURIComponent\(jobId\)\}\`\)/);
+  for (const field of ["status", "analysis", "resume", "resumePdf", "draft"]) {
+    assert.match(source, new RegExp(`${field}: item\\.${field}`));
+  }
+  assert.match(source, /descriptionComplete: true/);
+});
