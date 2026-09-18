@@ -494,7 +494,7 @@ export async function resolveEmailEvent(
       };
     }
     method = "COMPOSITE";
-    confidence = selected.score / 100;
+    confidence = (scored.find((candidate) => candidate.id === selected?.id)?.score ?? 0) / 100;
   }
 
   const applied = await applyResolvedStatus(db, event, selected, method ?? "COMPOSITE", confidence ?? 1, options);
