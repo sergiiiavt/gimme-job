@@ -58,11 +58,11 @@ function bytesToBase64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
-function base64UrlToBytes(value: string): Uint8Array {
+function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
   const binary = atob(padded);
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new Uint8Array(Uint8Array.from(binary, (character) => character.charCodeAt(0)));
 }
 
 function randomToken(byteLength: number): string {
@@ -312,10 +312,10 @@ async function googleUserInfo(accessToken: string): Promise<Required<Pick<Google
   return profile as Required<Pick<GoogleUserInfo, "sub" | "email">> & GoogleUserInfo;
 }
 
-function decodeEncryptionKey(value: string): Uint8Array {
-  let bytes: Uint8Array;
+function decodeEncryptionKey(value: string): Uint8Array<ArrayBuffer> {
+  let bytes: Uint8Array<ArrayBuffer>;
   try {
-    bytes = Uint8Array.from(atob(value.trim()), (character) => character.charCodeAt(0));
+    bytes = new Uint8Array(Uint8Array.from(atob(value.trim()), (character) => character.charCodeAt(0)));
   } catch {
     throw new Error("GMAIL_TOKEN_ENCRYPTION_KEY must be base64 encoded.");
   }
