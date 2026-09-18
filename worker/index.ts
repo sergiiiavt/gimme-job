@@ -8,10 +8,16 @@ import {
   proxyWebSocketPlayground,
 } from "./websocket-playground-proxy";
 import { withPublicAiSessionScope } from "./request-policy";
+import {
+  enforcePublicApiRateLimit,
+  type PublicApiRateLimitEnv,
+} from "./public-api-rate-limit";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
-type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1] & Parameters<typeof handleDatabasePlayground>[1];
+type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1]
+  & Parameters<typeof handleDatabasePlayground>[1]
+  & PublicApiRateLimitEnv;
 type HttpWorkerContext = Parameters<HttpWorkerFetch>[2];
 
 function requiresFreshReferenceDocument(request: Request): boolean {
@@ -31,6 +37,9 @@ const worker = {
     if (isWebSocketPlaygroundRequest(request)) {
       return proxyWebSocketPlayground(request);
     }
+
+    const rateLimitResponse = await enforcePublicApiRateLimit(request, env);
+    if (rateLimitResponse) return rateLimitResponse;
 
     if (new URL(request.url).pathname === "/api/playgrounds/databases") {
       return handleDatabasePlayground(request, env);
