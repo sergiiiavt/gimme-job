@@ -482,6 +482,49 @@ export async function publicVacancyById(
   return job ?? null;
 }
 
+export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike): Promise<{
+  jobs: Array<IntakeJob & {
+    id: string;
+    discoveredAt: string;
+    descriptionComplete: boolean;
+    reservation: boolean;
+  }>;
+  generatedAt: string;
+}> {
+  const db = await database(databaseOverride);
+  const result = await db.prepare(`SELECT
+    id, source, external_id, title, company, location, remote, url, apply_url,
+    substr(description, 1, ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT}) AS description,
+    CASE WHEN length(description) <= ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT} THEN 1 ELSE 0 END AS description_complete,
+    CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
+    salary_text, posted_at, contact_email, discovered_at
+    FROM jobs
+    ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+    LIMIT 500`).all<Row>();
+
+  const jobs = result.results.map((row) => ({
+    id: String(row.id),
+    source: displaySource(String(row.source)),
+    externalId: row.external_id ? String(row.external_id) : null,
+    title: String(row.title),
+    company: String(row.company),
+    location: String(row.location),
+    remote: Number(row.remote) === 1,
+    url: String(row.url),
+    applyUrl: String(row.apply_url),
+    description: normalizeVacancyDescription(String(row.description ?? "")),
+    descriptionComplete: Number(row.description_complete) === 1,
+    reservation: Number(row.reservation) === 1,
+    salaryText: row.salary_text ? String(row.salary_text) : null,
+    postedAt: row.posted_at ? String(row.posted_at) : null,
+    contactEmail: row.contact_email ? String(row.contact_email) : null,
+    discoveredAt: String(row.discovered_at),
+    raw: {},
+  }));
+
+  return { jobs, generatedAt: new Date().toISOString() };
+}
+
 export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promise<{
   jobs: Array<IntakeJob & { id: string; discoveredAt: string }>;
   generatedAt: string;
