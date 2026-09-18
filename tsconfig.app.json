@@ -3,7 +3,8 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "incremental": false,
-    "noEmit": true
+    "noEmit": true,
+    "target": "ES2020"
   },
   "include": [
     "next-env.d.ts",
@@ -13,5 +14,10 @@
     "content/**/*.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": ["node_modules", "examples", "dist", ".next"]
+  "exclude": [
+    "node_modules",
+    "examples",
+    "dist",
+    ".next"
+  ]
 }
