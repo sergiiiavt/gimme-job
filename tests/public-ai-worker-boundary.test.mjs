@@ -14,11 +14,22 @@ registerHooks({
 });
 
 function fakeDb() {
+  const counters = new Map();
   return {
-    prepare() {
+    prepare(sql) {
+      const text = String(sql).replace(/\s+/g, " ").trim();
       const statement = {
-        bind() { return statement; },
-        async first() { return null; },
+        params: [],
+        bind(...values) { statement.params = values; return statement; },
+        async first() {
+          if (text.startsWith("INSERT INTO public_request_limits")) {
+            const key = statement.params.slice(0, 4).join("|");
+            const count = (counters.get(key) ?? 0) + 1;
+            counters.set(key, count);
+            return { request_count: count };
+          }
+          return null;
+        },
         async all() { return { results: [] }; },
         async run() { return { success: true }; },
       };
@@ -106,4 +117,33 @@ test("built Worker keeps the AI Assistant public without client auth or session 
   }), env, context);
   assert.equal(streamResponse.status, 503);
   assert.deepEqual(await streamResponse.json(), { error: "AI learning path service is not configured." });
+});
+
+
+test("built Worker rate-limits repeated public AI requests by client", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("public-ai-rate-limit-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const db = fakeDb();
+  const env = {
+    ...envFor(db),
+    PUBLIC_AI_RATE_LIMIT_PER_MINUTE: "2",
+    PUBLIC_AI_RATE_LIMIT_PER_DAY: "100",
+    PUBLIC_AI_GLOBAL_LIMIT_PER_MINUTE: "100",
+    PUBLIC_AI_GLOBAL_LIMIT_PER_DAY: "1000",
+  };
+
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  cloudflareEnv.MULTI_USER_ENABLED = "true";
+
+  const headers = { "cf-connecting-ip": "203.0.113.10" };
+  const first = await worker.fetch(new Request("https://gimmejob.example/api/ai/interviews", { headers }), env, context);
+  const second = await worker.fetch(new Request("https://gimmejob.example/api/ai/interviews", { headers }), env, context);
+  const third = await worker.fetch(new Request("https://gimmejob.example/api/ai/interviews", { headers }), env, context);
+
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(third.status, 429);
+  assert.ok(Number(third.headers.get("retry-after")) > 0);
 });
