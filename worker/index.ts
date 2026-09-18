@@ -7,21 +7,14 @@ import {
   isWebSocketPlaygroundRequest,
   proxyWebSocketPlayground,
 } from "./websocket-playground-proxy";
-
-function isAiAssistantApiRequest(request: Request): boolean {
-  return new URL(request.url).pathname.startsWith("/api/ai/");
-}
-
-function withPublicAiSessionScope(request: Request): Request {
-  if (!isAiAssistantApiRequest(request)) return request;
-  const headers = new Headers(request.headers);
-  headers.set("x-gimmejob-session-scope", "ephemeral");
-  return new Request(request, { headers });
-}
-
-function isPublicEphemeralAiRequest(request: Request): boolean {
-  return request.headers.get("x-gimmejob-session-scope") === "ephemeral" && isAiAssistantApiRequest(request);
-}
+import {
+  isPublicEphemeralAiRequest,
+  withPublicAiSessionScope,
+} from "./request-policy";
+import {
+  enforcePublicAbuseLimit,
+  type PublicAbuseLimitEnv,
+} from "./public-abuse-limit";
 
 // The multi-user boundary is the source of truth for browser authorization, but coreWorker still
 // contains the legacy single-user password gate. AI Assistant requests are public by design, so the
@@ -35,7 +28,7 @@ const boundaryAwareCore = {
     env: Parameters<typeof coreWorker.fetch>[1],
     ctx: Parameters<typeof coreWorker.fetch>[2],
   ): Promise<Response> {
-    if (!isPublicEphemeralAiRequest(request) || !env.APP_PASSWORD) {
+    if (!isPublicEphemeralAiRequest(request, new URL(request.url)) || !env.APP_PASSWORD) {
       return coreWorker.fetch(request, env, ctx);
     }
 
@@ -47,7 +40,7 @@ const boundaryAwareCore = {
 
 const httpWorker = createMultiUserBoundary(boundaryAwareCore);
 type HttpWorkerFetch = typeof httpWorker.fetch;
-type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1] & Parameters<typeof handleDatabasePlayground>[1];
+type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1] & Parameters<typeof handleDatabasePlayground>[1] & PublicAbuseLimitEnv;
 type HttpWorkerContext = Parameters<HttpWorkerFetch>[2];
 
 function requiresFreshReferenceDocument(request: Request): boolean {
@@ -69,10 +62,16 @@ const worker = {
     }
 
     if (new URL(request.url).pathname === "/api/playgrounds/databases") {
+      const limited = await enforcePublicAbuseLimit(request, env, "database");
+      if (limited) return limited;
       return handleDatabasePlayground(request, env);
     }
 
     const routedRequest = withPublicAiSessionScope(request);
+    if (isPublicEphemeralAiRequest(routedRequest, new URL(routedRequest.url))) {
+      const limited = await enforcePublicAbuseLimit(routedRequest, env, "ai");
+      if (limited) return limited;
+    }
     const response = await httpWorker.fetch(routedRequest, env, ctx);
     return requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response;
   },
