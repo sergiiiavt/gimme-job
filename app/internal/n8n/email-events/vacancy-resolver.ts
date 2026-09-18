@@ -475,8 +475,9 @@ export async function resolveEmailEvent(
     const fuzzyCandidates = await loadFuzzyCandidates(db, event);
     const choice = selectVacancyCandidate(event, fuzzyCandidates);
     scored = choice.scored;
-    selected = choice.selected;
-    if (choice.matchStatus !== "MATCHED" || !selected) {
+    const fuzzySelected = choice.selected;
+    selected = fuzzySelected;
+    if (choice.matchStatus !== "MATCHED" || !fuzzySelected) {
       const candidates = compactCandidates(scored);
       const matchStatus = choice.matchStatus;
       const topScore = scored[0]?.score ?? 0;
@@ -494,7 +495,7 @@ export async function resolveEmailEvent(
       };
     }
     method = "COMPOSITE";
-    confidence = selected.score / 100;
+    confidence = fuzzySelected.score / 100;
   }
 
   const applied = await applyResolvedStatus(db, event, selected, method ?? "COMPOSITE", confidence ?? 1, options);
