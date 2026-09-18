@@ -1,5 +1,3 @@
-type D1Primitive = null | number | string | ArrayBuffer | ArrayBufferView;
-
 interface D1Result<T = Record<string, unknown>> {
   results: T[];
   success: boolean;
@@ -11,7 +9,7 @@ interface D1Result<T = Record<string, unknown>> {
 }
 
 interface D1PreparedStatement {
-  bind(...values: D1Primitive[]): D1PreparedStatement;
+  bind(...values: unknown[]): D1PreparedStatement;
   first<T = Record<string, unknown>>(columnName?: string): Promise<T | null>;
   all<T = Record<string, unknown>>(): Promise<D1Result<T>>;
   run<T = Record<string, unknown>>(): Promise<D1Result<T>>;
@@ -31,4 +29,11 @@ interface Fetcher {
 
 declare module "cloudflare:workers" {
   export const env: unknown;
+}
+
+interface ImportMeta {
+  readonly env: {
+    readonly DEV?: boolean;
+    readonly [key: string]: string | boolean | undefined;
+  };
 }
