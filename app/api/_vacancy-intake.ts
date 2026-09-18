@@ -432,6 +432,55 @@ export function sanitizeDashboardPayload<T extends { jobs?: unknown }>(payload: 
   return { ...payload, jobs: [...sanitizeJobs(complete), ...incomplete] } as T;
 }
 
+const DASHBOARD_DESCRIPTION_PREVIEW_LIMIT = 360;
+
+export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T): T {
+  const sanitized = sanitizeDashboardPayload(payload);
+  if (!Array.isArray(sanitized.jobs)) return sanitized;
+
+  return {
+    ...sanitized,
+    jobs: sanitized.jobs.map((job) => {
+      if (!job || typeof job !== "object") return job;
+      const record = job as Record<string, unknown>;
+      const description = typeof record.description === "string" ? record.description : "";
+      if (!description) return record;
+      const descriptionComplete = description.length <= DASHBOARD_DESCRIPTION_PREVIEW_LIMIT;
+      return {
+        ...record,
+        reservation: /бронюванн/i.test(description),
+        description: descriptionComplete
+          ? description
+          : `${description.slice(0, DASHBOARD_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`,
+        descriptionComplete,
+      };
+    }),
+  } as T;
+}
+
+export async function publicVacancyById(
+  jobId: string,
+  databaseOverride?: D1DatabaseLike,
+): Promise<(IntakeJob & { id: string; discoveredAt: string }) | null> {
+  const db = await database(databaseOverride);
+  const row = await db.prepare(`SELECT
+    id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, contact_email, discovered_at, raw_json
+    FROM jobs
+    WHERE id = ?
+    LIMIT 1`)
+    .bind(jobId)
+    .first<Row>();
+  if (!row) return null;
+
+  const [job] = sanitizeJobs([{
+    ...mapExisting(row),
+    id: String(row.id),
+    discoveredAt: String(row.discovered_at),
+  }]);
+  return job ?? null;
+}
+
 export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promise<{
   jobs: Array<IntakeJob & { id: string; discoveredAt: string }>;
   generatedAt: string;
