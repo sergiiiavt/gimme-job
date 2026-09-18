@@ -118,6 +118,36 @@ jobs:
             grep -Eiq '^set-cookie: gimmejob_user_session=;.*Max-Age=0' "$headers"
           }
 
+          check_vacancy_dashboard() {
+            local file="/tmp/gimmejob-dashboard.json"
+            curl --fail --silent --show-error --max-time 20 \
+              --output "$file" "https://gimme-job.com/api/dashboard" || return 1
+            local bytes
+            bytes="$(wc -c < "$file")"
+            if (( bytes > 1500000 )); then
+              echo "Vacancy dashboard payload is too large: ${bytes} bytes"
+              return 1
+            fi
+            DASHBOARD_FILE="$file" node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+
+          const payload = JSON.parse(readFileSync(process.env.DASHBOARD_FILE, "utf8"));
+          if (!Array.isArray(payload.jobs) || payload.jobs.length === 0) {
+            throw new Error("Production vacancy dashboard returned no jobs.");
+          }
+          const first = payload.jobs[0];
+          if (!first?.id || !first?.title || !first?.company) {
+            throw new Error("Production vacancy dashboard returned an invalid job summary.");
+          }
+          if (typeof first.description !== "string" || first.description.length > 500) {
+            throw new Error(`Production vacancy description preview is invalid: ${first.description?.length ?? "missing"}`);
+          }
+          if ("raw" in first) {
+            throw new Error("Production vacancy dashboard leaked raw source payloads.");
+          }
+          NODE
+          }
+
           check_public_interview() {
             local body
             body="$(curl --fail --silent --show-error --max-time 20 \
@@ -192,6 +222,7 @@ jobs:
           retry check_health "https://gimme-job.com/api/health"
           retry check_websocket_playground
           retry check_logout
+          retry check_vacancy_dashboard
           retry check_public_interview
           retry check_public_learning_advisor
           retry check_qa_topic_link
