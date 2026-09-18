@@ -1,18 +1,36 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  isPublicAiEndpoint,
+  isPublicEphemeralAiRequest,
+  withPublicAiSessionScope,
+} from "../worker/request-policy.ts";
 
-const [workerEntry, authBoundary] = await Promise.all([
-  readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
-  readFile(new URL("../worker/multi-user-boundary.ts", import.meta.url), "utf8"),
-]);
+test("AI Assistant public policy is exact and adds ephemeral scope before auth", () => {
+  const publicCases = [
+    ["POST", "/api/ai/learning-path"],
+    ["POST", "/api/ai/learning-path/stream"],
+    ["GET", "/api/ai/interviews"],
+    ["POST", "/api/ai/interviews"],
+  ];
 
-test("AI Assistant requests are promoted to public ephemeral sessions before auth", () => {
-  assert.match(workerEntry, /pathname\.startsWith\("\/api\/ai\/"\)/);
-  assert.match(workerEntry, /headers\.set\("x-gimmejob-session-scope", "ephemeral"\)/);
-  assert.match(workerEntry, /const routedRequest = withPublicAiSessionScope\(request\);/);
-});
+  for (const [method, path] of publicCases) {
+    const request = new Request(`https://example.com${path}`, { method });
+    assert.equal(isPublicAiEndpoint(request), true, `${method} ${path}`);
+    const scoped = withPublicAiSessionScope(request);
+    assert.equal(scoped.headers.get("x-gimmejob-session-scope"), "ephemeral");
+    assert.equal(isPublicEphemeralAiRequest(scoped), true);
+  }
 
-test("the public auth boundary includes the Learning Advisor live stream", () => {
-  assert.match(authBoundary, /\/api\/ai\/learning-path\/stream/);
+  for (const [method, path] of [
+    ["GET", "/api/ai/learning-path"],
+    ["GET", "/api/ai/learning-path/stream"],
+    ["DELETE", "/api/ai/interviews"],
+    ["POST", "/api/ai/future-route"],
+    ["POST", "/api/jobs/1"],
+  ]) {
+    const request = new Request(`https://example.com${path}`, { method });
+    assert.equal(isPublicAiEndpoint(request), false, `${method} ${path}`);
+    assert.equal(withPublicAiSessionScope(request).headers.get("x-gimmejob-session-scope"), null);
+  }
 });
