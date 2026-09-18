@@ -49,8 +49,10 @@ export function isPrivateRequest(request: Request, url = new URL(request.url)): 
   if (isPublicEphemeralAiRequest(request, url)) return false;
 
   const isRead = request.method === "GET" || request.method === "HEAD";
+  const isPublicVacancyDetail = url.pathname.startsWith("/api/public/jobs/");
   const isPublicApi = url.pathname === "/api/health"
     || url.pathname === "/api/public/jobs"
+    || isPublicVacancyDetail
     || url.pathname === "/api/dashboard";
   return !(isRead && isPublicApi);
 }

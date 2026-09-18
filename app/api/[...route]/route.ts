@@ -18,10 +18,11 @@ import { adjustResumeForUser, analyzeJobsForUser } from "../_job-actions";
 import { upsertImportedVacancies } from "../_vacancy-import";
 import { handleVacancySync } from "../_vacancy-sync-route";
 import {
+  compactDashboardPayload,
   ensureVacancyCatalog,
   mergeVacancySourceDefaults,
   publicVacancies,
-  sanitizeDashboardPayload,
+  publicVacancyById,
   syncVacancySources,
 } from "../_vacancy-intake";
 import {
@@ -73,7 +74,7 @@ async function currentDashboard(request: Request) {
   const tenant = tenantRequestContext(request);
   const userId = tenant.authenticated ? tenant.userId : null;
   const value = tenant.multiUser ? await tenantDashboard(userId, request) : await dashboard(request);
-  return sanitizeDashboardPayload(value);
+  return compactDashboardPayload(value);
 }
 
 export async function GET(request: Request, context: RouteContext) {
@@ -81,6 +82,12 @@ export async function GET(request: Request, context: RouteContext) {
     const route = await parts(context);
     const tenant = tenantRequestContext(request);
     if (route[0] === "health") return Response.json({ ok: true, service: "jobpilot-cloud" });
+    if (route[0] === "public" && route[1] === "jobs" && route[2]) {
+      const job = await publicVacancyById(route[2]);
+      return job
+        ? Response.json(job, { headers: { "cache-control": "public, max-age=60" } })
+        : Response.json({ error: "Vacancy not found." }, { status: 404, headers: { "cache-control": "no-store" } });
+    }
     if (route[0] === "public" && route[1] === "jobs") {
       await ensureVacancyCatalog();
       return Response.json(await publicVacancies());

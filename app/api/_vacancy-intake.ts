@@ -213,10 +213,8 @@ function normalizedJob(value: IntakeJob): IntakeJob {
   };
 }
 
-function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string } {
+function mapStoredJob(row: Row): IntakeJob {
   return {
-    id: String(row.id),
-    fingerprint: String(row.fingerprint),
     source: String(row.source),
     externalId: row.external_id ? String(row.external_id) : null,
     title: String(row.title),
@@ -230,7 +228,26 @@ function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; s
     postedAt: row.posted_at ? String(row.posted_at) : null,
     contactEmail: row.contact_email ? String(row.contact_email) : null,
     raw: parseJson(row.raw_json, {}),
+  };
+}
+
+function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string } {
+  return {
+    ...mapStoredJob(row),
+    id: String(row.id),
+    fingerprint: String(row.fingerprint),
     status: row.status ? String(row.status) : undefined,
+  };
+}
+
+function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: string } {
+  const job = mapStoredJob(row);
+  return {
+    ...job,
+    source: displaySource(job.source),
+    id: String(row.id),
+    discoveredAt: String(row.discovered_at),
+    raw: {},
   };
 }
 
@@ -430,6 +447,84 @@ export function sanitizeDashboardPayload<T extends { jobs?: unknown }>(payload: 
   const complete = payload.jobs.filter(isCompleteJob) as IntakeJob[];
   const incomplete = payload.jobs.filter((job) => !isCompleteJob(job));
   return { ...payload, jobs: [...sanitizeJobs(complete), ...incomplete] } as T;
+}
+
+const DASHBOARD_DESCRIPTION_PREVIEW_LIMIT = 360;
+
+export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T): T {
+  const sanitized = sanitizeDashboardPayload(payload);
+  if (!Array.isArray(sanitized.jobs)) return sanitized;
+
+  return {
+    ...sanitized,
+    jobs: sanitized.jobs.map((job) => {
+      if (!job || typeof job !== "object") return job;
+      const record = job as Record<string, unknown>;
+      const { raw: _raw, ...lightweight } = record;
+      const description = typeof record.description === "string" ? record.description : "";
+      if (!description) return lightweight;
+      const descriptionComplete = description.length <= DASHBOARD_DESCRIPTION_PREVIEW_LIMIT;
+      return {
+        ...lightweight,
+        reservation: /бронюванн/i.test(description),
+        description: descriptionComplete
+          ? description
+          : `${description.slice(0, DASHBOARD_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`,
+        descriptionComplete,
+      };
+    }),
+  } as T;
+}
+
+export async function publicVacancyById(
+  jobId: string,
+  databaseOverride?: D1DatabaseLike,
+): Promise<(IntakeJob & { id: string; discoveredAt: string }) | null> {
+  const db = await database(databaseOverride);
+  const row = await db.prepare(`SELECT
+    id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, contact_email, discovered_at, raw_json
+    FROM jobs
+    WHERE id = ?
+    LIMIT 1`)
+    .bind(jobId)
+    .first<Row>();
+  if (!row) return null;
+
+  const [job] = sanitizeJobs([mapPublicStoredJob(row)]);
+  if (!job) return null;
+  const { raw: _raw, ...detail } = job;
+  return detail;
+}
+
+export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike): Promise<{
+  jobs: Array<IntakeJob & {
+    id: string;
+    discoveredAt: string;
+    descriptionComplete: boolean;
+    reservation: boolean;
+  }>;
+  generatedAt: string;
+}> {
+  const db = await database(databaseOverride);
+  const result = await db.prepare(`SELECT
+    id, source, external_id, title, company, location, remote, url, apply_url,
+    substr(description, 1, ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT}) AS description,
+    CASE WHEN length(description) <= ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT} THEN 1 ELSE 0 END AS description_complete,
+    CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
+    salary_text, posted_at, contact_email, discovered_at
+    FROM jobs
+    ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+    LIMIT 500`).all<Row>();
+
+  const jobs = result.results.map((row) => ({
+    ...mapPublicStoredJob(row),
+    description: normalizeVacancyDescription(String(row.description ?? "")),
+    descriptionComplete: Number(row.description_complete) === 1,
+    reservation: Number(row.reservation) === 1,
+  }));
+
+  return { jobs, generatedAt: new Date().toISOString() };
 }
 
 export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promise<{
