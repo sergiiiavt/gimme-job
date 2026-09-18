@@ -2,6 +2,7 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 import { operationalError, safeErrorDetails } from "../app/api/_operational-log";
+import { isPrivateRequest, isWorkspaceSurface, readCookie } from "./request-policy";
 
 interface Env {
   ASSETS: Fetcher;
@@ -75,18 +76,6 @@ function hasValidGrafanaToken(request: Request, env: Env): boolean {
 
   const token = authorization.slice("Bearer ".length).trim();
   return constantTimeEqual(token, env.GRAFANA_READ_TOKEN);
-}
-
-function readCookie(request: Request, name: string): string | null {
-  const cookieHeader = request.headers.get("cookie");
-  if (!cookieHeader) return null;
-
-  for (const part of cookieHeader.split(";")) {
-    const [cookieName, ...valueParts] = part.trim().split("=");
-    if (cookieName === name) return valueParts.join("=");
-  }
-
-  return null;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -588,26 +577,8 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   });
 }
 
-function isPrivateRequest(request: Request, url: URL): boolean {
-  // The vacancy workspace itself is viewable without a password (analysis/resume results are
-  // public); only status tracking and every write action stay password-gated below it and via
-  // the private-API allowlist. Deeper paths (e.g. /workspace/learn, personal study progress)
-  // remain fully private.
-  if (url.pathname === "/workspace") return false;
-  if (url.pathname.startsWith("/workspace/")) return true;
-  if (!url.pathname.startsWith("/api/")) return false;
-
-  const isRead = request.method === "GET" || request.method === "HEAD";
-  const isPublicApi = url.pathname === "/api/health" || url.pathname === "/api/public/jobs" || url.pathname === "/api/dashboard";
-  return !(isRead && isPublicApi);
-}
-
-// /workspace is viewable by anyone (see isPrivateRequest above) but is still a personal app
-// surface, never meant for search engines or shared caches — so it keeps the no-store/noindex
-// treatment regardless of whether the visitor is authenticated.
-function isWorkspaceSurface(url: URL): boolean {
-  return url.pathname === "/workspace" || url.pathname.startsWith("/workspace/");
-}
+// Shared request policy keeps the legacy core gate and the multi-user boundary aligned.
+// /workspace remains a no-store/noindex personal surface even when it is publicly viewable.
 
 function robotsResponse(url: URL): Response {
   return new Response([
