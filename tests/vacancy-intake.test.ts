@@ -7,9 +7,12 @@ register();
 const {
   buildVacancySources,
   ensureVacancyCatalog,
+  compactDashboardPayload,
   mergeVacancySourceDefaults,
   publicHttpsUrl,
+  publicVacancyById,
   publicVacancies,
+  publicVacancySummaries,
   sanitizeDashboardPayload,
   skippedCloudSources,
   syncVacancySources,
@@ -26,9 +29,21 @@ class FakeD1 {
       first: async <T>() => {
         if (normalized.includes("select value_json from settings")) return this.sourceSetting as T | null;
         if (normalized.includes("select count(*) as count from jobs")) return { count: this.jobs.length } as T;
+        if (normalized.includes("from jobs") && normalized.includes("where id = ?")) {
+          return (this.jobs.find((entry) => entry.id === values[0]) ?? null) as T | null;
+        }
         return null;
       },
       all: async <T>() => {
+        if (normalized.includes("substr(description")) {
+          const results = this.jobs.map((row) => ({
+            ...row,
+            description: String(row.description ?? "").slice(0, 360),
+            description_complete: String(row.description ?? "").length <= 360 ? 1 : 0,
+            reservation: /бронюванн/i.test(String(row.description ?? "")) ? 1 : 0,
+          }));
+          return { results: results as T[] };
+        }
         if (normalized.includes("from jobs")) return { results: [...this.jobs] as T[] };
         return { results: [] as T[] };
       },
@@ -177,6 +192,36 @@ test("sanitizeDashboardPayload filters legacy noise and merges duplicate cards w
   assert.ok(full);
   assert.match(String((full as { source: string }).source), /DOU/);
   assert.ok(result.jobs.some((job) => (job as { id?: string }).id === "compatibility-stub"));
+});
+
+test("compact dashboard payload strips raw data, truncates descriptions, and preserves reservation filtering", () => {
+  const description = `QA role with бронювання. ${"Long description. ".repeat(40)}`;
+  const result = compactDashboardPayload({
+    jobs: [{ ...vacancy({ description, raw: { huge: "payload" } }), id: "compact-1" }],
+  }) as { jobs: Array<Record<string, unknown>> };
+
+  assert.equal(result.jobs.length, 1);
+  assert.equal(result.jobs[0].raw, undefined);
+  assert.equal(result.jobs[0].reservation, true);
+  assert.equal(result.jobs[0].descriptionComplete, false);
+  assert.ok(String(result.jobs[0].description).length <= 361);
+});
+
+test("public vacancy summaries use compact SQL fields while detail keeps the full description", async () => {
+  const db = new FakeD1();
+  const description = `Requirements\n- QA\n- бронювання\n${"Detailed responsibility. ".repeat(40)}`;
+  await upsertVacancies([vacancy({ description })], db);
+
+  const summary = await publicVacancySummaries(db);
+  assert.equal(summary.jobs.length, 1);
+  assert.equal(summary.jobs[0].reservation, true);
+  assert.equal(summary.jobs[0].descriptionComplete, false);
+  assert.ok(summary.jobs[0].description.length <= 360);
+  assert.deepEqual(summary.jobs[0].raw, {});
+
+  const detail = await publicVacancyById(summary.jobs[0].id, db);
+  assert.ok(detail);
+  assert.equal(detail.description, description);
 });
 
 test("publicVacancies returns sanitized stored rows", async () => {
