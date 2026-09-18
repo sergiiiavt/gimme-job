@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { filterRelevantVacancies } from "../agent/src/job-intake.js";
-import { extractCompanyFromHtml, inferCompanyFromText, isUsableCompany } from "../agent/src/sources/company.js";
+import { extractCompanyFromHtml, isUsableCompany } from "../agent/src/sources/company.js";
 import { parseDjinniListing } from "../agent/src/sources/djinni.js";
-import { parseLobbyXDescription, parseLobbyXListing } from "../agent/src/sources/lobbyx.js";
+import { parseLobbyXCompany, parseLobbyXDescription, parseLobbyXListing } from "../agent/src/sources/lobbyx.js";
 import { parseRobotaUaResponse } from "../agent/src/sources/robotaua.js";
 import { parseDouVacancyListing, parseRssDetailDescription } from "../agent/src/sources/rss.js";
 import { parseWorkUaDescription, parseWorkUaListing } from "../agent/src/sources/workua.js";
@@ -48,8 +48,6 @@ function assertStructuredField(source: string, field: string, present: number, t
 
 function assertCompanyCoverage(source: string, companies: string[], minimum: number): void {
   assert.ok(companies.length > 0, `${source} did not return company candidates`);
-  // A company that reads like prose ("- Hands", "We provides e") is a defect,
-  // not coverage: the old assertion counted those as resolved employers.
   const fabricated = companies.filter((company) => PROSE_COMPANY.test(company));
   assert.equal(
     fabricated.length,
@@ -70,8 +68,6 @@ async function smokeDou(): Promise<void> {
   const jobs = parseDouVacancyListing(listing, "rss:dou-qa");
   assert.ok(jobs.length >= 15, `DOU listing returned only ${jobs.length} parseable vacancies`);
 
-  // The whole page is sampled, not just its first card: a selector that breaks
-  // for every card but one would otherwise pass unnoticed.
   assertCompanyCoverage("DOU", jobs.map((job) => job.company), 0.98);
   assertStructuredField("DOU", "posted date", jobs.filter((job) => job.postedAt).length, jobs.length, 0.95);
   assertStructuredField("DOU", "numeric external id", jobs.filter((job) => /^\d+$/.test(String(job.externalId))).length, jobs.length, 1);
@@ -81,17 +77,23 @@ async function smokeDou(): Promise<void> {
   assertCompany("DOU", vacancy.company);
 }
 
-async function smokeDjinni(): Promise<void> {
-  const listing = await text("https://djinni.co/jobs/?primary_keyword=QA");
-  const jobs = parseDjinniListing(listing, "djinni:djinni-qa");
-  assert.ok(jobs.length >= 10, `Djinni listing returned only ${jobs.length} parseable vacancies`);
+async function smokeDjinniCatalogue(label: string, query: string): Promise<void> {
+  const listing = await text(`https://djinni.co/jobs/?primary_keyword=${encodeURIComponent(query)}`);
+  const jobs = parseDjinniListing(listing, `djinni:${label}`);
+  assert.ok(jobs.length >= 10, `Djinni ${label} listing returned only ${jobs.length} parseable vacancies`);
 
-  assertCompanyCoverage("Djinni", jobs.map((job) => job.company), 1);
-  assertStructuredField("Djinni", "posted date", jobs.filter((job) => job.postedAt).length, jobs.length, 1);
-  assertStructuredField("Djinni", "location", jobs.filter((job) => job.location !== "Unknown").length, jobs.length, 0.95);
-  assertStructuredField("Djinni", "full description", jobs.filter((job) => job.description.length >= 400).length, jobs.length, 0.95);
-  assertFullDescription("Djinni", jobs[0].description);
-  assertCompany("Djinni", jobs[0].company);
+  const source = `Djinni ${label}`;
+  assertCompanyCoverage(source, jobs.map((job) => job.company), 1);
+  assertStructuredField(source, "posted date", jobs.filter((job) => job.postedAt).length, jobs.length, 1);
+  assertStructuredField(source, "location", jobs.filter((job) => job.location !== "Unknown").length, jobs.length, 0.95);
+  assertStructuredField(source, "full description", jobs.filter((job) => job.description.length >= 400).length, jobs.length, 0.95);
+  assertFullDescription(source, jobs[0].description);
+  assertCompany(source, jobs[0].company);
+}
+
+async function smokeDjinni(): Promise<void> {
+  await smokeDjinniCatalogue("manual", "QA");
+  await smokeDjinniCatalogue("automation", "QA Automation");
 }
 
 async function smokeWorkUa(): Promise<void> {
@@ -117,8 +119,6 @@ async function smokeRobotaUa(): Promise<void> {
   assertCompanyCoverage("Robota.ua", jobs.map((job) => job.company), 0.9);
   const relevant = filterRelevantVacancies(jobs).jobs;
   assert.ok(relevant.length > 0, "Robota.ua API returned no relevant software-QA vacancy in the smoke sample");
-  // Robota.ua publishes no long-form body and blocks its detail pages, so the
-  // contract is a complete teaser with a real employer, not a full description.
   const vacancy = relevant[0];
   assertCompany("Robota.ua", vacancy.company);
   assert.ok(vacancy.description.length > 0, "Robota.ua returned an empty teaser");
@@ -138,14 +138,16 @@ async function smokeLobbyX(): Promise<void> {
       const description = parseLobbyXDescription(html);
       if (description.length >= 120) {
         assertFullDescription("Lobby X", description);
-        assertCompany("Lobby X", extractCompanyFromHtml(listing.url, html) || inferCompanyFromText(description));
+        const company = parseLobbyXCompany(listing.url, html);
+        if (company === "Unknown") console.log("Lobby X: company not structurally published; kept as Unknown");
+        else assertCompany("Lobby X", company);
         return;
       }
     } catch (error) {
       lastError = error;
     }
   }
-  throw lastError instanceof Error ? lastError : new Error("Lobby X detail pages did not yield a complete description and company");
+  throw lastError instanceof Error ? lastError : new Error("Lobby X detail pages did not yield a complete description");
 }
 
 async function main(): Promise<void> {

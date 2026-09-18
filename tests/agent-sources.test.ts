@@ -5,7 +5,7 @@ import { register } from "tsx/esm/api";
 register();
 
 const { parseWorkUaListing } = await import("../agent/src/sources/workua.ts");
-const { inferCompanyFromDescription, parseLobbyXDescription, parseLobbyXListing } = await import(
+const { parseLobbyXCompany, parseLobbyXDescription, parseLobbyXListing } = await import(
   "../agent/src/sources/lobbyx.ts"
 );
 
@@ -63,6 +63,19 @@ const LOBBY_X_DETAIL_HTML = `
 </body></html>
 `;
 
+const LOBBY_X_STRUCTURED_COMPANY_HTML = `
+<html><head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": "QA Engineer",
+  "hiringOrganization": { "@type": "Organization", "name": "Vyriy Industries" }
+}
+</script>
+</head><body>${LOBBY_X_DETAIL_HTML}</body></html>
+`;
+
 test("parseWorkUaListing extracts title/company/location and skips incomplete cards", () => {
   const listings = parseWorkUaListing(WORK_UA_FIXTURE, "https://www.work.ua");
 
@@ -96,14 +109,16 @@ test("parseLobbyXDescription extracts only the vacancy-description container", (
   assert.doesNotMatch(description, /should not be included/);
 });
 
-test("inferCompanyFromDescription recognizes the 'Name — description' convention", () => {
+test("parseLobbyXCompany uses structural employer data when published", () => {
   assert.equal(
-    inferCompanyFromDescription("Vyriy Industries — українська Defense Tech компанія"),
+    parseLobbyXCompany("https://thelobbyx.com/tor/qa-engineer/", LOBBY_X_STRUCTURED_COMPANY_HTML),
     "Vyriy Industries",
   );
+});
+
+test("parseLobbyXCompany leaves company unknown instead of guessing from description prose", () => {
   assert.equal(
-    inferCompanyFromDescription("ДП «Цифрова Армія» — державне підприємство"),
-    "ДП «Цифрова Армія»",
+    parseLobbyXCompany("https://thelobbyx.com/tor/qa-engineer/", LOBBY_X_DETAIL_HTML),
+    "Unknown",
   );
-  assert.equal(inferCompanyFromDescription("No dash prefix here at all."), "Unknown");
 });

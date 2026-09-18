@@ -19,6 +19,13 @@ test("company validation keeps legitimate names containing digits", () => {
   assert.equal(isUsableCompany("Companies"), false);
 });
 
+test("company validation rejects legacy values fabricated from vacancy prose", () => {
+  assert.equal(isUsableCompany("- Hands"), false);
+  assert.equal(isUsableCompany("We provides e"), false);
+  assert.equal(isUsableCompany("The project is a large"), false);
+  assert.equal(isUsableCompany("- Софт"), false);
+});
+
 test("company inference supports Lobby X and Djinni prose variants", () => {
   assert.equal(
     inferCompanyFromText("Vyriy Industries — українська Defense Tech компанія, що розробляє автономні системи."),
@@ -108,12 +115,44 @@ test("company recovery uses structural evidence and never description prose", as
     description: "Software QA role.",
   });
   assert.equal(fromTitle.company, "MacPaw");
+  assert.equal((fromTitle.raw as Record<string, unknown>).companySource, "title-derived");
 
   const fromDescription = await recoverJobCompany({
     ...common,
     description: "Occam Industries is a European defence technology company.\nRequirements\n- API testing",
   });
   assert.equal(fromDescription.company, "Unknown");
+});
+
+test("company recovery respects an adapter's exhausted structural lookup", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = (async () => {
+    fetched = true;
+    throw new Error("must not fetch");
+  }) as typeof fetch;
+
+  try {
+    const recovered = await recoverJobCompany({
+      source: "lobbyx:test",
+      externalId: "1",
+      title: "QA Engineer",
+      company: "Unknown",
+      location: "Ukraine",
+      remote: false,
+      url: "https://thelobbyx.com/tor/qa-engineer/",
+      applyUrl: "https://thelobbyx.com/tor/qa-engineer/",
+      description: "Software QA role.",
+      salaryText: null,
+      postedAt: null,
+      contactEmail: null,
+      raw: { companySource: "missing" },
+    });
+    assert.equal(recovered.company, "Unknown");
+    assert.equal(fetched, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("company extraction does not fall back to prose on the vacancy page", () => {

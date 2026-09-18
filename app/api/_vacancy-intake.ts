@@ -39,13 +39,13 @@ export interface VacancySourceSkip {
   reason: string;
 }
 
-/** Raised when no configured source could be collected, so the run wrote nothing. */
+/** Raised when configured sources produced no vacancies, whether by errors or empty parser results. */
 export class VacancySyncFailure extends Error {
   readonly errors: VacancySourceError[];
 
   constructor(errors: VacancySourceError[]) {
     const detail = errors.map((entry) => `${entry.source}: ${entry.error}`).join("; ");
-    super(`Every vacancy source failed, so nothing was collected. ${detail}`);
+    super(`Vacancy sync collected nothing. ${detail}`);
     this.name = "VacancySyncFailure";
     this.errors = errors;
   }
@@ -67,7 +67,11 @@ export const DEFAULT_VACANCY_SOURCES = {
   rss: [
     { name: "dou-qa", url: "https://jobs.dou.ua/vacancies/?category=QA" },
   ],
-  djinni: [{ name: "djinni-qa", query: "QA" }],
+  // Djinni separates manual QA and automation into different catalogues.
+  djinni: [
+    { name: "djinni-qa", query: "QA" },
+    { name: "djinni-qa-automation", query: "QA Automation" },
+  ],
   greenhouse: [] as Json[],
   lever: [] as Json[],
   ashby: [] as Json[],
@@ -102,6 +106,15 @@ function sourceArray(config: Json, key: string, fallback: Json[]): Json[] {
   return Array.isArray(config[key]) ? config[key] as Json[] : fallback;
 }
 
+/** Upgrade the one-query default written by #466 without overriding deliberate custom Djinni arrays. */
+function djinniSourceArray(config: Json): Json[] {
+  const configured = sourceArray(config, "djinni", DEFAULT_VACANCY_SOURCES.djinni);
+  const legacyDefault = configured.length === 1
+    && cleanText(configured[0]?.name) === "djinni-qa"
+    && cleanText(configured[0]?.query) === "QA";
+  return legacyDefault ? DEFAULT_VACANCY_SOURCES.djinni : configured;
+}
+
 function isPrivateIpv4(host: string): boolean {
   return /^(?:10\.|127\.|169\.254\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(host);
 }
@@ -128,7 +141,7 @@ async function sourceConfig(databaseOverride?: D1DatabaseLike): Promise<Json> {
   return {
     ...configured,
     rss: sourceArray(configured, "rss", DEFAULT_VACANCY_SOURCES.rss),
-    djinni: sourceArray(configured, "djinni", DEFAULT_VACANCY_SOURCES.djinni),
+    djinni: djinniSourceArray(configured),
     greenhouse: sourceArray(configured, "greenhouse", DEFAULT_VACANCY_SOURCES.greenhouse),
     lever: sourceArray(configured, "lever", DEFAULT_VACANCY_SOURCES.lever),
     ashby: sourceArray(configured, "ashby", DEFAULT_VACANCY_SOURCES.ashby),
@@ -157,11 +170,15 @@ function querySources(config: Json, key: string, fallback: Json[], Source: Query
 
 export function buildVacancySources(config: Json): JobSource[] {
   const rss = sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)
-    .map((source) => new RssJobSource(cleanText(source.name, "rss"), publicHttpsUrl(source.url)));
+    // Worker sync is discovery-only for RSS detail pages. The hourly Node runner
+    // performs full DOU enrichment without spending the Worker's subrequest budget.
+    .map((source) => new RssJobSource(cleanText(source.name, "rss"), publicHttpsUrl(source.url), { detailBudget: 0 }));
+  const djinni = djinniSourceArray(config)
+    .map((source) => new DjinniListingSource(cleanText(source.name, "djinni-qa"), cleanText(source.query, "QA")));
 
   return [
     ...rss,
-    ...querySources(config, "djinni", DEFAULT_VACANCY_SOURCES.djinni, DjinniListingSource, { name: "djinni-qa", query: "QA" }),
+    ...djinni,
     ...boardSources(config, "greenhouse", GreenhouseSource),
     ...boardSources(config, "lever", LeverSource),
     ...boardSources(config, "ashby", AshbySource),
@@ -334,23 +351,26 @@ export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Pro
     .filter((result) => result.error)
     .map((result) => ({ source: result.source, error: result.error ?? "Unknown source failure" }));
   const jobs = intake?.jobs ?? [];
-  const stored = await upsertVacancies(jobs, databaseOverride);
+  const seen = intake?.seen ?? jobs.length;
 
-  // A run where every configured source failed collected nothing and wrote
-  // nothing. Reporting that as a success told the operator the catalogue had
-  // been refreshed while the real per-source errors went unread, so it is
-  // surfaced as a failure instead.
-  if (attempted.length > 0 && errors.length === attempted.length) {
+  // HTTP 200 with a changed page shape can make a parser return [] without
+  // throwing. That is just as much a failed refresh as every source throwing.
+  if (attempted.length > 0 && seen === 0) {
+    const failureErrors = errors.length === attempted.length
+      ? errors
+      : [...errors, { source: "intake", error: "Configured sources returned zero parseable vacancies." }];
     console.error({
       schemaVersion: 1,
       service: "gimmejob",
-      event: "vacancy_sync_sources_failed",
+      event: "vacancy_sync_collected_nothing",
       outcome: "failure",
       attempted: attempted.length,
-      errors,
+      errors: failureErrors,
     });
-    throw new VacancySyncFailure(errors);
+    throw new VacancySyncFailure(failureErrors);
   }
+
+  const stored = await upsertVacancies(jobs, databaseOverride);
 
   if (errors.length > 0) {
     console.warn({
@@ -365,7 +385,7 @@ export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Pro
 
   return {
     ...stored,
-    seen: intake?.seen ?? jobs.length,
+    seen,
     relevant: jobs.length,
     rejected: intake?.rejected ?? 0,
     duplicates: intake?.duplicates ?? stored.duplicates,
@@ -445,7 +465,7 @@ export function mergeVacancySourceDefaults(value: unknown): Json {
     ...settings,
     sources: {
       ...sources,
-      djinni: sourceArray(sources, "djinni", DEFAULT_VACANCY_SOURCES.djinni),
+      djinni: djinniSourceArray(sources),
       robotaUa: sourceArray(sources, "robotaUa", DEFAULT_VACANCY_SOURCES.robotaUa),
     },
   };

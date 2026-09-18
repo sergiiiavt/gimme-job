@@ -7,6 +7,7 @@ const UNKNOWN_COMPANY = /^(?:unknown|company is hidden|hidden company|невід
 const BOARD_NAMES = /^(?:dou|djinni|work\.ua|robota\.ua|rabota\.ua|lobby\s*x|greenhouse|lever|ashby|companies|компанії|компании)$/iu;
 const NON_COMPANY_TEXT = /(?:^(?:overview|about|about us|about the role|job description|responsibilities|requirements|nice to have|what we offer|benefits|conditions|обов[’'ʼ]?язки|вимоги|умови|про компанію|про нас|опис вакансії|задачі|требования|условия)$)|(?:\b(?:full[- ]?time|part[- ]?time|work experience|досвід роботи|повна зайнятість)\b)/iu;
 const ROLE_LIKE_NAME = /^(?:(?:senior|sr|middle|mid|junior|jr|lead|principal|staff|manual|automation|automated)\s+)?(?:qa|aqa|sdet|test|testing|quality assurance)(?:\s+(?:engineer|specialist|analyst|tester|lead|manager))?$/iu;
+const PROSE_LIKE_COMPANY = /^[-–—]\s*|^(?:we|our|this)\s|\s(?:is|are|was|were|provides|provide|seeking)\s/iu;
 const COMPANY_WORD = `[\\p{L}\\p{N}&+.'’ʼ«»()/_-]+`;
 const COMPANY_GAP = `[ \\t]+`;
 const OPTIONAL_GAP = `[ \\t]*`;
@@ -29,7 +30,8 @@ export function isUsableCompany(value: unknown): boolean {
       && !UNKNOWN_COMPANY.test(company)
       && !BOARD_NAMES.test(company)
       && !NON_COMPANY_TEXT.test(company)
-      && !ROLE_LIKE_NAME.test(company),
+      && !ROLE_LIKE_NAME.test(company)
+      && !PROSE_LIKE_COMPANY.test(company),
   );
 }
 
@@ -48,6 +50,20 @@ function decodeJsonString(value: string): string {
 
 function textFromAnchorBody(value: string): string {
   return cleanCompany(htmlToVacancyText(value));
+}
+
+function rawRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function withCompany(job: JobInput, company: string, companySource: string): JobInput {
+  return {
+    ...job,
+    company,
+    raw: { ...rawRecord(job.raw), companySource },
+  };
 }
 
 export function inferCompanyFromText(value: string): string {
@@ -153,12 +169,18 @@ export async function recoverJobCompany(job: JobInput): Promise<JobInput> {
   if (isUsableCompany(job.company)) return job;
 
   const fromTitle = usable(inferCompany(job.title, ""));
-  if (fromTitle) return { ...job, company: fromTitle };
+  if (fromTitle) return withCompany(job, fromTitle, "title-derived");
+
+  const raw = rawRecord(job.raw);
+  // An adapter that records `missing` has already exhausted its structural
+  // extraction path. Re-fetching the same page wastes Worker subrequests and
+  // cannot produce a better answer.
+  if (raw.companySource === "missing") return { ...job, company: "Unknown" };
 
   if (!job.url) return { ...job, company: "Unknown" };
   try {
     const fromHtml = extractCompanyFromHtml(job.url, await fetchText(job.url));
-    if (fromHtml) return { ...job, company: fromHtml };
+    if (fromHtml) return withCompany(job, fromHtml, "detail-structure");
   } catch {
     // A temporary detail-page failure must not fail the entire source.
   }
