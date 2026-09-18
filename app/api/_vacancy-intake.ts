@@ -443,11 +443,12 @@ export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T
     jobs: sanitized.jobs.map((job) => {
       if (!job || typeof job !== "object") return job;
       const record = job as Record<string, unknown>;
+      const { raw: _raw, ...lightweight } = record;
       const description = typeof record.description === "string" ? record.description : "";
-      if (!description) return record;
+      if (!description) return lightweight;
       const descriptionComplete = description.length <= DASHBOARD_DESCRIPTION_PREVIEW_LIMIT;
       return {
-        ...record,
+        ...lightweight,
         reservation: /бронюванн/i.test(description),
         description: descriptionComplete
           ? description
