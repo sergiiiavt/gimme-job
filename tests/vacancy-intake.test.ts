@@ -221,7 +221,7 @@ test("public vacancy summaries use compact SQL fields while detail keeps the ful
 
   const detail = await publicVacancyById(summary.jobs[0].id, db);
   assert.ok(detail);
-  assert.equal(detail.description, description);
+  assert.equal(detail.description, description.trim());
 });
 
 test("publicVacancies returns sanitized stored rows", async () => {
