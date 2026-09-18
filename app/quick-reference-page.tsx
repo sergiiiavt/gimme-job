@@ -380,9 +380,10 @@ function learningSubnav(referenceId: string): SubnavItem[] {
     }));
   }
   if (referenceId === "data") {
-    return sqlCurriculum.taxonomy.map((item) => ({
+    const taxonomy = sqlCurriculum.taxonomy as Array<{ id: string; navLabel?: string; label?: string; count?: number }>;
+    return taxonomy.map((item) => ({
       id: item.id,
-      label: item.navLabel ?? item.label,
+      label: item.navLabel ?? item.label ?? item.id,
       count: item.count || undefined,
     }));
   }
