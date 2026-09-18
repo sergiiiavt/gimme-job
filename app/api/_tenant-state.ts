@@ -340,14 +340,14 @@ export function createTenantState(deps: TenantStateDeps) {
     const [trackingResult, analysisResult, resumeResult, draftResult] = await Promise.all([
       database.prepare("SELECT * FROM job_tracking WHERE user_id = ?").bind(userId).all<Row>(),
       database.prepare("SELECT * FROM user_analyses WHERE user_id = ?").bind(userId).all<Row>(),
-      database.prepare("SELECT job_id, markdown, (pdf_base64 IS NOT NULL) AS has_pdf FROM user_resume_variants WHERE user_id = ?").bind(userId).all<Row>(),
+      database.prepare("SELECT * FROM user_resume_variants WHERE user_id = ?").bind(userId).all<Row>(),
       database.prepare("SELECT * FROM user_application_drafts WHERE user_id = ?").bind(userId).all<Row>(),
     ]);
 
     const tracking = new Map(trackingResult.results.map((row) => [String(row.job_id), row]));
     const analyses = new Map(analysisResult.results.map((row) => [String(row.job_id), parse<Json>(row.payload_json, {})]));
     const resumes = new Map(resumeResult.results.map((row) => [String(row.job_id), String(row.markdown)]));
-    const resumePdfs = new Set(resumeResult.results.filter((row) => Boolean(row.has_pdf)).map((row) => String(row.job_id)));
+    const resumePdfs = new Set(resumeResult.results.filter((row) => row.pdf_base64).map((row) => String(row.job_id)));
     const drafts = new Map(draftResult.results.map((row) => [String(row.job_id), mapDraft(row)]));
 
     const jobs = baseJobs.map((job) => {
