@@ -475,11 +475,25 @@ export async function publicVacancyById(
   if (!row) return null;
 
   const [job] = sanitizeJobs([{
-    ...mapExisting(row),
+    source: String(row.source),
+    externalId: row.external_id ? String(row.external_id) : null,
+    title: String(row.title),
+    company: String(row.company),
+    location: String(row.location),
+    remote: Number(row.remote) === 1,
+    url: String(row.url),
+    applyUrl: String(row.apply_url),
+    description: String(row.description ?? ""),
+    salaryText: row.salary_text ? String(row.salary_text) : null,
+    postedAt: row.posted_at ? String(row.posted_at) : null,
+    contactEmail: row.contact_email ? String(row.contact_email) : null,
+    raw: {},
     id: String(row.id),
     discoveredAt: String(row.discovered_at),
   }]);
-  return job ?? null;
+  if (!job) return null;
+  const { raw: _raw, ...detail } = job;
+  return detail;
 }
 
 export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike): Promise<{
