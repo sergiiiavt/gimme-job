@@ -19,7 +19,7 @@
 
 ## Runtime
 
-The hosted application is a React/Vinext worker with same-origin API routes. Public knowledge content is versioned as JSON in Git and lazy-loaded as a separate client chunk. Private, user-specific state is persisted in D1 through prepared SQL statements. Drizzle owns the schema and versioned migrations.
+The hosted application is a React/Vinext worker with same-origin API routes. Public knowledge content is versioned as JSON in Git and lazy-loaded as a separate client chunk. Private, user-specific state is persisted in D1 through prepared SQL statements. Ordered SQL files in `drizzle/` own the production D1 schema and migration history.
 
 The local agent remains separate so source collection and experimentation can run from VS Code without weakening the hosted application's approval-first behaviour.
 
