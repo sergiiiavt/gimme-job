@@ -213,10 +213,8 @@ function normalizedJob(value: IntakeJob): IntakeJob {
   };
 }
 
-function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string } {
+function mapStoredJob(row: Row): IntakeJob {
   return {
-    id: String(row.id),
-    fingerprint: String(row.fingerprint),
     source: String(row.source),
     externalId: row.external_id ? String(row.external_id) : null,
     title: String(row.title),
@@ -230,7 +228,26 @@ function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; s
     postedAt: row.posted_at ? String(row.posted_at) : null,
     contactEmail: row.contact_email ? String(row.contact_email) : null,
     raw: parseJson(row.raw_json, {}),
+  };
+}
+
+function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; status?: string } {
+  return {
+    ...mapStoredJob(row),
+    id: String(row.id),
+    fingerprint: String(row.fingerprint),
     status: row.status ? String(row.status) : undefined,
+  };
+}
+
+function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: string } {
+  const job = mapStoredJob(row);
+  return {
+    ...job,
+    source: displaySource(job.source),
+    id: String(row.id),
+    discoveredAt: String(row.discovered_at),
+    raw: {},
   };
 }
 
@@ -474,23 +491,7 @@ export async function publicVacancyById(
     .first<Row>();
   if (!row) return null;
 
-  const [job] = sanitizeJobs([{
-    source: String(row.source),
-    externalId: row.external_id ? String(row.external_id) : null,
-    title: String(row.title),
-    company: String(row.company),
-    location: String(row.location),
-    remote: Number(row.remote) === 1,
-    url: String(row.url),
-    applyUrl: String(row.apply_url),
-    description: String(row.description ?? ""),
-    salaryText: row.salary_text ? String(row.salary_text) : null,
-    postedAt: row.posted_at ? String(row.posted_at) : null,
-    contactEmail: row.contact_email ? String(row.contact_email) : null,
-    raw: {},
-    id: String(row.id),
-    discoveredAt: String(row.discovered_at),
-  }]);
+  const [job] = sanitizeJobs([mapPublicStoredJob(row)]);
   if (!job) return null;
   const { raw: _raw, ...detail } = job;
   return detail;
@@ -517,23 +518,10 @@ export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike):
     LIMIT 500`).all<Row>();
 
   const jobs = result.results.map((row) => ({
-    id: String(row.id),
-    source: displaySource(String(row.source)),
-    externalId: row.external_id ? String(row.external_id) : null,
-    title: String(row.title),
-    company: String(row.company),
-    location: String(row.location),
-    remote: Number(row.remote) === 1,
-    url: String(row.url),
-    applyUrl: String(row.apply_url),
+    ...mapPublicStoredJob(row),
     description: normalizeVacancyDescription(String(row.description ?? "")),
     descriptionComplete: Number(row.description_complete) === 1,
     reservation: Number(row.reservation) === 1,
-    salaryText: row.salary_text ? String(row.salary_text) : null,
-    postedAt: row.posted_at ? String(row.posted_at) : null,
-    contactEmail: row.contact_email ? String(row.contact_email) : null,
-    discoveredAt: String(row.discovered_at),
-    raw: {},
   }));
 
   return { jobs, generatedAt: new Date().toISOString() };
