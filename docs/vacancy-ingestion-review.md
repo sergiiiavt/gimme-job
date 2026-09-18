@@ -223,7 +223,7 @@ The scraper hard-codes `?category=QA` ([rss.ts:27-28](agent/src/sources/rss.ts:2
 
 ### D15 — No vacancy lifecycle *(medium)*
 
-[db/schema.ts:15](db/schema.ts:15) has `discovered_at` and `updated_at` but no `last_seen_at`, `closed_at` or `valid_through`. Closed vacancies are never retired and permanently occupy slots in the `LIMIT 500` public window. Djinni's `validThrough` field — available for free — is not collected.
+The canonical `jobs` migration history has `discovered_at` and `updated_at` but no `last_seen_at`, `closed_at` or `valid_through`. Closed vacancies are never retired and permanently occupy slots in the `LIMIT 500` public window. Djinni's `validThrough` field — available for free — is not collected.
 
 ### D16 — The tests cannot fail on any of the above *(critical process defect)*
 
@@ -344,7 +344,7 @@ Each phase is independently shippable and independently verifiable. Phases 1 and
 
 ### Phase 4 — Enrichment queue and lifecycle
 
-12. Add the schema columns from §6.3; migrate via Drizzle (`npm run db:generate`, then `check:db`).
+12. Add the schema columns from §6.3 in the next ordered SQL migration under `drizzle/`, then run `npm run check:db`.
 13. Split discovery from enrichment; remove `MAX_DETAIL_FETCHES` in favour of a per-run budget plus `last_enriched_at` ordering (D5).
 14. Add the closure sweep driven by `last_seen_at` and `valid_through` (D15).
 
