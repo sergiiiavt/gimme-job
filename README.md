@@ -284,7 +284,7 @@ Before publishing a completed change:
 npm run verify
 ```
 
-`npm run verify` is the deterministic validation contract for the TypeScript/Worker application. It covers linting, local-agent type checking, content and asset validators, the D1 migration contract, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation.
+`npm run verify` is the deterministic validation contract for the TypeScript/Worker application. It covers linting, local-agent and production backend/runtime type checking, content and asset validators, the D1 migration contract, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation.
 
 The Python AI service has its own tests:
 
