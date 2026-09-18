@@ -1,0 +1,29 @@
+name: Vacancy production diagnosis
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe production vacancy endpoints
+        shell: bash
+        run: |
+          set -u
+          for path in /api/auth-state /api/dashboard /api/public/jobs /vacancies; do
+            echo "===== $path ====="
+            headers="/tmp/headers"
+            body="/tmp/body"
+            status="$(curl --silent --show-error --max-time 30 --dump-header "$headers" --output "$body" --write-out '%{http_code}' "https://gimme-job.com$path" || true)"
+            echo "STATUS=$status"
+            sed -n '1,30p' "$headers"
+            echo "--- BODY ---"
+            head -c 8000 "$body" || true
+            echo
+          done
