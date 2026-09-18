@@ -2,7 +2,7 @@ import { base64ToBytes } from "../../agent/src/resume-pdf.js";
 import {
   DEFAULT_VACANCY_SOURCES,
   ensureVacancyCatalog,
-  publicVacancies,
+  publicVacancySummaries,
 } from "./_vacancy-intake";
 import {
   operationalError,
@@ -306,7 +306,7 @@ async function connections() {
 
 export async function publicJobs() {
   await ensureVacancyCatalog();
-  return publicVacancies();
+  return publicVacancySummaries();
 }
 
 const INTERVIEW_PROGRESS_STATUSES = new Set(["PLANNED", "LEARNING", "LEARNED"]);
