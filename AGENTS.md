@@ -39,7 +39,7 @@ When a change affects one of these areas, inspect and test the connected surface
 
 - **UI structure:** related CSS selectors, grid placement, responsive layouts, accessibility, navigation, and overflow.
 - **Auth/routes:** public/private boundaries, redirects, loading races, API consumers, and rendered Worker behavior.
-- **D1/schema:** `db/schema.ts`, generated Drizzle migrations/metadata, and migration compatibility.
+- **D1/schema:** ordered SQL migrations in `drizzle/`, migration compatibility, and the invariant that applied migration files are never renamed or regenerated.
 - **Worker/API:** route contracts, validation, integration tests, and Cloudflare artifact behavior.
 - **Learning/interview content:** relevant validators, stable IDs, source registries, lazy loading, render caps, canonical RAG discovery, and direct-link validity.
 - **Automation/IaC:** workflow definitions, environment contracts, operational documentation, and tests.
@@ -85,7 +85,7 @@ Before publishing a completed change, run the canonical local CI-equivalent veri
 npm run verify
 ```
 
-`npm run verify` covers linting, local-agent type checking, content and asset validators, Drizzle generation drift, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
+`npm run verify` covers linting, local-agent type checking, content and asset validators, the production D1 migration contract, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
 
 SonarQube remains a remote CI gate because it requires repository credentials and the generated coverage report.
 
