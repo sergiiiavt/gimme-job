@@ -253,7 +253,7 @@ Do not show the score, tracking controls, analysis panel, resume, or draft.
 | Shared visual system | `app/globals.css` |
 | Public/personal navigation | `app/site-navigation.tsx` |
 | Job API | `app/api/_jobpilot.ts`, `worker/index.ts` |
-| Database | `db/schema.ts`, `drizzle/` |
+| Database | `drizzle/` |
 
 `app/page.tsx` still contains the older `WorkspaceApp` implementation for now. `/workspace` must use `VacanciesWorkspace`; do not accidentally switch the route back while maintaining unrelated code.
 
