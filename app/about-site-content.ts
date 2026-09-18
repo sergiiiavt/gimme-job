@@ -56,7 +56,6 @@ export const PROJECT_URL = "https://gimme-job.com";
 export const REPO_URL = "https://github.com/sergiiiavt/gimme-job";
 export const ACTIONS_URL = `${REPO_URL}/actions`;
 export const CI_WORKFLOW_URL = `${REPO_URL}/blob/main/.github/workflows/ci.yml`;
-export const DB_SCHEMA_URL = `${REPO_URL}/blob/main/db/schema.ts`;
 export const MIGRATIONS_URL = `${REPO_URL}/tree/main/drizzle`;
 export const JOBPILOT_URL = `${REPO_URL}/blob/main/app/api/_jobpilot.ts`;
 export const ANALYST_URL = `${REPO_URL}/blob/main/agent/src/analyst.ts`;
@@ -183,8 +182,7 @@ export const DATABASE = {
     icon: "cloudflare" as const,
     accent: "blue" as const,
     links: [
-      { label: "Schema", href: DB_SCHEMA_URL, external: true },
-      { label: "Migrations", href: MIGRATIONS_URL, external: true },
+      { label: "SQL migrations", href: MIGRATIONS_URL, external: true },
     ],
   },
   groups: [
