@@ -498,16 +498,18 @@ export async function resolveEmailEvent(
     confidence = fuzzySelected.score / 100;
   }
 
-  const applied = await applyResolvedStatus(db, event, selected, method ?? "COMPOSITE", confidence ?? 1, options);
+  if (!selected) throw new Error("Vacancy resolution invariant violated: matched candidate is missing.");
+  const resolvedCandidate = selected;
+  const applied = await applyResolvedStatus(db, event, resolvedCandidate, method ?? "COMPOSITE", confidence ?? 1, options);
   const statusAppliedAt = applied.change ? new Date().toISOString() : null;
-  const candidates = compactCandidates(scored.length ? scored : [{ ...selected, score: Math.round((confidence ?? 1) * 100), signals: [method ?? "matched"] }]);
-  await persistResolution(db, event, "MATCHED", selected.id, method, confidence, candidates, statusAppliedAt, applied.note);
+  const candidates = compactCandidates(scored.length ? scored : [{ ...resolvedCandidate, score: Math.round((confidence ?? 1) * 100), signals: [method ?? "matched"] }]);
+  await persistResolution(db, event, "MATCHED", resolvedCandidate.id, method, confidence, candidates, statusAppliedAt, applied.note);
 
   return {
     eventId,
     userId,
     matchStatus: "MATCHED",
-    jobId: selected.id,
+    jobId: resolvedCandidate.id,
     matchMethod: method,
     confidence,
     statusChange: applied.change,
