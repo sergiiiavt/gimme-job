@@ -39,7 +39,7 @@ The production delivery flow is designed around several explicit requirements:
 - every pull request must run the repository validation suite;
 - pull requests must never deploy production;
 - `main` must be protected so changes arrive through a validated PR;
-- generated Drizzle migration metadata must match the committed schema;
+- ordered D1 migration files must remain sequential and already-applied filenames must be immutable;
 - learning/interview content invariants must be validated as code;
 - test coverage must be collected in LCOV form for Sonar analysis;
 - the Cloudflare artifact must be checked before a real deployment;
@@ -57,7 +57,7 @@ The production delivery flow is designed around several explicit requirements:
 | `.github/workflows/deploy.yml` | serialized production deployment and smoke verification | release work has its own workflow boundary |
 | `scripts/deploy-cloudflare.mjs` | deployment preconditions, D1 discovery/creation, migration, Worker + secret deployment | deployment itself is executable policy |
 | `sonar-project.properties` | Sonar source/coverage configuration and exclusions | quality analysis must match the build/test model |
-| `drizzle/` and `db/schema.ts` | database schema and migration history | schema drift is checked before deployment |
+| `drizzle/*.sql` | canonical database schema history | migration ordering and immutability are checked before deployment |
 | `scripts/validate-*-content.mjs` | content-specific invariants | non-code production data can have gates too |
 
 The workflows remain small enough to read end to end, which makes them useful teaching examples.
@@ -87,16 +87,15 @@ Lint catches configured static-rule violations. The agent type-check verifies th
 
 If either command exits non-zero, GitHub Actions stops the PR job and the revision cannot pass `Validate`.
 
-## Gate 3: database schema drift
+## Gate 3: database migration contract
 
-The canonical verification command regenerates Drizzle migration metadata and then asks Git whether generation changed committed schema/migration files.
+The production schema is defined by the ordered SQL files that Wrangler applies from `drizzle/`. Verification checks that filenames follow the migration contract, that the numeric sequence has no gaps, and that no new duplicate prefix is introduced.
 
 ```bash
-npm run db:generate
-git diff --exit-code -- db/schema.ts drizzle
+npm run check:db
 ```
 
-This converts a common repository hygiene problem into a merge gate. If a developer changed the schema but forgot to commit the generated migration result, CI rejects the revision before it can reach `main`.
+Historical duplicate prefixes are intentionally preserved because those filenames may already be recorded in deployed D1 environments. New migrations use the next unused sequential prefix; applied migrations are never regenerated or renamed.
 
 ## Gate 4: structured content validation
 
@@ -316,7 +315,7 @@ For Sonar on a PR, the workflow log should show that the action waits for the Qu
 | --- | --- | --- |
 | ESLint violation | PR verification | `Validate` fails |
 | Type error in agent code | PR verification | `Validate` fails |
-| schema changed without committed generated migration | Drizzle drift check | `Validate` fails |
+| invalid or conflicting D1 migration history | migration contract check | `Validate` fails |
 | malformed learning taxonomy | content validator | `Validate` fails |
 | production bundling problem | PR build | `Validate` fails |
 | failing test | PR test coverage step | `Validate` fails |
