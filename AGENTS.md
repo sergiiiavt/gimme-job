@@ -85,7 +85,7 @@ Before publishing a completed change, run the canonical local CI-equivalent veri
 npm run verify
 ```
 
-`npm run verify` covers linting, local-agent type checking, content and asset validators, the production D1 migration contract, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
+`npm run verify` covers linting, local-agent and production backend/runtime type checking, content and asset validators, the production D1 migration contract, the production build, Node tests with coverage, and Cloudflare artifact validation. A successful `npm run build` alone is not sufficient. GitHub Actions should not be the first place these deterministic checks are run.
 
 SonarQube remains a remote CI gate because it requires repository credentials and the generated coverage report.
 
