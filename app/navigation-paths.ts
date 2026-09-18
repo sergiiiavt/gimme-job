@@ -31,7 +31,7 @@ const canonicalSectionPaths: Record<string, string> = {
 };
 
 const publishedQuickReferenceSections = new Set(["qa-fundamentals", "programming", "data"]);
-const publishedInterviewDomainSlugs = new Set(INTERVIEW_DOMAIN_ROUTES.map((route) => route.slug));
+const publishedInterviewDomainSlugs = new Set<string>(INTERVIEW_DOMAIN_ROUTES.map((route) => route.slug));
 
 /**
  * Public and signed-in users share one canonical URL for each content surface.
