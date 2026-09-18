@@ -23,7 +23,8 @@ test("Data navigation uses a two-level track switcher like the automation learni
 test("SQL is the completed Data track and its real chapters render below the switcher", () => {
   assert.match(learningSource, /sqlModuleIds = sqlCurriculum\.taxonomy\.map/);
   assert.match(learningSource, /id: "sql", label: "SQL", available: true, moduleIds: sqlModuleIds/);
-  assert.match(referenceSource, /const taxonomy = sqlCurriculum\.taxonomy as Array/);\n  assert.match(referenceSource, /return taxonomy\.map/);
+  assert.match(referenceSource, /const taxonomy = sqlCurriculum\.taxonomy as Array/);
+  assert.match(referenceSource, /return taxonomy\.map/);
   assert.match(referenceSource, /label: item\.navLabel \?\? item\.label \?\? item\.id/);
   assert.match(referenceSource, /count: item\.count \|\| undefined/);
   assert.match(referenceSource, /referenceId === "data" \? "sql" : undefined/);
