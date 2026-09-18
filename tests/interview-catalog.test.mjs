@@ -220,11 +220,11 @@ test("preserves existing generated questions when authored coverage grows", asyn
 });
 
 test("lazy-loads the interview catalog, keeps unified filters, and caps each rendered page at 60", async () => {
-  const [uiSource, stylesSource, routeSource, schemaSource] = await Promise.all([
+  const [uiSource, stylesSource, routeSource, migrationSource] = await Promise.all([
     readFile(projectFile("app/public-site.tsx"), "utf8"),
     readFile(projectFile("app/globals.css"), "utf8"),
     readFile(projectFile("app/api/[...route]/route.ts"), "utf8"),
-    readFile(projectFile("db/schema.ts"), "utf8"),
+    readFile(projectFile("drizzle/0000_colossal_spencer_smythe.sql"), "utf8"),
   ]);
 
   assert.doesNotMatch(uiSource, /^import interviewCatalog/m);
