@@ -27,3 +27,13 @@ jobs:
             head -c 8000 "$body" || true
             echo
           done
+
+          echo "===== HEADLESS CHROME ====="
+          google-chrome --headless --disable-gpu --no-sandbox --enable-logging=stderr --v=1 \
+            --virtual-time-budget=20000 --dump-dom https://gimme-job.com/vacancies \
+            > /tmp/vacancies-dom.html 2> /tmp/chrome.log || true
+          echo "--- CHROME ERRORS/WARNINGS ---"
+          grep -E "ERROR|WARNING|Uncaught|TypeError|ReferenceError|Failed" /tmp/chrome.log | tail -100 || true
+          echo "--- RENDER MARKERS ---"
+          grep -Eo "Vacancies|[0-9]+ jobs|Senior Manual QA Engineer|Dashboard|Loading vacancies[^<]*" /tmp/vacancies-dom.html | head -80 || true
+          echo "DOM_BYTES=$(wc -c < /tmp/vacancies-dom.html)"
