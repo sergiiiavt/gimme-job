@@ -8,6 +8,7 @@ const {
   formatVacancyCatalogAge,
   syncFreshnessLabel,
   vacancyCatalogStatusLine,
+  vacancySourceHealthLine,
 } = await import("../app/vacancy-sync-freshness.ts");
 
 const NOW = Date.parse("2026-09-20T12:00:00.000Z");
@@ -42,4 +43,17 @@ test("labels stay empty rather than claiming an unknown freshness", () => {
   assert.equal(vacancyCatalogStatusLine(null, NOW), "");
   assert.equal(syncFreshnessLabel(ago(12 * 60_000), NOW), " (collected 12 minutes ago)");
   assert.equal(vacancyCatalogStatusLine(ago(12 * 60_000), NOW), "Vacancies collected 12 minutes ago");
+});
+
+
+test("scheduled source failures render without treating expected skips as failures", () => {
+  assert.equal(vacancySourceHealthLine([
+    { source: "djinni:qa", status: "FAILED", error: "403 Forbidden" },
+    { source: "workua:qa", status: "SKIPPED", error: "cloud access blocked" },
+    { source: "robotaua:qa", status: "SUCCESS", error: null },
+  ]), "1 source failing: djinni:qa (403 Forbidden)");
+
+  assert.equal(vacancySourceHealthLine([
+    { source: "robotaua:qa", status: "SUCCESS", error: null },
+  ]), "");
 });
