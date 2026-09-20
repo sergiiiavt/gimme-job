@@ -1,5 +1,12 @@
 export type LocalVacancySyncStatus = "IDLE" | "RUNNING" | "SUCCESS" | "FAILED";
 
+export interface LocalVacancySourceHealth {
+  source: string;
+  status: "SUCCESS" | "FAILED";
+  jobs: number;
+  error: string | null;
+}
+
 export interface LocalVacancySyncState {
   status: LocalVacancySyncStatus;
   trigger: string | null;
@@ -9,6 +16,7 @@ export interface LocalVacancySyncState {
   inserted: number;
   updated: number;
   error: string | null;
+  sources: LocalVacancySourceHealth[];
   catalogVersion: string | null;
 }
 
@@ -16,6 +24,7 @@ export interface LocalVacancySyncCounts {
   seen: number;
   inserted: number;
   updated: number;
+  sources?: LocalVacancySourceHealth[];
 }
 
 const IDLE_LOCAL_VACANCY_SYNC_STATE: LocalVacancySyncState = {
@@ -27,6 +36,7 @@ const IDLE_LOCAL_VACANCY_SYNC_STATE: LocalVacancySyncState = {
   inserted: 0,
   updated: 0,
   error: null,
+  sources: [],
   catalogVersion: null,
 };
 
@@ -38,7 +48,7 @@ const IDLE_LOCAL_VACANCY_SYNC_STATE: LocalVacancySyncState = {
 export function createLocalVacancySyncState() {
   let state: LocalVacancySyncState = { ...IDLE_LOCAL_VACANCY_SYNC_STATE };
 
-  const read = (): LocalVacancySyncState => ({ ...state });
+  const read = (): LocalVacancySyncState => ({ ...state, sources: state.sources.map((source) => ({ ...source })) });
 
   return {
     read,
@@ -64,6 +74,7 @@ export function createLocalVacancySyncState() {
         inserted: counts.inserted,
         updated: counts.updated,
         error: null,
+        sources: counts.sources ?? state.sources,
         catalogVersion: wrote ? completedAt : state.catalogVersion ?? completedAt,
       };
       return read();
