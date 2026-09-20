@@ -463,13 +463,16 @@ export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T
       const { raw: _raw, ...lightweight } = record;
       const description = typeof record.description === "string" ? record.description : "";
       if (!description) return lightweight;
-      const descriptionComplete = description.length <= DASHBOARD_DESCRIPTION_PREVIEW_LIMIT;
+      const truncate = description.length > DASHBOARD_DESCRIPTION_PREVIEW_LIMIT;
+      // SQL summaries are already shortened. Preserve their completeness and
+      // full-description reservation flag so the client still fetches details.
+      const descriptionComplete = record.descriptionComplete !== false && !truncate;
       return {
         ...lightweight,
-        reservation: /бронюванн/i.test(description),
-        description: descriptionComplete
-          ? description
-          : `${description.slice(0, DASHBOARD_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`,
+        reservation: typeof record.reservation === "boolean" ? record.reservation : /бронюванн/i.test(description),
+        description: truncate
+          ? `${description.slice(0, DASHBOARD_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`
+          : description,
         descriptionComplete,
       };
     }),

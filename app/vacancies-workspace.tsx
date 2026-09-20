@@ -104,7 +104,8 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v2";
+// Discard older previews that incorrectly claimed to contain the full description.
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v3";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 const VACANCY_STALE_MS = 10 * 60 * 1000;

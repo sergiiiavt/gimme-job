@@ -207,6 +207,52 @@ test("compact dashboard payload strips raw data, truncates descriptions, and pre
   assert.ok(String(result.jobs[0].description).length <= 361);
 });
 
+test("compacting SQL vacancy summaries preserves incomplete descriptions and full-description reservation signals", async () => {
+  const db = new FakeD1();
+  const description = `${"QA web application testing responsibility. ".repeat(20).trimEnd()}\nБронювання працівників.`;
+  await upsertVacancies([vacancy({ source: "djinni:qa", description })], db);
+
+  const summary = await publicVacancySummaries(db);
+  assert.equal(summary.jobs[0].descriptionComplete, false);
+  assert.equal(summary.jobs[0].reservation, true);
+  assert.doesNotMatch(summary.jobs[0].description, /бронюванн/iu);
+
+  const compact = compactDashboardPayload(summary);
+  assert.equal(compact.jobs[0].descriptionComplete, false);
+  assert.equal(compact.jobs[0].reservation, true);
+
+  const detail = await publicVacancyById(compact.jobs[0].id, db);
+  assert.ok(detail);
+  assert.equal(detail.description, description);
+});
+
+test("dashboard compaction is idempotent for an incomplete preview", () => {
+  const description = `${"QA web application testing responsibility. ".repeat(20).trimEnd()}\nБронювання працівників.`;
+  const once = compactDashboardPayload({
+    jobs: [{ ...vacancy({ description }), id: "compact-repeat" }],
+  });
+
+  assert.deepEqual(compactDashboardPayload(once), once);
+
+  const shortPreview = {
+    jobs: [{ ...vacancy({ description: "Short QA preview" }), descriptionComplete: false, reservation: true }],
+  };
+  const compact = compactDashboardPayload(shortPreview);
+  assert.equal(compact.jobs[0].description, "Short QA preview");
+  assert.equal(compact.jobs[0].descriptionComplete, false);
+  assert.deepEqual(compactDashboardPayload(compact), compact);
+});
+
+test("dashboard compaction keeps short complete descriptions complete", () => {
+  const description = "Test web applications and APIs.";
+  const compact = compactDashboardPayload({
+    jobs: [{ ...vacancy({ description }), id: "compact-short" }],
+  }) as { jobs: Array<Record<string, unknown>> };
+
+  assert.equal(compact.jobs[0].description, description);
+  assert.equal(compact.jobs[0].descriptionComplete, true);
+});
+
 test("public vacancy summaries use compact SQL fields while detail keeps the full description", async () => {
   const db = new FakeD1();
   const description = `Requirements\n- QA\n- бронювання\n${"Detailed responsibility. ".repeat(40)}`;
