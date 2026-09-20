@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import { SiteSidebar } from "./site-navigation";
 import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacancy-tabs";
-import { syncFreshnessLabel, vacancyCatalogStatusLine } from "./vacancy-sync-freshness";
+import { syncFreshnessLabel, vacancyCatalogStatusLine, vacancySourceHealthLine } from "./vacancy-sync-freshness";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
@@ -60,10 +60,19 @@ interface Job {
   draft: JobDraft | null;
 }
 
+interface VacancySyncSourceHealth {
+  source: string;
+  status: string;
+  jobs?: number;
+  error?: string | null;
+}
+
 interface VacancySyncMarker {
   status?: string;
   completedAt?: string | null;
   catalogVersion?: string | null;
+  error?: string | null;
+  sources?: VacancySyncSourceHealth[];
 }
 
 interface DashboardData {
@@ -81,6 +90,7 @@ interface VacancyCacheSnapshot {
   catalogVersion: string | null;
   /** When ingestion last refreshed the catalogue, for the freshness label. */
   catalogUpdatedAt: string | null;
+  sourceHealth: VacancySyncSourceHealth[];
 }
 
 interface VacancyWorkspaceSnapshot {
@@ -117,7 +127,7 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
 ];
 
 // v4 snapshots carry the catalogue version used to revalidate them.
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v4";
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v5";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 // A cached catalogue older than this is revalidated — but against the sync
@@ -329,7 +339,7 @@ function readVacancyCache(): VacancyCacheSnapshot | null {
     removeVacancyCache();
     return null;
   }
-  if (snapshot.catalogVersion === undefined || snapshot.catalogUpdatedAt === undefined) {
+  if (snapshot.catalogVersion === undefined || snapshot.catalogUpdatedAt === undefined || !Array.isArray(snapshot.sourceHealth)) {
     removeVacancyCache();
     return null;
   }
@@ -358,6 +368,7 @@ function writeVacancyCache(dashboard: DashboardData): VacancyCacheSnapshot {
     lastAccessedAt: now,
     catalogVersion: markerText(dashboard.vacancySync?.catalogVersion),
     catalogUpdatedAt: markerText(dashboard.vacancySync?.completedAt),
+    sourceHealth: Array.isArray(dashboard.vacancySync?.sources) ? dashboard.vacancySync.sources : [],
   };
   clientVacancyCache = snapshot;
   if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(snapshot));
@@ -376,6 +387,7 @@ function refreshVacancyCacheValidity(marker: VacancySyncMarker): VacancyCacheSna
     dataUpdatedAt: Date.now(),
     lastAccessedAt: Date.now(),
     catalogUpdatedAt: markerText(marker.completedAt) ?? snapshot.catalogUpdatedAt,
+    sourceHealth: Array.isArray(marker.sources) ? marker.sources : snapshot.sourceHealth,
   };
   clientVacancyCache = revalidated;
   if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(revalidated));
@@ -538,7 +550,9 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
   const [authenticated, setAuthenticated] = useState<boolean | null>(() => memoryCache?.authenticated ?? null);
   const [catalogUpdatedAt, setCatalogUpdatedAt] = useState<string | null>(() => memoryCache?.catalogUpdatedAt ?? null);
+  const [catalogSourceHealth, setCatalogSourceHealth] = useState<VacancySyncSourceHealth[]>(() => memoryCache?.sourceHealth ?? []);
   const analyzeCancelRef = useRef(false);
+  const syncPollTimerRef = useRef<number | null>(null);
   const isPersonal = mode === "personal" && authenticated === true;
   const viewMode = isPersonal ? "personal" : "public";
 
@@ -553,6 +567,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       setOnline(true);
       setAuthenticated(cached.authenticated);
       setCatalogUpdatedAt(cached.catalogUpdatedAt);
+      setCatalogSourceHealth(cached.sourceHealth);
     }
     if (workspace) {
       setOpenTabIds(workspace.openTabIds);
@@ -611,6 +626,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       active = false;
       touchVacancyCache();
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+      if (syncPollTimerRef.current !== null) window.clearTimeout(syncPollTimerRef.current);
     };
   }, []);
 
@@ -705,6 +721,41 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     setOnline(true);
     setAuthenticated(snapshot.authenticated);
     setCatalogUpdatedAt(snapshot.catalogUpdatedAt);
+    setCatalogSourceHealth(snapshot.sourceHealth);
+  };
+
+  const pollBackgroundSync = (baselineVersion: string | null, attempt = 0) => {
+    if (typeof window === "undefined" || attempt >= 60) return;
+    if (syncPollTimerRef.current !== null) window.clearTimeout(syncPollTimerRef.current);
+    syncPollTimerRef.current = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const marker = await api<VacancySyncMarker>("/vacancy-sync");
+          setCatalogUpdatedAt(markerText(marker.completedAt));
+          setCatalogSourceHealth(Array.isArray(marker.sources) ? marker.sources : []);
+          if (marker.status === "RUNNING") {
+            pollBackgroundSync(baselineVersion, attempt + 1);
+            return;
+          }
+
+          const version = markerText(marker.catalogVersion);
+          if (version !== baselineVersion || marker.status === "FAILED") {
+            const dashboard = await api<DashboardData>("/dashboard");
+            applyDashboard(dashboard);
+          }
+          const health = vacancySourceHealthLine(marker.sources);
+          setNotice(marker.status === "FAILED"
+            ? health || marker.error || "Vacancy sync failed."
+            : health || "Job sources synced. Nothing was sent.");
+        } catch (error) {
+          if (attempt < 59) {
+            pollBackgroundSync(baselineVersion, attempt + 1);
+            return;
+          }
+          setNotice(error instanceof Error ? error.message : String(error));
+        }
+      })();
+    }, 5_000);
   };
 
   const clearFilters = () => {
@@ -732,20 +783,33 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     clearVacancyWorkspace();
     setBusy("sync");
     try {
+      const baselineVersion = readClientVacancyCache()?.catalogVersion ?? null;
       const result = await api<{
-        dashboard: DashboardData;
+        background?: boolean;
+        dashboard?: DashboardData;
         skipped?: "fresh" | "running";
+        sync?: VacancySyncMarker | null;
         result?: { accepted?: number; errors?: Array<{ source: string; error: string }> };
       }>("/sync", "POST", force ? { force: true } : {});
-      applyDashboard(result.dashboard);
+      if (result.dashboard) applyDashboard(result.dashboard);
+      if (result.sync) {
+        setCatalogUpdatedAt(markerText(result.sync.completedAt));
+        setCatalogSourceHealth(Array.isArray(result.sync.sources) ? result.sync.sources : []);
+      }
       // Collecting from every job board takes minutes. When a scheduled run
       // already covered it, say so instead of repeating the crawl.
       if (result.skipped === "running") {
         setNotice("A scheduled sync is already collecting vacancies. The newest results appear here when it finishes.");
+        pollBackgroundSync(baselineVersion);
         return;
       }
       if (result.skipped === "fresh") {
-        setNotice(`Vacancies are already up to date${syncFreshnessLabel(result.dashboard.vacancySync?.completedAt ?? null)}.`);
+        setNotice(`Vacancies are already up to date${syncFreshnessLabel(result.dashboard?.vacancySync?.completedAt ?? result.sync?.completedAt ?? null)}.`);
+        return;
+      }
+      if (result.background) {
+        setNotice("Vacancy sync started in the background. This view will refresh when it finishes.");
+        pollBackgroundSync(baselineVersion);
         return;
       }
       // A partially failed sync looked identical to a healthy one, which hid
@@ -811,6 +875,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   const stopAnalyze = () => { analyzeCancelRef.current = true; };
 
   const catalogStatus = vacancyCatalogStatusLine(catalogUpdatedAt);
+  const catalogHealth = vacancySourceHealthLine(catalogSourceHealth);
 
   const adjustResume = async (job: Job) => {
     if (!isPersonal) return;
@@ -896,6 +961,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                 <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
               )}
               {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
+              {catalogHealth && <p className="vacancy-catalog-freshness vacancy-catalog-health" role="status">{catalogHealth}</p>}
             </div>
           </section>
 
