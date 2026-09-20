@@ -27,8 +27,8 @@
     "label": "Control flow: conditionals & loops",
     "labelUk": "Control flow: умови та цикли",
     "level": "Beginner",
-    "description": "if/elif/else, while and for loops, range, break, continue and loop else.",
-    "descriptionUk": "if/elif/else, while і for loops, range, break, continue та loop else."
+    "description": "if/elif/else, while and for loops, range, break/continue, loop else and structural pattern matching.",
+    "descriptionUk": "if/elif/else, while і for loops, range, break/continue, loop else та structural pattern matching."
   },
   {
     "id": "functions-and-scope",
@@ -67,8 +67,8 @@
     "label": "Object-oriented programming",
     "labelUk": "Об’єктно-орієнтоване програмування",
     "level": "Intermediate",
-    "description": "Classes, instances, inheritance, dunder methods, properties and dataclasses.",
-    "descriptionUk": "Classes, instances, inheritance, dunder methods, properties і dataclasses."
+    "description": "Classes, instances, inheritance, dunder methods, properties, dataclasses and enums.",
+    "descriptionUk": "Classes, instances, inheritance, dunder methods, properties, dataclasses та enums."
   },
   {
     "id": "errors-exceptions-debugging",
@@ -93,6 +93,14 @@
     "level": "Intermediate",
     "description": "collections, itertools, functools, datetime, os/sys and logging.",
     "descriptionUk": "collections, itertools, functools, datetime, os/sys і logging."
+  },
+  {
+    "id": "practical-scripting-automation",
+    "label": "Practical scripting, CLI & automation",
+    "labelUk": "Практичні скрипти, CLI та автоматизація",
+    "level": "Intermediate",
+    "description": "argparse, subprocess, filesystem automation, configuration, SQLite, HTTP clients and test doubles.",
+    "descriptionUk": "argparse, subprocess, автоматизація файлової системи, конфігурація, SQLite, HTTP clients і test doubles."
   },
   {
     "id": "iterators-generators-decorators-functional",
