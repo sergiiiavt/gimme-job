@@ -39,3 +39,20 @@ export function vacancyCatalogStatusLine(completedAt: string | null | undefined,
   const age = formatVacancyCatalogAge(completedAt, now);
   return age ? `Vacancies collected ${age}` : "";
 }
+
+
+export interface VacancySourceHealthSummary {
+  source: string;
+  status: string;
+  error?: string | null;
+}
+
+/** Persisted scheduled-source failures, compact enough to sit below freshness. */
+export function vacancySourceHealthLine(sources: VacancySourceHealthSummary[] | null | undefined): string {
+  if (!Array.isArray(sources)) return "";
+  const failed = sources.filter((source) => source.status === "FAILED");
+  if (failed.length === 0) return "";
+  return `${failed.length} source${failed.length === 1 ? "" : "s"} failing: ${failed
+    .map((source) => source.error ? `${source.source} (${source.error})` : source.source)
+    .join("; ")}`;
+}
