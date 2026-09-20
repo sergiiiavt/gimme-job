@@ -18,6 +18,11 @@ type DashboardFn = (request: Request) => Promise<unknown>;
  */
 export interface VacancySyncGate {
   readState?: () => Promise<VacancySyncState>;
+  /**
+   * Cloudflare can register a promise with waitUntil and return the request
+   * immediately. Returning false keeps local/non-Worker runtimes synchronous.
+   */
+  defer?: (promise: Promise<unknown>) => boolean | Promise<boolean>;
   /** Set by an explicit user request for fresh data. */
   force?: boolean;
   now?: number;
@@ -58,7 +63,37 @@ export async function handleVacancySync(
   }
 
   try {
-    const result = await syncVacancies();
+    const task = syncVacancies();
+
+    if (gate.defer) {
+      const deferredTask = task.then(() => undefined).catch((error) => {
+        console.error({
+          schemaVersion: 1,
+          service: "gimmejob",
+          event: "vacancy_sync_background",
+          outcome: "failure",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+      const deferred = await gate.defer(deferredTask);
+      if (deferred) {
+        const persisted = gate.readState ? await gate.readState() : state;
+        const sync = persisted && persisted.status !== "RUNNING"
+          ? {
+              ...persisted,
+              status: "RUNNING" as const,
+              startedAt: persisted.startedAt ?? new Date(gate.now ?? Date.now()).toISOString(),
+              error: null,
+            }
+          : persisted;
+        return Response.json(
+          { ok: true, background: true, sync },
+          { status: 202, headers: { "cache-control": "no-store" } },
+        );
+      }
+    }
+
+    const result = await task;
     const dashboard = await loadDashboard(request);
     const payload = state
       ? { ok: true, result, sync: gate.readState ? await gate.readState() : state, dashboard }
