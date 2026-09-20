@@ -86,10 +86,22 @@ export async function importVacancyCatalog(
       seen: values.length,
       inserted: result.inserted,
       updated: result.updated,
+      sources: [{
+        source: "rss:dou-qa",
+        status: "SUCCESS",
+        jobs: values.length,
+        error: null,
+      }],
     });
     return result;
   } catch (error) {
-    await markVacancySyncFailed(db, trigger, error instanceof Error ? error.message : String(error));
+    const message = error instanceof Error ? error.message : String(error);
+    await markVacancySyncFailed(db, trigger, message, new Date(), [{
+      source: "rss:dou-qa",
+      status: "FAILED",
+      jobs: 0,
+      error: message,
+    }]);
     throw error;
   }
 }
