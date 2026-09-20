@@ -271,8 +271,12 @@ async function sha256(value: string): Promise<string> {
 
 /**
  * D1 charges a network round trip per statement, so a sync that wrote each of
- * its few hundred vacancies separately spent most of its time waiting. Batches
- * also make a sync atomic: the catalogue never shows a half-applied refresh.
+ * its few hundred vacancies separately spent most of its time waiting.
+ *
+ * Each batch is atomic, but a sync spanning several batches is not: a failure
+ * partway through leaves the earlier batches committed. That matches the
+ * previous statement-at-a-time behaviour and is safe here because every write
+ * is an idempotent upsert the next run repeats.
  */
 const UPSERT_BATCH_SIZE = 50;
 
