@@ -14,6 +14,7 @@ test("local vacancy sync state mirrors the cloud marker lifecycle", () => {
     inserted: 0,
     updated: 0,
     error: null,
+    sources: [],
     catalogVersion: null,
   });
 
@@ -27,12 +28,18 @@ test("local vacancy sync state mirrors the cloud marker lifecycle", () => {
     inserted: 0,
     updated: 0,
     error: null,
+    sources: [],
     catalogVersion: null,
   });
 
   marker.succeeded(
     "manual",
-    { seen: 12, inserted: 2, updated: 10 },
+    {
+      seen: 12,
+      inserted: 2,
+      updated: 10,
+      sources: [{ source: "manual:test", status: "SUCCESS", jobs: 12, error: null }],
+    },
     new Date("2026-09-20T10:01:00.000Z"),
   );
   assert.deepEqual(marker.read(), {
@@ -44,6 +51,7 @@ test("local vacancy sync state mirrors the cloud marker lifecycle", () => {
     inserted: 2,
     updated: 10,
     error: null,
+    sources: [{ source: "manual:test", status: "SUCCESS", jobs: 12, error: null }],
     catalogVersion: "2026-09-20T10:01:00.000Z",
   });
 
