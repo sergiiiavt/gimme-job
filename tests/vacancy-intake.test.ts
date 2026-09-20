@@ -44,12 +44,27 @@ class FakeD1 {
           }));
           return { results: results as T[] };
         }
-        if (normalized.includes("from jobs")) return { results: [...this.jobs] as T[] };
+        if (normalized.includes("from jobs")) {
+          const rows = normalized.includes("where relevant = 1")
+            ? this.jobs.filter((row) => Number(row.relevant ?? 1) === 1)
+            : this.jobs;
+          return { results: [...rows] as T[] };
+        }
         return { results: [] as T[] };
       },
       run: async () => {
-        if (normalized.startsWith("update jobs set")) {
-          const id = String(values[14]);
+        if (normalized.startsWith("update jobs set relevant =")) {
+          const id = String(values[4]);
+          const row = this.jobs.find((entry) => entry.id === id);
+          assert.ok(row, `FakeD1 metadata target ${id} must exist`);
+          Object.assign(row, {
+            relevant: values[0],
+            display_source: values[1],
+            dedupe_url: values[2],
+            dedupe_company: values[3],
+          });
+        } else if (normalized.startsWith("update jobs set")) {
+          const id = String(values[17]);
           const row = this.jobs.find((entry) => entry.id === id);
           assert.ok(row, `FakeD1 update target ${id} must exist`);
           Object.assign(row, {
@@ -57,10 +72,11 @@ class FakeD1 {
             location: values[4], remote: values[5], url: values[6], apply_url: values[7], description: values[8],
             salary_text: values[9] ?? row.salary_text, posted_at: values[10] ?? row.posted_at,
             contact_email: values[11] ?? row.contact_email, updated_at: values[12], raw_json: values[13],
+            relevant: 1, display_source: values[14], dedupe_url: values[15], dedupe_company: values[16],
           });
         } else if (normalized.startsWith("insert into jobs")) {
           const [id, fingerprint, source, externalId, title, company, location, remote, url, applyUrl, description,
-            salaryText, postedAt, contactEmail, discoveredAt, updatedAt, rawJson] = values;
+            salaryText, postedAt, contactEmail, discoveredAt, updatedAt, rawJson, displaySource, dedupeUrl, dedupeCompany] = values;
           const existing = this.jobs.find((entry) => entry.fingerprint === fingerprint);
           if (existing) {
             Object.assign(existing, {
@@ -68,13 +84,15 @@ class FakeD1 {
               apply_url: applyUrl, description: String(description).length > String(existing.description ?? "").length ? description : existing.description,
               salary_text: salaryText ?? existing.salary_text, posted_at: postedAt ?? existing.posted_at,
               contact_email: contactEmail ?? existing.contact_email, updated_at: updatedAt, raw_json: rawJson,
+              relevant: 1, display_source: displaySource, dedupe_url: dedupeUrl, dedupe_company: dedupeCompany,
             });
           } else {
             this.jobs.push({
               id, fingerprint, source, external_id: externalId, title, company, location, remote, url,
               apply_url: applyUrl, description, salary_text: salaryText, posted_at: postedAt,
               contact_email: contactEmail, discovered_at: discoveredAt, updated_at: updatedAt,
-              status: "NEW", raw_json: rawJson,
+              status: "NEW", raw_json: rawJson, relevant: 1, display_source: displaySource,
+              dedupe_url: dedupeUrl, dedupe_company: dedupeCompany,
             });
           }
         }
