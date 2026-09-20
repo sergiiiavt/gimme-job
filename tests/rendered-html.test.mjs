@@ -582,7 +582,7 @@ function fakeImportObservabilityDb({ failUpsert = false, failDashboard = false }
               };
             }
 
-            if (failDashboard && text.includes("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC")) {
+            if (failDashboard && text.includes("FROM jobs") && text.includes("ORDER BY COALESCE(posted_at, discovered_at) DESC") && text.includes("LIMIT 500")) {
               state.dashboardQueries += 1;
               throw new Error("fake dashboard failure");
             }
@@ -590,7 +590,7 @@ function fakeImportObservabilityDb({ failUpsert = false, failDashboard = false }
             return null;
           },
           async all() {
-            if (failDashboard && text.includes("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC")) {
+            if (failDashboard && text.includes("FROM jobs") && text.includes("ORDER BY COALESCE(posted_at, discovered_at) DESC") && text.includes("LIMIT 500")) {
               state.dashboardQueries += 1;
               throw new Error("fake dashboard failure");
             }
