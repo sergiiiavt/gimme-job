@@ -1,0 +1,98 @@
+[
+  {
+    "id": "python-docs-argparse",
+    "title": "argparse — Parser for command-line options, arguments and subcommands",
+    "url": "https://docs.python.org/3/library/argparse.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Building command-line interfaces with positional arguments, options, flags, validation and generated help"
+  },
+  {
+    "id": "python-docs-subprocess",
+    "title": "subprocess — Subprocess management",
+    "url": "https://docs.python.org/3/library/subprocess.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Launching external processes safely, capturing output, checking exit status and using timeouts"
+  },
+  {
+    "id": "python-docs-shutil",
+    "title": "shutil — High-level file operations",
+    "url": "https://docs.python.org/3/library/shutil.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Copying, moving, deleting and archiving files and directory trees"
+  },
+  {
+    "id": "python-docs-tempfile",
+    "title": "tempfile — Generate temporary files and directories",
+    "url": "https://docs.python.org/3/library/tempfile.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Safe temporary files and directories with automatic cleanup"
+  },
+  {
+    "id": "python-docs-tomllib",
+    "title": "tomllib — Parse TOML files",
+    "url": "https://docs.python.org/3/library/tomllib.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Reading TOML configuration with the standard library"
+  },
+  {
+    "id": "python-docs-configparser",
+    "title": "configparser — Configuration file parser",
+    "url": "https://docs.python.org/3/library/configparser.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Reading and writing INI-style configuration files"
+  },
+  {
+    "id": "python-docs-sqlite3",
+    "title": "sqlite3 — DB-API 2.0 interface for SQLite databases",
+    "url": "https://docs.python.org/3/library/sqlite3.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Executing parameterized SQL, transactions and row retrieval from Python"
+  },
+  {
+    "id": "python-docs-unittest-mock",
+    "title": "unittest.mock — Mock object library",
+    "url": "https://docs.python.org/3/library/unittest.mock.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Replacing external boundaries in tests and asserting interactions"
+  },
+  {
+    "id": "python-docs-secrets",
+    "title": "secrets — Generate secure random numbers for managing secrets",
+    "url": "https://docs.python.org/3/library/secrets.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Security-sensitive random tokens and values"
+  },
+  {
+    "id": "python-docs-hashlib",
+    "title": "hashlib — Secure hashes and message digests",
+    "url": "https://docs.python.org/3/library/hashlib.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Computing cryptographic hashes for integrity and identifiers"
+  },
+  {
+    "id": "python-docs-uuid",
+    "title": "uuid — UUID objects according to RFC 9562",
+    "url": "https://docs.python.org/3/library/uuid.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Generating and parsing universally unique identifiers"
+  },
+  {
+    "id": "python-docs-enum",
+    "title": "enum — Support for enumerations",
+    "url": "https://docs.python.org/3/library/enum.html",
+    "publisher": "Python Software Foundation",
+    "kind": "Official documentation",
+    "role": "Representing fixed named values with Enum, IntEnum and StrEnum"
+  }
+]
