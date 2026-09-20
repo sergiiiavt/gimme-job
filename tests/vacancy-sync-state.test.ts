@@ -39,10 +39,10 @@ class FakeMarkerDb {
         if (normalized.startsWith("insert into vacancy_sync_state")) {
           if (this.failWrites) throw new Error("no such table: vacancy_sync_state");
           this.writes += 1;
-          const [, status, trigger, startedAt, completedAt, seen, inserted, updated, error, catalogVersion] = values;
+          const [, status, trigger, startedAt, completedAt, seen, inserted, updated, error, sourcesJson, catalogVersion] = values;
           this.row = {
             status, trigger, started_at: startedAt, completed_at: completedAt,
-            seen, inserted, updated, error, catalog_version: catalogVersion,
+            seen, inserted, updated, error, sources_json: sourcesJson, catalog_version: catalogVersion,
           };
         }
         return {};
@@ -160,4 +160,25 @@ test("an abandoned run stops holding the lock once it is too old to believe", ()
 
   assert.equal(vacancySyncFreshness(live, { now }).running, true);
   assert.equal(vacancySyncFreshness(abandoned, { now }).running, false);
+});
+
+
+test("a completed run persists per-source health", async () => {
+  const db = new FakeMarkerDb();
+  await markVacancySyncStarted(db, "scheduled");
+  await markVacancySyncSucceeded(db, "scheduled", {
+    seen: 12,
+    inserted: 2,
+    updated: 3,
+    sources: [
+      { source: "djinni:qa", status: "FAILED", jobs: 0, error: "403 Forbidden" },
+      { source: "robotaua:qa", status: "SUCCESS", jobs: 12, error: null },
+    ],
+  });
+
+  const state = await readVacancySyncState(db);
+  assert.deepEqual(state.sources, [
+    { source: "djinni:qa", status: "FAILED", jobs: 0, error: "403 Forbidden" },
+    { source: "robotaua:qa", status: "SUCCESS", jobs: 12, error: null },
+  ]);
 });
