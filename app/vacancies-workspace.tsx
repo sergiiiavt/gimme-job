@@ -126,7 +126,7 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// v4 snapshots carry the catalogue version used to revalidate them.
+// v5 snapshots carry catalogue version, freshness and source-health metadata.
 const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v5";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
