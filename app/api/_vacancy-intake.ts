@@ -1,6 +1,8 @@
 import type { JobInput } from "../../agent/src/domain.js";
 import {
   VacancyDuplicateIndex,
+  canonicalCompany,
+  canonicalUrl,
   deduplicateVacancies,
   filterRelevantVacancies,
   mergeDuplicateVacancies,
@@ -19,6 +21,7 @@ import {
   markVacancySyncSucceeded,
   readVacancySyncState,
   vacancySyncFreshness,
+  type VacancySourceHealth,
   type VacancySyncState,
 } from "./_vacancy-sync-state";
 
@@ -256,7 +259,7 @@ function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: s
   const job = mapStoredJob(row);
   return {
     ...job,
-    source: displaySource(job.source),
+    source: row.display_source ? String(row.display_source) : displaySource(job.source),
     id: String(row.id),
     discoveredAt: String(row.discovered_at),
     raw: {},
@@ -291,6 +294,100 @@ async function runStatements(db: D1DatabaseLike, statements: D1BoundStatementLik
   }
 }
 
+const DUPLICATE_LOOKUP_BATCH_SIZE = 25;
+
+function vacancyStorageMetadata(job: IntakeJob) {
+  return {
+    displaySource: displaySource(job.source),
+    dedupeUrl: canonicalUrl(job.url) || null,
+    dedupeCompany: canonicalCompany(job.company) || null,
+  };
+}
+
+/**
+ * Rows created before migration 0020 deliberately default to relevant so a
+ * deployment cannot hide the existing catalogue. The next scheduled write
+ * reclassifies those legacy rows once and stores the same exact blocker keys
+ * used by the in-memory duplicate detector.
+ */
+async function backfillVacancyStorageMetadata(db: D1DatabaseLike): Promise<void> {
+  const legacy = await db.prepare(`SELECT
+    id, source, external_id, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, contact_email, raw_json
+    FROM jobs
+    WHERE display_source IS NULL`).all<Row>();
+  if (legacy.results.length === 0) return;
+
+  const statements = legacy.results.map((row) => {
+    const job = mapStoredJob(row);
+    const relevant = filterRelevantVacancies([job]).jobs.length === 1;
+    const metadata = vacancyStorageMetadata(job);
+    return db.prepare(`UPDATE jobs
+      SET relevant = ?, display_source = ?, dedupe_url = ?, dedupe_company = ?
+      WHERE id = ?`)
+      .bind(relevant ? 1 : 0, metadata.displaySource, metadata.dedupeUrl, metadata.dedupeCompany, String(row.id));
+  });
+  await runStatements(db, statements);
+}
+
+type PreparedVacancy = {
+  job: IntakeJob;
+  fingerprint: string;
+  dedupeUrl: string | null;
+  dedupeCompany: string | null;
+};
+
+async function prepareVacancies(jobs: IntakeJob[]): Promise<PreparedVacancy[]> {
+  return Promise.all(jobs.map(async (job) => ({
+    job,
+    fingerprint: await sha256(`${job.source}|${job.externalId || job.url}`),
+    dedupeUrl: canonicalUrl(job.url) || null,
+    dedupeCompany: canonicalCompany(job.company) || null,
+  })));
+}
+
+/**
+ * Duplicate confidence can only become non-zero when the canonical URL or
+ * canonical company matches. Persisting those exact blockers lets D1 return
+ * only possible matches instead of loading an arbitrary recent-row window.
+ */
+async function duplicateCandidates(
+  db: D1DatabaseLike,
+  incoming: PreparedVacancy[],
+): Promise<Array<IntakeJob & { id: string; fingerprint: string; status?: string }>> {
+  const rows = new Map<string, Row>();
+
+  for (let offset = 0; offset < incoming.length; offset += DUPLICATE_LOOKUP_BATCH_SIZE) {
+    const batch = incoming.slice(offset, offset + DUPLICATE_LOOKUP_BATCH_SIZE);
+    const fingerprints = [...new Set(batch.map((entry) => entry.fingerprint))];
+    const urls = [...new Set(batch.flatMap((entry) => entry.dedupeUrl ? [entry.dedupeUrl] : []))];
+    const companies = [...new Set(batch.flatMap((entry) => entry.dedupeCompany ? [entry.dedupeCompany] : []))];
+    const clauses: string[] = [];
+    const values: string[] = [];
+    const inClause = (column: string, entries: string[]) => {
+      if (entries.length === 0) return;
+      clauses.push(`${column} IN (${entries.map(() => "?").join(", ")})`);
+      values.push(...entries);
+    };
+
+    inClause("fingerprint", fingerprints);
+    inClause("dedupe_url", urls);
+    inClause("dedupe_company", companies);
+    if (clauses.length === 0) continue;
+
+    const result = await db.prepare(`SELECT *
+      FROM jobs
+      WHERE ${clauses.join(" OR ")}`)
+      .bind(...values)
+      .all<Row>();
+    for (const row of result.results) rows.set(String(row.id), row);
+  }
+
+  return [...rows.values()]
+    .sort((left, right) => String(right.updated_at ?? "").localeCompare(String(left.updated_at ?? "")))
+    .map(mapExisting);
+}
+
 export async function upsertVacancies(
   values: IntakeJob[],
   databaseOverride?: D1DatabaseLike,
@@ -299,24 +396,34 @@ export async function upsertVacancies(
   const relevance = filterRelevantVacancies(normalized);
   const incoming = deduplicateVacancies(relevance.jobs);
   const db = await database(databaseOverride);
-  const existingResult = await db.prepare("SELECT * FROM jobs ORDER BY updated_at DESC LIMIT 1000").all<Row>();
-  const existing = existingResult.results.map(mapExisting);
+
+  await backfillVacancyStorageMetadata(db);
+  const prepared = await prepareVacancies(incoming.jobs);
+  const existing = await duplicateCandidates(db, prepared);
   const duplicates = new VacancyDuplicateIndex();
-  existing.forEach((job, index) => duplicates.register(index, job));
+  const fingerprints = new Map<string, number>();
+  existing.forEach((job, index) => {
+    duplicates.register(index, job);
+    fingerprints.set(job.fingerprint, index);
+  });
+
   const statements: D1BoundStatementLike[] = [];
   let inserted = 0;
   let updated = 0;
   const timestamp = new Date().toISOString();
 
-  for (const job of incoming.jobs) {
-    const duplicateIndex = duplicates.findDuplicateIndex(existing, job);
+  for (const entry of prepared) {
+    const { job, fingerprint } = entry;
+    const duplicateIndex = fingerprints.get(fingerprint) ?? duplicates.findDuplicateIndex(existing, job);
     if (duplicateIndex >= 0) {
       const duplicate = existing[duplicateIndex];
       const merged = mergeDuplicateVacancies(duplicate, job);
+      const metadata = vacancyStorageMetadata(merged);
       statements.push(db.prepare(`UPDATE jobs SET
         source = ?, external_id = COALESCE(?, external_id), title = ?, company = ?, location = ?, remote = ?,
         url = ?, apply_url = ?, description = ?, salary_text = COALESCE(?, salary_text),
-        posted_at = COALESCE(?, posted_at), contact_email = COALESCE(?, contact_email), updated_at = ?, raw_json = ?
+        posted_at = COALESCE(?, posted_at), contact_email = COALESCE(?, contact_email), updated_at = ?, raw_json = ?,
+        relevant = 1, display_source = ?, dedupe_url = ?, dedupe_company = ?
         WHERE id = ?`)
         .bind(
           merged.source,
@@ -333,21 +440,26 @@ export async function upsertVacancies(
           merged.contactEmail,
           timestamp,
           JSON.stringify(merged.raw ?? {}),
+          metadata.displaySource,
+          metadata.dedupeUrl,
+          metadata.dedupeCompany,
           duplicate.id,
         ));
-      Object.assign(duplicate, merged);
+      Object.assign(duplicate, merged, { fingerprint });
+      fingerprints.set(fingerprint, duplicateIndex);
       // A merge can move the record under new duplicate keys.
       duplicates.register(duplicateIndex, duplicate);
       updated += 1;
       continue;
     }
 
-    const fingerprint = await sha256(`${job.source}|${job.externalId || job.url}`);
     const id = `job_${fingerprint.slice(0, 20)}`;
+    const metadata = vacancyStorageMetadata(job);
     statements.push(db.prepare(`INSERT INTO jobs (
       id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
-      salary_text, posted_at, contact_email, discovered_at, updated_at, status, raw_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?)
+      salary_text, posted_at, contact_email, discovered_at, updated_at, status, raw_json,
+      relevant, display_source, dedupe_url, dedupe_company
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?, 1, ?, ?, ?)
     ON CONFLICT(fingerprint) DO UPDATE SET
       source = excluded.source,
       external_id = COALESCE(excluded.external_id, jobs.external_id),
@@ -362,7 +474,11 @@ export async function upsertVacancies(
       posted_at = COALESCE(excluded.posted_at, jobs.posted_at),
       contact_email = COALESCE(excluded.contact_email, jobs.contact_email),
       updated_at = excluded.updated_at,
-      raw_json = excluded.raw_json`)
+      raw_json = excluded.raw_json,
+      relevant = 1,
+      display_source = excluded.display_source,
+      dedupe_url = excluded.dedupe_url,
+      dedupe_company = excluded.dedupe_company`)
       .bind(
         id,
         fingerprint,
@@ -381,9 +497,14 @@ export async function upsertVacancies(
         timestamp,
         timestamp,
         JSON.stringify(job.raw ?? {}),
+        metadata.displaySource,
+        metadata.dedupeUrl,
+        metadata.dedupeCompany,
       ));
     existing.push({ ...job, id, fingerprint });
-    duplicates.register(existing.length - 1, existing[existing.length - 1]);
+    const index = existing.length - 1;
+    duplicates.register(index, existing[index]);
+    fingerprints.set(fingerprint, index);
     inserted += 1;
   }
 
@@ -518,12 +639,11 @@ export function sanitizeDashboardPayload<T extends { jobs?: unknown }>(payload: 
 const DASHBOARD_DESCRIPTION_PREVIEW_LIMIT = 360;
 
 export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T): T {
-  const sanitized = sanitizeDashboardPayload(payload);
-  if (!Array.isArray(sanitized.jobs)) return sanitized;
+  if (!Array.isArray(payload.jobs)) return payload;
 
   return {
-    ...sanitized,
-    jobs: sanitized.jobs.map((job) => {
+    ...payload,
+    jobs: payload.jobs.map((job) => {
       if (!job || typeof job !== "object") return job;
       const record = job as Record<string, unknown>;
       const { raw: _raw, ...lightweight } = record;
@@ -551,8 +671,8 @@ export async function publicVacancyById(
 ): Promise<(IntakeJob & { id: string; discoveredAt: string }) | null> {
   const db = await database(databaseOverride);
   const row = await db.prepare(`SELECT
-    id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
-    salary_text, posted_at, contact_email, discovered_at, raw_json
+    id, fingerprint, source, display_source, external_id, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, contact_email, discovered_at, raw_json, relevant
     FROM jobs
     WHERE id = ?
     LIMIT 1`)
@@ -560,8 +680,8 @@ export async function publicVacancyById(
     .first<Row>();
   if (!row) return null;
 
-  const [job] = sanitizeJobs([mapPublicStoredJob(row)]);
-  if (!job) return null;
+  if (Number(row.relevant ?? 1) !== 1) return null;
+  const job = mapPublicStoredJob(row);
   const { raw: _raw, ...detail } = job;
   return detail;
 }
@@ -577,12 +697,13 @@ export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike):
 }> {
   const db = await database(databaseOverride);
   const result = await db.prepare(`SELECT
-    id, source, external_id, title, company, location, remote, url, apply_url,
+    id, source, display_source, external_id, title, company, location, remote, url, apply_url,
     substr(description, 1, ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT}) AS description,
     CASE WHEN length(description) <= ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT} THEN 1 ELSE 0 END AS description_complete,
     CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
     salary_text, posted_at, contact_email, discovered_at
     FROM jobs
+    WHERE relevant = 1
     ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
     LIMIT 500`).all<Row>();
 
@@ -602,17 +723,16 @@ export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promis
 }> {
   const db = await database(databaseOverride);
   const result = await db.prepare(`SELECT
-    id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
-    salary_text, posted_at, contact_email, discovered_at, raw_json
+    id, source, display_source, external_id, title, company, location, remote, url, apply_url, description,
+    salary_text, posted_at, contact_email, discovered_at
     FROM jobs
+    WHERE relevant = 1
     ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
     LIMIT 500`).all<Row>();
-  const jobs = result.results.map((row) => ({
-    ...mapExisting(row),
-    id: String(row.id),
-    discoveredAt: String(row.discovered_at),
-  }));
-  return { jobs: sanitizeJobs(jobs), generatedAt: new Date().toISOString() };
+  return {
+    jobs: result.results.map(mapPublicStoredJob),
+    generatedAt: new Date().toISOString(),
+  };
 }
 
 /**
