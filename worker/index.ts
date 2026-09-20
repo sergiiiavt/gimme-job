@@ -12,6 +12,7 @@ import {
   enforcePublicApiRateLimit,
   type PublicApiRateLimitEnv,
 } from "./public-api-rate-limit";
+import { runVacancyCatalogBackstop } from "./vacancy-sync-backstop";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
@@ -48,6 +49,30 @@ const worker = {
     const routedRequest = withPublicAiSessionScope(request);
     const response = await httpWorker.fetch(routedRequest, env, ctx);
     return requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response;
+  },
+  scheduled(_controller: unknown, env: HttpWorkerEnv, ctx: HttpWorkerContext): void {
+    ctx.waitUntil(
+      runVacancyCatalogBackstop(env.DB)
+        .then((result) => {
+          console.log({
+            schemaVersion: 1,
+            service: "gimmejob",
+            event: "vacancy_sync_backstop",
+            outcome: result.started ? "started" : "skipped",
+            reason: result.reason,
+          });
+        })
+        .catch((error) => {
+          console.error({
+            schemaVersion: 1,
+            service: "gimmejob",
+            event: "vacancy_sync_backstop",
+            outcome: "failure",
+            error: error instanceof Error ? error.message : String(error),
+          });
+          throw error;
+        }),
+    );
   },
   email: handleForwardedEmail,
 };
