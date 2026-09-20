@@ -78,6 +78,19 @@ async function currentDashboard(request: Request) {
   return compactDashboardPayload(value);
 }
 
+async function deferVacancySync(promise: Promise<unknown>): Promise<boolean> {
+  try {
+    const runtime = await import("cloudflare:workers");
+    if (typeof runtime.waitUntil !== "function") return false;
+    runtime.waitUntil(promise);
+    return true;
+  } catch {
+    // Node/local-agent compatibility: when no Worker runtime exists, keep the
+    // historical synchronous behaviour rather than losing the requested sync.
+    return false;
+  }
+}
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const route = await parts(context);
@@ -201,6 +214,7 @@ export async function POST(request: Request, context: RouteContext) {
       // being made to wait for another crawl.
       return handleVacancySync(request, tenant, syncVacancySources, currentDashboard, {
         readState: () => vacancySyncState(),
+        defer: deferVacancySync,
         force: payload.force === true,
       });
     }
