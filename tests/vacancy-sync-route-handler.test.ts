@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { handleVacancySync } from "../app/api/_vacancy-sync-route.ts";
+import { register } from "tsx/esm/api";
+
+register();
+
+const { handleVacancySync } = await import("../app/api/_vacancy-sync-route.ts");
 
 const request = new Request("https://gimmejob.example/api/sync", { method: "POST" });
 

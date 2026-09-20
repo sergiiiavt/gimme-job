@@ -244,6 +244,23 @@ async function route(request: IncomingMessage, response: ServerResponse) {
     json(response, 200, dashboard());
     return;
   }
+  if (request.method === "GET" && routePath === "/api/vacancy-sync") {
+    // The local agent syncs on demand and keeps no catalogue marker. Reporting
+    // an idle one keeps the browser's revalidation path identical to the cloud
+    // app's: no version to compare against means load the dashboard.
+    json(response, 200, {
+      status: "IDLE",
+      trigger: null,
+      startedAt: null,
+      completedAt: null,
+      seen: 0,
+      inserted: 0,
+      updated: 0,
+      error: null,
+      catalogVersion: null,
+    });
+    return;
+  }
   if (request.method === "GET" && routePath === "/api/settings") {
     json(response, 200, settingsView());
     return;

@@ -1,6 +1,6 @@
 import type { JobInput } from "../../agent/src/domain.js";
 import {
-  areDuplicateVacancies,
+  VacancyDuplicateIndex,
   deduplicateVacancies,
   filterRelevantVacancies,
   mergeDuplicateVacancies,
@@ -13,20 +13,32 @@ import { RobotaUaSource } from "../../agent/src/sources/robotaua.js";
 import { RssJobSource } from "../../agent/src/sources/rss.js";
 import { collectAllSources, type JobSource } from "../../agent/src/sources/types.js";
 import { normalizeVacancyDescription } from "../../agent/src/vacancy-content.js";
+import {
+  markVacancySyncFailed,
+  markVacancySyncStarted,
+  markVacancySyncSucceeded,
+  readVacancySyncState,
+  vacancySyncFreshness,
+  type VacancySyncState,
+} from "./_vacancy-sync-state";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
 
+export interface D1BoundStatementLike {
+  first<T = Row>(): Promise<T | null>;
+  all<T = Row>(): Promise<{ results: T[] }>;
+  run(): Promise<unknown>;
+}
+
 export interface D1DatabaseLike {
   prepare(query: string): {
-    bind(...values: unknown[]): {
-      first<T = Row>(): Promise<T | null>;
-      all<T = Row>(): Promise<{ results: T[] }>;
-      run(): Promise<unknown>;
-    };
+    bind(...values: unknown[]): D1BoundStatementLike;
     first<T = Row>(): Promise<T | null>;
     all<T = Row>(): Promise<{ results: T[] }>;
   };
+  /** Present on D1 itself; absent on the minimal shapes tests supply. */
+  batch?(statements: D1BoundStatementLike[]): Promise<unknown>;
 }
 
 export interface VacancySourceError {
@@ -257,6 +269,24 @@ async function sha256(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * D1 charges a network round trip per statement, so a sync that wrote each of
+ * its few hundred vacancies separately spent most of its time waiting. Batches
+ * also make a sync atomic: the catalogue never shows a half-applied refresh.
+ */
+const UPSERT_BATCH_SIZE = 50;
+
+async function runStatements(db: D1DatabaseLike, statements: D1BoundStatementLike[]): Promise<void> {
+  if (statements.length === 0) return;
+  if (typeof db.batch !== "function") {
+    for (const statement of statements) await statement.run();
+    return;
+  }
+  for (let index = 0; index < statements.length; index += UPSERT_BATCH_SIZE) {
+    await db.batch(statements.slice(index, index + UPSERT_BATCH_SIZE));
+  }
+}
+
 export async function upsertVacancies(
   values: IntakeJob[],
   databaseOverride?: D1DatabaseLike,
@@ -267,15 +297,19 @@ export async function upsertVacancies(
   const db = await database(databaseOverride);
   const existingResult = await db.prepare("SELECT * FROM jobs ORDER BY updated_at DESC LIMIT 1000").all<Row>();
   const existing = existingResult.results.map(mapExisting);
+  const duplicates = new VacancyDuplicateIndex();
+  existing.forEach((job, index) => duplicates.register(index, job));
+  const statements: D1BoundStatementLike[] = [];
   let inserted = 0;
   let updated = 0;
   const timestamp = new Date().toISOString();
 
   for (const job of incoming.jobs) {
-    const duplicate = existing.find((candidate) => areDuplicateVacancies(candidate, job));
-    if (duplicate) {
+    const duplicateIndex = duplicates.findDuplicateIndex(existing, job);
+    if (duplicateIndex >= 0) {
+      const duplicate = existing[duplicateIndex];
       const merged = mergeDuplicateVacancies(duplicate, job);
-      await db.prepare(`UPDATE jobs SET
+      statements.push(db.prepare(`UPDATE jobs SET
         source = ?, external_id = COALESCE(?, external_id), title = ?, company = ?, location = ?, remote = ?,
         url = ?, apply_url = ?, description = ?, salary_text = COALESCE(?, salary_text),
         posted_at = COALESCE(?, posted_at), contact_email = COALESCE(?, contact_email), updated_at = ?, raw_json = ?
@@ -296,16 +330,17 @@ export async function upsertVacancies(
           timestamp,
           JSON.stringify(merged.raw ?? {}),
           duplicate.id,
-        )
-        .run();
+        ));
       Object.assign(duplicate, merged);
+      // A merge can move the record under new duplicate keys.
+      duplicates.register(duplicateIndex, duplicate);
       updated += 1;
       continue;
     }
 
     const fingerprint = await sha256(`${job.source}|${job.externalId || job.url}`);
     const id = `job_${fingerprint.slice(0, 20)}`;
-    await db.prepare(`INSERT INTO jobs (
+    statements.push(db.prepare(`INSERT INTO jobs (
       id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
       salary_text, posted_at, contact_email, discovered_at, updated_at, status, raw_json
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?)
@@ -342,11 +377,13 @@ export async function upsertVacancies(
         timestamp,
         timestamp,
         JSON.stringify(job.raw ?? {}),
-      )
-      .run();
+      ));
     existing.push({ ...job, id, fingerprint });
+    duplicates.register(existing.length - 1, existing[existing.length - 1]);
     inserted += 1;
   }
+
+  await runStatements(db, statements);
 
   return {
     seen: normalized.length,
@@ -359,8 +396,28 @@ export async function upsertVacancies(
   };
 }
 
-export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Promise<VacancySyncResult> {
-  const config = await sourceConfig(databaseOverride);
+export interface VacancySyncOptions {
+  /** Recorded on the catalogue marker so a slow run can be attributed. */
+  trigger?: string;
+}
+
+export async function syncVacancySources(
+  databaseOverride?: D1DatabaseLike,
+  options: VacancySyncOptions = {},
+): Promise<VacancySyncResult> {
+  const db = await database(databaseOverride);
+  const trigger = options.trigger ?? "manual";
+  await markVacancySyncStarted(db, trigger);
+  try {
+    return await collectAndStoreVacancies(db, trigger);
+  } catch (error) {
+    await markVacancySyncFailed(db, trigger, error instanceof Error ? error.message : String(error));
+    throw error;
+  }
+}
+
+async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Promise<VacancySyncResult> {
+  const config = await sourceConfig(db);
   const attempted = buildVacancySources(config);
   const results = await collectAllSources(attempted);
   const intake = results.find((result) => result.source === "intake");
@@ -387,7 +444,12 @@ export async function syncVacancySources(databaseOverride?: D1DatabaseLike): Pro
     throw new VacancySyncFailure(failureErrors);
   }
 
-  const stored = await upsertVacancies(jobs, databaseOverride);
+  const stored = await upsertVacancies(jobs, db);
+  await markVacancySyncSucceeded(db, trigger, {
+    seen,
+    inserted: stored.inserted,
+    updated: stored.updated,
+  });
 
   if (errors.length > 0) {
     console.warn({
@@ -549,11 +611,29 @@ export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promis
   return { jobs: sanitizeJobs(jobs), generatedAt: new Date().toISOString() };
 }
 
+/**
+ * Bootstraps an empty catalogue only. Routine refreshes belong to the scheduled
+ * runner, so a page load never pays for a crawl once vacancies exist.
+ */
 export async function ensureVacancyCatalog(databaseOverride?: D1DatabaseLike): Promise<void> {
   const db = await database(databaseOverride);
   const row = await db.prepare("SELECT COUNT(*) AS count FROM jobs").first<Row>();
   if (Number(row?.count ?? 0) > 0) return;
-  await syncVacancySources(databaseOverride);
+  // Without this guard every concurrent request against an empty catalogue
+  // starts its own crawl. One bootstrap runs; the rest serve what exists and
+  // pick the result up on their next read.
+  if (vacancySyncFreshness(await readVacancySyncState(db)).running) return;
+  await syncVacancySources(db, { trigger: "catalog-bootstrap" });
+}
+
+/** The catalogue freshness marker, for routes that report or gate on it. */
+export async function vacancySyncState(databaseOverride?: D1DatabaseLike): Promise<VacancySyncState> {
+  return readVacancySyncState(await database(databaseOverride));
+}
+
+/** The runtime catalogue database, for callers that record their own marker. */
+export async function vacancyDatabase(databaseOverride?: D1DatabaseLike): Promise<D1DatabaseLike> {
+  return database(databaseOverride);
 }
 
 export function mergeVacancySourceDefaults(value: unknown): Json {

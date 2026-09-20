@@ -1,0 +1,66 @@
+name: Vacancy catalog sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vacancy-catalog-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Use Node.js 22.22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Collect DOU and import to production
+        env:
+          N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
+        run: node --import tsx scripts/sync-dou-vacancies.ts
+
+  # DOU is enriched off-platform because only this runner can afford a detail
+  # fetch per vacancy. The remaining boards publish complete listings, so the
+  # Worker collects them directly — and without this schedule they refreshed
+  # only when somebody pressed "Sync jobs" and waited for the crawl.
+  remaining-sources:
+    needs: sync
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger the Worker-side catalog sync
+        env:
+          N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
+          GIMMEJOB_URL: ${{ vars.GIMMEJOB_URL || 'https://gimmejob.gimmejob.workers.dev' }}
+        run: |
+          set -euo pipefail
+          status=$(curl --silent --show-error --fail-with-body \
+            --max-time 600 \
+            --output response.json \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "authorization: Bearer ${N8N_INGEST_TOKEN}" \
+            --header 'content-type: application/json' \
+            --header 'x-gimmejob-trigger: github-actions' \
+            --data '{}' \
+            "${GIMMEJOB_URL%/}/internal/n8n/vacancies-sync")
+          echo "HTTP ${status}"
+          cat response.json

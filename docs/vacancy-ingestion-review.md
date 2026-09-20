@@ -43,7 +43,7 @@ The good news is that the fix is mostly *subtraction*. Djinni's entire QA catalo
 
 | Path | Trigger | Sources collected | Writes |
 |---|---|---|---|
-| **GitHub Actions runner** — [.github/workflows/dou-vacancies.yml](.github/workflows/dou-vacancies.yml), [scripts/sync-dou-vacancies.ts](scripts/sync-dou-vacancies.ts) | hourly cron `17 * * * *` | **DOU only**, via `RssJobSource` directly | POSTs to `/internal/n8n/vacancies-sync` with `x-gimmejob-mode: dou-import` |
+| **GitHub Actions runner** — [.github/workflows/vacancy-catalog-sync.yml](.github/workflows/vacancy-catalog-sync.yml), [scripts/sync-dou-vacancies.ts](scripts/sync-dou-vacancies.ts) | hourly cron `17 * * * *` | DOU via `RssJobSource` directly, then the Worker sync for the remaining boards | POSTs to `/internal/n8n/vacancies-sync`, first with `x-gimmejob-mode: dou-import`, then without |
 | **Worker sync** — [syncVacancySources](app/api/_vacancy-intake.ts:308) | n8n / manual POST | RSS (DOU + Djinni), Robota.ua, Lobby X. Work.ua explicitly skipped | direct D1 upsert |
 | **Local CLI** — [agent/src/sources/index.ts](agent/src/sources/index.ts) | `npm run agent:sync` | whatever is in `config/sources.json` | local store |
 

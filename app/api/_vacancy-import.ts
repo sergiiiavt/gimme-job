@@ -1,6 +1,11 @@
 import type { IntakeJob } from "../../agent/src/job-intake.js";
 import { normalizeVacancyDescription } from "../../agent/src/vacancy-content.js";
-import { upsertVacancies } from "./_vacancy-intake";
+import { upsertVacancies, vacancyDatabase, type D1DatabaseLike } from "./_vacancy-intake";
+import {
+  markVacancySyncFailed,
+  markVacancySyncStarted,
+  markVacancySyncSucceeded,
+} from "./_vacancy-sync-state";
 
 type Json = Record<string, unknown>;
 
@@ -60,4 +65,31 @@ function normalizeImportedJob(value: unknown, index: number): IntakeJob {
 export async function upsertImportedVacancies(values: unknown[]) {
   const jobs = values.map((value, index) => normalizeImportedJob(value, index));
   return upsertVacancies(jobs);
+}
+
+/**
+ * The scheduled runner collects off-platform and imports the finished
+ * catalogue, so this path — not the in-Worker crawl — is what usually makes the
+ * catalogue fresh. It records the marker readers gate on; an ad-hoc admin
+ * import deliberately does not, because a partial import is not a refresh.
+ */
+export async function importVacancyCatalog(
+  values: unknown[],
+  trigger: string,
+  databaseOverride?: D1DatabaseLike,
+) {
+  const db = await vacancyDatabase(databaseOverride);
+  await markVacancySyncStarted(db, trigger);
+  try {
+    const result = await upsertImportedVacancies(values);
+    await markVacancySyncSucceeded(db, trigger, {
+      seen: values.length,
+      inserted: result.inserted,
+      updated: result.updated,
+    });
+    return result;
+  } catch (error) {
+    await markVacancySyncFailed(db, trigger, error instanceof Error ? error.message : String(error));
+    throw error;
+  }
 }

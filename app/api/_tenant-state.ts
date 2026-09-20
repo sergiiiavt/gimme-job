@@ -14,6 +14,7 @@ type PublicJob = {
 type PublicJobsPayload = {
   jobs: PublicJob[];
   generatedAt?: string;
+  vacancySync?: unknown;
 };
 
 export type TenantRequestContext = {
@@ -117,7 +118,7 @@ export function createTenantState(deps: TenantStateDeps) {
   const runtime = deps.runtime ?? {};
   const defaultProfile = deps.defaultProfile ?? {};
   const defaultSources = deps.defaultSources ?? {};
-  const loadPublicJobs = deps.loadPublicJobs ?? (async () => ({ jobs: [] }));
+  const loadPublicJobs: () => Promise<PublicJobsPayload> = deps.loadPublicJobs ?? (async () => ({ jobs: [] }));
 
   async function setting<T>(userId: string, key: string, fallback: T): Promise<T> {
     const row = await database.prepare("SELECT value_json FROM user_settings WHERE user_id = ? AND key = ?")
@@ -332,6 +333,7 @@ export function createTenantState(deps: TenantStateDeps) {
         },
         statuses: {},
         connections: null,
+        vacancySync: publicPayload.vacancySync ?? null,
         authenticated: false,
         generatedAt: now(),
       };
@@ -403,6 +405,7 @@ export function createTenantState(deps: TenantStateDeps) {
       },
       statuses,
       connections: await connections(userId),
+      vacancySync: publicPayload.vacancySync ?? null,
       authenticated: request ? tenantRequestContext(request).authenticated : true,
       generatedAt: now(),
     };

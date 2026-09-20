@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import { SiteSidebar } from "./site-navigation";
 import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacancy-tabs";
+import { syncFreshnessLabel, vacancyCatalogStatusLine } from "./vacancy-sync-freshness";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
@@ -59,9 +60,16 @@ interface Job {
   draft: JobDraft | null;
 }
 
+interface VacancySyncMarker {
+  status?: string;
+  completedAt?: string | null;
+  catalogVersion?: string | null;
+}
+
 interface DashboardData {
   jobs: Job[];
   authenticated?: boolean;
+  vacancySync?: VacancySyncMarker | null;
 }
 
 interface VacancyCacheSnapshot {
@@ -69,6 +77,10 @@ interface VacancyCacheSnapshot {
   authenticated: boolean;
   dataUpdatedAt: number;
   lastAccessedAt: number;
+  /** Identifies the catalogue this snapshot was built from. */
+  catalogVersion: string | null;
+  /** When ingestion last refreshed the catalogue, for the freshness label. */
+  catalogUpdatedAt: string | null;
 }
 
 interface VacancyWorkspaceSnapshot {
@@ -104,10 +116,13 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// Discard older previews that incorrectly claimed to contain the full description.
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v3";
+// v4 snapshots carry the catalogue version used to revalidate them.
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v4";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
+// A cached catalogue older than this is revalidated — but against the sync
+// marker, a single row, not by re-downloading 500 vacancies. The full dashboard
+// is fetched only once the catalogue has actually changed.
 const VACANCY_STALE_MS = 10 * 60 * 1000;
 const VACANCY_GC_MS = 60 * 60 * 1000;
 
@@ -314,6 +329,10 @@ function readVacancyCache(): VacancyCacheSnapshot | null {
     removeVacancyCache();
     return null;
   }
+  if (snapshot.catalogVersion === undefined || snapshot.catalogUpdatedAt === undefined) {
+    removeVacancyCache();
+    return null;
+  }
 
   if (now - snapshot.lastAccessedAt >= VACANCY_GC_MS) {
     removeVacancyCache();
@@ -326,6 +345,10 @@ function readVacancyCache(): VacancyCacheSnapshot | null {
   return touched;
 }
 
+function markerText(value: unknown): string | null {
+  return typeof value === "string" && value ? value : null;
+}
+
 function writeVacancyCache(dashboard: DashboardData): VacancyCacheSnapshot {
   const now = Date.now();
   const snapshot: VacancyCacheSnapshot = {
@@ -333,10 +356,30 @@ function writeVacancyCache(dashboard: DashboardData): VacancyCacheSnapshot {
     authenticated: Boolean(dashboard.authenticated),
     dataUpdatedAt: now,
     lastAccessedAt: now,
+    catalogVersion: markerText(dashboard.vacancySync?.catalogVersion),
+    catalogUpdatedAt: markerText(dashboard.vacancySync?.completedAt),
   };
   clientVacancyCache = snapshot;
   if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(snapshot));
   return snapshot;
+}
+
+/**
+ * Records that a revalidation found the cached catalogue unchanged, so the
+ * snapshot stays warm without a dashboard round trip.
+ */
+function refreshVacancyCacheValidity(marker: VacancySyncMarker): VacancyCacheSnapshot | null {
+  const snapshot = clientVacancyCache;
+  if (!snapshot) return null;
+  const revalidated: VacancyCacheSnapshot = {
+    ...snapshot,
+    dataUpdatedAt: Date.now(),
+    lastAccessedAt: Date.now(),
+    catalogUpdatedAt: markerText(marker.completedAt) ?? snapshot.catalogUpdatedAt,
+  };
+  clientVacancyCache = revalidated;
+  if (typeof window !== "undefined") window.sessionStorage.setItem(VACANCY_CACHE_KEY, JSON.stringify(revalidated));
+  return revalidated;
 }
 
 function touchVacancyCache() {
@@ -494,6 +537,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   const [analyzeProgress, setAnalyzeProgress] = useState<{ done: number; total: number } | null>(null);
   const [analyzeLog, setAnalyzeLog] = useState<string[]>([]);
   const [authenticated, setAuthenticated] = useState<boolean | null>(() => memoryCache?.authenticated ?? null);
+  const [catalogUpdatedAt, setCatalogUpdatedAt] = useState<string | null>(() => memoryCache?.catalogUpdatedAt ?? null);
   const analyzeCancelRef = useRef(false);
   const isPersonal = mode === "personal" && authenticated === true;
   const viewMode = isPersonal ? "personal" : "public";
@@ -508,6 +552,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       setJobs(cached.jobs);
       setOnline(true);
       setAuthenticated(cached.authenticated);
+      setCatalogUpdatedAt(cached.catalogUpdatedAt);
     }
     if (workspace) {
       setOpenTabIds(workspace.openTabIds);
@@ -522,6 +567,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
         setJobs(snapshot.jobs);
         setOnline(true);
         setAuthenticated(snapshot.authenticated);
+        setCatalogUpdatedAt(snapshot.catalogUpdatedAt);
       })
       .catch(() => {
         if (!active) return;
@@ -540,8 +586,26 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
         setAuthenticated(false);
       });
 
-    const shouldRefresh = !cached || Date.now() - cached.dataUpdatedAt >= VACANCY_STALE_MS;
-    if (shouldRefresh) void loadDashboard();
+    // Revalidating asks the catalogue marker what changed before paying for the
+    // whole dashboard. An unchanged catalogue costs one small response.
+    const revalidate = async () => {
+      if (!cached) return loadDashboard();
+      if (Date.now() - cached.dataUpdatedAt < VACANCY_STALE_MS) return undefined;
+      try {
+        const marker = await api<VacancySyncMarker>("/vacancy-sync");
+        const version = markerText(marker.catalogVersion);
+        if (version !== null && version === cached.catalogVersion) {
+          const revalidated = refreshVacancyCacheValidity(marker);
+          if (active && revalidated) setCatalogUpdatedAt(revalidated.catalogUpdatedAt);
+          return undefined;
+        }
+      } catch {
+        // The marker is an optimization. Fall through to the full dashboard.
+      }
+      return loadDashboard();
+    };
+
+    void revalidate();
 
     return () => {
       active = false;
@@ -640,6 +704,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     setJobs(snapshot.jobs);
     setOnline(true);
     setAuthenticated(snapshot.authenticated);
+    setCatalogUpdatedAt(snapshot.catalogUpdatedAt);
   };
 
   const clearFilters = () => {
@@ -660,15 +725,29 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     setSelectedId(next.activeId);
   };
 
-  const sync = async () => {
+  const sync = async (force = false) => {
     if (!isPersonal) return;
     setOpenTabIds([]);
     setSelectedId(null);
     clearVacancyWorkspace();
     setBusy("sync");
     try {
-      const result = await api<{ dashboard: DashboardData; result?: { accepted?: number; errors?: Array<{ source: string; error: string }> } }>("/sync", "POST", {});
+      const result = await api<{
+        dashboard: DashboardData;
+        skipped?: "fresh" | "running";
+        result?: { accepted?: number; errors?: Array<{ source: string; error: string }> };
+      }>("/sync", "POST", force ? { force: true } : {});
       applyDashboard(result.dashboard);
+      // Collecting from every job board takes minutes. When a scheduled run
+      // already covered it, say so instead of repeating the crawl.
+      if (result.skipped === "running") {
+        setNotice("A scheduled sync is already collecting vacancies. The newest results appear here when it finishes.");
+        return;
+      }
+      if (result.skipped === "fresh") {
+        setNotice(`Vacancies are already up to date${syncFreshnessLabel(result.dashboard.vacancySync?.completedAt ?? null)}.`);
+        return;
+      }
       // A partially failed sync looked identical to a healthy one, which hid
       // sources that had been failing for weeks.
       const failures = result.result?.errors ?? [];
@@ -730,6 +809,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   };
 
   const stopAnalyze = () => { analyzeCancelRef.current = true; };
+
+  const catalogStatus = vacancyCatalogStatusLine(catalogUpdatedAt);
 
   const adjustResume = async (job: Job) => {
     if (!isPersonal) return;
@@ -813,6 +894,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
             ) : (
               <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
             )}
+            {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
           </section>
 
           <nav className="vacancy-tabs" aria-label="Vacancy workspace tabs">

@@ -1,5 +1,5 @@
 import { handleDouVacancyImport } from "../../../api/_dou-vacancy-import";
-import { upsertImportedVacancies } from "../../../api/_vacancy-import";
+import { importVacancyCatalog } from "../../../api/_vacancy-import";
 import { syncVacancySources } from "../../../api/_vacancy-intake";
 import { bearerToken, constantTimeEqual } from "../email-events/email-event";
 import { handleVacancyAutomationActivity } from "./activity.ts";
@@ -50,12 +50,14 @@ export async function POST(request: Request): Promise<Response> {
   const authError = authorize(request, env);
   if (authError) return authError;
 
-  const douImport = await handleDouVacancyImport(request, upsertImportedVacancies);
+  // The hourly runner's import is a scheduled catalogue refresh, so it marks
+  // the catalogue fresh and keeps browsers from starting a redundant crawl.
+  const douImport = await handleDouVacancyImport(request, (jobs) => importVacancyCatalog(jobs, "scheduled-dou"));
   if (douImport) return douImport;
 
   const startedAt = Date.now();
   try {
-    const result = await syncVacancySources();
+    const result = await syncVacancySources(undefined, { trigger: "scheduled" });
     console.log({
       schemaVersion: 1,
       service: "gimmejob",

@@ -3,6 +3,7 @@ import {
   DEFAULT_VACANCY_SOURCES,
   ensureVacancyCatalog,
   publicVacancySummaries,
+  vacancySyncState,
 } from "./_vacancy-intake";
 import {
   operationalError,
@@ -306,7 +307,10 @@ async function connections() {
 
 export async function publicJobs() {
   await ensureVacancyCatalog();
-  return publicVacancySummaries();
+  const [payload, vacancySync] = await Promise.all([publicVacancySummaries(), vacancySyncState()]);
+  // Readers revalidate against this marker instead of re-fetching the whole
+  // catalogue on a timer.
+  return { ...payload, vacancySync };
 }
 
 const INTERVIEW_PROGRESS_STATUSES = new Set(["PLANNED", "LEARNING", "LEARNED"]);
@@ -411,6 +415,7 @@ export async function dashboard(request?: Request) {
     },
     statuses,
     connections: conn,
+    vacancySync: await vacancySyncState(),
     authenticated: request?.headers.get("x-gimmejob-authenticated") === "1",
     generatedAt: now(),
   };

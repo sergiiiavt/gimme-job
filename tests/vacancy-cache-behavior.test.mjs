@@ -10,17 +10,31 @@ const privateRoute = readFileSync(new URL("../app/workspace/page.tsx", import.me
 test("vacancy dashboard cache uses 10 minute freshness and 1 hour GC", () => {
   assert.match(source, /const VACANCY_STALE_MS = 10 \* 60 \* 1000;/);
   assert.match(source, /const VACANCY_GC_MS = 60 \* 60 \* 1000;/);
-  assert.match(source, /Date\.now\(\) - cached\.dataUpdatedAt >= VACANCY_STALE_MS/);
+  assert.match(source, /Date\.now\(\) - cached\.dataUpdatedAt < VACANCY_STALE_MS/);
   assert.match(source, /now - snapshot\.lastAccessedAt >= VACANCY_GC_MS/);
 });
 
+test("a stale cache revalidates against the sync marker before refetching the catalogue", () => {
+  const revalidateBlock = source.match(/const revalidate = async \(\) => \{[\s\S]*?\n {4}\};/u)?.[0] ?? "";
+  assert.match(revalidateBlock, /api<VacancySyncMarker>\("\/vacancy-sync"\)/);
+  assert.match(revalidateBlock, /version === cached\.catalogVersion/);
+  assert.match(revalidateBlock, /refreshVacancyCacheValidity\(marker\)/);
+  assert.match(revalidateBlock, /return loadDashboard\(\);/);
+});
+
 test("vacancy data cache survives route changes and refreshes within the same view", () => {
-  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v3";/);
+  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v4";/);
   assert.match(source, /window\.sessionStorage\.getItem\(VACANCY_CACHE_KEY\)/);
   assert.match(source, /window\.sessionStorage\.setItem\(VACANCY_CACHE_KEY, JSON\.stringify\(snapshot\)\)/);
   assert.match(source, /const memoryCache = readClientVacancyCache\(\)/);
   assert.match(source, /const \[jobs, setJobs\] = useState<Job\[]>\(\(\) => memoryCache\?\.jobs \?\? \[\]\)/);
-  assert.match(source, /if \(shouldRefresh\) void loadDashboard\(\);/);
+  assert.match(source, /void revalidate\(\);/);
+});
+
+test("a snapshot without a catalogue version is discarded rather than trusted", () => {
+  const readBlock = source.match(/function readVacancyCache\(\)[\s\S]*?\n\}/u)?.[0] ?? "";
+  assert.match(readBlock, /snapshot\.catalogVersion === undefined \|\| snapshot\.catalogUpdatedAt === undefined/);
+  assert.match(readBlock, /removeVacancyCache\(\);/);
 });
 
 test("vacancy route resolves public or personal view from current auth without changing the canonical URL", () => {
@@ -61,15 +75,22 @@ test("open vacancy tabs persist for route navigation and F5 within the same view
 });
 
 test("manual sync closes all opened vacancy tabs", () => {
-  const syncBlock = source.match(/const sync = async \(\) => \{[\s\S]*?\n  \};/u)?.[0] ?? "";
+  const syncBlock = source.match(/const sync = async \(force = false\) => \{[\s\S]*?\n  \};/u)?.[0] ?? "";
   assert.match(syncBlock, /setOpenTabIds\(\[\]\);/);
   assert.match(syncBlock, /setSelectedId\(null\);/);
   assert.match(syncBlock, /clearVacancyWorkspace\(\);/);
-  assert.match(syncBlock, /api<\{ dashboard: DashboardData;[\s\S]*?\}>\("\/sync", "POST", \{\}\)/);
+  assert.match(syncBlock, /api<\{[\s\S]*?\}>\("\/sync", "POST", force \? \{ force: true \} : \{\}\)/);
+});
+
+test("a sync the schedule already covered is reported instead of silently doing nothing", () => {
+  const syncBlock = source.match(/const sync = async \(force = false\) => \{[\s\S]*?\n  \};/u)?.[0] ?? "";
+  assert.match(syncBlock, /result\.skipped === "running"/);
+  assert.match(syncBlock, /result\.skipped === "fresh"/);
+  assert.match(syncBlock, /syncFreshnessLabel\(/);
 });
 
 test("background refresh keeps tabs while only manual sync clears them", () => {
-  const loadBlock = source.match(/const loadDashboard = \(attempt = 0\)[\s\S]*?const shouldRefresh/u)?.[0] ?? "";
+  const loadBlock = source.match(/const loadDashboard = \(attempt = 0\)[\s\S]*?const revalidate/u)?.[0] ?? "";
   assert.doesNotMatch(loadBlock, /clearVacancyWorkspace\(\)/);
   assert.doesNotMatch(loadBlock, /setOpenTabIds\(\[\]\)/);
 });

@@ -436,15 +436,74 @@ export function mergeDuplicateVacancies<T extends IntakeJob>(left: T, right: T):
   } as T;
 }
 
+/**
+ * `duplicateConfidence` can only score above zero when two vacancies share a
+ * canonical URL or a canonical company, so those values are exact blocking
+ * keys rather than a heuristic prefilter.
+ */
+function duplicateBlockingKeys(job: IntakeJob): string[] {
+  const keys: string[] = [];
+  const url = canonicalUrl(job.url);
+  if (url) keys.push(`url:${url}`);
+  const company = canonicalCompany(job.company);
+  if (company) keys.push(`company:${company}`);
+  return keys;
+}
+
+/**
+ * Bucketed duplicate lookup over a growing candidate list.
+ *
+ * Scanning every pair made duplicate detection quadratic: 500 dashboard rows
+ * cost ~125 000 similarity scorings on every read, and a sync scored each
+ * incoming vacancy against 1 000 stored rows. Bucketing by the blocking keys
+ * above returns the same match while scoring only pairs that can qualify.
+ */
+export class VacancyDuplicateIndex {
+  private readonly buckets = new Map<string, Set<number>>();
+
+  /**
+   * Indexes `job` at `index`. Re-registering after a merge is required and
+   * safe: a merge can move a record under new keys, and the registrations it
+   * leaves behind only widen the candidate set, never narrow it.
+   */
+  register(index: number, job: IntakeJob): void {
+    for (const key of duplicateBlockingKeys(job)) {
+      const bucket = this.buckets.get(key);
+      if (bucket) bucket.add(index);
+      else this.buckets.set(key, new Set([index]));
+    }
+  }
+
+  /** Equivalent to `jobs.findIndex((candidate) => areDuplicateVacancies(candidate, job))`. */
+  findDuplicateIndex(jobs: readonly IntakeJob[], job: IntakeJob): number {
+    const candidates = new Set<number>();
+    for (const key of duplicateBlockingKeys(job)) {
+      const bucket = this.buckets.get(key);
+      if (bucket) for (const index of bucket) candidates.add(index);
+    }
+    // Ascending order preserves the "first stored match wins" contract, and
+    // every candidate is re-checked against the live record.
+    for (const index of [...candidates].sort((left, right) => left - right)) {
+      const candidate = jobs[index];
+      if (candidate && areDuplicateVacancies(candidate, job)) return index;
+    }
+    return -1;
+  }
+}
+
 export function deduplicateVacancies<T extends IntakeJob>(jobs: T[]): DedupeResult<T> {
   const result: T[] = [];
+  const index = new VacancyDuplicateIndex();
   let duplicateCount = 0;
   for (const job of jobs) {
-    const duplicateIndex = result.findIndex((candidate) => areDuplicateVacancies(candidate, job));
+    const duplicateIndex = index.findDuplicateIndex(result, job);
     if (duplicateIndex < 0) {
+      index.register(result.length, job);
       result.push(job);
     } else {
-      result[duplicateIndex] = mergeDuplicateVacancies(result[duplicateIndex], job);
+      const merged = mergeDuplicateVacancies(result[duplicateIndex], job);
+      result[duplicateIndex] = merged;
+      index.register(duplicateIndex, merged);
       duplicateCount += 1;
     }
   }

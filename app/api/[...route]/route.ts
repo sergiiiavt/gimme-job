@@ -24,6 +24,7 @@ import {
   publicVacancies,
   publicVacancyById,
   syncVacancySources,
+  vacancySyncState,
 } from "../_vacancy-intake";
 import {
   saveTenantSetting,
@@ -92,8 +93,14 @@ export async function GET(request: Request, context: RouteContext) {
       await ensureVacancyCatalog();
       return Response.json(await publicVacancies());
     }
+    if (route[0] === "vacancy-sync") {
+      // Deliberately tiny: a client revalidating its cached catalogue reads one
+      // row instead of 500 vacancies.
+      return Response.json(await vacancySyncState(), { headers: { "cache-control": "no-store" } });
+    }
     if (route[0] === "dashboard") {
-      await ensureVacancyCatalog();
+      // The dashboard loaders bootstrap the catalogue themselves; calling it
+      // here too spent a second COUNT(*) on every page load.
       return Response.json(await currentDashboard(request));
     }
     if (route[0] === "interview-progress") {
@@ -188,7 +195,15 @@ export async function POST(request: Request, context: RouteContext) {
       operationalInfo("job_import", { phase: "complete", outcome: "success", operationId, trigger, durationMs: Date.now() - startedAt, itemsSeen: jobs.length, itemsProcessed: result.accepted, rejected: result.rejected, duplicates: result.duplicates });
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
-    if (route[0] === "sync") return handleVacancySync(request, tenant, syncVacancySources, currentDashboard);
+    if (route[0] === "sync") {
+      // Routine freshness is the scheduled runner's job. A page that asks for a
+      // sync it does not need is answered from the catalogue marker instead of
+      // being made to wait for another crawl.
+      return handleVacancySync(request, tenant, syncVacancySources, currentDashboard, {
+        readState: () => vacancySyncState(),
+        force: payload.force === true,
+      });
+    }
     if (route[0] === "analyze") {
       if (tenant.multiUser && !userId) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
