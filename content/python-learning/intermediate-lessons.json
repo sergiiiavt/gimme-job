@@ -4,7 +4,7 @@
       "id": "py-lesson-reading-writing-files",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
-      "order": 27,
+      "order": 28,
       "title": "Reading and writing files",
       "titleUk": "Читання й запис файлів",
       "summary": "open() is the entry point for file I/O; the mode string decides read/write/append and text/binary behavior.",
@@ -47,7 +47,7 @@
       "id": "py-lesson-with-statement",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
-      "order": 28,
+      "order": 29,
       "title": "The with statement and context managers",
       "titleUk": "Оператор with і менеджери контексту",
       "summary": "with guarantees cleanup (like closing a file) happens even if an error occurs inside the block.",
@@ -90,7 +90,7 @@
       "id": "py-lesson-pathlib",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
-      "order": 29,
+      "order": 30,
       "title": "Filesystem paths with pathlib",
       "titleUk": "Шляхи файлової системи через pathlib",
       "summary": "Path objects, joined with /, replace error-prone string concatenation for building filesystem paths.",
@@ -132,7 +132,7 @@
       "id": "py-lesson-csv-json",
       "moduleId": "files-io-context-managers",
       "level": "Intermediate",
-      "order": 30,
+      "order": 31,
       "title": "Working with CSV and JSON data",
       "titleUk": "Робота з даними CSV і JSON",
       "summary": "The standard library's csv and json modules handle the escaping and structure details so you don't hand-roll a parser.",
@@ -175,7 +175,7 @@
       "id": "py-lesson-classes-and-instances",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
-      "order": 31,
+      "order": 32,
       "title": "Classes, instances and __init__",
       "titleUk": "Класи, екземпляри та __init__",
       "summary": "A class is a blueprint; __init__ sets up each new instance's own data when it is created.",
@@ -218,7 +218,7 @@
       "id": "py-lesson-inheritance",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
-      "order": 32,
+      "order": 33,
       "title": "Inheritance and super()",
       "titleUk": "Спадковість і super()",
       "summary": "A subclass reuses and extends a parent class's behavior instead of duplicating it.",
@@ -261,7 +261,7 @@
       "id": "py-lesson-dunder-methods",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
-      "order": 33,
+      "order": 34,
       "title": "Dunder methods: __repr__, __eq__ and friends",
       "titleUk": "Dunder-методи: __repr__, __eq__ та інші",
       "summary": "Special double-underscore methods let your own classes work with print(), ==, len() and other built-ins.",
@@ -303,7 +303,7 @@
       "id": "py-lesson-properties",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
-      "order": 34,
+      "order": 35,
       "title": "Properties: computed and validated attributes",
       "titleUk": "Властивості: обчислювані й валідовані атрибути",
       "summary": "@property lets a method be accessed like a plain attribute, enabling validation without changing the calling code.",
@@ -346,7 +346,7 @@
       "id": "py-lesson-dataclasses",
       "moduleId": "object-oriented-programming",
       "level": "Intermediate",
-      "order": 35,
+      "order": 36,
       "title": "@dataclass for data-holding classes",
       "titleUk": "@dataclass для класів, що зберігають дані",
       "summary": "@dataclass generates __init__, __repr__ and __eq__ from annotated fields, removing common boilerplate.",
@@ -385,10 +385,56 @@
       ]
     },
     {
+      "id": "py-lesson-enum",
+      "moduleId": "object-oriented-programming",
+      "level": "Intermediate",
+      "order": 37,
+      "title": "Enum, StrEnum and named states",
+      "titleUk": "Enum, StrEnum та іменовані стани",
+      "summary": "Enums replace scattered magic strings and numbers with a fixed, explicit set of named values.",
+      "summaryUk": "Enums замінюють розкидані magic strings і числа фіксованим, явним набором іменованих значень.",
+      "concept": "`Enum` defines a closed set of named values such as states, modes or result kinds. Code can then compare `Status.READY` instead of repeating fragile strings like `\"ready\"` across many files. `StrEnum` is useful when enum members also need to behave like strings at serialization or API boundaries, while `IntEnum` exists for integer-compatible protocols; ordinary `Enum` should remain the default when compatibility with a primitive type is not required. Enum members are singletons, so identity checks between members are stable, and construction such as `Status(\"ready\")` validates an external value by either returning the matching member or raising `ValueError`. Enums model a fixed vocabulary; they are not a replacement for classes that need substantial per-instance state.",
+      "conceptUk": "`Enum` визначає закритий набір іменованих значень, наприклад states, modes або result kinds. Тоді код може порівнювати `Status.READY` замість повторення крихких рядків на кшталт `\"ready\"` у багатьох файлах. `StrEnum` корисний, коли enum members також мають поводитися як рядки на межі serialization або API, а `IntEnum` існує для integer-compatible protocols; звичайний `Enum` варто залишати default, коли сумісність із primitive type не потрібна. Enum members є singletons, тому identity checks між members стабільні, а створення на кшталт `Status(\"ready\")` валідовує зовнішнє значення: повертає відповідний member або викликає `ValueError`. Enums моделюють фіксований vocabulary; вони не замінюють класи, яким потрібен суттєвий per-instance state.",
+      "keyPoints": [
+        "Enum gives a fixed set of named values and removes repeated magic strings or numbers",
+        "StrEnum is convenient at string serialization/API boundaries; use ordinary Enum when primitive compatibility is unnecessary",
+        "Constructing an enum from an external value validates it and raises ValueError for an unknown value"
+      ],
+      "keyPointsUk": [
+        "Enum дає фіксований набір іменованих значень і прибирає повторювані magic strings або числа",
+        "StrEnum зручний на межі string serialization/API; використовуйте звичайний Enum, якщо primitive compatibility не потрібна",
+        "Створення enum із зовнішнього значення валідовує його й викликає ValueError для невідомого значення"
+      ],
+      "code": "from enum import StrEnum\n\nclass TestStatus(StrEnum):\n    QUEUED = \"queued\"\n    RUNNING = \"running\"\n    PASSED = \"passed\"\n    FAILED = \"failed\"\n\ndef is_terminal(status: TestStatus) -> bool:\n    return status in {TestStatus.PASSED, TestStatus.FAILED}\n\nstatus = TestStatus(\"passed\")\nprint(status, is_terminal(status))",
+      "codeCaption": "A StrEnum turns external string states into validated named values before business logic uses them.",
+      "codeCaptionUk": "StrEnum перетворює зовнішні string states на валідовані іменовані значення до використання в business logic.",
+      "pitfalls": [
+        "Comparing an Enum member to its raw primitive value is usually a design smell unless you intentionally chose StrEnum or IntEnum",
+        "Changing an enum value that is stored in a database or sent over an API is a compatibility change",
+        "An enum is for a fixed set of alternatives, not for arbitrary user-created values"
+      ],
+      "pitfallsUk": [
+        "Порівняння Enum member із сирим primitive value зазвичай є design smell, якщо ви навмисно не обрали StrEnum або IntEnum",
+        "Зміна enum value, що зберігається в базі даних або передається через API, є compatibility change",
+        "Enum призначений для фіксованого набору альтернатив, а не довільних значень, створених користувачем"
+      ],
+      "exercise": "Define a StrEnum Environment with DEV, STAGE and PROD values, parse the string \"stage\" into the enum, and write a function that allows destructive test data cleanup only for non-PROD values.",
+      "exerciseUk": "Визначте StrEnum Environment зі значеннями DEV, STAGE і PROD, перетворіть рядок \"stage\" на enum і напишіть функцію, що дозволяє destructive cleanup тестових даних лише для не-PROD значень.",
+      "tags": [
+        "oop",
+        "enum",
+        "strenum",
+        "named-states"
+      ],
+      "sourceIds": [
+        "python-docs-enum"
+      ]
+    },
+    {
       "id": "py-lesson-try-except",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
-      "order": 36,
+      "order": 38,
       "title": "try/except: handling errors gracefully",
       "titleUk": "try/except: витончена обробка помилок",
       "summary": "Catch a specific exception type where recovery is possible, instead of letting the whole program crash.",
@@ -430,7 +476,7 @@
       "id": "py-lesson-custom-exceptions",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
-      "order": 37,
+      "order": 39,
       "title": "Raising and defining custom exceptions",
       "titleUk": "Виклик і визначення власних винятків",
       "summary": "raise triggers an exception; a custom exception class communicates a specific, domain-meaningful failure.",
@@ -473,7 +519,7 @@
       "id": "py-lesson-debugging-with-pdb",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
-      "order": 38,
+      "order": 40,
       "title": "Debugging interactively with breakpoint() and pdb",
       "titleUk": "Інтерактивне налагодження через breakpoint() і pdb",
       "summary": "Instead of scattering print() statements, pause execution and inspect live state with the built-in debugger.",
@@ -515,7 +561,7 @@
       "id": "py-lesson-defensive-programming",
       "moduleId": "errors-exceptions-debugging",
       "level": "Intermediate",
-      "order": 39,
+      "order": 41,
       "title": "Defensive habits: assertions and input validation",
       "titleUk": "Захисні звички: assert і валідація вводу",
       "summary": "assert catches your own programming mistakes early; explicit validation protects against bad external input.",
@@ -558,7 +604,7 @@
       "id": "py-lesson-writing-modules",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
-      "order": 40,
+      "order": 42,
       "title": "Writing and importing your own modules",
       "titleUk": "Написання й імпорт власних модулів",
       "summary": "Any .py file is a module; splitting code into modules is how programs grow past a single file.",
@@ -601,7 +647,7 @@
       "id": "py-lesson-packages-and-init",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
-      "order": 41,
+      "order": 43,
       "title": "Packages and __init__.py",
       "titleUk": "Пакети та __init__.py",
       "summary": "A package is a directory of modules; __init__.py runs on first import and can define what the package exposes.",
@@ -643,7 +689,7 @@
       "id": "py-lesson-venv-and-pip",
       "moduleId": "modules-packages-imports",
       "level": "Intermediate",
-      "order": 42,
+      "order": 44,
       "title": "Virtual environments and pip",
       "titleUk": "Віртуальні середовища й pip",
       "summary": "Every project gets its own isolated set of installed packages, so projects never fight over dependency versions.",
@@ -687,7 +733,7 @@
       "id": "py-lesson-collections-module",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
-      "order": 43,
+      "order": 45,
       "title": "The collections module: Counter, defaultdict, deque",
       "titleUk": "Модуль collections: Counter, defaultdict, deque",
       "summary": "Specialized container types that replace common manual bookkeeping patterns with a single import.",
@@ -729,7 +775,7 @@
       "id": "py-lesson-itertools-functools",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
-      "order": 44,
+      "order": 46,
       "title": "itertools and functools essentials",
       "titleUk": "Основи itertools і functools",
       "summary": "Lazy iterator composition and function-level tools that remove common loop and caching boilerplate.",
@@ -773,7 +819,7 @@
       "id": "py-lesson-datetime",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
-      "order": 45,
+      "order": 47,
       "title": "Working with dates and times",
       "titleUk": "Робота з датами й часом",
       "summary": "datetime objects, formatting with strftime, parsing with strptime, and the naive-versus-aware distinction.",
@@ -815,7 +861,7 @@
       "id": "py-lesson-os-and-sys",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
-      "order": 46,
+      "order": 48,
       "title": "os and sys for environment and runtime info",
       "titleUk": "os і sys для середовища й інформації про виконання",
       "summary": "os talks to the operating system (environment variables, processes); sys exposes interpreter-level state.",
@@ -858,7 +904,7 @@
       "id": "py-lesson-logging-basics",
       "moduleId": "standard-library-tour",
       "level": "Intermediate",
-      "order": 47,
+      "order": 49,
       "title": "Structured diagnostic output with logging",
       "titleUk": "Структурований діагностичний вивід через logging",
       "summary": "logging replaces print() debugging with leveled, configurable, and production-appropriate diagnostics.",
@@ -894,6 +940,387 @@
       ],
       "sourceIds": [
         "python-docs-logging"
+      ]
+    },
+    {
+      "id": "py-lesson-argparse",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 50,
+      "title": "Command-line interfaces with argparse",
+      "titleUk": "Command-line interfaces через argparse",
+      "summary": "Turn a script into a usable CLI with positional arguments, options, flags, type conversion, validation and generated help.",
+      "summaryUk": "Перетворення скрипта на зручний CLI з positional arguments, options, flags, type conversion, validation та generated help.",
+      "concept": "`argparse` is Python's standard-library default for basic command-line applications. An `ArgumentParser` describes what the program accepts; `add_argument()` declares positional arguments, named options and boolean flags, and `parse_args()` converts the actual command line into a `Namespace`. Declaring `type=int`, `choices=...`, defaults and required values moves routine validation into the parser and produces consistent usage/error messages automatically. `-h/--help` is generated for you. For larger CLIs, `add_subparsers()` can model commands such as `tool test ...` and `tool report ...`. Keep parsing near the application entry point rather than at import time so the module remains easy to import and test.",
+      "conceptUk": "`argparse` — default-модуль стандартної бібліотеки Python для базових command-line applications. `ArgumentParser` описує, що приймає програма; `add_argument()` оголошує positional arguments, named options і boolean flags, а `parse_args()` перетворює реальний command line на `Namespace`. Оголошення `type=int`, `choices=...`, defaults та required values переносить рутинну validation у parser і автоматично створює узгоджені usage/error messages. `-h/--help` генерується автоматично. Для більших CLI `add_subparsers()` може моделювати команди на кшталт `tool test ...` і `tool report ...`. Тримайте parsing біля application entry point, а не під час import, щоб модуль було легко імпортувати й тестувати.",
+      "keyPoints": [
+        "ArgumentParser + add_argument() declares the CLI contract; parse_args() returns a Namespace",
+        "Use type, choices, defaults and actions such as store_true instead of hand-parsing sys.argv",
+        "argparse generates help and input-error messages automatically, and subparsers support multi-command CLIs"
+      ],
+      "keyPointsUk": [
+        "ArgumentParser + add_argument() оголошує CLI contract; parse_args() повертає Namespace",
+        "Використовуйте type, choices, defaults та actions на кшталт store_true замість ручного parsing sys.argv",
+        "argparse автоматично генерує help та input-error messages, а subparsers підтримують multi-command CLI"
+      ],
+      "code": "import argparse\n\ndef build_parser():\n    parser = argparse.ArgumentParser(description=\"Run a test suite\")\n    parser.add_argument(\"suite\", help=\"suite name\")\n    parser.add_argument(\"--retries\", type=int, default=1, choices=range(1, 6))\n    parser.add_argument(\"-v\", \"--verbose\", action=\"store_true\")\n    return parser\n\ndef main():\n    args = build_parser().parse_args()\n    print(f\"suite={args.suite} retries={args.retries} verbose={args.verbose}\")\n\nif __name__ == \"__main__\":\n    main()",
+      "codeCaption": "A complete small CLI with one positional argument, a validated integer option, a boolean flag and generated help.",
+      "codeCaptionUk": "Повний невеликий CLI з positional argument, валідованим integer option, boolean flag та generated help.",
+      "pitfalls": [
+        "Using type=bool does not create a normal flag; use action=\"store_true\" or action=\"store_false\"",
+        "Calling parse_args() at module import time makes the module hard to import from tests or other code",
+        "Manually indexing sys.argv duplicates validation and help behavior that argparse already provides"
+      ],
+      "pitfallsUk": [
+        "Використання type=bool не створює звичайний flag; застосовуйте action=\"store_true\" або action=\"store_false\"",
+        "Виклик parse_args() під час import модуля ускладнює його імпорт із тестів або іншого коду",
+        "Ручне індексування sys.argv дублює validation і help behavior, які вже надає argparse"
+      ],
+      "exercise": "Build a CLI that accepts a required environment name, an optional --workers integer from 1 to 8, and a --dry-run flag; verify the automatically generated --help and an invalid workers value.",
+      "exerciseUk": "Створіть CLI, що приймає обов'язкову назву environment, optional --workers integer від 1 до 8 та flag --dry-run; перевірте автоматично generated --help і некоректне workers value.",
+      "tags": [
+        "argparse",
+        "cli",
+        "automation",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-argparse"
+      ]
+    },
+    {
+      "id": "py-lesson-subprocess",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 51,
+      "title": "Running external commands with subprocess",
+      "titleUk": "Запуск зовнішніх команд через subprocess",
+      "summary": "Use subprocess.run() to execute external programs, inspect exit codes, capture output and enforce timeouts safely.",
+      "summaryUk": "Використовуйте subprocess.run() для запуску зовнішніх програм, перевірки exit codes, capture output та безпечних timeouts.",
+      "concept": "`subprocess.run()` is the recommended high-level interface for executing an external command when you can wait for it to finish. Pass the command as a list of arguments so quoting is explicit, use `check=True` when a non-zero exit status should be an exception, `capture_output=True` plus `text=True` when you need stdout/stderr as strings, and `timeout=` so a hung child process cannot block forever. The returned `CompletedProcess` exposes `returncode`, `stdout` and `stderr`; failures with `check=True` raise `CalledProcessError`, and timeouts raise `TimeoutExpired`. Avoid `shell=True` for untrusted or interpolated input because passing text through a shell introduces command-injection and quoting risks.",
+      "conceptUk": "`subprocess.run()` — рекомендований high-level interface для запуску зовнішньої команди, коли можна дочекатися її завершення. Передавайте команду як список аргументів, щоб quoting був явним; використовуйте `check=True`, коли non-zero exit status має стати exception; `capture_output=True` разом із `text=True`, коли stdout/stderr потрібні як рядки; і `timeout=`, щоб завислий child process не блокувався назавжди. Повернений `CompletedProcess` містить `returncode`, `stdout` та `stderr`; помилки з `check=True` викликають `CalledProcessError`, а timeouts — `TimeoutExpired`. Уникайте `shell=True` для untrusted або interpolated input, бо передача тексту через shell додає command-injection та quoting risks.",
+      "keyPoints": [
+        "Prefer subprocess.run() for ordinary synchronous command execution",
+        "Use check=True, capture_output=True, text=True and timeout= deliberately according to the contract you need",
+        "Pass an argument list and avoid shell=True for untrusted input"
+      ],
+      "keyPointsUk": [
+        "Для звичайного synchronous command execution надавайте перевагу subprocess.run()",
+        "Свідомо використовуйте check=True, capture_output=True, text=True і timeout= відповідно до потрібного contract",
+        "Передавайте список аргументів і уникайте shell=True для untrusted input"
+      ],
+      "code": "import subprocess\nimport sys\n\nresult = subprocess.run(\n    [sys.executable, \"-c\", \"print('child ok')\"],\n    check=True,\n    capture_output=True,\n    text=True,\n    timeout=5,\n)\n\nprint(result.returncode)\nprint(result.stdout.strip())",
+      "codeCaption": "A portable child Python process whose exit status and captured stdout are checked explicitly.",
+      "codeCaptionUk": "Portable child Python process, у якого явно перевіряються exit status та captured stdout.",
+      "pitfalls": [
+        "Ignoring the return code can make a failed external tool look like success",
+        "shell=True with interpolated user input can create command-injection vulnerabilities",
+        "Without a timeout, a stuck child process can block the caller indefinitely"
+      ],
+      "pitfallsUk": [
+        "Ігнорування return code може зробити failed external tool схожим на success",
+        "shell=True з interpolated user input може створити command-injection vulnerability",
+        "Без timeout завислий child process може блокувати caller необмежено"
+      ],
+      "exercise": "Run a child Python process that writes one line to stdout and one to stderr, capture both streams as text, then intentionally exit with code 2 and observe CalledProcessError when check=True is enabled.",
+      "exerciseUk": "Запустіть child Python process, що пише один рядок у stdout і один у stderr, захопіть обидва streams як text, потім навмисно завершіть процес кодом 2 і спостерігайте CalledProcessError при check=True.",
+      "tags": [
+        "subprocess",
+        "processes",
+        "cli",
+        "automation",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-subprocess"
+      ]
+    },
+    {
+      "id": "py-lesson-shutil-tempfile",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 52,
+      "title": "Filesystem automation with shutil and tempfile",
+      "titleUk": "Автоматизація файлової системи через shutil і tempfile",
+      "summary": "Combine pathlib with shutil for high-level file operations and tempfile for isolated temporary workspaces.",
+      "summaryUk": "Поєднуйте pathlib із shutil для high-level file operations та tempfile для ізольованих temporary workspaces.",
+      "concept": "`pathlib` is excellent for expressing paths, while `shutil` provides high-level operations such as copying files (`copy2`), moving paths, copying directory trees, deleting directory trees and creating archives. `tempfile` creates temporary files and directories without hardcoding collision-prone names; context managers such as `TemporaryDirectory()` remove their workspace automatically when the block exits. This combination is particularly useful for test setup, build scripts and data-conversion jobs: create an isolated workspace, do the work, copy or archive the result, then let cleanup happen reliably. Treat destructive calls such as `shutil.rmtree()` as production operations — validate the target before deleting anything.",
+      "conceptUk": "`pathlib` зручний для представлення paths, а `shutil` надає high-level operations: копіювання files (`copy2`), переміщення paths, копіювання directory trees, видалення directory trees та створення archives. `tempfile` створює temporary files і directories без hardcoded імен, що можуть конфліктувати; context managers на кшталт `TemporaryDirectory()` автоматично прибирають workspace після виходу з block. Це поєднання особливо корисне для test setup, build scripts та data-conversion jobs: створіть isolated workspace, виконайте роботу, скопіюйте або архівуйте результат, а cleanup нехай відбудеться надійно. Ставтеся до destructive calls на кшталт `shutil.rmtree()` як до production operations — перевіряйте target перед видаленням.",
+      "keyPoints": [
+        "Use pathlib for paths and shutil for high-level copy/move/tree/archive operations",
+        "TemporaryDirectory() gives an isolated directory and removes it automatically on context exit",
+        "Validate targets before destructive operations such as rmtree()"
+      ],
+      "keyPointsUk": [
+        "Використовуйте pathlib для paths, а shutil — для high-level copy/move/tree/archive operations",
+        "TemporaryDirectory() дає isolated directory і автоматично видаляє його після виходу з context",
+        "Перевіряйте targets перед destructive operations на кшталт rmtree()"
+      ],
+      "code": "from pathlib import Path\nimport shutil\nimport tempfile\n\nwith tempfile.TemporaryDirectory() as tmp:\n    root = Path(tmp)\n    source = root / \"result.txt\"\n    backup = root / \"backup\"\n    backup.mkdir()\n\n    source.write_text(\"passed\\n\", encoding=\"utf-8\")\n    copied = shutil.copy2(source, backup / source.name)\n\n    print(Path(copied).read_text(encoding=\"utf-8\").strip())\n\nprint(\"temporary workspace cleaned\")",
+      "codeCaption": "A temporary workspace is created, a file is copied with shutil.copy2(), read back, and then cleaned automatically.",
+      "codeCaptionUk": "Створюється temporary workspace, файл копіюється через shutil.copy2(), читається назад, після чого workspace автоматично очищується.",
+      "pitfalls": [
+        "shutil.rmtree() is recursive and destructive; a wrong path can remove far more than intended",
+        "copy2() preserves more metadata than copy(), but it still cannot preserve every filesystem metadata feature on every OS",
+        "Do not rely on a TemporaryDirectory path after its context has exited"
+      ],
+      "pitfallsUk": [
+        "shutil.rmtree() рекурсивний і destructive; неправильний path може видалити значно більше, ніж планувалося",
+        "copy2() зберігає більше metadata, ніж copy(), але не може зберегти кожну filesystem metadata feature на кожній OS",
+        "Не покладайтеся на TemporaryDirectory path після завершення його context"
+      ],
+      "exercise": "Create a TemporaryDirectory, generate three text files inside it, copy only the .txt files into a backup subdirectory, print the copied filenames, and confirm the temporary tree disappears after the context exits.",
+      "exerciseUk": "Створіть TemporaryDirectory, згенеруйте в ньому три text files, скопіюйте лише .txt files у backup subdirectory, надрукуйте copied filenames і підтвердьте, що temporary tree зникає після виходу з context.",
+      "tags": [
+        "shutil",
+        "tempfile",
+        "filesystem",
+        "automation",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-shutil",
+        "python-docs-tempfile",
+        "python-docs-pathlib"
+      ]
+    },
+    {
+      "id": "py-lesson-configuration",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 53,
+      "title": "Configuration: environment variables, TOML and INI",
+      "titleUk": "Конфігурація: environment variables, TOML та INI",
+      "summary": "Separate runtime configuration from code using environment variables and structured configuration files.",
+      "summaryUk": "Відокремлюйте runtime configuration від коду через environment variables та structured configuration files.",
+      "concept": "Configuration should describe how a program runs without requiring source-code edits. Environment variables (`os.environ` / `os.getenv`) are a common way to inject deployment-specific values and secrets. `tomllib` reads TOML into ordinary Python dictionaries and is a good fit for structured application or tool configuration; it is read-only in the standard library. `configparser` handles traditional INI files with named sections and string values. Decide precedence explicitly — for example defaults < config file < environment variables < CLI arguments — so operators can predict which value wins. Parse configuration once near startup, validate required values and types, and pass a typed configuration object deeper into the program instead of reading global environment state everywhere.",
+      "conceptUk": "Configuration має описувати, як запускається програма, без редагування source code. Environment variables (`os.environ` / `os.getenv`) — поширений спосіб передавати deployment-specific values та secrets. `tomllib` читає TOML у звичайні Python dictionaries і добре підходить для structured application або tool configuration; у standard library він read-only. `configparser` працює з традиційними INI files із named sections та string values. Явно визначайте precedence — наприклад defaults < config file < environment variables < CLI arguments — щоб operators могли передбачити, яке value переможе. Parse configuration один раз біля startup, валідовуйте required values і types та передавайте typed configuration object глибше в програму замість читання global environment state всюди.",
+      "keyPoints": [
+        "Use environment variables for deployment-specific values and secrets, not hardcoded source constants",
+        "tomllib reads structured TOML; configparser reads/writes INI-style sections",
+        "Define configuration precedence and validate configuration once near application startup"
+      ],
+      "keyPointsUk": [
+        "Використовуйте environment variables для deployment-specific values і secrets, а не hardcoded source constants",
+        "tomllib читає structured TOML; configparser читає/пише INI-style sections",
+        "Визначте configuration precedence і валідовуйте configuration один раз біля application startup"
+      ],
+      "code": "import configparser\nimport os\nimport tomllib\n\ntoml_config = tomllib.loads(\"\"\"\ntimeout = 5\n[api]\nbase_url = \"https://example.test\"\n\"\"\")\n\nini = configparser.ConfigParser()\nini.read_string(\"\"\"\n[pytest]\naddopts = -q\n\"\"\")\n\nenvironment = os.getenv(\"APP_ENV\", \"local\")\nprint(environment)\nprint(toml_config[\"api\"][\"base_url\"], toml_config[\"timeout\"])\nprint(ini[\"pytest\"][\"addopts\"])",
+      "codeCaption": "Reading three common configuration sources without hardcoding environment-specific behavior into program logic.",
+      "codeCaptionUk": "Читання трьох поширених configuration sources без hardcoding environment-specific behavior у program logic.",
+      "pitfalls": [
+        "Environment variables are strings; convert and validate numbers, booleans and structured values explicitly",
+        "tomllib reads TOML but does not write it",
+        "Letting different modules independently read globals makes precedence and testing difficult to reason about"
+      ],
+      "pitfallsUk": [
+        "Environment variables є strings; явно перетворюйте й валідовуйте numbers, booleans та structured values",
+        "tomllib читає TOML, але не записує його",
+        "Коли різні modules незалежно читають globals, precedence і testing стають складними для reasoning"
+      ],
+      "exercise": "Define defaults for base_url and timeout, load overrides from a TOML string, then let API_TIMEOUT from the environment override only timeout; print the final resolved configuration.",
+      "exerciseUk": "Визначте defaults для base_url і timeout, завантажте overrides із TOML string, а потім дозвольте API_TIMEOUT з environment перевизначити лише timeout; надрукуйте final resolved configuration.",
+      "tags": [
+        "configuration",
+        "environment",
+        "tomllib",
+        "configparser",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-tomllib",
+        "python-docs-configparser",
+        "python-docs-stdlib-index"
+      ]
+    },
+    {
+      "id": "py-lesson-sqlite3",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 54,
+      "title": "SQLite from Python with sqlite3",
+      "titleUk": "SQLite з Python через sqlite3",
+      "summary": "Use the built-in DB-API interface for local relational data, parameterized SQL, transactions and row retrieval.",
+      "summaryUk": "Використовуйте built-in DB-API interface для local relational data, parameterized SQL, transactions та row retrieval.",
+      "concept": "The standard-library `sqlite3` module connects Python to SQLite without a separate database server. `connect()` returns a connection, `execute()` runs SQL, and placeholders (`?`) bind values separately from SQL text so data is not concatenated into a query. A connection used as a context manager commits the transaction when the block succeeds and rolls it back when an exception escapes, but that context manager does not close the connection by itself, so close it explicitly. `sqlite3.Row` makes result rows accessible by column name. SQLite is useful for local tools, fixtures, caches and prototypes; production systems with concurrent remote clients usually need a server database, but the DB-API habits — parameters, transactions and explicit resource ownership — transfer directly.",
+      "conceptUk": "Модуль standard library `sqlite3` підключає Python до SQLite без окремого database server. `connect()` повертає connection, `execute()` запускає SQL, а placeholders (`?`) прив'язують values окремо від SQL text, тому data не конкатенується в query. Connection як context manager робить commit transaction, коли block успішний, і rollback, коли exception виходить назовні, але цей context manager сам по собі не закриває connection, тому закривайте його явно. `sqlite3.Row` дозволяє звертатися до result rows за column name. SQLite корисний для local tools, fixtures, caches і prototypes; production systems із concurrent remote clients зазвичай потребують server database, але DB-API habits — parameters, transactions та explicit resource ownership — переносяться напряму.",
+      "keyPoints": [
+        "Use ? placeholders and parameter tuples instead of interpolating values into SQL",
+        "Use transactions deliberately; the connection context manager commits or rolls back but does not close the connection",
+        "sqlite3.Row provides readable name-based column access"
+      ],
+      "keyPointsUk": [
+        "Використовуйте ? placeholders та parameter tuples замість interpolation values у SQL",
+        "Свідомо використовуйте transactions; connection context manager робить commit або rollback, але не закриває connection",
+        "sqlite3.Row дає читабельний доступ до columns за name"
+      ],
+      "code": "import sqlite3\n\ncon = sqlite3.connect(\":memory:\")\ncon.row_factory = sqlite3.Row\n\ntry:\n    with con:\n        con.execute(\"CREATE TABLE tests (name TEXT, duration_ms INTEGER)\")\n        con.executemany(\n            \"INSERT INTO tests VALUES (?, ?)\",\n            [(\"login\", 120), (\"search\", 75), (\"checkout\", 210)],\n        )\n\n    rows = con.execute(\n        \"SELECT name, duration_ms FROM tests WHERE duration_ms > ? ORDER BY duration_ms\",\n        (100,),\n    ).fetchall()\n\n    print([dict(row) for row in rows])\nfinally:\n    con.close()",
+      "codeCaption": "An in-memory database demonstrates schema creation, parameterized inserts, a transaction and a parameterized SELECT.",
+      "codeCaptionUk": "In-memory database показує schema creation, parameterized inserts, transaction та parameterized SELECT.",
+      "pitfalls": [
+        "Never build SQL with f-strings or string concatenation for data values; bind parameters instead",
+        "A connection context manager manages transactions but does not automatically close the connection",
+        "Forgetting transaction boundaries can leave writes uncommitted or make failure behavior unclear"
+      ],
+      "pitfallsUk": [
+        "Ніколи не будуйте SQL через f-strings або string concatenation для data values; використовуйте parameter binding",
+        "Connection context manager керує transactions, але не закриває connection автоматично",
+        "Забуті transaction boundaries можуть залишити writes uncommitted або зробити failure behavior неясним"
+      ],
+      "exercise": "Create an in-memory table of test runs, insert several rows with executemany(), update one status inside a transaction, and select only failed rows using a bound parameter rather than string formatting.",
+      "exerciseUk": "Створіть in-memory table тестових запусків, вставте кілька rows через executemany(), оновіть один status у transaction і виберіть лише failed rows через bound parameter замість string formatting.",
+      "tags": [
+        "sqlite3",
+        "database",
+        "sql",
+        "transactions",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-sqlite3"
+      ]
+    },
+    {
+      "id": "py-lesson-test-doubles",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 55,
+      "title": "Test doubles with unittest.mock and pytest monkeypatch",
+      "titleUk": "Test doubles через unittest.mock та pytest monkeypatch",
+      "summary": "Replace slow or external boundaries in tests, control behavior, and verify interactions without replacing the code under test.",
+      "summaryUk": "Замінюйте slow або external boundaries у тестах, контролюйте behavior і перевіряйте interactions без заміни самого code under test.",
+      "concept": "A test double replaces a dependency at a boundary so the test can control inputs or observe interactions. `unittest.mock.Mock` can return configured values and record calls; `patch()` temporarily replaces an attribute for the duration of a context manager or decorated test. The central rule is to patch the name *where the code under test looks it up*, not automatically where the original object was defined. pytest's `monkeypatch` fixture is a lightweight way to replace attributes, dictionary entries or environment variables and automatically restores them after the test. Mock external HTTP clients, clocks or OS boundaries when isolation is valuable, but avoid mocking the unit's own internal logic so heavily that the test merely verifies its implementation rather than behavior.",
+      "conceptUk": "Test double замінює dependency на boundary, щоб тест міг контролювати inputs або спостерігати interactions. `unittest.mock.Mock` може повертати configured values і записувати calls; `patch()` тимчасово замінює attribute на час context manager або decorated test. Центральне правило — patch name *там, де code under test його шукає*, а не автоматично там, де original object був визначений. Fixture pytest `monkeypatch` — легкий спосіб замінювати attributes, dictionary entries або environment variables з автоматичним restore після тесту. Mock external HTTP clients, clocks або OS boundaries, коли isolation цінний, але не mock внутрішню logic unit настільки сильно, що тест лише перевіряє implementation замість behavior.",
+      "keyPoints": [
+        "Mock or patch external boundaries, not the behavior you are actually trying to test",
+        "Patch where the dependency is looked up by the code under test",
+        "pytest monkeypatch automatically restores attributes, mappings and environment changes after the test"
+      ],
+      "keyPointsUk": [
+        "Mock або patch external boundaries, а не behavior, який ви насправді тестуєте",
+        "Робіть patch там, де dependency шукається code under test",
+        "pytest monkeypatch автоматично відновлює attributes, mappings та environment changes після тесту"
+      ],
+      "code": "from unittest.mock import Mock\n\nclass HealthService:\n    def __init__(self, client):\n        self.client = client\n\n    def is_ready(self):\n        return self.client.get(\"/health\")[\"status\"] == \"ok\"\n\nclient = Mock()\nclient.get.return_value = {\"status\": \"ok\"}\n\nservice = HealthService(client)\nprint(service.is_ready())\n\nclient.get.assert_called_once_with(\"/health\")\n\n# In pytest, monkeypatch can temporarily change an env var:\n# monkeypatch.setenv(\"APP_ENV\", \"test\")",
+      "codeCaption": "A mock replaces only the HTTP-client boundary while the service's real decision logic still executes and the interaction is asserted.",
+      "codeCaptionUk": "Mock замінює лише HTTP-client boundary, тоді як реальна decision logic service виконується, а interaction перевіряється.",
+      "pitfalls": [
+        "Patching the object at its definition instead of the name imported by the module under test often has no effect",
+        "Over-mocking implementation details makes refactoring break tests even when behavior is unchanged",
+        "A Mock accepts many misspelled attributes unless you use a spec/autospec or another stricter interface"
+      ],
+      "pitfallsUk": [
+        "Patch object у місці його definition замість name, імпортованого module under test, часто не має ефекту",
+        "Over-mocking implementation details змушує refactoring ламати тести, навіть коли behavior не змінився",
+        "Mock приймає багато misspelled attributes, якщо не використати spec/autospec або інший stricter interface"
+      ],
+      "exercise": "Write a function that asks a client for /version and returns the version string. Test it with Mock, assert the call arguments, then write a pytest test that uses monkeypatch.setenv() to control a separate environment-dependent branch.",
+      "exerciseUk": "Напишіть функцію, що запитує client про /version і повертає version string. Протестуйте її через Mock, перевірте call arguments, а потім напишіть pytest test із monkeypatch.setenv() для контролю окремої environment-dependent branch.",
+      "tags": [
+        "testing",
+        "mock",
+        "unittest-mock",
+        "monkeypatch",
+        "pytest"
+      ],
+      "sourceIds": [
+        "python-docs-unittest-mock",
+        "pytest-docs"
+      ]
+    },
+    {
+      "id": "py-lesson-http-requests",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 56,
+      "title": "HTTP clients with Requests",
+      "titleUk": "HTTP clients через Requests",
+      "summary": "Make maintainable HTTP calls with explicit timeouts, status checks, query parameters, JSON payloads and sessions.",
+      "summaryUk": "Робіть maintainable HTTP calls з explicit timeouts, status checks, query parameters, JSON payloads та sessions.",
+      "concept": "Requests is a third-party HTTP client, so install it in the project's environment and declare it as a dependency rather than assuming it is part of Python. `requests.get()`/`post()` return a `Response`; call `raise_for_status()` when non-success HTTP statuses should become exceptions, use `response.json()` only when the response is expected to contain JSON, and always set a timeout so a network call cannot wait forever. Pass query parameters through `params=` and JSON request bodies through `json=` instead of manually building URLs or serializing payloads. A `requests.Session()` can reuse connection state and shared headers across several calls. In production code, keep HTTP access behind a small client function/class so tests can replace that boundary cleanly.",
+      "conceptUk": "Requests — third-party HTTP client, тому встановлюйте його в environment проєкту й оголошуйте dependency, а не вважайте частиною Python. `requests.get()`/`post()` повертають `Response`; викликайте `raise_for_status()`, коли non-success HTTP statuses мають стати exceptions; використовуйте `response.json()` лише коли очікується JSON; і завжди задавайте timeout, щоб network call не чекав безкінечно. Передавайте query parameters через `params=`, а JSON request bodies через `json=` замість ручного складання URLs або serialization payloads. `requests.Session()` може повторно використовувати connection state і shared headers між кількома calls. У production code тримайте HTTP access за невеликою client function/class, щоб tests могли чисто замінити цей boundary.",
+      "keyPoints": [
+        "Requests is third-party: install and declare it as a project dependency",
+        "Set timeouts, check status deliberately with raise_for_status(), and decode JSON only when the contract says JSON",
+        "Use params= and json= instead of hand-building query strings or JSON text; use Session for repeated calls"
+      ],
+      "keyPointsUk": [
+        "Requests — third-party: встановлюйте й оголошуйте його як project dependency",
+        "Задавайте timeouts, свідомо перевіряйте status через raise_for_status() і декодуйте JSON лише коли contract гарантує JSON",
+        "Використовуйте params= та json= замість ручного складання query strings або JSON text; використовуйте Session для repeated calls"
+      ],
+      "code": "import requests\n\ndef fetch_user(base_url: str, user_id: int) -> dict:\n    response = requests.get(\n        f\"{base_url}/users/{user_id}\",\n        params={\"include\": \"roles\"},\n        timeout=5,\n    )\n    response.raise_for_status()\n    return response.json()",
+      "codeCaption": "A small HTTP boundary with a query parameter, explicit timeout, status validation and JSON decoding.",
+      "codeCaptionUk": "Невеликий HTTP boundary із query parameter, explicit timeout, status validation та JSON decoding.",
+      "pitfalls": [
+        "Requests has no default timeout, so omitting timeout= can leave a call waiting indefinitely",
+        "A 404 or 500 response is still a Response object; call raise_for_status() or handle status_code explicitly",
+        "Calling response.json() does not prove Content-Type or schema correctness and can itself fail on invalid JSON"
+      ],
+      "pitfallsUk": [
+        "Requests не має default timeout, тому відсутність timeout= може залишити call чекати необмежено",
+        "404 або 500 response все одно є Response object; викликайте raise_for_status() або явно обробляйте status_code",
+        "Виклик response.json() не доводить коректність Content-Type чи schema і сам може впасти на invalid JSON"
+      ],
+      "exercise": "Write create_job(base_url, payload) that POSTs JSON with a 5-second timeout, requires a successful status, and returns the decoded JSON. Keep the HTTP call in this single function so a unit test can replace it.",
+      "exerciseUk": "Напишіть create_job(base_url, payload), що POSTить JSON із 5-second timeout, вимагає successful status і повертає decoded JSON. Тримайте HTTP call у цій одній функції, щоб unit test міг її замінити.",
+      "tags": [
+        "requests",
+        "http",
+        "api",
+        "automation"
+      ],
+      "sourceIds": [
+        "requests-docs"
+      ]
+    },
+    {
+      "id": "py-lesson-security-identifiers",
+      "moduleId": "practical-scripting-automation",
+      "level": "Intermediate",
+      "order": 57,
+      "title": "Secrets, hashes and UUIDs",
+      "titleUk": "Secrets, hashes та UUIDs",
+      "summary": "Know when to use secrets for secure randomness, hashlib for digests, and uuid for identifiers.",
+      "summaryUk": "Розумійте, коли використовувати secrets для secure randomness, hashlib для digests та uuid для identifiers.",
+      "concept": "Different utilities solve different problems. `secrets` generates cryptographically strong random values suitable for tokens and reset links; the `random` module is for simulation and sampling, not security. `hashlib` computes deterministic message digests such as SHA-256, useful for integrity checks, cache keys and content fingerprints — but a fast general-purpose hash is not a password-storage scheme, which requires a dedicated password-hashing algorithm with salting and work factors. `uuid.uuid4()` generates a random UUID for identifiers that need extremely low collision probability without coordination; a UUID is an identifier, not a secret. Keep these distinctions explicit so code does not accidentally use a convenient primitive for the wrong security property.",
+      "conceptUk": "Різні utilities вирішують різні задачі. `secrets` генерує cryptographically strong random values, придатні для tokens та reset links; модуль `random` призначений для simulation і sampling, а не security. `hashlib` обчислює deterministic message digests на кшталт SHA-256, корисні для integrity checks, cache keys та content fingerprints — але швидкий general-purpose hash не є password-storage scheme, для якого потрібен спеціальний password-hashing algorithm із salting та work factors. `uuid.uuid4()` генерує random UUID для identifiers із дуже низькою collision probability без координації; UUID — identifier, а не secret. Явно розрізняйте ці властивості, щоб code випадково не використав зручний primitive для неправильної security property.",
+      "keyPoints": [
+        "Use secrets, not random, for security-sensitive tokens",
+        "hashlib digests are useful for integrity/fingerprints but raw SHA-256 is not a password-storage solution",
+        "UUIDs are identifiers with low collision probability; they are not secrets or authorization tokens"
+      ],
+      "keyPointsUk": [
+        "Використовуйте secrets, а не random, для security-sensitive tokens",
+        "hashlib digests корисні для integrity/fingerprints, але raw SHA-256 не є password-storage solution",
+        "UUIDs — identifiers із low collision probability; це не secrets і не authorization tokens"
+      ],
+      "code": "import hashlib\nimport secrets\nimport uuid\n\ntoken = secrets.token_urlsafe(16)\ndigest = hashlib.sha256(b\"build-artifact\").hexdigest()\nrun_id = uuid.uuid4()\n\nprint(\"token length:\", len(token))\nprint(\"sha256:\", digest)\nprint(\"run id:\", run_id)",
+      "codeCaption": "Three distinct primitives demonstrate secure random tokens, deterministic hashing and unique identifiers.",
+      "codeCaptionUk": "Три різні primitives показують secure random tokens, deterministic hashing та unique identifiers.",
+      "pitfalls": [
+        "random.random() and random.choice() are not appropriate for secrets or security tokens",
+        "A UUID is usually guessable enough that it must not be treated as authentication",
+        "Fast hashes such as plain SHA-256 are not suitable for storing passwords directly"
+      ],
+      "pitfallsUk": [
+        "random.random() та random.choice() не підходять для secrets або security tokens",
+        "UUID зазвичай достатньо guessable, тому його не можна вважати authentication",
+        "Fast hashes на кшталт plain SHA-256 не підходять для прямого зберігання passwords"
+      ],
+      "exercise": "Generate a secure token, hash a byte string twice to prove the digest is deterministic, and generate two UUID4 values to show they are distinct identifiers.",
+      "exerciseUk": "Згенеруйте secure token, двічі захешуйте byte string, щоб довести deterministic digest, і згенеруйте два UUID4 values, щоб показати, що це distinct identifiers.",
+      "tags": [
+        "secrets",
+        "hashlib",
+        "uuid",
+        "security",
+        "stdlib"
+      ],
+      "sourceIds": [
+        "python-docs-secrets",
+        "python-docs-hashlib",
+        "python-docs-uuid"
       ]
     }
   ]

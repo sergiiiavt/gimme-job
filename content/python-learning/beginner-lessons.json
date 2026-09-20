@@ -481,38 +481,41 @@
       "order": 12,
       "title": "for loops and range()",
       "titleUk": "Цикли for і range()",
-      "summary": "for iterates directly over a sequence's values; range() generates a lazy sequence of numbers to loop over.",
-      "summaryUk": "for ітерує напряму по значеннях послідовності; range() генерує лінивий набір чисел для проходження.",
-      "concept": "Python's `for item in iterable:` asks the iterable for its items one by one — not over numeric indices — which is why there is rarely a need for a C-style counting loop. Lists and strings yield their elements in order; a dictionary is a mapping, not a sequence, and iterating it directly yields its *keys* by default, so reach for `.values()` or `.items()` when you want the values or both together. `range(stop)`, `range(start, stop)` or `range(start, stop, step)` generates a lazy sequence of integers used when you specifically need index positions or a fixed count of repetitions, and `enumerate(sequence)` gives you both the index and the value together when you need both at once, which is more idiomatic than manually tracking a counter.",
-      "conceptUk": "`for item in iterable:` у Python запитує в ітерованого об'єкта елементи один за одним, а не по числових індексах, тому рідко потрібен цикл підрахунку в стилі C. Списки й рядки видають свої елементи по порядку; словник — це відображення, а не послідовність, і пряма ітерація по ньому дає його *ключі* за замовчуванням, тож використовуйте `.values()` чи `.items()`, коли потрібні значення чи обидва разом. `range(stop)`, `range(start, stop)` чи `range(start, stop, step)` генерує лінивий набір цілих чисел, що використовується, коли конкретно потрібні позиції індексів чи фіксована кількість повторень, а `enumerate(sequence)` дає одразу і індекс, і значення, коли потрібні обидва — це ідіоматичніше за ручне відстеження лічильника.",
+      "summary": "for iterates directly over values; range(), enumerate() and zip() cover the common cases for counts, indexes and parallel iteration.",
+      "summaryUk": "for ітерує напряму по значеннях; range(), enumerate() і zip() покривають типові випадки для лічильників, індексів та паралельної ітерації.",
+      "concept": "Python's `for item in iterable:` asks the iterable for its items one by one — not over numeric indices — which is why there is rarely a need for a C-style counting loop. Lists and strings yield their elements in order; a dictionary yields its keys by default, so use `.values()` or `.items()` when you need values or key-value pairs. `range(start, stop, step)` supplies a lazy integer sequence when you actually need positions or a fixed repeat count. `enumerate(iterable, start=...)` gives an index together with each value. `zip(a, b, ...)` walks multiple iterables in parallel and yields tuples, stopping when the shortest input is exhausted by default; use `zip(..., strict=True)` when different lengths should be treated as an error rather than silently truncated.",
+      "conceptUk": "`for item in iterable:` у Python запитує в ітерованого об'єкта елементи один за одним, а не числові індекси, тому цикл підрахунку в стилі C потрібен рідко. Списки й рядки видають елементи по порядку; словник за замовчуванням видає ключі, тому використовуйте `.values()` або `.items()`, коли потрібні значення чи пари ключ-значення. `range(start, stop, step)` дає ліниву послідовність цілих чисел, коли справді потрібні позиції чи фіксована кількість повторень. `enumerate(iterable, start=...)` повертає індекс разом із кожним значенням. `zip(a, b, ...)` проходить кілька iterable паралельно й повертає кортежі, за замовчуванням зупиняючись на найкоротшому; використовуйте `zip(..., strict=True)`, якщо різна довжина має бути помилкою, а не тихим обрізанням.",
       "keyPoints": [
-        "for item in iterable: asks for items one by one; dicts yield keys by default, not values",
-        "range(start, stop, step) is lazy and commonly used for a fixed repeat count",
-        "enumerate(sequence) gives (index, value) pairs when both are needed"
+        "Iterate over values directly; dictionaries yield keys unless you use .values() or .items()",
+        "range() is for numeric sequences, enumerate() adds an index, and zip() pairs parallel iterables",
+        "zip() truncates to the shortest iterable by default; strict=True detects mismatched lengths"
       ],
       "keyPointsUk": [
-        "for item in iterable: запитує елементи один за одним; словники за замовчуванням дають ключі, не значення",
-        "range(start, stop, step) лінивий і часто використовується для фіксованої кількості повторень",
-        "enumerate(sequence) дає пари (індекс, значення), коли потрібні обидва"
+        "Ітеруйте напряму по значеннях; словники дають ключі, якщо не використати .values() чи .items()",
+        "range() потрібен для числових послідовностей, enumerate() додає індекс, а zip() поєднує паралельні iterable",
+        "zip() за замовчуванням обрізає до найкоротшого iterable; strict=True виявляє різну довжину"
       ],
-      "code": "fruits = [\"apple\", \"banana\", \"cherry\"]\nfor index, fruit in enumerate(fruits, start=1):\n    print(index, fruit)\n\nfor i in range(3):\n    print(\"repeat\", i)",
-      "codeCaption": "enumerate() for index-and-value pairs, and range() for a fixed number of repeats.",
-      "codeCaptionUk": "enumerate() для пар індекс-значення, і range() для фіксованої кількості повторень.",
+      "code": "names = [\"Ana\", \"Bob\", \"Cleo\"]\nscores = [91, 87, 95]\n\nfor position, (name, score) in enumerate(zip(names, scores, strict=True), start=1):\n    print(position, name, score)\n\nfor i in range(3):\n    print(\"repeat\", i)",
+      "codeCaption": "Combining zip() and enumerate() to iterate over two related sequences with a readable 1-based position.",
+      "codeCaptionUk": "Поєднання zip() та enumerate() для проходження двох пов'язаних послідовностей із читабельною позицією від 1.",
       "pitfalls": [
-        "for i in range(len(fruits)): fruits[i] works but is non-idiomatic — prefer for fruit in fruits:",
-        "range(5) produces 0, 1, 2, 3, 4 — five values, not including 5"
+        "for i in range(len(items)): items[i] is usually less readable than iterating values directly",
+        "zip() silently stops at the shortest input unless strict=True is used",
+        "range(5) produces 0, 1, 2, 3, 4 — the stop value itself is excluded"
       ],
       "pitfallsUk": [
-        "for i in range(len(fruits)): fruits[i] працює, але неідіоматично — надавайте перевагу for fruit in fruits:",
-        "range(5) дає 0, 1, 2, 3, 4 — п'ять значень, без включення 5"
+        "for i in range(len(items)): items[i] зазвичай менш читабельний, ніж пряма ітерація по значеннях",
+        "zip() тихо зупиняється на найкоротшому input, якщо не використати strict=True",
+        "range(5) дає 0, 1, 2, 3, 4 — саме stop-значення не включається"
       ],
-      "exercise": "Given a list of names, print each one preceded by its 1-based position, e.g. \"1: Alice\", using enumerate with start=1 instead of manual index math.",
-      "exerciseUk": "Маючи список імен, надрукуйте кожне з попередньою 1-базованою позицією, наприклад «1: Alice», використовуючи enumerate з start=1 замість ручної математики з індексами.",
+      "exercise": "Given equally-sized lists of test names and durations, use zip(..., strict=True) and enumerate(..., start=1) to print a numbered report without indexing the lists manually.",
+      "exerciseUk": "Маючи списки назв тестів і тривалостей однакової довжини, використайте zip(..., strict=True) та enumerate(..., start=1), щоб надрукувати нумерований звіт без ручного індексування списків.",
       "tags": [
         "loops",
         "for",
         "range",
-        "enumerate"
+        "enumerate",
+        "zip"
       ],
       "sourceIds": [
         "python-docs-tutorial",
@@ -563,10 +566,56 @@
       ]
     },
     {
+      "id": "py-lesson-structural-pattern-matching",
+      "moduleId": "control-flow",
+      "level": "Beginner",
+      "order": 14,
+      "title": "Structural pattern matching with match/case",
+      "titleUk": "Structural pattern matching через match/case",
+      "summary": "match/case selects a branch by the shape and contents of data, including destructuring and guarded patterns.",
+      "summaryUk": "match/case обирає гілку за формою та вмістом даних, включно з destructuring і guarded patterns.",
+      "concept": "`match value:` is Python's structural pattern-matching statement. It is more powerful than a traditional switch because a `case` can check both values and the *shape* of a sequence, mapping or object while binding parts of the matched value to names. Cases are tried from top to bottom and only the first matching case runs. `case _:` is the wildcard fallback. A guard such as `case {\"status\": code} if code >= 500:` adds an ordinary boolean condition after the structural pattern matched. Pattern matching is useful when data naturally has several distinct shapes — parsed messages, events, command records — but a simple two-branch boolean decision is usually still clearer as `if/else`.",
+      "conceptUk": "`match value:` — оператор structural pattern matching у Python. Він потужніший за традиційний switch, бо `case` може перевіряти і значення, і *форму* послідовності, mapping чи object, одночасно прив'язуючи частини збігу до імен. Cases перевіряються зверху вниз, і виконується лише перший збіг. `case _:` є wildcard fallback. Guard на кшталт `case {\"status\": code} if code >= 500:` додає звичайну булеву умову після того, як structural pattern уже збігся. Pattern matching корисний, коли дані природно мають кілька різних форм — parsed messages, events, command records — але проста булева розвилка з двох варіантів зазвичай читабельніша через `if/else`.",
+      "keyPoints": [
+        "match/case can match structure and values while binding matched parts to local names",
+        "Cases are evaluated top-to-bottom and only the first matching case executes",
+        "case _ is the wildcard fallback; an `if` guard can add an extra condition"
+      ],
+      "keyPointsUk": [
+        "match/case може зіставляти структуру й значення та прив'язувати знайдені частини до локальних імен",
+        "Cases перевіряються зверху вниз, і виконується лише перший збіг",
+        "case _ — wildcard fallback; guard через `if` може додати додаткову умову"
+      ],
+      "code": "def describe(event):\n    match event:\n        case {\"type\": \"test\", \"name\": name, \"status\": \"failed\", \"duration\": seconds} if seconds > 30:\n            return f\"slow failure: {name}\"\n        case {\"type\": \"test\", \"name\": name, \"status\": status}:\n            return f\"{name}: {status}\"\n        case {\"type\": \"build\", \"id\": build_id}:\n            return f\"build {build_id}\"\n        case _:\n            return \"unknown event\"\n\nprint(describe({\"type\": \"test\", \"name\": \"checkout\", \"status\": \"failed\", \"duration\": 42}))",
+      "codeCaption": "Matching dictionary shapes, binding fields to names, and using a guard for a more specific first case.",
+      "codeCaptionUk": "Зіставлення форм словника, прив'язування полів до імен і використання guard для більш специфічного першого case.",
+      "pitfalls": [
+        "Putting a broad case before a more specific one can make the later case unreachable in practice",
+        "A bare name in a pattern normally captures a value; it does not compare against an existing variable of the same spelling",
+        "Using match/case for a simple true/false decision can be less readable than if/else"
+      ],
+      "pitfallsUk": [
+        "Розміщення широкого case перед більш специфічним може фактично зробити пізніший case недосяжним",
+        "Звичайне ім'я в pattern зазвичай захоплює значення; воно не порівнює з уже наявною змінною з таким самим написанням",
+        "Використання match/case для простої true/false розвилки може бути менш читабельним, ніж if/else"
+      ],
+      "exercise": "Write classify(response) using match/case for tuples shaped like (status_code, payload): handle 200 with any payload, 404 with a resource name, any 5xx status via a guard, and a wildcard fallback.",
+      "exerciseUk": "Напишіть classify(response) через match/case для кортежів виду (status_code, payload): обробіть 200 з будь-яким payload, 404 з назвою ресурсу, будь-який 5xx status через guard і wildcard fallback.",
+      "tags": [
+        "control-flow",
+        "pattern-matching",
+        "match-case"
+      ],
+      "sourceIds": [
+        "python-docs-tutorial",
+        "pep-634"
+      ]
+    },
+    {
       "id": "py-lesson-defining-functions",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
-      "order": 14,
+      "order": 15,
       "title": "Defining and calling functions",
       "titleUk": "Визначення та виклик функцій",
       "summary": "def creates a reusable, named block of code; functions exist to avoid repeating yourself.",
@@ -608,7 +657,7 @@
       "id": "py-lesson-parameters-and-return",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
-      "order": 15,
+      "order": 16,
       "title": "Parameters, arguments and returning values",
       "titleUk": "Параметри, аргументи та повернення значень",
       "summary": "Parameters are placeholders in the definition; arguments are the actual values passed at call time.",
@@ -650,39 +699,45 @@
       "id": "py-lesson-default-and-keyword-arguments",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
-      "order": 16,
-      "title": "Default values and keyword arguments",
-      "titleUk": "Значення за замовчуванням і іменовані аргументи",
-      "summary": "Making some parameters optional with defaults, and calling functions with explicit argument names for clarity.",
-      "summaryUk": "Робимо деякі параметри необов'язковими через значення за замовчуванням, і викликаємо функції з явними іменами аргументів для ясності.",
-      "concept": "`def greet(name, greeting=\"Hello\"):` gives `greeting` a default value, making it optional at the call site — callers who do not care about it can simply omit it. Arguments can be passed positionally (`greet(\"Ana\")`, matched by order) or by keyword (`greet(name=\"Ana\", greeting=\"Hi\")`, matched by name), and keyword arguments both improve readability at a call site with several similar-looking parameters and let you skip earlier optional arguments to set only a later one. Parameters with defaults must come after parameters without them in the definition.",
-      "conceptUk": "`def greet(name, greeting=\"Hello\"):` дає `greeting` значення за замовчуванням, роблячи його необов'язковим у місці виклику — викликачі, яким воно байдуже, можуть просто його опустити. Аргументи можна передавати позиційно (`greet(\"Ana\")`, зіставлення за порядком) чи іменовано (`greet(name=\"Ana\", greeting=\"Hi\")`, зіставлення за іменем), і іменовані аргументи покращують читабельність у місці виклику з кількома схожими параметрами й дозволяють пропустити попередні необов'язкові аргументи, щоб встановити лише пізніший. Параметри зі значеннями за замовчуванням мають йти після параметрів без них у визначенні.",
+      "order": 17,
+      "title": "Function signatures: defaults, *args, **kwargs, / and *",
+      "titleUk": "Сигнатури функцій: defaults, *args, **kwargs, / та *",
+      "summary": "How Python signatures control optional values, positional/keyword calling, variadic arguments and keyword-only or positional-only APIs.",
+      "summaryUk": "Як сигнатури Python керують optional values, позиційними/іменованими викликами, variadic arguments та keyword-only або positional-only API.",
+      "concept": "A Python function signature can describe much more than required parameters followed by defaults. A default (`timeout=10`) makes a parameter optional. `*args` collects extra positional arguments into a tuple, while `**kwargs` collects extra keyword arguments into a dictionary. A `/` in the signature marks every parameter before it as positional-only; a bare `*` (or the presence of `*args`) makes following parameters keyword-only. These markers are useful when an API should prevent ambiguous calls or preserve freedom to rename an internal parameter later. At the call site, the reverse unpacking forms `func(*sequence)` and `func(**mapping)` spread positional and keyword arguments into a call. Variadic parameters should not be used merely to avoid designing a clear signature — explicit named parameters remain easier to discover and validate.",
+      "conceptUk": "Сигнатура функції Python може описувати значно більше, ніж обов'язкові параметри та defaults. Default (`timeout=10`) робить параметр необов'язковим. `*args` збирає додаткові позиційні аргументи в кортеж, а `**kwargs` — додаткові іменовані аргументи у словник. Символ `/` у сигнатурі робить усі параметри перед ним positional-only; окремий `*` (або наявність `*args`) робить наступні параметри keyword-only. Ці маркери корисні, коли API має заборонити неоднозначні виклики або зберегти можливість пізніше перейменувати внутрішній параметр. У місці виклику зворотні форми розпакування `func(*sequence)` та `func(**mapping)` розгортають позиційні й іменовані аргументи у виклик. Variadic parameters не слід використовувати лише для того, щоб уникнути проєктування чіткої сигнатури — явні іменовані параметри легше знаходити й валідовувати.",
       "keyPoints": [
-        "A default value (name=default) makes a parameter optional at the call site",
-        "Arguments can be matched by position or by explicit keyword name",
-        "Parameters with defaults must come after ones without defaults in the signature"
+        "Defaults make parameters optional; *args becomes a tuple and **kwargs becomes a dict",
+        "`/` marks earlier parameters positional-only, while `*` makes later parameters keyword-only",
+        "At the call site, *sequence and **mapping unpack arguments into a function call",
+        "Prefer an explicit signature when the accepted inputs are known instead of hiding everything in *args/**kwargs"
       ],
       "keyPointsUk": [
-        "Значення за замовчуванням (name=default) робить параметр необов'язковим у виклику",
-        "Аргументи можна зіставляти за позицією чи явним іменем",
-        "Параметри зі значеннями за замовчуванням мають йти після параметрів без них у сигнатурі"
+        "Defaults роблять параметри необов'язковими; *args стає кортежем, а **kwargs — словником",
+        "`/` робить попередні параметри positional-only, а `*` — наступні параметри keyword-only",
+        "У місці виклику *sequence та **mapping розпаковують аргументи у виклик функції",
+        "Якщо допустимі inputs відомі, надавайте перевагу явній сигнатурі замість приховування всього в *args/**kwargs"
       ],
-      "code": "def create_user(username, is_admin=False, active=True):\n    return {\"username\": username, \"is_admin\": is_admin, \"active\": active}\n\ncreate_user(\"ana\")\ncreate_user(\"bob\", is_admin=True)\ncreate_user(username=\"cleo\", active=False, is_admin=False)",
-      "codeCaption": "Three calls showing positional arguments, mixed positional/keyword arguments, and fully keyword arguments.",
-      "codeCaptionUk": "Три виклики, що показують позиційні аргументи, змішані позиційні/іменовані аргументи, і повністю іменовані аргументи.",
+      "code": "def run_check(name, /, *targets, timeout=10, **metadata):\n    print(\"check:\", name)\n    print(\"targets:\", targets)\n    print(\"timeout:\", timeout)\n    print(\"metadata:\", metadata)\n\nrun_check(\"smoke\", \"/health\", \"/ready\", timeout=2, owner=\"qa\")\n\npositional = (\"regression\", \"/api\")\noptions = {\"timeout\": 30, \"build\": \"2026.09\"}\nrun_check(*positional, **options)",
+      "codeCaption": "One signature demonstrates positional-only input, *args, a keyword-only timeout, **kwargs, and call-site unpacking.",
+      "codeCaptionUk": "Одна сигнатура показує positional-only input, *args, keyword-only timeout, **kwargs та розпакування в місці виклику.",
       "pitfalls": [
-        "def f(a=1, b):  is a SyntaxError — non-default parameters cannot follow default ones",
-        "As covered separately, a mutable default like items=[] is shared and mutated across calls"
+        "A mutable default such as items=[] is created once and reused across calls; use None and create a new object inside",
+        "Passing a positional-only parameter by name or a keyword-only parameter positionally raises TypeError",
+        "Accepting arbitrary **kwargs can hide misspelled option names unless you validate the keys deliberately"
       ],
       "pitfallsUk": [
-        "def f(a=1, b):  — SyntaxError; параметри без замовчування не можуть йти після параметрів зі замовчуванням",
-        "Як розглянуто окремо, змінюване значення за замовчуванням на кшталт items=[] спільне й змінюється між викликами"
+        "Змінюваний default на кшталт items=[] створюється один раз і повторно використовується між викликами; використовуйте None і створюйте новий об'єкт усередині",
+        "Передача positional-only параметра за ім'ям або keyword-only параметра позиційно викликає TypeError",
+        "Приймання довільних **kwargs може приховати помилки в назвах options, якщо ключі не валідовувати явно"
       ],
-      "exercise": "Write format_price(amount, currency=\"USD\", show_cents=True) and call it three ways: with just amount, with a different currency by keyword, and with show_cents=False.",
-      "exerciseUk": "Напишіть format_price(amount, currency=\"USD\", show_cents=True) і викличте її трьома способами: лише з amount, з іншою валютою через іменований аргумент, і з show_cents=False.",
+      "exercise": "Write execute(command, /, *args, cwd=None, timeout=30, **labels), call it directly, then call it once more by unpacking a tuple of positional values and a dictionary of keyword options.",
+      "exerciseUk": "Напишіть execute(command, /, *args, cwd=None, timeout=30, **labels), викличте її напряму, а потім ще раз через розпакування кортежу позиційних значень і словника keyword options.",
       "tags": [
         "functions",
-        "default-arguments"
+        "default-arguments",
+        "args-kwargs",
+        "function-signatures"
       ],
       "sourceIds": [
         "python-docs-tutorial",
@@ -693,7 +748,7 @@
       "id": "py-lesson-variable-scope-basics",
       "moduleId": "functions-and-scope",
       "level": "Beginner",
-      "order": 17,
+      "order": 18,
       "title": "Variable scope: local versus global",
       "titleUk": "Область видимості змінних: локальна проти глобальної",
       "summary": "A variable created inside a function only exists inside that function, unless declared global.",
@@ -736,7 +791,7 @@
       "id": "py-lesson-lists",
       "moduleId": "core-data-structures",
       "level": "Beginner",
-      "order": 18,
+      "order": 19,
       "title": "Lists: ordered, mutable collections",
       "titleUk": "Списки: впорядковані, змінювані колекції",
       "summary": "The everyday workhorse collection: ordered, indexable, mutable, and allows duplicate values.",
@@ -779,7 +834,7 @@
       "id": "py-lesson-tuples",
       "moduleId": "core-data-structures",
       "level": "Beginner",
-      "order": 19,
+      "order": 20,
       "title": "Tuples: fixed, immutable records",
       "titleUk": "Кортежі: фіксовані, незмінювані записи",
       "summary": "Tuples look like lists but signal \"this shape is fixed\" and, when their elements are hashable, can be used as dict keys.",
@@ -822,7 +877,7 @@
       "id": "py-lesson-dictionaries",
       "moduleId": "core-data-structures",
       "level": "Beginner",
-      "order": 20,
+      "order": 21,
       "title": "Dictionaries: key-value mappings",
       "titleUk": "Словники: відображення ключ-значення",
       "summary": "The primary tool for storing and looking up data by a meaningful name instead of a numeric position.",
@@ -865,7 +920,7 @@
       "id": "py-lesson-sets",
       "moduleId": "core-data-structures",
       "level": "Beginner",
-      "order": 21,
+      "order": 22,
       "title": "Sets: unique, unordered collections",
       "titleUk": "Множини: унікальні, невпорядковані колекції",
       "summary": "Sets automatically deduplicate and offer fast membership testing plus mathematical set operations.",
@@ -907,8 +962,8 @@
     {
       "id": "py-lesson-comprehensions",
       "moduleId": "core-data-structures",
-      "level": "Intermediate",
-      "order": 22,
+      "level": "Beginner",
+      "order": 23,
       "title": "List, dict and set comprehensions",
       "titleUk": "List, dict і set comprehension",
       "summary": "A compact, idiomatic way to build a new collection by transforming and filtering an existing one.",
@@ -951,7 +1006,7 @@
       "id": "py-lesson-string-methods",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
-      "order": 23,
+      "order": 24,
       "title": "Common string methods",
       "titleUk": "Поширені методи рядків",
       "summary": "Strings are immutable, so no string method ever modifies the original in place.",
@@ -994,7 +1049,7 @@
       "id": "py-lesson-f-strings",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
-      "order": 24,
+      "order": 25,
       "title": "f-strings for readable formatting",
       "titleUk": "f-рядки для читабельного форматування",
       "summary": "The modern, preferred way to build strings with embedded values, prefixed with f and using {expression}.",
@@ -1038,7 +1093,7 @@
       "id": "py-lesson-splitting-and-joining",
       "moduleId": "strings-and-text-formatting",
       "level": "Beginner",
-      "order": 25,
+      "order": 26,
       "title": "Splitting and joining strings",
       "titleUk": "Розбиття та з'єднання рядків",
       "summary": "split() turns text into a list; join() turns a list back into text — the two are inverses of each other.",
@@ -1081,8 +1136,8 @@
     {
       "id": "py-lesson-regex-intro",
       "moduleId": "strings-and-text-formatting",
-      "level": "Intermediate",
-      "order": 26,
+      "level": "Beginner",
+      "order": 27,
       "title": "An introduction to regular expressions",
       "titleUk": "Вступ до регулярних виразів",
       "summary": "Pattern matching for text that's too flexible for plain split()/in checks, using the re module.",

@@ -14,9 +14,11 @@ content/python-interview/
   *-qa.json               # one file per topic (core-language, oop, concurrency, ...)
 
 content/python-learning/
-  catalog.ts                # build-time composition
-  taxonomy.json              # 15 modules, Beginner to Expert
-  beginner-lessons.json       # lessons grouped by level
+  catalog.ts                 # build-time composition
+  taxonomy.json              # 16 modules, Beginner to Expert
+  sources.json               # curriculum-only official references
+  coverage-baseline.json     # validator-enforced must-teach capabilities
+  beginner-lessons.json      # lessons grouped by level
   intermediate-lessons.json
   advanced-lessons.json
   expert-lessons.json
@@ -66,15 +68,15 @@ The curriculum has no direct precedent in this codebase; it is modeled on the sa
 
 The curriculum is reached via the **Programming** nav item (renamed from "Programming for QA"), which now renders the full Python curriculum directly rather than a generic placeholder roadmap.
 
-`content/python-learning/catalog.ts` reuses `content/python-interview/sources.json` directly rather than duplicating the source list, since both modules cite the same official Python documentation and PEPs.
+`content/python-learning/catalog.ts` composes the shared Python/interview reference set with `content/python-learning/sources.json`. Shared language references remain deduplicated, while curriculum-only practical topics such as `argparse`, `subprocess`, `sqlite3` and `unittest.mock` can cite their exact official documentation without forcing the interview catalog to reference sources it does not use.
 
 ## Editorial approach
 
 - Real Python, GeeksforGeeks, InterviewBit, Toptal and DataCamp are cross-checked as coverage and prevalence inputs for the interview catalog, the same way DOU/Katalon/Indeed/GeeksforGeeks are used for the QA catalog — signals for what is commonly asked, never answer authorities.
 - `docs.python.org` and the relevant PEP validate every technical claim, in both the interview catalog and the curriculum.
 - Wording and answers are original.
-- Both are intentionally smaller, expandable v1 collections (133 interview questions across 13 topics; 64 lessons across 15 modules) rather than an attempt to match the QA catalog's 672-question scale on day one — the QA catalog itself grew to that size over many additions, documented across its own multiple `*-qa.json` files.
+- The Python curriculum is intentionally curated rather than an exhaustive standard-library reference, but its core coverage is explicit rather than count-driven: `coverage-baseline.json` requires critical language and practical capabilities to have real lessons. The current baseline is 74 lessons across 16 modules.
 
 ## Validation and deployment
 
-`npm run check:content` runs all three content validators in sequence: `scripts/validate-interview-content.mjs` (QA catalog, unchanged), `scripts/validate-python-interview-content.mjs`, and `scripts/validate-python-curriculum-content.mjs`. The Python validators enforce the same kind of rules as the QA validator — unique namespaced IDs, valid level/prevalence/module references, EN+UK length floors, matching EN/UK list lengths, known sources, every source referenced by at least one question or lesson — scaled to each collection's own (currently smaller, and rolling-minimum) baseline instead of the QA catalog's 672/19/67 floors.
+`npm run check:content` runs the content validators including `scripts/validate-python-interview-content.mjs` and `scripts/validate-python-curriculum-content.mjs`. The curriculum validator checks unique namespaced IDs, module/level consistency, EN+UK completeness, contiguous learning order, known and actually-used curriculum sources, module minimums, and the explicit `coverage-baseline.json`. This last check prevents a reference-only entry such as `argparse` from existing in Quick Reference without a corresponding teaching lesson.

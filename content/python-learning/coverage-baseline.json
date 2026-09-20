@@ -1,0 +1,141 @@
+{
+  "minimumLessons": 74,
+  "minimumModules": 16,
+  "requirements": [
+    {
+      "id": "structural-pattern-matching",
+      "lessonId": "py-lesson-structural-pattern-matching",
+      "lessonNeedles": [
+        "match",
+        "case"
+      ],
+      "quickReferenceNeedles": [
+        "match value: case"
+      ]
+    },
+    {
+      "id": "complete-function-signatures",
+      "lessonId": "py-lesson-default-and-keyword-arguments",
+      "lessonNeedles": [
+        "*args",
+        "**kwargs",
+        "keyword-only",
+        "positional-only"
+      ],
+      "quickReferenceNeedles": [
+        "*args",
+        "**kwargs",
+        "keyword-only",
+        "positional-only"
+      ]
+    },
+    {
+      "id": "enumeration-types",
+      "lessonId": "py-lesson-enum",
+      "lessonNeedles": [
+        "Enum",
+        "StrEnum"
+      ],
+      "quickReferenceNeedles": [
+        "class Color(Enum)",
+        "class Status(StrEnum)"
+      ]
+    },
+    {
+      "id": "cli-argument-parsing",
+      "lessonId": "py-lesson-argparse",
+      "lessonNeedles": [
+        "argparse",
+        "ArgumentParser",
+        "parse_args"
+      ],
+      "quickReferenceNeedles": [
+        "argparse.ArgumentParser"
+      ]
+    },
+    {
+      "id": "external-processes",
+      "lessonId": "py-lesson-subprocess",
+      "lessonNeedles": [
+        "subprocess.run",
+        "capture_output",
+        "check=True",
+        "timeout"
+      ],
+      "quickReferenceNeedles": [
+        "subprocess.run"
+      ]
+    },
+    {
+      "id": "filesystem-automation",
+      "lessonId": "py-lesson-shutil-tempfile",
+      "lessonNeedles": [
+        "shutil",
+        "tempfile",
+        "TemporaryDirectory"
+      ],
+      "quickReferenceNeedles": [
+        "shutil.copy2",
+        "TemporaryDirectory"
+      ]
+    },
+    {
+      "id": "configuration-files",
+      "lessonId": "py-lesson-configuration",
+      "lessonNeedles": [
+        "tomllib",
+        "configparser",
+        "os.environ"
+      ],
+      "quickReferenceNeedles": [
+        "tomllib",
+        "configparser"
+      ]
+    },
+    {
+      "id": "sqlite",
+      "lessonId": "py-lesson-sqlite3",
+      "lessonNeedles": [
+        "sqlite3",
+        "?",
+        "commit"
+      ],
+      "quickReferenceNeedles": [
+        "sqlite3.connect"
+      ]
+    },
+    {
+      "id": "test-doubles",
+      "lessonId": "py-lesson-test-doubles",
+      "lessonNeedles": [
+        "unittest.mock",
+        "patch",
+        "monkeypatch"
+      ],
+      "quickReferenceNeedles": [
+        "Mock(return_value"
+      ]
+    },
+    {
+      "id": "http-client",
+      "lessonId": "py-lesson-http-requests",
+      "lessonNeedles": [
+        "requests",
+        "timeout",
+        "raise_for_status"
+      ]
+    },
+    {
+      "id": "security-utilities",
+      "lessonId": "py-lesson-security-identifiers",
+      "lessonNeedles": [
+        "secrets",
+        "hashlib",
+        "uuid"
+      ],
+      "quickReferenceNeedles": [
+        "secrets.token_urlsafe"
+      ]
+    }
+  ]
+}
