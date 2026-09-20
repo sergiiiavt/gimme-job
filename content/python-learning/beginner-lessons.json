@@ -962,7 +962,7 @@
     {
       "id": "py-lesson-comprehensions",
       "moduleId": "core-data-structures",
-      "level": "Intermediate",
+      "level": "Beginner",
       "order": 23,
       "title": "List, dict and set comprehensions",
       "titleUk": "List, dict і set comprehension",
@@ -1136,7 +1136,7 @@
     {
       "id": "py-lesson-regex-intro",
       "moduleId": "strings-and-text-formatting",
-      "level": "Intermediate",
+      "level": "Beginner",
       "order": 27,
       "title": "An introduction to regular expressions",
       "titleUk": "Вступ до регулярних виразів",
