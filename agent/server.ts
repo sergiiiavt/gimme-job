@@ -165,7 +165,14 @@ async function syncJobs(manualOnly = false) {
         else updated += 1;
       }
     }
-    const sync = { inserted, updated, seen, errors };
+    const intakeHealth = results.find((result) => result.source === "intake")?.sourceHealth;
+    const sources = intakeHealth ?? results.map((result) => ({
+      source: result.source,
+      status: result.error ? "FAILED" as const : "SUCCESS" as const,
+      jobs: result.jobs.length,
+      error: result.error,
+    }));
+    const sync = { inserted, updated, seen, errors, sources };
     vacancySyncState.succeeded(trigger, sync);
     return sync;
   } catch (error) {
