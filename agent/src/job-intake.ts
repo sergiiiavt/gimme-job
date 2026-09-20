@@ -220,7 +220,7 @@ function looksLikeDescriptionProse(value: string): boolean {
   return PROSE_LIKE_COMPANY.test(String(value ?? "").trim());
 }
 
-function canonicalCompany(value: string): string {
+export function canonicalCompany(value: string): string {
   if (looksLikeDescriptionProse(value)) return "";
   const normalized = normalizeVacancyText(value).replace(COMPANY_SUFFIXES, " ").replace(/\s+/g, " ").trim();
   return /^(?:unknown|company is hidden|hidden company|невідома компанія|компанію приховано|компания скрыта|n a|none)$/.test(normalized) ? "" : normalized;
@@ -268,7 +268,7 @@ function descriptionSimilarity(left: string, right: string): number {
   return jaccard(tokenSet(left, DESCRIPTION_STOP_WORDS), tokenSet(right, DESCRIPTION_STOP_WORDS));
 }
 
-function canonicalUrl(value: string): string {
+export function canonicalUrl(value: string): string {
   try {
     const url = new URL(value);
     for (const key of [...url.searchParams.keys()]) {
