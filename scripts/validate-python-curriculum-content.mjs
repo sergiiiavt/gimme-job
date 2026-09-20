@@ -3,31 +3,64 @@ import { readFile } from "node:fs/promises";
 
 const readJson = async (relativePath) => JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
 
-const [beginner, intermediate, advanced, expert, taxonomy, sources] = await Promise.all([
+const [
+  beginner,
+  intermediate,
+  advanced,
+  expert,
+  taxonomy,
+  baseSources,
+  learningSources,
+  quickReference,
+  coverageBaseline,
+] = await Promise.all([
   readJson("../content/python-learning/beginner-lessons.json"),
   readJson("../content/python-learning/intermediate-lessons.json"),
   readJson("../content/python-learning/advanced-lessons.json"),
   readJson("../content/python-learning/expert-lessons.json"),
   readJson("../content/python-learning/taxonomy.json"),
   readJson("../content/python-interview/sources.json"),
+  readJson("../content/python-learning/sources.json"),
+  readJson("../content/python-learning/quick-reference.json"),
+  readJson("../content/python-learning/coverage-baseline.json"),
 ]);
 
 const lessons = [...beginner.lessons, ...intermediate.lessons, ...advanced.lessons, ...expert.lessons];
+const sources = [...baseSources, ...learningSources];
 const levels = new Set(["Beginner", "Intermediate", "Advanced", "Expert"]);
 const sourceIds = new Set(sources.map((source) => source.id));
 const modules = taxonomy.filter((item) => item.level);
 const moduleIds = new Set(modules.map((item) => item.id));
+const moduleById = new Map(modules.map((item) => [item.id, item]));
 const lessonIds = new Set();
 const lessonTitles = new Set();
 
-assert.ok(lessons.length >= 64, "The Python curriculum must not regress below the current 64-lesson baseline.");
-assert.equal(modules.length, 15, "The Python curriculum taxonomy must contain exactly 15 modules.");
+assert.equal(sourceIds.size, sources.length, "Python curriculum source IDs must be unique across shared and learning-specific sources.");
+assert.ok(
+  lessons.length >= coverageBaseline.minimumLessons,
+  `The Python curriculum must not regress below the coverage baseline of ${coverageBaseline.minimumLessons} lessons.`,
+);
+assert.ok(
+  modules.length >= coverageBaseline.minimumModules,
+  `The Python curriculum must not regress below the coverage baseline of ${coverageBaseline.minimumModules} modules.`,
+);
+
+for (const source of learningSources) {
+  assert.match(source.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid learning source id: ${source.id}`);
+  assert.ok(source.title?.trim(), `Missing title for learning source ${source.id}`);
+  assert.match(source.url, /^https:\/\//, `Learning source URL must use HTTPS: ${source.id}`);
+  assert.ok(source.publisher?.trim(), `Missing publisher for learning source ${source.id}`);
+  assert.ok(source.kind?.trim(), `Missing kind for learning source ${source.id}`);
+  assert.ok(source.role?.trim(), `Missing role for learning source ${source.id}`);
+}
 
 for (const curriculumModule of modules) {
   assert.match(curriculumModule.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, `Invalid module id: ${curriculumModule.id}`);
   assert.ok(levels.has(curriculumModule.level), `Invalid level for module ${curriculumModule.id}`);
   assert.ok(curriculumModule.label?.trim(), `Missing label for module ${curriculumModule.id}`);
+  assert.ok(curriculumModule.labelUk?.trim(), `Missing Ukrainian label for module ${curriculumModule.id}`);
   assert.ok(curriculumModule.description?.trim(), `Missing description for module ${curriculumModule.id}`);
+  assert.ok(curriculumModule.descriptionUk?.trim(), `Missing Ukrainian description for module ${curriculumModule.id}`);
 }
 
 for (const lesson of lessons) {
@@ -40,6 +73,11 @@ for (const lesson of lessons) {
 
   assert.ok(moduleIds.has(lesson.moduleId), `Unknown module ${lesson.moduleId} in ${lesson.id}`);
   assert.ok(levels.has(lesson.level), `Invalid level for ${lesson.id}`);
+  assert.equal(
+    lesson.level,
+    moduleById.get(lesson.moduleId).level,
+    `Lesson level must match module level for ${lesson.id}`,
+  );
   assert.ok(Number.isInteger(lesson.order) && lesson.order >= 1, `Invalid learning order for ${lesson.id}`);
 
   assert.ok(lesson.title?.trim(), `Missing title for ${lesson.id}`);
@@ -48,7 +86,7 @@ for (const lesson of lessons) {
   assert.ok(lesson.summaryUk?.trim(), `Missing Ukrainian summary for ${lesson.id}`);
   assert.ok(lesson.concept?.trim(), `Missing concept for ${lesson.id}`);
   assert.ok(lesson.concept.trim().length >= 200, `Concept explanation is too short for ${lesson.id}`);
-  assert.ok(lesson.conceptUk?.trim(), `Missing Ukrainian concept for ${lesson.id}`);
+  assert.ok(lesson.conceptUk?.trim(), `Missing Ukrainian concept explanation for ${lesson.id}`);
   assert.ok(lesson.conceptUk.trim().length >= 200, `Ukrainian concept explanation is too short for ${lesson.id}`);
 
   assert.ok(lesson.keyPoints?.length >= 2, `Add at least two key points for ${lesson.id}`);
@@ -89,4 +127,36 @@ for (const level of levels) {
   assert.ok(lessons.some((lesson) => lesson.level === level), `No lessons use level ${level}`);
 }
 
-console.log(`Python curriculum validated: ${lessons.length} lessons, ${modules.length} modules.`);
+const referencedLearningSourceIds = new Set(
+  lessons.flatMap((lesson) => lesson.sourceIds).filter((sourceId) => learningSources.some((source) => source.id === sourceId)),
+);
+for (const source of learningSources) {
+  assert.ok(referencedLearningSourceIds.has(source.id), `Learning-specific source ${source.id} is not referenced by any lesson.`);
+}
+
+const lessonsById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+const quickReferenceText = JSON.stringify(quickReference).toLowerCase();
+
+for (const requirement of coverageBaseline.requirements) {
+  const lesson = lessonsById.get(requirement.lessonId);
+  assert.ok(lesson, `Coverage requirement ${requirement.id} is missing lesson ${requirement.lessonId}.`);
+  const lessonText = JSON.stringify(lesson).toLowerCase();
+
+  for (const needle of requirement.lessonNeedles ?? []) {
+    assert.ok(
+      lessonText.includes(needle.toLowerCase()),
+      `Coverage requirement ${requirement.id} expects "${needle}" in ${requirement.lessonId}.`,
+    );
+  }
+
+  for (const needle of requirement.quickReferenceNeedles ?? []) {
+    assert.ok(
+      quickReferenceText.includes(needle.toLowerCase()),
+      `Coverage requirement ${requirement.id} expects "${needle}" in the Python Quick Reference.`,
+    );
+  }
+}
+
+console.log(
+  `Python curriculum validated: ${lessons.length} lessons, ${modules.length} modules, ${learningSources.length} curriculum-specific sources, ${coverageBaseline.requirements.length} coverage requirements.`,
+);
