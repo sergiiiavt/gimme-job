@@ -20,21 +20,56 @@ class RecordingD1 {
   supportsBatch = true;
 
   private apply(normalized: string, values: unknown[]) {
+    if (normalized.startsWith("update jobs set relevant =")) {
+      const id = String(values[4]);
+      const row = this.jobs.find((entry) => entry.id === id);
+      assert.ok(row, `metadata target ${id} must already exist when the statement runs`);
+      Object.assign(row, {
+        relevant: values[0],
+        display_source: values[1],
+        dedupe_url: values[2],
+        dedupe_company: values[3],
+      });
+      return;
+    }
     if (normalized.startsWith("update jobs set")) {
-      const id = String(values[14]);
+      const id = String(values[17]);
       const row = this.jobs.find((entry) => entry.id === id);
       assert.ok(row, `update target ${id} must already exist when the statement runs`);
-      Object.assign(row, { title: values[2], company: values[3], description: values[8], source: values[0] });
+      Object.assign(row, {
+        title: values[2],
+        company: values[3],
+        description: values[8],
+        source: values[0],
+        relevant: 1,
+        display_source: values[14],
+        dedupe_url: values[15],
+        dedupe_company: values[16],
+      });
       return;
     }
     if (normalized.startsWith("insert into jobs")) {
-      const [id, fingerprint, source, , title, company, , , url, , description] = values;
+      const [id, fingerprint, source, , title, company, , , url, , description,
+        , , , , , , displaySource, dedupeUrl, dedupeCompany] = values;
       const existing = this.jobs.find((entry) => entry.fingerprint === fingerprint);
       if (existing) {
-        Object.assign(existing, { source, title, company, url, description });
+        Object.assign(existing, {
+          source, title, company, url, description,
+          relevant: 1,
+          display_source: displaySource,
+          dedupe_url: dedupeUrl,
+          dedupe_company: dedupeCompany,
+        });
         return;
       }
-      this.jobs.push({ id, fingerprint, source, title, company, url, description, discovered_at: "2026-09-20T00:00:00.000Z" });
+      this.jobs.push({
+        id, fingerprint, source, title, company, url, description,
+        discovered_at: "2026-09-20T00:00:00.000Z",
+        relevant: 1,
+        display_source: displaySource,
+        dedupe_url: dedupeUrl,
+        dedupe_company: dedupeCompany,
+      });
     }
   }
 
@@ -44,7 +79,13 @@ class RecordingD1 {
       normalized,
       values,
       first: async <T>() => (normalized.includes("count(*)") ? { count: this.jobs.length } as T : null),
-      all: async <T>() => (normalized.includes("from jobs") ? { results: [...this.jobs] as T[] } : { results: [] as T[] }),
+      all: async <T>() => {
+        if (!normalized.includes("from jobs")) return { results: [] as T[] };
+        const rows = normalized.includes("where display_source is null")
+          ? this.jobs.filter((row) => row.display_source == null)
+          : this.jobs;
+        return { results: [...rows] as T[] };
+      },
       run: async () => {
         this.looseRuns += 1;
         this.apply(normalized, values);
