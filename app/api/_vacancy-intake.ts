@@ -57,12 +57,14 @@ export interface VacancySourceSkip {
 /** Raised when configured sources produced no vacancies, whether by errors or empty parser results. */
 export class VacancySyncFailure extends Error {
   readonly errors: VacancySourceError[];
+  readonly sources: VacancySourceHealth[];
 
-  constructor(errors: VacancySourceError[]) {
+  constructor(errors: VacancySourceError[], sources: VacancySourceHealth[] = []) {
     const detail = errors.map((entry) => `${entry.source}: ${entry.error}`).join("; ");
     super(`Vacancy sync collected nothing. ${detail}`);
     this.name = "VacancySyncFailure";
     this.errors = errors;
+    this.sources = sources;
   }
 }
 
@@ -536,7 +538,13 @@ export async function syncVacancySources(
   try {
     return await collectAndStoreVacancies(db, trigger);
   } catch (error) {
-    await markVacancySyncFailed(db, trigger, error instanceof Error ? error.message : String(error));
+    await markVacancySyncFailed(
+      db,
+      trigger,
+      error instanceof Error ? error.message : String(error),
+      new Date(),
+      error instanceof VacancySyncFailure ? error.sources : undefined,
+    );
     throw error;
   }
 }
@@ -551,13 +559,38 @@ async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Pr
     .map((result) => ({ source: result.source, error: result.error ?? "Unknown source failure" }));
   const jobs = intake?.jobs ?? [];
   const seen = intake?.seen ?? jobs.length;
+  const skipped = skippedCloudSources(config);
+  let sourceHealth: VacancySourceHealth[] = intake?.sourceHealth?.map((entry) => ({
+    source: entry.source,
+    status: entry.status,
+    jobs: entry.jobs,
+    error: entry.error,
+  })) ?? errors.map((entry) => ({
+    source: entry.source,
+    status: "FAILED" as const,
+    jobs: 0,
+    error: entry.error,
+  }));
+  sourceHealth = [
+    ...sourceHealth,
+    ...skipped.map((entry) => ({
+      source: entry.source,
+      status: "SKIPPED" as const,
+      jobs: 0,
+      error: entry.reason,
+    })),
+  ];
 
   // HTTP 200 with a changed page shape can make a parser return [] without
   // throwing. That is just as much a failed refresh as every source throwing.
   if (attempted.length > 0 && seen === 0) {
+    const zeroMessage = "Configured sources returned zero parseable vacancies.";
     const failureErrors = errors.length === attempted.length
       ? errors
-      : [...errors, { source: "intake", error: "Configured sources returned zero parseable vacancies." }];
+      : [...errors, { source: "intake", error: zeroMessage }];
+    sourceHealth = sourceHealth.map((entry) => entry.status === "SUCCESS" && entry.jobs === 0
+      ? { ...entry, status: "FAILED" as const, error: zeroMessage }
+      : entry);
     console.error({
       schemaVersion: 1,
       service: "gimmejob",
@@ -566,7 +599,7 @@ async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Pr
       attempted: attempted.length,
       errors: failureErrors,
     });
-    throw new VacancySyncFailure(failureErrors);
+    throw new VacancySyncFailure(failureErrors, sourceHealth);
   }
 
   const stored = await upsertVacancies(jobs, db);
@@ -574,6 +607,7 @@ async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Pr
     seen,
     inserted: stored.inserted,
     updated: stored.updated,
+    sources: sourceHealth,
   });
 
   if (errors.length > 0) {
@@ -594,7 +628,7 @@ async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Pr
     rejected: intake?.rejected ?? 0,
     duplicates: intake?.duplicates ?? stored.duplicates,
     errors,
-    skipped: skippedCloudSources(config),
+    skipped,
   };
 }
 
