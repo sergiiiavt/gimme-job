@@ -889,12 +889,14 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                 ? <a className="signin-link" href="/workspace">Open personal view →</a>
                 : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
             </div>
-            {isPersonal ? (
-              <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>
-            ) : (
-              <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
-            )}
-            {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
+            <div className="vacancy-catalog-summary">
+              {isPersonal ? (
+                <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>
+              ) : (
+                <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
+              )}
+              {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
+            </div>
           </section>
 
           <nav className="vacancy-tabs" aria-label="Vacancy workspace tabs">
