@@ -136,3 +136,48 @@ test("a sync failure is still reported as a failure when gating is wired", async
   assert.equal(payload.ok, false);
   assert.match(payload.error, /403 Forbidden/);
 });
+
+
+test("a stale Worker request returns immediately while the sync continues with waitUntil", async () => {
+  let release!: () => void;
+  let crawls = 0;
+  const completion = new Promise<void>((resolve) => { release = resolve; });
+  const stale = successState(new Date(NOW - 4 * 60 * 60_000).toISOString());
+  const running = {
+    ...stale,
+    status: "RUNNING" as const,
+    startedAt: new Date(NOW).toISOString(),
+  };
+  let reads = 0;
+  let deferred: Promise<unknown> | null = null;
+
+  const response = await handleVacancySync(
+    request(),
+    openTenant,
+    async () => {
+      crawls += 1;
+      await completion;
+      return { accepted: 3 };
+    },
+    async () => { throw new Error("background sync must not load a dashboard before returning"); },
+    {
+      readState: async () => reads++ === 0 ? stale : running,
+      defer: (promise) => {
+        deferred = promise;
+        return true;
+      },
+      now: NOW,
+    },
+  );
+
+  assert.equal(response.status, 202);
+  const payload = await response.json() as { ok: boolean; background: boolean; sync: { status: string } };
+  assert.equal(payload.ok, true);
+  assert.equal(payload.background, true);
+  assert.equal(payload.sync.status, "RUNNING");
+  assert.equal(crawls, 1);
+  assert.ok(deferred);
+
+  release();
+  await deferred;
+});
