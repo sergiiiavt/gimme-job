@@ -97,7 +97,9 @@ test("background refresh keeps tabs while only manual sync clears them", () => {
 
 
 test("vacancy freshness stays grouped underneath the stat line", () => {
-  const summaryBlock = source.match(/<div className="vacancy-catalog-summary">[\s\S]*?<\/div>/u)?.[0] ?? "";
+  const summaryStart = source.indexOf('<div className="vacancy-catalog-summary">');
+  const introEnd = source.indexOf("</section>", summaryStart);
+  const summaryBlock = summaryStart >= 0 && introEnd > summaryStart ? source.slice(summaryStart, introEnd) : "";
   assert.match(summaryBlock, /className="stat-line"/);
   assert.match(summaryBlock, /className="vacancy-catalog-freshness"/);
   assert.ok(summaryBlock.indexOf("stat-line") < summaryBlock.indexOf("vacancy-catalog-freshness"));
