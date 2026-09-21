@@ -8,6 +8,15 @@ export interface JobSource {
   collect(): Promise<JobInput[]>;
 }
 
+export type VacancySourceRunStatus = "SUCCESS" | "FAILED";
+
+export interface VacancySourceRunHealth {
+  source: string;
+  status: VacancySourceRunStatus;
+  jobs: number;
+  error: string | null;
+}
+
 export interface SourceRunResult {
   source: string;
   jobs: JobInput[];
@@ -15,6 +24,7 @@ export interface SourceRunResult {
   seen?: number;
   rejected?: number;
   duplicates?: number;
+  sourceHealth?: VacancySourceRunHealth[];
 }
 
 function normalizeCollectedJob(job: JobInput): JobInput {
@@ -56,6 +66,12 @@ export async function collectAllSources(sources: JobSource[]): Promise<SourceRun
   );
 
   const successful = sourceResults.filter((result) => result.error === null);
+  const sourceHealth: VacancySourceRunHealth[] = sourceResults.map((result) => ({
+    source: result.source,
+    status: result.error === null ? "SUCCESS" : "FAILED",
+    jobs: result.jobs.length,
+    error: result.error,
+  }));
   const collected = successful.flatMap((result) => result.jobs);
   const relevance = filterRelevantVacancies(collected);
   const deduplicated = deduplicateVacancies(relevance.jobs);
@@ -72,6 +88,7 @@ export async function collectAllSources(sources: JobSource[]): Promise<SourceRun
       seen: collected.length,
       rejected: relevance.rejected.length,
       duplicates: deduplicated.duplicateCount,
+      sourceHealth,
     },
   ];
 }

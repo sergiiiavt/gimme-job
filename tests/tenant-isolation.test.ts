@@ -101,16 +101,18 @@ class FakeDb {
     if (normalized.startsWith("SELECT question_id, created_at FROM user_interview_stars")) {
       return [...this.stars.values()].filter((row) => row.user_id === userId);
     }
-    if (normalized.startsWith("SELECT * FROM job_tracking")) {
+    if (normalized.startsWith("SELECT job_id, status, status_updated_at FROM job_tracking")) {
       return [...this.tracking.values()].filter((row) => row.user_id === userId);
     }
-    if (normalized.startsWith("SELECT * FROM user_analyses")) {
+    if (normalized.startsWith("SELECT job_id, payload_json FROM user_analyses")) {
       return [...this.analyses.values()].filter((row) => row.user_id === userId);
     }
-    if (normalized.startsWith("SELECT * FROM user_resume_variants")) {
-      return [...this.resumes.values()].filter((row) => row.user_id === userId);
+    if (normalized.startsWith("SELECT job_id, markdown, CASE WHEN pdf_base64")) {
+      return [...this.resumes.values()]
+        .filter((row) => row.user_id === userId)
+        .map((row) => ({ ...row, has_pdf: row.pdf_base64 ? 1 : 0 }));
     }
-    if (normalized.startsWith("SELECT * FROM user_application_drafts")) {
+    if (normalized.startsWith("SELECT id, job_id, recipient, subject, body, status")) {
       return [...this.drafts.values()].filter((row) => row.user_id === userId);
     }
     throw new Error(`Unhandled all SQL: ${normalized}`);

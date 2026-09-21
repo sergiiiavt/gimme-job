@@ -118,6 +118,9 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
+  // GitHub Actions refreshes hourly at :17. This :47 trigger is a backstop and
+  // the Worker itself skips it while the catalogue is less than three hours old.
+  deployConfig.triggers = { crons: ["47 * * * *"] };
   if (ragEnabled) {
     deployConfig.ai = { binding: "AI" };
     deployConfig.vectorize = [{ binding: "RAG_INDEX", index_name: vectorIndexName }];

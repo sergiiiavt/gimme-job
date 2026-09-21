@@ -8,6 +8,24 @@
   margin-bottom: 18px;
 }
 
+.vacancy-catalog-summary {
+  display: grid;
+  gap: 8px;
+}
+
+/* Ingestion runs on a schedule, so the catalogue states its own age. */
+.vacancy-catalog-freshness {
+  color: var(--faint);
+  font-size: 11px;
+  margin: 0;
+}
+
+@media (max-width: 1120px) {
+  .vacancy-catalog-summary {
+    width: 100%;
+  }
+}
+
 .vacancy-tabs {
   margin: 0 0 10px;
   overflow-x: auto;

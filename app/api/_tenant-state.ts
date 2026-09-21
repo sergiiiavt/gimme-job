@@ -14,6 +14,7 @@ type PublicJob = {
 type PublicJobsPayload = {
   jobs: PublicJob[];
   generatedAt?: string;
+  vacancySync?: unknown;
 };
 
 export type TenantRequestContext = {
@@ -117,7 +118,7 @@ export function createTenantState(deps: TenantStateDeps) {
   const runtime = deps.runtime ?? {};
   const defaultProfile = deps.defaultProfile ?? {};
   const defaultSources = deps.defaultSources ?? {};
-  const loadPublicJobs = deps.loadPublicJobs ?? (async () => ({ jobs: [] }));
+  const loadPublicJobs: () => Promise<PublicJobsPayload> = deps.loadPublicJobs ?? (async () => ({ jobs: [] }));
 
   async function setting<T>(userId: string, key: string, fallback: T): Promise<T> {
     const row = await database.prepare("SELECT value_json FROM user_settings WHERE user_id = ? AND key = ?")
@@ -332,22 +333,27 @@ export function createTenantState(deps: TenantStateDeps) {
         },
         statuses: {},
         connections: null,
+        vacancySync: publicPayload.vacancySync ?? null,
         authenticated: false,
         generatedAt: now(),
       };
     }
 
     const [trackingResult, analysisResult, resumeResult, draftResult] = await Promise.all([
-      database.prepare("SELECT * FROM job_tracking WHERE user_id = ?").bind(userId).all<Row>(),
-      database.prepare("SELECT * FROM user_analyses WHERE user_id = ?").bind(userId).all<Row>(),
-      database.prepare("SELECT * FROM user_resume_variants WHERE user_id = ?").bind(userId).all<Row>(),
-      database.prepare("SELECT * FROM user_application_drafts WHERE user_id = ?").bind(userId).all<Row>(),
+      database.prepare("SELECT job_id, status, status_updated_at FROM job_tracking WHERE user_id = ?").bind(userId).all<Row>(),
+      database.prepare("SELECT job_id, payload_json FROM user_analyses WHERE user_id = ?").bind(userId).all<Row>(),
+      database.prepare(`SELECT job_id, markdown,
+        CASE WHEN pdf_base64 IS NOT NULL AND length(pdf_base64) > 0 THEN 1 ELSE 0 END AS has_pdf
+        FROM user_resume_variants WHERE user_id = ?`).bind(userId).all<Row>(),
+      database.prepare(`SELECT
+        id, job_id, recipient, subject, body, status, approved_at, sent_at, provider_message_id, created_at, updated_at
+        FROM user_application_drafts WHERE user_id = ?`).bind(userId).all<Row>(),
     ]);
 
     const tracking = new Map(trackingResult.results.map((row) => [String(row.job_id), row]));
     const analyses = new Map(analysisResult.results.map((row) => [String(row.job_id), parse<Json>(row.payload_json, {})]));
     const resumes = new Map(resumeResult.results.map((row) => [String(row.job_id), String(row.markdown)]));
-    const resumePdfs = new Set(resumeResult.results.filter((row) => row.pdf_base64).map((row) => String(row.job_id)));
+    const resumePdfs = new Set(resumeResult.results.filter((row) => row.has_pdf === 1 || row.has_pdf === true).map((row) => String(row.job_id)));
     const drafts = new Map(draftResult.results.map((row) => [String(row.job_id), mapDraft(row)]));
 
     const jobs = baseJobs.map((job) => {
@@ -403,6 +409,7 @@ export function createTenantState(deps: TenantStateDeps) {
       },
       statuses,
       connections: await connections(userId),
+      vacancySync: publicPayload.vacancySync ?? null,
       authenticated: request ? tenantRequestContext(request).authenticated : true,
       generatedAt: now(),
     };

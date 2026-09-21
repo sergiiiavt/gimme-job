@@ -5,6 +5,7 @@ export function getCloudflareViteDevMode(lifecycleEvent) {
   const localOnlyBindingConfig = {
     main: "./worker/index.ts",
     compatibility_flags: ["nodejs_compat"],
+    triggers: { crons: ["47 * * * *"] },
     d1_databases: [
       {
         binding: "DB",

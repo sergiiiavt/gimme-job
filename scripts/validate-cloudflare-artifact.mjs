@@ -52,8 +52,11 @@ export async function validateCloudflareArtifact() {
   if (!Array.isArray(config.d1_databases) || config.d1_databases.every((binding) => binding.binding !== "DB")) {
     throw new Error("Generated Cloudflare configuration has no DB binding.");
   }
+  if (!Array.isArray(config.triggers?.crons) || !config.triggers.crons.includes("47 * * * *")) {
+    throw new Error("Generated Cloudflare configuration has no vacancy backstop cron.");
+  }
 
-  console.log("Validated Cloudflare Worker, client assets, exact approved logo pixels and D1 binding.");
+  console.log("Validated Cloudflare Worker, client assets, exact approved logo pixels, D1 binding and vacancy backstop cron.");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -26,6 +26,7 @@ import { buildSources } from "./src/sources/index.js";
 import { collectAllSources } from "./src/sources/types.js";
 import { localAgentInstanceId } from "./src/identity.js";
 import { listenOnAvailablePort } from "./src/port.js";
+import { createLocalVacancySyncState } from "./src/vacancy-sync-state.js";
 
 loadEnvironment();
 
@@ -40,6 +41,7 @@ const allowedOrigins = new Set([
   "http://127.0.0.1:4173",
   "http://terminal.local:4173",
 ]);
+const vacancySyncState = createLocalVacancySyncState();
 
 type JsonObject = Record<string, unknown>;
 
@@ -136,28 +138,47 @@ function dashboard() {
     connections: settingsView().connections,
     // Local dev is always the owner's machine; there is no password wall to check.
     authenticated: true,
+    vacancySync: vacancySyncState.read(),
     generatedAt: new Date().toISOString(),
   };
 }
 
 async function syncJobs(manualOnly = false) {
-  const config = loadSources(paths.sources);
-  const sources = await buildSources(config, paths, process.cwd(), { manualOnly });
-  const results = await collectAllSources(sources);
-  let inserted = 0;
-  let seen = 0;
-  const errors: Array<{ source: string; error: string }> = [];
-  for (const result of results) {
-    if (result.error) {
-      errors.push({ source: result.source, error: result.error });
-      continue;
+  const trigger = manualOnly ? "manual-only" : "manual";
+  vacancySyncState.started(trigger);
+  try {
+    const config = loadSources(paths.sources);
+    const sources = await buildSources(config, paths, process.cwd(), { manualOnly });
+    const results = await collectAllSources(sources);
+    let inserted = 0;
+    let updated = 0;
+    let seen = 0;
+    const errors: Array<{ source: string; error: string }> = [];
+    for (const result of results) {
+      if (result.error) {
+        errors.push({ source: result.source, error: result.error });
+        continue;
+      }
+      for (const job of result.jobs) {
+        seen += 1;
+        if (db.upsertJob(job).inserted) inserted += 1;
+        else updated += 1;
+      }
     }
-    for (const job of result.jobs) {
-      seen += 1;
-      if (db.upsertJob(job).inserted) inserted += 1;
-    }
+    const intakeHealth = results.find((result) => result.source === "intake")?.sourceHealth;
+    const sourceHealth = intakeHealth ?? results.map((result) => ({
+      source: result.source,
+      status: result.error ? "FAILED" as const : "SUCCESS" as const,
+      jobs: result.jobs.length,
+      error: result.error,
+    }));
+    const sync = { inserted, updated, seen, errors, sources: sourceHealth };
+    vacancySyncState.succeeded(trigger, sync);
+    return sync;
+  } catch (error) {
+    vacancySyncState.failed(trigger, error);
+    throw error;
   }
-  return { inserted, seen, errors };
 }
 
 async function analyzeJobs(options: { jobId?: string; limit?: number }) {
@@ -242,6 +263,10 @@ async function route(request: IncomingMessage, response: ServerResponse) {
   }
   if (request.method === "GET" && routePath === "/api/dashboard") {
     json(response, 200, dashboard());
+    return;
+  }
+  if (request.method === "GET" && routePath === "/api/vacancy-sync") {
+    json(response, 200, vacancySyncState.read());
     return;
   }
   if (request.method === "GET" && routePath === "/api/settings") {

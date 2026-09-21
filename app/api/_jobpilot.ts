@@ -3,6 +3,7 @@ import {
   DEFAULT_VACANCY_SOURCES,
   ensureVacancyCatalog,
   publicVacancySummaries,
+  vacancySyncState,
 } from "./_vacancy-intake";
 import {
   operationalError,
@@ -243,6 +244,8 @@ function mapJob(row: Row) {
     url: rowText(row.url),
     applyUrl: rowText(row.apply_url),
     description: rowText(row.description),
+    descriptionComplete: row.description_complete === 1 || row.description_complete === true,
+    reservation: row.reservation === 1 || row.reservation === true,
     salaryText: nullableRowText(row.salary_text),
     postedAt: nullableRowText(row.posted_at),
     contactEmail: nullableRowText(row.contact_email),
@@ -250,7 +253,8 @@ function mapJob(row: Row) {
     updatedAt: rowText(row.updated_at),
     status: rowText(row.status),
     statusUpdatedAt: nullableRowText(row.status_updated_at),
-    raw: parse(row.raw_json, {}),
+    // List views intentionally never load raw_json.
+    raw: {},
   };
 }
 
@@ -306,7 +310,10 @@ async function connections() {
 
 export async function publicJobs() {
   await ensureVacancyCatalog();
-  return publicVacancySummaries();
+  const [payload, vacancySync] = await Promise.all([publicVacancySummaries(), vacancySyncState()]);
+  // Readers revalidate against this marker instead of re-fetching the whole
+  // catalogue on a timer.
+  return { ...payload, vacancySync };
 }
 
 const INTERVIEW_PROGRESS_STATUSES = new Set(["PLANNED", "LEARNING", "LEARNED"]);
@@ -362,15 +369,28 @@ export async function dashboard(request?: Request) {
   await ensureVacancyCatalog();
   const database = await db();
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
-    database.prepare("SELECT * FROM jobs ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC LIMIT 500").all<Row>(),
-    database.prepare("SELECT * FROM analyses").all<Row>(),
-    database.prepare("SELECT * FROM resume_variants").all<Row>(),
-    database.prepare("SELECT * FROM application_drafts").all<Row>(),
+    database.prepare(`SELECT
+      id, fingerprint, COALESCE(display_source, source) AS source, external_id, title, company, location, remote,
+      url, apply_url, substr(description, 1, 360) AS description,
+      CASE WHEN length(description) <= 360 THEN 1 ELSE 0 END AS description_complete,
+      CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
+      salary_text, posted_at, contact_email, discovered_at, updated_at, status, status_updated_at
+      FROM jobs
+      WHERE relevant = 1
+      ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+      LIMIT 500`).all<Row>(),
+    database.prepare("SELECT job_id, payload_json FROM analyses").all<Row>(),
+    database.prepare(`SELECT job_id, markdown,
+      CASE WHEN pdf_base64 IS NOT NULL AND length(pdf_base64) > 0 THEN 1 ELSE 0 END AS has_pdf
+      FROM resume_variants`).all<Row>(),
+    database.prepare(`SELECT
+      id, job_id, recipient, subject, body, status, approved_at, sent_at, provider_message_id, created_at, updated_at
+      FROM application_drafts`).all<Row>(),
     connections(),
   ]);
   const analyses = new Map(analysisResult.results.map((row) => [rowText(row.job_id), parse<Json>(row.payload_json, {})]));
   const resumes = new Map(resumeResult.results.map((row) => [rowText(row.job_id), rowText(row.markdown)]));
-  const resumePdfs = new Set(resumeResult.results.filter((row) => row.pdf_base64).map((row) => rowText(row.job_id)));
+  const resumePdfs = new Set(resumeResult.results.filter((row) => row.has_pdf === 1 || row.has_pdf === true).map((row) => rowText(row.job_id)));
   const drafts = new Map(draftResult.results.map((row) => [rowText(row.job_id), mapDraft(row)]));
   const jobs = jobResult.results.map(mapJob).map((job) => ({
     ...job,
@@ -401,7 +421,7 @@ export async function dashboard(request?: Request) {
       analyzedJobs: analyzed.length,
       remoteShare: percent(jobs.filter((job) => job.remote).length),
       salaryDisclosureShare: percent(jobs.filter((job) => job.salaryText).length),
-      reservationMentions: jobs.filter((job) => /бронювання|reservation from mobilization/i.test(`${job.title} ${job.description}`)).length,
+      reservationMentions: jobs.filter((job) => job.reservation || /reservation from mobilization/i.test(`${job.title} ${job.description}`)).length,
       topSources: countBy(jobs.map((job) => job.source)),
       topRoles: countBy(jobs.map((job) => job.title)),
       topLocations: countBy(jobs.map((job) => job.location)),
@@ -411,6 +431,7 @@ export async function dashboard(request?: Request) {
     },
     statuses,
     connections: conn,
+    vacancySync: await vacancySyncState(),
     authenticated: request?.headers.get("x-gimmejob-authenticated") === "1",
     generatedAt: now(),
   };
