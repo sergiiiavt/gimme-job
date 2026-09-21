@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import AboutSiteEnhancements from "./about-site-enhancements";
+import { readJsonApiResponse } from "./client-api-response";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import PublicSite from "./public-site";
 import { SiteSidebar } from "./site-navigation";
@@ -150,20 +151,17 @@ async function apiBase() {
 async function api<T>(path: string, method = "GET", payload?: unknown): Promise<T> {
   const base = await apiBase();
   let response: Response;
-  let result: T & { error?: string };
   try {
     response = await fetch(`${base}${path}`, {
       method,
       headers: payload !== undefined ? { "content-type": "application/json" } : undefined,
       body: payload !== undefined ? JSON.stringify(payload) : undefined,
     });
-    result = await response.json() as T & { error?: string };
   } catch (error) {
     if (usesLocalAgent()) localAgentApi.invalidate();
     throw error;
   }
-  if (!response.ok) throw new Error(result.error ?? `Request failed: ${response.status}`);
-  return result;
+  return readJsonApiResponse<T>(response);
 }
 
 function Icon({ name, size = 18 }: { name: string; size?: number }) {
