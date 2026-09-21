@@ -187,8 +187,6 @@ function querySources(config: Json, key: string, fallback: Json[], Source: Query
 
 export function buildVacancySources(config: Json): JobSource[] {
   const rss = sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)
-    // Worker sync is discovery-only for RSS detail pages. The hourly Node runner
-    // performs full DOU enrichment without spending the Worker's subrequest budget.
     .map((source) => new RssJobSource(cleanText(source.name, "rss"), publicHttpsUrl(source.url), { detailBudget: 0 }));
   const djinni = djinniSourceArray(config)
     .map((source) => new DjinniListingSource(cleanText(source.name, "djinni-qa"), cleanText(source.query, "QA")));
@@ -204,11 +202,44 @@ export function buildVacancySources(config: Json): JobSource[] {
   ];
 }
 
+function isDouSource(source: Json): boolean {
+  const rawUrl = cleanText(source.url);
+  if (!rawUrl) return false;
+  try {
+    const hostname = new URL(rawUrl).hostname.toLowerCase();
+    return hostname === "dou.ua" || hostname.endsWith(".dou.ua");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * DOU rejects requests from the Cloudflare Worker with HTTP 403. It already has
+ * a dedicated GitHub-hosted hourly collector that imports the fully enriched
+ * catalogue, so retrying DOU inside the Worker only creates a false degraded
+ * sync. Keep arbitrary non-DOU RSS sources in the Worker path.
+ */
+export function buildCloudVacancySources(config: Json): JobSource[] {
+  const douSourceNames = new Set(
+    sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)
+      .filter(isDouSource)
+      .map((source) => `rss:${cleanText(source.name, "rss")}`),
+  );
+  return buildVacancySources(config).filter((source) => !douSourceNames.has(source.name));
+}
+
 export function skippedCloudSources(config: Json): VacancySourceSkip[] {
-  return sourceArray(config, "workUa", DEFAULT_VACANCY_SOURCES.workUa).map((source) => ({
+  const dou = sourceArray(config, "rss", DEFAULT_VACANCY_SOURCES.rss)
+    .filter(isDouSource)
+    .map((source) => ({
+      source: `rss:${cleanText(source.name, "rss")}`,
+      reason: "DOU blocks Cloudflare Worker requests (HTTP 403); DOU is refreshed by the dedicated hourly off-platform importer.",
+    }));
+  const workUa = sourceArray(config, "workUa", DEFAULT_VACANCY_SOURCES.workUa).map((source) => ({
     source: `workua:${cleanText(source.name, "workua-qa")}`,
     reason: "Direct Work.ua HTML access is blocked from cloud-hosted runners (HTTP 403); the adapter remains available for local sync only.",
   }));
+  return [...dou, ...workUa];
 }
 
 function normalizedJob(value: IntakeJob): IntakeJob {
@@ -551,7 +582,7 @@ export async function syncVacancySources(
 
 async function collectAndStoreVacancies(db: D1DatabaseLike, trigger: string): Promise<VacancySyncResult> {
   const config = await sourceConfig(db);
-  const attempted = buildVacancySources(config);
+  const attempted = buildCloudVacancySources(config);
   const results = await collectAllSources(attempted);
   const intake = results.find((result) => result.source === "intake");
   const errors = results
