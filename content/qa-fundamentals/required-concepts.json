@@ -37,9 +37,11 @@
 
   {"id":"test-documentation-model","topicId":"documentation-defects","label":"Test documentation across test activities"},
   {"id":"test-policy-strategy-plan","topicId":"documentation-defects","label":"Test policy, strategy and plan distinctions"},
+  {"id":"test-strategy-definition","topicId":"documentation-defects","label":"Test strategy purpose, scope, decision logic and practical example"},
   {"id":"test-plan-purpose","topicId":"documentation-defects","label":"Purpose of a test plan"},
   {"id":"test-plan-content","topicId":"documentation-defects","label":"Typical test plan content"},
-  {"id":"test-approach-schedule","topicId":"documentation-defects","label":"Test approach vs test schedule"},
+  {"id":"test-approach-schedule","topicId":"documentation-defects","label":"Test approach and its relationship to strategy and plan"},
+  {"id":"test-schedule-role","topicId":"documentation-defects","label":"Test schedule as timing, order and dependency information within planning"},
   {"id":"test-plan-reporting-loop","topicId":"documentation-defects","label":"Plan, progress, control and completion reporting"},
   {"id":"test-case-checklist-charter","topicId":"documentation-defects","label":"Test case, checklist and charter"},
   {"id":"test-suite-data-environment","topicId":"documentation-defects","label":"Test suites, data and environment records"},
