@@ -5,6 +5,7 @@ import { register } from "tsx/esm/api";
 register();
 
 const {
+  buildCloudVacancySources,
   buildVacancySources,
   ensureVacancyCatalog,
   compactDashboardPayload,
@@ -135,9 +136,12 @@ test("publicHttpsUrl permits public HTTPS and blocks local/private sources", () 
   assert.throws(() => publicHttpsUrl("https://192.168.1.4/feed"), /public HTTPS/);
 });
 
-test("buildVacancySources constructs cloud-safe configured sources and excludes direct Work.ua HTML", () => {
+test("cloud vacancy sources leave DOU to the off-platform importer and report intentional skips", () => {
   const config = {
-    rss: [{ name: "dou", url: "https://jobs.dou.ua/vacancies/feeds/?search=QA" }],
+    rss: [
+      { name: "dou", url: "https://jobs.dou.ua/vacancies/feeds/?search=QA" },
+      { name: "custom", url: "https://example.com/jobs.xml" },
+    ],
     djinni: [{ name: "djinni", query: "QA" }],
     greenhouse: [{ name: "Acme", board: "acme" }],
     lever: [{ name: "LeverCo", board: "leverco" }],
@@ -148,12 +152,21 @@ test("buildVacancySources constructs cloud-safe configured sources and excludes 
   };
   const sources = buildVacancySources(config);
   assert.deepEqual(sources.map((source) => source.name), [
-    "rss:dou", "djinni:djinni", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
+    "rss:dou", "rss:custom", "djinni:djinni", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
   ]);
-  assert.deepEqual(skippedCloudSources(config), [{
-    source: "workua:work",
-    reason: "Direct Work.ua HTML access is blocked from cloud-hosted runners (HTTP 403); the adapter remains available for local sync only.",
-  }]);
+  assert.deepEqual(buildCloudVacancySources(config).map((source) => source.name), [
+    "rss:custom", "djinni:djinni", "greenhouse:Acme", "lever:LeverCo", "ashby:AshbyCo", "robotaua:robota", "lobbyx:lobby",
+  ]);
+  assert.deepEqual(skippedCloudSources(config), [
+    {
+      source: "rss:dou",
+      reason: "DOU blocks Cloudflare Worker requests (HTTP 403); DOU is refreshed by the dedicated hourly off-platform importer.",
+    },
+    {
+      source: "workua:work",
+      reason: "Direct Work.ua HTML access is blocked from cloud-hosted runners (HTTP 403); the adapter remains available for local sync only.",
+    },
+  ]);
 });
 
 test("upsertVacancies rejects noise, inserts QA, then merges a cross-source duplicate", async () => {
