@@ -11,6 +11,17 @@
     "checkedAt": "2026-08-16"
   },
   {
+    "id": "istqb-ctal-tm-v3",
+    "title": "ISTQB Certified Tester Advanced Level Test Management syllabus v3.0",
+    "publisher": "ISTQB",
+    "kind": "official-syllabus",
+    "version": "3.0",
+    "status": "current",
+    "url": "https://www.istqb.org/certifications/certified-tester-advanced-level-test-management-ctal-tm-v3-0/",
+    "role": "Current source for organizational and project test strategy, choosing a test approach, and how project strategy is documented within planning.",
+    "checkedAt": "2026-09-21"
+  },
+  {
     "id": "istqb-glossary",
     "title": "ISTQB Glossary",
     "publisher": "ISTQB",

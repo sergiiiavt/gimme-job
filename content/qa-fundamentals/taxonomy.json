@@ -47,7 +47,7 @@
     "description": "Useful test work products, strategies and plans, test cases and checklists, reporting, defect records, severity, priority and defect lifecycle.",
     "descriptionUk": "Корисні test work products, strategies і plans, test cases і checklists, reporting, defect records, severity, priority та життєвий цикл дефекту.",
     "file": "05-documentation-defects.md",
-    "sourceIds": ["iso-29119-2-2021", "iso-29119-3-2021", "istqb-ctfl-v4", "swebok-v4a"]
+    "sourceIds": ["iso-29119-2-2021", "iso-29119-3-2021", "istqb-ctfl-v4", "istqb-ctal-tm-v3", "swebok-v4a"]
   },
   {
     "id": "risk-coverage-prioritization",
