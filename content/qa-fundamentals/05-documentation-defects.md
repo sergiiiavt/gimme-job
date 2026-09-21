@@ -1,4 +1,4 @@
-<!-- concepts: test-documentation-model, test-policy-strategy-plan, test-plan-purpose, test-plan-content, test-approach-schedule, test-plan-reporting-loop, test-case-checklist-charter, test-suite-data-environment, test-reporting, good-defect-report, severity-priority, defect-lifecycle, root-cause-symptom -->
+<!-- concepts: test-documentation-model, test-policy-strategy-plan, test-strategy-definition, test-plan-purpose, test-plan-content, test-approach-schedule, test-schedule-role, test-plan-reporting-loop, test-case-checklist-charter, test-suite-data-environment, test-reporting, good-defect-report, severity-priority, defect-lifecycle, root-cause-symptom -->
 
 # Test Documentation & Defects
 
@@ -62,31 +62,86 @@ These terms are often collapsed into “the test plan,” which makes planning d
 | Term | Main purpose | Typical scope |
 | --- | --- | --- |
 | **Test policy** | Defines organizational principles, expectations or governance for testing. | Organization / product family |
-| **Test strategy** | Defines a reusable higher-level approach to obtaining quality evidence. | Organization, product, programme or long-lived initiative |
+| **Test strategy** | Defines the testing logic for a context: objectives, risk focus and the selected combination of levels, types, techniques and practices. | Organization-wide strategy and/or a project, release, product, level or test type |
 | **Test plan** | Defines how testing objectives will be achieved for a specific test effort. | Project, release, iteration, migration or major change |
 | **Test approach** | Describes the selected levels, types, techniques, priorities and other methods used by the plan. | Part of a specific plan, possibly derived from strategy |
 | **Test schedule** | Places testing activities, dependencies and milestones in time and execution order. | Specific test effort |
 
-Organizations use these labels differently. The useful distinction is the **decision being documented**.
+Organizations use these labels differently. Do **not** memorize a rigid rule such as “strategy is always organization-wide and plan is always project-specific.” Modern ISTQB material distinguishes an **organizational test strategy** from a **project test strategy**. A project strategy can be documented inside the test plan instead of existing as a separate document. The useful distinction is the **decision being documented** and its scope.
 
 ```diagram
-Organizational direction
-Test policy / reusable strategy
-            ↓
-Specific release or test effort
-          TEST PLAN
-            ├── scope and objectives
-            ├── risks
-            ├── test approach
-            ├── responsibilities
-            ├── environments and data
-            ├── criteria and metrics
-            └── estimates / schedule
-                       ↓
+Organization / product direction
+TEST POLICY + ORGANIZATIONAL TEST STRATEGY
+                    ↓ influences
+Project / release context and risks
+          PROJECT TEST STRATEGY
+   (often documented in the test plan)
+                    ↓
+               TEST PLAN
+        ├── scope and objectives
+        ├── risks and priorities
+        ├── selected test approach
+        ├── responsibilities/resources
+        ├── environments and data
+        ├── criteria and metrics
+        └── schedule and dependencies
+                    ↓
                  execution
 ```
 
 > **Common mistake:** calling a list of browsers, test types and tools a “test plan.” That list may describe part of the **test approach**, but a plan also establishes scope, objectives, responsibilities, risks, resources, criteria and coordination.
+
+## Test strategy: the testing logic behind the plan
+
+A **test strategy** explains the overall logic for how testing will achieve its objectives in a particular context. It connects quality risks and constraints to deliberate choices about **where to test, what kinds of testing to perform, how deeply to test and which evidence matters most**.
+
+There are two useful scopes to recognize:
+
+- an **organizational test strategy** provides reusable principles, practices or constraints across products and projects;
+- a **project test strategy** tailors those principles to a project, release, product, test level or test type.
+
+The project strategy does **not** have to be a separate file. It is commonly documented inside a test plan, a project wiki or another planning artifact. The name of the container matters less than whether the strategic decisions are explicit.
+
+A useful strategy can answer questions such as:
+
+- Which product risks and quality characteristics deserve the most testing effort?
+- Which test levels and test types provide the most efficient evidence?
+- Which test techniques should be used for important rules, states, interfaces and code structures?
+- What should be automated, what should remain exploratory/manual, and why?
+- How will regression, confirmation and change-impact testing work?
+- Which non-functional concerns require dedicated testing?
+- How independent should testing or review be for high-risk areas?
+- What environment, test-data and service-virtualization principles are needed?
+- Where should tests run in CI/CD, and what production feedback is relevant?
+- Which trade-offs are acceptable when time, budget or access is constrained?
+
+### Example: payment-platform test strategy
+
+Suppose a product processes card payments through internal services and external providers. A concise strategy could be:
+
+- prioritize **financial integrity, idempotency, authorization state and recovery after timeouts** because their impact is high;
+- cover business rules mainly at **service/API level**, where combinations are cheaper and faster to exercise;
+- use **contract and integration tests** for provider boundaries and webhook behavior;
+- keep browser E2E coverage focused on a small set of critical customer journeys;
+- use **state-transition and decision-table techniques** for retries, payment states and provider outcomes;
+- automate stable regression checks in CI, while keeping exploratory sessions for interruption, recovery and unusual state combinations;
+- run performance and resilience testing against realistic transaction patterns before high-risk releases or infrastructure changes;
+- require stronger review/independence for changes that can create duplicate charges or inconsistent financial state.
+
+That is a strategy because it explains the **selection logic and priorities**. A plan for release 2026.09 would then add the concrete scope, owners, environment, dates, estimates, criteria and reporting for that release.
+
+### Strategy vs plan vs approach
+
+These concepts overlap in real organizations, so use them to reason rather than to police terminology:
+
+| Concept | Practical question |
+| --- | --- |
+| **Strategy** | What overall testing choices best address our objectives, risks and constraints, and why? |
+| **Plan** | How will this defined testing effort be organized and controlled? |
+| **Approach** | Which concrete levels, types, techniques and practices will we apply in this effort? |
+| **Schedule** | When and in what order will the planned work happen, and what depends on what? |
+
+A project strategy often **guides the approach**, while the plan records how the strategy will be carried out and controlled.
 
 ## Test plan: purpose
 
@@ -173,9 +228,11 @@ A criterion should support a decision. “100% tests passed” is weak when the 
 
 Some organizations also define **suspension and resumption criteria**: conditions under which testing should stop because continued execution is wasteful, and what must change before it resumes.
 
-## Test approach is part of the plan
+## Test approach: concrete choices for this effort
 
-The test approach explains **how the planned evidence will be obtained**. It can include:
+The **test approach** is the concrete selection and combination of testing practices used for the current context. In ISTQB terminology, choosing the approach is a central part of defining a project test strategy, and CTFL also lists the test approach as typical test-plan content.
+
+It can include:
 
 - test levels and test objects;
 - functional and relevant non-functional test types;
@@ -188,9 +245,11 @@ The test approach explains **how the planned evidence will be obtained**. It can
 - automation boundaries and CI/CD placement;
 - production or operational evidence where appropriate.
 
-A strong approach is selective. “Run every test type at every level” is not a strategy; it ignores cost and risk.
+The strategy explains **why this combination makes sense**; the approach makes that combination concrete. “Run every test type at every level” is a weak strategy/approach because it ignores risk, cost and feedback speed.
 
-## Test schedule is not the test plan
+## Test schedule: timing, order and dependencies
+
+A **test schedule is planning information, not an alternative to the test plan**. CTFL explicitly includes the means and schedule for achieving test objectives in the purpose/content of a test plan. The schedule may live inside the plan or be maintained in Jira, a release calendar or a project-planning tool.
 
 The schedule answers **when and in what order** planned activities occur. It should expose dependencies rather than merely give QA a start and end date.
 
@@ -438,9 +497,9 @@ Documentation quality is therefore not measured by page count. It is measured by
 ## Summary
 
 - Test documentation spans planning, analysis, design, implementation, execution, reporting and completion; test cases are only one form of testware.
-- Policy, strategy, plan, approach and schedule answer different planning questions even though organizations sometimes use the labels differently.
+- Policy, organizational/project strategy, plan, approach and schedule are related planning concepts; organizations package and name them differently, so focus on the decision and scope rather than a rigid document hierarchy.
 - A test plan defines how a specific testing effort will achieve its objectives and acts as a baseline for coordination, monitoring and control.
-- A useful plan covers context, basis, scope, objectives, assumptions, stakeholders, risks, approach, testware, environments/data, criteria, metrics, communication, resources and schedule.
+- A useful strategy explains the risk-driven testing logic and selection of levels, types, techniques and practices; a useful plan turns that logic into a controlled test effort with scope, owners, resources, criteria, reporting and schedule.
 - Entry and completion criteria should express decision-relevant conditions, not ritual percentages.
 - Progress reports compare reality with the current plan; control changes the plan when needed; completion reports summarize achieved evidence, deviations and residual risk.
 - Test cases, checklists and exploratory charters trade prescription, maintenance and executor freedom differently.
@@ -454,5 +513,6 @@ Documentation quality is therefore not measured by page count. It is measured by
 - [ISO/IEC/IEEE 29119-2:2021 — Test processes](https://www.iso.org/standard/79428.html)
 - [ISO/IEC/IEEE 29119-3:2021 — Test documentation](https://www.iso.org/standard/79429.html)
 - [ISTQB CTFL v4.0](https://www.istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/)
+- [ISTQB CTAL Test Management v3.0](https://www.istqb.org/certifications/certified-tester-advanced-level-test-management-ctal-tm-v3-0/)
 - [IEEE 829-2008 — superseded test documentation standard](https://standards.ieee.org/ieee/829/3787/)
 - [SWEBOK v4.0a](https://www.computer.org/education/bodies-of-knowledge/software-engineering/resources/)
