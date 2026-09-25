@@ -68,3 +68,20 @@ test("page families own their new-design density rules", async () => {
     assert.match(source, /:global\(html\[data-design="new"\]\)/, path);
   }
 });
+
+
+test("shared learning track switchers use two columns with a centered odd final option", async () => {
+  const globals = await read("app/globals.css");
+
+  assert.match(globals, /\.kb-subnav-switch \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
+  assert.match(globals, /\.kb-subnav-switch > button:last-child:nth-child\(odd\):not\(:first-child\) \{[^}]*grid-column:\s*1 \/ -1;[^}]*justify-self:\s*center;[^}]*width:\s*calc\(50% - 3px\)/s);
+});
+
+test("new design keeps learning topic clusters subtly separated", async () => {
+  const css = await read("app/new-design.css");
+
+  assert.match(css, /html\[data-design="new"\] \.kb-navigation \.kb-learning-cluster \{[^}]*border:\s*1px solid #ecefec !important;[^}]*border-left:\s*2px solid #d9ded9 !important;[^}]*border-radius:\s*5px/s);
+  for (const tone of ["foundation", "ai", "build", "systems", "infra", "governance"]) {
+    assert.match(css, new RegExp(`kb-learning-cluster-${tone}[^}]*border-left-color:`));
+  }
+});
