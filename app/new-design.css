@@ -1,66 +1,71 @@
 /*
  * GimmeJob design v2
  * ------------------
- * The legacy visual system remains the baseline. These rules are intentionally
- * scoped to html[data-design="new"] so the site can switch between designs
- * without duplicating pages, components, data, or interaction logic.
+ * This layer is deliberately conservative about geometry. Page-specific
+ * components keep their own layout contracts; the new mode changes hierarchy,
+ * density and surfaces without globally resizing every control.
  */
+
+/* The switcher belongs to the end of the scrollable primary navigation. */
+.kb-design-switcher-slot {
+  border-top: 1px solid #ecefec;
+  margin: 10px 4px 2px;
+  padding-top: 9px;
+}
 
 .design-mode-switcher {
   align-items: center;
-  background: rgba(255, 255, 255, .96);
-  border: 1px solid #d8ded9;
-  border-radius: 9px;
-  box-shadow: 0 6px 18px rgba(28, 39, 35, .09);
-  display: flex;
-  gap: 3px;
-  padding: 4px;
-  position: fixed;
-  right: max(10px, env(safe-area-inset-right));
-  top: 58px;
-  z-index: 89;
+  background: #f6f7f5;
+  border: 1px solid #e0e4e0;
+  border-radius: 5px;
+  display: grid;
+  gap: 2px;
+  grid-template-columns: auto 1fr 1fr;
+  padding: 2px;
+  width: 100%;
 }
 
 .design-mode-switcher > span {
-  color: #69736e;
-  font-size: 11px;
+  color: #8a928e;
+  font-size: 8px;
   font-weight: 650;
-  padding: 0 6px 0 4px;
+  padding: 0 5px 0 4px;
 }
 
 .design-mode-switcher button {
   background: transparent;
   border: 0;
-  border-radius: 6px;
-  color: #59635e;
+  border-radius: 3px;
+  color: #66706b;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 8.5px;
   font-weight: 700;
-  min-height: 30px;
-  padding: 0 9px;
+  line-height: 1;
+  min-height: 21px;
+  padding: 0 5px;
 }
 
 .design-mode-switcher button:hover {
-  background: #f1f3f0;
-  color: #17201d;
+  background: #ecefec;
+  color: #27312c;
 }
 
-.design-mode-switcher button.active,
 .design-mode-switcher button[aria-pressed="true"] {
-  background: #17201d;
-  color: #fff;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(28, 39, 35, .08);
+  color: #26312b;
 }
 
 html[data-design="new"] {
-  --bg: #f7f7f5;
-  --paper: #ffffff;
-  --ink: #1d2421;
-  --muted: #5f6964;
-  --faint: #7d8681;
-  --line: #dde1dd;
-  --nav: #1d2421;
+  --bg: #f7f8f6;
+  --paper: #fff;
+  --ink: #1d2621;
+  --muted: #626c67;
+  --faint: #858e89;
+  --line: #e0e4e0;
+  --nav: #1d2621;
   --green: #176f53;
-  --green-soft: #edf5f1;
+  --green-soft: #edf4f0;
   --red-soft: #f8eeee;
   --amber-soft: #faf3df;
   --blue-soft: #eef3f8;
@@ -70,16 +75,9 @@ html[data-design="new"] {
 html[data-design="new"] body {
   background: var(--bg);
   color: var(--ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-size: 14px;
   line-height: 1.5;
-}
-
-html[data-design="new"] button,
-html[data-design="new"] input,
-html[data-design="new"] select,
-html[data-design="new"] textarea {
-  font-size: inherit;
 }
 
 html[data-design="new"] button:focus-visible,
@@ -88,49 +86,15 @@ html[data-design="new"] input:focus-visible,
 html[data-design="new"] select:focus-visible,
 html[data-design="new"] textarea:focus-visible,
 html[data-design="new"] summary:focus-visible {
-  outline: 2px solid #1769ff;
+  outline: 2px solid rgba(49, 94, 156, .6);
   outline-offset: 2px;
 }
 
-/* Primary and secondary navigation: quieter surfaces, larger readable labels. */
-@media (min-width: 1101px) {
-  html[data-design="new"] .kb-navigation {
-    width: 472px;
-  }
-
-  html[data-design="new"] .kb-navigation.compact {
-    width: 236px;
-  }
-
-  html[data-design="new"] .kb-navigation .kb-sidebar {
-    width: 236px;
-  }
-
-  html[data-design="new"] .kb-subnav {
-    width: 236px;
-  }
-
-  html[data-design="new"] .kb-main {
-    margin-left: 472px;
-  }
-
-  html[data-design="new"] .kb-main-compact-nav {
-    margin-left: 236px;
-  }
-}
-
-html[data-design="new"] .kb-navigation .kb-sidebar,
-html[data-design="new"] .kb-subnav {
-  background: #fff;
-  border-color: var(--line);
-}
-
+/* Navigation keeps the existing 220/456px geometry so playgrounds and
+   compact pages stay aligned. Only hierarchy and decoration change. */
 html[data-design="new"] .kb-navigation .kb-sidebar {
-  padding: 18px 12px 16px;
-}
-
-html[data-design="new"] .kb-navigation .kb-nav-list {
-  gap: 2px !important;
+  background: #fbfcfb;
+  border-color: #e3e7e3;
 }
 
 html[data-design="new"] .kb-navigation .kb-area-group,
@@ -138,159 +102,109 @@ html[data-design="new"] .kb-navigation .kb-learning-cluster {
   background: transparent !important;
   border: 0 !important;
   border-radius: 0;
-  padding: 5px 2px;
 }
 
 html[data-design="new"] .kb-navigation .kb-area-group + .kb-area-group {
-  border-top: 1px solid #ecefec !important;
-  margin-top: 4px;
-  padding-top: 10px;
+  border-top: 1px solid #eef0ee !important;
+  margin-top: 3px;
+  padding-top: 7px;
 }
 
 html[data-design="new"] .kb-navigation .kb-area-group > h2 {
-  color: #69726d;
-  font-size: 11px;
+  color: #7d8681;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: .01em;
-  margin: 3px 8px 5px;
+  letter-spacing: .025em;
   text-transform: none;
 }
 
 html[data-design="new"] .kb-navigation .kb-nav-link {
   border-left-width: 2px;
   border-radius: 4px;
-  color: #3f4944;
-  font-size: 13px;
-  font-weight: 520 !important;
-  gap: 9px;
-  grid-template-columns: 18px minmax(0, 1fr);
-  line-height: 1.25;
-  min-height: 34px;
-  padding: 7px 8px 7px 6px;
+  color: #46514b;
+  font-size: 11.5px;
+  font-weight: 500 !important;
+  min-height: 27px;
 }
 
 html[data-design="new"] .kb-navigation .kb-nav-link:hover {
-  background: #f4f5f3;
+  background: #f1f3f1;
+  color: #25302a;
 }
 
 html[data-design="new"] .kb-navigation .kb-nav-link.active,
-html[data-design="new"] .kb-area-group-learning .kb-learning-cluster .kb-nav-link.active {
-  background: #eef2ed !important;
-  border-left-color: #52665b !important;
-  color: #1f2924;
-  font-weight: 650 !important;
+html[data-design="new"] .kb-area-group-learning .kb-learning-cluster .kb-nav-link.active,
+html[data-design="new"] .kb-nav-intro.active {
+  background: #edf1ed !important;
+  border-left-color: #60766a !important;
+  color: #243029 !important;
+  font-weight: 620 !important;
 }
 
 html[data-design="new"] .kb-nav-intro {
   background: transparent !important;
-  border: 0 !important;
-  border-left: 2px solid transparent !important;
-  color: #3f4944 !important;
-  font-weight: 600 !important;
-}
-
-html[data-design="new"] .kb-nav-intro.active {
-  background: #eef2ed !important;
-  border-left-color: #52665b !important;
-  color: #1f2924 !important;
-}
-
-html[data-design="new"] .kb-navigation .kb-nav-icon {
-  color: #6f7873;
-  height: 18px;
-  width: 18px;
-}
-
-html[data-design="new"] .kb-navigation .kb-nav-icon svg {
-  height: 17px;
-  width: 17px;
-}
-
-html[data-design="new"] .kb-quick-reference-link {
-  background: transparent;
-  border-radius: 5px;
-  font-size: 12px;
-  min-height: 36px;
-}
-
-html[data-design="new"] .kb-quick-reference-link small {
-  font-size: 10px;
-  letter-spacing: 0;
-  text-transform: none;
+  border-color: transparent !important;
 }
 
 html[data-design="new"] .kb-subnav {
-  padding: 16px 14px 20px;
-}
-
-html[data-design="new"] .kb-subnav nav {
-  gap: 1px;
+  background: #fafbfa;
+  border-color: #e1e5e1;
 }
 
 html[data-design="new"] .kb-subnav nav button {
-  border-radius: 5px;
-  color: #4f5a54;
-  font-size: 13px;
-  min-height: 39px;
-  padding: 8px 10px;
+  border-radius: 4px;
+  color: #58635d;
+  font-size: 11.5px;
+  min-height: 35px;
+  padding: 7px 8px;
 }
 
 html[data-design="new"] .kb-subnav nav button.active {
-  background: #eef2ed;
+  background: #edf1ed;
   color: #26322c;
   font-weight: 650;
 }
 
-html[data-design="new"] .kb-subnav nav button small,
-html[data-design="new"] .kb-construction-badge {
+html[data-design="new"] .kb-quick-reference-link {
+  background: transparent;
+  border-color: #e3e6e3;
   border-radius: 4px;
-  font-size: 10px;
-  letter-spacing: 0;
+  font-size: 10.5px;
+}
+
+html[data-design="new"] .kb-quick-reference-link small {
+  font-size: 8px;
+  letter-spacing: .02em;
   text-transform: none;
 }
 
-/* Shared content hierarchy. */
-html[data-design="new"] .kb-content {
-  max-width: 1360px;
-  padding: 42px 42px 72px;
-}
-
+/* Shared page header: strong title, quiet context. No generic article/control
+   font override here; individual surfaces decide their appropriate density. */
 html[data-design="new"] .kb-page-head {
-  gap: 28px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 html[data-design="new"] .kb-page-head > div:first-child > span,
-html[data-design="new"] .eyebrow,
-html[data-design="new"] .about-tech-eyebrow,
 html[data-design="new"] .public-kicker {
-  color: #5b6e64;
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: .01em;
-  margin-bottom: 8px;
+  color: #66736c;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .025em;
+  margin-bottom: 7px;
   text-transform: none;
 }
 
-html[data-design="new"] .kb-page-head h1,
-html[data-design="new"] .about-tech-overview-heading h1 {
-  font-size: clamp(34px, 4vw, 48px);
-  letter-spacing: -.035em;
-  line-height: 1.05;
+html[data-design="new"] .kb-page-head h1 {
+  font-size: clamp(30px, 3.4vw, 42px);
+  letter-spacing: -.04em;
+  line-height: 1.04;
 }
 
 html[data-design="new"] .kb-page-head p,
-html[data-design="new"] .about-tech-overview-heading p,
-html[data-design="new"] .about-tech-section-heading p,
 html[data-design="new"] .section-heading p {
   color: var(--muted);
-  font-size: 15px;
-  line-height: 1.65;
-}
-
-html[data-design="new"] .kb-page-stats > div,
-html[data-design="new"] .stat-line > div {
-  background: transparent;
+  font-size: 13.5px;
+  line-height: 1.6;
 }
 
 html[data-design="new"] .kb-page-stats small,
@@ -298,127 +212,135 @@ html[data-design="new"] .stat-line small,
 html[data-design="new"] .feed-meta,
 html[data-design="new"] .vacancy-catalog-freshness {
   color: var(--faint);
-  font-size: 12px;
+  font-size: 9.5px;
 }
 
-/* Reduce card-on-card presentation and decorative rounding. */
-html[data-design="new"] .about-tech-section,
-html[data-design="new"] .about-tech-purpose-card,
+/* About: preserve the purpose/technology flow geometry. The previous pass
+   broke this page by treating its compact overview label as a giant page h1. */
+html[data-design="new"] .about-tech-page {
+  --about-section-gap: 8px;
+}
+
+html[data-design="new"] .about-tech-overview-heading h1,
+html[data-design="new"] .about-tech-stack-title {
+  color: #33423a;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  text-transform: none;
+}
+
+html[data-design="new"] .about-tech-overview-heading p,
+html[data-design="new"] .about-tech-section-heading p {
+  color: #6b756f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+html[data-design="new"] .about-tech-purpose-grid,
+html[data-design="new"] .about-tech-section:not(.about-tech-overview),
 html[data-design="new"] .about-tech-node,
-html[data-design="new"] .about-tech-mini-node,
-html[data-design="new"] .iq-method-grid article,
-html[data-design="new"] .iq-source-catalog,
-html[data-design="new"] .iq-catalog-state,
-html[data-design="new"] .kb-topic-grid article,
-html[data-design="new"] .resume-sheet,
-html[data-design="new"] .public-jobs,
-html[data-design="new"] .module-grid article,
-html[data-design="new"] .coming-soon > div {
-  border-color: var(--line);
+html[data-design="new"] .about-tech-mini-node {
+  border-color: #e1e5e1;
+  box-shadow: none;
+}
+
+html[data-design="new"] .about-tech-purpose-grid,
+html[data-design="new"] .about-tech-section:not(.about-tech-overview) {
   border-radius: 8px;
-  box-shadow: none;
-}
-
-html[data-design="new"] .about-tech-purpose-card,
-html[data-design="new"] .module-grid article,
-html[data-design="new"] .kb-topic-grid article {
-  min-height: 0;
-}
-
-html[data-design="new"] .module-grid article:hover,
-html[data-design="new"] .hero-actions a:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-/* About / architecture page: keep structure, make content carry the hierarchy. */
-html[data-design="new"] .about-tech-section {
-  gap: 28px;
-  padding: 24px 26px;
-}
-
-html[data-design="new"] .about-tech-section-heading h2 {
-  font-size: 22px;
-}
-
-html[data-design="new"] .about-tech-section-number {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  color: #65706a;
-  font-size: 13px;
-  height: auto;
-  justify-content: flex-start;
-  width: auto;
 }
 
 html[data-design="new"] .about-tech-purpose-card {
-  border-width: 0 0 1px;
-  border-radius: 0;
-  padding: 18px 4px;
+  border-color: #e4e7e4;
+  border-radius: 6px;
+  box-shadow: none;
 }
 
 html[data-design="new"] .about-tech-purpose-card h3 {
-  font-size: 16px;
+  font-size: 13px;
 }
 
 html[data-design="new"] .about-tech-purpose-card p,
 html[data-design="new"] .about-tech-node p,
 html[data-design="new"] .about-tech-mini-node p {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
+  color: #68736d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+html[data-design="new"] .about-tech-section-heading h2 {
+  font-size: 17px;
+  letter-spacing: -.015em;
+}
+
+html[data-design="new"] .about-tech-section-number {
+  font-size: 10px;
+  height: 27px;
+  width: 27px;
+}
+
+html[data-design="new"] .about-tech-node,
+html[data-design="new"] .about-tech-mini-node {
+  border-radius: 6px;
 }
 
 html[data-design="new"] .about-tech-node > header strong,
 html[data-design="new"] .about-tech-mini-node strong {
-  font-size: 14px;
+  font-size: 11px;
 }
 
 html[data-design="new"] .about-tech-link,
 html[data-design="new"] .about-tech-action {
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 4px;
+  font-size: 9px;
+  min-height: 27px;
 }
 
-/* Interview catalog and learning content. */
-html[data-design="new"] .iq-question,
+/* Interview catalog: questions are primary; filters and language are utility
+   controls and intentionally remain compact. */
 html[data-design="new"] .iq-toolbar,
+html[data-design="new"] .iq-list,
 html[data-design="new"] .iq-progress-summary,
 html[data-design="new"] .iq-progress-control,
 html[data-design="new"] .iq-media {
+  border-color: #e1e5e1;
   border-radius: 7px;
   box-shadow: none;
 }
 
 html[data-design="new"] .iq-question > summary {
-  padding: 20px 18px;
+  padding-bottom: 16px;
+  padding-top: 16px;
 }
 
 html[data-design="new"] .iq-question h2 {
-  font-size: 16px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-html[data-design="new"] .iq-answer,
-html[data-design="new"] .py-lesson-summary,
-html[data-design="new"] .description p,
-html[data-design="new"] .resume-preview pre,
-html[data-design="new"] .draft-preview pre,
-html[data-design="new"] .resume-preview-text {
-  font-size: 15px;
-  line-height: 1.7;
+html[data-design="new"] .iq-answer {
+  gap: 18px 28px;
 }
 
+html[data-design="new"] .iq-answer p,
+html[data-design="new"] .iq-answer .iq-answer-points li {
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+html[data-design="new"] .iq-answer-copy .iq-answer-lead {
+  font-size: 13.5px;
+}
+
+html[data-design="new"] .iq-answer h3,
+html[data-design="new"] .iq-answer footer span,
 html[data-design="new"] .iq-filter-summary-copy small,
 html[data-design="new"] .iq-star-filter-copy small,
 html[data-design="new"] .iq-progress-summary span,
 html[data-design="new"] .iq-progress-control small,
-html[data-design="new"] .iq-question-tags em,
-html[data-design="new"] .iq-answer-tags button {
-  font-size: 11px;
-  letter-spacing: 0;
-  text-transform: none;
+html[data-design="new"] .iq-question-tags em {
+  font-size: 8.5px;
+  letter-spacing: .03em;
 }
 
 html[data-design="new"] .iq-filter-summary-copy strong,
@@ -427,60 +349,41 @@ html[data-design="new"] .iq-filter-option,
 html[data-design="new"] .iq-clear,
 html[data-design="new"] .iq-pagination button,
 html[data-design="new"] .iq-pagination span {
-  font-size: 12px;
+  font-size: 10.5px;
 }
 
 html[data-design="new"] .iq-filter-control summary,
 html[data-design="new"] .iq-star-filter {
-  border-radius: 7px;
-  min-height: 50px;
+  border-radius: 6px;
 }
 
-html[data-design="new"] .iq-filter-chevron,
-html[data-design="new"] .iq-star-filter-icon {
-  background: transparent;
+html[data-design="new"] .iq-lang-toggle {
+  gap: 3px;
+}
+
+html[data-design="new"] .iq-lang-toggle button {
   border-radius: 4px;
+  font-size: 8px;
+  min-height: 22px;
+  padding: 0 7px;
 }
 
-html[data-design="new"] .iq-method-grid h2 {
-  font-size: 19px;
-  margin-top: 18px;
+html[data-design="new"] .iq-answer-tags button {
+  font-size: 9px;
+  padding: 4px 6px;
 }
 
-html[data-design="new"] .iq-method-grid p,
-html[data-design="new"] .iq-source-catalog > header p,
-html[data-design="new"] .iq-source-catalog article p {
-  font-size: 13px;
-}
-
-html[data-design="new"] .iq-source-catalog article > div span,
-html[data-design="new"] .iq-source-catalog article > div small,
-html[data-design="new"] .iq-source-catalog > header span {
-  font-size: 11px;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-html[data-design="new"] .iq-source-catalog h3 {
-  font-size: 15px;
-}
-
-html[data-design="new"] .py-code,
-html[data-design="new"] pre[class*="code"],
 html[data-design="new"] .iq-code-block {
   border-radius: 6px;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
-/* Vacancy workspace: readable metadata over maximum density. */
-html[data-design="new"] .vacancy-page-intro {
-  margin-bottom: 22px;
-}
-
+/* Vacancies are a dense operational table. Improve scanning without turning
+   labels, chips and statuses into body-sized controls. */
 html[data-design="new"] .vacancy-feed-tools {
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 8px;
+  padding: 12px 14px;
 }
 
 html[data-design="new"] .vacancy-search input,
@@ -488,88 +391,68 @@ html[data-design="new"] .vacancy-date-filter input,
 html[data-design="new"] .vacancy-filter-summary-label,
 html[data-design="new"] .vacancy-filter-option,
 html[data-design="new"] .vacancy-clear-filters {
-  font-size: 12px;
+  font-size: 10.5px;
 }
 
 html[data-design="new"] .vacancy-date-filter > span,
 html[data-design="new"] .vacancy-filter-summary-count {
-  font-size: 10px;
-  letter-spacing: 0;
-  text-transform: none;
+  font-size: 8.5px;
 }
 
 html[data-design="new"] .vacancy-date-filter,
 html[data-design="new"] .vacancy-multifilter summary {
-  border-radius: 6px;
-  min-height: 42px;
+  border-radius: 5px;
 }
 
 html[data-design="new"] .vacancy-filter-menu {
-  border-radius: 7px;
-  box-shadow: 0 10px 28px rgba(28, 39, 35, .12);
-}
-
-html[data-design="new"] .vacancy-list-view {
-  overflow-x: auto;
+  border-radius: 6px;
+  box-shadow: 0 10px 24px rgba(28, 39, 35, .11);
 }
 
 html[data-design="new"] .vacancy-table-head {
-  color: #68726d;
-  font-size: 10.5px;
-  font-weight: 650;
-  letter-spacing: .01em;
-  min-height: 36px;
+  color: #6b756f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .015em;
   text-transform: none;
 }
 
 html[data-design="new"] .vacancy-table-row {
-  min-height: 62px;
-  padding-bottom: 10px;
-  padding-top: 10px;
+  min-height: 58px;
 }
 
-html[data-design="new"] .vacancy-cell {
-  color: #56615b;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-html[data-design="new"] .vacancy-title-cell strong {
-  font-size: 14px;
-  font-weight: 680;
-  line-height: 1.4;
-}
-
+html[data-design="new"] .vacancy-cell,
 html[data-design="new"] .vacancy-text-cell,
 html[data-design="new"] .vacancy-posted,
 html[data-design="new"] .vacancy-salary {
-  font-size: 12px;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+html[data-design="new"] .vacancy-title-cell strong {
+  font-size: 12.5px;
+  font-weight: 680;
+  line-height: 1.35;
 }
 
 html[data-design="new"] .vacancy-tag,
 html[data-design="new"] .vacancy-status-cell .status,
 html[data-design="new"] .vacancy-match strong,
 html[data-design="new"] .vacancy-match span {
-  font-size: 11px;
+  font-size: 9px;
 }
 
-@media (min-width: 1181px) {
-  html[data-design="new"] .vacancy-table-head-personal,
-  html[data-design="new"] .vacancy-table-row-personal {
-    min-width: 1200px;
-  }
-
-  html[data-design="new"] .vacancy-table-head-public,
-  html[data-design="new"] .vacancy-table-row-public {
-    min-width: 1000px;
-  }
+/* Resume is document-like, not an app dashboard. */
+html[data-design="new"] .resume-sheet {
+  border-color: #e0e4e0;
+  border-radius: 8px;
+  box-shadow: none;
 }
 
-/* Resume: keep printable structure, remove microcopy sizing. */
 html[data-design="new"] .resume-header > span,
 html[data-design="new"] .resume-section > h2 {
-  font-size: 12px;
-  letter-spacing: .04em;
+  font-size: 9px;
+  letter-spacing: .06em;
 }
 
 html[data-design="new"] .resume-contact span,
@@ -581,30 +464,42 @@ html[data-design="new"] .resume-timeline li,
 html[data-design="new"] .resume-education span,
 html[data-design="new"] .resume-education time,
 html[data-design="new"] .resume-education > p {
-  font-size: 13px;
+  font-size: 11px;
 }
 
 html[data-design="new"] .resume-section > p,
 html[data-design="new"] .resume-education strong {
-  font-size: 14px;
+  font-size: 12px;
 }
 
-/* Legacy public landing components still receive the same calmer visual language. */
+/* Public landing / catalog pages: remove decorative effects but keep their
+   existing scale rather than forcing dashboard typography onto them. */
 html[data-design="new"] .public-hero::before,
 html[data-design="new"] .public-hero::after {
   display: none;
 }
 
-html[data-design="new"] .public-section {
-  padding-top: 82px;
-  padding-bottom: 82px;
+html[data-design="new"] .public-jobs,
+html[data-design="new"] .module-grid article,
+html[data-design="new"] .kb-topic-grid article,
+html[data-design="new"] .coming-soon > div {
+  border-color: #e1e5e1;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+html[data-design="new"] .module-grid article:hover,
+html[data-design="new"] .hero-actions a:hover {
+  box-shadow: none;
+  transform: none;
 }
 
 html[data-design="new"] .public-job p,
 html[data-design="new"] .module-grid p,
 html[data-design="new"] .principle-grid p,
 html[data-design="new"] .public-empty span {
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 html[data-design="new"] .public-job-copy > div:first-child span,
@@ -613,93 +508,29 @@ html[data-design="new"] .public-job-meta span,
 html[data-design="new"] .module-grid article > div span,
 html[data-design="new"] .module-grid article > div em,
 html[data-design="new"] .module-grid small {
-  font-size: 11px;
-  letter-spacing: 0;
+  font-size: 8.5px;
+  letter-spacing: .01em;
   text-transform: none;
 }
 
-/* Generic content safety nets for long-form learning pages. */
-html[data-design="new"] article p,
-html[data-design="new"] article li {
-  line-height: 1.68;
-}
-
-html[data-design="new"] table {
-  font-size: 14px;
-}
-
-html[data-design="new"] small {
-  line-height: 1.45;
-}
-
-@media (max-width: 1100px) and (min-width: 901px) {
-  html[data-design="new"] .kb-navigation {
-    width: 400px;
-  }
-
-  html[data-design="new"] .kb-navigation.compact {
-    width: 176px;
-  }
-
-  html[data-design="new"] .kb-navigation .kb-sidebar {
-    width: 176px;
-  }
-
-  html[data-design="new"] .kb-subnav {
-    width: 224px;
-  }
-
-  html[data-design="new"] .kb-main {
-    margin-left: 400px;
-  }
-
-  html[data-design="new"] .kb-main-compact-nav {
-    margin-left: 176px;
-  }
-
-  html[data-design="new"] .kb-navigation .kb-nav-link {
-    font-size: 12px;
-  }
-}
-
 @media (max-width: 900px) {
-  .design-mode-switcher {
-    right: 12px;
-    top: 56px;
-  }
-
-  .design-mode-switcher > span {
-    display: none;
+  .kb-design-switcher-slot {
+    margin-bottom: 10px;
   }
 
   html[data-design="new"] .kb-navigation .kb-nav-link {
-    font-size: 12px;
-    min-height: 34px;
-  }
-
-  html[data-design="new"] .kb-content {
-    padding: 30px 22px 58px;
+    font-size: 10.5px;
   }
 }
 
 @media (max-width: 610px) {
-  .design-mode-switcher {
-    right: 10px;
-    top: 54px;
+  html[data-design="new"] .kb-page-head h1 {
+    font-size: 28px;
   }
 
-  .design-mode-switcher button {
-    min-height: 28px;
-    padding: 0 8px;
-  }
-
-  html[data-design="new"] .kb-page-head h1,
-  html[data-design="new"] .about-tech-overview-heading h1 {
-    font-size: 30px;
-  }
-
-  html[data-design="new"] .kb-navigation .kb-nav-list .kb-nav-link {
-    font-size: 12px;
+  html[data-design="new"] .iq-answer {
+    padding-left: 18px;
+    padding-right: 18px;
   }
 }
 
