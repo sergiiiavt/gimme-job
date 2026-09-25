@@ -62,6 +62,12 @@ test("page families own their new-design density rules", async () => {
     "app/interview-question-deep-link.module.css",
     "app/about-site-enhancements.module.css",
     "app/games/games.module.css",
+    "app/agentic-learning-page.module.css",
+    "app/learning-document-ui.module.css",
+    "app/istqb-ai-mock-exam.module.css",
+    "app/istqb-ai-official-sample-companion.module.css",
+    "app/learning-video.module.css",
+    "app/executable-python-block.module.css",
   ];
 
   for (const path of paths) {
