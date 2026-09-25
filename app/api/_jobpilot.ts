@@ -367,6 +367,35 @@ function stringArray(value: unknown): string[] {
 
 export async function dashboard(request?: Request) {
   await ensureVacancyCatalog();
+  const authenticated = request ? request.headers.get("x-gimmejob-authenticated") === "1" : true;
+
+  if (!authenticated) {
+    const [publicPayload, vacancySync] = await Promise.all([publicVacancySummaries(), vacancySyncState()]);
+    const jobs = publicPayload.jobs;
+    const percent = (count: number) => jobs.length ? Math.round(count / jobs.length * 100) : 0;
+    return {
+      jobs,
+      market: {
+        totalJobs: jobs.length,
+        analyzedJobs: 0,
+        remoteShare: percent(jobs.filter((job) => job.remote).length),
+        salaryDisclosureShare: percent(jobs.filter((job) => Boolean(job.salaryText)).length),
+        reservationMentions: jobs.filter((job) => job.reservation || /reservation from mobilization/i.test(`${job.title} ${job.description}`)).length,
+        topSources: countBy(jobs.map((job) => job.source)),
+        topRoles: countBy(jobs.map((job) => job.title)),
+        topLocations: countBy(jobs.map((job) => job.location)),
+        topRequirements: [],
+        topCandidateGaps: [],
+        verdicts: { strong: 0, possible: 0, weak: 0, reject: 0 },
+      },
+      statuses: {},
+      connections: null,
+      vacancySync,
+      authenticated: false,
+      generatedAt: now(),
+    };
+  }
+
   const database = await db();
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
     database.prepare(`SELECT
@@ -432,7 +461,7 @@ export async function dashboard(request?: Request) {
     statuses,
     connections: conn,
     vacancySync: await vacancySyncState(),
-    authenticated: request?.headers.get("x-gimmejob-authenticated") === "1",
+    authenticated,
     generatedAt: now(),
   };
 }
