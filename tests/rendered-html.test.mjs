@@ -440,12 +440,21 @@ test("legacy anonymous dashboard never reads or returns private workflow state",
   for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
   cloudflareEnv.DB = database;
 
-  const moduleUrl = new URL("../app/api/_jobpilot.ts", import.meta.url);
-  const { dashboard } = await import(`${moduleUrl.href}?anonymous-dashboard=${process.pid}-${Date.now()}`);
-  const payload = await dashboard(new Request("https://gimmejob.example/api/dashboard", {
-    headers: { "x-gimmejob-authenticated": "0" },
-  }));
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("anonymous-dashboard-boundary-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const response = await worker.fetch(
+    new Request("https://gimmejob.example/api/dashboard"),
+    {
+      APP_PASSWORD: "0123456789abcdef",
+      DB: database,
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
+    { waitUntil() {}, passThroughOnException() {} },
+  );
 
+  assert.equal(response.status, 200);
+  const payload = await response.json();
   assert.equal(payload.authenticated, false);
   assert.equal(payload.jobs.length, 1);
   assert.equal(payload.jobs[0].id, "job-public-1");
