@@ -569,3 +569,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* New design: long-form learning content gets reading typography while utility
+   controls (language, TOC, metadata) stay intentionally compact. */
+:global(html[data-design="new"]) .article {
+  border-color: #e1e5e1;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .article > h1 {
+  font-size: clamp(29px, 3.6vw, 40px);
+  line-height: 1.05;
+}
+
+:global(html[data-design="new"]) .article > h2 {
+  font-size: clamp(20px, 2vw, 25px);
+  margin-top: 38px;
+  padding-top: 28px;
+}
+
+:global(html[data-design="new"]) .article > h3 {
+  font-size: 16px;
+}
+
+:global(html[data-design="new"]) .article > p,
+:global(html[data-design="new"]) .article > ul,
+:global(html[data-design="new"]) .article > ol {
+  font-size: 15px;
+  line-height: 1.72;
+}
+
+:global(html[data-design="new"]) .language,
+:global(html[data-design="new"]) .toc,
+:global(html[data-design="new"]) .sourcePanel {
+  border-color: #e1e5e1;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .language > span,
+:global(html[data-design="new"]) .toc > span {
+  font-size: 8px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .language button {
+  border-radius: 4px;
+  font-size: 8.5px;
+  min-height: 24px;
+  padding: 4px 7px;
+}
+
+:global(html[data-design="new"]) .toc a {
+  font-size: 10.5px;
+  padding: 6px 7px;
+}
+
+:global(html[data-design="new"]) .meta span {
+  border-radius: 5px;
+  font-size: 9px;
+  padding: 4px 7px;
+}
+
+:global(html[data-design="new"]) .pager button {
+  border-radius: 7px;
+  min-height: 56px;
+}
