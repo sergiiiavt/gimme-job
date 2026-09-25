@@ -9,8 +9,6 @@ import VacanciesWorkspace from "./vacancies-workspace";
 
 type VacancyViewMode = "public" | "personal";
 
-let currentVacancyView: VacancyViewMode | null = null;
-
 async function resolveVacancyView(): Promise<VacancyViewMode> {
   const response = await fetch("/api/auth-state", {
     cache: "no-store",
@@ -22,19 +20,16 @@ async function resolveVacancyView(): Promise<VacancyViewMode> {
 }
 
 export default function VacancyWorkspaceRoute() {
-  const [mode, setMode] = useState<VacancyViewMode | null>(() => currentVacancyView);
+  const [mode, setMode] = useState<VacancyViewMode | null>(null);
 
   useEffect(() => {
     let active = true;
     void resolveVacancyView()
       .then((nextMode) => {
-        currentVacancyView = nextMode;
         if (active) setMode(nextMode);
       })
       .catch(() => {
-        const fallbackMode = currentVacancyView ?? "public";
-        currentVacancyView = fallbackMode;
-        if (active) setMode(fallbackMode);
+        if (active) setMode("public");
       });
     return () => { active = false; };
   }, []);
