@@ -28,6 +28,19 @@ test("vacancy dashboard reads trust persisted intake metadata", async () => {
   assert.doesNotMatch(publicJobs, /sanitizeJobs|raw_json/);
 });
 
+
+test("anonymous legacy dashboard returns before private workflow queries", async () => {
+  const legacy = await source("app/api/_jobpilot.ts");
+  const legacyDashboard = between(legacy, "export async function dashboard", "export async function resumePdf");
+  const anonymousBranch = between(legacyDashboard, "if (!authenticated) {", "const database = await db();");
+
+  assert.match(anonymousBranch, /publicVacancySummaries\(\)/);
+  assert.match(anonymousBranch, /authenticated: false/);
+  assert.match(anonymousBranch, /statuses: \{\}/);
+  assert.match(anonymousBranch, /connections: null/);
+  assert.doesNotMatch(anonymousBranch, /analyses|resume_variants|application_drafts|status_updated_at/);
+});
+
 test("dashboard list queries never project raw vacancy JSON or resume PDFs", async () => {
   const legacy = await source("app/api/_jobpilot.ts");
   const legacyDashboard = between(legacy, "export async function dashboard", "export async function resumePdf");
