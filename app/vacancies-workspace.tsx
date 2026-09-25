@@ -127,7 +127,7 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// v5 snapshots carry catalogue version, freshness and source-health metadata.
+// v6 snapshots carry the public/private boundary plus catalogue freshness and source-health metadata.
 const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v6";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
@@ -649,7 +649,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (syncPollTimerRef.current !== null) window.clearTimeout(syncPollTimerRef.current);
     };
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     if (!workspaceReady) return;
