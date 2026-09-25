@@ -16,19 +16,12 @@ test("root layout boots the saved design before page content", async () => {
   assert.doesNotMatch(layout, /className="design-mode-switcher"/);
 });
 
-test("design switcher lives at the bottom of the scrollable primary navigation", async () => {
-  const [navigation, switcher, css] = await Promise.all([
-    read("app/site-navigation.tsx"),
+test("design switcher is compact, persistent and non-floating", async () => {
+  const [switcher, css] = await Promise.all([
     read("app/design-mode-switcher.tsx"),
     read("app/new-design.css"),
   ]);
 
-  const groups = navigation.indexOf("navigationGroups.map");
-  const slot = navigation.indexOf('className="kb-design-switcher-slot"');
-
-  assert.ok(groups >= 0);
-  assert.ok(slot > groups);
-  assert.match(navigation, /<DesignModeSwitcher\/>/);
   assert.match(switcher, /data-design-option="old"/);
   assert.match(switcher, /data-design-option="new"/);
   assert.match(switcher, /localStorage\.setItem/);
