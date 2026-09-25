@@ -1,39 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type DesignMode = "old" | "new";
 
 const STORAGE_KEY = "gimmejob-design";
 
 function currentMode(): DesignMode {
-  if (typeof document === "undefined") return "new";
   return document.documentElement.dataset.design === "old" ? "old" : "new";
 }
 
 export default function DesignModeSwitcher() {
-  const [mode, setMode] = useState<DesignMode>("new");
+  const oldButtonRef = useRef<HTMLButtonElement>(null);
+  const newButtonRef = useRef<HTMLButtonElement>(null);
+
+  const syncPressedState = () => {
+    const mode = currentMode();
+    oldButtonRef.current?.setAttribute("aria-pressed", String(mode === "old"));
+    newButtonRef.current?.setAttribute("aria-pressed", String(mode === "new"));
+  };
 
   useEffect(() => {
-    setMode(currentMode());
+    syncPressedState();
   }, []);
 
   const selectMode = (nextMode: DesignMode) => {
     document.documentElement.dataset.design = nextMode;
-    setMode(nextMode);
 
     try {
       window.localStorage.setItem(STORAGE_KEY, nextMode);
     } catch {
       // Switching remains available even when persistent storage is blocked.
     }
+
+    syncPressedState();
   };
 
   return (
     <div aria-label="Site design" className="design-mode-switcher" role="group">
       <span>Design</span>
-      <button aria-pressed={mode === "old"} data-design-option="old" onClick={() => selectMode("old")} type="button">Old</button>
-      <button aria-pressed={mode === "new"} data-design-option="new" onClick={() => selectMode("new")} type="button">New</button>
+      <button aria-pressed="false" data-design-option="old" onClick={() => selectMode("old")} ref={oldButtonRef} type="button">Old</button>
+      <button aria-pressed="true" data-design-option="new" onClick={() => selectMode("new")} ref={newButtonRef} type="button">New</button>
     </div>
   );
 }
