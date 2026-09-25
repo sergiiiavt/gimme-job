@@ -10,7 +10,7 @@ import {
   safeErrorDetails,
   type OperationalReasonCode,
 } from "./_operational-log";
-import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard";
+import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard.js";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
