@@ -660,3 +660,76 @@
   min-height: 36px;
   padding-inline: 14px;
 }
+
+/* New design: the assistant is conversational content with compact chrome. */
+:global(html[data-design="new"]) .chat {
+  border-color: #e0e4e1;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .hero > span {
+  font-size: 9px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .hero p {
+  font-size: 13px;
+}
+
+:global(html[data-design="new"]) .chatTopline > span {
+  font-size: 10px;
+}
+
+:global(html[data-design="new"]) .chatTopline button {
+  border-radius: 5px;
+  font-size: 9.5px;
+  min-height: 29px;
+}
+
+:global(html[data-design="new"]) .emptyState p,
+:global(html[data-design="new"]) .userTurn p,
+:global(html[data-design="new"]) .responseIntro p {
+  font-size: 13px;
+}
+
+:global(html[data-design="new"]) .emptyState button {
+  border-radius: 5px;
+  font-size: 10.5px;
+  min-height: 33px;
+}
+
+:global(html[data-design="new"]) .responseIntro h2 {
+  font-size: 19px;
+}
+
+:global(html[data-design="new"]) .sectionHeader h3 {
+  font-size: 14px;
+}
+
+:global(html[data-design="new"]) .recommendationTitle h4 {
+  font-size: 12.5px;
+}
+
+:global(html[data-design="new"]) .recommendationCopy p,
+:global(html[data-design="new"]) .noLinks {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .contentLink,
+:global(html[data-design="new"]) .followUps button {
+  border-radius: 5px;
+  font-size: 9.5px;
+}
+
+:global(html[data-design="new"]) .composer textarea {
+  font-size: 13px;
+  min-height: 52px;
+}
+
+:global(html[data-design="new"]) .composer button {
+  border-radius: 5px;
+  font-size: 10.5px;
+  min-height: 32px;
+}
