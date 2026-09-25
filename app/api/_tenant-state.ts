@@ -309,15 +309,7 @@ export function createTenantState(deps: TenantStateDeps) {
     if (!userId) {
       const percent = (count: number) => baseJobs.length ? Math.round(count / baseJobs.length * 100) : 0;
       return {
-        jobs: baseJobs.map((job) => ({
-          ...job,
-          status: "NEW",
-          statusUpdatedAt: null,
-          analysis: null,
-          resume: null,
-          resumePdf: false,
-          draft: null,
-        })),
+        jobs: baseJobs,
         market: {
           totalJobs: baseJobs.length,
           analyzedJobs: 0,
