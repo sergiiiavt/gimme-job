@@ -109,7 +109,7 @@ test("expired personal access returns to canonical sign in", async () => {
   assert.deepEqual(redirects, ["/login"]);
 });
 
-test("auth sync falls back to the route mode on probe failure and supports cancellation", async () => {
+test("auth sync fails closed on probe failure and supports cancellation", async () => {
   const fallbackStates: boolean[] = [];
   startAuthSync({
     mode: "personal",
@@ -120,7 +120,7 @@ test("auth sync falls back to the route mode on probe failure and supports cance
     replace: () => {},
   });
   await tick();
-  assert.deepEqual(fallbackStates, [true]);
+  assert.deepEqual(fallbackStates, [false]);
 
   const cancelledStates: boolean[] = [];
   let resolveProbe!: (value: { ok: boolean }) => void;

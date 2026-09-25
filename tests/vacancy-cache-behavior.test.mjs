@@ -23,7 +23,7 @@ test("a stale cache revalidates against the sync marker before refetching the ca
 });
 
 test("vacancy data cache survives route changes and refreshes within the same view", () => {
-  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v5";/);
+  assert.match(source, /const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v6";/);
   assert.match(source, /window\.sessionStorage\.getItem\(VACANCY_CACHE_KEY\)/);
   assert.match(source, /window\.sessionStorage\.setItem\(VACANCY_CACHE_KEY, JSON\.stringify\(snapshot\)\)/);
   assert.match(source, /const memoryCache = readClientVacancyCache\(\)/);
@@ -43,9 +43,9 @@ test("vacancy route resolves public or personal view from current auth without c
   assert.match(routeResolver, /if \(response\.ok\) return "personal";/);
   assert.match(routeResolver, /if \(response\.status === 401\) return "public";/);
   assert.match(routeResolver, /throw new Error\(`Auth state request failed:/);
-  assert.match(routeResolver, /let currentVacancyView: VacancyViewMode \| null = null;/);
-  assert.match(routeResolver, /useState<VacancyViewMode \| null>\(\(\) => currentVacancyView\)/);
-  assert.match(routeResolver, /const fallbackMode = currentVacancyView \?\? "public";/);
+  assert.doesNotMatch(routeResolver, /currentVacancyView/);
+  assert.match(routeResolver, /useState<VacancyViewMode \| null>\(null\)/);
+  assert.match(routeResolver, /\.catch\(\(\) => \{[\s\S]*setMode\("public"\)/);
   assert.match(routeResolver, /<VacanciesWorkspace key=\{mode\} mode=\{mode\}\/>/);
   assert.match(publicRoute, /<VacancyWorkspaceRoute\/>/);
   assert.match(privateRoute, /<VacancyWorkspaceRoute\/>/);

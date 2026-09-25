@@ -127,8 +127,8 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// v5 snapshots carry catalogue version, freshness and source-health metadata.
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v5";
+// v6 snapshots carry the public/private boundary plus catalogue freshness and source-health metadata.
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v6";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 // A cached catalogue older than this is revalidated — but against the sync
@@ -311,6 +311,27 @@ function scoreTone(score: number): ScoreTone {
 
 function sortJobsByNewest(jobs: Job[]) {
   return [...jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
+}
+
+function publicSafeJob(job: Job): Job {
+  return {
+    ...job,
+    status: "NEW",
+    statusUpdatedAt: null,
+    analysis: null,
+    resume: null,
+    resumePdf: false,
+    draft: null,
+  };
+}
+
+function dashboardForView(dashboard: DashboardData, mode: VacancyViewMode): DashboardData {
+  const personal = mode === "personal" && dashboard.authenticated === true;
+  return {
+    ...dashboard,
+    authenticated: personal,
+    jobs: personal ? dashboard.jobs : dashboard.jobs.map(publicSafeJob),
+  };
 }
 
 function removeVacancyCache() {
@@ -576,7 +597,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     const loadDashboard = (attempt = 0) => api<DashboardData>("/dashboard")
       .then((result) => {
         if (!active) return;
-        const snapshot = writeVacancyCache(result);
+        const snapshot = writeVacancyCache(dashboardForView(result, mode));
         setJobs(snapshot.jobs);
         setOnline(true);
         setAuthenticated(snapshot.authenticated);
@@ -589,6 +610,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
           return;
         }
         if (cached) {
+          const safeJobs = cached.jobs.map(publicSafeJob);
+          setJobs(safeJobs);
           setOnline(false);
           setAuthenticated(false);
           return;
@@ -626,7 +649,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (syncPollTimerRef.current !== null) window.clearTimeout(syncPollTimerRef.current);
     };
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     if (!workspaceReady) return;
@@ -652,7 +675,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   useEffect(() => {
     if (isPersonal) return;
     if (selectedIds.size) setSelectedIds(new Set());
-  }, [isPersonal, selectedIds.size]);
+    if (statusFilters.length) setStatusFilters([]);
+  }, [isPersonal, selectedIds.size, statusFilters.length]);
 
   useEffect(() => {
     if (isPersonal || (sortOrder !== "SCORE_HIGH" && sortOrder !== "SCORE_LOW")) return;
@@ -660,11 +684,11 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   }, [isPersonal, sortOrder]);
 
   const visibleJobs = useMemo(() => jobs
-    .filter((job) => statusFilters.length === 0 || statusFilters.includes(job.status))
+    .filter((job) => !isPersonal || statusFilters.length === 0 || statusFilters.includes(job.status))
     .filter((job) => !dateFilter || jobDateKey(job) === dateFilter)
     .filter((job) => conditionFilters.length === 0 || conditionFilters.some((condition) => matchesCondition(job, condition)))
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source} ${job.salaryText ?? ""}`).toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, jobs, query, sortOrder, statusFilters]);
+    .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, isPersonal, jobs, query, sortOrder, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
 
@@ -710,11 +734,11 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     reservation: jobs.filter(hasReservation).length,
   };
   const sortOptions = isPersonal ? PERSONAL_SORT_OPTIONS : PUBLIC_SORT_OPTIONS;
-  const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
+  const hasActiveFilters = Boolean(query || dateFilter || (isPersonal && statusFilters.length) || conditionFilters.length);
   const analysisTargetCount = selected ? 1 : selectedIds.size;
 
   const applyDashboard = (dashboard: DashboardData) => {
-    const snapshot = writeVacancyCache(dashboard);
+    const snapshot = writeVacancyCache(dashboardForView(dashboard, mode));
     setJobs(snapshot.jobs);
     setOnline(true);
     setAuthenticated(snapshot.authenticated);
@@ -1037,13 +1061,13 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                 <span>Date</span>
                 <input type="date" aria-label="Filter vacancies by posted date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}/>
               </label>
-              <VacancyMultiFilter
+              {isPersonal && <VacancyMultiFilter
                 allLabel="All statuses"
                 label="Status"
                 onChange={setStatusFilters}
                 options={STATUS_OPTIONS}
                 selected={statusFilters}
-              />
+              />}
               <VacancyMultiFilter
                 allLabel="All conditions"
                 className="vacancy-condition-filter"

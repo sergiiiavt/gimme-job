@@ -277,14 +277,16 @@ export function startAuthSync({
   void probe().then((response) => {
     if (!active) return;
     if (!response.ok && typeof response.status === "number" && response.status !== 401) {
-      onAuthenticatedChange(mode === "personal");
+      // Authentication is unknown on infrastructure errors. Keep the page in
+      // its public-safe state without turning a transient outage into a login redirect.
+      onAuthenticatedChange(false);
       return;
     }
     const authenticated = response.ok;
     onAuthenticatedChange(authenticated);
     if (normalizeToPersonal && shouldNormalizeToPersonal(mode, authenticated, personalHref, currentHref())) return replace(personalHref);
     if (!authenticated && mode === "personal") replace(signInHref(personalHref));
-  }).catch(() => { if (active) onAuthenticatedChange(mode === "personal"); });
+  }).catch(() => { if (active) onAuthenticatedChange(false); });
   return () => { active = false; };
 }
 

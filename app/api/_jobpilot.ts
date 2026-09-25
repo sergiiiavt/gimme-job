@@ -10,6 +10,7 @@ import {
   safeErrorDetails,
   type OperationalReasonCode,
 } from "./_operational-log";
+import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard.js";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -367,6 +368,13 @@ function stringArray(value: unknown): string[] {
 
 export async function dashboard(request?: Request) {
   await ensureVacancyCatalog();
+  const authenticated = request ? request.headers.get("x-gimmejob-authenticated") === "1" : true;
+
+  if (!authenticated) {
+    const [publicPayload, vacancySync] = await Promise.all([publicVacancySummaries(), vacancySyncState()]);
+    return buildAnonymousVacancyDashboard(publicPayload, vacancySync, now());
+  }
+
   const database = await db();
   const [jobResult, analysisResult, resumeResult, draftResult, conn] = await Promise.all([
     database.prepare(`SELECT
@@ -432,7 +440,7 @@ export async function dashboard(request?: Request) {
     statuses,
     connections: conn,
     vacancySync: await vacancySyncState(),
-    authenticated: request?.headers.get("x-gimmejob-authenticated") === "1",
+    authenticated,
     generatedAt: now(),
   };
 }

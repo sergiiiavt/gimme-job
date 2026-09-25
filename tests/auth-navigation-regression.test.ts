@@ -9,7 +9,7 @@ test("sign in uses one query-free canonical route", () => {
   assert.equal(signInHref("/vacancies"), "/login");
 });
 
-test("transient auth server failures do not redirect personal pages to login", async () => {
+test("transient auth server failures fail closed without redirecting personal pages to login", async () => {
   const states: boolean[] = [];
   const redirects: string[] = [];
 
@@ -23,6 +23,6 @@ test("transient auth server failures do not redirect personal pages to login", a
   });
 
   await tick();
-  assert.deepEqual(states, [true]);
+  assert.deepEqual(states, [false]);
   assert.deepEqual(redirects, []);
 });

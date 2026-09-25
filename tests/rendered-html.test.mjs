@@ -370,6 +370,105 @@ test("serves the Grafana observability summary endpoint", async () => {
   assert.equal(JSON.stringify(capturedErrors[0]).includes("sergii@example.com"), false);
 });
 
+
+function fakeAnonymousDashboardDb() {
+  const state = { queries: [] };
+
+  return {
+    state,
+    prepare(sql) {
+      const text = String(sql);
+      state.queries.push(text);
+      const statement = {
+        bind() { return statement; },
+        async first() {
+          if (text.includes("SELECT COUNT(*) AS count FROM jobs")) return { count: 1 };
+          if (text.includes("FROM vacancy_sync_state")) {
+            return {
+              status: "SUCCESS",
+              trigger: "test",
+              started_at: "2026-09-25T20:00:00.000Z",
+              completed_at: "2026-09-25T20:01:00.000Z",
+              seen: 1,
+              inserted: 1,
+              updated: 0,
+              error: null,
+              sources_json: "[]",
+              catalog_version: "test-version",
+            };
+          }
+          return null;
+        },
+        async all() {
+          if (text.includes("FROM jobs") && text.includes("substr(description")) {
+            return {
+              results: [{
+                id: "job-public-1",
+                source: "rss:dou-qa",
+                display_source: "DOU",
+                external_id: "public-1",
+                title: "QA Engineer",
+                company: "Example",
+                location: "Kyiv",
+                remote: 1,
+                url: "https://example.com/job/1",
+                apply_url: "https://example.com/job/1",
+                description: "Public vacancy description",
+                description_complete: 1,
+                reservation: 0,
+                salary_text: "$3000",
+                posted_at: "2026-09-25T12:00:00.000Z",
+                contact_email: null,
+                discovered_at: "2026-09-25T12:05:00.000Z",
+              }],
+            };
+          }
+          if (/FROM (analyses|resume_variants|application_drafts)/.test(text)) {
+            throw new Error(`anonymous dashboard queried private table: ${text}`);
+          }
+          return { results: [] };
+        },
+      };
+      return statement;
+    },
+  };
+}
+
+test("legacy anonymous dashboard never reads or returns private workflow state", async () => {
+  const database = fakeAnonymousDashboardDb();
+  const { state } = database;
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = database;
+
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("anonymous-dashboard-boundary-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const response = await worker.fetch(
+    new Request("https://gimmejob.example/api/dashboard"),
+    {
+      APP_PASSWORD: "0123456789abcdef",
+      DB: database,
+      ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
+    },
+    { waitUntil() {}, passThroughOnException() {} },
+  );
+
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.authenticated, false);
+  assert.equal(payload.jobs.length, 1);
+  assert.equal(payload.jobs[0].id, "job-public-1");
+  assert.equal(payload.market.totalJobs, 1);
+  assert.equal(payload.market.analyzedJobs, 0);
+  assert.deepEqual(payload.statuses, {});
+  assert.equal(payload.connections, null);
+
+  for (const field of ["status", "statusUpdatedAt", "analysis", "resume", "resumePdf", "draft"]) {
+    assert.equal(Object.prototype.hasOwnProperty.call(payload.jobs[0], field), false, `anonymous job leaked ${field}`);
+  }
+  assert.equal(state.queries.some((query) => /FROM (analyses|resume_variants|application_drafts)/.test(query)), false);
+});
+
 test("keeps the public site open and protects the private workspace", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("access-test", `${process.pid}-${Date.now()}`);
