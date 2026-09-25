@@ -435,9 +435,10 @@ function fakeAnonymousDashboardDb() {
 }
 
 test("legacy anonymous dashboard never reads or returns private workflow state", async () => {
-  const { db, state } = fakeAnonymousDashboardDb();
+  const database = fakeAnonymousDashboardDb();
+  const { state } = database;
   for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
-  cloudflareEnv.DB = db;
+  cloudflareEnv.DB = database;
 
   const moduleUrl = new URL("../app/api/_jobpilot.ts", import.meta.url);
   const { dashboard } = await import(`${moduleUrl.href}?anonymous-dashboard=${process.pid}-${Date.now()}`);
