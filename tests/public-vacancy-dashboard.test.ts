@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildAnonymousVacancyDashboard } from "../app/api/_public-vacancy-dashboard.ts";
+import { buildAnonymousVacancyDashboard } from "../app/api/_public-vacancy-dashboard.js";
 
 test("anonymous vacancy dashboard exposes public catalogue metrics without private workflow state", () => {
   const jobs = [
