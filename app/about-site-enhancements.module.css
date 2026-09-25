@@ -335,3 +335,36 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* New design: supporting architecture rails stay subordinate to the actual
+   technology flow and use the same small technical typography. */
+:global(html[data-design="new"]) .tocRail section,
+:global(html[data-design="new"]) .sourceNode,
+:global(html[data-design="new"]) .workflowRow {
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .tocRail section > span,
+:global(html[data-design="new"]) .workflowLabel span {
+  font-size: 8px;
+  letter-spacing: .03em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .tocRail a {
+  font-size: 9.5px;
+}
+
+:global(html[data-design="new"]) .sourceNode strong {
+  font-size: 10px;
+}
+
+:global(html[data-design="new"]) .sourceNode span,
+:global(html[data-design="new"]) .workflowLabel small {
+  font-size: 8px;
+}
+
+:global(html[data-design="new"]) .workflowLabel strong {
+  font-size: 10px;
+}
