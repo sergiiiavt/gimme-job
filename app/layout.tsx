@@ -24,11 +24,12 @@ import "./to-top-button.css";
 import "./ai-assistant-controls.css";
 import "./vacancy-responsive-stats.css";
 import "./http-status-accordion.css";
-import "./site-code-blocks.css";\nimport "./new-design.css";
+import "./site-code-blocks.css";
+import "./new-design.css";
 
 const DESIGN_STORAGE_KEY = "gimmejob-design";
 
-const designModeBootstrap = String.raw\`
+const designModeBootstrap = String.raw`
 (() => {
   try {
     const stored = window.localStorage.getItem("${DESIGN_STORAGE_KEY}");
@@ -37,9 +38,9 @@ const designModeBootstrap = String.raw\`
     document.documentElement.dataset.design = "new";
   }
 })();
-\`;
+`;
 
-const designModeControls = String.raw\`
+const designModeControls = String.raw`
 (() => {
   const root = document.documentElement;
   const controls = Array.from(document.querySelectorAll("[data-design-option]"));
@@ -68,7 +69,7 @@ const designModeControls = String.raw\`
 
   sync();
 })();
-\`;
+`;
 
 const homeTitle = "GimmeJob | QA Interview Questions, Learning & Career Tools";
 
@@ -128,13 +129,20 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html data-design="new" lang="en" suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: designModeBootstrap }}/>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
         />
-        <div className="design-mode-switcher" role="group" aria-label="Site design">\n          <span>Design</span>\n          <button aria-pressed="false" data-design-option="old" type="button">Old</button>\n          <button aria-pressed="true" className="active" data-design-option="new" type="button">New</button>\n        </div>\n        <script dangerouslySetInnerHTML={{ __html: designModeControls }}/>\n        <InterviewNavigationState/>
+        <div aria-label="Site design" className="design-mode-switcher" role="group">
+          <span>Design</span>
+          <button aria-pressed="false" data-design-option="old" type="button">Old</button>
+          <button aria-pressed="true" className="active" data-design-option="new" type="button">New</button>
+        </div>
+        <script dangerouslySetInnerHTML={{ __html: designModeControls }}/>
+        <InterviewNavigationState/>
         <PrimaryNavScrollState/>
         <VacancyScrollState/>
         <VacancyPopoverLayer/>
