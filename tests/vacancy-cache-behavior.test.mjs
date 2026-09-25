@@ -43,9 +43,9 @@ test("vacancy route resolves public or personal view from current auth without c
   assert.match(routeResolver, /if \(response\.ok\) return "personal";/);
   assert.match(routeResolver, /if \(response\.status === 401\) return "public";/);
   assert.match(routeResolver, /throw new Error\(`Auth state request failed:/);
-  assert.match(routeResolver, /let currentVacancyView: VacancyViewMode \| null = null;/);
-  assert.match(routeResolver, /useState<VacancyViewMode \| null>\(\(\) => currentVacancyView\)/);
-  assert.match(routeResolver, /const fallbackMode = currentVacancyView \?\? "public";/);
+  assert.doesNotMatch(routeResolver, /currentVacancyView/);
+  assert.match(routeResolver, /useState<VacancyViewMode \| null>\(null\)/);
+  assert.match(routeResolver, /\.catch\(\(\) => \{[\s\S]*setMode\("public"\)/);
   assert.match(routeResolver, /<VacanciesWorkspace key=\{mode\} mode=\{mode\}\/>/);
   assert.match(publicRoute, /<VacancyWorkspaceRoute\/>/);
   assert.match(privateRoute, /<VacancyWorkspaceRoute\/>/);
