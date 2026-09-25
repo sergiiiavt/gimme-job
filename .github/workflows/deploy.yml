@@ -145,6 +145,14 @@ jobs:
           if ("raw" in first) {
             throw new Error("Production vacancy dashboard leaked raw source payloads.");
           }
+          for (const field of ["status", "statusUpdatedAt", "analysis", "resume", "resumePdf", "draft"]) {
+            if (field in first) {
+              throw new Error(`Production anonymous vacancy dashboard leaked private field: ${field}`);
+            }
+          }
+          if (payload.authenticated !== false) {
+            throw new Error("Production anonymous vacancy dashboard did not fail closed.");
+          }
           NODE
           }
 
