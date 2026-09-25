@@ -10,6 +10,7 @@ import {
   safeErrorDetails,
   type OperationalReasonCode,
 } from "./_operational-log";
+import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -371,29 +372,7 @@ export async function dashboard(request?: Request) {
 
   if (!authenticated) {
     const [publicPayload, vacancySync] = await Promise.all([publicVacancySummaries(), vacancySyncState()]);
-    const jobs = publicPayload.jobs;
-    const percent = (count: number) => jobs.length ? Math.round(count / jobs.length * 100) : 0;
-    return {
-      jobs,
-      market: {
-        totalJobs: jobs.length,
-        analyzedJobs: 0,
-        remoteShare: percent(jobs.filter((job) => job.remote).length),
-        salaryDisclosureShare: percent(jobs.filter((job) => Boolean(job.salaryText)).length),
-        reservationMentions: jobs.filter((job) => job.reservation || /reservation from mobilization/i.test(`${job.title} ${job.description}`)).length,
-        topSources: countBy(jobs.map((job) => job.source)),
-        topRoles: countBy(jobs.map((job) => job.title)),
-        topLocations: countBy(jobs.map((job) => job.location)),
-        topRequirements: [],
-        topCandidateGaps: [],
-        verdicts: { strong: 0, possible: 0, weak: 0, reject: 0 },
-      },
-      statuses: {},
-      connections: null,
-      vacancySync,
-      authenticated: false,
-      generatedAt: now(),
-    };
+    return buildAnonymousVacancyDashboard(publicPayload, vacancySync, now());
   }
 
   const database = await db();
