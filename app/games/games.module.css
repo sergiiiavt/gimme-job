@@ -256,3 +256,34 @@
     flex-direction: column;
   }
 }
+
+/* New design: the game canvas remains dominant; surrounding controls stay quiet. */
+:global(html[data-design="new"]) .header h1 {
+  font-size: 22px;
+}
+
+:global(html[data-design="new"]) .header p {
+  font-size: 11px;
+}
+
+:global(html[data-design="new"]) .selector,
+:global(html[data-design="new"]) .gameCard {
+  border-color: #dfe4df;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .selector button {
+  border-radius: 4px;
+  font-size: 10px;
+  min-height: 28px;
+}
+
+:global(html[data-design="new"]) .controls {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .controls button {
+  border-radius: 5px;
+  font-size: 9.5px;
+}
