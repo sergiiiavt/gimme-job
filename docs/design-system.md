@@ -2,28 +2,88 @@
 
 GimmeJob keeps two visual modes on the same application structure:
 
-- **New** — the default design. It uses the shared readability and hierarchy rules in `app/new-design.css`.
-- **Old** — the previous production appearance. It uses the existing styles without the new design overrides.
+- **New** — the default design.
+- **Old** — the previous production appearance.
 
-The selector is rendered by the root layout and stores the user's choice in `localStorage` under `gimmejob-design`. The selected mode is applied as `data-design="new|old"` on the root `html` element before the main page content is parsed, which avoids duplicating routes or application state.
+The selected mode is stored in `localStorage` under `gimmejob-design` and is applied as `data-design="new|old"` on the root `html` element before the main page content is parsed. Routes, application state, data and business logic are shared.
 
-## Design direction
+The **Old / New** selector is intentionally small and lives at the **very bottom of the scrollable primary navigation**. It is not a floating control and should not compete with page actions.
 
-The new mode follows four rules:
+## Design rules
 
-1. **Readable before dense.** Normal content is targeted at roughly 15–16 px and supporting information at roughly 11–13 px. Important metadata should not depend on 7–10 px text.
-2. **Fewer competing surfaces.** Cards, pastel navigation clusters, large radii, shadows, decorative backgrounds, uppercase labels, and letter spacing are reduced when they do not communicate state.
-3. **Data remains primary.** Vacancy tables, interview questions, learning documents, source evidence, filters, and status information keep their meaning and interaction contracts; presentation changes do not alter the underlying data.
-4. **One shared system.** Navigation, typography, surfaces, controls, focus treatment, and responsive behavior are changed through shared design-mode overrides rather than page copies.
+1. **Hierarchy is contextual, not global.** A reading paragraph, database cell, language switch, vacancy status and page title must not share the same scale merely because they all contain text.
+2. **Preserve page geometry.** Shared design CSS must not change primary-sidebar widths, main-column offsets, playground panel geometry or other page contracts. Geometry belongs to the page that owns it.
+3. **Utility controls stay quiet.** Language toggles, metadata chips, status labels, filter captions and secondary actions remain smaller than the content they control.
+4. **Dense tools remain dense.** Database, WebSocket, traces and quick-reference pages prioritize scanability and working area. Monospace is reserved for code/data; normal UI uses the site system font.
+5. **Reading pages get reading typography.** Learning documents and standalone interview answers use larger prose and comfortable line-height, but their navigation/metadata remain compact.
+6. **Fewer competing surfaces.** Shadows, large radii, pastel panels and decorative effects are reduced unless they communicate interaction or state.
+7. **Old and New share behavior.** Design work must not fork routes/components just to change appearance.
 
-## Implementation rules
+## Page-family review
 
-- New-design rules must stay scoped beneath `html[data-design="new"]` except for the design switcher itself.
-- Do not fork a page into old/new component trees only for appearance.
-- New feature work should remain functional in both modes until the old mode is intentionally retired.
-- Preserve semantic HTML, accessible names, keyboard focus, source attribution, saved preferences, localization, and public/private boundaries.
-- Prefer fixing shared selectors before adding another page-specific override.
+### Primary navigation
+- Keep the existing navigation geometry because several playgrounds intentionally align to the 220px compact sidebar.
+- Reduce cluster decoration in New mode.
+- Keep labels readable without turning navigation into body-sized text.
+- Place the design selector after all navigation content so it appears only at the bottom of the scroll.
+
+### About
+- Preserve the architecture-flow grid and intrinsic card widths.
+- The compact “Why / Tech stack” title is a section label, not a page hero; it must never inherit generic large-heading styles.
+- Technical cards and source rails use compact typography because the page is diagram-like.
+
+### Interview catalog
+- Question wording is primary.
+- Answer prose is normal reading text.
+- Filters, tags, progress metadata and **EN / UA** are utility UI and stay small.
+- Code remains monospace.
+
+### Standalone interview question
+- Behaves like a document: restrained title, readable answer, compact metadata and compact language selector.
+
+### Learning documents
+- Long-form prose uses reading typography.
+- TOC, language selector, badges, source metadata and paging are deliberately smaller.
+
+### Vacancies
+- Dense operational table; do not inflate every cell/chip.
+- Vacancy title is the strongest row element, with metadata/status subordinate.
+
+### Database playground
+- Dense workbench rather than article.
+- SQL/editor/result data stays monospace; tabs, table tree and actions use normal UI font.
+- Small labels remain small, with consistent radii and panel borders.
+
+### WebSocket playground
+- Chat text is readable.
+- Connection controls and inspector guidance remain compact.
+- Existing two-panel geometry is preserved.
+
+### AI assistant and execution trace
+- Assistant response text is conversational/readable.
+- Trace remains a technical inspector with denser metadata and monospace values.
+- Panel geometry and equal-height behavior are preserved.
+
+### Quick reference
+- Intentionally the densest reading surface on the site.
+- Cards and rows should not be enlarged to long-form article scale.
+
+### Games
+- Canvas is the visual priority.
+- Selector and control chrome stay compact.
+
+### Resume
+- Treat as a document, not a dashboard.
+- Keep print-like hierarchy and compact supporting metadata.
 
 ## Verification
 
-For design changes, verify representative desktop, tablet, and phone layouts plus the main data-heavy surfaces. The canonical repository validation remains `npm run verify`, followed by PR CI, SonarQube Cloud, merge, production deployment, and a live smoke check.
+For visual changes:
+
+- run `npm run verify`;
+- run the design-mode source regressions;
+- keep PR CodeQL and SonarQube Cloud green;
+- merge only after checks pass;
+- verify the production deployment and live page response.
+
+Visual inspection should cover representative desktop and mobile layouts from every page family above. Source-level tests protect against the specific regression that caused the first New-design implementation to break page geometry.
