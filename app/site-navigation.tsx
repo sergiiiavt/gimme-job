@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import AuthStatusControl from "./auth-status-control";
+import DesignModeSwitcher from "./design-mode-switcher";
 import {
   learningClusters,
   navigationGroups,
@@ -442,6 +443,9 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
               )}
             </section>
           ))}
+          <div className="kb-design-switcher-slot">
+            <DesignModeSwitcher/>
+          </div>
         </nav>
       </aside>
 

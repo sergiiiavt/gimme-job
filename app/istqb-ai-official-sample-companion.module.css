@@ -526,3 +526,42 @@
     transition: none;
   }
 }
+
+/* New design: keep question choices usable, but make source/timer/action chrome
+   visually secondary to the sample exam itself. */
+:global(html[data-design="new"]) .pdfFrame,
+:global(html[data-design="new"]) .timer,
+:global(html[data-design="new"]) .progress,
+:global(html[data-design="new"]) .questionGroup,
+:global(html[data-design="new"]) .actionBar,
+:global(html[data-design="new"]) .result,
+:global(html[data-design="new"]) .additionalQuestion,
+:global(html[data-design="new"]) .extraResult {
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .companion .sourceActions a,
+:global(html[data-design="new"]) .actionBar button,
+:global(html[data-design="new"]) .timer button {
+  border-radius: 5px;
+  font-size: 10.5px;
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+:global(html[data-design="new"]) .timer > span,
+:global(html[data-design="new"]) .questionGroup h3,
+:global(html[data-design="new"]) .result > div:first-child > span:first-child {
+  font-size: 9px;
+  letter-spacing: .035em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .optionButtons button {
+  border-radius: 5px;
+  font-size: 11px;
+  height: 31px;
+  min-width: 31px;
+  padding: 0 7px;
+}

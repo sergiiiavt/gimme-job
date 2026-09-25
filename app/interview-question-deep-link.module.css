@@ -340,3 +340,74 @@ button.backLink {
     padding: 11px;
   }
 }
+
+/* New design: standalone interview answers use document typography, while the
+   EN/UA selector is a small utility rather than a primary action. */
+:global(html[data-design="new"]) .page {
+  background: #f7f8f6;
+}
+
+:global(html[data-design="new"]) .card {
+  border-color: #e0e4e0;
+  border-radius: 8px;
+  box-shadow: none;
+  max-width: 860px;
+}
+
+:global(html[data-design="new"]) .header h1 {
+  font-size: clamp(26px, 3.5vw, 36px);
+  line-height: 1.15;
+}
+
+:global(html[data-design="new"]) .eyebrow {
+  font-size: 9px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .meta span,
+:global(html[data-design="new"]) .meta a,
+:global(html[data-design="new"]) .tags span {
+  border-radius: 5px;
+  font-size: 10px;
+  padding: 4px 7px;
+}
+
+:global(html[data-design="new"]) .language {
+  gap: 3px;
+}
+
+:global(html[data-design="new"]) .language button {
+  border-radius: 4px;
+  font-size: 8px;
+  min-height: 22px;
+  min-width: 30px;
+  padding: 3px 6px;
+}
+
+:global(html[data-design="new"]) .copyButton {
+  border-radius: 5px;
+  font-size: 10.5px;
+  padding: 6px 9px;
+}
+
+:global(html[data-design="new"]) .section h2,
+:global(html[data-design="new"]) .sources h2 {
+  font-size: 16px;
+}
+
+:global(html[data-design="new"]) .section p,
+:global(html[data-design="new"]) .section li {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+:global(html[data-design="new"]) .codeCard,
+:global(html[data-design="new"]) .sources a {
+  border-radius: 6px;
+}
+
+:global(html[data-design="new"]) .codeBlock {
+  border-radius: 6px;
+  font-size: 12px;
+}

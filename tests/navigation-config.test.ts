@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   learningClusters,
@@ -52,4 +53,15 @@ test("external navigation items keep canonical destinations independent of displ
   assert.equal(database.publicHref, "/playgrounds/databases");
   assert.equal(games.external, true);
   assert.equal(games.publicHref, "/games");
+});
+
+
+test("design switcher is rendered after every primary navigation group", () => {
+  const source = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");
+  const groups = source.indexOf("navigationGroups.map");
+  const slot = source.indexOf('className="kb-design-switcher-slot"');
+
+  assert.ok(groups >= 0, "primary navigation groups must be rendered");
+  assert.ok(slot > groups, "design switcher must be after the navigation groups so it appears at the bottom of the scroll");
+  assert.match(source, /<DesignModeSwitcher\/>/);
 });

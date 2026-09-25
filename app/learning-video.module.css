@@ -133,3 +133,36 @@
     min-width: 40px;
   }
 }
+
+/* New design: video itself is primary; playback-speed controls are compact. */
+:global(html[data-design="new"]) .card {
+  border-color: #dfe4df;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .meta strong {
+  font-size: 14px;
+}
+
+:global(html[data-design="new"]) .meta span {
+  font-size: 11.5px;
+}
+
+:global(html[data-design="new"]) .controlsLabel {
+  font-size: 9px;
+  letter-spacing: .025em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .speed {
+  border-radius: 5px;
+  font-size: 10px;
+  min-height: 28px;
+  min-width: 38px;
+  padding: 4px 7px;
+}
+
+:global(html[data-design="new"]) .note {
+  font-size: 10px;
+}

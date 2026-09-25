@@ -568,3 +568,24 @@
     scroll-behavior: auto;
   }
 }
+
+/* New design: preserve IDE conventions and monospace working text. */
+:global(html[data-design="new"]) .shell {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .actionDock {
+  border-radius: 6px;
+}
+
+:global(html[data-design="new"]) .primaryButton,
+:global(html[data-design="new"]) .secondaryButton,
+:global(html[data-design="new"]) .clearButton {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .databaseTab {
+  border-radius: 5px;
+  font-size: 10.5px;
+}

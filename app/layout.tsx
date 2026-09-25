@@ -40,36 +40,6 @@ const designModeBootstrap = String.raw`
 })();
 `;
 
-const designModeControls = String.raw`
-(() => {
-  const root = document.documentElement;
-  const controls = Array.from(document.querySelectorAll("[data-design-option]"));
-
-  const sync = () => {
-    const activeMode = root.dataset.design === "old" ? "old" : "new";
-    for (const control of controls) {
-      const active = control.getAttribute("data-design-option") === activeMode;
-      control.setAttribute("aria-pressed", String(active));
-      control.classList.toggle("active", active);
-    }
-  };
-
-  for (const control of controls) {
-    control.addEventListener("click", () => {
-      const mode = control.getAttribute("data-design-option") === "old" ? "old" : "new";
-      root.dataset.design = mode;
-      try {
-        window.localStorage.setItem("${DESIGN_STORAGE_KEY}", mode);
-      } catch {
-        // The visual switch still works when storage is unavailable.
-      }
-      sync();
-    });
-  }
-
-  sync();
-})();
-`;
 
 const homeTitle = "GimmeJob | QA Interview Questions, Learning & Career Tools";
 
@@ -136,12 +106,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
         />
-        <div aria-label="Site design" className="design-mode-switcher" role="group">
-          <span>Design</span>
-          <button aria-pressed="false" data-design-option="old" type="button">Old</button>
-          <button aria-pressed="true" className="active" data-design-option="new" type="button">New</button>
-        </div>
-        <script dangerouslySetInnerHTML={{ __html: designModeControls }}/>
+
         <InterviewNavigationState/>
         <PrimaryNavScrollState/>
         <VacancyScrollState/>

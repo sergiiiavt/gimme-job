@@ -670,3 +670,130 @@
   .runButton { padding-left: 7px; padding-right: 7px; }
   .queryTab { max-width: 145px; min-width: 90px; }
 }
+
+/* New design: Database is a technical workbench, not a reading page. Keep the
+   interface dense and use monospace only where the content is actually code/data. */
+:global(html[data-design="new"]) .workspaceLayout {
+  gap: 18px;
+}
+
+:global(html[data-design="new"]) .technicalPanel,
+:global(html[data-design="new"]) .workbench {
+  border-color: #dfe4df;
+  border-radius: 8px;
+  box-shadow: none;
+  font-family: inherit;
+}
+
+:global(html[data-design="new"]) .engineSwitch button {
+  border-radius: 5px;
+  font-size: 10px;
+  min-height: 30px;
+  padding: 5px 9px;
+}
+
+:global(html[data-design="new"]) .sideTabs button {
+  font-size: 11px;
+  min-height: 38px;
+  padding: 7px 9px 8px;
+}
+
+:global(html[data-design="new"]) .databaseTools > span {
+  font-size: 8.5px;
+  letter-spacing: .025em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .databaseTools button {
+  font-size: 8.5px;
+}
+
+:global(html[data-design="new"]) .tableButton {
+  font-size: 11.5px;
+  min-height: 37px;
+}
+
+:global(html[data-design="new"]) .columnRow {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .columnRow small {
+  font-size: 9px;
+}
+
+:global(html[data-design="new"]) .columnName em,
+:global(html[data-design="new"]) .quickSelect {
+  font-size: 8px;
+}
+
+:global(html[data-design="new"]) .exampleCategories button {
+  border-radius: 5px;
+  font-size: 9.5px;
+  padding: 5px 7px;
+}
+
+:global(html[data-design="new"]) .exampleCard {
+  border-radius: 6px;
+  padding: 9px;
+}
+
+:global(html[data-design="new"]) .exampleCard h2 {
+  font-size: 11.5px;
+}
+
+:global(html[data-design="new"]) .exampleCard p {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+:global(html[data-design="new"]) .exampleCard pre,
+:global(html[data-design="new"]) .mongoDocuments pre {
+  border-radius: 5px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+}
+
+:global(html[data-design="new"]) .queryTab {
+  border-radius: 5px 5px 0 0;
+}
+
+:global(html[data-design="new"]) .queryTabSelect span {
+  font-size: 9.5px;
+}
+
+:global(html[data-design="new"]) .queryTabSelect small {
+  border-radius: 3px;
+  font-size: 7.5px;
+}
+
+:global(html[data-design="new"]) .sectionHeader strong {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .sectionHeader > div:first-child > span,
+:global(html[data-design="new"]) .sectionHeader > span,
+:global(html[data-design="new"]) .resultMeta {
+  font-size: 8.5px;
+}
+
+:global(html[data-design="new"]) .editor {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+:global(html[data-design="new"]) .ghostButton,
+:global(html[data-design="new"]) .dangerButton,
+:global(html[data-design="new"]) .runButton {
+  border-radius: 5px;
+  font-size: 9px;
+  min-height: 28px;
+}
+
+:global(html[data-design="new"]) .grid {
+  font-size: 10.5px;
+}
+
+:global(html[data-design="new"]) .grid td {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}

@@ -462,3 +462,38 @@
     width: 28px !important;
   }
 }
+
+/* New design: Quick Reference intentionally remains the densest reading surface. */
+:global(html[data-design="new"]) .topbar {
+  background: rgba(250, 251, 249, .97);
+  border-color: #e3e6e3;
+}
+
+:global(html[data-design="new"]) .scopes button,
+:global(html[data-design="new"]) .search,
+:global(html[data-design="new"]) .card,
+:global(html[data-design="new"]) .empty {
+  border-radius: 5px;
+}
+
+:global(html[data-design="new"]) .expandedCard {
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .cardHeader h2 {
+  font-size: 12px;
+}
+
+:global(html[data-design="new"]) .cardSummary,
+:global(html[data-design="new"]) .row > code,
+:global(html[data-design="new"]) .rowMeaning,
+:global(html[data-design="new"]) .rowExample,
+:global(html[data-design="new"]) .codeList code {
+  font-size: 10px;
+}
+
+:global(html[data-design="new"]) .filterLabel,
+:global(html[data-design="new"]) .cardHeader small {
+  letter-spacing: .025em;
+  text-transform: none;
+}

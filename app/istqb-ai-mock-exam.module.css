@@ -340,3 +340,32 @@
     transition: none;
   }
 }
+
+/* New design: exam answers are real interaction targets, so they remain
+   comfortably clickable; only decorative card chrome is reduced. */
+:global(html[data-design="new"]) .progress,
+:global(html[data-design="new"]) .question,
+:global(html[data-design="new"]) .submitPanel,
+:global(html[data-design="new"]) .results {
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .question legend {
+  font-size: 14px;
+}
+
+:global(html[data-design="new"]) .option {
+  border-radius: 6px;
+  font-size: 13.5px;
+  min-height: 42px;
+  padding: 9px 10px;
+}
+
+:global(html[data-design="new"]) .submitPanel button,
+:global(html[data-design="new"]) .evaluation button {
+  border-radius: 5px;
+  font-size: 11.5px;
+  min-height: 36px;
+  padding: 8px 12px;
+}

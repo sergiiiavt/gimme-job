@@ -209,3 +209,36 @@
     gap: 8px;
   }
 }
+
+/* New design: deep links, language and copy are document utilities, not
+   primary calls to action. */
+:global(html[data-design="new"]) .headingDirectLink,
+:global(html[data-design="new"]) .pagerDirectLink {
+  border-radius: 5px !important;
+  height: 25px;
+  width: 25px;
+}
+
+:global(html[data-design="new"]) .headingDirectLink {
+  flex-basis: 25px;
+}
+
+:global(html[data-design="new"]) .focusedLanguage {
+  border-radius: 5px;
+  gap: 2px;
+  padding: 2px;
+}
+
+:global(html[data-design="new"]) .focusedLanguageButton {
+  border-radius: 3px;
+  font-size: 8.5px;
+  min-height: 23px;
+  min-width: 30px;
+  padding: 3px 6px;
+}
+
+:global(html[data-design="new"]) .focusedCopyButton {
+  border-radius: 5px;
+  font-size: 10.5px;
+  padding: 6px 9px;
+}
