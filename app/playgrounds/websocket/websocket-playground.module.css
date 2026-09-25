@@ -575,3 +575,88 @@
     padding: 18px 18px 21px;
   }
 }
+
+/* New design: chat content is readable, inspector guidance stays compact. */
+:global(html[data-design="new"]) .chat,
+:global(html[data-design="new"]) .guide {
+  border-color: #dfe4df;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+:global(html[data-design="new"]) .chatHeader {
+  min-height: 60px;
+  padding: 12px 16px;
+}
+
+:global(html[data-design="new"]) .chatHeader h1 {
+  font-size: 18px;
+}
+
+:global(html[data-design="new"]) .chatHeader p {
+  font-size: 10px;
+}
+
+:global(html[data-design="new"]) .messageBubble {
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+:global(html[data-design="new"]) .composerRow > input[type="text"],
+:global(html[data-design="new"]) .composerRow > input:not([type]) {
+  border-radius: 7px;
+  font-size: 13px;
+  min-height: 38px;
+}
+
+:global(html[data-design="new"]) .imageButton,
+:global(html[data-design="new"]) .sendButton,
+:global(html[data-design="new"]) .disconnectedBar button {
+  border-radius: 6px;
+  font-size: 10.5px;
+  min-height: 34px;
+  padding: 7px 11px;
+}
+
+:global(html[data-design="new"]) .guideTabs button {
+  font-size: 10px;
+  min-height: 35px;
+}
+
+:global(html[data-design="new"]) .guideBody {
+  padding: 18px 19px 20px;
+}
+
+:global(html[data-design="new"]) .eyebrow {
+  font-size: 8.5px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+:global(html[data-design="new"]) .guide h2 {
+  font-size: 18px;
+}
+
+:global(html[data-design="new"]) .lead {
+  font-size: 12px;
+}
+
+:global(html[data-design="new"]) .guideSection h3 {
+  font-size: 11.5px;
+}
+
+:global(html[data-design="new"]) .checkList,
+:global(html[data-design="new"]) .bulletList {
+  font-size: 11px;
+}
+
+:global(html[data-design="new"]) .inspectList > div,
+:global(html[data-design="new"]) .queueNote {
+  border-radius: 6px;
+}
+
+:global(html[data-design="new"]) .inspectList strong,
+:global(html[data-design="new"]) .inspectList span,
+:global(html[data-design="new"]) .queueNote p {
+  font-size: 10px;
+}
