@@ -508,9 +508,9 @@ test("keeps the public site open and protects the private workspace", async () =
   assert.doesNotMatch(publicHtml, /https:\/\/gimme-job\.com\/api\/observability\/health/);
   assert.doesNotMatch(publicHtml, /https:\/\/gimme-job\.com\/api\/observability\/summary/);
 
-  // The vacancy workspace itself is viewable without a password (analysis/resume are public);
-  // only status tracking and write actions stay gated. It still keeps noindex/no-store though,
-  // since it's never meant for search engines or shared caches.
+  // The vacancy catalogue itself is viewable without a password, but personal workflow
+  // state (status, analysis, tailored resumes and drafts) stays private. The workspace also
+  // keeps noindex/no-store because it is not meant for search engines or shared caches.
   const anonWorkspaceResponse = await worker.fetch(new Request("https://gimmejob.example/workspace"), env, context);
   assert.equal(anonWorkspaceResponse.status, 200);
   assert.equal(anonWorkspaceResponse.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
