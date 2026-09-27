@@ -31,17 +31,6 @@ export default function ProgrammingLearningPage({ mode }: { mode: "public" | "pe
       <LearningDocumentPage
         curriculum={programmingCurriculum}
         defaultTrackId={defaultTrackId}
-        heroMeta={({ language, lessonCount, module, sourceCount }) => module?.id.startsWith("csharp-")
-          ? [
-              language === "uk" ? "Базова тема" : "Foundational topic",
-              `${sourceCount} ${language === "uk" ? "джерел" : "references"}`,
-              language === "uk" ? "Методичний матеріал" : "Methodical material",
-            ]
-          : [
-              `${lessonCount} ${language === "uk" ? "тем" : "lessons"}`,
-              `${sourceCount} ${language === "uk" ? "джерел" : "references"}`,
-              language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
-            ]}
         initialModuleId={requestedTopic}
         mode={mode}
         personalHref="/workspace/learn/programming"
