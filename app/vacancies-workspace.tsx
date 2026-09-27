@@ -127,8 +127,8 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// v5 snapshots carry catalogue version, freshness and source-health metadata.
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v5";
+// v6 snapshots carry the public/private boundary plus catalogue freshness and source-health metadata.
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v6";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 // A cached catalogue older than this is revalidated — but against the sync
@@ -311,6 +311,27 @@ function scoreTone(score: number): ScoreTone {
 
 function sortJobsByNewest(jobs: Job[]) {
   return [...jobs].sort((a, b) => jobDate(b).getTime() - jobDate(a).getTime());
+}
+
+function publicSafeJob(job: Job): Job {
+  return {
+    ...job,
+    status: "NEW",
+    statusUpdatedAt: null,
+    analysis: null,
+    resume: null,
+    resumePdf: false,
+    draft: null,
+  };
+}
+
+function dashboardForView(dashboard: DashboardData, mode: VacancyViewMode): DashboardData {
+  const personal = mode === "personal" && dashboard.authenticated === true;
+  return {
+    ...dashboard,
+    authenticated: personal,
+    jobs: personal ? dashboard.jobs : dashboard.jobs.map(publicSafeJob),
+  };
 }
 
 function removeVacancyCache() {
@@ -576,7 +597,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     const loadDashboard = (attempt = 0) => api<DashboardData>("/dashboard")
       .then((result) => {
         if (!active) return;
-        const snapshot = writeVacancyCache(result);
+        const snapshot = writeVacancyCache(dashboardForView(result, mode));
         setJobs(snapshot.jobs);
         setOnline(true);
         setAuthenticated(snapshot.authenticated);
@@ -589,6 +610,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
           return;
         }
         if (cached) {
+          const safeJobs = cached.jobs.map(publicSafeJob);
+          setJobs(safeJobs);
           setOnline(false);
           setAuthenticated(false);
           return;
@@ -626,7 +649,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (syncPollTimerRef.current !== null) window.clearTimeout(syncPollTimerRef.current);
     };
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     if (!workspaceReady) return;
@@ -719,7 +742,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   const analysisTargetCount = selected ? 1 : selectedIds.size;
 
   const applyDashboard = (dashboard: DashboardData) => {
-    const snapshot = writeVacancyCache(dashboard);
+    const snapshot = writeVacancyCache(dashboardForView(dashboard, mode));
     setJobs(snapshot.jobs);
     setOnline(true);
     setAuthenticated(snapshot.authenticated);
