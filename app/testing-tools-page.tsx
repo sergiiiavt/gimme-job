@@ -42,11 +42,6 @@ export default function TestingToolsPage({ mode }: TestingToolsPageProps) {
     <LearningDocumentPage
       activeExternalId="testing-tools"
       curriculum={curriculum}
-      heroMeta={({ language, module, sourceCount }) => [
-        `${module.count ?? 0} ${language === "uk" ? "ключових понять" : "required concepts"}`,
-        `${sourceCount} ${language === "uk" ? "основних джерел" : "primary references"}`,
-        language === "uk" ? "Розгорнутий курс з інструментів діагностики" : "Long-form diagnostic tooling course",
-      ]}
       languages={["en", "uk"]}
       mode={mode}
       personalHref="/workspace/learn/testing-tools"
