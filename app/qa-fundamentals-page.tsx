@@ -43,11 +43,6 @@ export default function QaFundamentalsPage({ mode }: { mode: "public" | "persona
     <LearningDocumentPage
       activeExternalId="qa-fundamentals"
       curriculum={curriculum}
-      heroMeta={({ language, module, sourceCount }) => [
-        `${module.count ?? 0} ${language === "uk" ? "ключових понять" : "required concepts"}`,
-        `${sourceCount} ${language === "uk" ? "основних джерел" : "primary references"}`,
-        language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
-      ]}
       initialModuleId={requestedTopic}
       languages={["en", "uk"]}
       mode={mode}
