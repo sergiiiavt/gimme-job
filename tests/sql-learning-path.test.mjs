@@ -33,7 +33,7 @@ test("SQL learning path publishes a complete reviewed curriculum surface", () =>
   for (const id of moduleIds) assert.match(modulesSource, new RegExp(`id: "${id}"`));
   assert.equal((modulesSource.match(/id: "/g) ?? []).length, moduleIds.length);
   assert.match(catalogSource, /status: "under-review"/);
-  assert.match(pageSource, /"Under review"/);
+  assert.match(pageSource, /chapter references · Under review/);
   assert.doesNotMatch(pageSource, /heroMeta=/);
   assert.match(routeSource, /DataLearningPage/);
   assert.match(navigationSource, /data: "\/learn\/data"/);
