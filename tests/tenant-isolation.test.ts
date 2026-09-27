@@ -360,7 +360,9 @@ test("dashboard overlays only the current tenant private state", async () => {
   assert.equal(b.jobs[0]?.status, "NEW");
   assert.equal(b.jobs[0]?.analysis, null);
   assert.equal(b.jobs[0]?.resume, null);
-  assert.equal(anonymous.jobs[0]?.analysis, null);
+  for (const field of ["status", "statusUpdatedAt", "analysis", "resume", "resumePdf", "draft"]) {
+    assert.equal(Object.prototype.hasOwnProperty.call(anonymous.jobs[0] ?? {}, field), false, `anonymous job leaked ${field}`);
+  }
   assert.equal(anonymous.authenticated, false);
 });
 
