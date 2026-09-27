@@ -369,8 +369,8 @@ test("HTTP presentation keeps methodic material and composes URI detail into the
   assert.doesNotMatch(httpGuide, /:::details/);
   assert.doesNotMatch(apiPage, /Training and practical reference/);
   assert.doesNotMatch(apiPage, /Навчальний і практичний довідник/);
-  assert.match(apiPage, /Methodical material/);
-  assert.match(apiPage, /Методичний матеріал/);
+  assert.doesNotMatch(apiPage, /Methodical material/);
+  assert.doesNotMatch(apiPage, /Методичний матеріал/);
 });
 
 test("Markdown renderer treats tilde fences as code blocks and supports internal topic links", async () => {
