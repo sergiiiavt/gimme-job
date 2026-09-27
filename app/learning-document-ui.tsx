@@ -38,20 +38,14 @@ function pagerItemId<T>(item: T | undefined) {
   return typeof id === "string" ? id : null;
 }
 
-export function LearningHero({ description, eyebrow, meta, title }: {
-  description: string;
+export function LearningHero({ eyebrow, title }: {
   eyebrow: string;
-  meta: string[];
   title: string;
 }) {
   return (
     <header className={styles.hero}>
       <span className={styles.eyebrow}>{eyebrow}</span>
       <h1>{title}</h1>
-      <p>{description}</p>
-      <div className={styles.meta}>
-        {meta.map((item) => <span key={item}>{item}</span>)}
-      </div>
     </header>
   );
 }
