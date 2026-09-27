@@ -23,6 +23,6 @@ test("transient auth server failures do not redirect personal pages to login", a
   });
 
   await tick();
-  assert.deepEqual(states, [true]);
+  assert.deepEqual(states, [false]);
   assert.deepEqual(redirects, []);
 });

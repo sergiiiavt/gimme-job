@@ -655,16 +655,21 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
   }, [isPersonal, selectedIds.size]);
 
   useEffect(() => {
+    if (isPersonal || statusFilters.length === 0) return;
+    setStatusFilters([]);
+  }, [isPersonal, statusFilters.length]);
+
+  useEffect(() => {
     if (isPersonal || (sortOrder !== "SCORE_HIGH" && sortOrder !== "SCORE_LOW")) return;
     setSortOrder("NEWEST");
   }, [isPersonal, sortOrder]);
 
   const visibleJobs = useMemo(() => jobs
-    .filter((job) => statusFilters.length === 0 || statusFilters.includes(job.status))
+    .filter((job) => !isPersonal || statusFilters.length === 0 || statusFilters.includes(job.status))
     .filter((job) => !dateFilter || jobDateKey(job) === dateFilter)
     .filter((job) => conditionFilters.length === 0 || conditionFilters.some((condition) => matchesCondition(job, condition)))
     .filter((job) => displayText(`${job.title} ${job.company} ${job.location} ${job.source} ${job.salaryText ?? ""}`).toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, jobs, query, sortOrder, statusFilters]);
+    .sort((a, b) => compareJobs(a, b, sortOrder)), [conditionFilters, dateFilter, isPersonal, jobs, query, sortOrder, statusFilters]);
 
   const selected = visibleJobs.find((job) => job.id === selectedId) ?? jobs.find((job) => job.id === selectedId) ?? null;
 
@@ -710,7 +715,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     reservation: jobs.filter(hasReservation).length,
   };
   const sortOptions = isPersonal ? PERSONAL_SORT_OPTIONS : PUBLIC_SORT_OPTIONS;
-  const hasActiveFilters = Boolean(query || dateFilter || statusFilters.length || conditionFilters.length);
+  const hasActiveFilters = Boolean(query || dateFilter || (isPersonal && statusFilters.length) || conditionFilters.length);
   const analysisTargetCount = selected ? 1 : selectedIds.size;
 
   const applyDashboard = (dashboard: DashboardData) => {
@@ -1037,13 +1042,13 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                 <span>Date</span>
                 <input type="date" aria-label="Filter vacancies by posted date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}/>
               </label>
-              <VacancyMultiFilter
+              {isPersonal && <VacancyMultiFilter
                 allLabel="All statuses"
                 label="Status"
                 onChange={setStatusFilters}
                 options={STATUS_OPTIONS}
                 selected={statusFilters}
-              />
+              />}
               <VacancyMultiFilter
                 allLabel="All conditions"
                 className="vacancy-condition-filter"
