@@ -43,14 +43,15 @@ test("public state fails closed and private actions remain gated", () => {
   assert.match(source, /\{isPersonal && <article className="job-analysis-resume">/);
 });
 
-test("public and private vacancy lists share compact search and filters", () => {
+test("public vacancy list keeps personal status filtering behind authentication", () => {
   assert.match(source, /className="search vacancy-search"/);
   assert.match(source, /type="date" aria-label="Filter vacancies by posted date"/);
-  assert.match(source, /label="Status"[\s\S]*options=\{STATUS_OPTIONS\}/);
+  assert.match(source, /\{isPersonal && <VacancyMultiFilter[\s\S]*?label="Status"[\s\S]*?options=\{STATUS_OPTIONS\}/);
   assert.match(source, /label="Conditions"[\s\S]*options=\{CONDITION_OPTIONS\}/);
   assert.match(source, /const \[statusFilters, setStatusFilters\] = useState<JobStatus\[]>\(\[\]\)/);
   assert.match(source, /const \[conditionFilters, setConditionFilters\] = useState<JobCondition\[]>\(\[\]\)/);
-  assert.match(source, /statusFilters\.length === 0 \|\| statusFilters\.includes\(job\.status\)/);
+  assert.match(source, /!isPersonal \|\| statusFilters\.length === 0 \|\| statusFilters\.includes\(job\.status\)/);
+  assert.match(source, /if \(isPersonal \|\| statusFilters\.length === 0\) return;/);
   assert.match(source, /conditionFilters\.length === 0 \|\| conditionFilters\.some/);
   assert.match(styles, /\.vacancy-date-filter/);
   assert.match(styles, /\.vacancy-multifilter/);
