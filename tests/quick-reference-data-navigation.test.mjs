@@ -38,7 +38,7 @@ test("unfinished Data tracks are top-level choices with an Under construction st
   assert.match(learningSource, /learning path is under construction/);
 });
 
-test("unfinished Data tracks do not dereference a missing SQL chapter during SSR", () => {
-  assert.match(learningSource, /\$\{module\?\.count \?\? 0\} focused topics/);
-  assert.doesNotMatch(learningSource, /\$\{module\.count \?\? 0\} focused topics/);
+test("unfinished Data tracks do not depend on chapter hero metadata during SSR", () => {
+  assert.doesNotMatch(learningSource, /heroMeta=/);
+  assert.match(learningSource, /available: false, emptyState:/);
 });

@@ -40,15 +40,11 @@ type TopicLearningCatalog = Readonly<{
   sources?: readonly TopicLearningSource[];
 }>;
 
-type LanguageMeta = Readonly<Record<LearningLanguage, readonly string[]>>;
-
 type TopicLearningPageProps = Readonly<{
   activeSection: SiteSection;
   catalog: TopicLearningCatalog;
-  defaultMeta: LanguageMeta;
   defaultTopicId: string;
   mode: SiteMode;
-  publishedTopicMeta?: Readonly<Record<string, LanguageMeta>>;
   secondaryTitle: string;
 }>;
 
@@ -82,10 +78,8 @@ function stripSourceSections(markdown: string) {
 export default function TopicLearningPage({
   activeSection,
   catalog,
-  defaultMeta,
   defaultTopicId,
   mode,
-  publishedTopicMeta = {},
   secondaryTitle,
 }: TopicLearningPageProps) {
   const pathname = usePathname();
@@ -103,7 +97,6 @@ export default function TopicLearningPage({
     ?? topics.find((topic) => topic.id === defaultTopicId)
     ?? topics[0];
   const localizedLabel = language === "uk" ? activeTopic.labelUk : activeTopic.label;
-  const localizedDescription = language === "uk" ? activeTopic.descriptionUk : activeTopic.description;
   const markdown = language === "uk" ? activeTopic.markdownUk : activeTopic.markdown;
   const sourcesById = useMemo(
     () => new Map((catalog.sources ?? []).map((source) => [source.id, source])),
@@ -144,7 +137,6 @@ export default function TopicLearningPage({
 
   const pageTitle = language === "uk" ? catalog.titleUk : catalog.title;
   const chapterNumber = topics.findIndex((topic) => topic.id === activeTopic.id) + 1;
-  const meta = publishedTopicMeta[activeTopic.id]?.[language] ?? defaultMeta[language];
   const href = sectionNavigationHref(activeSection, mode);
 
   return (
@@ -169,25 +161,21 @@ export default function TopicLearningPage({
           {activeTopic.status === "under-construction" ? (
             <>
               <LearningHero
-                description={localizedDescription}
-                eyebrow={`${secondaryTitle} · Under construction`}
-                meta={[]}
+                eyebrow={`${secondaryTitle} · ${language === "uk" ? "У розробці" : "Under construction"}`}
                 title={localizedLabel}
               />
               <section className="kb-under-construction-page">
-                <span className="kb-construction-badge">Under construction</span>
+                <span className="kb-construction-badge">{language === "uk" ? "У розробці" : "Under construction"}</span>
                 <p>{language === "uk"
-                  ? "Топік збережений у learning path і буде розгорнутий у повний source-backed розділ."
-                  : "This topic stays in the learning path and will be expanded into a complete source-backed chapter."}</p>
+                  ? "Цей розділ ще не опублікований."
+                  : "This chapter has not been published yet."}</p>
               </section>
               <LearningRail headings={[]} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage}/>
             </>
           ) : (
             <>
               <LearningHero
-                description={localizedDescription}
                 eyebrow={`${secondaryTitle} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(chapterNumber).padStart(2, "0")} / ${String(topics.length).padStart(2, "0")}`}
-                meta={[...meta]}
                 title={pageTitle}
               />
 

@@ -18,11 +18,6 @@ export default function PerformanceTestingPage({ mode }: PerformanceTestingPageP
   return (
     <LearningDocumentPage
       curriculum={curriculum}
-      heroMeta={({ language, sourceCount }) => [
-        `${performanceTestingCatalog.chapters.length} ${language === "uk" ? "методичних розділів" : "methodical chapters"}`,
-        `${sourceCount} ${language === "uk" ? "джерел розділу" : "chapter references"}`,
-        language === "uk" ? "Навантаження · метрики · інструменти · діагностика" : "Workload · metrics · tooling · diagnosis",
-      ]}
       languages={["en", "uk"]}
       mode={mode}
       personalHref="/workspace/learn/performance"

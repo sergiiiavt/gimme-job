@@ -31,11 +31,6 @@ export default function CloudDevopsPage({ mode }: { mode: "public" | "personal" 
   return (
     <LearningDocumentPage
       curriculum={curriculum}
-      heroMeta={({ module, sourceCount }) => [
-        module.kind === "case-study" ? "Real GimmeJob production case study" : "Engineering foundation",
-        `${sourceCount} primary / implementation references`,
-        "Long-form learning material",
-      ]}
       languages={["en"]}
       mode={mode}
       personalHref="/workspace/learn/cloud-devops"

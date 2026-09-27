@@ -43,7 +43,7 @@ test("certification page enables Ukrainian only for localized modules", async ()
   assert.match(page, /activeModule\.markdownUk/);
   assert.match(page, /language=\{effectiveLanguage\}/);
   assert.match(page, /Сертифікації/);
-  assert.match(page, /офіційних прикладів запитань/);
+  assert.doesNotMatch(page, /description=|meta=\{/);
   assert.match(page, /Навігація розділами ISTQB CT-AI/);
   assert.doesNotMatch(page, /\[activeModule, language\]/);
 });

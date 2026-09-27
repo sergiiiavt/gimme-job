@@ -14,11 +14,11 @@ test("Programming exposes C# as a separate available track", async () => {
   assert.match(source, /waitingForReviewBannerStyle/);
 });
 
-test("Programming hero metadata tolerates unavailable tracks", async () => {
+test("Programming uses the minimal shared learning header for every track", async () => {
   const source = await readFile(projectFile("app/programming-learning-page.tsx"), "utf8");
 
-  assert.match(source, /module\?\.id\.startsWith\("csharp-"\)/);
-  assert.doesNotMatch(source, /module\.id\.startsWith\("csharp-"\)/);
+  assert.doesNotMatch(source, /heroMeta=/);
+  assert.match(source, /<LearningDocumentPage/);
 });
 
 test("C# material is a focused programming foundation, not an interview-labeled catalog", async () => {
