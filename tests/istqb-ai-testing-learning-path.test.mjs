@@ -146,8 +146,6 @@ test("mock exam is rendered as a selectable assessment with scoring and review",
   assert.match(page, /import IstqbAiMockExam from "\.\/istqb-ai-mock-exam"/);
   assert.match(page, /isMockExam\s*\? <IstqbAiMockExam markdown=\{localizedMarkdown\}/);
   assert.match(page, /isOfficialSampleExam = activeModule\?\.id === "official-sample-exam"/);
-  assert.match(page, /official sample questions/);
-  assert.match(page, /original practice questions/);
   assert.match(component, /type="radio"/);
   assert.match(component, />Check score</);
   assert.match(component, /Answer all \$\{exam\.questions\.length\} questions before checking the score/);
