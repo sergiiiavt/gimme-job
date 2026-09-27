@@ -277,14 +277,14 @@ export function startAuthSync({
   void probe().then((response) => {
     if (!active) return;
     if (!response.ok && typeof response.status === "number" && response.status !== 401) {
-      onAuthenticatedChange(mode === "personal");
+      onAuthenticatedChange(false);
       return;
     }
     const authenticated = response.ok;
     onAuthenticatedChange(authenticated);
     if (normalizeToPersonal && shouldNormalizeToPersonal(mode, authenticated, personalHref, currentHref())) return replace(personalHref);
     if (!authenticated && mode === "personal") replace(signInHref(personalHref));
-  }).catch(() => { if (active) onAuthenticatedChange(mode === "personal"); });
+  }).catch(() => { if (active) onAuthenticatedChange(false); });
   return () => { active = false; };
 }
 
@@ -402,7 +402,7 @@ function AuthenticatedControl({
 }
 
 export default function AuthStatusControl({ mode, personalHref }: { mode: AuthViewMode; personalHref: string }) {
-  const [authenticated, setAuthenticated] = useState(mode === "personal");
+  const [authenticated, setAuthenticated] = useState(false);
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
   const [forwarding, setForwarding] = useState<ForwardingSetup | null>(null);
   const [refreshing, setRefreshing] = useState(false);
