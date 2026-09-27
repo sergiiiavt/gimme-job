@@ -114,7 +114,6 @@ interface LearningDocumentPageProps {
   defaultTrackId?: string;
   initialModuleId?: string;
   languages?: LearningLanguage[];
-  heroMeta?: (context: LearningMetaContext) => string[];
   sourceStatusLabel?: (context: LearningMetaContext) => string;
 }
 
@@ -169,7 +168,7 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   return lines.join("\n");
 }
 
-export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, heroMeta, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
+export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -330,11 +329,6 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     lessonCount: moduleLessons.length,
     sourceCount: moduleSources.length,
   };
-  const meta = heroMeta ? heroMeta(metaContext) : [
-    `${moduleLessons.length} ${language === "uk" ? "тем" : "lessons"}`,
-    `${moduleSources.length} ${language === "uk" ? "джерел" : "references"}`,
-    language === "uk" ? "Розгорнутий навчальний матеріал" : "Long-form learning material",
-  ];
   const registryStatus = sourceStatusLabel
     ? sourceStatusLabel(metaContext)
     : `${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`;
@@ -365,18 +359,22 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
 
         <div className={`kb-content ${styles.page}`}>
           {!trackAvailable ? (
-            <LearningHero
-              description={selectedTrack?.emptyState ?? "This learning track is under construction."}
-              eyebrow={secondaryTitle}
-              meta={[]}
-              title={selectedTrackLabel ?? secondaryTitle}
-            />
+            <>
+              <LearningHero
+                eyebrow={secondaryTitle}
+                title={selectedTrackLabel ?? secondaryTitle}
+              />
+              <section className="kb-under-construction-page">
+                <span className="kb-construction-badge">{language === "uk" ? "У розробці" : "Under construction"}</span>
+                <p>{selectedTrack?.emptyState ?? (language === "uk"
+                  ? "Цей навчальний трек ще не опублікований."
+                  : "This learning track is under construction.")}</p>
+              </section>
+            </>
           ) : (
             <>
               <LearningHero
-                description={localizedModuleDescription ?? ""}
                 eyebrow={`${secondaryTitle}${trackSegment} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(moduleIndex + 1).padStart(2, "0")} / ${String(modules.length).padStart(2, "0")}`}
-                meta={meta}
                 title={pageTitle}
               />
 
