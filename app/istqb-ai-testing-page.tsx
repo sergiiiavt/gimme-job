@@ -131,9 +131,6 @@ export default function IstqbAiTestingPage() {
   const localizedMarkdown = activeModule && effectiveLanguage === "uk" && hasUkrainian(activeModule)
     ? activeModule.markdownUk
     : activeModule?.markdown ?? "";
-  const localizedLevel = activeModule && effectiveLanguage === "uk" && hasUkrainian(activeModule)
-    ? activeModule.levelUk
-    : activeModule?.level ?? "";
   const localizedNavLabel = (chapter: IstqbAiTestingModule | undefined) => {
     if (!chapter) return undefined;
     return effectiveLanguage === "uk" && hasUkrainian(chapter) ? chapter.navLabelUk : chapter.navLabel;
@@ -194,21 +191,7 @@ export default function IstqbAiTestingPage() {
 
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
   const next = moduleIndex < modules.length - 1 ? modules[moduleIndex + 1] : undefined;
-  const activeModuleCountLabel = activeModule
-    ? effectiveLanguage === "uk"
-      ? isOfficialSampleExam
-        ? `${activeModule.count} офіційних прикладів запитань`
-        : isMockExam
-          ? `${activeModule.count} авторських тренувальних запитань`
-          : `${activeModule.count} екзаменаційних понять / активностей`
-      : isOfficialSampleExam
-        ? `${activeModule.count} official sample questions`
-        : isMockExam
-          ? `${activeModule.count} original practice questions`
-          : `${activeModule.count} exam concepts / activities`
-    : "";
   const catalogTitle = effectiveLanguage === "uk" ? istqbAiTestingCatalog.titleUk : istqbAiTestingCatalog.title;
-  const catalogDescription = effectiveLanguage === "uk" ? istqbAiTestingCatalog.descriptionUk : istqbAiTestingCatalog.description;
 
   return (
     <>
@@ -240,22 +223,22 @@ export default function IstqbAiTestingPage() {
 
           <div className={`kb-content ${styles.page}`}>
             {!trackAvailable ? (
-              <LearningHero
-                description={selectedTrack.emptyState ?? "This certification learning path is under construction."}
-                eyebrow="Certifications"
-                meta={[]}
-                title={selectedTrack.label}
-              />
+              <>
+                <LearningHero
+                  eyebrow={effectiveLanguage === "uk" ? "Сертифікації" : "Certifications"}
+                  title={selectedTrack.label}
+                />
+                <section className="kb-under-construction-page">
+                  <span className="kb-construction-badge">{effectiveLanguage === "uk" ? "У розробці" : "Under construction"}</span>
+                  <p>{selectedTrack.emptyState ?? (effectiveLanguage === "uk"
+                    ? "Цей навчальний трек ще не опублікований."
+                    : "This certification learning path is under construction.")}</p>
+                </section>
+              </>
             ) : activeModule ? (
               <>
                 <LearningHero
-                  description={catalogDescription}
-                  eyebrow={`${effectiveLanguage === "uk" ? "Навчальний шлях для сертифікації" : "Certification learning path"} · ${selectedTrack.label}`}
-                  meta={[
-                    localizedLevel,
-                    activeModuleCountLabel,
-                    `${moduleSources.length} ${effectiveLanguage === "uk" ? "джерела розділу" : "chapter references"}`,
-                  ]}
+                  eyebrow={`${effectiveLanguage === "uk" ? "Навчальний шлях для сертифікації" : "Certification learning path"} · ${selectedTrack.label} · ${effectiveLanguage === "uk" ? "Розділ" : "Chapter"} ${String(moduleIndex + 1).padStart(2, "0")} / ${String(modules.length).padStart(2, "0")}`}
                   title={catalogTitle}
                 />
 
