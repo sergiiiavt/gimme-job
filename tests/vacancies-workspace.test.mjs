@@ -57,6 +57,25 @@ test("public vacancy list keeps personal status filtering behind authentication"
   assert.match(styles, /\.vacancy-multifilter/);
 });
 
+test("public and failed-auth vacancy dashboards discard personal workflow data before caching", () => {
+  assert.match(source, /function publicSafeJob\(job: Job\): Job/);
+  for (const field of [
+    'status: "NEW"',
+    "statusUpdatedAt: null",
+    "analysis: null",
+    "resume: null",
+    "resumePdf: false",
+    "draft: null",
+  ]) {
+    assert.ok(source.includes(field), `missing public-safe field: ${field}`);
+  }
+  assert.match(source, /const personal = mode === "personal" && dashboard\.authenticated === true/);
+  assert.match(source, /jobs: personal \? dashboard\.jobs : dashboard\.jobs\.map\(publicSafeJob\)/);
+  assert.match(source, /writeVacancyCache\(dashboardForView\(result, mode\)\)/);
+  assert.match(source, /writeVacancyCache\(dashboardForView\(dashboard, mode\)\)/);
+  assert.match(source, /const safeJobs = cached\.jobs\.map\(publicSafeJob\)/);
+});
+
 test("vacancy toolbar keeps filters right and lets search consume remaining width", () => {
   assert.match(filterStyles, /\.vacancy-search\s*\{[\s\S]*flex:\s*1 1 320px !important/);
   assert.match(filterStyles, /\.vacancy-search\s*\{[\s\S]*width:\s*auto !important/);
