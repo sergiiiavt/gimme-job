@@ -109,7 +109,7 @@ test("expired personal access returns to canonical sign in", async () => {
   assert.deepEqual(redirects, ["/login"]);
 });
 
-test("auth sync falls back to the route mode on probe failure and supports cancellation", async () => {
+test("auth sync fails closed on probe failure and supports cancellation", async () => {
   const fallbackStates: boolean[] = [];
   startAuthSync({
     mode: "personal",
@@ -120,7 +120,7 @@ test("auth sync falls back to the route mode on probe failure and supports cance
     replace: () => {},
   });
   await tick();
-  assert.deepEqual(fallbackStates, [true]);
+  assert.deepEqual(fallbackStates, [false]);
 
   const cancelledStates: boolean[] = [];
   let resolveProbe!: (value: { ok: boolean }) => void;
@@ -138,18 +138,17 @@ test("auth sync falls back to the route mode on probe failure and supports cance
   assert.deepEqual(cancelledStates, []);
 });
 
-test("auth control renders a compact sign-in action publicly and the account menu privately", () => {
+test("auth control renders only public-safe state before authentication is confirmed", () => {
   const publicMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "public", personalHref: "/vacancies" }));
   assert.match(publicMarkup, />Sign in<\/a>/);
   assert.doesNotMatch(publicMarkup, /Public view/);
   assert.doesNotMatch(publicMarkup, /Personal<\/a>/);
 
   const personalMarkup = renderToStaticMarkup(createElement(AuthStatusControl, { mode: "personal", personalHref: "/vacancies" }));
-  assert.match(personalMarkup, /Signed in/);
-  assert.match(personalMarkup, /Personal workspace/);
-  assert.match(personalMarkup, /Gmail forwarding/);
-  assert.match(personalMarkup, /Sign out/);
-  assert.match(personalMarkup, /method="post"/);
+  assert.match(personalMarkup, />Sign in<\/a>/);
+  assert.doesNotMatch(personalMarkup, /Personal workspace/);
+  assert.doesNotMatch(personalMarkup, /Gmail forwarding/);
+  assert.doesNotMatch(personalMarkup, /Sign out/);
 });
 
 test("auth-state endpoint reports trusted identity and never caches", async () => {
