@@ -5,9 +5,7 @@
 }
 
 .hero {
-  border-bottom: 1px solid #dfe4df;
-  margin-bottom: 28px;
-  padding-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
@@ -28,31 +26,6 @@
   max-width: 880px;
 }
 
-.hero p {
-  color: #68756e;
-  font-size: 14px;
-  line-height: 1.7;
-  margin: 14px 0 0;
-  max-width: 840px;
-}
-
-.meta {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.meta span {
-  background: #edf5ef;
-  border: 1px solid #dce8df;
-  border-radius: 999px;
-  color: #397657;
-  font-size: 10px;
-  font-weight: 750;
-  padding: 5px 9px;
-}
 
 .layout {
   align-items: start;
