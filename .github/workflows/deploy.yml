@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: production-deploy
@@ -226,3 +227,14 @@ jobs:
           retry check_public_interview
           retry check_public_learning_advisor
           retry check_qa_topic_link
+
+      - name: Record verified production deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST \
+            "repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -f state=success \
+            -f context="production/deploy" \
+            -f description="Production deploy and smoke checks passed" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
