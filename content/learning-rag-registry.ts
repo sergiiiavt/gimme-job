@@ -6,6 +6,7 @@ import sqlPracticalTasks from "./data-learning/sql-practical-tasks.json";
 import sqlQuickReference from "./data-learning/sql-quick-reference.json";
 import embeddedIotCatalog from "./embedded-iot/catalog";
 import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
+import llmTestingCatalog from "./llm-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
 import networkingCatalog from "./networking/catalog";
 import performanceTestingCatalog from "./performance-testing/catalog";
@@ -43,6 +44,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "api-integration", route: "/learn/api", value: apiIntegrationCatalog },
   { key: "networking", route: "/learn/networking", value: networkingCatalog },
   { key: "embedded-iot", route: "/learn/embedded", value: embeddedIotCatalog },
+  { key: "llm-testing", route: "/learn/llm", value: llmTestingCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
 
