@@ -77,6 +77,27 @@ test("shared learning track switchers use two columns with a centered odd final 
   assert.match(globals, /\.kb-subnav-switch > button:last-child:nth-child\(odd\):not\(:first-child\) \{[^}]*grid-column:\s*1 \/ -1;[^}]*justify-self:\s*center;[^}]*width:\s*calc\(50% - 3px\)/s);
 });
 
+
+test("Quick reference matches the secondary button block width on every page", async () => {
+  const [sidebar, globals, newDesign] = await Promise.all([
+    read("app/site-navigation.tsx"),
+    read("app/globals.css"),
+    read("app/new-design.css"),
+  ]);
+
+  // A single shared sidebar renders the link and track switcher on every learning page.
+  assert.match(sidebar, /<aside className="kb-subnav">[\\s\\S]*?className=\\{\\`kb-quick-reference-link/);
+  assert.match(sidebar, /<div className="kb-subnav-switch"/);
+  const linkCss = sidebar.match(/\\.kb-quick-reference-link \\{([^}]+)\\}/)?.[1];
+  assert.ok(linkCss, "Quick reference style must exist on the shared sidebar");
+  assert.match(linkCss, /margin:\\s*0 0 7px;/);
+  assert.match(linkCss, /width:\\s*100%;/);
+  assert.doesNotMatch(linkCss, /margin-(left|right):/);
+  assert.match(globals, /\\.kb-subnav\\s*\\{[^}]*display:\\s*flex;[^}]*flex-direction:\\s*column;/);
+  assert.match(globals, /\\.kb-subnav-switch\\s*\\{[^}]*display:\\s*grid;/);
+  assert.doesNotMatch(newDesign, /html\\[data-design="new"\\] \\.kb-quick-reference-link\\s*\\{[^}]*\\b(?:margin|width):/);
+});
+
 test("new design keeps learning topic clusters subtly separated", async () => {
   const css = await read("app/new-design.css");
 
