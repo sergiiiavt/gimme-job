@@ -225,10 +225,11 @@ const responsiveAccountStyle = `
   font-size: 10.5px;
   font-weight: 700;
   justify-content: space-between;
-  margin: 0 4px 7px;
+  margin: 0 0 7px;
   min-height: 32px;
   padding: 6px 8px;
   text-decoration: none;
+  width: 100%;
 }
 
 .kb-quick-reference-link:hover {
