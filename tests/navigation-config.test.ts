@@ -65,3 +65,28 @@ test("design switcher is rendered after every primary navigation group", () => {
   assert.ok(slot > groups, "design switcher must be after the navigation groups so it appears at the bottom of the scroll");
   assert.match(source, /<DesignModeSwitcher\/>/);
 });
+
+// Navigation owns this shared sidebar width invariant for all pages and design modes.
+test("Quick reference matches the secondary navigation buttons in width", () => {
+  const sidebar = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");
+  const globals = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  const newDesign = readFileSync(new URL("../app/new-design.css", import.meta.url), "utf8");
+
+  assert.ok(sidebar.includes('className="kb-subnav"'));
+  assert.ok(sidebar.includes('className={`kb-quick-reference-link'));
+  assert.ok(sidebar.includes('className="kb-subnav-switch"'));
+
+  const linkCss = sidebar.split(".kb-quick-reference-link {")[1]?.split("}")[0];
+  assert.ok(linkCss, "Quick reference style must exist on the shared sidebar");
+  assert.ok(linkCss.includes("margin: 0 0 7px;"), "Quick reference must not be inset horizontally");
+  assert.ok(linkCss.includes("width: 100%;"), "Quick reference must fill the same width as the switcher");
+  assert.ok(!linkCss.includes("margin-left:") && !linkCss.includes("margin-right:"));
+
+  const subnavCss = globals.split(".kb-subnav {")[1]?.split("}")[0] ?? "";
+  const switcherCss = globals.split(".kb-subnav-switch {")[1]?.split("}")[0] ?? "";
+  assert.ok(subnavCss.includes("flex-direction: column;"));
+  assert.ok(switcherCss.includes("display: grid;"));
+
+  const newDesignLinkCss = newDesign.split('html[data-design="new"] .kb-quick-reference-link {')[1]?.split("}")[0] ?? "";
+  assert.ok(!newDesignLinkCss.includes("margin:") && !newDesignLinkCss.includes("width:"));
+});

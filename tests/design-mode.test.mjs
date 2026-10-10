@@ -77,6 +77,7 @@ test("shared learning track switchers use two columns with a centered odd final 
   assert.match(globals, /\.kb-subnav-switch > button:last-child:nth-child\(odd\):not\(:first-child\) \{[^}]*grid-column:\s*1 \/ -1;[^}]*justify-self:\s*center;[^}]*width:\s*calc\(50% - 3px\)/s);
 });
 
+
 test("new design keeps learning topic clusters subtly separated", async () => {
   const css = await read("app/new-design.css");
 
