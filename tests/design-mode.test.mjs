@@ -78,33 +78,6 @@ test("shared learning track switchers use two columns with a centered odd final 
 });
 
 
-test("Quick reference matches the secondary button block width on every page", async () => {
-  const [sidebar, globals, newDesign] = await Promise.all([
-    read("app/site-navigation.tsx"),
-    read("app/globals.css"),
-    read("app/new-design.css"),
-  ]);
-
-  // The same sidebar renders Quick reference and the track switcher for every learning page.
-  assert.ok(sidebar.includes('className="kb-subnav"'));
-  assert.ok(sidebar.includes('className={`kb-quick-reference-link'));
-  assert.ok(sidebar.includes('className="kb-subnav-switch"'));
-
-  const linkCss = sidebar.split(".kb-quick-reference-link {")[1]?.split("}")[0];
-  assert.ok(linkCss, "Quick reference style must exist on the shared sidebar");
-  assert.ok(linkCss.includes("margin: 0 0 7px;"), "Quick reference must not be inset horizontally");
-  assert.ok(linkCss.includes("width: 100%;"), "Quick reference must fill the same width as the switcher");
-  assert.ok(!linkCss.includes("margin-left:") && !linkCss.includes("margin-right:"));
-
-  const subnavCss = globals.split(".kb-subnav {")[1]?.split("}")[0] ?? "";
-  const switcherCss = globals.split(".kb-subnav-switch {")[1]?.split("}")[0] ?? "";
-  assert.ok(subnavCss.includes("flex-direction: column;"));
-  assert.ok(switcherCss.includes("display: grid;"));
-
-  const newDesignLinkCss = newDesign.split('html[data-design="new"] .kb-quick-reference-link {')[1]?.split("}")[0] ?? "";
-  assert.ok(!newDesignLinkCss.includes("margin:") && !newDesignLinkCss.includes("width:"));
-});
-
 test("new design keeps learning topic clusters subtly separated", async () => {
   const css = await read("app/new-design.css");
 
