@@ -69,6 +69,47 @@ test("database playground POSTs receive their own budget", () => {
   assert.equal(publicRateLimitPolicy(new Request("https://gimme-job.com/api/playgrounds/databases"), env), null);
 });
 
+test("authenticated cost, crawl, account, and relay endpoints receive their own budgets", () => {
+  const groupFor = (path, method = "POST") => publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method }), env)?.routeGroup ?? null;
+  assert.equal(groupFor("/api/analyze"), "tenant-ai");
+  assert.equal(groupFor("/api/analyze-resume"), "tenant-ai");
+  assert.equal(groupFor("/api/sync"), "sync");
+  assert.equal(groupFor("/api/run"), "sync");
+  assert.equal(groupFor("/register"), "register");
+  assert.equal(groupFor("/workspace/register"), "register");
+  assert.equal(groupFor("/login"), "login");
+  assert.equal(groupFor("/workspace/login"), "login");
+  assert.equal(groupFor("/playgrounds/websocket/ws", "GET"), "websocket");
+
+  assert.equal(groupFor("/login", "GET"), null);
+  assert.equal(groupFor("/register", "GET"), null);
+  assert.equal(groupFor("/api/dashboard", "GET"), null);
+  assert.equal(groupFor("/playgrounds/websocket/ws"), null);
+});
+
+test("tenant AI budgets accept overrides; sign-in has no shared global ceiling", () => {
+  assert.deepEqual(
+    publicRateLimitPolicy(new Request("https://gimme-job.com/api/analyze", { method: "POST" }), {
+      TENANT_AI_HOURLY_IP_LIMIT: "4",
+      TENANT_AI_DAILY_GLOBAL_LIMIT: "40",
+    }),
+    { routeGroup: "tenant-ai", ipLimit: 4, globalLimit: 40 },
+  );
+  assert.equal(publicRateLimitPolicy(new Request("https://gimme-job.com/login", { method: "POST" }), env)?.globalLimit, null);
+});
+
+test("sign-in throttling reserves only the per-address budget", async () => {
+  const db = new FakeRateLimitDb([1]);
+  const response = await enforcePublicApiRateLimit(
+    new Request("https://gimme-job.com/login", { method: "POST", headers: { "cf-connecting-ip": "192.0.2.10" } }),
+    { DB: db },
+  );
+  assert.equal(response, null);
+  assert.equal(db.calls.length, 1);
+  assert.equal(db.calls[0].bindings[1], "login");
+  assert.equal(db.calls[0].bindings[2], "IP");
+});
+
 test("successful public requests reserve hashed IP and global budgets", async () => {
   const db = new FakeRateLimitDb([1, 1]);
   const response = await enforcePublicApiRateLimit(

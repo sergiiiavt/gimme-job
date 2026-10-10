@@ -9,10 +9,12 @@ from fastapi.testclient import TestClient
 from starlette.testclient import WebSocketTestSession
 
 from gimmejob_ai.application import app
+from gimmejob_ai import websocket_playground
 from gimmejob_ai.websocket_playground import (
     MAX_IMAGE_DATA_URL_CHARS,
     MAX_MESSAGE_BYTES,
     MAX_TEXT_MESSAGE_CHARS,
+    MessageRateLimiter,
     _normalize_room,
 )
 
@@ -173,6 +175,39 @@ class WebSocketPlaygroundTests(unittest.TestCase):
             closed = socket.receive()
             self.assertEqual(closed["type"], "websocket.close")
             self.assertEqual(closed["code"], 1000)
+
+
+    def test_message_rate_limiter_uses_a_sliding_window(self) -> None:
+        limiter = MessageRateLimiter(limit=2, window_seconds=10.0)
+        self.assertTrue(limiter.allow(now=0.0))
+        self.assertTrue(limiter.allow(now=1.0))
+        self.assertFalse(limiter.allow(now=2.0))
+        self.assertTrue(limiter.allow(now=10.5))
+
+    def test_flooding_connection_receives_rate_limit_errors(self) -> None:
+        with self.connected_socket("flood") as socket:
+            for _ in range(websocket_playground.MAX_MESSAGES_PER_WINDOW):
+                self.assertEqual(self.send_action(socket, "heartbeat")["type"], "heartbeat")
+            limited = self.send_action(socket, "heartbeat")
+            self.assertEqual(limited["type"], "error")
+            self.assertIn("Too many messages", limited["message"])
+
+    def test_new_rooms_are_refused_when_the_room_cap_is_reached(self) -> None:
+        original = websocket_playground.MAX_ROOMS
+        websocket_playground.MAX_ROOMS = 1
+        try:
+            with self.connected_socket("cap-first"):
+                with self.client.websocket_connect("/v1/playground/ws?room=cap-second") as second:
+                    refused = second.receive_json()
+                    self.assertEqual(refused["type"], "error")
+                    self.assertEqual(refused["message"], "Too many active rooms.")
+                    closed = second.receive()
+                    self.assertEqual(closed["type"], "websocket.close")
+                    self.assertEqual(closed["code"], 1013)
+                with self.connected_socket("cap-first") as same_room:
+                    self.assertEqual(self.send_action(same_room, "whoami")["room"], "cap-first")
+        finally:
+            websocket_playground.MAX_ROOMS = original
 
 
 if __name__ == "__main__":

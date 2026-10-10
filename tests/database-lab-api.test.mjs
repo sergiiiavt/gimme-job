@@ -9,12 +9,34 @@ import {
   MYSQL_WORKSPACE_MARKER,
   mysqlArgs,
   mysqlBaseFixtureCountSql,
+  mysqlKillStatements,
+  mysqlRunawaySql,
   parseCsv,
   parseTsv,
   postgresGrid,
+  postgresRunawaySql,
   statementKind,
   workspaceFor,
 } from "../ops/hetzner/db-lab-api/server.mjs";
+
+test("runaway-query reaper targets only workspace roles past the playground limit", () => {
+  const postgres = postgresRunawaySql();
+  assert.match(postgres, /pg_terminate_backend\(pid\)/);
+  assert.match(postgres, /usename ~ '\^gjws_\[0-9\]\+\$'/);
+  assert.match(postgres, /state <> 'idle'/);
+  assert.match(postgres, /interval '10 seconds'/);
+
+  const mysql = mysqlRunawaySql();
+  assert.match(mysql, /FROM information_schema\.processlist/);
+  assert.match(mysql, /user REGEXP '\^gjws_\[0-9\]\+\$'/);
+  assert.match(mysql, /command <> 'Sleep'/);
+  assert.match(mysql, /time >= 10/);
+});
+
+test("MySQL KILL statements are built only from numeric thread ids", () => {
+  assert.equal(mysqlKillStatements("12\n 34 \r\nNULL\n1; DROP DATABASE x\n\n"), "KILL 12;\nKILL 34;");
+  assert.equal(mysqlKillStatements(""), "");
+});
 
 test("HTTP adapter keeps request targets local and requires authorization on every SQL route", async (t) => {
   const server = createLabServer().listen(0, "127.0.0.1");

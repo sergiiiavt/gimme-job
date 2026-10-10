@@ -27,6 +27,8 @@ function fakeDb(options: FakeOptions = {}) {
     failureWrites: 0,
     batchCalls: 0,
     statements: [] as string[],
+    limitFailures: new Map<string, number>(),
+    limitBlockedUntil: new Map<string, string>(),
   };
   const db = {
     prepare(sql: string) {
@@ -37,7 +39,9 @@ function fakeDb(options: FakeOptions = {}) {
         bind(...values: unknown[]) { statement.values = values; return statement; },
         async first() {
           if (text.startsWith("SELECT blocked_until FROM auth_login_limits")) {
-            return options.blockedUntil ? { blocked_until: options.blockedUntil } : null;
+            if (options.blockedUntil) return { blocked_until: options.blockedUntil };
+            const blockedUntil = state.limitBlockedUntil.get(String(statement.values[0]));
+            return blockedUntil ? { blocked_until: blockedUntil } : null;
           }
           if (text.startsWith("SELECT failures, window_started_at FROM auth_login_limits")) {
             return options.failures === undefined ? null : {
@@ -64,7 +68,14 @@ function fakeDb(options: FakeOptions = {}) {
           if (text.startsWith("INSERT INTO email_ingest_aliases")) state.insertedAlias = true;
           if (text.startsWith("INSERT INTO user_sessions")) state.insertedSession = true;
           if (text.startsWith("DELETE FROM auth_login_limits")) state.deletedLimits = true;
-          if (text.startsWith("INSERT INTO auth_login_limits")) state.failureWrites += 1;
+          if (text.startsWith("INSERT INTO auth_login_limits")) {
+            state.failureWrites += 1;
+            // Mirror the atomic upsert: bindings are key, now, maxFailures, blockedUntil, ...
+            const [key, , maxFailures, blockedUntil] = statement.values as [string, string, number, string];
+            const failures = (state.limitFailures.get(key) ?? 0) + 1;
+            state.limitFailures.set(key, failures);
+            if (failures >= maxFailures) state.limitBlockedUntil.set(key, blockedUntil);
+          }
           return { success: true };
         },
       };
@@ -213,7 +224,8 @@ test("failed and blocked logins are throttled without creating sessions", async 
   }), { MULTI_USER_ENABLED: "true", DB: failed.db });
   assert.equal(bad.status, 400);
   assert.match(await bad.text(), /Invalid email or password/);
-  assert.equal(failed.state.failureWrites, 1);
+  // One write for the address+account key and one for the account-wide key.
+  assert.equal(failed.state.failureWrites, 2);
   assert.equal(failed.state.insertedSession, false);
 
   const blocked = fakeDb({ blockedUntil: new Date(Date.now() + 60_000).toISOString() });
@@ -234,4 +246,80 @@ test("ensureForwardingAlias reuses existing token or creates a private token", a
   const token = await ensureForwardingAlias(created.db, "user-b");
   assert.match(token, /^[a-z0-9_-]{12,64}$/);
   assert.equal(created.state.insertedAlias, true);
+});
+
+test("an account is locked after repeated failures even when every attempt uses a new address", async () => {
+  const passwordHash = await hashPassword("valid-password-123");
+  const { db, state } = fakeDb({ userId: "user-a", passwordHash });
+  const env = { MULTI_USER_ENABLED: "true", DB: db };
+  const attempt = (address: string, password: string) => handlePasswordLogin(new Request("https://gimme-job.com/workspace/login", {
+    method: "POST",
+    headers: { "cf-connecting-ip": address },
+    body: new URLSearchParams({ email: "user@example.com", password }),
+  }), env);
+
+  for (let index = 0; index < 20; index += 1) {
+    const response = await attempt(`203.0.113.${index}`, "wrong-password-123");
+    assert.match(await response.text(), /Invalid email or password/);
+  }
+  const locked = await attempt("198.51.100.99", "valid-password-123");
+  assert.match(await locked.text(), /Too many sign-in attempts/);
+  assert.equal(state.insertedSession, false);
+});
+
+test("unknown accounts fail like wrong passwords and are throttled the same way", async () => {
+  const { db, state } = fakeDb();
+  const response = await handlePasswordLogin(postForm("https://gimme-job.com/workspace/login", {
+    email: "nobody@example.com", password: "wrong-password-123",
+  }), { MULTI_USER_ENABLED: "true", DB: db });
+  assert.equal(response.status, 400);
+  assert.match(await response.text(), /Invalid email or password/);
+  assert.equal(state.failureWrites, 2);
+  assert.equal(state.insertedSession, false);
+});
+
+test("a claimed legacy workspace never evaluates the legacy password", async () => {
+  const { db, state } = fakeDb({ claimedBy: "owner-user" });
+  const response = await handlePasswordRegister(postForm("https://gimme-job.com/workspace/register", {
+    email: "new@example.com", password: "valid-password-123", confirmPassword: "valid-password-123",
+    legacyPassword: "existing-private-password",
+  }), { MULTI_USER_ENABLED: "true", DB: db, APP_PASSWORD: "existing-private-password" });
+  assert.equal(response.status, 400);
+  assert.match(await response.text(), /already been claimed/);
+  assert.equal(state.insertedUser, false);
+  assert.equal(state.failureWrites, 0);
+});
+
+test("legacy password guesses are throttled globally", async () => {
+  const { db, state } = fakeDb();
+  const env = { MULTI_USER_ENABLED: "true", DB: db, APP_PASSWORD: "existing-private-password" };
+  const guess = (legacyPassword: string) => handlePasswordRegister(postForm("https://gimme-job.com/workspace/register", {
+    email: "guess@example.com", password: "valid-password-123", confirmPassword: "valid-password-123", legacyPassword,
+  }), env);
+
+  for (let index = 0; index < 8; index += 1) {
+    assert.match(await (await guess(`wrong-${index}`)).text(), /existing private-site password is incorrect/);
+  }
+  const blocked = await guess("existing-private-password");
+  assert.match(await blocked.text(), /Too many attempts/);
+  assert.equal(state.insertedUser, false);
+});
+
+test("registration does not echo unexpected storage errors", async (t) => {
+  const { db } = fakeDb();
+  const failing = {
+    ...db,
+    prepare(sql: string) {
+      if (sql.startsWith("INSERT INTO users")) throw new Error("D1_ERROR: UNIQUE constraint failed: users.google_sub");
+      return db.prepare(sql);
+    },
+  } as unknown as D1Database;
+  t.mock.method(console, "error", () => undefined);
+  const response = await handlePasswordRegister(postForm("https://gimme-job.com/workspace/register", {
+    email: "new@example.com", password: "valid-password-123", confirmPassword: "valid-password-123",
+  }), { MULTI_USER_ENABLED: "true", DB: failing });
+  const html = await response.text();
+  assert.equal(response.status, 400);
+  assert.match(html, /Unable to create account/);
+  assert.doesNotMatch(html, /D1_ERROR|UNIQUE constraint/);
 });

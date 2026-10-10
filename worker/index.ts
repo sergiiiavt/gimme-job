@@ -13,6 +13,7 @@ import {
   type PublicApiRateLimitEnv,
 } from "./public-api-rate-limit";
 import { runVacancyCatalogBackstop } from "./vacancy-sync-backstop";
+import { withSecurityHeaders } from "./security-headers";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
@@ -35,20 +36,20 @@ function preventStaleReferenceCaching(response: Response): Response {
 
 const worker = {
   async fetch(request: Request, env: HttpWorkerEnv, ctx: HttpWorkerContext): Promise<Response> {
+    const rateLimitResponse = await enforcePublicApiRateLimit(request, env);
+    if (rateLimitResponse) return withSecurityHeaders(rateLimitResponse);
+
     if (isWebSocketPlaygroundRequest(request)) {
       return proxyWebSocketPlayground(request);
     }
 
-    const rateLimitResponse = await enforcePublicApiRateLimit(request, env);
-    if (rateLimitResponse) return rateLimitResponse;
-
     if (new URL(request.url).pathname === "/api/playgrounds/databases") {
-      return handleDatabasePlayground(request, env);
+      return withSecurityHeaders(await handleDatabasePlayground(request, env));
     }
 
     const routedRequest = withPublicAiSessionScope(request);
     const response = await httpWorker.fetch(routedRequest, env, ctx);
-    return requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response;
+    return withSecurityHeaders(requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response);
   },
   scheduled(_controller: unknown, env: HttpWorkerEnv, ctx: HttpWorkerContext): void {
     ctx.waitUntil(

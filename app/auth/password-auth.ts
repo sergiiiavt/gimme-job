@@ -15,8 +15,16 @@ const MAX_PASSWORD = 128;
 // Cloudflare Workers Web Crypto rejects PBKDF2 iteration counts above 100,000.
 const PBKDF2_ITERATIONS = 100_000;
 const MAX_FAILURES = 8;
+// Per-account ceiling across every source address, so rotating IPs cannot
+// brute-force one account. Higher than the per-address limit so one attacker
+// address locks itself out before it can lock the account.
+const MAX_ACCOUNT_FAILURES = 20;
+const MAX_LEGACY_CLAIM_FAILURES = 8;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const BLOCK_MS = 15 * 60 * 1000;
+
+/** Errors whose message is safe and useful to show on the registration form. */
+class RegistrationError extends Error {}
 
 function base64Url(bytes: Uint8Array): string {
   let binary = "";
@@ -146,8 +154,14 @@ function redirect(location: string, cookie: string): Response {
   return new Response(null, { status: 303, headers: { location, "set-cookie": cookie, "cache-control": "no-store" } });
 }
 
-async function throttleKey(request: Request, email: string): Promise<string> {
-  return sha256Base64Url(`${email}|${request.headers.get("cf-connecting-ip") ?? "unknown"}`);
+type ThrottleKey = { key: string; maxFailures: number };
+
+async function loginThrottleKeys(request: Request, email: string): Promise<ThrottleKey[]> {
+  const address = request.headers.get("cf-connecting-ip") ?? "unknown";
+  return [
+    { key: await sha256Base64Url(`${email}|${address}`), maxFailures: MAX_FAILURES },
+    { key: await sha256Base64Url(`account|${email}`), maxFailures: MAX_ACCOUNT_FAILURES },
+  ];
 }
 
 async function isBlocked(db: D1Database, key: string): Promise<boolean> {
@@ -155,19 +169,41 @@ async function isBlocked(db: D1Database, key: string): Promise<boolean> {
   return Boolean(row?.blocked_until && Date.parse(row.blocked_until) > Date.now());
 }
 
-async function failLogin(db: D1Database, key: string): Promise<void> {
+async function anyBlocked(db: D1Database, keys: ThrottleKey[]): Promise<boolean> {
+  for (const { key } of keys) {
+    if (await isBlocked(db, key)) return true;
+  }
+  return false;
+}
+
+// One atomic upsert: concurrent failures each increment the counter instead of
+// several read-then-write attempts collapsing into a single recorded failure.
+async function failLogin(db: D1Database, { key, maxFailures }: ThrottleKey): Promise<void> {
   const now = new Date();
-  const row = await db.prepare("SELECT failures, window_started_at FROM auth_login_limits WHERE key = ? LIMIT 1")
-    .bind(key).first<{ failures?: number; window_started_at?: string }>();
-  const started = row?.window_started_at ? Date.parse(row.window_started_at) : 0;
-  const inWindow = started > 0 && now.getTime() - started < LOGIN_WINDOW_MS;
-  const failures = inWindow ? Number(row?.failures ?? 0) + 1 : 1;
-  const windowStarted = inWindow ? String(row?.window_started_at) : now.toISOString();
-  const blockedUntil = failures >= MAX_FAILURES ? new Date(now.getTime() + BLOCK_MS).toISOString() : null;
+  const nowIso = now.toISOString();
+  const windowCutoff = new Date(now.getTime() - LOGIN_WINDOW_MS).toISOString();
+  const blockedUntil = new Date(now.getTime() + BLOCK_MS).toISOString();
   await db.prepare(`INSERT INTO auth_login_limits (key, failures, window_started_at, blocked_until, updated_at)
-    VALUES (?, ?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET failures=excluded.failures,
-    window_started_at=excluded.window_started_at, blocked_until=excluded.blocked_until, updated_at=excluded.updated_at`)
-    .bind(key, failures, windowStarted, blockedUntil, now.toISOString()).run();
+    VALUES (?, 1, ?, CASE WHEN 1 >= ? THEN ? ELSE NULL END, ?)
+    ON CONFLICT(key) DO UPDATE SET
+      failures = CASE WHEN auth_login_limits.window_started_at > ? THEN auth_login_limits.failures + 1 ELSE 1 END,
+      window_started_at = CASE WHEN auth_login_limits.window_started_at > ? THEN auth_login_limits.window_started_at ELSE excluded.window_started_at END,
+      blocked_until = CASE
+        WHEN (CASE WHEN auth_login_limits.window_started_at > ? THEN auth_login_limits.failures + 1 ELSE 1 END) >= ? THEN ?
+        ELSE auth_login_limits.blocked_until
+      END,
+      updated_at = excluded.updated_at`)
+    .bind(key, nowIso, maxFailures, blockedUntil, nowIso, windowCutoff, windowCutoff, windowCutoff, maxFailures, blockedUntil)
+    .run();
+}
+
+let dummyPasswordHash: Promise<string> | null = null;
+
+// Unknown accounts still pay for one PBKDF2 derivation, so response time does
+// not reveal whether an email is registered.
+async function verifyAgainstDummy(password: string): Promise<void> {
+  dummyPasswordHash ??= hashPassword(randomToken(16));
+  await verifyPassword(password, await dummyPasswordHash);
 }
 
 export async function ensureForwardingAlias(db: D1Database, userId: string): Promise<string> {
@@ -182,10 +218,15 @@ export async function ensureForwardingAlias(db: D1Database, userId: string): Pro
   return token;
 }
 
-async function claimLegacy(db: D1Database, userId: string): Promise<void> {
+async function legacyClaimOwner(db: D1Database): Promise<string | null> {
   const claimed = await db.prepare("SELECT user_id FROM legacy_workspace_claims WHERE id = 1 LIMIT 1").first<{ user_id?: string }>();
-  if (claimed?.user_id && claimed.user_id !== userId) throw new Error("The old private workspace has already been claimed.");
-  if (claimed?.user_id === userId) return;
+  return claimed?.user_id ?? null;
+}
+
+async function claimLegacy(db: D1Database, userId: string): Promise<void> {
+  const claimedBy = await legacyClaimOwner(db);
+  if (claimedBy && claimedBy !== userId) throw new RegistrationError("The old private workspace has already been claimed.");
+  if (claimedBy === userId) return;
   const now = new Date().toISOString();
   await db.batch([
     db.prepare("INSERT INTO legacy_workspace_claims (id,user_id,claimed_at) VALUES (1,?,?)").bind(userId, now),
@@ -201,8 +242,22 @@ async function claimLegacy(db: D1Database, userId: string): Promise<void> {
   ]);
 }
 
+/**
+ * The legacy claim compares against APP_PASSWORD, so it must not become an
+ * unlimited password oracle: once the workspace is claimed the password is never
+ * evaluated, and failed guesses share one global throttle.
+ */
+async function legacyClaimError(db: D1Database, legacyPassword: string, appPassword: string | undefined): Promise<string | null> {
+  if (await legacyClaimOwner(db)) return "The old private workspace has already been claimed.";
+  const throttle = { key: await sha256Base64Url("legacy-workspace-claim"), maxFailures: MAX_LEGACY_CLAIM_FAILURES };
+  if (await isBlocked(db, throttle.key)) return "Too many attempts. Try again in 15 minutes.";
+  if (appPassword && constantTimeEqual(legacyPassword, appPassword)) return null;
+  await failLogin(db, throttle);
+  return "The existing private-site password is incorrect.";
+}
+
 async function createAccount(db: D1Database, email: string, password: string): Promise<string> {
-  if (await db.prepare("SELECT id FROM users WHERE email = ? LIMIT 1").bind(email).first()) throw new Error("An account with this email already exists.");
+  if (await db.prepare("SELECT id FROM users WHERE email = ? LIMIT 1").bind(email).first()) throw new RegistrationError("An account with this email already exists.");
   const id = `usr_${crypto.randomUUID()}`;
   const now = new Date().toISOString();
   await db.prepare(`INSERT INTO users (id,google_sub,email,email_verified,name,picture_url,password_hash,created_at,updated_at)
@@ -226,17 +281,19 @@ export async function handlePasswordLogin(request: Request, env: PasswordAuthEnv
   const next = normalizeNextPath(String(form.get("next") ?? nextPath));
   const formReturnPath = normalizePublicReturnPath(request, String(form.get("returnTo") ?? returnPath));
   if (!validEmail(email) || !password) return page("login", next, formReturnPath, email, "Invalid email or password.");
-  const key = await throttleKey(request, email);
-  if (await isBlocked(env.DB, key)) return page("login", next, formReturnPath, email, "Too many sign-in attempts. Try again in 15 minutes.");
+  const keys = await loginThrottleKeys(request, email);
+  if (await anyBlocked(env.DB, keys)) return page("login", next, formReturnPath, email, "Too many sign-in attempts. Try again in 15 minutes.");
 
   const user = await env.DB.prepare("SELECT id,password_hash FROM users WHERE email = ? LIMIT 1")
     .bind(email).first<{ id?: string; password_hash?: string | null }>();
-  const valid = Boolean(user?.id && user.password_hash && await verifyPassword(password, user.password_hash));
+  let valid = false;
+  if (user?.id && user.password_hash) valid = await verifyPassword(password, user.password_hash);
+  else await verifyAgainstDummy(password);
   if (!valid || !user?.id) {
-    await failLogin(env.DB, key);
+    for (const key of keys) await failLogin(env.DB, key);
     return page("login", next, formReturnPath, email, "Invalid email or password.");
   }
-  await env.DB.prepare("DELETE FROM auth_login_limits WHERE key = ?").bind(key).run();
+  await env.DB.prepare("DELETE FROM auth_login_limits WHERE key IN (?, ?)").bind(keys[0].key, keys[1].key).run();
   await ensureForwardingAlias(env.DB, user.id);
   return redirect(next, await newSession(env.DB, user.id));
 }
@@ -259,13 +316,18 @@ export async function handlePasswordRegister(request: Request, env: PasswordAuth
   if (!validEmail(email)) return page("register", next, formReturnPath, email, "Enter a valid email address.");
   if (password.length < MIN_PASSWORD || password.length > MAX_PASSWORD) return page("register", next, formReturnPath, email, `Password must contain ${MIN_PASSWORD}-${MAX_PASSWORD} characters.`);
   if (password !== confirm) return page("register", next, formReturnPath, email, "Passwords do not match.");
-  if (legacyPassword && (!env.APP_PASSWORD || !constantTimeEqual(legacyPassword, env.APP_PASSWORD))) return page("register", next, formReturnPath, email, "The existing private-site password is incorrect.");
+  if (legacyPassword) {
+    const legacyError = await legacyClaimError(env.DB, legacyPassword, env.APP_PASSWORD);
+    if (legacyError) return page("register", next, formReturnPath, email, legacyError);
+  }
 
   try {
     const userId = await createAccount(env.DB, email, password);
     if (legacyPassword) await claimLegacy(env.DB, userId);
     return redirect(next, await newSession(env.DB, userId));
   } catch (error) {
-    return page("register", next, formReturnPath, email, error instanceof Error ? error.message : "Unable to create account.");
+    if (error instanceof RegistrationError) return page("register", next, formReturnPath, email, error.message);
+    console.error("Password registration failed", error instanceof Error ? error.message : String(error));
+    return page("register", next, formReturnPath, email, "Unable to create account.");
   }
 }
