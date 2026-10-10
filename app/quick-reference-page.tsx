@@ -398,7 +398,11 @@ function learningSwitcher(referenceId: string): SecondarySwitcher | undefined {
   if (referenceId === "programming") {
     return {
       activeId: "python",
-      options: [{ id: "python", label: "Python" }, { id: "typescript", label: "TypeScript" }],
+      options: [
+        { id: "python", label: "Python" },
+        { id: "csharp", label: "C#" },
+        { id: "typescript", label: "TypeScript" },
+      ],
       onSelect: (id) => window.location.assign(regularLearningHref(referenceId, undefined, id)),
     };
   }
