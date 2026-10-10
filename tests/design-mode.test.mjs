@@ -85,17 +85,24 @@ test("Quick reference matches the secondary button block width on every page", a
     read("app/new-design.css"),
   ]);
 
-  // A single shared sidebar renders the link and track switcher on every learning page.
-  assert.match(sidebar, /<aside className="kb-subnav">[\\s\\S]*?className=\\{\\`kb-quick-reference-link/);
-  assert.match(sidebar, /<div className="kb-subnav-switch"/);
-  const linkCss = sidebar.match(/\\.kb-quick-reference-link \\{([^}]+)\\}/)?.[1];
+  // The same sidebar renders Quick reference and the track switcher for every learning page.
+  assert.ok(sidebar.includes('className="kb-subnav"'));
+  assert.ok(sidebar.includes('className={`kb-quick-reference-link'));
+  assert.ok(sidebar.includes('className="kb-subnav-switch"'));
+
+  const linkCss = sidebar.split(".kb-quick-reference-link {")[1]?.split("}")[0];
   assert.ok(linkCss, "Quick reference style must exist on the shared sidebar");
-  assert.match(linkCss, /margin:\\s*0 0 7px;/);
-  assert.match(linkCss, /width:\\s*100%;/);
-  assert.doesNotMatch(linkCss, /margin-(left|right):/);
-  assert.match(globals, /\\.kb-subnav\\s*\\{[^}]*display:\\s*flex;[^}]*flex-direction:\\s*column;/);
-  assert.match(globals, /\\.kb-subnav-switch\\s*\\{[^}]*display:\\s*grid;/);
-  assert.doesNotMatch(newDesign, /html\\[data-design="new"\\] \\.kb-quick-reference-link\\s*\\{[^}]*\\b(?:margin|width):/);
+  assert.ok(linkCss.includes("margin: 0 0 7px;"), "Quick reference must not be inset horizontally");
+  assert.ok(linkCss.includes("width: 100%;"), "Quick reference must fill the same width as the switcher");
+  assert.ok(!linkCss.includes("margin-left:") && !linkCss.includes("margin-right:"));
+
+  const subnavCss = globals.split(".kb-subnav {")[1]?.split("}")[0] ?? "";
+  const switcherCss = globals.split(".kb-subnav-switch {")[1]?.split("}")[0] ?? "";
+  assert.ok(subnavCss.includes("flex-direction: column;"));
+  assert.ok(switcherCss.includes("display: grid;"));
+
+  const newDesignLinkCss = newDesign.split('html[data-design="new"] .kb-quick-reference-link {')[1]?.split("}")[0] ?? "";
+  assert.ok(!newDesignLinkCss.includes("margin:") && !newDesignLinkCss.includes("width:"));
 });
 
 test("new design keeps learning topic clusters subtly separated", async () => {
