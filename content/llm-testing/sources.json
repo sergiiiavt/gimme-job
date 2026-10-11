@@ -1718,5 +1718,155 @@
     "role": "Annex III lists AI systems for recruitment and selection, including filtering applications and evaluating candidates, as high-risk.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "otel-genai-semconv",
+    "title": "OpenTelemetry GenAI Semantic Conventions",
+    "publisher": "OpenTelemetry",
+    "kind": "standard",
+    "url": "https://github.com/open-telemetry/semantic-conventions-genai",
+    "role": "Standard span names and attributes for model calls, tools, retrieval and agents, used by the tracer of the example project.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "langfuse-observability",
+    "title": "LLM observability and application tracing",
+    "publisher": "Langfuse",
+    "kind": "official-docs",
+    "url": "https://langfuse.com/docs/observability/overview",
+    "role": "Traces, nested observations and scores for LLM applications, as used by the Learning Path Advisor of this site.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "arize-phoenix",
+    "title": "Phoenix: AI observability and evaluation",
+    "publisher": "Arize AI",
+    "kind": "tool",
+    "url": "https://github.com/Arize-ai/phoenix",
+    "role": "Open-source tracing based on OpenTelemetry and evaluation of LLM applications.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "google-sre-monitoring",
+    "title": "Monitoring Distributed Systems",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "role": "The four golden signals, and why latency is watched in percentiles rather than averages.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "google-sre-canarying",
+    "title": "Canarying Releases",
+    "publisher": "Google — The Site Reliability Workbook (O'Reilly, 2018)",
+    "kind": "article",
+    "url": "https://sre.google/workbook/canarying-releases/",
+    "role": "Releasing a change to a small, time-limited share of production and comparing it with the rest before widening the rollout.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "nist-p-chart",
+    "title": "Proportions Control Charts (section 6.3.3.2)",
+    "publisher": "NIST/SEMATECH e-Handbook of Statistical Methods",
+    "kind": "official-docs",
+    "url": "https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc332.htm",
+    "role": "Control limits of a p-chart for a daily pass rate: the average rate plus and minus three standard errors.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "nist-control-chart-rules",
+    "title": "What are Variables Control Charts? (section 6.3.2)",
+    "publisher": "NIST/SEMATECH e-Handbook of Statistical Methods",
+    "kind": "official-docs",
+    "url": "https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc32.htm",
+    "role": "The Western Electric rules, including eight consecutive points on one side of the center line.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "yurdakul-psi",
+    "title": "Statistical Properties of Population Stability Index",
+    "publisher": "Bilal Yurdakul — doctoral dissertation, Western Michigan University, 2018",
+    "kind": "paper",
+    "url": "https://scholarworks.wmich.edu/dissertations/3208/",
+    "role": "The population stability index, its statistical properties and the common thresholds of 0.1 and 0.25.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "miller-how-not-ab-test",
+    "title": "How Not To Run an A/B Test",
+    "publisher": "Evan Miller",
+    "kind": "article",
+    "url": "https://www.evanmiller.org/how-not-to-run-an-ab-test.html",
+    "role": "Why stopping an experiment as soon as it looks significant inflates false positives.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "johari-always-valid",
+    "title": "Always Valid Inference: Bringing Sequential Analysis to A/B Testing",
+    "publisher": "Johari, Pekelis, Walsh — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1512.04922",
+    "role": "The mixture sequential probability ratio test: results that stay valid when an experiment is checked continuously.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "fabijan-srm",
+    "title": "Diagnosing Sample Ratio Mismatch in Online Controlled Experiments: A Taxonomy and Rules of Thumb for Practitioners",
+    "publisher": "Fabijan et al. — KDD 2019",
+    "kind": "paper",
+    "url": "https://doi.org/10.1145/3292500.3330722",
+    "role": "A sample ratio mismatch as the symptom of broken assignment or logging, and how to diagnose it.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "little-1961",
+    "title": "A Proof for the Queuing Formula: L = λW",
+    "publisher": "John D. C. Little — Operations Research 9(3), 1961",
+    "kind": "paper",
+    "url": "https://doi.org/10.1287/opre.9.3.383",
+    "role": "Little's law: requests in the system equal the arrival rate times the time in the system, used for capacity planning.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "anthropic-prompt-caching",
+    "title": "Prompt caching",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+    "role": "Cache reads billed at a fraction of the input price, and why a cache hit needs an identical prompt prefix.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "anthropic-model-deprecations",
+    "title": "Model deprecations",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/about-claude/model-deprecations",
+    "role": "The model lifecycle and retirement dates, with the advice to test replacements well before retirement.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "openai-deprecations",
+    "title": "Deprecations",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://developers.openai.com/api/docs/deprecations",
+    "role": "Shutdown dates and recommended replacements for OpenAI models.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
   }
 ]

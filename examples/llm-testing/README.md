@@ -18,6 +18,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [12-rag-testing](12-rag-testing) | Evaluating RAG systems | A chunker with property-based invariants, BM25 written out, retrieval metrics against labelled questions, a small RAG pipeline with tenant filtering and document versions, faithfulness and citation checks with injected faults, abstention outcomes, and metamorphic tests |
 | [13-agent-testing](13-agent-testing) | Evaluating agents and tool use | A support-agent environment with validated, scoped tools and an approval gate, outcome and trajectory checks, fault injection with false-claim detection, pass^k over seeded runs, and an MCP-style server with protocol contract tests |
 | [14-security-testing](14-security-testing) | Security, red teaming and guardrails | Defences tested against a model that obeys every injection: rendering without exfiltration channels, a tool gate, encoded-leak detection, output encoding, guardrails per attack category, counterfactual fairness and consumption limits |
+| [15-production-quality](15-production-quality) | Production quality | A release gate over hard checks, quality, latency, cost and slices; tracing with OpenTelemetry names and redaction; latency percentiles, Little's law and a load simulation with rate limits; control charts and drift; experiments with and without peeking |
 
 ## Principles
 

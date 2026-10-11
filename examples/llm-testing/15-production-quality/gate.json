@@ -1,0 +1,12 @@
+{
+  "decided": "2026-10-01 by the support product team, before the evaluation of any candidate",
+  "checks": [
+    {"name": "zero-tolerance cases failed", "kind": "hard", "metric": "zero_tolerance_failures", "max": 0},
+    {"name": "quality: lower bound of paired difference", "kind": "quality", "metric": "paired_difference_low", "min": -0.02},
+    {"name": "latency: p95 end-to-end", "kind": "latency", "metric": "latency_p95", "max": 8.0},
+    {"name": "latency: p95 time to first token", "kind": "latency", "metric": "ttft_p95", "max": 2.0},
+    {"name": "cost: per resolved conversation", "kind": "cost", "metric": "cost_per_resolved", "max": 0.03},
+    {"name": "slice: Ukrainian pass rate", "kind": "slice", "metric": "pass_rate", "where": {"language": "uk"}, "min": 0.88},
+    {"name": "slice: refund pass rate", "kind": "slice", "metric": "pass_rate", "where": {"intent": "refund"}, "min": 0.85}
+  ]
+}
