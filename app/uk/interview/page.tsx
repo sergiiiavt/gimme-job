@@ -11,7 +11,7 @@ import {
 import { bilingualLanguageAlternates, breadcrumbJsonLd, createPageMetadata, noIndexMetadata } from "../../seo";
 import UkrainianInterviewPage from "./ukrainian-interview-page";
 
-type UkrainianInterviewIndexProps = { searchParams: Promise<{ question?: string | string[] }> };
+type UkrainianInterviewIndexProps = Readonly<{ searchParams: Promise<{ question?: string | string[] }> }>;
 
 async function resolveQuestion(searchParams: UkrainianInterviewIndexProps["searchParams"]) {
   const questionId = questionIdFromSearchParams(await searchParams);

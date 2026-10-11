@@ -87,7 +87,7 @@ function normalizeQuestionText(question: InterviewQuestion) {
   };
 }
 
-function QuestionCard({ question, questionHref, sources, open = false }: { question: InterviewQuestion; questionHref?: string; sources: Map<string, InterviewSource>; open?: boolean }) {
+function QuestionCard({ question, questionHref, sources, open = false }: Readonly<{ question: InterviewQuestion; questionHref?: string; sources: Map<string, InterviewSource>; open?: boolean }>) {
   const text = normalizeQuestionText(question);
   const questionSources = question.sourceIds.map((id) => sources.get(id)).filter((source): source is InterviewSource => Boolean(source));
 

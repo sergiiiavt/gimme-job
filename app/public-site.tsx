@@ -779,7 +779,7 @@ function UnderConstructionPage({ copy, title }: { copy: string; title: string })
 }
 
 // Server-rendered placeholder: keeps the page heading in the initial HTML while the catalog chunk loads.
-function InterviewCatalogLoadingState({ error, python = false }: { error: boolean; python?: boolean }) {
+function InterviewCatalogLoadingState({ error, python = false }: Readonly<{ error: boolean; python?: boolean }>) {
   const pathname = usePathname();
   const copy = python
     ? { heading: "Python interview knowledge base", loading: "Loading Python interview catalog…", unavailable: "Python interview catalog unavailable" }

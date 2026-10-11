@@ -16,10 +16,10 @@ import {
 import { bilingualLanguageAlternates, breadcrumbJsonLd, createPageMetadata, noIndexMetadata } from "../../seo";
 import InterviewDomainPageClient from "../interview-domain-page-client";
 
-type InterviewDomainPageProps = {
+type InterviewDomainPageProps = Readonly<{
   params: Promise<{ domain: string }>;
   searchParams: Promise<{ question?: string | string[] }>;
-};
+}>;
 
 export function generateStaticParams() {
   return INTERVIEW_DOMAIN_ROUTES.map((route) => ({ domain: route.slug }));

@@ -276,13 +276,18 @@ export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlterna
   };
 }
 
+const SNIPPET_TRAILING_PUNCTUATION = new Set([" ", ",", ".", ";", ":", "—", "–", "-"]);
+
 /** Plain-text meta description that fits search snippets, cut on a word boundary. */
 export function metaDescription(text: string, limit = 155): string {
   const normalized = text.replace(/`|\*\*/g, "").replace(/\s+/g, " ").trim();
   if (normalized.length <= limit) return normalized;
   const cut = normalized.slice(0, limit - 1);
   const boundary = cut.lastIndexOf(" ");
-  return `${(boundary > limit * 0.6 ? cut.slice(0, boundary) : cut).replace(/[\s,.;:—–-]+$/, "")}…`;
+  const snippet = boundary > limit * 0.6 ? cut.slice(0, boundary) : cut;
+  let end = snippet.length;
+  while (end > 0 && SNIPPET_TRAILING_PUNCTUATION.has(snippet[end - 1])) end -= 1;
+  return `${snippet.slice(0, end)}…`;
 }
 
 type BreadcrumbItem = Readonly<{ name: string; path: string }>;

@@ -11,7 +11,7 @@ import {
 import { breadcrumbJsonLd, noIndexMetadata } from "../../seo";
 import PythonInterviewPageClient from "./python-interview-page-client";
 
-type PythonInterviewPageProps = { searchParams: Promise<{ question?: string | string[] }> };
+type PythonInterviewPageProps = Readonly<{ searchParams: Promise<{ question?: string | string[] }> }>;
 
 export async function generateMetadata({ searchParams }: PythonInterviewPageProps): Promise<Metadata> {
   const questionId = questionIdFromSearchParams(await searchParams);

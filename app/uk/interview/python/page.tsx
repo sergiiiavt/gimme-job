@@ -11,7 +11,7 @@ import {
 import { bilingualLanguageAlternates, breadcrumbJsonLd, createPageMetadata, noIndexMetadata } from "../../../seo";
 import UkrainianInterviewPage from "../ukrainian-interview-page";
 
-type UkrainianPythonInterviewPageProps = { searchParams: Promise<{ question?: string | string[] }> };
+type UkrainianPythonInterviewPageProps = Readonly<{ searchParams: Promise<{ question?: string | string[] }> }>;
 
 export async function generateMetadata({ searchParams }: UkrainianPythonInterviewPageProps): Promise<Metadata> {
   const questionId = questionIdFromSearchParams(await searchParams);

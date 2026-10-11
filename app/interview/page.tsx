@@ -10,7 +10,7 @@ import {
 import { noIndexMetadata } from "../seo";
 import InterviewDomainPageClient from "./interview-domain-page-client";
 
-type InterviewPageProps = { searchParams: Promise<{ question?: string | string[] }> };
+type InterviewPageProps = Readonly<{ searchParams: Promise<{ question?: string | string[] }> }>;
 
 export async function generateMetadata({ searchParams }: InterviewPageProps): Promise<Metadata> {
   const questionId = questionIdFromSearchParams(await searchParams);

@@ -17,10 +17,10 @@ import {
 import { bilingualLanguageAlternates, breadcrumbJsonLd, createPageMetadata, noIndexMetadata } from "../../../seo";
 import UkrainianInterviewPage from "../ukrainian-interview-page";
 
-type UkrainianInterviewDomainPageProps = {
+type UkrainianInterviewDomainPageProps = Readonly<{
   params: Promise<{ domain: string }>;
   searchParams: Promise<{ question?: string | string[] }>;
-};
+}>;
 
 export function generateStaticParams() {
   return UKRAINIAN_INTERVIEW_DOMAIN_ROUTES.map((route) => ({ domain: route.slug }));
