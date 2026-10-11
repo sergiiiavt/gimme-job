@@ -123,7 +123,7 @@ Platform principles:
 
 Combine everything into one public portfolio project:
 
-1. the support bot from chapter 2, extended with RAG and agent tools;
+1. the support bot you built during the course, extended with RAG and agent tools;
 2. a versioned golden dataset with a failure taxonomy;
 3. deterministic checks, validated judges with published agreement stats, and RAG and agent evals;
 4. a red-team report with findings and fixes;

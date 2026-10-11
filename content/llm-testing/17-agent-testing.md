@@ -103,7 +103,7 @@ Make tools fail on purpose:
 - malformed responses;
 - partial success (2 of 3 items updated);
 - slow responses that hit time limits;
-- **tool output containing instructions** (indirect prompt injection, see chapter 7).
+- **tool output containing instructions** (indirect prompt injection, see [Prompt injection and jailbreaks](/learn/llm?topic=prompt-injection)).
 
 The agent should retry with limits, report the failure honestly, and never claim success.
 
