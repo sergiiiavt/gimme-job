@@ -617,10 +617,6 @@ test("keeps the public site open and protects the private workspace", async () =
 
   const progressApiResponse = await worker.fetch(new Request("https://gimmejob.example/api/interview-progress"), env, context);
   assert.equal(progressApiResponse.status, 401);
-
-  const robotsResponse = await worker.fetch(new Request("https://gimmejob.example/robots.txt"), env, context);
-  assert.equal(robotsResponse.status, 200);
-  assert.match(await robotsResponse.text(), /Disallow: \/workspace/);
 });
 
 function fakeImportObservabilityDb({ failUpsert = false, failDashboard = false } = {}) {

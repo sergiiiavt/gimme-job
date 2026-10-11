@@ -179,6 +179,18 @@
   text-decoration: none;
 }
 
+.permalink {
+  color: #45623c;
+  font-size: 12px;
+  font-weight: 700;
+  justify-self: start;
+  text-decoration: none;
+}
+
+.permalink:hover {
+  text-decoration: underline;
+}
+
 .question {
   background: #ffffff;
   border: 1px solid #e0e4df;

@@ -580,32 +580,6 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
 // Shared request policy keeps the legacy core gate and the multi-user boundary aligned.
 // /workspace remains a no-store/noindex personal surface even when it is publicly viewable.
 
-function robotsResponse(url: URL): Response {
-  return new Response([
-    "User-agent: *",
-    "Allow: /",
-    "Disallow: /workspace",
-    "Disallow: /api/",
-    `Sitemap: ${url.origin}/sitemap.xml`,
-    "",
-  ].join("\n"), {
-    headers: {
-      "cache-control": "public, max-age=3600",
-      "content-type": "text/plain; charset=utf-8",
-    },
-  });
-}
-
-function sitemapResponse(url: URL): Response {
-  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${url.origin}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n</urlset>\n`;
-  return new Response(body, {
-    headers: {
-      "cache-control": "public, max-age=3600",
-      "content-type": "application/xml; charset=utf-8",
-    },
-  });
-}
-
 interface ExecutionContext {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException(): void;
@@ -656,9 +630,6 @@ const worker = {
         { status: env.APP_PASSWORD ? 401 : 503, headers: { "cache-control": "no-store" } },
       );
     }
-
-    if (url.pathname === "/robots.txt") return robotsResponse(url);
-    if (url.pathname === "/sitemap.xml") return sitemapResponse(url);
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

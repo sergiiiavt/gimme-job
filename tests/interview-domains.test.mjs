@@ -170,7 +170,7 @@ test("renders equal two-column domain buttons and logical topics underneath", as
     readText("content/python-interview/catalog.ts"),
     readText("app/interview/page.tsx"),
     readText("app/interview/interview-domain-page-client.tsx"),
-    readText("app/interview/python/page.tsx"),
+    readText("app/interview/python/python-interview-page-client.tsx"),
   ]);
 
   for (const label of ["Generic QA", "OS / CLI", "Python", "Automation", "SQL / DB", "Web / API", "Performance", "Mobile", "Embedded", "AI / LLM"]) {
