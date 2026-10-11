@@ -1,0 +1,24 @@
+{"left": "Can I return worn shoes?", "right": "Is it possible to send back shoes I wore?", "similarity": 0.95, "equivalent": true}
+{"left": "How long does delivery take?", "right": "When will my order arrive?", "similarity": 0.93, "equivalent": true}
+{"left": "Do you ship to Poland?", "right": "Is delivery to Poland available?", "similarity": 0.92, "equivalent": true}
+{"left": "How do I change my shoe size?", "right": "Can I exchange for another size?", "similarity": 0.91, "equivalent": true}
+{"left": "Where is my refund?", "right": "My refund has not arrived yet", "similarity": 0.9, "equivalent": true}
+{"left": "Can I pay with a gift card?", "right": "Do you accept gift cards?", "similarity": 0.89, "equivalent": true}
+{"left": "How do I reset my password?", "right": "I forgot my password", "similarity": 0.88, "equivalent": true}
+{"left": "Is there free shipping?", "right": "Do I pay for delivery?", "similarity": 0.87, "equivalent": true}
+{"left": "Can I cancel my order?", "right": "I want to cancel the order I placed", "similarity": 0.86, "equivalent": true}
+{"left": "What sizes do you have?", "right": "Which shoe sizes are available?", "similarity": 0.84, "equivalent": true}
+{"left": "Do you sell vegan shoes?", "right": "Are any of your shoes vegan?", "similarity": 0.82, "equivalent": true}
+{"left": "Can I return sale items?", "right": "Are discounted shoes returnable?", "similarity": 0.79, "equivalent": true}
+{"left": "Cancel my order", "right": "Do not cancel my order", "similarity": 0.89, "equivalent": false}
+{"left": "Returns are accepted within 30 days", "right": "Returns are accepted within 60 days", "similarity": 0.86, "equivalent": false}
+{"left": "Ship from Kyiv to Lviv", "right": "Ship from Lviv to Kyiv", "similarity": 0.85, "equivalent": false}
+{"left": "The refund was approved", "right": "The refund was not approved", "similarity": 0.83, "equivalent": false}
+{"left": "Order A-1042", "right": "Order A-1024", "similarity": 0.81, "equivalent": false}
+{"left": "Can I return all items?", "right": "Can I return some items?", "similarity": 0.8, "equivalent": false}
+{"left": "How do I return shoes?", "right": "How do I return a gift card?", "similarity": 0.78, "equivalent": false}
+{"left": "Is delivery free in Ukraine?", "right": "Is delivery free in Poland?", "similarity": 0.75, "equivalent": false}
+{"left": "Track my parcel", "right": "Change my delivery address", "similarity": 0.72, "equivalent": false}
+{"left": "Do you have size 46?", "right": "Do you have size 36?", "similarity": 0.68, "equivalent": false}
+{"left": "Reset my password", "right": "Delete my account", "similarity": 0.64, "equivalent": false}
+{"left": "Do you sell socks?", "right": "What are your opening hours?", "similarity": 0.58, "equivalent": false}

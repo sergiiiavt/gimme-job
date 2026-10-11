@@ -339,7 +339,16 @@ The course follows the order in which you need the knowledge. One running exampl
 | Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |
 | Professional practice | Benchmarks, human evaluation and governance | You can select models, run human evaluation and produce governance evidence |
 
-**Setup for the hands-on parts:** Python 3.11 or newer, a virtual environment, and access to at least one model. A paid API key from any major provider works. To practise without cost, run an open-weight model locally with [Ollama](https://ollama.com/), which exposes an OpenAI-compatible endpoint. Many code examples in this course are self-contained and run directly in the page with the **Run** button; examples that call real models or install packages are meant for your own machine.
+**Setup for the hands-on parts:** Python 3.11 or newer, a virtual environment, and access to at least one model. A paid API key from any major provider works. To practise without cost, run an open-weight model locally with [Ollama](https://ollama.com/), which exposes an OpenAI-compatible endpoint. Many code examples in this course are self-contained and run directly in the page with the **Run** button; examples that call real models or install packages are meant for your own machine. Many chapters also come with a complete example project with tests in [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing).
+
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/01-property-oracles](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/01-property-oracles): property oracles for the refund assistant, a test that documents what they cannot detect, and the run-count arithmetic. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/01-property-oracles
+```
 
 ## Common mistakes
 

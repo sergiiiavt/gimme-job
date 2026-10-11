@@ -1,0 +1,4 @@
+{"at": 0.0, "type": "start"}
+{"at": 0.4, "type": "tool_delta", "index": 0, "name": "get_order_status", "arguments": "{\"order_"}
+{"at": 0.43, "type": "tool_delta", "index": 0, "arguments": "id\": \"A-1042\"}"}
+{"at": 0.45, "type": "stop", "stop_reason": "tool_use", "output_tokens": 18}

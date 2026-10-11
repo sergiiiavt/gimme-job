@@ -503,6 +503,15 @@ Question from support: why did an answer quote a return policy that was replaced
 - **Local and OpenAI-compatible endpoints.** Tools such as Ollama expose an OpenAI-compatible API for local models, which is useful for free practice and offline integration tests. Behaviour, limits and error formats still differ from the production provider, so they cannot replace tests against the real one.
 - **Gateways.** A gateway or abstraction library normalizes providers, adds retries, budgets and logging in one place, and makes provider switches cheaper to test.
 
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/04-model-client](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/04-model-client): stop-reason handling for two providers, a retry policy tested with a fake clock, recorded streams replayed through the stream assembler, a cost model, and optional live checks against a real provider. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/04-model-client
+```
+
 ## Common mistakes
 
 - **Delivering truncated output** because the stop reason is never checked.

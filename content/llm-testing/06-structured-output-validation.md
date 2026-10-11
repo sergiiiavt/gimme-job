@@ -453,6 +453,15 @@ Report all three views. Field accuracies look reasonable here, but only a third 
 
 Fixing one costly error often creates another. If the model is changed so that it always sets `needs_human` to true for priority 3 and 4, the missed escalation above disappears, but cases with priority 3 or 4 that did not need a human are now escalated unnecessarily. Measure the false escalation rate (the manual workload) next to the missed escalation rate, and agree the acceptable trade-off with the business before changing the rule.
 
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/06-structured-output](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/06-structured-output): the Pydantic contract, the full validation pipeline run against 19 recorded raw outputs, property tests generated from the JSON Schema, a field-level accuracy report and an optional live check of native structured output. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/06-structured-output
+```
+
 ## Common mistakes
 
 - **Parsing with regular expressions** instead of asking for structure.

@@ -471,6 +471,15 @@ Needle tests вимірюють витягування одного явного
 - **Не сприймайте reasoning текст як пояснення рішення.** Дослідження faithfulness chain-of-thought показують, що заявлене reasoning може пропускати чинники, які насправді визначили відповідь. Оцінюйте фінальний output і його наслідки; видиме reasoning використовуйте лише як підказку для debugging.
 - **Деякі sampling parameters можуть бути зафіксовані** для reasoning models, тож поради про temperature не застосовуються без змін.
 
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/02-generation-mechanics](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/02-generation-mechanics): BPE tokenizer, softmax, temperature, top-k і top-p з property-based tests та генератор needle-in-a-haystack зі звітом по клітинках. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/02-generation-mechanics
+```
+
 ## Типові помилки
 
 - **Вважати, що temperature 0 дає повторюваний output**, і писати exact-string assertions.

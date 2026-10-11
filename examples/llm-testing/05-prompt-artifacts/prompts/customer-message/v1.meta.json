@@ -1,0 +1,8 @@
+{
+  "id": "customer-message",
+  "version": "v1",
+  "owner": "support-ai-team",
+  "models": ["<pinned model id>"],
+  "changelog": ["v1: Customer text is wrapped in a structural tag and sanitized before insertion."],
+  "evaluation": "runs/2026-09-12-customer-message-v1.json"
+}

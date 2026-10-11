@@ -483,6 +483,15 @@ answer B: 2/5 constraints met; failed: ['exactly 3 bullet points', 'no apology p
 - **Жодних email адрес.** Шукайте у відповіді шаблон на кшталт `[\w.+-]+@[\w-]+\.[\w.]+` і падайте на будь-якому збігу, крім офіційної адреси підтримки.
 - **Order ID дослівно.** Витягніть ID з повідомлення клієнта за задокументованим шаблоном (наприклад `A-\d{4}`), вимагайте ідентичний рядок у відповіді й падайте на будь-якому іншому рядку з тим самим шаблоном.
 
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/05-prompt-artifacts](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/05-prompt-artifacts): версіоновані файли prompts з metadata і lock file, який перевіряє CI, безпечний rendering з fuzzing через Hypothesis, інструкції, перевірені code, і metamorphic тест стійкості. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/05-prompt-artifacts
+```
+
 ## Типові помилки
 
 - **Редагувати випущений prompt на місці**, через що traces більше не ідентифікують текст, який створив відповідь.

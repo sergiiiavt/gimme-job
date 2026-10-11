@@ -503,6 +503,15 @@ prompt growth of 1,500 tokens: +26% cost per request
 - **Локальні та OpenAI-compatible endpoints.** Інструменти на кшталт Ollama надають OpenAI-compatible API для локальних моделей, що корисно для безкоштовної практики та offline integration tests. Поведінка, ліміти й формати помилок усе одно відрізняються від production provider, тож тести проти реального provider вони не замінюють.
 - **Gateways.** Gateway чи abstraction library нормалізує providers, додає retries, budgets і logging в одному місці та здешевлює тестування переходу між providers.
 
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/04-model-client](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/04-model-client): обробка stop reasons для двох providers, retry policy, протестована з fake clock, записані streams, відтворені через stream assembler, cost model і опційні live checks з реальним provider. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/04-model-client
+```
+
 ## Типові помилки
 
 - **Віддавати обрізаний output**, бо stop reason ніколи не перевіряється.

@@ -362,6 +362,15 @@ A model switch is a migration:
 4. Re-embed the full corpus into a new index instead of mixing vectors; store the model version in the index metadata and assert at query time that query and index use the same model.
 5. Switch only if the new model is at least as good on the agreed metrics with statistical confidence and no language or segment regresses beyond the tolerance; keep the old index for rollback.
 
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/03-similarity-thresholds](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/03-similarity-thresholds): similarity measures, a threshold-calibration command-line tool with a labelled data set that includes hard negatives, and recall measurement of an approximate index. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/03-similarity-thresholds
+```
+
 ## Common mistakes
 
 - **Reusing a similarity threshold** from another model, another domain or an article.

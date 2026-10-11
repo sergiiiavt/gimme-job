@@ -471,6 +471,15 @@ Some models generate a hidden or summarized chain of intermediate **reasoning to
 - **Do not treat the reasoning text as an explanation of the decision.** Studies of chain-of-thought faithfulness show that stated reasoning can omit the factors that actually drove the answer. Evaluate the final output and its effects; use visible reasoning only as a debugging hint.
 - **Some sampling parameters may be fixed** for reasoning models, so the advice about temperature does not apply unchanged.
 
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/02-generation-mechanics](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/02-generation-mechanics): a BPE tokenizer, softmax, temperature, top-k and top-p with property-based tests, and a needle-in-a-haystack generator with a per-cell report. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/02-generation-mechanics
+```
+
 ## Common mistakes
 
 - **Assuming temperature 0 gives repeatable output** and writing exact-string assertions on it.

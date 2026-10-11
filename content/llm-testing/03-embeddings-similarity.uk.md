@@ -362,6 +362,15 @@ print(len(vectors), "vectors of", len(vectors[0]), "dimensions")
 4. Перегенеруйте embeddings усього корпусу в новий index замість змішування vectors; зберігайте версію моделі в metadata index і перевіряйте під час запиту, що запит і index використовують одну модель.
 5. Перемикайтеся лише тоді, коли нова модель щонайменше не гірша за погодженими metrics зі статистичною впевненістю і жодна мова чи сегмент не регресує понад tolerance; залиште старий index для rollback.
 
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/03-similarity-thresholds](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/03-similarity-thresholds): міри similarity, command-line tool для калібрування threshold з позначеним набором, що містить hard negatives, і вимірювання recall approximate index. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/03-similarity-thresholds
+```
+
 ## Типові помилки
 
 - **Повторно використовувати similarity threshold** з іншої моделі, іншого домену чи статті.
