@@ -70,7 +70,7 @@ jobs:
 
       - name: Verify LLM testing course examples
         run: |
-          uv sync --project examples/llm-testing --frozen
+          uv sync --project examples/llm-testing --frozen --no-build
           examples/llm-testing/.venv/bin/python -m pytest examples/llm-testing -q
           rm -rf examples/llm-testing/.venv
           find examples/llm-testing -type d -name __pycache__ -prune -exec rm -rf {} +
