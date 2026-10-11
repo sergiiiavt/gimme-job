@@ -1,0 +1,40 @@
+{"id": "test-01", "question": "Can I return shoes after 40 days?", "answer": "No. Returns are accepted within 30 days of delivery, so 40 days is too late.", "human": "P", "judge_v2": "P"}
+{"id": "test-02", "question": "Do I need the tags to return a jacket?", "answer": "Yes, items can be returned only unworn and with the tags attached.", "human": "P", "judge_v2": "P"}
+{"id": "test-03", "question": "When will I get my refund?", "answer": "Your refund goes to the original payment method within 5 business days after your return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-04", "question": "Can I return shoes after 40 days?", "answer": "Yes, returns are accepted within 60 days of delivery.", "human": "F", "judge_v2": "F"}
+{"id": "test-05", "question": "How long does standard delivery take?", "answer": "Standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-06", "question": "Is delivery free for a 60 EUR order?", "answer": "Yes, delivery is free for orders over 50 EUR.", "human": "P", "judge_v2": "P"}
+{"id": "test-07", "question": "Can you guarantee delivery by Friday?", "answer": "I cannot promise a date: delivery dates are estimates, and standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-08", "question": "Can I get the refund on a different card?", "answer": "Refunds go to the original payment method, so they cannot be sent to another card.", "human": "P", "judge_v2": "P"}
+{"id": "test-09", "question": "I wore the boots once, can I return them?", "answer": "Only unworn items can be returned, so worn boots are not eligible.", "human": "P", "judge_v2": "P"}
+{"id": "test-10", "question": "How long do I have to return something?", "answer": "You have 30 days from delivery to return unworn items with tags.", "human": "P", "judge_v2": "P"}
+{"id": "test-11", "question": "Do I need the tags to return a jacket?", "answer": "No, tags are optional as long as you have the receipt.", "human": "F", "judge_v2": "F"}
+{"id": "test-12", "question": "Why has my refund not arrived after two days?", "answer": "Refunds take up to 5 business days after the return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-13", "question": "Can I return shoes after 40 days?", "answer": "No. Returns are accepted within 30 days of delivery, so 40 days is too late.", "human": "P", "judge_v2": "P"}
+{"id": "test-14", "question": "Do I need the tags to return a jacket?", "answer": "Yes, items can be returned only unworn and with the tags attached.", "human": "P", "judge_v2": "P"}
+{"id": "test-15", "question": "When will I get my refund?", "answer": "Your refund goes to the original payment method within 5 business days after your return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-16", "question": "How long does standard delivery take?", "answer": "Standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-17", "question": "Is delivery free for a 60 EUR order?", "answer": "Yes, delivery is free for orders over 50 EUR.", "human": "P", "judge_v2": "P"}
+{"id": "test-18", "question": "When will I get my refund?", "answer": "Refunds arrive within 24 hours.", "human": "F", "judge_v2": "P"}
+{"id": "test-19", "question": "Can you guarantee delivery by Friday?", "answer": "I cannot promise a date: delivery dates are estimates, and standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-20", "question": "Can I get the refund on a different card?", "answer": "Refunds go to the original payment method, so they cannot be sent to another card.", "human": "P", "judge_v2": "P"}
+{"id": "test-21", "question": "I wore the boots once, can I return them?", "answer": "Only unworn items can be returned, so worn boots are not eligible.", "human": "P", "judge_v2": "P"}
+{"id": "test-22", "question": "How long do I have to return something?", "answer": "You have 30 days from delivery to return unworn items with tags.", "human": "P", "judge_v2": "P"}
+{"id": "test-23", "question": "Why has my refund not arrived after two days?", "answer": "Refunds take up to 5 business days after the return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-24", "question": "Can I return shoes after 40 days?", "answer": "No. Returns are accepted within 30 days of delivery, so 40 days is too late.", "human": "P", "judge_v2": "P"}
+{"id": "test-25", "question": "How long does standard delivery take?", "answer": "Standard delivery takes 1-2 business days.", "human": "F", "judge_v2": "F"}
+{"id": "test-26", "question": "Do I need the tags to return a jacket?", "answer": "Yes, items can be returned only unworn and with the tags attached.", "human": "P", "judge_v2": "P"}
+{"id": "test-27", "question": "When will I get my refund?", "answer": "Your refund goes to the original payment method within 5 business days after your return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-28", "question": "How long does standard delivery take?", "answer": "Standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-29", "question": "Is delivery free for a 60 EUR order?", "answer": "Yes, delivery is free for orders over 50 EUR.", "human": "P", "judge_v2": "P"}
+{"id": "test-30", "question": "Can you guarantee delivery by Friday?", "answer": "I cannot promise a date: delivery dates are estimates, and standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
+{"id": "test-31", "question": "Is delivery free for a 30 EUR order?", "answer": "Yes, delivery is always free.", "human": "F", "judge_v2": "F"}
+{"id": "test-32", "question": "Can I get the refund on a different card?", "answer": "Refunds go to the original payment method, so they cannot be sent to another card.", "human": "P", "judge_v2": "P"}
+{"id": "test-33", "question": "I wore the boots once, can I return them?", "answer": "Only unworn items can be returned, so worn boots are not eligible.", "human": "P", "judge_v2": "P"}
+{"id": "test-34", "question": "How long do I have to return something?", "answer": "You have 30 days from delivery to return unworn items with tags.", "human": "P", "judge_v2": "F"}
+{"id": "test-35", "question": "Can you guarantee delivery by Friday?", "answer": "Yes, we guarantee delivery by Friday.", "human": "F", "judge_v2": "F"}
+{"id": "test-36", "question": "Why has my refund not arrived after two days?", "answer": "Refunds take up to 5 business days after the return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-37", "question": "Can I return shoes after 40 days?", "answer": "No. Returns are accepted within 30 days of delivery, so 40 days is too late.", "human": "P", "judge_v2": "P"}
+{"id": "test-38", "question": "Do I need the tags to return a jacket?", "answer": "Yes, items can be returned only unworn and with the tags attached.", "human": "P", "judge_v2": "P"}
+{"id": "test-39", "question": "When will I get my refund?", "answer": "Your refund goes to the original payment method within 5 business days after your return reaches our warehouse.", "human": "P", "judge_v2": "P"}
+{"id": "test-40", "question": "How long does standard delivery take?", "answer": "Standard delivery takes 3-5 business days.", "human": "P", "judge_v2": "P"}
