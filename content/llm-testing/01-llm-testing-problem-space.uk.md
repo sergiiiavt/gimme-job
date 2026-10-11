@@ -52,7 +52,7 @@ Training data and training process
 З цього випливають три наслідки, що формують решту курсу:
 
 - **Точні очікувані значення рідко працюють.** Потрібні інші типи oracles (наступний розділ).
-- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [Статистика для evaluation](/learn/llm?topic=eval-statistics)).
 - **Поведінка може дрейфувати без зміни code.** Версії треба фіксувати й записувати, а тестування продовжувати в production (див. [Якість у production](/learn/llm?topic=production-quality)).
 
 ## Проблема test oracle
@@ -188,7 +188,7 @@ feature correct 70% of the time -> 5 tries all pass with probability 0.17
 10000 runs: observed pass rate 0.904
 ```
 
-Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. Наступний підрозділ показує, скільки runs потребують такі твердження.
+Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. Наступний підрозділ показує, скільки runs потребують такі твердження, а [Статистика для evaluation](/learn/llm?topic=eval-statistics) — як додати до них error bars і порівнювати версії.
 
 ### Скільки runs потрібно, щоб побачити рідкісний збій?
 
@@ -334,7 +334,7 @@ failure rate 1%: need 299 runs
 |---|---|---|
 | Foundations | Чим особливе тестування LLM; Як LLM генерують текст; Embeddings і semantic similarity | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
 | Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation; Тестування LLM code без моделі | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
-| Evaluation | Методологія evaluation і datasets; Code-based scorers і metrics; LLM-as-a-judge | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
+| Evaluation | Методологія evaluation і datasets; Code-based scorers і metrics; LLM-as-a-judge; Статистика для evaluation | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
 | RAG і agents | Evaluation RAG систем; Evaluation agents і tool use | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
 | Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |
 | Професійна практика | Benchmarks, human evaluation і governance | Ви вмієте вибирати моделі, проводити human evaluation і готувати governance evidence |

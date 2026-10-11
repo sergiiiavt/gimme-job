@@ -216,7 +216,7 @@ lowest threshold with precision >= 0.90: 0.90 (recall 0.42)
 
 - **Перекриття — норма.** Еквівалентні й нееквівалентні пари ділять діапазон 0.78–0.89. Жоден threshold не розділяє їх ідеально; кожен вибір обмінює false positives на false negatives.
 - **Правильний threshold залежить від ціни кожної помилки.** Для semantic cache false positive віддає користувачу чужу відповідь («скасуй моє замовлення» отримує кешовану відповідь на «не скасовуй моє замовлення»), тож найважливіша висока precision, навіть ціною меншої кількості cache hits. Для test assertion, що лише попередньо фільтрує відповіді для judge, важливіший recall.
-- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність як confidence interval ([Benchmarks, human evaluation і governance](/learn/llm?topic=pro-practice) показує як).
+- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність як confidence interval ([Статистика для evaluation](/learn/llm?topic=eval-statistics) показує як).
 
 ## Vector search
 

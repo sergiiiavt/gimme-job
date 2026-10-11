@@ -216,7 +216,7 @@ How to interpret this table:
 
 - **Overlap is the norm.** Equivalent and non-equivalent pairs share the range 0.78–0.89. No threshold separates them perfectly; every choice trades false positives against false negatives.
 - **The right threshold depends on the cost of each error.** For a semantic cache, a false positive serves the wrong answer to a user ("cancel my order" answered with the cached reply to "don't cancel my order"), so high precision matters most, even at the price of fewer cache hits. For a test assertion that only pre-filters answers for a judge, recall matters more.
-- **Small samples mislead.** With 24 pairs, one pair moves precision by several points. Use hundreds of pairs and report the uncertainty as a confidence interval ([Benchmarks, human evaluation and governance](/learn/llm?topic=pro-practice) shows how).
+- **Small samples mislead.** With 24 pairs, one pair moves precision by several points. Use hundreds of pairs and report the uncertainty as a confidence interval ([Statistics for evaluation](/learn/llm?topic=eval-statistics) shows how).
 
 ## Vector search
 

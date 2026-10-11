@@ -255,7 +255,7 @@ T=1.5: 193 of 1000 sampled answers state a wrong return window
 | Extraction, classification, structured output | Temperature 0 або близько | Одна правильна відповідь; різноманітність — дефект | Усе одно запускайте cases кілька разів: temperature 0 не детермінована |
 | Question answering з документів | Низька temperature | Триматися найімовірнішої grounded відповіді | Вимірюйте faithfulness, а не лише correctness |
 | Creative writing, brainstorming | Temperature приблизно 0.7–1.0 | Різноманітність — мета | Вимірюйте distributions (якість на багатьох samples), а не окремі outputs |
-| Code generation з кількома спробами | Помірна temperature, кілька samples | Різноманітність підвищує шанс, що одна спроба пройде тести | Показуйте pass@k, див. [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation) |
+| Code generation з кількома спробами | Помірна temperature, кілька samples | Різноманітність підвищує шанс, що одна спроба пройде тести | Показуйте pass@k, див. [Статистика для evaluation](/learn/llm?topic=eval-statistics) |
 
 Два правила діють скрізь. **Тестуйте на production settings**, бо prompt, оцінений при temperature 0, може поводитися інакше при 0.7. І **змінюйте лише один sampling parameter за раз**, порівнюючи runs. Також деякі моделі, особливо reasoning models, фіксують або ігнорують sampling parameters; перевірте документацію provider, перш ніж вважати, що parameter має ефект.
 

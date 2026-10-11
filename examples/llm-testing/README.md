@@ -12,6 +12,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [06-structured-output](06-structured-output) | Structured output and validation | A Pydantic contract, the extract/validate/repair/fallback pipeline against recorded raw outputs, schema-generated property tests, field-level accuracy |
 | [07-testing-without-the-model](07-testing-without-the-model) | Testing LLM code without the model | A support assistant with an injected client, all kinds of test doubles, context-assembly invariants, a prompt snapshot, provider contract fixtures, tool authorization, record and replay with vcrpy |
 | [09-code-based-scorers](09-code-based-scorers) | Code-based scorers and metrics | Text and classification metrics with property-based tests, a bilingual fact scorer validated against human labels, a scoring harness that compares two versions slice by slice, execution-based scoring of generated SQL |
+| [11-eval-statistics](11-eval-statistics) | Statistics for evaluation | Wilson and exact intervals with exact coverage checks, McNemar's test and the paired bootstrap, pass@k and pass^k, clustered errors, sample size and power, the Holm correction, and a release gate that decides ship, block or inconclusive |
 
 ## Principles
 

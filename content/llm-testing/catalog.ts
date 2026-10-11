@@ -19,6 +19,8 @@ import codeBasedScorers from "./09-code-based-scorers.md?raw";
 import codeBasedScorersUk from "./09-code-based-scorers.uk.md?raw";
 import modelGradedEvaluation from "./13-model-graded-evaluation.md?raw";
 import modelGradedEvaluationUk from "./13-model-graded-evaluation.uk.md?raw";
+import evalStatistics from "./11-eval-statistics.md?raw";
+import evalStatisticsUk from "./11-eval-statistics.uk.md?raw";
 import ragTesting from "./16-rag-testing.md?raw";
 import ragTestingUk from "./16-rag-testing.uk.md?raw";
 import agentTesting from "./17-agent-testing.md?raw";
@@ -147,6 +149,14 @@ const topics: LlmTestingTopic[] = [
     description: "Judge patterns, rubric design, judge biases, calibration against human labels, metamorphic testing, testing under non-determinism with pass@k and pass^k, and cost control.",
     descriptionUk: "Patterns judges, дизайн rubrics, bias judges, калібрування проти human labels, metamorphic testing, тестування в умовах non-determinism з pass@k і pass^k та контроль cost.",
   }, modelGradedEvaluation, modelGradedEvaluationUk),
+  chapter({
+    id: "eval-statistics",
+    label: "Statistics for evaluation",
+    labelUk: "Статистика для evaluation",
+    level: "advanced",
+    description: "Confidence intervals for pass rates, paired comparisons with McNemar's test, the bootstrap, pass@k and pass^k for repeated runs, clustered errors, sample size and power, multiple comparisons, and release gates with a non-inferiority margin.",
+    descriptionUk: "Довірчі інтервали для pass rate, парні порівняння з тестом Мак-Немара, bootstrap, pass@k і pass^k для повторних запусків, кластеризовані похибки, розмір вибірки і power, множинні порівняння та release gates з margin non-inferiority.",
+  }, evalStatistics, evalStatisticsUk, ["miller-error-bars", "anthropic-statistical-evals", "wilson-1927", "brown-cai-dasgupta", "mcnemar-1947", "dietterich-1998", "koehn-bootstrap", "dror-significance", "card-power", "connor-1987", "holm-1979", "chen-humaneval", "yao-tau-bench", "madaan-variance", "thinking-machines-nondeterminism", "statsmodels-proportion-confint", "statsmodels-mcnemar", "python-statistics"]),
   chapter({
     id: "rag-testing",
     label: "Evaluating RAG systems",
