@@ -295,7 +295,7 @@ failure rate 1%: need 299 runs
 | Етап | Основні активності | Chapter |
 |---|---|---|
 | Design | Критерії якості, аналіз ризиків, evaluation plan | Цей chapter, [Benchmarks, human evaluation і governance](/learn/llm?topic=pro-practice) |
-| Build | Unit tests з fake models, рев'ю prompts і schemas | [Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy), [Structured output і validation](/learn/llm?topic=structured-output-validation) |
+| Build | Unit tests з fake models, рев'ю prompts і schemas | [Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model) |
 | Offline evaluation | Datasets, scorers, judges, статистика | [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals) і наступні chapters |
 | Pre-release | Security testing, performance tests, release gates | [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming), [Якість у production](/learn/llm?topic=production-quality) |
 | Release | Canary і shadow deployments, міграції моделей | [Якість у production](/learn/llm?topic=production-quality) |
@@ -333,7 +333,7 @@ failure rate 1%: need 299 runs
 | Частина | Chapters | Результат |
 |---|---|---|
 | Foundations | Чим особливе тестування LLM; Як LLM генерують текст; Embeddings і semantic similarity | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
-| Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
+| Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation; Тестування LLM code без моделі | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
 | Evaluation | Методологія evaluation і datasets; LLM-as-a-judge | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
 | RAG і agents | Evaluation RAG систем; Evaluation agents і tool use | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
 | Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |

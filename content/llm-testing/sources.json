@@ -608,5 +608,85 @@
     "role": "Explains constrained decoding, the mechanism behind schema-constrained structured outputs.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "fowler-test-double",
+    "title": "Test Double",
+    "publisher": "Martin Fowler",
+    "kind": "article",
+    "url": "https://martinfowler.com/bliki/TestDouble.html",
+    "role": "Vocabulary of test doubles (dummy, stub, spy, mock, fake) applied to model clients.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "fowler-mocks-arent-stubs",
+    "title": "Mocks Aren't Stubs",
+    "publisher": "Martin Fowler",
+    "kind": "article",
+    "url": "https://martinfowler.com/articles/mocksArentStubs.html",
+    "role": "State versus interaction verification; why mocks should verify interactions that matter.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "vcrpy-docs",
+    "title": "VCR.py documentation",
+    "publisher": "vcrpy",
+    "kind": "tool",
+    "url": "https://vcrpy.readthedocs.io/",
+    "role": "Record and replay HTTP interactions; record modes, header filtering and request matching.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pytest-recording",
+    "title": "pytest-recording",
+    "publisher": "Kiwi.com",
+    "kind": "tool",
+    "url": "https://github.com/kiwicom/pytest-recording",
+    "role": "pytest plugin on top of vcrpy with record modes controlled from the command line.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "syrupy",
+    "title": "syrupy — snapshot testing for pytest",
+    "publisher": "syrupy",
+    "kind": "tool",
+    "url": "https://github.com/syrupy-project/syrupy",
+    "role": "Snapshot (golden-file) tests for rendered prompts.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pytest-monkeypatch",
+    "title": "How to monkeypatch/mock modules and environments",
+    "publisher": "pytest",
+    "kind": "official-docs",
+    "url": "https://docs.pytest.org/en/stable/how-to/monkeypatch.html",
+    "role": "Temporary replacement of module attributes when code has no injection seam yet.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pytest-markers",
+    "title": "Working with custom markers",
+    "publisher": "pytest",
+    "kind": "official-docs",
+    "url": "https://docs.pytest.org/en/stable/example/markers.html",
+    "role": "Separating offline, live and evaluation test layers with markers.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pytest-asyncio",
+    "title": "pytest-asyncio",
+    "publisher": "pytest-dev",
+    "kind": "tool",
+    "url": "https://pytest-asyncio.readthedocs.io/",
+    "role": "Testing asynchronous streaming and cancellation.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

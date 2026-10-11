@@ -1,0 +1,21 @@
+{
+  "stop_reason": "tool_use",
+  "content": [
+    {
+      "type": "text",
+      "text": "Let me check."
+    },
+    {
+      "type": "tool_use",
+      "id": "toolu_1",
+      "name": "get_order_status",
+      "input": {
+        "order_id": "A-1042"
+      }
+    }
+  ],
+  "usage": {
+    "input_tokens": 790,
+    "output_tokens": 24
+  }
+}

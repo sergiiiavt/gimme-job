@@ -295,7 +295,7 @@ LLM testing is not one phase. It happens at every stage, and production feeds ba
 | Stage | Main activities | Chapter |
 |---|---|---|
 | Design | Quality criteria, risk analysis, evaluation plan | This chapter, [Benchmarks, human evaluation and governance](/learn/llm?topic=pro-practice) |
-| Build | Unit tests with fake models, prompt and schema reviews | [LLM application anatomy and APIs](/learn/llm?topic=llm-application-anatomy), [Structured output and validation](/learn/llm?topic=structured-output-validation) |
+| Build | Unit tests with fake models, prompt and schema reviews | [Testing LLM code without the model](/learn/llm?topic=testing-without-the-model) |
 | Offline evaluation | Datasets, scorers, judges, statistics | [Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals) and the chapters after it |
 | Pre-release | Security testing, performance tests, release gates | [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming), [Production quality](/learn/llm?topic=production-quality) |
 | Release | Canary and shadow deployments, model migrations | [Production quality](/learn/llm?topic=production-quality) |
@@ -333,7 +333,7 @@ The course follows the order in which you need the knowledge. One running exampl
 | Part | Chapters | Outcome |
 |---|---|---|
 | Foundations | Why LLM testing is different; How LLMs generate text; Embeddings and similarity | You understand how models produce text and how similarity is measured |
-| Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation | You can build and unit-test the system you will evaluate |
+| Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation; Testing LLM code without the model | You can build and unit-test the system you will evaluate |
 | Evaluation | Evaluation methodology and datasets; LLM-as-a-judge | You can design datasets, scorers and judges and compare versions soundly |
 | RAG and agents | Evaluating RAG systems; Evaluating agents and tool use | You can evaluate retrieval pipelines and multi-step agents |
 | Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |

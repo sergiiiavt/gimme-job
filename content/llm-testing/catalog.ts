@@ -11,6 +11,8 @@ import promptsAsArtifacts from "./05-prompts-as-artifacts.md?raw";
 import promptsAsArtifactsUk from "./05-prompts-as-artifacts.uk.md?raw";
 import structuredOutput from "./06-structured-output-validation.md?raw";
 import structuredOutputUk from "./06-structured-output-validation.uk.md?raw";
+import testingWithoutModel from "./07-testing-without-the-model.md?raw";
+import testingWithoutModelUk from "./07-testing-without-the-model.uk.md?raw";
 import evaluationFundamentals from "./10-evaluation-fundamentals.md?raw";
 import evaluationFundamentalsUk from "./10-evaluation-fundamentals.uk.md?raw";
 import modelGradedEvaluation from "./13-model-graded-evaluation.md?raw";
@@ -111,6 +113,14 @@ const topics: LlmTestingTopic[] = [
     description: "Designing output contracts with JSON Schema and Pydantic, the extract, validate, repair and fallback pipeline, provider-native structured outputs and their limits, truncation, test cases and field-level accuracy.",
     descriptionUk: "Проєктування контрактів output з JSON Schema і Pydantic, pipeline extract, validate, repair і fallback, нативні structured outputs providers та їхні межі, truncation, test cases і точність по полях.",
   }, structuredOutput, structuredOutputUk, ["json-schema-docs", "pydantic-docs", "anthropic-structured-outputs", "openai-structured-outputs", "rfc8259", "hypothesis-docs", "hypothesis-jsonschema", "tam-format-restrictions", "willard-guided-generation"]),
+  chapter({
+    id: "testing-without-the-model",
+    label: "Testing LLM code without the model",
+    labelUk: "Тестування LLM code без моделі",
+    level: "intermediate",
+    description: "Test doubles for model clients, dependency injection, context-assembly invariants, prompt snapshots, record and replay, contract fixtures, tool routing and authorization, and organizing offline, live and evaluation test layers.",
+    descriptionUk: "Test doubles для model clients, dependency injection, інваріанти збирання context, snapshots prompts, record and replay, contract fixtures, маршрутизація tools і authorization та організація offline, live і evaluation рівнів тестів.",
+  }, testingWithoutModel, testingWithoutModelUk, ["fowler-test-double", "fowler-mocks-arent-stubs", "vcrpy-docs", "pytest-recording", "syrupy", "pytest-monkeypatch", "pytest-markers", "pytest-asyncio", "hypothesis-docs"]),
   chapter({
     id: "evaluation-fundamentals",
     label: "Evaluation methodology and datasets",

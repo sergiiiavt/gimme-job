@@ -1,0 +1,35 @@
+interactions:
+- request:
+    body: '{"model": "example-model", "messages": [{"role": "user", "content": "Can
+      I return worn shoes?"}]}'
+    headers:
+      Connection:
+      - close
+      Content-Length:
+      - '97'
+      Content-Type:
+      - application/json
+      Host:
+      - api.example.test
+      User-Agent:
+      - Python-urllib/3.14
+    method: POST
+    uri: https://api.example.test/v1/chat/completions
+  response:
+    body:
+      string: '{"choices": [{"finish_reason": "stop", "message": {"role": "assistant",
+        "content": "Unworn shoes can be returned within 30 days of delivery."}}],
+        "usage": {"prompt_tokens": 214, "completion_tokens": 13}}'
+    headers:
+      Content-Length:
+      - '203'
+      Content-Type:
+      - application/json
+      Date:
+      - Sun, 11 Oct 2026 09:45:55 GMT
+      Server:
+      - example-provider
+    status:
+      code: 200
+      message: OK
+version: 1

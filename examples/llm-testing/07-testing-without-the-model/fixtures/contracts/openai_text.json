@@ -1,0 +1,15 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Unworn shoes can be returned within 30 days of delivery."
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 214,
+    "completion_tokens": 13
+  }
+}

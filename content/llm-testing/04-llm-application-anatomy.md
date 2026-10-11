@@ -33,7 +33,7 @@ The Stride assistant answers questions about policies and orders. Its request pa
         └─► response + trace ─────── answer, citations, trace ID, usage and latency metrics
 ```
 
-Only the model calls inside the model client are probabilistic. Everything else is deterministic code and should be tested with ordinary unit and integration tests, using a fake model where a model call is involved, as the retry and streaming examples in this chapter show.
+Only the model calls inside the model client are probabilistic. Everything else is deterministic code and should be tested with ordinary unit and integration tests, using a fake model where a model call is involved ([Testing LLM code without the model](/learn/llm?topic=testing-without-the-model)).
 
 | Component | Deterministic? | Typical defects | Main test technique |
 |---|---|---|---|
@@ -484,7 +484,7 @@ You cannot test, debug or reproduce what you did not record. For every model cal
 }
 ```
 
-Each field answers a testing question: *which model and prompt produced this?* (model, template version, parameters), *what did it see?* (messages hash, retrieved IDs, tools), *why did it stop?* (stop reason), *what did it cost and how long did it take?* (usage, latency) and *what happened next?* (outcome). These records become regression cases ([Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures for tests such as the stream example above, and the raw material of production monitoring ([Production quality](/learn/llm?topic=production-quality)).
+Each field answers a testing question: *which model and prompt produced this?* (model, template version, parameters), *what did it see?* (messages hash, retrieved IDs, tools), *why did it stop?* (stop reason), *what did it cost and how long did it take?* (usage, latency) and *what happened next?* (outcome). These records become regression cases ([Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures ([Testing LLM code without the model](/learn/llm?topic=testing-without-the-model)) and the raw material of production monitoring ([Production quality](/learn/llm?topic=production-quality)).
 
 ### Worked example: an answer that quotes a replaced policy
 

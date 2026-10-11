@@ -33,7 +33,7 @@ Production LLM feature — це переважно звичайне software н�
         └─► response + trace ─────── answer, citations, trace ID, usage and latency metrics
 ```
 
-Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі, як показують приклади retry і streaming у цьому chapter.
+Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)).
 
 | Компонент | Детермінований? | Типові дефекти | Основна техніка тестування |
 |---|---|---|---|
@@ -484,7 +484,7 @@ prompt growth of 1,500 tokens: +26% cost per request
 }
 ```
 
-Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures для тестів на кшталт прикладу зі stream вище, і сировиною production monitoring ([Якість у production](/learn/llm?topic=production-quality)).
+Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)) і сировиною production monitoring ([Якість у production](/learn/llm?topic=production-quality)).
 
 ### Розібраний приклад: відповідь цитує замінену policy
 

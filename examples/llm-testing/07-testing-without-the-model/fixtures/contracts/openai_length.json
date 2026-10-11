@@ -1,0 +1,15 @@
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "message": {
+        "role": "assistant",
+        "content": "Our return policy has several parts. First,"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 230,
+    "completion_tokens": 8
+  }
+}

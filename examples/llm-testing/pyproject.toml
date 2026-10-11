@@ -8,6 +8,7 @@ dependencies = [
   "hypothesis-jsonschema==0.23.1",
   "pydantic==2.14.0",
   "pytest==9.1.1",
+  "vcrpy==8.3.0",
 ]
 
 [project.optional-dependencies]
