@@ -69,12 +69,15 @@ test("database playground POSTs receive their own budget", () => {
   assert.equal(publicRateLimitPolicy(new Request("https://gimme-job.com/api/playgrounds/databases"), env), null);
 });
 
+const SESSION = { cookie: "theme=dark; gimmejob_user_session=opaque-token" };
+
 test("authenticated cost, crawl, account, and relay endpoints receive their own budgets", () => {
-  const groupFor = (path, method = "POST") => publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method }), env)?.routeGroup ?? null;
+  const groupFor = (path, method = "POST", headers = SESSION) => publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method, headers }), env)?.routeGroup ?? null;
   assert.equal(groupFor("/api/analyze"), "tenant-ai");
   assert.equal(groupFor("/api/analyze-resume"), "tenant-ai");
   assert.equal(groupFor("/api/sync"), "sync");
-  assert.equal(groupFor("/api/run"), "sync");
+  assert.equal(groupFor("/api/run", "POST", { authorization: "Basic Z2ltbWVqb2I6eA==" }), "sync");
+  assert.equal(groupFor("/api/sync", "POST", { cookie: "gimmejob_session=1.sig" }), "sync");
   assert.equal(groupFor("/register"), "register");
   assert.equal(groupFor("/workspace/register"), "register");
   assert.equal(groupFor("/login"), "login");
@@ -87,9 +90,20 @@ test("authenticated cost, crawl, account, and relay endpoints receive their own 
   assert.equal(groupFor("/playgrounds/websocket/ws"), null);
 });
 
+test("anonymous calls to signed-in cost endpoints are left to the auth gate", () => {
+  for (const path of ["/api/analyze", "/api/analyze-resume", "/api/sync", "/api/run"]) {
+    assert.equal(publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method: "POST" }), env), null, path);
+    assert.equal(
+      publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method: "POST", headers: { cookie: "theme=dark" } }), env),
+      null,
+      path,
+    );
+  }
+});
+
 test("tenant AI budgets accept overrides; sign-in has no shared global ceiling", () => {
   assert.deepEqual(
-    publicRateLimitPolicy(new Request("https://gimme-job.com/api/analyze", { method: "POST" }), {
+    publicRateLimitPolicy(new Request("https://gimme-job.com/api/analyze", { method: "POST", headers: SESSION }), {
       TENANT_AI_HOURLY_IP_LIMIT: "4",
       TENANT_AI_DAILY_GLOBAL_LIMIT: "40",
     }),
@@ -187,6 +201,21 @@ test("metered routes fail closed when D1 is unavailable or throws", async (t) =>
   assert.equal(failed?.status, 503);
   assert.deepEqual(await failed?.json(), { error: "Public request throttling is temporarily unavailable." });
   assert.equal(errors.length, 1);
+});
+
+test("sign-in and the relay stay available when D1 is unavailable or throws", async (t) => {
+  const login = new Request("https://gimme-job.com/workspace/login", { method: "POST" });
+  assert.equal(await enforcePublicApiRateLimit(login, {}), null);
+  assert.equal(await enforcePublicApiRateLimit(new Request("https://gimme-job.com/playgrounds/websocket/ws"), {}), null);
+
+  t.mock.method(console, "error", () => undefined);
+  assert.equal(
+    await enforcePublicApiRateLimit(login, { DB: new FakeRateLimitDb([], new Error("simulated D1 failure")) }),
+    null,
+  );
+
+  const register = await enforcePublicApiRateLimit(new Request("https://gimme-job.com/register", { method: "POST" }), {});
+  assert.equal(register?.status, 503);
 });
 
 test("unmetered requests bypass D1 entirely", async () => {

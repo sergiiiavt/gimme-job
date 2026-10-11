@@ -30,15 +30,36 @@ const DEFAULT_LIMITS: Record<RouteGroup, { ip: number; global: number | null }> 
   websocket: { ip: 60, global: 20_000 },
 };
 
-const ROUTE_GROUPS: Array<{ method: string; paths: readonly string[]; routeGroup: RouteGroup }> = [
+// Groups that spend money or hit upstream services fail closed when D1 is
+// unavailable. Sign-in (the legacy single-user login needs no D1) and the
+// cost-free relay stay available instead of turning D1 into a hard dependency.
+const FAIL_OPEN_GROUPS: ReadonlySet<RouteGroup> = new Set(["login", "websocket"]);
+
+type RouteGroupMatch = {
+  method: string;
+  paths: readonly string[];
+  routeGroup: RouteGroup;
+  /** Only callers presenting credentials can reach the cost; the auth gate rejects the rest for free. */
+  credentialed?: boolean;
+};
+
+const ROUTE_GROUPS: RouteGroupMatch[] = [
   { method: "POST", paths: ["/api/ai/learning-path", "/api/ai/learning-path/stream", "/api/ai/interviews"], routeGroup: "ai" },
   { method: "POST", paths: ["/api/playgrounds/databases"], routeGroup: "database" },
-  { method: "POST", paths: ["/api/analyze", "/api/analyze-resume"], routeGroup: "tenant-ai" },
-  { method: "POST", paths: ["/api/sync", "/api/run"], routeGroup: "sync" },
+  { method: "POST", paths: ["/api/analyze", "/api/analyze-resume"], routeGroup: "tenant-ai", credentialed: true },
+  { method: "POST", paths: ["/api/sync", "/api/run"], routeGroup: "sync", credentialed: true },
   { method: "POST", paths: ["/register", "/workspace/register"], routeGroup: "register" },
   { method: "POST", paths: ["/login", "/workspace/login"], routeGroup: "login" },
   { method: "GET", paths: ["/playgrounds/websocket/ws"], routeGroup: "websocket" },
 ];
+
+const CREDENTIAL_COOKIES = ["gimmejob_user_session=", "gimmejob_session="];
+
+function presentsCredentials(request: Request): boolean {
+  if (request.headers.has("authorization")) return true;
+  const cookie = request.headers.get("cookie") ?? "";
+  return cookie.split(";").some((part) => CREDENTIAL_COOKIES.some((name) => part.trim().startsWith(name)));
+}
 
 function positiveInteger(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
@@ -59,6 +80,8 @@ export function publicRateLimitPolicy(
   const pathname = new URL(request.url).pathname;
   const match = ROUTE_GROUPS.find((group) => group.method === request.method && group.paths.includes(pathname));
   if (!match) return null;
+  // Anonymous calls are answered 401 by the auth gate and must not drain the shared budget.
+  if (match.credentialed && !presentsCredentials(request)) return null;
 
   const defaults = DEFAULT_LIMITS[match.routeGroup];
   const configured = configuredLimits(match.routeGroup, env);
@@ -149,7 +172,8 @@ export async function enforcePublicApiRateLimit(
 ): Promise<Response | null> {
   const policy = publicRateLimitPolicy(request, env);
   if (!policy) return null;
-  if (!env.DB) return rejection("Public request throttling is temporarily unavailable.", 503);
+  const failOpen = FAIL_OPEN_GROUPS.has(policy.routeGroup);
+  if (!env.DB) return failOpen ? null : rejection("Public request throttling is temporarily unavailable.", 503);
 
   const now = new Date();
   const nowIso = now.toISOString();
@@ -172,6 +196,6 @@ export async function enforcePublicApiRateLimit(
     return null;
   } catch (error) {
     console.error("Public API rate-limit reservation failed", error);
-    return rejection("Public request throttling is temporarily unavailable.", 503);
+    return failOpen ? null : rejection("Public request throttling is temporarily unavailable.", 503);
   }
 }
