@@ -15,6 +15,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [09-code-based-scorers](09-code-based-scorers) | Code-based scorers and metrics | Text and classification metrics with property-based tests, a bilingual fact scorer validated against human labels, a scoring harness that compares two versions slice by slice, execution-based scoring of generated SQL |
 | [10-llm-judge](10-llm-judge) | LLM-as-a-judge | A versioned judge prompt with strict verdicts, validation on development and test labels, the corrected pass rate with a bootstrap interval, and probes for position and verbosity bias, all checked against a simulated judge with known error rates |
 | [11-eval-statistics](11-eval-statistics) | Statistics for evaluation | Wilson and exact intervals with exact coverage checks, McNemar's test and the paired bootstrap, pass@k and pass^k, clustered errors, sample size and power, the Holm correction, and a release gate that decides ship, block or inconclusive |
+| [12-rag-testing](12-rag-testing) | Evaluating RAG systems | A chunker with property-based invariants, BM25 written out, retrieval metrics against labelled questions, a small RAG pipeline with tenant filtering and document versions, faithfulness and citation checks with injected faults, abstention outcomes, and metamorphic tests |
 
 ## Principles
 

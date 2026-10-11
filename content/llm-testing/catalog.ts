@@ -21,8 +21,8 @@ import modelGradedEvaluation from "./10-model-graded-evaluation.md?raw";
 import modelGradedEvaluationUk from "./10-model-graded-evaluation.uk.md?raw";
 import evalStatistics from "./11-eval-statistics.md?raw";
 import evalStatisticsUk from "./11-eval-statistics.uk.md?raw";
-import ragTesting from "./16-rag-testing.md?raw";
-import ragTestingUk from "./16-rag-testing.uk.md?raw";
+import ragTesting from "./12-rag-testing.md?raw";
+import ragTestingUk from "./12-rag-testing.uk.md?raw";
 import agentTesting from "./17-agent-testing.md?raw";
 import agentTestingUk from "./17-agent-testing.uk.md?raw";
 import securityRedTeaming from "./19-security-red-teaming.md?raw";
@@ -162,9 +162,9 @@ const topics: LlmTestingTopic[] = [
     label: "Evaluating RAG systems",
     labelUk: "Evaluation RAG систем",
     level: "advanced",
-    description: "Separating retrieval from generation, recall@k, MRR and nDCG, the RAG triad, Ragas, test-set design, citation checks and a GimmeJob canonical RAG case study.",
-    descriptionUk: "Розділення retrieval і generation, recall@k, MRR і nDCG, RAG triad, Ragas, дизайн test set, перевірка citations і case study canonical RAG GimmeJob.",
-  }, ragTesting, ragTestingUk),
+    description: "How RAG systems work and fail stage by stage: chunking invariants, retrieval metrics with relevance labels, the RAG triad, claim-level faithfulness and citations, unanswerable questions, robustness and access-control tests, metric libraries and safe changes.",
+    descriptionUk: "Як працюють і де ламаються RAG системи етап за етапом: інваріанти chunking, metrics retrieval з labels релевантності, RAG triad, faithfulness і citations на рівні тверджень, питання без відповіді, тести стійкості й контролю доступу, бібліотеки metrics і безпечні зміни.",
+  }, ragTesting, ragTestingUk, ["lewis-rag", "gao-rag-survey", "es-ragas", "ragas-docs", "saad-falcon-ares", "trulens-rag-triad", "min-factscore", "jarvelin-ndcg", "manning-ir-evaluation", "robertson-bm25", "thakur-beir", "nogueira-reranking", "anthropic-contextual-retrieval", "liu-lost-middle", "maynez-faithfulness"]),
   chapter({
     id: "agent-testing",
     label: "Evaluating agents and tool use",
