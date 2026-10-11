@@ -212,8 +212,11 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
+const DISPLAY_ENTITIES: Record<string, string> = { "&nbsp;": " ", "&amp;": "&", "&quot;": "\"", "&#39;": "'", "&lt;": "<", "&gt;": ">" };
+
+// Single pass, so an encoded entity such as "&amp;lt;" decodes once to "&lt;", never to "<".
 function displayText(value: string) {
-  return value.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+  return value.replace(/&(?:nbsp|amp|quot|#39|lt|gt);/g, (entity) => DISPLAY_ENTITIES[entity]);
 }
 
 function statusLabel(status: JobStatus) {
