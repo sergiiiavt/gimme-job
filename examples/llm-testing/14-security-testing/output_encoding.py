@@ -23,7 +23,9 @@ def to_html(answer: str) -> str:
     for match in LINK.finditer(answer):
         parts.append(escape_html(answer[position:match.start()]))
         text, url = match.group(1), match.group(2)
-        host = re.match(r"https://([^/?#:]+)", url)
+        # the whole authority must be an allowed host: a port or user info would let
+        # https://shop.example:1@evil.example through, and browsers would open evil.example
+        host = re.match(r"https://([^/?#]+)", url)
         if host and host.group(1) in ALLOWED_HOSTS:
             parts.append(f'<a href="{escape_html(url)}" rel="noopener noreferrer">{escape_html(text)}</a>')
         else:

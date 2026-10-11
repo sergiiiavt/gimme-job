@@ -40,7 +40,7 @@ Normalization closes the encoding and separator gaps, rewordings still get throu
 - For every attack in the corpus the model leaks the secret or asks for a harmful tool call, and still the customer never sees the secret in any form, no URL to an attacker's host survives, and no tool call is executed for a plain question. Monitoring sees each leak in the raw output.
 - Rendering alone was not enough: the first version let base64, reversed and spelled-out leaks through to the customer, and the canary detector missed the spelled-out form. Both gaps were found by the corpus; leaking answers are now replaced by a fallback.
 - Benign reviews, including one that says "ignore the mud on the photo", are answered normally.
-- Output encoding is property-tested: for any text, no markup survives except anchors to the allowed host, and no link points anywhere else.
+- Output encoding is property-tested: for any text, no markup survives except anchors to the allowed host, and no link points anywhere else. The first version compared only the part of the authority before a colon, so `https://shop.example:1@evil.example` passed as the allowed host while browsers open `evil.example`; the whole authority must now equal an allowed host, and the property test generates such look-alike URLs.
 - A hidden scoring penalty for one group of names is detected by counterfactual pairs (p < 0.001) and changes shortlist decisions; a scorer without it passes.
 - Oversized inputs are refused before any model call, budgets run out per user and refill over time, and every allowed request carries the output cap.
 
