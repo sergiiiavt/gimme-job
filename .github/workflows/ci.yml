@@ -75,7 +75,9 @@ jobs:
           rm -rf examples/llm-testing/.venv
           find examples/llm-testing -type d -name __pycache__ -prune -exec rm -rf {} +
 
+      # Dependabot runs receive no repository secrets; main is re-analyzed after merge.
       - name: SonarQube Cloud quality gate
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         with:
           args: >
