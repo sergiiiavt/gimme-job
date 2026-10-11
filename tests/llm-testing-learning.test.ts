@@ -58,6 +58,7 @@ const courseFormatTopicIds = [
   "eval-statistics",
   "rag-testing",
   "agent-testing",
+  "security-red-teaming",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];

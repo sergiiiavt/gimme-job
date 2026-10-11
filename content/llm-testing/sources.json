@@ -1508,5 +1508,215 @@
     "role": "Evaluation of function selection and arguments, from single calls to agentic tasks.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "owasp-llm-top10",
+    "title": "OWASP Top 10 for LLM Applications (2025)",
+    "publisher": "OWASP Gen AI Security Project",
+    "kind": "standard",
+    "url": "https://genai.owasp.org/llm-top-10/",
+    "role": "The ten most important security risks of LLM applications, from prompt injection to unbounded consumption.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "willison-lethal-trifecta",
+    "title": "The lethal trifecta for AI agents: private data, untrusted content, and external communication",
+    "publisher": "Simon Willison",
+    "kind": "article",
+    "url": "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+    "role": "Why agents that combine private data, untrusted content and external communication can be made to leak data.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "greshake-indirect-injection",
+    "title": "Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection",
+    "publisher": "Greshake et al. — arXiv / AISec 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2302.12173",
+    "role": "Indirect prompt injection through retrieved content, with real-world demonstrations.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "debenedetti-camel",
+    "title": "Defeating Prompt Injections by Design",
+    "publisher": "Debenedetti et al. — arXiv 2025",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2503.18813",
+    "role": "CaMeL: separating control flow from untrusted data and tracking capabilities so that injected text cannot choose actions.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "hines-spotlighting",
+    "title": "Defending Against Indirect Prompt Injection Attacks With Spotlighting",
+    "publisher": "Hines et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2403.14720",
+    "role": "Marking untrusted input by delimiting, datamarking or encoding to reduce indirect injection.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "wallace-instruction-hierarchy",
+    "title": "The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions",
+    "publisher": "Wallace et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2404.13208",
+    "role": "Training models to give system instructions precedence over instructions found in user input and data.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zou-gcg",
+    "title": "Universal and Transferable Adversarial Attacks on Aligned Language Models",
+    "publisher": "Zou et al. — arXiv 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2307.15043",
+    "role": "Automatically optimized adversarial suffixes that transfer between models.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-many-shot",
+    "title": "Many-shot jailbreaking",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/research/many-shot-jailbreaking",
+    "role": "Jailbreaks with many fabricated dialogue examples in a long context window.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "russinovich-crescendo",
+    "title": "Great, Now Write an Article About That: The Crescendo Multi-Turn LLM Jailbreak Attack",
+    "publisher": "Russinovich et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2404.01833",
+    "role": "Multi-turn escalation from harmless requests to forbidden content.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mazeika-harmbench",
+    "title": "HarmBench: A Standardized Evaluation Framework for Automated Red Teaming and Robust Refusal",
+    "publisher": "Mazeika et al. — arXiv / ICML 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2402.04249",
+    "role": "Standardized attack success rates with validated classifiers for red-teaming evaluations.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "carlini-extraction",
+    "title": "Extracting Training Data from Large Language Models",
+    "publisher": "Carlini et al. — arXiv / USENIX Security 2021",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2012.07805",
+    "role": "Models can reproduce memorized training data, including personal information.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "inan-llama-guard",
+    "title": "Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations",
+    "publisher": "Inan et al. — arXiv 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2312.06674",
+    "role": "A model-based classifier for unsafe inputs and outputs, evaluated like any classifier.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "parrish-bbq",
+    "title": "BBQ: A Hand-Built Bias Benchmark for Question Answering",
+    "publisher": "Parrish et al. — arXiv / Findings of ACL 2022",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2110.08193",
+    "role": "Measuring social bias in question answering with ambiguous and disambiguated contexts.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "garak",
+    "title": "garak, the LLM vulnerability scanner",
+    "publisher": "NVIDIA",
+    "kind": "tool",
+    "url": "https://github.com/NVIDIA/garak",
+    "role": "Probes models and endpoints for injection, leakage, jailbreaks and other weaknesses.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pyrit",
+    "title": "PyRIT: Python Risk Identification Tool for generative AI",
+    "publisher": "Microsoft",
+    "kind": "tool",
+    "url": "https://github.com/Azure/PyRIT",
+    "role": "Orchestrates automated and multi-turn red-teaming attacks.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "promptfoo-red-team",
+    "title": "LLM red teaming guide",
+    "publisher": "promptfoo",
+    "kind": "tool",
+    "url": "https://www.promptfoo.dev/docs/red-team/",
+    "role": "Generates adversarial test cases for an application and grades the results.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mitre-atlas",
+    "title": "MITRE ATLAS",
+    "publisher": "MITRE",
+    "kind": "standard",
+    "url": "https://atlas.mitre.org/",
+    "role": "A knowledge base of adversary tactics and techniques against AI systems.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "nist-ai-600-1",
+    "title": "Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile (NIST AI 600-1)",
+    "publisher": "NIST",
+    "kind": "standard",
+    "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf",
+    "role": "Risks of generative AI and suggested actions for managing them.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "presidio",
+    "title": "Presidio",
+    "publisher": "Data Privacy Stack (originally Microsoft)",
+    "kind": "tool",
+    "url": "https://data-privacy-stack.github.io/presidio/",
+    "role": "Detection and anonymization of personal data in text, for example in logs and traces.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "owasp-xss-cheatsheet",
+    "title": "Cross Site Scripting Prevention Cheat Sheet",
+    "publisher": "OWASP Cheat Sheet Series",
+    "kind": "official-docs",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html",
+    "role": "Output encoding rules that apply unchanged to model output rendered in a browser.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "eu-ai-act",
+    "title": "Regulation (EU) 2024/1689 (Artificial Intelligence Act)",
+    "publisher": "European Union",
+    "kind": "standard",
+    "url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+    "role": "Annex III lists AI systems for recruitment and selection, including filtering applications and evaluating candidates, as high-risk.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]
