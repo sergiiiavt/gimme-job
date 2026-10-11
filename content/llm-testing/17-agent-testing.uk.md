@@ -103,7 +103,7 @@ Stop when: the refund is confirmed, or after 10 turns.
 - malformed responses;
 - частковий успіх (оновлено 2 з 3 елементів);
 - повільні відповіді, що впираються в ліміти часу;
-- **output tool з інструкціями** (indirect prompt injection, див. chapter 7).
+- **output tool з інструкціями** (indirect prompt injection, див. [Prompt injection і jailbreaks](/learn/llm?topic=prompt-injection)).
 
 Agent має повторювати з лімітами, чесно повідомляти про збій і ніколи не заявляти успіх.
 

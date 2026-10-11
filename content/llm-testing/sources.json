@@ -1,0 +1,522 @@
+[
+  {
+    "id": "barr-oracle-problem",
+    "title": "The Oracle Problem in Software Testing: A Survey",
+    "publisher": "Barr, Harman, McMinn, Shahbaz, Yoo — IEEE Transactions on Software Engineering",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://doi.org/10.1109/TSE.2014.2372785",
+    "role": "Defines the test oracle problem and the oracle families (specified, derived, implicit, human) used to structure LLM checks.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "chen-behavior-drift",
+    "title": "How is ChatGPT's behavior changing over time?",
+    "publisher": "Chen, Zaharia, Zou — arXiv",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2307.09009",
+    "role": "Evidence that the behaviour of the same API model changes between versions, motivating version pinning and regression testing.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "iso-25010",
+    "title": "ISO/IEC 25010:2023 — Product quality model",
+    "publisher": "ISO/IEC",
+    "kind": "standard",
+    "status": "current",
+    "url": "https://www.iso.org/standard/78176.html",
+    "role": "Classic software product quality model that the LLM quality characteristics extend.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "iso-25059",
+    "title": "ISO/IEC 25059:2023 — Quality model for AI systems",
+    "publisher": "ISO/IEC",
+    "kind": "standard",
+    "status": "current",
+    "url": "https://www.iso.org/standard/80655.html",
+    "role": "Adapts the SQuaRE quality model to AI systems; reference for AI-specific quality characteristics.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "istqb-ctai",
+    "title": "ISTQB Certified Tester AI Testing (CT-AI)",
+    "publisher": "ISTQB",
+    "kind": "official-syllabus",
+    "status": "current",
+    "url": "https://istqb.org/certifications/certified-tester-ai-testing-ct-ai/",
+    "role": "Certification syllabus for AI testing terminology; complements this course, which goes deeper on generative systems.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "husain-evals",
+    "title": "Your AI Product Needs Evals",
+    "publisher": "Hamel Husain",
+    "kind": "article",
+    "status": "current",
+    "url": "https://hamel.dev/blog/posts/evals/",
+    "role": "Practitioner account of evaluation-driven development, error analysis and the levels of LLM evaluation.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "ollama",
+    "title": "Ollama — run open-weight models locally",
+    "publisher": "Ollama",
+    "kind": "tool",
+    "status": "current",
+    "url": "https://ollama.com/",
+    "role": "Free local model runtime with an OpenAI-compatible endpoint for practising the hands-on exercises.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sennrich-bpe",
+    "title": "Neural Machine Translation of Rare Words with Subword Units",
+    "publisher": "Sennrich, Haddow, Birch — arXiv / ACL 2016",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/1508.07909",
+    "role": "Introduces byte-pair encoding for subword tokenization, the algorithm implemented in the tokenization example.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "tiktoken",
+    "title": "tiktoken — BPE tokenizer for OpenAI models",
+    "publisher": "OpenAI",
+    "kind": "tool",
+    "status": "current",
+    "url": "https://github.com/openai/tiktoken",
+    "role": "Reference tokenizer library for counting real tokens instead of estimating from characters.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "vaswani-attention",
+    "title": "Attention Is All You Need",
+    "publisher": "Vaswani et al. — arXiv / NeurIPS 2017",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/1706.03762",
+    "role": "Original transformer architecture behind current LLMs.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "alammar-transformer",
+    "title": "The Illustrated Transformer",
+    "publisher": "Jay Alammar",
+    "kind": "article",
+    "status": "current",
+    "url": "https://jalammar.github.io/illustrated-transformer/",
+    "role": "Visual, non-mathematical walkthrough of attention and the transformer for readers who want more depth.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "karpathy-intro-llms",
+    "title": "Intro to Large Language Models",
+    "publisher": "Andrej Karpathy",
+    "kind": "video",
+    "status": "current",
+    "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g",
+    "role": "One-hour overview of pretraining, fine-tuning and LLM security for newcomers.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "holtzman-nucleus",
+    "title": "The Curious Case of Neural Text Degeneration",
+    "publisher": "Holtzman et al. — arXiv / ICLR 2020",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/1904.09751",
+    "role": "Introduces nucleus (top-p) sampling and analyses decoding strategies.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "thinking-machines-nondeterminism",
+    "title": "Defeating Nondeterminism in LLM Inference",
+    "publisher": "Thinking Machines Lab",
+    "kind": "article",
+    "status": "current",
+    "url": "https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/",
+    "role": "Shows that batch-size-dependent floating-point reduction order is the main cause of non-determinism at temperature 0, and how batch-invariant kernels remove it.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "ouyang-instructgpt",
+    "title": "Training language models to follow instructions with human feedback",
+    "publisher": "Ouyang et al. — arXiv / NeurIPS 2022",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2203.02155",
+    "role": "Describes supervised instruction tuning and RLHF, the training stages behind chat models.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rafailov-dpo",
+    "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+    "publisher": "Rafailov et al. — arXiv / NeurIPS 2023",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2305.18290",
+    "role": "Widely used preference-tuning method that replaces explicit reinforcement learning.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sharma-sycophancy",
+    "title": "Towards Understanding Sycophancy in Language Models",
+    "publisher": "Sharma et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2310.13548",
+    "role": "Shows that preference-tuned models systematically agree with users, the basis for push-back test cases.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rottger-xstest",
+    "title": "XSTest: A Test Suite for Identifying Exaggerated Safety Behaviours in Large Language Models",
+    "publisher": "Röttger et al. — arXiv / NAACL 2024",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2308.01263",
+    "role": "Test suite for over-refusal: safe prompts that resemble unsafe ones.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "kalai-why-hallucinate",
+    "title": "Why Language Models Hallucinate",
+    "publisher": "Kalai, Nachum, Vempala, Zhang — arXiv",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2509.04664",
+    "role": "Argues that training and evaluation incentives reward guessing over abstention, and that evaluations should reward calibrated abstention.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "maynez-faithfulness",
+    "title": "On Faithfulness and Factuality in Abstractive Summarization",
+    "publisher": "Maynez et al. — arXiv / ACL 2020",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2005.00661",
+    "role": "Defines intrinsic and extrinsic hallucination, used throughout the course for faithfulness checks.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "liu-lost-middle",
+    "title": "Lost in the Middle: How Language Models Use Long Contexts",
+    "publisher": "Liu et al. — arXiv / TACL 2024",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2307.03172",
+    "role": "Documents position sensitivity in long contexts, the basis for position-sweep tests.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "hsieh-ruler",
+    "title": "RULER: What's the Real Context Size of Your Long-Context Language Models?",
+    "publisher": "Hsieh et al. — arXiv / COLM 2024",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2404.06654",
+    "role": "Long-context benchmark showing that effective context length is often far below the advertised maximum.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "turpin-cot-faithfulness",
+    "title": "Language Models Don't Always Say What They Think: Unfaithful Explanations in Chain-of-Thought Prompting",
+    "publisher": "Turpin et al. — arXiv / NeurIPS 2023",
+    "kind": "paper",
+    "status": "current",
+    "url": "https://arxiv.org/abs/2305.04388",
+    "role": "Shows that stated reasoning can omit the factors that drove an answer, so reasoning text is not an explanation.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "muennighoff-mteb",
+    "title": "MTEB: Massive Text Embedding Benchmark",
+    "publisher": "Muennighoff et al. — arXiv / EACL 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2210.07316",
+    "role": "Benchmark for comparing embedding models across tasks and languages; a starting point before domain-specific retrieval evaluation.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mteb-leaderboard",
+    "title": "MTEB leaderboard",
+    "publisher": "Hugging Face",
+    "kind": "benchmark",
+    "url": "https://huggingface.co/spaces/mteb/leaderboard",
+    "role": "Current comparison of embedding models by task and language.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "reimers-sbert",
+    "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+    "publisher": "Reimers, Gurevych — arXiv / EMNLP 2019",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1908.10084",
+    "role": "Foundational method for sentence embeddings trained so that cosine similarity reflects meaning.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sbert-docs",
+    "title": "Sentence Transformers documentation",
+    "publisher": "SBERT / Hugging Face",
+    "kind": "official-docs",
+    "url": "https://sbert.net/",
+    "role": "Library used in the coverage-analysis example, including multilingual models.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-embeddings-guide",
+    "title": "Embeddings guide",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/embeddings",
+    "role": "API reference for creating embeddings, vector length and normalization behaviour.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "malkov-hnsw",
+    "title": "Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs",
+    "publisher": "Malkov, Yashunin — arXiv / IEEE TPAMI",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1603.09320",
+    "role": "The HNSW graph index used by most vector databases; explains the recall-speed trade-off.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "faiss",
+    "title": "The Faiss library",
+    "publisher": "Douze et al. — arXiv / Meta",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2401.08281",
+    "role": "Reference for vector index types (IVF, HNSW, quantization) and how to evaluate their recall.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pgvector",
+    "title": "pgvector — vector similarity search for Postgres",
+    "publisher": "pgvector",
+    "kind": "tool",
+    "url": "https://github.com/pgvector/pgvector",
+    "role": "Widely used vector store; documents exact and approximate (HNSW, IVFFlat) search and filtering.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-messages-api",
+    "title": "Messages API reference",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/api/messages",
+    "role": "Request and response shape of the Anthropic Messages API: system parameter, content blocks, usage fields.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-stop-reasons",
+    "title": "Handling stop reasons",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/api/handling-stop-reasons",
+    "role": "Authoritative list of stop_reason values (end_turn, max_tokens, stop_sequence, tool_use, pause_turn, refusal, model_context_window_exceeded) and how to handle each.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-errors",
+    "title": "API errors",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/api/errors",
+    "role": "HTTP error codes, including 429 rate limits and 529 overloaded, used for the retry policy.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-streaming",
+    "title": "Streaming messages",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/streaming",
+    "role": "Server-sent event types for streamed responses and where usage and stop reasons appear.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-text-guide",
+    "title": "Text generation guide",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/text",
+    "role": "Request and response shape for the Responses and Chat Completions APIs.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-error-codes",
+    "title": "Error codes",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/error-codes",
+    "role": "Error classes including rate-limit 429s versus insufficient-quota 429s that must not be retried.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-streaming",
+    "title": "Streaming API responses",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/streaming-responses",
+    "role": "Streaming event model and how to obtain usage for streamed responses.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-prompt-caching",
+    "title": "Prompt caching",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/prompt-caching",
+    "role": "How cached input tokens are reported and discounted, used in the cost model.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "aws-backoff-jitter",
+    "title": "Timeouts, retries, and backoff with jitter",
+    "publisher": "Amazon Builders' Library",
+    "kind": "article",
+    "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+    "role": "Engineering reference for retry budgets, exponential backoff, jitter and the danger of layered retries.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "litellm",
+    "title": "LiteLLM — unified interface to LLM providers",
+    "publisher": "BerriAI",
+    "kind": "tool",
+    "url": "https://github.com/BerriAI/litellm",
+    "role": "Gateway library that normalizes provider APIs, retries, budgets and logging.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "ollama-openai-compat",
+    "title": "OpenAI compatibility",
+    "publisher": "Ollama",
+    "kind": "official-docs",
+    "url": "https://docs.ollama.com/api/openai-compatibility",
+    "role": "Local OpenAI-compatible endpoint for practice and offline integration tests.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sclar-prompt-format",
+    "title": "Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design",
+    "publisher": "Sclar et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.11324",
+    "role": "Shows large performance differences caused by prompt formatting choices, the basis for sensitivity experiments.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "lu-example-order",
+    "title": "Fantastically Ordered Prompts and Where to Find Them: Overcoming Few-Shot Prompt Order Sensitivity",
+    "publisher": "Lu et al. — arXiv / ACL 2022",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2104.08786",
+    "role": "Demonstrates that the order of few-shot examples can swing results from near state of the art to near chance.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zhao-calibrate",
+    "title": "Calibrate Before Use: Improving Few-Shot Performance of Language Models",
+    "publisher": "Zhao et al. — arXiv / ICML 2021",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2102.09690",
+    "role": "Identifies majority-label and recency biases from few-shot examples.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "wei-chain-of-thought",
+    "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "publisher": "Wei et al. — arXiv / NeurIPS 2022",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2201.11903",
+    "role": "Original description of step-by-step (chain-of-thought) prompting.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zhou-ifeval",
+    "title": "Instruction-Following Evaluation for Large Language Models (IFEval)",
+    "publisher": "Zhou et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2311.07911",
+    "role": "Benchmark of verifiable instructions checked by code, the model for code-verified constraint checks.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-prompt-engineering",
+    "title": "Prompt engineering overview",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+    "role": "Provider guidance on clear instructions, XML-tag structure, examples and step-by-step reasoning.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-prompt-engineering",
+    "title": "Prompt engineering guide",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://platform.openai.com/docs/guides/prompt-engineering",
+    "role": "Provider guidance on message roles, instructions, examples and formatting.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "langfuse-prompt-management",
+    "title": "Prompt management",
+    "publisher": "Langfuse",
+    "kind": "official-docs",
+    "url": "https://langfuse.com/docs/prompt-management/overview",
+    "role": "Example of a hosted prompt registry with versions and labels, and the controls it needs.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "jinja",
+    "title": "Jinja template engine",
+    "publisher": "Pallets",
+    "kind": "tool",
+    "url": "https://jinja.palletsprojects.com/",
+    "role": "Template engine that avoids the brace collisions of str.format.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "python-string-template",
+    "title": "string.Template — template strings",
+    "publisher": "Python documentation",
+    "kind": "official-docs",
+    "url": "https://docs.python.org/3/library/string.html#template-strings",
+    "role": "Standard-library templating with $placeholders, used in the template example.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  }
+]

@@ -66,7 +66,7 @@ def recall_at_k(expected_ids, retrieved_ids, k):
 - **context precision:** чи релевантні chunks стоять вище за нерелевантні;
 - **context recall:** чи містить context інформацію з reference answer.
 
-DeepEval і TruLens мають порівнянні metrics. Вони корисні, але пам'ятай chapter 4: ці metrics — це judges. Вибірково звіряй їх зі своїми labels, перш ніж довіряти числам, і фіксуй версії бібліотеки та judge model, бо визначення metrics змінюються між релізами.
+DeepEval і TruLens мають порівнянні metrics. Вони корисні, але пам'ятай [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation): ці metrics — це judges. Вибірково звіряй їх зі своїми labels, перш ніж довіряти числам, і фіксуй версії бібліотеки та judge model, бо визначення metrics змінюються між релізами.
 
 ## 5. Як зібрати RAG test set
 
@@ -120,7 +120,7 @@ Synthetic sets — для розширення coverage, але ніколи н�
 - документи іншою мовою, ніж питання;
 - **access control:** користувач ніколи не повинен отримати приватні документи іншого tenant чи користувача. Тестуй це з двома акаунтами; це security defect, а не питання якості;
 - **freshness:** оновлений документ має замінити старий в index; тестуй reindex path;
-- **injection у документах:** retrieved content може містити інструкції. Див. chapter 7.
+- **injection у документах:** retrieved content може містити інструкції. Див. [Prompt injection і jailbreaks](/learn/llm?topic=prompt-injection).
 
 ## 9. Case study: canonical RAG у GimmeJob
 

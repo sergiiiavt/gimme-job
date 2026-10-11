@@ -6,83 +6,181 @@ import { register as registerTsx } from "tsx/esm/api";
 registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
-const [{ default: llmTestingCatalog }, { default: learningRagSources }, { staticRagDocuments }, { sectionNavigationHref }] = await Promise.all([
+const [
+  { default: llmTestingCatalog },
+  { default: learningRagSources },
+  { staticRagDocuments },
+  { sectionNavigationHref },
+  { isRunnablePythonSource },
+] = await Promise.all([
   import("../content/llm-testing/catalog.ts"),
   import("../content/learning-rag-registry.ts"),
   import("../worker/rag.ts"),
   import("../app/navigation-paths.ts"),
+  import("../app/interview-python-execution.ts"),
 ]);
 
+type Topic = (typeof llmTestingCatalog.topics)[number];
+
 const expectedTopicIds = [
+  "llm-testing-problem-space",
   "llm-foundations",
+  "embeddings-similarity",
   "llm-application-anatomy",
+  "prompts-as-artifacts",
+  "structured-output-validation",
+  "rag-architecture",
+  "tools-agents-mcp",
+  "testing-without-the-model",
   "evaluation-fundamentals",
+  "evaluation-datasets",
+  "code-based-scorers",
   "model-graded-evaluation",
+  "eval-frameworks",
+  "eval-statistics",
   "rag-testing",
   "agent-testing",
+  "prompt-injection",
   "security-red-teaming",
+  "bias-fairness-privacy",
   "production-quality",
+  "ci-release-gates",
+  "performance-cost",
+  "benchmarks-model-selection",
   "pro-practice",
+  "capstone",
+];
+
+// Chapters already rewritten in the full course format (objectives, worked examples, exercises with solutions).
+const courseFormatTopicIds = [
+  "llm-testing-problem-space",
+  "llm-foundations",
+  "embeddings-similarity",
+  "llm-application-anatomy",
+  "prompts-as-artifacts",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];
+const published = llmTestingCatalog.topics.filter((topic: Topic) => topic.status === "published");
+const topicIds = new Set(llmTestingCatalog.topics.map((topic: Topic) => topic.id));
 
-test("LLM testing path publishes nine chapters in learning order from beginner to pro", () => {
-  assert.deepEqual(llmTestingCatalog.topics.map((topic) => topic.id), expectedTopicIds);
-  assert.ok(llmTestingCatalog.topics.every((topic) => topic.status === "published"));
+function fencedBlocks(markdown: string, languages: readonly string[]) {
+  const blocks: Array<{ language: string; source: string }> = [];
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  for (let index = 0; index < lines.length; index += 1) {
+    const opening = lines[index].match(/^```([\w-]*)\s*$/);
+    if (!opening) continue;
+    let end = index + 1;
+    while (end < lines.length && !/^```\s*$/.test(lines[end])) end += 1;
+    if (languages.includes(opening[1])) blocks.push({ language: opening[1], source: lines.slice(index + 1, end).join("\n") });
+    index = end;
+  }
+  return blocks;
+}
 
-  const levels = llmTestingCatalog.topics.map((topic) => levelOrder.indexOf(topic.level));
-  assert.ok(levels.every((level) => level >= 0), "every chapter has a known level");
+test("the LLM testing course lists 26 chapters in learning order from beginner to pro", () => {
+  assert.deepEqual(llmTestingCatalog.topics.map((topic: Topic) => topic.id), expectedTopicIds);
+
+  const levels = llmTestingCatalog.topics.map((topic: Topic) => levelOrder.indexOf(topic.level));
+  assert.ok(levels.every((level: number) => level >= 0), "every chapter has a known level");
   assert.deepEqual([...levels].sort((a, b) => a - b), levels, "levels never step backwards");
   assert.equal(llmTestingCatalog.topics[0].level, "beginner");
   assert.equal(llmTestingCatalog.topics.at(-1)?.level, "pro");
-});
 
-test("every LLM testing chapter is bilingual with practice, an exit check and sources", () => {
   for (const topic of llmTestingCatalog.topics) {
+    assert.ok(topic.label && topic.labelUk && topic.description && topic.descriptionUk, `${topic.id} needs bilingual labels and descriptions`);
+  }
+  for (const id of courseFormatTopicIds) {
+    assert.equal(llmTestingCatalog.topics.find((topic: Topic) => topic.id === id)?.status, "published", `${id} must be published`);
+  }
+});
+
+test("published chapters are bilingual, substantive and share identical code in both languages", () => {
+  for (const topic of published) {
     for (const [language, markdown] of [["en", topic.markdown], ["uk", topic.markdownUk]] as const) {
-      const where = `${topic.id} (${language})`;
-      assert.ok(markdown.length > 4000, `${where} must contain real material`);
-      assert.match(markdown, /^## 1\. /m, `${where} must start a numbered sequence`);
-      assert.match(markdown, /^## \d+\. QA quick reference$/m, `${where} must include a QA quick reference`);
-      assert.match(markdown, /^## \d+\. Practice$/m, `${where} must include practice`);
-      assert.match(markdown, /\*\*Exit check:\*\*/, `${where} must define when the chapter is done`);
-      assert.match(markdown, /^## Sources$/m, `${where} must include sources`);
-      assert.ok(markdown.indexOf("## Sources") > markdown.indexOf("## 1. "), `${where} sources must follow the material`);
-      assert.match(markdown, /^- \[[^\]]+\]\(https:\/\//m, `${where} must cite at least one external source`);
+      assert.ok(markdown.length > 4000, `${topic.id} (${language}) must contain real material`);
+      assert.ok((markdown.match(/^## /gm) ?? []).length >= 5, `${topic.id} (${language}) must have sections`);
     }
-    assert.notEqual(topic.markdown, topic.markdownUk, `${topic.id} must have a distinct Ukrainian translation`);
+    assert.notEqual(topic.markdown, topic.markdownUk, `${topic.id} needs a distinct Ukrainian translation`);
+
+    const codeLanguages = ["python", "yaml", "json", "bash", "typescript", "javascript", "sql", "diff"];
+    assert.deepEqual(
+      fencedBlocks(topic.markdownUk, codeLanguages),
+      fencedBlocks(topic.markdown, codeLanguages),
+      `${topic.id} must contain the same code in English and Ukrainian`,
+    );
   }
 });
 
-test("LLM testing path covers the core evaluation, RAG, agent, security and governance concepts", () => {
-  const all = llmTestingCatalog.topics.map((topic) => topic.markdown).join("\n").toLowerCase();
+test("rewritten chapters follow the course format with objectives, runnable examples and solved exercises", () => {
+  for (const id of courseFormatTopicIds) {
+    const topic = llmTestingCatalog.topics.find((candidate: Topic) => candidate.id === id) as Topic;
+    const en = topic.markdown;
+    const uk = topic.markdownUk;
 
-  for (const concept of [
-    "token", "temperature", "embedding", "hallucination", "structured output", "tool calling", "model context protocol",
-    "golden dataset", "error analysis", "llm-as-a-judge", "cohen's kappa", "metamorphic", "pass@k", "pass^k",
-    "recall@k", "ndcg", "faithfulness", "ragas", "trajectory", "simulated user", "fault injection",
-    "prompt injection", "indirect prompt injection", "lethal trifecta", "jailbreak", "guardrail", "mitre atlas",
-    "opentelemetry", "ttft", "model migration", "confidence interval", "bootstrap", "contamination",
-    "nist ai rmf", "eu ai act", "iso/iec 42001", "promptfoo", "deepeval", "garak", "pyrit", "langfuse",
-  ]) {
-    assert.ok(all.includes(concept), `Missing LLM testing concept ${concept}`);
+    assert.match(en, /^# \S/m, `${id} needs a chapter title`);
+    assert.match(uk, /^# \S/m, `${id} (uk) needs a chapter title`);
+    assert.match(en, /\*\*After this chapter you can:\*\*/, `${id} needs learning objectives`);
+    assert.match(uk, /\*\*Після цього chapter ви вмієте:\*\*/, `${id} (uk) needs learning objectives`);
+    assert.match(en, /\*\*Prerequisites:\*\*/);
+    assert.match(en, /^## Common mistakes$/m);
+    assert.match(en, /^## Exercises$/m);
+    assert.match(en, /^## Summary$/m);
+    assert.match(uk, /^## Вправи$/m);
+    assert.match(uk, /^## Підсумок$/m);
+
+    const solutions = (en.match(/^:::details /gm) ?? []).length;
+    assert.ok(solutions >= 3, `${id} needs worked solutions for its exercises`);
+    assert.equal((uk.match(/^:::details /gm) ?? []).length, solutions, `${id} (uk) must keep every solution`);
+
+    const runnable = fencedBlocks(en, ["python"]).filter((block) => isRunnablePythonSource("python", block.source));
+    assert.ok(runnable.length >= 1, `${id} needs at least one example that runs in the page`);
+
+    assert.ok(topic.sourceIds.length >= 5, `${id} must cite its references`);
+    assert.doesNotMatch(en, /^## Sources$/m, `${id} uses the source registry instead of an inline Sources section`);
   }
-
-  assert.match(all, /temperature 0 is not deterministic/);
-  assert.match(all, /owasp top 10 for llm applications \(2025\)/);
 });
 
-test("LLM testing path is the canonical /learn/llm surface and is discoverable by canonical RAG", () => {
+test("the source registry is complete, unique and fully referenced", () => {
+  const sources = llmTestingCatalog.sources;
+  const ids = sources.map((source: { id: string }) => source.id);
+  assert.equal(new Set(ids).size, ids.length, "source ids are unique");
+
+  for (const source of sources) {
+    assert.match(source.url, /^https:\/\//, `${source.id} needs an https URL`);
+    for (const field of ["title", "publisher", "kind", "role", "checkedAt"] as const) {
+      assert.ok(source[field], `${source.id} needs ${field}`);
+    }
+  }
+
+  const cited = new Set(llmTestingCatalog.topics.flatMap((topic: Topic) => topic.sourceIds));
+  for (const sourceId of cited) assert.ok(ids.includes(sourceId), `unknown source ${sourceId}`);
+  for (const sourceId of ids) assert.ok(cited.has(sourceId), `source ${sourceId} is not cited by any chapter`);
+});
+
+test("links between chapters always point to chapters of the course", () => {
+  for (const topic of published) {
+    for (const markdown of [topic.markdown, topic.markdownUk]) {
+      for (const match of markdown.matchAll(/\]\(\/learn\/llm\?topic=([a-z0-9-]+)/g)) {
+        assert.ok(topicIds.has(match[1]), `${topic.id} links to unknown chapter ${match[1]}`);
+      }
+    }
+  }
+});
+
+test("the course is the canonical /learn/llm surface; placeholders stay out of retrieval", () => {
   assert.equal(sectionNavigationHref("llm", "public"), "/learn/llm");
-  assert.ok(learningRagSources.some((source) => source.key === "llm-testing" && source.route === "/learn/llm" && !source.track));
+  assert.ok(learningRagSources.some((source: { key: string; route: string; track?: string }) =>
+    source.key === "llm-testing" && source.route === "/learn/llm" && !source.track));
 
   const documents = staticRagDocuments().filter((document) => document.kind === "learning" && document.metadata.route === "/learn/llm");
-  for (const topicId of expectedTopicIds) {
-    assert.ok(documents.some((document) => document.metadata.topic === topicId && typeof document.metadata.section === "string"), `${topicId} sections must be retrievable`);
+  for (const topic of llmTestingCatalog.topics) {
+    const sections = documents.filter((document) => document.metadata.topic === topic.id && typeof document.metadata.section === "string");
+    if (topic.status === "published") assert.ok(sections.length > 0, `${topic.id} sections must be retrievable`);
+    else assert.equal(documents.filter((document) => document.metadata.topic === topic.id).length, 0, `${topic.id} is a placeholder and must not be indexed`);
   }
 
-  const triad = documents.find((document) => document.metadata.topic === "rag-testing" && /RAG triad/.test(document.title));
-  assert.ok(triad, "RAG triad section must be its own retrieval unit");
-  assert.match(triad.text, /groundedness/i);
+  const sampling = documents.find((document) => document.metadata.topic === "llm-foundations" && /temperature, top-k and top-p/i.test(document.title));
+  assert.ok(sampling, "a rewritten section is its own retrieval unit");
+  assert.match(sampling.text, /nucleus sampling/);
 });
