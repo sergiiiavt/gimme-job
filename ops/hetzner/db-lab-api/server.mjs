@@ -20,6 +20,13 @@ const MAX_ROWS = 200;
 const QUERY_TIMEOUT_MS = 7_000;
 const ADMIN_TIMEOUT_MS = 60_000;
 const MAX_ACTIVE_REQUESTS = 4;
+// Killing the psql/mysql client at QUERY_TIMEOUT_MS does not stop the server-side
+// statement, and a learner can lift statement_timeout/max_execution_time for
+// their own session. The reaper terminates workspace statements that outlive
+// the playground limit so they cannot pin a workspace's connection slots.
+const RUNAWAY_QUERY_SECONDS = 10;
+const REAPER_INTERVAL_MS = 5_000;
+const WORKSPACE_ROLE_PATTERN = "^gjws_[0-9]+$";
 const workspacePromises = new Map();
 let activeRequests = 0;
 
@@ -443,6 +450,61 @@ async function executeUserQuery(engine, workspace, sql) {
   };
 }
 
+function postgresRunawaySql() {
+  return `SELECT count(pg_terminate_backend(pid)) FROM pg_stat_activity
+    WHERE backend_type = 'client backend'
+      AND usename ~ '${WORKSPACE_ROLE_PATTERN}'
+      AND state <> 'idle'
+      AND query_start < now() - interval '${RUNAWAY_QUERY_SECONDS} seconds';`;
+}
+
+function mysqlRunawaySql() {
+  return `SELECT id FROM information_schema.processlist
+    WHERE user REGEXP '${WORKSPACE_ROLE_PATTERN}'
+      AND command <> 'Sleep'
+      AND time >= ${RUNAWAY_QUERY_SECONDS};`;
+}
+
+// Only server-reported numeric thread ids ever reach KILL.
+function mysqlKillStatements(stdout) {
+  return stdout.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /^\d+$/.test(line))
+    .map((id) => `KILL ${id};`)
+    .join("\n");
+}
+
+async function reapRunawayQueries() {
+  const tasks = [];
+  if (POSTGRES_ADMIN_PASSWORD) {
+    tasks.push(postgresRun({ user: "postgres", password: POSTGRES_ADMIN_PASSWORD, database: "postgres", admin: true, sql: postgresRunawaySql() }));
+  }
+  if (MYSQL_ADMIN_PASSWORD) {
+    tasks.push((async () => {
+      const running = await mysqlRun({ user: "root", password: MYSQL_ADMIN_PASSWORD, admin: true, skipHeaders: true, sql: mysqlRunawaySql() });
+      const kills = mysqlKillStatements(running.stdout);
+      // A statement may finish between listing and KILL; that error is expected.
+      if (kills) await mysqlRun({ user: "root", password: MYSQL_ADMIN_PASSWORD, admin: true, sql: kills }).catch(() => undefined);
+    })());
+  }
+  const results = await Promise.allSettled(tasks);
+  for (const result of results) {
+    if (result.status === "rejected") console.warn("Database lab runaway-query reaper failed:", result.reason?.message ?? result.reason);
+  }
+}
+
+function startRunawayQueryReaper() {
+  let running = false;
+  const timer = setInterval(() => {
+    if (running) return;
+    running = true;
+    // reapRunawayQueries settles every task itself and never rejects.
+    void reapRunawayQueries().finally(() => { running = false; });
+  }, REAPER_INTERVAL_MS);
+  timer.unref?.();
+  return timer;
+}
+
 function schemaFromRows(engine, workspace, rows) {
   const tables = [];
   const byName = new Map();
@@ -590,6 +652,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   createLabServer().listen(PORT, "0.0.0.0", () => {
     console.log(`Database lab API listening on :${PORT}`);
   });
+  startRunawayQueryReaper();
 }
 
 export {
@@ -599,7 +662,10 @@ export {
   MYSQL_WORKSPACE_MARKER,
   mysqlArgs,
   mysqlBaseFixtureCountSql,
+  mysqlKillStatements,
+  mysqlRunawaySql,
   parseCsv,
+  postgresRunawaySql,
   parseTsv,
   postgresGrid,
   statementKind,

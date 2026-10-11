@@ -69,6 +69,61 @@ test("database playground POSTs receive their own budget", () => {
   assert.equal(publicRateLimitPolicy(new Request("https://gimme-job.com/api/playgrounds/databases"), env), null);
 });
 
+const SESSION = { cookie: "theme=dark; gimmejob_user_session=opaque-token" };
+
+test("authenticated cost, crawl, account, and relay endpoints receive their own budgets", () => {
+  const groupFor = (path, method = "POST", headers = SESSION) => publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method, headers }), env)?.routeGroup ?? null;
+  assert.equal(groupFor("/api/analyze"), "tenant-ai");
+  assert.equal(groupFor("/api/analyze-resume"), "tenant-ai");
+  assert.equal(groupFor("/api/sync"), "sync");
+  assert.equal(groupFor("/api/run", "POST", { authorization: "Basic Z2ltbWVqb2I6eA==" }), "sync");
+  assert.equal(groupFor("/api/sync", "POST", { cookie: "gimmejob_session=1.sig" }), "sync");
+  assert.equal(groupFor("/register"), "register");
+  assert.equal(groupFor("/workspace/register"), "register");
+  assert.equal(groupFor("/login"), "login");
+  assert.equal(groupFor("/workspace/login"), "login");
+  assert.equal(groupFor("/playgrounds/websocket/ws", "GET"), "websocket");
+
+  assert.equal(groupFor("/login", "GET"), null);
+  assert.equal(groupFor("/register", "GET"), null);
+  assert.equal(groupFor("/api/dashboard", "GET"), null);
+  assert.equal(groupFor("/playgrounds/websocket/ws"), null);
+});
+
+test("anonymous calls to signed-in cost endpoints are left to the auth gate", () => {
+  for (const path of ["/api/analyze", "/api/analyze-resume", "/api/sync", "/api/run"]) {
+    assert.equal(publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method: "POST" }), env), null, path);
+    assert.equal(
+      publicRateLimitPolicy(new Request(`https://gimme-job.com${path}`, { method: "POST", headers: { cookie: "theme=dark" } }), env),
+      null,
+      path,
+    );
+  }
+});
+
+test("tenant AI budgets accept overrides; sign-in has no shared global ceiling", () => {
+  assert.deepEqual(
+    publicRateLimitPolicy(new Request("https://gimme-job.com/api/analyze", { method: "POST", headers: SESSION }), {
+      TENANT_AI_HOURLY_IP_LIMIT: "4",
+      TENANT_AI_DAILY_GLOBAL_LIMIT: "40",
+    }),
+    { routeGroup: "tenant-ai", ipLimit: 4, globalLimit: 40 },
+  );
+  assert.equal(publicRateLimitPolicy(new Request("https://gimme-job.com/login", { method: "POST" }), env)?.globalLimit, null);
+});
+
+test("sign-in throttling reserves only the per-address budget", async () => {
+  const db = new FakeRateLimitDb([1]);
+  const response = await enforcePublicApiRateLimit(
+    new Request("https://gimme-job.com/login", { method: "POST", headers: { "cf-connecting-ip": "192.0.2.10" } }),
+    { DB: db },
+  );
+  assert.equal(response, null);
+  assert.equal(db.calls.length, 1);
+  assert.equal(db.calls[0].bindings[1], "login");
+  assert.equal(db.calls[0].bindings[2], "IP");
+});
+
 test("successful public requests reserve hashed IP and global budgets", async () => {
   const db = new FakeRateLimitDb([1, 1]);
   const response = await enforcePublicApiRateLimit(
@@ -146,6 +201,21 @@ test("metered routes fail closed when D1 is unavailable or throws", async (t) =>
   assert.equal(failed?.status, 503);
   assert.deepEqual(await failed?.json(), { error: "Public request throttling is temporarily unavailable." });
   assert.equal(errors.length, 1);
+});
+
+test("sign-in and the relay stay available when D1 is unavailable or throws", async (t) => {
+  const login = new Request("https://gimme-job.com/workspace/login", { method: "POST" });
+  assert.equal(await enforcePublicApiRateLimit(login, {}), null);
+  assert.equal(await enforcePublicApiRateLimit(new Request("https://gimme-job.com/playgrounds/websocket/ws"), {}), null);
+
+  t.mock.method(console, "error", () => undefined);
+  assert.equal(
+    await enforcePublicApiRateLimit(login, { DB: new FakeRateLimitDb([], new Error("simulated D1 failure")) }),
+    null,
+  );
+
+  const register = await enforcePublicApiRateLimit(new Request("https://gimme-job.com/register", { method: "POST" }), {});
+  assert.equal(register?.status, 503);
 });
 
 test("unmetered requests bypass D1 entirely", async () => {

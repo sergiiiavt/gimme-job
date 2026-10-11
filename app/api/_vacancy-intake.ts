@@ -132,19 +132,24 @@ function djinniSourceArray(config: Json): Json[] {
   return legacyDefault ? DEFAULT_VACANCY_SOURCES.djinni : configured;
 }
 
-function isPrivateIpv4(host: string): boolean {
-  return /^(?:10\.|127\.|169\.254\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(host);
+// Job boards are always reached by hostname. The URL parser normalises decimal,
+// octal, and hex IPv4 forms to dotted quads and wraps IPv6 in brackets, so
+// refusing every IP literal also covers loopback, CGNAT, mapped-IPv6, and ULA.
+function isIpLiteral(host: string): boolean {
+  return host.startsWith("[") || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
 }
 
 export function publicHttpsUrl(value: unknown): string {
   const raw = cleanText(value);
   if (!raw) throw new Error("Source URL is missing.");
   const url = new URL(raw);
-  const host = url.hostname.toLowerCase();
+  const host = url.hostname.toLowerCase().replace(/\.$/, "");
   const blockedHost = host === "localhost"
-    || host === "::1"
+    || host.endsWith(".localhost")
     || host.endsWith(".local")
-    || isPrivateIpv4(host);
+    || host.endsWith(".internal")
+    || !host.includes(".")
+    || isIpLiteral(host);
   if (url.protocol !== "https:" || blockedHost) {
     throw new Error("Only public HTTPS source URLs are allowed.");
   }

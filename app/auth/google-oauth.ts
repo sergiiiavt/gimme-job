@@ -138,6 +138,16 @@ function authConfig(env: MultiUserAuthEnv): { clientId: string; clientSecret: st
   };
 }
 
+/** Errors whose message is safe to show to the person completing Google sign-in. */
+class OAuthUserError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status = 500) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function json(payload: unknown, status = 200): Response {
   return Response.json(payload, {
     status,
@@ -155,6 +165,14 @@ function disabledResponse(): Response {
 
 function errorResponse(message: string, status = 400): Response {
   return json({ error: message }, status);
+}
+
+// User-facing OAuth problems keep their message; anything else (missing secrets,
+// storage or provider errors) is logged and answered generically.
+function oauthFailure(error: unknown, stage: string, publicMessage: string, status: number): Response {
+  if (error instanceof OAuthUserError) return errorResponse(error.message, error.status);
+  console.error(`Google OAuth ${stage} failed`, error instanceof Error ? error.message : String(error));
+  return errorResponse(publicMessage, status);
 }
 
 function redirect(location: string, cookies: string[] = []): Response {
@@ -307,7 +325,7 @@ async function googleUserInfo(accessToken: string): Promise<Required<Pick<Google
   if (!response.ok) throw new Error(`Google userinfo failed with HTTP ${response.status}.`);
   const profile = await response.json() as GoogleUserInfo;
   if (!profile.sub || !profile.email || profile.email_verified !== true) {
-    throw new Error("Google account does not provide a verified email address.");
+    throw new OAuthUserError("Google account does not provide a verified email address.");
   }
   return profile as Required<Pick<GoogleUserInfo, "sub" | "email">> & GoogleUserInfo;
 }
@@ -360,6 +378,14 @@ async function upsertUser(db: D1Database, profile: Required<Pick<GoogleUserInfo,
       .run();
     return existing.id;
   }
+  // Never silently link a Google identity to an existing password account: that
+  // email was never verified, so linking would allow account pre-hijacking.
+  const emailOwner = await db.prepare("SELECT id FROM users WHERE email = ? LIMIT 1")
+    .bind(profile.email.toLowerCase())
+    .first<{ id: string }>();
+  if (emailOwner?.id) {
+    throw new OAuthUserError("An account with this email already exists. Sign in with your email and password.", 409);
+  }
   const id = `usr_${crypto.randomUUID()}`;
   await db.prepare(`INSERT INTO users (
     id, google_sub, email, email_verified, name, picture_url, created_at, updated_at
@@ -395,7 +421,7 @@ async function saveGmailConnection(
   const refreshToken = required(tokens.refresh_token, "Google refresh token");
   const profile = await gmailProfile(accessToken);
   if (profile.emailAddress !== user.email.toLowerCase()) {
-    throw new Error("Connect the same Google account that is signed in to GimmeJob.");
+    throw new OAuthUserError("Connect the same Google account that is signed in to GimmeJob.", 409);
   }
   const now = new Date();
   const tokenExpiresAt = typeof tokens.expires_in === "number"
@@ -460,7 +486,7 @@ export async function handleGoogleOAuthStart(request: Request, env: MultiUserAut
 
     return redirect(authorization.toString(), [secureCookie(OAUTH_STATE_COOKIE, state, OAUTH_ATTEMPT_SECONDS)]);
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : "Unable to start Google OAuth.", 503);
+    return oauthFailure(error, "start", "Google sign-in is temporarily unavailable.", 503);
   }
 }
 
@@ -513,7 +539,7 @@ export async function handleGoogleOAuthCallback(request: Request, env: MultiUser
     destination.searchParams.set("gmail", "connected");
     return redirect(`${destination.pathname}${destination.search}`, [clearOAuthStateCookie()]);
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : "Google OAuth failed.", 500);
+    return oauthFailure(error, "callback", "Google sign-in failed. Try again.", 500);
   }
 }
 

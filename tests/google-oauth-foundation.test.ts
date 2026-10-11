@@ -108,6 +108,11 @@ class FakeDb {
         expires_at: row.expiresAt,
       };
     }
+    if (normalized.startsWith("SELECT id FROM users WHERE email")) {
+      const email = String(values[0]);
+      const user = [...this.users.values()].find((candidate) => candidate.email === email);
+      return user ? { id: user.id } : null;
+    }
     if (normalized.startsWith("SELECT id FROM users WHERE google_sub")) {
       const id = this.userByGoogleSub.get(String(values[0]));
       return id ? { id } : null;
@@ -438,4 +443,38 @@ test("logout removes server session and clears cookie", async () => {
   assert.equal(db.sessions.size, 0);
   assert.match(response.headers.get("set-cookie") ?? "", /gimmejob_user_session=;/);
   assert.match(clearSessionCookie(), /Max-Age=0/);
+});
+
+test("Google sign-in never links to an existing password account with the same email", async () => {
+  const db = new FakeDb();
+  db.users.set("usr_password", { id: "usr_password", googleSub: "local:usr_password", email: "person@example.com", name: null, pictureUrl: null });
+  const start = await handleGoogleOAuthStart(new Request("https://gimme-job.com/auth/google/start"), env(db));
+  const state = stateFromStart(start);
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = googleFetch();
+  try {
+    const callback = await handleGoogleOAuthCallback(
+      new Request(`https://gimme-job.com/auth/google/callback?code=login-code&state=${encodeURIComponent(state)}`, {
+        headers: { cookie: cookie(start, "gimmejob_oauth_state") },
+      }),
+      env(db),
+    );
+    assert.equal(callback.status, 409);
+    assert.match(String((await callback.json() as Record<string, unknown>).error), /already exists/);
+    assert.equal(db.users.size, 1);
+    assert.equal(db.sessions.size, 0);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("OAuth configuration errors are not echoed to the browser", async (t) => {
+  t.mock.method(console, "error", () => undefined);
+  const response = await handleGoogleOAuthStart(
+    new Request("https://gimme-job.com/auth/google/start"),
+    env(new FakeDb(), { GOOGLE_OAUTH_CLIENT_SECRET: "" }),
+  );
+  assert.equal(response.status, 503);
+  const payload = await response.json() as Record<string, unknown>;
+  assert.equal(payload.error, "Google sign-in is temporarily unavailable.");
 });

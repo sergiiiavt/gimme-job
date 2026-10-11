@@ -275,6 +275,11 @@ async function main() {
   if (explicitMcpServiceToken && explicitMcpServiceToken.length < 32) throw new Error("MCP_SERVICE_TOKEN must contain at least 32 characters when configured separately.");
   if (ragServiceToken && ragServiceToken.length < 32) throw new Error("GIMMEJOB_RAG_SERVICE_TOKEN must contain at least 32 characters when configured.");
   if (aiService.configured && !ragServiceToken) throw new Error("GIMMEJOB_RAG_SERVICE_TOKEN is required when GimmeJob AI is configured.");
+  if (!explicitMcpServiceToken) {
+    // The MCP token can read any tenant's learning progress and analyses; sharing
+    // it with the site password widens both secrets' blast radius.
+    deploymentWarning("MCP_SERVICE_TOKEN is not configured, so APP_PASSWORD is being used as the cross-tenant MCP service token. Add a dedicated random MCP_SERVICE_TOKEN (32+ characters) repository secret and update the local agent's MCP token.");
+  }
 
   await ensureBuildArtifact();
   const ragEnabled = tryEnsureVectorIndex();

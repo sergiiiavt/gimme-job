@@ -114,7 +114,10 @@ export async function GET(request: Request, context: RouteContext) {
     if (route[0] === "dashboard") {
       // The dashboard loaders bootstrap the catalogue themselves; calling it
       // here too spent a second COUNT(*) on every page load.
-      return Response.json(await currentDashboard(request));
+      // A signed-in caller's dashboard carries private tracking state on a public URL.
+      return Response.json(await currentDashboard(request), tenant.authenticated
+        ? { headers: { "cache-control": "private, no-store", vary: "cookie" } }
+        : undefined);
     }
     if (route[0] === "interview-progress") {
       if (!tenant.multiUser) return Response.json(await interviewProgress());
@@ -152,7 +155,7 @@ export async function GET(request: Request, context: RouteContext) {
       return new Response(Uint8Array.from(pdf).buffer, {
         headers: {
           "cache-control": "no-store",
-          "content-disposition": `attachment; filename="${resumeMatch[1]}-resume.pdf"`,
+          "content-disposition": `attachment; filename="${resumeMatch[1].replace(/[^A-Za-z0-9._-]/g, "_")}-resume.pdf"`,
           "content-type": "application/pdf",
         },
       });
@@ -222,7 +225,11 @@ export async function POST(request: Request, context: RouteContext) {
       if (tenant.multiUser && !userId) {
         return Response.json({ ok: false, error: "Authentication required." }, { status: 401, headers: { "cache-control": "no-store" } });
       }
-      const result = await analyzeJobsForUser(userId, typeof payload.jobId === "string" ? payload.jobId : undefined, typeof payload.limit === "number" ? payload.limit : 25);
+      // Tenants analyse one vacancy per request (the UI always names it); batch
+      // scoring of up to 100 vacancies is an owner-only, single-user operation.
+      const requestedLimit = typeof payload.limit === "number" ? payload.limit : 25;
+      const limit = tenant.multiUser ? 1 : requestedLimit;
+      const result = await analyzeJobsForUser(userId, typeof payload.jobId === "string" ? payload.jobId : undefined, limit);
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }
     if (route[0] === "analyze-resume") {

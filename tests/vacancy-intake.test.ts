@@ -134,6 +134,22 @@ test("publicHttpsUrl permits public HTTPS and blocks local/private sources", () 
   assert.throws(() => publicHttpsUrl("https://localhost/feed"), /public HTTPS/);
   assert.throws(() => publicHttpsUrl("https://127.0.0.1/feed"), /public HTTPS/);
   assert.throws(() => publicHttpsUrl("https://192.168.1.4/feed"), /public HTTPS/);
+  for (const bypass of [
+    "https://[::1]/feed",
+    "https://[::ffff:127.0.0.1]/feed",
+    "https://[fd00::1]/feed",
+    "https://0.0.0.0/feed",
+    "https://100.64.0.1/feed",
+    "https://2130706433/feed",
+    "https://0x7f.0.0.1/feed",
+    "https://localhost./feed",
+    "https://api.localhost/feed",
+    "https://metadata.google.internal/feed",
+    "https://intranet/feed",
+  ]) {
+    assert.throws(() => publicHttpsUrl(bypass), /public HTTPS/, bypass);
+  }
+  assert.equal(publicHttpsUrl("https://boards.greenhouse.io/example"), "https://boards.greenhouse.io/example");
 });
 
 test("cloud vacancy sources leave DOU to the off-platform importer and report intentional skips", () => {

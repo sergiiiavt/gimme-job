@@ -26,6 +26,7 @@ import { buildSources } from "./src/sources/index.js";
 import { collectAllSources } from "./src/sources/types.js";
 import { localAgentInstanceId } from "./src/identity.js";
 import { listenOnAvailablePort } from "./src/port.js";
+import { isLoopbackHost, safeDownloadName } from "./src/host-guard.js";
 import { createLocalVacancySyncState } from "./src/vacancy-sync-state.js";
 
 loadEnvironment();
@@ -237,6 +238,10 @@ function normalizeImportedJob(value: unknown, index: number): JobInput {
 }
 
 async function route(request: IncomingMessage, response: ServerResponse) {
+  if (!isLoopbackHost(request.headers.host)) {
+    json(response, 403, { ok: false, error: "Host is not allowed." });
+    return;
+  }
   const origin = request.headers.origin;
   if (origin && !allowedOrigins.has(origin)) {
     json(response, 403, { ok: false, error: "Origin is not allowed." });
@@ -349,7 +354,7 @@ async function route(request: IncomingMessage, response: ServerResponse) {
       "access-control-allow-headers": "content-type",
       "access-control-allow-methods": "GET, POST, PUT, PATCH, OPTIONS",
       "cache-control": "no-store",
-      "content-disposition": `attachment; filename="${jobIdValue}-resume.pdf"`,
+      "content-disposition": `attachment; filename="${safeDownloadName(jobIdValue)}-resume.pdf"`,
       "content-type": "application/pdf",
     });
     response.end(Buffer.from(base64ToBytes(pdfBase64)));

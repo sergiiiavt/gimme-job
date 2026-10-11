@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections import defaultdict
-from dataclasses import dataclass
+import time
+from collections import deque
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -15,6 +16,12 @@ MAX_MESSAGE_BYTES = 700_000
 MAX_TEXT_MESSAGE_CHARS = 4_000
 MAX_IMAGE_DATA_URL_CHARS = 520_000
 MAX_ROOM_CONNECTIONS = 32
+# The relay is public and reachable directly on the AI origin, so it bounds its
+# own footprint instead of relying on the Worker's per-address limit.
+MAX_ROOMS = 200
+MAX_TOTAL_CONNECTIONS = 1_000
+MAX_MESSAGES_PER_WINDOW = 20
+MESSAGE_WINDOW_SECONDS = 10.0
 MAX_DELAY_MS = 5_000
 IMAGE_DATA_URL_PREFIXES = (
     "data:image/jpeg;base64,",
@@ -37,21 +44,47 @@ class Client:
     websocket: WebSocket
 
 
+@dataclass
+class MessageRateLimiter:
+    """Sliding-window cap on frames accepted from one connection."""
+
+    limit: int = MAX_MESSAGES_PER_WINDOW
+    window_seconds: float = MESSAGE_WINDOW_SECONDS
+    _accepted: deque[float] = field(default_factory=deque)
+
+    def allow(self, now: float | None = None) -> bool:
+        current = time.monotonic() if now is None else now
+        while self._accepted and current - self._accepted[0] >= self.window_seconds:
+            self._accepted.popleft()
+        if len(self._accepted) >= self.limit:
+            return False
+        self._accepted.append(current)
+        return True
+
+
 class RoomManager:
     def __init__(self) -> None:
-        self._rooms: dict[str, dict[str, WebSocket]] = defaultdict(dict)
+        self._rooms: dict[str, dict[str, WebSocket]] = {}
         self._lock = asyncio.Lock()
+
+    def _rejection(self, room: str) -> str | None:
+        if sum(len(connections) for connections in self._rooms.values()) >= MAX_TOTAL_CONNECTIONS:
+            return "Playground is at capacity."
+        connections = self._rooms.get(room)
+        if connections is None:
+            return "Too many active rooms." if len(self._rooms) >= MAX_ROOMS else None
+        return "Room is full." if len(connections) >= MAX_ROOM_CONNECTIONS else None
 
     async def connect(self, room: str, websocket: WebSocket) -> Client | None:
         await websocket.accept()
         async with self._lock:
-            connections = self._rooms[room]
-            if len(connections) >= MAX_ROOM_CONNECTIONS:
-                await websocket.send_json(_event("error", message="Room is full."))
-                await websocket.close(code=1013, reason="Room is full")
+            rejection = self._rejection(room)
+            if rejection:
+                await websocket.send_json(_event("error", message=rejection))
+                await websocket.close(code=1013, reason=rejection.rstrip("."))
                 return None
             client = Client(id=uuid4().hex[:12], websocket=websocket)
-            connections[client.id] = websocket
+            self._rooms.setdefault(room, {})[client.id] = websocket
             return client
 
     async def disconnect(self, room: str, client_id: str) -> None:
@@ -193,9 +226,13 @@ async def websocket_playground(websocket: WebSocket, room: str = Query(default="
         _event("presence", room=room_name, roomConnections=await rooms.count(room_name)),
     )
 
+    limiter = MessageRateLimiter()
     try:
         while True:
             text = await websocket.receive_text()
+            if not limiter.allow():
+                await websocket.send_json(_event("error", message="Too many messages. Slow down and try again."))
+                continue
             if len(text.encode("utf-8")) > MAX_MESSAGE_BYTES:
                 await websocket.send_json(_event("error", message=f"Message exceeds {MAX_MESSAGE_BYTES} bytes."))
                 continue
