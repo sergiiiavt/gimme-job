@@ -1268,5 +1268,135 @@
     "role": "Metamorphic relations as test oracles when the correct output is unknown.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "lewis-rag",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "publisher": "Lewis et al. — arXiv / NeurIPS 2020",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2005.11401",
+    "role": "Introduces retrieval-augmented generation: a generator conditioned on passages retrieved for each question.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "gao-rag-survey",
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "publisher": "Gao et al. — arXiv 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2312.10997",
+    "role": "Overview of RAG architectures, retrieval and augmentation techniques, and their evaluation.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "es-ragas",
+    "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+    "publisher": "Es et al. — arXiv / EACL 2024 demo",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2309.15217",
+    "role": "Reference-free RAG metrics for faithfulness, answer relevance and context relevance.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "ragas-docs",
+    "title": "Ragas documentation",
+    "publisher": "Ragas",
+    "kind": "tool",
+    "url": "https://docs.ragas.io/en/stable/",
+    "role": "Library implementations of context precision and recall, faithfulness and answer relevance.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "saad-falcon-ares",
+    "title": "ARES: An Automated Evaluation Framework for Retrieval-Augmented Generation Systems",
+    "publisher": "Saad-Falcon et al. — arXiv / NAACL 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2311.09476",
+    "role": "Trained judges for context relevance, faithfulness and answer relevance, calibrated with a small set of human labels.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "trulens-rag-triad",
+    "title": "RAG Triad",
+    "publisher": "TruLens",
+    "kind": "tool",
+    "url": "https://www.trulens.org/getting_started/core_concepts/rag_triad/",
+    "role": "Context relevance, groundedness and answer relevance as three checks that locate RAG failures.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "min-factscore",
+    "title": "FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation",
+    "publisher": "Min et al. — arXiv / EMNLP 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2305.14251",
+    "role": "Factual precision measured over atomic facts checked against a knowledge source.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "jarvelin-ndcg",
+    "title": "Cumulated Gain-Based Evaluation of IR Techniques",
+    "publisher": "Järvelin and Kekäläinen — ACM Transactions on Information Systems 2002",
+    "kind": "paper",
+    "url": "https://doi.org/10.1145/582415.582418",
+    "role": "Discounted cumulative gain and its normalized form nDCG for graded relevance.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "manning-ir-evaluation",
+    "title": "Evaluation in information retrieval (Introduction to Information Retrieval, chapter 8)",
+    "publisher": "Manning, Raghavan and Schütze — Cambridge University Press 2008",
+    "kind": "article",
+    "url": "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-in-information-retrieval-1.html",
+    "role": "Relevance judgements, pooling, precision, recall and ranked-retrieval metrics.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "robertson-bm25",
+    "title": "The Probabilistic Relevance Framework: BM25 and Beyond",
+    "publisher": "Robertson and Zaragoza — Foundations and Trends in Information Retrieval 2009",
+    "kind": "paper",
+    "url": "https://doi.org/10.1561/1500000019",
+    "role": "The BM25 ranking function implemented in the example project.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "thakur-beir",
+    "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models",
+    "publisher": "Thakur et al. — arXiv / NeurIPS 2021",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2104.08663",
+    "role": "Retrieval evaluation across domains; BM25 remains a strong baseline for dense retrievers.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "nogueira-reranking",
+    "title": "Passage Re-ranking with BERT",
+    "publisher": "Nogueira and Cho — arXiv 2019",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1901.04085",
+    "role": "Reranking first-stage candidates with a cross-encoder.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-contextual-retrieval",
+    "title": "Contextual Retrieval",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/news/contextual-retrieval",
+    "role": "Adding document context to chunks before embedding and BM25 indexing reduced failed retrievals by 49%, and by 67% with reranking.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

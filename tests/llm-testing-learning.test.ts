@@ -56,6 +56,7 @@ const courseFormatTopicIds = [
   "code-based-scorers",
   "model-graded-evaluation",
   "eval-statistics",
+  "rag-testing",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];

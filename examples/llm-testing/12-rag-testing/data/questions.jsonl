@@ -1,0 +1,12 @@
+{"question": "How long is the return window for unworn items?", "answer_sentence": "Unworn items with the tags attached can be returned within 30 days of delivery.", "relevant": ["returns-policy@2026-09#0"], "tenant": "public"}
+{"question": "Can sale items be returned?", "answer_sentence": "Sale items can be returned on the same terms.", "relevant": ["returns-policy@2026-09#1", "returns-policy@2026-09#2"], "tenant": "public"}
+{"question": "Where do I print the prepaid return label?", "answer_sentence": "Start a return at shop.example/returns and print the prepaid label.", "relevant": ["returns-policy@2026-09#1"], "tenant": "public"}
+{"question": "I paid with a gift card, can I get cash back?", "answer_sentence": "Items bought with a gift card are refunded as store credit.", "relevant": ["returns-policy@2026-09#2"], "tenant": "public"}
+{"question": "When will my refund reach my payment method?", "answer_sentence": "Refunds go to the original payment method within 5 business days after the return reaches our warehouse.", "relevant": ["refunds-policy@2026-09#0"], "tenant": "public"}
+{"question": "Are delivery costs refunded if I return part of the order?", "answer_sentence": "Delivery costs are refunded only when the whole order is returned.", "relevant": ["refunds-policy@2026-09#1"], "tenant": "public"}
+{"question": "How long does express delivery take and what does it cost?", "answer_sentence": "Express delivery takes 1-2 business days and costs 9 EUR.", "relevant": ["delivery-policy@2026-09#1"], "tenant": "public"}
+{"question": "Is standard delivery free for my order?", "answer_sentence": "Standard delivery takes 3-5 business days and is free for orders over 50 EUR.", "relevant": ["delivery-policy@2026-09#0"], "tenant": "public"}
+{"question": "What happened to order A-1042?", "answer_sentence": "The refund for order A-1042 was approved.", "relevant": ["ticket-olena#0"], "tenant": "customer-olena"}
+{"question": "Can I send back sneakers I already wore?", "answer_sentence": "Unworn items with the tags attached can be returned within 30 days of delivery.", "relevant": ["returns-policy@2026-09#0"], "tenant": "public"}
+{"question": "Do you ship to Antarctica?", "answer_sentence": null, "relevant": [], "tenant": "public"}
+{"question": "Can I pay with cryptocurrency?", "answer_sentence": null, "relevant": [], "tenant": "public"}
