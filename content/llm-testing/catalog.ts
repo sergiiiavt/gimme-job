@@ -25,8 +25,8 @@ import ragTesting from "./12-rag-testing.md?raw";
 import ragTestingUk from "./12-rag-testing.uk.md?raw";
 import agentTesting from "./13-agent-testing.md?raw";
 import agentTestingUk from "./13-agent-testing.uk.md?raw";
-import securityRedTeaming from "./19-security-red-teaming.md?raw";
-import securityRedTeamingUk from "./19-security-red-teaming.uk.md?raw";
+import securityRedTeaming from "./14-security-red-teaming.md?raw";
+import securityRedTeamingUk from "./14-security-red-teaming.uk.md?raw";
 import productionQuality from "./21-production-quality.md?raw";
 import productionQualityUk from "./21-production-quality.uk.md?raw";
 import proPractice from "./25-pro-practice.md?raw";
@@ -178,9 +178,9 @@ const topics: LlmTestingTopic[] = [
     label: "Security, red teaming and guardrails",
     labelUk: "Security, red teaming і guardrails",
     level: "advanced",
-    description: "OWASP Top 10 for LLM Applications, direct and indirect prompt injection, the lethal trifecta, jailbreaks, data leakage, bias and toxicity, automated red teaming, guardrail testing, MITRE ATLAS and writing findings.",
-    descriptionUk: "OWASP Top 10 for LLM Applications, direct та indirect prompt injection, lethal trifecta, jailbreaks, leakage даних, bias і toxicity, автоматизований red teaming, тестування guardrails, MITRE ATLAS і написання findings.",
-  }, securityRedTeaming, securityRedTeamingUk),
+    description: "Threat models and the OWASP Top 10 for LLM applications, prompt injection tested on the assumption that the model is fooled, jailbreaks with over-refusal, leakage and canaries, output handling, guardrails evaluated per attack category, counterfactual fairness, consumption limits and red teaming as a process.",
+    descriptionUk: "Моделі загроз і OWASP Top 10 для LLM applications, prompt injection, перевірена з припущенням, що модель обдурили, jailbreaks і надмірні відмови, витоки й canaries, обробка output, guardrails по категоріях атак, контрфактична справедливість, ліміти споживання і red teaming як процес.",
+  }, securityRedTeaming, securityRedTeamingUk, ["owasp-llm-top10", "willison-lethal-trifecta", "greshake-indirect-injection", "debenedetti-camel", "hines-spotlighting", "wallace-instruction-hierarchy", "zou-gcg", "anthropic-many-shot", "russinovich-crescendo", "mazeika-harmbench", "rottger-xstest", "carlini-extraction", "inan-llama-guard", "parrish-bbq", "garak", "pyrit", "promptfoo-red-team", "mitre-atlas", "nist-ai-600-1", "presidio", "owasp-xss-cheatsheet", "eu-ai-act"]),
   chapter({
     id: "production-quality",
     label: "Production quality",
