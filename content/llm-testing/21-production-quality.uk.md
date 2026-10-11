@@ -140,16 +140,6 @@ Advisor у цьому repository демонструє кілька з цих п�
 - Вимірюй TTFT, p95 latency, throttling і cost на успішну задачу.
 - Стався до змін моделі як до міграцій: повний suite, canary, rollback.
 
-## 12. Practice
-
-1. Додай GitHub Actions job, що запускає smoke eval suite на pull requests і падає на regression порівняно зі збереженим baseline.
-2. Інструментуй bot tracing-ом (Langfuse або Phoenix) з tokens, cost і retrieved IDs.
-3. Додай один online judge на 10% вибірки і dashboard його pass rate у часі.
-4. Зроби load test bot через k6 або Locust на трьох рівнях concurrency; покажи TTFT і p95.
-5. Мігруй bot на іншу модель за процесом з розділу 8 і напиши одну сторінку migration report.
-
-**Exit check:** погана зміна prompt блокується до merge, а падіння якості в production запускає alert з посиланнями на traces.
-
 ## Sources
 
 - [OpenTelemetry — semantic conventions for generative AI](https://opentelemetry.io/docs/specs/semconv/gen-ai/)

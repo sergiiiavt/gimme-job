@@ -103,7 +103,7 @@ Make tools fail on purpose:
 - malformed responses;
 - partial success (2 of 3 items updated);
 - slow responses that hit time limits;
-- **tool output containing instructions** (indirect prompt injection, see [Prompt injection and jailbreaks](/learn/llm?topic=prompt-injection)).
+- **tool output containing instructions** (indirect prompt injection, see [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming)).
 
 The agent should retry with limits, report the failure honestly, and never claim success.
 
@@ -133,16 +133,6 @@ You will rarely run them yourself. Study their design: how they build environmen
 - Use simulated users for multi-turn coverage; validate the simulator.
 - Report pass^k, steps, tokens and cost per scenario.
 - Inject tool failures and check for honest reporting.
-
-## 12. Practice
-
-1. Add two tools to your support bot: `verify_identity` and `issue_refund`, backed by a seeded fake environment.
-2. Write 30 single-step tool-selection tests and score them deterministically.
-3. Write 20 multi-turn scenarios driven by a user simulator with personas.
-4. Run each scenario 5 times and report success rate, pass^5, median steps and cost.
-5. Inject three kinds of tool failure and show how the agent behaves in each.
-
-**Exit check:** you report agent reliability over repeated runs, and every critical scenario checks both the final state and a safety constraint on the trajectory.
 
 ## Sources
 

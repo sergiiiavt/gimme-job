@@ -4,14 +4,6 @@
 
 Цей chapter точно формулює проблему. Він вводить словник, типи test oracles, що працюють для generative output, характеристики якості, які ви вимірюватимете, і lifecycle, у якому відбувається тестування LLM. Кожен наступний chapter спирається на ці визначення.
 
-**Після цього chapter ви вмієте:**
-
-- відрізняти model evaluation від тестування LLM system і визначати, що з цього належить вашій команді;
-- пояснити проблему test oracle для generative output і вибрати тип oracle для конкретної перевірки;
-- перелічити джерела варіативності output і пояснити, чому один успішний run — слабке evidence;
-- перетворити розмиту вимогу до LLM feature на вимірювані acceptance criteria;
-- послідовно використовувати базовий словник LLM evaluation.
-
 **Prerequisites:** базові поняття тестування (test basis, test oracle, test levels) з [QA fundamentals](/reference/qa-fundamentals) і достатньо Python, щоб читати короткі скрипти.
 
 ## Що ми називаємо LLM system
@@ -60,8 +52,8 @@ Training data and training process
 З цього випливають три наслідки, що формують решту курсу:
 
 - **Точні очікувані значення рідко працюють.** Потрібні інші типи oracles (наступний розділ).
-- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [Статистика для evaluation](/learn/llm?topic=eval-statistics)).
-- **Поведінка може дрейфувати без зміни code.** Версії треба фіксувати й записувати, а тестування продовжувати в production (див. [Observability і online evaluation](/learn/llm?topic=production-quality)).
+- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+- **Поведінка може дрейфувати без зміни code.** Версії треба фіксувати й записувати, а тестування продовжувати в production (див. [Якість у production](/learn/llm?topic=production-quality)).
 
 ## Проблема test oracle
 
@@ -146,6 +138,21 @@ answer 3: FAIL: longer than 80 words
 
 Model drift — не гіпотеза. Відоме дослідження 2023 року виміряло ті самі API-версії моделей з інтервалом три місяці й знайшло великі зміни поведінки на кількох задачах ([Chen, Zaharia and Zou](https://arxiv.org/abs/2307.09009)). Providers тепер пропонують зафіксовані snapshots саме для того, щоб ви контролювали, коли зміна до вас доходить.
 
+### Діагностика зміни без deployment
+
+Коли відповідь змінилася, хоча ніхто не деплоїв code, порівняйте traces хорошого і поганого run поле за полем:
+
+| Evidence у traces | Що означає різниця |
+|---|---|
+| Той самий input, відповіді чергуються при повторах | Варіативність sampling: вимірюйте rate замість судження за одним run |
+| Інша версія моделі чи serving fingerprint | Оновлення в provider або alias моделі, що переїхав |
+| Інші retrieved chunk IDs | Змінився index документів |
+| Інша версія prompt | Prompt змінили поза code release, наприклад у prompt-management tool |
+| Інша історія розмови чи профіль користувача | Поведінка залежить від стану |
+| Інші результати tools | Зовнішня система повернула інші дані |
+
+Кожен рядок потребує traces, що записують версії та context, тому [Якість у production](/learn/llm?topic=production-quality) розглядає tracing як передумову тестування.
+
 ### Чому один успішний run — слабке evidence
 
 Якщо feature правильна з імовірністю `p` на кожному незалежному run, то ймовірність, що `k` ручних спроб усі виглядатимуть правильними, дорівнює `p` у степені `k`. Скрипт нижче показує, як легко дефектна feature проходить швидку ручну перевірку і як спостережуваний pass rate наближається до справжнього лише після багатьох runs.
@@ -181,7 +188,35 @@ feature correct 70% of the time -> 5 tries all pass with probability 0.17
 10000 runs: observed pass rate 0.904
 ```
 
-Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. [Статистика для evaluation](/learn/llm?topic=eval-statistics) показує, якими великими мають бути ці вибірки.
+Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. Наступний підрозділ показує, скільки runs потребують такі твердження.
+
+### Скільки runs потрібно, щоб побачити рідкісний збій?
+
+Та сама арифметика відповідає на питання планування: скільки незалежних runs потрібно, щоб хоча б раз побачити збій? Якщо feature ламається з імовірністю `q` на run, то ймовірність не побачити жодного збою за `n` runs дорівнює `(1 − q)^n`. Вимога побачити збій з імовірністю щонайменше 95% дає `n ≥ log(0.05) / log(1 − q)`.
+
+```python
+import math
+
+# How many independent runs are needed to see at least one failure with 95% probability,
+# if the feature fails with probability q on each run?  Solve 1 - (1 - q) ** n >= 0.95.
+for q in [0.2, 0.05, 0.01]:
+    n = math.ceil(math.log(0.05) / math.log(1 - q))
+    print(f"failure rate {q:.0%}: need {n} runs")
+
+p_correct = 0.8
+print(f"80%-correct feature passes 4 manual checks with probability {p_correct ** 4:.2f}")
+```
+
+Output:
+
+```text
+failure rate 20%: need 14 runs
+failure rate 5%: need 59 runs
+failure rate 1%: need 299 runs
+80%-correct feature passes 4 manual checks with probability 0.41
+```
+
+Рідкісні збої потребують багатьох runs, щоб з'явитися хоча б раз. Тому evaluation datasets мають сотні cases, а production monitoring обов'язковий.
 
 ## Характеристики якості LLM features
 
@@ -259,12 +294,12 @@ Feature, що помиляється раз на десять, частіше п
 
 | Етап | Основні активності | Chapter |
 |---|---|---|
-| Design | Критерії якості, аналіз ризиків, evaluation plan | Цей chapter, [Human evaluation і governance](/learn/llm?topic=pro-practice) |
-| Build | Unit tests з fake models, рев'ю prompts і schemas | [Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model) |
-| Offline evaluation | Datasets, scorers, judges, статистика | [Методологія evaluation](/learn/llm?topic=evaluation-fundamentals) і наступні chapters |
-| Pre-release | Security testing, performance tests, release gates | [Red teaming і guardrails](/learn/llm?topic=security-red-teaming), [CI/CD, release gates і міграції](/learn/llm?topic=ci-release-gates) |
-| Release | Canary і shadow deployments, міграції моделей | [CI/CD, release gates і міграції](/learn/llm?topic=ci-release-gates) |
-| Production | Tracing, online evaluation, feedback loops | [Observability і online evaluation](/learn/llm?topic=production-quality) |
+| Design | Критерії якості, аналіз ризиків, evaluation plan | Цей chapter, [Benchmarks, human evaluation і governance](/learn/llm?topic=pro-practice) |
+| Build | Unit tests з fake models, рев'ю prompts і schemas | [Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy), [Structured output і validation](/learn/llm?topic=structured-output-validation) |
+| Offline evaluation | Datasets, scorers, judges, статистика | [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals) і наступні chapters |
+| Pre-release | Security testing, performance tests, release gates | [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming), [Якість у production](/learn/llm?topic=production-quality) |
+| Release | Canary і shadow deployments, міграції моделей | [Якість у production](/learn/llm?topic=production-quality) |
+| Production | Tracing, online evaluation, feedback loops | [Якість у production](/learn/llm?topic=production-quality) |
 
 ## Базовий словник
 
@@ -297,13 +332,12 @@ Feature, що помиляється раз на десять, частіше п
 
 | Частина | Chapters | Результат |
 |---|---|---|
-| Foundations | 1–3 | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
-| Побудова LLM applications | 4–9 | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
-| Evaluation | 10–15 | Ви вмієте проєктувати datasets, scorers, judges і статистично коректні порівняння |
-| RAG і agents | 16–17 | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
-| Security, safety і fairness | 18–20 | Ви вмієте атакувати, посилювати й аудитувати LLM систему |
-| Production | 21–23 | Ви вмієте запускати evaluation у CI, моніторити production і тестувати performance та cost |
-| Професійна практика | 24–26 | Ви вмієте вибирати моделі, проводити human evaluation, готувати governance evidence і вести роботу з якості |
+| Foundations | Чим особливе тестування LLM; Як LLM генерують текст; Embeddings і semantic similarity | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
+| Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
+| Evaluation | Методологія evaluation і datasets; LLM-as-a-judge | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
+| RAG і agents | Evaluation RAG систем; Evaluation agents і tool use | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
+| Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |
+| Професійна практика | Benchmarks, human evaluation і governance | Ви вмієте вибирати моделі, проводити human evaluation і готувати governance evidence |
 
 **Налаштування для практики:** Python 3.11 або новіший, virtual environment і доступ щонайменше до однієї моделі. Підійде платний API key будь-якого великого provider. Щоб практикуватися безкоштовно, запустіть open-weight модель локально через [Ollama](https://ollama.com/), яка надає OpenAI-compatible endpoint. Багато прикладів code в курсі самодостатні й запускаються прямо на сторінці кнопкою **Run**; приклади, що викликають реальні моделі чи встановлюють packages, призначені для вашої машини.
 
@@ -312,72 +346,9 @@ Feature, що помиляється раз на десять, частіше п
 - **Сприймати demo як тест.** Кілька гарних відповідей мало що доводять; див. ймовірності вище.
 - **Тестувати лише модель.** Більшість збоїв походить від prompts, retrieval, parsing і tools, які ви контролюєте.
 - **Використовувати exact-match oracles для вільного тексту.** Вони падають на правильних парафразах і привчають команду ігнорувати failures.
-- **Вибирати metrics до того, як подивилися на outputs.** Generic metrics часто не вимірюють нічого важливого для продукту. Почніть з error analysis (див. [Методологія evaluation](/learn/llm?topic=evaluation-fundamentals)).
+- **Вибирати metrics до того, як подивилися на outputs.** Generic metrics часто не вимірюють нічого важливого для продукту. Почніть з error analysis (див. [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)).
 - **Не записувати версії.** Результат без версії моделі, версії prompt і parameters неможливо відтворити чи порівняти.
 - **Ігнорувати latency і cost.** Правильна відповідь, що приходить запізно чи коштує задорого, — це невиконана вимога.
-
-## Вправи
-
-1. Класифікуйте кожну перевірку за типом oracle: (a) відповідь парситься як JSON; (b) друга модель вирішує, чи відповідь ввічлива; (c) відповіді на «де моє замовлення?» і «де моя посилка?» мають давати однаковий статус; (d) відповідь має містити факт «безкоштовна доставка від 50 EUR»; (e) support lead оцінює 50 відповідей.
-2. Перепишіть вимогу як щонайменше чотири тестовані критерії з вимірюванням, threshold і пріоритетом: *«Summarizer нотаток зустрічей має робити хороші summaries.»*
-3. Feature правильна у 80% випадків. Яка ймовірність, що вона пройде чотири ручні перевірки? Скільки незалежних runs потрібно, щоб з імовірністю 95% побачити хоча б один збій, якщо failure rate 20%, 5% чи 1%?
-4. RAG асистент у понеділок відповів правильно, а у вівторок — неправильно. Ніхто не деплоїв code. Перелічіть щонайменше чотири можливі причини та evidence, яке ви шукали б для кожної.
-
-:::details Розв'язок вправи 1
-
-(a) property oracle; (b) model-based oracle (LLM-as-a-judge); (c) metamorphic relation; (d) reference-based oracle (перевірка факту); (e) human judgement.
-
-:::
-
-:::details Розв'язок вправи 2
-
-Один з можливих варіантів:
-
-| ID | Критерій | Вимірювання | Threshold | Пріоритет |
-|---|---|---|---|---|
-| S1 | Кожне рішення й action item з нотаток є в summary | Checklist очікуваних пунктів для кожної тестової зустрічі, оцінка по пунктах | Щонайменше 90% пунктів відтворено | High |
-| S2 | Summary не містить рішень чи action items, яких немає в нотатках | Claim-level faithfulness judge, валідований на human labels | Щонайменше 98% summaries без непідтверджених claims | Critical |
-| S3 | Кожен action item називає відповідального, коли нотатки його називають | Deterministic check проти позначених відповідальних | Щонайменше 95% | Medium |
-| S4 | Довжина summary не більша за 200 слів | Підрахунок слів | 100% | Low |
-| S5 | Summary генерується швидше ніж за 10 секунд для нотаток до 5 000 слів | Вимірювання в performance test | p95 до 10 s | Medium |
-
-Головне: «добре» розкладено на recall, faithfulness, атрибуцію, довжину і latency — кожне з методом і threshold.
-
-:::
-
-:::details Розв'язок вправи 3
-
-Ймовірність пройти чотири перевірки — 0.8 у четвертому степені, приблизно 0.41. Кількість runs знаходимо з нерівності 1 − (1 − q)^n ≥ 0.95:
-
-```python
-import math
-
-# How many independent runs are needed to see at least one failure with 95% probability,
-# if the feature fails with probability q on each run?  Solve 1 - (1 - q) ** n >= 0.95.
-for q in [0.2, 0.05, 0.01]:
-    n = math.ceil(math.log(0.05) / math.log(1 - q))
-    print(f"failure rate {q:.0%}: need {n} runs")
-
-p_correct = 0.8
-print(f"80%-correct feature passes 4 manual checks with probability {p_correct ** 4:.2f}")
-```
-
-```text
-failure rate 20%: need 14 runs
-failure rate 5%: need 59 runs
-failure rate 1%: need 299 runs
-80%-correct feature passes 4 manual checks with probability 0.41
-```
-
-Рідкісні збої потребують багатьох runs, щоб з'явитися хоча б раз. Тому evaluation datasets мають сотні cases, а production monitoring обов'язковий.
-
-:::
-
-:::details Розв'язок вправи 4
-
-Можливі причини та evidence: (1) варіативність sampling — повторіть той самий запит кілька разів і подивіться, чи відповіді чергуються; (2) оновлення моделі в provider або alias, що переїхав, — порівняйте версію моделі в traces понеділка і вівторка; (3) змінився index документів — порівняйте retrieved chunk IDs в обох traces; (4) зміна prompt чи конфігурації поза repository code, наприклад у prompt-management tool, — перевірте версію prompt у traces; (5) інша історія розмови чи профіль користувача — порівняйте повний зібраний context; (6) tool або зовнішній API повернув інші дані — порівняйте результати tools у traces. Кожна з цих перевірок потребує traces із записаними версіями та context, тому chapter 21 розглядає tracing як передумову тестування.
-
-:::
 
 ## Підсумок
 

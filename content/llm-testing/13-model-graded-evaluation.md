@@ -132,16 +132,6 @@ Because outputs vary, one run is a sample, not a result.
 - Use metamorphic relations when the right answer is unknown.
 - Measure pass rates over repeated runs; report pass^k for reliability.
 
-## 11. Practice
-
-1. Label 60 of your bot's answers yourself for one criterion (for example FAITHFUL) with written reasons.
-2. Write a judge for that criterion. Measure TPR, TNR and Cohen's kappa against your labels.
-3. Improve the rubric, then validate on 40 new labelled answers you did not use while tuning.
-4. Add five metamorphic tests from section 7.
-5. Run your full suite five times and report per-case pass rate and pass^5. List the flaky cases and explain each.
-
-**Exit check:** you can show numbers for why you trust your judge, and your scorecard reports reliability over repeated runs.
-
 ## Sources
 
 - [Zheng et al. — Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685)

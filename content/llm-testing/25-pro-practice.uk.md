@@ -119,30 +119,7 @@ datasets (версіоновані, теговані, з контролем до
 - **Навчай розробників писати evals.** Якість масштабується, коли кожна feature team володіє своїми datasets.
 - **Знай, коли evals недостатньо:** деякі ризики потребують поетапного розгортання, human oversight або відмови від релізу.
 
-## 9. Capstone
-
-Об'єднай усе в один публічний portfolio project:
-
-1. support bot, який ви побудували під час курсу, розширений RAG і agent tools;
-2. версіонований golden dataset з failure taxonomy;
-3. deterministic checks, валідовані judges з опублікованою статистикою узгодженості, RAG і agent evals;
-4. red-team звіт з findings і виправленнями;
-5. CI pipeline з regression gates і tracing dashboard;
-6. опис методології: що виміряно, з confidence intervals, і що виміряти не вдалося.
-
-## 10. Кар'єра і portfolio
-
-Ролі, для яких підходить цей path: **AI QA engineer**, **LLM evaluation engineer**, **AI red teamer**, **ML quality lead** та SDETs в AI product teams.
-
-Щоб виділитися:
-
-- опублікуй capstone repository зі зрозумілим README;
-- напиши три короткі статті: калібрування judge, історія debugging RAG, red-team findings;
-- зроби merged pull request в open-source eval tool (promptfoo, DeepEval, Ragas, garak або Inspect);
-- тренуй інтерв'ю-вправу «спроєктуй eval план для цього продукту за 30 хвилин»: ризики, datasets, metrics, gates і monitoring;
-- готуйся за [AI & LLM QA interview questions](/interview/ai-llm).
-
-## 11. QA quick reference
+## 9. QA quick reference
 
 - Показуй кожен score з confidence interval; порівнюй версії paired аналізом.
 - Тримай held-out дані й стеж за overfitting і multiple comparisons.
@@ -150,16 +127,6 @@ datasets (версіоновані, теговані, з контролем до
 - Проводь human evaluation з guidelines, калібруванням і metrics узгодженості.
 - Мапуй ризики на тести, щоб мати governance evidence.
 - Погоджуй критерії релізу до тестування.
-
-## 12. Practice
-
-1. Перерахуй основні metrics bot з bootstrap 95% інтервалами і переоціни одне попереднє порівняння prompts як paired аналіз. Чи покращення було реальним?
-2. Запусти одну публічну benchmark task через lm-evaluation-harness або Inspect на двох open models і поясни, чому результат передбачає чи не передбачає якість твого bot.
-3. Напиши annotation guidelines для одного критерію і виміряй узгодженість між собою та ще однією людиною.
-4. Зістав ризики bot з категоріями NIST AI 600-1 і перелічи тести, що покривають кожну.
-5. Опублікуй capstone і зроби 10-хвилинну доповідь про методологію.
-
-**Exit check:** інші люди використовують твої evaluation results для рішень ship / no-ship, і ти можеш захистити кожне число разом з його невизначеністю.
 
 ## Sources
 

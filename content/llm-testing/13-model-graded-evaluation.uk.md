@@ -132,16 +132,6 @@ def test_prompt_builder_always_escapes_user_text(user_text):
 - Використовуй metamorphic relations, коли правильна відповідь невідома.
 - Вимірюй pass rates за повторних runs; для надійності показуй pass^k.
 
-## 11. Practice
-
-1. Сам познач 60 відповідей свого bot за одним критерієм (наприклад FAITHFUL) з письмовими причинами.
-2. Напиши judge для цього критерію. Виміряй TPR, TNR і Cohen's kappa проти своїх labels.
-3. Покращ rubric і перевір на 40 нових позначених відповідях, які не використовував під час тюнінгу.
-4. Додай п'ять metamorphic tests з розділу 7.
-5. Прожени весь suite п'ять разів і покажи pass rate для кожного case та pass^5. Перелічи flaky cases і поясни кожен.
-
-**Exit check:** ти можеш показати цифри, чому довіряєш своєму judge, а scorecard показує надійність за повторних runs.
-
 ## Sources
 
 - [Zheng et al. — Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685)

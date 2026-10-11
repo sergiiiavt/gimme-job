@@ -2,15 +2,6 @@
 
 To test a system well you need a working model of how it produces its output. You do not need the linear algebra of transformers, but you do need to know what a token is, how the next token is chosen, which parameters change that choice, why repeated runs differ, and how the training process shapes behaviours such as refusing, agreeing or inventing facts. Each of these mechanisms explains a family of defects you will meet in practice.
 
-**After this chapter you can:**
-
-- explain how text becomes tokens, and why token counts differ between languages;
-- describe the generation loop from context to logits to a sampled token;
-- compute softmax with temperature and apply top-k and top-p filtering by hand and in code;
-- explain why outputs can differ even at temperature 0;
-- connect pretraining, instruction tuning and preference tuning to testable behaviours;
-- design a long-context test and account for reasoning tokens in latency and cost tests.
-
 **Prerequisites:** [Why LLM testing is different](/learn/llm?topic=llm-testing-problem-space).
 
 ## Tokens and tokenization
@@ -130,7 +121,7 @@ for text in ["Can I return worn shoes?", "Чи можу я повернути н
 
 ### Chat templates and special tokens
 
-Chat APIs accept a list of messages with roles (system, user, assistant, tool). Before the model sees them, the provider renders the messages into one token sequence using a **chat template**: special tokens mark where each message starts and ends and which role it has. Two testing consequences follow. First, every message, tool definition and piece of retrieved text consumes context tokens. Second, user text that imitates role markers (for example a fake "system:" line) is a classic prompt-injection technique; [Prompt injection and jailbreaks](/learn/llm?topic=prompt-injection) covers it.
+Chat APIs accept a list of messages with roles (system, user, assistant, tool). Before the model sees them, the provider renders the messages into one token sequence using a **chat template**: special tokens mark where each message starts and ends and which role it has. Two testing consequences follow. First, every message, tool definition and piece of retrieved text consumes context tokens. Second, user text that imitates role markers (for example a fake "system:" line) is a classic prompt-injection technique; [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming) covers it.
 
 ## The generation loop
 
@@ -163,7 +154,7 @@ Processing has two phases with different performance characteristics:
 - **Prefill.** The model processes all input tokens in parallel and builds a cache of intermediate results (the **KV cache**). Prefill time grows with the input length and determines most of the **time to first token**.
 - **Decode.** The model generates output tokens one at a time, each reusing the cache. Decode time grows with the number of output tokens.
 
-So a long prompt mainly delays the first token, and a long answer mainly delays the last one. [Performance and cost testing](/learn/llm?topic=performance-cost) builds on this distinction.
+So a long prompt mainly delays the first token, and a long answer mainly delays the last one. [Production quality](/learn/llm?topic=production-quality) builds on this distinction.
 
 ## Softmax, temperature, top-k and top-p
 
@@ -264,7 +255,7 @@ Read the result as a tester. The model "knows" the right answer in the sense tha
 | Extraction, classification, structured output | Temperature 0 or close to it | One correct answer; variety is a defect | Still run cases several times: temperature 0 is not deterministic |
 | Question answering from documents | Low temperature | Stay close to the most likely, grounded answer | Measure faithfulness, not only correctness |
 | Creative writing, brainstorming | Temperature around 0.7–1.0 | Variety is the point | Measure distributions (quality across many samples), not single outputs |
-| Code generation with multiple attempts | Moderate temperature, several samples | Diversity raises the chance one attempt passes tests | Report pass@k, see [Statistics for evaluation](/learn/llm?topic=eval-statistics) |
+| Code generation with multiple attempts | Moderate temperature, several samples | Diversity raises the chance one attempt passes tests | Report pass@k, see [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation) |
 
 Two rules apply everywhere. **Test at the production settings**, because a prompt evaluated at temperature 0 may behave differently at 0.7. And **change one sampling parameter at a time** when comparing runs. Note also that some models, especially reasoning models, fix or ignore sampling parameters; check the provider documentation before assuming a parameter has an effect.
 
@@ -325,6 +316,15 @@ A difference of a few quadrillionths changed the chosen token. Real near-ties ar
 Other sources add to this: the provider may route your request to different hardware, update the serving software or the model snapshot, and some architectures route tokens through different expert sub-networks depending on the batch. A few APIs accept a `seed` parameter for best-effort reproducibility and return a fingerprint of the serving configuration; treat that as a convenience for debugging, not as a guarantee.
 
 **Testing consequence:** design every evaluation to tolerate variation. Run important cases several times, assert on properties and rates rather than exact strings, and record the model version and parameters with every result.
+
+### When a temperature-0 test flips
+
+A typical symptom: an extraction test alternates between two outputs that differ in one word. Make such a test robust without hiding real defects:
+
+- assert on the extracted values after the normalization the specification allows (case, whitespace, accepted synonyms), not on the full string;
+- run the case several times and require a pass rate instead of a single pass;
+- pin the model version and record the serving fingerprint when the API returns one;
+- never widen an assertion until it always passes: if one of the two outputs is actually wrong, the test must keep failing on it.
 
 ## How training shapes testable behaviour
 
@@ -449,6 +449,19 @@ length  depth  accuracy
 
 Needle tests measure retrieval of a single explicit fact, which is the easiest long-context task. Real features also need multi-fact reasoning over long inputs, so treat a passing needle test as a necessary, not a sufficient, condition. Also test what your application does **before** the limit: which messages or documents are dropped when a conversation grows, whether the system prompt survives truncation, and how the user is told that a document was too long.
 
+### Designing a long-context test plan
+
+For a feature that answers questions about uploaded contracts of up to 150 pages:
+
+| Dimension | Values |
+|---|---|
+| Document length | 5, 50 and 150 pages, plus one document above the limit |
+| Position of the relevant clause | Start, 25%, 50%, 75%, end |
+| Question type | Single fact lookup; comparison of two clauses far apart; aggregation such as "list all termination conditions" |
+| Repetitions | 3–5 per cell, because of output variability |
+| Scoring | Deterministic checks against labelled values for facts; a validated judge or human review for multi-clause answers |
+| Report | Accuracy per length and position; latency and cost per length; the behaviour above the limit |
+
 ## Reasoning models
 
 Some models generate a hidden or summarized chain of intermediate **reasoning tokens** before the final answer. Providers expose a setting such as a reasoning effort level or a thinking-token budget. This improves performance on multi-step problems but changes the testing picture:
@@ -467,65 +480,6 @@ Some models generate a hidden or summarized chain of intermediate **reasoning to
 - **Treating a refusal as a pass.** A refusal of a legitimate request is a failure of helpfulness.
 - **Trusting the model's confidence wording** or its displayed reasoning as evidence of correctness.
 - **Declaring long-context support after one needle test** at one depth.
-
-## Exercises
-
-1. Compute by hand, then in code, the softmax of logits `[2.0, 1.0, 0.1]` at temperature 1.0 and at 0.5. What happens to the probability of the least likely token?
-2. A distribution over five tokens is `[0.50, 0.25, 0.15, 0.07, 0.03]`. Which tokens remain after top-k with k = 2? After top-p with p = 0.8? After top-p with p = 0.9?
-3. A user reports that the assistant answered "There are 2 r's in strawberry". Explain the failure using tokenization, and propose how the product should handle such requests.
-4. Design a long-context test plan for a feature that answers questions about uploaded contracts of up to 150 pages: what you vary, how many repetitions, how you score, and what you report.
-5. An extraction test at temperature 0 alternates between two outputs that differ in one word. List three plausible causes and two ways to make the test robust without hiding real defects.
-
-:::details Solution to exercise 1
-
-exp(2) = 7.389, exp(1) = 2.718, exp(0.1) = 1.105; the sum is 11.212, so the probabilities are 0.659, 0.242 and 0.099. At temperature 0.5 the logits are doubled first, which sharpens the distribution:
-
-```python
-import math
-
-
-def softmax(values: list[float], temperature: float = 1.0) -> list[float]:
-    exps = [math.exp(value / temperature) for value in values]
-    total = sum(exps)
-    return [round(value / total, 3) for value in exps]
-
-
-print("T=1.0:", softmax([2.0, 1.0, 0.1]))
-print("T=0.5:", softmax([2.0, 1.0, 0.1], 0.5))
-```
-
-```text
-T=1.0: [0.659, 0.242, 0.099]
-T=0.5: [0.864, 0.117, 0.019]
-```
-
-The least likely token drops from about 10% to about 2%. Lower temperature concentrates probability on the leading tokens.
-
-:::
-
-:::details Solution to exercise 2
-
-Top-k with k = 2 keeps the first two tokens, renormalized to 0.667 and 0.333. Top-p with p = 0.8: cumulative sums are 0.50, 0.75, 0.90, so the smallest set reaching 0.8 is the first three tokens (0.50 + 0.25 + 0.15 = 0.90), renormalized to 0.556, 0.278 and 0.167. Top-p with p = 0.9 also stops at three tokens, because 0.90 reaches the threshold exactly. Top-p adapts the number of kept tokens to the shape of the distribution; top-k does not.
-
-:::
-
-:::details Solution to exercise 3
-
-"strawberry" is split into a few multi-letter tokens, so the model never sees the individual letters it is asked to count. It answers from patterns in training data, which can be wrong. The product should route such deterministic text operations to code (a tool that counts characters), or the requirement should state that the assistant does not perform character-level operations. A test set for the feature should include such requests and check that the answer comes from the tool result.
-
-:::
-
-:::details Solution to exercise 4
-
-Vary the document length (for example 5, 50 and 150 pages), the position of the relevant clause (start, 25%, 50%, 75%, end), and the question type (single fact lookup, comparison of two clauses in different places, aggregation such as "list all termination conditions"). Use real contracts or realistic synthetic ones, with labelled answers. Repeat each cell at least 3–5 times because of output variability. Score fact questions with deterministic checks against labelled values and multi-clause questions with a validated judge or human review. Report accuracy per cell as a table of length by position, plus latency and cost per length. Also test the behaviour above 150 pages: the expected error message or truncation strategy.
-
-:::
-
-:::details Solution to exercise 5
-
-Causes: (1) a near-tie between two tokens combined with batch-dependent floating-point reduction order; (2) the provider routing requests to different hardware or serving versions; (3) a model snapshot update behind an alias; (4) non-pinned retrieval or time-dependent context. To make the test robust: assert on the extracted field values after normalization (case, whitespace, synonyms defined in the specification) rather than on the full string; run the case several times and require a pass rate threshold; pin the model version and record the serving fingerprint when the API returns one. Do not simply widen the assertion until it always passes: if one of the two outputs is actually wrong, the test must keep failing on it.
-
-:::
 
 ## Summary
 

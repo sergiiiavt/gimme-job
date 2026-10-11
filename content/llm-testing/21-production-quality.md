@@ -140,16 +140,6 @@ The advisor in this repository shows several of these practices:
 - Measure TTFT, p95 latency, throttling and cost per successful task.
 - Treat model changes as migrations: full suite, canary, rollback.
 
-## 12. Practice
-
-1. Add a GitHub Actions job that runs your smoke eval suite on pull requests and fails on a regression compared with a stored baseline.
-2. Instrument your bot with tracing (Langfuse or Phoenix) including tokens, cost and retrieved IDs.
-3. Add one online judge on a 10% sample and a dashboard of its pass rate over time.
-4. Load-test the bot with k6 or Locust at three concurrency levels; report TTFT and p95.
-5. Migrate the bot to a different model using the process in section 8 and write a one-page migration report.
-
-**Exit check:** a bad prompt change is blocked before merge, and a production quality drop triggers an alert with linked traces.
-
 ## Sources
 
 - [OpenTelemetry — semantic conventions for generative AI](https://opentelemetry.io/docs/specs/semconv/gen-ai/)

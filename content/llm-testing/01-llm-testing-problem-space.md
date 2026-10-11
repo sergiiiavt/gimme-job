@@ -4,14 +4,6 @@ Testing software that uses a large language model (LLM) breaks several assumptio
 
 This chapter defines the problem precisely. It introduces the vocabulary, the kinds of test oracles that work for generative output, the quality characteristics you will measure, and the lifecycle in which LLM testing happens. Every later chapter builds on these definitions.
 
-**After this chapter you can:**
-
-- distinguish model evaluation from LLM system testing and say which one your team owns;
-- explain the test oracle problem for generative output and choose an oracle type for a given check;
-- list the sources of output variability and explain why one passing run is weak evidence;
-- turn a vague requirement for an LLM feature into measurable acceptance criteria;
-- use the core vocabulary of LLM evaluation consistently.
-
 **Prerequisites:** basic software-testing concepts (test basis, test oracle, test levels) from [QA fundamentals](/reference/qa-fundamentals), and enough Python to read short scripts.
 
 ## What we mean by an LLM system
@@ -60,8 +52,8 @@ The table compares a conventional feature, such as a price calculator, with an L
 Three consequences follow, and they shape the rest of the course:
 
 - **Exact expected values rarely work.** You need other kinds of oracles (next section).
-- **One run is a sample, not a verdict.** You must run cases repeatedly and reason about rates (see [Statistics for evaluation](/learn/llm?topic=eval-statistics)).
-- **Behaviour can drift with no code change.** You must pin and record versions and keep testing in production (see [Observability and online evaluation](/learn/llm?topic=production-quality)).
+- **One run is a sample, not a verdict.** You must run cases repeatedly and reason about rates (see [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+- **Behaviour can drift with no code change.** You must pin and record versions and keep testing in production (see [Production quality](/learn/llm?topic=production-quality)).
 
 ## The test oracle problem
 
@@ -146,6 +138,21 @@ When an LLM feature gives a different result today than yesterday, one of these 
 
 Model drift is not hypothetical. A widely cited 2023 study measured the same API model versions three months apart and found large changes in behaviour on several tasks ([Chen, Zaharia and Zou](https://arxiv.org/abs/2307.09009)). Providers now offer pinned snapshots precisely so that you can control when a change reaches you.
 
+### Diagnosing a change with no deployment
+
+When an answer changes although nobody deployed code, compare the traces of a good run and a bad run field by field:
+
+| Evidence in the traces | What a difference means |
+|---|---|
+| Same input, answers alternate on re-runs | Sampling variability: measure the rate instead of judging one run |
+| Different model version or serving fingerprint | Provider update or a moved model alias |
+| Different retrieved chunk IDs | The document index changed |
+| Different prompt version | A prompt was changed outside the code release, for example in a prompt-management tool |
+| Different conversation history or user profile | State-dependent behaviour |
+| Different tool results | An external system returned other data |
+
+Every row needs traces that record versions and context, which is why [Production quality](/learn/llm?topic=production-quality) treats tracing as a testing prerequisite.
+
 ### Why one passing run is weak evidence
 
 If a feature is correct with probability `p` on each independent run, the probability that `k` manual tries all look correct is `p` to the power `k`. The script below shows how easily a flawed feature survives a quick manual check, and how the observed pass rate only settles near the true rate after many runs.
@@ -181,7 +188,35 @@ feature correct 70% of the time -> 5 tries all pass with probability 0.17
 10000 runs: observed pass rate 0.904
 ```
 
-A feature that fails one time in ten passes five manual tries more often than not, and in this simulation even ten runs showed a perfect score. Quality claims about LLM features are statements about rates, and rates need samples. [Statistics for evaluation](/learn/llm?topic=eval-statistics) shows how large those samples must be.
+A feature that fails one time in ten passes five manual tries more often than not, and in this simulation even ten runs showed a perfect score. Quality claims about LLM features are statements about rates, and rates need samples. The next subsection shows how many runs such claims need.
+
+### How many runs reveal a rare failure?
+
+The same arithmetic answers a planning question: how many independent runs are needed to see a failure at least once? If a feature fails with probability `q` per run, the chance of seeing no failure in `n` runs is `(1 − q)^n`. Requiring at least a 95% chance of seeing a failure gives `n ≥ log(0.05) / log(1 − q)`.
+
+```python
+import math
+
+# How many independent runs are needed to see at least one failure with 95% probability,
+# if the feature fails with probability q on each run?  Solve 1 - (1 - q) ** n >= 0.95.
+for q in [0.2, 0.05, 0.01]:
+    n = math.ceil(math.log(0.05) / math.log(1 - q))
+    print(f"failure rate {q:.0%}: need {n} runs")
+
+p_correct = 0.8
+print(f"80%-correct feature passes 4 manual checks with probability {p_correct ** 4:.2f}")
+```
+
+Output:
+
+```text
+failure rate 20%: need 14 runs
+failure rate 5%: need 59 runs
+failure rate 1%: need 299 runs
+80%-correct feature passes 4 manual checks with probability 0.41
+```
+
+Rare failures need many runs to appear even once. This is why evaluation datasets have hundreds of cases and why production monitoring is necessary.
 
 ## Quality characteristics of LLM features
 
@@ -259,12 +294,12 @@ LLM testing is not one phase. It happens at every stage, and production feeds ba
 
 | Stage | Main activities | Chapter |
 |---|---|---|
-| Design | Quality criteria, risk analysis, evaluation plan | This chapter, [Human evaluation and governance](/learn/llm?topic=pro-practice) |
-| Build | Unit tests with fake models, prompt and schema reviews | [Testing LLM code without the model](/learn/llm?topic=testing-without-the-model) |
-| Offline evaluation | Datasets, scorers, judges, statistics | [Evaluation methodology](/learn/llm?topic=evaluation-fundamentals) and the chapters after it |
-| Pre-release | Security testing, performance tests, release gates | [Red teaming and guardrails](/learn/llm?topic=security-red-teaming), [CI/CD, release gates and migrations](/learn/llm?topic=ci-release-gates) |
-| Release | Canary and shadow deployments, model migrations | [CI/CD, release gates and migrations](/learn/llm?topic=ci-release-gates) |
-| Production | Tracing, online evaluation, feedback loops | [Observability and online evaluation](/learn/llm?topic=production-quality) |
+| Design | Quality criteria, risk analysis, evaluation plan | This chapter, [Benchmarks, human evaluation and governance](/learn/llm?topic=pro-practice) |
+| Build | Unit tests with fake models, prompt and schema reviews | [LLM application anatomy and APIs](/learn/llm?topic=llm-application-anatomy), [Structured output and validation](/learn/llm?topic=structured-output-validation) |
+| Offline evaluation | Datasets, scorers, judges, statistics | [Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals) and the chapters after it |
+| Pre-release | Security testing, performance tests, release gates | [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming), [Production quality](/learn/llm?topic=production-quality) |
+| Release | Canary and shadow deployments, model migrations | [Production quality](/learn/llm?topic=production-quality) |
+| Production | Tracing, online evaluation, feedback loops | [Production quality](/learn/llm?topic=production-quality) |
 
 ## Core vocabulary
 
@@ -297,13 +332,12 @@ The course follows the order in which you need the knowledge. One running exampl
 
 | Part | Chapters | Outcome |
 |---|---|---|
-| Foundations | 1–3 | You understand how models produce text and how similarity is measured |
-| Building LLM applications | 4–9 | You can build and unit-test the system you will evaluate |
-| Evaluation | 10–15 | You can design datasets, scorers, judges and statistically sound comparisons |
-| RAG and agents | 16–17 | You can evaluate retrieval pipelines and multi-step agents |
-| Security, safety and fairness | 18–20 | You can attack, harden and audit an LLM system |
-| Production | 21–23 | You can run evaluation in CI, monitor production and test performance and cost |
-| Professional practice | 24–26 | You can select models, run human evaluation, produce governance evidence and lead quality work |
+| Foundations | Why LLM testing is different; How LLMs generate text; Embeddings and similarity | You understand how models produce text and how similarity is measured |
+| Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation | You can build and unit-test the system you will evaluate |
+| Evaluation | Evaluation methodology and datasets; LLM-as-a-judge | You can design datasets, scorers and judges and compare versions soundly |
+| RAG and agents | Evaluating RAG systems; Evaluating agents and tool use | You can evaluate retrieval pipelines and multi-step agents |
+| Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |
+| Professional practice | Benchmarks, human evaluation and governance | You can select models, run human evaluation and produce governance evidence |
 
 **Setup for the hands-on parts:** Python 3.11 or newer, a virtual environment, and access to at least one model. A paid API key from any major provider works. To practise without cost, run an open-weight model locally with [Ollama](https://ollama.com/), which exposes an OpenAI-compatible endpoint. Many code examples in this course are self-contained and run directly in the page with the **Run** button; examples that call real models or install packages are meant for your own machine.
 
@@ -312,72 +346,9 @@ The course follows the order in which you need the knowledge. One running exampl
 - **Treating a demo as a test.** A few good-looking answers prove little; see the probabilities above.
 - **Testing only the model.** Most failures come from prompts, retrieval, parsing and tools, which you control.
 - **Using exact-match oracles for free text.** They fail on correct paraphrases and teach the team to ignore failures.
-- **Choosing metrics before looking at outputs.** Generic metrics often measure nothing that matters for the product. Start with error analysis (see [Evaluation methodology](/learn/llm?topic=evaluation-fundamentals)).
+- **Choosing metrics before looking at outputs.** Generic metrics often measure nothing that matters for the product. Start with error analysis (see [Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)).
 - **Not recording versions.** A result without the model version, prompt version and parameters cannot be reproduced or compared.
 - **Ignoring latency and cost.** A correct answer that arrives too late or costs too much is a failed requirement.
-
-## Exercises
-
-1. Classify each check by oracle type: (a) the reply parses as JSON; (b) a second model decides whether the reply is polite; (c) the reply to "where is my order?" and to "where's my parcel?" must give the same status; (d) the reply must contain the fact "free shipping over 50 EUR"; (e) a support lead rates 50 replies.
-2. Rewrite this requirement as at least four testable criteria with measurement, threshold and priority: *"The meeting-notes summarizer should produce good summaries."*
-3. A feature is correct 80% of the time. What is the probability that it passes four manual checks? How many independent runs do you need to see at least one failure with 95% probability if the failure rate is 20%, 5% or 1%?
-4. A RAG assistant answered a question correctly on Monday and incorrectly on Tuesday. Nobody deployed code. List at least four possible causes and the evidence you would look for in each case.
-
-:::details Solution to exercise 1
-
-(a) property oracle; (b) model-based oracle (LLM-as-a-judge); (c) metamorphic relation; (d) reference-based oracle (fact check); (e) human judgement.
-
-:::
-
-:::details Solution to exercise 2
-
-One possible answer:
-
-| ID | Criterion | Measurement | Threshold | Priority |
-|---|---|---|---|---|
-| S1 | Every decision and action item in the notes appears in the summary | Checklist of expected items per test meeting, judged per item | At least 90% of items recalled | High |
-| S2 | The summary contains no decision or action item that is not in the notes | Claim-level faithfulness judge validated on human labels | At least 98% of summaries have no unsupported claim | Critical |
-| S3 | Each action item names an owner when the notes name one | Deterministic check against labelled owners | At least 95% | Medium |
-| S4 | Summary length is at most 200 words | Word count | 100% | Low |
-| S5 | Summary is produced in under 10 seconds for notes up to 5,000 words | Timing in performance test | p95 under 10 s | Medium |
-
-The key point is that "good" was decomposed into recall, faithfulness, attribution, length and latency, each with a method and a threshold.
-
-:::
-
-:::details Solution to exercise 3
-
-The probability of passing four checks is 0.8 to the power 4, about 0.41. For the number of runs, solve 1 − (1 − q)^n ≥ 0.95 for n:
-
-```python
-import math
-
-# How many independent runs are needed to see at least one failure with 95% probability,
-# if the feature fails with probability q on each run?  Solve 1 - (1 - q) ** n >= 0.95.
-for q in [0.2, 0.05, 0.01]:
-    n = math.ceil(math.log(0.05) / math.log(1 - q))
-    print(f"failure rate {q:.0%}: need {n} runs")
-
-p_correct = 0.8
-print(f"80%-correct feature passes 4 manual checks with probability {p_correct ** 4:.2f}")
-```
-
-```text
-failure rate 20%: need 14 runs
-failure rate 5%: need 59 runs
-failure rate 1%: need 299 runs
-80%-correct feature passes 4 manual checks with probability 0.41
-```
-
-Rare failures need many runs to appear even once. This is why evaluation datasets have hundreds of cases and why production monitoring is necessary.
-
-:::
-
-:::details Solution to exercise 4
-
-Possible causes and evidence: (1) sampling variability: re-run the same request several times and see whether answers alternate; (2) a provider model update or an alias that moved: compare the model version recorded in Monday's and Tuesday's traces; (3) the document index changed: compare retrieved chunk IDs in both traces; (4) a prompt or configuration change outside the code repository, for example in a prompt-management tool: check the prompt version in the traces; (5) different conversation history or user profile: compare the full assembled context; (6) a tool or external API returned different data: compare tool results in the traces. Every one of these needs traces that record versions and context, which is why chapter 21 treats tracing as a testing prerequisite.
-
-:::
 
 ## Summary
 
