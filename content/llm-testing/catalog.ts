@@ -27,8 +27,8 @@ import agentTesting from "./13-agent-testing.md?raw";
 import agentTestingUk from "./13-agent-testing.uk.md?raw";
 import securityRedTeaming from "./14-security-red-teaming.md?raw";
 import securityRedTeamingUk from "./14-security-red-teaming.uk.md?raw";
-import productionQuality from "./21-production-quality.md?raw";
-import productionQualityUk from "./21-production-quality.uk.md?raw";
+import productionQuality from "./15-production-quality.md?raw";
+import productionQualityUk from "./15-production-quality.uk.md?raw";
 import proPractice from "./25-pro-practice.md?raw";
 import proPracticeUk from "./25-pro-practice.uk.md?raw";
 
@@ -186,9 +186,9 @@ const topics: LlmTestingTopic[] = [
     label: "Production quality",
     labelUk: "Якість у production",
     level: "advanced",
-    description: "Evals in CI/CD, tracing with OpenTelemetry and Langfuse, online evaluation, feedback loops, performance and cost testing, model migrations and experiments.",
-    descriptionUk: "Evals у CI/CD, tracing з OpenTelemetry і Langfuse, online evaluation, feedback loops, тестування performance і cost, міграції моделей та експерименти.",
-  }, productionQuality, productionQualityUk),
+    description: "Release gates in CI/CD over quality, latency, cost and slices, tracing with the OpenTelemetry conventions, latency percentiles and capacity, cost per resolved task, online evaluation with control charts and drift indices, user feedback, model migrations, experiments without peeking, and incidents.",
+    descriptionUk: "Release gates у CI/CD за якістю, latency, вартістю й зрізами, tracing за конвенціями OpenTelemetry, перцентилі latency і місткість, вартість вирішеного завдання, online evaluation з контрольними картами й індексами дрейфу, зворотний зв'язок користувачів, міграції моделей, експерименти без підглядань та інциденти.",
+  }, productionQuality, productionQualityUk, ["otel-genai-semconv", "langfuse-observability", "arize-phoenix", "google-sre-monitoring", "little-1961", "aws-backoff-jitter", "anthropic-errors", "anthropic-prompt-caching", "openai-prompt-caching", "nist-p-chart", "nist-control-chart-rules", "yurdakul-psi", "husain-field-guide", "chen-behavior-drift", "anthropic-model-deprecations", "openai-deprecations", "google-sre-canarying", "miller-how-not-ab-test", "johari-always-valid", "fabijan-srm"]),
   chapter({
     id: "pro-practice",
     label: "Benchmarks, human evaluation and governance",
