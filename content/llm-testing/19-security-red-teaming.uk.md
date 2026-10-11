@@ -162,16 +162,6 @@ Guardrails знижують ризик, але не розв'язують prompt
 - Вимірюй у guardrails і false positives, і false negatives.
 - Показуй success rates атак за повторних спроб.
 
-## 14. Practice
-
-1. Напиши threat model для свого support bot: assets, trust boundaries, які ноги trifecta він має.
-2. Створи 50 ручних атак: direct injection, indirect injection (через підкинутий документ), leakage і output handling.
-3. Запусти garak або promptfoo redteam проти bot і зроби тріаж результатів.
-4. Додай guardrail і виміряй його false-positive rate на звичайному golden dataset.
-5. Напиши три findings у форматі з розділу 12, виправ їх і зроби re-test.
-
-**Exit check:** ти можеш передати security engineer звіт з findings, упорядкований за severity, з rates відтворення, impact і перевіреними виправленнями.
-
 ## Sources
 
 - [OWASP — Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/)

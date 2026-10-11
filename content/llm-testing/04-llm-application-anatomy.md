@@ -2,14 +2,6 @@
 
 A production LLM feature is mostly ordinary software wrapped around a few calls to a model API. Those calls are remote, slow, metered, rate-limited and probabilistic, and every one of those properties creates defects that have nothing to do with the quality of the model. This chapter takes the running example, the Stride support assistant, apart: its components, the request and response of a model call, the ways a call ends, streaming, errors and retries, cost, and what must be recorded so that any behaviour can be reproduced and tested.
 
-**After this chapter you can:**
-
-- draw the architecture of an LLM application and mark which parts are deterministic;
-- read and write chat API requests and responses for the major providers;
-- handle every stop reason, streamed responses, errors, retries and timeouts correctly, and test each path;
-- compute token usage and cost per request, per conversation and per resolved task;
-- define the record that must be logged for each model call to make testing and debugging possible.
-
 **Prerequisites:** [How LLMs generate text](/learn/llm?topic=llm-foundations); basic HTTP and JSON ([API & Integration](/learn/api)).
 
 ## Architecture of an LLM application
@@ -41,7 +33,7 @@ The Stride assistant answers questions about policies and orders. Its request pa
         └─► response + trace ─────── answer, citations, trace ID, usage and latency metrics
 ```
 
-Only the model calls inside the model client are probabilistic. Everything else is deterministic code and should be tested with ordinary unit and integration tests, using a fake model where a model call is involved ([Testing LLM code without the model](/learn/llm?topic=testing-without-the-model)).
+Only the model calls inside the model client are probabilistic. Everything else is deterministic code and should be tested with ordinary unit and integration tests, using a fake model where a model call is involved, as the retry and streaming examples in this chapter show.
 
 | Component | Deterministic? | Typical defects | Main test technique |
 |---|---|---|---|
@@ -272,6 +264,19 @@ broken {'text': 'You can return unworn shoes within ', 'complete': False, 'time_
 
 Recording real streams once and replaying them in tests, as in this example, is the standard way to test streaming code without network access.
 
+### Test cases for streaming
+
+| Case | Expected behaviour |
+|---|---|
+| Normal stream | Text assembled completely; time to first token and total time recorded |
+| Connection drops before the final event | Not shown or stored as a complete answer; the user can retry |
+| Final event reports `max_tokens` | Truncation handling runs |
+| Tool-call deltas in the stream | Assembled into a complete tool call before execution |
+| User closes the chat | The server stops reading the stream |
+| Interrupted stream without usage data | Missing usage is logged |
+| Error event in the middle of the stream | Handled like an API error |
+| No event within the read timeout | Stream aborted cleanly |
+
 ## Errors, retries and timeouts
 
 Model APIs fail often enough that error handling is part of the core functionality. The status codes fall into two groups:
@@ -451,7 +456,7 @@ large-model: $0.0517 per resolved conversation, $2,070 per month
 prompt growth of 1,500 tokens: +26% cost per request
 ```
 
-Two lessons follow. Retrieved context dominates the input in this budget, so retrieval settings (how many chunks, how long) are also cost settings. And an innocent-looking prompt edit can raise cost by a quarter; cost belongs in the regression report of every prompt change ([CI/CD, release gates and migrations](/learn/llm?topic=ci-release-gates)).
+Two lessons follow. Retrieved context dominates the input in this budget, so retrieval settings (how many chunks, how long) are also cost settings. And an innocent-looking prompt edit can raise cost by a quarter; cost belongs in the regression report of every prompt change ([Production quality](/learn/llm?topic=production-quality)).
 
 ## Recording model calls for testing
 
@@ -479,7 +484,17 @@ You cannot test, debug or reproduce what you did not record. For every model cal
 }
 ```
 
-Each field answers a testing question: *which model and prompt produced this?* (model, template version, parameters), *what did it see?* (messages hash, retrieved IDs, tools), *why did it stop?* (stop reason), *what did it cost and how long did it take?* (usage, latency) and *what happened next?* (outcome). These records become regression cases ([Evaluation datasets](/learn/llm?topic=evaluation-datasets)), replay fixtures ([Testing LLM code without the model](/learn/llm?topic=testing-without-the-model)) and the raw material of production monitoring ([Observability and online evaluation](/learn/llm?topic=production-quality)).
+Each field answers a testing question: *which model and prompt produced this?* (model, template version, parameters), *what did it see?* (messages hash, retrieved IDs, tools), *why did it stop?* (stop reason), *what did it cost and how long did it take?* (usage, latency) and *what happened next?* (outcome). These records become regression cases ([Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures for tests such as the stream example above, and the raw material of production monitoring ([Production quality](/learn/llm?topic=production-quality)).
+
+### Worked example: an answer that quotes a replaced policy
+
+Question from support: why did an answer quote a return policy that was replaced last week? The log record answers it field by field:
+
+- `retrieved_chunk_ids` shows which policy chunks the model saw; the ID of an old chunk means the index was not refreshed.
+- `timestamp` shows whether the call happened before or after the policy update and the reindex.
+- `prompt_template.version` and `model` exclude the prompt and the model as causes.
+- `output_text` confirms what exactly was quoted.
+- If the old chunk was not retrieved, the model reproduced the old policy from training data or from the conversation history; the stored history and `messages_hash` show what was in the context.
 
 ## Choices that change testing
 
@@ -496,44 +511,6 @@ Each field answers a testing question: *which model and prompt produced this?* (
 - **Untested fallback models.**
 - **Measuring cost per request only**, not per conversation and per resolved task.
 - **Logging too little** (no model version or prompt version) or too much (raw personal data without redaction and retention limits).
-
-## Exercises
-
-1. For the Stride architecture, pick four components and write one concrete test for each, stating whether it needs a real model.
-2. A team's retry policy reads: "On any error, retry up to 10 times with a fixed 1-second delay. The SDK's default retries are left enabled." List every problem and rewrite the policy.
-3. A request has 8,000 input tokens, of which 2,000 are a cached prefix, and 600 output tokens. Using the example `large-model` prices, compute the cost with and without caching. Then compute the monthly cost for 30,000 conversations with 3 requests each.
-4. Design the tests for streaming in the Stride chat: list at least five test cases with the expected behaviour.
-5. Which fields of the log record would you need to answer: "Why did this answer quote a policy that was replaced last week?" Explain how each field helps.
-
-:::details Solution to exercise 1
-
-Examples: (1) **Context assembly**, no model: render the prompt for a 30-turn conversation and assert that the system prompt and the latest user message are present and that the history is truncated oldest-first. (2) **Model client**, fake model: a scripted response with stop reason `max_tokens` must not be delivered as a final answer. (3) **Tool loop**, fake model: a scripted tool call for an order that belongs to another customer must be rejected by the authorization check, and the rejection must be returned to the model as a tool result. (4) **Output quality**, real model: run the refund evaluation dataset and check faithfulness and abstention rates against the acceptance criteria. Only the last one needs a real model.
-
-:::
-
-:::details Solution to exercise 2
-
-Problems: retrying "any error" retries 400, 401, 403 and 404, which cannot succeed; a fixed delay without jitter synchronizes clients and prolongs overload; 10 attempts with 1 second each can keep a user waiting beyond any reasonable deadline, and with the SDK's own retries the real attempt count multiplies; `Retry-After` is ignored; quota-exhaustion 429s are retried; side effects of tool calls are not protected. Rewrite: retry only 408, 429 (except quota or billing errors), 500, 502, 503, 504 and 529; use exponential backoff with full jitter capped at 8 seconds; honour `Retry-After`; at most 4 attempts in total and an overall deadline of 20 seconds per user request; disable the SDK's retries or count them in the budget; use idempotency keys for side-effecting tools; log every retry with its reason.
-
-:::
-
-:::details Solution to exercise 3
-
-Without caching: (8,000 × 3.00 + 600 × 15.00) / 1,000,000 = (24,000 + 9,000) / 1,000,000 = 0.033 USD. With caching: (6,000 × 3.00 + 2,000 × 0.30 + 600 × 15.00) / 1,000,000 = (18,000 + 600 + 9,000) / 1,000,000 = 0.0276 USD. Monthly: 30,000 × 3 = 90,000 requests; 90,000 × 0.0276 = 2,484 USD with caching (2,970 USD without).
-
-:::
-
-:::details Solution to exercise 4
-
-Test cases: (1) a normal stream assembles into the full text, and TTFT and total time are recorded; (2) a stream that drops before the final event is not shown or stored as complete, and the user sees a retry option; (3) the stop reason `max_tokens` arriving in the final event triggers the truncation handling; (4) a stream containing a tool-call delta is assembled into a complete tool call before execution; (5) when the user closes the chat, the server stops reading the stream; (6) usage is recorded from the final event, and the absence of usage is logged for interrupted streams; (7) a provider error event in the middle of the stream is handled like an API error; (8) slow streams hitting the read timeout between events are aborted cleanly. Use recorded event sequences replayed through the stream handler, as in the assembler example.
-
-:::
-
-:::details Solution to exercise 5
-
-`retrieved_chunk_ids` shows which policy chunks the model saw: if the old chunk ID appears, the index was not refreshed. `timestamp` tells you whether the call happened before or after the policy update and reindex. `prompt_template.version` and `model` exclude the prompt or model as causes. `output_text` confirms what was quoted. If the old chunk was not retrieved, the model hallucinated the old policy from training data or conversation history, and `messages_hash` together with stored conversation history helps confirm what was in the context.
-
-:::
 
 ## Summary
 

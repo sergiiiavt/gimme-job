@@ -120,7 +120,7 @@ Synthetic sets — для розширення coverage, але ніколи н�
 - документи іншою мовою, ніж питання;
 - **access control:** користувач ніколи не повинен отримати приватні документи іншого tenant чи користувача. Тестуй це з двома акаунтами; це security defect, а не питання якості;
 - **freshness:** оновлений документ має замінити старий в index; тестуй reindex path;
-- **injection у документах:** retrieved content може містити інструкції. Див. [Prompt injection і jailbreaks](/learn/llm?topic=prompt-injection).
+- **injection у документах:** retrieved content може містити інструкції. Див. [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming).
 
 ## 9. Case study: canonical RAG у GimmeJob
 
@@ -140,16 +140,6 @@ Learning Path Advisor у GimmeJob дістає матеріали з єдино�
 - Включай unanswerable, multi-hop і conflicting питання.
 - Перевіряй citations детерміновано, потім support — через judge.
 - Тестуй ізоляцію tenants і reindexing як частину тестування RAG.
-
-## 11. Practice
-
-1. Познач релевантні chunk IDs для 50 питань по документах свого support bot.
-2. Порахуй hit rate@4, recall@4, MRR і nDCG@4 для свого retriever.
-3. Порівняй три конфігурації chunking і обґрунтуй переможця retrieval metrics, answer correctness і latency.
-4. Запусти faithfulness evaluation (Ragas або власний claim-decomposition judge) і вручну перевір 20 cases.
-5. Додай 10 unanswerable і 5 conflicting-document питань; виміряй, як часто bot правильно утримується від відповіді.
-
-**Exit check:** для будь-якої неправильної відповіді bot ти можеш показати, чи її спричинив retrieval, чи generation.
 
 ## Sources
 

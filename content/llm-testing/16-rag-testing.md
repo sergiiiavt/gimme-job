@@ -120,7 +120,7 @@ If the product shows citations:
 - documents in different languages from the question;
 - **access control:** a user must never retrieve another tenant's or another user's private documents. Test this with two accounts; it is a security defect, not a quality issue;
 - **freshness:** an updated document must replace the old one in the index; test the reindex path;
-- **injection in documents:** retrieved content can contain instructions. See [Prompt injection and jailbreaks](/learn/llm?topic=prompt-injection).
+- **injection in documents:** retrieved content can contain instructions. See [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming).
 
 ## 9. Case study: GimmeJob canonical RAG
 
@@ -140,16 +140,6 @@ GimmeJob's Learning Path Advisor retrieves from a single canonical RAG pipeline 
 - Include unanswerable, multi-hop and conflicting questions.
 - Validate citations deterministically, then check support with a judge.
 - Test tenant isolation and reindexing as part of RAG testing.
-
-## 11. Practice
-
-1. Label relevant chunk IDs for 50 questions about your support bot's documents.
-2. Compute hit rate@4, recall@4, MRR and nDCG@4 for your retriever.
-3. Compare three chunking configurations and justify the winner with retrieval metrics, answer correctness and latency.
-4. Run a faithfulness evaluation (Ragas or your own claim-decomposition judge) and spot-check 20 cases by hand.
-5. Add 10 unanswerable and 5 conflicting-document questions; measure how often the bot correctly abstains.
-
-**Exit check:** for any wrong answer from your bot, you can show whether retrieval or generation caused it.
 
 ## Sources
 

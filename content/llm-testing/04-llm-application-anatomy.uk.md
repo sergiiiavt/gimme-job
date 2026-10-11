@@ -2,14 +2,6 @@
 
 Production LLM feature — це переважно звичайне software навколо кількох викликів model API. Ці виклики віддалені, повільні, тарифіковані, обмежені rate limits і ймовірнісні, і кожна з цих властивостей створює дефекти, що не мають жодного стосунку до якості моделі. Цей chapter розбирає наскрізний приклад — support assistant магазину Stride: його компоненти, request і response виклику моделі, способи, якими виклик завершується, streaming, помилки та retries, cost і те, що треба записувати, щоб будь-яку поведінку можна було відтворити й протестувати.
 
-**Після цього chapter ви вмієте:**
-
-- намалювати архітектуру LLM application і позначити детерміновані частини;
-- читати й писати chat API requests і responses для основних providers;
-- правильно обробляти кожен stop reason, streamed responses, помилки, retries і timeouts та тестувати кожен шлях;
-- обчислювати використання tokens і cost на запит, на розмову і на розв'язану задачу;
-- визначити запис, який треба логувати для кожного виклику моделі, щоб тестування й debugging були можливі.
-
 **Prerequisites:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations); основи HTTP і JSON ([API & Integration](/learn/api)).
 
 ## Архітектура LLM application
@@ -41,7 +33,7 @@ Production LLM feature — це переважно звичайне software н�
         └─► response + trace ─────── answer, citations, trace ID, usage and latency metrics
 ```
 
-Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)).
+Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі, як показують приклади retry і streaming у цьому chapter.
 
 | Компонент | Детермінований? | Типові дефекти | Основна техніка тестування |
 |---|---|---|---|
@@ -272,6 +264,19 @@ broken {'text': 'You can return unworn shoes within ', 'complete': False, 'time_
 
 Записати реальні streams один раз і відтворювати їх у тестах, як у цьому прикладі, — стандартний спосіб тестувати streaming code без мережі.
 
+### Test cases для streaming
+
+| Case | Очікувана поведінка |
+|---|---|
+| Нормальний stream | Текст зібрано повністю; time to first token і загальний час записано |
+| З'єднання обірвалося до фінальної події | Не показується і не зберігається як повна відповідь; користувач може повторити |
+| Фінальна подія повідомляє `max_tokens` | Запускається обробка truncation |
+| Deltas виклику tool у stream | Збираються в повний tool call до виконання |
+| Користувач закриває чат | Server припиняє читати stream |
+| Перерваний stream без даних usage | Відсутність usage логується |
+| Подія помилки посеред stream | Обробляється як API error |
+| Немає подій протягом read timeout | Stream коректно переривається |
+
 ## Помилки, retries і timeouts
 
 Model APIs падають достатньо часто, щоб обробка помилок була частиною основної функціональності. Status codes діляться на дві групи:
@@ -451,7 +456,7 @@ large-model: $0.0517 per resolved conversation, $2,070 per month
 prompt growth of 1,500 tokens: +26% cost per request
 ```
 
-Звідси два уроки. Retrieved context домінує в input цього budget, тож налаштування retrieval (скільки chunks, якої довжини) — це й налаштування cost. А невинна на вигляд правка prompt може підняти cost на чверть; cost має бути в regression report кожної зміни prompt ([CI/CD, release gates і міграції](/learn/llm?topic=ci-release-gates)).
+Звідси два уроки. Retrieved context домінує в input цього budget, тож налаштування retrieval (скільки chunks, якої довжини) — це й налаштування cost. А невинна на вигляд правка prompt може підняти cost на чверть; cost має бути в regression report кожної зміни prompt ([Якість у production](/learn/llm?topic=production-quality)).
 
 ## Запис викликів моделі для тестування
 
@@ -479,7 +484,17 @@ prompt growth of 1,500 tokens: +26% cost per request
 }
 ```
 
-Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Evaluation datasets](/learn/llm?topic=evaluation-datasets)), replay fixtures ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)) і сировиною production monitoring ([Observability і online evaluation](/learn/llm?topic=production-quality)).
+Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures для тестів на кшталт прикладу зі stream вище, і сировиною production monitoring ([Якість у production](/learn/llm?topic=production-quality)).
+
+### Розібраний приклад: відповідь цитує замінену policy
+
+Питання від підтримки: чому відповідь процитувала return policy, яку замінили минулого тижня? Запис логу відповідає поле за полем:
+
+- `retrieved_chunk_ids` показує, які chunks policy бачила модель; ID старого chunk означає, що index не оновився.
+- `timestamp` показує, чи виклик стався до чи після оновлення policy і reindex.
+- `prompt_template.version` і `model` виключають prompt і модель як причини.
+- `output_text` підтверджує, що саме процитовано.
+- Якщо старий chunk не був отриманий, модель відтворила стару policy з training data чи історії розмови; збережена історія і `messages_hash` показують, що було в context.
 
 ## Рішення, що змінюють тестування
 
@@ -496,44 +511,6 @@ prompt growth of 1,500 tokens: +26% cost per request
 - **Непротестовані fallback models.**
 - **Вимірювати cost лише на запит**, а не на розмову і на розв'язану задачу.
 - **Логувати замало** (без версії моделі чи prompt) або забагато (сирі персональні дані без redaction і лімітів зберігання).
-
-## Вправи
-
-1. Для архітектури Stride виберіть чотири компоненти й напишіть по одному конкретному тесту для кожного, вказавши, чи потрібна реальна модель.
-2. Retry policy команди звучить так: «На будь-яку помилку повторювати до 10 разів з фіксованою затримкою 1 секунда. Стандартні retries SDK залишено увімкненими.» Перелічіть усі проблеми й перепишіть policy.
-3. Запит має 8 000 input tokens, з яких 2 000 — кешований префікс, і 600 output tokens. За прикладом цін `large-model` обчисліть cost з кешуванням і без. Потім обчисліть місячний cost для 30 000 розмов по 3 запити.
-4. Спроєктуйте тести streaming для чату Stride: перелічіть щонайменше п'ять test cases з очікуваною поведінкою.
-5. Які поля запису логу потрібні, щоб відповісти: «Чому ця відповідь процитувала policy, замінену минулого тижня?» Поясніть, як допомагає кожне поле.
-
-:::details Розв'язок вправи 1
-
-Приклади: (1) **Context assembly**, без моделі: відрендерити prompt для розмови з 30 turns і перевірити, що system prompt і останнє повідомлення користувача присутні, а історія обрізана від найстаріших. (2) **Model client**, fake model: scripted response зі stop reason `max_tokens` не має віддаватися як фінальна відповідь. (3) **Tool loop**, fake model: scripted tool call для замовлення іншого клієнта має відхилятися перевіркою authorization, а відмова має повертатися моделі як tool result. (4) **Якість output**, реальна модель: прогнати refund evaluation dataset і перевірити faithfulness та abstention rates проти acceptance criteria. Реальна модель потрібна лише для останнього.
-
-:::
-
-:::details Розв'язок вправи 2
-
-Проблеми: «будь-яка помилка» включає 400, 401, 403 і 404, які не можуть стати успішними; фіксована затримка без jitter синхронізує клієнтів і затягує перевантаження; 10 спроб по 1 секунді можуть тримати користувача довше за будь-який розумний deadline, а з власними retries SDK реальна кількість спроб множиться; `Retry-After` ігнорується; 429 через вичерпану квоту повторюються; side effects tool calls не захищені. Переписана policy: повторювати лише 408, 429 (крім помилок квоти чи оплати), 500, 502, 503, 504 і 529; exponential backoff з full jitter і межею 8 секунд; дотримуватися `Retry-After`; щонайбільше 4 спроби загалом і загальний deadline 20 секунд на запит користувача; вимкнути retries SDK або врахувати їх у budget; idempotency keys для tools із side effects; логувати кожен retry з причиною.
-
-:::
-
-:::details Розв'язок вправи 3
-
-Без кешування: (8 000 × 3.00 + 600 × 15.00) / 1 000 000 = (24 000 + 9 000) / 1 000 000 = 0.033 USD. З кешуванням: (6 000 × 3.00 + 2 000 × 0.30 + 600 × 15.00) / 1 000 000 = (18 000 + 600 + 9 000) / 1 000 000 = 0.0276 USD. За місяць: 30 000 × 3 = 90 000 запитів; 90 000 × 0.0276 = 2 484 USD з кешуванням (2 970 USD без).
-
-:::
-
-:::details Розв'язок вправи 4
-
-Test cases: (1) нормальний stream збирається в повний текст, TTFT і загальний час записуються; (2) stream, що обірвався до фінальної події, не показується і не зберігається як повний, а користувач бачить опцію повторити; (3) stop reason `max_tokens` у фінальній події запускає обробку truncation; (4) stream з delta виклику tool збирається в повний tool call до виконання; (5) коли користувач закриває чат, server припиняє читати stream; (6) usage записується з фінальної події, а відсутність usage логується для перерваних streams; (7) подія помилки provider посеред stream обробляється як API error; (8) повільні streams, що впираються в read timeout між подіями, коректно перериваються. Використовуйте записані послідовності подій, відтворені через stream handler, як у прикладі assembler.
-
-:::
-
-:::details Розв'язок вправи 5
-
-`retrieved_chunk_ids` показує, які chunks policy бачила модель: якщо там є ID старого chunk, index не оновився. `timestamp` каже, чи виклик стався до чи після оновлення policy і reindex. `prompt_template.version` і `model` виключають prompt чи модель як причини. `output_text` підтверджує, що саме процитовано. Якщо старий chunk не був отриманий, модель вигадала стару policy з training data чи історії розмови, і `messages_hash` разом зі збереженою історією розмови допомагає підтвердити, що було в context.
-
-:::
 
 ## Підсумок
 

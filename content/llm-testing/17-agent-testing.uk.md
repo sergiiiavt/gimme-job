@@ -103,7 +103,7 @@ Stop when: the refund is confirmed, or after 10 turns.
 - malformed responses;
 - частковий успіх (оновлено 2 з 3 елементів);
 - повільні відповіді, що впираються в ліміти часу;
-- **output tool з інструкціями** (indirect prompt injection, див. [Prompt injection і jailbreaks](/learn/llm?topic=prompt-injection)).
+- **output tool з інструкціями** (indirect prompt injection, див. [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming)).
 
 Agent має повторювати з лімітами, чесно повідомляти про збій і ніколи не заявляти успіх.
 
@@ -133,16 +133,6 @@ Agent має повторювати з лімітами, чесно повідо
 - Використовуй simulated users для multi-turn coverage; валідуй simulator.
 - Показуй pass^k, кроки, tokens і cost для кожного сценарію.
 - Inject tool failures і перевіряй чесність звітування.
-
-## 12. Practice
-
-1. Додай до support bot два tools: `verify_identity` і `issue_refund` на seeded fake environment.
-2. Напиши 30 single-step тестів вибору tool і оцінюй їх детерміновано.
-3. Напиши 20 multi-turn сценаріїв з user simulator і personas.
-4. Запусти кожен сценарій 5 разів і покажи success rate, pass^5, медіану кроків і cost.
-5. Inject три типи tool failure і покажи поведінку agent у кожному.
-
-**Exit check:** ти показуєш надійність agent за повторних runs, і кожен критичний сценарій перевіряє і final state, і safety-обмеження trajectory.
 
 ## Sources
 

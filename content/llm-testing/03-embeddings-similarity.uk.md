@@ -2,15 +2,6 @@
 
 **Embedding** — це список чисел, що представляє зміст фрагмента тексту. Embeddings присутні скрізь в LLM системах: retrieval у RAG pipelines, semantic caches, topic guardrails, дедуплікація, кластеризація і similarity-based assertions у тестах. Тестувальник зустрічає їх двічі: як компонент system under test і як інструмент для побудови тестів. Обидві ролі вимагають однакового розуміння того, що означають similarity scores і, що важливіше, чого вони не означають.
 
-**Після цього chapter ви вмієте:**
-
-- пояснити, що таке embedding і як тренують embedding models;
-- обчислювати dot product, cosine similarity і Euclidean distance та пояснити, як нормалізація їх пов'язує;
-- показати на конкретних прикладах, чому semantic similarity — не еквівалентність;
-- калібрувати similarity threshold на позначених парах і показувати його precision та recall;
-- пояснити exact і approximate nearest-neighbour search та виміряти recall approximate index;
-- використовувати embeddings у test engineering: дедуплікація, кластеризація failures і аналіз coverage.
-
 **Prerequisites:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
 
 ## Що таке embedding
@@ -145,7 +136,7 @@ Output:
 | Обсяг і квантори | «all items» vs «some items» | Квантори — маленькі tokens | Rubric, що називає квантор |
 | Підміна сутностей | «order A-1042» vs «order A-1024» | IDs схожі між собою | Exact match по IDs |
 
-**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Code-based scorers і metrics](/learn/llm?topic=code-based-scorers)).
+**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)).
 
 ## Калібрування similarity threshold
 
@@ -225,7 +216,7 @@ lowest threshold with precision >= 0.90: 0.90 (recall 0.42)
 
 - **Перекриття — норма.** Еквівалентні й нееквівалентні пари ділять діапазон 0.78–0.89. Жоден threshold не розділяє їх ідеально; кожен вибір обмінює false positives на false negatives.
 - **Правильний threshold залежить від ціни кожної помилки.** Для semantic cache false positive віддає користувачу чужу відповідь («скасуй моє замовлення» отримує кешовану відповідь на «не скасовуй моє замовлення»), тож найважливіша висока precision, навіть ціною меншої кількості cache hits. Для test assertion, що лише попередньо фільтрує відповіді для judge, важливіший recall.
-- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність ([Статистика для evaluation](/learn/llm?topic=eval-statistics)).
+- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність як confidence interval ([Benchmarks, human evaluation і governance](/learn/llm?topic=pro-practice) показує як).
 
 ## Vector search
 
@@ -315,7 +306,7 @@ Embeddings також практичний інструмент тестувал
 | Кластеризація failures для error analysis | Зробіть embeddings провальних outputs чи inputs і кластеризуйте, щоб побачити групи збоїв | Кластери відображають тему, а не причину; називайте їх після читання прикладів |
 | Аналіз coverage | Зробіть embeddings production запитів і evaluation cases; production кластери без близьких cases — прогалини coverage | Потрібен доступ до (анонімізованих) production даних |
 | Тестування semantic cache | Генеруйте пари майже однакових питань з різним змістом і перевіряйте, що cache не відповідає на одне відповіддю на інше | False hits — дефекти, видимі користувачу |
-| Виявлення input drift | Порівнюйте distribution сьогоднішніх запитів з минуломісячними | Обережно; див. [Observability і online evaluation](/learn/llm?topic=production-quality) |
+| Виявлення input drift | Порівнюйте distribution сьогоднішніх запитів з минуломісячними | Обережно; див. [Якість у production](/learn/llm?topic=production-quality) |
 
 Перевірка coverage з реальною embedding model займає кілька рядків. Запустіть її на своїй машині:
 
@@ -361,6 +352,16 @@ vectors = [item.embedding for item in response.data]
 print(len(vectors), "vectors of", len(vectors[0]), "dimensions")
 ```
 
+### Перехід на іншу embedding model
+
+Зміна моделі — це міграція:
+
+1. Виміряйте якість retrieval (recall@k, MRR, nDCG) старої й нової моделі на тих самих позначених запитах кожною підтримуваною мовою, включно з cross-language запитами.
+2. Виміряйте end-to-end якість відповідей на RAG evaluation set, а також latency і cost embedding та пошуку.
+3. Перевірте нову максимальну довжину input проти розмірів ваших chunks.
+4. Перегенеруйте embeddings усього корпусу в новий index замість змішування vectors; зберігайте версію моделі в metadata index і перевіряйте під час запиту, що запит і index використовують одну модель.
+5. Перемикайтеся лише тоді, коли нова модель щонайменше не гірша за погодженими metrics зі статистичною впевненістю і жодна мова чи сегмент не регресує понад tolerance; залиште старий index для rollback.
+
 ## Типові помилки
 
 - **Повторно використовувати similarity threshold** з іншої моделі, іншого домену чи статті.
@@ -369,50 +370,6 @@ print(len(vectors), "vectors of", len(vectors[0]), "dimensions")
 - **Ігнорувати обрізання input** довгих chunks embedding model.
 - **Не вимірювати recall ANN** і не тестувати metadata filters, оновлення та видалення.
 - **Використовувати dot product на ненормалізованих vectors** і отримувати ranking, спотворений довжиною.
-
-## Вправи
-
-1. Обчисліть вручну cosine similarity для `a = (1, 2, 2)` і `b = (2, 1, 2)` та Euclidean distance між їхніми нормалізованими версіями. Перевірте в code.
-2. Команда використовує «cosine ≥ 0.85 до reference answer» як критерій pass для refund асистента. Напишіть три тестові відповіді, що пройдуть цей критерій, будучи неправильними, і поясніть, який oracle має його замінити чи доповнити.
-3. Для semantic cache кожен false hit коштує один support ticket, а кожен промах — один додатковий виклик моделі. За калібрувальною таблицею цього chapter — який threshold ви вибрали б і що зробили б перед випуском?
-4. Напишіть test plan заміни embedding model у RAG системі: що вимірюєте, на яких даних і що має бути правдою перед перемиканням.
-
-:::details Розв'язок вправи 1
-
-Dot product дорівнює 1·2 + 2·1 + 2·2 = 8, обидві довжини — sqrt(9) = 3, тож cosine = 8 / 9 = 0.889. Для unit vectors distance = sqrt(2 − 2 · 0.889) = 0.471.
-
-```python
-import math
-
-a, b = [1, 2, 2], [2, 1, 2]
-dot = sum(x * y for x, y in zip(a, b))
-cos = dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(x * x for x in b)))
-print(f"cosine = {cos:.3f}, distance of normalized vectors = {math.sqrt(2 - 2 * cos):.3f}")
-```
-
-```text
-cosine = 0.889, distance of normalized vectors = 0.471
-```
-
-:::
-
-:::details Розв'язок вправи 2
-
-Відповіді, що мають спільну тему й формулювання з reference на кшталт «You can return unworn shoes within 30 days of delivery», але неправильні: (1) «You can return unworn shoes within 60 days of delivery» (число); (2) «You cannot return unworn shoes within 30 days of delivery» (заперечення); (3) «You can return worn shoes within 30 days of delivery» (одне змінене слово змінює policy). Кожна, ймовірно, матиме score близький до reference. Критерій треба замінити чи доповнити перевірками фактів: витягти кількість днів і порівняти точно, перевірити умову «unworn» і використати faithfulness judge, валідований на позначених прикладах. Similarity може залишитися дешевим першим фільтром для відповідей не на тему.
-
-:::
-
-:::details Розв'язок вправи 3
-
-Оскільки false hits дорогі, пріоритет — precision. У таблиці precision уперше досягає 0.90 і вище на threshold 0.90 (precision 1.00, recall 0.42): менше половини справжніх дублікатів потрапляють у cache, але на цій вибірці не віддано жодної неправильної відповіді. Перед випуском: позначте ще кілька сотень пар, особливо hard negatives на кшталт «скасуй / не скасовуй»; обчисліть confidence interval для precision на вибраному threshold; додайте правила-винятки для питань з order IDs, сумами чи запереченнями; і моніторте cache hits у production з вибірковим human review.
-
-:::
-
-:::details Розв'язок вправи 4
-
-Вимірюйте якість retrieval (recall@k, MRR, nDCG) старої і нової моделі на тому самому позначеному наборі запитів з вашого домену, кожною підтримуваною мовою, включно з cross-language запитами; end-to-end якість відповідей на RAG evaluation set; latency і cost embedding та пошуку; вплив нової максимальної довжини input на розміри chunks. Перегенеруйте embeddings усього корпусу в новий index замість змішування vectors; зберігайте версію моделі в metadata index і перевіряйте під час запиту, що моделі запиту й index збігаються. Перед перемиканням: нова модель має бути щонайменше не гіршою за погодженими metrics зі статистичною впевненістю, жодна мова чи сегмент не мають регресувати понад tolerance, і має існувати rollback на старий index.
-
-:::
 
 ## Підсумок
 

@@ -119,30 +119,7 @@ Platform principles:
 - **Teach developers to write evals.** Quality scales when every feature team owns its datasets.
 - **Know when evals are not enough:** some risks need staged rollouts, human oversight or not shipping at all.
 
-## 9. Capstone
-
-Combine everything into one public portfolio project:
-
-1. the support bot you built during the course, extended with RAG and agent tools;
-2. a versioned golden dataset with a failure taxonomy;
-3. deterministic checks, validated judges with published agreement stats, and RAG and agent evals;
-4. a red-team report with findings and fixes;
-5. a CI pipeline with regression gates and a tracing dashboard;
-6. a methodology write-up: what you measured, with confidence intervals, and what you could not measure.
-
-## 10. Career and portfolio
-
-Roles that use this path: **AI QA engineer**, **LLM evaluation engineer**, **AI red teamer**, **ML quality lead**, and SDETs on AI product teams.
-
-To stand out:
-
-- publish the capstone repository with a clear README;
-- write three short articles: judge calibration, a RAG debugging story and red-team findings;
-- contribute a merged pull request to an open-source eval tool (promptfoo, DeepEval, Ragas, garak or Inspect);
-- practise the interview exercise "design an eval plan for this product in 30 minutes": risks, datasets, metrics, gates and monitoring;
-- prepare with the [AI & LLM QA interview questions](/interview/ai-llm).
-
-## 11. QA quick reference
+## 9. QA quick reference
 
 - Report every score with a confidence interval; compare versions with paired analysis.
 - Keep held-out data and watch for overfitting and multiple comparisons.
@@ -150,16 +127,6 @@ To stand out:
 - Run human evaluation with guidelines, calibration and agreement metrics.
 - Map risks to tests to produce governance evidence.
 - Agree ship criteria before testing.
-
-## 12. Practice
-
-1. Recompute your bot's main metrics with bootstrap 95% intervals and redo one earlier prompt comparison as a paired analysis. Was the improvement real?
-2. Run one public benchmark task with lm-evaluation-harness or Inspect on two open models and explain why the result does or does not predict your bot's quality.
-3. Write annotation guidelines for one criterion and measure agreement between you and one other person.
-4. Map your bot's risks to the NIST AI 600-1 categories and list which tests cover each.
-5. Publish the capstone and give a 10-minute talk on its methodology.
-
-**Exit check:** other people use your evaluation results to make ship / no-ship decisions, and you can defend every number with its uncertainty.
 
 ## Sources
 

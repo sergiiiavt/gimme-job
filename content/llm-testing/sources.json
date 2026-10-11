@@ -518,5 +518,95 @@
     "role": "Standard-library templating with $placeholders, used in the template example.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "json-schema-docs",
+    "title": "Understanding JSON Schema",
+    "publisher": "JSON Schema",
+    "kind": "official-docs",
+    "url": "https://json-schema.org/understanding-json-schema/",
+    "role": "Reference for the schema keywords used to define output contracts.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "pydantic-docs",
+    "title": "Pydantic documentation",
+    "publisher": "Pydantic",
+    "kind": "official-docs",
+    "url": "https://docs.pydantic.dev/latest/",
+    "role": "Python models for validating structured output and generating JSON Schema; explains coercion and strict mode.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-structured-outputs",
+    "title": "Structured outputs",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+    "role": "output_config.format and messages.parse(); documents unsupported constraints, enum casing and refusal and max_tokens limitations.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-structured-outputs",
+    "title": "Structured model outputs",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+    "role": "Strict JSON-schema mode, the responses.parse() helper and how refusals are returned.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rfc8259",
+    "title": "RFC 8259 — The JavaScript Object Notation (JSON) Data Interchange Format",
+    "publisher": "IETF",
+    "kind": "standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc8259",
+    "role": "The JSON grammar that malformed model output violates (trailing commas, single quotes).",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "hypothesis-docs",
+    "title": "Hypothesis documentation",
+    "publisher": "Hypothesis",
+    "kind": "tool",
+    "url": "https://hypothesis.readthedocs.io/",
+    "role": "Property-based testing library used to fuzz the validation pipeline.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "hypothesis-jsonschema",
+    "title": "hypothesis-jsonschema",
+    "publisher": "python-jsonschema",
+    "kind": "tool",
+    "url": "https://github.com/python-jsonschema/hypothesis-jsonschema",
+    "role": "Generates test data that conforms to a JSON Schema for property-based tests.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "tam-format-restrictions",
+    "title": "Let Me Speak Freely? A Study on the Impact of Format Restrictions on Performance of Large Language Models",
+    "publisher": "Tam et al. — arXiv / EMNLP 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2408.02442",
+    "role": "Reports that strict format constraints can reduce reasoning quality, so switching to constrained output needs a full quality evaluation.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "willard-guided-generation",
+    "title": "Efficient Guided Generation for Large Language Models",
+    "publisher": "Willard, Louf — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2307.09702",
+    "role": "Explains constrained decoding, the mechanism behind schema-constrained structured outputs.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

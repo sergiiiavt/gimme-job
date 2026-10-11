@@ -164,16 +164,6 @@ Then look at the cases that changed. Aggregate scores hide regressions in small 
 - Prefer fact checks over n-gram metrics for open-ended answers.
 - Compare against a baseline and read the flipped cases.
 
-## 10. Practice
-
-1. Run your support bot on 100 realistic questions and build a failure taxonomy with counts.
-2. Turn it into a tagged JSONL golden dataset of at least 100 cases, including 15 edge cases and 15 adversarial cases.
-3. Implement all deterministic assertions from section 5 that apply to your bot.
-4. Build the same small suite in promptfoo and in DeepEval. Write down which one you prefer and why.
-5. Change the prompt, rerun, and produce a baseline vs candidate scorecard with the flipped cases listed.
-
-**Exit check:** a prompt change produces a clear before/after scorecard, and you can name the three most common failure categories of your bot with counts.
-
 ## Sources
 
 - [Hamel Husain — Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/)

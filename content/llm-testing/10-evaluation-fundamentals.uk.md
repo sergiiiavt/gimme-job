@@ -164,16 +164,6 @@ Eval run має давати порівняння, а не одне число:
 - Для відкритих відповідей фактчекінг кращий за n-gram metrics.
 - Порівнюй з baseline і читай flipped cases.
 
-## 10. Practice
-
-1. Прожени support bot на 100 реалістичних питаннях і побудуй failure taxonomy з кількостями.
-2. Перетвори це на тегований JSONL golden dataset щонайменше зі 100 cases, включно з 15 edge cases і 15 adversarial cases.
-3. Реалізуй усі deterministic assertions з розділу 5, які застосовні до твого bot.
-4. Збери той самий невеликий suite у promptfoo і в DeepEval. Запиши, який подобається більше і чому.
-5. Зміни prompt, перезапусти і зроби baseline vs candidate scorecard зі списком flipped cases.
-
-**Exit check:** зміна prompt дає чіткий before/after scorecard, і ти можеш назвати три найчастіші категорії failures свого bot з кількостями.
-
 ## Sources
 
 - [Hamel Husain — Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/)

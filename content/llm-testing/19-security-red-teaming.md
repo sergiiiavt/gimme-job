@@ -162,16 +162,6 @@ Because LLM attacks are probabilistic, always report the success rate, not just 
 - Measure guardrails' false positives as well as false negatives.
 - Report attack success rates over repeated attempts.
 
-## 14. Practice
-
-1. Write a threat model for your support bot: assets, trust boundaries, which trifecta legs it has.
-2. Create 50 manual attacks across direct injection, indirect injection (through a planted document), leakage and output handling.
-3. Run garak or promptfoo redteam against the bot and triage the results.
-4. Add a guardrail and measure its false-positive rate on your normal golden dataset.
-5. Write three findings in the format from section 12, fix them, and re-test.
-
-**Exit check:** you can hand a security engineer a severity-ranked findings report with reproduction rates, impact and verified fixes.
-
 ## Sources
 
 - [OWASP — Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/)

@@ -2,15 +2,6 @@
 
 An **embedding** is a list of numbers that represents the meaning of a piece of text. Embeddings are everywhere in LLM systems: retrieval in RAG pipelines, semantic caches, topic guardrails, deduplication, clustering and similarity-based test assertions. A tester meets them twice: as a component of the system under test, and as a tool for building tests. Both roles require the same understanding of what similarity scores mean and, more importantly, what they do not mean.
 
-**After this chapter you can:**
-
-- explain what an embedding is and how embedding models are trained;
-- compute dot product, cosine similarity and Euclidean distance, and explain how normalization relates them;
-- show why semantic similarity is not equivalence, with concrete failure cases;
-- calibrate a similarity threshold on labelled pairs and report its precision and recall;
-- explain exact and approximate nearest-neighbour search and measure the recall of an approximate index;
-- use embeddings for test engineering: deduplication, failure clustering and coverage analysis.
-
 **Prerequisites:** [How LLMs generate text](/learn/llm?topic=llm-foundations).
 
 ## What an embedding is
@@ -145,7 +136,7 @@ The first three pairs mean different things and score high; the last pair means 
 | Scope and quantifiers | "all items" vs "some items" | Quantifiers are small tokens | Rubric that names the quantifier |
 | Entity swaps | "order A-1042" vs "order A-1024" | IDs look alike | Exact match on IDs |
 
-**Consequence for testing:** a similarity score can tell you that an answer is *about the right thing*. It cannot tell you that the answer is *right*. Use similarity for retrieval, clustering and as a cheap first filter; use fact checks, structured extraction or validated judges for correctness ([Code-based scorers and metrics](/learn/llm?topic=code-based-scorers)).
+**Consequence for testing:** a similarity score can tell you that an answer is *about the right thing*. It cannot tell you that the answer is *right*. Use similarity for retrieval, clustering and as a cheap first filter; use fact checks, structured extraction or validated judges for correctness ([Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)).
 
 ## Calibrating a similarity threshold
 
@@ -225,7 +216,7 @@ How to interpret this table:
 
 - **Overlap is the norm.** Equivalent and non-equivalent pairs share the range 0.78–0.89. No threshold separates them perfectly; every choice trades false positives against false negatives.
 - **The right threshold depends on the cost of each error.** For a semantic cache, a false positive serves the wrong answer to a user ("cancel my order" answered with the cached reply to "don't cancel my order"), so high precision matters most, even at the price of fewer cache hits. For a test assertion that only pre-filters answers for a judge, recall matters more.
-- **Small samples mislead.** With 24 pairs, one pair moves precision by several points. Use hundreds of pairs and report the uncertainty ([Statistics for evaluation](/learn/llm?topic=eval-statistics)).
+- **Small samples mislead.** With 24 pairs, one pair moves precision by several points. Use hundreds of pairs and report the uncertainty as a confidence interval ([Benchmarks, human evaluation and governance](/learn/llm?topic=pro-practice) shows how).
 
 ## Vector search
 
@@ -315,7 +306,7 @@ Embeddings are also a practical tool for testers:
 | Clustering failures for error analysis | Embed failing outputs or inputs and cluster them to see failure groups | Clusters reflect topic, not cause; name them after reading examples |
 | Coverage analysis | Embed production queries and evaluation cases; production clusters without nearby cases are coverage gaps | Requires access to (anonymized) production data |
 | Semantic cache testing | Generate pairs of near-identical questions with different meaning and check the cache does not answer one with the other | False hits are user-visible defects |
-| Input drift detection | Compare the distribution of today's queries with last month's | Use with care; see [Observability and online evaluation](/learn/llm?topic=production-quality) |
+| Input drift detection | Compare the distribution of today's queries with last month's | Use with care; see [Production quality](/learn/llm?topic=production-quality) |
 
 A coverage check with a real embedding model takes only a few lines. Run it on your own machine:
 
@@ -361,6 +352,16 @@ vectors = [item.embedding for item in response.data]
 print(len(vectors), "vectors of", len(vectors[0]), "dimensions")
 ```
 
+### Switching to another embedding model
+
+A model switch is a migration:
+
+1. Measure retrieval quality (recall@k, MRR, nDCG) of the old and the new model on the same labelled queries, in every supported language, including cross-language queries.
+2. Measure end-to-end answer quality on the RAG evaluation set, and the latency and cost of embedding and search.
+3. Check the new maximum input length against your chunk sizes.
+4. Re-embed the full corpus into a new index instead of mixing vectors; store the model version in the index metadata and assert at query time that query and index use the same model.
+5. Switch only if the new model is at least as good on the agreed metrics with statistical confidence and no language or segment regresses beyond the tolerance; keep the old index for rollback.
+
 ## Common mistakes
 
 - **Reusing a similarity threshold** from another model, another domain or an article.
@@ -369,50 +370,6 @@ print(len(vectors), "vectors of", len(vectors[0]), "dimensions")
 - **Ignoring input truncation** of long chunks by the embedding model.
 - **Not measuring ANN recall** and not testing metadata filters, updates and deletes.
 - **Using dot product on vectors that are not normalized** and getting a length-biased ranking.
-
-## Exercises
-
-1. Compute by hand the cosine similarity of `a = (1, 2, 2)` and `b = (2, 1, 2)`, and the Euclidean distance between their normalized versions. Check with code.
-2. A team uses "cosine ≥ 0.85 to the reference answer" as the pass criterion for a refund assistant. Write three test answers that would pass this criterion while being wrong, and explain which oracle should replace or complement it.
-3. For a semantic cache, false hits cost a support ticket each and misses cost one extra model call. Using the calibration table in this chapter, which threshold would you choose, and what would you do before shipping it?
-4. Write a test plan for replacing the embedding model of a RAG system: what you measure, on which data, and what must be true before the switch.
-
-:::details Solution to exercise 1
-
-The dot product is 1·2 + 2·1 + 2·2 = 8, both lengths are sqrt(9) = 3, so the cosine is 8 / 9 = 0.889. For unit vectors the distance is sqrt(2 − 2 · 0.889) = 0.471.
-
-```python
-import math
-
-a, b = [1, 2, 2], [2, 1, 2]
-dot = sum(x * y for x, y in zip(a, b))
-cos = dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(x * x for x in b)))
-print(f"cosine = {cos:.3f}, distance of normalized vectors = {math.sqrt(2 - 2 * cos):.3f}")
-```
-
-```text
-cosine = 0.889, distance of normalized vectors = 0.471
-```
-
-:::
-
-:::details Solution to exercise 2
-
-Answers that share topic and wording with a reference such as "You can return unworn shoes within 30 days of delivery" but are wrong: (1) "You can return unworn shoes within 60 days of delivery" (number); (2) "You cannot return unworn shoes within 30 days of delivery" (negation); (3) "You can return worn shoes within 30 days of delivery" (one changed word that changes the policy). Each is likely to score close to the reference. The criterion should be replaced or complemented by fact checks: extract the number of days and compare exactly, check the condition "unworn", and use a faithfulness judge validated on labelled examples. Similarity can remain as a cheap first filter for answers that are off-topic.
-
-:::
-
-:::details Solution to exercise 3
-
-Because false hits are expensive, precision is the priority. In the table, precision first reaches 0.90 or more at threshold 0.90 (precision 1.00, recall 0.42): fewer than half of the true duplicates hit the cache, but no wrong answers are served on this sample. Before shipping: label several hundred more pairs, especially hard negatives such as "cancel / don't cancel"; compute a confidence interval for precision at the chosen threshold; add exclusion rules for questions with order IDs, amounts or negations; and monitor cache hits in production with sampled human review.
-
-:::
-
-:::details Solution to exercise 4
-
-Measure retrieval quality (recall@k, MRR, nDCG) of the old and new model on the same labelled query set from your domain, in every supported language, including cross-language queries; end-to-end answer quality on the RAG evaluation set; latency and cost of embedding and search; and the effect of the new maximum input length on your chunk sizes. Re-embed the full corpus into a new index rather than mixing vectors; store the model version in the index metadata and assert at query time that query and index models match. Before switching: the new model must be at least as good on the agreed metrics with statistical confidence, no language or segment may regress beyond the tolerance, and a rollback path to the old index must exist.
-
-:::
 
 ## Summary
 
