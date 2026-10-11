@@ -66,7 +66,7 @@ A failure in each points to a different fix:
 - **context precision:** whether relevant chunks are ranked above irrelevant ones;
 - **context recall:** whether the context contains the information in the reference answer.
 
-DeepEval and TruLens offer comparable metrics. They are useful, but remember chapter 4: these metrics are judges. Spot-check them against your own labels before you trust their numbers, and pin the library and judge model versions because metric definitions change between releases.
+DeepEval and TruLens offer comparable metrics. They are useful, but remember [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation): these metrics are judges. Spot-check them against your own labels before you trust their numbers, and pin the library and judge model versions because metric definitions change between releases.
 
 ## 5. Building a RAG test set
 
@@ -120,7 +120,7 @@ If the product shows citations:
 - documents in different languages from the question;
 - **access control:** a user must never retrieve another tenant's or another user's private documents. Test this with two accounts; it is a security defect, not a quality issue;
 - **freshness:** an updated document must replace the old one in the index; test the reindex path;
-- **injection in documents:** retrieved content can contain instructions. See chapter 7.
+- **injection in documents:** retrieved content can contain instructions. See [Prompt injection and jailbreaks](/learn/llm?topic=prompt-injection).
 
 ## 9. Case study: GimmeJob canonical RAG
 

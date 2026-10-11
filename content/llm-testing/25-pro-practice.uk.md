@@ -123,7 +123,7 @@ datasets (версіоновані, теговані, з контролем до
 
 Об'єднай усе в один публічний portfolio project:
 
-1. support bot з chapter 2, розширений RAG і agent tools;
+1. support bot, який ви побудували під час курсу, розширений RAG і agent tools;
 2. версіонований golden dataset з failure taxonomy;
 3. deterministic checks, валідовані judges з опублікованою статистикою узгодженості, RAG і agent evals;
 4. red-team звіт з findings і виправленнями;
