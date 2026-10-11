@@ -1,10 +1,6 @@
-import { createPageMetadata } from "../seo";
+import { SITE_PAGE_SEO, createPageMetadata } from "../seo";
 
-export const metadata = createPageMetadata({
-  title: "QA Engineering Trends",
-  description: "QA engineering trends across testing, automation, AI, tools, skills, and the software quality job market.",
-  path: "/trends",
-});
+export const metadata = createPageMetadata(SITE_PAGE_SEO.trends);
 
 export default function TrendsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;

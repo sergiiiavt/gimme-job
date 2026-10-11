@@ -137,6 +137,14 @@ export function interviewDomainRouteById(id: string): InterviewDomainRoute | und
   return INTERVIEW_DOMAIN_ROUTES.find((route) => route.id === id);
 }
 
+/** `/interview` renders the Generic QA domain, so the hub is that domain's canonical list URL. */
+export const INTERVIEW_HUB_PATH = "/interview";
+export const INTERVIEW_HUB_DOMAIN_ID = "generic-qa";
+
+export function canonicalInterviewDomainPath(route: Readonly<{ id: string; path: string }>): string {
+  return route.id === INTERVIEW_HUB_DOMAIN_ID ? INTERVIEW_HUB_PATH : route.path;
+}
+
 export function interviewDomainRouteFromPathname(pathname: string): InterviewDomainRoute | undefined {
   const normalized = pathname !== "/" ? pathname.replace(/\/+$/, "") : pathname;
   return INTERVIEW_DOMAIN_ROUTES.find((route) => route.path === normalized);

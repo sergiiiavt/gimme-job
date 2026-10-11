@@ -1,19 +1,94 @@
 import type { Metadata } from "next";
+import { INTERVIEW_DOMAIN_ROUTES, canonicalInterviewDomainPath } from "../content/interview/domain-routes.ts";
 
 export const SITE_NAME = "GimmeJob";
 export const SITE_ORIGIN = "https://gimme-job.com";
 export const DEFAULT_DESCRIPTION =
   "Practical QA interview questions, testing and automation learning materials, references, and career tools for quality engineers.";
+export const HOME_TITLE = `${SITE_NAME} | QA Interview Questions, Learning & Career Tools`;
+export const DEFAULT_OG_IMAGE = {
+  url: "/og-image.png",
+  width: 1200,
+  height: 630,
+  alt: "GimmeJob — QA interview questions, learning paths, and career tools",
+} as const;
 
-type SeoPage = Readonly<{
+export type SeoPage = Readonly<{
   title: string;
   description: string;
+  /** Canonical path. Duplicate surfaces point this at the page that should rank. */
   path: string;
+  /** Replaces the default "<title> | GimmeJob" format. */
+  absoluteTitle?: string;
+  /** Placeholder pages stay crawlable for links but are kept out of the index and sitemap. */
+  maturity?: "under-construction";
 }>;
 
 export type SeoLanguageAlternates = Readonly<Record<"en" | "uk" | "x-default", string>>;
 
+export const SITE_PAGE_SEO = {
+  home: {
+    title: "QA Interview Questions, Learning & Career Tools",
+    absoluteTitle: HOME_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    path: "/",
+  },
+  // `/about` and `/learn` render the same introduction as the home page.
+  about: {
+    title: "About",
+    description: "About GimmeJob: a practical QA engineering knowledge base and career toolkit covering interview preparation, learning paths, automation, AI, and software quality.",
+    path: "/",
+  },
+  vacancies: {
+    title: "QA Vacancies & Job Search",
+    description: "QA and test automation vacancies with practical filtering and job-search tooling for quality engineers.",
+    path: "/vacancies",
+  },
+  resume: {
+    title: "QA Engineer Resume",
+    description: "QA engineering resume covering test leadership, automation, Python, Playwright, API testing, AI and LLM testing, and quality engineering experience.",
+    path: "/resume",
+  },
+  trends: {
+    title: "QA Engineering Trends",
+    description: "QA engineering trends across testing, automation, AI, tools, skills, and the software quality job market.",
+    path: "/trends",
+    maturity: "under-construction",
+  },
+  news: {
+    title: "QA & Software Testing News",
+    description: "Curated QA, software testing, automation, AI, tooling, and quality engineering news and updates.",
+    path: "/news",
+    maturity: "under-construction",
+  },
+  databasePlayground: {
+    title: "Online SQL & NoSQL Database Playground",
+    description: "Run SQL and NoSQL queries in the browser against MySQL 8, PostgreSQL 16, and MongoDB 8 sample databases to practise database testing and data validation.",
+    path: "/playgrounds/databases",
+  },
+  websocketPlayground: {
+    title: "WebSocket Testing Playground",
+    description: "A live WebSocket chat for practising WebSocket testing: connections, frames, reconnects, broadcasts, boundaries, and DevTools inspection.",
+    path: "/playgrounds/websocket",
+  },
+  games: {
+    title: "Games",
+    description: "Small browser games built as a GimmeJob technology playground, with generated platform battlefields and selectable difficulty.",
+    path: "/games",
+  },
+} as const satisfies Readonly<Record<string, SeoPage>>;
+
 export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
+  "qa-fundamentals": {
+    title: "QA Fundamentals Learning Path",
+    description: "A source-backed learning path for software testing and quality fundamentals: test process, test design, defects, risk, reviews, and modern delivery.",
+    path: "/learn/qa-fundamentals",
+  },
+  programming: {
+    title: "Python & Programming for QA Automation",
+    description: "A structured programming learning path for QA automation engineers, with Python and C# lessons, runnable examples, and interview-oriented explanations.",
+    path: "/learn/programming",
+  },
   certifications: {
     title: "QA Certifications",
     description: "QA certification learning materials, exam-oriented references, and practical study guidance for quality engineers.",
@@ -23,6 +98,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "QA Strategy & Risk",
     description: "Practical QA strategy, risk-based testing, estimation, planning, and quality leadership learning materials.",
     path: "/learn/strategy",
+    maturity: "under-construction",
   },
   automation: {
     title: "Test Automation Learning",
@@ -43,6 +119,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "Mobile Testing Learning",
     description: "Practical mobile testing materials for Android and iOS, including device tooling, logs, debugging, and automation concepts.",
     path: "/learn/mobile",
+    maturity: "under-construction",
   },
   embedded: {
     title: "Embedded & IoT Testing Learning",
@@ -58,6 +135,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "Security Testing Learning",
     description: "Security testing learning materials for QA engineers, including web risks, practical checks, tooling, and secure testing habits.",
     path: "/learn/security",
+    maturity: "under-construction",
   },
   "cloud-devops": {
     title: "Cloud & DevOps for QA",
@@ -68,6 +146,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "Observability for QA",
     description: "Observability learning materials for QA engineers covering logs, metrics, traces, monitoring, diagnostics, and production feedback loops.",
     path: "/learn/observability",
+    maturity: "under-construction",
   },
   networking: {
     title: "Networking for QA Engineers",
@@ -78,6 +157,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "Linux for QA Engineers",
     description: "Practical Linux learning materials for QA engineers covering shell usage, processes, files, networking, logs, and test automation workflows.",
     path: "/learn/linux",
+    maturity: "under-construction",
   },
   llm: {
     title: "LLM Testing & AI Learning",
@@ -93,6 +173,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     title: "QA Standards Learning",
     description: "Software quality and testing standards learning materials with practical context for QA engineers and regulated development environments.",
     path: "/learn/standards",
+    maturity: "under-construction",
   },
   "testing-tools": {
     title: "Software Testing Tools",
@@ -124,42 +205,28 @@ export const REFERENCE_SEO: Readonly<Record<string, SeoPage>> = {
   },
 };
 
-export const UKRAINIAN_SITEMAP_PATHS = [
-  "/uk/interview",
-  "/uk/interview/python",
-  "/uk/interview/generic-qa",
-  "/uk/interview/os-command-line",
-  "/uk/interview/automation",
-  "/uk/interview/sql",
-  "/uk/interview/web-api",
-  "/uk/interview/performance",
-  "/uk/interview/mobile",
-  "/uk/interview/embedded-iot",
-  "/uk/interview/ai-llm",
-] as const;
+export function isIndexableSeoPage(page: SeoPage): boolean {
+  return page.maturity !== "under-construction";
+}
 
-export const PUBLIC_SITEMAP_PATHS = [
-  "/",
-  "/about",
-  "/vacancies",
-  "/resume",
+const ENGLISH_INTERVIEW_SITEMAP_PATHS = [
   "/interview",
   "/interview/python",
-  "/interview/generic-qa",
-  "/interview/os-command-line",
-  "/interview/automation",
-  "/interview/sql",
-  "/interview/web-api",
-  "/interview/performance",
-  "/interview/mobile",
-  "/interview/embedded-iot",
-  "/interview/ai-llm",
-  "/trends",
-  "/news",
+  ...INTERVIEW_DOMAIN_ROUTES.map(canonicalInterviewDomainPath),
+];
+
+export const UKRAINIAN_SITEMAP_PATHS: readonly string[] = [...new Set(ENGLISH_INTERVIEW_SITEMAP_PATHS)].map((path) => `/uk${path}`);
+
+const indexablePaths = (pages: Readonly<Record<string, SeoPage>>) => Object.values(pages).filter(isIndexableSeoPage).map((page) => page.path);
+
+/** Canonical, indexable list and landing pages. Question pages are appended by the sitemap route. */
+export const PUBLIC_SITEMAP_PATHS: readonly string[] = [...new Set([
+  ...indexablePaths(SITE_PAGE_SEO),
+  ...ENGLISH_INTERVIEW_SITEMAP_PATHS,
   ...UKRAINIAN_SITEMAP_PATHS,
-  ...Object.values(LEARNING_SEO).map((page) => page.path),
-  ...Object.values(REFERENCE_SEO).map((page) => page.path),
-] as const;
+  ...indexablePaths(LEARNING_SEO),
+  ...indexablePaths(REFERENCE_SEO),
+])];
 
 function normalizedPath(path: string): string {
   return path.startsWith("/") ? path : `/${path}`;
@@ -175,8 +242,13 @@ export function bilingualLanguageAlternates(englishPath: string, ukrainianPath?:
   };
 }
 
+function openGraphLocale(path: string) {
+  return path === "/uk" || path.startsWith("/uk/") ? "uk_UA" : "en_US";
+}
+
 export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlternates): Metadata {
-  const fullTitle = `${page.title} | ${SITE_NAME}`;
+  const fullTitle = page.absoluteTitle ?? `${page.title} | ${SITE_NAME}`;
+  const locale = openGraphLocale(page.path);
   return {
     title: fullTitle,
     description: page.description,
@@ -184,18 +256,47 @@ export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlterna
       canonical: page.path,
       ...(languages ? { languages } : {}),
     },
+    ...(isIndexableSeoPage(page) ? {} : { robots: { index: false, follow: true } }),
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
       title: fullTitle,
       description: page.description,
       url: page.path,
+      locale,
+      ...(languages ? { alternateLocale: locale === "uk_UA" ? "en_US" : "uk_UA" } : {}),
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: fullTitle,
       description: page.description,
+      images: [DEFAULT_OG_IMAGE.url],
     },
+  };
+}
+
+/** Plain-text meta description that fits search snippets, cut on a word boundary. */
+export function metaDescription(text: string, limit = 155): string {
+  const normalized = text.replace(/`|\*\*/g, "").replace(/\s+/g, " ").trim();
+  if (normalized.length <= limit) return normalized;
+  const cut = normalized.slice(0, limit - 1);
+  const boundary = cut.lastIndexOf(" ");
+  return `${(boundary > limit * 0.6 ? cut.slice(0, boundary) : cut).replace(/[\s,.;:—–-]+$/, "")}…`;
+}
+
+type BreadcrumbItem = Readonly<{ name: string; path: string }>;
+
+export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.path, SITE_ORIGIN).toString(),
+    })),
   };
 }
 
@@ -221,10 +322,6 @@ export function referenceSectionMetadata(section: string): Metadata {
     description: `A practical ${humanizeSlug(section).toLowerCase()} reference for QA and quality engineering.`,
     path: `/reference/${section}`,
   });
-}
-
-export function legacyReferenceMetadata(section: keyof typeof REFERENCE_SEO): Metadata {
-  return createPageMetadata(REFERENCE_SEO[section]);
 }
 
 export function noIndexMetadata(title: string, description: string): Metadata {

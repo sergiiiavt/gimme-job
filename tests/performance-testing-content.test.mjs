@@ -6,7 +6,8 @@ const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 const readJson = (path) => readFile(projectFile(path), "utf8").then(JSON.parse);
 
 test("publishes a dedicated source-backed performance interview domain", async () => {
-  const [core, practical, domains, subtopics, catalogSource, routeSource, ukRouteSource, navigationSource, seoSource, switcherSource] = await Promise.all([
+  const { PUBLIC_SITEMAP_PATHS } = await import("../app/seo.ts");
+  const [core, practical, domains, subtopics, catalogSource, routeSource, ukRouteSource, navigationSource, switcherSource] = await Promise.all([
     readJson("content/interview/performance-testing-core-qa.json"),
     readJson("content/interview/performance-testing-practical-qa.json"),
     readJson("content/interview/domains.json"),
@@ -15,7 +16,6 @@ test("publishes a dedicated source-backed performance interview domain", async (
     readFile(projectFile("content/interview/domain-routes.ts"), "utf8"),
     readFile(projectFile("content/interview/ukrainian-routes.ts"), "utf8"),
     readFile(projectFile("app/navigation-paths.ts"), "utf8"),
-    readFile(projectFile("app/seo.ts"), "utf8"),
     readFile(projectFile("app/interview-domain-switcher-overlay.tsx"), "utf8"),
   ]);
 
@@ -38,8 +38,8 @@ test("publishes a dedicated source-backed performance interview domain", async (
   assert.match(routeSource, /path: "\/interview\/performance"/);
   assert.match(ukRouteSource, /performance:\s*\{/);
   assert.match(navigationSource, /INTERVIEW_DOMAIN_ROUTES\.map\(\(route\) => route\.slug\)/);
-  assert.match(seoSource, /"\/interview\/performance"/);
-  assert.match(seoSource, /"\/uk\/interview\/performance"/);
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/interview/performance"));
+  assert.ok(PUBLIC_SITEMAP_PATHS.includes("/uk/interview/performance"));
   assert.match(switcherSource, /id: "performance-testing"/);
   assert.match(switcherSource, /"\/interview\/performance"/);
 });

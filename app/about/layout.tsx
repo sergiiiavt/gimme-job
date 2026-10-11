@@ -1,10 +1,6 @@
-import { createPageMetadata } from "../seo";
+import { SITE_PAGE_SEO, createPageMetadata } from "../seo";
 
-export const metadata = createPageMetadata({
-  title: "About GimmeJob",
-  description: "About GimmeJob: a practical QA engineering knowledge base and career toolkit covering interview preparation, learning paths, automation, AI, and software quality.",
-  path: "/about",
-});
+export const metadata = createPageMetadata(SITE_PAGE_SEO.about);
 
 export default function AboutLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;

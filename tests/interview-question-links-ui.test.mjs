@@ -8,7 +8,7 @@ test("QA and Python interview lists mount direct question links", async () => {
   const [qaPage, qaClient, pythonPage] = await Promise.all([
     read("app/interview/page.tsx"),
     read("app/interview/interview-domain-page-client.tsx"),
-    read("app/interview/python/page.tsx"),
+    read("app/interview/python/python-interview-page-client.tsx"),
   ]);
 
   assert.match(qaPage, /<InterviewDomainPageClient\/>/);

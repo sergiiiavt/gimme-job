@@ -6,7 +6,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("vacancy UI keeps responsive rows, local-agent routing, and accessible interaction contracts", async () => {
   const [privateJobsSource, publicSiteSource, stylesSource] = await Promise.all([
-    read("app/page.tsx"),
+    read("app/home-page.tsx"),
     read("app/public-site.tsx"),
     read("app/globals.css"),
   ]);

@@ -1,9 +1,10 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import { notFound } from "next/navigation";
 import PublicSite from "../../public-site";
+import { LEARNING_SEO } from "../../seo";
 
-export default function PublicLearningSectionPage() {
-  const pathname = usePathname();
-  return <PublicSite key={pathname}/>;
+export default async function PublicLearningSectionPage({ params }: { params: Promise<{ section: string }> }) {
+  const { section } = await params;
+  if (!Object.hasOwn(LEARNING_SEO, section)) notFound();
+
+  return <PublicSite key={section}/>;
 }

@@ -46,5 +46,5 @@ test("removes the visible page language switch while keeping SEO language altern
   assert.doesNotMatch(overlay, /iq-seo-language/);
   assert.doesNotMatch(overlay, /Page language/);
   assert.doesNotMatch(overlay, />Language</);
-  assert.match(domainPage, /bilingualLanguageAlternates\(route\.path, `\/uk\$\{route\.path\}`\)/);
+  assert.match(domainPage, /bilingualLanguageAlternates\(canonicalPath, `\/uk\$\{canonicalPath\}`\)/);
 });

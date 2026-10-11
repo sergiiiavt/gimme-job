@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { interviewDomainRouteFromPathname } from "../content/interview/domain-routes.ts";
 import AboutSite from "./about-site";
 import ResumePage from "./resume-page";
 import { sectionFromPathname, sectionNavigationHref } from "./navigation-paths";
@@ -777,6 +778,25 @@ function UnderConstructionPage({ copy, title }: { copy: string; title: string })
   );
 }
 
+// Server-rendered placeholder: keeps the page heading in the initial HTML while the catalog chunk loads.
+function InterviewCatalogLoadingState({ error, python = false }: { error: boolean; python?: boolean }) {
+  const pathname = usePathname();
+  const copy = python
+    ? { heading: "Python interview knowledge base", loading: "Loading Python interview catalog…", unavailable: "Python interview catalog unavailable" }
+    : { heading: `${interviewDomainRouteFromPathname(pathname)?.label ?? "Generic QA"} interview questions`, loading: "Loading interview catalog…", unavailable: "Interview catalog unavailable" };
+  return (
+    <div className="kb-content iq-page">
+      <header className="kb-page-head">
+        <div><h1>{copy.heading}</h1></div>
+      </header>
+      <div className="kb-empty iq-catalog-state">
+        <strong>{error ? copy.unavailable : copy.loading}</strong>
+        <span>{error ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
+      </div>
+    </div>
+  );
+}
+
 function KnowledgeSection({ activeTopic, automationCurriculum, automationCurriculumError, automationTrack, interviewCatalog, interviewCatalogError, mode, onTopicChange, programmingTrack, pythonCurriculum, pythonCurriculumError, pythonInterviewCatalog, pythonInterviewCatalogError, section }: {
   activeTopic: string;
   automationCurriculum: LearningCurriculum | null;
@@ -797,30 +817,12 @@ function KnowledgeSection({ activeTopic, automationCurriculum, automationCurricu
   if (section === "resume") return <ResumePage mode={mode}/>;
 
   if (section === "interview") {
-    if (!interviewCatalog) {
-      return (
-        <div className="kb-content iq-page">
-          <div className="kb-empty iq-catalog-state">
-            <strong>{interviewCatalogError ? "Interview catalog unavailable" : "Loading interview catalog…"}</strong>
-            <span>{interviewCatalogError ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
-          </div>
-        </div>
-      );
-    }
+    if (!interviewCatalog) return <InterviewCatalogLoadingState error={interviewCatalogError}/>;
     return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={interviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
   }
 
   if (section === "python-interview") {
-    if (!pythonInterviewCatalog) {
-      return (
-        <div className="kb-content iq-page">
-          <div className="kb-empty iq-catalog-state">
-            <strong>{pythonInterviewCatalogError ? "Python interview catalog unavailable" : "Loading Python interview catalog…"}</strong>
-            <span>{pythonInterviewCatalogError ? "Reload the page to try the separate catalog request again." : "The public catalog is loaded only when this section is opened."}</span>
-          </div>
-        </div>
-      );
-    }
+    if (!pythonInterviewCatalog) return <InterviewCatalogLoadingState error={pythonInterviewCatalogError} python/>;
     return <InterviewKnowledgeBase activeTopic={activeTopic} catalog={pythonInterviewCatalog} mode={mode} onTopicChange={onTopicChange}/>;
   }
 
