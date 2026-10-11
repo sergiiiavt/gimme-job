@@ -1008,5 +1008,145 @@
     "role": "NormalDist, fmean and stdev used in the examples of the chapter.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "husain-evals-faq",
+    "title": "AI Evals: Everything You Need to Know",
+    "publisher": "Hamel Husain and Shreya Shankar",
+    "kind": "article",
+    "url": "https://hamel.dev/blog/posts/evals-faq/",
+    "role": "Error analysis with open and axial coding, theoretical saturation, binary pass/fail criteria and one domain expert as the owner of quality.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "husain-field-guide",
+    "title": "A Field Guide to Rapidly Improving AI Products",
+    "publisher": "Hamel Husain",
+    "kind": "article",
+    "url": "https://hamel.dev/blog/posts/field-guide/",
+    "role": "Looking at data, simple annotation tools and making evaluation part of everyday product work.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "shankar-validators",
+    "title": "Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences",
+    "publisher": "Shankar et al. — arXiv / UIST 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2404.12272",
+    "role": "Criteria drift: evaluation criteria become clear while grading outputs, so criteria, labels and scorers evolve together.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "gebru-datasheets",
+    "title": "Datasheets for Datasets",
+    "publisher": "Gebru et al. — arXiv / Communications of the ACM 2021",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1803.09010",
+    "role": "Documenting how a dataset was collected, labelled and should be used.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "liang-helm",
+    "title": "Holistic Evaluation of Language Models",
+    "publisher": "Liang et al. — arXiv / TMLR 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2211.09110",
+    "role": "Evaluation as a matrix of scenarios and metrics, reported per scenario instead of as one number.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sainz-contamination",
+    "title": "NLP Evaluation in trouble: On the Need to Measure LLM Data Contamination for each Benchmark",
+    "publisher": "Sainz et al. — arXiv / Findings of EMNLP 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.18018",
+    "role": "Benchmark data in the training data of a model makes its scores unreliable; contamination has to be measured.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "cohen-kappa",
+    "title": "A Coefficient of Agreement for Nominal Scales",
+    "publisher": "Jacob Cohen — Educational and Psychological Measurement 1960",
+    "kind": "paper",
+    "url": "https://doi.org/10.1177/001316446002000104",
+    "role": "Cohen's kappa: agreement between two raters corrected for the agreement expected by chance.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "landis-koch",
+    "title": "The Measurement of Observer Agreement for Categorical Data",
+    "publisher": "Landis and Koch — Biometrics 1977",
+    "kind": "paper",
+    "url": "https://doi.org/10.2307/2529310",
+    "role": "The conventional verbal scale for kappa values, from slight to almost perfect agreement.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "nist-combinatorial",
+    "title": "Practical Combinatorial Testing (SP 800-142)",
+    "publisher": "NIST",
+    "kind": "official-docs",
+    "url": "https://csrc.nist.gov/pubs/sp/800/142/final",
+    "role": "Pairwise and t-way combinatorial testing; most failures are triggered by interactions of few factors.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "promptfoo-intro",
+    "title": "Intro",
+    "publisher": "promptfoo",
+    "kind": "tool",
+    "url": "https://www.promptfoo.dev/docs/intro/",
+    "role": "Configuration-driven evaluation of prompts and models with a command-line runner suited to CI.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "deepeval-github",
+    "title": "DeepEval",
+    "publisher": "Confident AI",
+    "kind": "tool",
+    "url": "https://github.com/confident-ai/deepeval",
+    "role": "LLM test cases and metrics in the style of pytest.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "inspect-ai",
+    "title": "Inspect",
+    "publisher": "UK AI Security Institute",
+    "kind": "tool",
+    "url": "https://inspect.aisi.org.uk/",
+    "role": "Evaluation tasks made of datasets, solvers and scorers, with sandboxes for agent evaluations.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-evals",
+    "title": "openai/evals",
+    "publisher": "OpenAI",
+    "kind": "tool",
+    "url": "https://github.com/openai/evals",
+    "role": "A framework and registry of evaluation templates and benchmarks.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "yan-llm-patterns",
+    "title": "Patterns for Building LLM-based Systems & Products",
+    "publisher": "Eugene Yan",
+    "kind": "article",
+    "url": "https://eugeneyan.com/writing/llm-patterns/",
+    "role": "Evaluations as the first pattern of LLM products and their relation to the other patterns.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

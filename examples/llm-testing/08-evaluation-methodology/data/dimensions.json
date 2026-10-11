@@ -1,0 +1,21 @@
+{
+  "persona": [
+    "new customer",
+    "regular customer",
+    "angry customer"
+  ],
+  "intent": [
+    "return",
+    "refund",
+    "delivery"
+  ],
+  "language": [
+    "en",
+    "uk"
+  ],
+  "difficulty": [
+    "simple",
+    "ambiguous",
+    "two questions"
+  ]
+}

@@ -1,0 +1,18 @@
+{"id": "g01", "input": "Can I return shoes after 40 days?", "expected_facts": ["30 days"], "tags": {"lang": "en", "intent": "returns"}, "split": "dev", "source": "production log"}
+{"id": "g02", "input": "How do I return the boots from order A-1042?", "expected_facts": ["30 days"], "tags": {"lang": "en", "intent": "returns"}, "split": "test", "source": "production log"}
+{"id": "g03", "input": "Is it possible to return a jacket I bought last week?", "expected_facts": ["30 days"], "tags": {"lang": "en", "intent": "returns"}, "split": "dev", "source": "production log"}
+{"id": "g04", "input": "Чи можна повернути взуття через 40 днів?", "expected_facts": ["30 днів"], "tags": {"lang": "uk", "intent": "returns"}, "split": "test", "source": "production log"}
+{"id": "g05", "input": "Як повернути замовлення A-2210?", "expected_facts": ["30 днів"], "tags": {"lang": "uk", "intent": "returns"}, "split": "dev", "source": "production log"}
+{"id": "g06", "input": "Чи приймаєте повернення товарів зі знижкою?", "expected_facts": ["30 днів"], "tags": {"lang": "uk", "intent": "returns"}, "split": "test", "source": "production log"}
+{"id": "g07", "input": "How long does delivery to Lviv take?", "expected_facts": ["3-5 business days"], "tags": {"lang": "en", "intent": "delivery"}, "split": "dev", "source": "production log"}
+{"id": "g08", "input": "When will my delivery arrive if I order today?", "expected_facts": ["3-5 business days"], "tags": {"lang": "en", "intent": "delivery"}, "split": "test", "source": "production log"}
+{"id": "g09", "input": "Standard delivery time to Kyiv?", "expected_facts": ["3-5 business days"], "tags": {"lang": "en", "intent": "delivery"}, "split": "dev", "source": "production log"}
+{"id": "g10", "input": "Скільки триває доставка до Львова?", "expected_facts": ["3-5 робочих днів"], "tags": {"lang": "uk", "intent": "delivery"}, "split": "test", "source": "production log"}
+{"id": "g11", "input": "Коли буде доставка, якщо замовлю сьогодні?", "expected_facts": ["3-5 робочих днів"], "tags": {"lang": "uk", "intent": "delivery"}, "split": "dev", "source": "production log"}
+{"id": "g12", "input": "Яка тривалість стандартної доставки?", "expected_facts": ["3-5 робочих днів"], "tags": {"lang": "uk", "intent": "delivery"}, "split": "test", "source": "production log"}
+{"id": "g13", "input": "When will I get my refund for A-1042?", "expected_facts": ["5 business days", "original payment method"], "tags": {"lang": "en", "intent": "refunds"}, "split": "dev", "source": "production log"}
+{"id": "g14", "input": "My refund has not arrived yet, how long does it take?", "expected_facts": ["5 business days"], "tags": {"lang": "en", "intent": "refunds"}, "split": "test", "source": "production log"}
+{"id": "g15", "input": "Where does the refund money go?", "expected_facts": ["original payment method"], "tags": {"lang": "en", "intent": "refunds"}, "split": "dev", "source": "production log"}
+{"id": "g16", "input": "Коли я отримаю гроші за замовлення A-1042?", "expected_facts": ["5 робочих днів"], "tags": {"lang": "uk", "intent": "refunds"}, "split": "test", "source": "production log"}
+{"id": "g17", "input": "Куди повернуться гроші за повернення?", "expected_facts": ["той самий спосіб оплати"], "tags": {"lang": "uk", "intent": "refunds"}, "split": "dev", "source": "production log"}
+{"id": "g18", "input": "Скільки чекати на гроші за повернений товар?", "expected_facts": ["5 робочих днів"], "tags": {"lang": "uk", "intent": "refunds"}, "split": "test", "source": "production log"}

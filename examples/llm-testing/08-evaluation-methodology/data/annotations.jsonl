@@ -1,0 +1,40 @@
+{"trace": "t01", "note": "", "category": null}
+{"trace": "t02", "note": "Says returns are possible after 60 days; the policy says 30.", "category": "invented policy"}
+{"trace": "t03", "note": "Correct answer but no link to the returns policy.", "category": "missing citation"}
+{"trace": "t04", "note": "", "category": null}
+{"trace": "t05", "note": "Six paragraphs for a yes-or-no question.", "category": "too long"}
+{"trace": "t06", "note": "Promises a free return label, which the store does not offer.", "category": "invented policy"}
+{"trace": "t07", "note": "", "category": null}
+{"trace": "t08", "note": "Order number given, but the order tool was not called.", "category": "missed order lookup"}
+{"trace": "t09", "note": "Cites nothing although two policy documents were retrieved.", "category": "missing citation"}
+{"trace": "t10", "note": "", "category": null}
+{"trace": "t11", "note": "", "category": null}
+{"trace": "t12", "note": "Repeats the whole policy before answering.", "category": "too long"}
+{"trace": "t13", "note": "Ukrainian question, English answer.", "category": "wrong language"}
+{"trace": "t14", "note": "", "category": null}
+{"trace": "t15", "note": "Correct refund timing, citation missing.", "category": "missing citation"}
+{"trace": "t16", "note": "", "category": null}
+{"trace": "t17", "note": "Claims refunds take 24 hours.", "category": "invented policy"}
+{"trace": "t18", "note": "", "category": null}
+{"trace": "t19", "note": "Answers generically instead of looking up order A-2210.", "category": "missed order lookup"}
+{"trace": "t20", "note": "", "category": null}
+{"trace": "t21", "note": "Mentions the delivery policy without citing it.", "category": "missing citation"}
+{"trace": "t22", "note": "", "category": null}
+{"trace": "t23", "note": "Answer buried after an apology and a summary.", "category": "too long"}
+{"trace": "t24", "note": "", "category": null}
+{"trace": "t25", "note": "", "category": null}
+{"trace": "t26", "note": "Invents an exception for sale items.", "category": "invented policy"}
+{"trace": "t27", "note": "", "category": null}
+{"trace": "t28", "note": "No citation for the exchange rule.", "category": "missing citation"}
+{"trace": "t29", "note": "", "category": null}
+{"trace": "t30", "note": "", "category": null}
+{"trace": "t31", "note": "Lists every delivery option when asked about one.", "category": "too long"}
+{"trace": "t32", "note": "", "category": null}
+{"trace": "t33", "note": "Asks for the order number the customer already gave.", "category": "missed order lookup"}
+{"trace": "t34", "note": "", "category": null}
+{"trace": "t35", "note": "Correct, but cites a document that was not retrieved.", "category": "missing citation"}
+{"trace": "t36", "note": "", "category": null}
+{"trace": "t37", "note": "", "category": null}
+{"trace": "t38", "note": "States that opened boxes cannot be returned; not in the policy.", "category": "invented policy"}
+{"trace": "t39", "note": "", "category": null}
+{"trace": "t40", "note": "", "category": null}
