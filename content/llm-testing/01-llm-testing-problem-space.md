@@ -334,7 +334,7 @@ The course follows the order in which you need the knowledge. One running exampl
 |---|---|---|
 | Foundations | Why LLM testing is different; How LLMs generate text; Embeddings and similarity | You understand how models produce text and how similarity is measured |
 | Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation; Testing LLM code without the model | You can build and unit-test the system you will evaluate |
-| Evaluation | Evaluation methodology and datasets; LLM-as-a-judge | You can design datasets, scorers and judges and compare versions soundly |
+| Evaluation | Evaluation methodology and datasets; Code-based scorers and metrics; LLM-as-a-judge | You can design datasets, scorers and judges and compare versions soundly |
 | RAG and agents | Evaluating RAG systems; Evaluating agents and tool use | You can evaluate retrieval pipelines and multi-step agents |
 | Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |
 | Professional practice | Benchmarks, human evaluation and governance | You can select models, run human evaluation and produce governance evidence |

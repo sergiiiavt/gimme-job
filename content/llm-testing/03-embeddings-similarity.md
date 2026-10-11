@@ -136,7 +136,7 @@ The first three pairs mean different things and score high; the last pair means 
 | Scope and quantifiers | "all items" vs "some items" | Quantifiers are small tokens | Rubric that names the quantifier |
 | Entity swaps | "order A-1042" vs "order A-1024" | IDs look alike | Exact match on IDs |
 
-**Consequence for testing:** a similarity score can tell you that an answer is *about the right thing*. It cannot tell you that the answer is *right*. Use similarity for retrieval, clustering and as a cheap first filter; use fact checks, structured extraction or validated judges for correctness ([Evaluation methodology and datasets](/learn/llm?topic=evaluation-fundamentals)).
+**Consequence for testing:** a similarity score can tell you that an answer is *about the right thing*. It cannot tell you that the answer is *right*. Use similarity for retrieval, clustering and as a cheap first filter; use fact checks, structured extraction or validated judges for correctness ([Code-based scorers and metrics](/learn/llm?topic=code-based-scorers), [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
 
 ## Calibrating a similarity threshold
 

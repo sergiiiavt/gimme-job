@@ -11,6 +11,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [05-prompt-artifacts](05-prompt-artifacts) | Prompts as testable artifacts | Versioned prompt files with a lock file checked in CI, safe rendering fuzzed with Hypothesis, code-verified instructions, metamorphic input tests |
 | [06-structured-output](06-structured-output) | Structured output and validation | A Pydantic contract, the extract/validate/repair/fallback pipeline against recorded raw outputs, schema-generated property tests, field-level accuracy |
 | [07-testing-without-the-model](07-testing-without-the-model) | Testing LLM code without the model | A support assistant with an injected client, all kinds of test doubles, context-assembly invariants, a prompt snapshot, provider contract fixtures, tool authorization, record and replay with vcrpy |
+| [09-code-based-scorers](09-code-based-scorers) | Code-based scorers and metrics | Text and classification metrics with property-based tests, a bilingual fact scorer validated against human labels, a scoring harness that compares two versions slice by slice, execution-based scoring of generated SQL |
 
 ## Principles
 

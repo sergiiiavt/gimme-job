@@ -1,0 +1,5 @@
+{
+  "policy-returns": "Unworn items with the tags attached can be returned within 30 days of delivery. Start a return at https://shop.example/returns.",
+  "policy-refunds": "Refunds go to the original payment method within 5 business days after the return reaches our warehouse. Refunds cannot be sent to a different card or account.",
+  "policy-delivery": "Standard delivery takes 3-5 business days. Delivery is free for orders over 50 EUR. Delivery dates are estimates, not guarantees. Track a parcel at https://shop.example/track."
+}

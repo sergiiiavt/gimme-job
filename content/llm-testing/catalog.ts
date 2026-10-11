@@ -15,6 +15,8 @@ import testingWithoutModel from "./07-testing-without-the-model.md?raw";
 import testingWithoutModelUk from "./07-testing-without-the-model.uk.md?raw";
 import evaluationFundamentals from "./10-evaluation-fundamentals.md?raw";
 import evaluationFundamentalsUk from "./10-evaluation-fundamentals.uk.md?raw";
+import codeBasedScorers from "./09-code-based-scorers.md?raw";
+import codeBasedScorersUk from "./09-code-based-scorers.uk.md?raw";
 import modelGradedEvaluation from "./13-model-graded-evaluation.md?raw";
 import modelGradedEvaluationUk from "./13-model-graded-evaluation.uk.md?raw";
 import ragTesting from "./16-rag-testing.md?raw";
@@ -129,6 +131,14 @@ const topics: LlmTestingTopic[] = [
     description: "The LLM test pyramid, error analysis, golden datasets, deterministic assertions, reference-based metrics, promptfoo and DeepEval, and reading a scorecard.",
     descriptionUk: "Піраміда тестування LLM, error analysis, golden datasets, deterministic assertions, reference-based metrics, promptfoo і DeepEval та читання scorecard.",
   }, evaluationFundamentals, evaluationFundamentalsUk),
+  chapter({
+    id: "code-based-scorers",
+    label: "Code-based scorers and metrics",
+    labelUk: "Code-based scorers і metrics",
+    level: "intermediate",
+    description: "Scorers as tested software: assertions without a reference, exact match and token F1, fact-based scoring validated against human labels, BLEU and ROUGE step by step, BERTScore, classification metrics, execution-based scoring and a scoring harness with slices.",
+    descriptionUk: "Scorers як протестоване software: assertions без reference, exact match і token F1, оцінювання за фактами з validation проти human labels, BLEU і ROUGE крок за кроком, BERTScore, classification metrics, оцінювання виконанням і scoring harness зі зрізами.",
+  }, codeBasedScorers, codeBasedScorersUk, ["rajpurkar-squad", "papineni-bleu", "lin-och-orange", "chen-cherry-bleu-smoothing", "lin-rouge", "rouge-score", "post-sacrebleu", "novikova-nlg-metrics", "zhang-bertscore", "sklearn-metrics", "chen-humaneval", "zhong-test-suite-sql", "python-sqlite3", "anthropic-develop-tests", "promptfoo-assertions", "deepeval-custom-metrics", "hypothesis-docs", "husain-evals"]),
   chapter({
     id: "model-graded-evaluation",
     label: "LLM-as-a-judge",
