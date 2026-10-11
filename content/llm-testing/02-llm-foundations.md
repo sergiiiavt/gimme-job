@@ -255,7 +255,7 @@ Read the result as a tester. The model "knows" the right answer in the sense tha
 | Extraction, classification, structured output | Temperature 0 or close to it | One correct answer; variety is a defect | Still run cases several times: temperature 0 is not deterministic |
 | Question answering from documents | Low temperature | Stay close to the most likely, grounded answer | Measure faithfulness, not only correctness |
 | Creative writing, brainstorming | Temperature around 0.7–1.0 | Variety is the point | Measure distributions (quality across many samples), not single outputs |
-| Code generation with multiple attempts | Moderate temperature, several samples | Diversity raises the chance one attempt passes tests | Report pass@k, see [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation) |
+| Code generation with multiple attempts | Moderate temperature, several samples | Diversity raises the chance one attempt passes tests | Report pass@k, see [Statistics for evaluation](/learn/llm?topic=eval-statistics) |
 
 Two rules apply everywhere. **Test at the production settings**, because a prompt evaluated at temperature 0 may behave differently at 0.7. And **change one sampling parameter at a time** when comparing runs. Note also that some models, especially reasoning models, fix or ignore sampling parameters; check the provider documentation before assuming a parameter has an effect.
 

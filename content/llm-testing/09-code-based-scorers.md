@@ -347,7 +347,7 @@ How to read it:
 - **Accuracy** (0.75) hides which classes fail. The confusion matrix shows that technical tickets leak into "other" (recall 0.60): those customers wait for the wrong team.
 - **Macro F1** averages classes equally, so small classes count as much as large ones; **weighted F1** follows the class frequencies. Report the one that matches the business question, and always show per-class numbers.
 - **Precision versus recall** is a cost decision: for the escalation flag, missing a case (low recall) is usually worse than escalating unnecessarily (low precision).
-- **Twenty cases are far too few** for decisions; the point here is the method. Sample sizes are covered in [Benchmarks, human evaluation and governance](/learn/llm?topic=pro-practice).
+- **Twenty cases are far too few** for decisions; the point here is the method. Sample sizes are covered in [Statistics for evaluation](/learn/llm?topic=eval-statistics).
 
 ## Execution-based scoring
 

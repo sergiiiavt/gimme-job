@@ -52,7 +52,7 @@ The table compares a conventional feature, such as a price calculator, with an L
 Three consequences follow, and they shape the rest of the course:
 
 - **Exact expected values rarely work.** You need other kinds of oracles (next section).
-- **One run is a sample, not a verdict.** You must run cases repeatedly and reason about rates (see [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+- **One run is a sample, not a verdict.** You must run cases repeatedly and reason about rates (see [Statistics for evaluation](/learn/llm?topic=eval-statistics)).
 - **Behaviour can drift with no code change.** You must pin and record versions and keep testing in production (see [Production quality](/learn/llm?topic=production-quality)).
 
 ## The test oracle problem
@@ -188,7 +188,7 @@ feature correct 70% of the time -> 5 tries all pass with probability 0.17
 10000 runs: observed pass rate 0.904
 ```
 
-A feature that fails one time in ten passes five manual tries more often than not, and in this simulation even ten runs showed a perfect score. Quality claims about LLM features are statements about rates, and rates need samples. The next subsection shows how many runs such claims need.
+A feature that fails one time in ten passes five manual tries more often than not, and in this simulation even ten runs showed a perfect score. Quality claims about LLM features are statements about rates, and rates need samples. The next subsection shows how many runs such claims need, and [Statistics for evaluation](/learn/llm?topic=eval-statistics) shows how to put error bars on them and compare versions.
 
 ### How many runs reveal a rare failure?
 
@@ -334,7 +334,7 @@ The course follows the order in which you need the knowledge. One running exampl
 |---|---|---|
 | Foundations | Why LLM testing is different; How LLMs generate text; Embeddings and similarity | You understand how models produce text and how similarity is measured |
 | Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation; Testing LLM code without the model | You can build and unit-test the system you will evaluate |
-| Evaluation | Evaluation methodology and datasets; Code-based scorers and metrics; LLM-as-a-judge | You can design datasets, scorers and judges and compare versions soundly |
+| Evaluation | Evaluation methodology and datasets; Code-based scorers and metrics; LLM-as-a-judge; Statistics for evaluation | You can design datasets, scorers and judges and compare versions soundly |
 | RAG and agents | Evaluating RAG systems; Evaluating agents and tool use | You can evaluate retrieval pipelines and multi-step agents |
 | Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |
 | Professional practice | Benchmarks, human evaluation and governance | You can select models, run human evaluation and produce governance evidence |

@@ -848,5 +848,165 @@
     "role": "Wrapping your own code-based scorer as a metric with BaseMetric.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "miller-error-bars",
+    "title": "Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations",
+    "publisher": "Evan Miller — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2411.00640",
+    "role": "Standard errors, clustered errors for grouped and repeated questions, paired differences and power analysis for model evaluations.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-statistical-evals",
+    "title": "A statistical approach to model evaluations",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/research/statistical-approach-to-model-evals",
+    "role": "Short summary of the recommendations for reporting evaluation results with error bars.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "wilson-1927",
+    "title": "Probable Inference, the Law of Succession, and Statistical Inference",
+    "publisher": "Edwin B. Wilson — Journal of the American Statistical Association 1927",
+    "kind": "paper",
+    "url": "https://doi.org/10.1080/01621459.1927.10502953",
+    "role": "The Wilson score interval for a binomial proportion.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "brown-cai-dasgupta",
+    "title": "Interval Estimation for a Binomial Proportion",
+    "publisher": "Brown, Cai and DasGupta — Statistical Science 2001",
+    "kind": "paper",
+    "url": "https://doi.org/10.1214/ss/1009213286",
+    "role": "Shows the erratic coverage of the Wald interval even for large samples and recommends the Wilson interval and its relatives.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mcnemar-1947",
+    "title": "Note on the Sampling Error of the Difference Between Correlated Proportions or Percentages",
+    "publisher": "Quinn McNemar — Psychometrika 1947",
+    "kind": "paper",
+    "url": "https://doi.org/10.1007/BF02295996",
+    "role": "McNemar's test for paired proportions, based only on the discordant pairs.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "dietterich-1998",
+    "title": "Approximate Statistical Tests for Comparing Supervised Classification Learning Algorithms",
+    "publisher": "Thomas G. Dietterich — Neural Computation 1998",
+    "kind": "paper",
+    "url": "https://doi.org/10.1162/089976698300017197",
+    "role": "Recommends McNemar's test for comparing two classifiers evaluated on the same test set.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "koehn-bootstrap",
+    "title": "Statistical Significance Tests for Machine Translation Evaluation",
+    "publisher": "Philipp Koehn — EMNLP 2004",
+    "kind": "paper",
+    "url": "https://aclanthology.org/W04-3250/",
+    "role": "Bootstrap resampling and paired bootstrap resampling for comparing systems on one test set.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "dror-significance",
+    "title": "The Hitchhiker’s Guide to Testing Statistical Significance in Natural Language Processing",
+    "publisher": "Dror et al. — ACL 2018",
+    "kind": "paper",
+    "url": "https://aclanthology.org/P18-1128/",
+    "role": "How to choose a significance test for NLP evaluation results.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "card-power",
+    "title": "With Little Power Comes Great Responsibility",
+    "publisher": "Card et al. — EMNLP 2020",
+    "kind": "paper",
+    "url": "https://aclanthology.org/2020.emnlp-main.745/",
+    "role": "Statistical power of NLP comparisons; many published comparisons are underpowered.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "connor-1987",
+    "title": "Sample Size for Testing Differences in Proportions for the Paired-Sample Design",
+    "publisher": "Roger J. Connor — Biometrics 1987",
+    "kind": "paper",
+    "url": "https://doi.org/10.2307/2531961",
+    "role": "Sample-size formula for paired comparisons of two proportions.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "holm-1979",
+    "title": "A Simple Sequentially Rejective Multiple Test Procedure",
+    "publisher": "Sture Holm — Scandinavian Journal of Statistics 1979",
+    "kind": "paper",
+    "url": "https://www.jstor.org/stable/4615733",
+    "role": "The Holm procedure for controlling the family-wise error rate across many comparisons.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "yao-tau-bench",
+    "title": "τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains",
+    "publisher": "Yao et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.12045",
+    "role": "Introduces pass^k, the reliability of an agent across repeated trials of the same task.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "madaan-variance",
+    "title": "Quantifying Variance in Evaluation Benchmarks",
+    "publisher": "Madaan et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.10229",
+    "role": "Measures seed and sampling variance in language-model benchmarks and its effect on comparisons.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "statsmodels-proportion-confint",
+    "title": "statsmodels.stats.proportion.proportion_confint",
+    "publisher": "statsmodels",
+    "kind": "tool",
+    "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.proportion_confint.html",
+    "role": "Library implementations of the Wald, Wilson, Clopper-Pearson and other intervals for a proportion.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "statsmodels-mcnemar",
+    "title": "statsmodels.stats.contingency_tables.mcnemar",
+    "publisher": "statsmodels",
+    "kind": "tool",
+    "url": "https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.mcnemar.html",
+    "role": "Library implementation of the exact and asymptotic McNemar test.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "python-statistics",
+    "title": "statistics — Mathematical statistics functions",
+    "publisher": "Python documentation",
+    "kind": "official-docs",
+    "url": "https://docs.python.org/3/library/statistics.html",
+    "role": "NormalDist, fmean and stdev used in the examples of the chapter.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

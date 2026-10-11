@@ -35,6 +35,7 @@ const expectedTopicIds = [
   "evaluation-fundamentals",
   "code-based-scorers",
   "model-graded-evaluation",
+  "eval-statistics",
   "rag-testing",
   "agent-testing",
   "security-red-teaming",
@@ -52,6 +53,7 @@ const courseFormatTopicIds = [
   "structured-output-validation",
   "testing-without-the-model",
   "code-based-scorers",
+  "eval-statistics",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];
