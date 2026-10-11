@@ -1,0 +1,25 @@
+[project]
+name = "llm-testing-examples"
+version = "0.1.0"
+description = "Runnable example projects for the GimmeJob Generative AI & LLM testing course"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "hypothesis==6.169.0",
+  "hypothesis-jsonschema==0.23.1",
+  "pydantic==2.14.0",
+  "pytest==9.1.1",
+]
+
+[project.optional-dependencies]
+live = [
+  "anthropic==1.13.0",
+  "openai==3.28.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = "-m 'not live' -p no:cacheprovider"
+markers = ["live: calls a real model provider; needs API keys (run with: pytest -m live)"]
+testpaths = ["."]

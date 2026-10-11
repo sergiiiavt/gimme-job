@@ -483,6 +483,15 @@ More instructions that code can verify:
 - **No email addresses.** Search the reply with a pattern such as `[\w.+-]+@[\w-]+\.[\w.]+` and fail on any match except the official support address.
 - **Order ID quoted exactly.** Extract the ID from the customer message with the documented pattern (for example `A-\d{4}`), require the identical string in the reply, and fail on any other string with the same pattern.
 
+## Example project
+
+The method of this chapter is implemented and tested in [examples/llm-testing/05-prompt-artifacts](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/05-prompt-artifacts): versioned prompt files with metadata and a lock file that CI checks, safe rendering fuzzed with Hypothesis, code-verified instructions and a metamorphic robustness test. All tests run offline, without a model or API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/05-prompt-artifacts
+```
+
 ## Common mistakes
 
 - **Editing a released prompt in place**, so that traces no longer identify the text that produced an answer.

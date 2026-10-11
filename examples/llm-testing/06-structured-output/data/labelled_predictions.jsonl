@@ -1,0 +1,6 @@
+{"id": "triage-001", "expected": {"category": "returns", "priority": 2, "needs_human": false, "order_id": "A-1042"}, "predicted": {"category": "returns", "priority": 2, "needs_human": false, "order_id": "A-1042"}}
+{"id": "triage-002", "expected": {"category": "billing", "priority": 3, "needs_human": true, "order_id": null}, "predicted": {"category": "billing", "priority": 2, "needs_human": true, "order_id": null}}
+{"id": "triage-003", "expected": {"category": "technical", "priority": 1, "needs_human": false, "order_id": null}, "predicted": {"category": "account", "priority": 1, "needs_human": false, "order_id": null}}
+{"id": "triage-004", "expected": {"category": "returns", "priority": 3, "needs_human": true, "order_id": "A-2001"}, "predicted": {"category": "returns", "priority": 3, "needs_human": false, "order_id": "A-2001"}}
+{"id": "triage-005", "expected": {"category": "account", "priority": 2, "needs_human": false, "order_id": null}, "predicted": {"category": "account", "priority": 2, "needs_human": false, "order_id": null}}
+{"id": "triage-006", "expected": {"category": "billing", "priority": 4, "needs_human": true, "order_id": "A-3310"}, "predicted": {"category": "returns", "priority": 4, "needs_human": true, "order_id": "A-3310"}}

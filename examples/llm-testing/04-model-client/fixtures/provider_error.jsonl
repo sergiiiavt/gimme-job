@@ -1,0 +1,3 @@
+{"at": 0.0, "type": "start"}
+{"at": 0.62, "type": "text_delta", "text": "You can "}
+{"at": 0.9, "type": "error", "message": "overloaded"}

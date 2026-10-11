@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readdirSync } from "node:fs";
 import { register as registerLoader } from "node:module";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
@@ -129,6 +130,22 @@ test("rewritten chapters follow the course format with worked examples, runnable
 
     assert.ok(topic.sourceIds.length >= 5, `${id} must cite its references`);
     assert.doesNotMatch(en, /^## Sources$/m, `${id} uses the source registry instead of an inline Sources section`);
+  }
+});
+
+test("rewritten chapters link a runnable example project that exists and has tests", () => {
+  const projectLink = /\]\(https:\/\/github\.com\/sergiiiavt\/gimme-job\/tree\/main\/(examples\/llm-testing\/[\w-]+)\)/;
+  for (const id of courseFormatTopicIds) {
+    const topic = llmTestingCatalog.topics.find((candidate: Topic) => candidate.id === id) as Topic;
+    const link = topic.markdown.match(projectLink);
+    assert.ok(link, `${id} must link its example project`);
+    assert.ok(topic.markdownUk.includes(`(https://github.com/sergiiiavt/gimme-job/tree/main/${link[1]})`), `${id} (uk) must link the same project`);
+
+    const folder = new URL(`../${link[1]}/`, import.meta.url);
+    assert.ok(existsSync(folder), `${link[1]} must exist in the repository`);
+    const files = readdirSync(folder);
+    assert.ok(files.includes("README.md"), `${link[1]} needs a README`);
+    assert.ok(files.some((name) => /^test_.+\.py$/.test(name)), `${link[1]} needs a test suite`);
   }
 });
 

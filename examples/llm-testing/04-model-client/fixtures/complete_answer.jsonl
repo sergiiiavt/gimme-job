@@ -1,0 +1,5 @@
+{"at": 0.0, "type": "start"}
+{"at": 0.64, "type": "text_delta", "text": "You can return "}
+{"at": 0.7, "type": "text_delta", "text": "unworn shoes within "}
+{"at": 0.77, "type": "text_delta", "text": "30 days of delivery."}
+{"at": 0.79, "type": "stop", "stop_reason": "end", "output_tokens": 12}

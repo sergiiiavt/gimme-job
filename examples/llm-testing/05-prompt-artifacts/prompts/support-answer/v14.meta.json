@@ -1,0 +1,11 @@
+{
+  "id": "support-answer",
+  "version": "v14",
+  "owner": "support-ai-team",
+  "models": ["<pinned model id>"],
+  "changelog": [
+    "v14: Rule 5 now requires a link to the policy page (incident INC-2291).",
+    "v13: Added the Ukrainian reply rule."
+  ],
+  "evaluation": "runs/2026-10-02-support-answer-v14.json"
+}

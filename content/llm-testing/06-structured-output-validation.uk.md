@@ -453,6 +453,15 @@ missed escalations: 1
 
 Виправлення однієї дорогої помилки часто створює іншу. Якщо змінити модель так, щоб вона завжди ставила `needs_human` у true для priority 3 і 4, пропущена escalation вище зникне, але cases з priority 3 чи 4, яким не потрібна людина, ескалюватимуться зайво. Вимірюйте rate хибних escalations (ручне навантаження) поруч із rate пропущених escalations і погоджуйте прийнятний компроміс з бізнесом перед зміною правила.
 
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/06-structured-output](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/06-structured-output): Pydantic контракт, повний validation pipeline на 19 записаних сирих outputs, property tests, згенеровані з JSON Schema, звіт точності по полях і опційний live check нативного structured output. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/06-structured-output
+```
+
 ## Типові помилки
 
 - **Парсити регулярними виразами** замість того, щоб просити структуру.

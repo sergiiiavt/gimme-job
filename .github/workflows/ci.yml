@@ -65,6 +65,16 @@ jobs:
           rm -f .coverage ai-service/.coverage
           find ai-service -type d -name __pycache__ -prune -exec rm -rf {} +
 
+      - name: Verify committed LLM testing examples lock
+        run: uv lock --project examples/llm-testing --check
+
+      - name: Verify LLM testing course examples
+        run: |
+          uv sync --project examples/llm-testing --frozen --no-build
+          examples/llm-testing/.venv/bin/python -m pytest examples/llm-testing -q
+          rm -rf examples/llm-testing/.venv
+          find examples/llm-testing -type d -name __pycache__ -prune -exec rm -rf {} +
+
       - name: SonarQube Cloud quality gate
         uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
         with:

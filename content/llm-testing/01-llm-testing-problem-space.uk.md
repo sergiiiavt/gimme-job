@@ -339,7 +339,16 @@ failure rate 1%: need 299 runs
 | Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |
 | Професійна практика | Benchmarks, human evaluation і governance | Ви вмієте вибирати моделі, проводити human evaluation і готувати governance evidence |
 
-**Налаштування для практики:** Python 3.11 або новіший, virtual environment і доступ щонайменше до однієї моделі. Підійде платний API key будь-якого великого provider. Щоб практикуватися безкоштовно, запустіть open-weight модель локально через [Ollama](https://ollama.com/), яка надає OpenAI-compatible endpoint. Багато прикладів code в курсі самодостатні й запускаються прямо на сторінці кнопкою **Run**; приклади, що викликають реальні моделі чи встановлюють packages, призначені для вашої машини.
+**Налаштування для практики:** Python 3.11 або новіший, virtual environment і доступ щонайменше до однієї моделі. Підійде платний API key будь-якого великого provider. Щоб практикуватися безкоштовно, запустіть open-weight модель локально через [Ollama](https://ollama.com/), яка надає OpenAI-compatible endpoint. Багато прикладів code в курсі самодостатні й запускаються прямо на сторінці кнопкою **Run**; приклади, що викликають реальні моделі чи встановлюють packages, призначені для вашої машини. Багато chapters також мають повний приклад проєкту з тестами в [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing).
+
+## Приклад проєкту
+
+Метод цього chapter реалізований і покритий тестами в [examples/llm-testing/01-property-oracles](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing/01-property-oracles): property oracles для refund асистента, тест, що документує, чого вони не можуть виявити, і арифметика кількості runs. Усі тести працюють offline, без моделі та API keys:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing/01-property-oracles
+```
 
 ## Типові помилки
 

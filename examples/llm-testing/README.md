@@ -1,0 +1,50 @@
+# LLM testing examples
+
+Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme-job.com/learn/llm). Each folder applies one chapter's method to real code with a real test suite, so you can read the technique, run it, break it and extend it.
+
+| Folder | Chapter | What it demonstrates |
+|---|---|---|
+| [01-property-oracles](01-property-oracles) | Why LLM testing is different | Property oracles for generative answers, their limits, and how many runs reveal a rare failure |
+| [02-generation-mechanics](02-generation-mechanics) | How LLMs generate text | A BPE tokenizer, softmax/temperature/top-k/top-p with property-based tests, and a needle-in-a-haystack test generator |
+| [03-similarity-thresholds](03-similarity-thresholds) | Embeddings and similarity | Similarity measures, a threshold-calibration tool on labelled pairs, and recall measurement of an approximate index |
+| [04-model-client](04-model-client) | LLM application anatomy and APIs | Stop-reason handling for two providers, a bounded retry policy tested with a fake clock, replayed stream recordings, cost per resolved task |
+| [05-prompt-artifacts](05-prompt-artifacts) | Prompts as testable artifacts | Versioned prompt files with a lock file checked in CI, safe rendering fuzzed with Hypothesis, code-verified instructions, metamorphic input tests |
+| [06-structured-output](06-structured-output) | Structured output and validation | A Pydantic contract, the extract/validate/repair/fallback pipeline against recorded raw outputs, schema-generated property tests, field-level accuracy |
+
+## Principles
+
+- **Offline by default.** Every test runs without network access or API keys, using fake models, recorded responses and fixtures. That is how LLM application code should be unit-tested.
+- **Live checks are opt-in.** Tests marked `live` call a real provider and run only when you ask for them.
+- **Deterministic.** Random behaviour uses fixed seeds, so a failure is reproducible.
+
+## Run
+
+With [uv](https://docs.astral.sh/uv/) from the repository root:
+
+```bash
+uv sync --project examples/llm-testing
+uv run --project examples/llm-testing pytest examples/llm-testing
+```
+
+Or with pip in a virtual environment:
+
+```bash
+pip install hypothesis==6.169.0 hypothesis-jsonschema==0.23.1 pydantic==2.14.0 pytest==9.1.1
+cd examples/llm-testing && pytest
+```
+
+Run one sub-project by passing its folder, for example `pytest examples/llm-testing/04-model-client`.
+
+## Live checks against a real model
+
+```bash
+uv sync --project examples/llm-testing --extra live
+LLM_PROVIDER=openai LLM_MODEL=<pinned model id> OPENAI_API_KEY=... uv run --project examples/llm-testing pytest examples/llm-testing -m live
+LLM_PROVIDER=anthropic LLM_MODEL=<pinned model id> ANTHROPIC_API_KEY=... uv run --project examples/llm-testing pytest examples/llm-testing -m live
+```
+
+Live checks cost money and their results vary between runs; they verify integration, not quality. Quality is measured with evaluation datasets, as described in the course.
+
+## Continuous integration
+
+The repository's `Validate` workflow job verifies the lock file and runs the offline suite on every pull request, so the examples stay working as the course evolves.
