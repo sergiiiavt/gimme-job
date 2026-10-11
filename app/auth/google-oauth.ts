@@ -167,6 +167,14 @@ function errorResponse(message: string, status = 400): Response {
   return json({ error: message }, status);
 }
 
+// User-facing OAuth problems keep their message; anything else (missing secrets,
+// storage or provider errors) is logged and answered generically.
+function oauthFailure(error: unknown, stage: string, publicMessage: string, status: number): Response {
+  if (error instanceof OAuthUserError) return errorResponse(error.message, error.status);
+  console.error(`Google OAuth ${stage} failed`, error instanceof Error ? error.message : String(error));
+  return errorResponse(publicMessage, status);
+}
+
 function redirect(location: string, cookies: string[] = []): Response {
   const headers = new Headers({
     location,
@@ -478,9 +486,7 @@ export async function handleGoogleOAuthStart(request: Request, env: MultiUserAut
 
     return redirect(authorization.toString(), [secureCookie(OAUTH_STATE_COOKIE, state, OAUTH_ATTEMPT_SECONDS)]);
   } catch (error) {
-    if (error instanceof OAuthUserError) return errorResponse(error.message, error.status);
-    console.error("Google OAuth start failed", error instanceof Error ? error.message : String(error));
-    return errorResponse("Google sign-in is temporarily unavailable.", 503);
+    return oauthFailure(error, "start", "Google sign-in is temporarily unavailable.", 503);
   }
 }
 
@@ -533,9 +539,7 @@ export async function handleGoogleOAuthCallback(request: Request, env: MultiUser
     destination.searchParams.set("gmail", "connected");
     return redirect(`${destination.pathname}${destination.search}`, [clearOAuthStateCookie()]);
   } catch (error) {
-    if (error instanceof OAuthUserError) return errorResponse(error.message, error.status);
-    console.error("Google OAuth callback failed", error instanceof Error ? error.message : String(error));
-    return errorResponse("Google sign-in failed. Try again.", 500);
+    return oauthFailure(error, "callback", "Google sign-in failed. Try again.", 500);
   }
 }
 

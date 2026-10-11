@@ -498,7 +498,8 @@ function startRunawayQueryReaper() {
   const timer = setInterval(() => {
     if (running) return;
     running = true;
-    reapRunawayQueries().finally(() => { running = false; });
+    // reapRunawayQueries settles every task itself and never rejects.
+    void reapRunawayQueries().finally(() => { running = false; });
   }, REAPER_INTERVAL_MS);
   timer.unref?.();
   return timer;

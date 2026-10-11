@@ -227,7 +227,8 @@ export async function POST(request: Request, context: RouteContext) {
       }
       // Tenants analyse one vacancy per request (the UI always names it); batch
       // scoring of up to 100 vacancies is an owner-only, single-user operation.
-      const limit = tenant.multiUser ? 1 : typeof payload.limit === "number" ? payload.limit : 25;
+      const requestedLimit = typeof payload.limit === "number" ? payload.limit : 25;
+      const limit = tenant.multiUser ? 1 : requestedLimit;
       const result = await analyzeJobsForUser(userId, typeof payload.jobId === "string" ? payload.jobId : undefined, limit);
       return Response.json({ ok: true, result, dashboard: await currentDashboard(request) });
     }

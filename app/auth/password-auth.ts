@@ -170,10 +170,8 @@ async function isBlocked(db: D1Database, key: string): Promise<boolean> {
 }
 
 async function anyBlocked(db: D1Database, keys: ThrottleKey[]): Promise<boolean> {
-  for (const { key } of keys) {
-    if (await isBlocked(db, key)) return true;
-  }
-  return false;
+  const blocked = await Promise.all(keys.map(({ key }) => isBlocked(db, key)));
+  return blocked.some(Boolean);
 }
 
 // One atomic upsert: concurrent failures each increment the counter instead of
@@ -290,7 +288,8 @@ export async function handlePasswordLogin(request: Request, env: PasswordAuthEnv
   if (user?.id && user.password_hash) valid = await verifyPassword(password, user.password_hash);
   else await verifyAgainstDummy(password);
   if (!valid || !user?.id) {
-    for (const key of keys) await failLogin(env.DB, key);
+    const db = env.DB;
+    await Promise.all(keys.map((key) => failLogin(db, key)));
     return page("login", next, formReturnPath, email, "Invalid email or password.");
   }
   await env.DB.prepare("DELETE FROM auth_login_limits WHERE key IN (?, ?)").bind(keys[0].key, keys[1].key).run();
