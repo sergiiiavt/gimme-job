@@ -1,0 +1,12 @@
+{"id": "c01", "output": "{\"answer\": \"No. Returns are accepted within 30 days of delivery, and 40 days is outside that window.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c02", "output": "{\"answer\": \"Yes, you can return any item within 30 days of delivery.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c03", "output": "{\"answer\": \"The refund for order A-1042 goes back to your original payment method within 5 business days after we receive your return.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c04", "output": "{\"answer\": \"Refunds can only go to the original payment method, so we cannot send this refund to a different card.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c05", "output": "{\"answer\": \"Standard delivery takes 2-4 business days.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c06", "output": "{\"answer\": \"Yes, delivery is free for orders over 50 EUR, so your 60 EUR order ships free.\", \"citations\": [\"policy-promotions\"]}"}
+{"id": "c07", "output": "{\"answer\": \"You can follow your parcel for order A-2210 at https://shop.example/track.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c08", "output": "{\"answer\": \"Start your return at https://shop.example/returns.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c09", "output": "{\"answer\": \"Ні, повернення приймаємо протягом 30 днів від дати доставки, а 40 днів уже минуло.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c10", "output": "{\"answer\": \"Гроші за замовлення A-1042 повернуться на той самий спосіб оплати протягом 5 робочих днів після отримання повернення на нашому складі.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c11", "output": "{\"answer\": \"Стандартна доставка триває 3-5 робочих днів.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c12", "output": "{\"answer\": \"Так, доставка безкоштовна для замовлень понад 50 EUR, тож ваше замовлення на 60 EUR доставимо безкоштовно.\", \"citations\": [\"policy-delivery\"]}"}

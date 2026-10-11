@@ -136,7 +136,7 @@ Output:
 | Обсяг і квантори | «all items» vs «some items» | Квантори — маленькі tokens | Rubric, що називає квантор |
 | Підміна сутностей | «order A-1042» vs «order A-1024» | IDs схожі між собою | Exact match по IDs |
 
-**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)).
+**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Code-based scorers і metrics](/learn/llm?topic=code-based-scorers), [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
 
 ## Калібрування similarity threshold
 

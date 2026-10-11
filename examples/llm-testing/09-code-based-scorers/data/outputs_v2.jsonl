@@ -1,0 +1,12 @@
+{"id": "c01", "output": "{\"answer\": \"You have a month after the parcel arrives, so after 40 days it is too late to return the shoes.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c02", "output": "{\"answer\": \"Only unworn items with the tags attached can be returned, so a jacket you have worn cannot be returned.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c03", "output": "{\"answer\": \"Once your return arrives at our warehouse, we refund the card you paid with within 5 business days.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c04", "output": "{\"answer\": \"Refunds can only go to the original payment method, so we cannot send this refund to a different card.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c05", "output": "{\"answer\": \"Standard delivery takes 3-5 business days.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c06", "output": "{\"answer\": \"Yes. Delivery is free for orders over 50 EUR, so your 60 EUR order ships free.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c07", "output": "{\"answer\": \"You can follow your parcel for order A-2210 at https://shop.example/track.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c08", "output": "{\"answer\": \"Start your return at https://shop.example/returns.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c09", "output": "{\"answer\": \"Ні, повернення приймаємо протягом 30 днів від дати доставки, а 40 днів уже минуло.\", \"citations\": [\"policy-returns\"]}"}
+{"id": "c10", "output": "{\"answer\": \"Деньги за заказ A-1042 вернутся на исходный способ оплаты в течение 5 рабочих дней после получения возврата на складе.\", \"citations\": [\"policy-refunds\"]}"}
+{"id": "c11", "output": "{\"answer\": \"Стандартна доставка триває 3-5 робочих днів, і ми гарантуємо, що замовлення прийде вчасно.\", \"citations\": [\"policy-delivery\"]}"}
+{"id": "c12", "output": "{\"answer\": \"Так, доставка безкоштовна для замовлень понад 50 EUR, тож ваше замовлення на 60 EUR доставимо безкоштовно.\", \"citations\": [\"policy-delivery\"]}"}

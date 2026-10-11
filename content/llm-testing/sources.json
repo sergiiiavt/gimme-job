@@ -688,5 +688,165 @@
     "role": "Testing asynchronous streaming and cancellation.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rajpurkar-squad",
+    "title": "SQuAD: 100,000+ Questions for Machine Comprehension of Text",
+    "publisher": "Rajpurkar et al. — arXiv / EMNLP 2016",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1606.05250",
+    "role": "Exact match and token F1 with answer normalization, the classic metrics for short factual answers.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "papineni-bleu",
+    "title": "BLEU: a Method for Automatic Evaluation of Machine Translation",
+    "publisher": "Papineni et al. — ACL 2002",
+    "kind": "paper",
+    "url": "https://aclanthology.org/P02-1040/",
+    "role": "Clipped n-gram precision, the brevity penalty and BLEU as a corpus-level metric.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "lin-och-orange",
+    "title": "ORANGE: a Method for Evaluating Automatic Evaluation Metrics for Machine Translation",
+    "publisher": "Lin and Och — COLING 2004",
+    "kind": "paper",
+    "url": "https://aclanthology.org/C04-1072/",
+    "role": "Add-one smoothing of the higher-order n-gram precisions used for sentence-level BLEU.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "chen-cherry-bleu-smoothing",
+    "title": "A Systematic Comparison of Smoothing Techniques for Sentence-Level BLEU",
+    "publisher": "Chen and Cherry — WMT 2014",
+    "kind": "paper",
+    "url": "https://aclanthology.org/W14-3346/",
+    "role": "Why sentence-level BLEU needs smoothing and how the smoothing methods compare.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "lin-rouge",
+    "title": "ROUGE: A Package for Automatic Evaluation of Summaries",
+    "publisher": "Chin-Yew Lin — ACL 2004 Workshop",
+    "kind": "paper",
+    "url": "https://aclanthology.org/W04-1013/",
+    "role": "ROUGE-N recall and ROUGE-L based on the longest common subsequence.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rouge-score",
+    "title": "rouge-score",
+    "publisher": "Google Research",
+    "kind": "tool",
+    "url": "https://github.com/google-research/google-research/tree/master/rouge",
+    "role": "Widely used ROUGE implementation; its default tokenizer keeps only a-z and 0-9, so non-Latin text needs a custom tokenizer.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "post-sacrebleu",
+    "title": "A Call for Clarity in Reporting BLEU Scores",
+    "publisher": "Matt Post — WMT 2018",
+    "kind": "paper",
+    "url": "https://aclanthology.org/W18-6319/",
+    "role": "BLEU values are comparable only with standardized tokenization; introduces the sacreBLEU tool.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "novikova-nlg-metrics",
+    "title": "Why We Need New Evaluation Metrics for NLG",
+    "publisher": "Novikova et al. — EMNLP 2017",
+    "kind": "paper",
+    "url": "https://aclanthology.org/D17-1238/",
+    "role": "Word-overlap metrics correlate weakly with human judgements of generated text.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zhang-bertscore",
+    "title": "BERTScore: Evaluating Text Generation with BERT",
+    "publisher": "Zhang et al. — arXiv / ICLR 2020",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1904.09675",
+    "role": "Token matching with contextual embeddings as a similarity metric for generated text.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "sklearn-metrics",
+    "title": "Metrics and scoring: quantifying the quality of predictions",
+    "publisher": "scikit-learn",
+    "kind": "official-docs",
+    "url": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+    "role": "Precision, recall and F1 per class, and the macro, weighted and micro averages.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "chen-humaneval",
+    "title": "Evaluating Large Language Models Trained on Code",
+    "publisher": "Chen et al. — arXiv 2021",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2107.03374",
+    "role": "HumanEval: functional correctness of generated code by executing unit tests, and the pass@k estimator.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zhong-test-suite-sql",
+    "title": "Semantic Evaluation for Text-to-SQL with Distilled Test Suites",
+    "publisher": "Zhong, Yu and Klein — arXiv / EMNLP 2020",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2010.02840",
+    "role": "Executing queries on several databases catches SQL that is right only by coincidence (test-suite accuracy).",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "python-sqlite3",
+    "title": "sqlite3 — DB-API 2.0 interface for SQLite databases",
+    "publisher": "Python documentation",
+    "kind": "official-docs",
+    "url": "https://docs.python.org/3/library/sqlite3.html",
+    "role": "set_authorizer and set_progress_handler for read-only, step-limited execution of generated SQL.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-develop-tests",
+    "title": "Define success criteria and build evaluations",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/test-and-evaluate/develop-tests",
+    "role": "Compares code-based, human and model-based grading and shows when exact and string matching are enough.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "promptfoo-assertions",
+    "title": "Assertions and metrics",
+    "publisher": "promptfoo",
+    "kind": "tool",
+    "url": "https://www.promptfoo.dev/docs/configuration/expected-outputs/",
+    "role": "Deterministic assertions such as contains, regex and is-json, plus custom JavaScript and Python assertions.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "deepeval-custom-metrics",
+    "title": "Custom metrics",
+    "publisher": "DeepEval",
+    "kind": "tool",
+    "url": "https://deepeval.com/docs/metrics-custom",
+    "role": "Wrapping your own code-based scorer as a metric with BaseMetric.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

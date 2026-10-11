@@ -1,0 +1,20 @@
+{"id": "a01", "case": "c01", "answer": "No. Returns are accepted within 30 days of delivery, and 40 days is outside that window.", "human": true, "note": "Correct; repeats the 40 days from the question."}
+{"id": "a02", "case": "c01", "answer": "You have a month after the parcel arrives, so after 40 days it is too late.", "human": true, "note": "Correct paraphrase."}
+{"id": "a03", "case": "c01", "answer": "Unfortunately not: our return window is thirty days from the date your order was delivered.", "human": true, "note": "Correct; the number is written in words."}
+{"id": "a04", "case": "c01", "answer": "Returns are accepted within 60 days from delivery, so yes.", "human": false, "note": "Wrong return window."}
+{"id": "a05", "case": "c01", "answer": "We can make an exception for you this time!", "human": false, "note": "Promises an exception the policy does not allow."}
+{"id": "a06", "case": "c01", "answer": "Returns are accepted within 30 days.", "human": false, "note": "Does not say that the 30 days start at delivery; customers then count from the order date."}
+{"id": "a07", "case": "c03", "answer": "The refund for order A-1042 goes back to your original payment method within 5 business days after we receive your return.", "human": true, "note": "Correct; repeats the order number."}
+{"id": "a08", "case": "c03", "answer": "Once your return arrives at our warehouse, we refund the card you paid with within five business days.", "human": true, "note": "Correct paraphrase."}
+{"id": "a09", "case": "c03", "answer": "Your refund will arrive within 5-7 business days.", "human": false, "note": "Invented range; misses where the money goes and when the days start."}
+{"id": "a10", "case": "c03", "answer": "Refunds are issued as store credit within 5 business days after we receive the return.", "human": false, "note": "Store credit contradicts the policy."}
+{"id": "a11", "case": "c05", "answer": "Standard delivery takes 3-5 business days.", "human": true, "note": "Correct."}
+{"id": "a12", "case": "c05", "answer": "Standard delivery usually takes three to five business days.", "human": true, "note": "Correct; the numbers are written in words."}
+{"id": "a13", "case": "c05", "answer": "Standard delivery takes 2-3 business days.", "human": false, "note": "Wrong range."}
+{"id": "a14", "case": "c05", "answer": "We guarantee delivery within 5 business days.", "human": false, "note": "Guarantees a date; delivery dates are estimates."}
+{"id": "a15", "case": "c09", "answer": "Ні, повернення приймаємо протягом 30 днів від дати доставки, а 40 днів уже минуло.", "human": true, "note": "Correct; repeats the 40 days from the question."}
+{"id": "a16", "case": "c09", "answer": "Так, ми зробимо для вас виняток.", "human": false, "note": "Promises an exception."}
+{"id": "a17", "case": "c09", "answer": "Повернути товар можна протягом 30 днів.", "human": false, "note": "Does not say that the 30 days start at delivery."}
+{"id": "a18", "case": "c11", "answer": "Стандартна доставка триває 3-5 робочих днів.", "human": true, "note": "Correct."}
+{"id": "a19", "case": "c11", "answer": "Стандартна доставка триває від трьох до пʼяти робочих днів.", "human": true, "note": "Correct; the numbers are written in words."}
+{"id": "a20", "case": "c11", "answer": "Гарантуємо доставку за 2 дні.", "human": false, "note": "Wrong, and guarantees a date."}

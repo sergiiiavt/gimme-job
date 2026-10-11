@@ -1,0 +1,20 @@
+{"id": "t01", "message": "I was charged twice for order A-1042.", "human": "billing", "model": "billing"}
+{"id": "t02", "message": "Can I get an invoice with my company VAT number?", "human": "billing", "model": "billing"}
+{"id": "t03", "message": "My card was declined but the money left my account.", "human": "billing", "model": "billing"}
+{"id": "t04", "message": "Why does my receipt show a different total than the checkout page?", "human": "billing", "model": "billing"}
+{"id": "t05", "message": "Do you accept PayPal?", "human": "billing", "model": "billing"}
+{"id": "t06", "message": "I returned the boots last week but I still see the charge on my statement.", "human": "billing", "model": "returns"}
+{"id": "t07", "message": "How do I send back a jacket that is too small?", "human": "returns", "model": "returns"}
+{"id": "t08", "message": "The shoes I ordered do not fit, can I exchange them?", "human": "returns", "model": "returns"}
+{"id": "t09", "message": "Where do I print the return label?", "human": "returns", "model": "returns"}
+{"id": "t10", "message": "Can I return an item bought on sale?", "human": "returns", "model": "returns"}
+{"id": "t11", "message": "I want to return two of the three shirts in my order.", "human": "returns", "model": "returns"}
+{"id": "t12", "message": "Is there a fee for returning items?", "human": "returns", "model": "returns"}
+{"id": "t13", "message": "The parcel I sent back has not been picked up by the courier.", "human": "returns", "model": "other"}
+{"id": "t14", "message": "The app crashes when I open my order history.", "human": "technical", "model": "technical"}
+{"id": "t15", "message": "I cannot log in, the password reset e-mail never arrives.", "human": "technical", "model": "technical"}
+{"id": "t16", "message": "The checkout button does nothing in Firefox.", "human": "technical", "model": "technical"}
+{"id": "t17", "message": "Your website shows a blank page on my phone.", "human": "technical", "model": "other"}
+{"id": "t18", "message": "I keep getting logged out after a minute.", "human": "technical", "model": "other"}
+{"id": "t19", "message": "Do you have a physical store in Lviv?", "human": "other", "model": "other"}
+{"id": "t20", "message": "Can I give feedback about a product I returned?", "human": "other", "model": "returns"}

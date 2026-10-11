@@ -334,7 +334,7 @@ failure rate 1%: need 299 runs
 |---|---|---|
 | Foundations | Чим особливе тестування LLM; Як LLM генерують текст; Embeddings і semantic similarity | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
 | Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation; Тестування LLM code без моделі | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
-| Evaluation | Методологія evaluation і datasets; LLM-as-a-judge | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
+| Evaluation | Методологія evaluation і datasets; Code-based scorers і metrics; LLM-as-a-judge | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
 | RAG і agents | Evaluation RAG систем; Evaluation agents і tool use | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
 | Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |
 | Професійна практика | Benchmarks, human evaluation і governance | Ви вмієте вибирати моделі, проводити human evaluation і готувати governance evidence |
