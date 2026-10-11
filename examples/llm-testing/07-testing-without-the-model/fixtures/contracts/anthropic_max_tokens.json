@@ -1,0 +1,13 @@
+{
+  "stop_reason": "max_tokens",
+  "content": [
+    {
+      "type": "text",
+      "text": "Our return policy has several parts. First,"
+    }
+  ],
+  "usage": {
+    "input_tokens": 221,
+    "output_tokens": 8
+  }
+}

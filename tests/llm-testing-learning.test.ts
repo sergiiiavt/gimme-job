@@ -31,6 +31,7 @@ const expectedTopicIds = [
   "llm-application-anatomy",
   "prompts-as-artifacts",
   "structured-output-validation",
+  "testing-without-the-model",
   "evaluation-fundamentals",
   "model-graded-evaluation",
   "rag-testing",
@@ -48,6 +49,7 @@ const courseFormatTopicIds = [
   "llm-application-anatomy",
   "prompts-as-artifacts",
   "structured-output-validation",
+  "testing-without-the-model",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];

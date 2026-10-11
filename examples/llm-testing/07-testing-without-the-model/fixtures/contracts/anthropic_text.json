@@ -1,0 +1,13 @@
+{
+  "stop_reason": "end_turn",
+  "content": [
+    {
+      "type": "text",
+      "text": "Unworn shoes can be returned within 30 days of delivery."
+    }
+  ],
+  "usage": {
+    "input_tokens": 205,
+    "output_tokens": 14
+  }
+}

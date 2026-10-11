@@ -10,6 +10,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [04-model-client](04-model-client) | LLM application anatomy and APIs | Stop-reason handling for two providers, a bounded retry policy tested with a fake clock, replayed stream recordings, cost per resolved task |
 | [05-prompt-artifacts](05-prompt-artifacts) | Prompts as testable artifacts | Versioned prompt files with a lock file checked in CI, safe rendering fuzzed with Hypothesis, code-verified instructions, metamorphic input tests |
 | [06-structured-output](06-structured-output) | Structured output and validation | A Pydantic contract, the extract/validate/repair/fallback pipeline against recorded raw outputs, schema-generated property tests, field-level accuracy |
+| [07-testing-without-the-model](07-testing-without-the-model) | Testing LLM code without the model | A support assistant with an injected client, all kinds of test doubles, context-assembly invariants, a prompt snapshot, provider contract fixtures, tool authorization, record and replay with vcrpy |
 
 ## Principles
 
@@ -29,7 +30,7 @@ uv run --project examples/llm-testing pytest examples/llm-testing
 Or with pip in a virtual environment:
 
 ```bash
-pip install hypothesis==6.169.0 hypothesis-jsonschema==0.23.1 pydantic==2.14.0 pytest==9.1.1
+pip install hypothesis==6.169.0 hypothesis-jsonschema==0.23.1 pydantic==2.14.0 pytest==9.1.1 vcrpy==8.3.0
 cd examples/llm-testing && pytest
 ```
 
