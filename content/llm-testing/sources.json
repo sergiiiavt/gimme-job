@@ -1398,5 +1398,115 @@
     "role": "Adding document context to chunks before embedding and BM25 indexing reduced failed retrievals by 49%, and by 67% with reranking.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "yao-react",
+    "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "publisher": "Yao et al. — arXiv / ICLR 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2210.03629",
+    "role": "The pattern of interleaving reasoning with actions and observations that most agent loops follow.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-building-agents",
+    "title": "Building Effective AI Agents",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "role": "Workflows versus agents, simple composable patterns, and the importance of tool design and testing in sandboxes.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-tool-use",
+    "title": "Tool use with Claude",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview",
+    "role": "Tool definitions with JSON Schemas, tool calls and tool results in the Messages API.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-function-calling",
+    "title": "Function calling",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://developers.openai.com/api/docs/guides/function-calling",
+    "role": "Function definitions, strict schemas and the tool-call loop in the OpenAI API.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mcp-tools-spec",
+    "title": "Model Context Protocol specification: Tools",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools",
+    "role": "tools/list and tools/call, input and output schemas, protocol errors versus tool execution errors, and security requirements.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mcp-inspector",
+    "title": "MCP Inspector",
+    "publisher": "Model Context Protocol",
+    "kind": "tool",
+    "url": "https://modelcontextprotocol.io/docs/tools/inspector",
+    "role": "Interactive testing and debugging of MCP servers.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "jimenez-swe-bench",
+    "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+    "publisher": "Jimenez et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.06770",
+    "role": "Agent tasks on real repositories, judged by the repository's own tests.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zhou-webarena",
+    "title": "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+    "publisher": "Zhou et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2307.13854",
+    "role": "Self-hosted websites as a reproducible environment, with functional checks of the final state.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "mialon-gaia",
+    "title": "GAIA: a benchmark for General AI Assistants",
+    "publisher": "Mialon et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2311.12983",
+    "role": "Questions that require tools, browsing and reasoning, scored by exact answers.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "liu-agentbench",
+    "title": "AgentBench: Evaluating LLMs as Agents",
+    "publisher": "Liu et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2308.03688",
+    "role": "Eight interactive environments for evaluating models as agents.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "bfcl",
+    "title": "Berkeley Function Calling Leaderboard",
+    "publisher": "Gorilla LLM, UC Berkeley",
+    "kind": "benchmark",
+    "url": "https://gorilla.cs.berkeley.edu/leaderboard.html",
+    "role": "Evaluation of function selection and arguments, from single calls to agentic tasks.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]
