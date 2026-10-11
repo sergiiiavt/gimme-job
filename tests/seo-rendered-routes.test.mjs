@@ -97,8 +97,8 @@ test("unknown questions and learning sections return 404 instead of indexable so
 
 test("duplicate and placeholder pages declare the right canonical and robots policy", async () => {
   const expectations = [
-    ["/", "/", undefined],
     ["/about", "/", undefined],
+    ["/learn", "/", undefined],
     ["/interview/generic-qa", "/interview", undefined],
     ["/learn/qa-fundamentals", "/learn/qa-fundamentals", undefined],
     ["/learn/networking", "/learn/networking", undefined],
@@ -111,6 +111,14 @@ test("duplicate and placeholder pages declare the right canonical and robots pol
     else assert.equal(robotsOf(html), "index, follow", `${path} robots`);
     assert.match(html, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
   }
+});
+
+test("the home page carries the site defaults and a large social preview", async () => {
+  const html = await (await fetchRoute("/")).text();
+  assert.equal(titleOf(html), "GimmeJob | QA Interview Questions, Learning &amp; Career Tools");
+  assert.equal(robotsOf(html), "index, follow");
+  assert.match(html, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
+  assert.match(html, /<meta[^>]+name="twitter:card"[^>]+content="summary_large_image"/);
 });
 
 test("English interview lists render their heading in the initial HTML", async () => {
