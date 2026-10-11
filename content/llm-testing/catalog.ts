@@ -17,8 +17,8 @@ import evaluationFundamentals from "./08-evaluation-fundamentals.md?raw";
 import evaluationFundamentalsUk from "./08-evaluation-fundamentals.uk.md?raw";
 import codeBasedScorers from "./09-code-based-scorers.md?raw";
 import codeBasedScorersUk from "./09-code-based-scorers.uk.md?raw";
-import modelGradedEvaluation from "./13-model-graded-evaluation.md?raw";
-import modelGradedEvaluationUk from "./13-model-graded-evaluation.uk.md?raw";
+import modelGradedEvaluation from "./10-model-graded-evaluation.md?raw";
+import modelGradedEvaluationUk from "./10-model-graded-evaluation.uk.md?raw";
 import evalStatistics from "./11-eval-statistics.md?raw";
 import evalStatisticsUk from "./11-eval-statistics.uk.md?raw";
 import ragTesting from "./16-rag-testing.md?raw";
@@ -146,9 +146,9 @@ const topics: LlmTestingTopic[] = [
     label: "LLM-as-a-judge",
     labelUk: "LLM-as-a-judge",
     level: "intermediate",
-    description: "Judge patterns, rubric design, judge biases, calibration against human labels, metamorphic testing, testing under non-determinism with pass@k and pass^k, and cost control.",
-    descriptionUk: "Patterns judges, дизайн rubrics, bias judges, калібрування проти human labels, metamorphic testing, тестування в умовах non-determinism з pass@k і pass^k та контроль cost.",
-  }, modelGradedEvaluation, modelGradedEvaluationUk),
+    description: "Judges as measuring instruments: when to use one, judge designs, writing judge prompts, validation against human labels with TPR, TNR and kappa, correcting judged pass rates, measuring position and verbosity bias, keeping judges reliable, and metamorphic relations.",
+    descriptionUk: "Judges як вимірювальні інструменти: коли їх використовувати, види judges, написання prompts для judge, validation проти human labels з TPR, TNR і kappa, виправлення оцінених judge pass rates, вимірювання позиційного упередження й багатослів'я, надійність judges і метаморфні відношення.",
+  }, modelGradedEvaluation, modelGradedEvaluationUk, ["zheng-judge", "wang-fair-evaluators", "liu-geval", "panickssery-self-preference", "thakur-judging-judges", "saito-verbosity", "kim-prometheus", "husain-llm-judge", "yan-llm-evaluators", "shankar-validators", "judgy", "rogan-gladen", "cohen-kappa", "anthropic-structured-outputs", "anthropic-develop-tests", "chen-metamorphic"]),
   chapter({
     id: "eval-statistics",
     label: "Statistics for evaluation",

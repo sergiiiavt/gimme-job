@@ -1148,5 +1148,125 @@
     "role": "Evaluations as the first pattern of LLM products and their relation to the other patterns.",
     "status": "current",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "zheng-judge",
+    "title": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+    "publisher": "Zheng et al. — arXiv / NeurIPS 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2306.05685",
+    "role": "Strong model judges agree with people about as often as people agree with each other; position, verbosity and self-enhancement biases.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "wang-fair-evaluators",
+    "title": "Large Language Models are not Fair Evaluators",
+    "publisher": "Wang et al. — arXiv / ACL 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2305.17926",
+    "role": "Position bias in pairwise judging and calibration by evaluating both orders.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "liu-geval",
+    "title": "G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment",
+    "publisher": "Liu et al. — arXiv / EMNLP 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2303.16634",
+    "role": "Rubric scoring with chain-of-thought evaluation steps and probability-weighted scores.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "panickssery-self-preference",
+    "title": "LLM Evaluators Recognize and Favor Their Own Generations",
+    "publisher": "Panickssery et al. — arXiv / NeurIPS 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2404.13076",
+    "role": "Self-preference: judges favour outputs of their own model.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "thakur-judging-judges",
+    "title": "Judging the Judges: Evaluating Alignment and Vulnerabilities in LLMs-as-Judges",
+    "publisher": "Thakur et al. — arXiv 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.12624",
+    "role": "Agreement of many judge models with human labels, and why kappa is more informative than raw agreement.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "saito-verbosity",
+    "title": "Verbosity Bias in Preference Labeling by Large Language Models",
+    "publisher": "Saito et al. — arXiv 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.10076",
+    "role": "Model judges prefer longer answers more than people do.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "kim-prometheus",
+    "title": "Prometheus: Inducing Fine-grained Evaluation Capability in Language Models",
+    "publisher": "Kim et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.08491",
+    "role": "An open model fine-tuned to evaluate against custom rubrics.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "husain-llm-judge",
+    "title": "Using LLM-as-a-Judge For Evaluation: A Complete Guide",
+    "publisher": "Hamel Husain",
+    "kind": "article",
+    "url": "https://hamel.dev/blog/posts/llm-judge/",
+    "role": "Building a judge with a domain expert: binary verdicts, critiques, labelled examples and iteration until agreement.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "yan-llm-evaluators",
+    "title": "Evaluating the Effectiveness of LLM-Evaluators (aka LLM-as-Judge)",
+    "publisher": "Eugene Yan",
+    "kind": "article",
+    "url": "https://eugeneyan.com/writing/llm-evaluators/",
+    "role": "Survey of judge designs, metrics for judge quality and the evidence on their reliability.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "judgy",
+    "title": "judgy",
+    "publisher": "AI Evals course (Shankar and Husain)",
+    "kind": "tool",
+    "url": "https://github.com/ai-evals-course/judgy",
+    "role": "Corrects pass rates measured by an LLM judge for its errors and computes bootstrap confidence intervals.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rogan-gladen",
+    "title": "Estimating Prevalence from the Results of a Screening Test",
+    "publisher": "Rogan and Gladen — American Journal of Epidemiology 1978",
+    "kind": "paper",
+    "url": "https://doi.org/10.1093/oxfordjournals.aje.a112510",
+    "role": "The correction of an observed rate for the sensitivity and specificity of an imperfect test.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "chen-metamorphic",
+    "title": "Metamorphic Testing: A Review of Challenges and Opportunities",
+    "publisher": "Chen et al. — ACM Computing Surveys 2018",
+    "kind": "paper",
+    "url": "https://doi.org/10.1145/3143561",
+    "role": "Metamorphic relations as test oracles when the correct output is unknown.",
+    "status": "current",
+    "checkedAt": "2026-10-11"
   }
 ]

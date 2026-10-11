@@ -54,6 +54,7 @@ const courseFormatTopicIds = [
   "testing-without-the-model",
   "evaluation-fundamentals",
   "code-based-scorers",
+  "model-graded-evaluation",
   "eval-statistics",
 ];
 
