@@ -13,8 +13,8 @@ import structuredOutput from "./06-structured-output-validation.md?raw";
 import structuredOutputUk from "./06-structured-output-validation.uk.md?raw";
 import testingWithoutModel from "./07-testing-without-the-model.md?raw";
 import testingWithoutModelUk from "./07-testing-without-the-model.uk.md?raw";
-import evaluationFundamentals from "./10-evaluation-fundamentals.md?raw";
-import evaluationFundamentalsUk from "./10-evaluation-fundamentals.uk.md?raw";
+import evaluationFundamentals from "./08-evaluation-fundamentals.md?raw";
+import evaluationFundamentalsUk from "./08-evaluation-fundamentals.uk.md?raw";
 import codeBasedScorers from "./09-code-based-scorers.md?raw";
 import codeBasedScorersUk from "./09-code-based-scorers.uk.md?raw";
 import modelGradedEvaluation from "./13-model-graded-evaluation.md?raw";
@@ -130,9 +130,9 @@ const topics: LlmTestingTopic[] = [
     label: "Evaluation methodology and datasets",
     labelUk: "Методологія evaluation і datasets",
     level: "intermediate",
-    description: "The LLM test pyramid, error analysis, golden datasets, deterministic assertions, reference-based metrics, promptfoo and DeepEval, and reading a scorecard.",
-    descriptionUk: "Піраміда тестування LLM, error analysis, golden datasets, deterministic assertions, reference-based metrics, promptfoo і DeepEval та читання scorecard.",
-  }, evaluationFundamentals, evaluationFundamentalsUk),
+    description: "Evaluations as experiments: success criteria, error analysis with open and axial coding, datasets built from production logs, synthetic cases with pairwise coverage, labels and Cohen's kappa, splits and contamination, running evaluations, frameworks, and reading flipped cases.",
+    descriptionUk: "Evaluations як експерименти: критерії успіху, error analysis з open і axial coding, datasets із production logs, синтетичні cases з pairwise-покриттям, labels і каппа Коена, розбиття й contamination, запуск evaluations, frameworks і читання cases, що змінили вердикт.",
+  }, evaluationFundamentals, evaluationFundamentalsUk, ["husain-evals", "husain-evals-faq", "husain-field-guide", "shankar-validators", "anthropic-develop-tests", "gebru-datasheets", "liang-helm", "sainz-contamination", "cohen-kappa", "landis-koch", "nist-combinatorial", "promptfoo-intro", "promptfoo-assertions", "deepeval-github", "inspect-ai", "openai-evals", "yan-llm-patterns"]),
   chapter({
     id: "code-based-scorers",
     label: "Code-based scorers and metrics",

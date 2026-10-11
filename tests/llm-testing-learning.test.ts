@@ -52,6 +52,7 @@ const courseFormatTopicIds = [
   "prompts-as-artifacts",
   "structured-output-validation",
   "testing-without-the-model",
+  "evaluation-fundamentals",
   "code-based-scorers",
   "eval-statistics",
 ];

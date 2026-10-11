@@ -1,0 +1,22 @@
+{
+  "invented policy": {
+    "severity": 3,
+    "description": "States a rule, number or promise that the policy does not contain"
+  },
+  "missed order lookup": {
+    "severity": 3,
+    "description": "An order number was given but the order tool was not called"
+  },
+  "wrong language": {
+    "severity": 2,
+    "description": "Replies in a language other than the customer's"
+  },
+  "missing citation": {
+    "severity": 2,
+    "description": "A policy statement without a citation of a retrieved document"
+  },
+  "too long": {
+    "severity": 1,
+    "description": "The answer is buried in text the customer did not need"
+  }
+}
