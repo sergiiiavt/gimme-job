@@ -23,6 +23,18 @@ interface D1Database {
   dump(): Promise<ArrayBuffer>;
 }
 
+interface HTMLRewriterElement {
+  setAttribute(name: string, value: string): void;
+}
+
+interface HTMLRewriterInstance {
+  on(selector: string, handlers: { element(element: HTMLRewriterElement): void }): HTMLRewriterInstance;
+  transform(response: Response): Response;
+}
+
+// Provided by workerd; absent when the built Worker is exercised from Node tests.
+declare const HTMLRewriter: (new () => HTMLRewriterInstance) | undefined;
+
 interface Fetcher {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }

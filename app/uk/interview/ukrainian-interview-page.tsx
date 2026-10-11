@@ -1,8 +1,9 @@
 import Link from "next/link";
 import interviewCatalog, { interviewCatalogForDomain } from "@/content/interview/catalog";
 import pythonInterviewCatalog from "@/content/python-interview/catalog";
-import { INTERVIEW_DOMAIN_ROUTES } from "@/content/interview/domain-routes";
-import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW } from "@/content/interview/ukrainian-routes";
+import { canonicalInterviewDomainPath, interviewDomainRouteById } from "@/content/interview/domain-routes";
+import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW, ukrainianInterviewPath } from "@/content/interview/ukrainian-routes";
+import { questionDeepLinkHref } from "../../content-deep-links";
 import styles from "./ukrainian-interview-page.module.css";
 
 type InterviewCodeExample = {
@@ -86,7 +87,7 @@ function normalizeQuestionText(question: InterviewQuestion) {
   };
 }
 
-function QuestionCard({ question, sources, open = false }: { question: InterviewQuestion; sources: Map<string, InterviewSource>; open?: boolean }) {
+function QuestionCard({ question, questionHref, sources, open = false }: Readonly<{ question: InterviewQuestion; questionHref?: string; sources: Map<string, InterviewSource>; open?: boolean }>) {
   const text = normalizeQuestionText(question);
   const questionSources = question.sourceIds.map((id) => sources.get(id)).filter((source): source is InterviewSource => Boolean(source));
 
@@ -152,6 +153,8 @@ function QuestionCard({ question, sources, open = false }: { question: Interview
             ))}
           </section>
         ) : null}
+
+        {questionHref ? <Link className={styles.permalink} href={questionHref} prefetch={false}>Відкрити питання окремою сторінкою →</Link> : null}
       </div>
     </details>
   );
@@ -183,9 +186,9 @@ export default function UkrainianInterviewPage({
 
   const selectedQuestion = questionId ? questions.find((question) => question.id === questionId) : undefined;
   const visibleQuestions = questionId ? (selectedQuestion ? [selectedQuestion] : []) : questions;
-  const relatedLinks = python
-    ? PYTHON_RELATED_LINKS
-    : INTERVIEW_DOMAIN_ROUTES.find((route) => route.id === domainId)?.relatedLinks ?? [];
+  const domainRoute = !python && domainId ? interviewDomainRouteById(domainId) : undefined;
+  const relatedLinks = python ? PYTHON_RELATED_LINKS : domainRoute?.relatedLinks ?? [];
+  const questionListPath = domainRoute ? ukrainianInterviewPath(canonicalInterviewDomainPath(domainRoute)) : path;
 
   return (
     <main className={styles.page} lang="uk">
@@ -243,7 +246,15 @@ export default function UkrainianInterviewPage({
         ) : (
           <section aria-label="Питання та відповіді" className={styles.list}>
             {questionId ? <Link className={styles.back} href={path}>← Повернутися до всіх питань</Link> : null}
-            {visibleQuestions.map((question) => <QuestionCard key={question.id} open={Boolean(questionId)} question={question} sources={sources}/>)}
+            {visibleQuestions.map((question) => (
+              <QuestionCard
+                key={question.id}
+                open={Boolean(questionId)}
+                question={question}
+                questionHref={questionId ? undefined : questionDeepLinkHref(questionListPath, question.id)}
+                sources={sources}
+              />
+            ))}
           </section>
         )}
       </div>

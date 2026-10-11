@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import InterviewNavigationState from "./interview-navigation-state";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
-import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "./seo";
+import JsonLd from "./json-ld";
+import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE, HOME_TITLE, SITE_NAME, SITE_ORIGIN } from "./seo";
 import ToTopButton from "./to-top-button";
 import VacancyPopoverLayer from "./vacancy-popover-layer";
 import VacancyScrollState from "./vacancy-scroll-state";
@@ -40,12 +41,9 @@ const designModeBootstrap = String.raw`
 })();
 `;
 
-
-const homeTitle = "GimmeJob | QA Interview Questions, Learning & Career Tools";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
-  title: homeTitle,
+  title: HOME_TITLE,
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
@@ -71,14 +69,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: homeTitle,
+    title: HOME_TITLE,
     description: DEFAULT_DESCRIPTION,
     siteName: SITE_NAME,
+    locale: "en_US",
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
-    card: "summary",
-    title: homeTitle,
+    card: "summary_large_image",
+    title: HOME_TITLE,
     description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
   other: {
     "codex-preview": "development",
@@ -95,6 +96,13 @@ const websiteJsonLd = {
   name: SITE_NAME,
   url: SITE_ORIGIN,
   description: DEFAULT_DESCRIPTION,
+  inLanguage: ["en", "uk"],
+  publisher: {
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_ORIGIN,
+    logo: `${SITE_ORIGIN}/gimmejob-logo.png`,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -102,10 +110,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html data-design="new" lang="en" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: designModeBootstrap }}/>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
-        />
+        <JsonLd data={websiteJsonLd}/>
 
         <InterviewNavigationState/>
         <PrimaryNavScrollState/>

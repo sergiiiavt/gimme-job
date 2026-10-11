@@ -1,10 +1,6 @@
-import { createPageMetadata } from "../seo";
+import { SITE_PAGE_SEO, createPageMetadata } from "../seo";
 
-export const metadata = createPageMetadata({
-  title: "QA Engineer Resume",
-  description: "QA engineering resume covering test leadership, automation, Python, Playwright, API testing, AI and LLM testing, and quality engineering experience.",
-  path: "/resume",
-});
+export const metadata = createPageMetadata(SITE_PAGE_SEO.resume);
 
 export default function ResumeLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;

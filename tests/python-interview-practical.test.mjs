@@ -10,7 +10,7 @@ test("publishes practical Python tasks with structured dark code examples", asyn
     readFile(projectFile("content/python-interview/catalog.ts"), "utf8"),
     readJson("content/python-interview/practical-qa.json"),
     readJson("content/python-interview/code-examples.json"),
-    readFile(projectFile("app/interview/python/page.tsx"), "utf8"),
+    readFile(projectFile("app/interview/python/python-interview-page-client.tsx"), "utf8"),
     readFile(projectFile("app/interview-question-code-overlay.tsx"), "utf8"),
     readFile(projectFile("app/python-interview-runnable-overlay.tsx"), "utf8"),
     readFile(projectFile("app/interview-runnable-overlay.tsx"), "utf8"),

@@ -1,10 +1,6 @@
-import { createPageMetadata } from "../seo";
+import { SITE_PAGE_SEO, createPageMetadata } from "../seo";
 
-export const metadata = createPageMetadata({
-  title: "QA Vacancies & Job Search",
-  description: "QA and test automation vacancies with practical filtering and job-search tooling for quality engineers.",
-  path: "/vacancies",
-});
+export const metadata = createPageMetadata(SITE_PAGE_SEO.vacancies);
 
 export default function VacanciesLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
