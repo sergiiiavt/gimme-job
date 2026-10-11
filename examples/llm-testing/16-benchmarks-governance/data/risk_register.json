@@ -1,0 +1,44 @@
+{
+ "risks": [
+  {
+   "id": "R1",
+   "severity": "high",
+   "risk": "answers contradict the refund policy",
+   "tests": [
+    "policy-suite",
+    "policy-judge"
+   ]
+  },
+  {
+   "id": "R2",
+   "severity": "high",
+   "risk": "one customer sees another's data",
+   "tests": [
+    "tenancy-tests",
+    "red-team-leaks"
+   ]
+  },
+  {
+   "id": "R3",
+   "severity": "high",
+   "risk": "CV scores differ by gender or origin",
+   "tests": []
+  },
+  {
+   "id": "R4",
+   "severity": "medium",
+   "risk": "slow answers at peak load",
+   "tests": [
+    "load-test"
+   ]
+  },
+  {
+   "id": "R5",
+   "severity": "low",
+   "risk": "answer in the wrong language",
+   "tests": [
+    "language-check"
+   ]
+  }
+ ]
+}

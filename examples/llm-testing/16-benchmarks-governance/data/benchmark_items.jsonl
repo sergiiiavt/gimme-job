@@ -1,0 +1,6 @@
+{"id": "cv-01", "question": "A candidate lists five years of Selenium but no API testing. Which two questions best check whether the experience covers test design rather than only scripting?"}
+{"id": "cv-02", "question": "Rewrite this bug report so that a developer can reproduce it: the checkout button sometimes does nothing on mobile when the cart has more than ten items."}
+{"id": "cv-03", "question": "Which risks would you test first for a feature that ranks job applications with a language model, and what evidence would show that the ranking does not depend on gender?"}
+{"id": "cv-04", "question": "Design boundary values for a field that accepts salaries from 10 000 to 250 000 euros per year in steps of one thousand."}
+{"id": "cv-05", "question": "What is a flaky test?"}
+{"id": "cv-06", "question": "Explain the difference between verification and validation for an assistant that drafts cover letters, with one test idea for each."}

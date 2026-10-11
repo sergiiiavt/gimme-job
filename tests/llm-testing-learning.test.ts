@@ -60,6 +60,7 @@ const courseFormatTopicIds = [
   "agent-testing",
   "security-red-teaming",
   "production-quality",
+  "pro-practice",
 ];
 
 const levelOrder = ["beginner", "intermediate", "advanced", "pro"];

@@ -29,8 +29,8 @@ import securityRedTeaming from "./14-security-red-teaming.md?raw";
 import securityRedTeamingUk from "./14-security-red-teaming.uk.md?raw";
 import productionQuality from "./15-production-quality.md?raw";
 import productionQualityUk from "./15-production-quality.uk.md?raw";
-import proPractice from "./25-pro-practice.md?raw";
-import proPracticeUk from "./25-pro-practice.uk.md?raw";
+import proPractice from "./16-pro-practice.md?raw";
+import proPracticeUk from "./16-pro-practice.uk.md?raw";
 
 export type LlmTestingLevel = "beginner" | "intermediate" | "advanced" | "pro";
 
@@ -194,9 +194,9 @@ const topics: LlmTestingTopic[] = [
     label: "Benchmarks, human evaluation and governance",
     labelUk: "Benchmarks, human evaluation і governance",
     level: "pro",
-    description: "Confidence intervals and paired comparisons, benchmarks and contamination, custom benchmarks, human evaluation programs, NIST AI RMF and the EU AI Act, evaluation platforms and quality leadership.",
-    descriptionUk: "Confidence intervals і paired порівняння, benchmarks і contamination, власні benchmarks, програми human evaluation, NIST AI RMF і EU AI Act, evaluation platforms і лідерство в якості.",
-  }, proPractice, proPracticeUk),
+    description: "Reading public benchmarks and detecting contamination, choosing a model on the Pareto front, custom benchmarks with item analysis, human evaluation with Krippendorff's alpha and Bradley–Terry rankings, multimodal and voice testing, governance evidence for NIST AI RMF and the EU AI Act, evaluation platforms and quality strategy.",
+    descriptionUk: "Читання публічних benchmarks і виявлення contamination, вибір моделі на фронті Парето, власні benchmarks з аналізом items, human evaluation з Krippendorff's alpha і рейтингами Bradley–Terry, тестування multimodal і voice, докази для governance за NIST AI RMF і EU AI Act, evaluation platforms і стратегія якості.",
+  }, proPractice, proPracticeUk, ["hendrycks-mmlu", "wang-mmlu-pro", "rein-gpqa", "chen-humaneval", "jimenez-swe-bench", "yao-tau-bench", "zhou-webarena", "liang-helm", "white-livebench", "eleuther-lm-eval-harness", "inspect-ai", "sainz-contamination", "brown-gpt3", "zhang-gsm1k", "srivastava-big-bench", "gema-mmlu-errors", "vania-irt", "polo-tinybenchmarks", "gebru-datasheets", "cohen-kappa", "krippendorff-computing-alpha", "krippendorff-reliability-2004", "chiang-chatbot-arena", "lmsys-style-control", "bradley-terry-1952", "hunter-mm-bradley-terry", "jiwer", "nist-ai-rmf", "nist-ai-600-1", "eu-ai-act", "eu-ai-omnibus-2026", "iso-42001", "mitchell-model-cards"]),
 ];
 
 export const llmTestingCatalog = {
