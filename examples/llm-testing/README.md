@@ -16,6 +16,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [10-llm-judge](10-llm-judge) | LLM-as-a-judge | A versioned judge prompt with strict verdicts, validation on development and test labels, the corrected pass rate with a bootstrap interval, and probes for position and verbosity bias, all checked against a simulated judge with known error rates |
 | [11-eval-statistics](11-eval-statistics) | Statistics for evaluation | Wilson and exact intervals with exact coverage checks, McNemar's test and the paired bootstrap, pass@k and pass^k, clustered errors, sample size and power, the Holm correction, and a release gate that decides ship, block or inconclusive |
 | [12-rag-testing](12-rag-testing) | Evaluating RAG systems | A chunker with property-based invariants, BM25 written out, retrieval metrics against labelled questions, a small RAG pipeline with tenant filtering and document versions, faithfulness and citation checks with injected faults, abstention outcomes, and metamorphic tests |
+| [13-agent-testing](13-agent-testing) | Evaluating agents and tool use | A support-agent environment with validated, scoped tools and an approval gate, outcome and trajectory checks, fault injection with false-claim detection, pass^k over seeded runs, and an MCP-style server with protocol contract tests |
 
 ## Principles
 

@@ -23,8 +23,8 @@ import evalStatistics from "./11-eval-statistics.md?raw";
 import evalStatisticsUk from "./11-eval-statistics.uk.md?raw";
 import ragTesting from "./12-rag-testing.md?raw";
 import ragTestingUk from "./12-rag-testing.uk.md?raw";
-import agentTesting from "./17-agent-testing.md?raw";
-import agentTestingUk from "./17-agent-testing.uk.md?raw";
+import agentTesting from "./13-agent-testing.md?raw";
+import agentTestingUk from "./13-agent-testing.uk.md?raw";
 import securityRedTeaming from "./19-security-red-teaming.md?raw";
 import securityRedTeamingUk from "./19-security-red-teaming.uk.md?raw";
 import productionQuality from "./21-production-quality.md?raw";
@@ -170,9 +170,9 @@ const topics: LlmTestingTopic[] = [
     label: "Evaluating agents and tool use",
     labelUk: "Evaluation agents і tool use",
     level: "advanced",
-    description: "Outcome vs trajectory evaluation, tool-call correctness, sandboxed environments, simulated users, pass^k reliability, fault injection and MCP server testing.",
-    descriptionUk: "Outcome vs trajectory evaluation, коректність tool calls, sandboxed environments, simulated users, надійність pass^k, fault injection і тестування MCP servers.",
-  }, agentTesting, agentTestingUk),
+    description: "How tool calling and agent loops work, validating and authorizing tool calls, outcome and trajectory evaluation, fault injection and honest failure, deterministic environments, simulated users, pass^k, permissions and approvals, MCP servers and agent benchmarks.",
+    descriptionUk: "Як працюють tool calling і цикли agents, validation і авторизація викликів tools, evaluation результату й траєкторії, fault injection і чесна відмова, детерміновані середовища, симульовані користувачі, pass^k, права й підтвердження, MCP servers і benchmarks agents.",
+  }, agentTesting, agentTestingUk, ["yao-react", "anthropic-building-agents", "anthropic-tool-use", "openai-function-calling", "mcp-tools-spec", "mcp-inspector", "yao-tau-bench", "jimenez-swe-bench", "zhou-webarena", "mialon-gaia", "liu-agentbench", "bfcl"]),
   chapter({
     id: "security-red-teaming",
     label: "Security, red teaming and guardrails",
