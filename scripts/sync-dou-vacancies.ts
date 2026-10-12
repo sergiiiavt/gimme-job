@@ -19,6 +19,43 @@ function externalId(value: unknown): string | null {
   return typeof value === "string" || typeof value === "number" ? String(value) : null;
 }
 
+/** A failure with the step it happened in. Messages never contain the token or request headers. */
+class SyncStepError extends Error {
+  constructor(readonly step: string, message: string) {
+    super(message);
+    this.name = "SyncStepError";
+  }
+}
+
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return "unknown error";
+  // fetch() reports network failures as "fetch failed" and puts the reason (DNS, refused, reset, TLS) in `cause`.
+  const cause = (error as { cause?: unknown }).cause;
+  const reason = cause instanceof Error
+    ? ` (${[(cause as { code?: unknown }).code, cause.message].filter((part) => typeof part === "string" && part).join(": ")})`
+    : "";
+  return `${error.name}: ${error.message}${reason}`;
+}
+
+async function step<T>(name: string, run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    throw error instanceof SyncStepError ? error : new SyncStepError(name, describeError(error));
+  }
+}
+
+/** The route answers with {"error": "..."}; anything else (a platform error page) is shortened to plain text. */
+function responseDetail(body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { error?: unknown };
+    if (typeof parsed.error === "string") return parsed.error.slice(0, 300);
+  } catch {
+    // not JSON
+  }
+  return body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+}
+
 async function verifyReportedVacancies(appUrl: string, collected: Array<{ externalId?: string | null }>): Promise<void> {
   const expected = new Set(
     collected
@@ -52,13 +89,16 @@ async function main(): Promise<void> {
   // subrequest ceiling and a ten-minute budget, so it enriches the whole
   // catalogue. The Worker-hosted sync keeps the bounded default.
   const source = new RssJobSource("dou-qa", DOU_LISTING_URL, { detailBudget: Number.POSITIVE_INFINITY });
-  const jobs = await source.collect();
+  const jobs = await step("discovery", () => source.collect());
+  const detailed = jobs.filter((job) => (job.raw as { descriptionSource?: unknown } | undefined)?.descriptionSource === "detail-page").length;
+  console.log(`DOU discovery: ${jobs.length} vacancies, ${detailed} with a detail-page description.`);
 
   if (jobs.length < MIN_EXPECTED_VACANCIES) {
-    throw new Error("DOU discovery returned an unexpectedly incomplete catalog.");
+    throw new SyncStepError("discovery", `only ${jobs.length} vacancies, fewer than the expected ${MIN_EXPECTED_VACANCIES}.`);
   }
 
-  const response = await fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
+  const startedAt = Date.now();
+  const response = await step("import", () => fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
@@ -68,11 +108,12 @@ async function main(): Promise<void> {
     },
     body: JSON.stringify({ jobs }),
     signal: AbortSignal.timeout(120_000),
-  });
+  }));
 
-  const body = await response.text();
+  const body = await step("import", () => response.text());
   if (!response.ok) {
-    throw new Error(`DOU import returned HTTP ${response.status}.`);
+    const detail = responseDetail(body);
+    throw new SyncStepError("import", `HTTP ${response.status} after ${Date.now() - startedAt} ms${detail ? `: ${detail}` : ""}`);
   }
 
   const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
@@ -83,12 +124,13 @@ async function main(): Promise<void> {
   const updated = numberField(result.updated);
   console.log(`DOU runner sync complete: ${jobs.length} collected, ${relevant} relevant, ${rejected} rejected, ${inserted} inserted, ${updated} updated.`);
 
-  await verifyReportedVacancies(appUrl, jobs);
+  await step("verification", () => verifyReportedVacancies(appUrl, jobs));
 }
 
 try {
   await main();
-} catch {
-  console.error("DOU runner sync failed.");
+} catch (error) {
+  const where = error instanceof SyncStepError ? ` during ${error.step}` : "";
+  console.error(`DOU runner sync failed${where}: ${error instanceof SyncStepError ? error.message : describeError(error)}`);
   process.exitCode = 1;
 }

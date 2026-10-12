@@ -50,9 +50,12 @@ jobs:
         env:
           N8N_INGEST_TOKEN: ${{ secrets.N8N_INGEST_TOKEN }}
           GIMMEJOB_URL: ${{ vars.GIMMEJOB_URL || 'https://gimmejob.gimmejob.workers.dev' }}
+        # The status and body are printed before the job fails: a bare
+        # "returned error: 503" hid which layer refused the request.
         run: |
-          set -euo pipefail
-          status=$(curl --silent --show-error --fail-with-body \
+          set -uo pipefail
+          started=$(date +%s)
+          status=$(curl --silent --show-error \
             --max-time 600 \
             --output response.json \
             --write-out '%{http_code}' \
@@ -61,6 +64,10 @@ jobs:
             --header 'content-type: application/json' \
             --header 'x-gimmejob-trigger: github-actions' \
             --data '{}' \
-            "${GIMMEJOB_URL%/}/internal/n8n/vacancies-sync")
-          echo "HTTP ${status}"
-          cat response.json
+            "${GIMMEJOB_URL%/}/internal/n8n/vacancies-sync") || status="000"
+          echo "HTTP ${status} after $(( $(date +%s) - started )) s"
+          if [ -s response.json ]; then head -c 4000 response.json; echo; fi
+          case "${status}" in
+            2??) ;;
+            *) echo "::error::The Worker-side catalog sync returned HTTP ${status}."; exit 1 ;;
+          esac
