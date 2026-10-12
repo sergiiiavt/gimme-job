@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { contentHref } from "./content-deep-links";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
+import { chapterSourcesLabel } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug, stripMarkdownSection, type MarkdownUsageFrequency } from "./qa-markdown";
 import { SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
@@ -331,7 +332,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   };
   const registryStatus = sourceStatusLabel
     ? sourceStatusLabel(metaContext)
-    : `${moduleSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`;
+    : chapterSourcesLabel(moduleSources.length, language);
   const pageTitle = language === "uk" ? curriculum.titleUk ?? curriculum.title : curriculum.title;
   const selectedTrackLabel = language === "uk" ? selectedTrack?.labelUk ?? selectedTrack?.label : selectedTrack?.label;
   const trackSegment = showTrackSwitcher ? ` · ${selectedTrackLabel}` : "";
