@@ -19,6 +19,7 @@ Runnable sub-projects for the [Generative AI & LLM testing course](https://gimme
 | [13-agent-testing](13-agent-testing) | Evaluating agents and tool use | A support-agent environment with validated, scoped tools and an approval gate, outcome and trajectory checks, fault injection with false-claim detection, pass^k over seeded runs, and an MCP-style server with protocol contract tests |
 | [14-security-testing](14-security-testing) | Security, red teaming and guardrails | Defences tested against a model that obeys every injection: rendering without exfiltration channels, a tool gate, encoded-leak detection, output encoding, guardrails per attack category, counterfactual fairness and consumption limits |
 | [15-production-quality](15-production-quality) | Production quality | A release gate over hard checks, quality, latency, cost and slices; tracing with OpenTelemetry names and redaction; latency percentiles, Little's law and a load simulation with rate limits; control charts and drift; experiments with and without peeking |
+| [16-benchmarks-governance](16-benchmarks-governance) | Benchmarks, human evaluation and governance | Contamination checks, item analysis, Bradley–Terry rankings with intervals, Krippendorff's alpha verified against published values, model selection on the Pareto front, error rates for speech, and governance evidence |
 
 ## Principles
 

@@ -1,0 +1,39 @@
+{
+ "results": {
+  "policy-suite": {
+   "status": "pass",
+   "version": "2.4.0",
+   "ran": "2026-10-09"
+  },
+  "policy-judge": {
+   "status": "pass",
+   "version": "2.4.0",
+   "ran": "2026-10-09"
+  },
+  "tenancy-tests": {
+   "status": "pass",
+   "version": "2.4.0",
+   "ran": "2026-10-09"
+  },
+  "red-team-leaks": {
+   "status": "fail",
+   "version": "2.4.0",
+   "ran": "2026-10-08"
+  },
+  "load-test": {
+   "status": "pass",
+   "version": "2.1.0",
+   "ran": "2026-06-02"
+  },
+  "language-check": {
+   "status": "pass",
+   "version": "2.4.0",
+   "ran": "2026-10-09"
+  },
+  "tone-check": {
+   "status": "pass",
+   "version": "2.4.0",
+   "ran": "2026-10-09"
+  }
+ }
+}

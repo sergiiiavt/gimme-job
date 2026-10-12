@@ -1868,5 +1868,225 @@
     "role": "Shutdown dates and recommended replacements for OpenAI models.",
     "checkedAt": "2026-10-12",
     "status": "current"
+  },
+  {
+    "id": "hendrycks-mmlu",
+    "title": "Measuring Massive Multitask Language Understanding",
+    "publisher": "Hendrycks et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2009.03300",
+    "role": "MMLU: multiple-choice questions over 57 subjects, the most cited benchmark of knowledge and reasoning.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "wang-mmlu-pro",
+    "title": "MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark",
+    "publisher": "Wang et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.01574",
+    "role": "A harder MMLU with more reasoning questions and ten answer options instead of four.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "rein-gpqa",
+    "title": "GPQA: A Graduate-Level Google-Proof Q&A Benchmark",
+    "publisher": "Rein et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2311.12022",
+    "role": "448 expert-written science questions; the Diamond subset has 198, which makes its scores noisy.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "white-livebench",
+    "title": "LiveBench: A Challenging, Contamination-Limited LLM Benchmark",
+    "publisher": "White et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.19314",
+    "role": "Frequently updated questions from recent sources, scored against ground truth, to limit contamination.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "eleuther-lm-eval-harness",
+    "title": "lm-evaluation-harness",
+    "publisher": "EleutherAI",
+    "kind": "tool",
+    "url": "https://github.com/EleutherAI/lm-evaluation-harness",
+    "role": "A framework that runs hundreds of benchmarks with explicit, repeatable setups.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "brown-gpt3",
+    "title": "Language Models are Few-Shot Learners",
+    "publisher": "Brown et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2005.14165",
+    "role": "The GPT-3 paper, whose contamination analysis flagged benchmark items sharing a 13-gram with the training data.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "srivastava-big-bench",
+    "title": "Beyond the Imitation Game: Quantifying and extrapolating the capabilities of language models",
+    "publisher": "Srivastava et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2206.04615",
+    "role": "BIG-bench, whose task files carry a canary string so that they can be kept out of training data.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "zhang-gsm1k",
+    "title": "A Careful Examination of Large Language Model Performance on Grade School Arithmetic",
+    "publisher": "Zhang et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2405.00332",
+    "role": "GSM1k: fresh questions in the style of GSM8k reveal accuracy drops of up to 8% and overfitting in whole model families.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "gema-mmlu-errors",
+    "title": "Are We Done with MMLU?",
+    "publisher": "Gema et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2406.04127",
+    "role": "A re-annotation estimating that 6.49% of MMLU questions contain errors, and 57% of the analysed virology questions.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "vania-irt",
+    "title": "Comparing Test Sets with Item Response Theory",
+    "publisher": "Vania et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2106.00840",
+    "role": "Item response theory over 29 datasets and 18 models to find which test sets still separate strong models.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "polo-tinybenchmarks",
+    "title": "tinyBenchmarks: evaluating LLMs with fewer examples",
+    "publisher": "Maia Polo et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2402.14992",
+    "role": "Item response theory to estimate a full benchmark score from about 100 selected items.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "chiang-chatbot-arena",
+    "title": "Chatbot Arena: An Open Platform for Evaluating LLMs by Human Preference",
+    "publisher": "Chiang et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2403.04132",
+    "role": "Crowdsourced pairwise votes ranked with the Bradley–Terry model instead of online Elo, with confidence intervals.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "bradley-terry-1952",
+    "title": "Rank Analysis of Incomplete Block Designs: I. The Method of Paired Comparisons",
+    "publisher": "Bradley and Terry — Biometrika 39(3/4), 1952",
+    "kind": "paper",
+    "url": "https://doi.org/10.2307/2334029",
+    "role": "The Bradley–Terry model for paired comparisons.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "hunter-mm-bradley-terry",
+    "title": "MM algorithms for generalized Bradley-Terry models",
+    "publisher": "David R. Hunter — The Annals of Statistics 32(1), 2004",
+    "kind": "paper",
+    "url": "https://doi.org/10.1214/aos/1079120141",
+    "role": "The MM algorithm used to fit Bradley–Terry scores by maximum likelihood.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "krippendorff-computing-alpha",
+    "title": "Computing Krippendorff's Alpha-Reliability",
+    "publisher": "Klaus Krippendorff — University of Pennsylvania, 2011",
+    "kind": "paper",
+    "url": "https://repository.upenn.edu/handle/20.500.14332/2089",
+    "role": "How to compute alpha for any number of annotators, missing labels and four levels of measurement, with worked examples used as test oracles.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "krippendorff-reliability-2004",
+    "title": "Reliability in Content Analysis: Some Common Misconceptions and Recommendations",
+    "publisher": "Klaus Krippendorff — Human Communication Research 30(3), 2004",
+    "kind": "paper",
+    "url": "https://doi.org/10.1111/j.1468-2958.2004.tb00738.x",
+    "role": "Recommended reliability levels: alpha of at least .800, tentative conclusions from .667, and no magical numbers.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "mitchell-model-cards",
+    "title": "Model Cards for Model Reporting",
+    "publisher": "Mitchell et al. — arXiv",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/1810.03993",
+    "role": "Short documents of a model's intended use, its evaluation across groups and conditions, and its limitations.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "nist-ai-rmf",
+    "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0)",
+    "publisher": "NIST — NIST AI 100-1, 2023",
+    "kind": "standard",
+    "url": "https://doi.org/10.6028/NIST.AI.100-1",
+    "role": "The Govern, Map, Measure and Manage functions of AI risk management.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "iso-42001",
+    "title": "ISO/IEC 42001:2023 — AI management systems",
+    "publisher": "ISO/IEC",
+    "kind": "standard",
+    "url": "https://www.iso.org/standard/42001",
+    "role": "A certifiable management system standard for organizations that develop or use AI.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "eu-ai-omnibus-2026",
+    "title": "Regulation (EU) 2026/1744 (Digital Omnibus on AI)",
+    "publisher": "European Union — Official Journal, 24 July 2026",
+    "kind": "standard",
+    "url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+    "role": "Moves the high-risk requirements of the AI Act to 2 December 2027 for Annex III systems and 2 August 2028 for Annex I.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "jiwer",
+    "title": "jiwer",
+    "publisher": "Jitsi",
+    "kind": "tool",
+    "url": "https://github.com/jitsi/jiwer",
+    "role": "A Python library for word and character error rates.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
+  },
+  {
+    "id": "lmsys-style-control",
+    "title": "Does style matter? Disentangling style and substance in Chatbot Arena",
+    "publisher": "Li, Angelopoulos, Chiang — LMSYS blog, 2024",
+    "kind": "article",
+    "url": "https://lmsys.org/blog/2024-08-28-style-control/",
+    "role": "Style control: answer length and formatting added to the Bradley–Terry model, because style alone shifts the Arena leaderboard.",
+    "checkedAt": "2026-10-12",
+    "status": "current"
   }
 ]
