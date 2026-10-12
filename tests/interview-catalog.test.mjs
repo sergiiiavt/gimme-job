@@ -283,7 +283,7 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
   assert.match(routeSource, /interview-stars/);
   assert.match(stylesSource, /\.iq-star-icon\.active \{/);
 
-  const assetDirectory = projectFile("dist/client/assets/");
+  const assetDirectory = projectFile("dist/client/_next/static/chunks/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
   const catalogScripts = scripts.filter((file) => file.startsWith("catalog-"));
   assert.ok(catalogScripts.length >= 1, "The production build must contain a separate catalog chunk.");
