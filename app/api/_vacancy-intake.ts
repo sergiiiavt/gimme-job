@@ -320,6 +320,7 @@ async function sha256(value: string): Promise<string> {
  * is an idempotent upsert the next run repeats.
  */
 const UPSERT_BATCH_SIZE = 50;
+const UPSERT_CHUNK_SIZE = UPSERT_BATCH_SIZE;
 
 async function runStatements(db: D1DatabaseLike, statements: D1BoundStatementLike[]): Promise<void> {
   if (statements.length === 0) return;
@@ -436,7 +437,31 @@ export async function upsertVacancies(
   const db = await database(databaseOverride);
 
   await backfillVacancyStorageMetadata(db);
-  const prepared = await prepareVacancies(incoming.jobs);
+  // Chunks bound the memory of one sync: each loads only its own duplicate candidates and statements, and
+  // they are garbage before the next chunk starts. The whole catalogue at once exceeded the Worker's limits
+  // (Cloudflare error 1102, from 2026-09-27). A chunk sees the rows that earlier chunks wrote, and a chunk
+  // never produces more statements than one write batch, so the write traffic keeps the same shape.
+  let inserted = 0;
+  let updated = 0;
+  for (let offset = 0; offset < incoming.jobs.length; offset += UPSERT_CHUNK_SIZE) {
+    const written = await upsertVacancyChunk(db, incoming.jobs.slice(offset, offset + UPSERT_CHUNK_SIZE));
+    inserted += written.inserted;
+    updated += written.updated;
+  }
+
+  return {
+    seen: normalized.length,
+    relevant: relevance.jobs.length,
+    rejected: relevance.rejected.length,
+    duplicates: incoming.duplicateCount,
+    inserted,
+    updated,
+    accepted: inserted + updated,
+  };
+}
+
+async function upsertVacancyChunk(db: D1DatabaseLike, jobs: IntakeJob[]): Promise<{ inserted: number; updated: number }> {
+  const prepared = await prepareVacancies(jobs);
   const existing = await duplicateCandidates(db, prepared);
   const duplicates = new VacancyDuplicateIndex();
   const fingerprints = new Map<string, number>();
@@ -547,16 +572,7 @@ export async function upsertVacancies(
   }
 
   await runStatements(db, statements);
-
-  return {
-    seen: normalized.length,
-    relevant: relevance.jobs.length,
-    rejected: relevance.rejected.length,
-    duplicates: incoming.duplicateCount,
-    inserted,
-    updated,
-    accepted: inserted + updated,
-  };
+  return { inserted, updated };
 }
 
 export interface VacancySyncOptions {
