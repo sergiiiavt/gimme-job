@@ -11,6 +11,9 @@ await mkdir(coverageDir, { recursive: true });
 const result = spawnSync(
   process.execPath,
   [
+    // Tests load TypeScript through tsx, which compiles it; without source maps the coverage
+    // report counts lines of the compiled code against the original files.
+    "--enable-source-maps",
     "--test",
     "--experimental-test-coverage",
     "--test-reporter=spec",
