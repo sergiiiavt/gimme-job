@@ -41,7 +41,16 @@ function headTag(html, pattern) {
   return html.match(pattern)?.[1];
 }
 
-const canonicalOf = (html) => headTag(html, /<link[^>]+rel="canonical"[^>]+href="([^"]+)"/);
+// Normalized so the bare origin and the origin with "/" compare equal.
+const canonicalOf = (html) => {
+  const href = headTag(html, /<link[^>]+rel="canonical"[^>]+href="([^"]+)"/);
+  return href === undefined ? undefined : new URL(href).toString();
+};
+const alternateHrefOf = (html, language) => {
+  const tags = html.match(/<link\b[^>]*>/gi) ?? [];
+  const tag = tags.find((link) => /\brel="alternate"/i.test(link) && new RegExp(`\\bhreflang="${language}"`, "i").test(link));
+  return tag?.match(/\bhref="([^"]+)"/i)?.[1];
+};
 const robotsOf = (html) => headTag(html, /<meta[^>]+name="robots"[^>]+content="([^"]+)"/);
 const titleOf = (html) => headTag(html, /<title>([^<]*)<\/title>/);
 
@@ -74,7 +83,7 @@ test("interview question pages are self-canonical, bilingual, and titled by the 
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.equal(canonicalOf(html), `${ORIGIN}/interview/sql?question=relational-versus-nonrelational-databases`);
-  assert.match(html, /<link[^>]+hreflang="uk"[^>]+href="https:\/\/gimme-job\.com\/uk\/interview\/sql\?question=relational-versus-nonrelational-databases"/i);
+  assert.equal(alternateHrefOf(html, "uk"), `${ORIGIN}/uk/interview/sql?question=relational-versus-nonrelational-databases`);
   assert.doesNotMatch(titleOf(html) ?? "", /General QA Interview Questions/);
   assert.match(html, /"@type":"BreadcrumbList"/);
 

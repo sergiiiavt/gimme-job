@@ -41,6 +41,9 @@ const designModeBootstrap = String.raw`
 })();
 `;
 
+// Every page renders per request; vinext 1.x would otherwise cache pages that read search params.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
   title: HOME_TITLE,
