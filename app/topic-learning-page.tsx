@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { contentHref } from "./content-deep-links";
 import { LearningHero, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
+import { chapterSourcesLabel } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
 import { SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
@@ -196,7 +197,7 @@ export default function TopicLearningPage({
                         title: source.title,
                         url: source.url,
                       }))}
-                      statusLabel={`${topicSources.length} ${language === "uk" ? "джерел цього розділу" : "chapter references"}`}
+                      statusLabel={chapterSourcesLabel(topicSources.length, language)}
                     />
                   )}
                 </div>

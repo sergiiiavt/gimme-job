@@ -10,6 +10,7 @@ import IstqbAiOfficialSampleCompanion from "./istqb-ai-official-sample-companion
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import LearningVideo from "./learning-video";
 import { sectionNavigationHref } from "./navigation-paths";
+import { chapterReferencesEn, sourcesNounUk } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings } from "./qa-markdown";
 import { SiteSidebar, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./qa-fundamentals-page.module.css";
@@ -281,8 +282,8 @@ export default function IstqbAiTestingPage() {
                         url: source.url,
                       }))}
                       statusLabel={effectiveLanguage === "uk"
-                        ? `Перевірено ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} джерела розділу`
-                        : `Reviewed ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} chapter references`}
+                        ? `Перевірено ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} ${sourcesNounUk(moduleSources.length)} розділу`
+                        : `Reviewed ${istqbAiTestingCatalog.lastReviewedAt} · ${chapterReferencesEn(moduleSources.length)}`}
                     />
 
                     <LearningPager
