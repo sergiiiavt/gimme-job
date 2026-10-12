@@ -45,15 +45,20 @@ async function step<T>(name: string, run: () => Promise<T>): Promise<T> {
   }
 }
 
-/** The route answers with {"error": "..."}; anything else (a platform error page) is shortened to plain text. */
+/** Server text is untrusted: control characters (line breaks included) become spaces before it is logged. */
+function singleLine(text: string, limit: number): string {
+  return text.slice(0, limit * 2).replace(/\p{Cc}+/gu, " ").trim().slice(0, limit);
+}
+
+/** The route answers with {"error": "..."}; anything else (a platform error page) is shown as a short excerpt. */
 function responseDetail(body: string): string {
   try {
     const parsed = JSON.parse(body) as { error?: unknown };
-    if (typeof parsed.error === "string") return parsed.error.slice(0, 300);
+    if (typeof parsed.error === "string") return singleLine(parsed.error, 300);
   } catch {
     // not JSON
   }
-  return body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+  return singleLine(body, 200);
 }
 
 async function verifyReportedVacancies(appUrl: string, collected: Array<{ externalId?: string | null }>): Promise<void> {
@@ -113,7 +118,8 @@ async function main(): Promise<void> {
   const body = await step("import", () => response.text());
   if (!response.ok) {
     const detail = responseDetail(body);
-    throw new SyncStepError("import", `HTTP ${response.status} after ${Date.now() - startedAt} ms${detail ? `: ${detail}` : ""}`);
+    const summary = `HTTP ${response.status} after ${Date.now() - startedAt} ms`;
+    throw new SyncStepError("import", detail ? `${summary}: ${detail}` : summary);
   }
 
   const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
@@ -130,7 +136,12 @@ async function main(): Promise<void> {
 try {
   await main();
 } catch (error) {
-  const where = error instanceof SyncStepError ? ` during ${error.step}` : "";
-  console.error(`DOU runner sync failed${where}: ${error instanceof SyncStepError ? error.message : describeError(error)}`);
+  // One JSON line: any text that came from the network stays inside a quoted, escaped value.
+  console.error(JSON.stringify({
+    event: "dou_runner_sync",
+    outcome: "failure",
+    step: error instanceof SyncStepError ? error.step : "setup",
+    error: error instanceof SyncStepError ? error.message : describeError(error),
+  }));
   process.exitCode = 1;
 }
