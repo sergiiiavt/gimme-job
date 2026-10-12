@@ -3,6 +3,7 @@ import { RssJobSource } from "../agent/src/sources/rss.js";
 const DEFAULT_APP_URL = "https://gimmejob.gimmejob.workers.dev";
 const DOU_LISTING_URL = "https://jobs.dou.ua/vacancies/?category=QA";
 const MIN_EXPECTED_VACANCIES = 100;
+const IMPORT_CHUNK_SIZE = 40;
 const REPORTED_REGRESSION_IDS = new Set(["368919", "368979", "364050"]);
 
 function requiredEnvironment(name: string): string {
@@ -87,6 +88,29 @@ async function verifyReportedVacancies(appUrl: string, collected: Array<{ extern
   console.log(`Production DOU regression check passed: ${expected.size}/${expected.size} reported vacancies visible.`);
 }
 
+async function importChunk(appUrl: string, token: string, chunk: unknown[], label: string): Promise<Record<string, unknown>> {
+  const startedAt = Date.now();
+  const response = await step("import", () => fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      "x-gimmejob-mode": "dou-import",
+      "x-gimmejob-trigger": process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "manual",
+    },
+    body: JSON.stringify({ jobs: chunk }),
+    signal: AbortSignal.timeout(120_000),
+  }));
+  const body = await step("import", () => response.text());
+  if (!response.ok) {
+    const detail = responseDetail(body);
+    const summary = `${label}: HTTP ${response.status} after ${Date.now() - startedAt} ms`;
+    throw new SyncStepError("import", detail ? `${summary}: ${detail}` : summary);
+  }
+  const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
+  return payload.result ?? {};
+}
+
 async function main(): Promise<void> {
   const token = requiredEnvironment("N8N_INGEST_TOKEN");
   const appUrl = new URL(process.env.GIMMEJOB_URL?.trim() || DEFAULT_APP_URL).origin;
@@ -102,33 +126,22 @@ async function main(): Promise<void> {
     throw new SyncStepError("discovery", `only ${jobs.length} vacancies, fewer than the expected ${MIN_EXPECTED_VACANCIES}.`);
   }
 
-  const startedAt = Date.now();
-  const response = await step("import", () => fetch(`${appUrl}/internal/n8n/vacancies-sync`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-      "x-gimmejob-mode": "dou-import",
-      "x-gimmejob-trigger": process.env.GITHUB_ACTIONS === "true" ? "github-actions" : "manual",
-    },
-    body: JSON.stringify({ jobs }),
-    signal: AbortSignal.timeout(120_000),
-  }));
-
-  const body = await step("import", () => response.text());
-  if (!response.ok) {
-    const detail = responseDetail(body);
-    const summary = `HTTP ${response.status} after ${Date.now() - startedAt} ms`;
-    throw new SyncStepError("import", detail ? `${summary}: ${detail}` : summary);
+  // One request per chunk. The Worker has a fixed memory and CPU budget per request, and importing the
+  // whole catalogue in one request exceeded it (Cloudflare error 1102, from 2026-09-27). Upserts are
+  // idempotent and each chunk finds the rows of earlier chunks as duplicate candidates, so the result
+  // is the same as one large import.
+  const totals = { relevant: 0, rejected: 0, inserted: 0, updated: 0 };
+  const chunks = Math.ceil(jobs.length / IMPORT_CHUNK_SIZE);
+  for (let index = 0; index < chunks; index += 1) {
+    const chunk = jobs.slice(index * IMPORT_CHUNK_SIZE, (index + 1) * IMPORT_CHUNK_SIZE);
+    const result = await importChunk(appUrl, token, chunk, `chunk ${index + 1}/${chunks}`);
+    totals.relevant += numberField(result.relevant);
+    totals.rejected += numberField(result.rejected);
+    totals.inserted += numberField(result.inserted);
+    totals.updated += numberField(result.updated);
   }
-
-  const payload = body ? JSON.parse(body) as { result?: Record<string, unknown> } : {};
-  const result = payload.result ?? {};
-  const relevant = numberField(result.relevant);
-  const rejected = numberField(result.rejected);
-  const inserted = numberField(result.inserted);
-  const updated = numberField(result.updated);
-  console.log(`DOU runner sync complete: ${jobs.length} collected, ${relevant} relevant, ${rejected} rejected, ${inserted} inserted, ${updated} updated.`);
+  console.log(`DOU runner sync complete: ${jobs.length} collected in ${chunks} requests, ${totals.relevant} relevant, `
+    + `${totals.rejected} rejected, ${totals.inserted} inserted, ${totals.updated} updated.`);
 
   await step("verification", () => verifyReportedVacancies(appUrl, jobs));
 }
