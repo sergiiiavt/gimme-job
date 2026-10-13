@@ -140,12 +140,12 @@ It may show:
 - salary;
 - posted date;
 - search;
-- compact header with the Vacancies title on the left and an unobtrusive sign-in/personal-workspace action on the right;
+- one compact header line: Vacancies | Collected X ago (only when known) | contextual text link to sign in for tracking and analysis;
 - vacancy detail text;
 - external vacancy/apply links;
 - sign-in link.
 
-Do not show the public Total / Remote / Бронювання summary counters. Keep Remote and Бронювання as per-vacancy condition chips and as filters.
+Do not show public Total / Remote / Бронювання summary counters or add a second sign-in button. The global account control already exists; the in-page sign-in is an inline text link after the freshness label, not a right-aligned CTA. Keep Remote and Бронювання as per-vacancy condition chips and as filters. On narrow mobile screens, shorten the explanatory text rather than forcing extra header rows; keep failed-source health visible below the tabs.
 
 It must **not** show:
 
