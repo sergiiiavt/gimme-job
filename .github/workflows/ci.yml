@@ -64,11 +64,25 @@ jobs:
               try:
                   payload = get("issues/search", {
                       "componentKeys": project, "branch": "main",
-                      "resolved": "false", "ps": 500, **extra,
+                      "resolved": "false", "ps": 500, "p": 1, **extra,
                   })
                   issues = payload.get("issues", [])
-                  print(label, "total:", payload.get("total"), "returned:", len(issues), flush=True)
-                  for issue in issues[:100]:
+                  if payload.get("total", 0) > len(issues):
+                      second = get("issues/search", {
+                          "componentKeys": project, "branch": "main",
+                          "resolved": "false", "ps": 500, "p": 2, **extra,
+                      })
+                      issues.extend(second.get("issues", []))
+                  flagged = [
+                      issue for issue in issues
+                      if issue.get("type") in ("BUG", "VULNERABILITY")
+                      or any(impact.get("softwareQuality") in ("RELIABILITY", "SECURITY")
+                             and impact.get("severity") in ("HIGH", "MEDIUM", "BLOCKER")
+                             for impact in issue.get("impacts", []))
+                  ]
+                  print(label, "total:", payload.get("total"), "returned:", len(issues),
+                        "security/reliability flagged:", len(flagged), flush=True)
+                  for issue in flagged:
                       print(
                           "ISSUE:",
                           issue.get("type"), issue.get("severity"), issue.get("rule"),
@@ -79,6 +93,9 @@ jobs:
               except Exception as e:
                   print(label, "ERROR:", type(e).__name__, str(e), flush=True)
           PY
+      - name: End one-off diagnostics without running unrelated checks
+        run: exit 1
+
       - name: Use Node.js 22.22
         uses: actions/setup-node@v7
         with:
