@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN python -m pip install --no-cache-dir uv==0.12.1
+RUN python -m pip install --no-cache-dir --only-binary :all: uv==0.12.1
 
 COPY ai-service/pyproject.toml /app/pyproject.toml
 COPY ai-service/uv.lock /app/uv.lock
