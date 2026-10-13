@@ -5,7 +5,7 @@ import { readJsonApiResponse } from "./client-api-response";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import { SiteSidebar } from "./site-navigation";
 import { closeVacancyTab, openVacancyTab, vacancyAnalysisTargets } from "./vacancy-tabs";
-import { syncFreshnessLabel, vacancyCatalogStatusLine, vacancySourceHealthLine } from "./vacancy-sync-freshness";
+import { formatVacancyCatalogAge, syncFreshnessLabel, vacancySourceHealthLine } from "./vacancy-sync-freshness";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
 type JobCondition = "REMOTE" | "RESERVATION";
@@ -895,7 +895,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
 
   const stopAnalyze = () => { analyzeCancelRef.current = true; };
 
-  const catalogStatus = vacancyCatalogStatusLine(catalogUpdatedAt);
+  const catalogAge = formatVacancyCatalogAge(catalogUpdatedAt);
   const catalogHealth = vacancySourceHealthLine(catalogSourceHealth);
 
   const adjustResume = async (job: Job) => {
@@ -965,7 +965,24 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
         <div className={`jobs-page private-jobs-page vacancy-workspace vacancy-workspace-${viewMode}`}>
           <section className="page-intro vacancy-page-intro">
             <div className="private-page-heading">
-              <h1>Vacancies</h1>
+              <div className="vacancy-header-title-group">
+                <h1>Vacancies</h1>
+                <div className="vacancy-header-meta">
+                  {catalogAge && <>
+                    <span className="vacancy-header-divider" aria-hidden="true"/>
+                    <span className="vacancy-header-age" title={`Vacancies collected ${catalogAge}`}>Collected {catalogAge}</span>
+                  </>}
+                  {!isPersonal && <>
+                    <span className="vacancy-header-divider" aria-hidden="true"/>
+                    <span className="vacancy-header-prompt">
+                      <span className="vacancy-header-context">Track and analyze jobs? </span>
+                      {authenticated === true
+                        ? <a href="/workspace">Open personal tools <span aria-hidden="true">→</span></a>
+                        : <a href="/workspace/login" aria-label="Sign in to track and analyze vacancies">Sign in <span aria-hidden="true">→</span></a>}
+                    </span>
+                  </>}
+                </div>
+              </div>
               {isPersonal && <div className="page-actions">
                 <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
                 {busy === "analyze"
@@ -973,13 +990,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                   : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || analysisTargetCount === 0}><Icon name="llm"/><span>{selected ? "Analyze vacancy" : selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
               </div>}
             </div>
-            {!isPersonal && (authenticated === true
-              ? <a className="signin-link vacancy-signin-action" href="/workspace">Personal workspace →</a>
-              : <a className="signin-link vacancy-signin-action" href="/workspace/login" aria-label="Sign in to use personal vacancy tools">Sign in →</a>)}
-            {(isPersonal || catalogStatus || catalogHealth) && <div className="vacancy-catalog-summary">
-              {isPersonal && <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>}
-              {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
-              {catalogHealth && <p className="vacancy-catalog-freshness vacancy-catalog-health" role="status">{catalogHealth}</p>}
+            {isPersonal && <div className="vacancy-catalog-summary">
+              <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>
             </div>}
           </section>
 
@@ -1021,6 +1033,8 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
               })}
             </div>
           </nav>
+
+          {catalogHealth && <p className="vacancy-catalog-freshness vacancy-catalog-health" role="status">{catalogHealth}</p>}
 
           {(online === null || (isPersonal && busy === "sync")) && <div className="analyze-progress vacancy-load-progress" aria-live="polite">
             <div
