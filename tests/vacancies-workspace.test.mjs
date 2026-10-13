@@ -36,7 +36,7 @@ test("public state fails closed and private actions remain gated", () => {
   assert.match(source, /const isPersonal = mode === "personal" && authenticated === true/);
   assert.match(source, /setAuthenticated\(false\);/);
   assert.match(source, /if \(!isPersonal\) return;/);
-  assert.match(source, /\{isPersonal \? <div className="page-actions">/);
+  assert.match(source, /\{isPersonal && <div className="page-actions">/);
   assert.match(source, /\{isPersonal && <input/);
   assert.match(source, /\{isPersonal && <div className={`vacancy-cell vacancy-match/);
   assert.match(source, /\{isPersonal && <div className="vacancy-cell vacancy-status-cell"/);

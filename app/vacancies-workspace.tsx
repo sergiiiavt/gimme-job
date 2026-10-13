@@ -732,11 +732,6 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
     applied: jobs.filter((job) => job.status === "APPLIED").length,
     interviews: jobs.filter((job) => job.status === "INTERVIEW").length,
   };
-  const publicCounts = {
-    total: jobs.length,
-    remote: jobs.filter((job) => job.remote).length,
-    reservation: jobs.filter(hasReservation).length,
-  };
   const sortOptions = isPersonal ? PERSONAL_SORT_OPTIONS : PUBLIC_SORT_OPTIONS;
   const hasActiveFilters = Boolean(query || dateFilter || (isPersonal && statusFilters.length) || conditionFilters.length);
   const analysisTargetCount = selected ? 1 : selectedIds.size;
@@ -971,24 +966,21 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
           <section className="page-intro vacancy-page-intro">
             <div className="private-page-heading">
               <h1>Vacancies</h1>
-              {isPersonal ? <div className="page-actions">
+              {isPersonal && <div className="page-actions">
                 <button className="sync-button" onClick={() => void sync()} disabled={busy !== null}><Icon name="sync"/><span>{busy === "sync" ? "Syncing…" : "Sync jobs"}</span></button>
                 {busy === "analyze"
                   ? <button className="sync-button stop-button" onClick={stopAnalyze}><Icon name="x"/><span>Stop ({analyzeProgress?.done ?? 0}/{analyzeProgress?.total ?? 0})</span></button>
                   : <button className="sync-button" onClick={() => void analyze()} disabled={busy !== null || analysisTargetCount === 0}><Icon name="llm"/><span>{selected ? "Analyze vacancy" : selectedIds.size > 0 ? `Analyze selected (${selectedIds.size})` : "Analyze"}</span></button>}
-              </div> : authenticated === true
-                ? <a className="signin-link" href="/workspace">Open personal view →</a>
-                : <a className="signin-link" href="/workspace/login">Sign in for personal tools →</a>}
+              </div>}
             </div>
-            <div className="vacancy-catalog-summary">
-              {isPersonal ? (
-                <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>
-              ) : (
-                <div className="stat-line"><Stat value={publicCounts.total} label="Total"/><Stat value={publicCounts.remote} label="Remote"/><Stat value={publicCounts.reservation} label="Бронювання"/></div>
-              )}
+            {!isPersonal && (authenticated === true
+              ? <a className="signin-link vacancy-signin-action" href="/workspace">Personal workspace →</a>
+              : <a className="signin-link vacancy-signin-action" href="/workspace/login" aria-label="Sign in to use personal vacancy tools">Sign in →</a>)}
+            {(isPersonal || catalogStatus || catalogHealth) && <div className="vacancy-catalog-summary">
+              {isPersonal && <div className="stat-line"><Stat value={personalCounts.total} label="Total"/><Stat value={personalCounts.new} label="New"/><Stat value={personalCounts.applied} label="Applied"/><Stat value={personalCounts.interviews} label="Interviews"/></div>}
               {catalogStatus && <p className="vacancy-catalog-freshness">{catalogStatus}</p>}
               {catalogHealth && <p className="vacancy-catalog-freshness vacancy-catalog-health" role="status">{catalogHealth}</p>}
-            </div>
+            </div>}
           </section>
 
           <nav className="vacancy-tabs" aria-label="Vacancy workspace tabs">

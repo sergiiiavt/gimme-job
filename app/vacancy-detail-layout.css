@@ -15,18 +15,28 @@
   width: calc(100% - 36px);
 }
 
-.vacancy-workspace-personal .vacancy-page-intro,
-.vacancy-workspace-public .vacancy-page-intro {
+.vacancy-workspace-personal .vacancy-page-intro {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
   justify-content: flex-start;
 }
 
-.vacancy-workspace-personal .stat-line,
-.vacancy-workspace-public .stat-line {
+.vacancy-workspace-personal .stat-line {
   height: 38px;
   padding: 0 4px;
+}
+
+/* Keep public sign-in available without giving it the visual weight of a stat card. */
+.vacancy-workspace-public .vacancy-page-intro {
+  align-items: center;
+  display: grid;
+  gap: 8px 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.vacancy-workspace-public .vacancy-catalog-summary {
+  grid-column: 1 / -1;
 }
 
 .vacancy-workspace .score strong {
@@ -226,11 +236,14 @@
     width: calc(100% - 32px);
   }
 
-  .vacancy-workspace-personal .vacancy-page-intro,
-  .vacancy-workspace-public .vacancy-page-intro {
+  .vacancy-workspace-personal .vacancy-page-intro {
     align-items: stretch;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .vacancy-workspace-public .vacancy-page-intro {
+    gap: 8px 12px;
   }
 
   .vacancy-workspace-public .vacancy-detail-tab {

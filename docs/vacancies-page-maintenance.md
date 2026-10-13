@@ -140,10 +140,12 @@ It may show:
 - salary;
 - posted date;
 - search;
-- public counters such as Total / Remote / Бронювання;
+- compact header with the Vacancies title on the left and an unobtrusive sign-in/personal-workspace action on the right;
 - vacancy detail text;
 - external vacancy/apply links;
 - sign-in link.
+
+Do not show the public Total / Remote / Бронювання summary counters. Keep Remote and Бронювання as per-vacancy condition chips and as filters.
 
 It must **not** show:
 
