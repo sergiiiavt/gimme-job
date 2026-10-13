@@ -13,6 +13,101 @@
   gap: 8px;
 }
 
+/* Keep title, ingestion freshness and the optional personal-tools link in one row. */
+.vacancy-header-title-group {
+  align-items: center;
+  display: inline-flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.vacancy-header-title-group h1 {
+  flex: 0 0 auto;
+}
+
+.vacancy-header-meta {
+  align-items: center;
+  display: inline-flex;
+  gap: 10px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.vacancy-header-divider {
+  background: var(--line);
+  flex: 0 0 1px;
+  height: 18px;
+}
+
+.vacancy-header-age {
+  color: var(--faint);
+  font-size: 11px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vacancy-header-prompt {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.vacancy-header-prompt a {
+  color: var(--green);
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.vacancy-header-prompt a:hover {
+  text-decoration: underline;
+}
+
+.vacancy-workspace-public .vacancy-page-intro .private-page-heading {
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Global account controls already occupy the top-right corner. */
+@media (max-width: 900px) {
+  .vacancy-workspace-public .vacancy-header-context {
+    display: none;
+  }
+}
+
+@media (max-width: 610px) {
+  .vacancy-workspace-public .vacancy-page-intro {
+    padding-top: 32px;
+  }
+
+  .vacancy-workspace-public .vacancy-header-title-group {
+    gap: 7px;
+    width: 100%;
+  }
+
+  .vacancy-workspace-public .vacancy-header-title-group h1 {
+    font-size: 22px;
+  }
+
+  .vacancy-workspace-public .vacancy-header-meta {
+    flex: 1 1 auto;
+    gap: 6px;
+  }
+
+  .vacancy-workspace-public .vacancy-header-divider {
+    height: 14px;
+  }
+
+  .vacancy-workspace-public .vacancy-header-age,
+  .vacancy-workspace-public .vacancy-header-prompt {
+    font-size: 10px;
+  }
+}
+
 /* Ingestion runs on a schedule, so the catalogue states its own age. */
 .vacancy-catalog-freshness {
   color: var(--faint);
@@ -607,27 +702,6 @@
   padding: 5px 7px;
 }
 
-.vacancy-workspace-public .vacancy-signin-action {
-  align-self: center;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 650;
-  justify-self: end;
-  min-height: 34px;
-  padding: 0 12px;
-  white-space: nowrap;
-}
-
-.vacancy-workspace-public .vacancy-signin-action:hover {
-  background: var(--green-soft);
-  border-color: var(--green);
-  color: var(--green);
-  text-decoration: none;
-}
-
 @media (max-width: 1440px) and (min-width: 1181px) {
   .vacancy-table-head-personal,
   .vacancy-table-row-personal {
@@ -726,7 +800,7 @@
     align-items: stretch;
   }
 
-  .vacancy-page-intro .private-page-heading {
+  .vacancy-workspace-personal .vacancy-page-intro .private-page-heading {
     align-items: flex-start;
     flex-direction: column;
   }
