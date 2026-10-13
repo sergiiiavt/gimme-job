@@ -15,7 +15,7 @@ const HISTORICAL_DUPLICATES = new Map([
 ]);
 
 const entries = await readdir(migrationDir, { withFileTypes: true });
-const files = entries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort();
+const files = entries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort((left, right) => left.localeCompare(right));
 assert.ok(files.length > 0, "drizzle/ must contain D1 migration SQL files");
 
 const byPrefix = new Map();
