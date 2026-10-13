@@ -47,7 +47,7 @@ jobs:
             ai-service/uv.lock
 
       - name: Install uv
-        run: python -m pip install uv==0.12.1
+        run: python -m pip install --only-binary :all: uv==0.12.1
 
       - name: Verify committed AI service lock
         run: uv lock --project ai-service --check
@@ -224,7 +224,7 @@ jobs:
             ai-service/uv.lock
 
       - name: Install uv
-        run: python -m pip install uv==0.12.1
+        run: python -m pip install --only-binary :all: uv==0.12.1
 
       - name: Verify committed AI service lock
         run: uv lock --project ai-service --check
