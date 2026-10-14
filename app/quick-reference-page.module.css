@@ -226,7 +226,8 @@
   overflow-wrap: anywhere;
 }
 
-.page:has([aria-label="SQL dialect"]) .rowExample {
+.page:has([aria-label="SQL dialect"]) .rowExample,
+.page:has([aria-label="Programming language"]) .rowExample {
   display: block;
   line-height: 1.4;
   min-width: 0;
