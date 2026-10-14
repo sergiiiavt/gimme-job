@@ -85,7 +85,7 @@ export default function AgenticLearningPage() {
               </article>
             </div>
 
-            <LearningRail headings={videoHeadings} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage}/>
+            <LearningRail headings={videoHeadings} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage} showSourceRegistry={false}/>
           </div>
         </div>
       </section>
