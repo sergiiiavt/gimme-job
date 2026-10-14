@@ -5,6 +5,7 @@ import { register } from "tsx/esm/api";
 
 register();
 
+const { agenticVideos } = await import("../app/agentic-videos.ts");
 const {
   isLearningVideoRateSupported,
   LEARNING_VIDEO_PLAYBACK_RATES,
@@ -16,39 +17,38 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("agentic route uses the dedicated learning page", async () => {
   const route = await read("app/learn/agentic/page.tsx");
 
-  assert.match(route, /import AgenticLearningPage from "\.\.\/\.\.\/agentic-learning-page"/);
+  assert.match(route, /import AgenticLearningPage from/);
   assert.match(route, /return <AgenticLearningPage\/>/);
 });
 
-test("agentic learning embeds all three verified videos", async () => {
-  const page = await read("app/agentic-learning-page.tsx");
-
-  assert.match(page, /videoId="zW4SEqgFBJc"/);
-  assert.match(page, /videoId="rSDKAjao_7Q"/);
-  assert.match(page, /videoId="LZ79ZwTI6lU"/);
-  assert.match(page, /channel="RO БУДУЄ · Rodion Lozovoi"/);
-  assert.match(page, /channel="Штучка Інтелект"/);
-  assert.match(page, /Як автоматизувати 80% роботи за €20\? Повний огляд Claude Cowork/);
-  assert.match(page, /Контент-завод з Claude Cowork, Notion та Skill Editor/);
-  assert.doesNotMatch(page, /Точний YouTube watch URL ще треба верифікувати/);
+test("agentic video list preserves the four existing videos and their titles", () => {
+  assert.deepEqual(agenticVideos.map(({ videoId }) => videoId), [
+    "zW4SEqgFBJc",
+    "rSDKAjao_7Q",
+    "LZ79ZwTI6lU",
+    "geoFJ6OXMKE",
+  ]);
+  assert.equal(new Set(agenticVideos.map(({ id }) => id)).size, agenticVideos.length);
+  assert.deepEqual(agenticVideos.map(({ title }) => title), [
+    "Claude Code Desktop: from zero to a working web app",
+    "Контент-завод з Claude Cowork, Notion та Skill Editor",
+    "Як автоматизувати 80% роботи за €20? Повний огляд Claude Cowork",
+    "Інженер Claude показав, ЯК ПРАВИЛЬНО писати промти",
+  ]);
+  for (const video of agenticVideos) {
+    assert.ok(video.channel);
+    assert.match(video.channelUrl, /^https:\/\/www\.youtube\.com\//);
+  }
 });
 
-test("agentic learning restores the original under-construction roadmap tabs", async () => {
+test("agentic page displays videos without promotional sections or empty roadmap placeholders", async () => {
   const page = await read("app/agentic-learning-page.tsx");
 
-  for (const title of [
-    "Tools and actions",
-    "State and memory",
-    "Approval workflows",
-    "Agent evaluation",
-    "MCP experiments",
-    "Pet projects",
-  ]) {
-    assert.match(page, new RegExp(title));
-  }
-
-  assert.match(page, /status: "under-construction" as const/);
-  assert.match(page, /id=\{item\.id\}/);
+  assert.match(page, /agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, label: title \}\)\)/);
+  assert.match(page, /agenticVideos\.map\(\(\{ id, title, channel, channelUrl, videoId \}\) =>/);
+  assert.match(page, /className=\{styles\.videoItem\} id=\{id\} key=\{id\}/);
+  assert.match(page, /<LearningVideo[\s\S]*?title=\{title\}[\s\S]*?videoId=\{videoId\}/);
+  assert.doesNotMatch(page, /<h[2-6]\b|<p\b|<ul\b|roadmapItems|underConstruction|LearningRail|patternsIntro|codeIntro|coworkIntro|promptingIntro/);
 });
 
 test("learning video playback policy exposes 3× and 4× and can still identify advertised rates", () => {
@@ -77,13 +77,4 @@ test("learning video always attempts requested custom speed and reports YouTube'
   assert.match(player, /Requested \$\{lastAttempt\.requested\}×; YouTube applied \$\{lastAttempt\.actual\}×/);
   assert.doesNotMatch(player, /contentDocument/);
   assert.doesNotMatch(player, /querySelector\(["']video["']\)/);
-});
-
-test("agentic copy describes best-effort 3× and 4× requests instead of capability gating", async () => {
-  const page = await read("app/agentic-learning-page.tsx");
-
-  assert.match(page, /best-effort setPlaybackRate/);
-  assert.match(page, /кожен клік 3× \/ 4× завжди відправляє/);
-  assert.match(page, /фактично застосований rate/);
-  assert.doesNotMatch(page, /активуються тільки коли YouTube віддає їх/);
 });
