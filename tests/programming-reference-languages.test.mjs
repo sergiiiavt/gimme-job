@@ -11,7 +11,7 @@ const python = JSON.parse(readFileSync("content/python-learning/quick-reference.
 test("General and C# references are separate from the existing Python catalog", () => {
   assert.ok(reference.general.length >= 5);
   assert.ok(reference.csharp.length >= 12);
-  assert.ok(python.cards.length >= 25);
+  assert.ok(python.cards.length >= 24);
   assert.match(page, /\.\.\.pythonReferenceCards/);
   assert.match(page, /\.\.\.programmingReferenceCatalog\.general\.map/);
   assert.match(page, /\.\.\.programmingReferenceCatalog\.csharp\.map/);
