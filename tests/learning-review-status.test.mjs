@@ -45,3 +45,14 @@ test("SQL shows the review banner without applying it to unfinished sibling data
   assert.match(source, /const showReviewBanner = !requestedTrack \|\| requestedTrack === "sql"/);
   assert.match(source, /showReviewBanner \? waitingForReviewBannerStyle : ""/);
 });
+
+test("Performance Testing and Cloud & DevOps show the shared review banner in public and personal modes", async () => {
+  for (const page of ["app/performance-testing-page.tsx", "app/cloud-devops-page.tsx"]) {
+    const source = await readFile(projectFile(page), "utf8");
+
+    assert.match(source, /import \{ waitingForReviewBannerStyle \} from "\.\/learning-review-status"/);
+    assert.match(source, /<style>\{waitingForReviewBannerStyle\}<\/style>/);
+    assert.match(source, /<LearningDocumentPage/);
+    assert.match(source, /mode=\{mode\}/);
+  }
+});
