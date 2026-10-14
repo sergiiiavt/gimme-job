@@ -194,7 +194,7 @@ for (const chapterId of ["robot-framework", "robot-keywords", "robot-project", "
   assert.ok(pathSource.includes(chapterId), `Missing Robot Framework chapter ${chapterId}`);
 }
 assert.equal((additionalSource.match(/"ta-lesson-robot-framework-(?:isolation|browser-isolation|api-contracts|capstone)"/g) ?? []).length, 4, "Expected four advanced Robot lessons");
-assert.match(additionalSource, /python -m robot --outputdir results examples\\/);
+assert.ok(additionalSource.includes("python -m robot --outputdir results examples/robot-framework/tests"));
 assert.match(exampleSource, /Test Setup    Start With Inventory/);
 assert.match(exampleSource, /Run Keyword And Expect Error/);
 assert.match(robotSource, /rfbrowser install/, "Browser Library bundled-runtime installation must be covered");
