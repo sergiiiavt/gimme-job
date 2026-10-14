@@ -316,10 +316,18 @@
 
 .toc nav {
   display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
   gap: 2px;
 }
 
 .toc a {
+  display: block;
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
   border-left: 2px solid transparent;
   border-radius: 4px;
   color: #5c6962;
