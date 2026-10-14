@@ -1,0 +1,982 @@
+{
+  "topicFilters": [
+    "Core",
+    "Design",
+    "Performance",
+    "Runtime",
+    "LINQ"
+  ],
+  "general": [
+    {
+      "id": "mental-models",
+      "title": "Program execution & state",
+      "topics": [
+        "Core",
+        "Design"
+      ],
+      "moduleId": null,
+      "summary": "A language-neutral checklist for understanding what a program does before translating it to syntax.",
+      "entries": [
+        {
+          "term": "Input → transform → output",
+          "meaning": "Trace where data comes from, how it changes, and which side effects it causes.",
+          "detail": "Given input → validated value → result / failure"
+        },
+        {
+          "term": "State & identity",
+          "meaning": "Distinguish a value from the identity of the object storing it.",
+          "detail": "Does an update mutate shared state or create a new value?"
+        },
+        {
+          "term": "Control flow",
+          "meaning": "Account for all branches, loops, early exits, and exceptional paths.",
+          "detail": "Normal → empty → invalid → cancelled → timeout"
+        },
+        {
+          "term": "Invariant",
+          "meaning": "State what must remain true before and after an operation.",
+          "detail": "Balance cannot drop below zero"
+        },
+        {
+          "term": "Boundary",
+          "meaning": "Treat external input as untrusted and keep side effects at explicit edges.",
+          "detail": "Parse → validate → calculate → persist"
+        }
+      ],
+      "more": [
+        {
+          "term": "Precondition / postcondition",
+          "meaning": "Describe what callers must supply and what success guarantees.",
+          "detail": "Pre: valid account · Post: transfer recorded exactly once"
+        }
+      ]
+    },
+    {
+      "id": "data-structures",
+      "title": "Data structures & complexity",
+      "topics": [
+        "Core",
+        "Collections",
+        "Performance"
+      ],
+      "moduleId": null,
+      "summary": "Choose structures by operations and constraints, not by language-specific class names.",
+      "entries": [
+        {
+          "term": "Sequence",
+          "meaning": "Preserves element order; indexing and mutation costs depend on its implementation.",
+          "detail": "Array / dynamic list / linked list"
+        },
+        {
+          "term": "Set",
+          "meaning": "Represents unique members, typically optimized for membership tests.",
+          "detail": "Deduplicate identifiers before comparing"
+        },
+        {
+          "term": "Map",
+          "meaning": "Associates keys with values; lookup complexity depends on implementation.",
+          "detail": "User ID → profile"
+        },
+        {
+          "term": "Time complexity",
+          "meaning": "Separate the number of operations from the input size.",
+          "detail": "Linear scan O(n) · nested scans O(n²)"
+        },
+        {
+          "term": "Space complexity",
+          "meaning": "Count temporary allocations and retained data.",
+          "detail": "Streaming uses less memory than materializing everything"
+        }
+      ],
+      "more": [
+        {
+          "term": "Equality / hashing",
+          "meaning": "Set and map correctness depends on consistent equality/hash behavior.",
+          "detail": "Equal keys must have equal hashes"
+        }
+      ]
+    },
+    {
+      "id": "api-contracts",
+      "title": "Functions, APIs & error contracts",
+      "topics": [
+        "Core",
+        "Design",
+        "Testing"
+      ],
+      "moduleId": null,
+      "summary": "Define observable behavior independently of Python exceptions or .NET types.",
+      "entries": [
+        {
+          "term": "Contract",
+          "meaning": "Specify inputs, result shape and failure modes.",
+          "detail": "Valid response · invalid input · missing resource"
+        },
+        {
+          "term": "Pure operation",
+          "meaning": "Same inputs yield same result without externally observable side effects.",
+          "detail": "Compute a checksum or normalization"
+        },
+        {
+          "term": "Idempotency",
+          "meaning": "Repeating the operation has the same intended effect as doing it once.",
+          "detail": "Set state to enabled (vs increment counter)"
+        },
+        {
+          "term": "Failure taxonomy",
+          "meaning": "Distinguish expected domain outcomes from infrastructure errors.",
+          "detail": "Not found vs timeout vs malformed payload"
+        },
+        {
+          "term": "Compatibility",
+          "meaning": "Consider versioning and existing callers before changing a public interface.",
+          "detail": "Adding an optional field vs renaming a required field"
+        }
+      ],
+      "more": [
+        {
+          "term": "Observable state",
+          "meaning": "Prefer testing outcomes and externally visible events over private implementation details.",
+          "detail": "Assert persisted value and returned status"
+        }
+      ]
+    },
+    {
+      "id": "async-design",
+      "title": "Concurrency & resource ownership",
+      "topics": [
+        "Async",
+        "Design",
+        "Performance"
+      ],
+      "moduleId": null,
+      "summary": "Shared concepts apply across languages, but runtime scheduling and syntax differ.",
+      "entries": [
+        {
+          "term": "Concurrency vs parallelism",
+          "meaning": "Overlapping operations are not necessarily executed simultaneously.",
+          "detail": "Async I/O vs CPU work on multiple cores"
+        },
+        {
+          "term": "Cancellation",
+          "meaning": "A caller should be able to stop abandoned work safely.",
+          "detail": "Propagate cancellation to downstream calls"
+        },
+        {
+          "term": "Deadline / timeout",
+          "meaning": "Put an upper bound on waits, retries and requests.",
+          "detail": "Deadline per workflow; bounded retry budget"
+        },
+        {
+          "term": "Race condition",
+          "meaning": "Unsynchronized access makes a result depend on execution timing.",
+          "detail": "Two writers updating the same state"
+        },
+        {
+          "term": "Resource lifecycle",
+          "meaning": "Acquire and release files, sockets and locks predictably.",
+          "detail": "Dispose/close even when an operation fails"
+        }
+      ],
+      "more": [
+        {
+          "term": "Retry safety",
+          "meaning": "Retry only when operation semantics permit; use backoff and idempotency.",
+          "detail": "Do not blindly retry an unprotected payment"
+        }
+      ]
+    },
+    {
+      "id": "testing-design",
+      "title": "Testability & debugging",
+      "topics": [
+        "Testing",
+        "Design",
+        "Tooling"
+      ],
+      "moduleId": null,
+      "summary": "The testing method is general; assertion libraries and mocking syntax are not.",
+      "entries": [
+        {
+          "term": "Arrange → act → assert",
+          "meaning": "Set up state, execute behavior, check a meaningful outcome.",
+          "detail": "Known input → operation → observed result"
+        },
+        {
+          "term": "Boundaries first",
+          "meaning": "Cover zero, one, minimum, maximum, null/missing and invalid values.",
+          "detail": "Empty list · 1 item · very large list"
+        },
+        {
+          "term": "Determinism",
+          "meaning": "Control time, randomness, network and external state.",
+          "detail": "Inject clock / fixed seed / fake dependency"
+        },
+        {
+          "term": "Isolation",
+          "meaning": "Avoid cross-test order dependence and leaked global state.",
+          "detail": "Fresh fixture or clean storage per test"
+        },
+        {
+          "term": "Evidence",
+          "meaning": "Capture reproducible inputs and diagnostic context.",
+          "detail": "Correlation ID, request ID, expected vs actual"
+        }
+      ],
+      "more": [
+        {
+          "term": "Regression check",
+          "meaning": "Add a focused test for the failure and nearby edge cases.",
+          "detail": "Reproduce → fix → prevent recurrence"
+        }
+      ]
+    },
+    {
+      "id": "maintainability",
+      "title": "Maintainable program design",
+      "topics": [
+        "Design",
+        "Core"
+      ],
+      "moduleId": null,
+      "summary": "Keep boundaries, names and responsibilities clear before choosing language-specific constructs.",
+      "entries": [
+        {
+          "term": "Single responsibility",
+          "meaning": "Keep related behavior together without mixing unrelated concerns.",
+          "detail": "Parsing, business rules and storage in separate units"
+        },
+        {
+          "term": "Dependency direction",
+          "meaning": "Higher-level logic should depend on stable contracts, not incidental details.",
+          "detail": "Interface boundary around external service"
+        },
+        {
+          "term": "Explicit ownership",
+          "meaning": "Make it clear who creates, changes and disposes a resource.",
+          "detail": "A single owner closes the open connection"
+        },
+        {
+          "term": "Cohesion",
+          "meaning": "Group operations that act on the same concept.",
+          "detail": "User validation rules in one component"
+        },
+        {
+          "term": "Trade-offs",
+          "meaning": "Prefer the least complex design meeting actual needs.",
+          "detail": "Do not introduce abstractions without repeated use"
+        }
+      ],
+      "more": []
+    }
+  ],
+  "csharp": [
+    {
+      "id": "syntax-control-flow",
+      "title": "Syntax & control flow",
+      "topics": [
+        "Syntax",
+        "Core"
+      ],
+      "moduleId": "csharp-language-basics",
+      "summary": "C# blocks, declarations and branch/loop forms.",
+      "entries": [
+        {
+          "term": "Declare",
+          "meaning": "var is statically inferred, not dynamically typed.",
+          "detail": "var retries = 3;"
+        },
+        {
+          "term": "Condition",
+          "meaning": "Use braces around controlled statements for clarity.",
+          "detail": "if (ready) { Start(); } else { Log(); }"
+        },
+        {
+          "term": "Switch expression",
+          "meaning": "Choose a result by matching a value.",
+          "detail": "var label = status switch { 200 => \"OK\", _ => \"Other\" };"
+        },
+        {
+          "term": "foreach",
+          "meaning": "Enumerate without manual indexes.",
+          "detail": "foreach (var item in items) { Console.WriteLine(item); }"
+        },
+        {
+          "term": "Pattern test",
+          "meaning": "Check a type or pattern while introducing a variable.",
+          "detail": "if (value is string text) Console.WriteLine(text);"
+        }
+      ],
+      "more": [
+        {
+          "term": "null coalescing",
+          "meaning": "Provide a value when an expression is null.",
+          "detail": "var name = input ?? \"unknown\";"
+        },
+        {
+          "term": "string interpolation",
+          "meaning": "Embed expressions with $-prefixed strings.",
+          "detail": "$\"Run {id}: {status}\""
+        }
+      ]
+    },
+    {
+      "id": "types-nullability",
+      "title": "Types & null safety",
+      "topics": [
+        "Types",
+        "Typing",
+        "Gotchas"
+      ],
+      "moduleId": "csharp-language-basics",
+      "summary": "Distinguish compile-time types, nullable annotations, and value/reference semantics.",
+      "entries": [
+        {
+          "term": "Value type",
+          "meaning": "An assignment copies the value for structs and built-in numeric types.",
+          "detail": "int a = 1; int b = a;"
+        },
+        {
+          "term": "Reference type",
+          "meaning": "Assignment copies a reference, not the referenced instance.",
+          "detail": "var alias = original;"
+        },
+        {
+          "term": "Nullable value",
+          "meaning": "Allow absence for non-nullable value types.",
+          "detail": "int? count = null;"
+        },
+        {
+          "term": "Nullable reference",
+          "meaning": "Nullable context enables compile-time diagnostics; not a runtime guard.",
+          "detail": "string? name = null;"
+        },
+        {
+          "term": "Null-safe access",
+          "meaning": "Return null if the receiver is null.",
+          "detail": "var length = name?.Length;"
+        }
+      ],
+      "more": [
+        {
+          "term": "Nullable fallback",
+          "meaning": "Evaluate the right side only if the left is null.",
+          "detail": "var size = count ?? 0;"
+        },
+        {
+          "term": "Casting",
+          "meaning": "Prefer pattern checks when types are uncertain.",
+          "detail": "if (obj is int number) Console.WriteLine(number);"
+        }
+      ]
+    },
+    {
+      "id": "strings-numbers",
+      "title": "Strings, numbers & formatting",
+      "topics": [
+        "Strings",
+        "Types"
+      ],
+      "moduleId": "csharp-language-basics",
+      "summary": "Practical C# string handling and numeric conversions.",
+      "entries": [
+        {
+          "term": "Interpolate",
+          "meaning": "Create formatted output.",
+          "detail": "var message = $\"Total: {total:F2}\";"
+        },
+        {
+          "term": "Split / join",
+          "meaning": "Transform delimited text.",
+          "detail": "var parts = csv.Split(','); string.Join(\",\", parts);"
+        },
+        {
+          "term": "Case-insensitive compare",
+          "meaning": "Choose explicit comparison semantics.",
+          "detail": "string.Equals(a, b, StringComparison.OrdinalIgnoreCase)"
+        },
+        {
+          "term": "Parse safely",
+          "meaning": "Avoid exceptions for routine invalid input.",
+          "detail": "int.TryParse(input, out var number)"
+        },
+        {
+          "term": "Money",
+          "meaning": "Use decimal rather than binary floating point for decimal money amounts.",
+          "detail": "decimal price = 12.50m;"
+        }
+      ],
+      "more": [
+        {
+          "term": "Trim",
+          "meaning": "Remove outer whitespace.",
+          "detail": "var cleaned = input.Trim();"
+        },
+        {
+          "term": "Invariant culture",
+          "meaning": "Use a fixed culture for machine-readable text.",
+          "detail": "value.ToString(CultureInfo.InvariantCulture)"
+        }
+      ]
+    },
+    {
+      "id": "methods-parameters",
+      "title": "Methods & parameter passing",
+      "topics": [
+        "Functions",
+        "Syntax",
+        "Gotchas"
+      ],
+      "moduleId": "csharp-methods-parameters",
+      "summary": "C# overloads and parameter passing are different from Python argument semantics.",
+      "entries": [
+        {
+          "term": "Method",
+          "meaning": "Declare return and parameter types.",
+          "detail": "static int Sum(int a, int b) => a + b;"
+        },
+        {
+          "term": "Optional parameter",
+          "meaning": "Default supplied when argument omitted.",
+          "detail": "static int Total(int value, int tax = 0) => value + tax;"
+        },
+        {
+          "term": "Named argument",
+          "meaning": "Make call-site meaning explicit.",
+          "detail": "Total(value: 10, tax: 2)"
+        },
+        {
+          "term": "ref",
+          "meaning": "Pass a caller's initialized variable by reference.",
+          "detail": "void Increment(ref int n) => n++;"
+        },
+        {
+          "term": "out",
+          "meaning": "Called method must assign an output value.",
+          "detail": "int.TryParse(\"42\", out var parsed)"
+        }
+      ],
+      "more": [
+        {
+          "term": "in",
+          "meaning": "Readonly-byref parameter; often used for large structs.",
+          "detail": "void Print(in LargeStruct value) { /* read only */ }"
+        },
+        {
+          "term": "Overload",
+          "meaning": "Differentiate methods by parameter signature, not return type alone.",
+          "detail": "Print(int value) · Print(string value)"
+        }
+      ]
+    },
+    {
+      "id": "classes-properties",
+      "title": "Classes & properties",
+      "topics": [
+        "OOP",
+        "Syntax"
+      ],
+      "moduleId": "csharp-classes-objects",
+      "summary": "Encapsulation through class members, properties and access modifiers.",
+      "entries": [
+        {
+          "term": "Class",
+          "meaning": "Declare a reference type.",
+          "detail": "public class Customer { }"
+        },
+        {
+          "term": "Constructor",
+          "meaning": "Establish initial state.",
+          "detail": "public Customer(string name) { Name = name; }"
+        },
+        {
+          "term": "Property",
+          "meaning": "Expose controlled state.",
+          "detail": "public string Name { get; private set; }"
+        },
+        {
+          "term": "Expression property",
+          "meaning": "Derive a read-only computed value.",
+          "detail": "public bool IsActive => State == \"active\";"
+        },
+        {
+          "term": "Static member",
+          "meaning": "Belongs to the type, not each instance.",
+          "detail": "public static int Count { get; private set; }"
+        }
+      ],
+      "more": [
+        {
+          "term": "internal",
+          "meaning": "Access is limited to the same assembly.",
+          "detail": "internal class Parser { }"
+        },
+        {
+          "term": "init",
+          "meaning": "Set a property during object initialization.",
+          "detail": "public int Id { get; init; }"
+        }
+      ]
+    },
+    {
+      "id": "polymorphism",
+      "title": "Inheritance, interfaces & polymorphism",
+      "topics": [
+        "OOP",
+        "Design"
+      ],
+      "moduleId": "csharp-oop",
+      "summary": "Model contracts and dispatch without conflating interfaces, virtual methods and composition.",
+      "entries": [
+        {
+          "term": "Interface",
+          "meaning": "Describe required members.",
+          "detail": "interface IReader { string Read(); }"
+        },
+        {
+          "term": "Implement",
+          "meaning": "Supply all required interface members.",
+          "detail": "class FileReader : IReader { public string Read() => \"data\"; }"
+        },
+        {
+          "term": "Virtual / override",
+          "meaning": "Enable and implement runtime polymorphism.",
+          "detail": "public virtual void Run() {} · public override void Run() {}"
+        },
+        {
+          "term": "Abstract class",
+          "meaning": "Share base implementation but block direct instantiation.",
+          "detail": "abstract class Worker { public abstract void Run(); }"
+        },
+        {
+          "term": "sealed",
+          "meaning": "Prevent further inheritance or overriding as appropriate.",
+          "detail": "public sealed class FinalProcessor { }"
+        }
+      ],
+      "more": [
+        {
+          "term": "Composition",
+          "meaning": "Prefer combining collaborators when inheritance is not the natural relationship.",
+          "detail": "class Service(IReader reader) { }"
+        }
+      ]
+    },
+    {
+      "id": "records-structs",
+      "title": "Records, structs & equality",
+      "topics": [
+        "Types",
+        "OOP",
+        "Gotchas"
+      ],
+      "moduleId": "csharp-abstractions",
+      "summary": "Data-oriented types have different assignment and equality defaults.",
+      "entries": [
+        {
+          "term": "record",
+          "meaning": "Reference record with value-based equality by default.",
+          "detail": "public record Person(string Name, int Age);"
+        },
+        {
+          "term": "record struct",
+          "meaning": "Value type with generated value equality.",
+          "detail": "public readonly record struct Point(int X, int Y);"
+        },
+        {
+          "term": "struct",
+          "meaning": "A value type copied by assignment.",
+          "detail": "public readonly struct Token { public int Id { get; init; } }"
+        },
+        {
+          "term": "with",
+          "meaning": "Create a copy with selected updated members for supported record types.",
+          "detail": "var updated = person with { Age = 30 };"
+        },
+        {
+          "term": "Equality",
+          "meaning": "Regular classes default to reference equality unless overridden.",
+          "detail": "ReferenceEquals(first, second)"
+        }
+      ],
+      "more": [
+        {
+          "term": "Nullable struct",
+          "meaning": "Wrap a non-nullable struct in Nullable<T>.",
+          "detail": "Point? location = null;"
+        }
+      ]
+    },
+    {
+      "id": "collections-generics",
+      "title": "Collections & generics",
+      "topics": [
+        "Collections",
+        "Types"
+      ],
+      "moduleId": "csharp-collections-generics",
+      "summary": "Use .NET generic collection types rather than Python-style containers.",
+      "entries": [
+        {
+          "term": "List<T>",
+          "meaning": "Ordered, indexable dynamic array.",
+          "detail": "var values = new List<int> { 1, 2 };"
+        },
+        {
+          "term": "Dictionary<K,V>",
+          "meaning": "Map unique keys to values.",
+          "detail": "var scores = new Dictionary<string, int>();"
+        },
+        {
+          "term": "HashSet<T>",
+          "meaning": "Store unique values with hashing.",
+          "detail": "var seen = new HashSet<int> { 1, 2 };"
+        },
+        {
+          "term": "IEnumerable<T>",
+          "meaning": "A sequence you can enumerate; may be lazily computed.",
+          "detail": "IEnumerable<int> values = Enumerable.Range(1, 5);"
+        },
+        {
+          "term": "Generic method",
+          "meaning": "Preserve static type information.",
+          "detail": "static T Identity<T>(T value) => value;"
+        }
+      ],
+      "more": [
+        {
+          "term": "TryGetValue",
+          "meaning": "Read a missing key without exception.",
+          "detail": "if (scores.TryGetValue(\"Ada\", out var score)) { }"
+        },
+        {
+          "term": "Comparer",
+          "meaning": "Define equality / ordering explicitly where needed.",
+          "detail": "new HashSet<string>(StringComparer.OrdinalIgnoreCase)"
+        }
+      ]
+    },
+    {
+      "id": "delegates-events",
+      "title": "Delegates, lambdas & events",
+      "topics": [
+        "Functions",
+        "OOP"
+      ],
+      "moduleId": "csharp-delegates-linq",
+      "summary": "Typed callbacks and C# events are not the same thing as Python callables.",
+      "entries": [
+        {
+          "term": "Func",
+          "meaning": "Delegate with a return value.",
+          "detail": "Func<int, int> square = n => n * n;"
+        },
+        {
+          "term": "Action",
+          "meaning": "Delegate that returns void.",
+          "detail": "Action<string> log = Console.WriteLine;"
+        },
+        {
+          "term": "Lambda",
+          "meaning": "Create an inline function.",
+          "detail": "var positive = values.Where(n => n > 0);"
+        },
+        {
+          "term": "Event",
+          "meaning": "Expose subscription/notification without allowing external invocation.",
+          "detail": "public event EventHandler? Completed;"
+        },
+        {
+          "term": "Subscribe",
+          "meaning": "Attach or detach a handler.",
+          "detail": "worker.Completed += OnCompleted;"
+        }
+      ],
+      "more": [
+        {
+          "term": "Unsubscribe",
+          "meaning": "Remove long-lived subscriptions when no longer needed.",
+          "detail": "worker.Completed -= OnCompleted;"
+        }
+      ]
+    },
+    {
+      "id": "linq",
+      "title": "LINQ sequences",
+      "topics": [
+        "LINQ",
+        "Collections",
+        "Gotchas"
+      ],
+      "moduleId": "csharp-delegates-linq",
+      "summary": "Sequence operators and deferred execution differ from Python comprehensions.",
+      "entries": [
+        {
+          "term": "Where / Select",
+          "meaning": "Filter and project values.",
+          "detail": "items.Where(x => x.Active).Select(x => x.Id)"
+        },
+        {
+          "term": "Any / All",
+          "meaning": "Ask boolean questions without materializing results.",
+          "detail": "items.Any(x => x.Failed)"
+        },
+        {
+          "term": "FirstOrDefault",
+          "meaning": "Return a first match or the type's default value.",
+          "detail": "items.FirstOrDefault(x => x.Id == id)"
+        },
+        {
+          "term": "OrderBy",
+          "meaning": "Create an ordered sequence.",
+          "detail": "items.OrderBy(x => x.Name)"
+        },
+        {
+          "term": "ToList",
+          "meaning": "Materialize the result now.",
+          "detail": "var snapshot = items.Where(x => x.Active).ToList();"
+        }
+      ],
+      "more": [
+        {
+          "term": "GroupBy",
+          "meaning": "Group by a key.",
+          "detail": "items.GroupBy(x => x.Category)"
+        },
+        {
+          "term": "Deferred query",
+          "meaning": "Many IEnumerable LINQ queries execute when enumerated.",
+          "detail": "var query = items.Where(x => x.Ready); // not executed yet"
+        }
+      ]
+    },
+    {
+      "id": "exceptions-resources",
+      "title": "Exceptions & disposal",
+      "topics": [
+        "Gotchas",
+        "Files"
+      ],
+      "moduleId": "csharp-exceptions-disposal",
+      "summary": "Preserve stack traces and release IDisposable resources deterministically.",
+      "entries": [
+        {
+          "term": "Catch specific",
+          "meaning": "Handle only failures you can recover from.",
+          "detail": "catch (IOException ex) { Log(ex); }"
+        },
+        {
+          "term": "finally",
+          "meaning": "Run cleanup after success or failure.",
+          "detail": "try { Work(); } finally { Cleanup(); }"
+        },
+        {
+          "term": "Rethrow",
+          "meaning": "Preserve the original stack trace.",
+          "detail": "catch { Log(); throw; }"
+        },
+        {
+          "term": "using declaration",
+          "meaning": "Dispose an IDisposable at end of containing scope.",
+          "detail": "using var stream = File.OpenRead(path);"
+        },
+        {
+          "term": "await using",
+          "meaning": "Dispose IAsyncDisposable asynchronously.",
+          "detail": "await using var stream = new FileStream(path, FileMode.Open);"
+        }
+      ],
+      "more": [
+        {
+          "term": "Exception filter",
+          "meaning": "Catch only when a condition holds.",
+          "detail": "catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { }"
+        }
+      ]
+    },
+    {
+      "id": "async-task",
+      "title": "Tasks, async & cancellation",
+      "topics": [
+        "Async",
+        "Gotchas"
+      ],
+      "moduleId": "csharp-async",
+      "summary": "Async waiting is not synonymous with CPU parallelism.",
+      "entries": [
+        {
+          "term": "Task<T>",
+          "meaning": "Represents an eventual result.",
+          "detail": "async Task<string> LoadAsync() => await client.GetStringAsync(url);"
+        },
+        {
+          "term": "await",
+          "meaning": "Asynchronously wait for a task result.",
+          "detail": "var response = await LoadAsync();"
+        },
+        {
+          "term": "Task.WhenAll",
+          "meaning": "Wait for multiple tasks; completion order may differ.",
+          "detail": "await Task.WhenAll(taskA, taskB);"
+        },
+        {
+          "term": "CancellationToken",
+          "meaning": "Propagate cancellation to supporting async APIs.",
+          "detail": "await client.GetAsync(url, cancellationToken);"
+        },
+        {
+          "term": "ConfigureAwait(false)",
+          "meaning": "Control synchronization-context capture where relevant.",
+          "detail": "await operation.ConfigureAwait(false);"
+        }
+      ],
+      "more": [
+        {
+          "term": "async void",
+          "meaning": "Reserve for event handlers; cannot be awaited normally.",
+          "detail": "Prefer async Task for other methods"
+        },
+        {
+          "term": "Timeout",
+          "meaning": "Use a bounded cancellation token or supported API timeout.",
+          "detail": "using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));"
+        }
+      ]
+    },
+    {
+      "id": "runtime-equality",
+      "title": "Runtime, GC & equality",
+      "topics": [
+        "Runtime",
+        "Gotchas",
+        "Performance"
+      ],
+      "moduleId": "csharp-runtime-memory",
+      "summary": "Know which semantics belong to the CLR and which are language contracts.",
+      "entries": [
+        {
+          "term": "Managed heap / GC",
+          "meaning": "GC reclaims eligible managed objects; it does not call Dispose for you.",
+          "detail": "using for prompt resource cleanup"
+        },
+        {
+          "term": "ReferenceEquals",
+          "meaning": "Compare reference identity.",
+          "detail": "ReferenceEquals(a, b)"
+        },
+        {
+          "term": "Equals",
+          "meaning": "Value equality depends on the type's implementation.",
+          "detail": "object.Equals(a, b)"
+        },
+        {
+          "term": "Boxing",
+          "meaning": "Wrap a value-type value as object/interface, typically allocating.",
+          "detail": "object boxed = 42;"
+        },
+        {
+          "term": "Unboxing",
+          "meaning": "Recover a boxed value with a compatible explicit cast.",
+          "detail": "int n = (int)boxed;"
+        }
+      ],
+      "more": [
+        {
+          "term": "String equality",
+          "meaning": "string compares text contents with ordinal case-sensitive default equality.",
+          "detail": "string.Equals(\"a\", \"a\")"
+        }
+      ]
+    },
+    {
+      "id": "files-json",
+      "title": "Files, paths & JSON",
+      "topics": [
+        "Files",
+        "Stdlib",
+        "Tooling"
+      ],
+      "moduleId": "csharp-exceptions-disposal",
+      "summary": "Use .NET APIs with explicit encoding, resource lifetimes and serialization contracts.",
+      "entries": [
+        {
+          "term": "Read text",
+          "meaning": "Read small text files asynchronously.",
+          "detail": "var text = await File.ReadAllTextAsync(path);"
+        },
+        {
+          "term": "Write text",
+          "meaning": "Overwrite a text file asynchronously.",
+          "detail": "await File.WriteAllTextAsync(path, content);"
+        },
+        {
+          "term": "Path.Combine",
+          "meaning": "Combine path segments portably.",
+          "detail": "Path.Combine(root, \"data\", \"result.json\")"
+        },
+        {
+          "term": "Serialize",
+          "meaning": "Produce JSON using System.Text.Json.",
+          "detail": "JsonSerializer.Serialize(value)"
+        },
+        {
+          "term": "Deserialize<T>",
+          "meaning": "Read JSON into a known .NET type.",
+          "detail": "JsonSerializer.Deserialize<RunInfo>(json)"
+        }
+      ],
+      "more": [
+        {
+          "term": "Directory.CreateDirectory",
+          "meaning": "Ensure a directory exists.",
+          "detail": "Directory.CreateDirectory(outputDir);"
+        }
+      ]
+    },
+    {
+      "id": "qa-automation-boundaries",
+      "title": "Practical automation boundaries",
+      "topics": [
+        "Testing",
+        "Design",
+        "Tooling"
+      ],
+      "moduleId": "csharp-async",
+      "summary": "Reliable test automation separates language APIs, test assertions and external-system behavior.",
+      "entries": [
+        {
+          "term": "Async test flow",
+          "meaning": "Always await operations that return tasks.",
+          "detail": "await apiClient.SendAsync(request, cancellationToken);"
+        },
+        {
+          "term": "Timeout / cancellation",
+          "meaning": "Bound external operations to avoid indefinitely hanging suites.",
+          "detail": "CancellationTokenSource(TimeSpan.FromSeconds(10))"
+        },
+        {
+          "term": "Input validation",
+          "meaning": "Prefer TryParse and explicit result checks for external data.",
+          "detail": "if (!int.TryParse(raw, out var port)) throw new FormatException();"
+        },
+        {
+          "term": "Cleanup",
+          "meaning": "Dispose streams, responses and temporary resources deterministically.",
+          "detail": "using var response = await client.GetAsync(url);"
+        },
+        {
+          "term": "Failure evidence",
+          "meaning": "Keep diagnostics with IDs, durations and expected/actual data.",
+          "detail": "Log correlationId, endpoint and status code"
+        }
+      ],
+      "more": [
+        {
+          "term": "Test isolation",
+          "meaning": "Do not share mutable fixture state unintentionally across parallel tests.",
+          "detail": "Fresh run context per test"
+        }
+      ]
+    }
+  ]
+}
