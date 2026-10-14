@@ -41,6 +41,16 @@ test("agentic video list preserves the four existing videos and their titles", (
   }
 });
 
+test("video table-of-contents labels are concise and independent from full video titles", () => {
+  assert.deepEqual(agenticVideos.map(({ tocTitle }) => tocTitle), [
+    "Claude Code Desktop",
+    "Claude Cowork + Notion",
+    "Огляд Claude Cowork",
+    "Промпти для Claude",
+  ]);
+  assert.ok(agenticVideos.every(({ title, tocTitle }) => title !== tocTitle && tocTitle.length <= 24));
+});
+
 test("agentic learning keeps a single Learning videos navigation entry alongside planned chapters", async () => {
   const { agenticPlannedTopics } = await import("../app/agentic-videos.ts");
   const page = await read("app/agentic-learning-page.tsx");
@@ -64,7 +74,7 @@ test("agentic learning keeps a single Learning videos navigation entry alongside
 test("right-hand table of contents contains individual video titles", async () => {
   const page = await read("app/agentic-learning-page.tsx");
 
-  assert.match(page, /videoHeadings = agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, text: title \}\)\)/);
+  assert.match(page, /videoHeadings = agenticVideos\.map\(\(\{ id, tocTitle \}\) => \(\{ id, text: tocTitle \}\)\)/);
   assert.match(page, /<LearningRail headings=\{videoHeadings\}/);
   assert.match(page, /<h2 className=\{styles\.videoTitle\} id=\{id\}>\{title\}<\/h2>/);
   assert.match(page, /showTitle=\{false\}/);
