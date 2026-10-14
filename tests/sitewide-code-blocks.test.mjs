@@ -12,8 +12,8 @@ test("all static pre/code examples receive the shared dark presentation", async 
 
   assert.match(layout, /import "\.\/site-code-blocks\.css"/);
   assert.match(styles, /pre:has\(> code\)/);
-  assert.match(styles, /background: #1e1e1e !important/);
-  assert.match(styles, /color: #d4d4d4 !important/);
+  assert.match(styles, /background: #1e1e1e;/);
+  assert.match(styles, /color: #d4d4d4;/);
   assert.match(styles, /white-space: pre;/);
   assert.match(styles, /html:root body pre:has\(> code\)/);
   assert.doesNotMatch(styles, /:\s*[^;]+!important;/);
