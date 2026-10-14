@@ -90,3 +90,13 @@ test("Quick reference matches the secondary navigation buttons in width", () => 
   const newDesignLinkCss = newDesign.split('html[data-design="new"] .kb-quick-reference-link {')[1]?.split("}")[0] ?? "";
   assert.ok(!newDesignLinkCss.includes("margin:") && !newDesignLinkCss.includes("width:"));
 });
+
+test("optional secondary switcher grouping preserves all ungrouped navigation and active states", () => {
+  const sidebar = readFileSync(new URL("../app/site-navigation.tsx", import.meta.url), "utf8");
+
+  assert.match(sidebar, /secondarySwitcher\.groups\?\.length/);
+  assert.match(sidebar, /secondarySwitcher\.options\.map\(renderSwitcherOption\)/);
+  assert.match(sidebar, /aria-pressed=\{secondarySwitcher\?\.activeId === option\.id\}/);
+  assert.match(sidebar, /group\.optionIds\.map/);
+  assert.match(sidebar, /className="kb-subnav-switch-heading"/);
+});

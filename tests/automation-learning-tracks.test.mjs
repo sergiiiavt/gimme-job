@@ -50,6 +50,27 @@ test("Test Automation track tabs fit inside the secondary navigation", async () 
   assert.match(page, /white-space: normal/);
 });
 
+test("Test Automation groups its tracks without changing their URLs or module mapping", async () => {
+  const page = await read("app/automation-learning-page.tsx");
+  const renderer = await read("app/learning-document-page.tsx");
+
+  for (const [id, label, trackIds] of [
+    ["concepts", "Concepts & Design", ["foundations", "architecture"]],
+    ["python", "Python Automation", ["python-setup", "pytest", "automation"]],
+    ["examples", "Examples & References", ["real-projects", "reference-framework"]],
+    ["specialized", "Specialized", ["robot-framework"]],
+  ]) {
+    assert.ok(page.includes(`id: "${id}", label: "${label}"`), `Group ${id} must exist`);
+    assert.ok(page.includes(`trackIds: [${trackIds.map((track) => `"${track}"`).join(", ")}]`), `Group ${id} must contain expected tracks`);
+  }
+
+  assert.match(page, /trackGroups=\{trackGroups\}/);
+  assert.match(page, /\.kb-subnav-switch\[data-grouped="true"\]/);
+  assert.match(page, /\.kb-subnav-switch-options > button:only-child/);
+  assert.match(renderer, /trackGroups\?: TrackGroup\[\]/);
+  assert.match(renderer, /optionIds: trackIds/);
+});
+
 test("shared learning renderer filters the secondary navigation by selected track", async () => {
   const renderer = await read("app/learning-document-page.tsx");
 

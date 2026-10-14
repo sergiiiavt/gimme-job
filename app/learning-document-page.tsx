@@ -96,6 +96,13 @@ interface TrackOption {
   emptyState?: string;
 }
 
+interface TrackGroup {
+  id: string;
+  label: string;
+  labelUk?: string;
+  trackIds: string[];
+}
+
 interface LearningMetaContext {
   language: LearningLanguage;
   module: LearningModule;
@@ -112,6 +119,7 @@ interface LearningDocumentPageProps {
   publicHref: string;
   personalHref: string;
   trackOptions?: TrackOption[];
+  trackGroups?: TrackGroup[];
   defaultTrackId?: string;
   initialModuleId?: string;
   languages?: LearningLanguage[];
@@ -169,7 +177,7 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   return lines.join("\n");
 }
 
-export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackOptions }: LearningDocumentPageProps) {
+export default function LearningDocumentPage({ activeExternalId, curriculum, defaultTrackId, initialModuleId, languages = ["en", "uk"], mode, personalHref, publicHref, secondaryTitle, section, sourceStatusLabel, trackGroups, trackOptions }: LearningDocumentPageProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -291,6 +299,11 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
   const switcher: SecondarySwitcher = {
     activeId: activeTrack,
     options: resolvedTrackOptions.map(({ id, label, labelUk }) => ({ id, label: language === "uk" ? labelUk ?? label : label })),
+    groups: trackGroups?.map(({ id, label, labelUk, trackIds }) => ({
+      id,
+      label: language === "uk" ? labelUk ?? label : label,
+      optionIds: trackIds,
+    })),
     onSelect: (trackId) => {
       const option = resolvedTrackOptions.find((candidate) => candidate.id === trackId);
       if (!option) return;
