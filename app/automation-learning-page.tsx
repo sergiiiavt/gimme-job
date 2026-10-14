@@ -10,11 +10,21 @@ const curriculum = {
 };
 
 const trackOptions = [
-  { id: "foundations", label: "Foundations", labelUk: "Основи", available: true, moduleIds: ["automation-foundations"] },
-  { id: "python-setup", label: "Python Setup", labelUk: "Python Setup", available: true, moduleIds: ["project-setup"] },
-  { id: "pytest", label: "pytest", labelUk: "pytest", available: true, moduleIds: ["pytest-core"] },
+  {
+    id: "foundations",
+    label: "Fundamentals & Architecture",
+    labelUk: "Основи та архітектура",
+    available: true,
+    moduleIds: ["automation-foundations", "framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"],
+  },
+  {
+    id: "python-setup",
+    label: "Python & pytest",
+    labelUk: "Python та pytest",
+    available: true,
+    moduleIds: ["project-setup", "pytest-core"],
+  },
   { id: "automation", label: "Web / API / Mobile", labelUk: "Web / API / Mobile", available: true, moduleIds: ["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"] },
-  { id: "architecture", label: "Architecture", labelUk: "Архітектура", available: true, moduleIds: ["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"] },
   {
     id: "real-projects",
     label: "Desktop Automation Example",
@@ -31,12 +41,8 @@ const trackOptions = [
   { id: "robot-framework", label: "Specific", labelUk: "Specific", available: true, moduleIds: ["robot-framework"] },
 ];
 
-const trackGroups = [
-  { id: "concepts", label: "Concepts & Design", labelUk: "Концепції та архітектура", trackIds: ["foundations", "architecture"] },
-  { id: "python", label: "Python Automation", labelUk: "Автоматизація на Python", trackIds: ["python-setup", "pytest", "automation"] },
-  { id: "examples", label: "Examples & References", labelUk: "Приклади та довідники", trackIds: ["real-projects", "reference-framework"] },
-  { id: "specialized", label: "Specialized", labelUk: "Спеціалізоване", trackIds: ["robot-framework"] },
-];
+// Old deep links continue opening the same chapter after the broader tracks are combined.
+const trackAliases = { architecture: "foundations", pytest: "python-setup" };
 
 const automationTrackLayout = `
 .kb-subnav-switch {
@@ -55,43 +61,6 @@ const automationTrackLayout = `
   overflow-wrap: break-word;
 }
 
-.kb-subnav-switch[data-grouped="true"] {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.kb-subnav-switch-group {
-  min-width: 0;
-  border: 1px solid #e1e6df;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .55);
-  padding: 8px;
-}
-
-.kb-subnav-switch-heading {
-  margin: 0 0 7px;
-  color: #69766d;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: .02em;
-}
-
-.kb-subnav-switch-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.kb-subnav-switch-options > button:last-child:nth-child(odd):not(:first-child) {
-  grid-column: 1 / -1;
-  justify-self: center;
-  width: calc(50% - 3px);
-}
-
-.kb-subnav-switch-options > button:only-child {
-  grid-column: 1 / -1;
-}
 `;
 
 export default function AutomationLearningPage({ mode }: { mode: "public" | "personal" }) {
@@ -107,7 +76,7 @@ export default function AutomationLearningPage({ mode }: { mode: "public" | "per
         secondaryTitle="Test automation"
         section="automation"
         trackOptions={trackOptions}
-        trackGroups={trackGroups}
+        trackAliases={trackAliases}
       />
     </>
   );
