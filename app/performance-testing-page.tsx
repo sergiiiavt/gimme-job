@@ -20,14 +20,14 @@ export default function PerformanceTestingPage({ mode }: PerformanceTestingPageP
     <>
       <style>{waitingForReviewBannerStyle}</style>
       <LearningDocumentPage
-      curriculum={curriculum}
-      languages={["en", "uk"]}
-      mode={mode}
-      personalHref="/workspace/learn/performance"
-      publicHref="/learn/performance"
-      secondaryTitle="Performance testing"
-      section="performance"
-      sourceStatusLabel={({ language }) => language === "uk" ? "Джерела розділу перевірені" : "Chapter references verified"}
+        curriculum={curriculum}
+        languages={["en", "uk"]}
+        mode={mode}
+        personalHref="/workspace/learn/performance"
+        publicHref="/learn/performance"
+        secondaryTitle="Performance testing"
+        section="performance"
+        sourceStatusLabel={({ language }) => language === "uk" ? "Джерела розділу перевірені" : "Chapter references verified"}
       />
     </>
   );
