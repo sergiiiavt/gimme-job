@@ -134,23 +134,24 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   );
 }
 
-export function LearningRail({ headings, language, languages = ["en", "uk"], onLanguageChange }: {
+export function LearningRail({ headings, language, languages = ["en", "uk"], onLanguageChange, showSourceRegistry = true }: {
   headings: LearningTocHeading[];
   language: LearningLanguage;
   languages?: LearningLanguage[];
   onLanguageChange: (language: LearningLanguage) => void;
+  showSourceRegistry?: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const focusedSectionId = searchParams.get("section");
   const focusedHeading = focusedSectionId ? headings.find((heading) => heading.id === focusedSectionId) : undefined;
-  const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? "source-registry");
+  const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? (showSourceRegistry ? "source-registry" : ""));
   const sectionHref = (sectionId: string) => contentHref(pathname, searchParams.toString(), { section: null }, sectionId);
 
   useEffect(() => {
     if (focusedHeading) return;
 
-    const trackedIds = [...headings.map((heading) => heading.id), "source-registry"];
+    const trackedIds = [...headings.map((heading) => heading.id), ...(showSourceRegistry ? ["source-registry"] : [])];
     let frame = 0;
 
     const updateActiveSection = () => {
@@ -167,7 +168,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
         else break;
       }
 
-      const sourceRegistry = document.getElementById("source-registry");
+      const sourceRegistry = showSourceRegistry ? document.getElementById("source-registry") : null;
       if (sourceRegistry && sourceRegistry.getBoundingClientRect().top <= window.innerHeight * 0.55) {
         nextActiveId = "source-registry";
       }
@@ -188,7 +189,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
       window.removeEventListener("resize", scheduleUpdate);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [focusedHeading, headings]);
+  }, [focusedHeading, headings, showSourceRegistry]);
 
   useEffect(() => {
     if (!focusedHeading) return;
@@ -367,6 +368,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
               </a>
             );
           })}
+          {showSourceRegistry && (
           <a
             aria-current={activeSectionId === "source-registry" ? "location" : undefined}
             className={`${styles.sourceLink} ${activeSectionId === "source-registry" ? uiStyles.activeTocLink : ""}`}
@@ -375,6 +377,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
             <small>{language === "uk" ? "Джерела" : "References"}</small>
             {language === "uk" ? "Реєстр джерел" : "Source registry"}
           </a>
+          )}
         </nav>
       </section>
     </aside>

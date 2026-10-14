@@ -75,6 +75,26 @@ test("right-hand table of contents contains individual video titles", async () =
   assert.match(player, /showTitle && <strong>\{title\}<\/strong>/);
 });
 
+
+test("agentic video table of contents wraps full video names and omits absent source registry", async () => {
+  const [page, rail, css] = await Promise.all([
+    read("app/agentic-learning-page.tsx"),
+    read("app/learning-document-ui.tsx"),
+    read("app/qa-fundamentals-page.module.css"),
+  ]);
+
+  // Videos belong to the right-side TOC, whereas the page has no source registry element.
+  assert.match(page, /<LearningRail[^>]*showSourceRegistry=\{false\}/);
+  assert.doesNotMatch(page, /id="source-registry"/);
+  assert.match(rail, /showSourceRegistry = true/);
+  assert.match(rail, /showSourceRegistry && \(/);
+  assert.match(rail, /\.\.\.\(showSourceRegistry \? \["source-registry"\] : \[\]\)/);
+
+  // Grid items must grow to their wrapped text height; do not clip long multilingual names.
+  assert.match(css, /\.toc nav\s*\{[^}]*grid-auto-rows:\s*max-content/s);
+  assert.match(css, /\.toc a\s*\{[^}]*display:\s*block;[^}]*height:\s*auto;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere/s);
+});
+
 test("learning video playback policy exposes 3× and 4× and can still identify advertised rates", () => {
   assert.deepEqual([...LEARNING_VIDEO_PLAYBACK_RATES], [1, 1.25, 1.5, 1.75, 2, 3, 4]);
   assert.equal(isLearningVideoRateSupported([1, 1.5, 2, 3, 4], 3), true);
