@@ -4,7 +4,8 @@ import advancedLessons from "./advanced-lessons.json";
 import expertLessons from "./expert-lessons.json";
 import sources from "./sources.json";
 import taxonomy from "./taxonomy.json";
-import { robotFrameworkLessons, robotFrameworkModule, robotFrameworkSources } from "./robot-framework";
+import { robotFrameworkSources } from "./robot-framework";
+import { robotFrameworkCurriculumLessons, robotFrameworkModules } from "./robot-framework-path";
 import {
   desktopAutomationLessons,
   desktopAutomationModule,
@@ -87,7 +88,7 @@ const lessons = [
   ...intermediateLessons.lessons,
   ...advancedLessons.lessons,
   ...expertLessons.lessons,
-  ...robotFrameworkLessons,
+  ...robotFrameworkCurriculumLessons,
   ...desktopAutomationExampleLessons,
 ];
 
@@ -95,9 +96,9 @@ export const automationCurriculum = {
   version: 1,
   title: "Test automation learning path",
   description: "A structured path through test automation for services, web, mobile and Windows desktop automation: foundations, framework design, runnable examples and guided implementation studies.",
-  lastReviewedAt: "2026-08-30",
+  lastReviewedAt: "2026-10-14",
   methodology: {
-    coverage: "Modules progress Beginner to Expert and follow the order in which a framework is actually built: foundations, then the cheap service layer, then the expensive interface layer, then hardening and strategy. Robot Framework is available as a focused parallel track. The Desktop Automation Example is a methodological study of one implementation: first the desktop-automation model, then the Python lifecycle, the equivalent .NET framework design, and finally local/CI execution and reporting.",
+    coverage: "Modules progress Beginner to Expert and follow the order in which a framework is actually built: foundations, then the cheap service layer, then the expensive interface layer, then hardening and strategy. Robot Framework has its own seven-chapter progression from first suite to a runnable capstone. The Desktop Automation Example is a methodological study of one implementation: first the desktop-automation model, then the Python lifecycle, the equivalent .NET framework design, and finally local/CI execution and reporting.",
     answers: "Every lesson's explanation and code sample is written for this path and checked against the official documentation of the tool it describes. Python-framework code samples are drawn from a runnable reference framework; Robot Framework examples include their required files and exact local run commands; the Desktop Automation Example keeps exact repository code but presents it as concept → project implementation → detailed execution explanation → design reasoning, with reusable key points and common pitfalls.",
     publishing: "Only production-ready lessons are kept on the public site. Git pull requests provide review and history.",
     prevalence: "Module level reflects typical learning order rather than difficulty in isolation - later modules assume earlier ones. Robot Framework is taught as a currently maintained but specialized tool rather than the default recommendation for every new automation project. The desktop-automation example is advanced because it combines framework, operating-system, synchronization, reporting and CI concepts in one coherent system.",
@@ -109,7 +110,7 @@ export const automationCurriculum = {
     verifiedCommit: "f9ada16fd8eca02310a1d09d03034bb57895d985",
     verifiedAt: "2026-08-14",
   },
-  taxonomy: [...taxonomy, robotFrameworkModule, ...desktopAutomationModules],
+  taxonomy: [...taxonomy, ...robotFrameworkModules, ...desktopAutomationModules],
   sources: [...sources, ...robotFrameworkSources, ...desktopAutomationSources],
   lessons,
 };

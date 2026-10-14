@@ -2,6 +2,7 @@
 
 import automationCurriculum from "@/content/automation-learning/catalog";
 import referenceFrameworkModule from "@/content/automation-learning/reference-framework";
+import { robotFrameworkChapterIds } from "@/content/automation-learning/robot-framework-path";
 import LearningDocumentPage from "./learning-document-page";
 
 const curriculum = {
@@ -38,7 +39,7 @@ const trackOptions = [
     ],
   },
   { id: "reference-framework", label: "Framework Reference", labelUk: "Framework Reference", available: true, moduleIds: ["reference-framework"] },
-  { id: "robot-framework", label: "Specific", labelUk: "Specific", available: true, moduleIds: ["robot-framework"] },
+  { id: "robot-framework", label: "Robot Framework", labelUk: "Robot Framework", available: true, moduleIds: robotFrameworkChapterIds },
 ];
 
 // Old deep links continue opening the same chapter after the broader tracks are combined.

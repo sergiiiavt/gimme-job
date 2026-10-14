@@ -185,4 +185,19 @@ assert.ok(robotSource.includes("```yaml"), "Robot Framework CI examples must use
 assert.ok(robotSource.includes("actively maintained in 2026"), "Robot Framework module must explain its current 2026 relevance without presenting it as the universal default.");
 assert.ok(robotSource.includes("Robot Framework 7.5 was released on September 14, 2026"), "Robot Framework module must identify the current stable release used by the guide.");
 
+const [pathSource, additionalSource, exampleSource] = await Promise.all([
+  readFile(new URL("../content/automation-learning/robot-framework-path.ts", import.meta.url), "utf8"),
+  readFile(new URL("../content/automation-learning/robot-framework-additions.ts", import.meta.url), "utf8"),
+  readFile(new URL("../examples/robot-framework/tests/inventory.robot", import.meta.url), "utf8"),
+]);
+for (const chapterId of ["robot-framework", "robot-keywords", "robot-project", "robot-web", "robot-api", "robot-execution", "robot-architecture"]) {
+  assert.ok(pathSource.includes(chapterId), `Missing Robot Framework chapter ${chapterId}`);
+}
+assert.equal((additionalSource.match(/"ta-lesson-robot-framework-(?:isolation|browser-isolation|api-contracts|capstone)"/g) ?? []).length, 4, "Expected four advanced Robot lessons");
+assert.match(additionalSource, /python -m robot --outputdir results examples\\/);
+assert.match(exampleSource, /Test Setup    Start With Inventory/);
+assert.match(exampleSource, /Run Keyword And Expect Error/);
+assert.match(robotSource, /rfbrowser install/, "Browser Library bundled-runtime installation must be covered");
+assert.ok(robotSource.includes("Fill Secret    id=password    $password"), "Fill Secret must use a supported secret indirection");
+console.log("Robot Framework chapters, added lessons and offline reference structure validated.");
 console.log(`Test automation curriculum validated: ${lessons.length} base lessons, ${modules.length} base modules, ${sources.length} base sources + Robot Framework complete guide.`);
