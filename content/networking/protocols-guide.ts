@@ -437,33 +437,76 @@ Useful tools:
 
 A packet capture is powerful, but it is not the first tool for every problem. Start with the highest layer that can quickly confirm or reject the current hypothesis.
 
-## 15. Practice
+## 15. Worked examples: questions and explanations
 
-### Exercise 1 — classify the stack
+These are explained examples, not assignments. Each question is answered here to connect the protocol definitions to real system behavior.
 
-For an HTTPS request returning JSON, identify the role of DNS, IP, TCP or QUIC, TLS, HTTP and JSON. Explain why JSON is not “the protocol used by the API.”
+### Example 1 — What happens when a browser requests JSON over HTTPS?
 
-### Exercise 2 — TCP vs UDP
+**Question:** Which roles do DNS, IP, TCP/QUIC, TLS, HTTP and JSON play in one request?
 
-Explain why DNS often uses UDP while HTTP/1.1 normally uses TCP, then explain why HTTP/3 can still be reliable even though QUIC runs over UDP.
+**Explanation:**
 
-### Exercise 3 — HTTP versions
+1. **DNS** finds address records for the hostname (unless the client already has a usable cached answer). It does not carry the API response.
+2. **IP** addresses and routes packets across networks.
+3. **TCP** carries the byte stream for HTTP/1.1 or HTTP/2 in a typical HTTPS connection; **QUIC over UDP** carries HTTP/3.
+4. **TLS** authenticates the server and protects traffic. In QUIC, TLS 1.3 is integrated into QUIC's handshake rather than layered over TCP.
+5. **HTTP** defines the request/response semantics, including method, target, headers and status.
+6. **JSON** is one possible *representation* of the response body, not the communication protocol.
 
-Compare HTTP/1.1, HTTP/2 and HTTP/3 without discussing methods or status codes. Focus only on transport, framing and multiplexing.
+**Key distinction:** HTTPS describes HTTP secured by TLS; a JSON response does not make JSON a network protocol.
 
-### Exercise 4 — real-time design
+### Example 2 — How can HTTP/3 be reliable if it runs over UDP?
 
-Choose between polling, SSE and WebSocket for:
+**Question:** Why does ordinary DNS often use UDP, HTTP/1.1 normally use TCP, and HTTP/3 use QUIC over UDP?
 
-- a build-progress screen;
-- a chat application;
-- a dashboard refreshed every five minutes.
+**Explanation:** Traditional DNS commonly uses UDP for simple query/response exchanges, but it can use TCP, and encrypted DNS can use other transports. UDP itself only supplies datagrams; it does not guarantee delivery or ordering. HTTP/1.1 relies on TCP's reliable, ordered byte stream.
 
-Defend each choice.
+QUIC adds its **own** acknowledgements, loss recovery, congestion control and independently ordered streams above UDP. HTTP/3 therefore gets reliable stream delivery without relying on TCP. QUIC avoids TCP's cross-stream head-of-line blocking, although shared congestion and network loss can still affect the overall connection.
 
-### Exercise 5 — diagnose a failure
+**Key distinction:** A UDP-based protocol is not automatically unreliable; reliability can be implemented above UDP.
 
-A browser reports that \`https://api.example.com\` is unavailable. Build an investigation sequence from DNS to TLS to HTTP rather than immediately assuming an application bug.
+### Example 3 — What actually changes across HTTP versions?
+
+**Question:** If HTTP methods and status codes remain conceptually the same, why are there three versions?
+
+| Version | Typical transport | Message representation | Concurrency behavior |
+|---|---|---|---|
+| HTTP/1.1 | TCP, often with TLS | Text-based messages | Persistent connections; no HTTP-level multiplexing |
+| HTTP/2 | TCP, typically with TLS | Binary frames and compressed headers | Multiplexed streams, but TCP loss can delay all streams |
+| HTTP/3 | QUIC over UDP, with integrated TLS 1.3 | HTTP/3 framing and compressed headers | Multiplexed QUIC streams without TCP-style cross-stream blocking |
+
+**Explanation:** The versions primarily change how messages travel, not the meaning of GET, POST or 404. A server can support more than one version, and clients may negotiate or fall back depending on server and network support. A different version alone does not guarantee faster application responses.
+
+**Key distinction:** Compare transport, framing and multiplexing separately from HTTP application semantics.
+
+### Example 4 — Which update mechanism fits each product?
+
+**Question:** What would you choose for build progress, a chat application and a dashboard updated every five minutes?
+
+| Scenario | Reasonable starting choice | Reasoning and alternative |
+|---|---|---|
+| Build-progress screen | SSE | One-way server updates fit an HTTP event stream. Polling is fine if updates are infrequent or infrastructure makes streaming difficult. |
+| Interactive chat | WebSocket | Both sides can send messages over a long-lived channel. HTTP requests plus SSE can also work when the client sends only occasional messages. |
+| Dashboard refreshing every five minutes | Polling | Periodic HTTP requests are simple, inspectable and adequate for low update frequency. Streaming is unnecessary unless latency requirements change. |
+
+**Explanation:** These are design defaults, not fixed protocol rules. Consider browser/proxy support, reconnection, missed events, authorization, backpressure and operating cost. SSE or WebSocket transport alone does not ensure that disconnected clients recover every missed update.
+
+**Key distinction:** Choose according to direction, update frequency and failure behavior—not a blanket ranking of technologies.
+
+### Example 5 — How do you diagnose an unavailable HTTPS service?
+
+**Question:** A browser cannot reach an API. How do you identify the failing layer before calling it an application bug?
+
+**Explanation:** Work from the cheapest discriminating evidence to deeper inspection:
+
+1. **DNS:** Verify the intended hostname and A/AAAA answers with dig or nslookup. Check for stale cached answers.
+2. **Reachability and transport:** Try curl -v against the actual URL. Separate connection refused from timeout; check IP family, network path and proxy. A TCP port test applies to HTTP/1.1 and HTTP/2, but does **not** prove HTTP/3 over UDP works.
+3. **TLS:** Inspect the handshake, trust chain, hostname and negotiated protocol; openssl s_client with the correct SNI is useful for TCP-based TLS.
+4. **HTTP:** Read the returned status, headers, redirects and body. An HTTP 401/403 is an application-level authorization result, not a DNS or TLS failure; a 5xx response means an HTTP-speaking component returned an error.
+5. **System behavior:** Only then investigate upstream dependencies, retries, timeouts, server logs and request tracing as warranted by the evidence.
+
+**Key distinction:** An unavailable page is a symptom, not a root cause; each layer needs different evidence.
 
 ## 16. QA quick reference
 
@@ -935,27 +978,76 @@ SFTP — **SSH File Transfer Protocol**. Він працює через SSH і �
 
 Packet capture дуже потужний, але не має бути first tool для кожної проблеми. Починай з найвищого layer, який швидко підтвердить або спростує hypothesis.
 
-## 15. Practice
+## 15. Розібрані приклади: запитання та пояснення
 
-### Exercise 1 — classify the stack
+Це частина навчального матеріалу, а не завдання для самостійного виконання. Кожне запитання супроводжується відповіддю, яка пов'язує теорію протоколів із поведінкою реальних систем.
 
-Для HTTPS request, який повертає JSON, визнач role DNS, IP, TCP/QUIC, TLS, HTTP та JSON. Поясни, чому JSON не є «protocol used by API».
+### Приклад 1 — Що відбувається під час запиту JSON через HTTPS?
 
-### Exercise 2 — TCP vs UDP
+**Запитання:** Яку роль в одному запиті відіграють DNS, IP, TCP/QUIC, TLS, HTTP та JSON?
 
-Поясни, чому DNS часто використовує UDP, HTTP/1.1 — TCP, але HTTP/3 усе одно може бути reliable, хоча QUIC працює over UDP.
+**Пояснення:**
 
-### Exercise 3 — HTTP versions
+1. **DNS** визначає адресу для доменного імені (якщо клієнт не має придатної кешованої відповіді). DNS не передає відповідь API.
+2. **IP** забезпечує адресацію та маршрутизацію пакетів між мережами.
+3. **TCP** передає потік байтів для типових HTTPS-з'єднань з HTTP/1.1 чи HTTP/2; **QUIC поверх UDP** використовується для HTTP/3.
+4. **TLS** автентифікує сервер і захищає трафік. У QUIC TLS 1.3 інтегрований у handshake самого QUIC, а не працює поверх TCP.
+5. **HTTP** задає семантику запиту й відповіді: метод, ресурс, заголовки та статус.
+6. **JSON** — можливий *формат представлення* тіла відповіді, а не мережевий протокол.
 
-Порівняй HTTP/1.1, HTTP/2 та HTTP/3 без methods/status codes. Тільки transport, framing та multiplexing.
+**Головна відмінність:** HTTPS — це HTTP із захистом TLS; JSON у відповіді не перетворює JSON на мережевий протокол.
 
-### Exercise 4 — real-time design
+### Приклад 2 — Як HTTP/3 може бути надійним, якщо працює поверх UDP?
 
-Обери polling, SSE або WebSocket для build-progress screen, chat application та dashboard із refresh раз на п'ять хвилин. Обґрунтуй.
+**Запитання:** Чому звичайний DNS часто використовує UDP, HTTP/1.1 зазвичай використовує TCP, а HTTP/3 — QUIC поверх UDP?
 
-### Exercise 5 — diagnose failure
+**Пояснення:** Традиційний DNS часто застосовує UDP для коротких запитів і відповідей, але може використовувати TCP, а шифровані варіанти DNS мають інші транспорти. Сам UDP передає датаграми без гарантій доставки та порядку. HTTP/1.1 покладається на надійний упорядкований потік байтів TCP.
 
-Browser каже, що \`https://api.example.com\` unavailable. Побудуй investigation sequence від DNS до TLS та HTTP замість припущення «це bug в application».
+QUIC реалізує **власні** підтвердження, відновлення після втрат, контроль перевантаження та незалежні впорядковані потоки поверх UDP. Отже, HTTP/3 отримує надійну передачу потоків без TCP. QUIC уникає TCP-блокування інших потоків через втрату пакета, хоча спільне перевантаження мережі все ще може впливати на все з'єднання.
+
+**Головна відмінність:** Протокол поверх UDP не обов'язково ненадійний — гарантії можуть реалізовуватися на вищому рівні.
+
+### Приклад 3 — Чим насправді відрізняються версії HTTP?
+
+**Запитання:** Якщо семантика методів і статусів HTTP переважно не змінюється, навіщо існують різні версії?
+
+| Версія | Типовий транспорт | Представлення повідомлень | Паралельність |
+|---|---|---|---|
+| HTTP/1.1 | TCP, часто із TLS | Текстові повідомлення | Повторне використання з'єднання без HTTP-мультиплексування |
+| HTTP/2 | TCP, зазвичай із TLS | Бінарні кадри та стиснені заголовки | Паралельні потоки, але втрата TCP-пакета може затримати всі потоки |
+| HTTP/3 | QUIC поверх UDP з інтегрованим TLS 1.3 | Кадри HTTP/3 та стиснені заголовки | Паралельні QUIC-потоки без TCP-блокування між потоками |
+
+**Пояснення:** Версії змінюють спосіб передавання повідомлень, а не значення GET, POST чи 404. Сервер може підтримувати кілька версій, а клієнт — узгодити доступну або перейти на іншу залежно від мережі. Нова версія сама по собі не гарантує швидшої відповіді застосунку.
+
+**Головна відмінність:** Транспорт, framing і multiplexing слід розглядати окремо від семантики HTTP.
+
+### Приклад 4 — Як обрати спосіб отримання оновлень?
+
+**Запитання:** Що доцільно використати для прогресу збірки, чату та dashboard, який оновлюється раз на п'ять хвилин?
+
+| Сценарій | Початковий вибір | Пояснення та альтернатива |
+|---|---|---|
+| Прогрес збірки | SSE | Для односторонніх оновлень з сервера підходить HTTP-потік подій. Рідкісні оновлення можна отримувати polling-запитами. |
+| Інтерактивний чат | WebSocket | Обидві сторони надсилають повідомлення через тривале з'єднання. Також можливі HTTP-запити від клієнта й SSE для отримання повідомлень. |
+| Dashboard раз на п'ять хвилин | Polling | Періодичні HTTP-запити прості й достатні для низької частоти оновлень. Streaming потрібен лише за інших вимог до затримки. |
+
+**Пояснення:** Це обґрунтовані стартові варіанти, а не універсальні правила. Враховуй підтримку браузерами та проксі, перепідключення, пропущені події, авторизацію, backpressure і вартість підтримки. Сам SSE або WebSocket не гарантує відновлення всіх пропущених оновлень.
+
+**Головна відмінність:** Вибір залежить від напрямку обміну, частоти оновлень і поведінки під час збоїв.
+
+### Приклад 5 — Як знайти причину недоступності HTTPS-сервісу?
+
+**Запитання:** Браузер не може відкрити API. Як з'ясувати проблемний рівень, не називаючи все одразу помилкою застосунку?
+
+**Пояснення:** Починай із перевірок, які найшвидше відокремлюють можливі причини:
+
+1. **DNS:** Перевір ім'я та відповіді A/AAAA через dig або nslookup; зверни увагу на застарілий кеш.
+2. **Мережа та транспорт:** Виконай curl -v для фактичної URL-адреси. Відрізняй відмову в з'єднанні від тайм-ауту; перевір IPv4/IPv6, маршрут і проксі. Перевірка TCP-порту доречна для HTTP/1.1 та HTTP/2, але **не** підтверджує роботу HTTP/3 поверх UDP.
+3. **TLS:** Перевір handshake, довіру до сертифіката, відповідність імені та узгоджений протокол. Для TLS поверх TCP корисний openssl s_client із правильним SNI.
+4. **HTTP:** Переглянь статус, заголовки, перенаправлення й тіло відповіді. HTTP 401/403 означає відповідь рівня авторизації, а не збій DNS чи TLS; 5xx — помилку, повернуту HTTP-компонентом.
+5. **Система:** За необхідності перевір залежності, повторні спроби, тайм-аути, серверні логи та трасування запиту, керуючись зібраними доказами.
+
+**Головна відмінність:** Недоступність сторінки — симптом, а не встановлена першопричина. Для кожного рівня потрібні свої докази.
 
 ## 16. QA quick reference
 
