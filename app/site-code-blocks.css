@@ -49,3 +49,17 @@ pre:has(> code) > code {
   margin: 0 !important;
   padding: 16px 18px;
 }
+
+/* On phone-sized screens, keep static examples readable without horizontal
+   scrolling. Preserve intentional newlines/indentation and wrap long tokens.
+   The desktop preformatted layout and interactive code editors are unchanged. */
+@media (max-width: 610px) {
+  pre:has(> code) {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    overflow-wrap: anywhere !important;
+    white-space: pre-wrap !important;
+  }
+}
