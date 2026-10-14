@@ -33,14 +33,14 @@ export default function CloudDevopsPage({ mode }: { mode: "public" | "personal" 
     <>
       <style>{waitingForReviewBannerStyle}</style>
       <LearningDocumentPage
-      curriculum={curriculum}
-      languages={["en"]}
-      mode={mode}
-      personalHref="/workspace/learn/cloud-devops"
-      publicHref="/learn/cloud-devops"
-      secondaryTitle="Cloud & DevOps"
-      section="devops"
-      sourceStatusLabel={() => "Verified 16 Aug 2026"}
+        curriculum={curriculum}
+        languages={["en"]}
+        mode={mode}
+        personalHref="/workspace/learn/cloud-devops"
+        publicHref="/learn/cloud-devops"
+        secondaryTitle="Cloud & DevOps"
+        section="devops"
+        sourceStatusLabel={() => "Verified 16 Aug 2026"}
       />
     </>
   );
