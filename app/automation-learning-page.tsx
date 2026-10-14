@@ -31,6 +31,13 @@ const trackOptions = [
   { id: "robot-framework", label: "Specific", labelUk: "Specific", available: true, moduleIds: ["robot-framework"] },
 ];
 
+const trackGroups = [
+  { id: "concepts", label: "Concepts & Design", labelUk: "Концепції та архітектура", trackIds: ["foundations", "architecture"] },
+  { id: "python", label: "Python Automation", labelUk: "Автоматизація на Python", trackIds: ["python-setup", "pytest", "automation"] },
+  { id: "examples", label: "Examples & References", labelUk: "Приклади та довідники", trackIds: ["real-projects", "reference-framework"] },
+  { id: "specialized", label: "Specialized", labelUk: "Спеціалізоване", trackIds: ["robot-framework"] },
+];
+
 const automationTrackLayout = `
 .kb-subnav-switch {
   display: grid;
@@ -47,6 +54,44 @@ const automationTrackLayout = `
   white-space: normal;
   overflow-wrap: break-word;
 }
+
+.kb-subnav-switch[data-grouped="true"] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kb-subnav-switch-group {
+  min-width: 0;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .55);
+  padding: 8px;
+}
+
+.kb-subnav-switch-heading {
+  margin: 0 0 7px;
+  color: #69766d;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .02em;
+}
+
+.kb-subnav-switch-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kb-subnav-switch-options > button:last-child:nth-child(odd):not(:first-child) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 3px);
+}
+
+.kb-subnav-switch-options > button:only-child {
+  grid-column: 1 / -1;
+}
 `;
 
 export default function AutomationLearningPage({ mode }: { mode: "public" | "personal" }) {
@@ -62,6 +107,7 @@ export default function AutomationLearningPage({ mode }: { mode: "public" | "per
         secondaryTitle="Test automation"
         section="automation"
         trackOptions={trackOptions}
+        trackGroups={trackGroups}
       />
     </>
   );
