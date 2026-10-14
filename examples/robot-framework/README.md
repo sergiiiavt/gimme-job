@@ -7,7 +7,7 @@ A runnable, deliberately small automation framework: suite -> reusable domain re
 ```bash
 python -m venv .venv
 source .venv/bin/activate      # Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install -r examples/robot-framework/requirements.txt
+python -m pip install --require-hashes --only-binary :all: -r examples/robot-framework/requirements.txt
 python -m robot --outputdir results examples/robot-framework/tests
 ```
 
