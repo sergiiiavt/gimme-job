@@ -6,6 +6,8 @@ import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
 import sqlCurriculum from "@/content/data-learning/catalog";
 import pythonCurriculum from "@/content/python-learning/catalog";
+import csharpCurriculum from "@/content/csharp-learning/catalog";
+import programmingQuickReference from "@/content/programming-reference/quick-reference.json";
 import pythonQuickReference from "@/content/python-learning/quick-reference.json";
 import pythonQuickReferenceGuidance from "@/content/python-learning/quick-reference-guidance.json";
 import pythonQuickReferenceInterview from "@/content/python-learning/quick-reference-interview.json";
@@ -27,6 +29,7 @@ type ReferenceCard = {
   tags?: string[];
   topics?: string[];
   dialects?: string[];
+  languages?: string[];
   meta?: string;
   summary?: string;
   rows?: ReferenceRow[];
@@ -78,6 +81,20 @@ type QaReferenceCatalog = {
   filters: string[];
   cards: ReferenceCard[];
 };
+type ProgrammingReferenceSourceCard = {
+  id: string;
+  title: string;
+  topics: string[];
+  moduleId: string | null;
+  summary: string;
+  entries: ReferenceRow[];
+  more: ReferenceRow[];
+};
+type ProgrammingReferenceCatalog = {
+  topicFilters: string[];
+  general: ProgrammingReferenceSourceCard[];
+  csharp: ProgrammingReferenceSourceCard[];
+};
 type PythonReferenceGuidance = {
   summaries: Record<string, string>;
   explanations: Record<string, Record<string, string>>;
@@ -93,6 +110,7 @@ type PythonReferenceGuidance = {
 };
 
 const supportedReferenceIds = new Set(["qa-fundamentals", "programming", "automation", "devops", "data"]);
+const programmingReferenceCatalog = programmingQuickReference as ProgrammingReferenceCatalog;
 const pythonReferenceCatalog = pythonQuickReference as PythonReferenceCatalog;
 const pythonInterviewReferenceCatalog = pythonQuickReferenceInterview as PythonInterviewReferenceCatalog;
 const pythonReferenceGuidanceCatalog = pythonQuickReferenceGuidance as PythonReferenceGuidance;
@@ -227,6 +245,7 @@ function pythonCardMeta(cardId: string) {
 const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
   const primaryCard: ReferenceCard = {
     id: `python-${card.id}`,
+    languages: ["Python"],
     title: card.title,
     tags: card.tags,
     meta: pythonCardMeta(card.id),
@@ -239,6 +258,7 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
     .filter((theoryCard) => theoryCard.after === card.id)
     .map((theoryCard): ReferenceCard => ({
       id: `python-${theoryCard.id}`,
+      languages: ["Python"],
       title: theoryCard.title,
       tags: theoryCard.tags,
       meta: pythonCardMeta(theoryCard.id),
@@ -252,6 +272,7 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
 
 const interviewPythonReferenceCards: ReferenceCard[] = pythonInterviewReferenceCatalog.cards.map((card) => ({
   id: `python-${card.id}`,
+  languages: ["Python"],
   title: card.title,
   tags: card.tags,
   meta: pythonCardMeta(card.id),
@@ -268,6 +289,17 @@ const pythonReferenceCards: ReferenceCard[] = [...basePythonReferenceCards, ...i
   const bOrder = pythonReferencePriority.get(bId)?.index ?? Number.MAX_SAFE_INTEGER;
   return aOrder - bOrder;
 });
+
+const programmingReferenceCards: ReferenceCard[] = [
+  ...programmingReferenceCatalog.general.map((card) => ({ ...card, id: `general-${card.id}`, languages: ["General"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+  ...pythonReferenceCards,
+  ...programmingReferenceCatalog.csharp.map((card) => ({ ...card, id: `csharp-${card.id}`, languages: ["C#"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+];
+
+/** General concepts are portable across languages, like Portable SQL across database dialects. */
+function matchesProgrammingLanguage(card: ReferenceCard, language: string) {
+  return language === "All" || card.languages?.includes(language) || (language !== "General" && card.languages?.includes("General"));
+}
 
 const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) => ({
   id: `sql-${card.id}`,
@@ -314,7 +346,7 @@ function placeholderCards(referenceId: string): ReferenceCard[] {
 }
 
 function referenceCards(referenceId: string): ReferenceCard[] {
-  if (referenceId === "programming") return pythonReferenceCards;
+  if (referenceId === "programming") return programmingReferenceCards;
   if (referenceId === "data") return sqlReferenceCards;
   if (referenceId === "qa-fundamentals") return qaReferenceCards;
   return placeholderCards(referenceId);
@@ -329,6 +361,7 @@ function searchableCardText(card: ReferenceCard) {
     ...(card.tags ?? []),
     ...(card.topics ?? []),
     ...(card.dialects ?? []),
+    ...(card.languages ?? []),
     ...(card.rows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
     ...(card.moreRows ?? []).flatMap((row) => [row.term, row.meaning ?? "", row.detail]),
     ...(card.code ?? []).flatMap((item) => [item.label, item.code]),
@@ -353,13 +386,16 @@ function regularLearningHref(referenceId: string, topicId?: string, trackId?: st
   return params.size ? `${path}?${params.toString()}` : path;
 }
 
-function learningSubnav(referenceId: string): SubnavItem[] {
+function learningSubnav(referenceId: string, programmingLanguage: string): SubnavItem[] {
   if (referenceId === "programming") {
-    const taxonomy = pythonTaxonomy as TaxonomyItem[];
+    const csharpSelected = programmingLanguage === "C#";
+    const taxonomy = (csharpSelected ? csharpCurriculum.taxonomy : pythonTaxonomy) as TaxonomyItem[];
     return taxonomy.filter((item) => item.level).map((item) => ({
       id: item.id,
       label: item.label,
-      count: pythonCurriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length || undefined,
+      count: csharpSelected
+        ? undefined
+        : pythonCurriculum.lessons.filter((lesson) => lesson.moduleId === item.id).length || undefined,
     }));
   }
   if (referenceId === "automation") {
@@ -394,10 +430,10 @@ function learningSubnav(referenceId: string): SubnavItem[] {
   }));
 }
 
-function learningSwitcher(referenceId: string): SecondarySwitcher | undefined {
+function learningSwitcher(referenceId: string, programmingLanguage: string): SecondarySwitcher | undefined {
   if (referenceId === "programming") {
     return {
-      activeId: "python",
+      activeId: programmingLanguage === "C#" ? "csharp" : "python",
       options: [
         { id: "python", label: "Python" },
         { id: "csharp", label: "C#" },
@@ -449,22 +485,34 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const learningGroup = navigationGroups.find((group) => group.id === "learning");
   const activeItem = learningGroup?.items.find((item) => item.id === referenceId);
   const cards = referenceCards(referenceId);
+  const [query, setQuery] = useState("");
+  const [scope, setScope] = useState("All");
+  // Preserve the previously published Python-first reference, while allowing other languages explicitly.
+  const [dialect, setDialect] = useState(referenceId === "programming" ? "Python" : "All");
+  const hasVariantFilter = referenceId === "programming" || referenceId === "data";
+  const dialects = referenceId === "data"
+    ? sqlReferenceCatalog.dialectFilters
+    : referenceId === "programming" ? ["All", "General", "Python", "C#"] : ["All"];
   const scopes = useMemo(() => {
-    if (referenceId === "programming") return pythonReferenceFilters;
+    if (referenceId === "programming") {
+      const availableTopics = new Set(
+        programmingReferenceCards.filter((card) => matchesProgrammingLanguage(card, dialect)).flatMap((card) => card.tags ?? []),
+      );
+      const orderedTopics = [...new Set([...pythonReferenceFilters, ...programmingReferenceCatalog.topicFilters])];
+      return orderedTopics.filter((filter) => filter === "All" || availableTopics.has(filter));
+    }
     if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
     if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
     return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
-  }, [cards, referenceId]);
-  const dialects = referenceId === "data" ? sqlReferenceCatalog.dialectFilters : ["All"];
-  const [query, setQuery] = useState("");
-  const [scope, setScope] = useState("All");
-  const [dialect, setDialect] = useState("All");
+  }, [cards, referenceId, dialect]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set());
   const [mobileNav, setMobileNav] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCards = cards.filter((card) => {
     const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
-    const dialectMatches = referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
+    const dialectMatches = referenceId === "programming"
+      ? matchesProgrammingLanguage(card, dialect)
+      : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
     return scopeMatches && dialectMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
   });
 
@@ -475,9 +523,9 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const external = activeItem.external === true;
   const activeSection = external ? null : activeItem.id as SiteSection;
   const activeExternalId = external ? activeItem.id as ExternalNavigationId : undefined;
-  const secondaryItems = learningSubnav(referenceId);
-  const secondarySwitcher = learningSwitcher(referenceId);
-  const activeTrack = referenceId === "programming" ? "python" : referenceId === "automation" ? "framework" : referenceId === "data" ? "sql" : undefined;
+  const secondaryItems = learningSubnav(referenceId, dialect);
+  const secondarySwitcher = learningSwitcher(referenceId, dialect);
+  const activeTrack = referenceId === "programming" ? (dialect === "C#" ? "csharp" : "python") : referenceId === "automation" ? "framework" : referenceId === "data" ? "sql" : undefined;
 
   const selectLearningTopic = (topicId: string) => {
     window.location.assign(regularLearningHref(referenceId, topicId, activeTrack));
@@ -513,18 +561,18 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
           <div className={styles.topbar} aria-label="Quick reference filters">
-            <div className={styles.filterGroups} style={referenceId === "data" ? { flexDirection: "column", alignItems: "stretch", gap: 4 } : undefined}>
+            <div className={styles.filterGroups} style={hasVariantFilter ? { flexDirection: "column", alignItems: "stretch", gap: 4 } : undefined}>
               <div className={styles.filterGroup}>
-                {referenceId === "data" ? <span className={styles.filterLabel}>Topic</span> : null}
+                {hasVariantFilter ? <span className={styles.filterLabel}>Topic</span> : null}
                 <div className={styles.scopes} aria-label="Reference topic">
                   {scopes.map((item) => <button className={scope === item ? styles.active : ""} key={item} onClick={() => setScope(item)} type="button">{item}</button>)}
                 </div>
               </div>
-              {referenceId === "data" ? (
+              {hasVariantFilter ? (
                 <div className={styles.filterGroup}>
-                  <span className={styles.filterLabel}>Dialect</span>
-                  <div className={styles.scopes} aria-label="SQL dialect">
-                    {dialects.map((item) => <button className={dialect === item ? styles.active : ""} key={item} onClick={() => setDialect(item)} type="button">{item}</button>)}
+                  <span className={styles.filterLabel}>{referenceId === "programming" ? "Language" : "Dialect"}</span>
+                  <div className={styles.scopes} aria-label={referenceId === "programming" ? "Programming language" : "SQL dialect"}>
+                    {dialects.map((item) => <button aria-pressed={dialect === item} className={dialect === item ? styles.active : ""} key={item} onClick={() => { setDialect(item); setScope("All"); }} type="button">{item}</button>)}
                   </div>
                 </div>
               ) : null}
