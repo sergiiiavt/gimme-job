@@ -41,14 +41,38 @@ test("agentic video list preserves the four existing videos and their titles", (
   }
 });
 
-test("agentic page displays videos without promotional sections or empty roadmap placeholders", async () => {
+test("agentic learning keeps a single Learning videos navigation entry alongside planned chapters", async () => {
+  const { agenticPlannedTopics } = await import("../app/agentic-videos.ts");
   const page = await read("app/agentic-learning-page.tsx");
 
-  assert.match(page, /agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, label: title \}\)\)/);
-  assert.match(page, /agenticVideos\.map\(\(\{ id, title, channel, channelUrl, videoId \}\) =>/);
-  assert.match(page, /className=\{styles\.videoItem\} id=\{id\} key=\{id\}/);
-  assert.match(page, /<LearningVideo[\s\S]*?title=\{title\}[\s\S]*?videoId=\{videoId\}/);
-  assert.doesNotMatch(page, /<h[2-6]\b|<p\b|<ul\b|roadmapItems|underConstruction|LearningRail|patternsIntro|codeIntro|coworkIntro|promptingIntro/);
+  assert.deepEqual(agenticPlannedTopics.map(({ id }) => id), [
+    "tools-and-actions",
+    "state-and-memory",
+    "approval-workflows",
+    "agent-evaluation",
+    "mcp-experiments",
+    "pet-projects",
+  ]);
+  assert.match(page, /id: "learning-videos", label: "Learning videos"/);
+  assert.match(page, /status: "under-construction" as const/);
+  assert.match(page, /id="learning-videos"/);
+  assert.match(page, /id=\{item\.id\}/);
+  assert.match(page, /text\.underConstruction/);
+  assert.doesNotMatch(page, /agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, label: title \}\)\)/);
+});
+
+test("right-hand table of contents contains individual video titles", async () => {
+  const page = await read("app/agentic-learning-page.tsx");
+
+  assert.match(page, /videoHeadings = agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, text: title \}\)\)/);
+  assert.match(page, /<LearningRail headings=\{videoHeadings\}/);
+  assert.match(page, /<h2 className=\{styles\.videoTitle\} id=\{id\}>\{title\}<\/h2>/);
+  assert.match(page, /showTitle=\{false\}/);
+  assert.match(page, /<LearningVideo[\s\S]*?videoId=\{videoId\}/);
+  assert.doesNotMatch(page, /codeIntro|coworkIntro|promptingIntro|patternsIntro|practical start|Practitioner Start/);
+  const player = await read("app/learning-video.tsx");
+  assert.match(player, /showTitle = true/);
+  assert.match(player, /showTitle && <strong>\{title\}<\/strong>/);
 });
 
 test("learning video playback policy exposes 3× and 4× and can still identify advertised rates", () => {

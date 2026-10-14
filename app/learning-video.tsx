@@ -78,9 +78,10 @@ function loadYouTubeApi() {
   return youtubeApiPromise;
 }
 
-export default function LearningVideo({ channel, channelUrl, title, videoId }: {
+export default function LearningVideo({ channel, channelUrl, showTitle = true, title, videoId }: {
   channel: string;
   channelUrl: string;
+  showTitle?: boolean;
   title: string;
   videoId: string;
 }) {
@@ -165,7 +166,7 @@ export default function LearningVideo({ channel, channelUrl, title, videoId }: {
         {error && <div className={styles.error}>{error}</div>}
       </div>
       <div className={styles.meta}>
-        <strong>{title}</strong>
+        {showTitle && <strong>{title}</strong>}
         <span><a href={channelUrl} rel="noopener noreferrer" target="_blank">{channel}</a> · YouTube</span>
       </div>
       <div className={styles.controls} role="group" aria-label="Playback speed">
