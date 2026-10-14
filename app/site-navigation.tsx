@@ -27,6 +27,7 @@ export interface SecondarySwitcher {
   activeId: string;
   onSelect: (id: string) => void;
   options: Array<{ id: string; label: string }>;
+  groups?: Array<{ id: string; label: string; optionIds: string[] }>;
 }
 
 interface SidebarProps {
@@ -401,6 +402,18 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
     );
   };
 
+  const renderSwitcherOption = (option: SecondarySwitcher["options"][number]) => (
+    <button
+      aria-pressed={secondarySwitcher?.activeId === option.id}
+      className={secondarySwitcher?.activeId === option.id ? "active" : ""}
+      key={option.id}
+      onClick={() => secondarySwitcher?.onSelect(option.id)}
+      type="button"
+    >
+      {option.label}
+    </button>
+  );
+
   const renderLearningItems = (items: NavigationItem[]) => (
     <div className="kb-learning-catalog">
       {learningClusters.map((cluster) => (
@@ -457,12 +470,25 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
           </Link>
         )}
         {secondarySwitcher && (
-          <div className="kb-subnav-switch" role="group" aria-label={`${secondaryTitle} catalog`}>
-            {secondarySwitcher.options.map((option) => (
-              <button className={secondarySwitcher.activeId === option.id ? "active" : ""} key={option.id} onClick={() => secondarySwitcher.onSelect(option.id)} type="button">
-                {option.label}
-              </button>
-            ))}
+          <div
+            aria-label={`${secondaryTitle} catalog`}
+            className="kb-subnav-switch"
+            data-grouped={secondarySwitcher.groups?.length ? "true" : undefined}
+            role="group"
+          >
+            {secondarySwitcher.groups?.length
+              ? secondarySwitcher.groups.map((group) => (
+                <section aria-label={group.label} className="kb-subnav-switch-group" key={group.id}>
+                  <h3 className="kb-subnav-switch-heading">{group.label}</h3>
+                  <div className="kb-subnav-switch-options">
+                    {group.optionIds.map((optionId) => {
+                      const option = secondarySwitcher.options.find((item) => item.id === optionId);
+                      return option ? renderSwitcherOption(option) : null;
+                    })}
+                  </div>
+                </section>
+              ))
+              : secondarySwitcher.options.map(renderSwitcherOption)}
           </div>
         )}
         {secondaryEmptyState ? (
