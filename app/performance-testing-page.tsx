@@ -2,6 +2,7 @@
 
 import performanceTestingCatalog from "@/content/performance-testing/catalog";
 import LearningDocumentPage, { type StructuredLearningCurriculum } from "./learning-document-page";
+import { waitingForReviewBannerStyle } from "./learning-review-status";
 
 const curriculum: StructuredLearningCurriculum = {
   title: performanceTestingCatalog.title,
@@ -16,7 +17,9 @@ type PerformanceTestingPageProps = Readonly<{ mode: "public" | "personal" }>;
 
 export default function PerformanceTestingPage({ mode }: PerformanceTestingPageProps) {
   return (
-    <LearningDocumentPage
+    <>
+      <style>{waitingForReviewBannerStyle}</style>
+      <LearningDocumentPage
       curriculum={curriculum}
       languages={["en", "uk"]}
       mode={mode}
@@ -25,6 +28,7 @@ export default function PerformanceTestingPage({ mode }: PerformanceTestingPageP
       secondaryTitle="Performance testing"
       section="performance"
       sourceStatusLabel={({ language }) => language === "uk" ? "Джерела розділу перевірені" : "Chapter references verified"}
-    />
+      />
+    </>
   );
 }
