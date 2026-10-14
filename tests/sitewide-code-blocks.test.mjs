@@ -14,7 +14,9 @@ test("all static pre/code examples receive the shared dark presentation", async 
   assert.match(styles, /pre:has\(> code\)/);
   assert.match(styles, /background: #1e1e1e !important/);
   assert.match(styles, /color: #d4d4d4 !important/);
-  assert.match(styles, /white-space: pre !important/);
+  assert.match(styles, /white-space: pre;/);
+  assert.match(styles, /html:root body pre:has\(> code\)/);
+  assert.doesNotMatch(styles, /:\s*[^;]+!important;/);
 });
 
 test("static pre/code blocks wrap on mobile without changing desktop formatting", async () => {
@@ -23,10 +25,10 @@ test("static pre/code blocks wrap on mobile without changing desktop formatting"
     read("app/qa-markdown.tsx"),
     read("app/static-code-block.ts"),
   ]);
-  const mobileRule = styles.match(/@media\s*\(max-width:\s*610px\)\s*\{\s*pre:has\(> code\)\s*\{([^}]+)\}/)?.[1];
+  const mobileRule = styles.match(/@media\s*\(max-width:\s*610px\)\s*\{\s*html:root body pre:has\(> code\)\s*\{([^}]+)\}/)?.[1];
   assert.ok(mobileRule, "Expected a phone-only override for static pre/code content");
-  assert.match(mobileRule, /white-space:\s*pre-wrap !important/);
-  assert.match(mobileRule, /overflow-wrap:\s*anywhere !important/);
+  assert.match(mobileRule, /white-space:\s*pre-wrap;/);
+  assert.match(mobileRule, /overflow-wrap:\s*anywhere;/);
   assert.match(mobileRule, /overflow-x:\s*clip/);
   assert.match(mobileRule, /max-width:\s*100%/);
   assert.doesNotMatch(mobileRule, /overflow-y:\s*(?:auto|scroll)/);
