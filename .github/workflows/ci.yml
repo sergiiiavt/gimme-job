@@ -175,6 +175,27 @@ jobs:
                       f"line={issue.get('line')} "
                       f"message={issue.get('message')}"
                   )
+              smells_payload = request(
+                  "issues/search",
+                  {
+                      "componentKeys": project_key,
+                      "pullRequest": pr_number,
+                      "resolved": "false",
+                      "types": "CODE_SMELL",
+                      "ps": 100,
+                  },
+              )
+              smells = smells_payload.get("issues", [])
+              print(f"Open maintainability issues: {len(smells)}")
+              for issue in smells:
+                  print(
+                      "Maintainability: "
+                      f"rule={issue.get('rule')} "
+                      f"severity={issue.get('severity')} "
+                      f"component={issue.get('component')} "
+                      f"line={issue.get('line')} "
+                      f"message={issue.get('message')}"
+                  )
           except Exception as error:
               print(f"Sonar diagnostics unavailable: {type(error).__name__}: {error}")
           PY
