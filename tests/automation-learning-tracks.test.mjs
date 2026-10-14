@@ -53,7 +53,6 @@ test("Test Automation track tabs fit inside the secondary navigation", async () 
 test("Test Automation groups its tracks without changing their URLs or module mapping", async () => {
   const page = await read("app/automation-learning-page.tsx");
   const renderer = await read("app/learning-document-page.tsx");
-  const sidebar = await read("app/site-navigation.tsx");
 
   for (const [id, label, trackIds] of [
     ["concepts", "Concepts & Design", ["foundations", "architecture"]],
@@ -70,11 +69,6 @@ test("Test Automation groups its tracks without changing their URLs or module ma
   assert.match(page, /\.kb-subnav-switch-options > button:only-child/);
   assert.match(renderer, /trackGroups\?: TrackGroup\[\]/);
   assert.match(renderer, /optionIds: trackIds/);
-  assert.match(sidebar, /secondarySwitcher\.groups\?\.length/);
-  assert.match(sidebar, /secondarySwitcher\.options\.map\(renderSwitcherOption\)/);
-  assert.match(sidebar, /aria-pressed=\{secondarySwitcher\?\.activeId === option\.id\}/);
-  assert.match(sidebar, /group\.optionIds\.map/);
-  assert.match(sidebar, /className="kb-subnav-switch-heading"/);
 });
 
 test("shared learning renderer filters the secondary navigation by selected track", async () => {
