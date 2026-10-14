@@ -4,15 +4,13 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Test Automation uses eight module-scoped learning tracks", async () => {
+test("Test Automation uses six broad tracks without losing learning modules", async () => {
   const page = await read("app/automation-learning-page.tsx");
 
   for (const [id, label] of [
-    ["foundations", "Foundations"],
-    ["python-setup", "Python Setup"],
-    ["pytest", "pytest"],
+    ["foundations", "Fundamentals & Architecture"],
+    ["python-setup", "Python & pytest"],
     ["automation", "Web / API / Mobile"],
-    ["architecture", "Architecture"],
     ["real-projects", "Desktop Automation Example"],
     ["reference-framework", "Framework Reference"],
     ["robot-framework", "Specific"],
@@ -23,21 +21,18 @@ test("Test Automation uses eight module-scoped learning tracks", async () => {
 
   assert.ok(
     page.indexOf('id: "reference-framework"') < page.indexOf('id: "robot-framework"'),
-    "Specific must be the last track, after Framework Reference",
+    "Specific remains the last track, after Framework Reference",
   );
-
   assert.match(page, /defaultTrackId="foundations"/);
-  assert.match(page, /moduleIds: \["automation-foundations"\]/);
-  assert.match(page, /moduleIds: \["project-setup"\]/);
-  assert.match(page, /moduleIds: \["pytest-core"\]/);
-  assert.match(page, /moduleIds: \["robot-framework"\]/);
+  assert.match(page, /moduleIds: \["automation-foundations", "framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
+  assert.match(page, /moduleIds: \["project-setup", "pytest-core"\]/);
   assert.match(page, /moduleIds: \["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"\]/);
-  assert.match(page, /moduleIds: \["framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
   assert.match(page, /"desktop-automation-overview"/);
   assert.match(page, /"desktop-automation-python"/);
   assert.match(page, /"desktop-automation-dotnet"/);
   assert.match(page, /"desktop-automation-ci"/);
   assert.match(page, /moduleIds: \["reference-framework"\]/);
+  assert.match(page, /moduleIds: \["robot-framework"\]/);
   assert.match(page, /referenceFrameworkModule/);
 });
 
@@ -50,25 +45,16 @@ test("Test Automation track tabs fit inside the secondary navigation", async () 
   assert.match(page, /white-space: normal/);
 });
 
-test("Test Automation groups its tracks without changing their URLs or module mapping", async () => {
+test("Test Automation removes visual groups and preserves old deep links", async () => {
   const page = await read("app/automation-learning-page.tsx");
   const renderer = await read("app/learning-document-page.tsx");
 
-  for (const [id, label, trackIds] of [
-    ["concepts", "Concepts & Design", ["foundations", "architecture"]],
-    ["python", "Python Automation", ["python-setup", "pytest", "automation"]],
-    ["examples", "Examples & References", ["real-projects", "reference-framework"]],
-    ["specialized", "Specialized", ["robot-framework"]],
-  ]) {
-    assert.ok(page.includes(`id: "${id}", label: "${label}"`), `Group ${id} must exist`);
-    assert.ok(page.includes(`trackIds: [${trackIds.map((track) => `"${track}"`).join(", ")}]`), `Group ${id} must contain expected tracks`);
-  }
-
-  assert.match(page, /trackGroups=\{trackGroups\}/);
-  assert.match(page, /\.kb-subnav-switch\[data-grouped="true"\]/);
-  assert.match(page, /\.kb-subnav-switch-options > button:only-child/);
-  assert.match(renderer, /trackGroups\?: TrackGroup\[\]/);
-  assert.match(renderer, /optionIds: trackIds/);
+  assert.doesNotMatch(page, /trackGroups|kb-subnav-switch-group|data-grouped/);
+  assert.match(page, /trackAliases=\{trackAliases\}/);
+  assert.match(page, /architecture: "foundations", pytest: "python-setup"/);
+  assert.match(renderer, /trackAliases\?: Record<string, string>/);
+  assert.match(renderer, /trackAliases\?\.\[requestedTrackId\] \?\? requestedTrackId/);
+  assert.match(renderer, /resolvedTrackOptions\.some\(\(option\) => option\.id === canonicalTrackId\)/);
 });
 
 test("shared learning renderer filters the secondary navigation by selected track", async () => {
