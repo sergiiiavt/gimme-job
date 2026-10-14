@@ -13,7 +13,7 @@ test("Test Automation uses six broad tracks without losing learning modules", as
     ["automation", "Web / API / Mobile"],
     ["real-projects", "Desktop Automation Example"],
     ["reference-framework", "Framework Reference"],
-    ["robot-framework", "Specific"],
+    ["robot-framework", "Robot Framework"],
   ]) {
     assert.ok(page.includes(`id: "${id}"`), `Track ${id} must be present`);
     assert.ok(page.includes(`label: "${label}"`), `Track ${id} must use label ${label}`);
@@ -21,7 +21,7 @@ test("Test Automation uses six broad tracks without losing learning modules", as
 
   assert.ok(
     page.indexOf('id: "reference-framework"') < page.indexOf('id: "robot-framework"'),
-    "Specific remains the last track, after Framework Reference",
+    "Robot Framework remains a dedicated last track, after Framework Reference",
   );
   assert.match(page, /defaultTrackId="foundations"/);
   assert.match(page, /moduleIds: \["automation-foundations", "framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
@@ -32,7 +32,8 @@ test("Test Automation uses six broad tracks without losing learning modules", as
   assert.match(page, /"desktop-automation-dotnet"/);
   assert.match(page, /"desktop-automation-ci"/);
   assert.match(page, /moduleIds: \["reference-framework"\]/);
-  assert.match(page, /moduleIds: \["robot-framework"\]/);
+  assert.match(page, /moduleIds: robotFrameworkChapterIds/);
+  assert.match(page, /import \{ robotFrameworkChapterIds \} from/);
   assert.match(page, /referenceFrameworkModule/);
 });
 

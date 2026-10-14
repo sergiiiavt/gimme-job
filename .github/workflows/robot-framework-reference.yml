@@ -1,0 +1,38 @@
+name: Robot Framework reference
+
+on:
+  pull_request:
+    paths:
+      - "examples/robot-framework/**"
+      - "content/automation-learning/robot-framework*.ts"
+      - ".github/workflows/robot-framework-reference.yml"
+  push:
+    branches: [main]
+    paths:
+      - "examples/robot-framework/**"
+      - "content/automation-learning/robot-framework*.ts"
+      - ".github/workflows/robot-framework-reference.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Robot Framework
+        run: python -m pip install --require-hashes --only-binary :all: -r examples/robot-framework/requirements.txt
+      - name: Run offline example
+        run: python -m robot --outputdir results examples/robot-framework/tests
+      - name: Retain evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-framework-reference-results
+          path: results/
+          if-no-files-found: warn
