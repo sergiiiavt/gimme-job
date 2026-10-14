@@ -13,7 +13,7 @@ const navigation: SubnavItem[] = [
   ...agenticPlannedTopics.map(({ id, title }) => ({ id, label: title, status: "under-construction" as const })),
 ];
 
-const videoHeadings = agenticVideos.map(({ id, title }) => ({ id, text: title }));
+const videoHeadings = agenticVideos.map(({ id, tocTitle }) => ({ id, text: tocTitle }));
 
 const copy = {
   en: { plannedTitle: "Planned learning topics", underConstruction: "Under construction" },
