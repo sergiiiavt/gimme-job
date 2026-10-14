@@ -2,6 +2,7 @@
 
 import cloudDevopsCatalog from "@/content/cloud-devops/catalog";
 import LearningDocumentPage, { type StructuredLearningCurriculum } from "./learning-document-page";
+import { waitingForReviewBannerStyle } from "./learning-review-status";
 
 const curriculum: StructuredLearningCurriculum = {
   title: cloudDevopsCatalog.title,
@@ -29,15 +30,18 @@ const curriculum: StructuredLearningCurriculum = {
 
 export default function CloudDevopsPage({ mode }: { mode: "public" | "personal" }) {
   return (
-    <LearningDocumentPage
-      curriculum={curriculum}
-      languages={["en"]}
-      mode={mode}
-      personalHref="/workspace/learn/cloud-devops"
-      publicHref="/learn/cloud-devops"
-      secondaryTitle="Cloud & DevOps"
-      section="devops"
-      sourceStatusLabel={() => "Verified 16 Aug 2026"}
-    />
+    <>
+      <style>{waitingForReviewBannerStyle}</style>
+      <LearningDocumentPage
+        curriculum={curriculum}
+        languages={["en"]}
+        mode={mode}
+        personalHref="/workspace/learn/cloud-devops"
+        publicHref="/learn/cloud-devops"
+        secondaryTitle="Cloud & DevOps"
+        section="devops"
+        sourceStatusLabel={() => "Verified 16 Aug 2026"}
+      />
+    </>
   );
 }
