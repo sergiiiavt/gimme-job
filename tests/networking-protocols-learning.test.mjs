@@ -44,6 +44,14 @@ test("protocols curriculum is bilingual, ordered and general-purpose", async () 
     assert.ok(qaSection > 0, "QA material must be a compact separate reference");
     assert.equal(markdown.slice(0, qaSection).includes("QA perspective"), false, "Main curriculum must not be framed from a QA perspective");
 
+    const examples = markdown.slice(markdown.indexOf("## 15."), qaSection);
+    assert.match(examples, /^## 15\. (?:Worked examples|Розібрані приклади)/m);
+    assert.doesNotMatch(examples, /Practice|Exercise|завдання для самостійного виконання\s*:/i);
+    assert.equal((examples.match(/^### (?:Example|Приклад) [1-5] /gm) ?? []).length, 5);
+    assert.equal((examples.match(/\*\*(?:Question|Запитання):\*\*/g) ?? []).length, 5);
+    assert.equal((examples.match(/\*\*(?:Explanation|Пояснення):\*\*/g) ?? []).length, 5);
+    assert.equal((examples.match(/\*\*(?:Key distinction|Головна відмінність):\*\*/g) ?? []).length, 5);
+
     for (const embeddedConcept of [
       "MQTT", "CoAP", "Bluetooth", "BLE", "Zigbee", "Thread", "Matter", "LoRaWAN",
       "CAN", "LIN", "Modbus", "UART", "I²C", "SPI", "USB",
