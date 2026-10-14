@@ -1,25 +1,31 @@
 /* Static code examples use one dark presentation everywhere on the site.
    Runnable editors keep their dedicated runner styles. */
 pre:has(> code) {
-  background: #1e1e1e !important;
-  border: 1px solid #303030 !important;
-  border-radius: 8px !important;
-  color: #d4d4d4 !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
   font-size: 12px;
   line-height: 1.6;
   overflow-x: auto;
-  overflow-wrap: normal !important;
-  white-space: pre !important;
 }
 
-pre:has(> code) > code {
-  background: transparent !important;
-  border: 0 !important;
+/* The root scope lets the shared colors and formatting outrank page themes
+   without !important. Keep sizing and default scrolling in the rule above so
+   page-specific diagram and example layouts preserve their desktop behavior. */
+html:root body pre:has(> code) {
+  background: #1e1e1e;
+  border: 1px solid #303030;
+  border-radius: 8px;
+  color: #d4d4d4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: normal;
+  white-space: pre;
+}
+
+html:root body pre:has(> code) > code {
+  background: transparent;
+  border: 0;
   color: inherit;
   font-family: inherit;
   font-size: inherit;
-  padding: 0 !important;
+  padding: 0;
   white-space: inherit;
 }
 
@@ -42,11 +48,11 @@ pre:has(> code) > code {
   padding: 8px 14px;
 }
 
-.qa-md-static-code pre:has(> code) {
-  border: 0 !important;
-  border-radius: 0 !important;
+html:root body .qa-md-static-code pre:has(> code) {
+  border: 0;
+  border-radius: 0;
   line-height: 1.65;
-  margin: 0 !important;
+  margin: 0;
   padding: 16px 18px;
 }
 
@@ -54,12 +60,12 @@ pre:has(> code) > code {
    scrolling. Preserve intentional newlines/indentation and wrap long tokens.
    The desktop preformatted layout and interactive code editors are unchanged. */
 @media (max-width: 610px) {
-  pre:has(> code) {
+  html:root body pre:has(> code) {
     box-sizing: border-box;
     max-width: 100%;
     min-width: 0;
     overflow-x: clip;
-    overflow-wrap: anywhere !important;
-    white-space: pre-wrap !important;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
   }
 }
