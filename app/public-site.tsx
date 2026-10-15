@@ -595,7 +595,10 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
   const [subsection, setSubsection] = useState("all");
   const [programmingTrack, setProgrammingTrack] = useState<ProgrammingTrack>("python");
   const [automationTrack, setAutomationTrack] = useState<AutomationTrack>("framework");
-  const [interviewCatalog, setInterviewCatalog] = useState<InterviewCatalog | null>(null);
+  // Keep the catalog tied to its route: returning from another page must not reuse another domain's questions.
+  const interviewDomainId = interviewDomainRouteFromPathname(pathname)?.id ?? "generic-qa";
+  const [interviewCatalogState, setInterviewCatalogState] = useState<{ domainId: string; catalog: InterviewCatalog } | null>(null);
+  const interviewCatalog = interviewCatalogState?.domainId === interviewDomainId ? interviewCatalogState.catalog : null;
   const [interviewCatalogError, setInterviewCatalogError] = useState(false);
   const [pythonInterviewCatalog, setPythonInterviewCatalog] = useState<InterviewCatalog | null>(null);
   const [pythonInterviewCatalogError, setPythonInterviewCatalogError] = useState(false);
@@ -635,13 +638,18 @@ export default function PublicSite({ mode = "public" }: { mode?: SiteMode }) {
     let active = true;
     import("@/content/interview/catalog")
       .then((module) => {
-        if (active) setInterviewCatalog(module.default as unknown as InterviewCatalog);
+        if (!active) return;
+        setInterviewCatalogState({
+          domainId: interviewDomainId,
+          catalog: module.interviewCatalogForDomain(interviewDomainId) as unknown as InterviewCatalog,
+        });
+        setInterviewCatalogError(false);
       })
       .catch(() => {
         if (active) setInterviewCatalogError(true);
       });
     return () => { active = false; };
-  }, [interviewCatalog, section]);
+  }, [interviewCatalog, interviewDomainId, section]);
 
   useEffect(() => {
     if (section !== "python-interview" || pythonInterviewCatalog) return;
