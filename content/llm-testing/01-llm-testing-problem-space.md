@@ -2,9 +2,9 @@
 
 Testing software that uses a large language model (LLM) breaks several assumptions that classic test design relies on. The same input can produce different outputs. A wrong answer looks as fluent and confident as a right one. The expected result is often not a single value but a space of acceptable answers. And the behaviour can change without any change to your code, because the model, the prompt, the retrieved data or the provider's infrastructure changed.
 
-This chapter defines the problem precisely. It introduces the vocabulary, the kinds of test oracles that work for generative output, the quality characteristics you will measure, and the lifecycle in which LLM testing happens. Every later chapter builds on these definitions.
+This chapter defines the problem precisely. It introduces the kinds of test oracles that work for generative output, the quality characteristics you will measure, and the lifecycle in which LLM testing happens. Later evaluation and testing chapters build on these definitions.
 
-**Prerequisites:** basic software-testing concepts (test basis, test oracle, test levels) from [QA fundamentals](/reference/qa-fundamentals), and enough Python to read short scripts.
+**Prerequisites:** [Generative AI and LLM overview](/learn/llm?topic=generative-ai-overview), [How LLMs generate text](/learn/llm?topic=llm-foundations), and basic software-testing concepts (test basis, test oracle, test levels) from [QA fundamentals](/reference/qa-fundamentals), and enough Python to read short scripts.
 
 ## What we mean by an LLM system
 
@@ -300,46 +300,6 @@ LLM testing is not one phase. It happens at every stage, and production feeds ba
 | Pre-release | Security testing, performance tests, release gates | [Security, red teaming and guardrails](/learn/llm?topic=security-red-teaming), [Production quality](/learn/llm?topic=production-quality) |
 | Release | Canary and shadow deployments, model migrations | [Production quality](/learn/llm?topic=production-quality) |
 | Production | Tracing, online evaluation, feedback loops | [Production quality](/learn/llm?topic=production-quality) |
-
-## Core vocabulary
-
-Terms are used inconsistently across tools and papers. This course uses them as defined here.
-
-| Term | Meaning in this course |
-|---|---|
-| Evaluation (eval) | A repeatable measurement of quality: a dataset, a way to run the system on it, scorers and a decision rule |
-| Case (sample) | One input to evaluate, with optional reference answer, metadata and tags |
-| Dataset | A versioned collection of cases; a "golden dataset" is a curated, trusted one |
-| Scorer (grader) | Code, a model or a person that assigns a score or verdict to one output |
-| Metric | An aggregate of scores over a dataset, for example pass rate or mean faithfulness |
-| Judge | A model used as a scorer (LLM-as-a-judge) |
-| Rubric | Written criteria a judge or human applies |
-| Reference answer | A known good answer, or the facts it must contain |
-| Baseline | The results of the current production version, used for comparison |
-| Regression | A statistically and practically meaningful drop compared with the baseline |
-| Trace / span | A record of one request and of each step inside it (model call, retrieval, tool call) |
-| Hallucination (confabulation) | Output that is fluent but not supported by facts or sources |
-| Grounding | Basing output on provided sources, verifiable by citation |
-| Guardrail | A control around the model that blocks or modifies inputs or outputs |
-| Red teaming | Adversarial testing that tries to make the system fail in harmful ways |
-| Prompt injection | Input that makes the model follow attacker instructions instead of the developer's |
-| Benchmark | A public, standardized evaluation used to compare models |
-| pass@k / pass^k | Probability that at least one of k attempts passes / that all k attempts pass |
-
-## How this course is organized
-
-The course follows the order in which you need the knowledge. One running example appears throughout: the support assistant of the fictional store **Stride**, which answers questions from a policy knowledge base and can look up orders. Several chapters also use the real GimmeJob Learning Path Advisor (in the `ai-service` directory of this repository) as a case study.
-
-| Part | Chapters | Outcome |
-|---|---|---|
-| Foundations | Why LLM testing is different; How LLMs generate text; Embeddings and similarity | You understand how models produce text and how similarity is measured |
-| Building LLM applications | LLM application anatomy and APIs; Prompts as testable artifacts; Structured output and validation; Testing LLM code without the model | You can build and unit-test the system you will evaluate |
-| Evaluation | Evaluation methodology and datasets; Code-based scorers and metrics; LLM-as-a-judge; Statistics for evaluation | You can design datasets, scorers and judges and compare versions soundly |
-| RAG and agents | Evaluating RAG systems; Evaluating agents and tool use | You can evaluate retrieval pipelines and multi-step agents |
-| Security and production | Security, red teaming and guardrails; Production quality | You can attack and harden an LLM system and run evaluation in CI and production |
-| Professional practice | Benchmarks, human evaluation and governance | You can select models, run human evaluation and produce governance evidence |
-
-**Setup for the hands-on parts:** Python 3.11 or newer, a virtual environment, and access to at least one model. A paid API key from any major provider works. To practise without cost, run an open-weight model locally with [Ollama](https://ollama.com/), which exposes an OpenAI-compatible endpoint. Many code examples in this course are self-contained and run directly in the page with the **Run** button; examples that call real models or install packages are meant for your own machine. Many chapters also come with a complete example project with tests in [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing).
 
 ## Example project
 

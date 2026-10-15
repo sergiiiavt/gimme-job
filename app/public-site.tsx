@@ -410,10 +410,10 @@ const knowledge: Record<Exclude<PublicSection, "about" | "jobs" | "resume" | "pr
     ],
   },
   llm: {
-    title: "Generative AI & LLM testing",
-    description: "A testing and engineering knowledge base for products built around language models.",
+    title: "Generative AI & LLM",
+    description: "Learn generative model fundamentals, application engineering, evaluation, and responsible production use.",
     items: [
-      { title: "LLM testing", copy: "Functional behaviour, robustness, safety, consistency, and model-change regression.", tags: ["Testing"] },
+      { title: "Fundamentals", copy: "Generative AI concepts, model behavior, embeddings, prompts, and application architecture.", tags: ["Foundations"] },
       { title: "Evaluations", copy: "Datasets, rubrics, model graders, human review, thresholds, and experiment tracking.", tags: ["Evals"] },
       { title: "RAG", copy: "Retrieval quality, grounding, citations, chunking, permissions, and freshness.", tags: ["RAG"] },
       { title: "Prompt security", copy: "Prompt injection, data leakage, tool misuse, and layered mitigations.", tags: ["Security"] },

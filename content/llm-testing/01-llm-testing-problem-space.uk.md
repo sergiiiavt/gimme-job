@@ -2,9 +2,9 @@
 
 Тестування software, що використовує large language model (LLM), ламає кілька припущень, на яких тримається класичний test design. Той самий input може дати різні outputs. Неправильна відповідь звучить так само впевнено і гладко, як правильна. Очікуваний результат часто не одне значення, а простір прийнятних відповідей. А поведінка може змінитися без жодної зміни у вашому code, бо змінилися модель, prompt, retrieved data або інфраструктура provider.
 
-Цей chapter точно формулює проблему. Він вводить словник, типи test oracles, що працюють для generative output, характеристики якості, які ви вимірюватимете, і lifecycle, у якому відбувається тестування LLM. Кожен наступний chapter спирається на ці визначення.
+Цей chapter точно формулює проблему. Він вводить типи test oracles, що працюють для generative output, характеристики якості, які ви вимірюватимете, і lifecycle, у якому відбувається тестування LLM. Подальші chapters з evaluation та testing спираються на ці визначення.
 
-**Prerequisites:** базові поняття тестування (test basis, test oracle, test levels) з [QA fundamentals](/reference/qa-fundamentals) і достатньо Python, щоб читати короткі скрипти.
+**Prerequisites:** базові поняття тестування (test basis, test oracle, test levels) з [QA fundamentals](/reference/qa-fundamentals) і достатньо Python, щоб читати короткі скрипти. Також див. [Огляд генеративного AI та LLM](/learn/llm?topic=generative-ai-overview) і [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
 
 ## Що ми називаємо LLM system
 
@@ -300,46 +300,6 @@ failure rate 1%: need 299 runs
 | Pre-release | Security testing, performance tests, release gates | [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming), [Якість у production](/learn/llm?topic=production-quality) |
 | Release | Canary і shadow deployments, міграції моделей | [Якість у production](/learn/llm?topic=production-quality) |
 | Production | Tracing, online evaluation, feedback loops | [Якість у production](/learn/llm?topic=production-quality) |
-
-## Базовий словник
-
-Інструменти й статті вживають терміни непослідовно. Цей курс використовує їх так, як визначено тут.
-
-| Термін | Значення в цьому курсі |
-|---|---|
-| Evaluation (eval) | Повторюване вимірювання якості: dataset, спосіб прогнати на ньому систему, scorers і правило рішення |
-| Case (sample) | Один input для оцінювання з опційною reference answer, metadata і tags |
-| Dataset | Версіонована колекція cases; «golden dataset» — курований, довірений dataset |
-| Scorer (grader) | Code, модель або людина, що ставить score чи вердикт одному output |
-| Metric | Агрегат scores по dataset, наприклад pass rate чи середня faithfulness |
-| Judge | Модель, що використовується як scorer (LLM-as-a-judge) |
-| Rubric | Письмові критерії, які застосовує judge або людина |
-| Reference answer | Відома хороша відповідь або факти, які вона має містити |
-| Baseline | Результати поточної production версії для порівняння |
-| Regression | Статистично і практично значуще падіння порівняно з baseline |
-| Trace / span | Запис одного запиту і кожного кроку в ньому (model call, retrieval, tool call) |
-| Hallucination (confabulation) | Гладкий output, не підтверджений фактами чи джерелами |
-| Grounding | Опора output на надані джерела, яку можна перевірити через citation |
-| Guardrail | Контроль навколо моделі, що блокує чи змінює inputs або outputs |
-| Red teaming | Adversarial тестування, що намагається змусити систему шкідливо зламатися |
-| Prompt injection | Input, що змушує модель виконувати інструкції атакувальника замість інструкцій розробника |
-| Benchmark | Публічна стандартизована evaluation для порівняння моделей |
-| pass@k / pass^k | Ймовірність, що хоча б одна з k спроб пройде / що всі k спроб пройдуть |
-
-## Як організований курс
-
-Курс іде в тому порядку, в якому знання знадобляться. Скрізь проходить один наскрізний приклад: support assistant вигаданого магазину **Stride**, що відповідає на питання з knowledge base політик і вміє знаходити замовлення. Кілька chapters також використовують реальний GimmeJob Learning Path Advisor (директорія `ai-service` цього repository) як case study.
-
-| Частина | Chapters | Результат |
-|---|---|---|
-| Foundations | Чим особливе тестування LLM; Як LLM генерують текст; Embeddings і semantic similarity | Ви розумієте, як моделі генерують текст і як вимірюється схожість |
-| Побудова LLM applications | Анатомія LLM application і APIs; Prompts як тестовані артефакти; Structured output і validation; Тестування LLM code без моделі | Ви можете зібрати і покрити unit tests систему, яку оцінюватимете |
-| Evaluation | Методологія evaluation і datasets; Code-based scorers і metrics; LLM-as-a-judge; Статистика для evaluation | Ви вмієте проєктувати datasets, scorers і judges та коректно порівнювати версії |
-| RAG і agents | Evaluation RAG систем; Evaluation agents і tool use | Ви вмієте оцінювати retrieval pipelines і багатокрокових agents |
-| Security і production | Security, red teaming і guardrails; Якість у production | Ви вмієте атакувати й посилювати LLM систему та запускати evaluation у CI і production |
-| Професійна практика | Benchmarks, human evaluation і governance | Ви вмієте вибирати моделі, проводити human evaluation і готувати governance evidence |
-
-**Налаштування для практики:** Python 3.11 або новіший, virtual environment і доступ щонайменше до однієї моделі. Підійде платний API key будь-якого великого provider. Щоб практикуватися безкоштовно, запустіть open-weight модель локально через [Ollama](https://ollama.com/), яка надає OpenAI-compatible endpoint. Багато прикладів code в курсі самодостатні й запускаються прямо на сторінці кнопкою **Run**; приклади, що викликають реальні моделі чи встановлюють packages, призначені для вашої машини. Багато chapters також мають повний приклад проєкту з тестами в [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing).
 
 ## Приклад проєкту
 

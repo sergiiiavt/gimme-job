@@ -13,7 +13,7 @@ export default function LlmTestingPage({ mode }: LlmTestingPageProps) {
       <TopicLearningPage
         activeSection="llm"
         catalog={llmTestingCatalog}
-        defaultTopicId="llm-foundations"
+        defaultTopicId="generative-ai-overview"
         mode={mode}
         secondaryTitle="Generative AI & LLM"
       />

@@ -1,8 +1,8 @@
 # How LLMs generate text
 
-To test a system well you need a working model of how it produces its output. You do not need the linear algebra of transformers, but you do need to know what a token is, how the next token is chosen, which parameters change that choice, why repeated runs differ, and how the training process shapes behaviours such as refusing, agreeing or inventing facts. Each of these mechanisms explains a family of defects you will meet in practice.
+To build or use an LLM application well, you need a working model of how it produces output. You do not need the linear algebra of transformers, but you do need to know what a token is, how the next token is chosen, which parameters change that choice, why repeated runs differ, and how the training process shapes behaviours such as refusing, agreeing or inventing facts. Each of these mechanisms explains capabilities, limitations and trade-offs you will meet in practice.
 
-**Prerequisites:** [Why LLM testing is different](/learn/llm?topic=llm-testing-problem-space).
+**Prerequisites:** [Generative AI and LLM overview](/learn/llm?topic=generative-ai-overview).
 
 ## Tokens and tokenization
 
