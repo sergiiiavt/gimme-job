@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
-import { setInterviewCatalogDomain } from "@/content/interview/catalog";
 import { INTERVIEW_DOMAIN_ROUTES, interviewDomainRouteFromPathname } from "@/content/interview/domain-routes";
 import { rememberInterviewPath } from "./interview-navigation-memory";
 
@@ -45,7 +44,6 @@ export default function InterviewDomainSwitcherOverlay() {
     if (activeDomain === domain.id) return;
 
     resetInterviewViewState();
-    if (domain.id !== "python") setInterviewCatalogDomain(domain.id);
   };
 
   useEffect(() => {
