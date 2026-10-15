@@ -29,7 +29,6 @@ import topicTaxonomy from "./taxonomy.json";
 import domains from "./domains.json";
 import subtopics from "./subtopics.json";
 import performanceTestingSubtopics from "./performance-testing-subtopics.json";
-import { interviewDomainRouteFromPathname } from "./domain-routes";
 
 const sourceEvidenceById = new Map(sourceEvidence.map((item) => [item.id, item]));
 const sqlCodeExamplesById = new Map(
@@ -203,17 +202,8 @@ export function interviewCatalogForDomain(domainId: string) {
   return buildInterviewCatalog(domainId, true);
 }
 
-const runtimePathname = typeof window === "undefined" ? "" : window.location.pathname.replace(/\/+$/, "");
-const runtimeSearchParams = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-const requestedRoute = interviewDomainRouteFromPathname(runtimePathname);
-const requestedDomainId = requestedRoute?.id ?? runtimeSearchParams?.get("domain") ?? "generic-qa";
-const scopeToDomain = (runtimePathname === "/interview" || Boolean(requestedRoute)) && !runtimeSearchParams?.has("question");
-
-export const interviewCatalog = buildInterviewCatalog(requestedDomainId, scopeToDomain);
-
-export function setInterviewCatalogDomain(domainId: string) {
-  Object.assign(interviewCatalog, interviewCatalogForDomain(domainId));
-  return interviewCatalog;
-}
+// The shared catalog is a stable, complete index (also used by question deep links).
+// Page views must derive a scoped copy from the active route instead of mutating this singleton.
+export const interviewCatalog = buildInterviewCatalog("generic-qa", false);
 
 export default interviewCatalog;

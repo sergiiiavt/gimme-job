@@ -12,7 +12,7 @@ test("QA and Python interview lists mount direct question links", async () => {
   ]);
 
   assert.match(qaPage, /<InterviewDomainPageClient\/>/);
-  assert.match(qaClient, /InterviewQuestionLinkOverlay pathname=\{canonicalPath\} questions=\{interviewCatalog\.questions\}/);
+  assert.match(qaClient, /InterviewQuestionLinkOverlay pathname=\{canonicalPath\} questions=\{scopedCatalog\.questions\}/);
   assert.match(pythonPage, /InterviewQuestionLinkOverlay pathname="\/interview\/python" questions=\{pythonInterviewCatalog\.questions\}/);
 });
 
