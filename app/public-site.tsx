@@ -1101,8 +1101,19 @@ function InterviewKnowledgeBase({ activeTopic, catalog, mode, onTopicChange }: {
   return (
     <div className="kb-content iq-page">
       <header className="kb-page-head iq-head">
-        <div>
-          <h1>{activeTaxonomy?.category ? activeTaxonomy.label : catalog.title}</h1>
+        <div className="iq-header-copy">
+          <div className="iq-header-title-line">
+            <h1>{activeTaxonomy?.category ? activeTaxonomy.label : catalog.title}</h1>
+            {mode === "public" && (
+              <span className="iq-header-prompt">
+                <span className="iq-header-divider" aria-hidden="true"/>
+                <span className="iq-header-prompt-context">Track your interview preparation?</span>
+                <a href="/workspace/login" aria-label="Sign in to track interview preparation and access personal tools">
+                  Sign in <span aria-hidden="true">→</span>
+                </a>
+              </span>
+            )}
+          </div>
         </div>
         <div className="kb-page-stats">
           <div><strong>{interviewQuestions.length}</strong><span>Questions</span></div>
