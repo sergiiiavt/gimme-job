@@ -25,12 +25,13 @@ type Topic = (typeof llmTestingCatalog.topics)[number];
 
 // Only chapters with content are listed; planned chapters are added when they are written.
 const expectedTopicIds = [
-  "llm-testing-problem-space",
+  "generative-ai-overview",
   "llm-foundations",
   "embeddings-similarity",
   "llm-application-anatomy",
   "prompts-as-artifacts",
   "structured-output-validation",
+  "llm-testing-problem-space",
   "testing-without-the-model",
   "evaluation-fundamentals",
   "code-based-scorers",
@@ -80,7 +81,7 @@ function fencedBlocks(markdown: string, languages: readonly string[]) {
   return blocks;
 }
 
-test("the LLM testing course lists its written chapters in learning order from beginner to pro", () => {
+test("the generative AI course begins with foundations before testing and progresses to pro", () => {
   assert.deepEqual(llmTestingCatalog.topics.map((topic: Topic) => topic.id), expectedTopicIds);
 
   const levels = llmTestingCatalog.topics.map((topic: Topic) => levelOrder.indexOf(topic.level));
@@ -93,6 +94,22 @@ test("the LLM testing course lists its written chapters in learning order from b
     assert.equal(topic.status, "published", `${topic.id} must have content; planned chapters are not listed`);
     assert.ok(topic.label && topic.labelUk && topic.description && topic.descriptionUk, `${topic.id} needs bilingual labels and descriptions`);
   }
+});
+
+test("a general introduction owns the glossary and course roadmap; testing follows application basics", () => {
+  const [intro, foundation] = llmTestingCatalog.topics;
+  assert.equal(intro.id, "generative-ai-overview");
+  assert.equal(foundation.id, "llm-foundations");
+  const testingIndex = llmTestingCatalog.topics.findIndex((topic: Topic) => topic.id === "llm-testing-problem-space");
+  const applicationIndex = llmTestingCatalog.topics.findIndex((topic: Topic) => topic.id === "structured-output-validation");
+  assert.ok(testingIndex > applicationIndex);
+  assert.match(intro.markdown, /^## Core vocabulary$/m);
+  assert.match(intro.markdown, /^## How this course is organized$/m);
+  assert.match(intro.markdownUk, /^## Базовий словник$/m);
+  assert.match(intro.markdownUk, /^## Як організований курс$/m);
+  assert.doesNotMatch(llmTestingCatalog.topics[testingIndex].markdown, /^## Core vocabulary$/m);
+  assert.match(foundation.markdown, /topic=generative-ai-overview/);
+  assert.match(foundation.markdownUk, /topic=generative-ai-overview/);
 });
 
 test("every chapter is bilingual, substantive and shares identical code in both languages", () => {
