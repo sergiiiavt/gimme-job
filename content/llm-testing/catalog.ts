@@ -1,4 +1,6 @@
 import sourcesData from "./sources.json";
+import overview from "./00-generative-ai-overview.md?raw";
+import overviewUk from "./00-generative-ai-overview.uk.md?raw";
 import problemSpace from "./01-llm-testing-problem-space.md?raw";
 import problemSpaceUk from "./01-llm-testing-problem-space.uk.md?raw";
 import llmFoundations from "./02-llm-foundations.md?raw";
@@ -70,13 +72,13 @@ const chapter = (
 
 const topics: LlmTestingTopic[] = [
   chapter({
-    id: "llm-testing-problem-space",
-    label: "Why LLM testing is different",
-    labelUk: "Чим особливе тестування LLM",
+    id: "generative-ai-overview",
+    label: "Generative AI & LLM overview",
+    labelUk: "Огляд генеративного AI та LLM",
     level: "beginner",
-    description: "LLM systems vs models, the test oracle problem and oracle types, sources of variability, quality characteristics, turning vague requirements into testable criteria, and the core vocabulary.",
-    descriptionUk: "LLM systems vs моделі, проблема test oracle і типи oracles, джерела варіативності, характеристики якості, перетворення розмитих вимог на тестовані критерії та базовий словник.",
-  }, problemSpace, problemSpaceUk, ["barr-oracle-problem", "chen-behavior-drift", "iso-25010", "iso-25059", "istqb-ctai", "husain-evals", "ollama"]),
+    description: "AI, ML and generative models; how LLMs fit; model versus application architecture; foundational terminology, common patterns and the learning roadmap.",
+    descriptionUk: "AI, ML та генеративні моделі; місце LLM; архітектура застосунку; основні терміни, підходи та маршрут навчання.",
+  }, overview, overviewUk, ["karpathy-intro-llms","vaswani-attention","anthropic-messages-api","openai-text-guide","lewis-rag","nist-ai-600-1","ollama"]),
   chapter({
     id: "llm-foundations",
     label: "How LLMs generate text",
@@ -117,6 +119,14 @@ const topics: LlmTestingTopic[] = [
     description: "Designing output contracts with JSON Schema and Pydantic, the extract, validate, repair and fallback pipeline, provider-native structured outputs and their limits, truncation, test cases and field-level accuracy.",
     descriptionUk: "Проєктування контрактів output з JSON Schema і Pydantic, pipeline extract, validate, repair і fallback, нативні structured outputs providers та їхні межі, truncation, test cases і точність по полях.",
   }, structuredOutput, structuredOutputUk, ["json-schema-docs", "pydantic-docs", "anthropic-structured-outputs", "openai-structured-outputs", "rfc8259", "hypothesis-docs", "hypothesis-jsonschema", "tam-format-restrictions", "willard-guided-generation"]),
+  chapter({
+    id: "llm-testing-problem-space",
+    label: "Why LLM testing is different",
+    labelUk: "Чим особливе тестування LLM",
+    level: "beginner",
+    description: "LLM systems vs models, the test oracle problem and oracle types, sources of variability, quality characteristics, turning vague requirements into testable criteria, and evaluation fundamentals.",
+    descriptionUk: "LLM systems vs моделі, проблема test oracle і типи oracles, джерела варіативності, характеристики якості, перетворення розмитих вимог на тестовані критерії і основи evaluation.",
+  }, problemSpace, problemSpaceUk, ["barr-oracle-problem", "chen-behavior-drift", "iso-25010", "iso-25059", "istqb-ctai", "husain-evals", "ollama"]),
   chapter({
     id: "testing-without-the-model",
     label: "Testing LLM code without the model",
@@ -200,10 +210,10 @@ const topics: LlmTestingTopic[] = [
 ];
 
 export const llmTestingCatalog = {
-  title: "Generative AI & LLM testing",
-  titleUk: "Generative AI та LLM testing",
-  description: "A course from zero to pro for testing products built on language models: how models work, building testable LLM applications, evaluation, RAG and agents, security, production quality and professional practice.",
-  descriptionUk: "Курс від нуля до pro з тестування продуктів на мовних моделях: як працюють моделі, побудова тестованих LLM applications, evaluation, RAG і agents, security, якість у production і професійна практика.",
+  title: "Generative AI & LLM",
+  titleUk: "Генеративний AI та LLM",
+  description: "A course from generative AI concepts through model mechanics and application engineering to evaluation, RAG, agents, security and production practice.",
+  descriptionUk: "Курс від основ генеративного AI та механіки моделей до розробки застосунків, evaluation, RAG, agents, security і production.",
   sources: sourcesData as LlmTestingSource[],
   topics,
 };
