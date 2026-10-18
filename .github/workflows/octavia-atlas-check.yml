@@ -1,0 +1,26 @@
+name: Octavia Atlas Cloudflare access check
+
+on:
+  push:
+    branches: [octavia-atlas-publish]
+    paths: ['.github/workflows/octavia-atlas-check.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify Pages API access without exposing secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Cloudflare token not configured'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Cloudflare account ID not configured'; exit 1; }
+          status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects")
+          if [ "$status" = 200 ]; then echo 'Cloudflare Pages API access available'; else echo "Cloudflare Pages API HTTP $status"; exit 1; fi
