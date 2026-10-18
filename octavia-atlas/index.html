@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f6f3">
+  <meta name="description" content="Інтерактивний довідник вузлів та OEM-номерів Škoda Octavia Tour 2005 (Typ 1U). Схеми, артикули, PR-коди та джерела.">
+  <meta property="og:title" content="Octavia Atlas — Škoda Octavia Tour 2005">
+  <meta property="og:description" content="Інтерактивний каталог компонентів Škoda Octavia Tour 2005 Typ 1U з перевіреними OEM-номерами.">
+  <title>Octavia Atlas — Škoda Octavia Tour 2005</title>
+  
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#app-main">До основного вмісту</a>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="Octavia Atlas — головна">
+      <span class="brand-symbol" aria-hidden="true"><span class="symbol-ring"></span><span class="symbol-stem"></span></span>
+      <span>OCTAVIA <strong>ATLAS</strong><small>PARTS REFERENCE</small></span>
+    </a>
+    <div class="topbar-actions">
+      <span class="topbar-edition">ŠKODA <i></i> 2005 <i></i> TYP 1U</span>
+      <button id="search-trigger" class="header-button" type="button" aria-label="Пошук деталей"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><span>Пошук</span><kbd>/</kbd></button>
+    </div>
+  </header>
+  <div class="shell" id="app-main">
+    <section class="intro" aria-label="Про каталог">
+      <div>
+        <div class="eyebrow"><span class="live-pip"></span> ІНТЕРАКТИВНИЙ ТЕХНІЧНИЙ ДОВІДНИК <span class="eyebrow-sep">/</span> ПЕРШЕ ПОКОЛІННЯ</div>
+        <h1>Škoda Octavia <span>Tour.</span></h1>
+        <p>Досліджуйте автомобіль від загальної схеми до окремої деталі. OEM-артикули, каталожні варіанти та умови сумісності — в одному інтерфейсі.</p>
+      </div>
+      <div class="intro-spec">
+        <div><span>МОДЕЛЬНИЙ РІК</span><strong>2005</strong></div>
+        <div><span>ПЛАТФОРМА</span><strong>1U · TOUR</strong></div>
+        <div><span>ТИП КАТАЛОГУ</span><strong>REFERENCE <span class="status-circle"></span></strong></div>
+      </div>
+    </section>
+    <main class="workspace">
+      <aside class="systems-panel" aria-label="Системи автомобіля">
+        <div class="panel-head"><div><span class="micro-label">НАВІГАЦІЯ / 01</span><h2>Системи автомобіля</h2></div><span class="panel-count" id="systems-count">07</span></div>
+        <nav id="systems-nav" class="systems-nav" aria-label="Вибрати систему"></nav>
+        <div class="aside-foot"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5.5M12 7.8h.01"/></svg><span>Номери — каталожні приклади. Точну сумісність визначають за VIN та PR-кодами.</span></div>
+      </aside>
+      <section class="canvas-panel" aria-label="Інтерактивна схема">
+        <div class="canvas-top"><div><span class="micro-label" id="canvas-kicker">ІНТЕРАКТИВНА СХЕМА / 01</span><h2 id="canvas-title">Огляд автомобіля</h2></div><button id="home-button" type="button" class="subtle-button" hidden><svg class="ui-icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> До автомобіля</button></div>
+        <div class="diagram-stage" id="diagram-stage">
+          <div class="stage-meta"><span class="stage-dot"></span> <span id="stage-label">ЗОВНІШНЯ СХЕМА / ЛІВИЙ БІК</span></div>
+          <div id="diagram-container" class="diagram-container" aria-live="polite"></div>
+          <div class="stage-bottom"><span><span class="crosshair">⌖</span> <span id="stage-hint">Оберіть підсвічену зону або систему зі списку</span></span><span class="stage-id">REF / 1U-2005</span></div>
+        </div>
+        <div class="content-region" id="content-region">
+          <div class="content-topline"><div><span class="micro-label">ДОСТУПНІ ВУЗЛИ</span><h3 id="content-heading">Оберіть вузол автомобіля</h3></div><span class="content-counter" id="content-counter">07 систем</span></div>
+          <div class="parts-grid" id="parts-grid"></div>
+        </div>
+      </section>
+      <aside class="details-panel" aria-label="Інформація про компонент">
+        <div class="panel-head details-header"><div><span class="micro-label">ІНФОРМАЦІЯ / 02</span><h2 id="details-header-title">Панель деталей</h2></div><span class="small-square">↗</span></div>
+        <div id="details-content" class="details-content"></div>
+      </aside>
+    </main>
+    <section class="info-strip"><div><span class="info-symbol">i</span><p><strong>Важливо щодо сумісності</strong> Цей сайт — незалежний ілюстрований довідник, не офіційний каталог Škoda. OEM-номери наведені як каталожні варіанти для Octavia 1U 2005; остаточний підбір потребує VIN, двигуна, PR-кодів і перевірки замін артикула.</p></div><a href="https://7zap.com/en/catalog/cars/skoda/octavia-i-typ-1u-facelift-parts-catalog/" target="_blank" rel="noopener noreferrer">Повний зовнішній каталог <span>↗</span></a></section>
+  </div>
+  <footer class="site-footer"><span>OCTAVIA ATLAS <span class="footer-muted">/ Independent reference project</span></span><span>ŠKODA OCTAVIA TOUR · 2005 · TYP 1U</span><a href="https://oemwolf.com/wiki/skoda/czech_republic/octavia/2005_for_vins_from_1u_5_000_001/service_parts.html" target="_blank" rel="noopener noreferrer">Джерела даних ↗</a></footer>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="dialog-top"><svg class="ui-icon" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="search-input" type="search" placeholder="Назва, система або OEM-номер…" aria-label="Пошук деталей" autocomplete="off"><button type="button" id="search-close" aria-label="Закрити пошук">ESC</button></div><div class="dialog-summary" id="search-title">ПОШУК ПО КАТАЛОГУ</div><div id="search-results" class="search-results"></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
