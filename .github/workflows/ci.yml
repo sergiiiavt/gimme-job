@@ -37,6 +37,25 @@ jobs:
       - name: Verify repository
         run: npm run verify
 
+      - name: Verify Docker learning capstone containers
+        working-directory: examples/docker-learning
+        env:
+          COMPOSE_PROJECT_NAME: docker-course-${{ github.run_id }}-${{ github.run_attempt }}
+          DOCKER_COURSE_PORT: '0'
+        run: |
+          cleanup() {
+            status=$?
+            docker compose logs --no-color || true
+            docker compose down --volumes || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+          docker compose config --quiet
+          docker compose up --build -d --wait --wait-timeout 90
+          docker compose --profile checks run --rm --no-deps checks
+          docker compose up -d --force-recreate --wait --wait-timeout 90 api
+          docker compose --profile checks run --rm --no-deps checks --require-existing
+
       - name: Use Python 3.13
         uses: actions/setup-python@v6
         with:

@@ -111,6 +111,7 @@ test("duplicate and placeholder pages declare the right canonical and robots pol
     ["/interview/generic-qa", "/interview", undefined],
     ["/learn/qa-fundamentals", "/learn/qa-fundamentals", undefined],
     ["/learn/networking", "/learn/networking", undefined],
+    ["/learn/docker", "/learn/docker", undefined],
     ["/learn/strategy", "/learn/strategy", "noindex, follow"],
   ];
   for (const [path, canonicalPath, robots] of expectations) {

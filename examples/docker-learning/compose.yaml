@@ -1,0 +1,43 @@
+services:
+  api:
+    image: gimmejob-docker-course:local
+    build: .
+    init: true
+    ports:
+      - "127.0.0.1:${DOCKER_COURSE_PORT:-18080}:8000"
+    environment:
+      DB_PATH: /data/counter.sqlite
+    volumes:
+      - counter-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    logging:
+      driver: local
+    stop_grace_period: 10s
+  checks:
+    image: gimmejob-docker-course:local
+    profiles: [checks]
+    entrypoint: [python, checks.py]
+    environment:
+      API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  counter-data:

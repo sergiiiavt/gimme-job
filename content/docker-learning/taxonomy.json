@@ -1,0 +1,236 @@
+[
+  {
+    "id": "foundations",
+    "order": 1,
+    "label": "Foundations",
+    "labelUk": "Основи",
+    "description": "Understand containers, virtual machines, Linux isolation, Docker components, and the learning sequence.",
+    "descriptionUk": "Контейнери, віртуальні машини, ізоляція Linux, компоненти Docker та послідовність навчання.",
+    "file": "01-foundations.md",
+    "sourceIds": [
+      "docker-concepts",
+      "docker-engine-security",
+      "oci"
+    ]
+  },
+  {
+    "id": "setup",
+    "order": 2,
+    "label": "Setup & first run",
+    "labelUk": "Налаштування і запуск",
+    "description": "Install on macOS, Windows or Linux; verify Engine, Compose, contexts and the first container.",
+    "descriptionUk": "Встановлення на macOS, Windows або Linux; перевірка Engine, Compose, контексту та першого контейнера.",
+    "file": "02-setup.md",
+    "sourceIds": [
+      "docker-install",
+      "docker-mac",
+      "docker-windows",
+      "docker-contexts"
+    ]
+  },
+  {
+    "id": "container-lifecycle",
+    "order": 3,
+    "label": "Container lifecycle",
+    "labelUk": "Життєвий цикл",
+    "description": "Run and inspect processes, handle signals, distinguish readiness from restarts, and clean up deliberately.",
+    "descriptionUk": "Запуск і діагностика процесів, сигнали, готовність, перезапуски та контрольоване очищення.",
+    "file": "03-container-lifecycle.md",
+    "sourceIds": [
+      "docker-run",
+      "dockerfile",
+      "docker-restart"
+    ]
+  },
+  {
+    "id": "images-registries",
+    "order": 4,
+    "label": "Images & registries",
+    "labelUk": "Образи та реєстри",
+    "description": "Trace layers, tags, digests, manifests, registry authentication and image promotion.",
+    "descriptionUk": "Шари, теги, дайджести, маніфести, автентифікація в реєстрах та просування образів між середовищами.",
+    "file": "04-images-registries.md",
+    "sourceIds": [
+      "docker-images",
+      "docker-pull",
+      "docker-login",
+      "oci"
+    ]
+  },
+  {
+    "id": "dockerfiles",
+    "order": 5,
+    "label": "Dockerfiles",
+    "labelUk": "Dockerfile",
+    "description": "Write Dockerfiles with an explicit build context, safe file selection, non-root users and correct startup commands.",
+    "descriptionUk": "Dockerfile: контекст збирання, вибір файлів, непривілейований користувач і коректна команда запуску.",
+    "file": "05-dockerfiles.md",
+    "sourceIds": [
+      "dockerfile",
+      "docker-context",
+      "docker-best-practices"
+    ]
+  },
+  {
+    "id": "builds",
+    "order": 6,
+    "label": "BuildKit & platforms",
+    "labelUk": "BuildKit і платформи",
+    "description": "Use multi-stage builds, cache mounts, build secrets and Buildx for ARM and x86 artifacts.",
+    "descriptionUk": "Багатоетапні збірки, кеш, секрети збирання та Buildx для ARM і x86.",
+    "file": "06-builds.md",
+    "sourceIds": [
+      "docker-build-cache",
+      "docker-multi-stage",
+      "docker-build-secrets",
+      "docker-platforms"
+    ]
+  },
+  {
+    "id": "storage",
+    "order": 7,
+    "label": "Storage & backups",
+    "labelUk": "Сховища та копії",
+    "description": "Choose volumes, bind mounts or tmpfs; handle permissions, persistence, backups and restores.",
+    "descriptionUk": "Вибір між томами, bind mount і tmpfs; права доступу, збереження даних, резервування та відновлення.",
+    "file": "07-storage.md",
+    "sourceIds": [
+      "docker-volumes",
+      "docker-bind-mounts",
+      "docker-tmpfs"
+    ]
+  },
+  {
+    "id": "networking",
+    "order": 8,
+    "label": "Networking",
+    "labelUk": "Мережі",
+    "description": "Understand service DNS, localhost, port publishing, bridges, proxies and platform differences.",
+    "descriptionUk": "DNS сервісів, localhost, публікація портів, bridge-мережі, проксі та відмінності платформ.",
+    "file": "08-networking.md",
+    "sourceIds": [
+      "docker-network",
+      "docker-ports",
+      "docker-desktop-network"
+    ]
+  },
+  {
+    "id": "compose",
+    "order": 9,
+    "label": "Docker Compose",
+    "labelUk": "Docker Compose",
+    "description": "Model multi-container applications, readiness, dependency order, project isolation, profiles and overrides.",
+    "descriptionUk": "Багатоконтейнерний застосунок, готовність залежностей, ізоляція проєктів, профілі та перевизначення.",
+    "file": "09-compose.md",
+    "sourceIds": [
+      "docker-compose",
+      "docker-startup",
+      "docker-compose-reference"
+    ]
+  },
+  {
+    "id": "configuration",
+    "order": 10,
+    "label": "Config & development",
+    "labelUk": "Конфігурація і розробка",
+    "description": "Separate runtime configuration from build inputs and secrets; choose a fast, reproducible development loop.",
+    "descriptionUk": "Розділення конфігурації виконання, параметрів збирання та секретів; відтворюваний цикл розробки.",
+    "file": "10-configuration.md",
+    "sourceIds": [
+      "docker-compose-env",
+      "docker-compose-secrets",
+      "docker-watch",
+      "devcontainers"
+    ]
+  },
+  {
+    "id": "testing-ci",
+    "order": 11,
+    "label": "Testing & CI",
+    "labelUk": "Тестування та CI",
+    "description": "Build container-based test environments, preserve failure evidence, isolate parallel jobs and publish tested artifacts.",
+    "descriptionUk": "Контейнерні тестові середовища, діагностика збоїв, ізоляція паралельних задач і публікація перевірених образів.",
+    "file": "11-testing-ci.md",
+    "sourceIds": [
+      "docker-github-actions",
+      "docker-compose-reference",
+      "testcontainers"
+    ]
+  },
+  {
+    "id": "security",
+    "order": 12,
+    "label": "Security & supply chain",
+    "labelUk": "Безпека",
+    "description": "Reduce privileges, protect the Docker socket, scan dependencies, and understand SBOMs, provenance and signing.",
+    "descriptionUk": "Обмеження привілеїв, захист Docker socket, аналіз залежностей, SBOM, походження та підписування артефактів.",
+    "file": "12-security.md",
+    "sourceIds": [
+      "docker-engine-security",
+      "docker-rootless",
+      "docker-build-secrets",
+      "docker-attestations",
+      "sigstore"
+    ]
+  },
+  {
+    "id": "troubleshooting",
+    "order": 13,
+    "label": "Troubleshooting",
+    "labelUk": "Діагностика",
+    "description": "Diagnose startup failures, networking, resource pressure and disk growth using observable evidence.",
+    "descriptionUk": "Діагностика збоїв запуску, мережі, нестачі ресурсів і зростання диска за спостережуваними даними.",
+    "file": "13-troubleshooting.md",
+    "sourceIds": [
+      "docker-resources",
+      "docker-logging",
+      "docker-run"
+    ]
+  },
+  {
+    "id": "production",
+    "order": 14,
+    "label": "Production delivery",
+    "labelUk": "Робота у production",
+    "description": "Deploy immutable releases on one host with TLS, backups, resource limits, health checks and rollback planning.",
+    "descriptionUk": "Незмінні релізи на одному хості: TLS, резервні копії, ліміти ресурсів, перевірки здоров’я та відкат.",
+    "file": "14-production.md",
+    "sourceIds": [
+      "docker-production",
+      "docker-restart",
+      "docker-logging",
+      "docker-volumes"
+    ]
+  },
+  {
+    "id": "ecosystem",
+    "order": 15,
+    "label": "Beyond Docker",
+    "labelUk": "Екосистема",
+    "description": "Place OCI, containerd, Podman, Kubernetes, Swarm and managed container platforms in the architecture.",
+    "descriptionUk": "Роль OCI, containerd, Podman, Kubernetes, Swarm і керованих контейнерних платформ в архітектурі.",
+    "file": "15-ecosystem.md",
+    "sourceIds": [
+      "oci",
+      "containerd",
+      "podman",
+      "kubernetes",
+      "docker-swarm"
+    ]
+  },
+  {
+    "id": "capstone",
+    "order": 16,
+    "label": "Capstone & reference",
+    "labelUk": "Підсумковий проєкт",
+    "description": "Build, inspect, test, replace and diagnose a complete local stack, then check the release criteria.",
+    "descriptionUk": "Збирання, перевірка, заміна та діагностика повного локального стека; критерії готовності.",
+    "file": "16-capstone.md",
+    "sourceIds": [
+      "docker-compose",
+      "docker-volumes",
+      "docker-run",
+      "capstone-repository"
+    ]
+  }
+]
