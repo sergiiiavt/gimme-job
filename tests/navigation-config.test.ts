@@ -53,6 +53,9 @@ test("external navigation items keep canonical destinations independent of displ
   assert.equal(database.publicHref, "/playgrounds/databases");
   assert.equal(games.external, true);
   assert.equal(games.publicHref, "/games");
+  const docker = item("learning", "docker");
+  assert.equal(docker.external, true);
+  assert.equal(docker.publicHref, "/learn/docker");
 });
 
 

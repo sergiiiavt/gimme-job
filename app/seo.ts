@@ -142,6 +142,11 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     description: "Cloud and DevOps learning materials for QA engineers covering CI/CD, containers, infrastructure, delivery pipelines, and testing in production-like environments.",
     path: "/learn/cloud-devops",
   },
+  docker: {
+    title: "Docker & Containers Learning Path",
+    description: "Learn Docker from first containers to production: Dockerfiles, Compose, networking, storage, security, testing, CI/CD, troubleshooting, and a runnable project.",
+    path: "/learn/docker",
+  },
   observability: {
     title: "Observability for QA",
     description: "Observability learning materials for QA engineers covering logs, metrics, traces, monitoring, diagnostics, and production feedback loops.",

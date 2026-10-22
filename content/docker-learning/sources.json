@@ -1,0 +1,407 @@
+[
+  {
+    "id": "docker-concepts",
+    "title": "Docker container concepts",
+    "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+    "publisher": "Docker",
+    "role": "Container and image fundamentals and the separation between application and runtime.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-install",
+    "title": "Install Docker Engine",
+    "url": "https://docs.docker.com/engine/install/",
+    "publisher": "Docker",
+    "role": "Supported Linux installation routes and distribution-specific prerequisites.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-mac",
+    "title": "Install Docker Desktop on Mac",
+    "url": "https://docs.docker.com/desktop/setup/install/mac-install/",
+    "publisher": "Docker",
+    "role": "Apple silicon versus Intel installation and Desktop host requirements.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-windows",
+    "title": "Install Docker Desktop on Windows",
+    "url": "https://docs.docker.com/desktop/setup/install/windows-install/",
+    "publisher": "Docker",
+    "role": "Windows installation, WSL requirements and Linux versus Windows containers.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-contexts",
+    "title": "Docker contexts",
+    "url": "https://docs.docker.com/engine/manage-resources/contexts/",
+    "publisher": "Docker",
+    "role": "Choosing the daemon endpoint and checking which host a command affects.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-run",
+    "title": "Running containers",
+    "url": "https://docs.docker.com/engine/containers/run/",
+    "publisher": "Docker",
+    "role": "Container process, mounts, users, resource flags and exit status semantics.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-restart",
+    "title": "Start containers automatically",
+    "url": "https://docs.docker.com/engine/containers/start-containers-automatically/",
+    "publisher": "Docker",
+    "role": "Restart policy behavior and its separation from health status.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-images",
+    "title": "Images and layers",
+    "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/building-images/understanding-image-layers/",
+    "publisher": "Docker",
+    "role": "Filesystem layers and the distinction between images and writable container state.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-pull",
+    "title": "docker image pull reference",
+    "url": "https://docs.docker.com/reference/cli/docker/image/pull/",
+    "publisher": "Docker",
+    "role": "Tags, digests, registry names and selecting platform-specific images.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-login",
+    "title": "docker login reference",
+    "url": "https://docs.docker.com/reference/cli/docker/login/",
+    "publisher": "Docker",
+    "role": "Registry authentication, credential stores and password input through stdin.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "dockerfile",
+    "title": "Dockerfile reference",
+    "url": "https://docs.docker.com/reference/dockerfile/",
+    "publisher": "Docker",
+    "role": "Instruction semantics including COPY, RUN, USER, ENTRYPOINT, CMD and HEALTHCHECK.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-context",
+    "title": "Build context",
+    "url": "https://docs.docker.com/build/concepts/context/",
+    "publisher": "Docker",
+    "role": "Build input boundaries, file selection and Docker ignore rules.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-best-practices",
+    "title": "Docker build best practices",
+    "url": "https://docs.docker.com/build/building/best-practices/",
+    "publisher": "Docker",
+    "role": "Base image choices, rebuilds, dependency control and reproducible release inputs.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-build-cache",
+    "title": "Optimize build cache",
+    "url": "https://docs.docker.com/build/cache/optimize/",
+    "publisher": "Docker",
+    "role": "Layer ordering, cache mounts and external cache tradeoffs.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-multi-stage",
+    "title": "Multi-stage builds",
+    "url": "https://docs.docker.com/build/building/multi-stage/",
+    "publisher": "Docker",
+    "role": "Named stages, targeted builds and copying only runtime artifacts.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-build-secrets",
+    "title": "Build secrets",
+    "url": "https://docs.docker.com/build/building/secrets/",
+    "publisher": "Docker",
+    "role": "BuildKit secret and SSH mounts, their lifetime and limitations.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-platforms",
+    "title": "Multi-platform builds",
+    "url": "https://docs.docker.com/build/building/multi-platform/",
+    "publisher": "Docker",
+    "role": "Buildx, platform manifests, native builds, emulation and cross-compilation.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-volumes",
+    "title": "Docker volumes",
+    "url": "https://docs.docker.com/engine/storage/volumes/",
+    "publisher": "Docker",
+    "role": "Volume lifecycle, initialization, backup and restore responsibilities.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-bind-mounts",
+    "title": "Bind mounts",
+    "url": "https://docs.docker.com/engine/storage/bind-mounts/",
+    "publisher": "Docker",
+    "role": "Host path dependencies, write permissions and remote daemon boundaries.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-tmpfs",
+    "title": "tmpfs mounts",
+    "url": "https://docs.docker.com/engine/storage/tmpfs/",
+    "publisher": "Docker",
+    "role": "Ephemeral memory-backed storage and limitations including swap behavior.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-network",
+    "title": "Docker networking overview",
+    "url": "https://docs.docker.com/engine/network/",
+    "publisher": "Docker",
+    "role": "Bridge networks, service discovery, network drivers and DNS behavior.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-ports",
+    "title": "Port publishing and mapping",
+    "url": "https://docs.docker.com/engine/network/port-publishing/",
+    "publisher": "Docker",
+    "role": "Host binding addresses, published ports and network exposure boundaries.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-desktop-network",
+    "title": "Networking in Docker Desktop",
+    "url": "https://docs.docker.com/desktop/features/networking/",
+    "publisher": "Docker",
+    "role": "VM networking and reaching host services from Desktop containers.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-compose",
+    "title": "Docker Compose overview",
+    "url": "https://docs.docker.com/compose/",
+    "publisher": "Docker",
+    "role": "Compose model, current plugin commands and multi-container application management.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-startup",
+    "title": "Compose startup and shutdown order",
+    "url": "https://docs.docker.com/compose/how-tos/startup-order/",
+    "publisher": "Docker",
+    "role": "Dependency conditions, readiness gates and explicit restart propagation.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-compose-reference",
+    "title": "Compose file reference",
+    "url": "https://docs.docker.com/reference/compose-file/",
+    "publisher": "Docker",
+    "role": "Services, networks, volumes, profiles, health checks and service configuration.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-compose-env",
+    "title": "Environment variables in Compose",
+    "url": "https://docs.docker.com/compose/how-tos/environment-variables/",
+    "publisher": "Docker",
+    "role": "Interpolation, container environment, precedence and local environment files.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-compose-secrets",
+    "title": "Secrets in Docker Compose",
+    "url": "https://docs.docker.com/compose/how-tos/use-secrets/",
+    "publisher": "Docker",
+    "role": "Explicit per-service access and the boundary between file injection and secret storage.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-watch",
+    "title": "Compose Watch",
+    "url": "https://docs.docker.com/compose/how-tos/file-watch/",
+    "publisher": "Docker",
+    "role": "Synchronizing application files and rebuilding when dependencies change.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-github-actions",
+    "title": "Docker Build GitHub Actions",
+    "url": "https://docs.docker.com/build/ci/github-actions/",
+    "publisher": "Docker",
+    "role": "Official build, registry authentication, cache and publication workflow components.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-engine-security",
+    "title": "Docker Engine security",
+    "url": "https://docs.docker.com/engine/security/",
+    "publisher": "Docker",
+    "role": "Daemon privileges, kernel isolation, capabilities and the threat model.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-rootless",
+    "title": "Rootless Docker",
+    "url": "https://docs.docker.com/engine/security/rootless/",
+    "publisher": "Docker",
+    "role": "Running both daemon and containers in an unprivileged user namespace.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-attestations",
+    "title": "Build attestations",
+    "url": "https://docs.docker.com/build/metadata/attestations/",
+    "publisher": "Docker",
+    "role": "SBOM and provenance metadata attached to image build outputs.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-resources",
+    "title": "Container resource constraints",
+    "url": "https://docs.docker.com/engine/containers/resource_constraints/",
+    "publisher": "Docker",
+    "role": "Memory, CPU, OOM behavior and host resource considerations.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-logging",
+    "title": "Configure logging drivers",
+    "url": "https://docs.docker.com/engine/logging/configure/",
+    "publisher": "Docker",
+    "role": "Container log routing, rotation and preventing disk exhaustion.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-production",
+    "title": "Compose in production",
+    "url": "https://docs.docker.com/compose/how-tos/production/",
+    "publisher": "Docker",
+    "role": "Single-host production configuration, deployment overrides and update behavior.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "docker-swarm",
+    "title": "Docker Swarm mode",
+    "url": "https://docs.docker.com/engine/swarm/",
+    "publisher": "Docker",
+    "role": "Multi-host scheduling, reconciliation and Docker-integrated orchestration.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "oci",
+    "title": "Open Container Initiative overview",
+    "url": "https://opencontainers.org/about/overview/",
+    "publisher": "Open Container Initiative",
+    "role": "Runtime, image and distribution standards shared across container tools.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "containerd",
+    "title": "containerd overview",
+    "url": "https://containerd.io/",
+    "publisher": "containerd",
+    "role": "Container runtime responsibilities beneath higher-level platforms.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "podman",
+    "title": "Podman documentation",
+    "url": "https://podman.io/docs",
+    "publisher": "Podman",
+    "role": "Alternative container engine and platform-specific compatibility considerations.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "kubernetes",
+    "title": "Kubernetes overview",
+    "url": "https://kubernetes.io/docs/concepts/overview/",
+    "publisher": "Kubernetes",
+    "role": "Cluster orchestration responsibilities and application lifecycle concepts.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "devcontainers",
+    "title": "Development Containers specification",
+    "url": "https://containers.dev/",
+    "publisher": "Development Containers",
+    "role": "Declaring editor-oriented development environments separately from production images.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "testcontainers",
+    "title": "Testcontainers documentation",
+    "url": "https://testcontainers.com/",
+    "publisher": "Testcontainers",
+    "role": "Test-managed disposable dependencies, readiness and language-specific integrations.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "sigstore",
+    "title": "Cosign verification documentation",
+    "url": "https://docs.sigstore.dev/cosign/verifying/verify/",
+    "publisher": "Sigstore",
+    "role": "Checking image signatures against explicit trusted identities and issuers.",
+    "kind": "official-documentation",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "capstone-repository",
+    "title": "GimmeJob Docker capstone source",
+    "url": "https://github.com/sergiiiavt/gimme-job/tree/main/examples/docker-learning",
+    "publisher": "GimmeJob repository",
+    "role": "Complete API, Dockerfile, Compose configuration and executable checks used in the course.",
+    "kind": "implementation",
+    "checkedAt": "2026-10-23"
+  }
+]
