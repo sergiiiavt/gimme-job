@@ -1,3 +1,4 @@
+import { insertPracticalExamples } from "../learning-document-composition.ts";
 import taxonomyData from "./taxonomy.json";
 import sourcesData from "./sources.json";
 import requiredConceptsData from "./required-concepts.json";
@@ -65,14 +66,6 @@ export interface LearningChapter extends LearningTopic {
   markdownUk: string;
 }
 
-function insertPracticalExamples(markdown: string, addition: string) {
-  if (!addition.trim()) return markdown;
-  const marker = "\n## Summary";
-  if (markdown.includes(marker)) {
-    return markdown.replace(marker, `\n\n${addition.trim()}\n\n## Summary`);
-  }
-  return `${markdown.trimEnd()}\n\n${addition.trim()}`;
-}
 
 const taxonomy = taxonomyData as LearningTopic[];
 const sources = sourcesData as LearningSource[];
@@ -94,7 +87,7 @@ export const catalog = {
   title: "QA Metrics & Estimation",
   titleUk: "QA метрики та оцінювання",
   description: "A source-backed path through measurement, QA and delivery metrics, estimation methods, forecasting, calibration and communication of uncertainty.",
-  descriptionUk: "Підкріплений джерелами шлях через measurement, QA та delivery metrics, estimation methods, forecasting, calibration і комунікацію uncertainty.",
+  descriptionUk: "Вимірювання, метрики QA й постачання, методи оцінювання, прогнозування, калібрування та пояснення невизначеності.",
   taxonomy,
   sources,
   requiredConcepts,

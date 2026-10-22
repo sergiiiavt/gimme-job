@@ -151,7 +151,7 @@ function createSqlMetadata(example: InterviewCodeExample, language: "en" | "uk",
     chips.appendChild(createMetaChip(
       example.sqlRuntime.engine === "sqlite"
         ? "Runtime · SQLite sample DB"
-        : language === "uk" ? "Runtime · статичний приклад" : "Runtime · static example",
+        : language === "uk" ? "Виконання · статичний приклад" : "Runtime · static example",
     ));
   }
   wrapper.appendChild(chips);

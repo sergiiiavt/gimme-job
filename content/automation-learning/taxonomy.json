@@ -4,7 +4,7 @@
     "label": "All lessons",
     "labelUk": "Усі уроки",
     "description": "The complete test automation path: first fixture to automation strategy.",
-    "descriptionUk": "Повний шлях з автоматизації тестування: від першої fixture до automation strategy."
+    "descriptionUk": "Маршрут автоматизації тестування від першої фікстури до стратегії."
   },
   {
     "id": "automation-foundations",
@@ -12,23 +12,23 @@
     "labelUk": "Основи та вибір рівня",
     "level": "Beginner",
     "description": "What automation is for, the layers available, and deciding what to automate at all.",
-    "descriptionUk": "Навіщо потрібна автоматизація, які рівні доступні та як вирішувати, що взагалі варто автоматизувати."
+    "descriptionUk": "Призначення автоматизації, доступні рівні та вибір перевірок."
   },
   {
     "id": "pytest-core",
     "label": "pytest core: fixtures, scope & markers",
-    "labelUk": "pytest core: fixtures, scope і markers",
+    "labelUk": "Основи pytest",
     "level": "Beginner",
     "description": "Fixtures, scope, parametrize, markers, skip versus xfail, and the flags worth knowing.",
-    "descriptionUk": "Fixtures, scope, parametrize, markers, skip проти xfail і корисні pytest flags."
+    "descriptionUk": "Фікстури, область дії, параметризація, маркери, skip, xfail та параметри запуску."
   },
   {
     "id": "project-setup",
     "label": "Python environment & project setup",
-    "labelUk": "Python-середовище та налаштування проєкту",
+    "labelUk": "Python-середовище та проєкт",
     "level": "Beginner",
     "description": "Virtual environments, dependency installation, project layout, typed settings and a run configuration the whole team shares.",
-    "descriptionUk": "Віртуальні середовища, встановлення залежностей, структура проєкту, типізовані налаштування та спільна для команди конфігурація запуску.",
+    "descriptionUk": "Віртуальні середовища, залежності, структура проєкту й спільна конфігурація запуску.",
     "sourceIds": [
       "python-venv",
       "python-pyproject",
@@ -40,66 +40,66 @@
   {
     "id": "framework-architecture",
     "label": "Test architecture & framework design",
-    "labelUk": "Тестова архітектура та дизайн framework",
+    "labelUk": "Архітектура тестів і фреймворку",
     "level": "Intermediate",
     "description": "Dependency boundaries, page and component objects, reusable test abstractions, naming and the Arrange-Act-Assert shape.",
-    "descriptionUk": "Межі залежностей, page та component objects, повторно використовувані тестові абстракції, іменування та структура Arrange-Act-Assert."
+    "descriptionUk": "Межі залежностей, об’єкти сторінок і компонентів, іменування та Arrange-Act-Assert."
   },
   {
     "id": "api-testing",
     "label": "Service & API testing",
-    "labelUk": "Service та API testing",
+    "labelUk": "Тестування сервісів і API",
     "level": "Intermediate",
     "description": "An instrumented HTTP client, service objects, response validation and a repeatable test-design checklist.",
-    "descriptionUk": "Інструментований HTTP client, service objects, response validation і повторюваний test-design checklist."
+    "descriptionUk": "HTTP-клієнт із діагностикою, сервісні об’єкти та перевірка відповідей."
   },
   {
     "id": "web-ui-testing",
     "label": "Web UI with Playwright",
-    "labelUk": "Web UI з Playwright",
+    "labelUk": "Вебінтерфейс із Playwright",
     "level": "Intermediate",
     "description": "Auto-waiting, locator strategy, page objects, reusing signed-in state and network fault injection.",
-    "descriptionUk": "Auto-waiting, locator strategy, page objects, повторне використання signed-in state і network fault injection."
+    "descriptionUk": "Очікування, локатори, об’єкти сторінок, стан входу та імітація мережевих збоїв."
   },
   {
     "id": "mobile-testing",
     "label": "Mobile: emulated & real devices",
-    "labelUk": "Mobile: emulated та real devices",
+    "labelUk": "Мобільні пристрої",
     "level": "Advanced",
     "description": "Mobile web versus native, Appium sessions and locators, gestures and device-only scenarios.",
-    "descriptionUk": "Mobile web проти native, Appium sessions і locators, gestures та device-only scenarios."
+    "descriptionUk": "Мобільний веб і нативні застосунки, сеанси Appium, локатори, жести й апаратні сценарії."
   },
   {
     "id": "test-data",
     "label": "Test data & isolation",
-    "labelUk": "Test data та ізоляція",
+    "labelUk": "Тестові дані та ізоляція",
     "level": "Advanced",
     "description": "Building data per test, uniqueness under parallel runs, factories, personas and cleanup.",
-    "descriptionUk": "Створення data для кожного test, uniqueness у parallel runs, factories, personas і cleanup."
+    "descriptionUk": "Дані для кожного тесту, унікальність паралельних запусків, фабрики, персони та очищення."
   },
   {
     "id": "flakiness",
     "label": "Flakiness: diagnosis & cure",
-    "labelUk": "Flakiness: діагностика та усунення",
+    "labelUk": "Діагностика нестабільних тестів",
     "level": "Advanced",
     "description": "The root causes of non-deterministic tests, how to diagnose each, and how to run a quarantine.",
-    "descriptionUk": "Root causes недетермінованих tests, діагностика кожної причини та організація quarantine."
+    "descriptionUk": "Причини недетермінованих результатів, їх дослідження та тимчасовий карантин."
   },
   {
     "id": "ci-and-reporting",
     "label": "CI, parallelism & reporting",
-    "labelUk": "CI, parallelism та reporting",
+    "labelUk": "CI та звітність",
     "level": "Advanced",
     "description": "Pipeline shape, parallel execution, artifacts that explain failures, and gates people trust.",
-    "descriptionUk": "Структура pipeline, parallel execution, artifacts для пояснення failures і надійні quality gates."
+    "descriptionUk": "Конвеєр перевірок, паралельні запуски, діагностичні артефакти та критерії якості."
   },
   {
     "id": "contract-and-property",
     "label": "Contract & property-based testing",
-    "labelUk": "Contract та property-based testing",
+    "labelUk": "Контракти й властивості",
     "level": "Expert",
     "description": "Generating tests from a schema, stating invariants, and triaging what generated tools report.",
-    "descriptionUk": "Генерація tests зі schema, формулювання invariants і triage результатів generated tools."
+    "descriptionUk": "Генерація тестів за схемою, інваріанти та аналіз згенерованих результатів."
   },
   {
     "id": "quality-strategy",
@@ -107,13 +107,13 @@
     "labelUk": "Стратегія, метрики та вплив",
     "level": "Expert",
     "description": "Risk-based prioritisation, metrics that survive scrutiny, and building a programme from zero.",
-    "descriptionUk": "Risk-based prioritisation, змістовні metrics і побудова automation programme з нуля."
+    "descriptionUk": "Пріоритети за ризиками, змістовні метрики й побудова програми автоматизації."
   },
   {
     "id": "methodology",
     "label": "Sources & methodology",
     "labelUk": "Джерела та методологія",
     "description": "How these lessons are written and validated, and the source catalog behind them.",
-    "descriptionUk": "Як написані й перевірені ці уроки та які джерела лежать в їх основі."
+    "descriptionUk": "Як написані й перевірені уроки та на які джерела вони спираються."
   }
 ]

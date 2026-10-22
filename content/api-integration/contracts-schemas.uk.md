@@ -1,4 +1,4 @@
-# API Contracts & Schemas
+# Контракти та схеми API
 
 API contract описує interface, на який consumer може покладатися під час взаємодії із service. Contract ширший за schema. Schema описує структуру data; contract також включає operations, parameters, status codes, headers, authentication requirements, media types і behavioral expectations.
 
@@ -12,7 +12,7 @@ API contract описує interface, на який consumer може покла�
 - які authentication та authorization rules застосовуються;
 - на які compatibility guarantees можуть розраховувати consumers.
 
-## Contract layers
+## Рівні контракту
 
 HTTP API contract зазвичай має кілька рівнів.
 
@@ -84,7 +84,7 @@ components:
           type: string
 ~~~
 
-## Paths та operations
+## Шляхи й операції
 
 `paths` мапить URI templates на HTTP operations.
 
@@ -112,7 +112,7 @@ OpenAPI operation може визначати:
 - callbacks і links;
 - operation-specific servers.
 
-## Parameters
+## Параметри
 
 OpenAPI розрізняє чотири locations parameters:
 
@@ -138,7 +138,7 @@ parameters:
 
 Parameter serialization також є частиною contract. Arrays і objects можуть представлятися по-різному залежно від location та OpenAPI `style`/`explode` rules.
 
-## Request bodies
+## Тіла запитів
 
 Request body описується окремо від parameters.
 
@@ -165,7 +165,7 @@ content:
 
 Для file uploads contract може описувати binary body або `multipart/form-data` parts.
 
-## Responses
+## Відповіді
 
 Responses описуються за HTTP status codes або response ranges/default rules, які підтримує specification.
 
@@ -192,7 +192,7 @@ responses:
 
 Response contract може одночасно описувати status, headers і body.
 
-## Reusable components та references
+## Повторно використовувані компоненти й посилання
 
 `components` містить reusable contract elements.
 
@@ -255,7 +255,7 @@ Schema може визначати types і structural constraints:
 - `enum` та `const` — fixed allowed values;
 - `allOf`, `anyOf`, `oneOf`, `not` — schema composition.
 
-## Required, optional, nullable та absent
+## Обов’язковість, необов’язковість, null і відсутність поля
 
 Це різні concepts.
 
@@ -278,7 +278,7 @@ Schema може визначати types і structural constraints:
 
 OpenAPI 3.1+ використовує JSON Schema-style type semantics. OpenAPI 3.0 мав окремий `nullable` keyword, тому schema behavior треба трактувати відповідно до version OpenAPI document.
 
-## Types, formats та semantic meaning
+## Типи, формати та зміст значень
 
 Schema type обмежує JSON representation. `format` зазвичай додає semantic information, наприклад `date-time`, `uuid`, `email`, `uri` або `ipv4`.
 
@@ -292,7 +292,7 @@ Format handling не однаковий у всіх validators. Contract не п
 
 Це може описати representation date, але не business rule типу "date має бути working day і не більше ніж 30 днів у майбутньому".
 
-## Enums та closed sets
+## Переліки й замкнені множини
 
 Enum визначає finite set allowed values.
 
@@ -307,7 +307,7 @@ Enums впливають на compatibility. Додавання нового res
 
 Тому API contract потребує compatibility rules, а не лише schema validity.
 
-## Composition
+## Композиція
 
 Schema composition описує alternatives та combinations.
 
@@ -343,7 +343,7 @@ Instance не повинен match supplied schema.
 
 Composition корисний, але сильно overlapping `oneOf` branches ускладнюють contract і для людей, і для tooling.
 
-## Examples та defaults
+## Приклади й типові значення
 
 Example ілюструє value; він не означає, що тільки це value є valid.
 
@@ -356,7 +356,7 @@ Contract має чітко розрізняти:
 - default behavior;
 - server-side business rules.
 
-## Error contracts
+## Контракти помилок
 
 Errors також є частиною API contract.
 
@@ -372,7 +372,7 @@ Errors також є частиною API contract.
 
 Non-2xx responses не повинні автоматично трактуватись як unstructured strings. Error status codes, media types, fields та stable machine-readable identifiers — consumer-facing behavior.
 
-## Contract compatibility
+## Сумісність контрактів
 
 Change може бути schema-valid і водночас ламати existing consumers.
 
@@ -399,7 +399,7 @@ Changes, які часто є additive:
 
 Навіть additive changes потребують documented compatibility model. Strict consumers, generated clients та exhaustive enum handling можуть зробити формально safe change incompatible.
 
-## Backward та forward compatibility
+## Зворотна та пряма сумісність
 
 **Backward compatibility** означає, що newer provider залишається usable existing consumers відповідно до supported contract.
 
@@ -407,7 +407,7 @@ Changes, які часто є additive:
 
 Compatibility залежить від direction. Наприклад, новий optional request field розширює accepted input, а перетворення optional field на required звужує contract.
 
-## API versioning
+## Версіонування API
 
 У HTTP APIs немає одного universal versioning mechanism. Поширені strategies:
 
@@ -418,7 +418,7 @@ Compatibility залежить від direction. Наприклад, новий 
 
 Versioning не замінює compatibility management. Version має бути meaningful contract boundary, а не спосіб уникати disciplined change control.
 
-## Deprecation та lifecycle
+## Виведення з ужитку та життєвий цикл
 
 Mature contract має lifecycle:
 
@@ -438,7 +438,7 @@ Retire
 
 Deprecation має пояснювати, що замінюється, коли support зміниться і як consumers можуть migrate. OpenAPI operations та schemas можуть містити deprecation metadata, але operational retirement policy залишається рішенням API lifecycle.
 
-## Schema validation та business validation
+## Перевірка схеми та бізнес-правил
 
 Schema validation відповідає на питання:
 

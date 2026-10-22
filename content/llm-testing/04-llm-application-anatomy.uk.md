@@ -1,10 +1,10 @@
-# Анатомія LLM application і APIs
+# Анатомія LLM-застосунку та API
 
 Production LLM feature — це переважно звичайне software навколо кількох викликів model API. Ці виклики віддалені, повільні, тарифіковані, обмежені rate limits і ймовірнісні, і кожна з цих властивостей створює дефекти, що не мають жодного стосунку до якості моделі. Цей chapter розбирає наскрізний приклад — support assistant магазину Stride: його компоненти, request і response виклику моделі, способи, якими виклик завершується, streaming, помилки та retries, cost і те, що треба записувати, щоб будь-яку поведінку можна було відтворити й протестувати.
 
-**Prerequisites:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations); основи HTTP і JSON ([API & Integration](/learn/api)).
+**Передумови:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations); основи HTTP і JSON ([API & Integration](/learn/api)).
 
-## Архітектура LLM application
+## Архітектура LLM-застосунку
 
 Асистент Stride відповідає на питання про policies і замовлення. Шлях запиту виглядає так:
 
@@ -33,7 +33,7 @@ Production LLM feature — це переважно звичайне software н�
         └─► response + trace ─────── answer, citations, trace ID, usage and latency metrics
 ```
 
-Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)).
+Імовірнісні лише виклики моделі всередині model client. Усе інше — детермінований code, і його треба тестувати звичайними unit та integration tests, використовуючи fake model там, де є виклик моделі ([Тестування коду LLM-застосунку без моделі](/learn/llm?topic=testing-without-the-model)).
 
 | Компонент | Детермінований? | Типові дефекти | Основна техніка тестування |
 |---|---|---|---|
@@ -49,7 +49,7 @@ Production LLM feature — це переважно звичайне software н�
 
 Таблиця показує повторюваний момент: **більшість LLM application тестується звичайними техніками.** Evaluation моделі потрібна, але вона не замінює цих тестів.
 
-## Виклик моделі: request і response
+## Виклик моделі: запит і відповідь
 
 Усі основні chat APIs мають однакову концептуальну форму: список **messages** з ролями плюс **parameters**, надісланий **моделі**; response містить згенерований контент, **stop reason** і лічильники **usage**.
 
@@ -130,7 +130,7 @@ print(message.stop_reason, message.usage.input_tokens, message.usage.output_toke
 
 Відмінності між providers невеликі, але для тестів важливі: де розташований system prompt, чи обов'язковий `max_tokens`, як структурований контент (рядок чи список content blocks) і як називаються stop reasons та поля usage. Багато команд обгортають providers одним внутрішнім інтерфейсом або використовують gateway library на кшталт LiteLLM, щоб решта application і її тести мали справу з однією нормалізованою формою.
 
-## Stop reasons: як завершується виклик
+## Причини завершення виклику
 
 Кожен response каже, чому генерація зупинилася. Кожна причина вимагає окремої обробки, і кожен шлях обробки потребує тесту.
 
@@ -192,7 +192,7 @@ for name, response, budget in cases:
     print(f"{name:<24} -> {handle(response, budget)}")
 ```
 
-Output:
+Результат:
 
 ```text
 normal answer            -> deliver answer
@@ -203,7 +203,7 @@ provider refusal         -> show the refusal template and log for review
 new provider value       -> fail closed: unknown stop reason
 ```
 
-## Streaming
+## Потокове передавання
 
 При streaming API надсилає response як послідовність подій через одне HTTP з'єднання (server-sent events): подія старту, багато дрібних текстових deltas, можливо deltas викликів tools і фінальна подія зі stop reason та usage. Користувачі бачать текст одразу, тому chat інтерфейси використовують streaming.
 
@@ -254,7 +254,7 @@ for name, events in [("complete", complete_stream), ("broken", broken_stream)]:
         print("  -> must not be shown as a full answer: retry or show an error")
 ```
 
-Output:
+Результат:
 
 ```text
 complete {'text': 'You can return unworn shoes within 30 days of delivery.', 'complete': True, 'time_to_first_token_s': 0.64, 'total_s': 0.79, 'usage': {'stop_reason': 'end', 'output_tokens': 12}}
@@ -277,7 +277,7 @@ broken {'text': 'You can return unworn shoes within ', 'complete': False, 'time_
 | Подія помилки посеред stream | Обробляється як API error |
 | Немає подій протягом read timeout | Stream коректно переривається |
 
-## Помилки, retries і timeouts
+## Помилки, повторні спроби й граничний час очікування
 
 Model APIs падають достатньо часто, щоб обробка помилок була частиною основної функціональності. Status codes діляться на дві групи:
 
@@ -377,7 +377,7 @@ assert run("Retry-After beyond the deadline", [ApiError(429, retry_after=60.0), 
 print("all retry policy checks passed")
 ```
 
-Output:
+Результат:
 
 ```text
 429 with Retry-After, 503, success calls=3  waited= 3.69s  result=ok
@@ -395,7 +395,7 @@ all retry policy checks passed
 - **Timeouts на кожному рівні.** Connection timeout, read timeout між подіями stream і загальний deadline на запит користувача.
 - **Fallback models.** Якщо основна модель недоступна, деякі системи перемикаються на іншу. Fallback модель має проходити той самий evaluation suite; інакше fallback шлях — непротестований продукт.
 
-## Tokens, usage і cost
+## Токени, використання ресурсів і вартість
 
 Providers беруть плату за token, з окремими цінами для input і output tokens. Output tokens зазвичай у кілька разів дорожчі. Кешовані input tokens (prompt caching: повторне використання ідентичного префікса prompt між запитами) мають знижку, а reasoning tokens тарифікуються як output.
 
@@ -447,7 +447,7 @@ grown = request_cost("large-model", input_tokens + 1500, output_tokens)
 print(f"prompt growth of 1,500 tokens: {grown / per_request - 1:+.0%} cost per request")
 ```
 
-Output:
+Результат:
 
 ```text
 large-model: 4650 in / 220 out -> $0.01725 per request, $0.01293 with prompt caching
@@ -456,7 +456,7 @@ large-model: $0.0517 per resolved conversation, $2,070 per month
 prompt growth of 1,500 tokens: +26% cost per request
 ```
 
-Звідси два уроки. Retrieved context домінує в input цього budget, тож налаштування retrieval (скільки chunks, якої довжини) — це й налаштування cost. А невинна на вигляд правка prompt може підняти cost на чверть; cost має бути в regression report кожної зміни prompt ([Якість у production](/learn/llm?topic=production-quality)).
+Звідси два уроки. Retrieved context домінує в input цього budget, тож налаштування retrieval (скільки chunks, якої довжини) — це й налаштування cost. А невинна на вигляд правка prompt може підняти cost на чверть; cost має бути в regression report кожної зміни prompt ([Якість у промисловому середовищі](/learn/llm?topic=production-quality)).
 
 ## Запис викликів моделі для тестування
 
@@ -484,7 +484,7 @@ prompt growth of 1,500 tokens: +26% cost per request
 }
 ```
 
-Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)), replay fixtures ([Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model)) і сировиною production monitoring ([Якість у production](/learn/llm?topic=production-quality)).
+Кожне поле відповідає на питання тестування: *яка модель і prompt це створили?* (model, версія template, parameters), *що вона бачила?* (messages hash, retrieved IDs, tools), *чому зупинилася?* (stop reason), *скільки це коштувало і тривало?* (usage, latency) і *що сталося далі?* (outcome). Ці записи стають regression cases ([Методологія оцінювання та набори даних](/learn/llm?topic=evaluation-fundamentals)), replay fixtures ([Тестування коду LLM-застосунку без моделі](/learn/llm?topic=testing-without-the-model)) і сировиною production monitoring ([Якість у промисловому середовищі](/learn/llm?topic=production-quality)).
 
 ### Розібраний приклад: відповідь цитує замінену policy
 

@@ -1,10 +1,10 @@
-# Embeddings і semantic similarity
+# Векторні подання та семантична подібність
 
 **Embedding** — це список чисел, що представляє зміст фрагмента тексту. Embeddings присутні скрізь в LLM системах: retrieval у RAG pipelines, semantic caches, topic guardrails, дедуплікація, кластеризація і similarity-based assertions у тестах. Тестувальник зустрічає їх двічі: як компонент system under test і як інструмент для побудови тестів. Обидві ролі вимагають однакового розуміння того, що означають similarity scores і, що важливіше, чого вони не означають.
 
-**Prerequisites:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
+**Передумови:** [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
 
-## Що таке embedding
+## Що таке векторне подання
 
 **Embedding model** — функція, що відображає текст у vector фіксованої довжини `d`, зазвичай від 256 до 3 072 чисел. Її тренують так, щоб тексти зі схожим змістом відображалися у vectors зі схожим напрямком. Звичайний метод — **contrastive learning**: модель бачить пари текстів, що пасують одне одному (питання і відповідь, речення і його парафраз), і пари, що не пасують, і її оптимізують зближувати перші та розводити другі.
 
@@ -19,7 +19,7 @@ Embedding models окремі від chat models. Вони мають власн
 
 Окремі числа не мають людського змісту. Змістовні лише співвідношення між vectors, виміряні similarity function, і лише для vectors, створених **тією самою версією моделі**.
 
-## Вимірювання схожості
+## Вимірювання подібності
 
 Поширені три міри:
 
@@ -74,7 +74,7 @@ distance = euclidean(ua, ub)
 print(f"euclidean distance of unit vectors = {distance:.3f}; sqrt(2 - 2*cos) = {math.sqrt(2 - 2 * cosine(a, b)):.3f}")
 ```
 
-Output:
+Результат:
 
 ```text
 cosine(a, b) = 0.978   cosine(a, c) = 0.179
@@ -87,7 +87,7 @@ euclidean distance of unit vectors = 0.211; sqrt(2 - 2*cos) = 0.211
 
 Cosine similarity визначена від −1 до 1, але реальні embedding models використовують лише частину цього діапазону. У багатьох моделей навіть непов'язані тексти мають score помітно вище 0, а scores парафраз і просто тематичних сусідів перекриваються. Шкала **залежить від моделі**: threshold 0.8 може бути суворим для однієї моделі й м'яким для іншої. Ніколи не копіюйте threshold зі статті чи з іншої моделі; калібруйте його (див. нижче).
 
-## Similarity — не еквівалентність
+## Подібність та еквівалентність
 
 Embeddings значно краще вловлюють тему і формулювання, ніж логіку. Два речення на одну тему можуть мати дуже високу similarity і стверджувати протилежне. Скрипт нижче використовує найпростіший embedding — bag-of-words vector з кількостей слів, — щоб механізм був видимим. Навчені embedding models значно краще працюють із синонімами, але мають ті самі слабкості на запереченнях, числах і ролях — у меншій, але все ще важливій мірі.
 
@@ -117,7 +117,7 @@ for left, right in pairs:
     print(f"{score:.2f}  {left!r} vs {right!r}")
 ```
 
-Output:
+Результат:
 
 ```text
 0.89  'The refund was approved.' vs 'The refund was not approved.'
@@ -136,9 +136,9 @@ Output:
 | Обсяг і квантори | «all items» vs «some items» | Квантори — маленькі tokens | Rubric, що називає квантор |
 | Підміна сутностей | «order A-1042» vs «order A-1024» | IDs схожі між собою | Exact match по IDs |
 
-**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Code-based scorers і metrics](/learn/llm?topic=code-based-scorers), [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+**Наслідок для тестування:** similarity score може сказати, що відповідь *про те саме*. Він не може сказати, що відповідь *правильна*. Використовуйте similarity для retrieval, кластеризації і як дешевий перший фільтр; для correctness — перевірки фактів, structured extraction або валідовані judges ([Програмні оцінювачі та метрики](/learn/llm?topic=code-based-scorers), [LLM як оцінювач](/learn/llm?topic=model-graded-evaluation)).
 
-## Калібрування similarity threshold
+## Калібрування порога подібності
 
 Коли система чи тест використовує similarity threshold, наприклад «вважати відповідь відповідною reference, якщо cosine ≥ t» або «віддати кешовану відповідь, якщо нове питання ближче за t до кешованого», threshold — це бінарний classifier, і калібрувати його треба відповідно:
 
@@ -190,7 +190,7 @@ for step in range(15):
 print(f"lowest threshold with precision >= 0.90: {best[0]:.2f} (recall {best[1]:.2f})")
 ```
 
-Output:
+Результат:
 
 ```text
 threshold  precision  recall   F1    false-positive rate
@@ -216,9 +216,9 @@ lowest threshold with precision >= 0.90: 0.90 (recall 0.42)
 
 - **Перекриття — норма.** Еквівалентні й нееквівалентні пари ділять діапазон 0.78–0.89. Жоден threshold не розділяє їх ідеально; кожен вибір обмінює false positives на false negatives.
 - **Правильний threshold залежить від ціни кожної помилки.** Для semantic cache false positive віддає користувачу чужу відповідь («скасуй моє замовлення» отримує кешовану відповідь на «не скасовуй моє замовлення»), тож найважливіша висока precision, навіть ціною меншої кількості cache hits. Для test assertion, що лише попередньо фільтрує відповіді для judge, важливіший recall.
-- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність як confidence interval ([Статистика для evaluation](/learn/llm?topic=eval-statistics) показує як).
+- **Малі вибірки вводять в оману.** На 24 парах одна пара зсуває precision на кілька пунктів. Використовуйте сотні пар і показуйте невизначеність як confidence interval ([Статистика для оцінювання](/learn/llm?topic=eval-statistics) показує як).
 
-## Vector search
+## Векторний пошук
 
 Щоб знайти документи, найсхожіші на запит, система порівнює vector запиту зі збереженими vectors.
 
@@ -277,7 +277,7 @@ for nprobe in [1, 2, 4, 8, 16]:
     print(f"{nprobe:>6}  {sum(scanned) / len(scanned) / N_DOCS:>6.0%}   {sum(recalls) / len(recalls):.2f}")
 ```
 
-Output:
+Результат:
 
 ```text
 nprobe  scanned  recall@10
@@ -296,7 +296,7 @@ nprobe  scanned  recall@10
 - **Freshness.** Після оновлення чи видалення документа старий vector має зникнути. Тестуйте шляхи оновлення і видалення, а не лише вставки.
 - **Узгодженість моделі.** Vectors запиту і документів мають походити від однієї версії embedding model. Зберігайте назву й версію моделі разом з index і явно падайте при невідповідності.
 
-## Embeddings у test engineering
+## Векторні подання в інженерії тестування
 
 Embeddings також практичний інструмент тестувальника:
 
@@ -306,7 +306,7 @@ Embeddings також практичний інструмент тестувал
 | Кластеризація failures для error analysis | Зробіть embeddings провальних outputs чи inputs і кластеризуйте, щоб побачити групи збоїв | Кластери відображають тему, а не причину; називайте їх після читання прикладів |
 | Аналіз coverage | Зробіть embeddings production запитів і evaluation cases; production кластери без близьких cases — прогалини coverage | Потрібен доступ до (анонімізованих) production даних |
 | Тестування semantic cache | Генеруйте пари майже однакових питань з різним змістом і перевіряйте, що cache не відповідає на одне відповіддю на інше | False hits — дефекти, видимі користувачу |
-| Виявлення input drift | Порівнюйте distribution сьогоднішніх запитів з минуломісячними | Обережно; див. [Якість у production](/learn/llm?topic=production-quality) |
+| Виявлення input drift | Порівнюйте distribution сьогоднішніх запитів з минуломісячними | Обережно; див. [Якість у промисловому середовищі](/learn/llm?topic=production-quality) |
 
 Перевірка coverage з реальною embedding model займає кілька рядків. Запустіть її на своїй машині:
 
@@ -329,9 +329,9 @@ for query, row in zip(production_queries, similarity):
     print(f"{flag:<8} {row[nearest]:.2f}  {query!r} -> nearest case {eval_cases[nearest]!r}")
 ```
 
-## Вибір і тестування embedding model
+## Вибір і тестування моделі векторних подань
 
-Публічні leaderboards на кшталт MTEB порівнюють embedding models на багатьох задачах і мовах — це добра відправна точка. Вони не замінюють тестування на ваших даних, бо якість retrieval сильно залежить від доменної лексики, стилю документів і змішування мов. Оцінюйте кандидатів retrieval metrics з [Evaluation RAG систем](/learn/llm?topic=rag-testing) на позначених запитах з вашого домену, а також порівнюйте:
+Публічні leaderboards на кшталт MTEB порівнюють embedding models на багатьох задачах і мовах — це добра відправна точка. Вони не замінюють тестування на ваших даних, бо якість retrieval сильно залежить від доменної лексики, стилю документів і змішування мов. Оцінюйте кандидатів retrieval metrics з [Оцінювання систем RAG](/learn/llm?topic=rag-testing) на позначених запитах з вашого домену, а також порівнюйте:
 
 - **максимальну довжину input:** текст понад неї обрізається, часто мовчки, тож довгі chunks втрачають кінець;
 - **мови:** перевірте кожну мову користувачів і cross-language retrieval, якщо питають однією мовою про документи іншою;

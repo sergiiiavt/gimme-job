@@ -4,7 +4,7 @@
     "label": "All lessons",
     "labelUk": "Усі уроки",
     "description": "The complete Python learning path, basics to advanced.",
-    "descriptionUk": "Повний навчальний шлях Python: від основ до advanced topics."
+    "descriptionUk": "Повний навчальний маршрут Python від основ до поглиблених тем."
   },
   {
     "id": "getting-started",
@@ -12,7 +12,7 @@
     "labelUk": "Початок роботи та синтаксис",
     "level": "Beginner",
     "description": "Running Python, the REPL, variables, comments and script structure.",
-    "descriptionUk": "Запуск Python, REPL, variables, comments і структура script."
+    "descriptionUk": "Запуск Python, REPL, змінні, коментарі та структура скрипту."
   },
   {
     "id": "variables-data-types-operators",
@@ -20,31 +20,31 @@
     "labelUk": "Змінні, типи даних та оператори",
     "level": "Beginner",
     "description": "Numbers, strings, booleans, None, arithmetic, comparisons and conversion.",
-    "descriptionUk": "Numbers, strings, booleans, None, arithmetic, comparisons і conversion."
+    "descriptionUk": "Числа, рядки, булеві значення, None, арифметика, порівняння й перетворення типів."
   },
   {
     "id": "control-flow",
     "label": "Control flow: conditionals & loops",
-    "labelUk": "Control flow: умови та цикли",
+    "labelUk": "Умови та цикли",
     "level": "Beginner",
     "description": "if/elif/else, while and for loops, range, break/continue, loop else and structural pattern matching.",
-    "descriptionUk": "if/elif/else, while і for loops, range, break/continue, loop else та structural pattern matching."
+    "descriptionUk": "if/elif/else, while, for, range, break/continue, else циклу та зіставлення зі зразком."
   },
   {
     "id": "functions-and-scope",
     "label": "Functions & scope",
-    "labelUk": "Функції та scope",
+    "labelUk": "Функції та області видимості",
     "level": "Beginner",
     "description": "Defining functions, parameters, return values, defaults and basic scope.",
-    "descriptionUk": "Визначення functions, parameters, return values, defaults і базовий scope."
+    "descriptionUk": "Визначення функцій, параметри, повернення значень, типові аргументи й області видимості."
   },
   {
     "id": "core-data-structures",
     "label": "Core data structures & comprehensions",
-    "labelUk": "Основні структури даних та comprehensions",
+    "labelUk": "Структури даних і включення",
     "level": "Beginner",
     "description": "Lists, tuples, dictionaries, sets and comprehensions.",
-    "descriptionUk": "Lists, tuples, dictionaries, sets та comprehensions."
+    "descriptionUk": "Списки, кортежі, словники, множини та включення (comprehensions)."
   },
   {
     "id": "strings-and-text-formatting",
@@ -52,15 +52,15 @@
     "labelUk": "Рядки та форматування тексту",
     "level": "Beginner",
     "description": "String methods, f-strings, splitting/joining and an introduction to regular expressions.",
-    "descriptionUk": "String methods, f-strings, splitting/joining і вступ до regular expressions."
+    "descriptionUk": "Методи рядків, f-рядки, розбиття, з’єднання та вступ до регулярних виразів."
   },
   {
     "id": "files-io-context-managers",
     "label": "Files, I/O & context managers",
-    "labelUk": "Файли, I/O та context managers",
+    "labelUk": "Файли та менеджери контексту",
     "level": "Intermediate",
     "description": "Reading and writing files, the with statement, pathlib, CSV and JSON.",
-    "descriptionUk": "Читання та запис files, statement with, pathlib, CSV і JSON."
+    "descriptionUk": "Читання й запис файлів, оператор with, pathlib, CSV і JSON."
   },
   {
     "id": "object-oriented-programming",
@@ -68,31 +68,31 @@
     "labelUk": "Об’єктно-орієнтоване програмування",
     "level": "Intermediate",
     "description": "Classes, instances, inheritance, dunder methods, properties, dataclasses and enums.",
-    "descriptionUk": "Classes, instances, inheritance, dunder methods, properties, dataclasses та enums."
+    "descriptionUk": "Класи, екземпляри, успадкування, спеціальні методи, властивості, dataclasses і переліки."
   },
   {
     "id": "errors-exceptions-debugging",
     "label": "Errors, exceptions & debugging",
-    "labelUk": "Помилки, exceptions та debugging",
+    "labelUk": "Помилки, винятки та налагодження",
     "level": "Intermediate",
     "description": "try/except, custom exceptions, interactive debugging and defensive habits.",
-    "descriptionUk": "try/except, custom exceptions, interactive debugging і defensive habits."
+    "descriptionUk": "try/except, власні винятки, інтерактивне налагодження й запобігання помилкам."
   },
   {
     "id": "modules-packages-imports",
     "label": "Modules, packages & the import system",
-    "labelUk": "Modules, packages та система import",
+    "labelUk": "Модулі, пакети та імпорт",
     "level": "Intermediate",
     "description": "Writing modules, building packages, virtual environments and pip.",
-    "descriptionUk": "Написання modules, побудова packages, virtual environments і pip."
+    "descriptionUk": "Створення модулів і пакетів, віртуальні середовища та pip."
   },
   {
     "id": "standard-library-tour",
     "label": "Standard library tour",
-    "labelUk": "Огляд standard library",
+    "labelUk": "Огляд стандартної бібліотеки",
     "level": "Intermediate",
     "description": "collections, itertools, functools, datetime, os/sys and logging.",
-    "descriptionUk": "collections, itertools, functools, datetime, os/sys і logging."
+    "descriptionUk": "collections, itertools, functools, datetime, os/sys і журналювання."
   },
   {
     "id": "practical-scripting-automation",
@@ -100,45 +100,45 @@
     "labelUk": "Практичні скрипти, CLI та автоматизація",
     "level": "Intermediate",
     "description": "argparse, subprocess, filesystem automation, configuration, SQLite, HTTP clients and test doubles.",
-    "descriptionUk": "argparse, subprocess, автоматизація файлової системи, конфігурація, SQLite, HTTP clients і test doubles."
+    "descriptionUk": "argparse, subprocess, файлові операції, конфігурація, SQLite, HTTP-клієнти й тестові двійники."
   },
   {
     "id": "iterators-generators-decorators-functional",
     "label": "Iterators, generators, decorators & functional tools",
-    "labelUk": "Iterators, generators, decorators та functional tools",
+    "labelUk": "Ітератори, генератори та декоратори",
     "level": "Advanced",
     "description": "The iterator protocol, generator functions, decorators, closures and functional idioms.",
-    "descriptionUk": "Iterator protocol, generator functions, decorators, closures і functional idioms."
+    "descriptionUk": "Протокол ітератора, генератори, декоратори, замикання та функціональні прийоми."
   },
   {
     "id": "typing-testing-tooling",
     "label": "Typing, testing & tooling",
-    "labelUk": "Typing, testing та tooling",
+    "labelUk": "Типізація, тестування та інструменти",
     "level": "Advanced",
     "description": "Type hints, pytest, linters/formatters and sane project structure.",
-    "descriptionUk": "Type hints, pytest, linters/formatters і здорова структура проєкту."
+    "descriptionUk": "Анотації типів, pytest, лінтери, форматери та структура проєкту."
   },
   {
     "id": "concurrency",
     "label": "Concurrency: threading, multiprocessing & asyncio",
-    "labelUk": "Concurrency: threading, multiprocessing та asyncio",
+    "labelUk": "Конкурентне виконання",
     "level": "Advanced",
     "description": "Choosing and using threading, multiprocessing and asyncio correctly.",
-    "descriptionUk": "Правильний вибір і використання threading, multiprocessing та asyncio."
+    "descriptionUk": "Вибір і використання threading, multiprocessing та asyncio."
   },
   {
     "id": "memory-performance-metaprogramming",
     "label": "Memory model, performance, the GIL & metaprogramming",
-    "labelUk": "Memory model, performance, GIL та metaprogramming",
+    "labelUk": "Пам’ять і метапрограмування",
     "level": "Expert",
     "description": "CPython memory management, profiling, free-threading and descriptors/metaclasses.",
-    "descriptionUk": "CPython memory management, profiling, free-threading і descriptors/metaclasses."
+    "descriptionUk": "Пам’ять CPython, профілювання, GIL, free-threading, дескриптори та метакласи."
   },
   {
     "id": "methodology",
     "label": "Sources & methodology",
     "labelUk": "Джерела та методологія",
     "description": "How lessons are written and validated, and the source catalog behind them.",
-    "descriptionUk": "Як написані й перевірені уроки та які джерела лежать в їх основі."
+    "descriptionUk": "Як написані й перевірені уроки та на які джерела вони спираються."
   }
 ]

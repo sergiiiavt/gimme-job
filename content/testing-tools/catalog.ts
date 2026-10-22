@@ -1,3 +1,4 @@
+import { insertPracticalExamples } from "../learning-document-composition.ts";
 import taxonomyData from "./taxonomy.json";
 import sourcesData from "./sources.json";
 import requiredConceptsData from "./required-concepts.json";
@@ -62,14 +63,6 @@ export interface LearningChapter extends LearningTopic {
   markdownUk: string;
 }
 
-function insertPracticalExamples(markdown: string, addition: string) {
-  if (!addition.trim()) return markdown;
-  const marker = "\n## Summary";
-  if (markdown.includes(marker)) {
-    return markdown.replace(marker, `\n\n${addition.trim()}\n\n## Summary`);
-  }
-  return `${markdown.trimEnd()}\n\n${addition.trim()}`;
-}
 
 const taxonomy = taxonomyData as LearningTopic[];
 const sources = sourcesData as LearningSource[];
@@ -91,7 +84,7 @@ export const catalog = {
   title: "Testing & Diagnostic Tools",
   titleUk: "Інструменти тестування та діагностики",
   description: "A workflow-first, source-backed path through the diagnostic tools QA engineers use to inspect, reproduce and explain system behaviour.",
-  descriptionUk: "Підкріплений джерелами workflow-first шлях через інструменти, якими QA engineers досліджують, відтворюють і пояснюють поведінку системи.",
+  descriptionUk: "Навчальний маршрут на основі джерел: інструменти, якими QA-інженери досліджують, відтворюють і пояснюють поведінку системи.",
   taxonomy,
   sources,
   requiredConcepts,

@@ -5,10 +5,12 @@ import uriAddressingUk from "./http-uri-addressing.uk.md?raw";
 
 const HTTP_MESSAGES_HEADING = "\n## HTTP messages\n";
 
-const addUriAddressing = (base: string, addressing: string) =>
+const HTTP_MESSAGES_HEADING_UK = "\n## Повідомлення HTTP\n";
+
+const addUriAddressing = (base: string, addressing: string, heading = HTTP_MESSAGES_HEADING) =>
   base.replace(
-    HTTP_MESSAGES_HEADING,
-    `\n${addressing.trim()}\n${HTTP_MESSAGES_HEADING}`,
+    heading,
+    `\n${addressing.trim()}\n${heading}`,
   );
 
 const renameChapter = (base: string, currentTitle: string, nextTitle: string) =>
@@ -21,9 +23,9 @@ export const httpFoundations = {
     "# HTTP & REST APIs",
   ),
   markdownUk: renameChapter(
-    addUriAddressing(markdownUk, uriAddressingUk),
+    addUriAddressing(markdownUk, uriAddressingUk, HTTP_MESSAGES_HEADING_UK),
     "# Основи HTTP, REST та CORS",
-    "# HTTP та REST APIs",
+    "# HTTP та REST API",
   ),
 };
 

@@ -125,6 +125,12 @@ const repoRefKindLabels: Record<string, string> = {
   ci: "CI",
 };
 
+const repoRefKindLabelsUk: Record<string, string> = {
+  implementation: "Реалізація",
+  usage: "Використання",
+  ci: "CI",
+};
+
 const repoBlobUrl = (repo: string, rev: string, path: string) => `https://github.com/${repo}/blob/${rev}/${path}`;
 
 function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, referenceImplementation?: ReferenceImplementation) {
@@ -148,15 +154,15 @@ function lessonMarkdown(lesson: LearningLesson, language: LearningLanguage, refe
   }
 
   if (lesson.repoRefs?.length && referenceImplementation) {
-    lines.push("", `### ${showUk ? "У реальному framework" : "See it in the framework"}`, "");
+    lines.push("", `### ${showUk ? "У реальному фреймворку" : "See it in the framework"}`, "");
     for (const ref of lesson.repoRefs) {
-      const kindLabel = ref.kind ? repoRefKindLabels[ref.kind] ?? ref.kind : "";
+      const kindLabel = ref.kind ? (showUk ? repoRefKindLabelsUk : repoRefKindLabels)[ref.kind] ?? ref.kind : "";
       const kind = kindLabel ? `${kindLabel} · ` : "";
       const live = repoBlobUrl(referenceImplementation.repo, referenceImplementation.branch, ref.path);
       const reviewed = repoBlobUrl(referenceImplementation.repo, referenceImplementation.verifiedCommit, ref.path);
-      lines.push(`- ${kind}${ref.label}: \`${ref.path}\` — [live](${live}) · [reviewed](${reviewed})`);
+      lines.push(`- ${kind}${ref.label}: \`${ref.path}\` — [${showUk ? "актуальна версія" : "live"}](${live}) · [${showUk ? "перевірена версія" : "reviewed"}](${reviewed})`);
     }
-    lines.push("", `${showUk ? "Перевірено" : "Reviewed against"} commit \`${referenceImplementation.verifiedCommit.slice(0, 7)}\` (${referenceImplementation.verifiedAt}).`);
+    lines.push("", `${showUk ? "Перевірено за комітом" : "Reviewed against commit"} \`${referenceImplementation.verifiedCommit.slice(0, 7)}\` (${referenceImplementation.verifiedAt}).`);
   }
 
   if (pitfalls.length) {

@@ -1,10 +1,10 @@
-# Тестування LLM code без моделі
+# Тестування коду LLM-застосунку без моделі
 
 Більшість code в LLM application ніколи не потребує моделі для тестування. Рендеринг prompts, збирання context, обрізання історії, parsing output, маршрутизація tools і authorization, retries, streaming, підключення guardrails, logging і облік cost — детерміновані, а їхні дефекти звичайні: неправильні гілки, пропущені перевірки, помилки на одиницю в budgets. Тестувати їх через реальну модель повільно, дорого й нестабільно, і причина збою ховається за випадковістю генерації.
 
 Цей chapter показує, як тестувати такий code швидко, offline і детерміновано: test doubles для model clients, dependency injection, тести інваріантів для збирання context, snapshot tests для prompts, record and replay реального HTTP трафіку, contract fixtures для відповідей providers і структура test suite, що відділяє offline тести від live checks і evaluation якості.
 
-**Prerequisites:** [Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy), [Structured output і validation](/learn/llm?topic=structured-output-validation) та базовий pytest.
+**Передумови:** [Анатомія LLM-застосунку та API](/learn/llm?topic=llm-application-anatomy), [Структуровані відповіді та їх перевірка](/learn/llm?topic=structured-output-validation) та базовий pytest.
 
 ## Що тестувати без моделі
 
@@ -21,9 +21,9 @@
 | Logging і tracing | Кожен виклик записує модель, версію prompt, usage та ідентифікатори context | Spy |
 | Fallbacks | Збій основної моделі перемикає на fallback шлях | Failing client |
 
-Жоден із цих тестів не каже, чи хороші відповіді моделі. Це робота evaluation ([Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)). Два види тестування доповнюють одне одного: offline тести роблять систему надійною, evaluations — корисною.
+Жоден із цих тестів не каже, чи хороші відповіді моделі. Це робота evaluation ([Методологія оцінювання та набори даних](/learn/llm?topic=evaluation-fundamentals)). Два види тестування доповнюють одне одного: offline тести роблять систему надійною, evaluations — корисною.
 
-## Test doubles для model clients
+## Тестові двійники для клієнтів моделі
 
 **Test double** замінює реальну залежність у тесті. Класичний словник розрізняє кілька видів, і кожен має чітке застосування для model clients:
 
@@ -123,7 +123,7 @@ assert "colleague" in answer_question("Do you ship to Mars?", fake, policy)
 print("stub, spy, fault injection and fake: all checks passed")
 ```
 
-Output:
+Результат:
 
 ```text
 stub, spy, fault injection and fake: all checks passed
@@ -157,7 +157,7 @@ def test_answer_uses_the_fallback_message_on_timeout(monkeypatch):
 
 Mock, що перевіряє точний текст prompt, прив'язує тест до деталі реалізації; кожна нешкідлива правка prompt його ламає. Використовуйте mocks і spies для **важливих взаємодій**: модель не викликається, коли input guardrail блокує запит; tool викликається з ID автентифікованого користувача; fallback модель викликається після збою основної. Точний текст prompt перевіряйте snapshot tests, де зміни рецензуються свідомо (див. нижче).
 
-## Тестування збирання context
+## Перевірка збирання контексту
 
 Збирання context вирішує, що бачить модель: system prompt, історію розмови, retrieved документи, профіль користувача, визначення tools — у межах token budget. Його дефекти тихі: відкинутий system prompt чи дані іншого користувача в context не кидають exception, вони змінюють поведінку.
 
@@ -217,7 +217,7 @@ for _ in range(500):
 print("500 random conversations: invariants hold")
 ```
 
-Output:
+Результат:
 
 ```text
 ['Answer from the ', 'Order A-1042?', 'It ships today.', 'And returns?']
@@ -226,7 +226,7 @@ Output:
 
 Інші інваріанти, які варто перевіряти в реальних системах: retrieved документи належать tenant, що робить запит; персональні дані прибрано до того, як вони потраплять у context; визначення tools відповідають правам користувача; context ніколи не перевищує window моделі мінус зарезервований budget output. Для production code використовуйте в цих тестах справжній tokenizer provider; неправильна оцінка tokens — сама по собі поширений дефект.
 
-## Snapshot tests для prompts
+## Тести зі знімками промптів
 
 **Snapshot** (golden-file) тест рендерить prompt для фіксованих inputs і порівнює з закоміченим файлом. Будь-яка зміна відрендереного тексту валить тест, доки хтось не перегляне різницю й не оновить snapshot. Це ловить ненавмисні зміни: рефакторинг, що втратив правило, змінну template, що рендериться порожньою, випадково продубльований приклад.
 
@@ -237,9 +237,9 @@ def test_support_prompt_snapshot(snapshot):
     assert rendered == snapshot          # pytest --snapshot-update rewrites the file after review
 ```
 
-Snapshots мають один відомий failure mode: люди оновлюють їх, не читаючи diff. Тримайте їх малими (один snapshot на template з короткими фіксованими inputs), рецензуйте diffs snapshots як prompt diffs ([Prompts як тестовані артефакти](/learn/llm?topic=prompts-as-artifacts)) і ніколи не використовуйте snapshots для output моделі, який варіюється за задумом.
+Snapshots мають один відомий failure mode: люди оновлюють їх, не читаючи diff. Тримайте їх малими (один snapshot на template з короткими фіксованими inputs), рецензуйте diffs snapshots як prompt diffs ([Промпти як артефакти, які можна тестувати](/learn/llm?topic=prompts-as-artifacts)) і ніколи не використовуйте snapshots для output моделі, який варіюється за задумом.
 
-## Record and replay
+## Запис і відтворення
 
 Деякі тести потребують реального HTTP трафіку: інтеграції вашого client wrapper із SDK provider, headers запитів, тіл помилок, форматів streaming. **Record and replay** один раз записує реальні взаємодії й надалі їх відтворює. З vcrpy (або plugin pytest-recording на його основі) тест уперше працює з реальним API і зберігає обмін у файлі cassette; наступні запуски відтворюють cassette без мережі.
 
@@ -270,7 +270,7 @@ def test_client_wrapper_parses_a_real_response():
 - **Перезаписуйте свідомо,** наприклад при оновленні SDK, і рецензуйте diff cassette.
 - **Не перевіряйте згенерований текст** у відтворених тестах понад те, що обробляє parsing code. Відтворену відповідь модель створила один раз; це fixture, а не вимірювання якості.
 
-## Contract fixtures для відповідей providers
+## Контрактні фікстури відповідей постачальників
 
 Записані cassettes показують поширені відповіді. Рідкісні форми — tool calls, refusals, truncation, content filters, кілька tool calls, порожній контент — можуть ніколи не з'явитися у ваших записах, але parsing code мусить їх обробляти. **Contract fixtures** — це тіла відповідей у формі, задокументованій provider, збережені як JSON файли й використані для тестування коду нормалізації. Коли змінюється версія SDK чи API, порівнюйте нові реальні відповіді з fixtures.
 
@@ -322,7 +322,7 @@ print("openai   :", openai)
 print("anthropic:", anthropic)
 ```
 
-Output:
+Результат:
 
 ```text
 openai   : {'text': '', 'stop': 'tool_calls', 'tool_calls': [{'name': 'get_order_status', 'arguments': {'order_id': 'A-1042'}}], 'tokens': (812, 19)}
@@ -331,7 +331,7 @@ anthropic: {'text': 'Let me check.', 'stop': 'tool_use', 'tool_calls': [{'name':
 
 Зверніть увагу на дві деталі, які ловлять contract fixtures і не ловлять тести щасливого шляху: OpenAI повертає `content: null`, коли модель лише викликає tools, а arguments tool приходять як JSON **рядок**, який треба розпарсити (і який може бути невалідним). Anthropic повертає arguments як object, а текст і tool calls можуть бути в одній відповіді.
 
-## Тестування маршрутизації tools і authorization
+## Маршрутизація інструментів та авторизація
 
 Коли модель просить виклик tool, запит — це **untrusted input**: модель може вибрати неіснуючий tool, надіслати невалідні arguments або бути змушеною запитати дані іншого клієнта. Router, що виконує tool calls, — критичний для безпеки code, і він повністю тестується без моделі.
 
@@ -380,7 +380,7 @@ for name, call in cases:
     print(f"{name:<26} -> {run_tool_call(call, user_id='u-17')}")
 ```
 
-Output:
+Результат:
 
 ```text
 own order                  -> {'result': {'order_id': 'A-1042', 'status': 'shipped'}}
@@ -396,15 +396,15 @@ wrong argument type        -> {'error': 'invalid argument types'}
 - **«Не знайдено» і «не ваше» дають однакову відповідь,** тож tool не можна використати, щоб з'ясувати, які order IDs існують.
 - **Помилки повертаються моделі як tool results,** щоб вона пояснила ситуацію користувачу, і логуються для monitoring.
 
-## Час, випадковість і конкурентність
+## Час, випадковість і конкурентне виконання
 
 Ще три джерела нестабільних тестів мають стандартні ліки:
 
-- **Час.** Підставляйте clock. Логіка retries і timeouts, протестована з fake clock, виконується миттєво й детерміновано (повний приклад — в [Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy)). Поведінка, залежна від дати («ваше вікно повернення закінчується завтра»), потребує фіксованого «зараз».
+- **Час.** Підставляйте clock. Логіка retries і timeouts, протестована з fake clock, виконується миттєво й детерміновано (повний приклад — в [Анатомія LLM-застосунку та API](/learn/llm?topic=llm-application-anatomy)). Поведінка, залежна від дати («ваше вікно повернення закінчується завтра»), потребує фіксованого «зараз».
 - **Випадковість.** Фіксуйте seed кожного генератора випадковості в тестах, включно з sampling у fakes і генераторами даних, і друкуйте seed при збої.
 - **Асинхронність.** Streaming і паралельні tool calls зазвичай асинхронні. Тестуйте їх async test runner (наприклад pytest-asyncio), рухайте streams записаними подіями й явно тестуйте скасування: скасований запит має припинити читати stream і не залишити напівзаписаного стану.
 
-## Організація test suite
+## Організація набору тестів
 
 Розділяйте тести за тим, що їм потрібно і як часто вони запускаються:
 
@@ -426,7 +426,7 @@ markers = [
 ]
 ```
 
-Запускайте `pytest -m live` чи `pytest -m eval` свідомо, на етапах pipeline, описаних у [Якість у production](/learn/llm?topic=production-quality).
+Запускайте `pytest -m live` чи `pytest -m eval` свідомо, на етапах pipeline, описаних у [Якість у промисловому середовищі](/learn/llm?topic=production-quality).
 
 ## Приклад проєкту
 

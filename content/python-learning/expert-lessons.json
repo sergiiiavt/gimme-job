@@ -93,11 +93,11 @@
       "level": "Expert",
       "order": 73,
       "title": "The GIL and the free-threaded build",
-      "titleUk": "GIL і безблокувальна (free-threaded) збірка",
+      "titleUk": "GIL і збірка без GIL (free-threaded)",
       "summary": "Why the GIL exists, what it costs, and how the officially-supported free-threaded build in 3.14 changes the picture.",
-      "summaryUk": "Чому існує GIL, у що він обходиться, і як офіційно підтримувана безблокувальна збірка в 3.14 змінює картину.",
+      "summaryUk": "Чому існує GIL, у що він обходиться, і як офіційно підтримувана збірка без GIL в 3.14 змінює картину.",
       "concept": "In the normal CPython build, the GIL is a single mutex that lets only one thread execute Python bytecode — more precisely, hold the interpreter lock while touching Python objects and C-API state — at a time. Protecting reference-count updates (covered in an earlier lesson) is one important reason it exists, but not the whole story: historically it has simplified thread-safety for much of the interpreter's other internal state too. PEP 703 proposed removing it via finer-grained internal locking, and PEP 779 defined the criteria under which that free-threaded build became officially supported starting in Python 3.14 — though it remains opt-in rather than default, because it currently costs some single-threaded performance and not every C extension is compatible with it yet. The exact command or installer for a free-threaded interpreter varies by platform rather than being one portable `python3.14t`; the reliable way to check whether the *current* interpreter is running free-threaded is `python -VV`, `sys._is_gil_enabled()`, or `sysconfig.get_config_var(\"Py_GIL_DISABLED\")`. Whether `multiprocessing`, the free-threaded build, or `InterpreterPoolExecutor` fits a given CPU-bound workload best now depends on the specifics — data sharing, extension compatibility, overhead — not one blanket default.",
-      "conceptUk": "У звичайній збірці CPython GIL — єдиний м'ютекс, що дозволяє лише одному потоку виконувати байткод Python — точніше, тримати блокування інтерпретатора під час роботи з об'єктами Python і станом C-API — одночасно. Захист оновлень лічильника посилань (розглянутий у попередньому уроці) — одна важлива причина його існування, але не вся історія: історично він також спрощував потокобезпеку багато іншого внутрішнього стану інтерпретатора. PEP 703 запропонував прибрати його через дрібнозернистіше внутрішнє блокування, а PEP 779 визначив критерії, за якими ця безблокувальна збірка стала офіційно підтримуваною, починаючи з Python 3.14 — хоча вона залишається опційною, а не типовою, бо наразі коштує деякої однопотокової продуктивності, і не кожне C-розширення ще сумісне з нею. Точна команда чи інсталятор для free-threaded інтерпретатора відрізняється залежно від платформи, а не є єдиним переносним `python3.14t`; надійний спосіб перевірити, чи *поточний* інтерпретатор виконується у free-threaded режимі — `python -VV`, `sys._is_gil_enabled()` чи `sysconfig.get_config_var(\"Py_GIL_DISABLED\")`. Чи `multiprocessing`, free-threaded збірка, чи `InterpreterPoolExecutor` найкраще підходить для конкретного CPU-прив'язаного навантаження, тепер залежить від деталей — спільних даних, сумісності розширень, накладних витрат — а не від одного типового правила.",
+      "conceptUk": "У звичайній збірці CPython GIL — єдиний м'ютекс, що дозволяє лише одному потоку виконувати байткод Python — точніше, тримати блокування інтерпретатора під час роботи з об'єктами Python і станом C-API — одночасно. Захист оновлень лічильника посилань (розглянутий у попередньому уроці) — одна важлива причина його існування, але не вся історія: історично він також спрощував потокобезпеку багато іншого внутрішнього стану інтерпретатора. PEP 703 запропонував прибрати його через дрібнозернистіше внутрішнє блокування, а PEP 779 визначив критерії, за якими ця збірка без GIL стала офіційно підтримуваною, починаючи з Python 3.14 — хоча вона залишається опційною, а не типовою, бо наразі коштує деякої однопотокової продуктивності, і не кожне C-розширення ще сумісне з нею. Точна команда чи інсталятор для free-threaded інтерпретатора відрізняється залежно від платформи, а не є єдиним переносним `python3.14t`; надійний спосіб перевірити, чи *поточний* інтерпретатор виконується у free-threaded режимі — `python -VV`, `sys._is_gil_enabled()` чи `sysconfig.get_config_var(\"Py_GIL_DISABLED\")`. Чи `multiprocessing`, free-threaded збірка, чи `InterpreterPoolExecutor` найкраще підходить для конкретного CPU-прив'язаного навантаження, тепер залежить від деталей — спільних даних, сумісності розширень, накладних витрат — а не від одного типового правила.",
       "keyPoints": [
         "The GIL protects reference-count updates and broader interpreter/C-API state — not only reference counting",
         "PEP 703 proposed removal; PEP 779 made the free-threaded build officially supported in Python 3.14",
@@ -105,7 +105,7 @@
       ],
       "keyPointsUk": [
         "GIL захищає оновлення лічильника посилань і ширший стан інтерпретатора/C-API — не лише підрахунок посилань",
-        "PEP 703 запропонував видалення; PEP 779 зробив безблокувальну збірку офіційно підтримуваною в Python 3.14",
+        "PEP 703 запропонував видалення; PEP 779 зробив збірку без GIL офіційно підтримуваною в Python 3.14",
         "Free-threading залишається опційним; перевіряйте через python -VV чи sys._is_gil_enabled(), а не припускайте фіксовану команду python3.14t"
       ],
       "code": "# Standard build: only one thread executes bytecode at a time\npython script.py\n\n# Checking whether the CURRENT interpreter is free-threaded (portable):\npython -VV\npython -c \"import sys; print(sys._is_gil_enabled())\"\n\n# The actual free-threaded executable name/invocation varies by platform and installer.",
@@ -116,11 +116,11 @@
         "Switching to the free-threaded build without checking whether your C-extension dependencies support it can silently re-enable the GIL anyway"
       ],
       "pitfallsUk": [
-        "Припущення, що безблокувальна збірка тепер типова — вона залишається опційною станом на Python 3.14",
-        "Перехід на безблокувальну збірку без перевірки, чи підтримують її ваші C-розширення, може все одно тихо повторно увімкнути GIL"
+        "Припущення, що збірка без GIL тепер типова — вона залишається опційною станом на Python 3.14",
+        "Перехід на збірку без GIL без перевірки, чи підтримують її ваші C-розширення, може все одно тихо повторно увімкнути GIL"
       ],
       "exercise": "Read Python's official free-threading documentation and write two or three sentences comparing when you would consider the free-threaded build, InterpreterPoolExecutor, and multiprocessing for a real CPU-bound workload.",
-      "exerciseUk": "Прочитайте офіційну документацію Python про free-threading і напишіть два-три речення, що порівнюють, коли ви розглянули б безблокувальну збірку, InterpreterPoolExecutor і multiprocessing для реального CPU-прив'язаного навантаження.",
+      "exerciseUk": "Прочитайте офіційну документацію Python про free-threading і напишіть два-три речення, що порівнюють, коли ви розглянули б збірку без GIL, InterpreterPoolExecutor і multiprocessing для реального CPU-прив'язаного навантаження.",
       "tags": [
         "gil",
         "free-threading",

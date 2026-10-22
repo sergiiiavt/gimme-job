@@ -32,16 +32,16 @@ const underConstruction = (
 
 export const networkingCatalog = {
   title: "Networking",
-  titleUk: "Networking",
+  titleUk: "Комп’ютерні мережі",
   description: "A general learning path for Internet networking, protocol layering, transports, security, application protocols and diagnostics.",
-  descriptionUk: "Загальний learning path про Internet networking, protocol layering, transports, security, application protocols та diagnostics.",
+  descriptionUk: "Загальний курс про мережі Інтернету, рівні протоколів, транспорт, безпеку, прикладні протоколи та діагностику.",
   topics: [
     {
       id: "protocols-and-transports",
       label: "Protocols & transports",
-      labelUk: "Protocols та transports",
+      labelUk: "Протоколи та транспорт",
       description: "IP, TCP, UDP, QUIC, TLS, DNS, HTTP versions, WebSocket, SSE, gRPC, AMQP, email and file-transfer protocols, with Embedded & IoT kept as a separate scope.",
-      descriptionUk: "IP, TCP, UDP, QUIC, TLS, DNS, HTTP versions, WebSocket, SSE, gRPC, AMQP, email та file-transfer protocols; Embedded & IoT винесено в окремий scope.",
+      descriptionUk: "IP, TCP, UDP, QUIC, TLS, DNS, версії HTTP, WebSocket, SSE, gRPC, AMQP, електронна пошта та передавання файлів. Вбудовані системи та IoT розглядаються окремо.",
       status: "published" as const,
       markdown: protocolsGuide.markdown,
       markdownUk: protocolsGuide.markdownUk,

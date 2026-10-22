@@ -6,7 +6,7 @@
       "level": "Advanced",
       "order": 58,
       "title": "The iterator protocol behind for loops",
-      "titleUk": "Протокол ітератора за циклами for",
+      "titleUk": "Протокол ітератора, на якому ґрунтується цикл for",
       "summary": "Every for loop is sugar for iter() and repeated next(); understanding this lets you build your own iterables.",
       "summaryUk": "Кожен цикл for — це цукор для iter() і повторного next(); розуміння цього дозволяє будувати власні ітеровані об'єкти.",
       "concept": "An *iterable* implements `__iter__`, returning an *iterator*; an iterator implements `__iter__` (usually returning itself) and `__next__`, which returns the next value or raises `StopIteration` once exhausted. A `for item in obj:` loop is exactly equivalent to calling `iter(obj)` once, then calling `next()` on the result repeatedly until `StopIteration` is caught and silently stops the loop. Implementing this protocol on your own class lets instances of it be used directly in `for` loops, `list()`, and anywhere else Python expects an iterable, without any special-casing.",
@@ -29,7 +29,7 @@
         "An object with only __getitem__ but no __iter__ can still work with for in some cases via a legacy fallback, which surprises people relying on the modern protocol"
       ],
       "pitfallsUk": [
-        "Забуття врешті-решт викликати StopIteration змушує ітератор (і будь-який цикл for над ним) працювати вічно",
+        "Якщо кінцевий ітератор не породжує StopIteration після вичерпання елементів, цикл for над ним може не завершитися",
         "Об'єкт лише з __getitem__, без __iter__, у деяких випадках все ще працює з for через застарілий резервний механізм, що дивує тих, хто покладається на сучасний протокол"
       ],
       "exercise": "Write an iterator class Evens(limit) that yields only even numbers from 0 up to (not including) limit, implementing __iter__ and __next__ by hand.",
@@ -115,7 +115,7 @@
         "Skipping functools.wraps makes decorated_func.__name__ report \"wrapper\" instead of the real function name"
       ],
       "pitfallsUk": [
-        "Забуття *args, **kwargs в обгортці ламає декорування будь-якої функції з аргументами",
+        "Обгортка без передавання *args і **kwargs не підтримує довільні аргументи декорованої функції",
         "Пропуск functools.wraps робить так, що decorated_func.__name__ показує «wrapper» замість реальної назви функції"
       ],
       "exercise": "Write a @log_calls decorator that prints the function name and its arguments every time the decorated function is called, using functools.wraps correctly.",
@@ -137,18 +137,18 @@
       "title": "Closures: functions that remember their environment",
       "titleUk": "Замикання: функції, що пам'ятають своє оточення",
       "summary": "An inner function can capture and reuse variables from its enclosing function even after that function returns.",
-      "summaryUk": "Внутрішня функція може захопити й повторно використовувати змінні охоплюючої функції навіть після її завершення.",
+      "summaryUk": "Внутрішня функція може захопити й повторно використовувати змінні зовнішньої функції навіть після її завершення.",
       "concept": "When a function defined inside another function references a variable from the outer function's scope, Python keeps that variable alive as part of a *closure* even after the outer function has already returned — the inner function \"closes over\" that variable. This is the mechanism behind decorators and behind factory functions that produce customized functions, like a `make_multiplier(factor)` that returns a function remembering its own `factor`. To modify (not just read) an enclosing variable from inside the inner function, you must declare it `nonlocal` first.",
-      "conceptUk": "Коли функція, визначена всередині іншої функції, посилається на змінну з області видимості зовнішньої функції, Python тримає цю змінну живою як частину *замикання* навіть після того, як зовнішня функція вже повернулася — внутрішня функція «замикається» на цій змінній. Це механізм за декораторами й фабричними функціями, що виробляють кастомізовані функції, як `make_multiplier(factor)`, що повертає функцію, яка пам'ятає власний `factor`. Щоб змінити (не лише прочитати) охоплюючу змінну зсередини внутрішньої функції, потрібно спершу оголосити її `nonlocal`.",
+      "conceptUk": "Коли функція, визначена всередині іншої функції, посилається на змінну з області видимості зовнішньої функції, Python тримає цю змінну живою як частину *замикання* навіть після того, як зовнішня функція вже повернулася — внутрішня функція «замикається» на цій змінній. Це механізм за декораторами й фабричними функціями, що виробляють кастомізовані функції, як `make_multiplier(factor)`, що повертає функцію, яка пам'ятає власний `factor`. Щоб змінити (не лише прочитати) змінну із зовнішньої області видимості зсередини внутрішньої функції, потрібно спершу оголосити її `nonlocal`.",
       "keyPoints": [
         "An inner function captures variables from its enclosing scope, kept alive after the outer function returns",
         "Factory functions like make_multiplier(factor) use closures to produce customized functions",
         "Modifying (not just reading) an enclosing variable requires an explicit nonlocal declaration"
       ],
       "keyPointsUk": [
-        "Внутрішня функція захоплює змінні з охоплюючої області, які лишаються живими після повернення зовнішньої функції",
+        "Внутрішня функція захоплює змінні з зовнішньої області, які лишаються живими після повернення зовнішньої функції",
         "Фабричні функції на кшталт make_multiplier(factor) використовують замикання для вироблення кастомізованих функцій",
-        "Зміна (не лише читання) охоплюючої змінної потребує явного оголошення nonlocal"
+        "Зміна (не лише читання) змінної із зовнішньої області видимості потребує явного оголошення nonlocal"
       ],
       "code": "def make_multiplier(factor):\n    def multiply(value):\n        return value * factor\n    return multiply\n\ndouble = make_multiplier(2)\ntriple = make_multiplier(3)\nprint(double(5), triple(5))  # 10 15",
       "codeCaption": "Two independent closures, each remembering its own factor from when make_multiplier was called.",
@@ -159,7 +159,7 @@
       ],
       "pitfallsUk": [
         "Замикання, створені в циклі, що посилаються напряму на змінну циклу, усі ділять те саме кінцеве значення при виклику",
-        "Спроба повторно присвоїти охоплюючу змінну всередині внутрішньої функції без nonlocal натомість створює нову локальну змінну"
+        "Спроба повторно присвоїти змінну із зовнішньої області видимості всередині внутрішньої функції без nonlocal натомість створює нову локальну змінну"
       ],
       "exercise": "Write make_counter() that returns a function which increments and returns an internal count each time it's called, using nonlocal to modify the enclosed count variable.",
       "exerciseUk": "Напишіть make_counter(), що повертає функцію, яка збільшує й повертає внутрішній лічильник щоразу при виклику, використовуючи nonlocal для зміни захопленої змінної count.",
@@ -243,7 +243,7 @@
       ],
       "pitfallsUk": [
         "Віра, що анотації типів запобігають помилкам виконання — вони допомагають, лише якщо перевіряльник справді запускається, наприклад у CI",
-        "Забуття -> None для функції без значущого значення, що повертається, — поширена невідповідність, яку позначає mypy"
+        "Для повністю анотованої функції, що не повертає значущого результату, зазначайте -> None"
       ],
       "exercise": "Add complete type hints to a small function of your choice, install mypy, and run it against the file to see what, if anything, it flags.",
       "exerciseUk": "Додайте повні анотації типів до невеликої функції на власний вибір, встановіть mypy й запустіть його на файлі, щоб побачити, що (якщо взагалі щось) він позначить.",
@@ -286,7 +286,7 @@
       ],
       "pitfallsUk": [
         "Тестові функції без префікса test_ тихо пропускаються виявленням pytest",
-        "Забуття pytest.raises(...) навколо коду, що має провалитись, означає, що тест проходить, лише якщо винятку НЕ сталося — протилежне до наміру"
+        "Без pytest.raises(...) очікуваний виняток спричинить падіння тесту; успіх без винятку не перевіряє потрібну поведінку"
       ],
       "exercise": "Write parametrized pytest tests for the is_palindrome(text) function from an earlier lesson, covering an empty string, a single character, and a mixed-case palindrome.",
       "exerciseUk": "Напишіть параметризовані тести pytest для функції is_palindrome(text) з попереднього уроку, охоплюючи порожній рядок, один символ і паліндром зі змішаним регістром.",
