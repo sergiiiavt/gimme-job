@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ukrainianInterviewLabel } from "@/content/interview/ukrainian-labels";
 import interviewCatalog, { interviewCatalogForDomain } from "@/content/interview/catalog";
 import pythonInterviewCatalog from "@/content/python-interview/catalog";
 import { canonicalInterviewDomainPath, interviewDomainRouteById } from "@/content/interview/domain-routes";
@@ -45,61 +46,6 @@ type InterviewSource = {
   role?: string;
 };
 
-const CATEGORY_UK: Record<string, string> = {
-  Fundamentals: "Основи тестування",
-  "Test design": "Тест-дизайн",
-  "Documentation and defects": "Документація та дефекти",
-  "Web, API and data": "Вебзастосунки, API та дані",
-  Mobile: "Мобільне тестування",
-  "Embedded and IoT": "Вбудовані системи та IoT",
-  "Automation and CI": "Автоматизація та CI",
-  Programming: "Програмування",
-  Infrastructure: "Інфраструктура",
-  "OS & command line": "ОС і командний рядок",
-  "Performance and resilience": "Продуктивність і стійкість",
-  "Security and accessibility": "Безпека та доступність інтерфейсів",
-  "Agile and delivery": "Agile та постачання ПЗ",
-  "Metrics and estimation": "Метрики та оцінювання",
-  "Strategy and risk": "Стратегія та ризики",
-  Leadership: "Лідерство",
-  "Practical tasks": "Практичні завдання",
-  "AI, ML and LLM": "AI, ML та LLM",
-  "Databases, SQL and BI": "Бази даних, SQL та BI",
-  "Observability and production": "Спостережуваність та експлуатація",
-  "Regulated domains": "Регульовані галузі",
-};
-
-
-const QUESTION_META_UK: Record<string, string> = {
-  "Very common": "Дуже поширене",
-  Common: "Поширене",
-  Occasional: "Трапляється іноді",
-  Specialist: "Спеціалізоване",
-  Theory: "Теорія",
-  Practical: "Практика",
-  Scenario: "Сценарій",
-  "Test design": "Тест-дизайн",
-  Troubleshooting: "Діагностика",
-  "Risk analysis": "Аналіз ризиків",
-  Automation: "Автоматизація",
-  "Release decision": "Рішення про реліз",
-  Strategy: "Стратегія",
-  Leadership: "Лідерство",
-  Security: "Безпека",
-  Design: "Проєктування",
-  Performance: "Продуктивність",
-  Integration: "Інтеграція",
-  Comparison: "Порівняння",
-  Tooling: "Інструменти",
-  Behavioral: "Поведінкове питання",
-  Operations: "Експлуатація",
-  Reliability: "Надійність",
-  Analysis: "Аналіз",
-  Scripting: "Скрипти",
-  Architecture: "Архітектура",
-  Delivery: "Постачання ПЗ",
-  Planning: "Планування",
-};
 const RELATED_LABELS_UK: Record<string, string> = {
   "QA fundamentals": "Основи QA",
   "QA strategy & risk": "Стратегія QA та ризики",
@@ -130,7 +76,7 @@ const PYTHON_RELATED_LINKS = [
 ] as const;
 
 function localizedCategory(category: string) {
-  return CATEGORY_UK[category] ?? category;
+  return ukrainianInterviewLabel(category);
 }
 
 function normalizeQuestionText(question: InterviewQuestion) {
@@ -152,8 +98,8 @@ function QuestionCard({ question, questionHref, sources, open = false }: Readonl
         <div className={styles.questionMeta}>
           <span>{localizedCategory(question.category)}</span>
           <span>{question.level}</span>
-          <span>{QUESTION_META_UK[question.prevalence] ?? question.prevalence}</span>
-          {question.kind ? <span>{QUESTION_META_UK[question.kind] ?? question.kind}</span> : null}
+          <span>{ukrainianInterviewLabel(question.prevalence)}</span>
+          {question.kind ? <span>{ukrainianInterviewLabel(question.kind)}</span> : null}
         </div>
         <h2>{text.question}</h2>
       </summary>
