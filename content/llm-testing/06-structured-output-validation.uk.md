@@ -1,10 +1,10 @@
-# Structured output і validation
+# Структуровані відповіді та їх перевірка
 
 Вільний текст пишуть для людей. Щойно output моделі читає code — щоб маршрутизувати ticket, заповнити форму, записати рядок у базу чи викликати tool, — він стає інтерфейсом між двома програмами, і йому потрібен контракт: schema, що визначає валідний output, і validation, що щоразу її забезпечує. Цей chapter показує, як спроєктувати такий контракт, як забезпечити його validation pipeline, що також виправляє і безпечно відступає на fallback, чим допомагають нативні structured outputs providers і де їхня допомога закінчується, а також які test cases потрібні кожному structured output.
 
-**Prerequisites:** [Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy), [Prompts як тестовані артефакти](/learn/llm?topic=prompts-as-artifacts).
+**Передумови:** [Анатомія LLM-застосунку та API](/learn/llm?topic=llm-application-anatomy), [Промпти як артефакти, які можна тестувати](/learn/llm?topic=prompts-as-artifacts).
 
-## Коли output має бути структурованим
+## Коли потрібна структурована відповідь
 
 Вимагайте structured output щоразу, коли результат споживає code:
 
@@ -18,7 +18,7 @@
 
 Витягувати значення з вільного тексту регулярними виразами постфактум крихко: формулювання змінюються між runs, версіями prompt і моделями. Запит структури заздалегідь переводить проблему з парсингу прози у validation даних, а це вирішена інженерна задача.
 
-## Проєктування контракту output
+## Проєктування контракту відповіді
 
 Schema — це API contract між моделлю та вашим code. Проєктуйте її з тією самою ретельністю:
 
@@ -98,7 +98,7 @@ except ValidationError as error:
 
 Зверніть увагу на дві поведінки Pydantic, важливі для тестів. За замовчуванням Pydantic **приводить** сумісні типи, тож `"priority": "2"` стає integer 2; використовуйте strict mode, якщо контракт вимагає справжніх integers. А значення enum **чутливі до регістру**: `"Returns"` не проходить, що правильно для контракту, але означає, що треба вирішити, чи нормалізувати регістр перед validation.
 
-## Validation pipeline
+## Послідовність перевірки
 
 Надійний споживач output моделі пропускає кожну відповідь через той самий pipeline:
 
@@ -242,7 +242,7 @@ for name, model in cases:
     print(f"{name:<34} -> {outcome}")
 ```
 
-Output:
+Результат:
 
 ```text
 clean JSON                         -> accepted on attempt 1
@@ -257,7 +257,7 @@ hallucinated order id twice        -> fallback after 2 attempts; last errors: ['
 
 **Що містить repair prompt.** Друга спроба надсилає початковий запит плюс повідомлення на кшталт: *«Your previous output was invalid: priority must be an integer from 1 to 4. Return only the corrected JSON object.»* Repair prompts добре працюють для помилок формату й погано — для семантичних: модель, що один раз вигадала order ID, часто вигадує інший, як показує останній case. Обмежуйте кількість спроб (зазвичай достатньо одного repair) і рахуйте repair rates у monitoring.
 
-## Нативні structured outputs providers
+## Вбудована підтримка структурованих відповідей
 
 Сучасні APIs providers можуть обмежити генерацію JSON schema, щоб повернений текст завжди парсився і відповідав структурі schema. Реалізації використовують **constrained decoding**: на кожному кроці tokens, що порушили б schema, виключаються з sampling.
 
@@ -316,9 +316,9 @@ print(response.output_parsed)                      # None when the model refused
 
 ### Tool calling як structured output
 
-До появи нативних structured outputs стандартною технікою було визначити tool, чия input schema — це бажаний output, і змусити модель його викликати. Це досі працює з кожним provider, що підтримує tool calling, і до arguments tools застосовуються ті самі правила validation ([Evaluation agents і tool use](/learn/llm?topic=agent-testing)).
+До появи нативних structured outputs стандартною технікою було визначити tool, чия input schema — це бажаний output, і змусити модель його викликати. Це досі працює з кожним provider, що підтримує tool calling, і до arguments tools застосовуються ті самі правила validation ([Оцінювання агентів і викликів інструментів](/learn/llm?topic=agent-testing)).
 
-## Обрізаний і malformed output
+## Обрізана або некоректно сформована відповідь
 
 Два різні збої спершу виглядають однаково: JSON не парситься. Вони потребують різної обробки.
 
@@ -348,7 +348,7 @@ print(diagnose(truncated, "max_tokens"))
 print(diagnose('{"category": "returns", "priority": 2,}', "end"))
 ```
 
-Output:
+Результат:
 
 ```text
 valid JSON
@@ -358,7 +358,7 @@ malformed output (Illegal trailing comma before end of object at position 37): s
 
 При **streaming** JSON неповний до останньої події. Валідуйте лише зібраний object. Якщо UI потребує живого preview, використовуйте parser, розроблений для часткового JSON, і вважайте preview недовіреним, доки фінальна validation не пройде.
 
-## Test cases, потрібні кожному structured output
+## Обов’язкові тестові сценарії для структурованої відповіді
 
 Використовуйте schema як checklist. Для object triage:
 
@@ -437,7 +437,7 @@ missed_escalations = sum(expected["needs_human"] and not predicted["needs_human"
 print(f"missed escalations: {missed_escalations}")
 ```
 
-Output:
+Результат:
 
 ```text
 category     accuracy 4/6 = 67%

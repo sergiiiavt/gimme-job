@@ -82,7 +82,7 @@ function renderHighlightedCode(source: string, language: string): ReactNode[] {
 
 function sqlRuntimeLabel(engine: string | undefined, showUk: boolean) {
   if (engine === "sqlite") return "Runtime · SQLite sample DB";
-  return showUk ? "Runtime · статичний приклад" : "Runtime · static example";
+  return showUk ? "Виконання · статичний приклад" : "Runtime · static example";
 }
 
 export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, questionId }: {
@@ -190,7 +190,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
         </section>
 
         <section className={styles.section}>
-          <h2>{showUk ? "Сильна відповідь включає" : "Strong answer includes"}</h2>
+          <h2>{showUk ? "Що має містити ґрунтовна відповідь" : "Strong answer includes"}</h2>
           <ul>{displaySignals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
         </section>
 

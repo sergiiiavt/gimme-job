@@ -4,6 +4,7 @@ import pythonInterviewCatalog from "@/content/python-interview/catalog";
 import { canonicalInterviewDomainPath, interviewDomainRouteById } from "@/content/interview/domain-routes";
 import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW, ukrainianInterviewPath } from "@/content/interview/ukrainian-routes";
 import { questionDeepLinkHref } from "../../content-deep-links";
+import { ukrainianPlural } from "../../source-count-label";
 import styles from "./ukrainian-interview-page.module.css";
 
 type InterviewCodeExample = {
@@ -48,24 +49,78 @@ const CATEGORY_UK: Record<string, string> = {
   Fundamentals: "Основи тестування",
   "Test design": "Тест-дизайн",
   "Documentation and defects": "Документація та дефекти",
-  "Web, API and data": "Web, API та дані",
-  Mobile: "Mobile",
-  "Embedded and IoT": "Embedded та IoT",
+  "Web, API and data": "Вебзастосунки, API та дані",
+  Mobile: "Мобільне тестування",
+  "Embedded and IoT": "Вбудовані системи та IoT",
   "Automation and CI": "Автоматизація та CI",
   Programming: "Програмування",
   Infrastructure: "Інфраструктура",
-  "OS & command line": "OS та command line",
-  "Performance and resilience": "Performance та стійкість",
-  "Security and accessibility": "Безпека та accessibility",
-  "Agile and delivery": "Agile та delivery",
+  "OS & command line": "ОС і командний рядок",
+  "Performance and resilience": "Продуктивність і стійкість",
+  "Security and accessibility": "Безпека та доступність інтерфейсів",
+  "Agile and delivery": "Agile та постачання ПЗ",
   "Metrics and estimation": "Метрики та оцінювання",
   "Strategy and risk": "Стратегія та ризики",
   Leadership: "Лідерство",
   "Practical tasks": "Практичні завдання",
   "AI, ML and LLM": "AI, ML та LLM",
   "Databases, SQL and BI": "Бази даних, SQL та BI",
-  "Observability and production": "Observability та production",
-  "Regulated domains": "Регульовані домени",
+  "Observability and production": "Спостережуваність та експлуатація",
+  "Regulated domains": "Регульовані галузі",
+};
+
+
+const QUESTION_META_UK: Record<string, string> = {
+  "Very common": "Дуже поширене",
+  Common: "Поширене",
+  Occasional: "Трапляється іноді",
+  Specialist: "Спеціалізоване",
+  Theory: "Теорія",
+  Practical: "Практика",
+  Scenario: "Сценарій",
+  "Test design": "Тест-дизайн",
+  Troubleshooting: "Діагностика",
+  "Risk analysis": "Аналіз ризиків",
+  Automation: "Автоматизація",
+  "Release decision": "Рішення про реліз",
+  Strategy: "Стратегія",
+  Leadership: "Лідерство",
+  Security: "Безпека",
+  Design: "Проєктування",
+  Performance: "Продуктивність",
+  Integration: "Інтеграція",
+  Comparison: "Порівняння",
+  Tooling: "Інструменти",
+  Behavioral: "Поведінкове питання",
+  Operations: "Експлуатація",
+  Reliability: "Надійність",
+  Analysis: "Аналіз",
+  Scripting: "Скрипти",
+  Architecture: "Архітектура",
+  Delivery: "Постачання ПЗ",
+  Planning: "Планування",
+};
+const RELATED_LABELS_UK: Record<string, string> = {
+  "QA fundamentals": "Основи QA",
+  "QA strategy & risk": "Стратегія QA та ризики",
+  "Metrics & estimation": "Метрики та оцінювання",
+  "Linux for QA": "Linux для QA",
+  "Cloud & DevOps for QA": "Хмарні технології та DevOps для QA",
+  "Networking for QA": "Мережі для QA",
+  "Test automation learning": "Курс автоматизації тестування",
+  "Automation learning": "Курс автоматизації тестування",
+  "Programming reference": "Довідник із програмування",
+  "QA Automation interview": "Співбесіда з автоматизації тестування",
+  "Data & SQL reference": "Довідник із даних і SQL",
+  "Testing tools": "Інструменти тестування",
+  "API testing learning": "Курс тестування API",
+  "Security testing": "Тестування безпеки",
+  "Performance testing learning": "Курс тестування продуктивності",
+  "Observability & SRE": "Спостережуваність і SRE",
+  "Mobile testing learning": "Курс мобільного тестування",
+  "Embedded & IoT learning": "Вбудовані системи та IoT",
+  "LLM testing & AI learning": "Курс AI та тестування LLM",
+  "AI agents & MCP": "Агенти AI та MCP",
 };
 
 const PYTHON_RELATED_LINKS = [
@@ -97,8 +152,8 @@ function QuestionCard({ question, questionHref, sources, open = false }: Readonl
         <div className={styles.questionMeta}>
           <span>{localizedCategory(question.category)}</span>
           <span>{question.level}</span>
-          <span>{question.prevalence}</span>
-          {question.kind ? <span>{question.kind}</span> : null}
+          <span>{QUESTION_META_UK[question.prevalence] ?? question.prevalence}</span>
+          {question.kind ? <span>{QUESTION_META_UK[question.kind] ?? question.kind}</span> : null}
         </div>
         <h2>{text.question}</h2>
       </summary>
@@ -110,7 +165,7 @@ function QuestionCard({ question, questionHref, sources, open = false }: Readonl
 
         {text.signals.length ? (
           <section>
-            <h3>Сильна відповідь включає</h3>
+            <h3>Що має містити ґрунтовна відповідь</h3>
             <ul>{text.signals.map((signal) => <li key={signal}>{signal}</li>)}</ul>
           </section>
         ) : null}
@@ -201,7 +256,7 @@ export default function UkrainianInterviewPage({
       </div>
 
       <div className={styles.content}>
-        <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+        <nav aria-label="Шлях навігації" className={styles.breadcrumb}>
           <Link href="/uk/interview">Питання для співбесіди</Link>
           {path !== "/uk/interview" ? <><span aria-hidden="true">/</span><span aria-current="page">{label}</span></> : null}
         </nav>
@@ -212,11 +267,11 @@ export default function UkrainianInterviewPage({
           <span>{description}</span>
           <div className={styles.stats}>
             <strong>{questions.length}</strong>
-            <span>{questions.length === 1 ? "питання" : "питань"}</span>
+            <span>{ukrainianPlural(questions.length, "питання", "питання", "питань")}</span>
           </div>
         </header>
 
-        <nav aria-label="Домени питань для співбесіди" className={styles.domains}>
+        <nav aria-label="Теми питань для співбесіди" className={styles.domains}>
           {UKRAINIAN_INTERVIEW_DOMAIN_ROUTES.map((route) => (
             <Link
               aria-current={!python && route.id === domainId ? "page" : undefined}
@@ -233,7 +288,7 @@ export default function UkrainianInterviewPage({
         {relatedLinks.length ? (
           <nav aria-label="Пов’язані навчальні матеріали" className={styles.related}>
             <span>Пов’язані матеріали</span>
-            {relatedLinks.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
+            {relatedLinks.map((link) => <Link href={link.href} key={link.href}>{RELATED_LABELS_UK[link.label] ?? link.label}</Link>)}
           </nav>
         ) : null}
 

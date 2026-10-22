@@ -10,16 +10,16 @@
       "summary": "Two ways to run Python code: an interactive REPL for quick experiments, and script files for real programs.",
       "summaryUk": "Два способи запускати код Python: інтерактивний REPL для швидких експериментів і файли скриптів для справжніх програм.",
       "concept": "Typing `python` (or `python3`) with no arguments opens the REPL — Read-Eval-Print Loop — where each input is executed immediately, and when that input is a bare expression, its value is automatically displayed; statements such as assignments execute without automatically printing anything, which is exactly why `name = \"Ada\"` in the example below produces no visible output on its own line. Real programs live in `.py` files and are run with `python filename.py`. Modern editors and IDEs also offer a Jupyter-style notebook cell interface, but the REPL and plain scripts are the two forms every Python programmer needs to be comfortable with first.",
-      "conceptUk": "Введення `python` (чи `python3`) без аргументів відкриває REPL — Read-Eval-Print Loop (цикл читання-обчислення-друку), де кожен введений вираз виконується негайно, а коли цим вводом є голий вираз, його значення автоматично відображається; оператори на кшталт присвоєнь виконуються без автоматичного друку результату, саме тому `name = \"Ada\"` у прикладі нижче не дає видимого виводу на своєму рядку. Справжні програми живуть у файлах `.py` й запускаються через `python filename.py`. Сучасні редактори та IDE також пропонують інтерфейс комірок у стилі Jupyter-ноутбуків, але REPL і звичайні скрипти — дві форми, з якими має бути зручно кожному програмісту Python спершу.",
+      "conceptUk": "Запуск `python` або `python3` без аргументів відкриває REPL — інтерактивний цикл читання, обчислення та виведення. Введений код виконується одразу. Значення окремого виразу показується автоматично, якщо це не `None`; присвоєння на зразок `name = \"Ada\"` виконується без виведення результату. Скрипти зберігають у файлах `.py` та запускають командою `python filename.py`. Редактори й IDE також можуть підтримувати комірки в стилі Jupyter, але спочатку варто освоїти REPL і звичайні скрипти.",
       "keyPoints": [
         "The REPL executes each input immediately, but only a bare expression's value is displayed automatically",
         "A .py script is run with `python filename.py` from a terminal",
         "Exit the REPL with `exit()`, `quit()`, or Ctrl-D (Ctrl-Z then Enter on Windows)"
       ],
       "keyPointsUk": [
-        "REPL негайно виконує кожен ввід, але автоматично відображається лише значення голого виразу",
-        "Скрипт .py запускається через `python filename.py` з термінала",
-        "Вийти з REPL можна через `exit()`, `quit()` чи Ctrl-D (Ctrl-Z, потім Enter на Windows)"
+        "REPL виконує введений код одразу й автоматично показує результат окремого виразу, якщо він не None",
+        "Скрипт .py запускають командою python filename.py з термінала",
+        "Для виходу з REPL використовуйте exit(), quit() або Ctrl-D; у Windows — Ctrl-Z, потім Enter"
       ],
       "code": ">>> 2 + 2\n4\n>>> name = \"Ada\"\n>>> print(f\"Hello, {name}!\")\nHello, Ada!\n>>> exit()",
       "codeCaption": "A short REPL session: an expression, a variable assignment, and a formatted greeting.",
@@ -30,7 +30,7 @@
       ],
       "pitfallsUk": [
         "Стан REPL втрачається при закритті — усе варте збереження має бути у файлі .py",
-        "REPL автоматично відлунює результати голих виразів, а скрипт — ніколи, якщо не викликати print()"
+        "REPL автоматично показує результати окремих виразів, а скрипт — ніколи, якщо не викликати print()"
       ],
       "exercise": "Open a REPL, compute the area of a circle with radius 4 (use 3.14159 for pi), then save the same calculation as a script called area.py that prints the result.",
       "exerciseUk": "Відкрийте REPL, обчисліть площу кола з радіусом 4 (використайте 3.14159 для пі), а потім збережіть той самий розрахунок як скрипт area.py, що друкує результат.",
@@ -49,7 +49,7 @@
       "level": "Beginner",
       "order": 2,
       "title": "print() and reading basic input",
-      "titleUk": "print() і читання базового вводу",
+      "titleUk": "print() і введення даних",
       "summary": "How print() actually works — separators, line endings, multiple values — and how to read a line of user input.",
       "summaryUk": "Як насправді працює print() — роздільники, закінчення рядків, кілька значень — і як прочитати рядок вводу від користувача.",
       "concept": "`print()` accepts any number of positional arguments, converts each to a string, joins them with `sep` (a single space by default) and finishes the line with `end` (a newline by default) — both are keyword arguments you can override. `input(\"prompt: \")` displays a prompt, blocks until the user types a line and presses Enter, and always returns that line as a `str`, even if the user typed digits, so numeric input needs an explicit conversion like `int(input(...))`.",
@@ -72,7 +72,7 @@
         "input() blocks forever waiting for a line — it never times out on its own"
       ],
       "pitfallsUk": [
-        "Забуття int()/float() навколо input() призводить до того, що '5' + '3' дає '53', а не 8",
+        "Без перетворення через int() або float() значення input() залишаються рядками: '5' + '3' дає '53', а не 8",
         "input() блокується вічно в очікуванні рядка — сам по собі ніколи не має тайм-ауту"
       ],
       "exercise": "Write a script that asks for two numbers with input(), converts them to float, and prints their sum, difference and product on three separate lines.",
@@ -96,7 +96,7 @@
       "summary": "When to write a comment, when to write a docstring, and the naming/spacing conventions from PEP 8.",
       "summaryUk": "Коли писати коментар, коли — docstring, і угоди іменування/відступів з PEP 8.",
       "concept": "A `#` comment explains *why* code does something non-obvious; it is stripped before execution and invisible to `help()`. A triple-quoted docstring as the first statement in a module, function or class instead documents *what* that object does and is stored on `__doc__`, discoverable at runtime. PEP 8 is Python's official style guide: 4 spaces per indentation level, with spaces preferred over tabs (tabs are mainly for staying consistent within an already tab-indented codebase, and mixing the two for indentation is disallowed); its default maximum line length is 79 characters for code (72 for comments and docstrings), though a team may deliberately agree on a longer limit up to 99 — conventions followed closely enough across the ecosystem that most codebases read consistently.",
-      "conceptUk": "Коментар `#` пояснює *чому* код робить щось неочевидне; він видаляється перед виконанням і невидимий для `help()`. Рядок у потрійних лапках як перший оператор модуля, функції чи класу натомість документує *що* робить цей об'єкт і зберігається в `__doc__`, доступний під час виконання. PEP 8 — офіційний посібник зі стилю Python: 4 пробіли на рівень відступу, пробіли надаються перевазі над табуляцією (табуляція — переважно для узгодженості в уже табульованій кодовій базі, а змішування табуляції й пробілів для відступів заборонене); типовий максимум довжини рядка — 79 символів для коду (72 для коментарів і docstring), хоча команда може навмисно погодити довший ліміт до 99 — угоди, яких досить послідовно дотримується екосистема, тож більшість кодових баз читаються узгоджено.",
+      "conceptUk": "Коментар `#` пояснює *чому* код робить щось неочевидне; він видаляється перед виконанням і невидимий для `help()`. Рядок у потрійних лапках як перший оператор модуля, функції чи класу натомість документує *що* робить цей об'єкт і зберігається в `__doc__`, доступний під час виконання. PEP 8 — офіційний посібник зі стилю Python: 4 пробіли на рівень відступу, пробілам надають перевагу перед табуляцією (табуляція — переважно для узгодженості в уже табульованій кодовій базі, а змішування табуляції й пробілів для відступів заборонене); типовий максимум довжини рядка — 79 символів для коду (72 для коментарів і docstring), хоча команда може навмисно погодити довший ліміт до 99 — угоди, яких досить послідовно дотримується екосистема, тож більшість кодових баз читаються узгоджено.",
       "keyPoints": [
         "# comments explain why; docstrings document what, and are readable via __doc__/help()",
         "PEP 8: 4-space indents, snake_case names, PascalCase classes",
@@ -136,7 +136,7 @@
       "level": "Beginner",
       "order": 4,
       "title": "The shape of a real Python script",
-      "titleUk": "Форма справжнього скрипта Python",
+      "titleUk": "Структура скрипта Python",
       "summary": "Why real scripts put logic inside functions and guard the entry point with if __name__ == \"__main__\":",
       "summaryUk": "Чому справжні скрипти розміщують логіку всередині функцій і захищають точку входу через if __name__ == \"__main__\":",
       "concept": "Every `.py` file has a special variable `__name__`, which Python sets to `\"__main__\"` when that file is run directly, but to the module's actual name when it is imported by another file. Wrapping a script's entry logic in `if __name__ == \"__main__\":` means the file can be run directly for its own behavior, but can also be safely imported elsewhere to reuse its functions without that entry logic running unintentionally. This, combined with keeping real logic inside functions rather than loose at module level, is the standard shape of a maintainable Python script.",
@@ -266,11 +266,11 @@
       "level": "Beginner",
       "order": 7,
       "title": "Booleans, None and truthiness",
-      "titleUk": "Булеві значення, None і правдивість",
+      "titleUk": "Булеві значення, None і істинність",
       "summary": "bool is a subtype of int, None means \"no value\", and every object has an implicit truth value.",
       "summaryUk": "bool — підтип int, None означає «немає значення», і кожен об'єкт має неявне значення істинності.",
       "concept": "`True` and `False` are actually instances of `bool`, which is a subclass of `int` — `True == 1` and `False == 0` are both `True`, and `True + True` evaluates to `2`, though relying on that in real code is poor style. `None` is Python's single \"no value\" object, commonly used as a default for \"nothing provided yet\", and is always tested with `is None`, never `== None`. Every object can be evaluated in a boolean context: `None`, `False`, `0`, `0.0`, and empty containers (`\"\"`, `[]`, `{}`) are falsy, and virtually everything else is truthy.",
-      "conceptUk": "`True` і `False` насправді є екземплярами `bool`, підкласу `int` — `True == 1` і `False == 0` обидва дають `True`, а `True + True` обчислюється в `2`, хоча покладатися на це в реальному коді — поганий стиль. `None` — єдиний об'єкт «немає значення» в Python, часто використовується як значення за замовчуванням для «ще нічого не надано», і завжди перевіряється через `is None`, ніколи `== None`. Кожен об'єкт можна обчислити в булевому контексті: `None`, `False`, `0`, `0.0` та порожні контейнери (`\"\"`, `[]`, `{}`) хибні, а практично все інше — правдиве.",
+      "conceptUk": "`True` і `False` насправді є екземплярами `bool`, підкласу `int` — `True == 1` і `False == 0` обидва дають `True`, а `True + True` обчислюється в `2`, хоча покладатися на це в реальному коді — поганий стиль. `None` — єдиний об'єкт «немає значення» в Python, часто використовується як значення за замовчуванням для «ще нічого не надано», і завжди перевіряється через `is None`, ніколи `== None`. Кожен об'єкт можна обчислити в булевому контексті: `None`, `False`, `0`, `0.0` та порожні контейнери (`\"\"`, `[]`, `{}`) хибні, а практично все інше — істинне.",
       "keyPoints": [
         "bool is a subclass of int; True == 1 and False == 0",
         "Test for \"no value\" with `is None`, never `== None`",
@@ -279,11 +279,11 @@
       "keyPointsUk": [
         "bool — підклас int; True == 1 і False == 0",
         "Перевіряйте «немає значення» через `is None`, ніколи через `== None`",
-        "None, False, 0, 0.0 і порожні контейнери хибні; майже все інше правдиве"
+        "None, False, 0, 0.0 і порожні контейнери хибні; майже все інше істинне"
       ],
       "code": "def greet(name=None):\n    if name is None:\n        name = \"stranger\"\n    return f\"Hello, {name}\"\n\nprint(greet())        # Hello, stranger\nprint(bool([]), bool([0]))  # False True",
       "codeCaption": "Using None as a sentinel default, and showing that a list containing 0 is still truthy.",
-      "codeCaptionUk": "Використання None як сентинела за замовчуванням, і демонстрація, що список з 0 усе ще правдивий.",
+      "codeCaptionUk": "Використання None як сентинела за замовчуванням, і демонстрація, що список з 0 усе ще істинний.",
       "pitfalls": [
         "if value == None: works but is non-idiomatic and slower than is None",
         "if my_list == []: works but if not my_list: is the idiomatic emptiness check"
@@ -293,7 +293,7 @@
         "if my_list == []: працює, але if not my_list: — ідіоматична перевірка на порожнечу"
       ],
       "exercise": "Write is_empty(value) that returns True for None, an empty string, an empty list, or 0, using only truthiness — no explicit type checks.",
-      "exerciseUk": "Напишіть is_empty(value), що повертає True для None, порожнього рядка, порожнього списку чи 0, використовуючи лише правдивість — без явних перевірок типу.",
+      "exerciseUk": "Напишіть is_empty(value), що повертає True для None, порожнього рядка, порожнього списку чи 0, використовуючи лише істинність — без явних перевірок типу.",
       "tags": [
         "booleans",
         "none",
@@ -314,7 +314,7 @@
       "summary": "Operator precedence, chained comparisons, and how and/or actually return one of their operands.",
       "summaryUk": "Пріоритет операторів, ланцюгові порівняння, і як and/or насправді повертають один зі своїх операндів.",
       "concept": "Python follows standard mathematical precedence (`**` highest, then `*`/`/`/`//`/`%`, then `+`/`-`, then comparisons, then `not`, `and`, `or`), and parentheses always override it for clarity. Comparisons can be chained (`0 <= x < 10`), which reads naturally and evaluates each part only once. `and` and `or` are not restricted to returning `True`/`False`: `and` returns its first falsy operand or its last operand, and `or` returns its first truthy operand or its last operand, both short-circuiting as soon as the result is determined — this is the basis of the common `value = user_input or \"default\"` idiom.",
-      "conceptUk": "Python дотримується стандартного математичного пріоритету (`**` найвищий, потім `*`/`/`/`//`/`%`, потім `+`/`-`, потім порівняння, потім `not`, `and`, `or`), і дужки завжди перекривають його для ясності. Порівняння можна ланцюжити (`0 <= x < 10`), що читається природно й обчислює кожну частину лише раз. `and` і `or` не обмежені поверненням `True`/`False`: `and` повертає перший хибний операнд чи останній операнд, а `or` повертає перший правдивий операнд чи останній операнд, обидва зі скороченим обчисленням, щойно результат визначено — це основа поширеної ідіоми `value = user_input or \"default\"`.",
+      "conceptUk": "Python дотримується стандартного математичного пріоритету (`**` найвищий, потім `*`/`/`/`//`/`%`, потім `+`/`-`, потім порівняння, потім `not`, `and`, `or`), і дужки завжди перекривають його для ясності. Порівняння можна ланцюжити (`0 <= x < 10`), що читається природно й обчислює кожну частину лише раз. `and` і `or` не обмежені поверненням `True`/`False`: `and` повертає перший хибний операнд чи останній операнд, а `or` повертає перший істинний операнд чи останній операнд, обидва зі скороченим обчисленням, щойно результат визначено — це основа поширеної ідіоми `value = user_input or \"default\"`.",
       "keyPoints": [
         "Precedence among these operators: ** first, then * / // %, then + -, then comparisons, then not/and/or",
         "Chained comparisons like 0 <= x < 10 evaluate each part once, combined with and",
@@ -334,7 +334,7 @@
       ],
       "pitfallsUk": [
         "`value or default` тихо замінює й 0, \"\", чи [], не лише None — використовуйте `value if value is not None else default`, коли 0/порожнє — дійсні значення",
-        "Забуття, що ** зв'язує сильніше за унарний мінус: -2 ** 2 дорівнює -4, не 4"
+        "Оператор ** має вищий пріоритет за унарний мінус: -2 ** 2 дорівнює -4, а не 4"
       ],
       "exercise": "Without running it, predict the result of `10 - 2 * 3 ** 2 // 4`, then verify in a REPL and explain the order of operations that produced it.",
       "exerciseUk": "Не запускаючи, передбачте результат `10 - 2 * 3 ** 2 // 4`, потім перевірте в REPL і поясніть порядок операцій, що його дав.",
@@ -356,14 +356,14 @@
       "summary": "Converting between int, float, str, and bool explicitly, and checking a value's type safely.",
       "summaryUk": "Явне перетворення між int, float, str і bool, та безпечна перевірка типу значення.",
       "concept": "`int(x)`, `float(x)`, `str(x)` and `bool(x)` each convert a value using different rules. `int(x)` and `float(x)` parse or convert supported inputs and can raise `ValueError` for a malformed string like `int(\"forty-two\")`, or `TypeError` for an object that offers no sensible conversion at all. `str(x)` asks for a textual representation and essentially never fails. `bool(x)` applies Python's truth-value rules rather than validating anything, so `bool(\"nonsense\")` is simply `True`. `int(\"3.5\")` raises `ValueError` because it does not parse a float string directly, but `int(float(\"3.5\"))` works — and it is not just a parsing workaround: it genuinely truncates toward zero, so `int(float(\"3.9\"))` is `3`, not a rounded `4`. `type(x)` returns an object's exact class, while `isinstance(x, SomeType)` checks whether an object is that type or any subclass of it, which is almost always the better choice for validation because it correctly handles inheritance.",
-      "conceptUk": "`int(x)`, `float(x)`, `str(x)` і `bool(x)` кожен перетворює значення за власними правилами. `int(x)` і `float(x)` розбирають чи перетворюють підтримувані вхідні дані й можуть викликати `ValueError` для некоректного рядка на кшталт `int(\"forty-two\")`, або `TypeError` для об'єкта, що взагалі не пропонує розумного перетворення. `str(x)` запитує текстове представлення й практично ніколи не провалюється. `bool(x)` застосовує правила правдивості Python замість будь-якої валідації, тож `bool(\"nonsense\")` — просто `True`. `int(\"3.5\")` викликає `ValueError`, бо не розбирає рядок з дробовим числом напряму, але `int(float(\"3.5\"))` працює — і це не просто обхідний шлях для розбору: він справді обрізає в бік нуля, тож `int(float(\"3.9\"))` дорівнює `3`, а не округленим `4`. `type(x)` повертає точний клас об'єкта, тоді як `isinstance(x, SomeType)` перевіряє, чи є об'єкт цим типом чи будь-яким його підкласом, що майже завжди кращий вибір для валідації, бо коректно враховує спадковість.",
+      "conceptUk": "`int(x)`, `float(x)`, `str(x)` і `bool(x)` кожен перетворює значення за власними правилами. `int(x)` і `float(x)` розбирають чи перетворюють підтримувані вхідні дані й можуть викликати `ValueError` для некоректного рядка на кшталт `int(\"forty-two\")`, або `TypeError` для об'єкта, що взагалі не пропонує розумного перетворення. `str(x)` запитує текстове представлення й практично ніколи не провалюється. `bool(x)` застосовує правила істинності Python замість будь-якої валідації, тож `bool(\"nonsense\")` — просто `True`. `int(\"3.5\")` викликає `ValueError`, бо не розбирає рядок з дробовим числом напряму, але `int(float(\"3.5\"))` працює — і це не просто обхідний шлях для розбору: він справді обрізає в бік нуля, тож `int(float(\"3.9\"))` дорівнює `3`, а не округленим `4`. `type(x)` повертає точний клас об'єкта, тоді як `isinstance(x, SomeType)` перевіряє, чи є об'єкт цим типом чи будь-яким його підкласом, що майже завжди кращий вибір для валідації, бо коректно враховує спадковість.",
       "keyPoints": [
         "int() and float() may raise ValueError or TypeError depending on the input; str() rarely fails; bool() applies truth-value rules rather than validating",
         "int(\"3.5\") fails directly; int(float(\"3.5\")) works and truncates toward zero, e.g. int(float(\"3.9\")) is 3",
         "isinstance() respects inheritance and is generally preferred over type() == for checks"
       ],
       "keyPointsUk": [
-        "int() і float() можуть викликати ValueError чи TypeError залежно від вводу; str() рідко провалюється; bool() застосовує правила правдивості, а не валідує",
+        "int() і float() можуть викликати ValueError чи TypeError залежно від вводу; str() рідко провалюється; bool() застосовує правила істинності, а не валідує",
         "int(\"3.5\") провалюється напряму; int(float(\"3.5\")) працює й обрізає в бік нуля, наприклад int(float(\"3.9\")) дорівнює 3",
         "isinstance() враховує спадковість і зазвичай кращий за type() == для перевірок"
       ],
@@ -399,14 +399,14 @@
       "summary": "Branching logic with if/elif/else, and the match/case alternative for shape-based branching.",
       "summaryUk": "Логіка розгалуження через if/elif/else, і альтернатива match/case для розгалуження за формою.",
       "concept": "An `if` block runs its body only when its condition is truthy; an optional chain of `elif` blocks is checked in order, and only the first one whose condition is true runs; an optional final `else` runs if none of the above did. Indentation, not braces, defines each block's boundaries, so consistent indentation is not a style preference — it is the syntax. Since Python 3.10, `match`/`case` offers a structural alternative for branching on the *shape* of a value rather than a chain of equality checks, useful once you have more than a few related conditions to compare against one value.",
-      "conceptUk": "Блок `if` виконує своє тіло, лише коли умова правдива; необов'язковий ланцюжок блоків `elif` перевіряється по черзі, і виконується лише перший з правдивою умовою; необов'язковий фінальний `else` виконується, якщо жоден з попередніх не спрацював. Межі кожного блоку визначає відступ, а не фігурні дужки, тож послідовний відступ — не стильова перевага, а синтаксис. З Python 3.10 `match`/`case` пропонує структурну альтернативу для розгалуження за *формою* значення, а не ланцюжком перевірок на рівність, корисну, коли треба порівняти більше кількох пов'язаних умов з одним значенням.",
+      "conceptUk": "Блок `if` виконує своє тіло, лише коли умова істинна; необов'язковий ланцюжок блоків `elif` перевіряється по черзі, і виконується лише перший з істинною умовою; необов'язковий фінальний `else` виконується, якщо жоден з попередніх не спрацював. Межі кожного блоку визначає відступ, а не фігурні дужки, тож послідовний відступ — не стильова перевага, а синтаксис. З Python 3.10 `match`/`case` пропонує структурну альтернативу для розгалуження за *формою* значення, а не ланцюжком перевірок на рівність, корисну, коли треба порівняти більше кількох пов'язаних умов з одним значенням.",
       "keyPoints": [
         "elif branches are checked in order; only the first true one runs",
         "Indentation defines block boundaries — it is syntax, not style",
         "match/case (3.10+) suits structural branching better than a long elif chain"
       ],
       "keyPointsUk": [
-        "Гілки elif перевіряються по черзі; виконується лише перша правдива",
+        "Гілки elif перевіряються по черзі; виконується лише перша істинна",
         "Відступ визначає межі блоку — це синтаксис, а не стиль",
         "match/case (3.10+) краще підходить для структурного розгалуження, ніж довгий ланцюжок elif"
       ],
@@ -440,9 +440,9 @@
       "title": "while loops",
       "titleUk": "Цикли while",
       "summary": "Repeating code while a condition holds, and why forgetting to update the condition causes an infinite loop.",
-      "summaryUk": "Повторення коду, доки умова виконується, і чому забуття оновлення умови спричиняє нескінченний цикл.",
+      "summaryUk": "Повторення коду, доки умова виконується, та запобігання нескінченним циклам.",
       "concept": "A `while condition:` block repeats its body for as long as `condition` remains truthy, re-checking it before every iteration, including the very first. `while` is the right tool when the number of iterations is not known in advance — waiting for user input to satisfy some rule, or processing a queue until it is empty — whereas `for` is better once you are iterating over a known, finite sequence. A `while` loop needs a deliberate termination strategy unless it is intentionally long-running: the condition can eventually become false, or execution can leave through `break`, `return`, or an exception — `while True:` itself is a completely standard, intentional pattern for event loops, servers and retry logic, as long as one of those exits is actually reachable.",
-      "conceptUk": "Блок `while condition:` повторює своє тіло, доки `condition` залишається правдивою, перевіряючи її перед кожною ітерацією, включно з першою. `while` — правильний інструмент, коли кількість ітерацій наперед невідома — очікування, доки ввід користувача задовольнить якесь правило, чи обробка черги, доки вона не спорожніє, тоді як `for` кращий, коли ітеруєте по відомій, скінченній послідовності. Цикл `while` потребує навмисної стратегії завершення, якщо він не задуманий як довготривалий: умова може врешті стати хибною, або виконання може вийти через `break`, `return` чи виняток — сам `while True:` є цілком стандартним, навмисним патерном для циклів подій, серверів і логіки повторних спроб, доки один з цих виходів справді досяжний.",
+      "conceptUk": "Блок `while condition:` повторює своє тіло, доки `condition` залишається істинною, перевіряючи її перед кожною ітерацією, включно з першою. `while` — правильний інструмент, коли кількість ітерацій наперед невідома — очікування, доки ввід користувача задовольнить якесь правило, чи обробка черги, доки вона не спорожніє, тоді як `for` кращий, коли ітеруєте по відомій, скінченній послідовності. Цикл `while` потребує навмисної стратегії завершення, якщо він не задуманий як довготривалий: умова може врешті стати хибною, або виконання може вийти через `break`, `return` чи виняток — сам `while True:` є цілком стандартним, навмисним патерном для циклів подій, серверів і логіки повторних спроб, доки один з цих виходів справді досяжний.",
       "keyPoints": [
         "while re-checks its condition before every iteration, including the first",
         "Use while when the iteration count is unknown ahead of time",
@@ -462,7 +462,7 @@
       ],
       "pitfallsUk": [
         "while True: без жодного break усередині виконується вічно",
-        "Забуття attempts += 1 тут зробило б цикл абсолютно нескінченним, а не триразовим"
+        "Без attempts += 1 лічильник не змінюється: цикл не завершиться після трьох ітерацій"
       ],
       "exercise": "Write a while loop that keeps asking the user for a positive number and only stops once they enter one, printing an error message for anything else.",
       "exerciseUk": "Напишіть цикл while, що продовжує запитувати в користувача додатне число й зупиняється лише коли він його введе, друкуючи повідомлення про помилку для всього іншого.",
@@ -532,7 +532,7 @@
       "summary": "Exiting a loop early, skipping to the next iteration, and the rarely-used else that runs only if break never fired.",
       "summaryUk": "Дострокове завершення циклу, перехід до наступної ітерації, та рідко використовуваний else, що виконується лише якщо break не спрацював.",
       "concept": "`break` immediately exits the innermost enclosing loop entirely, skipping any remaining iterations. `continue` skips the rest of the current iteration's body and jumps straight to the next one, without exiting the loop. Both `for` and `while` support an optional trailing `else:` block that runs only if the loop completed all its iterations *without* hitting a `break` — a natural fit for \"search and report not-found\" patterns, though many developers find an explicit flag variable clearer and use that instead.",
-      "conceptUk": "`break` негайно повністю виходить з найближчого охоплюючого циклу, пропускаючи будь-які ітерації, що залишилися. `continue` пропускає решту тіла поточної ітерації й переходить прямо до наступної, не виходячи з циклу. І `for`, і `while` підтримують необов'язковий кінцевий блок `else:`, що виконується, лише якщо цикл завершив усі ітерації *без* спрацювання `break` — природно підходить для патернів «пошук і звіт про відсутність», хоча багато розробників вважають явну змінну-прапорець зрозумілішою і використовують натомість її.",
+      "conceptUk": "`break` негайно повністю виходить з найближчого зовнішнього циклу, пропускаючи будь-які ітерації, що залишилися. `continue` пропускає решту тіла поточної ітерації й переходить прямо до наступної, не виходячи з циклу. І `for`, і `while` підтримують необов'язковий кінцевий блок `else:`, що виконується, лише якщо цикл завершив усі ітерації *без* спрацювання `break` — природно підходить для патернів «пошук і звіт про відсутність», хоча багато розробників вважають явну змінну-прапорець зрозумілішою і використовують натомість її.",
       "keyPoints": [
         "break exits the loop entirely; continue skips to the next iteration",
         "A loop's else clause runs only if the loop finished without a break",
@@ -641,7 +641,7 @@
       ],
       "pitfallsUk": [
         "Визначення функції не запускає її — часта рання плутанина: очікування виводу до її виклику",
-        "Забуття return означає, що результат функції тихо стає None, навіть якщо вона щось надрукувала всередині"
+        "Без return функція повертає None, навіть якщо всередині виводить результат через print()"
       ],
       "exercise": "Write a function is_palindrome(text) that returns True if text reads the same forwards and backwards, ignoring case, and call it with three different test strings.",
       "exerciseUk": "Напишіть функцію is_palindrome(text), що повертає True, якщо text читається однаково вперед і назад, ігноруючи регістр, і викличте її з трьома різними тестовими рядками.",
@@ -1074,7 +1074,7 @@
         "f\"{value:.2f}\" on a non-numeric value raises a ValueError at runtime"
       ],
       "pitfallsUk": [
-        "Забуття префіксу f перетворює \"{name}\" на буквальний, необчислений рядок з фігурними дужками",
+        "Без префікса f рядок \"{name}\" містить буквальний текст із дужками, а не значення змінної",
         "f\"{value:.2f}\" на нечисловому значенні викликає ValueError під час виконання"
       ],
       "exercise": "Given a list of (product, price, quantity) tuples, print a receipt line for each with the product name, right-aligned price to 2 decimals, and the line total.",
@@ -1162,7 +1162,7 @@
         "Reaching for regex when a plain .split() or in check would be simpler and faster overcomplicates the code"
       ],
       "pitfallsUk": [
-        "Забуття префіксу r (сирий рядок) на патерні з бекслешами спричиняє заплутані помилки подвійного екранування",
+        "Без префікса r для шаблону зі зворотними скісними рисками легко помилитися в подвійному екрануванні",
         "Використання regex, коли простіший і швидший .split() чи in вистачив би, зайво ускладнює код"
       ],
       "exercise": "Use the pattern \\w+@\\w+\\.\\w+ with re.findall to extract email-like strings from a block of text, then identify at least three valid-looking addresses (with a dot, hyphen, or +tag) that it misses, and explain in one sentence why production email validation should not be reduced to this toy regex.",

@@ -72,7 +72,7 @@
         "Code that uses the file object after the with block has exited will find it already closed"
       ],
       "pitfallsUk": [
-        "Ручний виклик f.close() і забуття його при ранньому return чи винятку призводить до витоку файлового дескриптора",
+        "Ручний f.close() легко пропустити при ранньому return або винятку. Використовуйте with для гарантованого закриття",
         "Код, що використовує файловий об'єкт після виходу з блоку with, побачить його вже закритим"
       ],
       "exercise": "Rewrite a function that opens a file, might raise an exception while processing it, and manually calls close() at the end, to instead use a with statement — and explain why the rewrite is safer.",
@@ -200,7 +200,7 @@
         "Setting a mutable default like self.items = [] as a class attribute (outside __init__) shares one list across every instance"
       ],
       "pitfallsUk": [
-        "Забуття self як першого параметра методу викликає TypeError при виклику",
+        "Якщо в методі екземпляра пропустити перший параметр self, передавання екземпляра може спричинити TypeError",
         "Встановлення змінюваного значення за замовчуванням, як self.items = [], як атрибута класу (поза __init__) ділить один список між усіма екземплярами"
       ],
       "exercise": "Write a BankAccount class with __init__(self, owner, balance=0), a deposit(amount) method and a withdraw(amount) method that refuses to overdraw.",
@@ -440,7 +440,7 @@
       "summary": "Catch a specific exception type where recovery is possible, instead of letting the whole program crash.",
       "summaryUk": "Перехоплюйте конкретний тип винятку там, де можливе відновлення, замість краху всієї програми.",
       "concept": "Code that might fail goes inside `try:`; one or more `except SpecificError:` blocks catch and handle a named exception type raised inside that block, and code after the entire `try`/`except` continues normally if the exception was handled. Catching the narrowest exception type that makes sense (`except ValueError:` rather than a bare `except:`) means genuine bugs still surface loudly instead of being silently swallowed alongside the error you actually expected and can recover from, such as bad user input.",
-      "conceptUk": "Код, що може провалитись, іде всередину `try:`; один чи кілька блоків `except SpecificError:` перехоплюють і обробляють названий тип винятку, викликаний усередині цього блоку, а код після всього `try`/`except` продовжується нормально, якщо виняток було оброблено. Перехоплення найвужчого доречного типу винятку (`except ValueError:`, а не голий `except:`) означає, що справжні баги все ще гучно проявляються замість того, щоб тихо поглинутися разом з помилкою, яку ви реально очікували й могли б виправити, як-от неправильний ввід користувача.",
+      "conceptUk": "Код, що може провалитись, іде всередину `try:`; один чи кілька блоків `except SpecificError:` перехоплюють і обробляють названий тип винятку, викликаний усередині цього блоку, а код після всього `try`/`except` продовжується нормально, якщо виняток було оброблено. Перехоплення найвужчого доречного типу винятку (`except ValueError:`, а не `except:` без зазначення типу винятку) означає, що справжні баги все ще гучно проявляються замість того, щоб тихо поглинутися разом з помилкою, яку ви реально очікували й могли б виправити, як-от неправильний ввід користувача.",
       "keyPoints": [
         "try/except catches a specific error type and lets the program continue instead of crashing",
         "Catch the narrowest exception type that makes sense, never a bare except:",
@@ -448,7 +448,7 @@
       ],
       "keyPointsUk": [
         "try/except перехоплює конкретний тип помилки й дозволяє програмі продовжити замість краху",
-        "Перехоплюйте найвужчий доречний тип винятку, ніколи голий except:",
+        "Перехоплюйте найвужчий доречний тип винятку, ніколи except: без зазначення типу винятку",
         "Код після обробленого винятку продовжує виконуватись нормально"
       ],
       "code": "def safe_divide(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        print(\"Cannot divide by zero\")\n        return None\n\nprint(safe_divide(10, 2))\nprint(safe_divide(10, 0))",
@@ -459,7 +459,7 @@
         "Wrapping too much code in one try block makes it unclear which line actually raised the exception"
       ],
       "pitfallsUk": [
-        "Голий except: (чи except Exception: pass) невизначено приховує справжні баги на кшталт одруківок і TypeError",
+        "except: без типу винятку перехоплює також KeyboardInterrupt і SystemExit; except Exception: pass приховує помилки на кшталт TypeError",
         "Обгортання надто великої кількості коду в один блок try робить незрозумілим, який саме рядок реально викликав виняток"
       ],
       "exercise": "Write a function that reads a number from input(), catching both ValueError (invalid text) and the case of dividing by it if it's zero, with a distinct message for each.",
@@ -501,7 +501,7 @@
         "Overusing generic Exception for custom errors instead of a purpose-built subclass makes selective catching impossible"
       ],
       "pitfallsUk": [
-        "Виклик голого рядка замість екземпляра винятку (raise \"error\") — недійсний Python — потрібно викликати об'єкт винятку",
+        "raise \"error\" некоректний: оператор raise приймає клас або екземпляр винятку, а не рядок",
         "Надмірне використання загального Exception для власних помилок замість спеціалізованого підкласу робить вибіркове перехоплення неможливим"
       ],
       "exercise": "Define an OutOfStockError exception carrying the product name and requested quantity, and raise it from a purchase(product, quantity, stock) function when stock is insufficient.",
@@ -610,7 +610,7 @@
       "summary": "Any .py file is a module; splitting code into modules is how programs grow past a single file.",
       "summaryUk": "Будь-який файл .py — модуль; розділення коду на модулі — спосіб зростання програм за межі одного файлу.",
       "concept": "Any `.py` file can serve as a module that other files `import` by its filename without the extension — as long as Python's import system can actually locate it, through `sys.path`, the enclosing package, or another import finder; a file sitting outside all of those is not importable just by existing. On the normal first import in a running interpreter, a module's top-level code runs once, and the result — every function, class and variable it defines — becomes accessible through the module's namespace and is cached in `sys.modules`, so a later `import` of the same module reuses that cached module object instead of re-running its code. Splitting a growing single-file script into multiple focused modules (one for data access, one for calculations, one for the command-line interface, for example) keeps each file's purpose clear and makes individual pieces easier to test in isolation.",
-      "conceptUk": "Будь-який файл `.py` може слугувати модулем, який інші файли `import` за назвою файлу без розширення — доки система імпорту Python справді може його знайти через `sys.path`, охоплюючий пакет чи інший засіб пошуку імпорту; файл поза всім цим не стає імпортовним просто через своє існування. При звичайному першому імпорті в запущеному інтерпретаторі код верхнього рівня модуля виконується один раз, і результат — кожна функція, клас і змінна, які він визначає — стає доступним через простір імен модуля й кешується в `sys.modules`, тож пізніший `import` того самого модуля повторно використовує закешований об'єкт модуля замість повторного виконання коду. Розділення зростаючого однофайлового скрипта на кілька сфокусованих модулів (наприклад, один для доступу до даних, один для розрахунків, один для інтерфейсу командного рядка) тримає призначення кожного файлу чітким і робить окремі частини легшими для ізольованого тестування.",
+      "conceptUk": "Будь-який файл `.py` може слугувати модулем, який інші файли `import` за назвою файлу без розширення — доки система імпорту Python справді може його знайти через `sys.path`, батьківський пакет чи інший засіб пошуку імпорту; файл поза всім цим не стає імпортовним просто через своє існування. При звичайному першому імпорті в запущеному інтерпретаторі код верхнього рівня модуля виконується один раз, і результат — кожна функція, клас і змінна, які він визначає — стає доступним через простір імен модуля й кешується в `sys.modules`, тож пізніший `import` того самого модуля повторно використовує закешований об'єкт модуля замість повторного виконання коду. Розділення зростаючого однофайлового скрипта на кілька сфокусованих модулів (наприклад, один для доступу до даних, один для розрахунків, один для інтерфейсу командного рядка) тримає призначення кожного файлу чітким і робить окремі частини легшими для ізольованого тестування.",
       "keyPoints": [
         "A .py file is importable by filename when Python's import system can find it (sys.path, package, etc.)",
         "A module's top-level code runs once, the first time it is imported",
@@ -715,7 +715,7 @@
       ],
       "pitfallsUk": [
         "Встановлення пакетів глобально через pip (поза будь-яким venv) ризикує конфліктами версій між непов'язаними проєктами",
-        "Забуття активувати venv перед pip install встановлює пакет у несподіване місце"
+        "Перед pip install перевірте активне віртуальне середовище, інакше пакет може встановитися для іншого інтерпретатора"
       ],
       "exercise": "Create a new virtual environment, install the requests package into it, generate a requirements.txt, and explain in one or two sentences what pip freeze does and does not guarantee about reproducing your exact environment on another machine.",
       "exerciseUk": "Створіть нове віртуальне середовище, встановіть у нього пакет requests, згенеруйте requirements.txt і поясніть одним-двома реченнями, що pip freeze гарантує, а що ні, щодо відтворення вашого точного середовища на іншій машині.",
@@ -887,7 +887,7 @@
       ],
       "pitfallsUk": [
         "os.environ[\"NAME\"] викликає KeyError, якщо відсутня; використовуйте .get() зі значенням за замовчуванням чи явну перевірку",
-        "Забуття, що sys.argv[0] — сама назва скрипта, тож реальні аргументи починаються з індексу 1"
+        "sys.argv[0] містить назву скрипта; аргументи користувача починаються з індексу 1"
       ],
       "exercise": "Write a small CLI script that reads a required OUTPUT_DIR environment variable, exits with status 1 and an error message on stderr if it's missing, and otherwise prints the command-line arguments it received.",
       "exerciseUk": "Напишіть невеликий CLI-скрипт, що читає обов'язкову змінну середовища OUTPUT_DIR, виходить зі статусом 1 і повідомленням про помилку в stderr, якщо вона відсутня, і інакше друкує отримані аргументи командного рядка.",

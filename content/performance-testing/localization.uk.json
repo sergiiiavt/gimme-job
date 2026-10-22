@@ -1,51 +1,51 @@
 {
   "title": "Тестування продуктивності",
-  "description": "Методичний навчальний шлях від моделювання навантаження та performance-метрик до JMeter, k6, Locust, distributed load generation, діагностики bottleneck-ів і performance regression testing у CI.",
+  "description": "Навчальний маршрут від моделювання навантаження та метрик до JMeter, k6, Locust, розподілених запусків, діагностики вузьких місць і регресійних перевірок у CI.",
   "chapters": [
     {
       "id": "foundations",
       "labelUk": "1. Основи та типи тестування",
-      "descriptionUk": "Що вимірює performance testing, чим відрізняються його типи та як перетворити нечітку вимогу «має бути швидко» на перевірювану ціль."
+      "descriptionUk": "Що вимірює тестування продуктивності, чим відрізняються його типи та як сформулювати перевірювану ціль."
     },
     {
       "id": "workload-model",
       "labelUk": "2. Моделювання навантаження",
-      "descriptionUk": "Operational profiles, concurrency, arrivals, throughput, think time, pacing, open/closed models і реалістичні форми навантаження."
+      "descriptionUk": "Профіль використання, одночасні користувачі, потік запитів, пропускна здатність, паузи, відкриті й замкнені моделі."
     },
     {
       "id": "metrics-objectives",
-      "labelUk": "3. Метрики, percentiles та цілі",
-      "descriptionUk": "Latency distributions, throughput, errors, saturation, p95/p99, baselines і автоматизовані pass/fail thresholds."
+      "labelUk": "3. Метрики, процентилі та цілі",
+      "descriptionUk": "Розподіли затримок, пропускна здатність, помилки, насичення, p95/p99, базові рівні та пороги успіху."
     },
     {
       "id": "environment-scripts-data",
-      "labelUk": "4. Environment, scripts і test data",
-      "descriptionUk": "Валідність performance test: порівнюваність environment, correctness checks, parameterization, correlation, ізоляція даних і warm-up state."
+      "labelUk": "4. Середовище, скрипти й тестові дані",
+      "descriptionUk": "Зіставність середовища, коректність сценаріїв, параметризація, передавання динамічних значень, ізоляція даних і прогрівання."
     },
     {
       "id": "jmeter-workflow",
-      "labelUk": "5. JMeter: від script до load run",
-      "descriptionUk": "Практичний workflow JMeter: Test Plan, дані/correlation, timers, assertions, CLI execution, reports і distributed mode."
+      "labelUk": "5. JMeter: від скрипту до навантаження",
+      "descriptionUk": "План JMeter, тестові дані, динамічні значення, таймери, перевірки, командний рядок, звіти й розподілений запуск."
     },
     {
       "id": "k6-locust",
       "labelUk": "6. k6 та Locust",
-      "descriptionUk": "Code-first load testing через k6 scenarios/thresholds та Locust user/task modelling, headless runs і distributed execution."
+      "descriptionUk": "Сценарії та пороги k6, поведінка користувачів і задачі Locust, запуск без інтерфейсу та розподілене виконання."
     },
     {
       "id": "diagnosis-resilience",
-      "labelUk": "7. Bottlenecks, scalability та recovery",
-      "descriptionUk": "Як перейти від графіка «повільно» до підтвердженої bottleneck hypothesis, знайти limits, перевірити scaling і recovery."
+      "labelUk": "7. Вузькі місця, масштабованість і відновлення",
+      "descriptionUk": "Від спостереження повільної роботи до перевіреної гіпотези про вузьке місце, межі, масштабування та відновлення."
     },
     {
       "id": "ci-reporting",
-      "labelUk": "8. CI/CD, regression та reporting",
-      "descriptionUk": "Багаторівневі performance checks, відтворювані baselines, automated gates, trend comparison і decision-oriented reports."
+      "labelUk": "8. CI/CD, регресія та звітність",
+      "descriptionUk": "Рівні перевірок, відтворювані базові результати, автоматичні критерії, порівняння тенденцій і звіти для рішень."
     },
     {
       "id": "locust-performance-testing",
       "labelUk": "9. GimmeJob Locust: розбір реального проєкту",
-      "descriptionUk": "Розбір реального GimmeJob workload: virtual users, task weights/tags, pacing, RPS, response validation, production safety, thresholds і сценарії поза health endpoint."
+      "descriptionUk": "Користувачі, ваги й теги задач, паузи, RPS, перевірка відповідей, безпека промислового середовища та сценарії GimmeJob."
     }
   ]
 }

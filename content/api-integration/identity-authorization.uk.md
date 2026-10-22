@@ -1,4 +1,4 @@
-# Identity & Authorization
+# Ідентифікація та авторизація
 
 Identity та access control відповідають на два різні питання:
 
@@ -7,7 +7,7 @@ Identity та access control відповідають на два різні п�
 
 System може успішно authenticate identity і все одно відхилити operation, якщо identity не має потрібного permission.
 
-## Core concepts
+## Основні поняття
 
 | Concept | Значення |
 | --- | --- |
@@ -23,7 +23,7 @@ System може успішно authenticate identity і все одно відх
 
 Authentication створює trusted security context. Authorization оцінює цей context для конкретного resource та operation.
 
-## HTTP Basic authentication
+## Базова автентифікація HTTP
 
 HTTP Basic authentication передає username і password у header `Authorization`.
 
@@ -40,7 +40,7 @@ Value після `Basic` — Base64-encoded `username:password`. Base64 — enco
 - password rotation напряму змінює credential;
 - credentials не повинні потрапляти в logs або unsafe client-side storage.
 
-## API keys
+## Ключі API
 
 API key — application credential, виданий client або integration.
 
@@ -63,7 +63,7 @@ API keys часто використовують для service access, metering
 
 Long-lived secrets небажано передавати через query string, тому що URLs частіше потрапляють у logs, browser history, analytics та referrer data.
 
-## Sessions та cookies
+## Сеанси та cookie
 
 Традиційна browser authentication часто використовує server-managed session.
 
@@ -94,7 +94,7 @@ Cookie зазвичай містить opaque session identifier або, в ок
 
 Оскільки browser автоматично додає matching cookies, cookie-based authentication має окремо враховувати CSRF. CORS не замінює CSRF protection.
 
-## Bearer tokens
+## Токени пред’явника
 
 Bearer token передається в `Authorization` header:
 
@@ -146,7 +146,7 @@ Decoded claims:
 }
 ~~~
 
-### Common registered JWT claims
+### Поширені зареєстровані поля JWT
 
 | Claim | Значення |
 | --- | --- |
@@ -160,7 +160,7 @@ Decoded claims:
 
 JWT payload не є secret лише тому, що Base64url-encoded. Signed JWT захищає integrity/authenticity, але не encrypt-ить claims.
 
-### JWT validation
+### Перевірка JWT
 
 Resource server має validate token відповідно до trust model. Типові checks:
 
@@ -203,7 +203,7 @@ Resource server / API
 
 OAuth сам по собі не визначає user identity. Його primary purpose — delegated authorization.
 
-## Authorization Code flow з PKCE
+## Потік коду авторизації з PKCE
 
 Для browser-based, native та інших public clients Authorization Code + PKCE є central modern OAuth pattern.
 
@@ -221,7 +221,7 @@ PKCE захищає authorization-code flow від interception і misuse stolen
 
 Current OAuth security guidance вимагає strict redirect-URI validation і broadly recommends PKCE. Resource Owner Password Credentials grant не повинен використовуватись згідно з OAuth 2.0 Security Best Current Practice.
 
-## Client Credentials flow
+## Потік облікових даних клієнта
 
 Client Credentials використовується, коли confidential client діє від свого імені, а не від імені end user.
 
@@ -239,7 +239,7 @@ Typical use cases — machine-to-machine integrations і background services.
 
 Client credential та access token — різні credentials і можуть мати різні lifetime, scopes та rotation rules.
 
-## Refresh tokens
+## Токени оновлення
 
 Refresh token дозволяє client отримати новий access token без повторення повного user authorization flow.
 
@@ -268,7 +268,7 @@ ID token і access token мають різні purposes:
 
 Client не повинен надсилати ID token в API замість access token, якщо specific contract прямо цього не визначає.
 
-## Scopes
+## Області дозволів
 
 OAuth scopes описують delegated access, виданий token.
 
@@ -280,7 +280,7 @@ Scopes зазвичай є coarse-grained capabilities token. Resource server в
 
 Token з `orders:write` не означає автоматично, що caller може змінити будь-який order у system.
 
-## Roles та permissions
+## Ролі й дозволи
 
 Role групує permissions.
 
@@ -325,7 +325,7 @@ ABAC може виражати складніші policies, ніж fixed roles, 
 
 RBAC та ABAC не mutually exclusive; багато systems комбінують їх.
 
-## Object-level authorization
+## Авторизація на рівні об’єкта
 
 Authorization має перевірятись для конкретного target object, а не лише endpoint.
 
@@ -338,7 +338,7 @@ Server має визначити, чи може user 7 access account 42. Valid 
 
 Це правило також застосовується до nested resources, file identifiers, batch operations та indirect object references.
 
-## Multi-tenant authorization
+## Авторизація в багатотенантній системі
 
 Multi-tenant system має зберігати tenant boundaries.
 
@@ -354,7 +354,7 @@ Authorization має перевірити, що resource належить allowe
 
 Tenant identifier, який надсилає client, не можна довіряти без server-side validation проти authenticated identity.
 
-## Service-to-service identity
+## Ідентичність у взаємодії сервісів
 
 Machine identities можуть використовувати:
 
@@ -366,7 +366,7 @@ Machine identities можуть використовувати:
 
 Service identity має бути достатньо unique для audit та revocation. Один shared secret для багатьох services ускладнює least privilege і incident containment.
 
-## Mutual TLS
+## Взаємна автентифікація TLS
 
 При mutual TLS і client, і server презентують certificates під час TLS handshake.
 
@@ -379,7 +379,7 @@ mTLS може створювати strong machine identity на transport layer.
 
 mTLS не прибирає необхідність application-level authorization.
 
-## Request signing
+## Підписування запитів
 
 Деякі APIs authenticate requests через signature selected request components з shared secret або private key.
 
@@ -394,7 +394,7 @@ Signature input може включати:
 
 Request signing може забезпечувати integrity та replay resistance, якщо canonicalization і verification contract чітко визначені.
 
-## Token та credential lifecycle
+## Життєвий цикл токенів і облікових даних
 
 Кожен credential має lifecycle.
 
@@ -434,7 +434,7 @@ HTTP status semantics розрізняє authentication та authorization.
 
 API може навмисно повертати 404 для окремих protected resources, щоб не reveal їх existence, але це application security decision, а не нове definition 403.
 
-## Authentication versus authorization flow
+## Послідовність автентифікації й авторизації
 
 Typical protected request:
 
@@ -454,7 +454,7 @@ Allow or deny
 
 Authentication failure відбувається до встановлення trusted principal. Authorization failure виникає після того, як system має достатньо trusted context для access decision.
 
-## Server-side enforcement
+## Перевірка прав на сервері
 
 Client-side UI restrictions не є authorization controls.
 

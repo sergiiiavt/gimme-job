@@ -128,7 +128,7 @@
       "level": "Expert",
       "order": 41,
       "title": "Risk-based prioritisation",
-      "titleUk": "Пріоритезація на основі ризику",
+      "titleUk": "Пріоритизація на основі ризику",
       "summary": "Score features by probability and impact, assign a layer to each, and be willing to write \"no automation\".",
       "summaryUk": "Оцініть функціональність за ймовірністю та впливом, призначте рівень кожній і не бійтеся написати «без автоматизації».",
       "concept": "Coverage decisions are easier to make and far easier to defend when they come from a scored table rather than from intuition. Score each feature for the probability that it breaks and the impact if it does, multiply, and then assign a coverage approach to each row: which layer, how exhaustively, and whether a user-interface journey is justified at all. The output is a single page that converts an unfalsifiable request for more testing into a specific, negotiable plan, and it is the right artifact to bring to a planning conversation because a stakeholder can argue with a score in a way they cannot argue with a feeling. The most important rows are the ones where the answer is no automation. A plan without any such rows has not actually prioritised; it has just listed everything. Being able to say that a feature is not worth automating, and to show the reasoning, is what separates an engineer who owns a strategy from one who processes a backlog.",

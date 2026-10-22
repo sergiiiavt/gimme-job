@@ -105,7 +105,7 @@ test("metrics practical examples distinguish published evidence, real observatio
   assert.deepEqual(Object.keys(uk).sort(), Object.keys(en).sort());
 });
 
-test("catalogs inject practical examples before their chapter summaries", async () => {
+test("catalogs use shared bilingual practical-example composition", async () => {
   for (const path of [
     "content/testing-tools/catalog.ts",
     "content/metrics-estimation/catalog.ts",
@@ -114,6 +114,6 @@ test("catalogs inject practical examples before their chapter summaries", async 
     assert.match(catalog, /practical-examples\.en\.json/);
     assert.match(catalog, /practical-examples\.uk\.json/);
     assert.match(catalog, /insertPracticalExamples/);
-    assert.match(catalog, /## Summary/);
+    assert.match(catalog, /learning-document-composition/);
   }
 });

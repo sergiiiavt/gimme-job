@@ -4,9 +4,9 @@
 
 Цей chapter точно формулює проблему. Він вводить типи test oracles, що працюють для generative output, характеристики якості, які ви вимірюватимете, і lifecycle, у якому відбувається тестування LLM. Подальші chapters з evaluation та testing спираються на ці визначення.
 
-**Prerequisites:** базові поняття тестування (test basis, test oracle, test levels) з [QA fundamentals](/reference/qa-fundamentals) і достатньо Python, щоб читати короткі скрипти. Також див. [Огляд генеративного AI та LLM](/learn/llm?topic=generative-ai-overview) і [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
+**Передумови:** базові поняття тестування (test basis, test oracle, test levels) з [QA fundamentals](/reference/qa-fundamentals) і достатньо Python, щоб читати короткі скрипти. Також див. [Огляд генеративного AI та LLM](/learn/llm?topic=generative-ai-overview) і [Як LLM генерують текст](/learn/llm?topic=llm-foundations).
 
-## Що ми називаємо LLM system
+## Що називаємо системою на основі LLM
 
 **Large language model** — це нейронна мережа, натренована передбачати наступний token тексту. У цьому курсі «модель» завжди означає саме цей компонент: набір weights, доступний через API у provider або на вашій інфраструктурі.
 
@@ -35,7 +35,7 @@ Training data and training process
 
 Більшість тестувальників працює на рівнях application і feature. Weights моделі ви контролюєте рідко, але майже все інше — так: яку модель і версію викликати, prompts, дані для retrieval, tools, validation output і monitoring у production. Саме там живе більшість дефектів, і саме на цьому фокусується курс.
 
-## Чим LLM features відрізняються від звичайних
+## Чим функції LLM відрізняються від звичайних
 
 Таблиця порівнює звичайну feature, наприклад калькулятор ціни, з LLM feature — асистентом, що відповідає на питання про ціни природною мовою.
 
@@ -52,10 +52,10 @@ Training data and training process
 З цього випливають три наслідки, що формують решту курсу:
 
 - **Точні очікувані значення рідко працюють.** Потрібні інші типи oracles (наступний розділ).
-- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [Статистика для evaluation](/learn/llm?topic=eval-statistics)).
-- **Поведінка може дрейфувати без зміни code.** Версії треба фіксувати й записувати, а тестування продовжувати в production (див. [Якість у production](/learn/llm?topic=production-quality)).
+- **Один run — це вибірка, а не вердикт.** Cases треба запускати повторно і міркувати про rates (див. [Статистика для оцінювання](/learn/llm?topic=eval-statistics)).
+- **Поведінка може дрейфувати без зміни code.** Версії треба фіксувати й записувати, а тестування продовжувати в production (див. [Якість у промисловому середовищі](/learn/llm?topic=production-quality)).
 
-## Проблема test oracle
+## Проблема тестового оракула
 
 **Test oracle** — джерело, за яким ви вирішуєте, чи спостережуваний результат правильний. У класичному тесті oracle зазвичай — очікуване значення в тесті: `assert total == 90.0`.
 
@@ -112,7 +112,7 @@ for number, answer in enumerate(candidates, start=1):
     print(f"answer {number}: {verdict}")
 ```
 
-Output:
+Результат:
 
 ```text
 answer 1: PASS
@@ -151,7 +151,7 @@ Model drift — не гіпотеза. Відоме дослідження 2023 
 | Інша історія розмови чи профіль користувача | Поведінка залежить від стану |
 | Інші результати tools | Зовнішня система повернула інші дані |
 
-Кожен рядок потребує traces, що записують версії та context, тому [Якість у production](/learn/llm?topic=production-quality) розглядає tracing як передумову тестування.
+Кожен рядок потребує traces, що записують версії та context, тому [Якість у промисловому середовищі](/learn/llm?topic=production-quality) розглядає tracing як передумову тестування.
 
 ### Чому один успішний run — слабке evidence
 
@@ -173,7 +173,7 @@ for runs in [10, 100, 1000, 10000]:
     print(f"{runs:>5} runs: observed pass rate {passed / runs:.3f}")
 ```
 
-Output:
+Результат:
 
 ```text
 feature correct 95% of the time -> 3 tries all pass with probability 0.86
@@ -188,7 +188,7 @@ feature correct 70% of the time -> 5 tries all pass with probability 0.17
 10000 runs: observed pass rate 0.904
 ```
 
-Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. Наступний підрозділ показує, скільки runs потребують такі твердження, а [Статистика для evaluation](/learn/llm?topic=eval-statistics) — як додати до них error bars і порівнювати версії.
+Feature, що помиляється раз на десять, частіше проходить п'ять ручних спроб, ніж ні, а в цій симуляції навіть десять runs показали ідеальний результат. Твердження про якість LLM features — це твердження про rates, а rates потребують вибірок. Наступний підрозділ показує, скільки runs потребують такі твердження, а [Статистика для оцінювання](/learn/llm?topic=eval-statistics) — як додати до них error bars і порівнювати версії.
 
 ### Скільки runs потрібно, щоб побачити рідкісний збій?
 
@@ -207,7 +207,7 @@ p_correct = 0.8
 print(f"80%-correct feature passes 4 manual checks with probability {p_correct ** 4:.2f}")
 ```
 
-Output:
+Результат:
 
 ```text
 failure rate 20%: need 14 runs
@@ -218,7 +218,7 @@ failure rate 1%: need 299 runs
 
 Рідкісні збої потребують багатьох runs, щоб з'явитися хоча б раз. Тому evaluation datasets мають сотні cases, а production monitoring обов'язковий.
 
-## Характеристики якості LLM features
+## Характеристики якості функцій LLM
 
 Щоб щось тестувати, спершу треба сказати, що означає «добре». Характеристики нижче ви вимірюватимете впродовж курсу. Вони розширюють класичну модель якості software ISO/IEC 25010; ISO/IEC 25059 адаптує цю модель для AI систем.
 
@@ -239,7 +239,7 @@ failure rate 1%: need 299 runs
 
 Не кожній feature потрібні всі характеристики. Code-review асистент для інженерів може терпіти 10 секунд latency, але не вигадані APIs. Публічний chat widget має бути передусім швидким і безпечним.
 
-## Від розмитої вимоги до тестованих критеріїв
+## Від нечітких вимог до перевірюваних критеріїв
 
 Вимоги до LLM features зазвичай приходять розмитими: *«Асистент має давати корисні відповіді про refunds.»* Так це протестувати неможливо. Процес нижче перетворює вимогу на критерії, які можна перевірити.
 
@@ -278,7 +278,7 @@ failure rate 1%: need 299 runs
 
 Кожен критерій називає, *що* вимірюється, *як* вимірюється, *який результат прийнятний* і *наскільки це важливо*. Це мінімум, щоб критерій був тестованим.
 
-## Де тестування відбувається в lifecycle
+## Місце тестування в життєвому циклі
 
 Тестування LLM — не одна фаза. Воно відбувається на кожному етапі, а production повертає знання в розробку.
 
@@ -294,12 +294,12 @@ failure rate 1%: need 299 runs
 
 | Етап | Основні активності | Chapter |
 |---|---|---|
-| Design | Критерії якості, аналіз ризиків, evaluation plan | Цей chapter, [Benchmarks, human evaluation і governance](/learn/llm?topic=pro-practice) |
-| Build | Unit tests з fake models, рев'ю prompts і schemas | [Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model) |
-| Offline evaluation | Datasets, scorers, judges, статистика | [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals) і наступні chapters |
-| Pre-release | Security testing, performance tests, release gates | [Security, red teaming і guardrails](/learn/llm?topic=security-red-teaming), [Якість у production](/learn/llm?topic=production-quality) |
-| Release | Canary і shadow deployments, міграції моделей | [Якість у production](/learn/llm?topic=production-quality) |
-| Production | Tracing, online evaluation, feedback loops | [Якість у production](/learn/llm?topic=production-quality) |
+| Design | Критерії якості, аналіз ризиків, evaluation plan | Цей chapter, [Порівняльні тести, людське оцінювання та управління](/learn/llm?topic=pro-practice) |
+| Build | Unit tests з fake models, рев'ю prompts і schemas | [Тестування коду LLM-застосунку без моделі](/learn/llm?topic=testing-without-the-model) |
+| Offline evaluation | Datasets, scorers, judges, статистика | [Методологія оцінювання та набори даних](/learn/llm?topic=evaluation-fundamentals) і наступні chapters |
+| Pre-release | Security testing, performance tests, release gates | [Безпека, імітація атак і захисні механізми](/learn/llm?topic=security-red-teaming), [Якість у промисловому середовищі](/learn/llm?topic=production-quality) |
+| Release | Canary і shadow deployments, міграції моделей | [Якість у промисловому середовищі](/learn/llm?topic=production-quality) |
+| Production | Tracing, online evaluation, feedback loops | [Якість у промисловому середовищі](/learn/llm?topic=production-quality) |
 
 ## Приклад проєкту
 
@@ -315,7 +315,7 @@ uv run --project examples/llm-testing pytest examples/llm-testing/01-property-or
 - **Сприймати demo як тест.** Кілька гарних відповідей мало що доводять; див. ймовірності вище.
 - **Тестувати лише модель.** Більшість збоїв походить від prompts, retrieval, parsing і tools, які ви контролюєте.
 - **Використовувати exact-match oracles для вільного тексту.** Вони падають на правильних парафразах і привчають команду ігнорувати failures.
-- **Вибирати metrics до того, як подивилися на outputs.** Generic metrics часто не вимірюють нічого важливого для продукту. Почніть з error analysis (див. [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals)).
+- **Вибирати metrics до того, як подивилися на outputs.** Generic metrics часто не вимірюють нічого важливого для продукту. Почніть з error analysis (див. [Методологія оцінювання та набори даних](/learn/llm?topic=evaluation-fundamentals)).
 - **Не записувати версії.** Результат без версії моделі, версії prompt і parameters неможливо відтворити чи порівняти.
 - **Ігнорувати latency і cost.** Правильна відповідь, що приходить запізно чи коштує задорого, — це невиконана вимога.
 

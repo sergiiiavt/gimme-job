@@ -275,7 +275,7 @@
       ],
       "pitfallsUk": [
         "Перелік персон, що росте, поволі відтворюючи проблему спільного стану, яку розв'язали згенеровані дані",
-        "Білдер, що повертає змінний об'єкт, через що зміна одного тесту протікає в інший через спільне значення"
+        "Білдер, що повертає змінний об'єкт, через що зміна даних одним тестом впливає на інший через спільне значення"
       ],
       "code": "@dataclass\nclass UserBuilder:\n    _username: str = field(default_factory=unique_username)\n    _password: str = \"Str0ng!Passw0rd\"\n    _email: str = field(default_factory=unique_email)\n\n    def with_email(self, value: str) -> Self:\n        self._email = value\n        return self\n\n    def build(self) -> UserData:          # frozen result, cannot be mutated\n        return UserData(self._username, self._password, self._email)\n\n\nclass ProductFactory(ModelFactory[Product]):\n    \"\"\"Derived from the model, so it can never drift from the schema.\"\"\"\n\n    __model__ = Product\n\n\nPERSONAS = {\n    \"standard\": Persona(\"alice\", \"wonderland\", \"Ordinary shopper, read-only scenarios\"),\n}",
       "codeCaption": "Builder for specifics, factory for anything valid, persona only where pre-existing state is unavoidable.",
@@ -294,7 +294,7 @@
       "level": "Advanced",
       "order": 30,
       "title": "Cleanup strategies and their trade-offs",
-      "titleUk": "Стратегії прибирання та їхні компроміси",
+      "titleUk": "Стратегії очищення та компроміси",
       "summary": "Clean before as well as after, keep cleanup idempotent, and never let a global reset near a parallel run.",
       "summaryUk": "Прибирайте і до, і після, робіть прибирання ідемпотентним і не пускайте глобальне скидання в паралельний запуск.",
       "concept": "Fixture teardown is the default cleanup mechanism and it has one important gap: it does not run when setup failed before the suspension point, so a crash mid-setup leaves state behind for the next run to inherit. Cleaning defensively at the start of a fixture as well as at the end makes a suite recoverable rather than merely tidy. Other strategies suit other situations. Generating uniquely named data and never cleaning it works well when data is cheap and namespaced, at the cost of a database that grows forever and eventually needs a scheduled sweeper that matches your naming prefix. Transaction rollback is elegant but only available when the tests share a database session with the application. A global reset endpoint is the one to be careful with, because it is fundamentally incompatible with parallel execution — each worker's reset destroys the other workers' live state. Whatever you choose, cleanup has to be idempotent, and its failure should never replace or hide the test's own result — if the test's assertions already passed or failed, that verdict is what matters, and a teardown exception shouldn't bury it under a confusing traceback. That's different from making cleanup failures invisible, though: pytest already reports a teardown exception as its own outcome, distinct from the test's pass or fail, and that visibility is doing real work — a cleanup step that silently swallows its own exceptions can leave contaminated state for the next test with nothing in the report to explain why. Treat a repeated cleanup failure as a signal about your test infrastructure's health, not noise to suppress.",

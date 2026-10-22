@@ -11,7 +11,7 @@ test("HTTP status codes are methodic inline material instead of reference accord
   ]);
 
   for (const markdown of [english, ukrainian]) {
-    assert.match(markdown, /## HTTP status codes/);
+    assert.match(markdown, /## HTTP status codes|## Коди стану HTTP/);
     assert.doesNotMatch(markdown, /:::details/);
     assert.doesNotMatch(markdown, /<!-- flush-table -->/);
 
@@ -33,6 +33,6 @@ test("HTTP status codes are methodic inline material instead of reference accord
     assert.match(markdown, /502 Bad Gateway/);
     assert.match(markdown, /503 Service Unavailable/);
     assert.match(markdown, /504 Gateway Timeout/);
-    assert.match(markdown, /### Important status-code distinctions|### Важливі відмінності status codes/);
+    assert.match(markdown, /### Important status-code distinctions|### Важливі відмінності кодів стану/);
   }
 });

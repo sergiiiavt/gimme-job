@@ -11,8 +11,8 @@ test("HTTP methodic material explains file transfer directly in both languages",
   ]);
 
   for (const markdown of [english, ukrainian]) {
-    assert.match(markdown, /## Request bodies, forms/);
-    assert.match(markdown, /### Raw binary content/);
+    assert.match(markdown, /## Request bodies, forms|## Тіла запитів, форми/);
+    assert.match(markdown, /### Raw binary content|### Необроблений двійковий вміст/);
     assert.match(markdown, /file bytes/);
     assert.match(markdown, /Content-Type: application\/pdf/);
     assert.match(markdown, /multipart\/form-data/);
@@ -41,5 +41,5 @@ test("HTTP learning owns file-transfer material directly without runtime section
   assert.match(loader, /http-foundations\.md\?raw/);
   assert.match(loader, /http-foundations\.uk\.md\?raw/);
   assert.match(english, /## Request bodies, forms and files/);
-  assert.match(ukrainian, /## Request bodies, forms та files/);
+  assert.match(ukrainian, /## Тіла запитів, форми й файли/);
 });

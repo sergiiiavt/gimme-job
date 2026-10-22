@@ -22,8 +22,12 @@ test("HTTP learning chapter is methodic material and covers core API semantics b
   assert.match(loader, /addUriAddressing/);
 
   const documents = [english, ukrainian];
-  for (const markdown of documents) {
-    const orderedSections = [
+  for (const [languageIndex, markdown] of documents.entries()) {
+    const orderedSections = languageIndex === 1 ? [
+      "## HTTP", "## URL, ресурси", "## Повідомлення HTTP", "## Методи HTTP",
+      "## REST", "## Заголовки", "## Коди стану HTTP", "## Тіла запитів",
+      "## Cookie", "## Кешування", "## Автентифікація", "## CORS", "## Помилки", "## Sources",
+    ] : [
       "## HTTP",
       "## URLs, resources",
       "## HTTP messages",
@@ -193,7 +197,7 @@ test("Identity and authorization is complete methodic material in both languages
   assert.match(loader, /identity-authorization\.md\?raw/);
   assert.match(loader, /identity-authorization\.uk\.md\?raw/);
 
-  for (const markdown of [english, ukrainian]) {
+  for (const [languageIndex, markdown] of [english, ukrainian].entries()) {
     for (const concept of [
       "authentication",
       "authorization",
@@ -216,7 +220,10 @@ test("Identity and authorization is complete methodic material in both languages
       "403",
       "server-side",
     ]) {
-      assert.match(markdown, new RegExp(concept, "i"), `Missing identity concept ${concept}`);
+      const localConcept = languageIndex === 1
+        ? ({ "object-level authorization": "Авторизація на рівні об’єкта", "multi-tenant": "багатотенантній" }[concept] ?? concept)
+        : concept;
+      assert.match(markdown, new RegExp(localConcept, "i"), `Missing identity concept ${concept}`);
     }
     assert.match(markdown, /RFC 9700/);
     assert.match(markdown, /RFC 8725/);

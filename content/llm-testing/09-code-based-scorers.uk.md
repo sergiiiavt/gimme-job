@@ -1,12 +1,12 @@
-# Code-based scorers і metrics
+# Програмні оцінювачі та метрики
 
 **Scorer** перетворює один output моделі на вердикт або число. Code-based scorers роблять це звичайним code: парсингом, зіставленням зі шаблонами, порівнянням з reference, арифметикою. Вони безкоштовні, миттєві, ідеально відтворювані й позбавлені bias model judges, тому є першим рівнем будь-якого evaluation suite. Їхня межа так само очевидна: вони перевіряють лише те, що можна специфікувати механічно, а погано спроєктований scorer дуже точно вимірює не те.
 
 Цей chapter будує поширені code-based scorers з перших принципів, показує, де саме кожен із них помиляється, і розглядає scorers як software, що потребує власних тестів і validation.
 
-**Prerequisites:** [Методологія evaluation і datasets](/learn/llm?topic=evaluation-fundamentals), [Structured output і validation](/learn/llm?topic=structured-output-validation).
+**Передумови:** [Методологія оцінювання та набори даних](/learn/llm?topic=evaluation-fundamentals), [Структуровані відповіді та їх перевірка](/learn/llm?topic=structured-output-validation).
 
-## Що таке code-based scorer
+## Що таке програмний оцінювач
 
 Scorer — це функція від test case і output до score з причиною:
 
@@ -26,7 +26,7 @@ reason  why the scorer decided as it did, so that a failure can be read without 
 - **Версіонованість:** зміна scorer змінює кожен результат, який він дає, тож scorers живуть у version control, а їхня версія зберігається з результатами.
 - **Протестованість:** scorer — це code з власними unit tests і, для будь-чого нетривіального, validation проти human labels.
 
-## Assertions, яким не потрібен reference
+## Перевірки без еталонної відповіді
 
 Багато вимог можна перевірити лише за output або за output та input:
 
@@ -41,9 +41,9 @@ reason  why the scorer decided as it did, so that a failure can be read without 
 | Посилання | Кожен URL у allow-list | Посилання на домен-двійник |
 | Числа | Витягти числа з одиницями й порівняти | «60 days», хоча policy каже 30 |
 
-Ці перевірки вводилися в попередніх chapters ([Prompts як тестовані артефакти](/learn/llm?topic=prompts-as-artifacts), [Structured output і validation](/learn/llm?topic=structured-output-validation)). Решта chapter присвячена scores, що порівнюють output з reference, та інфраструктурі навколо scorers.
+Ці перевірки вводилися в попередніх chapters ([Промпти як артефакти, які можна тестувати](/learn/llm?topic=prompts-as-artifacts), [Структуровані відповіді та їх перевірка](/learn/llm?topic=structured-output-validation)). Решта chapter присвячена scores, що порівнюють output з reference, та інфраструктурі навколо scorers.
 
-## Exact match і token F1
+## Точний збіг і token F1
 
 Для коротких фактичних відповідей класичні metrics походять з extractive question answering (benchmark SQuAD):
 
@@ -91,7 +91,7 @@ for prediction in ["30 days from delivery", "The 30 days, from delivery!", "With
     print(f"EM={exact_match(prediction, reference):.0f}  F1={token_f1(prediction, reference):.2f}  {prediction!r}")
 ```
 
-Output:
+Результат:
 
 ```text
 EM=1  F1=1.00  '30 days from delivery'
@@ -160,7 +160,7 @@ for label, day_check in [("naive scorer", unsupported_days_naive), ("fixed score
     print(f"  agreement with human labels: {agreement}/{len(labelled)}")
 ```
 
-Output:
+Результат:
 
 ```text
 naive scorer
@@ -180,7 +180,7 @@ fixed scorer
 Наївне правило «жодної кількості днів, крім 30» відхиляє обидві хороші відповіді, бо хороші відповіді повторюють «40 days» самого клієнта. Scorer виглядав розумно і повідомляв би про хибну regression на кожній правильній відповіді. Дві практики запобігають цьому:
 
 - **Проєктуйте факти з реальних outputs.** Перш ніж писати шаблони, прочитайте вибірку хороших і поганих відповідей і врахуйте, як правильні відповіді насправді формулюють думку.
-- **Валідуйте scorer проти human labels,** перш ніж йому довіряти, так само як валідуєте model judge ([LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)). Зберігайте позначені відповіді як unit tests scorer.
+- **Валідуйте scorer проти human labels,** перш ніж йому довіряти, так само як валідуєте model judge ([LLM як оцінювач](/learn/llm?topic=model-graded-evaluation)). Зберігайте позначені відповіді як unit tests scorer.
 
 ## BLEU і ROUGE крок за кроком
 
@@ -258,7 +258,7 @@ for name, candidate in candidates.items():
     print(f"{name:<19} BLEU={bleu(candidate, reference):.2f}  " + "  ".join(f"{k}={v:.2f}" for k, v in r.items()))
 ```
 
-Output:
+Результат:
 
 ```text
 same words          BLEU=1.00  ROUGE-1 recall=1.00  ROUGE-2 recall=1.00  ROUGE-L F1=1.00
@@ -275,9 +275,9 @@ opposite meaning    BLEU=0.74  ROUGE-1 recall=0.90  ROUGE-2 recall=0.78  ROUGE-L
 - **Задачі перекладу й нормалізації тексту** з кількома references, де формулювання — частина вимоги.
 - **Тренди на рівні корпусу** на тисячах outputs, а не рішення щодо окремих cases. BLEU спочатку визначили для всього test set, з n-gram counts, підсумованими по всіх реченнях; середнє оцінок окремих речень — інше число.
 
-## Embedding similarity і BERTScore
+## Подібність векторних подань і BERTScore
 
-Embedding similarity порівнює зміст, а не формулювання, тож винагороджує правильні парафрази. Вона все одно оцінює заперечення, неправильні числа й переставлені ролі як близькі ([Embeddings і semantic similarity](/learn/llm?topic=embeddings-similarity)). **BERTScore** зіставляє кожен token кандидата з найсхожішим token reference за допомогою contextual embeddings; він краще корелює з людським судженням, ніж n-grams, але успадковує ту саму сліпоту до дрібних правок, що змінюють зміст.
+Embedding similarity порівнює зміст, а не формулювання, тож винагороджує правильні парафрази. Вона все одно оцінює заперечення, неправильні числа й переставлені ролі як близькі ([Векторні подання та семантична подібність](/learn/llm?topic=embeddings-similarity)). **BERTScore** зіставляє кожен token кандидата з найсхожішим token reference за допомогою contextual embeddings; він краще корелює з людським судженням, ніж n-grams, але успадковує ту саму сліпоту до дрібних правок, що змінюють зміст.
 
 ```python
 # Run on your own machine: pip install bert-score
@@ -291,7 +291,7 @@ print(f"BERTScore F1 = {f1[0]:.3f}")
 
 Використовуйте similarity scorers як **попередні фільтри й сигнали трендів**: відповідь не на тему отримує низький score і може впасти рано; високий score ніколи сам не доводить правильність.
 
-## Classification metrics
+## Метрики класифікації
 
 Багато LLM features — замасковані classifiers: triage tickets, визначення наміру, guardrails, прапорець «потрібна людина», PASS/FAIL judge. Для них використовуйте classification metrics на позначеному наборі.
 
@@ -327,7 +327,7 @@ weighted_f1 = sum(values[2] * values[3] for values in per_class.values()) / len(
 print(f"accuracy={accuracy:.2f}  macro F1={macro_f1:.2f}  weighted F1={weighted_f1:.2f}")
 ```
 
-Output:
+Результат:
 
 ```text
 human vs model    billing    returns  technical      other
@@ -347,7 +347,7 @@ accuracy=0.75  macro F1=0.70  weighted F1=0.77
 - **Accuracy** (0.75) приховує, які класи не працюють. Confusion matrix показує, що технічні tickets протікають в «other» (recall 0.60): ці клієнти чекають не на ту команду.
 - **Macro F1** усереднює класи рівно, тож малі класи важать стільки ж, скільки великі; **weighted F1** йде за частотами класів. Показуйте ту, що відповідає бізнес-питанню, і завжди показуйте числа по класах.
 - **Precision проти recall** — це рішення про ціну: для прапорця escalation пропустити case (низький recall) зазвичай гірше, ніж зайво ескалювати (низька precision).
-- **Двадцять cases — замало** для рішень; тут ідеться про метод. Розміри вибірок розглянуто в розділі [Статистика для evaluation](/learn/llm?topic=eval-statistics).
+- **Двадцять cases — замало** для рішень; тут ідеться про метод. Розміри вибірок розглянуто в розділі [Статистика для оцінювання](/learn/llm?topic=eval-statistics).
 
 ## Оцінювання виконанням
 
@@ -359,7 +359,7 @@ accuracy=0.75  macro F1=0.70  weighted F1=0.77
 
 Виконання code, згенерованого моделлю, — окремий ризик безпеки: ніколи не запускайте його в самому процесі evaluation чи з доступом до секретів або мережі.
 
-## Побудова scoring harness
+## Побудова засобів запуску оцінювання
 
 На практиці на кожному case працює кілька scorers, а результати агрегуються загалом і за зрізами (мова, feature, складність). Зріз, що падає, поки середнє виглядає нормально, — найпоширеніший спосіб, яким ховаються regressions.
 
@@ -425,7 +425,7 @@ for failure in failures:
     print("FAIL", failure)
 ```
 
-Output:
+Результат:
 
 ```text
 all      pass rate 3/5 = 60%
@@ -438,7 +438,7 @@ FAIL ('r4', 'max_40_words', 'not JSON')
 
 Важливі рішення в дизайні harness: кожен збій несе ID case, назву scorer і причину; зрізи обчислюються з tags cases, а не захардкожені; scorers — звичайні функції, тож кожну можна покрити unit tests і повторно використати в evaluation frameworks на кшталт promptfoo чи DeepEval, що приймають власні code assertions.
 
-## Тестування й validation scorers
+## Тестування й перевірка оцінювачів
 
 Неправильний scorer дає впевнені, але неправильні результати evaluation. Захищайте scorers як production code:
 

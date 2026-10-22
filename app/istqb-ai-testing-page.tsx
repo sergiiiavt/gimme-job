@@ -36,15 +36,15 @@ function hasUkrainian(module: IstqbAiTestingModule): module is IstqbAiTestingMod
 }
 
 const sourceRoleUk: Record<string, string> = {
-  "istqb-ctai-sample-questions-v22": "Офіційний набір sample questions CT-AI v2.2. Це авторитетне джерело для стилю, структури, складності та кількості балів у прикладах запитань.",
-  "istqb-ctai-sample-answers-v22": "Офіційні відповіді та обґрунтування до sample exam v2.2. Використовуй їх для розбору логіки після самостійного проходження запитань.",
-  "istqb-ctai-syllabus-v2": "Основне офіційне джерело для learning objectives, термінології, структури розділів і всього матеріалу, який може перевірятися на іспиті.",
+  "istqb-ctai-sample-questions-v22": "Офіційний набір прикладів запитань CT-AI v2.2. Це авторитетне джерело для стилю, структури, складності та кількості балів у прикладах запитань.",
+  "istqb-ctai-sample-answers-v22": "Офіційні відповіді та обґрунтування до пробного іспиту v2.2. Використовуйте їх для розбору логіки після самостійного проходження запитань.",
+  "istqb-ctai-syllabus-v2": "Основне офіційне джерело для навчальних цілей, термінології, структури розділів і всього матеріалу, який може перевірятися на іспиті.",
 };
 
 const sourceMetaUk: Record<string, string> = {
-  "official-sample-exam": "офіційний sample exam",
+  "official-sample-exam": "офіційний пробний іспит",
   "official-sample-exam-answers": "офіційні відповіді",
-  "official-syllabus": "офіційний syllabus",
+  "official-syllabus": "офіційна навчальна програма",
 };
 
 const certificationTracks = [
@@ -256,7 +256,7 @@ export default function IstqbAiTestingPage() {
                         <section>
                           <h2 id="recommended-videos">{effectiveLanguage === "uk" ? "Рекомендовані відео" : "Recommended videos"}</h2>
                           <p>{effectiveLanguage === "uk"
-                            ? "Використовуй їх як візуальне закріплення після читання розділу. Офіційний syllabus ISTQB залишається головним джерелом для іспиту."
+                            ? "Використовуйте їх для наочного закріплення після читання розділу. Офіційна навчальна програма ISTQB залишається головним джерелом для іспиту."
                             : "Use these as visual reinforcement after reading the chapter. The ISTQB syllabus remains the exam authority."}</p>
                           {activeModule.videos.map((video) => (
                             <LearningVideo

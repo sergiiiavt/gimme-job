@@ -1,4 +1,4 @@
-# Формати даних та serialization
+# Формати даних і серіалізація
 
 API обмінюються bytes, але ці bytes зазвичай представляють структуровані дані. Формат визначає, як client і server мають ці дані інтерпретувати.
 
@@ -48,13 +48,13 @@ XML є case-sensitive, а elements мають бути правильно вкл
 
 SOAP використовує XML, але SOAP, WSDL, XSD та XML namespaces розглядаються окремо у **SOAP та XML APIs**.
 
-## Serialization та deserialization
+## Серіалізація та десеріалізація
 
 **Serialization** перетворює application value або object у представлення для передачі, наприклад JSON чи XML. **Deserialization** розбирає це представлення назад у values, з якими працює application.
 
 Наприклад, HTTP response може містити JSON bytes. Python client може deserialize їх у `dict`, а C# client — у class instance. Сам JSON не є ні Python dictionary, ні C# object.
 
-## Media types
+## Медіатипи
 
 HTTP використовує `Content-Type`, щоб описати формат message content, а `Accept` — щоб повідомити server, які response formats client може обробити.
 
@@ -69,7 +69,7 @@ HTTP використовує `Content-Type`, щоб описати формат
 
 HTTP-деталі `Content-Type`, `Accept`, request bodies та file upload залишаються у **HTTP та REST APIs**.
 
-## Missing, null та empty — різні стани
+## Відсутнє, null і порожнє значення
 
 Ці стани можуть мати різне значення в API contract:
 

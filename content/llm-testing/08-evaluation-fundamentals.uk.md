@@ -1,12 +1,12 @@
-# Методологія evaluation і datasets
+# Методологія оцінювання та набори даних
 
 **Evaluation** (eval) — це відтворюване вимірювання якості LLM feature: dataset cases, система під тестом, scorers, що оцінюють кожен output, і правило, яке перетворює scores на рішення. Unit tests з fake models тримають правильним code навколо моделі; evaluations вимірюють, що модель робить усередині продукту.
 
-Більшість слабких evaluation suites провалюються ще до вибору будь-якої metric: вони вимірюють загальні якості, які нікому не потрібні, на cases, якими ніхто не користується, за labels, про які ніхто не домовився. Цей chapter описує метод, що цьому запобігає: критерії успіху, error analysis, побудова й підтримка datasets, labels і узгодженість, overfitting і contamination, запуск evaluations, frameworks і читання результатів. Наступні chapters описують інструменти: [code-based scorers](/learn/llm?topic=code-based-scorers), [LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation) і [статистику](/learn/llm?topic=eval-statistics).
+Більшість слабких evaluation suites провалюються ще до вибору будь-якої metric: вони вимірюють загальні якості, які нікому не потрібні, на cases, якими ніхто не користується, за labels, про які ніхто не домовився. Цей chapter описує метод, що цьому запобігає: критерії успіху, error analysis, побудова й підтримка datasets, labels і узгодженість, overfitting і contamination, запуск evaluations, frameworks і читання результатів. Наступні chapters описують інструменти: [code-based scorers](/learn/llm?topic=code-based-scorers), [LLM як оцінювач](/learn/llm?topic=model-graded-evaluation) і [статистику](/learn/llm?topic=eval-statistics).
 
-**Prerequisites:** [Чим особливе тестування LLM](/learn/llm?topic=llm-testing-problem-space), [Тестування LLM code без моделі](/learn/llm?topic=testing-without-the-model).
+**Передумови:** [Чим особливе тестування LLM](/learn/llm?topic=llm-testing-problem-space), [Тестування коду LLM-застосунку без моделі](/learn/llm?topic=testing-without-the-model).
 
-## Тести й evaluations
+## Тести й оцінювання
 
 | Аспект | Класичний тест | Evaluation |
 |---|---|---|
@@ -26,7 +26,7 @@ evaluation = dataset      cases: inputs plus what is needed to judge them (facts
            + decision     a rule fixed in advance that turns results into ship, block or investigate
 ```
 
-## Цикл evaluation
+## Цикл оцінювання
 
 Evaluation — не фаза в кінці проєкту. Це цикл, який починається ще до першого prompt і триває в production:
 
@@ -61,7 +61,7 @@ Evaluation — не фаза в кінці проєкту. Це цикл, яки
 
 Надавайте перевагу **бінарним критеріям**, pass або fail, а не оцінкам від 1 до 5. Двоє рецензентів рідко погоджуються, чи відповідь — це 3 чи 4, середня оцінка приховує, що саме не так, а pass rate легко відстежувати. Якщо якість має кілька аспектів, напишіть окремий бінарний критерій для кожного.
 
-## Error analysis
+## Аналіз помилок
 
 Error analysis — крок, який більшість команд пропускає, і саме він вирішує, чи вимірюватиме evaluation щось корисне. Він запозичує дві техніки з якісних досліджень:
 
@@ -107,7 +107,7 @@ for position, (_, category) in enumerate(reviewed, 1):
 print("new categories appeared at traces", first_seen, "and none in the last", len(reviewed) - first_seen[-1])
 ```
 
-Output:
+Результат:
 
 ```text
 19 of 40 traces have a problem
@@ -122,7 +122,7 @@ new categories appeared at traces [2, 3, 5, 8, 13] and none in the last 27
 
 Найчастіша проблема, відсутні citations, — не найважливіша: вигадані політики трапляються рідше, але шкодять більше. Кожна категорія також підказує свій інструмент. Вигадана політика потребує scorer за фактами або валідованого judge; пропущений пошук замовлення — це детермінована перевірка tool calls у trace; «задовго» — підрахунок слів. Загальний score «helpfulness» із framework не виміряв би жодної з них.
 
-## Побудова evaluation dataset
+## Побудова набору даних для оцінювання
 
 Dataset має відображати реальне використання, містити відомі вам збої та покривати важливі зрізи. Кожне джерело дає щось своє:
 
@@ -203,7 +203,7 @@ print(f"{len(sample)} cases:", dict(Counter(split(case["id"]) for case in sample
 print("scrubbed example:", next(case["text"] for case in sample if "<email>" in case["text"]))
 ```
 
-Output:
+Результат:
 
 ```text
 2000 logged messages, 1320 after removing duplicates
@@ -229,7 +229,7 @@ scrubbed example: Refund A-7388 to <email> please
 - **Поповнюйте його з кожним збоєм у production** і прибирайте cases, які вже не відображають продукт.
 - **Документуйте його:** звідки cases, як їх позначали і які відомі прогалини, у дусі datasheets for datasets.
 
-## Синтетичні cases із покриттям
+## Синтетичні приклади й покриття
 
 Вибірки з production пропускають рідкісні комбінації: розлючений клієнт, що ставить два питання українською, може не з'явитися за місяць logs. Синтетичні cases закривають такі прогалини, якщо їх генерують систематично: виберіть виміри, що змінюють поведінку, виберіть комбінації їхніх значень, згенеруйте inputs для кожної комбінації моделлю і перевірте кожен згенерований case.
 
@@ -266,7 +266,7 @@ for values in chosen[:5]:
     print("  " + " | ".join(values))
 ```
 
-Output:
+Результат:
 
 ```text
 all combinations: 54, value pairs to cover: 45
@@ -280,7 +280,7 @@ cases that cover every pair of values: 9
 
 Дев'ять комбінацій покривають кожну пару, яку покрили б 54. Кожна комбінація стає короткою інструкцією для моделі-генератора («напиши повідомлення розлюченого постійного клієнта, який ставить два питання про refund, українською»), зазвичай із кількома inputs на комбінацію. Людина перевіряє кожен згенерований case, перш ніж він потрапить у dataset: згенерований текст зазвичай чистіший і явніший за реальні повідомлення, а модель не повинна бути єдиним суддею cases, які сама написала.
 
-## Labels і еталонні відповіді
+## Розмітка та еталонні відповіді
 
 Що case зберігає як очікуваний результат, залежить від задачі:
 
@@ -322,16 +322,16 @@ print(f"raw agreement {observed:.0%}, agreement expected by chance {expected:.0%
 print(f"failures found: reviewer 1 {reviewer_1.count('F')}, reviewer 2 {reviewer_2.count('F')}, both {both_fail}")
 ```
 
-Output:
+Результат:
 
 ```text
 raw agreement 87%, agreement expected by chance 82%, kappa 0.26
 failures found: reviewer 1 3, reviewer 2 3, both 1
 ```
 
-Узгодженість 87% звучить добре, але двоє рецензентів, які позначають майже все як pass, погоджуються так часто випадково. Каппа 0.26 показує головне: з п'яти відповідей, які хтось позначив як fail, рецензенти погоджуються щодо однієї. Перш ніж позначати сотні cases, обговоріть саме ці розбіжності, уточніть критерій і приклади та виміряйте знову. Та сама міра потім валідує model judges проти human labels ([LLM-as-a-judge](/learn/llm?topic=model-graded-evaluation)).
+Узгодженість 87% звучить добре, але двоє рецензентів, які позначають майже все як pass, погоджуються так часто випадково. Каппа 0.26 показує головне: з п'яти відповідей, які хтось позначив як fail, рецензенти погоджуються щодо однієї. Перш ніж позначати сотні cases, обговоріть саме ці розбіжності, уточніть критерій і приклади та виміряйте знову. Та сама міра потім валідує model judges проти human labels ([LLM як оцінювач](/learn/llm?topic=model-graded-evaluation)).
 
-## Розбиття, overfitting і contamination
+## Поділ вибірок, перенавчання й витік даних
 
 - **Development і test sets.** Ітеруйте над prompts на development set; test set, відкладений окремо, використовуйте для рішень і рідко дивіться на його окремі cases. Коли score на development зростає, а на test — ні, prompt підігнано під cases development.
 - **Few-shot приклади, взяті з evaluation cases,** завищують scores: модель уже бачила відповіді. Тримайте приклади в prompts і evaluation cases у множинах, що не перетинаються, і перевіряйте перетин автоматично.
@@ -353,7 +353,7 @@ failures found: reviewer 1 3, reviewer 2 3, both 1
 
 Нижчі рівні дешеві, швидкі й відтворювані; вищі — дорогі й шумні, але ближчі до того, що відчувають користувачі. Ніколи не питайте model judge, чи output — валідний JSON, і ніколи не довіряйте judge, якого не порівняли з human labels.
 
-## Запуск evaluations
+## Запуск оцінювання
 
 Запуск evaluation — це експеримент. Записуйте достатньо, щоб його відтворити і пояснити результати:
 
@@ -369,10 +369,10 @@ failures found: reviewer 1 3, reviewer 2 3, both 1
 
 - **Відокремлюйте генерацію від оцінювання.** Зберігайте outputs один раз, а оцінюйте їх стільки разів, скільки змінюються scorers.
 - **Кешуйте виклики моделі** за моделлю, версією prompt, параметрами й input, щоб незмінені cases нічого не коштували під час наступного запуску.
-- **Запускайте cases паралельно в межах rate limits provider** і повторюйте лише тимчасові помилки ([Анатомія LLM application і APIs](/learn/llm?topic=llm-application-anatomy)).
+- **Запускайте cases паралельно в межах rate limits provider** і повторюйте лише тимчасові помилки ([Анатомія LLM-застосунку та API](/learn/llm?topic=llm-application-anatomy)).
 - **Тримайте запуски незмінними.** Запуск, який переоцінили чи частково перегенерували, — це новий запуск.
 
-## Evaluation frameworks
+## Фреймворки оцінювання
 
 Frameworks дають datasets, runners, кешування, вбудовані scorers, звіти та інтеграцію з CI. Поняття цього chapter стосуються їх усіх:
 
@@ -434,7 +434,7 @@ def refunds():
 
 Оберіть один framework для offline evaluations, тримайте власні scorers звичайними функціями, які можна протестувати окремо, і уникайте вбудованих metrics, визначення яких не можете пояснити.
 
-## Читання результатів: scorecards і cases, що змінили вердикт
+## Читання результатів: показники й зміни вердиктів
 
 Результат — це порівняння з baseline, а не одне число. Агрегат — найменш інформативна його частина:
 
@@ -467,7 +467,7 @@ for lang, (old, new, total) in sorted(by_slice.items()):
     print(f"lang={lang}: baseline {old}/{total}, candidate {new}/{total}")
 ```
 
-Output:
+Результат:
 
 ```text
 pass rate: baseline 75%, candidate 75%, change +0%
@@ -477,7 +477,7 @@ lang=en: baseline 5/8, candidate 7/8
 lang=uk: baseline 4/4, candidate 2/4
 ```
 
-«Без змін» приховує два виправлення і два нові збої, обидва українською. Прочитайте кожен case, що змінив вердикт, перш ніж схвалити зміну: такі cases показують, що зміна насправді зробила, а скупчення змін в одному зрізі — це regression, навіть коли середнє не змінилося. Чи більша різниця за шум — питання статистики ([Статистика для evaluation](/learn/llm?topic=eval-statistics)).
+«Без змін» приховує два виправлення і два нові збої, обидва українською. Прочитайте кожен case, що змінив вердикт, перш ніж схвалити зміну: такі cases показують, що зміна насправді зробила, а скупчення змін в одному зрізі — це regression, навіть коли середнє не змінилося. Чи більша різниця за шум — питання статистики ([Статистика для оцінювання](/learn/llm?topic=eval-statistics)).
 
 ## Приклад проєкту
 
