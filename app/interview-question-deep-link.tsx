@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { ukrainianInterviewLabel } from "../content/interview/ukrainian-labels";
 import { contentHref } from "./content-deep-links";
 import ExecutablePythonBlock from "./executable-python-block";
 import ExecutableSqlBlock from "./executable-sql-block";
@@ -81,7 +82,7 @@ function renderHighlightedCode(source: string, language: string): ReactNode[] {
 }
 
 function sqlRuntimeLabel(engine: string | undefined, showUk: boolean) {
-  if (engine === "sqlite") return "Runtime · SQLite sample DB";
+  if (engine === "sqlite") return showUk ? "Виконання · тестова база SQLite" : "Runtime · SQLite sample DB";
   return showUk ? "Виконання · статичний приклад" : "Runtime · static example";
 }
 
@@ -161,23 +162,23 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
   return (
     <main className={styles.page}>
       <article className={styles.card} id={`question-${question.id}`}>
-        <nav className={styles.topNav} aria-label="Interview question navigation">
-          <button className={styles.backLink} onClick={returnToQuestionList} type="button">← All questions</button>
-          <button className={styles.copyButton} onClick={copyLink} type="button">{copied ? "Copied" : "Copy link"}</button>
+        <nav className={styles.topNav} aria-label={showUk ? "Навігація питання для співбесіди" : "Interview question navigation"}>
+          <button className={styles.backLink} onClick={returnToQuestionList} type="button">← {showUk ? "Усі питання" : "All questions"}</button>
+          <button className={styles.copyButton} onClick={copyLink} type="button">{copied ? (showUk ? "Скопійовано" : "Copied") : (showUk ? "Копіювати посилання" : "Copy link")}</button>
         </nav>
 
         <header className={styles.header}>
-          <span className={styles.eyebrow}>{eyebrow}</span>
+          <span className={styles.eyebrow}>{showUk ? ukrainianInterviewLabel(eyebrow) : eyebrow}</span>
           <div className={styles.meta}>
-            <a href={categoryHref}>{taxonomyItem?.label ?? question.category}</a>
-            {question.sqlScope && <span>{question.sqlScope}</span>}
+            <a href={categoryHref}>{showUk ? ukrainianInterviewLabel(taxonomyItem?.label ?? question.category) : taxonomyItem?.label ?? question.category}</a>
+            {question.sqlScope && <span>{showUk ? ukrainianInterviewLabel(question.sqlScope) : question.sqlScope}</span>}
             <span>{question.level}</span>
-            <span>{question.prevalence}</span>
-            {question.kind && <span>{question.kind}</span>}
+            <span>{showUk ? ukrainianInterviewLabel(question.prevalence) : question.prevalence}</span>
+            {question.kind && <span>{showUk ? ukrainianInterviewLabel(question.kind) : question.kind}</span>}
           </div>
           <h1>{displayQuestion}</h1>
           {question.questionUk && (
-            <div className={styles.language} role="group" aria-label="Question language">
+            <div className={styles.language} role="group" aria-label={showUk ? "Мова питання" : "Question language"}>
               <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => setLanguage("en")} type="button">EN</button>
               <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => setLanguage("uk")} type="button">UA</button>
             </div>
@@ -217,7 +218,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
                       </header>
                       {(example.sqlDialect || example.sqlRuntime) && (
                         <div className={styles.codeMeta}>
-                          {example.sqlDialect && <span>{showUk ? "Діалект" : "Dialect"} · {example.sqlDialect}</span>}
+                          {example.sqlDialect && <span>{showUk ? "Діалект" : "Dialect"} · {showUk ? ukrainianInterviewLabel(example.sqlDialect) : example.sqlDialect}</span>}
                           {example.sqlRuntime && <span>{sqlRuntimeLabel(example.sqlRuntime.engine, showUk)}</span>}
                         </div>
                       )}
