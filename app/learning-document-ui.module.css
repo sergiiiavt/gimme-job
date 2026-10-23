@@ -242,3 +242,97 @@
   font-size: 10.5px;
   padding: 6px 9px;
 }
+
+/* Learning utilities: compact touch-first controls, without changing desktop. */
+.tocToggle {
+  display: none;
+}
+
+@media (max-width: 610px) {
+  .pagerEdge.pagerEdge {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pagerUnavailable {
+    display: none;
+  }
+
+  .pagerItem > button {
+    min-height: 88px;
+    padding: 14px 42px 14px 14px;
+    text-align: left;
+  }
+
+  .pagerItem:first-child > button:not(:disabled) {
+    background: #fff;
+    border-color: #dce2dd;
+    color: #33443b;
+  }
+
+  .pagerItem:last-child > button:not(:disabled) {
+    background: #1d2923;
+    border-color: #1d2923;
+    color: #fff;
+  }
+
+  .pagerItem > button small {
+    font-size: 9px;
+    letter-spacing: .06em;
+    line-height: 1.4;
+    margin-bottom: 7px;
+  }
+
+  .pagerItem > button strong {
+    font-size: 13px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .pagerItem .pagerDirectLink {
+    bottom: 11px;
+    right: 10px;
+    top: auto;
+    transform: none;
+  }
+
+  .tocToggle {
+    align-items: center;
+    background: #f2f5f2;
+    border: 1px solid #e1e6e2;
+    border-radius: 7px;
+    color: #3c5947;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    gap: 7px;
+    justify-content: center;
+    min-height: 38px;
+    padding: 7px 10px;
+    white-space: nowrap;
+  }
+
+  .tocToggle svg {
+    transition: transform .18s ease;
+  }
+
+  .tocToggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+
+  .tocItems:not(.tocItemsOpen) {
+    display: none;
+  }
+
+  .tocItemsOpen {
+    display: grid;
+  }
+}
+
+@media (max-width: 350px) {
+  .pagerEdge.pagerEdge,
+  .pagerItem.pagerItem {
+    min-width: 0;
+  }
+}
