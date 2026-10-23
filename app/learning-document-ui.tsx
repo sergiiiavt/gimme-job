@@ -95,7 +95,7 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   return (
     <nav className={`${styles.pager} ${!previous || !next ? uiStyles.pagerEdge : ""}`} aria-label={ariaLabel}>
       <div className={`${uiStyles.pagerItem} ${!previous ? uiStyles.pagerUnavailable : ""}`}>
-        <button disabled={!previous onClick={() => previous && onSelect(previous)} type="button">
+        <button disabled={!previous} onClick={() => previous && onSelect(previous)} type="button">
           <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
           <strong>{labelFor(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
         </button>
@@ -113,7 +113,7 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
         )}
       </div>
       <div className={`${uiStyles.pagerItem} ${!next ? uiStyles.pagerUnavailable : ""}`}>
-        <button disabled={!next onClick={() => next && onSelect(next)} type="button">
+        <button disabled={!next} onClick={() => next && onSelect(next)} type="button">
           <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
           <strong>{labelFor(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
         </button>
