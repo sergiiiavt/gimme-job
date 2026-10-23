@@ -59,6 +59,7 @@ test("sitemap.xml and robots.txt come from the canonical Next metadata routes", 
   assert.equal(sitemap.status, 200);
   const xml = await sitemap.text();
   assert.match(xml, /<loc>https:\/\/gimme-job\.com\/learn\/qa-fundamentals<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/gimme-job\.com\/learn\/git<\/loc>/);
   assert.match(xml, /<loc>https:\/\/gimme-job\.com\/interview\/sql\?question=relational-versus-nonrelational-databases<\/loc>/);
   assert.match(xml, /<loc>https:\/\/gimme-job\.com\/uk\/interview\?question=severity-versus-priority<\/loc>/);
   assert.doesNotMatch(xml, /<loc>https:\/\/gimme-job\.com\/about<\/loc>/);
@@ -112,6 +113,7 @@ test("duplicate and placeholder pages declare the right canonical and robots pol
     ["/learn/qa-fundamentals", "/learn/qa-fundamentals", undefined],
     ["/learn/networking", "/learn/networking", undefined],
     ["/learn/docker", "/learn/docker", undefined],
+    ["/learn/git", "/learn/git", undefined],
     ["/learn/strategy", "/learn/strategy", "noindex, follow"],
   ];
   for (const [path, canonicalPath, robots] of expectations) {
@@ -129,6 +131,17 @@ test("the home page carries the site defaults and a large social preview", async
   assert.equal(robotsOf(html), "index, follow");
   assert.match(html, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
   assert.match(html, /<meta[^>]+name="twitter:card"[^>]+content="summary_large_image"/);
+});
+
+test("Git learning is public, marked for review and renders the requested chapter", async () => {
+  const response = await fetchRoute("/learn/git?topic=conflict-resolution&section=resolve-the-example-deliberately");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Review required/);
+  assert.match(html, /Resolve conflicts without losing intent/);
+  assert.match(html, /id="resolve-the-example-deliberately"/);
+  assert.match(html, /Git &amp; collaboration/);
+  assert.doesNotMatch(html, /This learning track is under construction/);
 });
 
 test("English interview lists render their heading in the initial HTML", async () => {

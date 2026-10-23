@@ -56,6 +56,9 @@ test("external navigation items keep canonical destinations independent of displ
   const docker = item("learning", "docker");
   assert.equal(docker.external, true);
   assert.equal(docker.publicHref, "/learn/docker");
+  const git = item("learning", "git");
+  assert.equal(git.external, true);
+  assert.equal(git.publicHref, "/learn/git");
 });
 
 

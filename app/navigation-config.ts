@@ -1,5 +1,5 @@
 export type SiteSection = "about" | "jobs" | "resume" | "interview" | "python-interview" | "certifications" | "strategy" | "programming" | "automation" | "api" | "data" | "mobile" | "embedded" | "performance" | "security" | "devops" | "observability" | "networking" | "linux" | "llm" | "agentic" | "standards" | "trends" | "news";
-export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "testing-tools" | "docker" | "metrics-estimation" | "websocket-playground" | "database-playground" | "games";
+export type ExternalNavigationId = "ai-assistant" | "qa-fundamentals" | "git" | "testing-tools" | "docker" | "metrics-estimation" | "websocket-playground" | "database-playground" | "games";
 export type NavigationGroupId = "career" | "learning" | "playgrounds" | "misc";
 
 export interface SectionNavigationItem {
@@ -36,7 +36,7 @@ export interface LearningCluster {
 export const learningClusters: LearningCluster[] = [
   { tone: "foundation", itemIds: ["qa-fundamentals", "certifications"] },
   { tone: "ai", itemIds: ["llm", "agentic"] },
-  { tone: "build", itemIds: ["programming", "automation", "testing-tools"] },
+  { tone: "build", itemIds: ["git", "programming", "automation", "testing-tools"] },
   { tone: "systems", itemIds: ["api", "data", "mobile", "embedded"] },
   { tone: "infra", itemIds: ["performance", "security", "devops", "docker", "observability", "networking", "linux"] },
   { tone: "governance", itemIds: ["standards", "metrics-estimation", "strategy"] },
@@ -98,6 +98,7 @@ export const navigationGroups: NavigationGroup[] = [
       { id: "certifications", label: "Certs & Trainings" },
       { id: "llm", label: "Generative AI & LLM" },
       { id: "agentic", label: "AI agents & MCP" },
+      { id: "git", label: "Git & collaboration", external: true, publicHref: "/learn/git" },
       sectionItem("programming", "Programming"),
       sectionItem("automation", "Test automation"),
       {
