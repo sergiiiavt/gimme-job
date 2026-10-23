@@ -108,3 +108,25 @@ test("learning heading link sits at the far right and focused mode becomes singl
   assert.match(styles, /\.focusedLayout[\s\S]*display: block !important/);
   assert.match(styles, /\.focusedContent[\s\S]*max-width: 980px !important/);
 });
+
+test("mobile learning utilities preserve section navigation and readable phone layouts", async () => {
+  const [component, ui, page] = await Promise.all([
+    read("app/learning-document-ui.tsx"),
+    read("app/learning-document-ui.module.css"),
+    read("app/qa-fundamentals-page.module.css"),
+  ]);
+
+  assert.match(component, /const \[tocOpen, setTocOpen\] = useState\(false\)/);
+  assert.match(component, /aria-controls=\{tocId\}/);
+  assert.match(component, /aria-expanded=\{tocOpen\}/);
+  assert.match(component, /onClick=\{\(\) => setTocOpen\(\(open\) => !open\)\}/);
+  assert.match(component, /onClick=\{\(\) => setTocOpen\(false\)\}/);
+  assert.match(component, /!previous \? uiStyles\.pagerUnavailable/);
+  assert.match(component, /!next \? uiStyles\.pagerUnavailable/);
+
+  assert.match(ui, /\.tocToggle\s*\{\s*display: none;/);
+  assert.match(ui, /@media \(max-width: 610px\)[\s\S]*\.tocItems:not\(\.tocItemsOpen\)\s*\{\s*display: none;/);
+  assert.match(ui, /@media \(max-width: 610px\)[\s\S]*\.pagerUnavailable\s*\{\s*display: none;/);
+  assert.match(page, /@media \(max-width: 610px\)[\s\S]*\.language\s*\{\s*align-items: center;\s*display: flex;/);
+  assert.match(page, /@media \(max-width: 440px\)[\s\S]*\.pager\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/);
+});

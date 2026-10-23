@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { contentHref } from "./content-deep-links";
 import styles from "./qa-fundamentals-page.module.css";
@@ -93,8 +93,8 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
   const nextHref = nextId ? contentHref(pathname, searchParams.toString(), { topic: nextId, section: null }) : null;
 
   return (
-    <nav className={styles.pager} aria-label={ariaLabel}>
-      <div className={uiStyles.pagerItem}>
+    <nav className={`${styles.pager} ${!previous || !next ? uiStyles.pagerEdge : ""}`} aria-label={ariaLabel}>
+      <div className={`${uiStyles.pagerItem} ${!previous ? uiStyles.pagerUnavailable : ""}`}>
         <button disabled={!previous} onClick={() => previous && onSelect(previous)} type="button">
           <small>← {language === "uk" ? "Попередній розділ" : "Previous chapter"}</small>
           <strong>{labelFor(previous) ?? (language === "uk" ? "Початок курсу" : "Beginning of path")}</strong>
@@ -112,7 +112,7 @@ export function LearningPager<T>({ ariaLabel, language, labelFor, next, onSelect
           </a>
         )}
       </div>
-      <div className={uiStyles.pagerItem}>
+      <div className={`${uiStyles.pagerItem} ${!next ? uiStyles.pagerUnavailable : ""}`}>
         <button disabled={!next} onClick={() => next && onSelect(next)} type="button">
           <small>{language === "uk" ? "Наступний розділ" : "Next chapter"} →</small>
           <strong>{labelFor(next) ?? (language === "uk" ? "Кінець курсу" : "End of path")}</strong>
@@ -146,6 +146,8 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
   const focusedSectionId = searchParams.get("section");
   const focusedHeading = focusedSectionId ? headings.find((heading) => heading.id === focusedSectionId) : undefined;
   const [activeSectionId, setActiveSectionId] = useState(headings[0]?.id ?? (showSourceRegistry ? "source-registry" : ""));
+  const [tocOpen, setTocOpen] = useState(false);
+  const tocId = useId();
   const sectionHref = (sectionId: string) => contentHref(pathname, searchParams.toString(), { section: null }, sectionId);
 
   useEffect(() => {
@@ -354,7 +356,19 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
 
       <section className={styles.toc} aria-label={language === "uk" ? "На цій сторінці" : "On this page"}>
         <span>{language === "uk" ? "На цій сторінці" : "On this page"}</span>
-        <nav>
+        <button
+          aria-controls={tocId}
+          aria-expanded={tocOpen}
+          className={uiStyles.tocToggle}
+          onClick={() => setTocOpen((open) => !open)}
+          type="button"
+        >
+          {language === "uk" ? "Розділи" : "Sections"} · {headings.length + (showSourceRegistry ? 1 : 0)}
+          <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16">
+            <path d="m6 9 6 6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+          </svg>
+        </button>
+        <nav className={`${uiStyles.tocItems} ${tocOpen ? uiStyles.tocItemsOpen : ""}`} id={tocId}>
           {headings.map((heading) => {
             const isActive = activeSectionId === heading.id;
             return (
@@ -363,6 +377,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
                 className={isActive ? uiStyles.activeTocLink : undefined}
                 href={sectionHref(heading.id)}
                 key={heading.id}
+                onClick={() => setTocOpen(false)}
               >
                 {heading.text}
               </a>
@@ -373,6 +388,7 @@ export function LearningRail({ headings, language, languages = ["en", "uk"], onL
             aria-current={activeSectionId === "source-registry" ? "location" : undefined}
             className={`${styles.sourceLink} ${activeSectionId === "source-registry" ? uiStyles.activeTocLink : ""}`}
             href={sectionHref("source-registry")}
+            onClick={() => setTocOpen(false)}
           >
             <small>{language === "uk" ? "Джерела" : "References"}</small>
             {language === "uk" ? "Реєстр джерел" : "Source registry"}
