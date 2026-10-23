@@ -1,0 +1,206 @@
+[
+  {
+    "id": "foundations",
+    "order": 1,
+    "label": "Foundations & learning sequence",
+    "labelUk": "Основи й послідовність навчання",
+    "description": "Snapshots, objects, the working tree, index, HEAD and the difference between Git and hosting.",
+    "descriptionUk": "Знімки стану, об’єкти, робоче дерево, індекс, HEAD і відмінність між Git та хостингом.",
+    "file": "01-foundations.md",
+    "sourceIds": [
+      "git-tutorial",
+      "git-glossary"
+    ]
+  },
+  {
+    "id": "setup-authentication",
+    "order": 2,
+    "label": "Setup & authentication",
+    "labelUk": "Налаштування й автентифікація",
+    "description": "Install Git, configure identity, create or clone a repository and authenticate without storing credentials in source.",
+    "descriptionUk": "Встановлення Git, налаштування автора, створення й клонування репозиторію та безпечна автентифікація.",
+    "file": "02-setup-authentication.md",
+    "sourceIds": [
+      "git-config",
+      "git-clone",
+      "github-auth"
+    ]
+  },
+  {
+    "id": "staging-commits",
+    "order": 3,
+    "label": "Changes, staging & commits",
+    "labelUk": "Зміни, індекс і коміти",
+    "description": "Inspect and stage intentional changes, write useful commits and manage ignored files and line endings.",
+    "descriptionUk": "Перегляд і відбір змін, змістовні коміти, ігноровані файли та закінчення рядків.",
+    "file": "03-staging-commits.md",
+    "sourceIds": [
+      "git-add",
+      "git-diff",
+      "git-commit",
+      "gitignore",
+      "gitattributes"
+    ]
+  },
+  {
+    "id": "history-comparison",
+    "order": 4,
+    "label": "History & comparison",
+    "labelUk": "Історія та порівняння",
+    "description": "Read the commit graph, compare branches correctly and trace changes without confusing snapshots with ranges.",
+    "descriptionUk": "Читання графа комітів, порівняння гілок і пошук змін із розрізненням знімків та діапазонів.",
+    "file": "04-history-comparison.md",
+    "sourceIds": [
+      "git-log",
+      "git-diff",
+      "git-revisions"
+    ]
+  },
+  {
+    "id": "branches-worktrees",
+    "order": 5,
+    "label": "Branches, stash & worktrees",
+    "labelUk": "Гілки, stash і робочі дерева",
+    "description": "Start focused branches, preserve unfinished work and use separate worktrees for concurrent tasks.",
+    "descriptionUk": "Створення гілок для окремих задач, збереження незавершених змін і паралельна робота в кількох робочих деревах.",
+    "file": "05-branches-worktrees.md",
+    "sourceIds": [
+      "git-switch",
+      "git-stash",
+      "git-worktree"
+    ]
+  },
+  {
+    "id": "remotes-synchronization",
+    "order": 6,
+    "label": "Remotes & synchronization",
+    "labelUk": "Віддалені репозиторії та синхронізація",
+    "description": "Understand remote-tracking refs, upstreams, fetch, pull, push and non-fast-forward rejection.",
+    "descriptionUk": "Віддалені посилання, upstream, fetch, pull, push і відхилення оновлень, що не є fast-forward.",
+    "file": "06-remotes-synchronization.md",
+    "sourceIds": [
+      "git-remote",
+      "git-fetch",
+      "git-pull",
+      "git-push"
+    ]
+  },
+  {
+    "id": "merge-rebase",
+    "order": 7,
+    "label": "Merge, rebase & cherry-pick",
+    "labelUk": "Merge, rebase і cherry-pick",
+    "description": "Choose integration behavior deliberately and understand rewritten identities, squash merges and backports.",
+    "descriptionUk": "Свідомий вибір інтеграції, нові ідентифікатори комітів, squash-злиття та перенесення виправлень.",
+    "file": "07-merge-rebase.md",
+    "sourceIds": [
+      "git-merge",
+      "git-rebase",
+      "git-cherry-pick",
+      "git-push"
+    ]
+  },
+  {
+    "id": "conflict-resolution",
+    "order": 8,
+    "label": "Conflict resolution",
+    "labelUk": "Розв’язання конфліктів",
+    "description": "Resolve a complete merge example, continue or abort an operation and verify semantic correctness.",
+    "descriptionUk": "Повний приклад розв’язання конфлікту злиття, продовження чи скасування операції та перевірка змісту результату.",
+    "file": "08-conflict-resolution.md",
+    "sourceIds": [
+      "git-merge",
+      "git-rebase",
+      "git-add"
+    ]
+  },
+  {
+    "id": "undo-recovery",
+    "order": 9,
+    "label": "Undo & recovery",
+    "labelUk": "Скасування змін і відновлення",
+    "description": "Choose restore, reset, revert or reflog based on the state at risk and whether history is shared.",
+    "descriptionUk": "Вибір restore, reset, revert або reflog залежно від стану даних і того, чи опублікована історія.",
+    "file": "09-undo-recovery.md",
+    "sourceIds": [
+      "git-restore",
+      "git-reset",
+      "git-revert",
+      "git-reflog"
+    ]
+  },
+  {
+    "id": "pull-requests-review",
+    "order": 10,
+    "label": "Pull requests & code review",
+    "labelUk": "Пулреквести та перевірка коду",
+    "description": "Build reviewable changes, select the correct base, handle feedback and coordinate a team workflow.",
+    "descriptionUk": "Підготовка зрозумілих змін, правильна базова гілка, робота із зауваженнями та командний процес.",
+    "file": "10-pull-requests-review.md",
+    "sourceIds": [
+      "github-prs",
+      "github-reviews",
+      "git-workflows"
+    ]
+  },
+  {
+    "id": "ci-releases",
+    "order": 11,
+    "label": "CI, releases & team policy",
+    "labelUk": "CI, релізи й командні правила",
+    "description": "Tie checks to a revision, understand protected branches, tag releases and distinguish Git history from deployed state.",
+    "descriptionUk": "Перевірки конкретної ревізії, захист гілок, теги релізів і відмінність між історією Git та розгорнутою версією.",
+    "file": "11-ci-releases.md",
+    "sourceIds": [
+      "github-protection",
+      "github-status-checks",
+      "git-tag",
+      "git-hooks"
+    ]
+  },
+  {
+    "id": "debugging-bisect",
+    "order": 12,
+    "label": "Troubleshooting & bisect",
+    "labelUk": "Діагностика й bisect",
+    "description": "Diagnose repository state, inspect blame evidence and find an introducing commit using a reproducible predicate.",
+    "descriptionUk": "Діагностика стану репозиторію, аналіз blame і пошук коміту, що вніс регресію, за відтворюваною перевіркою.",
+    "file": "12-debugging-bisect.md",
+    "sourceIds": [
+      "git-bisect",
+      "git-blame",
+      "git-status"
+    ]
+  },
+  {
+    "id": "security-hygiene",
+    "order": 13,
+    "label": "Security & repository hygiene",
+    "labelUk": "Безпека й упорядкування репозиторію",
+    "description": "Handle secrets, signing, large files, submodules, shallow clones and cross-platform repository issues.",
+    "descriptionUk": "Секрети, підписування, великі файли, підмодулі, неглибокі клони та міжплатформні особливості.",
+    "file": "13-security-hygiene.md",
+    "sourceIds": [
+      "github-secrets",
+      "git-config",
+      "git-submodule",
+      "git-lfs",
+      "git-clean"
+    ]
+  },
+  {
+    "id": "capstone-reference",
+    "order": 14,
+    "label": "Collaboration lab & reference",
+    "labelUk": "Лабораторія співпраці та довідник",
+    "description": "Run a local two-contributor workflow with real Git and use a task-oriented command reference.",
+    "descriptionUk": "Локальний процес двох учасників зі справжнім Git і довідник команд за задачами.",
+    "file": "14-capstone-reference.md",
+    "sourceIds": [
+      "git-tutorial",
+      "git-push",
+      "git-bisect",
+      "github-prs"
+    ]
+  }
+]

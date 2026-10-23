@@ -6,6 +6,7 @@ import dockerCatalog from "./docker-learning/catalog";
 import sqlPracticalTasks from "./data-learning/sql-practical-tasks.json";
 import sqlQuickReference from "./data-learning/sql-quick-reference.json";
 import embeddedIotCatalog from "./embedded-iot/catalog";
+import gitCatalog from "./git-learning/catalog";
 import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
 import llmTestingCatalog from "./llm-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
@@ -32,6 +33,7 @@ export type LearningRagSource = Readonly<{
  */
 export const learningRagSources: readonly LearningRagSource[] = [
   { key: "qa-fundamentals", route: "/reference/qa-fundamentals", value: qaFundamentalsCatalog },
+  { key: "git", route: "/learn/git", value: gitCatalog },
   { key: "python", route: "/learn/programming", track: "python", value: pythonCurriculum },
   { key: "csharp", route: "/learn/programming", track: "csharp", value: csharpCurriculum },
   { key: "python-quick-reference", route: "/learn/programming", track: "python", value: pythonQuickReference },

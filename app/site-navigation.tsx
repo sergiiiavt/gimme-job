@@ -339,6 +339,8 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
       return <svg {...props}><path d="m12 3 1.2 3.3L17 7.5l-3.8 1.2L12 12l-1.2-3.3L7 7.5l3.8-1.2zM5 13l.8 2.2L8 16l-2.2.8L5 19l-.8-2.2L2 16l2.2-.8zM18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/></svg>;
     case "agentic":
       return <svg {...props}><rect x="5" y="7" width="14" height="11" rx="3"/><path d="M9 11h.01M15 11h.01M9 15h6M12 7V4M10 4h4"/></svg>;
+    case "git":
+      return <svg {...props}><circle cx="6" cy="5" r="3"/><circle cx="18" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><path d="M6 8v8M18 8v1a6 6 0 0 1-6 6H6"/></svg>;
     case "programming":
       return <svg {...props}><path d="m8 6-5 6 5 6M16 6l5 6-5 6M14 4l-4 16"/></svg>;
     case "automation":

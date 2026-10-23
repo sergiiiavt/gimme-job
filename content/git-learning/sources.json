@@ -1,0 +1,362 @@
+[
+  {
+    "id": "git-tutorial",
+    "title": "Git documentation: gittutorial",
+    "url": "https://git-scm.com/docs/gittutorial",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for tutorial.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-glossary",
+    "title": "Git documentation: gitglossary",
+    "url": "https://git-scm.com/docs/gitglossary",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for glossary.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-config",
+    "title": "Git documentation: git-config",
+    "url": "https://git-scm.com/docs/git-config",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for config.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-clone",
+    "title": "Git documentation: git-clone",
+    "url": "https://git-scm.com/docs/git-clone",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for clone.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-add",
+    "title": "Git documentation: git-add",
+    "url": "https://git-scm.com/docs/git-add",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for add.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-diff",
+    "title": "Git documentation: git-diff",
+    "url": "https://git-scm.com/docs/git-diff",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for diff.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-commit",
+    "title": "Git documentation: git-commit",
+    "url": "https://git-scm.com/docs/git-commit",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for commit.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-log",
+    "title": "Git documentation: git-log",
+    "url": "https://git-scm.com/docs/git-log",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for log.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-revisions",
+    "title": "Git documentation: gitrevisions",
+    "url": "https://git-scm.com/docs/gitrevisions",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for revisions.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-switch",
+    "title": "Git documentation: git-switch",
+    "url": "https://git-scm.com/docs/git-switch",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for switch.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-stash",
+    "title": "Git documentation: git-stash",
+    "url": "https://git-scm.com/docs/git-stash",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for stash.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-worktree",
+    "title": "Git documentation: git-worktree",
+    "url": "https://git-scm.com/docs/git-worktree",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for worktree.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-remote",
+    "title": "Git documentation: git-remote",
+    "url": "https://git-scm.com/docs/git-remote",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for remote.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-fetch",
+    "title": "Git documentation: git-fetch",
+    "url": "https://git-scm.com/docs/git-fetch",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for fetch.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-pull",
+    "title": "Git documentation: git-pull",
+    "url": "https://git-scm.com/docs/git-pull",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for pull.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-push",
+    "title": "Git documentation: git-push",
+    "url": "https://git-scm.com/docs/git-push",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for push.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-merge",
+    "title": "Git documentation: git-merge",
+    "url": "https://git-scm.com/docs/git-merge",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for merge.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-rebase",
+    "title": "Git documentation: git-rebase",
+    "url": "https://git-scm.com/docs/git-rebase",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for rebase.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-cherry-pick",
+    "title": "Git documentation: git-cherry-pick",
+    "url": "https://git-scm.com/docs/git-cherry-pick",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for cherry-pick.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-restore",
+    "title": "Git documentation: git-restore",
+    "url": "https://git-scm.com/docs/git-restore",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for restore.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-reset",
+    "title": "Git documentation: git-reset",
+    "url": "https://git-scm.com/docs/git-reset",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for reset.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-revert",
+    "title": "Git documentation: git-revert",
+    "url": "https://git-scm.com/docs/git-revert",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for revert.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-reflog",
+    "title": "Git documentation: git-reflog",
+    "url": "https://git-scm.com/docs/git-reflog",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for reflog.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-tag",
+    "title": "Git documentation: git-tag",
+    "url": "https://git-scm.com/docs/git-tag",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for tag.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-hooks",
+    "title": "Git documentation: githooks",
+    "url": "https://git-scm.com/docs/githooks",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for hooks.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-bisect",
+    "title": "Git documentation: git-bisect",
+    "url": "https://git-scm.com/docs/git-bisect",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for bisect.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-blame",
+    "title": "Git documentation: git-blame",
+    "url": "https://git-scm.com/docs/git-blame",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for blame.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-status",
+    "title": "Git documentation: git-status",
+    "url": "https://git-scm.com/docs/git-status",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for status.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-submodule",
+    "title": "Git documentation: git-submodule",
+    "url": "https://git-scm.com/docs/git-submodule",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for submodule.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-clean",
+    "title": "Git documentation: git-clean",
+    "url": "https://git-scm.com/docs/git-clean",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Command semantics and limitations for clean.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "gitignore",
+    "title": "Ignoring files",
+    "url": "https://git-scm.com/docs/gitignore",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Patterns, exclusions and already tracked files.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "gitattributes",
+    "title": "Repository attributes",
+    "url": "https://git-scm.com/docs/gitattributes",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Text normalization, line endings and path-specific attributes.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-workflows",
+    "title": "Distributed workflows",
+    "url": "https://git-scm.com/docs/gitworkflows",
+    "publisher": "Git project",
+    "kind": "official-documentation",
+    "role": "Integration and topic-branch workflow trade-offs.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-auth",
+    "title": "Authenticating to GitHub",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "HTTPS, SSH and account authorization boundaries.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-prs",
+    "title": "Pull requests",
+    "url": "https://docs.github.com/en/pull-requests/reference/pull-requests",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "Pull request context, draft state and collaboration models.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-reviews",
+    "title": "About pull request reviews",
+    "url": "https://docs.github.com/en/pull-requests/reference/pull-request-reviews",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "Review feedback and approval state.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-protection",
+    "title": "About protected branches",
+    "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "Required reviews, checks and restrictions on important refs.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-status-checks",
+    "title": "About status checks",
+    "url": "https://docs.github.com/en/pull-requests/reference/status-checks",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "Checks associated with commits and integration requirements.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "github-secrets",
+    "title": "Removing sensitive data from a repository",
+    "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository",
+    "publisher": "GitHub",
+    "kind": "official-documentation",
+    "role": "Credential rotation and coordinated history cleanup.",
+    "checkedAt": "2026-10-23"
+  },
+  {
+    "id": "git-lfs",
+    "title": "Git Large File Storage",
+    "url": "https://git-lfs.com/",
+    "publisher": "Git LFS project",
+    "kind": "official-documentation",
+    "role": "Large-object pointers and external object storage.",
+    "checkedAt": "2026-10-23"
+  }
+]
