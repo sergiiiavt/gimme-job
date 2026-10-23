@@ -618,3 +618,127 @@
   border-radius: 7px;
   min-height: 56px;
 }
+
+/* Shared by all learning documents; desktop/tablet layouts remain unchanged. */
+@media (max-width: 610px) {
+  .pager {
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 12px;
+  }
+
+  .rail {
+    gap: 9px;
+    margin-top: 12px;
+  }
+
+  .language,
+  .toc {
+    border-radius: 12px;
+    min-width: 0;
+    padding: 13px 14px;
+  }
+
+  .language {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    max-width: none;
+    min-height: 66px;
+  }
+
+  .language > span,
+  .toc > span,
+  :global(html[data-design="new"]) .language > span,
+  :global(html[data-design="new"]) .toc > span {
+    font-size: 11px;
+    letter-spacing: .02em;
+    margin-bottom: 0;
+    text-transform: none;
+  }
+
+  .language div {
+    flex: 0 0 132px;
+    width: 132px;
+  }
+
+  .language button,
+  :global(html[data-design="new"]) .language button {
+    font-size: 12px;
+    min-height: 34px;
+    padding: 6px 9px;
+  }
+
+  .toc {
+    align-items: center;
+    display: grid;
+    gap: 0 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .toc nav {
+    border-top: 1px solid #e9ede8;
+    gap: 3px;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 12px;
+    padding-top: 9px;
+  }
+
+  .toc a,
+  :global(html[data-design="new"]) .toc a {
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    min-height: 38px;
+    padding: 9px 10px;
+  }
+
+  .toc .sourceLink {
+    background: #f4f6f3;
+    border-top: 0;
+    border-radius: 6px;
+    margin-top: 5px;
+    padding-top: 9px;
+  }
+
+  .sourcePanel {
+    padding: 14px;
+  }
+
+  .sourcePanel > header {
+    align-items: start;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+  }
+
+  .source {
+    gap: 8px;
+    padding: 13px;
+  }
+
+  .source strong {
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .source a {
+    align-self: start;
+    font-size: 11px;
+    min-height: 30px;
+    padding: 4px 0;
+  }
+}
+
+@media (max-width: 350px) {
+  .pager {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .language div {
+    flex-basis: 116px;
+    width: 116px;
+  }
+}
