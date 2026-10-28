@@ -31,7 +31,7 @@ jobs:
         run: python -m robot --outputdir results examples/robot-framework/tests
       - name: Retain evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: robot-framework-reference-results
           path: results/
