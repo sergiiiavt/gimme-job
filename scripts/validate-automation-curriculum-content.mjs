@@ -199,5 +199,26 @@ assert.match(exampleSource, /Test Setup    Start With Inventory/);
 assert.match(exampleSource, /Run Keyword And Expect Error/);
 assert.match(robotSource, /rfbrowser install/, "Browser Library bundled-runtime installation must be covered");
 assert.ok(robotSource.includes("Fill Secret    id=password    $password"), "Fill Secret must use a supported secret indirection");
+// The pytest primer must remain integrated with runnable, framework-independent examples.
+const [fixturePrimer, fixtureDefinitions, scopeExamples, browserExamples, fixtureReadme] = await Promise.all([
+  readFile(new URL("../content/automation-learning/pytest-fixtures-primer.ts", import.meta.url), "utf8"),
+  readFile(new URL("../examples/pytest-fixtures/tests/conftest.py", import.meta.url), "utf8"),
+  readFile(new URL("../examples/pytest-fixtures/tests/test_scopes.py", import.meta.url), "utf8"),
+  readFile(new URL("../examples/pytest-fixtures/tests/test_playwright_isolation.py", import.meta.url), "utf8"),
+  readFile(new URL("../examples/pytest-fixtures/README.md", import.meta.url), "utf8"),
+]);
+assert.match(catalogSource, /pytestFixturesIntroMarkdownUk/, "Both languages must show the fixture primer");
+for (const scope of ["function", "class", "module", "package", "session"]) {
+  assert.ok(fixtureDefinitions.includes(`scope="${scope}"`), `Missing runnable ${scope} fixture`);
+  assert.ok(fixturePrimer.includes(scope), `Missing ${scope} documentation`);
+}
+assert.match(scopeExamples, /getfixturevalue\("cart"\)/, "Show fixture caching within one test");
+assert.match(scopeExamples, /cart_with_mouse is cart/, "Show dependency injection in a composed fixture");
+assert.match(browserExamples, /browser\.new_context\(\)/, "Show browser context isolation");
+assert.match(browserExamples, /other_context\.close\(\)/, "Manually created contexts need cleanup");
+assert.match(fixtureReadme, /python -m pytest tests\/test_scopes.py/, "Include a direct runnable pytest command");
+assert.match(fixtureReadme, /python -m pytest tests\/test_playwright_isolation.py/, "Include a direct runnable Playwright command");
+console.log("pytest fixture scopes, bilingual primer, and runnable code paths validated.");
+
 console.log("Robot Framework chapters, added lessons and offline reference structure validated.");
 console.log(`Test automation curriculum validated: ${lessons.length} base lessons, ${modules.length} base modules, ${sources.length} base sources + Robot Framework complete guide.`);
