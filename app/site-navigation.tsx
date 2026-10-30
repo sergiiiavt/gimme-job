@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import AuthStatusControl from "./auth-status-control";
 import DesignModeSwitcher from "./design-mode-switcher";
 import {
@@ -385,6 +386,16 @@ function SidebarItemIcon({ id }: { id: NavigationItem["id"] }) {
 }
 
 export function SiteSidebar({ activeExternalId, activeSection, activeSubsection, hideSecondary = false, mobileOpen, mode, onSelectSubsection, personalHref = "/vacancies", quickReferenceActive = false, secondaryEmptyState, secondaryItems, secondarySwitcher, secondaryTitle }: SidebarProps) {
+  const [canViewResume, setCanViewResume] = useState(false);
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth-state", { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() as Promise<{ resumeOwner?: boolean }> : null)
+      .then((state) => { if (active) setCanViewResume(state?.resumeOwner === true); })
+      .catch(() => { if (active) setCanViewResume(false); });
+    return () => { active = false; };
+  }, [mode]);
+
   const renderItem = (item: NavigationItem, intro = false) => {
     const active = item.external ? activeExternalId === item.id : activeSection === item.id;
     const href = item.external ? item.publicHref : sectionNavigationHref(item.id, mode);
@@ -442,7 +453,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
             <section className={`kb-area-group kb-area-group-${group.id}`} aria-labelledby={`kb-area-${group.id}`} key={group.id}>
               <h2 id={`kb-area-${group.id}`}>{group.label}</h2>
               {group.id === "learning" ? renderLearningItems(group.items) : (
-                <div>{group.items.map((item) => renderItem(item))}</div>
+                <div>{group.items.filter((item) => item.id !== "resume" || canViewResume).map((item) => renderItem(item))}</div>
               )}
             </section>
           ))}

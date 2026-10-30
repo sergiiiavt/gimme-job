@@ -23,7 +23,7 @@ function fakeCore() {
   };
 }
 
-function fakeSessionDb(authenticated = true) {
+function fakeSessionDb(authenticated = true, ownerUserId: string | null = "user-a") {
   const state = { deletes: 0 };
   const db = {
     prepare(sql: string) {
@@ -32,6 +32,7 @@ function fakeSessionDb(authenticated = true) {
         values: [] as unknown[],
         bind(...values: unknown[]) { statement.values = values; return statement; },
         async first() {
+          if (text.includes("FROM legacy_workspace_claims")) return ownerUserId ? { user_id: ownerUserId } : null;
           if (authenticated && text.includes("FROM user_sessions s") && text.includes("INNER JOIN users u")) {
             return {
               user_id: "user-a",
@@ -258,4 +259,41 @@ test("canonical logout is POST-only and invalidates the D1 session", async () =>
   assert.equal(state.deletes, 1);
   assert.match(logout.headers.get("set-cookie") ?? "", /^gimmejob_user_session=;/);
   assert.equal(calls.length, 0);
+});
+
+test("resume page and data API are available only to the claimed workspace owner", async () => {
+  for (const [label, authenticated, ownerUserId, expected] of [
+    ["anonymous", false, "user-a", 404],
+    ["other signed-in account", true, "another-user", 404],
+    ["not claimed", true, null, 404],
+    ["owner", true, "user-a", 200],
+  ] as const) {
+    const { worker: core, calls } = fakeCore();
+    const boundary = createMultiUserBoundary(core);
+    const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(authenticated, ownerUserId).db };
+    for (const path of ["/resume", "/api/owner-resume"]) {
+      const response = await boundary.fetch(new Request(`https://example.com${path}`, {
+        headers: { cookie: "gimmejob_user_session=valid-session", "x-gimmejob-resume-owner": "1" },
+      }), env, undefined);
+      assert.equal(response.status, expected, `${label}: ${path}`);
+      assert.equal(response.headers.get("cache-control")?.includes("no-store"), true);
+      if (expected === 200) assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+    }
+    assert.equal(calls.length, expected === 200 ? 2 : 0);
+    if (expected === 200) {
+      assert.ok(calls.every((call) => call.request.headers.get("x-gimmejob-resume-owner") === "1"));
+    }
+  }
+});
+
+test("auth-state reveals only a verified owner flag, never a spoofed identity", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(true, "not-user-a").db };
+  const request = new Request("https://example.com/api/auth-state", {
+    headers: { cookie: "gimmejob_user_session=valid-session", "x-gimmejob-resume-owner": "1" },
+  });
+  assert.equal((await boundary.fetch(request, env, undefined)).status, 200);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0]!.request.headers.get("x-gimmejob-resume-owner"), null);
 });
