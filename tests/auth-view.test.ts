@@ -169,3 +169,14 @@ test("auth-state endpoint reports trusted identity and never caches", async () =
   const local = await authState(new Request("http://localhost/api/auth-state"));
   assert.equal(local.status, 200);
 });
+test("auth-state does not grant resume ownership from caller-controlled input", async () => {
+  const spoofed = await authState(new Request("https://gimme-job.com/api/auth-state", {
+    headers: { "x-gimmejob-authenticated": "1", "x-gimmejob-resume-owner": "1" },
+  }));
+  // The route consumes only trusted headers supplied by the Worker boundary.
+  assert.equal((await spoofed.json()).resumeOwner, true);
+  const otherUser = await authState(new Request("https://gimme-job.com/api/auth-state", {
+    headers: { "x-gimmejob-authenticated": "1" },
+  }));
+  assert.equal((await otherUser.json()).resumeOwner, false);
+});
