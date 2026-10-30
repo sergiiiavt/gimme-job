@@ -27,15 +27,18 @@ type AccessContext = {
   mode: "multi-user";
   authenticated: boolean;
   userId: string | null;
+  resumeOwner: boolean;
 };
 
 const BASIC_AUTH_USERNAME = "gimmejob";
 const AUTH_RETURN_COOKIE = "gimmejob_auth_return";
 const AUTH_RETURN_SECONDS = 10 * 60;
+const OWNER_RESUME_PATHS = new Set(["/resume", "/api/owner-resume"]);
 const TRUSTED_AUTH_HEADERS = [
   "x-gimmejob-auth-mode",
   "x-gimmejob-user-id",
   "x-gimmejob-authenticated",
+  "x-gimmejob-resume-owner",
 ] as const;
 const CANONICAL_RETURN_PREFIXES = ["/ai-assistant/", "/learn/", "/reference/"];
 const CANONICAL_RETURN_PATHS = new Set([
@@ -167,14 +170,23 @@ function bridgeAuthorization(password: string): string {
 
 async function multiUserAccess(request: Request, env: MultiUserAuthEnv, url: URL): Promise<AccessContext> {
   const privateRequest = isPrivateRequest(request, url);
-  const needsIdentity = privateRequest || isWorkspaceSurface(url) || url.pathname.startsWith("/api/");
-  if (!needsIdentity) return { mode: "multi-user", authenticated: false, userId: null };
+  const needsIdentity = privateRequest || isWorkspaceSurface(url) || url.pathname.startsWith("/api/") || OWNER_RESUME_PATHS.has(url.pathname);
+  if (!needsIdentity) return { mode: "multi-user", authenticated: false, userId: null, resumeOwner: false };
 
   const user = await readUserSession(request, env);
+  // The account that claimed the original private workspace is the resume owner.
+  // Never infer ownership from a display name, editable profile, or client header.
+  let resumeOwner = false;
+  if (user && env.DB && (OWNER_RESUME_PATHS.has(url.pathname) || url.pathname === "/api/auth-state")) {
+    const claim = await env.DB.prepare("SELECT user_id FROM legacy_workspace_claims WHERE id = 1 LIMIT 1")
+      .first<{ user_id: string }>();
+    resumeOwner = claim?.user_id === user.id;
+  }
   return {
     mode: "multi-user",
     authenticated: Boolean(user),
     userId: user?.id ?? null,
+    resumeOwner,
   };
 }
 
@@ -185,6 +197,7 @@ function authenticatedForwardRequest(request: Request, access: AccessContext, br
   headers.set("x-gimmejob-auth-mode", access.mode);
   headers.set("x-gimmejob-authenticated", access.authenticated ? "1" : "0");
   if (access.userId) headers.set("x-gimmejob-user-id", access.userId);
+  if (access.resumeOwner) headers.set("x-gimmejob-resume-owner", "1");
   if (access.authenticated) headers.set("authorization", bridgeAuthorization(bridgePassword));
   return new Request(request, { headers });
 }
@@ -281,6 +294,11 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
 
       const access = await multiUserAccess(sanitizedRequest, env, url);
       const privateRequest = isPrivateRequest(sanitizedRequest, url);
+      if (OWNER_RESUME_PATHS.has(url.pathname) && !access.resumeOwner) {
+        return new Response("Not found.", { status: 404, headers: {
+          "cache-control": "no-store", "x-robots-tag": "noindex, nofollow, noarchive",
+        } });
+      }
       if (privateRequest && !access.authenticated) {
         if (url.pathname.startsWith("/workspace/")) return redirectCanonical("/login", 303);
         return Response.json(
@@ -292,7 +310,13 @@ export function createMultiUserBoundary<Env extends BoundaryEnv, Context>(coreWo
       const bridgePassword = randomBridgePassword();
       const forwardedRequest = authenticatedForwardRequest(sanitizedRequest, access, bridgePassword);
       const coreEnv = { ...env, APP_PASSWORD: bridgePassword } as Env;
-      return coreWorker.fetch(forwardedRequest, coreEnv, ctx);
+      const response = await coreWorker.fetch(forwardedRequest, coreEnv, ctx);
+      if (!OWNER_RESUME_PATHS.has(url.pathname)) return response;
+      const privateResponse = new Response(response.body, response);
+      privateResponse.headers.set("cache-control", "private, no-store");
+      privateResponse.headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+      privateResponse.headers.set("vary", "cookie");
+      return privateResponse;
     },
   };
 }
