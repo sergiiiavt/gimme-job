@@ -1,4 +1,4 @@
-import { ownerResume } from "./data";
+import { ownerResume } from "./data.ts";
 
 // The Worker checks the authenticated legacy-workspace owner before forwarding.
 // This second check prevents accidental exposure if the endpoint is routed differently.
