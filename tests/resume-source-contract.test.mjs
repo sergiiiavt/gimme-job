@@ -6,11 +6,11 @@ const client = await readFile(new URL("../app/resume-page.tsx", import.meta.url)
 const server = await readFile(new URL("../app/api/owner-resume/data.ts", import.meta.url), "utf8");
 
 test("resume content is delivered from an owner-only API, not bundled into the public client", () => {
-  assert.match(client, /fetch\\("\\/api\\/owner-resume"/);
-  assert.match(client, /fetch\\("\\/api\\/settings"\\)/);
+  assert.ok(client.includes('fetch("/api/owner-resume"'));
+  assert.ok(client.includes('fetch("/api/settings")'));
   assert.doesNotMatch(client, /PUBLIC RESUME|TIETO UKRAINE LTD|GlobalLogic|SERHII YAVTUSHKEVYCH/);
   assert.match(server, /Lead QA Engineer/);
   assert.match(server, /TIETO UKRAINE LTD/);
   assert.match(server, /National Technical University of Ukraine/);
-  assert.doesNotMatch(server, /sergii\\.iavt@gmail\\.com/i);
+  assert.equal(server.toLowerCase().includes("sergii.iavt@gmail.com"), false);
 });
