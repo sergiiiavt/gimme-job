@@ -160,16 +160,16 @@ test("auth-state endpoint reports trusted identity and never caches", async () =
   }));
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "no-store");
-  assert.deepEqual(await response.json(), { authenticated: true, userId: "user-123" });
+  assert.deepEqual(await response.json(), { authenticated: true, userId: "user-123", resumeOwner: false });
 
   const anonymous = await authState(new Request("https://gimme-job.com/api/auth-state"));
   assert.equal(anonymous.status, 401);
-  assert.deepEqual(await anonymous.json(), { authenticated: false, userId: null });
+  assert.deepEqual(await anonymous.json(), { authenticated: false, userId: null, resumeOwner: false });
 
   const local = await authState(new Request("http://localhost/api/auth-state"));
   assert.equal(local.status, 200);
 });
-test("auth-state does not grant resume ownership from caller-controlled input", async () => {
+test("auth-state reports the worker-provided owner flag without inferring it from authentication", async () => {
   const spoofed = await authState(new Request("https://gimme-job.com/api/auth-state", {
     headers: { "x-gimmejob-authenticated": "1", "x-gimmejob-resume-owner": "1" },
   }));
