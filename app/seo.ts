@@ -22,6 +22,7 @@ export type SeoPage = Readonly<{
   absoluteTitle?: string;
   /** Placeholder pages stay crawlable for links but are kept out of the index and sitemap. */
   maturity?: "under-construction";
+  private?: boolean;
 }>;
 
 export type SeoLanguageAlternates = Readonly<Record<"en" | "uk" | "x-default", string>>;
@@ -45,9 +46,10 @@ export const SITE_PAGE_SEO = {
     path: "/vacancies",
   },
   resume: {
-    title: "QA Engineer Resume",
-    description: "QA engineering resume covering test leadership, automation, Python, Playwright, API testing, AI and LLM testing, and quality engineering experience.",
+    title: "Private Resume",
+    description: "Private account resume.",
     path: "/resume",
+    private: true,
   },
   trends: {
     title: "QA Engineering Trends",
@@ -216,7 +218,7 @@ export const REFERENCE_SEO: Readonly<Record<string, SeoPage>> = {
 };
 
 export function isIndexableSeoPage(page: SeoPage): boolean {
-  return page.maturity !== "under-construction";
+  return page.maturity !== "under-construction" && !page.private;
 }
 
 const ENGLISH_INTERVIEW_SITEMAP_PATHS = [
@@ -266,7 +268,7 @@ export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlterna
       canonical: page.path,
       ...(languages ? { languages } : {}),
     },
-    ...(isIndexableSeoPage(page) ? {} : { robots: { index: false, follow: true } }),
+    ...(isIndexableSeoPage(page) ? {} : { robots: { index: false, follow: !page.private, ...(page.private ? { nocache: true } : {}) } }),
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
