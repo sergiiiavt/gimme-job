@@ -192,3 +192,8 @@ test("robots policy blocks service endpoints but leaves noindex workspace crawla
   assert.equal(policy.host, SITE_ORIGIN);
   assert.equal(SITE_ORIGIN, "https://gimme-job.com");
 });
+
+test("private resume is never included in public SEO discovery", () => {
+  assert.equal(PUBLIC_SITEMAP_PATHS.includes("/resume"), false);
+  assert.equal(SITE_PAGE_SEO.resume.private, true);
+});
