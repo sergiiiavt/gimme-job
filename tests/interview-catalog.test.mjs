@@ -285,10 +285,15 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
 
   const assetDirectory = projectFile("dist/client/_next/static/chunks/");
   const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
-  const catalogScripts = scripts.filter((file) => file.startsWith("catalog-"));
+  // Client chunks are hash-only since vinext 1.4, so the catalog chunk is identified by content.
+  const sources = new Map(await Promise.all(scripts.map(async (file) => [file, await readFile(new URL(file, assetDirectory), "utf8")])));
+  const catalogScripts = scripts.filter((file) => sources.get(file).includes("testing-purpose-and-limits"));
   assert.ok(catalogScripts.length >= 1, "The production build must contain a separate catalog chunk.");
+  for (const file of catalogScripts) {
+    assert.doesNotMatch(sources.get(file), /Starred only|iq-filter-grid/, "The catalog chunk must not be bundled with the interview UI.");
+  }
 
-  const catalogOutput = (await Promise.all(catalogScripts.map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
+  const catalogOutput = catalogScripts.map((file) => sources.get(file)).join("\n");
   assert.match(catalogOutput, /testing-purpose-and-limits/);
   assert.match(catalogOutput, /data-source-target-lineage/);
   assert.match(catalogOutput, /monitoring-versus-observability/);
@@ -299,8 +304,7 @@ test("lazy-loads the interview catalog, keeps unified filters, and caps each ren
   assert.match(catalogOutput, /good-requirement-quality-characteristics/);
   assert.match(catalogOutput, /test-estimation-technique-families/);
 
-  const initialOutput = (await Promise.all(scripts.filter((file) => !catalogScripts.includes(file)).map((file) => readFile(new URL(file, assetDirectory), "utf8")))).join("\n");
-  assert.doesNotMatch(initialOutput, /testing-purpose-and-limits/);
+  const initialOutput = scripts.filter((file) => !catalogScripts.includes(file)).map((file) => sources.get(file)).join("\n");
   assert.doesNotMatch(initialOutput, /data-source-target-lineage/);
   assert.doesNotMatch(initialOutput, /monitoring-versus-observability/);
   assert.doesNotMatch(initialOutput, /embedded-layered-test-strategy/);
