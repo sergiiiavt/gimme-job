@@ -120,7 +120,7 @@ The path moves from general concepts to the engineering of complete systems, and
 | Application engineering | [Application anatomy and APIs](/learn/llm?topic=llm-application-anatomy); [Prompts](/learn/llm?topic=prompts-as-artifacts); [Structured output](/learn/llm?topic=structured-output-validation) | Understand and assemble LLM-powered applications |
 | Testing and evaluation | [Why LLM testing is different](/learn/llm?topic=llm-testing-problem-space); [Testing without the model](/learn/llm?topic=testing-without-the-model); [Evaluation methodology](/learn/llm?topic=evaluation-fundamentals); scorers, judges and statistics | Measure quality and detect regressions |
 | Advanced systems | [RAG systems](/learn/llm?topic=rag-testing); [Agents and tool use](/learn/llm?topic=agent-testing) | Understand multi-stage retrieval and action workflows |
-| Security and operations | [Security and guardrails](/learn/llm?topic=security-red-teaming); [Production quality](/learn/llm?topic=production-quality); [Governance](/learn/llm?topic=pro-practice) | Operate systems safely and responsibly |
+| Security and operations | [Security and guardrails](/learn/llm?topic=security-red-teaming); [Production quality](/learn/llm?topic=production-quality); [Reliable AI pipelines](/learn/llm?topic=ai-reliability); [Governance](/learn/llm?topic=pro-practice) | Operate systems safely and responsibly |
 
 Many examples run directly in the page. Later, Python 3.11+, a virtual environment and an optional hosted model API or local model via Ollama are useful. Runnable examples live in [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing); the folder name predates this broader course structure.
 

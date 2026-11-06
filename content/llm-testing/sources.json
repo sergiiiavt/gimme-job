@@ -2088,5 +2088,55 @@
     "role": "Style control: answer length and formatting added to the Bradley–Terry model, because style alone shifts the Arena leaderboard.",
     "checkedAt": "2026-10-12",
     "status": "current"
+  },
+  {
+    "id": "anthropic-reduce-hallucinations",
+    "title": "Reduce hallucinations",
+    "publisher": "Anthropic — Claude Platform Docs",
+    "kind": "documentation",
+    "url": "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+    "role": "Prompting, grounding and abstention techniques to evaluate as hallucination-reduction controls, rather than universal guarantees.",
+    "checkedAt": "2026-11-06",
+    "status": "current"
+  },
+  {
+    "id": "anthropic-citations",
+    "title": "Citations",
+    "publisher": "Anthropic — Claude Platform Docs",
+    "kind": "documentation",
+    "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+    "role": "Native references into supplied documents; distinguishes valid citation pointers from semantic support and source truth.",
+    "checkedAt": "2026-11-06",
+    "status": "current"
+  },
+  {
+    "id": "huang-self-correction",
+    "title": "Large Language Models Cannot Self-Correct Reasoning Yet",
+    "publisher": "Huang et al. — ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.01798",
+    "role": "Evidence about limits of intrinsic self-correction on the studied models and reasoning tasks; not a universal claim about subsequent systems.",
+    "checkedAt": "2026-11-06",
+    "status": "current"
+  },
+  {
+    "id": "farquhar-semantic-entropy",
+    "title": "Detecting hallucinations in large language models using semantic entropy",
+    "publisher": "Farquhar, Kossen, Kuhn, Gal — Nature 630, 2024",
+    "kind": "paper",
+    "url": "https://www.nature.com/articles/s41586-024-07421-0",
+    "role": "Meaning-level uncertainty from sampled answers, targeting confabulations rather than detecting every consistently false claim.",
+    "checkedAt": "2026-11-06",
+    "status": "current"
+  },
+  {
+    "id": "quach-conformal-language",
+    "title": "Conformal Language Modeling",
+    "publisher": "Quach et al. — ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2306.10193",
+    "role": "Calibrated response sets and component-level statistical guarantees with explicit assumptions; set coverage does not imply every generated answer is correct.",
+    "checkedAt": "2026-11-06",
+    "status": "current"
   }
 ]

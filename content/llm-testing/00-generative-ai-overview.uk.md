@@ -118,7 +118,7 @@ RAG додає зовнішню інформацію під час запиту 
 | Розробка | [Анатомія застосунку та API](/learn/llm?topic=llm-application-anatomy); [Промпти](/learn/llm?topic=prompts-as-artifacts); [Структуровані відповіді](/learn/llm?topic=structured-output-validation) | Інтеграція LLM у застосунок |
 | Тестування й оцінювання | [Особливості тестування LLM](/learn/llm?topic=llm-testing-problem-space); [Тестування без моделі](/learn/llm?topic=testing-without-the-model); [Методологія оцінювання](/learn/llm?topic=evaluation-fundamentals); оцінювачі та статистика | Вимірювання якості й регресій |
 | Складні системи | [Системи RAG](/learn/llm?topic=rag-testing); [Агенти й інструменти](/learn/llm?topic=agent-testing) | Багатокрокові процеси пошуку та дій |
-| Безпека й експлуатація | [Захисні механізми](/learn/llm?topic=security-red-teaming); [Якість в експлуатації](/learn/llm?topic=production-quality); [Управління](/learn/llm?topic=pro-practice) | Відповідальна робота системи |
+| Безпека й експлуатація | [Захисні механізми](/learn/llm?topic=security-red-teaming); [Якість в експлуатації](/learn/llm?topic=production-quality); [Надійні AI-процеси](/learn/llm?topic=ai-reliability); [Управління](/learn/llm?topic=pro-practice) | Відповідальна робота системи |
 
 Чимало прикладів можна запустити на сторінці. Пізніше знадобляться Python 3.11+, віртуальне середовище, за бажанням API моделі або локальна модель через Ollama. Код розміщено в [examples/llm-testing](https://github.com/sergiiiavt/gimme-job/tree/main/examples/llm-testing); назва каталогу залишилася від попередньої структури курсу.
 
