@@ -62,9 +62,9 @@ function normalizeImportedJob(value: unknown, index: number): IntakeJob {
   };
 }
 
-export async function upsertImportedVacancies(values: unknown[]) {
+export async function upsertImportedVacancies(values: unknown[], databaseOverride?: D1DatabaseLike) {
   const jobs = values.map((value, index) => normalizeImportedJob(value, index));
-  return upsertVacancies(jobs);
+  return upsertVacancies(jobs, databaseOverride);
 }
 
 /**
@@ -81,7 +81,7 @@ export async function importVacancyCatalog(
   const db = await vacancyDatabase(databaseOverride);
   await markVacancySyncStarted(db, trigger);
   try {
-    const result = await upsertImportedVacancies(values);
+    const result = await upsertImportedVacancies(values, db);
     await markVacancySyncSucceeded(db, trigger, {
       seen: values.length,
       inserted: result.inserted,
