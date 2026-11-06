@@ -64,6 +64,14 @@ test("learning documents preserve track-specific navigation without AI-specific 
   assert.ok(certification);
 });
 
+test("AI reliability guarantees are discoverable as a linked learning section", async () => {
+  const result = await searchRagDocuments(env as never, "What can actually be guaranteed?", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath ===
+    "/learn/llm?topic=ai-reliability&section=what-can-actually-be-guaranteed");
+
+  assert.ok(hit, "the new chapter must participate in canonical section retrieval");
+});
+
 test("under-construction topic catalogs do not leak placeholder pages into retrieval", () => {
   const documents = staticRagDocuments().filter((document) => document.kind === "learning");
 

@@ -41,6 +41,7 @@ const expectedTopicIds = [
   "agent-testing",
   "security-red-teaming",
   "production-quality",
+  "ai-reliability",
   "pro-practice",
 ];
 
@@ -61,6 +62,7 @@ const courseFormatTopicIds = [
   "agent-testing",
   "security-red-teaming",
   "production-quality",
+  "ai-reliability",
   "pro-practice",
 ];
 

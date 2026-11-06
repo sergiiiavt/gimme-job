@@ -33,6 +33,8 @@ import productionQuality from "./15-production-quality.md?raw";
 import productionQualityUk from "./15-production-quality.uk.md?raw";
 import proPractice from "./16-pro-practice.md?raw";
 import proPracticeUk from "./16-pro-practice.uk.md?raw";
+import aiReliability from "./17-ai-reliability.md?raw";
+import aiReliabilityUk from "./17-ai-reliability.uk.md?raw";
 
 export type LlmTestingLevel = "beginner" | "intermediate" | "advanced" | "pro";
 
@@ -199,6 +201,14 @@ const topics: LlmTestingTopic[] = [
     description: "Release gates in CI/CD over quality, latency, cost and slices, tracing with the OpenTelemetry conventions, latency percentiles and capacity, cost per resolved task, online evaluation with control charts and drift indices, user feedback, model migrations, experiments without peeking, and incidents.",
     descriptionUk: "Критерії випуску в CI/CD за якістю, затримкою й вартістю, трасування OpenTelemetry, пропускна здатність, вартість вирішеної задачі, вибірковий контроль, дрейф, відгуки, міграції, експерименти та інциденти.",
   }, productionQuality, productionQualityUk, ["otel-genai-semconv", "langfuse-observability", "arize-phoenix", "google-sre-monitoring", "little-1961", "aws-backoff-jitter", "anthropic-errors", "anthropic-prompt-caching", "openai-prompt-caching", "nist-p-chart", "nist-control-chart-rules", "yurdakul-psi", "husain-field-guide", "chen-behavior-drift", "anthropic-model-deprecations", "openai-deprecations", "google-sre-canarying", "miller-how-not-ab-test", "johari-always-valid", "fabijan-srm"]),
+  chapter({
+    id: "ai-reliability",
+    label: "Reliable AI pipelines",
+    labelUk: "Надійні AI-процеси",
+    level: "advanced",
+    description: "Conditional guarantees, hallucination control, evidence and claim validation, constrained answers, workflow invariants, abstention, reviewer limitations, risk measurement and an end-to-end reliability design.",
+    descriptionUk: "Умовні гарантії, контроль галюцинацій, перевірка джерел і тверджень, обмеження відповідей, інваріанти процесу, утримання від відповіді, межі оцінювачів і вимірювання ризику.",
+  }, aiReliability, aiReliabilityUk, ["nist-ai-600-1", "lewis-rag", "anthropic-building-agents", "json-schema-docs", "owasp-llm-top10", "debenedetti-camel", "anthropic-reduce-hallucinations", "anthropic-citations", "huang-self-correction", "farquhar-semantic-entropy", "quach-conformal-language"]),
   chapter({
     id: "pro-practice",
     label: "Benchmarks, human evaluation and governance",
