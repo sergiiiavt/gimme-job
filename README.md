@@ -286,6 +286,8 @@ npm run verify
 
 `npm run verify` is the deterministic validation contract for the TypeScript/Worker application. It covers linting, shipped-application and local-agent type checking, content and asset validators, the D1 migration contract, the production build, Node tests with LCOV coverage, and Cloudflare artifact validation.
 
+Coverage collection excludes generated `dist/**` bundles to keep their source maps from overwriting application-source coverage. Artifact tests still run; application source files remain subject to the coverage gate.
+
 The Python AI service has its own tests:
 
 ```bash
