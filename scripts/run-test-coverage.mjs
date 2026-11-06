@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
-import { testCoverageArguments } from "./test-coverage-options.mjs";
+import { testCoverageArguments } from "./coverage-options.mjs";
 
 const coverageDir = path.resolve("coverage");
 const lcovPath = path.join(coverageDir, "lcov.info");

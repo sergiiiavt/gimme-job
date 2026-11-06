@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { testCoverageArguments } from "../scripts/test-coverage-options.mjs";
+import { testCoverageArguments } from "../scripts/coverage-options.mjs";
 
 test("generated bundle coverage cannot erase source hits or cover an uncalled source function", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "gimmejob-coverage-"));
