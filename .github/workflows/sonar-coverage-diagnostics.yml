@@ -1,0 +1,40 @@
+name: Inspect Sonar main coverage
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read main branch coverage measures
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          python - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          params = {
+              "component": "sergiiiavt_gimme-job",
+              "branch": "main",
+              "metricKeys": "new_coverage,new_lines_to_cover,new_uncovered_lines,new_conditions_to_cover,new_uncovered_conditions",
+              "qualifiers": "FIL",
+              "ps": 500,
+          }
+          url = "https://sonarcloud.io/api/measures/component_tree?" + urllib.parse.urlencode(params)
+          token = os.environ.get("SONAR_TOKEN", "")
+          auth = base64.b64encode((token + ":").encode()).decode()
+          request = urllib.request.Request(url, headers={"Authorization": "Basic " + auth})
+          with urllib.request.urlopen(request, timeout=30) as response:
+              payload = json.load(response)
+          print(json.dumps(payload, indent=2))
+          PY
