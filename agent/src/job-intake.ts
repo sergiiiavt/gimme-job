@@ -390,6 +390,19 @@ function selectCompany(primary: IntakeJob, secondary: IntakeJob): { company: str
   return { company: primary.company || secondary.company || "Unknown", owner: primary };
 }
 
+/**
+ * Merge provenance keeps exactly one level. Every sync merges a re-seen vacancy
+ * into its stored row, so copying the stored `primary` (which held the previous
+ * copy, and so on) added a full copy of the row's metadata on every sync. DOU
+ * rows grew until D1 refused the write (2 MB row limit) and the DOU import
+ * failed with HTTP 500.
+ */
+function withoutMergeHistory(raw: Record<string, unknown>): Record<string, unknown> {
+  const rest = { ...raw };
+  delete rest.primary;
+  return rest;
+}
+
 function mergeRawMetadata(
   primary: IntakeJob,
   secondary: IntakeJob,
@@ -408,7 +421,7 @@ function mergeRawMetadata(
     descriptionSource: descriptionRaw.descriptionSource ?? primaryRaw.descriptionSource ?? secondaryRaw.descriptionSource,
     companySource: companyRaw.companySource ?? primaryRaw.companySource ?? secondaryRaw.companySource,
     validThrough: primaryRaw.validThrough ?? secondaryRaw.validThrough,
-    primary: primary.raw ?? null,
+    primary: primary.raw == null ? null : withoutMergeHistory(primaryRaw),
     duplicateSources: sources.split(","),
   };
 }

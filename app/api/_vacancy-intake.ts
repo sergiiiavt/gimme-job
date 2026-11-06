@@ -414,7 +414,13 @@ async function duplicateCandidates(
     inClause("dedupe_company", companies);
     if (clauses.length === 0) continue;
 
-    const result = await db.prepare(`SELECT *
+    // Rows written before merge history was bounded can carry megabytes of
+    // nested `primary` copies. A merge replaces that key anyway, so it is never
+    // loaded into the Worker.
+    const result = await db.prepare(`SELECT
+      id, fingerprint, source, external_id, title, company, location, remote, url, apply_url, description,
+      salary_text, posted_at, contact_email, updated_at, status,
+      CASE WHEN json_valid(raw_json) THEN json_remove(raw_json, '$.primary') ELSE raw_json END AS raw_json
       FROM jobs
       WHERE ${clauses.join(" OR ")}`)
       .bind(...values)

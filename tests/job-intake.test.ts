@@ -218,6 +218,25 @@ test("duplicate merge keeps completeness metadata aligned with the selected desc
   assert.equal(raw.descriptionSource, "detail-page");
 });
 
+test("re-merging a stored vacancy on every sync keeps its raw metadata bounded", () => {
+  const incoming = job({ raw: { discovery: "dou-listing", companySource: "listing-anchor", descriptionSource: "detail-page" } });
+  let stored = job({ raw: { discovery: "dou-listing", companySource: "listing-anchor" } });
+  const sizes: number[] = [];
+
+  for (let sync = 0; sync < 50; sync += 1) {
+    // raw_json round-trips through D1 between syncs.
+    const merged = mergeDuplicateVacancies(stored, incoming);
+    stored = { ...merged, raw: JSON.parse(JSON.stringify(merged.raw)) };
+    sizes.push(JSON.stringify(stored.raw).length);
+  }
+
+  const raw = stored.raw as Record<string, unknown>;
+  // The first merges add the merge's own keys once; after that the size must not move.
+  assert.equal(sizes.at(-1), sizes[2]);
+  assert.equal((raw.primary as Record<string, unknown>).companySource, "listing-anchor");
+  assert.equal("primary" in (raw.primary as Record<string, unknown>), false, "provenance keeps one level, not a chain");
+});
+
 test("same company and title are not blindly merged when descriptions differ", () => {
   const webTeam = job({ description: "QA for the customer web portal using Playwright, REST API and PostgreSQL." });
   const firmwareTeam = job({
