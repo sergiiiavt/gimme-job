@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
+import { register as registerTsx } from "tsx/esm/api";
+
+registerTsx();
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
+
+const loadTracks = () => import("../content/automation-learning/tracks.ts");
 
 const projectFile = (path) => new URL(`../${path}`, import.meta.url);
 
@@ -97,10 +104,12 @@ test("Desktop Automation Example is presented as methodical learning material", 
 });
 
 test("test automation UI exposes Desktop Automation Example as focused second-panel topics", async () => {
-  const [catalog, page] = await Promise.all([
+  const [catalog, { automationTrackOptions }] = await Promise.all([
     readFile(projectFile("content/automation-learning/catalog.ts"), "utf8"),
-    readFile(projectFile("app/automation-learning-page.tsx"), "utf8"),
+    loadTracks(),
   ]);
+  const desktopTrack = automationTrackOptions.find((option) => option.label === "Desktop Automation Example");
+  assert.ok(desktopTrack, "Desktop Automation Example is a track");
 
   assert.match(catalog, /from "\.\/desktop-automation-walkthrough"/);
   assert.match(catalog, /\.\.\.desktopAutomationExampleLessons/);
@@ -113,11 +122,10 @@ test("test automation UI exposes Desktop Automation Example as focused second-pa
     "desktop-automation-ci",
   ]) {
     assert.ok(catalog.includes(`id: "${moduleId}"`), `Missing desktop example module ${moduleId}`);
-    assert.ok(page.includes(`"${moduleId}"`), `Desktop Automation Example track does not expose ${moduleId}`);
+    assert.ok(desktopTrack.moduleIds.includes(moduleId), `Desktop Automation Example track does not expose ${moduleId}`);
   }
 
-  assert.match(page, /label: "Desktop Automation Example"/);
-  assert.doesNotMatch(page, /label: "Real Projects"/);
+  assert.equal(automationTrackOptions.some((option) => option.label === "Real Projects"), false);
   assert.match(catalog, /navLabel: "Overview"/);
   assert.match(catalog, /navLabel: "Python \+ pytest"/);
   assert.match(catalog, /navLabel: "C# \+ NUnit"/);

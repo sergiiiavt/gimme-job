@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { learningTopicPageMetadata, type LearningPageProps } from "../../learning-topic-seo";
 import IstqbAiTestingPage from "../../istqb-ai-testing-page";
-import { learningSectionMetadata } from "../../seo";
 
-export const metadata: Metadata = learningSectionMetadata("certifications");
+export function generateMetadata(props: LearningPageProps): Promise<Metadata> {
+  return learningTopicPageMetadata("/learn/certifications", props);
+}
 
 export default function Page() {
   return <IstqbAiTestingPage/>;

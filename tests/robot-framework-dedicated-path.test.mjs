@@ -1,17 +1,25 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
+import { register as registerTsx } from "tsx/esm/api";
+
+registerTsx();
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
+
+const loadTracks = () => import("../content/automation-learning/tracks.ts");
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Robot Framework uses a dedicated chaptered navigation and stable legacy entry", async () => {
-  const [page, path, catalog] = await Promise.all([
-    read("app/automation-learning-page.tsx"),
+  const [{ automationTrackOptions }, { robotFrameworkChapterIds }, path, catalog] = await Promise.all([
+    loadTracks(),
+    import("../content/automation-learning/robot-framework-path.ts"),
     read("content/automation-learning/robot-framework-path.ts"),
     read("content/automation-learning/catalog.ts"),
   ]);
-  assert.match(page, /label: "Robot Framework"/);
-  assert.match(page, /moduleIds: robotFrameworkChapterIds/);
+  const robotTrack = automationTrackOptions.find((option) => option.label === "Robot Framework");
+  assert.deepEqual(robotTrack?.moduleIds, robotFrameworkChapterIds);
   assert.match(path, /"robot-framework"/);
   for (const name of ["robot-keywords", "robot-project", "robot-web", "robot-api", "robot-execution", "robot-architecture"]) {
     assert.ok(path.includes(name), `missing ${name}`);

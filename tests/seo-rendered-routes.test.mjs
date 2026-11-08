@@ -114,6 +114,8 @@ test("duplicate and placeholder pages declare the right canonical and robots pol
     ["/learn/networking", "/learn/networking", undefined],
     ["/learn/docker", "/learn/docker", undefined],
     ["/learn/git", "/learn/git", undefined],
+    // Without its track the page opens the track's first chapter, so this is not the topic page.
+    ["/learn/automation?topic=desktop-automation-ci", "/learn/automation", undefined],
     ["/learn/strategy", "/learn/strategy", "noindex, follow"],
   ];
   for (const [path, canonicalPath, robots] of expectations) {
@@ -142,6 +144,26 @@ test("Git learning is public, marked for review and renders the requested chapte
   assert.match(html, /id="resolve-the-example-deliberately"/);
   assert.match(html, /Git &amp; collaboration/);
   assert.doesNotMatch(html, /This learning track is under construction/);
+});
+
+test("every learning topic in the sitemap renders that topic under its own canonical", async () => {
+  const xml = await (await fetchRoute("/sitemap.xml")).text();
+  const topicUrls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+    .map((match) => match[1].replaceAll("&amp;", "&"))
+    .filter((url) => new URL(url).pathname.startsWith("/learn/") && new URL(url).searchParams.has("topic"));
+  assert.ok(topicUrls.length > 0, "the sitemap lists learning topic pages");
+
+  for (const url of topicUrls) {
+    const { pathname, search } = new URL(url);
+    const response = await fetchRoute(`${pathname}${search}`);
+    assert.equal(response.status, 200, url);
+    const html = (await response.text()).replaceAll("&amp;", "&");
+    assert.equal(canonicalOf(html), url, `${url} is self-canonical`);
+    assert.equal(robotsOf(html), "index, follow", `${url} is indexable`);
+    // The page opened this topic rather than its section's default: the active contents link is the topic's own.
+    const activeContentsLink = html.match(/<a\b[^>]*aria-current="location"[^>]*>/)?.[0].match(/href="([^"]+)"/)?.[1];
+    assert.ok(activeContentsLink?.startsWith(`${pathname}${search}#`), `${url} renders its own topic (active contents link: ${activeContentsLink})`);
+  }
 });
 
 test("English interview lists render their heading in the initial HTML", async () => {

@@ -11,10 +11,10 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const allMarkdown = () => catalog.taxonomy.map((module) => module.markdown).join("\n");
 
 test("certifications route renders the dedicated ISTQB CT-AI v2 page", async () => {
-  const route = await read("app/learn/certifications/page.tsx");
+  const [route, layout] = await Promise.all([read("app/learn/certifications/page.tsx"), read("app/learn/certifications/layout.tsx")]);
 
   assert.match(route, /import IstqbAiTestingPage from "\.\.\/\.\.\/istqb-ai-testing-page"/);
-  assert.match(route, /learningSectionMetadata\("certifications"\)/);
+  assert.match(layout, /learningSectionMetadata\("certifications"\)/);
   assert.match(route, /return <IstqbAiTestingPage\/>/);
 });
 

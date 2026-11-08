@@ -52,4 +52,25 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
 
+export type LearningCatalogItem = Record<string, unknown>;
+
+const LEARNING_CATALOG_ITEM_KEYS = ["lessons", "chapters", "articles", "modules", "taxonomy", "topics", "cards"] as const;
+
+/**
+ * The items a registered catalog publishes: the first non-empty list among the known keys.
+ * Retrieval documents and per-topic search pages both derive from these items, so they agree
+ * on which topics exist.
+ */
+export function learningCatalogItems(catalog: unknown): LearningCatalogItem[] {
+  if (!catalog || typeof catalog !== "object") return [];
+  const value = catalog as Record<string, unknown>;
+  for (const key of LEARNING_CATALOG_ITEM_KEYS) {
+    const items = value[key];
+    if (Array.isArray(items) && items.length) {
+      return items.filter((item): item is LearningCatalogItem => Boolean(item && typeof item === "object" && !Array.isArray(item)));
+    }
+  }
+  return [];
+}
+
 export default learningRagSources;
