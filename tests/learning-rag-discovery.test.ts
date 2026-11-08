@@ -6,9 +6,16 @@ import { register as registerTsx } from "tsx/esm/api";
 registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
-const [{ default: learningRagSources }, { searchRagDocuments, staticRagDocuments }] = await Promise.all([
+const [
+  { default: learningRagSources },
+  { searchRagDocuments, staticRagDocuments },
+  { automationTrackForModule },
+  { learningTopicPages },
+] = await Promise.all([
   import("../content/learning-rag-registry.ts"),
   import("../worker/rag.ts"),
+  import("../content/automation-learning/tracks.ts"),
+  import("../app/learning-topic-seo.ts"),
 ]);
 
 const env = {
@@ -62,6 +69,33 @@ test("learning documents preserve track-specific navigation without AI-specific 
 
   assert.ok(csharp);
   assert.ok(certification);
+});
+
+test("Test automation deep links carry the track that opens their module", async () => {
+  const automation = staticRagDocuments().filter((document) =>
+    document.kind === "learning" && document.metadata.route === "/learn/automation");
+  assert.ok(automation.length > 0);
+  for (const document of automation) {
+    assert.equal(document.metadata.track, automationTrackForModule(String(document.metadata.topic)), document.refId);
+  }
+
+  // Outside the default track a link without its track opens the first foundations chapter instead.
+  const result = await searchRagDocuments(env as never, "Allure pipeline raw results HTML report preserved artifacts", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath.startsWith("/learn/automation?topic=desktop-automation-ci&"));
+  assert.ok(hit, "the desktop CI chapter is retrievable");
+  assert.equal(new URL(hit.sourcePath, "https://gimme-job.com").searchParams.get("track"), "real-projects");
+});
+
+test("learning deep links open the same topic page search engines index", () => {
+  const pages = new Map(learningTopicPages().map((page) => [`${page.route}\n${page.topic}`, page]));
+  let compared = 0;
+  for (const document of staticRagDocuments().filter((entry) => entry.kind === "learning")) {
+    const page = pages.get(`${document.metadata.route}\n${document.metadata.topic}`);
+    if (!page) continue;
+    compared += 1;
+    assert.equal(document.metadata.track, page.track, `${document.refId} links the track its topic page uses`);
+  }
+  assert.ok(compared > 0);
 });
 
 test("AI reliability guarantees are discoverable as a linked learning section", async () => {

@@ -1,5 +1,6 @@
 import apiIntegrationCatalog from "./api-integration/catalog";
 import automationCurriculum from "./automation-learning/catalog";
+import { automationTrackAliases, automationTrackForModule } from "./automation-learning/tracks";
 import cloudDevopsCatalog from "./cloud-devops/catalog";
 import csharpCurriculum from "./csharp-learning/catalog";
 import dockerCatalog from "./docker-learning/catalog";
@@ -21,7 +22,12 @@ export type LearningRagSource = Readonly<{
   key: string;
   route: `/${string}`;
   value: unknown;
+  /** The track every topic of this catalog opens in. */
   track?: string;
+  /** For a page that opens a topic only inside the track listing it: that topic's track. */
+  trackForTopic?: (topic: string) => string | undefined;
+  /** Legacy track ids the page still accepts, mapped to their canonical ids. */
+  trackAliases?: Readonly<Record<string, string>>;
 }>;
 
 /**
@@ -37,7 +43,13 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "python", route: "/learn/programming", track: "python", value: pythonCurriculum },
   { key: "csharp", route: "/learn/programming", track: "csharp", value: csharpCurriculum },
   { key: "python-quick-reference", route: "/learn/programming", track: "python", value: pythonQuickReference },
-  { key: "automation", route: "/learn/automation", value: automationCurriculum },
+  {
+    key: "automation",
+    route: "/learn/automation",
+    trackForTopic: automationTrackForModule,
+    trackAliases: automationTrackAliases,
+    value: automationCurriculum,
+  },
   { key: "testing-tools", route: "/learn/testing-tools", value: testingToolsCatalog },
   { key: "cloud-devops", route: "/learn/cloud-devops", value: cloudDevopsCatalog },
   { key: "docker", route: "/learn/docker", value: dockerCatalog },
@@ -51,6 +63,11 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "llm-testing", route: "/learn/llm", value: llmTestingCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
+
+/** The track a topic's link must carry for its page to open that topic, if any. */
+export function learningTopicTrack(source: LearningRagSource, topic: string): string | undefined {
+  return source.track ?? source.trackForTopic?.(topic);
+}
 
 export type LearningCatalogItem = Record<string, unknown>;
 
