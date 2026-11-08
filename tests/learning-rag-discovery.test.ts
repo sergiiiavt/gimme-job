@@ -86,6 +86,16 @@ test("Test automation deep links carry the track that opens their module", async
   assert.equal(new URL(hit.sourcePath, "https://gimme-job.com").searchParams.get("track"), "real-projects");
 });
 
+test("QA fundamentals deep links open the chapter page, sections included", async () => {
+  const qa = staticRagDocuments().filter((document) => document.kind === "learning" && document.metadata.catalog === "qa-fundamentals");
+  assert.ok(qa.length > 0);
+  assert.ok(qa.every((document) => document.metadata.route === "/learn/qa-fundamentals"));
+
+  const result = await searchRagDocuments(env as never, "boundary value analysis equivalence partitioning test design", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath.startsWith("/learn/qa-fundamentals?topic=") && item.sourcePath.includes("&section="));
+  assert.ok(hit, "a QA fundamentals section is retrievable with a deep link to its chapter");
+});
+
 test("learning deep links open the same topic page search engines index", () => {
   const pages = new Map(learningTopicPages().map((page) => [`${page.route}\n${page.topic}`, page]));
   let compared = 0;

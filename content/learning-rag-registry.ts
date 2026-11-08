@@ -38,7 +38,7 @@ export type LearningRagSource = Readonly<{
  * existing catalog requires no AI-service or Learning Advisor registration changes.
  */
 export const learningRagSources: readonly LearningRagSource[] = [
-  { key: "qa-fundamentals", route: "/reference/qa-fundamentals", value: qaFundamentalsCatalog },
+  { key: "qa-fundamentals", route: "/learn/qa-fundamentals", value: qaFundamentalsCatalog },
   { key: "git", route: "/learn/git", value: gitCatalog },
   { key: "python", route: "/learn/programming", track: "python", value: pythonCurriculum },
   { key: "csharp", route: "/learn/programming", track: "csharp", value: csharpCurriculum },

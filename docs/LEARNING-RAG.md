@@ -52,7 +52,9 @@ lexical fallback          Vectorize index
 
 ## Canonical registry
 
-`content/learning-rag-registry.ts` contains the current Git-backed learning surfaces and their canonical site routes. It can also attach a `track` when a page has multiple tracks, for example Python/C# under Programming or CT-AI under Certifications.
+`content/learning-rag-registry.ts` contains the current Git-backed learning surfaces and the route of the page that renders each one, for example `/learn/qa-fundamentals` for the QA fundamentals chapters. It can also attach a `track` when a page has multiple tracks, for example Python/C# under Programming or CT-AI under Certifications.
+
+When a page opens a topic only inside the track that lists it, as Test automation does, the entry instead resolves the track per topic with `trackForTopic` and lists the legacy track ids the page still accepts in `trackAliases`. `learningTopicTrack` applies that rule, and both retrieval links and the per-topic search pages in `app/learning-topic-seo.ts` use it, so the Learning Advisor and search engines point to the same canonical topic URL.
 
 The registry contains content objects, not generated RAG documents. RAG document creation is derived from those objects at runtime/build time.
 
@@ -65,7 +67,7 @@ Adding another topic to `content/api-integration/catalog.ts`, another C# taxonom
 When a completely new Git-backed learning surface is introduced:
 
 1. create the normal content/catalog and UI route;
-2. add one entry to `content/learning-rag-registry.ts` with its canonical route and optional track;
+2. add one entry to `content/learning-rag-registry.ts` with the route of the page that renders it and, when that page has tracks, its `track` or `trackForTopic`;
 3. add/extend product tests for that surface.
 
 Do **not** add matching route lists to `worker/rag.ts`, `ai-service/`, or the Learning Advisor UI.
