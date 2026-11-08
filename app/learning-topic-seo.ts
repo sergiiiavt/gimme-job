@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-import { automationTrackAliases, automationTrackForModule } from "../content/automation-learning/tracks";
-import learningRagSources, { learningCatalogItems, type LearningCatalogItem } from "../content/learning-rag-registry";
+import learningRagSources, {
+  learningCatalogItems,
+  learningTopicTrack,
+  type LearningCatalogItem,
+  type LearningRagSource,
+} from "../content/learning-rag-registry";
 import { contentHref } from "./content-deep-links";
 import { createPageMetadata, isIndexableSeoPage, LEARNING_SEO, metaDescription, type SeoPage } from "./seo";
 
@@ -26,12 +30,9 @@ const RENDERED_ROUTES: Readonly<Record<string, string>> = {
   "/reference/qa-fundamentals": "/learn/qa-fundamentals",
 };
 
-type TopicTracks = Readonly<{ trackFor(topic: string): string | undefined; aliases: Readonly<Record<string, string>> }>;
-
-/** Pages that open a topic only inside the track listing it, where the registry names no track. */
-const TOPIC_TRACKS: Readonly<Record<string, TopicTracks>> = {
-  "/learn/automation": { trackFor: automationTrackForModule, aliases: automationTrackAliases },
-};
+function renderedRoute(source: LearningRagSource): string {
+  return RENDERED_ROUTES[source.route] ?? source.route;
+}
 
 type TopicEntry = Readonly<{ topic: string; label: string; description: string }>;
 
@@ -78,14 +79,14 @@ export function learningTopicPages(): LearningTopicPage[] {
   if (topicPages) return topicPages;
   const byPath = new Map<string, LearningTopicPage>();
   for (const source of learningRagSources) {
-    const route = RENDERED_ROUTES[source.route] ?? source.route;
+    const route = renderedRoute(source);
     const section = sectionSeo(route);
     if (!section || !isIndexableSeoPage(section)) continue;
     const catalogTitle = text(catalogRecord(source.value).title) || section.title;
-    const tracks = TOPIC_TRACKS[route];
     for (const entry of topicEntries(source.value)) {
-      const track = source.track ?? tracks?.trackFor(entry.topic);
-      if (tracks && !track) continue;
+      const track = learningTopicTrack(source, entry.topic);
+      // A topic its page cannot open in any track is not a page.
+      if (source.trackForTopic && !track) continue;
       const path = contentHref(route, "", { topic: entry.topic, track });
       if (byPath.has(path)) continue;
       byPath.set(path, {
@@ -111,7 +112,8 @@ export function learningTopicPage(route: string, searchParams: LearningSearchPar
   const topic = single(searchParams.topic);
   if (!topic) return undefined;
   const requestedTrack = single(searchParams.track);
-  const track = requestedTrack ? TOPIC_TRACKS[route]?.aliases[requestedTrack] ?? requestedTrack : undefined;
+  const aliases = learningRagSources.find((source) => renderedRoute(source) === route && source.trackAliases)?.trackAliases;
+  const track = requestedTrack ? aliases?.[requestedTrack] ?? requestedTrack : undefined;
   // A page with tracks opens the topic only in its own track; any other request keeps the section canonical.
   return learningTopicPages().find((page) => page.route === route && page.topic === topic && (!page.track || page.track === track));
 }

@@ -1,5 +1,5 @@
 import interviewCatalog from "../content/interview/catalog";
-import learningRagSources, { learningCatalogItems } from "../content/learning-rag-registry";
+import learningRagSources, { learningCatalogItems, learningTopicTrack } from "../content/learning-rag-registry";
 import pythonInterviewCatalog from "../content/python-interview/catalog";
 
 type Json = Record<string, unknown>;
@@ -210,7 +210,8 @@ function markdownSections(markdown: string): Array<{ id: string; title: string; 
 }
 
 function learningDocuments(): RagDocument[] {
-  return learningRagSources.flatMap(({ key, route, track, value }) => learningCatalogItems(value).flatMap((item, index) => {
+  return learningRagSources.flatMap((source) => learningCatalogItems(source.value).flatMap((item, index) => {
+    const { key, route } = source;
     const status = clean(item.status, 100);
     if (status && status !== "published") return [];
 
@@ -218,6 +219,7 @@ function learningDocuments(): RagDocument[] {
     const title = learningTitle(item);
     const text = compactText([title, ...collectStrings(item)]);
     const topic = clean(item.moduleId || item.id, 300);
+    const track = topic ? learningTopicTrack(source, topic) : source.track;
     const markdown = clean(item.markdown, 60_000);
     const lessonSection = !markdown && item.moduleId ? markdownSlug(clean(item.title, 500)) : "";
     const commonMetadata: Record<string, string | number | boolean> = {
