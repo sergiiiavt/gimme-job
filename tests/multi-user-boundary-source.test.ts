@@ -146,9 +146,26 @@ test("QA Fundamentals topic links from Advisor resolve to the long-form learning
   assert.equal(topic.headers.get("location"), "/learn/qa-fundamentals?topic=testing-process-lifecycle");
   assert.equal(calls.length, 0);
 
-  const quickReference = await boundary.fetch(new Request("https://example.com/reference/qa-fundamentals"), env, undefined);
-  assert.equal(quickReference.status, 200);
-  assert.equal(calls.length, 1);
+  const section = await boundary.fetch(
+    new Request("https://example.com/reference/qa-fundamentals?topic=requirements-test-design&section=good-requirements"),
+    env,
+    undefined,
+  );
+  assert.equal(section.status, 308);
+  assert.equal(section.headers.get("location"), "/learn/qa-fundamentals?topic=requirements-test-design&section=good-requirements");
+  assert.equal(calls.length, 0);
+
+  // Anything else is not an Advisor topic link, so the quick reference keeps serving it.
+  for (const path of [
+    "/reference/qa-fundamentals",
+    "/reference/qa-fundamentals?topic=requirements-test-design&track=python",
+    "/reference/qa-fundamentals?topic=a&topic=b",
+    "/reference/qa-fundamentals?section=good-requirements",
+  ]) {
+    const response = await boundary.fetch(new Request(`https://example.com${path}`), env, undefined);
+    assert.equal(response.status, 200, path);
+  }
+  assert.equal(calls.length, 4);
 });
 
 test("legacy private About URL redirects to canonical About before auth", async () => {

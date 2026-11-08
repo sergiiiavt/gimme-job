@@ -3,7 +3,6 @@ import learningRagSources, {
   learningCatalogItems,
   learningTopicTrack,
   type LearningCatalogItem,
-  type LearningRagSource,
 } from "../content/learning-rag-registry";
 import { contentHref } from "./content-deep-links";
 import { createPageMetadata, isIndexableSeoPage, LEARNING_SEO, metaDescription, type SeoPage } from "./seo";
@@ -24,15 +23,6 @@ export type LearningTopicPage = Readonly<{
 
 export type LearningSearchParams = Readonly<Record<string, string | string[] | undefined>>;
 export type LearningPageProps = Readonly<{ searchParams: Promise<LearningSearchParams> }>;
-
-/** Registry routes whose topic links the Worker redirects to the page that renders them. */
-const RENDERED_ROUTES: Readonly<Record<string, string>> = {
-  "/reference/qa-fundamentals": "/learn/qa-fundamentals",
-};
-
-function renderedRoute(source: LearningRagSource): string {
-  return RENDERED_ROUTES[source.route] ?? source.route;
-}
 
 type TopicEntry = Readonly<{ topic: string; label: string; description: string }>;
 
@@ -79,7 +69,7 @@ export function learningTopicPages(): LearningTopicPage[] {
   if (topicPages) return topicPages;
   const byPath = new Map<string, LearningTopicPage>();
   for (const source of learningRagSources) {
-    const route = renderedRoute(source);
+    const { route } = source;
     const section = sectionSeo(route);
     if (!section || !isIndexableSeoPage(section)) continue;
     const catalogTitle = text(catalogRecord(source.value).title) || section.title;
@@ -112,7 +102,7 @@ export function learningTopicPage(route: string, searchParams: LearningSearchPar
   const topic = single(searchParams.topic);
   if (!topic) return undefined;
   const requestedTrack = single(searchParams.track);
-  const aliases = learningRagSources.find((source) => renderedRoute(source) === route && source.trackAliases)?.trackAliases;
+  const aliases = learningRagSources.find((source) => source.route === route && source.trackAliases)?.trackAliases;
   const track = requestedTrack ? aliases?.[requestedTrack] ?? requestedTrack : undefined;
   // A page with tracks opens the topic only in its own track; any other request keeps the section canonical.
   return learningTopicPages().find((page) => page.route === route && page.topic === topic && (!page.track || page.track === track));

@@ -89,11 +89,18 @@ function returnPathFromRequest(request: Request): string {
 }
 
 function legacyCanonicalPath(url: URL): string | null {
+  // QA fundamentals chapters live on /learn/qa-fundamentals. Learning Advisor links made before
+  // retrieval pointed there carry a topic and sometimes a section; the bare path stays the
+  // quick reference.
   if (url.pathname === "/reference/qa-fundamentals") {
     const topics = url.searchParams.getAll("topic");
+    const sections = url.searchParams.getAll("section");
     const keys = [...new Set(url.searchParams.keys())];
-    if (topics.length === 1 && topics[0].trim() && keys.length === 1 && keys[0] === "topic") {
-      return `/learn/qa-fundamentals?topic=${encodeURIComponent(topics[0].trim())}`;
+    const topic = topics[0]?.trim();
+    const section = sections[0]?.trim();
+    if (topics.length === 1 && topic && sections.length <= 1 && keys.every((key) => key === "topic" || key === "section")) {
+      const target = `/learn/qa-fundamentals?topic=${encodeURIComponent(topic)}`;
+      return section ? `${target}&section=${encodeURIComponent(section)}` : target;
     }
   }
 
