@@ -1,39 +1,44 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
+import { register as registerTsx } from "tsx/esm/api";
+
+registerTsx();
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const [
+  { AUTOMATION_DEFAULT_TRACK_ID, automationTrackAliases, automationTrackOptions },
+  { robotFrameworkChapterIds },
+] = await Promise.all([
+  import("../content/automation-learning/tracks.ts"),
+  import("../content/automation-learning/robot-framework-path.ts"),
+]);
 
 test("Test Automation uses six broad tracks without losing learning modules", async () => {
-  const page = await read("app/automation-learning-page.tsx");
-
-  for (const [id, label] of [
+  assert.deepEqual(automationTrackOptions.map(({ id, label }) => [id, label]), [
     ["foundations", "Fundamentals & Architecture"],
     ["python-setup", "Python & pytest"],
     ["automation", "Web / API / Mobile"],
     ["real-projects", "Desktop Automation Example"],
     ["reference-framework", "Framework Reference"],
     ["robot-framework", "Robot Framework"],
-  ]) {
-    assert.ok(page.includes(`id: "${id}"`), `Track ${id} must be present`);
-    assert.ok(page.includes(`label: "${label}"`), `Track ${id} must use label ${label}`);
-  }
+  ], "Robot Framework remains a dedicated last track, after Framework Reference");
+  assert.equal(AUTOMATION_DEFAULT_TRACK_ID, "foundations");
 
-  assert.ok(
-    page.indexOf('id: "reference-framework"') < page.indexOf('id: "robot-framework"'),
-    "Robot Framework remains a dedicated last track, after Framework Reference",
-  );
-  assert.match(page, /defaultTrackId="foundations"/);
-  assert.match(page, /moduleIds: \["automation-foundations", "framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"\]/);
-  assert.match(page, /moduleIds: \["project-setup", "pytest-core"\]/);
-  assert.match(page, /moduleIds: \["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"\]/);
-  assert.match(page, /"desktop-automation-overview"/);
-  assert.match(page, /"desktop-automation-python"/);
-  assert.match(page, /"desktop-automation-dotnet"/);
-  assert.match(page, /"desktop-automation-ci"/);
-  assert.match(page, /moduleIds: \["reference-framework"\]/);
-  assert.match(page, /moduleIds: robotFrameworkChapterIds/);
-  assert.match(page, /import \{ robotFrameworkChapterIds \} from/);
+  const modules = Object.fromEntries(automationTrackOptions.map((option) => [option.id, option.moduleIds]));
+  assert.deepEqual(modules.foundations, ["automation-foundations", "framework-architecture", "test-data", "flakiness", "ci-and-reporting", "quality-strategy"]);
+  assert.deepEqual(modules["python-setup"], ["project-setup", "pytest-core"]);
+  assert.deepEqual(modules.automation, ["api-testing", "web-ui-testing", "mobile-testing", "contract-and-property"]);
+  assert.deepEqual(modules["real-projects"], ["desktop-automation-overview", "desktop-automation-python", "desktop-automation-dotnet", "desktop-automation-ci"]);
+  assert.deepEqual(modules["reference-framework"], ["reference-framework"]);
+  assert.deepEqual(modules["robot-framework"], robotFrameworkChapterIds);
+
+  // The page renders exactly these tracks.
+  const page = await read("app/automation-learning-page.tsx");
+  assert.match(page, /trackOptions=\{automationTrackOptions\}/);
+  assert.match(page, /defaultTrackId=\{AUTOMATION_DEFAULT_TRACK_ID\}/);
   assert.match(page, /referenceFrameworkModule/);
 });
 
@@ -51,8 +56,8 @@ test("Test Automation removes visual groups and preserves old deep links", async
   const renderer = await read("app/learning-document-page.tsx");
 
   assert.doesNotMatch(page, /trackGroups|kb-subnav-switch-group|data-grouped/);
-  assert.match(page, /trackAliases=\{trackAliases\}/);
-  assert.match(page, /architecture: "foundations", pytest: "python-setup"/);
+  assert.match(page, /trackAliases=\{automationTrackAliases\}/);
+  assert.deepEqual(automationTrackAliases, { architecture: "foundations", pytest: "python-setup" });
   assert.match(renderer, /trackAliases\?: Record<string, string>/);
   assert.match(renderer, /trackAliases\?\.\[requestedTrackId\] \?\? requestedTrackId/);
   assert.match(renderer, /resolvedTrackOptions\.some\(\(option\) => option\.id === canonicalTrackId\)/);

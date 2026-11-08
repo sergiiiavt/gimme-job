@@ -1,5 +1,5 @@
 import interviewCatalog from "../content/interview/catalog";
-import learningRagSources from "../content/learning-rag-registry";
+import learningRagSources, { learningCatalogItems } from "../content/learning-rag-registry";
 import pythonInterviewCatalog from "../content/python-interview/catalog";
 
 type Json = Record<string, unknown>;
@@ -171,17 +171,6 @@ function collectStrings(value: unknown, depth = 0): string[] {
     .flatMap(([, item]) => collectStrings(item, depth + 1));
 }
 
-function catalogItems(catalog: unknown): Json[] {
-  if (!catalog || typeof catalog !== "object") return [];
-  const value = catalog as Json;
-  for (const key of ["lessons", "chapters", "articles", "modules", "taxonomy", "topics", "cards"]) {
-    if (Array.isArray(value[key]) && (value[key] as unknown[]).length) {
-      return (value[key] as unknown[]).filter((item): item is Json => Boolean(item && typeof item === "object" && !Array.isArray(item)));
-    }
-  }
-  return [];
-}
-
 function learningTitle(item: Json): string {
   return clean(item.title || item.label || item.name || item.id, 500) || "Learning material";
 }
@@ -221,7 +210,7 @@ function markdownSections(markdown: string): Array<{ id: string; title: string; 
 }
 
 function learningDocuments(): RagDocument[] {
-  return learningRagSources.flatMap(({ key, route, track, value }) => catalogItems(value).flatMap((item, index) => {
+  return learningRagSources.flatMap(({ key, route, track, value }) => learningCatalogItems(value).flatMap((item, index) => {
     const status = clean(item.status, 100);
     if (status && status !== "published") return [];
 

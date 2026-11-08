@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
+import { register as registerLoader } from "node:module";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
 
 registerTsx();
+// The sitemap also lists learning topics, whose catalogs import Markdown.
+registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const {
   allInterviewQuestionPages,
@@ -88,8 +91,11 @@ test("sitemap publishes landing pages and every question page as absolute produc
   const urls = sitemap().map((entry) => entry.url);
   const questionPages = allInterviewQuestionPages();
 
-  assert.equal(urls.length, PUBLIC_SITEMAP_PATHS.length + questionPages.length * 2);
-  assert.equal(new Set(urls).size, urls.length);
+  const listed = new Set(urls);
+  for (const path of [...PUBLIC_SITEMAP_PATHS, ...questionPages.flatMap((page) => [page.englishPath, page.ukrainianPath])]) {
+    assert.ok(listed.has(new URL(path, SITE_ORIGIN).toString()), `${path} is in the sitemap`);
+  }
+  assert.equal(listed.size, urls.length);
   assert.ok(urls.every((url) => url.startsWith(`${SITE_ORIGIN}/`)));
   assert.ok(urls.includes(`${SITE_ORIGIN}/interview/sql?question=relational-versus-nonrelational-databases`));
   assert.ok(urls.includes(`${SITE_ORIGIN}/uk/interview?question=severity-versus-priority`));
