@@ -502,6 +502,11 @@ test("keeps the public site open and protects the private workspace", async () =
   }
   const overviewHeadings = [...publicHtml.matchAll(/<h1[^>]*>Why I created this site<\/h1>/g)];
   assert.equal(overviewHeadings.length, 1);
+  const startLearning = publicHtml.match(/<nav\b[^>]*aria-label="Start learning"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  assert.ok(startLearning);
+  assert.match(startLearning, /href="\/interview"/);
+  assert.match(startLearning, /href="\/learn\/qa-fundamentals"/);
+  assert.match(startLearning, /href="\/reference\/qa-fundamentals"/);
   assert.doesNotMatch(publicHtml, /Technology stack/);
   assert.match(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimme-job/);
   assert.doesNotMatch(publicHtml, /https:\/\/github\.com\/sergiiiavt\/gimmejob/);

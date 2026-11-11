@@ -50,6 +50,24 @@
   max-width: 440px;
 }
 
+.about-tech-overview-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  margin-top: 4px;
+}
+
+.about-tech-overview-links a {
+  align-items: center;
+  color: var(--green);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 650;
+  min-height: 28px;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
 .about-tech-actions {
   align-self: start;
   justify-self: end;

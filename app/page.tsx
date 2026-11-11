@@ -5,6 +5,7 @@ import AboutSiteEnhancements from "./about-site-enhancements";
 import { readJsonApiResponse } from "./client-api-response";
 import { createLocalAgentApiResolver, DEFAULT_LOCAL_AGENT_PORT } from "./local-agent";
 import PublicSite from "./public-site";
+import { SITE_ORIGIN } from "./seo";
 import { SiteSidebar } from "./site-navigation";
 
 type JobStatus = "NEW" | "INTERESTED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED" | "NOT_INTERESTED" | "ARCHIVED";
@@ -513,6 +514,7 @@ export function WorkspaceApp() {
 export default function Home() {
   return (
     <>
+      <link rel="canonical" href={SITE_ORIGIN + "/"}/>
       <PublicSite/>
       <AboutSiteEnhancements/>
     </>
