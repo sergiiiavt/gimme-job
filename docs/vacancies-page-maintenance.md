@@ -257,7 +257,7 @@ Do not show the score, tracking controls, analysis panel, resume, or draft.
 | Job API | `app/api/_jobpilot.ts`, `worker/index.ts` |
 | Database | `drizzle/` |
 
-`app/home-page-client.tsx` still contains the older `WorkspaceApp` implementation. `/workspace` uses `VacanciesWorkspace`.
+`app/page.tsx` still contains the older `WorkspaceApp` implementation for now. `/workspace` must use `VacanciesWorkspace`; do not accidentally switch the route back while maintaining unrelated code.
 
 ---
 
