@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   ABOUT_OVERVIEW,
@@ -252,6 +253,13 @@ export default function AboutSite({ mode = "public" }: { mode?: "public" | "pers
               <span className="about-tech-eyebrow">{ABOUT_OVERVIEW.eyebrow}</span>
               <h1 id="about-overview-title">{ABOUT_OVERVIEW.title}</h1>
               <p>{ABOUT_OVERVIEW.subtitle}</p>
+              {mode === "public" && (
+                <nav className="about-tech-overview-links" aria-label="Start learning">
+                  <Link href={interviewHref} prefetch={false}>Interview questions</Link>
+                  <Link href="/learn/qa-fundamentals" prefetch={false}>Learning paths</Link>
+                  <Link href={sectionNavigationHref("qa-fundamentals", mode)} prefetch={false}>Quick reference</Link>
+                </nav>
+              )}
             </div>
           </div>
           <nav className="about-tech-actions" aria-label="About page links">

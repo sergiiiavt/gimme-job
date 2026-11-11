@@ -41,6 +41,12 @@ function headTag(html, pattern) {
   return html.match(pattern)?.[1];
 }
 
+function documentHead(html) {
+  const head = headTag(html, /<head\b[^>]*>([\s\S]*?)<\/head>/i);
+  assert.ok(head, "Expected an HTML head");
+  return head;
+}
+
 // Normalized so the bare origin and the origin with "/" compare equal.
 const canonicalOf = (html) => {
   const href = headTag(html, /<link[^>]+rel="canonical"[^>]+href="([^"]+)"/);
@@ -128,11 +134,36 @@ test("duplicate and placeholder pages declare the right canonical and robots pol
 });
 
 test("the home page carries the site defaults and a large social preview", async () => {
-  const html = await (await fetchRoute("/")).text();
-  assert.equal(titleOf(html), "GimmeJob | QA Interview Questions, Learning &amp; Career Tools");
-  assert.equal(robotsOf(html), "index, follow");
-  assert.match(html, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
-  assert.match(html, /<meta[^>]+name="twitter:card"[^>]+content="summary_large_image"/);
+  const head = documentHead(await (await fetchRoute("/")).text());
+  assert.equal(titleOf(head), "GimmeJob | QA Interview Questions, Learning &amp; Career Tools");
+  assert.equal(canonicalOf(head), ORIGIN + "/");
+  assert.equal(robotsOf(head), "index, follow");
+  assert.match(head, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
+  assert.match(head, /<meta[^>]+name="twitter:card"[^>]+content="summary_large_image"/);
+});
+
+test("search and social crawlers receive canonical and language links in the head", async () => {
+  const googlebot = "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+  const facebook = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)";
+  const question = "/interview/python?question=py-std-pytest-fixtures-and-scope";
+  const ukrainianQuestion = "/uk" + question;
+  for (const [agent, path] of [[googlebot, question], [googlebot, ukrainianQuestion], [facebook, ukrainianQuestion]]) {
+    const taggedPath = path + "&utm_source=threads&utm_medium=organic_social&utm_campaign=qa_launch";
+    const response = await fetchRoute(taggedPath, { headers: { "user-agent": agent } });
+    assert.equal(response.status, 200, path);
+    const head = documentHead(await response.text());
+    assert.equal(canonicalOf(head), ORIGIN + path);
+    assert.equal(alternateHrefOf(head, "en"), ORIGIN + question);
+    assert.equal(alternateHrefOf(head, "uk"), ORIGIN + ukrainianQuestion);
+    assert.equal(alternateHrefOf(head, "x-default"), ORIGIN + question);
+    assert.match(head, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
+  }
+
+  for (const path of ["/learn/git?topic=conflict-resolution", "/reference/qa-fundamentals"]) {
+    const response = await fetchRoute(path, { headers: { "user-agent": googlebot } });
+    assert.equal(response.status, 200, path);
+    assert.equal(canonicalOf(documentHead(await response.text())), ORIGIN + path);
+  }
 });
 
 test("Git learning is public, marked for review and renders the requested chapter", async () => {
