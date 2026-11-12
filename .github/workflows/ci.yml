@@ -97,7 +97,7 @@ jobs:
       # Dependabot runs receive no repository secrets; main is re-analyzed after merge.
       - name: SonarQube Cloud quality gate
         if: github.event.pull_request.user.login != 'dependabot[bot]'
-        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
         with:
           args: >
             -Dsonar.qualitygate.wait=true
@@ -310,7 +310,7 @@ jobs:
           find ai-service -type d -name __pycache__ -prune -exec rm -rf {} +
 
       - name: Refresh SonarQube Cloud main branch
-        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
         with:
           args: >
             -Dsonar.tests=tests,ai-service/tests
