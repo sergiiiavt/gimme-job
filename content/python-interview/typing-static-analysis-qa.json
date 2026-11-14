@@ -29,8 +29,8 @@
       "questionUk": "Яку проблему вирішує узагальнена (generic) функція чи клас з `TypeVar` (чи новішим синтаксисом `class Stack[T]:`)?",
       "shortAnswerUk": "Узагальнення дозволяє написати функцію чи клас один раз, зберігаючи при цьому точний зв'язок між типами вхідних і вихідних даних для перевіряльника типів, замість того щоб вдаватися до непридатного `Any`, який повністю відкидає інформацію про тип. `def first(items: list[T]) -> T:` каже перевіряльнику, що яким би не був конкретний тип, що заповнює список, значення, що повертається, — той самий тип: передавши `list[int]`, отримуєш назад `int`, передавши `list[str]` — `str`, що `Any` ніколи не міг би виразити. Синтаксис PEP 695 з Python 3.12, `def first[T](items: list[T]) -> T:`, виражає ту саму ідею без окремого оголошення `TypeVar`.",
       "strongAnswerSignalsUk": ["зберігає точний зв'язок типів вхід-вихід замість Any", "та сама змінна типу пов'язує кілька позицій між викликами", "синтаксис PEP 695 (3.12) виражає те саме без окремого TypeVar"],
-      "example": "`class Stack[T]:\\n    def push(self, item: T) -> None: ...\\n    def pop(self) -> T: ...` guarantees a checker flags `Stack[int]().push(\"oops\")` as an error, something an untyped or `Any`-typed stack could never catch.",
-      "exampleUk": "`class Stack[T]:\\n    def push(self, item: T) -> None: ...\\n    def pop(self) -> T: ...` гарантує, що перевіряльник позначить `Stack[int]().push(\"oops\")` як помилку — те, що нетипізований чи типізований як `Any` стек ніколи не зміг би виявити.",
+      "example": "`class Stack[T]:\n    def push(self, item: T) -> None: ...\n    def pop(self) -> T: ...` guarantees a checker flags `Stack[int]().push(\"oops\")` as an error, something an untyped or `Any`-typed stack could never catch.",
+      "exampleUk": "`class Stack[T]:\n    def push(self, item: T) -> None: ...\n    def pop(self) -> T: ...` гарантує, що перевіряльник позначить `Stack[int]().push(\"oops\")` як помилку — те, що нетипізований чи типізований як `Any` стек ніколи не зміг би виявити.",
       "tags": ["typing", "generics"],
       "sourceIds": ["python-docs-typing", "python-docs-whatsnew-314"]
     },
@@ -63,8 +63,8 @@
       "questionUk": "Що дозволяє виразити `@typing.overload`, чого не може одна сигнатура функції з анотаціями типів?",
       "shortAnswerUk": "`@overload` дозволяє оголосити кілька сигнатур типів для тієї самої назви функції, кожна з яких описує іншу дійсну комбінацію типів аргументів і значення, що повертається, за якими йде одна реальна реалізація без декоратора, що справді виконується під час виклику. Перевіряльник типів використовує перевантажені сигнатури — ніколи власну сигнатуру реалізації — щоб обрати правильний, найточніший тип, що повертається, для конкретного виклику, що необхідно для функцій, чий тип, що повертається, справді залежить від того, які аргументи чи типи аргументів було передано, — те, чого одна загальна сигнатура точно виразити не може.",
       "strongAnswerSignalsUk": ["оголошує кілька сигнатур для тієї самої назви функції для вибору перевіряльником", "за ними йде одна реальна реалізація без декоратора, що справді виконується", "потрібно, коли тип, що повертається, справді залежить від переданих аргументів"],
-      "example": "`@overload\\ndef parse(value: str) -> dict: ...\\n@overload\\ndef parse(value: bytes) -> bytes: ...\\ndef parse(value): ...` lets a checker know `parse(\"x\")` returns a `dict` while `parse(b\"x\")` returns `bytes`.",
-      "exampleUk": "`@overload\\ndef parse(value: str) -> dict: ...\\n@overload\\ndef parse(value: bytes) -> bytes: ...\\ndef parse(value): ...` дає перевіряльнику знати, що `parse(\"x\")` повертає `dict`, а `parse(b\"x\")` — `bytes`.",
+      "example": "`@overload\ndef parse(value: str) -> dict: ...\n@overload\ndef parse(value: bytes) -> bytes: ...\ndef parse(value): ...` lets a checker know `parse(\"x\")` returns a `dict` while `parse(b\"x\")` returns `bytes`.",
+      "exampleUk": "`@overload\ndef parse(value: str) -> dict: ...\n@overload\ndef parse(value: bytes) -> bytes: ...\ndef parse(value): ...` дає перевіряльнику знати, що `parse(\"x\")` повертає `dict`, а `parse(b\"x\")` — `bytes`.",
       "tags": ["typing", "overload"],
       "sourceIds": ["python-docs-typing"]
     },
@@ -97,8 +97,8 @@
       "questionUk": "Що додає `typing.TypedDict` для коду, що працює зі звичайними словниками фіксованої, відомої форми, як-от розібраний JSON?",
       "shortAnswerUk": "`TypedDict` дозволяє оголосити, що звичайний `dict` має мати конкретний, фіксований набір рядкових ключів з конкретними типами значень — наприклад, для JSON-корисних навантажень із зовнішнього API, тоді як значення під час виконання залишається звичайним об'єктом `dict` без жодних накладних витрат, без нового типу під час виконання й без валідації під час виконання. Статичний перевіряльник типів тоді позначає звернення до неоголошеного ключа чи присвоєння неправильного типу оголошеному ключу, виявляючи цілий клас помилок одруківок і невідповідностей форми в коді, що інакше просто використовував би довільні, нетипізовані словники всюди.",
       "strongAnswerSignalsUk": ["оголошує фіксований набір рядкових ключів і типів значень для форми dict", "значення під час виконання все ще звичайний dict, без накладних витрат, без валідації", "перевіряльник позначає неоголошені ключі й невідповідності типів при присвоєнні"],
-      "example": "`class UserPayload(TypedDict):\\n    id: int\\n    name: str` lets a checker flag `payload[\"nam\"]` as an unknown key or `payload[\"id\"] = \"5\"` as a type mismatch, both common bugs in raw dict-handling code.",
-      "exampleUk": "`class UserPayload(TypedDict):\\n    id: int\\n    name: str` дозволяє перевіряльнику позначити `payload[\"nam\"]` як невідомий ключ чи `payload[\"id\"] = \"5\"` як невідповідність типу — обидві поширені помилки в коді, що працює з сирими словниками.",
+      "example": "`class UserPayload(TypedDict):\n    id: int\n    name: str` lets a checker flag `payload[\"nam\"]` as an unknown key or `payload[\"id\"] = \"5\"` as a type mismatch, both common bugs in raw dict-handling code.",
+      "exampleUk": "`class UserPayload(TypedDict):\n    id: int\n    name: str` дозволяє перевіряльнику позначити `payload[\"nam\"]` як невідомий ключ чи `payload[\"id\"] = \"5\"` як невідповідність типу — обидві поширені помилки в коді, що працює з сирими словниками.",
       "tags": ["typing", "typeddict"],
       "sourceIds": ["python-docs-typing"]
     },
@@ -131,8 +131,8 @@
       "questionUk": "Що таке звуження типу (type narrowing), і як перевірка `isinstance()` уможливлює його для статичного перевіряльника типів?",
       "shortAnswerUk": "Звуження типу — це коли перевіряльник типів уточнює відомий тип змінної в конкретній гілці коду на основі перевірки під час виконання, яку виконує код, без потреби додавати жодної додаткової анотації типу. Усередині `if isinstance(value, str):` перевіряльник трактує `value` як точно `str` для решти цієї гілки, навіть якщо оголошений тип був ширшим об'єднанням на кшталт `str | int`, дозволяючи безпечно викликати `.upper()` усередині гілки, тоді як перевіряльник все ще позначає `.upper()` поза нею, бо там `value` все ще міг би бути `int`.",
       "strongAnswerSignalsUk": ["перевіряльник уточнює відомий тип змінної в гілці на основі перевірки під час виконання", "isinstance — найпоширеніша перевірка звуження, без додаткової анотації", "звуження застосовується лише всередині гілки, де перевірка виконалась"],
-      "example": "`def describe(value: str | int) -> str:\\n    if isinstance(value, str):\\n        return value.upper()\\n    return str(value * 2)` type-checks cleanly because each branch narrows `value` to exactly the type it uses.",
-      "exampleUk": "`def describe(value: str | int) -> str:\\n    if isinstance(value, str):\\n        return value.upper()\\n    return str(value * 2)` чисто проходить перевірку типів, бо кожна гілка звужує `value` точно до того типу, який використовує.",
+      "example": "`def describe(value: str | int) -> str:\n    if isinstance(value, str):\n        return value.upper()\n    return str(value * 2)` type-checks cleanly because each branch narrows `value` to exactly the type it uses.",
+      "exampleUk": "`def describe(value: str | int) -> str:\n    if isinstance(value, str):\n        return value.upper()\n    return str(value * 2)` чисто проходить перевірку типів, бо кожна гілка звужує `value` точно до того типу, який використовує.",
       "tags": ["typing", "isinstance"],
       "sourceIds": ["python-docs-typing"]
     }
