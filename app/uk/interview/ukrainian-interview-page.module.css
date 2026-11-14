@@ -270,6 +270,7 @@
 .codeExamples {
   display: grid;
   gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .codeExample {
@@ -286,7 +287,7 @@
   margin-bottom: 8px;
 }
 
-.codeExample pre {
+.codeExamples pre {
   background: #171b19;
   border-radius: 7px;
   color: #edf0ee;
@@ -296,6 +297,10 @@
   overflow-x: auto;
   padding: 12px;
   white-space: pre;
+}
+
+.codeExamples > pre {
+  margin: 0;
 }
 
 .sources {

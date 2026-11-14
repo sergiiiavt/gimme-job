@@ -165,8 +165,8 @@
       "questionUk": "Як потрійні лапки пов'язані з docstring, і як docstring отримують під час виконання?",
       "shortAnswerUk": "Рядок у потрійних лапках (`\"\"\"...\"\"\"` чи `'''...'''`) дозволяє рядковому літералу займати декілька рядків і містити вбудовані символи лапок без екранування. Docstring, за визначенням, — це будь-який рядковий літерал-вираз, що є найпершим оператором усередині модуля, класу, функції чи методу — однорядковий рядок у звичайних лапках на цій позиції теж технічно docstring; потрійні лапки — просто звичайний, прийнятий стиль, бо добре читаються для багаторядкової документації. Python автоматично зберігає той рядковий літерал, що виконує цю роль, в атрибуті `__doc__` цього об'єкта, а інструменти на кшталт `help()`, IDE та генератори документації читають `__doc__`, щоб показати інформацію про використання без окремих файлів документації.",
       "strongAnswerSignalsUk": ["потрійні лапки дозволяють багаторядкові літерали з вбудованими лапками", "docstring визначається синтаксичною позицією — перший оператор блоку, — а не самими потрійними лапками", "автоматично зберігається в __doc__, читається help() та інструментами документації"],
-      "example": "`def add(a, b):\\n    \"\"\"Return the sum of a and b.\"\"\"\\n    return a + b` makes `add.__doc__` equal to `\"Return the sum of a and b.\"`, retrievable at runtime via `help(add)`.",
-      "exampleUk": "`def add(a, b):\\n    \"\"\"Return the sum of a and b.\"\"\"\\n    return a + b` робить `add.__doc__` рівним `\"Return the sum of a and b.\"`, доступним під час виконання через `help(add)`.",
+      "example": "`def add(a, b):\n    \"\"\"Return the sum of a and b.\"\"\"\n    return a + b` makes `add.__doc__` equal to `\"Return the sum of a and b.\"`, retrievable at runtime via `help(add)`.",
+      "exampleUk": "`def add(a, b):\n    \"\"\"Return the sum of a and b.\"\"\"\n    return a + b` робить `add.__doc__` рівним `\"Return the sum of a and b.\"`, доступним під час виконання через `help(add)`.",
       "tags": ["strings", "docstrings"],
       "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
     }

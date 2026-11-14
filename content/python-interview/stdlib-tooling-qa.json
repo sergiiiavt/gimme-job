@@ -12,8 +12,8 @@
       "questionUk": "Які проблеми вирішують `collections.defaultdict`, `Counter` і `deque` порівняно зі звичайним `dict` чи `list`?",
       "shortAnswerUk": "`defaultdict(list)` усуває потребу перевіряти наявність ключа перед додаванням до нього, бо звернення до відсутнього ключа автоматично створює його за допомогою наданої функції-фабрики замість виклику `KeyError`. `Counter` — спеціалізований словник для підрахунку хешованих елементів, що безкоштовно дає `.most_common(n)` та арифметику між лічильниками замість написання ручних циклів підрахунку. `deque` (двостороння черга) дає O(1) для додавання й вилучення з *обох* кінців, на відміну від звичайного `list`, чиї `insert(0, x)` чи `pop(0)` мають складність O(n), бо кожен елемент, що залишився, доводиться зсувати.",
       "strongAnswerSignalsUk": ["defaultdict автоматично створює відсутні ключі через фабрику", "Counter підраховує хешовані елементи з most_common() та арифметикою", "deque дає O(1) на обох кінцях, на відміну від O(n) list на початку"],
-      "example": "`groups = defaultdict(list)\\nfor item in items:\\n    groups[item.category].append(item)` groups items by category in three lines, with no `if category not in groups:` boilerplate.",
-      "exampleUk": "`groups = defaultdict(list)\\nfor item in items:\\n    groups[item.category].append(item)` групує елементи за категорією у трьох рядках, без шаблонного `if category not in groups:`.",
+      "example": "`groups = defaultdict(list)\nfor item in items:\n    groups[item.category].append(item)` groups items by category in three lines, with no `if category not in groups:` boilerplate.",
+      "exampleUk": "`groups = defaultdict(list)\nfor item in items:\n    groups[item.category].append(item)` групує елементи за категорією у трьох рядках, без шаблонного `if category not in groups:`.",
       "tags": ["collections", "data-structures"],
       "sourceIds": ["python-docs-collections"]
     },
@@ -80,8 +80,8 @@
       "questionUk": "Що таке фікстура pytest, і як її аргумент `scope` контролює, як часто вона виконується?",
       "shortAnswerUk": "Фікстура pytest — це функція, декорована `@pytest.fixture`, що надає налаштування (і, після `yield`, очищення) для тестів, які оголошують її як параметр за іменем; pytest розв'язує та впроваджує її автоматично без явного виклику. Аргумент `scope` (`function` за замовчуванням, `class`, `module`, `package` чи `session`) контролює, скільки разів фікстура реально виконується проти того, скільки тестів ділять той самий екземпляр: фікстура з областю `session` виконується один раз для всього тестового прогону й ділиться кожним тестом, що її запитує, що необхідно для дорогого налаштування на кшталт підключення до бази даних, тоді як область `function` заново запускає налаштування й очищення для кожного окремого тесту, щоб гарантувати ізоляцію.",
       "strongAnswerSignalsUk": ["декорована функція, що надає налаштування, опційно очищення після yield, впроваджується за іменем параметра", "scope контролює, скільки тестів ділять один екземпляр фікстури", "session для дорогого спільного налаштування, function для повної ізоляції"],
-      "example": "`@pytest.fixture(scope=\"session\")\\ndef db_connection():\\n    conn = connect()\\n    yield conn\\n    conn.close()` opens one database connection for the whole test suite instead of reconnecting before every single test.",
-      "exampleUk": "`@pytest.fixture(scope=\"session\")\\ndef db_connection():\\n    conn = connect()\\n    yield conn\\n    conn.close()` відкриває одне підключення до бази даних для всього набору тестів замість повторного підключення перед кожним окремим тестом.",
+      "example": "`@pytest.fixture(scope=\"session\")\ndef db_connection():\n    conn = connect()\n    yield conn\n    conn.close()` opens one database connection for the whole test suite instead of reconnecting before every single test.",
+      "exampleUk": "`@pytest.fixture(scope=\"session\")\ndef db_connection():\n    conn = connect()\n    yield conn\n    conn.close()` відкриває одне підключення до бази даних для всього набору тестів замість повторного підключення перед кожним окремим тестом.",
       "tags": ["pytest", "testing"],
       "sourceIds": ["pytest-docs", "python-docs-unittest"]
     },
@@ -97,8 +97,8 @@
       "questionUk": "Що робить `@pytest.mark.parametrize`, і чому це зазвичай краще за цикл `for` над тестовими випадками всередині однієї тестової функції?",
       "shortAnswerUk": "`@pytest.mark.parametrize(\"input,expected\", [(1, 2), (2, 4)])` запускає декоровану тестову функцію по одному разу для кожного кортежу аргументів, і pytest звітує кожен як окремий, незалежно названий, незалежно пройдений/провалений тестовий результат. Цикл `for` усередині однієї тестової функції натомість виконує всі випадки в межах одного тесту, тож перший провальний випадок зупиняє цикл і приховує результати всіх наступних, а провал звітує лише загальну назву тесту, що містить цю перевірку замість точного визначення, який саме вхід провалився.",
       "strongAnswerSignalsUk": ["запускає тест по разу для кожного кортежу параметрів, кожен як окремий результат", "цикл for зупиняється на першому провалі й приховує наступні випадки", "parametrize точно вказує, який вхід провалився, замість одного загального результату"],
-      "example": "`@pytest.mark.parametrize(\"n,expected\", [(0, 0), (1, 1), (5, 120)])\\ndef test_factorial(n, expected):\\n    assert factorial(n) == expected` reports `test_factorial[5-120]` as a separately failing test if only that case breaks.",
-      "exampleUk": "`@pytest.mark.parametrize(\"n,expected\", [(0, 0), (1, 1), (5, 120)])\\ndef test_factorial(n, expected):\\n    assert factorial(n) == expected` звітує `test_factorial[5-120]` як окремо провалений тест, якщо ламається лише цей випадок.",
+      "example": "`@pytest.mark.parametrize(\"n,expected\", [(0, 0), (1, 1), (5, 120)])\ndef test_factorial(n, expected):\n    assert factorial(n) == expected` reports `test_factorial[5-120]` as a separately failing test if only that case breaks.",
+      "exampleUk": "`@pytest.mark.parametrize(\"n,expected\", [(0, 0), (1, 1), (5, 120)])\ndef test_factorial(n, expected):\n    assert factorial(n) == expected` звітує `test_factorial[5-120]` як окремо провалений тест, якщо ламається лише цей випадок.",
       "tags": ["pytest", "testing"],
       "sourceIds": ["pytest-docs"]
     },

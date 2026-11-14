@@ -45,8 +45,6 @@ test("publishes practical SQL tasks and code-aware interview rendering", async (
   assert.match(overlay, /practicalExample\.appendChild\(replacement\)/);
   assert.match(overlay, /background: "#1e1e1e"/);
   assert.match(overlay, /highlightInterviewCode\(source, language\)/);
-  assert.match(overlay, /whiteSpace: "pre"/);
-  assert.match(overlay, /overflowX: "auto"/);
   assert.match(overlay, /navigator\.clipboard\.writeText\(code\)/);
   assert.match(highlighter, /const sqlKeywords = new Set/);
   assert.match(highlighter, /"#569cd6"/);

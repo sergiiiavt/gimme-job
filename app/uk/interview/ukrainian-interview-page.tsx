@@ -5,6 +5,7 @@ import pythonInterviewCatalog from "@/content/python-interview/catalog";
 import { canonicalInterviewDomainPath, interviewDomainRouteById } from "@/content/interview/domain-routes";
 import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW, ukrainianInterviewPath } from "@/content/interview/ukrainian-routes";
 import { questionDeepLinkHref } from "../../content-deep-links";
+import { splitPythonPracticalExample } from "../../interview-practical-formatting";
 import { ukrainianPlural } from "../../source-count-label";
 import styles from "./ukrainian-interview-page.module.css";
 
@@ -91,6 +92,9 @@ function normalizeQuestionText(question: InterviewQuestion) {
 function QuestionCard({ question, questionHref, sources, open = false }: Readonly<{ question: InterviewQuestion; questionHref?: string; sources: Map<string, InterviewSource>; open?: boolean }>) {
   const text = normalizeQuestionText(question);
   const questionSources = question.sourceIds.map((id) => sources.get(id)).filter((source): source is InterviewSource => Boolean(source));
+  const legacyPythonSegments = !question.codeExamples?.length && question.id.startsWith("py-") && text.example?.includes("\n")
+    ? splitPythonPracticalExample(text.example)
+    : [];
 
   return (
     <details className={styles.question} id={`question-${question.id}`} open={open}>
@@ -135,7 +139,15 @@ function QuestionCard({ question, questionHref, sources, open = false }: Readonl
         ) : text.example ? (
           <section>
             <h3>Практичний приклад</h3>
-            <p>{text.example}</p>
+            {legacyPythonSegments.length ? (
+              <div className={styles.codeExamples}>
+                {legacyPythonSegments.map((segment, index) => segment.type === "code" ? (
+                  <pre key={`${question.id}-example-${index}`}><code>{segment.text}</code></pre>
+                ) : (
+                  <p key={`${question.id}-example-${index}`}>{segment.text}</p>
+                ))}
+              </div>
+            ) : <p>{text.example}</p>}
           </section>
         ) : null}
 

@@ -12,8 +12,8 @@
       "questionUk": "Що означають `*args` і `**kwargs` у сигнатурі функції?",
       "shortAnswerUk": "`*args` збирає будь-які додаткові позиційні аргументи, які передав викликач понад іменовані параметри, у кортеж, а `**kwargs` збирає будь-які додаткові іменовані аргументи у словник. Імена `args` і `kwargs` — лише угода, а не вимога синтаксису; значення мають саме префікси `*` і `**`. Вони дозволяють функції приймати гнучку, змінну кількість аргументів і часто використовуються для функцій-обгорток і декораторів, що мають передавати отримані аргументи іншому викличному об'єкту.",
       "strongAnswerSignalsUk": ["*args збирає зайві позиційні у кортеж", "**kwargs збирає зайві іменовані у словник", "використовується для передачі довільних аргументів, наприклад у декораторах"],
-      "example": "`def log_call(func):\\n    def wrapper(*args, **kwargs):\\n        print(func.__name__, args, kwargs)\\n        return func(*args, **kwargs)\\n    return wrapper` forwards any call signature to the wrapped function unchanged.",
-      "exampleUk": "`def log_call(func):\\n    def wrapper(*args, **kwargs):\\n        print(func.__name__, args, kwargs)\\n        return func(*args, **kwargs)\\n    return wrapper` передає будь-яку сигнатуру виклику обгорнутій функції без змін.",
+      "example": "`def log_call(func):\n    def wrapper(*args, **kwargs):\n        print(func.__name__, args, kwargs)\n        return func(*args, **kwargs)\n    return wrapper` forwards any call signature to the wrapped function unchanged.",
+      "exampleUk": "`def log_call(func):\n    def wrapper(*args, **kwargs):\n        print(func.__name__, args, kwargs)\n        return func(*args, **kwargs)\n    return wrapper` передає будь-яку сигнатуру виклику обгорнутій функції без змін.",
       "tags": ["functions", "args-kwargs"],
       "sourceIds": ["python-docs-tutorial", "python-docs-language-reference"]
     },

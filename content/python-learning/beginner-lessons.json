@@ -111,11 +111,11 @@
       "codeCaption": "A docstring documenting the function's purpose, and a comment explaining a non-obvious detail.",
       "codeCaptionUk": "Docstring, що документує призначення функції, і коментар, що пояснює неочевидну деталь.",
       "pitfalls": [
-        "A comment that just restates the code (# increment i by one \\n i += 1) adds noise, not value",
+        "A comment like `# increment i by one` above `i += 1` repeats what the code already says.",
         "Mixing tabs and spaces for indentation raises a TabError in Python 3"
       ],
       "pitfallsUk": [
-        "Коментар, що просто повторює код (# збільшити i на одиницю \\n i += 1), додає шум, а не цінність",
+        "Коментар `# збільшити i на одиницю` над `i += 1` повторює те, що вже видно з коду.",
         "Змішування табуляції й пробілів у відступах викликає TabError у Python 3"
       ],
       "exercise": "Write a function is_leap_year(year) with a one-line docstring, a comment explaining the century-divisible-by-400 rule, and PEP 8-compliant naming.",

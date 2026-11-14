@@ -29,8 +29,8 @@
       "questionUk": "Чим функція з `yield` поводиться інакше, ніж звичайна функція?",
       "shortAnswerUk": "Будь-яка функція, тіло якої містить хоча б один оператор `yield`, стає функцією-генератором: її виклик взагалі не виконує тіло, а одразу повертає об'єкт-генератор, що автоматично реалізує протокол ітератора. Кожен виклик `next()` на цьому генераторі виконує тіло функції до наступного виразу `yield`, зупиняє виконання там і повертає видане значення; увесь локальний стан функції — змінні, вказівник інструкцій, навіть відкриті цикли — зберігається між викликами, і виконання відновлюється точно з того місця, де зупинилося, на наступному `next()`.",
       "strongAnswerSignalsUk": ["наявність yield робить функцію генератором", "виклик повертає об'єкт-генератор без виконання тіла", "виконання зупиняється на yield і відновлюється зі збереженим локальним станом"],
-      "example": "`def countdown(n):\\n    while n > 0:\\n        yield n\\n        n -= 1` returns a generator immediately when called; only iterating it with a `for` loop or `next()` actually counts down.",
-      "exampleUk": "`def countdown(n):\\n    while n > 0:\\n        yield n\\n        n -= 1` одразу повертає генератор при виклику; лише ітерація через `for` чи `next()` реально відлічує.",
+      "example": "`def countdown(n):\n    while n > 0:\n        yield n\n        n -= 1` returns a generator immediately when called; only iterating it with a `for` loop or `next()` actually counts down.",
+      "exampleUk": "`def countdown(n):\n    while n > 0:\n        yield n\n        n -= 1` одразу повертає генератор при виклику; лише ітерація через `for` чи `next()` реально відлічує.",
       "tags": ["generators", "yield"],
       "sourceIds": ["python-docs-language-reference", "python-docs-tutorial", "real-python"]
     },
@@ -46,8 +46,8 @@
       "questionUk": "Чим `generator.send(value)` відрізняється від `next(generator)`, і що це дозволяє реалізувати?",
       "shortAnswerUk": "`next(gen)` відновлює генератор і неявно передає `None` у призупинений вираз `yield`. `gen.send(value)` відновлює генератор і робить це `value` результатом самого призупиненого виразу `yield`, перетворюючи генератор на двосторонній канал спілкування, а не одностороннього виробника значень. Саме цей механізм зробив можливими генератори у стилі корутин до появи нативних `async`/`await`, хоча сучасний код майже завжди надає перевагу `async`/`await` для цього випадку, залишаючи звичайні генератори для простого виробництва значень.",
       "strongAnswerSignalsUk": ["next() неявно передає None у призупинений yield", "send(value) робить value результатом виразу yield", "історично уможливило генератори-корутини, тепер витіснено async/await"],
-      "example": "`def echo():\\n    while True:\\n        received = yield\\n        print(\"got\", received)` requires priming with `next(gen)` once, after which `gen.send(\"hi\")` prints `got hi` and pauses again at the same `yield`.",
-      "exampleUk": "`def echo():\\n    while True:\\n        received = yield\\n        print(\"got\", received)` потребує одноразового «прайму» через `next(gen)`, після чого `gen.send(\"hi\")` друкує `got hi` і знову зупиняється на тому самому `yield`.",
+      "example": "`def echo():\n    while True:\n        received = yield\n        print(\"got\", received)` requires priming with `next(gen)` once, after which `gen.send(\"hi\")` prints `got hi` and pauses again at the same `yield`.",
+      "exampleUk": "`def echo():\n    while True:\n        received = yield\n        print(\"got\", received)` потребує одноразового «прайму» через `next(gen)`, після чого `gen.send(\"hi\")` друкує `got hi` і знову зупиняється на тому самому `yield`.",
       "tags": ["generators", "coroutines"],
       "sourceIds": ["python-docs-language-reference", "pep-380"]
     },
@@ -63,8 +63,8 @@
       "questionUk": "Що робить `yield from`, і яку проблему воно вирішило порівняно з ручним циклом і повторним yield?",
       "shortAnswerUk": "`yield from subgenerator` делегує ітерацію підгенератору `subgenerator`, прозоро видаючи кожне значення, яке він виробляє, так, ніби зовнішній генератор видав їх напряму, а також передає виклики `send()`, `throw()` і `close()` вниз до підгенератора й повертає його значення `return` як значення самого виразу `yield from`. До того, як PEP 380 ввів це в Python 3.3, делегування підгенератору вимагало ручного циклу `for item in subgenerator: yield item`, який втрачає можливість коректно передавати надіслані значення, кинуті винятки й значення `return` підгенератора.",
       "strongAnswerSignalsUk": ["делегує ітерацію, send, throw і close підгенератору", "вираз yield from обчислюється до значення return підгенератора", "замінює схильний до помилок ручний цикл for з yield"],
-      "example": "`def all_lines(files):\\n    for path in files:\\n        yield from open(path)` streams every line from every file in sequence without manually re-yielding each one.",
-      "exampleUk": "`def all_lines(files):\\n    for path in files:\\n        yield from open(path)` послідовно передає кожен рядок з кожного файлу без ручного повторного yield.",
+      "example": "`def all_lines(files):\n    for path in files:\n        yield from open(path)` streams every line from every file in sequence without manually re-yielding each one.",
+      "exampleUk": "`def all_lines(files):\n    for path in files:\n        yield from open(path)` послідовно передає кожен рядок з кожного файлу без ручного повторного yield.",
       "tags": ["generators", "yield-from"],
       "sourceIds": ["pep-380", "python-docs-language-reference"]
     },
@@ -97,8 +97,8 @@
       "questionUk": "Що таке декоратор, і що насправді робить `@my_decorator` над визначенням функції?",
       "shortAnswerUk": "Декоратор — це виклична сутність, що приймає ціль — найчастіше функцію чи клас — і повертає її заміну, зазвичай обгортку, що додає поведінку навколо оригіналу. Фабрика декораторів, як `retry(times=3)`, — пов'язана, але окрема ідея: це окрема виклична сутність, що сама повертає справжній декоратор, і саме це дозволяє працювати `@retry(times=3)`, хоча декоратор, застосований через `@`, концептуально завжди приймає лише одну ціль. Написання `@my_decorator` прямо над `def func(): ...` точно еквівалентне звичайному визначенню `func`, а потім негайному повторному прив'язуванню імені через `func = my_decorator(func)`; синтаксис декоратора — це суто скорочення для читабельності цього повторного прив'язування, що обчислюється щоразу, коли виконується сам оператор `def` — при імпорті модуля для функції верхнього рівня, але під час виклику для функції, визначеної всередині іншої функції, а не обов'язково «коли модуль завантажується».",
       "strongAnswerSignalsUk": ["декоратор приймає ціль (функцію чи клас) і повертає її заміну", "фабрика декораторів — окрема сутність, що сама повертає справжній декоратор, напр. для @retry(times=3)", "@decorator дорівнює name = decorator(name), обчислюється при виконанні цього def — не завжди при завантаженні модуля"],
-      "example": "`@timed\\ndef slow_task(): ...` is exactly the same as `def slow_task(): ...` followed by `slow_task = timed(slow_task)`; only one of these two spellings needs to be used, never both.",
-      "exampleUk": "`@timed\\ndef slow_task(): ...` — це точно те саме, що `def slow_task(): ...`, а потім `slow_task = timed(slow_task)`; потрібен лише один із цих двох записів, ніколи обидва.",
+      "example": "`@timed\ndef slow_task(): ...` is exactly the same as `def slow_task(): ...` followed by `slow_task = timed(slow_task)`; only one of these two spellings needs to be used, never both.",
+      "exampleUk": "`@timed\ndef slow_task(): ...` — це точно те саме, що `def slow_task(): ...`, а потім `slow_task = timed(slow_task)`; потрібен лише один із цих двох записів, ніколи обидва.",
       "tags": ["decorators"],
       "sourceIds": ["python-docs-language-reference", "interviewbit-python"]
     },
@@ -114,8 +114,8 @@
       "questionUk": "Як написати декоратор, що сам приймає аргументи, наприклад `@retry(times=3)`?",
       "shortAnswerUk": "Декоратор, що приймає аргументи, потребує одного додаткового рівня вкладеності: найзовнішня функція приймає власні аргументи декоратора й повертає справжню функцію-декоратор, яка приймає цільову функцію й повертає обгортку, яка вже приймає аргументи цільової функції під час виклику. Тож `@retry(times=3)` спершу викликає `retry(times=3)`, яка повертає справжній декоратор, і цей декоратор потім застосовується до функції одразу під ним, точно так само, як звичайний декоратор без аргументів.",
       "strongAnswerSignalsUk": ["потрібен додатковий зовнішній рівень, що повертає справжній декоратор", "зовнішній рівень приймає власні аргументи декоратора", "повернутий декоратор застосовується до функції як зазвичай"],
-      "example": "`def retry(times):\\n    def decorator(func):\\n        def wrapper(*args, **kwargs):\\n            for _ in range(times):\\n                try:\\n                    return func(*args, **kwargs)\\n                except Exception:\\n                    continue\\n            raise\\n        return wrapper\\n    return decorator` defines a three-level decorator factory.",
-      "exampleUk": "`def retry(times):\\n    def decorator(func):\\n        def wrapper(*args, **kwargs):\\n            for _ in range(times):\\n                try:\\n                    return func(*args, **kwargs)\\n                except Exception:\\n                    continue\\n            raise\\n        return wrapper\\n    return decorator` визначає трирівневу фабрику декораторів.",
+      "example": "`def retry(times):\n    if times < 1:\n        raise ValueError(\"times must be at least 1\")\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            for attempt in range(times):\n                try:\n                    return func(*args, **kwargs)\n                except Exception:\n                    if attempt == times - 1:\n                        raise\n        return wrapper\n    return decorator` defines a three-level decorator factory.",
+      "exampleUk": "`def retry(times):\n    if times < 1:\n        raise ValueError(\"times must be at least 1\")\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            for attempt in range(times):\n                try:\n                    return func(*args, **kwargs)\n                except Exception:\n                    if attempt == times - 1:\n                        raise\n        return wrapper\n    return decorator` визначає трирівневу фабрику декораторів.",
       "tags": ["decorators", "advanced"],
       "sourceIds": ["python-docs-language-reference"]
     },
@@ -148,8 +148,8 @@
       "questionUk": "Як можна використати клас як декоратор замість вкладеної функції, і коли такий підхід кращий?",
       "shortAnswerUk": "Клас стає придатним для використання як декоратор, коли реалізує `__init__` для отримання декорованої функції та `__call__` для отримання аргументів виклику й виклику збереженої функції, оскільки `@MyDecorator`, застосований до функції, — це просто `func = MyDecorator(func)`, а подальший виклик `func(...)` стає `instance.__call__(...)`. Декоратор на основі класу кращий, коли декоратору потрібно тримати й керувати значущим внутрішнім станом між викликами (як лічильник викликів чи кеш), бо такий стан природно живе як атрибути екземпляра, а не незграбно вкладені змінні замикання.",
       "strongAnswerSignalsUk": ["__init__ отримує функцію, __call__ обробляє виклик", "@MyDecorator на функції дорівнює func = MyDecorator(func)", "кращий, коли декоратору потрібен реальний внутрішній стан"],
-      "example": "`class CountCalls:\\n    def __init__(self, func):\\n        self.func = func\\n        self.calls = 0\\n    def __call__(self, *a, **kw):\\n        self.calls += 1\\n        return self.func(*a, **kw)` exposes `decorated_func.calls` directly as instance state.",
-      "exampleUk": "`class CountCalls:\\n    def __init__(self, func):\\n        self.func = func\\n        self.calls = 0\\n    def __call__(self, *a, **kw):\\n        self.calls += 1\\n        return self.func(*a, **kw)` напряму надає `decorated_func.calls` як стан екземпляра.",
+      "example": "`class CountCalls:\n    def __init__(self, func):\n        self.func = func\n        self.calls = 0\n    def __call__(self, *a, **kw):\n        self.calls += 1\n        return self.func(*a, **kw)` exposes `decorated_func.calls` directly as instance state.",
+      "exampleUk": "`class CountCalls:\n    def __init__(self, func):\n        self.func = func\n        self.calls = 0\n    def __call__(self, *a, **kw):\n        self.calls += 1\n        return self.func(*a, **kw)` напряму надає `decorated_func.calls` як стан екземпляра.",
       "tags": ["decorators", "oop"],
       "sourceIds": ["python-docs-datamodel"]
     },
@@ -182,8 +182,8 @@
       "questionUk": "Коли над однією функцією накладено декілька декораторів, у якому порядку вони застосовуються?",
       "shortAnswerUk": "Декоратори застосовуються знизу вгору, але виконуються ззовні всередину. З `@a`, потім `@b`, потім `def f():` Python спершу застосовує `b` до `f`, а потім застосовує `a` до результату цього, що еквівалентно `f = a(b(f))`. Але під час виклику виконання йде у зворотному напрямку: виклик фінальної декорованої `f()` спершу входить в обгортку `a`, яка зазвичай викликає обгортку `b`, яка вже врешті викликає оригінальну `f`. Плутанина в цьому — поширене джерело помилок, коли порядок декораторів реально важливий, наприклад застосування `@app.route(...)` над `@login_required` чи навпаки.",
       "strongAnswerSignalsUk": ["застосовуються знизу вгору: найближчий декоратор обгортає першим", "еквівалентно f = a(b(f)) для стосу @a @b", "виконання під час виклику йде ззовні всередину через обгортки"],
-      "example": "`@log\\n@cache\\ndef compute(): ...` applies `cache` first then `log`, so at call time `log`'s wrapper runs first and can time the entire cached call, including a cache miss falling through to `compute`.",
-      "exampleUk": "`@log\\n@cache\\ndef compute(): ...` спершу застосовує `cache`, потім `log`, тож під час виклику обгортка `log` виконується першою і може виміряти час усього кешованого виклику, включно з промахом кешу, що проходить до `compute`.",
+      "example": "`@log\n@cache\ndef compute(): ...` applies `cache` first then `log`, so at call time `log`'s wrapper runs first and can time the entire cached call, including a cache miss falling through to `compute`.",
+      "exampleUk": "`@log\n@cache\ndef compute(): ...` спершу застосовує `cache`, потім `log`, тож під час виклику обгортка `log` виконується першою і може виміряти час усього кешованого виклику, включно з промахом кешу, що проходить до `compute`.",
       "tags": ["decorators", "gotchas"],
       "sourceIds": ["python-docs-language-reference"]
     }
