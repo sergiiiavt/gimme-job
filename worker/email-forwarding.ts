@@ -1,3 +1,4 @@
+import { EMAIL_AUTOMATION_ENABLED } from "../app/email-automation.ts";
 import { extractEmailTextExcerpt } from "./email-text.ts";
 
 type ForwardedEmailMessage = {
@@ -193,6 +194,25 @@ export async function handleForwardedEmail(message: ForwardedEmailMessage, env: 
     .run();
 
   await captureGmailForwardingVerification(rawMessage, env.DB, alias.user_id, subject, senderEmail, receivedAt);
+}
+
+/**
+ * Worker email entry point. While email automation is paused, mail is accepted
+ * and discarded rather than rejected, so users' Gmail forwarding does not bounce.
+ */
+export async function handleIncomingEmail(
+  message: ForwardedEmailMessage,
+  env: EmailForwardingEnv,
+  enabled = EMAIL_AUTOMATION_ENABLED,
+): Promise<void> {
+  if (enabled) return handleForwardedEmail(message, env);
+  console.log({
+    schemaVersion: 1,
+    service: "gimmejob",
+    event: "forwarded_email",
+    outcome: "discarded",
+    reason: "email_automation_paused",
+  });
 }
 
 export function forwardingAddress(token: string): string {

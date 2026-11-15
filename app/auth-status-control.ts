@@ -1,6 +1,7 @@
 "use client";
 
 import { createElement, useEffect, useState } from "react";
+import { EMAIL_AUTOMATION_ENABLED, EMAIL_AUTOMATION_PAUSED_NOTE } from "./email-automation.ts";
 
 export type AuthViewMode = "public" | "personal";
 type AuthProbeResponse = { ok: boolean; status?: number };
@@ -305,6 +306,38 @@ function AnonymousControl({ personalHref }: { personalHref: string }) {
   }, "Sign in");
 }
 
+const pausedSectionStyle = {
+  ...sectionStyle,
+  filter: "grayscale(1)",
+  opacity: 0.6,
+} as const;
+const pausedBadgeStyle = {
+  background: "#eef0ee",
+  border: "1px solid #d8dfd9",
+  borderRadius: "999px",
+  color: "#5d6862",
+  fontSize: "9px",
+  fontWeight: 750,
+  marginLeft: "6px",
+  padding: "1px 7px",
+  textTransform: "uppercase",
+  verticalAlign: "1px",
+} as const;
+
+export function PausedGmailForwarding() {
+  return createElement("section", { style: pausedSectionStyle, "aria-label": "Gmail forwarding (paused)" },
+    createElement("strong", { style: sectionTitleStyle }, "Gmail forwarding",
+      createElement("span", { style: pausedBadgeStyle }, "Paused"),
+    ),
+    createElement("p", { style: mutedStyle }, EMAIL_AUTOMATION_PAUSED_NOTE),
+    createElement("button", {
+      type: "button",
+      style: { ...buttonStyle, cursor: "not-allowed", marginTop: "9px", width: "100%" },
+      disabled: true,
+    }, "Check for verification email"),
+  );
+}
+
 function AuthenticatedControl({
   session,
   forwarding,
@@ -346,7 +379,7 @@ function AuthenticatedControl({
         createElement("i", { style: statusDotStyle, "aria-hidden": "true" }),
         createElement("span", { style: { ...mutedStyle, fontWeight: 750 } }, "Private account · Account registered"),
       ),
-      createElement("section", { style: sectionStyle, "aria-label": "Gmail forwarding verification" },
+      !EMAIL_AUTOMATION_ENABLED ? createElement(PausedGmailForwarding) : createElement("section", { style: sectionStyle, "aria-label": "Gmail forwarding verification" },
         createElement("strong", { style: sectionTitleStyle }, "Gmail forwarding"),
         createElement("p", { style: mutedStyle }, verificationState),
         forwarding?.address
@@ -424,7 +457,7 @@ export default function AuthStatusControl({ mode, personalHref }: { mode: AuthVi
   useEffect(() => {
     if (!authenticated) return;
     let active = true;
-    void Promise.all([loadAuthSession(), loadForwardingSetup()]).then(([nextSession, setup]) => {
+    void Promise.all([loadAuthSession(), EMAIL_AUTOMATION_ENABLED ? loadForwardingSetup() : null]).then(([nextSession, setup]) => {
       if (!active) return;
       if (nextSession) setSession(nextSession);
       setForwarding(setup);
