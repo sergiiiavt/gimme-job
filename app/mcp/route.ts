@@ -44,7 +44,9 @@ async function withMcpTenant(request: Request, env: RuntimeEnv): Promise<Request
   const headers = new Headers(request.headers);
   headers.set("x-gimmejob-user-id", user.id);
   headers.set("x-gimmejob-authenticated", "1");
-  return new Request(request, { headers });
+  // vinext hands route handlers a Proxy around NextRequest, which neither workerd
+  // nor undici can clone with `new Request(request, init)`. Rebuild from parts.
+  return new Request(request.url, { method: request.method, headers, body: await request.arrayBuffer() });
 }
 
 export async function POST(request: Request) {
