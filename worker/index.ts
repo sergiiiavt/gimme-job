@@ -1,6 +1,6 @@
 /** Cloudflare Worker entry point with tenant auth and per-user email forwarding. */
 import coreWorker from "./core";
-import { handleForwardedEmail } from "./email-forwarding";
+import { handleIncomingEmail } from "./email-forwarding";
 import { createMultiUserBoundary } from "./multi-user-boundary";
 import { handleDatabasePlayground } from "../app/api/playgrounds/databases/route";
 import {
@@ -16,6 +16,7 @@ import { runVacancyCatalogBackstop } from "./vacancy-sync-backstop";
 import { withSecurityHeaders } from "./security-headers";
 import { withWebAnalytics, type WebAnalyticsEnv } from "./web-analytics";
 import { SITE_ORIGIN } from "../app/seo";
+import { emailAutomationPausedResponse } from "../app/email-automation";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
@@ -65,6 +66,9 @@ const worker = {
     const rateLimitResponse = await enforcePublicApiRateLimit(request, env);
     if (rateLimitResponse) return withSecurityHeaders(rateLimitResponse);
 
+    const emailPausedResponse = emailAutomationPausedResponse(request);
+    if (emailPausedResponse) return withSecurityHeaders(emailPausedResponse);
+
     if (isWebSocketPlaygroundRequest(request)) {
       return proxyWebSocketPlayground(request);
     }
@@ -105,7 +109,7 @@ const worker = {
         }),
     );
   },
-  email: handleForwardedEmail,
+  email: handleIncomingEmail,
 };
 
 export default worker;

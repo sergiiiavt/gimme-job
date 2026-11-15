@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
+import { EMAIL_AUTOMATION_ENABLED } from "../app/email-automation.ts";
 
 const cloudflareWorkersModule = `data:text/javascript,${encodeURIComponent("export const env = globalThis.__gimmejobMultiUserCloudflareEnv;")}`;
 const cloudflareEnv = {};
@@ -147,7 +148,29 @@ test("multi-user Worker injects only the user id resolved from the server sessio
   assert.deepEqual(state.starUserIds, ["user-a"]);
 });
 
-test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", async () => {
+test("paused email automation answers n8n email routes with 503 even with a valid service token", { skip: EMAIL_AUTOMATION_ENABLED && "email automation is enabled" }, async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("multi-user-email-paused-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const { db } = fakeSessionDb();
+  const env = envFor(db);
+
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  cloudflareEnv.MULTI_USER_ENABLED = "true";
+  cloudflareEnv.N8N_INGEST_TOKEN = "n8n-service-token";
+
+  for (const [path, method] of [["/internal/n8n/email-events?limit=1", "GET"], ["/internal/n8n/email-classify", "POST"]]) {
+    const response = await worker.fetch(new Request(`https://gimmejob.example${path}`, {
+      method,
+      headers: { authorization: "Bearer n8n-service-token" },
+    }), env, context);
+    assert.equal(response.status, 503, `${method} ${path}`);
+    assert.equal((await response.json()).code, "email_automation_paused");
+  }
+});
+
+test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", { skip: !EMAIL_AUTOMATION_ENABLED && "email automation is paused; its n8n routes answer 503 before auth" }, async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("multi-user-n8n-service-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
