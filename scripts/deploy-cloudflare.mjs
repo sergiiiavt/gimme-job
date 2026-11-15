@@ -105,6 +105,15 @@ function aiServiceConfiguration() {
   return { configured: true, url: url.replace(/\/+$/, ""), serviceToken };
 }
 
+// Public site token from the Cloudflare Web Analytics snippet; unset keeps analytics off.
+function webAnalyticsToken() {
+  const token = optionalEnvironment("CLOUDFLARE_WEB_ANALYTICS_TOKEN");
+  if (token && !/^[0-9a-f]{32}$/i.test(token)) {
+    throw new Error("CLOUDFLARE_WEB_ANALYTICS_TOKEN must be the 32-character hex token from the Cloudflare Web Analytics snippet.");
+  }
+  return token;
+}
+
 async function ensureBuildArtifact() {
   await Promise.all([
     access(path.join(projectRoot, "dist", "server", "index.js")),
@@ -115,6 +124,7 @@ async function ensureBuildArtifact() {
 
 async function writeDeployConfig(id, multiUserEnabled = false, aiService = { configured: false, url: "" }, ragEnabled = true) {
   const deployConfig = JSON.parse(await readFile(artifactConfigPath, "utf8"));
+  const analyticsToken = webAnalyticsToken();
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
@@ -146,6 +156,7 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
     PUBLIC_DB_HOURLY_IP_LIMIT: optionalEnvironment("PUBLIC_DB_HOURLY_IP_LIMIT") || "120",
     PUBLIC_DB_DAILY_GLOBAL_LIMIT: optionalEnvironment("PUBLIC_DB_DAILY_GLOBAL_LIMIT") || "5000",
     ...(aiService.configured ? { GIMMEJOB_AI_URL: aiService.url } : {}),
+    ...(analyticsToken ? { CLOUDFLARE_WEB_ANALYTICS_TOKEN: analyticsToken } : {}),
   };
   deployConfig.d1_databases = [{
     binding: "DB",
@@ -300,7 +311,7 @@ async function main() {
     console.log("Deploying GimmeJob to Cloudflare Workers...");
     runWrangler(["deploy", "--config", generatedConfigPath, "--secrets-file", deploySecretsPath]);
     if (ragEnabled) await refreshRagIndexBestEffort(mcpServiceToken);
-    console.log(`Cloudflare deployment completed. RAG: ${ragEnabled ? "enabled/best-effort refresh" : "degraded lexical fallback"}. RAG service auth: ${ragServiceToken ? "configured" : "optional/not configured"}. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. MCP service token: ${explicitMcpServiceToken ? "dedicated" : "APP_PASSWORD fallback"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
+    console.log(`Cloudflare deployment completed. RAG: ${ragEnabled ? "enabled/best-effort refresh" : "degraded lexical fallback"}. RAG service auth: ${ragServiceToken ? "configured" : "optional/not configured"}. Multi-user password authentication: ${multiUserEnabled ? "enabled" : "disabled"}. MCP service token: ${explicitMcpServiceToken ? "dedicated" : "APP_PASSWORD fallback"}. Gmail OAuth: ${googleAuth.configured ? "configured" : "optional/not configured"}. GimmeJob AI: ${aiService.configured ? "configured" : "optional/not configured"}. Web Analytics: ${optionalEnvironment("CLOUDFLARE_WEB_ANALYTICS_TOKEN") ? "enabled" : "optional/not configured"}. Email AI: ${optionalEnvironment("EMAIL_AI_ENABLED") || "true"}, user daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_USER_LIMIT") || "50"}, global daily limit: ${optionalEnvironment("EMAIL_AI_DAILY_GLOBAL_LIMIT") || "500"}.`);
   } finally {
     await Promise.all([rm(generatedConfigPath, { force: true }), rm(deploySecretsPath, { force: true })]);
   }

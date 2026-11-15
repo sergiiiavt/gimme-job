@@ -14,13 +14,15 @@ import {
 } from "./public-api-rate-limit";
 import { runVacancyCatalogBackstop } from "./vacancy-sync-backstop";
 import { withSecurityHeaders } from "./security-headers";
+import { withWebAnalytics, type WebAnalyticsEnv } from "./web-analytics";
 import { SITE_ORIGIN } from "../app/seo";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
 type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1]
   & Parameters<typeof handleDatabasePlayground>[1]
-  & PublicApiRateLimitEnv;
+  & PublicApiRateLimitEnv
+  & WebAnalyticsEnv;
 type HttpWorkerContext = Parameters<HttpWorkerFetch>[2];
 
 const PRODUCTION_HOST = new URL(SITE_ORIGIN).host;
@@ -72,7 +74,11 @@ const worker = {
     }
 
     const routedRequest = withPublicAiSessionScope(request);
-    const response = withDocumentLanguage(request, await httpWorker.fetch(routedRequest, env, ctx));
+    const response = withWebAnalytics(
+      request,
+      withDocumentLanguage(request, await httpWorker.fetch(routedRequest, env, ctx)),
+      env,
+    );
     return withSecurityHeaders(requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response);
   },
   scheduled(_controller: unknown, env: HttpWorkerEnv, ctx: HttpWorkerContext): void {

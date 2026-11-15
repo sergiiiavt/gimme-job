@@ -25,6 +25,7 @@ interface D1Database {
 
 interface HTMLRewriterElement {
   setAttribute(name: string, value: string): void;
+  append(content: string, options?: { html?: boolean }): void;
 }
 
 interface HTMLRewriterInstance {
