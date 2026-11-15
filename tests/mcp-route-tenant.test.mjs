@@ -79,7 +79,7 @@ function mcpRequest(message, { email } = {}) {
 
 const initialize = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26" } };
 
-test("MCP route serves the account selected by x-gimmejob-mcp-user-email", async () => {
+test("MCP route resolves the selected account through the real vinext route handler", async () => {
   const { worker, env, state } = await loadWorker(USERS);
 
   const initialized = await worker.fetch(mcpRequest(initialize, { email: "B@Example.test" }), env, context);
@@ -95,16 +95,4 @@ test("MCP route serves the account selected by x-gimmejob-mcp-user-email", async
   assert.equal(progress.status, 200);
   assert.equal((await progress.json()).result.isError, false);
   assert.deepEqual(state.progressUserIds, ["user-b"]);
-});
-
-test("MCP route auto-selects the only account and rejects unknown or ambiguous selection", async () => {
-  const single = await loadWorker(USERS.slice(0, 1));
-  const autoSelected = await single.worker.fetch(mcpRequest(initialize), single.env, context);
-  assert.equal(autoSelected.status, 200);
-
-  const multiple = await loadWorker(USERS);
-  const ambiguous = await multiple.worker.fetch(mcpRequest(initialize), multiple.env, context);
-  assert.equal(ambiguous.status, 409);
-  const unknown = await multiple.worker.fetch(mcpRequest(initialize, { email: "missing@example.test" }), multiple.env, context);
-  assert.equal(unknown.status, 404);
 });

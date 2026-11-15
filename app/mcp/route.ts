@@ -1,52 +1,13 @@
 import { handleMcpRequest, type McpEnv } from "../../worker/mcp";
 import { hasMcpServiceToken, mcpServiceAuthFailure } from "../../worker/mcp-auth";
+import { withMcpTenant } from "../../worker/mcp-tenant";
 
 type RuntimeEnv = McpEnv & {
   MCP_SERVICE_TOKEN?: string;
 };
 
-type UserRow = {
-  id: string;
-  email: string;
-};
-
 async function runtimeEnv(): Promise<RuntimeEnv> {
   return (await import("cloudflare:workers")).env as unknown as RuntimeEnv;
-}
-
-async function withMcpTenant(request: Request, env: RuntimeEnv): Promise<Request | Response> {
-  if (request.headers.get("x-gimmejob-auth-mode") !== "multi-user") return request;
-  if (request.headers.get("x-gimmejob-user-id")) return request;
-
-  const requestedEmail = request.headers.get("x-gimmejob-mcp-user-email")?.trim().toLowerCase() ?? "";
-  let user: UserRow | null = null;
-  if (requestedEmail) {
-    user = await env.DB.prepare("SELECT id, email FROM users WHERE lower(email) = ? LIMIT 1")
-      .bind(requestedEmail)
-      .first<UserRow>();
-    if (!user) {
-      return Response.json(
-        { error: "The configured MCP user email does not match a GimmeJob account." },
-        { status: 404, headers: { "cache-control": "no-store" } },
-      );
-    }
-  } else {
-    const result = await env.DB.prepare("SELECT id, email FROM users ORDER BY created_at ASC LIMIT 2").all<UserRow>();
-    if (result.results.length !== 1) {
-      return Response.json(
-        { error: "Set GIMMEJOB_MCP_USER_EMAIL when the site has zero or multiple user accounts." },
-        { status: 409, headers: { "cache-control": "no-store" } },
-      );
-    }
-    user = result.results[0];
-  }
-
-  const headers = new Headers(request.headers);
-  headers.set("x-gimmejob-user-id", user.id);
-  headers.set("x-gimmejob-authenticated", "1");
-  // vinext hands route handlers a Proxy around NextRequest, which neither workerd
-  // nor undici can clone with `new Request(request, init)`. Rebuild from parts.
-  return new Request(request.url, { method: request.method, headers, body: await request.arrayBuffer() });
 }
 
 export async function POST(request: Request) {
