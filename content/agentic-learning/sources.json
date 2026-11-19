@@ -1,0 +1,200 @@
+[
+  {
+    "id": "anthropic-building-agents",
+    "title": "Building Effective AI Agents",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "role": "Workflows versus agents, the five workflow patterns, and the advice to start with the simplest design that measurably works.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "anthropic-writing-tools",
+    "title": "Writing effective tools for AI agents",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+    "role": "Choosing and consolidating tools, namespacing, high-signal and token-efficient results, actionable errors and evaluating tools with realistic tasks.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "yao-react",
+    "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+    "publisher": "Yao et al. — arXiv / ICLR 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2210.03629",
+    "role": "The pattern of interleaving reasoning, actions and observations that most agent loops follow.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-tool-use",
+    "title": "Tool use with Claude",
+    "publisher": "Anthropic",
+    "kind": "official-docs",
+    "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview",
+    "role": "Tool definitions with JSON Schemas, tool calls and tool results in a provider API.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "openai-function-calling",
+    "title": "Function calling",
+    "publisher": "OpenAI",
+    "kind": "official-docs",
+    "url": "https://developers.openai.com/api/docs/guides/function-calling",
+    "role": "The same tool-call loop in a second provider API, including strict schemas.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "json-schema-docs",
+    "title": "Understanding JSON Schema",
+    "publisher": "JSON Schema",
+    "kind": "official-docs",
+    "url": "https://json-schema.org/understanding-json-schema/",
+    "role": "Reference for the keywords used to constrain tool arguments: types, required, enum, ranges and additionalProperties.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "aws-backoff-jitter",
+    "title": "Timeouts, retries, and backoff with jitter",
+    "publisher": "Amazon Builders' Library",
+    "kind": "article",
+    "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/",
+    "role": "Timeouts, retry budgets, exponential backoff with jitter and why retries must be limited to safe operations.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "rfc-9110",
+    "title": "RFC 9110: HTTP Semantics",
+    "publisher": "IETF",
+    "kind": "standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+    "role": "Definition of safe and idempotent methods, the vocabulary used for read and write tools.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "idempotency-key-draft",
+    "title": "The Idempotency-Key HTTP Header Field",
+    "publisher": "IETF HTTPAPI Working Group (Internet-Draft)",
+    "kind": "draft-standard",
+    "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/",
+    "role": "A client-supplied key that makes a retried write produce one effect, the pattern behind idempotent write tools.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-spec",
+    "title": "Model Context Protocol specification, revision 2026-07-28",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+    "role": "Architecture of hosts, clients and servers, server features (tools, resources, prompts) and client features.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-changelog",
+    "title": "MCP specification changelog",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+    "role": "What changed in the 2026-07-28 revision: no initialization handshake, no protocol sessions, server/discover, deprecated roots and sampling.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-versioning",
+    "title": "MCP specification: Versioning and compatibility",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/lifecycle",
+    "role": "Per-request protocol version and capabilities, and the error a server returns for an unsupported version.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-transports",
+    "title": "MCP specification: Transports",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports",
+    "role": "The stdio and Streamable HTTP transports, Origin validation and the deprecation of HTTP+SSE.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-tools",
+    "title": "MCP specification: Tools",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+    "role": "Tool definitions, tools/list and tools/call, structured results, and protocol errors versus tool execution errors.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-authorization",
+    "title": "MCP specification: Authorization",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    "role": "OAuth 2.1 for HTTP transports, protected resource metadata, resource indicators, audience validation and environment credentials for stdio.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-security",
+    "title": "MCP specification: Security best practices",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices",
+    "role": "Named attack classes for MCP deployments: confused deputy, token passthrough, SSRF, local server compromise and scope minimization.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "mcp-inspector",
+    "title": "MCP Inspector",
+    "publisher": "Model Context Protocol",
+    "kind": "tool",
+    "url": "https://modelcontextprotocol.io/docs/tools/inspector",
+    "role": "Interactive tool for connecting to an MCP server and calling its tools by hand.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "jsonrpc-spec",
+    "title": "JSON-RPC 2.0 Specification",
+    "publisher": "JSON-RPC Working Group",
+    "kind": "standard",
+    "url": "https://www.jsonrpc.org/specification",
+    "role": "The request, response, notification and error objects that MCP messages are built from.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "rfc-9728",
+    "title": "RFC 9728: OAuth 2.0 Protected Resource Metadata",
+    "publisher": "IETF",
+    "kind": "standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc9728",
+    "role": "How an MCP server tells clients which authorization server protects it.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "rfc-8707",
+    "title": "RFC 8707: Resource Indicators for OAuth 2.0",
+    "publisher": "IETF",
+    "kind": "standard",
+    "url": "https://www.rfc-editor.org/rfc/rfc8707",
+    "role": "Binding an access token to the one MCP server it was issued for.",
+    "checkedAt": "2026-11-19"
+  },
+  {
+    "id": "owasp-llm-top10",
+    "title": "OWASP Top 10 for LLM Applications (2025)",
+    "publisher": "OWASP Gen AI Security Project",
+    "kind": "standard",
+    "url": "https://genai.owasp.org/llm-top-10/",
+    "role": "Prompt injection and excessive agency as named risks for tool-using applications.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "greshake-indirect-injection",
+    "title": "Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection",
+    "publisher": "Greshake et al. — arXiv / AISec 2023",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2302.12173",
+    "role": "Instructions hidden in retrieved content or tool results that the model then follows.",
+    "checkedAt": "2026-10-11"
+  }
+]
