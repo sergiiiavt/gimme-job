@@ -106,24 +106,137 @@ export default function TopicLearningPage({
   const topics = catalog.topics;
   const requestedTopic = searchParams.get("topic");
   const activeSupplement = supplements.find((supplement) => supplement.id === requestedTopic);
-  const activeTopicId = requestedTopic && topics.some((topic) => topic.id === requestedTopic)
-    ? requestedTopic
-    : defaultTopicId;
-  const activeTopic = topics.find((topic) => topic.id === activeTopicId)
+  const activeTopic = topics.find((topic) => topic.id === requestedTopic)
     ?? topics.find((topic) => topic.id === defaultTopicId)
     ?? topics[0];
-  const localizedLabel = language === "uk" ? activeTopic.labelUk : activeTopic.label;
-  const markdown = language === "uk" ? activeTopic.markdownUk : activeTopic.markdown;
-  const sourcesById = useMemo(
-    () => new Map((catalog.sources ?? []).map((source) => [source.id, source])),
-    [catalog.sources],
+  const navigableIds = new Set([...topics, ...supplements].map((item) => item.id));
+
+  const selectTopic = (topicId: string) => {
+    if (!navigableIds.has(topicId)) return;
+    router.push(contentHref(pathname, searchParams.toString(), { topic: topicId }), { scroll: false });
+    setMobileNav(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const openSection = (section: SiteSection) => {
+    window.location.assign(sectionNavigationHref(section, mode));
+  };
+
+  const href = sectionNavigationHref(activeSection, mode);
+  const rail = { language, onLanguageChange: setLanguage };
+  let content: ReactNode;
+  if (activeSupplement) {
+    content = <SupplementView eyebrow={secondaryTitle} supplement={activeSupplement} {...rail}/>;
+  } else if (activeTopic.status === "under-construction") {
+    content = <UnderConstructionView eyebrow={secondaryTitle} topic={activeTopic} {...rail}/>;
+  } else {
+    const chapterNumber = topics.findIndex((topic) => topic.id === activeTopic.id) + 1;
+    content = <ChapterView catalog={catalog} chapterCount={topics.length} chapterNumber={chapterNumber} eyebrow={secondaryTitle} topic={activeTopic} {...rail}/>;
+  }
+
+  return (
+    <main className="kb-shell">
+      <SiteSidebar
+        activeSection={activeSection}
+        activeSubsection={(activeSupplement ?? activeTopic).id}
+        mobileOpen={mobileNav}
+        mode={mode}
+        onSelect={openSection}
+        onSelectSubsection={selectTopic}
+        personalHref={href}
+        publicHref={href}
+        secondaryItems={navigationItems(topics, supplements, language)}
+        secondaryTitle={secondaryTitle}
+      />
+
+      <section className="kb-main">
+        <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
+        <div className={`kb-content ${styles.page}`}>{content}</div>
+      </section>
+
+      {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
+    </main>
   );
-  const topicSources = useMemo(
-    () => (activeTopic.sourceIds ?? [])
+}
+
+type Localized = Readonly<{ label: string; labelUk: string }>;
+
+function localizedLabel(item: Localized, language: LearningLanguage) {
+  return language === "uk" ? item.labelUk : item.label;
+}
+
+function navigationItems(
+  topics: readonly TopicLearningItem[],
+  supplements: readonly TopicLearningSupplement[],
+  language: LearningLanguage,
+): SubnavItem[] {
+  return [
+    ...topics.map((topic): SubnavItem => ({
+      id: topic.id,
+      label: localizedLabel(topic, language),
+      status: topic.status === "under-construction" ? "under-construction" : undefined,
+    })),
+    ...supplements.map((supplement): SubnavItem => ({ id: supplement.id, label: localizedLabel(supplement, language) })),
+  ];
+}
+
+type ViewProps = Readonly<{
+  eyebrow: string;
+  language: LearningLanguage;
+  onLanguageChange: (language: LearningLanguage) => void;
+}>;
+
+function SupplementView({ eyebrow, language, onLanguageChange, supplement }: ViewProps & Readonly<{ supplement: TopicLearningSupplement }>) {
+  return (
+    <>
+      <LearningHero eyebrow={eyebrow} title={localizedLabel(supplement, language)}/>
+      <div className={styles.layout}>
+        <div className={styles.document}>
+          <article className={styles.article}>{supplement.content(language)}</article>
+        </div>
+        <LearningRail
+          headings={[...supplement.headings]}
+          language={language}
+          languages={["en", "uk"]}
+          onLanguageChange={onLanguageChange}
+          showSourceRegistry={false}
+        />
+      </div>
+    </>
+  );
+}
+
+function UnderConstructionView({ eyebrow, language, onLanguageChange, topic }: ViewProps & Readonly<{ topic: TopicLearningItem }>) {
+  const uk = language === "uk";
+  return (
+    <>
+      <LearningHero
+        eyebrow={`${eyebrow} · ${uk ? "У розробці" : "Under construction"}`}
+        title={localizedLabel(topic, language)}
+      />
+      <section className="kb-under-construction-page">
+        <span className="kb-construction-badge">{uk ? "У розробці" : "Under construction"}</span>
+        <p>{uk ? "Цей розділ ще не опублікований." : "This chapter has not been published yet."}</p>
+      </section>
+      <LearningRail headings={[]} language={language} languages={["en", "uk"]} onLanguageChange={onLanguageChange}/>
+    </>
+  );
+}
+
+function ChapterView({ catalog, chapterCount, chapterNumber, eyebrow, language, onLanguageChange, topic }: ViewProps & Readonly<{
+  catalog: TopicLearningCatalog;
+  chapterCount: number;
+  chapterNumber: number;
+  topic: TopicLearningItem;
+}>) {
+  const uk = language === "uk";
+  const markdown = uk ? topic.markdownUk : topic.markdown;
+  const topicSources = useMemo(() => {
+    const sourcesById = new Map((catalog.sources ?? []).map((source) => [source.id, source]));
+    return (topic.sourceIds ?? [])
       .map((sourceId) => sourcesById.get(sourceId))
-      .filter((source): source is TopicLearningSource => Boolean(source)),
-    [activeTopic.sourceIds, sourcesById],
-  );
+      .filter((source): source is TopicLearningSource => Boolean(source));
+  }, [catalog.sources, topic.sourceIds]);
   const hasSourceRegistry = topicSources.length > 0;
   const renderedMarkdown = useMemo(
     () => hasSourceRegistry ? stripSourceSections(markdown) : markdown,
@@ -134,123 +247,41 @@ export default function TopicLearningPage({
     [renderedMarkdown],
   );
 
-  const secondaryItems: SubnavItem[] = [
-    ...topics.map((topic): SubnavItem => ({
-      id: topic.id,
-      label: language === "uk" ? topic.labelUk : topic.label,
-      status: topic.status === "under-construction" ? "under-construction" : undefined,
-    })),
-    ...supplements.map((supplement): SubnavItem => ({
-      id: supplement.id,
-      label: language === "uk" ? supplement.labelUk : supplement.label,
-    })),
-  ];
-
-  const selectTopic = (topicId: string) => {
-    if (!topics.some((topic) => topic.id === topicId) && !supplements.some((supplement) => supplement.id === topicId)) return;
-    router.push(contentHref(pathname, searchParams.toString(), { topic: topicId }), { scroll: false });
-    setMobileNav(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const openSection = (section: SiteSection) => {
-    window.location.assign(sectionNavigationHref(section, mode));
-  };
-
-  const pageTitle = language === "uk" ? catalog.titleUk : catalog.title;
-  const chapterNumber = topics.findIndex((topic) => topic.id === activeTopic.id) + 1;
-  const href = sectionNavigationHref(activeSection, mode);
-
   return (
-    <main className="kb-shell">
-      <SiteSidebar
-        activeSection={activeSection}
-        activeSubsection={activeSupplement?.id ?? activeTopic.id}
-        mobileOpen={mobileNav}
-        mode={mode}
-        onSelect={openSection}
-        onSelectSubsection={selectTopic}
-        personalHref={href}
-        publicHref={href}
-        secondaryItems={secondaryItems}
-        secondaryTitle={secondaryTitle}
+    <>
+      <LearningHero
+        eyebrow={`${eyebrow} · ${uk ? "Розділ" : "Chapter"} ${String(chapterNumber).padStart(2, "0")} / ${String(chapterCount).padStart(2, "0")}`}
+        title={uk ? catalog.titleUk : catalog.title}
       />
 
-      <section className="kb-main">
-        <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
+      <div className={styles.layout}>
+        <div className={styles.document}>
+          <article className={styles.article}>
+            <MarkdownDocument markdown={renderedMarkdown}/>
+          </article>
 
-        <div className={`kb-content ${styles.page}`}>
-          {activeSupplement ? (
-            <>
-              <LearningHero eyebrow={secondaryTitle} title={language === "uk" ? activeSupplement.labelUk : activeSupplement.label}/>
-              <div className={styles.layout}>
-                <div className={styles.document}>
-                  <article className={styles.article}>{activeSupplement.content(language)}</article>
-                </div>
-                <LearningRail
-                  headings={[...activeSupplement.headings]}
-                  language={language}
-                  languages={["en", "uk"]}
-                  onLanguageChange={setLanguage}
-                  showSourceRegistry={false}
-                />
-              </div>
-            </>
-          ) : activeTopic.status === "under-construction" ? (
-            <>
-              <LearningHero
-                eyebrow={`${secondaryTitle} · ${language === "uk" ? "У розробці" : "Under construction"}`}
-                title={localizedLabel}
-              />
-              <section className="kb-under-construction-page">
-                <span className="kb-construction-badge">{language === "uk" ? "У розробці" : "Under construction"}</span>
-                <p>{language === "uk"
-                  ? "Цей розділ ще не опублікований."
-                  : "This chapter has not been published yet."}</p>
-              </section>
-              <LearningRail headings={[]} language={language} languages={["en", "uk"]} onLanguageChange={setLanguage}/>
-            </>
-          ) : (
-            <>
-              <LearningHero
-                eyebrow={`${secondaryTitle} · ${language === "uk" ? "Розділ" : "Chapter"} ${String(chapterNumber).padStart(2, "0")} / ${String(topics.length).padStart(2, "0")}`}
-                title={pageTitle}
-              />
-
-              <div className={styles.layout}>
-                <div className={styles.document}>
-                  <article className={styles.article}>
-                    <MarkdownDocument markdown={renderedMarkdown}/>
-                  </article>
-
-                  {hasSourceRegistry && (
-                    <LearningSourceRegistry
-                      language={language}
-                      sources={topicSources.map((source) => ({
-                        id: source.id,
-                        meta: (source.kind ?? "reference").replaceAll("-", " "),
-                        publisher: source.publisher,
-                        role: source.role,
-                        title: source.title,
-                        url: source.url,
-                      }))}
-                      statusLabel={chapterSourcesLabel(topicSources.length, language)}
-                    />
-                  )}
-                </div>
-                <LearningRail
-                  headings={headings}
-                  language={language}
-                  languages={["en", "uk"]}
-                  onLanguageChange={setLanguage}
-                />
-              </div>
-            </>
+          {hasSourceRegistry && (
+            <LearningSourceRegistry
+              language={language}
+              sources={topicSources.map((source) => ({
+                id: source.id,
+                meta: (source.kind ?? "reference").replaceAll("-", " "),
+                publisher: source.publisher,
+                role: source.role,
+                title: source.title,
+                url: source.url,
+              }))}
+              statusLabel={chapterSourcesLabel(topicSources.length, language)}
+            />
           )}
         </div>
-      </section>
-
-      {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
-    </main>
+        <LearningRail
+          headings={headings}
+          language={language}
+          languages={["en", "uk"]}
+          onLanguageChange={onLanguageChange}
+        />
+      </div>
+    </>
   );
 }
