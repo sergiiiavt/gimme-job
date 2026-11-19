@@ -24,5 +24,5 @@ test("Programming quick reference does not replace the switcher after hydration"
   const route = await readFile(projectFile("app/reference/[section]/page.tsx"), "utf8");
 
   assert.doesNotMatch(route, /ProgrammingReferenceTrackOverlay/);
-  assert.match(route, /return <QuickReferencePage referenceId=\{section\}\/>;/);
+  assert.match(route, /return <QuickReferencePage [^>]*\breferenceId=\{section\}[^>]*\/>;/);
 });

@@ -464,7 +464,8 @@ async function documentsForKinds(env: RagEnv, kinds: RagKind[]): Promise<RagDocu
   return documents;
 }
 
-function sourcePath(document: RagDocument): string {
+/** The canonical link a retrieval result opens. */
+export function ragSourcePath(document: RagDocument): string {
   const route = clean(document.metadata.route, 1_000);
   if (!route.startsWith("/") || route.startsWith("//")) return "/";
   if (document.kind !== "learning") return route;
@@ -487,7 +488,7 @@ function presentDocument(document: RagDocument, score: number, metadata: Record<
     title: document.title,
     text: document.text.slice(0, SEARCH_TEXT_LIMIT),
     score,
-    sourcePath: sourcePath(document),
+    sourcePath: ragSourcePath(document),
     route: route.startsWith("/") && !route.startsWith("//") ? route : null,
     metadata,
   };

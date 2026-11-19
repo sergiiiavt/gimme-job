@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import automationCurriculum from "@/content/automation-learning/catalog";
 import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
@@ -17,6 +17,7 @@ import sqlPracticalTasks from "@/content/data-learning/sql-practical-tasks.json"
 import qaQuickReference from "@/content/qa-fundamentals/quick-reference.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
+import { referenceCardForTopic } from "./quick-reference-deep-link";
 import { navigationGroups, SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./quick-reference-page.module.css";
 
@@ -24,6 +25,9 @@ type ReferenceRow = { term: string; detail: string; meaning?: string };
 type ReferenceCode = { label: string; code: string };
 type ReferenceCard = {
   id: string;
+  /** The card's id in its source catalog, which canonical learning links use as `topic`. */
+  sourceId?: string;
+  track?: string;
   title: string;
   scope?: string;
   tags?: string[];
@@ -245,6 +249,8 @@ function pythonCardMeta(cardId: string) {
 const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
   const primaryCard: ReferenceCard = {
     id: `python-${card.id}`,
+    sourceId: card.id,
+    track: "python",
     languages: ["Python"],
     title: card.title,
     tags: card.tags,
@@ -258,6 +264,8 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
     .filter((theoryCard) => theoryCard.after === card.id)
     .map((theoryCard): ReferenceCard => ({
       id: `python-${theoryCard.id}`,
+      sourceId: theoryCard.id,
+      track: "python",
       languages: ["Python"],
       title: theoryCard.title,
       tags: theoryCard.tags,
@@ -272,6 +280,8 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
 
 const interviewPythonReferenceCards: ReferenceCard[] = pythonInterviewReferenceCatalog.cards.map((card) => ({
   id: `python-${card.id}`,
+  sourceId: card.id,
+  track: "python",
   languages: ["Python"],
   title: card.title,
   tags: card.tags,
@@ -291,9 +301,9 @@ const pythonReferenceCards: ReferenceCard[] = [...basePythonReferenceCards, ...i
 });
 
 const programmingReferenceCards: ReferenceCard[] = [
-  ...programmingReferenceCatalog.general.map((card) => ({ ...card, id: `general-${card.id}`, languages: ["General"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+  ...programmingReferenceCatalog.general.map((card) => ({ ...card, id: `general-${card.id}`, sourceId: card.id, languages: ["General"], tags: card.topics, rows: card.entries, moreRows: card.more })),
   ...pythonReferenceCards,
-  ...programmingReferenceCatalog.csharp.map((card) => ({ ...card, id: `csharp-${card.id}`, languages: ["C#"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+  ...programmingReferenceCatalog.csharp.map((card) => ({ ...card, id: `csharp-${card.id}`, sourceId: card.id, track: "csharp", languages: ["C#"], tags: card.topics, rows: card.entries, moreRows: card.more })),
 ];
 
 /** General concepts are portable across languages, like Portable SQL across database dialects. */
@@ -303,6 +313,7 @@ function matchesProgrammingLanguage(card: ReferenceCard, language: string) {
 
 const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) => ({
   id: `sql-${card.id}`,
+  sourceId: card.id,
   title: card.title,
   topics: card.topics,
   dialects: card.dialects,
@@ -481,14 +492,25 @@ function ReferenceRows({ cardId, rows, className = "" }: { cardId: string; rows:
   );
 }
 
-export default function QuickReferencePage({ referenceId }: { referenceId: string }) {
+type QuickReferencePageProps = Readonly<{
+  referenceId: string;
+  /** Opens one card: its catalog id or rendered id, as canonical learning links carry it. */
+  topic?: string;
+  track?: string;
+}>;
+
+export default function QuickReferencePage({ referenceId, topic, track }: QuickReferencePageProps) {
   const learningGroup = navigationGroups.find((group) => group.id === "learning");
   const activeItem = learningGroup?.items.find((item) => item.id === referenceId);
   const cards = referenceCards(referenceId);
+  const targetCard = referenceCardForTopic(cards, topic, track);
+  const targetCardId = targetCard?.id;
+  const topbarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState("All");
   // Preserve the previously published Python-first reference, while allowing other languages explicitly.
-  const [dialect, setDialect] = useState(referenceId === "programming" ? "Python" : "All");
+  // A linked card opens with the language that shows it.
+  const [dialect, setDialect] = useState(referenceId === "programming" ? targetCard?.languages?.[0] ?? "Python" : "All");
   const hasVariantFilter = referenceId === "programming" || referenceId === "data";
   const dialects = referenceId === "data"
     ? sqlReferenceCatalog.dialectFilters
@@ -505,7 +527,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
     if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
     return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
   }, [cards, referenceId, dialect]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set());
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set(targetCardId ? [targetCardId] : []));
   const [mobileNav, setMobileNav] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCards = cards.filter((card) => {
@@ -515,6 +537,17 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
       : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
     return scopeMatches && dialectMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
   });
+
+  useEffect(() => {
+    if (!targetCardId) return;
+    const card = document.getElementById(targetCardId);
+    if (!card) return;
+    // Land below the sticky filter bar, whose offset and height depend on the viewport.
+    const topbar = topbarRef.current;
+    const topbarBottom = topbar ? (Number.parseFloat(getComputedStyle(topbar).top) || 0) + topbar.offsetHeight : 0;
+    card.style.scrollMarginTop = `${topbarBottom + 8}px`;
+    card.scrollIntoView({ block: "start" });
+  }, [targetCardId]);
 
   if (!activeItem || !supportedReferenceIds.has(referenceId)) {
     return <main className="kb-content"><div className="kb-empty"><strong>Quick reference not published</strong><span>This reference is limited to the learning paths that already use the document-style curriculum.</span></div></main>;
@@ -560,7 +593,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <div className={styles.topbar} aria-label="Quick reference filters">
+          <div className={styles.topbar} aria-label="Quick reference filters" ref={topbarRef}>
             <div className={styles.filterGroups} style={hasVariantFilter ? { flexDirection: "column", alignItems: "stretch", gap: 4 } : undefined}>
               <div className={styles.filterGroup}>
                 {hasVariantFilter ? <span className={styles.filterLabel}>Topic</span> : null}
@@ -589,8 +622,14 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
               const expanded = expandedCards.has(card.id);
               const showMoreRows = expanded || Boolean(normalizedQuery);
               const cardNumber = referenceId === "programming" || referenceId === "data" ? cards.findIndex((candidate) => candidate.id === card.id) + 1 : null;
+              const targeted = card.id === targetCardId;
               return (
-                <article className={`${styles.card}${hasContent ? "" : ` ${styles.placeholder}`}${expanded ? ` ${styles.expandedCard}` : ""}`} key={card.id}>
+                <article
+                  className={`${styles.card}${hasContent ? "" : ` ${styles.placeholder}`}${expanded ? ` ${styles.expandedCard}` : ""}${targeted ? ` ${styles.targetCard}` : ""}`}
+                  data-deep-link-target={targeted ? "true" : undefined}
+                  id={card.id}
+                  key={card.id}
+                >
                   <header className={styles.cardHeader}>
                     <div className={styles.cardTitle}>
                       {cardNumber ? <span className={styles.cardIndex}>{cardNumber}</span> : null}
