@@ -96,6 +96,17 @@ test("QA fundamentals deep links open the chapter page, sections included", asyn
   assert.ok(hit, "a QA fundamentals section is retrievable with a deep link to its chapter");
 });
 
+test("SQL learning path modules are retrievable as sections of their SQL-track chapter", async () => {
+  const sql = staticRagDocuments().filter((document) => document.kind === "learning" && document.metadata.catalog === "sql");
+  assert.ok(sql.some((document) => typeof document.metadata.section === "string"), "SQL chapters split into sections");
+  assert.ok(sql.every((document) => document.metadata.route === "/learn/data" && document.metadata.track === "sql"));
+
+  const result = await searchRagDocuments(env as never, "ROW_NUMBER RANK DENSE_RANK window functions", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath.startsWith("/learn/data?topic=window-functions&section="));
+  assert.ok(hit, "a SQL path section is retrievable with a deep link to its chapter");
+  assert.equal(new URL(hit.sourcePath, "https://gimme-job.com").searchParams.get("track"), "sql");
+});
+
 test("learning deep links open the same topic page search engines index", () => {
   const pages = new Map(learningTopicPages().map((page) => [`${page.route}\n${page.topic}`, page]));
   let compared = 0;
