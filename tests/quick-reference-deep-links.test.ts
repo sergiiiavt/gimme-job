@@ -44,9 +44,9 @@ async function render(path: string): Promise<string> {
   return response.text();
 }
 
+// The text React rendered for a heading with a single text child, so it holds no markup.
 function decodeHtml(value: string): string {
   return value
-    .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/&quot;/g, "\"")
     .replace(/&#x27;|&#39;/g, "'")
     .replace(/&lt;/g, "<")

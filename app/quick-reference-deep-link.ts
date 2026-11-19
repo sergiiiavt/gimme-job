@@ -1,23 +1,11 @@
-/**
- * Quick-reference cards are entries inside a `/reference/<slug>` page, not pages of their own.
- * A canonical learning link `/reference/<slug>?topic=<id>[&track=<id>]` opens one of them: `topic`
- * is the card's catalog id (what retrieval links carry) or its rendered element id, and `track`
- * picks between cards that share a catalog id in different tracks.
- */
-export type DeepLinkableReferenceCard = Readonly<{
-  /** The rendered element id, unique on the page. */
-  id: string;
-  /** The id of the card in its source catalog. */
-  sourceId?: string;
-  /** The learning track the card belongs to, when the page has tracks. */
-  track?: string;
-}>;
-
-export function referenceCardForTopic<Card extends DeepLinkableReferenceCard>(
+export function referenceCardForTopic<Card extends Readonly<{ id: string; sourceId?: string; track?: string }>>(
   cards: readonly Card[],
   topic: string | null | undefined,
   track?: string | null,
 ): Card | undefined {
+  // A canonical learning link `/reference/<slug>?topic=<id>[&track=<id>]` opens one card of the page:
+  // `topic` is the card's catalog id (`sourceId`, what retrieval links carry) or its rendered element
+  // id (`id`, unique on the page), and `track` picks between cards sharing a catalog id across tracks.
   const wanted = topic?.trim();
   if (!wanted) return undefined;
   const rendered = cards.find((card) => card.id === wanted);

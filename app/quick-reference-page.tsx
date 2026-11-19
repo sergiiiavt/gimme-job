@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import automationCurriculum from "@/content/automation-learning/catalog";
 import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
@@ -499,6 +499,67 @@ type QuickReferencePageProps = Readonly<{
   track?: string;
 }>;
 
+/** The language or dialect a page opens with. */
+function initialDialect(referenceId: string, targetCard: ReferenceCard | undefined) {
+  if (referenceId !== "programming") return "All";
+  // Preserve the previously published Python-first reference, while allowing other languages explicitly.
+  // A linked card opens with the language that shows it.
+  return targetCard?.languages?.[0] ?? "Python";
+}
+
+function variantDialects(referenceId: string) {
+  if (referenceId === "data") return sqlReferenceCatalog.dialectFilters;
+  return referenceId === "programming" ? ["All", "General", "Python", "C#"] : ["All"];
+}
+
+function referenceScopes(referenceId: string, cards: readonly ReferenceCard[], dialect: string) {
+  if (referenceId === "programming") {
+    const availableTopics = new Set(
+      programmingReferenceCards.filter((card) => matchesProgrammingLanguage(card, dialect)).flatMap((card) => card.tags ?? []),
+    );
+    const orderedTopics = [...new Set([...pythonReferenceFilters, ...programmingReferenceCatalog.topicFilters])];
+    return orderedTopics.filter((filter) => filter === "All" || availableTopics.has(filter));
+  }
+  if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
+  if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
+  return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
+}
+
+type CardFilters = Readonly<{ referenceId: string; scope: string; dialect: string; query: string }>;
+
+function cardMatchesFilters(card: ReferenceCard, { referenceId, scope, dialect, query }: CardFilters) {
+  const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
+  const dialectMatches = referenceId === "programming"
+    ? matchesProgrammingLanguage(card, dialect)
+    : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
+  return scopeMatches && dialectMatches && (!query || searchableCardText(card).includes(query));
+}
+
+/** The learning track a reference page's topic links open. */
+function referenceTrack(referenceId: string, dialect: string) {
+  if (referenceId === "programming") return dialect === "C#" ? "csharp" : "python";
+  if (referenceId === "automation") return "framework";
+  return referenceId === "data" ? "sql" : undefined;
+}
+
+function cardClassName(hasContent: boolean, expanded: boolean, targeted: boolean) {
+  return [styles.card, !hasContent && styles.placeholder, expanded && styles.expandedCard, targeted && styles.targetCard].filter(Boolean).join(" ");
+}
+
+/** Scrolls the card a `?topic=` link opened into view, below the sticky filter bar. */
+function useScrollToCard(cardId: string | undefined, topbarRef: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    if (!cardId) return;
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    // The bar's sticky offset and height depend on the viewport.
+    const topbar = topbarRef.current;
+    const topbarBottom = topbar ? (Number.parseFloat(getComputedStyle(topbar).top) || 0) + topbar.offsetHeight : 0;
+    card.style.scrollMarginTop = `${topbarBottom + 8}px`;
+    card.scrollIntoView({ block: "start" });
+  }, [cardId, topbarRef]);
+}
+
 export default function QuickReferencePage({ referenceId, topic, track }: QuickReferencePageProps) {
   const learningGroup = navigationGroups.find((group) => group.id === "learning");
   const activeItem = learningGroup?.items.find((item) => item.id === referenceId);
@@ -508,46 +569,16 @@ export default function QuickReferencePage({ referenceId, topic, track }: QuickR
   const topbarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState("All");
-  // Preserve the previously published Python-first reference, while allowing other languages explicitly.
-  // A linked card opens with the language that shows it.
-  const [dialect, setDialect] = useState(referenceId === "programming" ? targetCard?.languages?.[0] ?? "Python" : "All");
+  const [dialect, setDialect] = useState(() => initialDialect(referenceId, targetCard));
   const hasVariantFilter = referenceId === "programming" || referenceId === "data";
-  const dialects = referenceId === "data"
-    ? sqlReferenceCatalog.dialectFilters
-    : referenceId === "programming" ? ["All", "General", "Python", "C#"] : ["All"];
-  const scopes = useMemo(() => {
-    if (referenceId === "programming") {
-      const availableTopics = new Set(
-        programmingReferenceCards.filter((card) => matchesProgrammingLanguage(card, dialect)).flatMap((card) => card.tags ?? []),
-      );
-      const orderedTopics = [...new Set([...pythonReferenceFilters, ...programmingReferenceCatalog.topicFilters])];
-      return orderedTopics.filter((filter) => filter === "All" || availableTopics.has(filter));
-    }
-    if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
-    if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
-    return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
-  }, [cards, referenceId, dialect]);
+  const dialects = variantDialects(referenceId);
+  const scopes = useMemo(() => referenceScopes(referenceId, cards, dialect), [cards, referenceId, dialect]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set(targetCardId ? [targetCardId] : []));
   const [mobileNav, setMobileNav] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
-  const visibleCards = cards.filter((card) => {
-    const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
-    const dialectMatches = referenceId === "programming"
-      ? matchesProgrammingLanguage(card, dialect)
-      : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
-    return scopeMatches && dialectMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
-  });
+  const visibleCards = cards.filter((card) => cardMatchesFilters(card, { referenceId, scope, dialect, query: normalizedQuery }));
 
-  useEffect(() => {
-    if (!targetCardId) return;
-    const card = document.getElementById(targetCardId);
-    if (!card) return;
-    // Land below the sticky filter bar, whose offset and height depend on the viewport.
-    const topbar = topbarRef.current;
-    const topbarBottom = topbar ? (Number.parseFloat(getComputedStyle(topbar).top) || 0) + topbar.offsetHeight : 0;
-    card.style.scrollMarginTop = `${topbarBottom + 8}px`;
-    card.scrollIntoView({ block: "start" });
-  }, [targetCardId]);
+  useScrollToCard(targetCardId, topbarRef);
 
   if (!activeItem || !supportedReferenceIds.has(referenceId)) {
     return <main className="kb-content"><div className="kb-empty"><strong>Quick reference not published</strong><span>This reference is limited to the learning paths that already use the document-style curriculum.</span></div></main>;
@@ -558,7 +589,7 @@ export default function QuickReferencePage({ referenceId, topic, track }: QuickR
   const activeExternalId = external ? activeItem.id as ExternalNavigationId : undefined;
   const secondaryItems = learningSubnav(referenceId, dialect);
   const secondarySwitcher = learningSwitcher(referenceId, dialect);
-  const activeTrack = referenceId === "programming" ? (dialect === "C#" ? "csharp" : "python") : referenceId === "automation" ? "framework" : referenceId === "data" ? "sql" : undefined;
+  const activeTrack = referenceTrack(referenceId, dialect);
 
   const selectLearningTopic = (topicId: string) => {
     window.location.assign(regularLearningHref(referenceId, topicId, activeTrack));
@@ -625,7 +656,7 @@ export default function QuickReferencePage({ referenceId, topic, track }: QuickR
               const targeted = card.id === targetCardId;
               return (
                 <article
-                  className={`${styles.card}${hasContent ? "" : ` ${styles.placeholder}`}${expanded ? ` ${styles.expandedCard}` : ""}${targeted ? ` ${styles.targetCard}` : ""}`}
+                  className={cardClassName(hasContent, expanded, targeted)}
                   data-deep-link-target={targeted ? "true" : undefined}
                   id={card.id}
                   key={card.id}
