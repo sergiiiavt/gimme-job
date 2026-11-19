@@ -5,7 +5,7 @@ import { register } from "tsx/esm/api";
 
 register();
 
-const { agenticVideos } = await import("../app/agentic-videos.ts");
+const { agenticVideoHeadings, agenticVideos } = await import("../app/agentic-videos.ts");
 const {
   isLearningVideoRateSupported,
   LEARNING_VIDEO_PLAYBACK_RATES,
@@ -13,13 +13,6 @@ const {
 } = await import("../app/learning-video-policy.ts");
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-
-test("agentic route uses the dedicated learning page", async () => {
-  const route = await read("app/learn/agentic/page.tsx");
-
-  assert.match(route, /import AgenticLearningPage from/);
-  assert.match(route, /return <AgenticLearningPage\/>/);
-});
 
 test("agentic video list preserves the four existing videos and their titles", () => {
   assert.deepEqual(agenticVideos.map(({ videoId }) => videoId), [
@@ -51,51 +44,23 @@ test("video table-of-contents labels are concise and independent from full video
   assert.ok(agenticVideos.every(({ title, tocTitle }) => title !== tocTitle && tocTitle.length <= 24));
 });
 
-test("agentic learning keeps a single Learning videos navigation entry alongside planned chapters", async () => {
-  const { agenticPlannedTopics } = await import("../app/agentic-videos.ts");
-  const page = await read("app/agentic-learning-page.tsx");
-
-  assert.deepEqual(agenticPlannedTopics.map(({ id }) => id), [
-    "tools-and-actions",
-    "state-and-memory",
-    "approval-workflows",
-    "agent-evaluation",
-    "mcp-experiments",
-    "pet-projects",
-  ]);
-  assert.match(page, /id: "learning-videos", label: "Learning videos"/);
-  assert.match(page, /status: "under-construction" as const/);
-  assert.match(page, /id="learning-videos"/);
-  assert.match(page, /id=\{item\.id\}/);
-  assert.match(page, /text\.underConstruction/);
-  assert.doesNotMatch(page, /agenticVideos\.map\(\(\{ id, title \}\) => \(\{ id, label: title \}\)\)/);
+test("the video page table of contents lists every video by its short label", () => {
+  assert.deepEqual(agenticVideoHeadings, agenticVideos.map(({ id, tocTitle }) => ({ id, text: tocTitle })));
 });
 
-test("right-hand table of contents contains individual video titles", async () => {
-  const page = await read("app/agentic-learning-page.tsx");
-
-  assert.match(page, /videoHeadings = agenticVideos\.map\(\(\{ id, tocTitle \}\) => \(\{ id, text: tocTitle \}\)\)/);
-  assert.match(page, /<LearningRail headings=\{videoHeadings\}/);
-  assert.match(page, /<h2 className=\{styles\.videoTitle\} id=\{id\}>\{title\}<\/h2>/);
-  assert.match(page, /showTitle=\{false\}/);
-  assert.match(page, /<LearningVideo[\s\S]*?videoId=\{videoId\}/);
-  assert.doesNotMatch(page, /codeIntro|coworkIntro|promptingIntro|patternsIntro|practical start|Practitioner Start/);
+test("the learning video player can hide its own title when the page shows it", async () => {
   const player = await read("app/learning-video.tsx");
   assert.match(player, /showTitle = true/);
   assert.match(player, /showTitle && <strong>\{title\}<\/strong>/);
 });
 
-
-test("agentic video table of contents wraps full video names and omits absent source registry", async () => {
-  const [page, rail, css] = await Promise.all([
-    read("app/agentic-learning-page.tsx"),
+test("learning table of contents wraps full video names and can omit the source registry", async () => {
+  const [rail, css] = await Promise.all([
     read("app/learning-document-ui.tsx"),
     read("app/qa-fundamentals-page.module.css"),
   ]);
 
-  // Videos belong to the right-side TOC, whereas the page has no source registry element.
-  assert.match(page, /<LearningRail[^>]*showSourceRegistry=\{false\}/);
-  assert.doesNotMatch(page, /id="source-registry"/);
+  // A page without sources, such as the video page, can leave the source registry out of its TOC.
   assert.match(rail, /showSourceRegistry = true/);
   assert.match(rail, /showSourceRegistry && \(/);
   assert.match(rail, /\.\.\.\(showSourceRegistry \? \["source-registry"\] : \[\]\)/);

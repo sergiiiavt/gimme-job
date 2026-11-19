@@ -1,3 +1,4 @@
+import agenticCatalog from "./agentic-learning/catalog";
 import apiIntegrationCatalog from "./api-integration/catalog";
 import automationCurriculum from "./automation-learning/catalog";
 import { automationTrackAliases, automationTrackForModule } from "./automation-learning/tracks";
@@ -63,6 +64,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "networking", route: "/learn/networking", value: networkingCatalog },
   { key: "embedded-iot", route: "/learn/embedded", value: embeddedIotCatalog },
   { key: "llm-testing", route: "/learn/llm", value: llmTestingCatalog },
+  { key: "agentic", route: "/learn/agentic", value: agenticCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
 

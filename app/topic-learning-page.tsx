@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { contentHref } from "./content-deep-links";
-import { LearningHero, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
+import { LearningHero, LearningRail, LearningSourceRegistry, type LearningLanguage, type LearningTocHeading } from "./learning-document-ui";
 import { sectionNavigationHref } from "./navigation-paths";
 import { chapterSourcesLabel } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
@@ -41,12 +41,25 @@ type TopicLearningCatalog = Readonly<{
   sources?: readonly TopicLearningSource[];
 }>;
 
+/**
+ * Page content listed after a catalog's chapters, such as a video list. It opens like a topic
+ * (`?topic=<id>`) but is not part of the catalog, so retrieval and topic pages never see it.
+ */
+export type TopicLearningSupplement = Readonly<{
+  id: string;
+  label: string;
+  labelUk: string;
+  headings: readonly LearningTocHeading[];
+  content: (language: LearningLanguage) => ReactNode;
+}>;
+
 type TopicLearningPageProps = Readonly<{
   activeSection: SiteSection;
   catalog: TopicLearningCatalog;
   defaultTopicId: string;
   mode: SiteMode;
   secondaryTitle: string;
+  supplements?: readonly TopicLearningSupplement[];
 }>;
 
 const sourceSectionIds = new Set(["sources", "references", "джерела"]);
@@ -82,6 +95,7 @@ export default function TopicLearningPage({
   defaultTopicId,
   mode,
   secondaryTitle,
+  supplements = [],
 }: TopicLearningPageProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -91,6 +105,7 @@ export default function TopicLearningPage({
 
   const topics = catalog.topics;
   const requestedTopic = searchParams.get("topic");
+  const activeSupplement = supplements.find((supplement) => supplement.id === requestedTopic);
   const activeTopicId = requestedTopic && topics.some((topic) => topic.id === requestedTopic)
     ? requestedTopic
     : defaultTopicId;
@@ -119,14 +134,20 @@ export default function TopicLearningPage({
     [renderedMarkdown],
   );
 
-  const secondaryItems: SubnavItem[] = topics.map((topic) => ({
-    id: topic.id,
-    label: language === "uk" ? topic.labelUk : topic.label,
-    status: topic.status === "under-construction" ? "under-construction" : undefined,
-  }));
+  const secondaryItems: SubnavItem[] = [
+    ...topics.map((topic): SubnavItem => ({
+      id: topic.id,
+      label: language === "uk" ? topic.labelUk : topic.label,
+      status: topic.status === "under-construction" ? "under-construction" : undefined,
+    })),
+    ...supplements.map((supplement): SubnavItem => ({
+      id: supplement.id,
+      label: language === "uk" ? supplement.labelUk : supplement.label,
+    })),
+  ];
 
   const selectTopic = (topicId: string) => {
-    if (!topics.some((topic) => topic.id === topicId)) return;
+    if (!topics.some((topic) => topic.id === topicId) && !supplements.some((supplement) => supplement.id === topicId)) return;
     router.push(contentHref(pathname, searchParams.toString(), { topic: topicId }), { scroll: false });
     setMobileNav(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -144,7 +165,7 @@ export default function TopicLearningPage({
     <main className="kb-shell">
       <SiteSidebar
         activeSection={activeSection}
-        activeSubsection={activeTopic.id}
+        activeSubsection={activeSupplement?.id ?? activeTopic.id}
         mobileOpen={mobileNav}
         mode={mode}
         onSelect={openSection}
@@ -159,7 +180,23 @@ export default function TopicLearningPage({
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
 
         <div className={`kb-content ${styles.page}`}>
-          {activeTopic.status === "under-construction" ? (
+          {activeSupplement ? (
+            <>
+              <LearningHero eyebrow={secondaryTitle} title={language === "uk" ? activeSupplement.labelUk : activeSupplement.label}/>
+              <div className={styles.layout}>
+                <div className={styles.document}>
+                  <article className={styles.article}>{activeSupplement.content(language)}</article>
+                </div>
+                <LearningRail
+                  headings={[...activeSupplement.headings]}
+                  language={language}
+                  languages={["en", "uk"]}
+                  onLanguageChange={setLanguage}
+                  showSourceRegistry={false}
+                />
+              </div>
+            </>
+          ) : activeTopic.status === "under-construction" ? (
             <>
               <LearningHero
                 eyebrow={`${secondaryTitle} · ${language === "uk" ? "У розробці" : "Under construction"}`}
