@@ -4,6 +4,7 @@ import { automationTrackAliases, automationTrackForModule } from "./automation-l
 import cloudDevopsCatalog from "./cloud-devops/catalog";
 import csharpCurriculum from "./csharp-learning/catalog";
 import dockerCatalog from "./docker-learning/catalog";
+import sqlCurriculum from "./data-learning/catalog";
 import sqlPracticalTasks from "./data-learning/sql-practical-tasks.json";
 import sqlQuickReference from "./data-learning/sql-quick-reference.json";
 import embeddedIotCatalog from "./embedded-iot/catalog";
@@ -55,6 +56,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "docker", route: "/learn/docker", value: dockerCatalog },
   { key: "metrics-estimation", route: "/learn/metrics-estimation", value: metricsEstimationCatalog },
   { key: "performance-testing", route: "/learn/performance", value: performanceTestingCatalog },
+  { key: "sql", route: "/learn/data", track: "sql", value: sqlCurriculum },
   { key: "sql-quick-reference", route: "/learn/data", value: sqlQuickReference },
   { key: "sql-practical-tasks", route: "/learn/data", value: sqlPracticalTasks },
   { key: "api-integration", route: "/learn/api", value: apiIntegrationCatalog },
