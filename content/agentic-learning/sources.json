@@ -196,5 +196,113 @@
     "url": "https://arxiv.org/abs/2302.12173",
     "role": "Instructions hidden in retrieved content or tool results that the model then follows.",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "anthropic-context-engineering",
+    "title": "Effective context engineering for AI agents",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+    "role": "Context as a finite resource, context rot, compaction, structured notes, sub-agents and just-in-time retrieval.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "liu-lost-middle",
+    "title": "Lost in the Middle: How Language Models Use Long Contexts",
+    "publisher": "Liu et al. — arXiv / TACL 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2307.03172",
+    "role": "Models use information at the start and end of a long context better than in the middle.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "lewis-rag",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "publisher": "Lewis et al. — arXiv / NeurIPS 2020",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2005.11401",
+    "role": "Introduces retrieval-augmented generation: generation conditioned on passages retrieved for each request.",
+    "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "owasp-excessive-agency",
+    "title": "LLM06:2025 Excessive Agency",
+    "publisher": "OWASP Gen AI Security Project",
+    "kind": "standard",
+    "url": "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/",
+    "role": "Excessive functionality, permissions and autonomy as root causes, with mitigations such as minimal tools, user-scoped permissions and human approval.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "willison-lethal-trifecta",
+    "title": "The lethal trifecta for AI agents: private data, untrusted content, and external communication",
+    "publisher": "Simon Willison",
+    "kind": "article",
+    "url": "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+    "role": "Why combining private data, untrusted content and an outbound channel in one agent enables data exfiltration.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "debenedetti-camel",
+    "title": "Defeating Prompt Injections by Design",
+    "publisher": "Debenedetti et al. — arXiv 2025",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2503.18813",
+    "role": "CaMeL: control flow from the trusted query, capability tracking and policy checks on tool calls.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "agents-md",
+    "title": "AGENTS.md",
+    "publisher": "AGENTS.md project (Agentic AI Foundation, Linux Foundation)",
+    "kind": "official-docs",
+    "url": "https://agents.md/",
+    "role": "The AGENTS.md convention: a README for coding agents, nested files and precedence.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "claude-code-memory",
+    "title": "How Claude remembers your project",
+    "publisher": "Anthropic — Claude Code docs",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/memory",
+    "role": "CLAUDE.md files, load order, and reading AGENTS.md when no CLAUDE.md exists; instructions are context, not enforcement.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "copilot-coding-agent",
+    "title": "GitHub Copilot coding agent",
+    "publisher": "GitHub Docs",
+    "kind": "official-docs",
+    "url": "https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent",
+    "role": "An asynchronous coding agent working in a sandbox and opening pull requests for review.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "metr-2025-study",
+    "title": "Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity",
+    "publisher": "METR",
+    "kind": "study",
+    "url": "https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/",
+    "role": "Randomized study: tasks took about 19% longer with AI allowed, while developers believed they were faster.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "metr-2026-update",
+    "title": "We are Changing our Developer Productivity Experiment Design",
+    "publisher": "METR",
+    "kind": "study",
+    "url": "https://metr.org/blog/2026-02-24-uplift-update/",
+    "role": "Follow-up with late-2025 agentic tools: weak evidence of speedup and the study-design problems behind it.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "jimenez-swe-bench",
+    "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+    "publisher": "Jimenez et al. — arXiv / ICLR 2024",
+    "kind": "paper",
+    "url": "https://arxiv.org/abs/2310.06770",
+    "role": "Coding agents judged by whether a repository's own tests pass after their change.",
+    "checkedAt": "2026-10-11"
   }
 ]

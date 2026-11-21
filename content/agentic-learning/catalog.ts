@@ -5,6 +5,12 @@ import toolDesign from "./02-tool-design.md?raw";
 import toolDesignUk from "./02-tool-design.uk.md?raw";
 import modelContextProtocol from "./03-model-context-protocol.md?raw";
 import modelContextProtocolUk from "./03-model-context-protocol.uk.md?raw";
+import stateMemoryRag from "./04-state-memory-rag.md?raw";
+import stateMemoryRagUk from "./04-state-memory-rag.uk.md?raw";
+import humanApproval from "./05-human-approval.md?raw";
+import humanApprovalUk from "./05-human-approval.uk.md?raw";
+import codingAgentsForQa from "./06-coding-agents-for-qa.md?raw";
+import codingAgentsForQaUk from "./06-coding-agents-for-qa.uk.md?raw";
 
 export type AgenticTopicStatus = "published" | "under-construction";
 
@@ -71,27 +77,27 @@ const topics: AgenticTopic[] = [
     description: "Hosts, clients and servers, tools, resources and prompts, JSON-RPC messages, stdio and Streamable HTTP, protocol revisions, authorization and trust, and the GimmeJob MCP endpoint as a case study.",
     descriptionUk: "Host, клієнт і сервер, tools, resources і prompts, повідомлення JSON-RPC, stdio і Streamable HTTP, ревізії протоколу, авторизація й довіра, а також MCP-ендпоінт GimmeJob як приклад.",
   }, modelContextProtocol, modelContextProtocolUk, ["mcp-spec", "mcp-changelog", "mcp-versioning", "mcp-transports", "mcp-tools", "mcp-authorization", "mcp-security", "mcp-inspector", "jsonrpc-spec", "rfc-9728", "rfc-8707", "owasp-llm-top10", "greshake-indirect-injection"]),
-  planned({
+  chapter({
     id: "state-memory-rag",
     label: "State, memory and RAG",
     labelUk: "Стан, пам'ять і RAG",
-    description: "Context windows, session state, durable memory, retrieval and the boundary between user data and agent data, with the GimmeJob Learning Path Advisor as a case study.",
-    descriptionUk: "Контекстне вікно, стан сесії, довга пам'ять, retrieval і межа між даними користувача та агента на прикладі Learning Path Advisor у GimmeJob.",
-  }),
-  planned({
+    description: "The context window as the model's only memory, four kinds of state, keeping long sessions in budget, retrieval as memory, long-term memory boundaries and the Learning Path Advisor as a case study.",
+    descriptionUk: "Контекстне вікно як єдина пам'ять моделі, чотири види стану, довгі сесії в межах бюджету, пошук як пам'ять, межі довгої пам'яті й Learning Path Advisor як приклад.",
+  }, stateMemoryRag, stateMemoryRagUk, ["anthropic-context-engineering", "liu-lost-middle", "lewis-rag", "anthropic-building-agents", "greshake-indirect-injection", "owasp-llm-top10"]),
+  chapter({
     id: "human-approval",
     label: "Human approval and action boundaries",
     labelUk: "Підтвердження людиною й межі дій",
-    description: "Approval gates before consequential actions, least privilege, dry runs, audit trails and prompt injection through tool data.",
-    descriptionUk: "Підтвердження перед важливими діями, мінімальні права, dry-run, журнал дій і prompt injection через дані інструментів.",
-  }),
-  planned({
+    description: "Excessive agency, classifying actions by impact, approval gates bound to exact arguments, least privilege, indirect prompt injection and the lethal trifecta, dry runs and kill switches.",
+    descriptionUk: "Надмірна автономність, класифікація дій за наслідками, підтвердження конкретних аргументів, мінімальні права, непряма prompt injection, lethal trifecta, dry-run і аварійні вимикачі.",
+  }, humanApproval, humanApprovalUk, ["owasp-excessive-agency", "willison-lethal-trifecta", "debenedetti-camel", "greshake-indirect-injection", "owasp-llm-top10", "mcp-tools"]),
+  chapter({
     id: "coding-agents-for-qa",
     label: "AI coding agents in QA work",
     labelUk: "AI coding agents у роботі QA",
-    description: "Writing and reviewing tests with a coding agent, triaging flaky tests, giving the agent project context and checking its result.",
-    descriptionUk: "Як писати й перевіряти тести з coding agent, розбирати нестабільні тести, давати агенту контекст проєкту й перевіряти результат.",
-  }),
+    description: "What coding agents are, AGENTS.md and project rules, QA tasks that fit, catching weakened tests in an agent's diff, how this site is built with agents and what productivity studies show.",
+    descriptionUk: "Що таке coding agents, AGENTS.md і правила проєкту, які задачі QA їм підходять, як помітити послаблені тести в diff агента, як цей сайт будується з агентами і що кажуть дослідження продуктивності.",
+  }, codingAgentsForQa, codingAgentsForQaUk, ["agents-md", "claude-code-memory", "copilot-coding-agent", "metr-2025-study", "metr-2026-update", "jimenez-swe-bench", "anthropic-context-engineering"]),
   planned({
     id: "agent-observability",
     label: "Evaluating and observing agents",
