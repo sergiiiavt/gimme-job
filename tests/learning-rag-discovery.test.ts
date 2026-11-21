@@ -107,6 +107,13 @@ test("SQL learning path modules are retrievable as sections of their SQL-track c
   assert.equal(new URL(hit.sourcePath, "https://gimme-job.com").searchParams.get("track"), "sql");
 });
 
+test("SQL quick-reference cards and tasks are retrieved as cards of the reference page", async () => {
+  const result = await searchRagDocuments(env as never, "SQL task: find customers without orders, entities with no related rows", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath === "/reference/data?topic=task-missing-related-rows");
+  assert.ok(hit, "the practical task links to its card on the SQL quick reference");
+  assert.equal(result.results.some((item) => item.sourcePath.startsWith("/learn/data?topic=task-")), false);
+});
+
 test("learning deep links open the same topic page search engines index", () => {
   const pages = new Map(learningTopicPages().map((page) => [`${page.route}\n${page.topic}`, page]));
   let compared = 0;
