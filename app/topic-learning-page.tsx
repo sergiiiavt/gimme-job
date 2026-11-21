@@ -7,7 +7,8 @@ import { LearningHero, LearningRail, LearningSourceRegistry, type LearningLangua
 import { sectionNavigationHref } from "./navigation-paths";
 import { chapterSourcesLabel } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
-import { SiteSidebar, type SiteSection, type SubnavItem } from "./site-navigation";
+import { SiteSidebar, type SiteSection } from "./site-navigation";
+import { localizedLabel, topicNavigationItems } from "./topic-learning-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
@@ -145,7 +146,7 @@ export default function TopicLearningPage({
         onSelectSubsection={selectTopic}
         personalHref={href}
         publicHref={href}
-        secondaryItems={navigationItems(topics, supplements, language)}
+        secondaryItems={topicNavigationItems(topics, supplements, language)}
         secondaryTitle={secondaryTitle}
       />
 
@@ -157,27 +158,6 @@ export default function TopicLearningPage({
       {mobileNav && <button className="kb-backdrop" onClick={() => setMobileNav(false)} aria-label="Close navigation"/>}
     </main>
   );
-}
-
-type Localized = Readonly<{ label: string; labelUk: string }>;
-
-function localizedLabel(item: Localized, language: LearningLanguage) {
-  return language === "uk" ? item.labelUk : item.label;
-}
-
-function navigationItems(
-  topics: readonly TopicLearningItem[],
-  supplements: readonly TopicLearningSupplement[],
-  language: LearningLanguage,
-): SubnavItem[] {
-  return [
-    ...topics.map((topic): SubnavItem => ({
-      id: topic.id,
-      label: localizedLabel(topic, language),
-      status: topic.status === "under-construction" ? "under-construction" : undefined,
-    })),
-    ...supplements.map((supplement): SubnavItem => ({ id: supplement.id, label: localizedLabel(supplement, language) })),
-  ];
 }
 
 type ViewProps = Readonly<{
