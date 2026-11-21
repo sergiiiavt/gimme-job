@@ -80,7 +80,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     relatedLinks: [
       { label: "Performance testing learning", href: "/learn/performance" },
       { label: "Testing tools", href: "/learn/testing-tools" },
-      { label: "Delivery & production metrics", href: "/learn/metrics-estimation?topic=delivery-production-metrics" },
+      { label: "Observability & SRE", href: "/learn/observability" },
     ],
   },
   {

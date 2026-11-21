@@ -1,0 +1,119 @@
+[
+  {
+    "id": "honeycomb-observability",
+    "title": "What Is Observability? Key Components and Best Practices",
+    "publisher": "Honeycomb (vendor article)",
+    "kind": "article",
+    "url": "https://www.honeycomb.io/what-is-observability",
+    "role": "Observability as the ability to ask new questions of a system without predicting them in advance, contrasted with threshold-based monitoring.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-signals",
+    "title": "Signals",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/",
+    "role": "The supported signals (traces, metrics, logs, baggage) and those still in development (events, profiles).",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-logs",
+    "title": "Logs",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/logs/",
+    "role": "Log record fields, structured versus semistructured logs, and correlation with traces through TraceId and SpanId.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-metrics",
+    "title": "Metrics",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/metrics/",
+    "role": "Counter, UpDownCounter, Gauge and Histogram instruments, and the default cardinality limit with an overflow series.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "google-sre-monitoring",
+    "title": "Monitoring Distributed Systems",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "role": "The four golden signals, symptoms versus causes, black-box versus white-box monitoring, and why averages hide slow requests.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "twelve-factor-logs",
+    "title": "XI. Logs",
+    "publisher": "The Twelve-Factor App (Adam Wiggins)",
+    "kind": "article",
+    "url": "https://12factor.net/logs",
+    "role": "Logs as time-ordered event streams written to stdout and routed by the environment.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "owasp-logging",
+    "title": "Logging Cheat Sheet",
+    "publisher": "OWASP Cheat Sheet Series",
+    "kind": "standard",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+    "role": "Which security events to log, data that must never be logged, log injection and why logging failures must not stop the application.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "cloudflare-workers-logs",
+    "title": "Workers Logs",
+    "publisher": "Cloudflare",
+    "kind": "official-docs",
+    "url": "https://developers.cloudflare.com/workers/observability/logs/workers-logs/",
+    "role": "Structured JSON logging, head-based sampling and retention limits of the platform GimmeJob runs on.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-metric-types",
+    "title": "Metric types",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/concepts/metric_types/",
+    "role": "Counter, gauge, histogram and summary definitions.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-histograms",
+    "title": "Histograms and summaries",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/practices/histograms/",
+    "role": "Quantiles estimated from histogram buckets, and why per-instance summary quantiles cannot be averaged.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-naming",
+    "title": "Metric and label naming",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/practices/naming/",
+    "role": "Base units, unit suffixes, _total for counters, and keeping unbounded values out of labels.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "usemethod",
+    "title": "The USE Method",
+    "publisher": "Brendan Gregg",
+    "kind": "article",
+    "url": "https://www.brendangregg.com/usemethod.html",
+    "role": "Utilization, saturation and errors for every resource.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "red-method",
+    "title": "The RED Method: How to Instrument Your Services",
+    "publisher": "Grafana Labs (method by Tom Wilkie)",
+    "kind": "article",
+    "url": "https://grafana.com/blog/2018/08/02/the-red-method-how-to-instrument-your-services/",
+    "role": "Rate, errors and duration for every service.",
+    "checkedAt": "2026-11-22"
+  }
+]
