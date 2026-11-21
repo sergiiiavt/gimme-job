@@ -9,7 +9,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     description: "Practical general QA interview questions and answers covering testing fundamentals, test design, defects, delivery, metrics, strategy, leadership, reliability, and cross-cutting quality engineering.",
     relatedLinks: [
       { label: "QA fundamentals", href: "/reference/qa-fundamentals" },
-      { label: "QA strategy & risk", href: "/learn/strategy" },
+      { label: "Risk & prioritization", href: "/learn/qa-fundamentals?topic=risk-coverage-prioritization" },
       { label: "Metrics & estimation", href: "/learn/metrics-estimation" },
     ],
   },
@@ -22,7 +22,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     title: "Windows & Linux Command Line Interview Questions",
     description: "Practical OS and command-line interview questions for QA and automation engineers covering Windows Command Prompt, PowerShell, Linux commands, files, logs, permissions, processes, services, networking, resource inspection, and troubleshooting.",
     relatedLinks: [
-      { label: "Linux for QA", href: "/learn/linux" },
+      { label: "Docker & containers", href: "/learn/docker" },
       { label: "Cloud & DevOps for QA", href: "/learn/cloud-devops" },
       { label: "Networking for QA", href: "/learn/networking" },
     ],
@@ -65,7 +65,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     description: "Practical web and API testing interview questions covering HTTP, REST, contracts, authentication, integrations, browser behaviour, service failures, and web-facing data flows.",
     relatedLinks: [
       { label: "API testing learning", href: "/learn/api" },
-      { label: "Security testing", href: "/learn/security" },
+      { label: "API authentication & authorization", href: "/learn/api?topic=identity-and-authorization" },
       { label: "Networking for QA", href: "/learn/networking" },
     ],
   },
@@ -80,7 +80,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     relatedLinks: [
       { label: "Performance testing learning", href: "/learn/performance" },
       { label: "Testing tools", href: "/learn/testing-tools" },
-      { label: "Observability & SRE", href: "/learn/observability" },
+      { label: "Delivery & production metrics", href: "/learn/metrics-estimation?topic=delivery-production-metrics" },
     ],
   },
   {
@@ -92,7 +92,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     title: "Mobile Testing Interview Questions & Answers",
     description: "Practical mobile testing interview questions and answers covering Android and iOS, devices, application lifecycle, permissions, constrained networks, releases, diagnostics, and automation concepts.",
     relatedLinks: [
-      { label: "Mobile testing learning", href: "/learn/mobile" },
+      { label: "Mobile test automation", href: "/learn/automation?topic=mobile-testing&track=automation" },
       { label: "Testing tools", href: "/learn/testing-tools" },
       { label: "Automation learning", href: "/learn/automation" },
     ],
@@ -122,7 +122,7 @@ export const INTERVIEW_DOMAIN_ROUTES = [
     relatedLinks: [
       { label: "LLM testing & AI learning", href: "/learn/llm" },
       { label: "AI agents & MCP", href: "/learn/agentic" },
-      { label: "Security testing", href: "/learn/security" },
+      { label: "LLM security & red teaming", href: "/learn/llm?topic=security-red-teaming" },
     ],
   },
 ] as const;
