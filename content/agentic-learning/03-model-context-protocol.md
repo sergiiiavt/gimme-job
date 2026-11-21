@@ -68,6 +68,7 @@ The result carries content for the model and, optionally, structured content for
   "jsonrpc": "2.0",
   "id": 7,
   "result": {
+    "resultType": "complete",
     "content": [{ "type": "text", "text": "{\"count\":1,\"jobs\":[{\"id\":\"job_123\",\"title\":\"QA Automation Engineer\"}]}" }],
     "structuredContent": { "count": 1, "jobs": [{ "id": "job_123", "title": "QA Automation Engineer" }] },
     "isError": false
@@ -158,7 +159,7 @@ The endpoint also shows how quickly MCP moves. It was written for the handshake-
 
 ## A minimal server in code
 
-The core of an MCP server is a dispatcher from JSON-RPC methods to handlers. This one runs in the page: it checks the protocol version of each request, lists one tool, runs it, and returns the three kinds of failure correctly. A complete 2026-07-28 server must also implement `server/discover`, whose exact result shape is defined in the specification's schema, and a real server would sit behind a stdio or HTTP transport.
+The core of an MCP server is a dispatcher from JSON-RPC methods to handlers. This one runs in the page: it checks the protocol version of each request, lists one tool, runs it, and returns the three kinds of failure correctly. A complete 2026-07-28 server must also implement `server/discover` and add `ttlMs` and `cacheScope` to list results, and a real server sits behind a stdio or HTTP transport; the [MCP lab](/learn/agentic?topic=agent-projects-lab) does both.
 
 ```python
 import json
@@ -179,7 +180,7 @@ def error(request_id, code, message, data=None):
     return {"jsonrpc": "2.0", "id": request_id, "error": body}
 
 def result(request_id, value):
-    return {"jsonrpc": "2.0", "id": request_id, "result": value}
+    return {"jsonrpc": "2.0", "id": request_id, "result": {"resultType": "complete", **value}}
 
 def call_tool(arguments):
     order_id = arguments.get("order_id")
@@ -197,7 +198,7 @@ def handle(message):
     meta = params.get("_meta", {})
     version = meta.get("io.modelcontextprotocol/protocolVersion")
     if version not in SUPPORTED_VERSIONS:
-        return error(request_id, -32022, "Unsupported protocol version", {"supported": SUPPORTED_VERSIONS})
+        return error(request_id, -32022, "Unsupported protocol version", {"supported": SUPPORTED_VERSIONS, "requested": version})
     method = message.get("method")
     if method == "tools/list":
         return result(request_id, {"tools": TOOLS})
