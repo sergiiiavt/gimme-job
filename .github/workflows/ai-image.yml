@@ -167,8 +167,21 @@ jobs:
           SSH=(ssh -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
           SCP=(scp -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
 
-          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            'install -d -m 700 /opt/gimmejob-n8n'
+          # Every deploy pulls a new :latest and leaves the previous image untagged. Remove those
+          # leftovers first, then refuse to upload into a nearly full disk with a clear reason
+          # instead of a bare scp "Failure" (the root filesystem filled up in November 2026).
+          "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" <<'REMOTE'
+          set -euo pipefail
+          install -d -m 700 /opt/gimmejob-n8n
+          docker image prune -f
+          available_kb="$(df --output=avail -k / | tail -n 1 | tr -d ' ')"
+          if (( available_kb < 2097152 )); then
+            echo "::error::Hetzner root filesystem has less than 2 GiB free after pruning untagged images."
+            df -h /
+            docker system df || true
+            exit 1
+          fi
+          REMOTE
 
           "${SCP[@]}" \
             ops/hetzner/docker-compose.yml \
@@ -186,6 +199,8 @@ jobs:
           docker compose --profile ai up -d gimmejob-ai caddy
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
           docker compose --profile ai ps
+          # The image this deploy replaced is untagged now; do not let it accumulate.
+          docker image prune -f
           REMOTE
 
       - name: Verify AI HTTPS and readiness
@@ -272,4 +287,4 @@ jobs:
         run: |
           SSH=(ssh -i "$HOME/.ssh/gimmejob-deploy" -o BatchMode=yes -o StrictHostKeyChecking=yes)
           "${SSH[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            'cd /opt/gimmejob-n8n && docker compose --profile ai logs --no-color --tail=160 gimmejob-ai' || true
+            'df -h / && cd /opt/gimmejob-n8n && docker compose --profile ai logs --no-color --tail=160 gimmejob-ai' || true
