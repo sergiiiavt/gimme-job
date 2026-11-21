@@ -197,7 +197,8 @@ jobs:
           chmod 644 docker-compose.yml Caddyfile
           docker compose --profile ai pull gimmejob-ai caddy
           docker compose --profile ai up -d gimmejob-ai caddy
-          docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+          # This script arrives on ssh's stdin; without </dev/null, exec would swallow the rest of it.
+          docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile </dev/null
           docker compose --profile ai ps
           # The image this deploy replaced is untagged now; do not let it accumulate.
           docker image prune -f
