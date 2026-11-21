@@ -22,8 +22,8 @@ const [
 
 type Topic = (typeof agenticCatalog.topics)[number];
 
-const publishedIds = ["how-agents-work", "tool-design", "model-context-protocol"];
-const plannedIds = ["state-memory-rag", "human-approval", "coding-agents-for-qa", "agent-observability", "agent-projects-lab"];
+const publishedIds = ["how-agents-work", "tool-design", "model-context-protocol", "state-memory-rag", "human-approval", "coding-agents-for-qa"];
+const plannedIds = ["agent-observability", "agent-projects-lab"];
 const published = agenticCatalog.topics.filter((topic: Topic) => topic.status === "published");
 
 function fencedBlocks(markdown: string, languages: readonly string[]) {
