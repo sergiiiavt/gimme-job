@@ -14,6 +14,7 @@ import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
 import llmTestingCatalog from "./llm-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
 import networkingCatalog from "./networking/catalog";
+import observabilityCatalog from "./observability-learning/catalog";
 import performanceTestingCatalog from "./performance-testing/catalog";
 import pythonCurriculum from "./python-learning/catalog";
 import pythonQuickReference from "./python-learning/quick-reference.json";
@@ -65,6 +66,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "embedded-iot", route: "/learn/embedded", value: embeddedIotCatalog },
   { key: "llm-testing", route: "/learn/llm", value: llmTestingCatalog },
   { key: "agentic", route: "/learn/agentic", value: agenticCatalog },
+  { key: "observability", route: "/learn/observability", value: observabilityCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
 
