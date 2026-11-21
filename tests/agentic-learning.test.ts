@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readdirSync } from "node:fs";
 import { register as registerLoader } from "node:module";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
@@ -22,8 +23,10 @@ const [
 
 type Topic = (typeof agenticCatalog.topics)[number];
 
-const publishedIds = ["how-agents-work", "tool-design", "model-context-protocol", "state-memory-rag", "human-approval", "coding-agents-for-qa"];
-const plannedIds = ["agent-observability", "agent-projects-lab"];
+const publishedIds = [
+  "how-agents-work", "tool-design", "model-context-protocol", "state-memory-rag",
+  "human-approval", "coding-agents-for-qa", "agent-observability", "agent-projects-lab",
+];
 const published = agenticCatalog.topics.filter((topic: Topic) => topic.status === "published");
 
 function fencedBlocks(markdown: string, languages: readonly string[]) {
@@ -41,7 +44,7 @@ function fencedBlocks(markdown: string, languages: readonly string[]) {
 }
 
 test("written chapters come first and reserved chapters stay placeholders", () => {
-  assert.deepEqual(agenticCatalog.topics.map((topic: Topic) => topic.id), [...publishedIds, ...plannedIds]);
+  assert.deepEqual(agenticCatalog.topics.map((topic: Topic) => topic.id), publishedIds);
   for (const topic of agenticCatalog.topics) {
     assert.ok(topic.label && topic.labelUk && topic.description && topic.descriptionUk, `${topic.id} needs bilingual labels and descriptions`);
   }
@@ -137,6 +140,20 @@ test("each written chapter is a topic page; placeholders and the video page keep
   const pages = learningTopicPages().filter((page) => page.route === "/learn/agentic");
   assert.deepEqual(pages.map((page) => page.path), publishedIds.map((id) => `/learn/agentic?topic=${id}`));
   assert.equal(learningTopicMetadata("/learn/agentic", { topic: "model-context-protocol" }).alternates?.canonical, "/learn/agentic?topic=model-context-protocol");
-  assert.deepEqual(learningTopicMetadata("/learn/agentic", { topic: plannedIds[0] }), {});
+  assert.deepEqual(learningTopicMetadata("/learn/agentic", { topic: "unknown-topic" }), {});
   assert.deepEqual(learningTopicMetadata("/learn/agentic", { topic: "learning-videos" }), {});
+});
+
+test("the lab chapter links a runnable example project that exists and has tests", () => {
+  const lab = published.find((topic: Topic) => topic.id === "agent-projects-lab");
+  assert.ok(lab);
+  const projectLink = /\]\(https:\/\/github\.com\/sergiiiavt\/gimme-job\/tree\/main\/(examples\/[\w-]+)\)/;
+  const link = lab.markdown.match(projectLink);
+  assert.ok(link, "the lab chapter must link its example project");
+  assert.ok(lab.markdownUk.includes(`(https://github.com/sergiiiavt/gimme-job/tree/main/${link[1]})`), "the Ukrainian chapter links the same project");
+  const folder = new URL(`../${link[1]}/`, import.meta.url);
+  assert.ok(existsSync(folder), `${link[1]} must exist`);
+  const files = readdirSync(folder);
+  assert.ok(files.includes("README.md"), `${link[1]} needs a README`);
+  assert.ok(files.some((name) => /^test_.+\.py$/.test(name)), `${link[1]} needs a test suite`);
 });

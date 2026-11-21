@@ -68,6 +68,7 @@ Host: AI-застосунок, у якому працює користувач (
   "jsonrpc": "2.0",
   "id": 7,
   "result": {
+    "resultType": "complete",
     "content": [{ "type": "text", "text": "{\"count\":1,\"jobs\":[{\"id\":\"job_123\",\"title\":\"QA Automation Engineer\"}]}" }],
     "structuredContent": { "count": 1, "jobs": [{ "id": "job_123", "title": "QA Automation Engineer" }] },
     "isError": false
@@ -158,7 +159,7 @@ MCP-обробник: розбирає JSON-RPC → tools/list або tools/call
 
 ## Мінімальний сервер у коді
 
-Ядро MCP-сервера — диспетчер, що зіставляє методи JSON-RPC з обробниками. Цей диспетчер запускається просто на сторінці: перевіряє версію протоколу в кожному запиті, повертає один інструмент, виконує його і правильно повертає три види збоїв. Повний сервер ревізії 2026-07-28 має також реалізувати `server/discover`, точну форму результату якого задає схема специфікації, а справжній сервер працював би за транспортом stdio або HTTP.
+Ядро MCP-сервера — диспетчер, що зіставляє методи JSON-RPC з обробниками. Цей диспетчер запускається просто на сторінці: перевіряє версію протоколу в кожному запиті, повертає один інструмент, виконує його і правильно повертає три види збоїв. Повний сервер ревізії 2026-07-28 має також реалізувати `server/discover` і додавати `ttlMs` і `cacheScope` до результатів списків, а справжній сервер працює за транспортом stdio або HTTP; [лабораторна MCP](/learn/agentic?topic=agent-projects-lab) робить і те, й інше.
 
 ```python
 import json
@@ -179,7 +180,7 @@ def error(request_id, code, message, data=None):
     return {"jsonrpc": "2.0", "id": request_id, "error": body}
 
 def result(request_id, value):
-    return {"jsonrpc": "2.0", "id": request_id, "result": value}
+    return {"jsonrpc": "2.0", "id": request_id, "result": {"resultType": "complete", **value}}
 
 def call_tool(arguments):
     order_id = arguments.get("order_id")
@@ -197,7 +198,7 @@ def handle(message):
     meta = params.get("_meta", {})
     version = meta.get("io.modelcontextprotocol/protocolVersion")
     if version not in SUPPORTED_VERSIONS:
-        return error(request_id, -32022, "Unsupported protocol version", {"supported": SUPPORTED_VERSIONS})
+        return error(request_id, -32022, "Unsupported protocol version", {"supported": SUPPORTED_VERSIONS, "requested": version})
     method = message.get("method")
     if method == "tools/list":
         return result(request_id, {"tools": TOOLS})

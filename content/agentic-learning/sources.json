@@ -304,5 +304,50 @@
     "url": "https://arxiv.org/abs/2310.06770",
     "role": "Coding agents judged by whether a repository's own tests pass after their change.",
     "checkedAt": "2026-10-11"
+  },
+  {
+    "id": "otel-genai-semconv",
+    "title": "OpenTelemetry GenAI Semantic Conventions",
+    "publisher": "OpenTelemetry",
+    "kind": "standard",
+    "url": "https://github.com/open-telemetry/semantic-conventions-genai",
+    "role": "Standard span names and attributes for model calls, tools, retrieval and agents, used by the tracer of the example project.",
+    "checkedAt": "2026-10-12"
+  },
+  {
+    "id": "langfuse-observability",
+    "title": "LLM observability and application tracing",
+    "publisher": "Langfuse",
+    "kind": "official-docs",
+    "url": "https://langfuse.com/docs/observability/overview",
+    "role": "Traces, nested observations and scores for LLM applications, as used by the Learning Path Advisor of this site.",
+    "checkedAt": "2026-10-12"
+  },
+  {
+    "id": "google-sre-monitoring",
+    "title": "Monitoring Distributed Systems",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "role": "The four golden signals, and why latency is watched in percentiles rather than averages.",
+    "checkedAt": "2026-10-12"
+  },
+  {
+    "id": "mcp-discover",
+    "title": "MCP specification: Discovery (server/discover)",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/discover",
+    "role": "The discovery request that replaces the initialization handshake: supported versions, capabilities, server info and caching fields.",
+    "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "mcp-stdio",
+    "title": "MCP specification: stdio transport",
+    "publisher": "Model Context Protocol",
+    "kind": "standard",
+    "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio",
+    "role": "Newline-delimited messages, stdout reserved for protocol messages, logs on stderr, and shutdown by closing stdin.",
+    "checkedAt": "2026-11-21"
   }
 ]

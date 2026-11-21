@@ -11,6 +11,10 @@ import humanApproval from "./05-human-approval.md?raw";
 import humanApprovalUk from "./05-human-approval.uk.md?raw";
 import codingAgentsForQa from "./06-coding-agents-for-qa.md?raw";
 import codingAgentsForQaUk from "./06-coding-agents-for-qa.uk.md?raw";
+import agentObservability from "./07-agent-observability.md?raw";
+import agentObservabilityUk from "./07-agent-observability.uk.md?raw";
+import agentProjectsLab from "./08-agent-projects-lab.md?raw";
+import agentProjectsLabUk from "./08-agent-projects-lab.uk.md?raw";
 
 export type AgenticTopicStatus = "published" | "under-construction";
 
@@ -44,15 +48,6 @@ const chapter = (fields: TopicFields, markdown: string, markdownUk: string, sour
   markdown,
   markdownUk,
   sourceIds,
-});
-
-/** A reserved chapter: listed in navigation, never retrieved or indexed until it is written. */
-const planned = (fields: TopicFields): AgenticTopic => ({
-  ...fields,
-  status: "under-construction",
-  markdown: `## Under construction\n\n${fields.description}`,
-  markdownUk: `## У розробці\n\n${fields.descriptionUk}`,
-  sourceIds: [],
 });
 
 const topics: AgenticTopic[] = [
@@ -98,20 +93,20 @@ const topics: AgenticTopic[] = [
     description: "What coding agents are, AGENTS.md and project rules, QA tasks that fit, catching weakened tests in an agent's diff, how this site is built with agents and what productivity studies show.",
     descriptionUk: "Що таке coding agents, AGENTS.md і правила проєкту, які задачі QA їм підходять, як помітити послаблені тести в diff агента, як цей сайт будується з агентами і що кажуть дослідження продуктивності.",
   }, codingAgentsForQa, codingAgentsForQaUk, ["agents-md", "claude-code-memory", "copilot-coding-agent", "metr-2025-study", "metr-2026-update", "jimenez-swe-bench", "anthropic-context-engineering"]),
-  planned({
+  chapter({
     id: "agent-observability",
     label: "Evaluating and observing agents",
     labelUk: "Оцінювання та спостережуваність агентів",
-    description: "Traces, cost and latency per task, and where to go next for outcome, trajectory and reliability testing.",
-    descriptionUk: "Трасування, вартість і затримка задачі та куди йти далі по тестування результату, траєкторії й надійності.",
-  }),
-  planned({
+    description: "What to record per agent task, task-level metrics such as cost per successful task and budget exhaustion, recording decisions, safe and cheap traces, and turning bad runs into evaluation cases.",
+    descriptionUk: "Що записувати для кожної задачі агента, метрики на рівні задачі на кшталт вартості успішної задачі й вичерпаних бюджетів, запис рішень, безпечне й недороге трасування і перетворення поганих запусків на випадки для оцінювання.",
+  }, agentObservability, agentObservabilityUk, ["otel-genai-semconv", "langfuse-observability", "google-sre-monitoring", "anthropic-building-agents", "anthropic-context-engineering"]),
+  chapter({
     id: "agent-projects-lab",
     label: "Projects and MCP lab",
     labelUk: "Проєкти й лабораторія MCP",
-    description: "Narrow, testable pet-project agents and a runnable lab that builds and tests a small MCP server.",
-    descriptionUk: "Невеликі агенти, які легко перевірити, і практична лабораторна: написати й протестувати маленький MCP-сервер.",
-  }),
+    description: "Choosing narrow agent projects for QA, a definition of done, and a runnable lab: an MCP server, client and triage agent on the 2026-07-28 revision of the protocol.",
+    descriptionUk: "Як обрати вузький агентний проєкт для QA, визначення «готово» і практична лабораторна: MCP-сервер, клієнт і агент для розбору збоїв за ревізією протоколу 2026-07-28.",
+  }, agentProjectsLab, agentProjectsLabUk, ["mcp-discover", "mcp-stdio", "mcp-versioning", "mcp-tools", "mcp-inspector", "anthropic-building-agents", "anthropic-writing-tools"]),
 ];
 
 export const agenticCatalog = {
