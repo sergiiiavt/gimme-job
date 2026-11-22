@@ -135,14 +135,14 @@ GimmeJob runs a private MCP server inside its Cloudflare Worker at `POST /mcp`. 
 
 ```diagram
 MCP client (the repository's TypeScript client in agent/src/mcp-client.ts)
-        ↓  POST /mcp, JSON-RPC body, service token in a request header
-Cloudflare Worker: check the service token, select the GimmeJob account in multi-user mode
+        ↓  POST /mcp: one JSON-RPC message with _meta, MCP-Protocol-Version / Mcp-Method / Mcp-Name headers, service token
+Cloudflare Worker route: check the service token, select the GimmeJob account in multi-user mode
         ↓
-MCP handler: parse JSON-RPC → tools/list or tools/call → validate arguments with strict schemas
+MCP handler: check Origin, revision and headers → server/discover, tools/list or tools/call → validate arguments with strict schemas
         ↓
 Tools → canonical RAG search (Vectorize, with a lexical fallback) and D1 database
         ↓
-Result: JSON text + structuredContent, or isError with a readable message
+Result: resultType "complete" with JSON text + structuredContent, or isError with a readable message
 ```
 
 Its design choices, and what each one trades:
@@ -150,12 +150,29 @@ Its design choices, and what each one trades:
 | Decision | Why | Trade-off |
 |---|---|---|
 | Stateless request and response over HTTP, no event streams | Fits a serverless Worker; each POST is independent | No streaming of long results or progress |
+| Only revision 2026-07-28, no `initialize` path for older revisions | Its only client lives in the same repository and changes in the same commit | A client of an older revision gets a version error and has to be upgraded |
 | A static service token in a header instead of OAuth | One trusted, server-to-server caller | Not suitable for third-party clients; the token is an administrative credential and must stay out of browsers |
 | Account selection by header in multi-user mode | Lets an administrative client act for one user | The server refuses to guess when several accounts exist |
 | Strict schemas plus server-side validation | Bad calls fail with an explanation | None worth mentioning |
 | Results as JSON text and `structuredContent` | Readable by models and programs | Slightly larger responses |
 
-The endpoint also shows how quickly MCP moves. It was written for the handshake-based lifecycle of earlier revisions: it answers `initialize` and then `tools/list` and `tools/call`, and it still accepts a JSON array of several messages, which revision 2025-06-18 removed. In `initialize` it echoes whatever protocol version the client sends, which effectively claims support for every version. A strict 2026-07-28 client would instead call `server/discover` and send the version in each request's `_meta`. Bringing the server up to date means implementing `server/discover`, reading and checking the version on every request, answering unsupported versions with `UnsupportedProtocolVersionError`, and rejecting batches. That is a small change, but only if somebody notices that the revision changed.
+Every POST carries exactly one JSON-RPC message. A JSON array is rejected with `-32600` before any tool runs, because revision 2025-06-18 removed batching. There is no handshake: each request names its revision and the client's capabilities in `_meta`, and the headers `MCP-Protocol-Version`, `Mcp-Method` and, for `tools/call`, `Mcp-Name` repeat what the body says. A header that is missing or disagrees with the body gets HTTP 400 and `HeaderMismatch` (`-32020`), so a gateway that routes on headers sees the same request the server executes. `server/discover` returns the supported versions, the tools capability, the instructions, and how long the answer may be cached (`ttlMs`, `cacheScope`). Every result has `resultType: "complete"` and the server's name and version in `_meta`. A browser page from another origin gets 403, and GET and DELETE get 405, since there are no streams or sessions to open or close.
+
+A request for any other revision, including an old-style `initialize`, gets HTTP 400 and this error:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32022,
+    "message": "Unsupported protocol version",
+    "data": { "supported": ["2026-07-28"], "requested": "2025-11-25" }
+  }
+}
+```
+
+The endpoint was first written for the handshake-based lifecycle. It answered `initialize` by echoing whatever version the client sent, which claimed support for every revision, and it accepted batches. The update itself was small. What made it easy is that the repository's own client is the only caller, so server and client changed together and no legacy path was needed. A server with third-party clients would have to run the old and new lifecycles side by side for a while, and test both. The tests check behaviour over the wire, not the source: a discover result, a version mismatch, each missing or mismatched header, a rejected batch, an unknown tool and invalid arguments.
 
 ## A minimal server in code
 
