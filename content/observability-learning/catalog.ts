@@ -5,6 +5,12 @@ import structuredLogs from "./02-structured-logs.md?raw";
 import structuredLogsUk from "./02-structured-logs.uk.md?raw";
 import metrics from "./03-metrics.md?raw";
 import metricsUk from "./03-metrics.uk.md?raw";
+import distributedTracing from "./04-distributed-tracing.md?raw";
+import distributedTracingUk from "./04-distributed-tracing.uk.md?raw";
+import sloErrorBudgets from "./05-slo-error-budgets.md?raw";
+import sloErrorBudgetsUk from "./05-slo-error-budgets.uk.md?raw";
+import alertingIncidents from "./06-alerting-incidents.md?raw";
+import alertingIncidentsUk from "./06-alerting-incidents.uk.md?raw";
 
 export type ObservabilityTopicStatus = "published" | "under-construction";
 
@@ -71,27 +77,27 @@ const topics: ObservabilityTopic[] = [
     description: "Counters, gauges and histograms, the golden signals, RED and USE, why averages hide the tail, percentiles you can and cannot combine, cardinality, naming, and metrics in QA work.",
     descriptionUk: "Лічильники, gauge і гістограми, золоті сигнали, RED і USE, чому середні ховають хвіст, які перцентилі можна поєднувати, а які ні, кардинальність, іменування й метрики в роботі QA.",
   }, metrics, metricsUk, ["prometheus-metric-types", "prometheus-histograms", "prometheus-naming", "otel-metrics", "google-sre-monitoring", "usemethod", "red-method"]),
-  planned({
+  chapter({
     id: "distributed-tracing",
     label: "Distributed tracing",
     labelUk: "Розподілене трасування",
-    description: "Spans and traces, context propagation across services, OpenTelemetry, sampling, and using traces to debug flaky end-to-end tests.",
-    descriptionUk: "Span і трасування, передавання контексту між сервісами, OpenTelemetry, вибірка й використання трасування для налагодження нестабільних end-to-end тестів.",
-  }),
-  planned({
+    description: "Traces and spans, W3C traceparent propagation, head and tail sampling, reading a trace, traces in QA work, and operation ids as correlation before tracing.",
+    descriptionUk: "Трасування й span, передавання контексту через W3C traceparent, head і tail sampling, як читати трасування, трасування в роботі QA і operation id як кореляція до трасування.",
+  }, distributedTracing, distributedTracingUk, ["w3c-trace-context", "otel-traces", "otel-context-propagation", "otel-sampling", "otel-signals"]),
+  chapter({
     id: "slo-error-budgets",
     label: "SLIs, SLOs and error budgets",
     labelUk: "SLI, SLO та error budget",
-    description: "Choosing service level indicators, setting objectives, error budget policies, burn-rate alerts and release decisions based on reliability.",
-    descriptionUk: "Вибір показників рівня сервісу, цілі, політики error budget, алерти за швидкістю витрачання бюджету й рішення про реліз на основі надійності.",
-  }),
-  planned({
+    description: "SLIs, SLOs and SLAs, choosing indicators from user journeys, setting targets, error budgets and policies, burn-rate alerts, SLOs in QA work, and a proposed SLO set for this site.",
+    descriptionUk: "SLI, SLO і SLA, вибір показників зі шляхів користувача, постановка цілей, error budget і політики, алерти за burn rate, SLO в роботі QA і запропонований набір SLO для цього сайту.",
+  }, sloErrorBudgets, sloErrorBudgetsUk, ["sre-slo", "sre-embracing-risk", "sre-alerting-on-slos", "sre-error-budget-policy", "google-sre-monitoring", "prometheus-histograms"]),
+  chapter({
     id: "alerting-incidents",
     label: "Alerting and incident response",
     labelUk: "Алерти й реагування на інциденти",
-    description: "Symptom-based alerts, runbooks, on-call, blameless postmortems and the role of QA during and after incidents.",
-    descriptionUk: "Алерти за симптомами, runbook, чергування, постмортеми без пошуку винних і роль QA під час інцидентів і після них.",
-  }),
+    description: "Good alerts, page versus ticket, runbooks, incident roles and priorities, QA during and after incidents, blameless postmortems, testing alerts, and a postmortem of a real incident on this site.",
+    descriptionUk: "Добрі алерти, page проти ticket, runbook, ролі й пріоритети під час інцидентів, QA під час і після інцидентів, постмортеми без пошуку винних, тестування алертів і постмортем реального інциденту на цьому сайті.",
+  }, alertingIncidents, alertingIncidentsUk, ["google-sre-monitoring", "sre-practical-alerting", "sre-alerting-on-slos", "sre-managing-incidents", "sre-postmortem-culture"]),
   planned({
     id: "testing-in-production",
     label: "Testing in production",

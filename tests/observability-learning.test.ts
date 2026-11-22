@@ -22,8 +22,8 @@ const [
 
 type Topic = (typeof observabilityCatalog.topics)[number];
 
-const publishedIds = ["observability-for-qa", "structured-logs", "metrics"];
-const plannedIds = ["distributed-tracing", "slo-error-budgets", "alerting-incidents", "testing-in-production", "observability-lab"];
+const publishedIds = ["observability-for-qa", "structured-logs", "metrics", "distributed-tracing", "slo-error-budgets", "alerting-incidents"];
+const plannedIds = ["testing-in-production", "observability-lab"];
 const published = observabilityCatalog.topics.filter((topic: Topic) => topic.status === "published");
 
 function fencedBlocks(markdown: string, languages: readonly string[]) {
