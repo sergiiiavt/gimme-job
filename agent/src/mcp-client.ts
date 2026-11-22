@@ -161,7 +161,8 @@ export class GimmeJobMcpClient {
     const { result } = await readMessage(response, id);
     // An absent resultType comes from an older server and means "complete"; this client handles nothing else.
     if (result?.resultType !== undefined && result.resultType !== "complete") {
-      throw new Error(`GimmeJob MCP returned unsupported resultType: ${String(result.resultType)}.`);
+      const resultType = typeof result.resultType === "string" ? result.resultType : JSON.stringify(result.resultType);
+      throw new Error(`GimmeJob MCP returned unsupported resultType: ${resultType}.`);
     }
     return result as T;
   }

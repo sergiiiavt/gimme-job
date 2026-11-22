@@ -317,10 +317,10 @@ function toolError(message: string): Json { return { content: [{ type: "text", t
 
 /** Streamable HTTP carries header values that are not plain ASCII as `=?base64?<utf-8 bytes>?=`. */
 function decodeHeaderValue(value: string | null): string | null {
-  const encoded = value === null ? null : /^=\?base64\?([A-Za-z0-9+/]*={0,2})\?=$/i.exec(value);
+  const encoded = value === null ? null : /^=\?base64\?([a-z0-9+/]*={0,2})\?=$/i.exec(value);
   if (!encoded) return value;
   try {
-    const bytes = Uint8Array.from(atob(encoded[1]), (character) => character.charCodeAt(0));
+    const bytes = Uint8Array.from(atob(encoded[1]), (character) => character.codePointAt(0) ?? 0);
     return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch { return null; }
 }
