@@ -11,6 +11,10 @@ import sloErrorBudgets from "./05-slo-error-budgets.md?raw";
 import sloErrorBudgetsUk from "./05-slo-error-budgets.uk.md?raw";
 import alertingIncidents from "./06-alerting-incidents.md?raw";
 import alertingIncidentsUk from "./06-alerting-incidents.uk.md?raw";
+import testingInProduction from "./07-testing-in-production.md?raw";
+import testingInProductionUk from "./07-testing-in-production.uk.md?raw";
+import observabilityLab from "./08-observability-lab.md?raw";
+import observabilityLabUk from "./08-observability-lab.uk.md?raw";
 
 export type ObservabilityTopicStatus = "published" | "under-construction";
 
@@ -44,15 +48,6 @@ const chapter = (fields: TopicFields, markdown: string, markdownUk: string, sour
   markdown,
   markdownUk,
   sourceIds,
-});
-
-/** A reserved chapter: listed in navigation, never retrieved or indexed until it is written. */
-const planned = (fields: TopicFields): ObservabilityTopic => ({
-  ...fields,
-  status: "under-construction",
-  markdown: `## Under construction\n\n${fields.description}`,
-  markdownUk: `## У розробці\n\n${fields.descriptionUk}`,
-  sourceIds: [],
 });
 
 const topics: ObservabilityTopic[] = [
@@ -98,20 +93,20 @@ const topics: ObservabilityTopic[] = [
     description: "Good alerts, page versus ticket, runbooks, incident roles and priorities, QA during and after incidents, blameless postmortems, testing alerts, and a postmortem of a real incident on this site.",
     descriptionUk: "Добрі алерти, page проти ticket, runbook, ролі й пріоритети під час інцидентів, QA під час і після інцидентів, постмортеми без пошуку винних, тестування алертів і постмортем реального інциденту на цьому сайті.",
   }, alertingIncidents, alertingIncidentsUk, ["google-sre-monitoring", "sre-practical-alerting", "sre-alerting-on-slos", "sre-managing-incidents", "sre-postmortem-culture"]),
-  planned({
+  chapter({
     id: "testing-in-production",
     label: "Testing in production",
     labelUk: "Тестування в продакшні",
-    description: "Synthetic monitoring, canary releases, feature flags, dark launches and controlled chaos experiments, done safely.",
-    descriptionUk: "Синтетичний моніторинг, canary-релізи, feature flags, приховані запуски й контрольовані хаос-експерименти без шкоди користувачам.",
-  }),
-  planned({
+    description: "Why production needs its own checks, synthetic monitoring, canary releases, feature flags and kill switches, dark launches, chaos experiments, safety rules, and how this site tests in production.",
+    descriptionUk: "Чому продакшну потрібні власні перевірки, синтетичний моніторинг, canary-релізи, feature flags і аварійні вимикачі, приховані запуски, хаос-експерименти, правила безпеки і як тестує в продакшні цей сайт.",
+  }, testingInProduction, testingInProductionUk, ["grafana-synthetic-monitoring", "google-sre-monitoring", "sre-canarying", "fowler-canary-release", "fowler-feature-toggles", "openfeature", "fowler-dark-launching", "principles-of-chaos", "sre-error-budget-policy"]),
+  chapter({
     id: "observability-lab",
     label: "Observability lab",
     labelUk: "Лабораторна зі спостережуваності",
-    description: "A runnable lab: instrument a small service with logs, metrics and traces, define an SLO and test against it.",
-    descriptionUk: "Практична лабораторна: додати логи, метрики й трасування до невеликого сервісу, визначити SLO і тестувати відносно нього.",
-  }),
+    description: "A runnable lab: a service with structured logs, Prometheus metrics and trace context, SLOs and burn rate computed from its metrics, a synthetic check and a canary decision.",
+    descriptionUk: "Практична лабораторна: сервіс зі структурованими логами, метриками Prometheus і контекстом трасування, SLO й burn rate з його метрик, синтетична перевірка й рішення щодо canary.",
+  }, observabilityLab, observabilityLabUk, ["prometheus-exposition-formats", "prometheus-histograms", "w3c-trace-context", "otel-context-propagation", "owasp-logging", "sre-alerting-on-slos", "sre-canarying", "grafana-synthetic-monitoring"]),
 ];
 
 export const observabilityCatalog = {

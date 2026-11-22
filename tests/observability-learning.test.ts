@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readdirSync } from "node:fs";
 import { register as registerLoader } from "node:module";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
@@ -22,8 +23,16 @@ const [
 
 type Topic = (typeof observabilityCatalog.topics)[number];
 
-const publishedIds = ["observability-for-qa", "structured-logs", "metrics", "distributed-tracing", "slo-error-budgets", "alerting-incidents"];
-const plannedIds = ["testing-in-production", "observability-lab"];
+const publishedIds = [
+  "observability-for-qa",
+  "structured-logs",
+  "metrics",
+  "distributed-tracing",
+  "slo-error-budgets",
+  "alerting-incidents",
+  "testing-in-production",
+  "observability-lab",
+];
 const published = observabilityCatalog.topics.filter((topic: Topic) => topic.status === "published");
 
 function fencedBlocks(markdown: string, languages: readonly string[]) {
@@ -40,8 +49,8 @@ function fencedBlocks(markdown: string, languages: readonly string[]) {
   return blocks;
 }
 
-test("written chapters come first and reserved chapters stay placeholders", () => {
-  assert.deepEqual(observabilityCatalog.topics.map((topic: Topic) => topic.id), [...publishedIds, ...plannedIds]);
+test("every chapter of the path is written, in reading order", () => {
+  assert.deepEqual(observabilityCatalog.topics.map((topic: Topic) => topic.id), publishedIds);
   for (const topic of observabilityCatalog.topics) {
     assert.ok(topic.label && topic.labelUk && topic.description && topic.descriptionUk, `${topic.id} needs bilingual labels and descriptions`);
   }
@@ -120,7 +129,7 @@ test("chapter links open published learning pages, topics and sections", () => {
   assert.ok(checked > 0);
 });
 
-test("written chapters are retrievable section by section; placeholders are not", () => {
+test("written chapters are retrievable section by section", () => {
   const documents = staticRagDocuments().filter((document) => document.kind === "learning" && document.metadata.route === "/learn/observability");
   assert.deepEqual([...new Set(documents.map((document) => document.metadata.topic))].sort(), [...publishedIds].sort());
   for (const id of publishedIds) {
@@ -128,9 +137,23 @@ test("written chapters are retrievable section by section; placeholders are not"
   }
 });
 
-test("each written chapter is a topic page; placeholders keep the section metadata", () => {
+test("each written chapter is a topic page; unknown topics keep the section metadata", () => {
   const pages = learningTopicPages().filter((page) => page.route === "/learn/observability");
   assert.deepEqual(pages.map((page) => page.path), publishedIds.map((id) => `/learn/observability?topic=${id}`));
   assert.equal(learningTopicMetadata("/learn/observability", { topic: "metrics" }).alternates?.canonical, "/learn/observability?topic=metrics");
-  assert.deepEqual(learningTopicMetadata("/learn/observability", { topic: plannedIds[0] }), {});
+  assert.deepEqual(learningTopicMetadata("/learn/observability", { topic: "unknown-topic" }), {});
+});
+
+test("the lab chapter links a runnable example project that exists and has tests", () => {
+  const lab = published.find((topic: Topic) => topic.id === "observability-lab");
+  assert.ok(lab);
+  const projectLink = /\]\(https:\/\/github\.com\/sergiiiavt\/gimme-job\/tree\/main\/(examples\/[\w-]+)\)/;
+  const link = lab.markdown.match(projectLink);
+  assert.ok(link, "the lab chapter must link its example project");
+  assert.ok(lab.markdownUk.includes(`(https://github.com/sergiiiavt/gimme-job/tree/main/${link[1]})`), "the Ukrainian chapter links the same project");
+  const folder = new URL(`../${link[1]}/`, import.meta.url);
+  assert.ok(existsSync(folder), `${link[1]} must exist`);
+  const files = readdirSync(folder);
+  assert.ok(files.includes("README.md"), `${link[1]} needs a README`);
+  assert.ok(files.some((name) => /^test_.+\.py$/.test(name)), `${link[1]} needs a test suite`);
 });

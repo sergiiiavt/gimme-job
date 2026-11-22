@@ -86,7 +86,7 @@
     "publisher": "Prometheus",
     "kind": "official-docs",
     "url": "https://prometheus.io/docs/practices/histograms/",
-    "role": "Quantiles estimated from histogram buckets, and why per-instance summary quantiles cannot be averaged.",
+    "role": "Quantiles estimated from histogram buckets, why per-instance summary quantiles cannot be averaged, and why a threshold SLI needs a bucket at that exact bound.",
     "checkedAt": "2026-11-22"
   },
   {
@@ -213,6 +213,78 @@
     "kind": "article",
     "url": "https://sre.google/sre-book/postmortem-culture/",
     "role": "Blameless postmortems, their contents and the triggers for writing one.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "grafana-synthetic-monitoring",
+    "title": "Synthetic Monitoring",
+    "publisher": "Grafana Labs (Grafana Cloud documentation)",
+    "kind": "official-docs",
+    "url": "https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/",
+    "role": "Synthetic monitoring as black-box testing of externally visible behaviour, run continuously from probe locations for availability, performance and correctness.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-canarying",
+    "title": "Canarying Releases",
+    "publisher": "Google — The Site Reliability Workbook (O'Reilly, 2018)",
+    "kind": "article",
+    "url": "https://sre.google/workbook/canarying-releases/",
+    "role": "Canary versus control, choosing the population and duration, a few user-visible metrics split by group, one canary at a time, and the risks of shared state.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-canary-release",
+    "title": "Canary Release",
+    "publisher": "martinfowler.com (Danilo Sato, 2014)",
+    "kind": "article",
+    "url": "https://martinfowler.com/bliki/CanaryRelease.html",
+    "role": "Rolling a new version out to a small subset of users before everyone, also called phased or incremental rollout.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-feature-toggles",
+    "title": "Feature Toggles (aka Feature Flags)",
+    "publisher": "martinfowler.com (Pete Hodgson, 2017)",
+    "kind": "article",
+    "url": "https://martinfowler.com/articles/feature-toggles.html",
+    "role": "Release, experiment, ops and permissioning toggles, how long each lives and how dynamic it is, and kill switches as long-lived ops toggles.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "openfeature",
+    "title": "OpenFeature",
+    "publisher": "OpenFeature (CNCF incubating project)",
+    "kind": "standard",
+    "url": "https://openfeature.dev/",
+    "role": "An open specification for a vendor-agnostic feature-flagging API: flag evaluation, providers, evaluation context and hooks.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-dark-launching",
+    "title": "Dark Launching",
+    "publisher": "martinfowler.com (Martin Fowler, 2020)",
+    "kind": "article",
+    "url": "https://martinfowler.com/bliki/DarkLaunching.html",
+    "role": "Calling new back-end behaviour from real requests without users noticing, to measure load before launch, and why user-choice features need canaries instead.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "principles-of-chaos",
+    "title": "Principles of Chaos Engineering",
+    "publisher": "principlesofchaos.org",
+    "kind": "article",
+    "url": "https://principlesofchaos.org/",
+    "role": "Chaos engineering as experiments on steady state, real-world events, experiments in production, automation and a minimal blast radius.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-exposition-formats",
+    "title": "Exposition formats",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/instrumenting/exposition_formats/",
+    "role": "The text format: HELP and TYPE lines before samples, label syntax, histogram buckets ordered by le, the mandatory +Inf bucket equal to _count, and _sum.",
     "checkedAt": "2026-11-22"
   }
 ]
