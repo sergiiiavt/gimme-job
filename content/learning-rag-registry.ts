@@ -1,9 +1,11 @@
+import agenticCatalog from "./agentic-learning/catalog";
 import apiIntegrationCatalog from "./api-integration/catalog";
 import automationCurriculum from "./automation-learning/catalog";
 import { automationTrackAliases, automationTrackForModule } from "./automation-learning/tracks";
 import cloudDevopsCatalog from "./cloud-devops/catalog";
 import csharpCurriculum from "./csharp-learning/catalog";
 import dockerCatalog from "./docker-learning/catalog";
+import sqlCurriculum from "./data-learning/catalog";
 import sqlPracticalTasks from "./data-learning/sql-practical-tasks.json";
 import sqlQuickReference from "./data-learning/sql-quick-reference.json";
 import embeddedIotCatalog from "./embedded-iot/catalog";
@@ -12,6 +14,7 @@ import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
 import llmTestingCatalog from "./llm-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
 import networkingCatalog from "./networking/catalog";
+import observabilityCatalog from "./observability-learning/catalog";
 import performanceTestingCatalog from "./performance-testing/catalog";
 import pythonCurriculum from "./python-learning/catalog";
 import pythonQuickReference from "./python-learning/quick-reference.json";
@@ -42,7 +45,7 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "git", route: "/learn/git", value: gitCatalog },
   { key: "python", route: "/learn/programming", track: "python", value: pythonCurriculum },
   { key: "csharp", route: "/learn/programming", track: "csharp", value: csharpCurriculum },
-  { key: "python-quick-reference", route: "/learn/programming", track: "python", value: pythonQuickReference },
+  { key: "python-quick-reference", route: "/reference/programming", track: "python", value: pythonQuickReference },
   {
     key: "automation",
     route: "/learn/automation",
@@ -55,12 +58,15 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "docker", route: "/learn/docker", value: dockerCatalog },
   { key: "metrics-estimation", route: "/learn/metrics-estimation", value: metricsEstimationCatalog },
   { key: "performance-testing", route: "/learn/performance", value: performanceTestingCatalog },
-  { key: "sql-quick-reference", route: "/learn/data", value: sqlQuickReference },
-  { key: "sql-practical-tasks", route: "/learn/data", value: sqlPracticalTasks },
+  { key: "sql", route: "/learn/data", track: "sql", value: sqlCurriculum },
+  { key: "sql-quick-reference", route: "/reference/data", value: sqlQuickReference },
+  { key: "sql-practical-tasks", route: "/reference/data", value: sqlPracticalTasks },
   { key: "api-integration", route: "/learn/api", value: apiIntegrationCatalog },
   { key: "networking", route: "/learn/networking", value: networkingCatalog },
   { key: "embedded-iot", route: "/learn/embedded", value: embeddedIotCatalog },
   { key: "llm-testing", route: "/learn/llm", value: llmTestingCatalog },
+  { key: "agentic", route: "/learn/agentic", value: agenticCatalog },
+  { key: "observability", route: "/learn/observability", value: observabilityCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
 ] as const;
 

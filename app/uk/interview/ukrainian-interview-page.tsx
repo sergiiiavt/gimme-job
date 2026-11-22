@@ -68,6 +68,12 @@ const RELATED_LABELS_UK: Record<string, string> = {
   "Embedded & IoT learning": "Вбудовані системи та IoT",
   "LLM testing & AI learning": "Курс AI та тестування LLM",
   "AI agents & MCP": "Агенти AI та MCP",
+  "Risk & prioritization": "Ризики та пріоритизація",
+  "Docker & containers": "Docker і контейнери",
+  "API authentication & authorization": "Автентифікація й авторизація API",
+  "Delivery & production metrics": "Метрики поставки та продакшну",
+  "Mobile test automation": "Автоматизація мобільного тестування",
+  "LLM security & red teaming": "Безпека LLM і red teaming",
 };
 
 const PYTHON_RELATED_LINKS = [

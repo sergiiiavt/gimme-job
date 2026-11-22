@@ -30,45 +30,25 @@ type ObservabilityEventInput = {
   httpStatus?: number | null;
 };
 
+// Starting profile for an account that has not saved its own. Keep it generic: it is
+// shown to every new account and lives in a public repository, so it must never hold
+// anyone's personal or contact details.
 export const DEFAULT_PROFILE = {
-  name: "Serhii Yavtushkevych",
-  headline: "Lead QA Engineer | Senior QA Engineer | QA Automation Engineer",
-  summary: "QA Lead / Test Engineer with 12+ years of experience in comprehensive software testing, primarily web applications and APIs. 4+ years of test automation experience using Python, Selenium, Behave, Pytest, Playwright, and TypeScript.",
-  targetRoles: ["Lead QA Engineer", "Head of QA", "QA Manager", "Senior QA Engineer", "QA Automation Engineer"],
-  locations: ["Kyiv", "Ukraine"],
-  languages: ["English: Upper-Intermediate", "Ukrainian"],
-  skills: ["QA leadership", "Manual testing", "Test automation", "Python", "TypeScript", "Playwright", "Selenium", "Behave", "Pytest", "API testing", "Postman", "SQL", "JMeter", "Jenkins", "Azure", "Docker", "Git", "Scrum", "Mentoring", "AI/LLM testing"],
+  name: "",
+  headline: "QA Engineer",
+  summary: "",
+  targetRoles: ["QA Engineer", "Senior QA Engineer", "QA Automation Engineer", "QA Lead"],
+  locations: [],
+  languages: [],
+  skills: ["Manual testing", "Test automation", "API testing", "SQL", "Python", "TypeScript", "Playwright", "Selenium", "Pytest", "Git"],
   mustHaveSignals: [],
-  preferredSignals: ["бронювання", "reservation from mobilization", "flexible", "part-time", "leadership", "automation"],
+  preferredSignals: [],
   excludedSignals: [],
-  facts: [
-    "12+ years of comprehensive software testing experience across web applications and APIs.",
-    "4+ years of test automation experience with Python and TypeScript tooling.",
-    "Led a QA team of 12 people, including planning, mentoring, quality processes, and stakeholder communication.",
-  ],
-  experience: [
-    {
-      company: "TIETO UKRAINE LTD",
-      role: "Lead QA Engineer",
-      period: "April 2021 - Present",
-      achievements: ["Led a 12-person QA team.", "Planned testing activities and managed priorities and scope.", "Mentored employees and improved QA processes."],
-    },
-    {
-      company: "GlobalLogic",
-      role: "Senior QA Automation Engineer",
-      period: "January 2019 - May 2021",
-      achievements: ["Developed automated tests for web applications.", "Integrated automated tests into CI/CD.", "Performed API and database testing."],
-    },
-    {
-      company: "GlobalLogic",
-      role: "Lead QA Engineer",
-      period: "January 2014 - June 2019",
-      achievements: ["Performed manual testing, requirements analysis, and test design.", "Created test documentation and managed defect tracking.", "Coordinated QA activities across teams."],
-    },
-  ],
-  education: ["Master's Degree, Computer Science - National Technical University of Ukraine, 2008 - 2014", "ISTQB Certified Software Tester - Foundation Level"],
-  links: ["https://www.linkedin.com/in/serhii-yavtushkevych/"],
-  contact: { email: "sergii.iavt@gmail.com", phone: "", location: "Kyiv, Ukraine" },
+  facts: [],
+  experience: [],
+  education: [],
+  links: [],
+  contact: { email: "", phone: "", location: "" },
 };
 
 export const DEFAULT_SOURCES = {
