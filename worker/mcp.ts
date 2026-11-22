@@ -6,7 +6,6 @@ import { type RagEnv, type RagSearchResult, searchRagDocuments } from "./rag";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
-type RpcId = string | number | null;
 
 type RequestContext = { multiUser: boolean; userId: string | null };
 
@@ -258,50 +257,163 @@ async function callTool(env: McpEnv, request: Request, name: string, args: unkno
   if (name === "search_jobs") return searchJobs(env, request, args);
   if (name === "get_interview_questions") return getInterviewQuestions(env, args);
   if (name === "get_learning_progress") return getLearningProgress(env, request, args);
-  if (name === "analyze_vacancy") return analyzeVacancy(env, request, args);
-  throw new Error(`Unknown tool: ${name}`);
+  return analyzeVacancy(env, request, args);
 }
-function rpcResult(id: RpcId, result: unknown) { return { jsonrpc: "2.0", id, result }; }
-function rpcError(id: RpcId, code: number, message: string, data?: unknown) { return { jsonrpc: "2.0", id, error: { code, message, ...(data === undefined ? {} : { data }) } }; }
-function toolResult(value: Json) { return { content: [{ type: "text", text: JSON.stringify(value) }], structuredContent: value, isError: false }; }
-function toolError(message: string) { return { content: [{ type: "text", text: message }], isError: true }; }
 
-async function handleRpcMessage(message: unknown, request: Request, env: McpEnv): Promise<unknown | null> {
-  if (!message || typeof message !== "object" || Array.isArray(message)) return rpcError(null, -32600, "Invalid Request");
-  const rpc = message as Json;
-  const id = typeof rpc.id === "string" || typeof rpc.id === "number" || rpc.id === null ? rpc.id as RpcId : null;
-  const method = clean(rpc.method, 200); const notification = !("id" in rpc);
-  if (method === "notifications/initialized" || method === "notifications/cancelled" || notification) return null;
-  if (method === "initialize") {
-    const params = rpc.params && typeof rpc.params === "object" && !Array.isArray(rpc.params) ? rpc.params as Json : {};
-    return rpcResult(id, { protocolVersion: clean(params.protocolVersion, 100) || "2026-07-28", capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: "gimmejob", version: "0.1.0" },
-      instructions: "Use GimmeJob tools for vacancy search/analysis and private interview-learning progress. All semantic and lexical retrieval runs through one canonical RAG pipeline; Git/D1 remain authoritative sources." });
+// Protocol layer: MCP revision 2026-07-28 over Streamable HTTP, stateless, one JSON-RPC message per POST.
+export const MCP_PROTOCOL_VERSION = "2026-07-28";
+export const MCP_SUPPORTED_VERSIONS: readonly string[] = [MCP_PROTOCOL_VERSION];
+export const MCP_ERROR_CODES = {
+  parseError: -32700,
+  invalidRequest: -32600,
+  methodNotFound: -32601,
+  invalidParams: -32602,
+  headerMismatch: -32020,
+  unsupportedProtocolVersion: -32022,
+} as const;
+const META_PROTOCOL_VERSION = "io.modelcontextprotocol/protocolVersion";
+const META_CLIENT_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities";
+const META_SERVER_INFO = "io.modelcontextprotocol/serverInfo";
+const SERVER_INFO = { name: "gimmejob", version: "0.2.0" };
+const SERVER_INSTRUCTIONS = "Use GimmeJob tools for vacancy search/analysis and private interview-learning progress. All semantic and lexical retrieval runs through one canonical RAG pipeline; Git/D1 remain authoritative sources.";
+const DISCOVER_TTL_MS = 3_600_000;
+const TOOLS_TTL_MS = 300_000;
+const ALLOWED_METHODS = "POST, OPTIONS";
+const JSON_HEADERS = { "cache-control": "no-store", "content-type": "application/json; charset=utf-8" };
+
+class McpProtocolError extends Error {
+  readonly status: number;
+  readonly code: number;
+  readonly data: unknown;
+
+  constructor(status: number, code: number, message: string, data?: unknown) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.data = data;
   }
-  if (method === "ping") return rpcResult(id, {});
-  if (method === "tools/list") return rpcResult(id, { tools: MCP_TOOLS });
-  if (method === "tools/call") {
-    const params = rpc.params && typeof rpc.params === "object" && !Array.isArray(rpc.params) ? rpc.params as Json : {};
-    const name = clean(params.name, 200);
-    if (!MCP_TOOL_NAMES.includes(name as typeof MCP_TOOL_NAMES[number])) return rpcError(id, -32602, `Unknown tool: ${name || "(missing)"}`);
-    try { return rpcResult(id, toolResult(await callTool(env, request, name, params.arguments ?? {}))); }
-    catch (error) {
-      if (error instanceof z.ZodError) return rpcResult(id, toolError(`Invalid tool arguments: ${error.issues.map((issue) => issue.message).join("; ")}`));
-      return rpcResult(id, toolError(error instanceof Error ? error.message : "Tool execution failed."));
-    }
+}
+
+function invalidRequest(message: string) { return new McpProtocolError(400, MCP_ERROR_CODES.invalidRequest, message); }
+function invalidParams(message: string) { return new McpProtocolError(400, MCP_ERROR_CODES.invalidParams, message); }
+function headerMismatch(message: string) { return new McpProtocolError(400, MCP_ERROR_CODES.headerMismatch, message); }
+function unsupportedVersion(requested: string) {
+  return new McpProtocolError(400, MCP_ERROR_CODES.unsupportedProtocolVersion, "Unsupported protocol version",
+    { supported: [...MCP_SUPPORTED_VERSIONS], requested });
+}
+function isObject(value: unknown): value is Json { return Boolean(value) && typeof value === "object" && !Array.isArray(value); }
+
+function rpcErrorResponse(id: string | number | undefined, error: McpProtocolError): Response {
+  const body = { jsonrpc: "2.0", ...(id === undefined ? {} : { id }),
+    error: { code: error.code, message: error.message, ...(error.data === undefined ? {} : { data: error.data }) } };
+  return Response.json(body, { status: error.status, headers: JSON_HEADERS });
+}
+function rpcResultResponse(id: string | number, value: Json): Response {
+  const result = { resultType: "complete", ...value, _meta: { [META_SERVER_INFO]: SERVER_INFO } };
+  return Response.json({ jsonrpc: "2.0", id, result }, { headers: JSON_HEADERS });
+}
+function toolResult(value: Json): Json { return { content: [{ type: "text", text: JSON.stringify(value) }], structuredContent: value, isError: false }; }
+function toolError(message: string): Json { return { content: [{ type: "text", text: message }], isError: true }; }
+
+/** Streamable HTTP carries header values that are not plain ASCII as `=?base64?<utf-8 bytes>?=`. */
+function decodeHeaderValue(value: string | null): string | null {
+  const encoded = value === null ? null : /^=\?base64\?([a-z0-9+/]*={0,2})\?=$/i.exec(value);
+  if (!encoded) return value;
+  try {
+    const bytes = Uint8Array.from(atob(encoded[1]), (character) => character.codePointAt(0) ?? 0);
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch { return null; }
+}
+
+function requireHeader(request: Request, name: string, expected: string, encoded = false): void {
+  const raw = request.headers.get(name);
+  const value = encoded ? decodeHeaderValue(raw) : raw;
+  if (!value) throw headerMismatch(`Missing or malformed ${name} header.`);
+  if (value !== expected) {
+    throw headerMismatch(`Header mismatch: ${name} header value '${clean(value, 200)}' does not match body value '${clean(expected, 200)}'.`);
   }
-  return rpcError(id, -32601, `Method not found: ${method || "(missing)"}`);
+}
+
+function validateHeaders(request: Request, method: string, version: string, toolName?: string): void {
+  requireHeader(request, "MCP-Protocol-Version", version);
+  requireHeader(request, "Mcp-Method", method);
+  if (toolName !== undefined) requireHeader(request, "Mcp-Name", toolName, true);
+}
+
+type McpMessage = { id?: string | number; method: string; params: Json };
+
+function parseMessage(body: unknown): McpMessage {
+  if (Array.isArray(body)) throw invalidRequest("Invalid Request: send one JSON-RPC message per POST; batching is not supported.");
+  if (!isObject(body) || body.jsonrpc !== "2.0" || typeof body.method !== "string" || !body.method) throw invalidRequest("Invalid Request");
+  if ("id" in body && typeof body.id !== "string" && typeof body.id !== "number") throw invalidRequest("Invalid Request: id must be a string or a number.");
+  if (body.params !== undefined && !isObject(body.params)) throw invalidParams("params must be an object.");
+  return { id: body.id as string | number | undefined, method: body.method, params: (body.params as Json | undefined) ?? {} };
+}
+
+/** Every request names its revision in params._meta; there is no initialize handshake to remember it. */
+function requestVersion(request: Request, message: McpMessage): string {
+  if (message.method === "initialize") throw unsupportedVersion(clean(message.params.protocolVersion, 100));
+  const meta = isObject(message.params._meta) ? message.params._meta : {};
+  const metaVersion = typeof meta[META_PROTOCOL_VERSION] === "string" ? meta[META_PROTOCOL_VERSION] : null;
+  const requested = metaVersion ?? request.headers.get("MCP-Protocol-Version");
+  if (requested !== null && !MCP_SUPPORTED_VERSIONS.includes(requested)) throw unsupportedVersion(clean(requested, 100));
+  if (metaVersion === null) throw invalidParams(`params._meta must include ${META_PROTOCOL_VERSION}.`);
+  if (!isObject(meta[META_CLIENT_CAPABILITIES])) throw invalidParams(`params._meta must include ${META_CLIENT_CAPABILITIES} (use {} for none).`);
+  return metaVersion;
+}
+
+function toolNameOf(params: Json): string { return typeof params.name === "string" ? params.name : ""; }
+
+async function runTool(request: Request, env: McpEnv, params: Json): Promise<Json> {
+  const name = toolNameOf(params);
+  if (!(MCP_TOOL_NAMES as readonly string[]).includes(name)) throw invalidParams(`Unknown tool: ${clean(name, 200) || "(missing)"}`);
+  try { return toolResult(await callTool(env, request, name, params.arguments ?? {})); }
+  catch (error) {
+    if (error instanceof z.ZodError) return toolError(`Invalid tool arguments: ${error.issues.map((issue) => issue.message).join("; ")}`);
+    return toolError(error instanceof Error ? error.message : "Tool execution failed.");
+  }
+}
+
+async function dispatch(request: Request, env: McpEnv, message: McpMessage): Promise<Json> {
+  if (message.method === "server/discover") {
+    return { supportedVersions: [...MCP_SUPPORTED_VERSIONS], capabilities: { tools: {} }, instructions: SERVER_INSTRUCTIONS,
+      ttlMs: DISCOVER_TTL_MS, cacheScope: "public" };
+  }
+  if (message.method === "tools/list") return { tools: MCP_TOOLS, ttlMs: TOOLS_TTL_MS, cacheScope: "public" };
+  if (message.method === "tools/call") return runTool(request, env, message.params);
+  throw new McpProtocolError(404, MCP_ERROR_CODES.methodNotFound, `Method not found: ${clean(message.method, 200)}`);
+}
+
+/** Server-to-server callers send no Origin; a browser page from another origin is refused (DNS rebinding, CSRF). */
+function hasAllowedOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  return origin === null || origin === new URL(request.url).origin;
+}
+
+async function handleMessage(request: Request, env: McpEnv, body: unknown): Promise<Response> {
+  const message = parseMessage(body);
+  if (message.id === undefined) {
+    const version = request.headers.get("MCP-Protocol-Version");
+    if (version !== null && !MCP_SUPPORTED_VERSIONS.includes(version)) throw unsupportedVersion(clean(version, 100));
+    validateHeaders(request, message.method, version ?? MCP_PROTOCOL_VERSION);
+    return new Response(null, { status: 202, headers: { "cache-control": "no-store" } });
+  }
+  const version = requestVersion(request, message);
+  validateHeaders(request, message.method, version, message.method === "tools/call" ? toolNameOf(message.params) : undefined);
+  return rpcResultResponse(message.id, await dispatch(request, env, message));
 }
 
 export async function handleMcpRequest(request: Request, env: McpEnv): Promise<Response> {
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { allow: "POST, OPTIONS", "cache-control": "no-store" } });
-  if (request.method !== "POST") return new Response("Method not allowed.", { status: 405, headers: { allow: "POST, OPTIONS", "cache-control": "no-store" } });
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { allow: ALLOWED_METHODS, "cache-control": "no-store" } });
+  if (request.method !== "POST") return new Response("Method not allowed.", { status: 405, headers: { allow: ALLOWED_METHODS, "cache-control": "no-store" } });
+  if (!hasAllowedOrigin(request)) return rpcErrorResponse(undefined, new McpProtocolError(403, MCP_ERROR_CODES.invalidRequest, "Forbidden: Origin is not allowed."));
   let body: unknown;
   try { body = await request.json(); }
-  catch { return Response.json(rpcError(null, -32700, "Parse error"), { status: 400, headers: { "cache-control": "no-store" } }); }
-  const responses = Array.isArray(body)
-    ? (await Promise.all(body.map((message) => handleRpcMessage(message, request, env)))).filter((item) => item !== null)
-    : [await handleRpcMessage(body, request, env)].filter((item) => item !== null);
-  if (!responses.length) return new Response(null, { status: 202, headers: { "cache-control": "no-store" } });
-  return Response.json(Array.isArray(body) ? responses : responses[0], { headers: { "cache-control": "no-store", "content-type": "application/json; charset=utf-8" } });
+  catch { return rpcErrorResponse(undefined, new McpProtocolError(400, MCP_ERROR_CODES.parseError, "Parse error")); }
+  try { return await handleMessage(request, env, body); }
+  catch (error) {
+    if (!(error instanceof McpProtocolError)) throw error;
+    const id = isObject(body) && (typeof body.id === "string" || typeof body.id === "number") ? body.id : undefined;
+    return rpcErrorResponse(id, error);
+  }
 }

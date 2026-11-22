@@ -102,11 +102,9 @@ function createCodeBlock(source: string, language: string) {
     lineHeight: "1.6",
     margin: "0",
     maxWidth: "100%",
-    overflowX: "auto",
     padding: "13px 14px",
     scrollbarColor: "#3b3b3b transparent",
     tabSize: "2",
-    whiteSpace: "pre",
   });
   const code = document.createElement("code");
   appendHighlightedCode(code, source, language);

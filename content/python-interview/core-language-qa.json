@@ -148,8 +148,8 @@
       "questionUk": "Чим структурне зіставлення `match`/`case` в Python відрізняється від switch-оператора в стилі C?",
       "shortAnswerUk": "Введений у Python 3.10 через PEP 634, `match`/`case` зіставляє форму й структуру значення, а не лише пряму рівність константі. Патерни можуть деструктурувати послідовності, словники й екземпляри класів, прив'язувати знайдені підзначення до імен, додавати умови-охоронці `if` і комбінувати варіанти через `|`. `case _:` виступає символом-заповнювачем за замовчуванням, і на відміну від switch у C тут немає неявного проходження (fall-through) між гілками.",
       "strongAnswerSignalsUk": ["структурне зіставлення, а не лише рівність", "введено PEP 634 у 3.10", "немає fall-through, заповнювач — case _"],
-      "example": "`match command.split():\\n    case [\"go\", direction]: move(direction)\\n    case [\"look\"]: describe_room()\\n    case _: print(\"unknown command\")` destructures the split command list directly in the pattern.",
-      "exampleUk": "`match command.split():\\n    case [\"go\", direction]: move(direction)\\n    case [\"look\"]: describe_room()\\n    case _: print(\"unknown command\")` деструктурує розбитий на слова рядок команди прямо в патерні.",
+      "example": "`match command.split():\n    case [\"go\", direction]: move(direction)\n    case [\"look\"]: describe_room()\n    case _: print(\"unknown command\")` destructures the split command list directly in the pattern.",
+      "exampleUk": "`match command.split():\n    case [\"go\", direction]: move(direction)\n    case [\"look\"]: describe_room()\n    case _: print(\"unknown command\")` деструктурує розбитий на слова рядок команди прямо в патерні.",
       "tags": ["pattern-matching", "pep-634"],
       "sourceIds": ["pep-634", "python-docs-whatsnew-314"]
     },

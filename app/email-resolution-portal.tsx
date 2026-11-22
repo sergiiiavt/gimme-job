@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { EMAIL_AUTOMATION_ENABLED, EMAIL_AUTOMATION_PAUSED_NOTE } from "./email-automation.ts";
 
 type Candidate = {
   jobId: string;
@@ -12,7 +13,7 @@ type Candidate = {
   signals: string[];
 };
 
-type ResolutionEvent = {
+export type ResolutionEvent = {
   id: string;
   subject: string;
   classification: string;
@@ -24,7 +25,7 @@ type ResolutionEvent = {
   evidence: { candidates?: Candidate[] };
 };
 
-type Job = {
+export type Job = {
   id: string;
   title: string;
   company: string;
@@ -57,7 +58,7 @@ function jobLabel(job: Pick<Job, "title" | "company" | "status">): string {
   return `${job.title} — ${job.company} · ${titleCase(job.status)}`;
 }
 
-export default function EmailResolutionPortal({ enabled }: { enabled: boolean }) {
+export default function EmailResolutionPortal({ enabled, paused = !EMAIL_AUTOMATION_ENABLED }: { enabled: boolean; paused?: boolean }) {
   const [target, setTarget] = useState<Element | null>(null);
   const [events, setEvents] = useState<ResolutionEvent[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -88,12 +89,12 @@ export default function EmailResolutionPortal({ enabled }: { enabled: boolean })
       try {
         const [resolutionResponse, dashboardResponse] = await Promise.all([
           fetch("/api/email-events/unresolved", { cache: "no-store", headers: { accept: "application/json" }, signal: controller.signal }),
-          fetch("/api/dashboard", { cache: "no-store", headers: { accept: "application/json" }, signal: controller.signal }),
+          paused ? null : fetch("/api/dashboard", { cache: "no-store", headers: { accept: "application/json" }, signal: controller.signal }),
         ]);
         const resolution = await resolutionResponse.json() as ResolutionPayload;
-        const dashboard = await dashboardResponse.json() as DashboardPayload;
+        const dashboard = dashboardResponse ? await dashboardResponse.json() as DashboardPayload : {};
         if (!resolutionResponse.ok) throw new Error(resolution.error ?? `Resolution request failed: ${resolutionResponse.status}`);
-        if (!dashboardResponse.ok) throw new Error(`Vacancy request failed: ${dashboardResponse.status}`);
+        if (dashboardResponse && !dashboardResponse.ok) throw new Error(`Vacancy request failed: ${dashboardResponse.status}`);
         setEvents(Array.isArray(resolution.events) ? resolution.events : []);
         setJobs((Array.isArray(dashboard.jobs) ? dashboard.jobs : [])
           .filter((job) => ACTIVE_STATUSES.has(job.status))
@@ -108,18 +109,16 @@ export default function EmailResolutionPortal({ enabled }: { enabled: boolean })
     };
 
     queueMicrotask(() => { void load(); });
-    const timer = window.setInterval(() => { void load(); }, REFRESH_MS);
+    const timer = paused ? undefined : window.setInterval(() => { void load(); }, REFRESH_MS);
     return () => {
       window.clearInterval(timer);
       controller.abort();
     };
-  }, [enabled]);
-
-  const choices = useMemo(() => new Map(jobs.map((job) => [job.id, job])), [jobs]);
+  }, [enabled, paused]);
 
   const link = async (eventId: string) => {
     const jobId = selection[eventId];
-    if (!jobId) return;
+    if (paused || !jobId) return;
     setLinking(eventId);
     setError(null);
     try {
@@ -142,11 +141,42 @@ export default function EmailResolutionPortal({ enabled }: { enabled: boolean })
   if (!enabled || !target || (events.length === 0 && !error)) return null;
 
   return createPortal(
-    <section className="email-resolution" aria-label="Emails that need vacancy linking">
+    <EmailResolutionPanel
+      events={events}
+      jobs={jobs}
+      selection={selection}
+      linking={linking}
+      error={error}
+      paused={paused}
+      onSelect={(eventId, jobId) => setSelection((current) => ({ ...current, [eventId]: jobId }))}
+      onLink={(eventId) => void link(eventId)}
+    />,
+    target,
+  );
+}
+
+type EmailResolutionPanelProps = {
+  events: ResolutionEvent[];
+  jobs: Job[];
+  selection: Record<string, string>;
+  linking: string | null;
+  error: string | null;
+  paused: boolean;
+  onSelect: (eventId: string, jobId: string) => void;
+  onLink: (eventId: string) => void;
+};
+
+export function EmailResolutionPanel({ events, jobs, selection, linking, error, paused, onSelect, onLink }: EmailResolutionPanelProps) {
+  const choices = new Map(jobs.map((job) => [job.id, job]));
+  return (
+    <section
+      className={paused ? "email-resolution email-resolution-paused" : "email-resolution"}
+      aria-label="Emails that need vacancy linking"
+    >
       <div className="email-resolution-head">
         <div>
-          <strong>Needs linking</strong>
-          <span>{events.length} job email{events.length === 1 ? "" : "s"} could not be matched safely.</span>
+          <strong>Needs linking{paused && <span className="email-resolution-badge">Paused</span>}</strong>
+          <span>{paused ? EMAIL_AUTOMATION_PAUSED_NOTE : `${events.length} job email${events.length === 1 ? "" : "s"} could not be matched safely.`}</span>
         </div>
       </div>
       {error && <p className="email-resolution-error">{error}</p>}
@@ -167,7 +197,8 @@ export default function EmailResolutionPortal({ enabled }: { enabled: boolean })
             <select
               aria-label={`Vacancy for ${event.subject}`}
               value={selection[event.id] ?? ""}
-              onChange={(change) => setSelection((current) => ({ ...current, [event.id]: change.target.value }))}
+              disabled={paused}
+              onChange={(change) => onSelect(event.id, change.target.value)}
             >
               <option value="">Choose vacancy…</option>
               {optionIds.map((jobId) => {
@@ -180,13 +211,12 @@ export default function EmailResolutionPortal({ enabled }: { enabled: boolean })
                 return <option value={jobId} key={jobId}>{label}</option>;
               })}
             </select>
-            <button type="button" disabled={!selection[event.id] || linking === event.id} onClick={() => void link(event.id)}>
+            <button type="button" disabled={paused || !selection[event.id] || linking === event.id} onClick={() => onLink(event.id)}>
               {linking === event.id ? "Linking…" : "Link"}
             </button>
           </div>
         </article>;
       })}
-    </section>,
-    target,
+    </section>
   );
 }

@@ -52,8 +52,6 @@ test("publishes practical Python tasks with structured dark code examples", asyn
   assert.match(overlay, /question\.id\.startsWith\("py-"\)/);
   assert.match(overlay, /highlightInterviewCode\(source, language\)/);
   assert.match(overlay, /background: "#1e1e1e"/);
-  assert.match(overlay, /whiteSpace: "pre"/);
-  assert.match(overlay, /overflowX: "auto"/);
   assert.match(overlay, /legacyCopy\.style\.display = "none"/);
   assert.match(overlay, /practicalExample\.appendChild\(replacement\)/);
   assert.match(overlay, /navigator\.clipboard\.writeText\(code\)/);

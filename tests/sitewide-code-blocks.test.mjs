@@ -20,10 +20,11 @@ test("all static pre/code examples receive the shared dark presentation", async 
 });
 
 test("static pre/code blocks wrap on mobile without changing desktop formatting", async () => {
-  const [styles, renderer, staticBlock] = await Promise.all([
+  const [styles, renderer, staticBlock, interviewOverlay] = await Promise.all([
     read("app/site-code-blocks.css"),
     read("app/qa-markdown.tsx"),
     read("app/static-code-block.ts"),
+    read("app/interview-question-code-overlay.tsx"),
   ]);
   const mobileRule = styles.match(/@media\s*\(max-width:\s*610px\)\s*\{\s*html:root body pre:has\(> code\)\s*\{([^}]+)\}/)?.[1];
   assert.ok(mobileRule, "Expected a phone-only override for static pre/code content");
@@ -34,6 +35,7 @@ test("static pre/code blocks wrap on mobile without changing desktop formatting"
   assert.doesNotMatch(mobileRule, /overflow-y:\s*(?:auto|scroll)/);
   assert.match(renderer, /<pre className="qa-md-diagram"/);
   assert.match(staticBlock, /className: "qa-md-code"/);
+  assert.doesNotMatch(interviewOverlay, /(?:whiteSpace|overflowX):/, "Interview code must use the shared responsive pre/code styles");
 });
 
 test("markdown fences preserve their language metadata when they are static", async () => {

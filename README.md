@@ -324,6 +324,8 @@ The main Cloudflare web application and the supporting Hetzner services have sep
 
 GitHub Actions builds the `main` commit, applies D1 migrations, deploys the Worker/static assets/runtime secrets, and checks the production site and health endpoint.
 
+Cookieless page-view analytics use Cloudflare Web Analytics and switch on when the `CLOUDFLARE_WEB_ANALYTICS_TOKEN` repository variable is set; see [`docs/web-analytics.md`](docs/web-analytics.md).
+
 Production deployment does not rerun the full PR validation suite after merge. A separate code-quality workflow can refresh the SonarQube `main` baseline without gating the release.
 
 ### AI service

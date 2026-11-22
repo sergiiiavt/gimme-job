@@ -29,8 +29,8 @@
       "questionUk": "Чим Flask і FastAPI відрізняються за основним дизайном, окрім того, що обидва описують як «легкі веб-фреймворки Python»?",
       "shortAnswerUk": "Flask — синхронний WSGI-фреймворк, побудований навколо мінімалізму й явної маршрутизації; валідація запитів, серіалізація й документація опційні через розширення, а не вбудовані в ядро. FastAPI побудований на ASGI для нативної підтримки `async`/`await` і безпосередньо інтегрує моделі Pydantic у визначення маршрутів, тож анотації типів обробника запиту одночасно визначають валідацію вхідних даних, автоматичні відповіді про помилки для некоректних запитів і інтерактивну документацію OpenAPI, без окремого кроку визначення схеми.",
       "strongAnswerSignalsUk": ["Flask синхронний WSGI, мінімальне ядро, валідація опційна через розширення", "FastAPI на основі ASGI з нативною підтримкою async/await", "анотації типів FastAPI одночасно валідують через Pydantic й генерують OpenAPI-документацію"],
-      "example": "`@app.post(\"/users\")\\nasync def create_user(user: UserIn) -> UserOut:` in FastAPI validates the incoming JSON against `UserIn` automatically, while the equivalent Flask route needs an explicit call to a validation library inside the function body.",
-      "exampleUk": "`@app.post(\"/users\")\\nasync def create_user(user: UserIn) -> UserOut:` у FastAPI автоматично валідує вхідний JSON проти `UserIn`, тоді як еквівалентний маршрут Flask потребує явного виклику бібліотеки валідації всередині тіла функції.",
+      "example": "`@app.post(\"/users\")\nasync def create_user(user: UserIn) -> UserOut:` in FastAPI validates the incoming JSON against `UserIn` automatically, while the equivalent Flask route needs an explicit call to a validation library inside the function body.",
+      "exampleUk": "`@app.post(\"/users\")\nasync def create_user(user: UserIn) -> UserOut:` у FastAPI автоматично валідує вхідний JSON проти `UserIn`, тоді як еквівалентний маршрут Flask потребує явного виклику бібліотеки валідації всередині тіла функції.",
       "tags": ["web-frameworks", "flask", "fastapi"],
       "sourceIds": ["flask-docs", "fastapi-docs"]
     },
