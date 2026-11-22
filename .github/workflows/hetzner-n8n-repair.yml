@@ -1,17 +1,20 @@
 name: Refresh Hetzner runtime
 
+# Manual dispatch only while the n8n integration is paused (N8N_INTEGRATION_ENABLED in
+# app/n8n-integration.ts). This workflow reboots the n8n VM into rescue mode, so merges
+# under ops/hetzner/ (including Dependabot bumps) must not run it automatically.
+# Restore the push trigger on main when n8n is resumed:
+#   push:
+#     branches: [main]
+#     paths:
+#       - .github/workflows/hetzner-n8n-repair.yml
+#       - ops/hetzner/bootstrap.sh
+#       - ops/hetzner/docker-compose.yml
+#       - ops/hetzner/Caddyfile
+#       - ops/hetzner/db-lab/**
+#       - ops/hetzner/db-lab-api/**
+#       - ops/hetzner/mongo-lab-api/**
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/hetzner-n8n-repair.yml
-      - ops/hetzner/bootstrap.sh
-      - ops/hetzner/docker-compose.yml
-      - ops/hetzner/Caddyfile
-      - ops/hetzner/db-lab/**
-      - ops/hetzner/db-lab-api/**
-      - ops/hetzner/mongo-lab-api/**
   workflow_dispatch:
 
 permissions:

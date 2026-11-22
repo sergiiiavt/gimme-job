@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import { EMAIL_AUTOMATION_ENABLED } from "../app/email-automation.ts";
+import { N8N_INTEGRATION_ENABLED } from "../app/n8n-integration.ts";
 
 const cloudflareWorkersModule = `data:text/javascript,${encodeURIComponent("export const env = globalThis.__gimmejobMultiUserCloudflareEnv;")}`;
 const cloudflareEnv = {};
@@ -170,7 +171,31 @@ test("paused email automation answers n8n email routes with 503 even with a vali
   }
 });
 
-test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", { skip: !EMAIL_AUTOMATION_ENABLED && "email automation is paused; its n8n routes answer 503 before auth" }, async () => {
+test("paused n8n integration answers n8n-only routes with 503 but keeps the vacancy-sync POST on its bearer auth", { skip: N8N_INTEGRATION_ENABLED && "n8n integration is enabled" }, async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("multi-user-n8n-paused-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const { db } = fakeSessionDb();
+  const env = envFor(db);
+
+  for (const key of Object.keys(cloudflareEnv)) delete cloudflareEnv[key];
+  cloudflareEnv.DB = db;
+  cloudflareEnv.MULTI_USER_ENABLED = "true";
+  cloudflareEnv.N8N_INGEST_TOKEN = "n8n-service-token";
+
+  const activity = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/vacancies-sync?startUtc=2026-11-21T22:00:00.000Z&endUtc=2026-11-22T22:00:00.000Z", {
+    headers: { authorization: "Bearer n8n-service-token" },
+  }), env, context);
+  assert.equal(activity.status, 503);
+  assert.equal((await activity.json()).code, "n8n_integration_paused");
+
+  // The hourly GitHub Actions vacancy sync shares this route by POST; it must reach the route's own bearer check.
+  const vacancySync = await worker.fetch(new Request("https://gimmejob.example/internal/n8n/vacancies-sync", { method: "POST" }), env, context);
+  assert.equal(vacancySync.status, 401);
+  assert.equal(vacancySync.headers.get("www-authenticate"), "Bearer");
+});
+
+test("multi-user Worker preserves n8n bearer auth only for scoped internal service routes", { skip: (!EMAIL_AUTOMATION_ENABLED || !N8N_INTEGRATION_ENABLED) && "email automation or the n8n integration is paused; their n8n routes answer 503 before auth" }, async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("multi-user-n8n-service-test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);

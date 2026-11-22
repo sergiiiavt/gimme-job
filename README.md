@@ -336,7 +336,7 @@ Pull-request AI-image jobs build/test without receiving production deployment se
 
 ### n8n / Hetzner infrastructure
 
-Infrastructure and n8n runtime configuration are versioned under `ops/hetzner/` and `ops/n8n/`. Provisioning/deployment workflows configure the VM, reconcile the firewall and Cloudflare DNS, refresh the version-controlled Compose runtime, and verify the public service boundaries after changes reach `main`.
+Infrastructure and n8n runtime configuration are versioned under `ops/hetzner/` and `ops/n8n/`. Provisioning/deployment workflows configure the VM, reconcile the firewall and Cloudflare DNS, refresh the version-controlled Compose runtime, and verify the public service boundaries after changes reach `main`. While the n8n integration is paused, those two Hetzner workflows run only on manual dispatch; see [`ops/n8n/README.md`](ops/n8n/README.md).
 
 Production credentials belong in GitHub/Cloudflare/provider-managed secret stores, never in source control. Database-lab credentials are separate from production credentials and are never sent to the browser. Legacy fixture login verifiers remain confined to the private lab databases.
 

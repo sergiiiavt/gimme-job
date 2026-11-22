@@ -17,6 +17,7 @@ import { withSecurityHeaders } from "./security-headers";
 import { withWebAnalytics, type WebAnalyticsEnv } from "./web-analytics";
 import { SITE_ORIGIN } from "../app/seo";
 import { emailAutomationPausedResponse } from "../app/email-automation";
+import { n8nIntegrationPausedResponse } from "../app/n8n-integration";
 
 const httpWorker = createMultiUserBoundary(coreWorker);
 type HttpWorkerFetch = typeof httpWorker.fetch;
@@ -68,6 +69,9 @@ const worker = {
 
     const emailPausedResponse = emailAutomationPausedResponse(request);
     if (emailPausedResponse) return withSecurityHeaders(emailPausedResponse);
+
+    const n8nPausedResponse = n8nIntegrationPausedResponse(request);
+    if (n8nPausedResponse) return withSecurityHeaders(n8nPausedResponse);
 
     if (isWebSocketPlaygroundRequest(request)) {
       return proxyWebSocketPlayground(request);
