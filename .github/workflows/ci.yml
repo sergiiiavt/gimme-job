@@ -94,10 +94,20 @@ jobs:
           rm -rf examples/llm-testing/.venv
           find examples/llm-testing -type d -name __pycache__ -prune -exec rm -rf {} +
 
+      - name: Verify AI agents & MCP lab
+        run: |
+          python -m unittest discover -s examples/agentic-mcp-lab -v
+          find examples/agentic-mcp-lab -type d -name __pycache__ -prune -exec rm -rf {} +
+
+      - name: Verify observability lab
+        run: |
+          python -m unittest discover -s examples/observability-lab -v
+          find examples/observability-lab -type d -name __pycache__ -prune -exec rm -rf {} +
+
       # Dependabot runs receive no repository secrets; main is re-analyzed after merge.
       - name: SonarQube Cloud quality gate
         if: github.event.pull_request.user.login != 'dependabot[bot]'
-        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         with:
           args: >
             -Dsonar.qualitygate.wait=true
@@ -310,7 +320,7 @@ jobs:
           find ai-service -type d -name __pycache__ -prune -exec rm -rf {} +
 
       - name: Refresh SonarQube Cloud main branch
-        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         with:
           args: >
             -Dsonar.tests=tests,ai-service/tests

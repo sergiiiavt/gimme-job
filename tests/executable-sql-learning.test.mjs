@@ -76,7 +76,7 @@ test("SQL interview examples and direct links use audited runtime metadata", () 
 test("SQL quick reference stays static instead of mounting executable SQL", () => {
   assert.doesNotMatch(referencePage, /SqlReferenceRunnableOverlay/);
   assert.doesNotMatch(referencePage, /section === "data"/);
-  assert.match(referencePage, /<QuickReferencePage referenceId=\{section\}\/\>/);
+  assert.match(referencePage, /<QuickReferencePage [^>]*\breferenceId=\{section\}[^>]*\/>/);
 });
 
 test("SQL runner starts horizontal overflow at the beginning while retaining left scrollbars", () => {

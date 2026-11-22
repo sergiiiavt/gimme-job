@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import automationCurriculum from "@/content/automation-learning/catalog";
 import automationTaxonomy from "@/content/automation-learning/taxonomy.json";
 import cloudDevopsTaxonomy from "@/content/cloud-devops/taxonomy.json";
@@ -17,6 +17,7 @@ import sqlPracticalTasks from "@/content/data-learning/sql-practical-tasks.json"
 import qaQuickReference from "@/content/qa-fundamentals/quick-reference.json";
 import qaRequiredConcepts from "@/content/qa-fundamentals/required-concepts.json";
 import qaTaxonomy from "@/content/qa-fundamentals/taxonomy.json";
+import { referenceCardForTopic } from "./quick-reference-deep-link";
 import { navigationGroups, SiteSidebar, type ExternalNavigationId, type SecondarySwitcher, type SiteSection, type SubnavItem } from "./site-navigation";
 import styles from "./quick-reference-page.module.css";
 
@@ -24,6 +25,9 @@ type ReferenceRow = { term: string; detail: string; meaning?: string };
 type ReferenceCode = { label: string; code: string };
 type ReferenceCard = {
   id: string;
+  /** The card's id in its source catalog, which canonical learning links use as `topic`. */
+  sourceId?: string;
+  track?: string;
   title: string;
   scope?: string;
   tags?: string[];
@@ -245,6 +249,8 @@ function pythonCardMeta(cardId: string) {
 const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.flatMap((card) => {
   const primaryCard: ReferenceCard = {
     id: `python-${card.id}`,
+    sourceId: card.id,
+    track: "python",
     languages: ["Python"],
     title: card.title,
     tags: card.tags,
@@ -258,6 +264,8 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
     .filter((theoryCard) => theoryCard.after === card.id)
     .map((theoryCard): ReferenceCard => ({
       id: `python-${theoryCard.id}`,
+      sourceId: theoryCard.id,
+      track: "python",
       languages: ["Python"],
       title: theoryCard.title,
       tags: theoryCard.tags,
@@ -272,6 +280,8 @@ const basePythonReferenceCards: ReferenceCard[] = pythonReferenceCatalog.cards.f
 
 const interviewPythonReferenceCards: ReferenceCard[] = pythonInterviewReferenceCatalog.cards.map((card) => ({
   id: `python-${card.id}`,
+  sourceId: card.id,
+  track: "python",
   languages: ["Python"],
   title: card.title,
   tags: card.tags,
@@ -291,9 +301,9 @@ const pythonReferenceCards: ReferenceCard[] = [...basePythonReferenceCards, ...i
 });
 
 const programmingReferenceCards: ReferenceCard[] = [
-  ...programmingReferenceCatalog.general.map((card) => ({ ...card, id: `general-${card.id}`, languages: ["General"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+  ...programmingReferenceCatalog.general.map((card) => ({ ...card, id: `general-${card.id}`, sourceId: card.id, languages: ["General"], tags: card.topics, rows: card.entries, moreRows: card.more })),
   ...pythonReferenceCards,
-  ...programmingReferenceCatalog.csharp.map((card) => ({ ...card, id: `csharp-${card.id}`, languages: ["C#"], tags: card.topics, rows: card.entries, moreRows: card.more })),
+  ...programmingReferenceCatalog.csharp.map((card) => ({ ...card, id: `csharp-${card.id}`, sourceId: card.id, track: "csharp", languages: ["C#"], tags: card.topics, rows: card.entries, moreRows: card.more })),
 ];
 
 /** General concepts are portable across languages, like Portable SQL across database dialects. */
@@ -303,6 +313,7 @@ function matchesProgrammingLanguage(card: ReferenceCard, language: string) {
 
 const sqlReferenceCards: ReferenceCard[] = sqlReferenceCatalog.cards.map((card) => ({
   id: `sql-${card.id}`,
+  sourceId: card.id,
   title: card.title,
   topics: card.topics,
   dialects: card.dialects,
@@ -481,40 +492,93 @@ function ReferenceRows({ cardId, rows, className = "" }: { cardId: string; rows:
   );
 }
 
-export default function QuickReferencePage({ referenceId }: { referenceId: string }) {
+type QuickReferencePageProps = Readonly<{
+  referenceId: string;
+  /** Opens one card: its catalog id or rendered id, as canonical learning links carry it. */
+  topic?: string;
+  track?: string;
+}>;
+
+/** The language or dialect a page opens with. */
+function initialDialect(referenceId: string, targetCard: ReferenceCard | undefined) {
+  if (referenceId !== "programming") return "All";
+  // Preserve the previously published Python-first reference, while allowing other languages explicitly.
+  // A linked card opens with the language that shows it.
+  return targetCard?.languages?.[0] ?? "Python";
+}
+
+function variantDialects(referenceId: string) {
+  if (referenceId === "data") return sqlReferenceCatalog.dialectFilters;
+  return referenceId === "programming" ? ["All", "General", "Python", "C#"] : ["All"];
+}
+
+function referenceScopes(referenceId: string, cards: readonly ReferenceCard[], dialect: string) {
+  if (referenceId === "programming") {
+    const availableTopics = new Set(
+      programmingReferenceCards.filter((card) => matchesProgrammingLanguage(card, dialect)).flatMap((card) => card.tags ?? []),
+    );
+    const orderedTopics = [...new Set([...pythonReferenceFilters, ...programmingReferenceCatalog.topicFilters])];
+    return orderedTopics.filter((filter) => filter === "All" || availableTopics.has(filter));
+  }
+  if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
+  if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
+  return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
+}
+
+type CardFilters = Readonly<{ referenceId: string; scope: string; dialect: string; query: string }>;
+
+function cardMatchesFilters(card: ReferenceCard, { referenceId, scope, dialect, query }: CardFilters) {
+  const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
+  const dialectMatches = referenceId === "programming"
+    ? matchesProgrammingLanguage(card, dialect)
+    : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
+  return scopeMatches && dialectMatches && (!query || searchableCardText(card).includes(query));
+}
+
+/** The learning track a reference page's topic links open. */
+function referenceTrack(referenceId: string, dialect: string) {
+  if (referenceId === "programming") return dialect === "C#" ? "csharp" : "python";
+  if (referenceId === "automation") return "framework";
+  return referenceId === "data" ? "sql" : undefined;
+}
+
+function cardClassName(hasContent: boolean, expanded: boolean, targeted: boolean) {
+  return [styles.card, !hasContent && styles.placeholder, expanded && styles.expandedCard, targeted && styles.targetCard].filter(Boolean).join(" ");
+}
+
+/** Scrolls the card a `?topic=` link opened into view, below the sticky filter bar. */
+function useScrollToCard(cardId: string | undefined, topbarRef: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    if (!cardId) return;
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    // The bar's sticky offset and height depend on the viewport.
+    const topbar = topbarRef.current;
+    const topbarBottom = topbar ? (Number.parseFloat(getComputedStyle(topbar).top) || 0) + topbar.offsetHeight : 0;
+    card.style.scrollMarginTop = `${topbarBottom + 8}px`;
+    card.scrollIntoView({ block: "start" });
+  }, [cardId, topbarRef]);
+}
+
+export default function QuickReferencePage({ referenceId, topic, track }: QuickReferencePageProps) {
   const learningGroup = navigationGroups.find((group) => group.id === "learning");
   const activeItem = learningGroup?.items.find((item) => item.id === referenceId);
   const cards = referenceCards(referenceId);
+  const targetCard = referenceCardForTopic(cards, topic, track);
+  const targetCardId = targetCard?.id;
+  const topbarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState("All");
-  // Preserve the previously published Python-first reference, while allowing other languages explicitly.
-  const [dialect, setDialect] = useState(referenceId === "programming" ? "Python" : "All");
+  const [dialect, setDialect] = useState(() => initialDialect(referenceId, targetCard));
   const hasVariantFilter = referenceId === "programming" || referenceId === "data";
-  const dialects = referenceId === "data"
-    ? sqlReferenceCatalog.dialectFilters
-    : referenceId === "programming" ? ["All", "General", "Python", "C#"] : ["All"];
-  const scopes = useMemo(() => {
-    if (referenceId === "programming") {
-      const availableTopics = new Set(
-        programmingReferenceCards.filter((card) => matchesProgrammingLanguage(card, dialect)).flatMap((card) => card.tags ?? []),
-      );
-      const orderedTopics = [...new Set([...pythonReferenceFilters, ...programmingReferenceCatalog.topicFilters])];
-      return orderedTopics.filter((filter) => filter === "All" || availableTopics.has(filter));
-    }
-    if (referenceId === "data") return sqlReferenceCatalog.topicFilters;
-    if (referenceId === "qa-fundamentals") return qaReferenceCatalog.filters;
-    return ["All", ...Array.from(new Set(cards.map((card) => card.scope).filter((value): value is string => Boolean(value))))];
-  }, [cards, referenceId, dialect]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set());
+  const dialects = variantDialects(referenceId);
+  const scopes = useMemo(() => referenceScopes(referenceId, cards, dialect), [cards, referenceId, dialect]);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(() => new Set(targetCardId ? [targetCardId] : []));
   const [mobileNav, setMobileNav] = useState(false);
   const normalizedQuery = query.trim().toLowerCase();
-  const visibleCards = cards.filter((card) => {
-    const scopeMatches = scope === "All" || card.scope === scope || card.tags?.includes(scope) || card.topics?.includes(scope);
-    const dialectMatches = referenceId === "programming"
-      ? matchesProgrammingLanguage(card, dialect)
-      : referenceId !== "data" || dialect === "All" || card.dialects?.includes(dialect) || (dialect !== "Portable" && card.dialects?.includes("Portable"));
-    return scopeMatches && dialectMatches && (!normalizedQuery || searchableCardText(card).includes(normalizedQuery));
-  });
+  const visibleCards = cards.filter((card) => cardMatchesFilters(card, { referenceId, scope, dialect, query: normalizedQuery }));
+
+  useScrollToCard(targetCardId, topbarRef);
 
   if (!activeItem || !supportedReferenceIds.has(referenceId)) {
     return <main className="kb-content"><div className="kb-empty"><strong>Quick reference not published</strong><span>This reference is limited to the learning paths that already use the document-style curriculum.</span></div></main>;
@@ -525,7 +589,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
   const activeExternalId = external ? activeItem.id as ExternalNavigationId : undefined;
   const secondaryItems = learningSubnav(referenceId, dialect);
   const secondarySwitcher = learningSwitcher(referenceId, dialect);
-  const activeTrack = referenceId === "programming" ? (dialect === "C#" ? "csharp" : "python") : referenceId === "automation" ? "framework" : referenceId === "data" ? "sql" : undefined;
+  const activeTrack = referenceTrack(referenceId, dialect);
 
   const selectLearningTopic = (topicId: string) => {
     window.location.assign(regularLearningHref(referenceId, topicId, activeTrack));
@@ -560,7 +624,7 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
       <section className="kb-main">
         <button aria-expanded={mobileNav} aria-label="Toggle navigation" className="kb-floating-menu" onClick={() => setMobileNav((value) => !value)} type="button">☰</button>
         <div className={`kb-content ${styles.page}`}>
-          <div className={styles.topbar} aria-label="Quick reference filters">
+          <div className={styles.topbar} aria-label="Quick reference filters" ref={topbarRef}>
             <div className={styles.filterGroups} style={hasVariantFilter ? { flexDirection: "column", alignItems: "stretch", gap: 4 } : undefined}>
               <div className={styles.filterGroup}>
                 {hasVariantFilter ? <span className={styles.filterLabel}>Topic</span> : null}
@@ -589,8 +653,14 @@ export default function QuickReferencePage({ referenceId }: { referenceId: strin
               const expanded = expandedCards.has(card.id);
               const showMoreRows = expanded || Boolean(normalizedQuery);
               const cardNumber = referenceId === "programming" || referenceId === "data" ? cards.findIndex((candidate) => candidate.id === card.id) + 1 : null;
+              const targeted = card.id === targetCardId;
               return (
-                <article className={`${styles.card}${hasContent ? "" : ` ${styles.placeholder}`}${expanded ? ` ${styles.expandedCard}` : ""}`} key={card.id}>
+                <article
+                  className={cardClassName(hasContent, expanded, targeted)}
+                  data-deep-link-target={targeted ? "true" : undefined}
+                  id={card.id}
+                  key={card.id}
+                >
                   <header className={styles.cardHeader}>
                     <div className={styles.cardTitle}>
                       {cardNumber ? <span className={styles.cardIndex}>{cardNumber}</span> : null}

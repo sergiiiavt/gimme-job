@@ -2,6 +2,10 @@
 
 This directory contains importable n8n workflow definitions for GimmeJob. The production n8n runtime is managed under `ops/hetzner/` and is available at `https://n8n.gimme-job.com`.
 
+## Email automation is paused
+
+`EMAIL_AUTOMATION_ENABLED` in `app/email-automation.ts` is `false`. While it is off, the Worker `email()` handler accepts and discards forwarded mail, `/auth/forwarding` and the `/internal/n8n/email-*` routes return `503 email_automation_paused`, and the account menu and the "Needs linking" panel are grayed out. Stored email events stay in D1. Deactivate the three email workflows in n8n while paused; set the flag back to `true` and redeploy to restore everything.
+
 ## Current email architecture
 
 ```text

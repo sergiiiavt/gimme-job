@@ -4,17 +4,17 @@ version = "0.1.0"
 description = "AI assistant service for GimmeJob"
 requires-python = ">=3.12,<3.15"
 dependencies = [
-  "fastapi[standard]==0.162.0",
-  "langchain==1.4.8",
-  "langchain-openai==1.7.3",
-  "langfuse==5.1.0",
-  "langgraph==1.2.19",
-  "pydantic-settings==2.16.2",
+  "fastapi[standard]==0.163.1",
+  "langchain==1.5.0",
+  "langchain-openai==1.8.0",
+  "langfuse==5.2.0",
+  "langgraph==1.2.22",
+  "pydantic-settings==2.16.3",
 ]
 
 [project.optional-dependencies]
 test = [
-  "coverage==7.17.0",
+  "coverage==7.17.3",
 ]
 
 [build-system]
