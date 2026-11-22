@@ -155,10 +155,9 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
     path: "/learn/docker",
   },
   observability: {
-    title: "Observability for QA",
-    description: "Observability learning materials for QA engineers covering logs, metrics, traces, monitoring, diagnostics, and production feedback loops.",
+    title: "Observability & SRE for QA",
+    description: "Observability and SRE for QA engineers: structured logs, metrics, golden signals and percentiles, tracing, SLOs and error budgets, alerting, incidents and testing in production.",
     path: "/learn/observability",
-    maturity: "under-construction",
   },
   networking: {
     title: "Networking for QA Engineers",

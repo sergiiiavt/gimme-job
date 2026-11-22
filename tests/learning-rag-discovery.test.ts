@@ -96,6 +96,24 @@ test("QA fundamentals deep links open the chapter page, sections included", asyn
   assert.ok(hit, "a QA fundamentals section is retrievable with a deep link to its chapter");
 });
 
+test("SQL learning path modules are retrievable as sections of their SQL-track chapter", async () => {
+  const sql = staticRagDocuments().filter((document) => document.kind === "learning" && document.metadata.catalog === "sql");
+  assert.ok(sql.some((document) => typeof document.metadata.section === "string"), "SQL chapters split into sections");
+  assert.ok(sql.every((document) => document.metadata.route === "/learn/data" && document.metadata.track === "sql"));
+
+  const result = await searchRagDocuments(env as never, "ROW_NUMBER RANK DENSE_RANK window functions", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath.startsWith("/learn/data?topic=window-functions&section="));
+  assert.ok(hit, "a SQL path section is retrievable with a deep link to its chapter");
+  assert.equal(new URL(hit.sourcePath, "https://gimme-job.com").searchParams.get("track"), "sql");
+});
+
+test("SQL quick-reference cards and tasks are retrieved as cards of the reference page", async () => {
+  const result = await searchRagDocuments(env as never, "SQL task: find customers without orders, entities with no related rows", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath === "/reference/data?topic=task-missing-related-rows");
+  assert.ok(hit, "the practical task links to its card on the SQL quick reference");
+  assert.equal(result.results.some((item) => item.sourcePath.startsWith("/learn/data?topic=task-")), false);
+});
+
 test("learning deep links open the same topic page search engines index", () => {
   const pages = new Map(learningTopicPages().map((page) => [`${page.route}\n${page.topic}`, page]));
   let compared = 0;

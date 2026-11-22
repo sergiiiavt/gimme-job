@@ -197,6 +197,13 @@
     padding-top: 16px !important;
   }
 
+  /* Chapter articles bleed into the page's 20px mobile gutter with negative margins; the
+     focused view's gutter is 10px, so that bleed would overflow the viewport. */
+  .focusedArticle {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
   .focusedTopNav {
     align-items: flex-start;
     flex-wrap: wrap;

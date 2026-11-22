@@ -115,6 +115,12 @@
   box-shadow: 0 2px 10px rgba(53, 77, 55, .07);
 }
 
+/* The card a `?topic=` link opened. An outline survives the design-specific shadow overrides. */
+.targetCard {
+  border-color: #9fbf86;
+  outline: 2px solid #cadbb8;
+}
+
 .cardHeader {
   align-items: center;
   border-bottom: 1px solid #edf0ed;
