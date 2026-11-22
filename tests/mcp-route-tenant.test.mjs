@@ -63,28 +63,38 @@ async function loadWorker(users) {
 }
 
 const context = { waitUntil() {}, passThroughOnException() {} };
+const META = {
+  "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+  "io.modelcontextprotocol/clientCapabilities": {},
+};
 
-function mcpRequest(message, { email } = {}) {
+function mcpRequest(message, { email, token = MCP_TOKEN } = {}) {
+  const toolName = message.method === "tools/call" ? message.params?.name : undefined;
   return new Request("https://gimmejob.example/mcp", {
     method: "POST",
     headers: {
       "content-type": "application/json",
       accept: "application/json, text/event-stream",
-      "x-gimmejob-mcp-token": MCP_TOKEN,
+      "mcp-protocol-version": "2026-07-28",
+      "mcp-method": message.method,
+      ...(toolName ? { "mcp-name": toolName } : {}),
+      ...(token ? { "x-gimmejob-mcp-token": token } : {}),
       ...(email ? { "x-gimmejob-mcp-user-email": email } : {}),
     },
-    body: JSON.stringify(message),
+    body: JSON.stringify({ ...message, params: { ...message.params, _meta: META } }),
   });
 }
 
-const initialize = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26" } };
+const discover = { jsonrpc: "2.0", id: 1, method: "server/discover", params: {} };
 
 test("MCP route resolves the selected account through the real vinext route handler", async () => {
   const { worker, env, state } = await loadWorker(USERS);
 
-  const initialized = await worker.fetch(mcpRequest(initialize, { email: "B@Example.test" }), env, context);
-  assert.equal(initialized.status, 200);
-  assert.equal((await initialized.json()).result.serverInfo.name, "gimmejob");
+  const discovered = await worker.fetch(mcpRequest(discover, { email: "B@Example.test" }), env, context);
+  assert.equal(discovered.status, 200);
+  const discovery = (await discovered.json()).result;
+  assert.deepEqual(discovery.supportedVersions, ["2026-07-28"]);
+  assert.equal(discovery._meta["io.modelcontextprotocol/serverInfo"].name, "gimmejob");
 
   const progress = await worker.fetch(mcpRequest({
     jsonrpc: "2.0",
@@ -93,6 +103,20 @@ test("MCP route resolves the selected account through the real vinext route hand
     params: { name: "get_learning_progress", arguments: {} },
   }, { email: "b@example.test" }), env, context);
   assert.equal(progress.status, 200);
-  assert.equal((await progress.json()).result.isError, false);
+  const result = (await progress.json()).result;
+  assert.equal(result.resultType, "complete");
+  assert.equal(result.isError, false);
   assert.deepEqual(state.progressUserIds, ["user-b"]);
+});
+
+test("MCP route keeps rejecting calls without the service token and refuses non-POST methods", async () => {
+  const { worker, env, state } = await loadWorker(USERS);
+
+  const anonymous = await worker.fetch(mcpRequest(discover, { token: "" }), env, context);
+  assert.equal(anonymous.status, 401);
+  assert.deepEqual(await anonymous.json(), { error: "MCP service authentication required." });
+
+  const get = await worker.fetch(new Request("https://gimmejob.example/mcp", { headers: { accept: "text/event-stream" } }), env, context);
+  assert.equal(get.status, 405);
+  assert.deepEqual(state.progressUserIds, []);
 });

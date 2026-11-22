@@ -1,0 +1,290 @@
+[
+  {
+    "id": "honeycomb-observability",
+    "title": "What Is Observability? Key Components and Best Practices",
+    "publisher": "Honeycomb (vendor article)",
+    "kind": "article",
+    "url": "https://www.honeycomb.io/what-is-observability",
+    "role": "Observability as the ability to ask new questions of a system without predicting them in advance, contrasted with threshold-based monitoring.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-signals",
+    "title": "Signals",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/",
+    "role": "The supported signals (traces, metrics, logs, baggage) and those still in development (events, profiles).",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-logs",
+    "title": "Logs",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/logs/",
+    "role": "Log record fields, structured versus semistructured logs, and correlation with traces through TraceId and SpanId.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-metrics",
+    "title": "Metrics",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/metrics/",
+    "role": "Counter, UpDownCounter, Gauge and Histogram instruments, and the default cardinality limit with an overflow series.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "google-sre-monitoring",
+    "title": "Monitoring Distributed Systems",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "role": "The four golden signals, symptoms versus causes, black-box versus white-box monitoring, and why averages hide slow requests.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "twelve-factor-logs",
+    "title": "XI. Logs",
+    "publisher": "The Twelve-Factor App (Adam Wiggins)",
+    "kind": "article",
+    "url": "https://12factor.net/logs",
+    "role": "Logs as time-ordered event streams written to stdout and routed by the environment.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "owasp-logging",
+    "title": "Logging Cheat Sheet",
+    "publisher": "OWASP Cheat Sheet Series",
+    "kind": "standard",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+    "role": "Which security events to log, data that must never be logged, log injection and why logging failures must not stop the application.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "cloudflare-workers-logs",
+    "title": "Workers Logs",
+    "publisher": "Cloudflare",
+    "kind": "official-docs",
+    "url": "https://developers.cloudflare.com/workers/observability/logs/workers-logs/",
+    "role": "Structured JSON logging, head-based sampling and retention limits of the platform GimmeJob runs on.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-metric-types",
+    "title": "Metric types",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/concepts/metric_types/",
+    "role": "Counter, gauge, histogram and summary definitions.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-histograms",
+    "title": "Histograms and summaries",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/practices/histograms/",
+    "role": "Quantiles estimated from histogram buckets, why per-instance summary quantiles cannot be averaged, and why a threshold SLI needs a bucket at that exact bound.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-naming",
+    "title": "Metric and label naming",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/practices/naming/",
+    "role": "Base units, unit suffixes, _total for counters, and keeping unbounded values out of labels.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "usemethod",
+    "title": "The USE Method",
+    "publisher": "Brendan Gregg",
+    "kind": "article",
+    "url": "https://www.brendangregg.com/usemethod.html",
+    "role": "Utilization, saturation and errors for every resource.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "red-method",
+    "title": "The RED Method: How to Instrument Your Services",
+    "publisher": "Grafana Labs (method by Tom Wilkie)",
+    "kind": "article",
+    "url": "https://grafana.com/blog/2018/08/02/the-red-method-how-to-instrument-your-services/",
+    "role": "Rate, errors and duration for every service.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "w3c-trace-context",
+    "title": "Trace Context",
+    "publisher": "W3C Recommendation (Distributed Tracing Working Group)",
+    "kind": "standard",
+    "url": "https://www.w3.org/TR/trace-context/",
+    "role": "The traceparent and tracestate headers: version, trace id, parent id and the sampled flag.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-traces",
+    "title": "Traces",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/signals/traces/",
+    "role": "Span fields (attributes, events, links, status) and span kinds.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-context-propagation",
+    "title": "Context propagation",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/context-propagation/",
+    "role": "Injecting and extracting context between services, W3C Trace Context as the default, and caution with untrusted context.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "otel-sampling",
+    "title": "Sampling",
+    "publisher": "OpenTelemetry",
+    "kind": "official-docs",
+    "url": "https://opentelemetry.io/docs/concepts/sampling/",
+    "role": "Head versus tail sampling, their trade-offs, and when sampling is worth it.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-slo",
+    "title": "Service Level Objectives",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/service-level-objectives/",
+    "role": "SLI, SLO and SLA definitions, choosing indicators and setting targets.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-embracing-risk",
+    "title": "Embracing Risk",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/embracing-risk/",
+    "role": "Error budgets as a shared rule between release velocity and reliability.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-alerting-on-slos",
+    "title": "Alerting on SLOs",
+    "publisher": "Google — The Site Reliability Workbook (O'Reilly, 2018)",
+    "kind": "article",
+    "url": "https://sre.google/workbook/alerting-on-slos/",
+    "role": "Burn rate and the multiwindow, multi-burn-rate alerts for a 30-day SLO.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-error-budget-policy",
+    "title": "Example Error Budget Policy",
+    "publisher": "Google — The Site Reliability Workbook (O'Reilly, 2018)",
+    "kind": "article",
+    "url": "https://sre.google/workbook/error-budget-policy/",
+    "role": "What to do when the error budget is exhausted, its exceptions, and the 20% single-incident rule.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-practical-alerting",
+    "title": "Practical Alerting",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/practical-alerting/",
+    "role": "Pages, tickets and dashboards as alert destinations, and conditions that must persist before firing.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-managing-incidents",
+    "title": "Managing Incidents",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/managing-incidents/",
+    "role": "Incident roles, the incident document, declaring incidents early and response priorities.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-postmortem-culture",
+    "title": "Postmortem Culture: Learning from Failure",
+    "publisher": "Google — Site Reliability Engineering (O'Reilly, 2016)",
+    "kind": "article",
+    "url": "https://sre.google/sre-book/postmortem-culture/",
+    "role": "Blameless postmortems, their contents and the triggers for writing one.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "grafana-synthetic-monitoring",
+    "title": "Synthetic Monitoring",
+    "publisher": "Grafana Labs (Grafana Cloud documentation)",
+    "kind": "official-docs",
+    "url": "https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/",
+    "role": "Synthetic monitoring as black-box testing of externally visible behaviour, run continuously from probe locations for availability, performance and correctness.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "sre-canarying",
+    "title": "Canarying Releases",
+    "publisher": "Google — The Site Reliability Workbook (O'Reilly, 2018)",
+    "kind": "article",
+    "url": "https://sre.google/workbook/canarying-releases/",
+    "role": "Canary versus control, choosing the population and duration, a few user-visible metrics split by group, one canary at a time, and the risks of shared state.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-canary-release",
+    "title": "Canary Release",
+    "publisher": "martinfowler.com (Danilo Sato, 2014)",
+    "kind": "article",
+    "url": "https://martinfowler.com/bliki/CanaryRelease.html",
+    "role": "Rolling a new version out to a small subset of users before everyone, also called phased or incremental rollout.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-feature-toggles",
+    "title": "Feature Toggles (aka Feature Flags)",
+    "publisher": "martinfowler.com (Pete Hodgson, 2017)",
+    "kind": "article",
+    "url": "https://martinfowler.com/articles/feature-toggles.html",
+    "role": "Release, experiment, ops and permissioning toggles, how long each lives and how dynamic it is, and kill switches as long-lived ops toggles.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "openfeature",
+    "title": "OpenFeature",
+    "publisher": "OpenFeature (CNCF incubating project)",
+    "kind": "standard",
+    "url": "https://openfeature.dev/",
+    "role": "An open specification for a vendor-agnostic feature-flagging API: flag evaluation, providers, evaluation context and hooks.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fowler-dark-launching",
+    "title": "Dark Launching",
+    "publisher": "martinfowler.com (Martin Fowler, 2020)",
+    "kind": "article",
+    "url": "https://martinfowler.com/bliki/DarkLaunching.html",
+    "role": "Calling new back-end behaviour from real requests without users noticing, to measure load before launch, and why user-choice features need canaries instead.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "principles-of-chaos",
+    "title": "Principles of Chaos Engineering",
+    "publisher": "principlesofchaos.org",
+    "kind": "article",
+    "url": "https://principlesofchaos.org/",
+    "role": "Chaos engineering as experiments on steady state, real-world events, experiments in production, automation and a minimal blast radius.",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "prometheus-exposition-formats",
+    "title": "Exposition formats",
+    "publisher": "Prometheus",
+    "kind": "official-docs",
+    "url": "https://prometheus.io/docs/instrumenting/exposition_formats/",
+    "role": "The text format: HELP and TYPE lines before samples, label syntax, histogram buckets ordered by le, the mandatory +Inf bucket equal to _count, and _sum.",
+    "checkedAt": "2026-11-22"
+  }
+]
