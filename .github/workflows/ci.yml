@@ -99,6 +99,11 @@ jobs:
           python -m unittest discover -s examples/agentic-mcp-lab -v
           find examples/agentic-mcp-lab -type d -name __pycache__ -prune -exec rm -rf {} +
 
+      - name: Verify observability lab
+        run: |
+          python -m unittest discover -s examples/observability-lab -v
+          find examples/observability-lab -type d -name __pycache__ -prune -exec rm -rf {} +
+
       # Dependabot runs receive no repository secrets; main is re-analyzed after merge.
       - name: SonarQube Cloud quality gate
         if: github.event.pull_request.user.login != 'dependabot[bot]'
