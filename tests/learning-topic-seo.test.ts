@@ -38,6 +38,7 @@ const foundationsModule = automationTrackOptions.find((option) => option.id === 
 const csharpTopic = catalogFor("csharp")[0]!;
 const apiPlaceholder = catalogFor("api-integration").find((item) => item.status === "under-construction")!;
 const sqlCard = catalogFor("sql-quick-reference")[0]!;
+const sqlModule = catalogFor("sql").at(-1)!;
 
 test("every learning topic page is a canonical topic link of its route", () => {
   const pages = learningTopicPages();
@@ -56,6 +57,7 @@ test("every learning topic page is a canonical topic link of its route", () => {
 test("topics carry the track their page needs to open them", () => {
   assert.ok(pageAt(`/learn/automation?topic=${desktopModule}&track=real-projects`), "automation modules link their own track");
   assert.ok(pageAt(`/learn/programming?topic=${csharpTopic.id}&track=csharp`), "registry tracks are kept");
+  assert.ok(pageAt(`/learn/data?topic=${sqlModule.id}&track=sql`), "SQL path modules are topic pages of the SQL track");
   assert.equal(learningTopicPages().some((page) => page.route === "/learn/automation" && !page.track), false);
 });
 
@@ -86,6 +88,7 @@ test("requests that do not open the topic keep the section metadata", () => {
     ["/learn/automation", { topic: desktopModule }],
     ["/learn/automation", { topic: desktopModule, track: "foundations" }],
     ["/learn/programming", { topic: String(csharpTopic.id), track: "python" }],
+    ["/learn/data", { topic: String(sqlModule.id), track: "data-quality" }],
     ["/learn/docker", { topic: String(llmTopic.id) }],
   ];
   for (const [route, searchParams] of cases) {

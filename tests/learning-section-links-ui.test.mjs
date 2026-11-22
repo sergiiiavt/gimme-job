@@ -130,3 +130,21 @@ test("mobile learning utilities preserve section navigation and readable phone l
   assert.match(page, /@media \(max-width: 610px\)[\s\S]*\.language\s*\{\s*align-items: center;\s*display: flex;/);
   assert.match(page, /@media \(max-width: 440px\)[\s\S]*\.pager\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/);
 });
+
+test("every learning UI class the component uses exists in its CSS module", async () => {
+  const [component, ui] = await Promise.all([
+    read("app/learning-document-ui.tsx"),
+    read("app/learning-document-ui.module.css"),
+  ]);
+  const used = new Set([...component.matchAll(/uiStyles\.([A-Za-z]\w*)/g)].map((match) => match[1]));
+  assert.ok(used.size > 0);
+  // A missing class makes `uiStyles.x` undefined, and classList.add() then adds a literal "undefined" class.
+  const defined = new Set([...ui.matchAll(/\.([A-Za-z][\w-]*)/g)].map((match) => match[1]));
+  for (const name of used) assert.ok(defined.has(name), `.${name} is used but not defined`);
+});
+
+test("the focused section view does not overflow a phone screen", async () => {
+  const ui = await read("app/learning-document-ui.module.css");
+  // Chapter articles use -20px margins on phones; the focused view's 10px gutter needs them reset.
+  assert.match(ui, /@media \(max-width: 610px\)[\s\S]*\.focusedArticle\s*\{\s*margin-left: 0 !important;\s*margin-right: 0 !important;/);
+});

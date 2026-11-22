@@ -6,6 +6,8 @@
 
 **Передумови:** [Анатомія LLM-застосунку та API](/learn/llm?topic=llm-application-anatomy), [Тестування коду LLM-застосунку без моделі](/learn/llm?topic=testing-without-the-model), [Статистика для оцінювання](/learn/llm?topic=eval-statistics).
 
+Цей розділ про тестування агентів. Як будувати й під'єднувати агентів, їхні інструменти та MCP-сервери, розказано в розділі [AI-агенти та MCP](/learn/agentic?topic=how-agents-work).
+
 ## Як працюють виклики інструментів і агенти
 
 ```diagram
