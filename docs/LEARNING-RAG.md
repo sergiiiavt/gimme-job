@@ -58,6 +58,17 @@ When a page opens a topic only inside the track that lists it, as Test automatio
 
 The registry contains content objects, not generated RAG documents. RAG document creation is derived from those objects at runtime/build time.
 
+### Quick-reference cards
+
+Quick-reference and practical-task cards render on a `/reference/<slug>` page, not on the learning chapter page of the same area, so their registry entries use that route, for example `/reference/data` for the SQL cards and tasks and `/reference/programming` with track `python` for the Python cards. Their links carry the card's catalog id as `topic`:
+
+```text
+/reference/data?topic=joins
+/reference/programming?topic=strings&track=python
+```
+
+The reference page resolves `topic` to the card whose catalog id (or rendered element id) matches it within the requested `track`, shows that card with the filters that make it visible, expands it, and scrolls to it. A `topic` that matches no card opens the page's default view. Cards are entries inside a page, not pages: the reference page stays canonical to `/reference/<slug>`, and cards are never per-topic search pages in `app/learning-topic-seo.ts`.
+
 ### Existing surface
 
 Adding another topic to `content/api-integration/catalog.ts`, another C# taxonomy item, or another Python lesson requires no RAG-specific code change. The next corpus build discovers it from the registered catalog.
@@ -150,6 +161,7 @@ Tests must protect the architecture rather than only individual examples:
 - current Git-backed learning surfaces are represented by the canonical registry;
 - published Markdown `##` sections become RAG documents;
 - generated documents carry valid canonical deep links;
+- every quick-reference card link opens that card on its reference page;
 - track-specific content preserves its track in navigation;
 - explicit under-construction placeholders are not indexed as learning material;
 - Python and browser consumers accept future canonical learning route slugs without adding route-specific allow-lists;

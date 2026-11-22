@@ -6,6 +6,8 @@ Agents are harder to test than single answers. Many different action sequences c
 
 **Prerequisites:** [LLM application anatomy and APIs](/learn/llm?topic=llm-application-anatomy), [Testing LLM code without the model](/learn/llm?topic=testing-without-the-model), [Statistics for evaluation](/learn/llm?topic=eval-statistics).
 
+This chapter is about testing agents. How agents, their tools and MCP servers are built and connected is covered in [AI agents & MCP](/learn/agentic?topic=how-agents-work).
+
 ## How tool calling and agents work
 
 ```diagram

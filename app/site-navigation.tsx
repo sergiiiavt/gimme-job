@@ -22,6 +22,8 @@ export interface SubnavItem {
   label: string;
   count?: number;
   status?: "under-construction";
+  /** Localized badge text for `status`; defaults to "Under construction". */
+  statusLabel?: string;
 }
 
 export interface SecondarySwitcher {
@@ -495,7 +497,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
                 type="button"
               >
                 <span>{item.label}</span>
-                {item.status === "under-construction" ? <em className="kb-construction-badge">Under construction</em> : typeof item.count === "number" && <small>{item.count}</small>}
+                {item.status === "under-construction" ? <em className="kb-construction-badge">{item.statusLabel ?? "Under construction"}</em> : typeof item.count === "number" && <small>{item.count}</small>}
               </button>
             ))}
           </nav>
