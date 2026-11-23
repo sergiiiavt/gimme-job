@@ -1,4 +1,5 @@
 import agenticCatalog from "./agentic-learning/catalog";
+import { claudeCertificationCatalog, githubCopilotCertificationCatalog } from "./ai-engineering-certifications/catalog";
 import apiIntegrationCatalog from "./api-integration/catalog";
 import automationCurriculum from "./automation-learning/catalog";
 import { automationTrackAliases, automationTrackForModule } from "./automation-learning/tracks";
@@ -68,6 +69,8 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "agentic", route: "/learn/agentic", value: agenticCatalog },
   { key: "observability", route: "/learn/observability", value: observabilityCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
+  { key: "claude-certification", route: "/learn/certifications", track: "claude-architect", value: claudeCertificationCatalog },
+  { key: "github-copilot-certification", route: "/learn/certifications", track: "github-copilot-gh-300", value: githubCopilotCertificationCatalog },
 ] as const;
 
 /** The track a topic's link must carry for its page to open that topic, if any. */

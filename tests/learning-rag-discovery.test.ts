@@ -35,6 +35,8 @@ test("canonical learning registry includes current Git-backed learning surfaces"
   assert.ok(routes.has("/learn/programming#python"));
   assert.ok(routes.has("/learn/programming#csharp"));
   assert.ok(routes.has("/learn/certifications#ct-ai-v2"));
+  assert.ok(routes.has("/learn/certifications#claude-architect"));
+  assert.ok(routes.has("/learn/certifications#github-copilot-gh-300"));
 });
 
 test("published markdown sections become first-class RAG documents with canonical deep links", async () => {
@@ -67,8 +69,16 @@ test("learning documents preserve track-specific navigation without AI-specific 
     && document.metadata.track === "ct-ai-v2"
   );
 
+  const claudeSection = documents.find((document) =>
+    document.metadata.catalog === "claude-certification"
+    && document.metadata.track === "claude-architect"
+    && document.metadata.topic === "tools-mcp"
+    && typeof document.metadata.section === "string"
+  );
+
   assert.ok(csharp);
   assert.ok(certification);
+  assert.ok(claudeSection);
 });
 
 test("Test automation deep links carry the track that opens their module", async () => {

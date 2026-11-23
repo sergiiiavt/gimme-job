@@ -10,6 +10,8 @@ register();
 const { default: catalog } = await import("../content/istqb-ai-testing/catalog.ts");
 const {
   evaluateIstqbAiMockExam,
+  evaluateMockExam,
+  mockExamGroupHeadings,
   parseIstqbAiMockExam,
   scoreIstqbAiMockExam,
 } = await import("../app/istqb-ai-mock-exam-model.ts");
@@ -152,6 +154,25 @@ test("parses and scores the complete CT-AI mock exam model", () => {
   assert.equal(evaluateIstqbAiMockExam(32).label, "Close");
   assert.equal(evaluateIstqbAiMockExam(28).label, "Material gaps remain");
   assert.equal(evaluateIstqbAiMockExam(27).label, "More preparation needed");
+});
+
+test("mock exam bands and rail headings scale with the number of questions", () => {
+  assert.equal(evaluateMockExam(27, 30).label, "Strong");
+  assert.equal(evaluateMockExam(26, 30).label, "Close");
+  assert.equal(evaluateMockExam(21, 30).label, "Material gaps remain");
+  assert.equal(evaluateMockExam(20, 30).label, "More preparation needed");
+
+  const texts = { strong: "s", close: "c", gaps: "g", more: "m" };
+  assert.equal(evaluateMockExam(40, 40, texts).text, "s");
+
+  assert.deepEqual(mockExamGroupHeadings(40).map(({ id }) => id), [
+    "questions-1-10", "questions-11-20", "questions-21-30", "questions-31-40",
+  ]);
+  assert.deepEqual(mockExamGroupHeadings(25), [
+    { id: "questions-1-10", text: "Questions 1–10" },
+    { id: "questions-11-20", text: "Questions 11–20" },
+    { id: "questions-21-25", text: "Questions 21–25" },
+  ]);
 });
 
 test("renders selectable questions with progress before submission", () => {

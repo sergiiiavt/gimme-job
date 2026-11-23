@@ -24,18 +24,21 @@ export type CertificationModule = IstqbAiTestingModule;
 
 type ModuleFields = Omit<CertificationModule, "count" | "markdown">;
 
+/** Mock exam chapters end in `mock-exam`; topic ids stay unique across tracks on the shared route. */
+export const isMockExamModuleId = (id: string) => id === "mock-exam" || id.endsWith("-mock-exam");
+
 const sectionCount = (markdown: string) => (markdown.match(/^## /gm) ?? []).length;
 const mockQuestionCount = (markdown: string) => (markdown.match(/^\*\*\d+\.\*\*/gm) ?? []).length;
 
 const chapter = (fields: ModuleFields, markdown: string): CertificationModule => ({
   ...fields,
-  count: fields.id === "mock-exam" ? mockQuestionCount(markdown) : sectionCount(markdown),
+  count: isMockExamModuleId(fields.id) ? mockQuestionCount(markdown) : sectionCount(markdown),
   markdown,
 });
 
 const claudeTaxonomy: CertificationModule[] = [
   chapter({
-    id: "exam-plan",
+    id: "claude-exam-plan",
     label: "Exam map & study plan",
     navLabel: "Exam map",
     level: "Start here",
@@ -91,7 +94,7 @@ const claudeTaxonomy: CertificationModule[] = [
     sourceIds: ["claude-docs", "ccdv-f-domains"],
   }, claudeDeveloperApi),
   chapter({
-    id: "hands-on-labs",
+    id: "claude-hands-on-labs",
     label: "Hands-on labs",
     navLabel: "Labs",
     level: "Practice",
@@ -99,7 +102,7 @@ const claudeTaxonomy: CertificationModule[] = [
     sourceIds: ["claude-docs", "mcp-specification", "anthropic-academy"],
   }, claudeHandsOnLabs),
   chapter({
-    id: "mock-exam",
+    id: "claude-mock-exam",
     label: "Original mock exam — 40 questions",
     navLabel: "Mock exam · 40",
     level: "Exam practice",
@@ -107,7 +110,7 @@ const claudeTaxonomy: CertificationModule[] = [
     sourceIds: ["aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains"],
   }, claudeMockExam),
   chapter({
-    id: "final-review",
+    id: "claude-final-review",
     label: "Final review & exam-day checklist",
     navLabel: "Final review",
     level: "Revision",
@@ -118,7 +121,7 @@ const claudeTaxonomy: CertificationModule[] = [
 
 const githubCopilotTaxonomy: CertificationModule[] = [
   chapter({
-    id: "exam-plan",
+    id: "gh300-exam-plan",
     label: "Exam map & study plan",
     navLabel: "Exam map",
     level: "Start here",
@@ -166,7 +169,7 @@ const githubCopilotTaxonomy: CertificationModule[] = [
     sourceIds: ["github-content-exclusion", "github-configure-content-exclusion", "github-exclusion-changelog", "ms-copilot-security-controls"],
   }, copilotPrivacySafeguards),
   chapter({
-    id: "hands-on-lab",
+    id: "gh300-hands-on-lab",
     label: "Hands-on lab in the gimme-job repository",
     navLabel: "Lab",
     level: "Practice",
@@ -174,7 +177,7 @@ const githubCopilotTaxonomy: CertificationModule[] = [
     sourceIds: ["gh300-study-guide"],
   }, copilotHandsOnLab),
   chapter({
-    id: "mock-exam",
+    id: "gh300-mock-exam",
     label: "Original mock exam — 30 questions",
     navLabel: "Mock exam · 30",
     level: "Exam practice",
@@ -182,7 +185,7 @@ const githubCopilotTaxonomy: CertificationModule[] = [
     sourceIds: ["gh300-study-guide", "github-content-exclusion"],
   }, copilotMockExam),
   chapter({
-    id: "final-review",
+    id: "gh300-final-review",
     label: "Final review & exam-day checklist",
     navLabel: "Final review",
     level: "Revision",
@@ -190,6 +193,11 @@ const githubCopilotTaxonomy: CertificationModule[] = [
     sourceIds: ["gh300-study-guide", "gh300-certification-page"],
   }, copilotFinalReview),
 ];
+
+export interface CertificationMockExamSettings {
+  scoreNote: string;
+  evaluationTexts: { strong: string; close: string; gaps: string; more: string };
+}
 
 export const claudeCertificationCatalog = {
   trackId: "claude-architect",
@@ -202,6 +210,15 @@ export const claudeCertificationCatalog = {
   lastReviewedAt: "2026-11-23",
   taxonomy: claudeTaxonomy,
   sources: claudeCertificationSources,
+  mockExam: {
+    scoreNote: "This mock uses one question = one practice mark. Claude exams report a scaled score from 100 to 1,000 with 720 to pass, so treat this percentage as a diagnostic.",
+    evaluationTexts: {
+      strong: "Take the official practice exam and book once it reports 900 or more.",
+      close: "Reread the chapters behind every wrong answer, then retake this mock.",
+      gaps: "Redo the hands-on labs for your weakest domain before another mock.",
+      more: "Return to the chapter sequence before doing more mock exams.",
+    },
+  } satisfies CertificationMockExamSettings,
 };
 
 export const githubCopilotCertificationCatalog = {
@@ -215,6 +232,15 @@ export const githubCopilotCertificationCatalog = {
   lastReviewedAt: "2026-11-23",
   taxonomy: githubCopilotTaxonomy,
   sources: githubCopilotCertificationSources,
+  mockExam: {
+    scoreNote: "This mock uses one question = one practice mark. GH-300 reports a scaled score out of 1,000 with 700 to pass, so treat this percentage as a diagnostic.",
+    evaluationTexts: {
+      strong: "Take Microsoft's free practice assessment, then book the exam.",
+      close: "Reread the chapters behind every wrong answer, then retake this mock.",
+      gaps: "Redo the Copilot lab in the gimme-job repository before another mock.",
+      more: "Return to the chapter sequence before doing more mock exams.",
+    },
+  } satisfies CertificationMockExamSettings,
 };
 
 export const aiEngineeringCertificationCatalogs = [claudeCertificationCatalog, githubCopilotCertificationCatalog];

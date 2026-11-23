@@ -7,7 +7,7 @@ registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const [
-  { aiEngineeringCertificationCatalogs },
+  { aiEngineeringCertificationCatalogs, isMockExamModuleId },
   { parseIstqbAiMockExam },
 ] = await Promise.all([
   import("../content/ai-engineering-certifications/catalog.ts"),
@@ -22,7 +22,7 @@ const expectedMockQuestions: Record<string, number> = {
 };
 
 const mockExam = (catalog: Catalog) => {
-  const module = catalog.taxonomy.find((chapter) => chapter.id === "mock-exam");
+  const module = catalog.taxonomy.find((chapter) => isMockExamModuleId(chapter.id));
   assert.ok(module, `${catalog.trackId} has a mock exam`);
   return { module, exam: parseIstqbAiMockExam(module.markdown) };
 };
