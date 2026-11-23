@@ -133,6 +133,7 @@ The lab is deliberately small. Natural next steps, each of which matches a chapt
 - **Cost and latency tracing.** Add token counts and timings per step and report them per task ([Evaluating and observing agents](/learn/agentic?topic=agent-observability)).
 - **HTTP transport.** Serve the same handler over Streamable HTTP, with `Origin` validation and binding to localhost ([Model Context Protocol](/learn/agentic?topic=model-context-protocol)).
 - **Systematic tests.** Add contract tests, property-based tests and fault injection ([Testing MCP servers](/learn/llm?topic=agent-testing&section=testing-mcp-servers)).
+- **A structured course.** The free [Hugging Face AI Agents Course](https://huggingface.co/learn/agents-course) takes the same ideas through smolagents, LlamaIndex and LangGraph and ends with a benchmark agent you can show. Finishing it earns a free certificate; the agent you build is worth more than the certificate.
 
 ## Common mistakes
 
