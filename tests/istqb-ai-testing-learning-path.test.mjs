@@ -153,9 +153,7 @@ test("mock exam is rendered as a selectable assessment with scoring and review",
   assert.match(component, /aria-live="polite"/);
   assert.match(component, />Retry exam</);
   assert.doesNotMatch(component, /localStorage|sessionStorage/);
-  assert.match(model, /if \(score >= 36\)/);
-  assert.match(model, /if \(score >= 32\)/);
-  assert.match(model, /if \(score >= 28\)/);
+  assert.match(model, /export function evaluateIstqbAiMockExam/);
 });
 
 test("official reference registry contains current syllabus, sample exam, glossary and quality references", () => {

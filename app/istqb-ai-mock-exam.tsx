@@ -2,25 +2,36 @@
 
 import { useMemo, useState } from "react";
 import {
-  evaluateIstqbAiMockExam,
+  evaluateMockExam,
+  MOCK_EXAM_GROUP_SIZE,
   parseIstqbAiMockExam,
   scoreIstqbAiMockExam,
   type AnswerKey,
   type MockExamAnswers,
+  type MockExamEvaluationTexts,
 } from "./istqb-ai-mock-exam-model";
 import MarkdownDocument from "./qa-markdown";
 import styles from "./istqb-ai-mock-exam.module.css";
 
-const GROUP_SIZE = 10;
+const GROUP_SIZE = MOCK_EXAM_GROUP_SIZE;
+const CT_AI_SCORE_NOTE = "This mock uses one question = one practice mark and is not directly convertible to the official 44-point CT-AI exam score.";
 
-export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
+export default function IstqbAiMockExam({
+  evaluationTexts,
+  markdown,
+  scoreNote = CT_AI_SCORE_NOTE,
+}: {
+  evaluationTexts?: MockExamEvaluationTexts;
+  markdown: string;
+  scoreNote?: string;
+}) {
   const exam = useMemo(() => parseIstqbAiMockExam(markdown), [markdown]);
   const [answers, setAnswers] = useState<MockExamAnswers>({});
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const answeredCount = Object.keys(answers).length;
   const score = submitted ? scoreIstqbAiMockExam(exam.questions, answers) : 0;
-  const evaluation = evaluateIstqbAiMockExam(score);
+  const evaluation = evaluateMockExam(score, exam.questions.length, evaluationTexts);
   const groups = Array.from(
     { length: Math.ceil(exam.questions.length / GROUP_SIZE) },
     (_, index) => exam.questions.slice(index * GROUP_SIZE, (index + 1) * GROUP_SIZE),
@@ -127,7 +138,7 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
       <div className={styles.submitPanel}>
         <div>
           <strong>Ready to evaluate?</strong>
-          <span>Your answer key stays hidden until you submit all 40 answers.</span>
+          <span>Your answer key stays hidden until you submit all {exam.questions.length} answers.</span>
         </div>
         <button onClick={checkScore} type="button">Check score</button>
       </div>
@@ -144,7 +155,7 @@ export default function IstqbAiMockExam({ markdown }: { markdown: string }) {
             <span>Evaluation</span>
             <h2>{evaluation.label}</h2>
             <p>{evaluation.text}</p>
-            <p className={styles.scoreNote}>This mock uses one question = one practice mark and is not directly convertible to the official 44-point CT-AI exam score.</p>
+            <p className={styles.scoreNote}>{scoreNote}</p>
             <button onClick={retry} type="button">Retry exam</button>
           </div>
         </section>

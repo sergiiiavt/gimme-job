@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { claudeCertificationCatalog, githubCopilotCertificationCatalog, isMockExamModuleId, type CertificationMockExamSettings } from "@/content/ai-engineering-certifications/catalog";
 import istqbAiTestingCatalog from "@/content/istqb-ai-testing/catalog";
 import type { IstqbAiTestingModule } from "@/content/istqb-ai-testing/modules";
 import { contentHref } from "./content-deep-links";
 import IstqbAiMockExam from "./istqb-ai-mock-exam";
+import { mockExamGroupHeadings, parseIstqbAiMockExam } from "./istqb-ai-mock-exam-model";
 import IstqbAiOfficialSampleCompanion from "./istqb-ai-official-sample-companion";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
 import LearningVideo from "./learning-video";
@@ -47,8 +49,25 @@ const sourceMetaUk: Record<string, string> = {
   "official-syllabus": "офіційна навчальна програма",
 };
 
+type CertificationCatalog = {
+  title: string;
+  titleUk: string;
+  lastReviewedAt: string;
+  taxonomy: IstqbAiTestingModule[];
+  sources: Array<{ id: string; title: string; url: string; publisher: string; kind: string; role: string }>;
+  mockExam?: CertificationMockExamSettings;
+};
+
+const certificationCatalogs: Record<string, CertificationCatalog> = {
+  [DEFAULT_TRACK_ID]: istqbAiTestingCatalog,
+  [claudeCertificationCatalog.trackId]: claudeCertificationCatalog,
+  [githubCopilotCertificationCatalog.trackId]: githubCopilotCertificationCatalog,
+};
+
 const certificationTracks = [
   { id: DEFAULT_TRACK_ID, label: "CT-AI v2.0", available: true },
+  { id: claudeCertificationCatalog.trackId, label: claudeCertificationCatalog.trackLabel, available: true },
+  { id: githubCopilotCertificationCatalog.trackId, label: githubCopilotCertificationCatalog.trackLabel, available: true },
   { id: "istqb", label: "ISTQB", available: false, emptyState: "The broader ISTQB certification learning path is under construction." },
   { id: "cloud", label: "Cloud", available: false, emptyState: "Cloud certification learning paths are under construction." },
   { id: "security", label: "Security", available: false, emptyState: "Security certification learning paths are under construction." },
@@ -73,13 +92,6 @@ const certificationTrackLayout = `
 }
 `;
 
-const mockExamHeadings = [
-  { id: "questions-1-10", text: "Questions 1–10" },
-  { id: "questions-11-20", text: "Questions 11–20" },
-  { id: "questions-21-30", text: "Questions 21–30" },
-  { id: "questions-31-40", text: "Questions 31–40" },
-];
-
 export default function IstqbAiTestingPage() {
   const pathname = usePathname();
   const router = useRouter();
@@ -92,7 +104,8 @@ export default function IstqbAiTestingPage() {
     : DEFAULT_TRACK_ID;
   const selectedTrack = certificationTracks.find((track) => track.id === activeTrackId) ?? certificationTracks[0];
   const trackAvailable = selectedTrack.available;
-  const modules = trackAvailable ? istqbAiTestingCatalog.taxonomy : [];
+  const activeCatalog = certificationCatalogs[selectedTrack.id] ?? istqbAiTestingCatalog;
+  const modules = trackAvailable ? activeCatalog.taxonomy : [];
   const firstModuleId = modules[0]?.id ?? "";
   const requestedModuleId = searchParams.get("topic");
   const activeModuleId = requestedModuleId && modules.some((chapter) => chapter.id === requestedModuleId)
@@ -100,7 +113,7 @@ export default function IstqbAiTestingPage() {
     : firstModuleId;
   const moduleIndex = Math.max(0, modules.findIndex((chapter) => chapter.id === activeModuleId));
   const activeModule = trackAvailable ? modules[moduleIndex] ?? modules[0] : undefined;
-  const isMockExam = activeModule?.id === "mock-exam";
+  const isMockExam = activeModule ? isMockExamModuleId(activeModule.id) : false;
   const isOfficialSampleExam = activeModule?.id === "official-sample-exam";
   const activeModuleHasUkrainian = Boolean(activeModule && hasUkrainian(activeModule));
   const effectiveLanguage: LearningLanguage = language === "uk" && activeModuleHasUkrainian ? "uk" : "en";
@@ -122,8 +135,8 @@ export default function IstqbAiTestingPage() {
   }, [activeModuleId, activeTrackId, pathname, router, searchParams, trackAvailable]);
 
   const sourceMap = useMemo(
-    () => new Map(istqbAiTestingCatalog.sources.map((source) => [source.id, source])),
-    [],
+    () => new Map(activeCatalog.sources.map((source) => [source.id, source])),
+    [activeCatalog],
   );
   const moduleSources = activeModule?.sourceIds.flatMap((id) => {
     const source = sourceMap.get(id);
@@ -137,7 +150,7 @@ export default function IstqbAiTestingPage() {
     return effectiveLanguage === "uk" && hasUkrainian(chapter) ? chapter.navLabelUk : chapter.navLabel;
   };
   const markdownHeadings = isMockExam
-    ? mockExamHeadings
+    ? mockExamGroupHeadings(parseIstqbAiMockExam(localizedMarkdown).questions.length)
     : activeModule
       ? extractMarkdownHeadings(localizedMarkdown)
         .filter((heading) => heading.level === 2)
@@ -158,7 +171,7 @@ export default function IstqbAiTestingPage() {
     onSelect: (trackId) => {
       const option = certificationTracks.find((candidate) => candidate.id === trackId);
       if (!option) return;
-      const firstTrackModule = option.available ? istqbAiTestingCatalog.taxonomy[0]?.id ?? null : null;
+      const firstTrackModule = option.available ? certificationCatalogs[option.id]?.taxonomy[0]?.id ?? null : null;
       setLanguage("en");
       router.push(contentHref(pathname, searchParams.toString(), {
         topic: firstTrackModule,
@@ -192,7 +205,7 @@ export default function IstqbAiTestingPage() {
 
   const previous = moduleIndex > 0 ? modules[moduleIndex - 1] : undefined;
   const next = moduleIndex < modules.length - 1 ? modules[moduleIndex + 1] : undefined;
-  const catalogTitle = effectiveLanguage === "uk" ? istqbAiTestingCatalog.titleUk : istqbAiTestingCatalog.title;
+  const catalogTitle = effectiveLanguage === "uk" ? activeCatalog.titleUk : activeCatalog.title;
 
   return (
     <>
@@ -249,7 +262,7 @@ export default function IstqbAiTestingPage() {
                       {isOfficialSampleExam
                         ? <IstqbAiOfficialSampleCompanion language={effectiveLanguage} markdown={localizedMarkdown}/>
                         : isMockExam
-                          ? <IstqbAiMockExam markdown={localizedMarkdown}/>
+                          ? <IstqbAiMockExam markdown={localizedMarkdown} evaluationTexts={activeCatalog.mockExam?.evaluationTexts} scoreNote={activeCatalog.mockExam?.scoreNote}/>
                           : <MarkdownDocument markdown={localizedMarkdown}/>}
 
                       {activeModule.videos?.length ? (
@@ -282,12 +295,14 @@ export default function IstqbAiTestingPage() {
                         url: source.url,
                       }))}
                       statusLabel={effectiveLanguage === "uk"
-                        ? `Перевірено ${istqbAiTestingCatalog.lastReviewedAt} · ${moduleSources.length} ${sourcesNounUk(moduleSources.length)} розділу`
-                        : `Reviewed ${istqbAiTestingCatalog.lastReviewedAt} · ${chapterReferencesEn(moduleSources.length)}`}
+                        ? `Перевірено ${activeCatalog.lastReviewedAt} · ${moduleSources.length} ${sourcesNounUk(moduleSources.length)} розділу`
+                        : `Reviewed ${activeCatalog.lastReviewedAt} · ${chapterReferencesEn(moduleSources.length)}`}
                     />
 
                     <LearningPager
-                      ariaLabel={effectiveLanguage === "uk" ? "Навігація розділами ISTQB CT-AI" : "ISTQB CT-AI chapter navigation"}
+                      ariaLabel={activeTrackId === DEFAULT_TRACK_ID
+                        ? effectiveLanguage === "uk" ? "Навігація розділами ISTQB CT-AI" : "ISTQB CT-AI chapter navigation"
+                        : `${selectedTrack.label} chapter navigation`}
                       labelFor={localizedNavLabel}
                       language={effectiveLanguage}
                       next={next}

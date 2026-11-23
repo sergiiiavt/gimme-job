@@ -76,27 +76,39 @@ export function scoreIstqbAiMockExam(questions: MockExamQuestion[], answers: Moc
   return questions.filter((question) => answers[question.number] === question.correctAnswer).length;
 }
 
+export interface MockExamEvaluationTexts {
+  strong: string;
+  close: string;
+  gaps: string;
+  more: string;
+}
+
+const istqbAiEvaluationTexts: MockExamEvaluationTexts = {
+  strong: "Review every uncertainty, then take the official sample exam under time pressure.",
+  close: "Revisit the learning-path chapters behind your wrong answers, then repeat the weak areas.",
+  gaps: "Repeat metric calculations and the distinctions between AI testing techniques before another mock.",
+  more: "Return to the chapter sequence before doing more mock exams, focusing on the concepts behind missed questions.",
+};
+
+/** Bands at 90%, 80% and 70% of the questions; for 40 questions these are 36, 32 and 28. */
+export function evaluateMockExam(score: number, total: number, texts: MockExamEvaluationTexts = istqbAiEvaluationTexts): ScoreEvaluation {
+  if (score * 10 >= total * 9) return { label: "Strong", text: texts.strong };
+  if (score * 10 >= total * 8) return { label: "Close", text: texts.close };
+  if (score * 10 >= total * 7) return { label: "Material gaps remain", text: texts.gaps };
+  return { label: "More preparation needed", text: texts.more };
+}
+
 export function evaluateIstqbAiMockExam(score: number): ScoreEvaluation {
-  if (score >= 36) {
-    return {
-      label: "Strong",
-      text: "Review every uncertainty, then take the official sample exam under time pressure.",
-    };
-  }
-  if (score >= 32) {
-    return {
-      label: "Close",
-      text: "Revisit the learning-path chapters behind your wrong answers, then repeat the weak areas.",
-    };
-  }
-  if (score >= 28) {
-    return {
-      label: "Material gaps remain",
-      text: "Repeat metric calculations and the distinctions between AI testing techniques before another mock.",
-    };
-  }
-  return {
-    label: "More preparation needed",
-    text: "Return to the chapter sequence before doing more mock exams, focusing on the concepts behind missed questions.",
-  };
+  return evaluateMockExam(score, 40);
+}
+
+export const MOCK_EXAM_GROUP_SIZE = 10;
+
+/** Rail headings matching the question groups the mock exam renders. */
+export function mockExamGroupHeadings(questionCount: number, groupSize = MOCK_EXAM_GROUP_SIZE): Array<{ id: string; text: string }> {
+  return Array.from({ length: Math.ceil(questionCount / groupSize) }, (_, index) => {
+    const first = index * groupSize + 1;
+    const last = Math.min(questionCount, first + groupSize - 1);
+    return { id: `questions-${first}-${last}`, text: `Questions ${first}–${last}` };
+  });
 }
