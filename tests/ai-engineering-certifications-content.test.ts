@@ -22,9 +22,9 @@ const expectedMockQuestions: Record<string, number> = {
 };
 
 const mockExam = (catalog: Catalog) => {
-  const module = catalog.taxonomy.find((chapter) => isMockExamModuleId(chapter.id));
-  assert.ok(module, `${catalog.trackId} has a mock exam`);
-  return { module, exam: parseIstqbAiMockExam(module.markdown) };
+  const mockChapter = catalog.taxonomy.find((chapter) => isMockExamModuleId(chapter.id));
+  assert.ok(mockChapter, `${catalog.trackId} has a mock exam`);
+  return { mockChapter, exam: parseIstqbAiMockExam(mockChapter.markdown) };
 };
 
 test("AI engineering certification tracks have unique ids and resolvable sources", () => {
@@ -60,9 +60,9 @@ test("AI engineering certification chapters publish retrievable sections", () =>
 
 test("AI engineering mock exams parse completely with the shared mock exam model", () => {
   for (const catalog of aiEngineeringCertificationCatalogs) {
-    const { module, exam } = mockExam(catalog);
+    const { mockChapter, exam } = mockExam(catalog);
     assert.equal(exam.questions.length, expectedMockQuestions[catalog.trackId], `${catalog.trackId} question count`);
-    assert.equal(module.count, exam.questions.length, `${catalog.trackId} module count matches the questions`);
+    assert.equal(mockChapter.count, exam.questions.length, `${catalog.trackId} module count matches the questions`);
     assert.ok(exam.introduction.startsWith("# "), `${catalog.trackId} mock exam has an introduction`);
 
     exam.questions.forEach((question, index) => {
