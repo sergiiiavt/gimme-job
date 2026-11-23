@@ -10,7 +10,7 @@ B. Business and Enterprise, the plans for organizations
 C. Every plan, including Copilot Free for individuals
 D. Enterprise only, through the enterprise account settings
 
-**2.** You excluded `secrets/**` an hour ago, but one developer still gets suggestions drawing on those files. What do you check first?
+**2.** You excluded secrets/** an hour ago, but one developer still gets suggestions drawing on those files. What do you check first?
 A. That the path pattern matches, then reload the IDE to pick up the settings
 B. Disable Copilot for the whole organization until the issue is fully resolved
 C. Rename the excluded files with a different extension so that they are skipped
@@ -35,22 +35,22 @@ C. The Copilot metrics API, which reports acceptance rates per language
 D. GitHub Spark, which scans generated code for any licence conflicts
 
 **6.** Repository-wide guidance such as "use Vitest, never Jest" should go in which file?
-A. `.github/copilot-instructions.md` in the repository
-B. `README.md` in the root of the repository
-C. `.copilotignore` in the root of the repository
-D. The `scripts` section of the project's `package.json`
+A. .github/copilot-instructions.md in the repository
+B. README.md in the root of the repository
+C. .copilotignore in the root of the repository
+D. The scripts section of the project's package.json
 
 **7.** You want rules that apply only when Copilot works on test files. What is the right mechanism?
 A. A comment at the top of every test file that describes the rules
-B. A `copilot-instructions.md` placed in every folder that holds tests
-C. `.github/instructions/tests.instructions.md` with `applyTo: "**/*.test.ts"`
+B. A copilot-instructions.md placed in every folder that holds tests
+C. .github/instructions/tests.instructions.md with applyTo: "**/*.test.ts"
 D. A VS Code user setting that each developer adds on their own machine
 
 **8.** The team wants one reusable prompt for generating API tests that anyone can run the same way. Where does it live?
 A. A pinned message in the team's Slack channel
 B. A GitHub Gist linked from the team's wiki page
-C. `.github/workflows/api-tests.yml` in the repository
-D. `.github/prompts/api-tests.prompt.md` in the repository
+C. .github/workflows/api-tests.yml in the repository
+D. .github/prompts/api-tests.prompt.md in the repository
 
 **9.** Which Copilot capability edits several files, runs terminal commands with your approval, and iterates until failing tests pass?
 A. Inline suggestions in the code editor
@@ -67,16 +67,16 @@ D. GitHub Spark, building a small app from the issue's text
 ## Questions 11–20
 
 **11.** Which Copilot Chat slash command generates unit tests for the selected code?
-A. `/fix`, which proposes a fix for problems in the code
-B. `/explain`, which explains how the selected code works
-C. `/tests`, which writes tests for the selected code
-D. `/doc`, which writes documentation comments for the code
+A. /fix, which proposes a fix for problems in the code
+B. /explain, which explains how the selected code works
+C. /tests, which writes tests for the selected code
+D. /doc, which writes documentation comments for the code
 
 **12.** In VS Code chat you want an answer that draws on the whole repository, not just the open file. What do you add?
-A. `#selection`, to attach the highlighted code
-B. `@terminal`, to ask about the integrated terminal
-C. `/new`, to scaffold a brand-new project
-D. `@workspace` or `#codebase` in the prompt
+A. #selection, to attach the highlighted code
+B. @terminal, to ask about the integrated terminal
+C. /new, to scaffold a brand-new project
+D. @workspace or #codebase in the prompt
 
 **13.** An admin must grant Copilot seats to 200 new hires automatically from the HR system. What should they use?
 A. Content exclusion settings configured for the organization
@@ -118,7 +118,7 @@ D. Lowering the temperature to get more stable, repeatable answers
 A. Copilot cannot write unit tests, so the generated tests were never run
 B. The team needs Copilot Enterprise for test generation to be reliable
 C. The tests asserted current, buggy behaviour instead of the specification
-D. The tests should have been generated with `/fix` rather than with `/tests`
+D. The tests should have been generated with /fix rather than with /tests
 
 **20.** Which practice reflects responsible use of AI-generated code?
 A. Commit it without review whenever it compiles and the tests pass
@@ -144,18 +144,18 @@ D. It never repeats insecure patterns that appear in its training data
 A. A comment that each reviewer pastes into every pull request
 B. The branch protection rules configured on the default branch
 C. The CODEOWNERS file, which lists who must approve each path
-D. Repository instruction files such as `copilot-instructions.md`
+D. Repository instruction files such as copilot-instructions.md
 
 **24.** An organization wants Copilot code review on github.com but agent mode disabled in IDEs for now. How?
 A. Ask every developer to uninstall the Copilot extension from their IDE
 B. Use content exclusion to exclude every repository from agent mode
 C. Set the feature policies in the organization's Copilot settings
-D. Create a `.copilotignore` file that lists agent mode as disabled
+D. Create a .copilotignore file that lists agent mode as disabled
 
 **25.** Agent mode needs to query your team's issue tracker during a task. What extends it with that capability?
 A. An MCP server for the tracker, configured for agent mode to call
 B. The tracker's API documentation pasted into every chat request
-C. The tracker's URL added to `copilot-instructions.md` as a reference
+C. The tracker's URL added to copilot-instructions.md as a reference
 D. The tracker open in a browser tab next to the IDE while you work
 
 **26.** A long agent session slows down because exploratory research fills its context. What does the GH-300 outline point you to?
@@ -195,13 +195,13 @@ D. It attaches the full contents of every repository in the org
 3. **D** — GitHub documents semantic leakage through IDE-provided information and uneven support on agentic surfaces; treat exclusion as hygiene, not a vault.
 4. **C** — the duplication filter checks suggestions against public code and drops matches when set to Block.
 5. **B** — code referencing shows where a match came from and under which licence, so the developer can decide.
-6. **A** — Copilot reads repository custom instructions from `.github/copilot-instructions.md`.
-7. **C** — path-specific instruction files use an `applyTo` glob, so the rules follow the files wherever they live.
-8. **D** — prompt files in `.github/prompts/` are versioned with the repository and run from chat for consistent results.
+6. **A** — Copilot reads repository custom instructions from .github/copilot-instructions.md.
+7. **C** — path-specific instruction files use an applyTo glob, so the rules follow the files wherever they live.
+8. **D** — prompt files in .github/prompts/ are versioned with the repository and run from chat for consistent results.
 9. **B** — agent mode plans and executes multi-step work, reads errors and retries, with approval for commands.
 10. **A** — the cloud agent works asynchronously on GitHub's infrastructure, starting from an issue and delivering a PR for review.
-11. **C** — `/tests` writes tests; the others fix, explain or document.
-12. **D** — workspace and codebase context widen retrieval to the repository; `#selection` narrows it.
+11. **C** — /tests writes tests; the others fix, explain or document.
+12. **D** — workspace and codebase context widen retrieval to the repository; #selection narrows it.
 13. **B** — seat assignment and removal can be scripted through the REST API.
 14. **A** — Copilot settings and seat changes are recorded as audit log events.
 15. **C** — the client gathers context and builds the prompt, a proxy screens it, and responses pass filters such as the public-code check before display.
