@@ -1,242 +1,72 @@
 [
   {
-    "id": "curl-docs",
-    "title": "curl documentation",
-    "publisher": "curl",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://curl.se/docs/",
-    "role": "Command-line HTTP requests, headers, auth, redirects and TLS options",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "postman-docs",
-    "title": "Postman Learning Center",
-    "publisher": "Postman",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://learning.postman.com/docs/getting-started/overview/",
-    "role": "Collections, environments, variables, scripts, auth and sharing",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "bruno-docs",
-    "title": "Bruno documentation",
-    "publisher": "Bruno",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://docs.usebruno.com/",
-    "role": "Local, Git-friendly API collections and environment handling",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "mdn-http-reference",
-    "title": "MDN HTTP reference",
-    "publisher": "Mozilla",
-    "kind": "Reference",
-    "status": "verified",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
-    "role": "HTTP methods, headers, status codes, caching and request/response semantics",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "mdn-websockets",
-    "title": "MDN WebSocket API",
-    "publisher": "Mozilla",
-    "kind": "Reference",
-    "status": "verified",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
-    "role": "WebSocket lifecycle and browser-facing integration concepts",
-    "checkedAt": "2026-08-16"
-  },
-  {
     "id": "chrome-devtools-docs",
     "title": "Chrome DevTools documentation",
     "publisher": "Google Chrome",
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://developer.chrome.com/docs/devtools/",
-    "role": "Elements, Console, Network, Application, Sources, Performance and security inspection",
+    "role": "Panels, shortcuts and the overall DevTools workflow",
     "checkedAt": "2026-08-16"
   },
   {
+    "id": "chrome-network-reference",
+    "title": "Chrome DevTools Network features reference",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/network/reference",
+    "role": "Network filters, Preserve log, throttling presets, Copy as cURL, edit and resend, HAR export",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "chrome-request-conditions",
+    "title": "Chrome DevTools: Request conditions (block and throttle requests)",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/network-request-blocking",
+    "role": "Blocking and per-request throttling from the Network panel and the Request conditions drawer",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "chrome-cookies",
+    "title": "Chrome DevTools: View, add, edit and delete cookies",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/application/cookies",
+    "role": "Cookies pane columns, editing, filtering, deleting and cookies with issues",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "chrome-device-mode",
+    "title": "Chrome DevTools: Simulate mobile devices with Device Mode",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/device-mode",
+    "role": "Device toolbar, dimensions, DPR, device type, throttling, sensors and Device Mode limitations",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "chrome-overrides",
+    "title": "Chrome DevTools: Override web content and HTTP response headers locally",
+    "publisher": "Google Chrome",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.chrome.com/docs/devtools/overrides",
+    "role": "Override content and headers, overrides folder setup, markers and limitations",
+    "checkedAt": "2026-11-22"
+  },
+  {
     "id": "firefox-devtools-docs",
-    "title": "Firefox Developer Tools user docs",
+    "title": "Firefox DevTools User Docs",
     "publisher": "Mozilla",
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://firefox-source-docs.mozilla.org/devtools-user/",
-    "role": "Cross-browser comparison for browser debugging workflows",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "web-vitals-docs",
-    "title": "Web Vitals",
-    "publisher": "Google",
-    "kind": "Official guidance",
-    "status": "verified",
-    "url": "https://web.dev/articles/vitals",
-    "role": "User-centric performance signals used by browser tooling",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "fiddler-everywhere-docs",
-    "title": "Fiddler Everywhere documentation",
-    "publisher": "Progress Telerik",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://www.telerik.com/fiddler/fiddler-everywhere/documentation/introduction",
-    "role": "Cross-platform HTTP(S) interception, capture, replay and rules",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "charles-docs",
-    "title": "Charles Proxy documentation",
-    "publisher": "XK72",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://www.charlesproxy.com/documentation/",
-    "role": "Alternative interception proxy and mobile-device setup",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "mitmproxy-docs",
-    "title": "mitmproxy documentation",
-    "publisher": "mitmproxy",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://docs.mitmproxy.org/stable/",
-    "role": "Scriptable interception proxy and command-line workflows",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "wireshark-guide",
-    "title": "Wireshark User’s Guide",
-    "publisher": "Wireshark Foundation",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://www.wireshark.org/docs/wsug_html/",
-    "role": "Capture/display filters, protocol inspection and following streams",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "tshark-docs",
-    "title": "TShark manual page",
-    "publisher": "Wireshark Foundation",
-    "kind": "Official reference",
-    "status": "verified",
-    "url": "https://www.wireshark.org/docs/man-pages/tshark.html",
-    "role": "Scriptable packet capture and analysis",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "tcpdump-docs",
-    "title": "tcpdump manual page",
-    "publisher": "The Tcpdump Group",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://www.tcpdump.org/manpages/tcpdump.1.html",
-    "role": "Portable command-line packet capture and libpcap filtering",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "android-adb-docs",
-    "title": "Android Debug Bridge (adb)",
-    "publisher": "Google Android",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://developer.android.com/tools/adb",
-    "role": "Device connection, install, shell, file and port-forwarding workflows",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "android-logcat-docs",
-    "title": "Logcat command-line tool",
-    "publisher": "Google Android",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://developer.android.com/tools/logcat",
-    "role": "Android application/system log capture and filtering",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "apple-simulator-docs",
-    "title": "Running your app in Simulator or on a device",
-    "publisher": "Apple",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device",
-    "role": "Simulator versus physical-device workflow and limitations",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "apple-instruments-docs",
-    "title": "Instruments",
-    "publisher": "Apple",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://developer.apple.com/documentation/instruments",
-    "role": "Performance and runtime diagnostics on Apple platforms",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "dbeaver-docs",
-    "title": "DBeaver documentation",
-    "publisher": "DBeaver Corp",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://dbeaver.com/docs/dbeaver/",
-    "role": "Database connections, schema browsing, querying and safe data export",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "k6-docs",
-    "title": "Grafana k6 documentation",
-    "publisher": "Grafana Labs",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://grafana.com/docs/k6/latest/",
-    "role": "Performance-testing bridge",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "jmeter-docs",
-    "title": "Apache JMeter User’s Manual",
-    "publisher": "Apache Software Foundation",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://jmeter.apache.org/usermanual/index.html",
-    "role": "Performance-testing bridge and GUI/CLI workflows",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "owasp-zap-docs",
-    "title": "OWASP ZAP documentation",
-    "publisher": "OWASP",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://www.zaproxy.org/docs/",
-    "role": "Web security proxy and automated scanning bridge",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "burp-suite-docs",
-    "title": "Burp Suite documentation",
-    "publisher": "PortSwigger",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://portswigger.net/burp/documentation",
-    "role": "Web security testing proxy bridge",
-    "checkedAt": "2026-08-16"
-  },
-  {
-    "id": "axe-core-docs",
-    "title": "axe-core API documentation",
-    "publisher": "Deque Systems",
-    "kind": "Official documentation",
-    "status": "verified",
-    "url": "https://github.com/dequelabs/axe-core/blob/develop/doc/API.md",
-    "role": "Accessibility rule-engine bridge",
+    "role": "Firefox equivalents of the Chrome DevTools panels",
     "checkedAt": "2026-08-16"
   },
   {
@@ -246,57 +76,527 @@
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://developer.chrome.com/docs/lighthouse/overview",
-    "role": "Performance, accessibility and best-practice audit bridge",
+    "role": "Quick page-load audits from the Lighthouse panel",
     "checkedAt": "2026-08-16"
   },
   {
-    "id": "appium-inspector-docs",
-    "title": "Appium Inspector documentation",
-    "publisher": "Appium",
+    "id": "postman-quick-start",
+    "title": "Postman quick start",
+    "publisher": "Postman",
     "kind": "Official documentation",
     "status": "verified",
-    "url": "https://github.com/appium/appium-inspector",
-    "role": "Mobile element-inspection bridge to automation",
+    "url": "https://learning.postman.com/docs/getting-started/quick-start/",
+    "role": "Sending a first request, saving to a collection and adding a status-code test",
     "checkedAt": "2026-08-16"
   },
   {
-    "id": "grpcurl-docs",
-    "title": "grpcurl repository documentation",
-    "publisher": "FullStory",
+    "id": "postman-environments",
+    "title": "Postman: Manage environments",
+    "publisher": "Postman",
     "kind": "Official documentation",
     "status": "verified",
-    "url": "https://github.com/fullstorydev/grpcurl",
-    "role": "Command-line gRPC request and introspection bridge",
+    "url": "https://learning.postman.com/docs/sending-requests/variables/managing-environments/",
+    "role": "Creating environments, local and shared values, Secure variables, scope precedence and {{variable}} syntax",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "postman-test-scripts",
+    "title": "Postman: Write post-response scripts to test API response data",
+    "publisher": "Postman",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts/",
+    "role": "Scripts > Post-response, snippets, pm.test and pm.expect examples, Test Results filtering",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "postman-collection-runs",
+    "title": "Postman: Run collections in the Collection Runner",
+    "publisher": "Postman",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learning.postman.com/docs/collections/running-collections/intro-to-collection-runs/",
+    "role": "Functional local runs, iterations, data files, run order, results and Postman CLI hand-off",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "postman-newman",
+    "title": "Postman: Run collections using Newman CLI",
+    "publisher": "Postman",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learning.postman.com/docs/collections/using-newman-cli/command-line-integration-with-newman/",
+    "role": "Newman installation, newman run syntax, --bail exit codes and the Postman CLI recommendation",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "postman-mqtt",
+    "title": "Postman: Create your first MQTT request",
+    "publisher": "Postman",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://learning.postman.com/docs/use/send-requests/protocols/mqtt-client/first-mqtt-request/",
+    "role": "Connecting to a broker, subscribing to topics and publishing messages from Postman",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "bruno-docs",
+    "title": "Bruno documentation",
+    "publisher": "Bruno",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.usebruno.com/",
+    "role": "File-based, Git-friendly API collections as an alternative to cloud workspaces",
     "checkedAt": "2026-08-16"
   },
   {
-    "id": "kafka-docs",
-    "title": "Apache Kafka documentation",
-    "publisher": "Apache Software Foundation",
+    "id": "mdn-websockets",
+    "title": "MDN WebSockets API",
+    "publisher": "Mozilla",
+    "kind": "Reference",
+    "status": "verified",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API",
+    "role": "WebSocket connection and message semantics behind WebSocket requests",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "curl-docs",
+    "title": "curl documentation",
+    "publisher": "curl",
     "kind": "Official documentation",
     "status": "verified",
-    "url": "https://kafka.apache.org/documentation/",
-    "role": "Event-streaming investigation bridge",
+    "url": "https://curl.se/docs/",
+    "role": "Command-line HTTP requests, data, auth, cookies, write-out variables, TLS and retry options",
     "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "jq-manual",
+    "title": "jq manual",
+    "publisher": "jq project",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://jqlang.org/manual/",
+    "role": "jq filters, select/map, raw output (-r) and exit-status mode (-e)",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mdn-http-reference",
+    "title": "MDN HTTP reference",
+    "publisher": "Mozilla",
+    "kind": "Reference",
+    "status": "verified",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+    "role": "HTTP methods, headers, status codes and request/response semantics",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "charles-docs",
+    "title": "Charles Proxy documentation",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/",
+    "role": "Charles recording, proxying and tools overview",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "charles-ssl-certificates",
+    "title": "Charles: SSL certificates",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/ssl-certificates/",
+    "role": "Installing and trusting the Charles root certificate on desktops, iOS, simulators, Android 7+ and Firefox",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "charles-breakpoints",
+    "title": "Charles: Breakpoints tool",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/proxying/breakpoints/",
+    "role": "Intercepting and editing requests and responses in the Breakpoints window",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "charles-throttling",
+    "title": "Charles: Bandwidth throttle",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/proxying/throttling/",
+    "role": "Simulating slower connections with bandwidth and latency throttling",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "charles-map-local",
+    "title": "Charles: Map Local tool",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/tools/map-local/",
+    "role": "Serving local files or directories in place of remote responses",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "charles-rewrite",
+    "title": "Charles: Rewrite tool",
+    "publisher": "XK72",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.charlesproxy.com/documentation/tools/rewrite/",
+    "role": "Rewrite sets, locations, rule types, match and replace with regular expressions",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fiddler-everywhere-docs",
+    "title": "Fiddler Everywhere documentation",
+    "publisher": "Progress Telerik",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.telerik.com/fiddler/fiddler-everywhere/documentation/introduction",
+    "role": "Capture modes, traffic inspection and supported protocols in Fiddler Everywhere",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "fiddler-rules",
+    "title": "Fiddler Everywhere: Modifying traffic with rules",
+    "publisher": "Progress Telerik",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.telerik.com/fiddler/fiddler-everywhere/documentation/modify-and-filter-traffic/modify-traffic-with-rules",
+    "role": "Rules tab, Rule Builder, creating rules from sessions, enabling and ordering rules",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "fiddler-https",
+    "title": "Fiddler Everywhere: HTTPS settings",
+    "publisher": "Progress Telerik",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.telerik.com/fiddler-everywhere/user-guide/settings/https",
+    "role": "Trusting the Fiddler CA, enabling HTTPS capture and ignoring certificate errors safely",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mitmproxy-docs",
+    "title": "mitmproxy documentation",
+    "publisher": "mitmproxy",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.mitmproxy.org/stable/",
+    "role": "Open-source scripted interception, mitm.it certificate installation and proxy modes",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "wireshark-guide",
+    "title": "Wireshark User’s Guide",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/wsug_html_chunked/",
+    "role": "Capturing, filtering, following streams, statistics and exporting packets",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "wireshark-display-filters",
+    "title": "Wireshark User’s Guide: Building display filter expressions",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/wsug_html_chunked/ChWorkBuildDisplayFilterSection.html",
+    "role": "Display filter fields, comparison and logical operators",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "wireshark-follow-stream",
+    "title": "Wireshark User’s Guide: Following protocol streams",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/wsug_html_chunked/ChAdvFollowStreamSection.html",
+    "role": "Reconstructing TCP, UDP, TLS and HTTP conversations",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "wireshark-tls-wiki",
+    "title": "Wireshark wiki: TLS",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://wiki.wireshark.org/TLS",
+    "role": "TLS decryption with key log files and the tls.keylog_file preference",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "tshark-docs",
+    "title": "tshark manual page",
+    "publisher": "Wireshark Foundation",
+    "kind": "Official reference",
+    "status": "verified",
+    "url": "https://www.wireshark.org/docs/man-pages/tshark.html",
+    "role": "Command-line capture and analysis with display filters, fields and statistics",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "tcpdump-docs",
+    "title": "tcpdump manual page",
+    "publisher": "The Tcpdump Group",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://www.tcpdump.org/manpages/tcpdump.1.html",
+    "role": "Server-side packet capture with interfaces, BPF filters and output files",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "mqtt-explorer",
+    "title": "MQTT Explorer",
+    "publisher": "Thomas Nordquist",
+    "kind": "Official project site",
+    "status": "verified",
+    "url": "https://mqtt-explorer.com/",
+    "role": "Topic tree, history, diff, publishing and retained-topic deletion in MQTT Explorer",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mqttx-docs",
+    "title": "MQTTX: Getting started",
+    "publisher": "EMQ",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://mqttx.app/docs/get-started",
+    "role": "Connection settings, MQTT versions, Last Will, subscriptions and publishing in MQTTX",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mosquitto-sub",
+    "title": "mosquitto_sub manual",
+    "publisher": "Eclipse Mosquitto",
+    "kind": "Official reference",
+    "status": "verified",
+    "url": "https://mosquitto.org/man/mosquitto_sub-1.html",
+    "role": "Subscribing, output formatting, message counts, timeouts, retained handling and wills",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mosquitto-pub",
+    "title": "mosquitto_pub manual",
+    "publisher": "Eclipse Mosquitto",
+    "kind": "Official reference",
+    "status": "verified",
+    "url": "https://mosquitto.org/man/mosquitto_pub-1.html",
+    "role": "Publishing messages with QoS, retain, files, empty payloads and protocol versions",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "mqtt-v5-spec",
+    "title": "MQTT Version 5.0 (OASIS Standard)",
+    "publisher": "OASIS",
+    "kind": "Standard",
+    "status": "verified",
+    "url": "https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html",
+    "role": "Normative rules for topics, wildcards, QoS flows, retained messages, wills and sessions",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "requestly-modify-headers",
+    "title": "Requestly: Modify Headers rule",
+    "publisher": "Requestly (BrowserStack)",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.requestly.com/general/rule-types/modify-headers",
+    "role": "Creating HTTP rules that add, remove or override request and response headers",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "axe-devtools-extension",
+    "title": "axe DevTools browser extension documentation",
+    "publisher": "Deque Systems",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://docs.deque.com/devtools-for-web/4/en/devtools-extension",
+    "role": "Installing and opening axe DevTools and running full and partial page scans",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "axe-core-docs",
+    "title": "axe-core API documentation",
+    "publisher": "Deque Systems",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://github.com/dequelabs/axe-core/blob/develop/doc/API.md",
+    "role": "The open-source rules engine behind axe DevTools",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "wave-extension",
+    "title": "WAVE browser extensions",
+    "publisher": "WebAIM",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://wave.webaim.org/extension/",
+    "role": "Running WAVE from the toolbar, context menu or keyboard shortcut, entirely in the browser",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "bug-magnet",
+    "title": "Bug Magnet (Firefox Add-ons)",
+    "publisher": "Gojko Adzic",
+    "kind": "Official store listing",
+    "status": "verified",
+    "url": "https://addons.mozilla.org/en-US/firefox/addon/bug-magnet",
+    "role": "Right-click edge-case values for exploratory testing of editable fields",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "gofullpage",
+    "title": "GoFullPage – Full Page Screen Capture (Chrome Web Store)",
+    "publisher": "Full Page LLC",
+    "kind": "Official store listing",
+    "status": "verified",
+    "url": "https://chromewebstore.google.com/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl",
+    "role": "Full-page screenshots including inner scrollable elements, exported as image or PDF",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "jam-extension",
+    "title": "Jam (Chrome Web Store)",
+    "publisher": "We Are Jam, Inc.",
+    "kind": "Official store listing",
+    "status": "verified",
+    "url": "https://chromewebstore.google.com/detail/jam/iohjgamcilhbgmhbnllfolmkmmekfmci",
+    "role": "Bug reports with console logs, network requests, device info, user steps and instant replay",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "cookie-editor",
+    "title": "Cookie-Editor (Chrome Web Store)",
+    "publisher": "cookie-editor.com",
+    "kind": "Official store listing",
+    "status": "verified",
+    "url": "https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm",
+    "role": "Creating, editing, deleting, importing and exporting cookies for the current tab",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "dbeaver-docs",
+    "title": "DBeaver documentation",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://dbeaver.com/docs/dbeaver/",
+    "role": "Connections, Database Navigator, SQL editor and data editor",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "dbeaver-connection-types",
+    "title": "DBeaver: Connection types",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://dbeaver.com/docs/dbeaver/Connection-Types/",
+    "role": "Development, Test and Production defaults for auto-commit, confirmations and colours",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "dbeaver-sql-execution",
+    "title": "DBeaver: SQL execution",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://dbeaver.com/docs/dbeaver/SQL-Execution/",
+    "role": "Executing statements and scripts, results tabs, parameters, variables and Export From Query",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "dbeaver-execution-plan",
+    "title": "DBeaver wiki: Query execution plan",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://github.com/dbeaver/dbeaver/wiki/Query-Execution-Plan",
+    "role": "Explaining the execution plan of the query under the cursor",
+    "checkedAt": "2026-11-22"
   },
   {
     "id": "postgresql-sql-tutorial",
-    "title": "PostgreSQL 18 SQL tutorial",
+    "title": "PostgreSQL tutorial: The SQL language",
     "publisher": "PostgreSQL Global Development Group",
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://www.postgresql.org/docs/current/tutorial-sql.html",
-    "role": "Relational querying, joins, updates and SQL investigation fundamentals",
+    "role": "Basic SELECT, joins and aggregates used in verification queries",
     "checkedAt": "2026-08-16"
   },
   {
     "id": "postgresql-transactions",
-    "title": "PostgreSQL 18 transaction documentation",
+    "title": "PostgreSQL tutorial: Transactions",
     "publisher": "PostgreSQL Global Development Group",
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
-    "role": "Transaction, COMMIT/ROLLBACK and visibility concepts used in safe database investigation",
+    "role": "BEGIN, COMMIT and ROLLBACK semantics behind manual commit mode",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "android-adb-docs",
+    "title": "Android Debug Bridge (adb)",
+    "publisher": "Google Android",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.android.com/tools/adb",
+    "role": "Device listing, USB and wireless debugging, installing apps, activity manager and file transfer",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "android-studio-logcat",
+    "title": "View logs with Logcat (Android Studio)",
+    "publisher": "Google Android",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.android.com/studio/debug/logcat",
+    "role": "Logcat window, query keys such as package:mine, level, is:crash, age and split panels",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "android-logcat-docs",
+    "title": "Logcat command-line tool",
+    "publisher": "Google Android",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.android.com/tools/logcat",
+    "role": "adb logcat buffers, filters and output formats",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "apple-simulator-docs",
+    "title": "Running your app in Simulator or on a device",
+    "publisher": "Apple",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device",
+    "role": "Choosing and running Simulator destinations from Xcode",
+    "checkedAt": "2026-08-16"
+  },
+  {
+    "id": "apple-simulator-wwdc",
+    "title": "WWDC20: Become a Simulator expert",
+    "publisher": "Apple",
+    "kind": "Official video",
+    "status": "verified",
+    "url": "https://developer.apple.com/videos/play/wwdc2020/10647/",
+    "role": "simctl commands for status bar overrides, push, privacy, recording and root certificates",
+    "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "apple-console-guide",
+    "title": "Console User Guide: View log messages",
+    "publisher": "Apple",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://support.apple.com/guide/console/cnsl1012/mac",
+    "role": "Streaming and filtering live log messages from a connected iPhone or iPad",
     "checkedAt": "2026-08-16"
   }
 ]

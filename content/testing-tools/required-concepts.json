@@ -1,192 +1,292 @@
 [
   {
-    "id": "choosing-a-tool-by-layer",
-    "topicId": "tooling-foundations",
-    "label": "Choosing a tool by evidence layer"
+    "id": "devtools-opening-command-menu",
+    "topicId": "chrome-devtools",
+    "label": "Opening DevTools, docking and the Command Menu"
   },
   {
-    "id": "evidence-capture-and-redaction",
-    "topicId": "tooling-foundations",
-    "label": "Capturing reproducible evidence and redacting secrets"
+    "id": "devtools-elements-console",
+    "topicId": "chrome-devtools",
+    "label": "Elements and Console: inspect the page and read errors"
   },
   {
-    "id": "read-only-vs-mutating-investigation",
-    "topicId": "tooling-foundations",
-    "label": "Read-only investigation and knowing when a tool changes state"
+    "id": "devtools-network-inspect",
+    "topicId": "chrome-devtools",
+    "label": "Network: find, filter and read a request"
   },
   {
-    "id": "curl-fundamentals",
-    "topicId": "http-api-tools",
-    "label": "curl fundamentals: building a request from scratch"
+    "id": "devtools-network-conditions",
+    "topicId": "chrome-devtools",
+    "label": "Network: throttling, offline and blocking requests"
+  },
+  {
+    "id": "devtools-network-export",
+    "topicId": "chrome-devtools",
+    "label": "Network: Copy as cURL, replay and HAR export"
+  },
+  {
+    "id": "devtools-application-storage",
+    "topicId": "chrome-devtools",
+    "label": "Application: cookies, storage and clearing site data"
+  },
+  {
+    "id": "devtools-device-mode",
+    "topicId": "chrome-devtools",
+    "label": "Device Mode: responsive layouts, touch and geolocation"
+  },
+  {
+    "id": "devtools-local-overrides",
+    "topicId": "chrome-devtools",
+    "label": "Local overrides: mock a response or header without a backend"
+  },
+  {
+    "id": "postman-sending-requests",
+    "topicId": "postman",
+    "label": "Sending a request: method, URL, params, headers and body"
   },
   {
     "id": "postman-collections-environments",
-    "topicId": "http-api-tools",
-    "label": "Postman: collections, environments and variables"
+    "topicId": "postman",
+    "label": "Collections, environments and variables"
   },
   {
-    "id": "postman-auth-cookies-multipart",
-    "topicId": "http-api-tools",
-    "label": "Postman: auth, cookies, multipart and scripted assertions"
+    "id": "postman-authorization",
+    "topicId": "postman",
+    "label": "Authorization: Bearer, Basic, API key, OAuth 2.0 and inheritance"
   },
   {
-    "id": "bruno-git-friendly-collections",
-    "topicId": "http-api-tools",
-    "label": "Bruno: file-based, Git-friendly API collections"
+    "id": "postman-scripts-tests",
+    "topicId": "postman",
+    "label": "Scripts: pre-request setup and post-response tests"
   },
   {
-    "id": "choosing-http-client",
-    "topicId": "http-api-tools",
-    "label": "Choosing among curl, Postman, Bruno and other HTTP clients"
+    "id": "postman-runner-cli",
+    "topicId": "postman",
+    "label": "Collection Runner, Postman CLI and Newman"
   },
   {
-    "id": "reproducible-request-artifacts",
-    "topicId": "http-api-tools",
-    "label": "Reproducible request artifacts: import, export and safe sharing"
+    "id": "postman-other-protocols",
+    "topicId": "postman",
+    "label": "WebSocket, gRPC, GraphQL and MQTT requests"
   },
   {
-    "id": "elements-and-console",
-    "topicId": "browser-devtools",
-    "label": "Elements and Console for live inspection"
+    "id": "postman-sharing-alternatives",
+    "topicId": "postman",
+    "label": "Sharing, code snippets and Git-friendly alternatives"
   },
   {
-    "id": "network-panel-waterfall",
-    "topicId": "browser-devtools",
-    "label": "Network panel: headers, timing and the waterfall"
+    "id": "curl-first-requests",
+    "topicId": "curl-cli",
+    "label": "First requests: GET, status, headers and verbose mode"
   },
   {
-    "id": "cache-throttling-emulation",
-    "topicId": "browser-devtools",
-    "label": "Cache disabling, throttling and device emulation limits"
+    "id": "curl-sending-data",
+    "topicId": "curl-cli",
+    "label": "Sending data: JSON, forms and file uploads"
   },
   {
-    "id": "application-panel-storage",
-    "topicId": "browser-devtools",
-    "label": "Application panel: cookies, storage and service workers"
+    "id": "curl-auth-cookies",
+    "topicId": "curl-cli",
+    "label": "Auth headers, Basic auth and cookie jars"
   },
   {
-    "id": "sources-breakpoints",
-    "topicId": "browser-devtools",
-    "label": "Sources, source maps and breakpoint debugging basics"
+    "id": "curl-timing-tls",
+    "topicId": "curl-cli",
+    "label": "Timing and TLS diagnostics with -w, --resolve and timeouts"
   },
   {
-    "id": "performance-lighthouse-bridge",
-    "topicId": "browser-devtools",
-    "label": "Performance and Lighthouse as bridges"
+    "id": "curl-jq-json",
+    "topicId": "curl-cli",
+    "label": "Reading JSON with jq"
   },
   {
-    "id": "devtools-security-and-firefox",
-    "topicId": "browser-devtools",
-    "label": "Security/certificate signals and Firefox DevTools comparison"
+    "id": "curl-scripts-ci",
+    "topicId": "curl-cli",
+    "label": "curl in scripts and CI: --fail, retries and exit codes"
   },
   {
-    "id": "interception-proxy-workflow",
-    "topicId": "interception-proxies",
-    "label": "The interception-proxy workflow and local certificates"
+    "id": "proxy-how-it-works",
+    "topicId": "proxies",
+    "label": "How a debugging proxy sees your traffic"
   },
   {
-    "id": "fiddler-capture-filter",
-    "topicId": "interception-proxies",
-    "label": "Fiddler Everywhere: capturing, filtering and inspecting traffic"
+    "id": "charles-record-ssl",
+    "topicId": "proxies",
+    "label": "Charles: record traffic and enable SSL Proxying"
   },
   {
-    "id": "fiddler-rules-rewrite-replay",
-    "topicId": "interception-proxies",
-    "label": "Fiddler rules, request modification and replay"
+    "id": "charles-mobile-devices",
+    "topicId": "proxies",
+    "label": "Charles: capture an iPhone, Android device or simulator"
   },
   {
-    "id": "charles-mitmproxy-alternatives",
-    "topicId": "interception-proxies",
-    "label": "Charles and mitmproxy as alternative proxy workflows"
+    "id": "charles-breakpoints",
+    "topicId": "proxies",
+    "label": "Charles: Breakpoints to edit a live request or response"
   },
   {
-    "id": "certificate-pinning-and-privacy",
-    "topicId": "interception-proxies",
-    "label": "Certificate pinning limits and privacy/security boundaries"
+    "id": "charles-map-rewrite",
+    "topicId": "proxies",
+    "label": "Charles: Map Local, Map Remote and Rewrite"
   },
   {
-    "id": "safe-db-connection-setup",
-    "topicId": "database-inspection",
-    "label": "Safe connection setup and read-only investigation habits"
+    "id": "charles-throttling",
+    "topicId": "proxies",
+    "label": "Charles: Throttling slow and lossy networks"
   },
   {
-    "id": "sql-client-querying-schema",
-    "topicId": "database-inspection",
-    "label": "Querying, filtering and inspecting schema and constraints"
+    "id": "fiddler-everywhere-rules",
+    "topicId": "proxies",
+    "label": "Fiddler Everywhere: HTTPS capture and Rules"
   },
   {
-    "id": "transactions-accidental-write-risk",
-    "topicId": "database-inspection",
-    "label": "Transactions and accidental-write risk"
+    "id": "proxy-tool-mapping",
+    "topicId": "proxies",
+    "label": "Same task, different proxy: Charles, Fiddler, Proxyman, mitmproxy"
   },
   {
-    "id": "exporting-evidence-reconciling",
-    "topicId": "database-inspection",
-    "label": "Exporting evidence and reconciling API/UI results with stored data"
+    "id": "wireshark-capture-filters",
+    "topicId": "wireshark",
+    "label": "Starting a capture: interfaces, permissions and capture filters"
   },
   {
-    "id": "capture-vs-display-filters",
-    "topicId": "packet-analysis",
-    "label": "Capture vs display filters and choosing an interface"
+    "id": "wireshark-display-filters",
+    "topicId": "wireshark",
+    "label": "Display filters QA uses every day"
   },
   {
-    "id": "following-tcp-conversations",
-    "topicId": "packet-analysis",
-    "label": "Following a TCP conversation: handshakes, retransmissions and resets"
+    "id": "wireshark-follow-stream",
+    "topicId": "wireshark",
+    "label": "Follow TCP/HTTP stream"
   },
   {
-    "id": "dns-tls-visibility-limits",
-    "topicId": "packet-analysis",
-    "label": "DNS and TLS visibility: what you can and cannot see"
+    "id": "wireshark-tls-decryption",
+    "topicId": "wireshark",
+    "label": "Decrypting your own HTTPS traffic with SSLKEYLOGFILE"
   },
   {
-    "id": "narrowing-capture-exporting",
-    "topicId": "packet-analysis",
-    "label": "Narrowing a capture and exporting evidence"
+    "id": "wireshark-problem-analysis",
+    "topicId": "wireshark",
+    "label": "Spotting problems: Expert Information, Conversations and I/O graphs"
   },
   {
-    "id": "tshark-tcpdump-bridges",
-    "topicId": "packet-analysis",
-    "label": "tshark and tcpdump as scriptable bridges—and when capture is the wrong layer"
+    "id": "wireshark-tcpdump-tshark",
+    "topicId": "wireshark",
+    "label": "tcpdump and tshark: capture on servers, analyse anywhere"
   },
   {
-    "id": "adb-fundamentals",
-    "topicId": "mobile-diagnostics",
-    "label": "adb fundamentals: devices, install, shell and file access"
+    "id": "mqtt-essentials",
+    "topicId": "mqtt-tools",
+    "label": "MQTT essentials for testers: topics, wildcards, QoS, retain and Last Will"
   },
   {
-    "id": "logcat-filtering-signal",
-    "topicId": "mobile-diagnostics",
-    "label": "Logcat: filtering signal from noise"
+    "id": "mqtt-explorer",
+    "topicId": "mqtt-tools",
+    "label": "MQTT Explorer: browse the topic tree, publish and diff"
   },
   {
-    "id": "ios-simulator-device-bridge",
-    "topicId": "mobile-diagnostics",
-    "label": "iOS bridge: Simulator vs device and device logs"
+    "id": "mqttx",
+    "topicId": "mqtt-tools",
+    "label": "MQTTX: connections, subscriptions, Last Will and MQTT 5"
   },
   {
-    "id": "instruments-diagnostic-bridge",
-    "topicId": "mobile-diagnostics",
-    "label": "Instruments as a diagnostic bridge"
+    "id": "mosquitto-cli",
+    "topicId": "mqtt-tools",
+    "label": "Mosquitto CLI: mosquitto_sub and mosquitto_pub"
   },
   {
-    "id": "performance-tool-bridge",
-    "topicId": "specialist-bridges",
-    "label": "k6 and JMeter: when to hand off to Performance"
+    "id": "mqtt-test-scenarios",
+    "topicId": "mqtt-tools",
+    "label": "MQTT test scenarios you should run"
   },
   {
-    "id": "security-tool-bridge",
-    "topicId": "specialist-bridges",
-    "label": "ZAP and Burp Suite: when to hand off to Security"
+    "id": "mqtt-debugging",
+    "topicId": "mqtt-tools",
+    "label": "Debugging MQTT: Wireshark filters, $SYS topics and Postman"
   },
   {
-    "id": "accessibility-tool-bridge",
-    "topicId": "specialist-bridges",
-    "label": "Lighthouse, axe and the accessibility tree: when to hand off to Accessibility"
+    "id": "extensions-safe-install",
+    "topicId": "browser-extensions",
+    "label": "Installing QA extensions safely: profiles, permissions and site access"
   },
   {
-    "id": "integration-tool-bridges",
-    "topicId": "specialist-bridges",
-    "label": "Appium Inspector, grpcurl, WebSocket and Kafka tooling"
+    "id": "requestly-rules",
+    "topicId": "browser-extensions",
+    "label": "Requestly: modify headers, redirect environments and mock API responses"
+  },
+  {
+    "id": "accessibility-extensions",
+    "topicId": "browser-extensions",
+    "label": "axe DevTools and WAVE: accessibility checks in the browser"
+  },
+  {
+    "id": "test-data-extensions",
+    "topicId": "browser-extensions",
+    "label": "Bug Magnet and fake-data fillers: edge-case input in one click"
+  },
+  {
+    "id": "capture-reporting-extensions",
+    "topicId": "browser-extensions",
+    "label": "Screenshots, recordings and bug reports: GoFullPage, Jam and built-in tools"
+  },
+  {
+    "id": "cookie-editor",
+    "topicId": "browser-extensions",
+    "label": "Cookie-Editor: inspect, edit and export cookies quickly"
+  },
+  {
+    "id": "dbeaver-connections",
+    "topicId": "dbeaver",
+    "label": "Creating a connection: driver, host, credentials and Test Connection"
+  },
+  {
+    "id": "dbeaver-safety",
+    "topicId": "dbeaver",
+    "label": "Safe by default: connection types, manual commit and read-only"
+  },
+  {
+    "id": "dbeaver-sql-editor",
+    "topicId": "dbeaver",
+    "label": "SQL editor: run statements, scripts and parameters"
+  },
+  {
+    "id": "dbeaver-data-editor",
+    "topicId": "dbeaver",
+    "label": "Data editor: filter, sort, compare and edit rows"
+  },
+  {
+    "id": "dbeaver-plans-export",
+    "topicId": "dbeaver",
+    "label": "Execution plans, ER diagrams and exporting evidence"
+  },
+  {
+    "id": "adb-device-setup",
+    "topicId": "mobile-tools",
+    "label": "Connecting an Android device: Developer options, USB and wireless debugging"
+  },
+  {
+    "id": "adb-daily-commands",
+    "topicId": "mobile-tools",
+    "label": "adb commands QA uses daily: install, deep links, app data, screenshots, video"
+  },
+  {
+    "id": "logcat-android-studio",
+    "topicId": "mobile-tools",
+    "label": "Logcat in Android Studio: filters, crashes and saved queries"
+  },
+  {
+    "id": "xcode-simulator",
+    "topicId": "mobile-tools",
+    "label": "Xcode Simulator: devices, screenshots, location and appearance"
+  },
+  {
+    "id": "simctl-cli",
+    "topicId": "mobile-tools",
+    "label": "simctl from the terminal: deep links, push, permissions, status bar"
+  },
+  {
+    "id": "ios-logs",
+    "topicId": "mobile-tools",
+    "label": "iOS logs: Console on macOS and simulator log stream"
   }
 ]

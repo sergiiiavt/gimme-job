@@ -20,6 +20,8 @@ import chapter07En from "./chapter-07.en.json";
 import chapter07Uk from "./chapter-07.uk.json";
 import chapter08En from "./chapter-08.en.json";
 import chapter08Uk from "./chapter-08.uk.json";
+import chapter09En from "./chapter-09.en.json";
+import chapter09Uk from "./chapter-09.uk.json";
 
 export interface LearningTopic {
   id: string;
@@ -72,19 +74,21 @@ const practicalExamplesUk = practicalExamplesUkData as Record<string, string>;
 const englishDocuments = [
   chapter01En, chapter02En, chapter03En, chapter04En,
   chapter05En, chapter06En, chapter07En, chapter08En,
+  chapter09En,
 ] as EnglishChapterDocument[];
 const ukrainianDocuments = [
   chapter01Uk, chapter02Uk, chapter03Uk, chapter04Uk,
   chapter05Uk, chapter06Uk, chapter07Uk, chapter08Uk,
+  chapter09Uk,
 ] as UkrainianChapterDocument[];
 const englishById = new Map(englishDocuments.map((document) => [document.id, document.markdown]));
 const ukrainianById = new Map(ukrainianDocuments.map((document) => [document.id, document.markdownUk]));
 
 export const catalog = {
-  title: "Testing & Diagnostic Tools",
-  titleUk: "Інструменти тестування та діагностики",
-  description: "A workflow-first, source-backed path through the diagnostic tools QA engineers use to inspect, reproduce and explain system behaviour.",
-  descriptionUk: "Навчальний маршрут на основі джерел: інструменти, якими QA-інженери досліджують, відтворюють і пояснюють поведінку системи.",
+  title: "Testing Tools",
+  titleUk: "Інструменти тестування",
+  description: "Hands-on guides to the specific tools QA engineers use every day: Chrome DevTools, Postman, curl, Charles and Fiddler, Wireshark, MQTT clients, browser extensions, DBeaver and mobile device tools, with step-by-step instructions, official screenshots and labs.",
+  descriptionUk: "Практичні посібники з конкретних інструментів, якими QA-інженери користуються щодня: Chrome DevTools, Postman, curl, Charles і Fiddler, Wireshark, MQTT-клієнти, розширення браузера, DBeaver і мобільні інструменти — з покроковими інструкціями, офіційними скриншотами й лабораторними.",
   taxonomy,
   sources,
   requiredConcepts,
