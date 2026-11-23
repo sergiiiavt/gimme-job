@@ -19,8 +19,18 @@ test("new learning paths route through standalone document pages", async () => {
 test("learning taxonomies stay compact while preserving the full concept scope", async () => {
   const toolsTaxonomy = JSON.parse(await read("content/testing-tools/taxonomy.json"));
   const toolsConcepts = JSON.parse(await read("content/testing-tools/required-concepts.json"));
-  assert.equal(toolsTaxonomy.length, 8);
-  assert.equal(toolsConcepts.length, 38);
+  assert.deepEqual(toolsTaxonomy.map((topic) => topic.id), [
+    "chrome-devtools",
+    "postman",
+    "curl-cli",
+    "proxies",
+    "wireshark",
+    "mqtt-tools",
+    "browser-extensions",
+    "dbeaver",
+    "mobile-tools",
+  ]);
+  assert.equal(toolsConcepts.length, 58);
   assert.equal(toolsTaxonomy.some((topic) => topic.id === "locust-performance-testing"), false);
 
   const metricsTaxonomy = JSON.parse(await read("content/metrics-estimation/taxonomy.json"));
@@ -67,26 +77,36 @@ test("document markdown supports compact collapsible practical sections", async 
   assert.match(renderer, /qa-md-details-body/);
 });
 
-test("testing-tools practical examples use traceable official flows and real screenshots", async () => {
+test("testing-tools guides are tool-specific walkthroughs with official screenshots and labs", async () => {
   const en = JSON.parse(await read("content/testing-tools/practical-examples.en.json"));
   const uk = JSON.parse(await read("content/testing-tools/practical-examples.uk.json"));
 
-  assert.match(en["http-api-tools"], /postman-echo\.com\/get/);
-  assert.match(en["http-api-tools"], /Scripts → Post-response/);
-  assert.match(en["http-api-tools"], /assets\.postman\.com\/postman-docs\/v12\/send-first-request\.png/);
-  assert.match(en["browser-devtools"], /Copy → Copy as cURL/);
-  assert.match(en["browser-devtools"], /developer\.chrome\.com\/static\/docs\/devtools\/network\/reference\/image\/request-headers\.png/);
-  assert.match(en["interception-proxies"], /localhost:8080/);
-  assert.match(en["database-inspection"], /Connection settings → Initialization/);
-  assert.match(en["packet-analysis"], /ws-follow-stream\.png/);
-  assert.match(en["mobile-diagnostics"], /adb devices -l/);
-  assert.match(en["mobile-diagnostics"], /package:mine/);
-  assert.match(en["mobile-diagnostics"], /is:crash/);
-  assert.match(en["mobile-diagnostics"], /Apple Console User Guide/);
+  assert.match(en["chrome-devtools"], /Override content/);
+  assert.match(en["postman"], /postman-echo\.com/);
+  assert.match(en["postman"], /newman run/);
+  assert.match(en["curl-cli"], /jq -e/);
+  assert.match(en["proxies"], /Edit Response/);
+  assert.match(en["wireshark"], /tls\.handshake\.type == 1/);
+  assert.match(en["mqtt-tools"], /--will-topic/);
+  assert.match(en["mqtt-tools"], /kill -9/);
+  assert.match(en["browser-extensions"], /Modify Headers/);
+  assert.match(en["dbeaver"], /Manual Commit/);
+  assert.match(en["mobile-tools"], /adb devices -l/);
+  assert.match(en["mobile-tools"], /package:mine/);
 
-  assert.deepEqual(Object.keys(uk).sort(), Object.keys(en).sort());
+  assert.deepEqual(Object.keys(uk), Object.keys(en));
   for (const value of Object.values(en)) assert.match(value, /:::details/);
   for (const value of Object.values(uk)) assert.match(value, /:::details/);
+
+  const devtools = JSON.parse(await read("content/testing-tools/chapter-01.en.json")).markdown;
+  assert.match(devtools, /developer\.chrome\.com\/static\/docs\/devtools\/network\/reference\/image\/request-headers-tab\.png/);
+  assert.match(devtools, /Copy → Copy as cURL/);
+  const wireshark = JSON.parse(await read("content/testing-tools/chapter-05.en.json")).markdown;
+  assert.match(wireshark, /ws-follow-stream\.png/);
+  assert.match(wireshark, /SSLKEYLOGFILE/);
+  const mqtt = JSON.parse(await read("content/testing-tools/chapter-06.en.json")).markdown;
+  assert.match(mqtt, /mosquitto_sub/);
+  assert.match(mqtt, /mqttx\.app\/images\/mqttx-willmessage\.png/);
 });
 
 test("metrics practical examples distinguish published evidence, real observations and baselines", async () => {

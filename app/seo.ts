@@ -188,7 +188,7 @@ export const LEARNING_SEO: Readonly<Record<string, SeoPage>> = {
   },
   "testing-tools": {
     title: "Software Testing Tools",
-    description: "Practical testing-tools learning materials covering API clients, browser DevTools, proxies, database tools, network inspection, and mobile diagnostics.",
+    description: "Step-by-step guides with screenshots for Chrome DevTools, Postman, curl, Charles and Fiddler, Wireshark, MQTT Explorer and MQTTX, QA browser extensions, DBeaver, adb, Logcat and Xcode Simulator.",
     path: "/learn/testing-tools",
   },
   "metrics-estimation": {

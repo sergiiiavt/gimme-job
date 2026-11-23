@@ -1,74 +1,154 @@
 [
   {
-    "id": "tooling-foundations",
+    "id": "chrome-devtools",
     "order": 1,
-    "label": "Tooling foundations & evidence",
-    "labelUk": "Основи роботи з інструментами та доказами",
-    "description": "Choose tools by the evidence layer you need, capture reproducible artifacts safely, and know when investigation mutates state.",
-    "descriptionUk": "Вибір інструмента за рівнем дослідження, відтворювані докази, захист секретів і відмінність спостереження від зміни стану.",
-    "sourceIds": ["mdn-http-reference", "chrome-devtools-docs", "wireshark-guide"]
+    "label": "Chrome DevTools",
+    "labelUk": "Chrome DevTools",
+    "description": "Step-by-step Elements, Console, Network (filters, throttling, blocking, cURL, HAR), Application storage, Device Mode and local overrides.",
+    "descriptionUk": "Покроково: Elements, Console, Network (фільтри, throttling, блокування, cURL, HAR), сховища Application, Device Mode і local overrides.",
+    "sourceIds": [
+      "chrome-devtools-docs",
+      "chrome-network-reference",
+      "chrome-request-conditions",
+      "chrome-cookies",
+      "chrome-device-mode",
+      "chrome-overrides",
+      "firefox-devtools-docs",
+      "lighthouse-docs"
+    ]
   },
   {
-    "id": "http-api-tools",
+    "id": "postman",
     "order": 2,
-    "label": "HTTP & API request tools",
-    "labelUk": "Інструменти HTTP- та API-запитів",
-    "description": "Build reproducible requests with curl, Postman and Bruno, then share them without coupling tests to one desktop client.",
-    "descriptionUk": "Відтворювані запити в curl, Postman і Bruno та обмін ними незалежно від настільного клієнта.",
-    "sourceIds": ["curl-docs", "postman-docs", "bruno-docs", "mdn-http-reference"]
+    "label": "Postman",
+    "labelUk": "Postman",
+    "description": "Requests, collections, environments and variables, authorization, scripts and tests, Collection Runner, Postman CLI/Newman, WebSocket, gRPC and MQTT requests.",
+    "descriptionUk": "Запити, колекції, середовища й змінні, авторизація, скрипти й тести, Collection Runner, Postman CLI/Newman, запити WebSocket, gRPC і MQTT.",
+    "sourceIds": [
+      "postman-quick-start",
+      "postman-environments",
+      "postman-test-scripts",
+      "postman-collection-runs",
+      "postman-newman",
+      "postman-mqtt",
+      "bruno-docs",
+      "mdn-websockets"
+    ]
   },
   {
-    "id": "browser-devtools",
+    "id": "curl-cli",
     "order": 3,
-    "label": "Browser DevTools & debugging",
-    "labelUk": "DevTools і налагодження браузера",
-    "description": "Inspect DOM, console, network, storage, sources, performance and security signals using browser developer tools, with Chrome as the primary example.",
-    "descriptionUk": "Дослідження DOM, консолі, мережі, сховищ, коду, продуктивності й безпеки в інструментах браузера.",
-    "sourceIds": ["chrome-devtools-docs", "firefox-devtools-docs", "web-vitals-docs", "lighthouse-docs"]
+    "label": "curl & jq",
+    "labelUk": "curl і jq",
+    "description": "Command-line HTTP: verbose debugging, JSON, forms and uploads, auth and cookie jars, timing and TLS diagnostics, jq assertions and CI-ready scripts.",
+    "descriptionUk": "HTTP у командному рядку: докладне налагодження, JSON, форми й файли, авторизація та cookie jar, діагностика часу й TLS, перевірки через jq і скрипти для CI.",
+    "sourceIds": [
+      "curl-docs",
+      "jq-manual",
+      "mdn-http-reference",
+      "chrome-network-reference"
+    ]
   },
   {
-    "id": "interception-proxies",
+    "id": "proxies",
     "order": 4,
-    "label": "HTTP interception & proxies",
-    "labelUk": "Перехоплення HTTP і проксі",
-    "description": "Capture, inspect, replay and deliberately modify HTTP(S) traffic using Fiddler Everywhere, Charles or mitmproxy while respecting TLS and privacy boundaries.",
-    "descriptionUk": "Захоплення, перегляд, повторення й контрольована зміна HTTP(S)-трафіку у Fiddler Everywhere, Charles і mitmproxy.",
-    "sourceIds": ["fiddler-everywhere-docs", "charles-docs", "mitmproxy-docs", "mdn-http-reference"]
+    "label": "Charles Proxy & Fiddler Everywhere",
+    "labelUk": "Charles Proxy і Fiddler Everywhere",
+    "description": "Debugging proxies for web and mobile: SSL proxying, phone and simulator setup, breakpoints, Map Local/Remote, Rewrite, throttling and Fiddler rules.",
+    "descriptionUk": "Налагоджувальні проксі для вебу й мобільних: SSL proxying, налаштування телефона й симулятора, breakpoints, Map Local/Remote, Rewrite, throttling і правила Fiddler.",
+    "sourceIds": [
+      "charles-docs",
+      "charles-ssl-certificates",
+      "charles-breakpoints",
+      "charles-throttling",
+      "charles-map-local",
+      "charles-rewrite",
+      "fiddler-everywhere-docs",
+      "fiddler-rules",
+      "fiddler-https",
+      "mitmproxy-docs"
+    ]
   },
   {
-    "id": "database-inspection",
+    "id": "wireshark",
     "order": 5,
-    "label": "Database & data inspection",
-    "labelUk": "Дослідження баз даних",
-    "description": "Investigate persisted state safely with a SQL client and reconcile database evidence with API and UI behavior.",
-    "descriptionUk": "Безпечна перевірка збереженого стану через SQL-клієнт і зіставлення з поведінкою API та інтерфейсу.",
-    "sourceIds": ["dbeaver-docs", "postgresql-sql-tutorial", "postgresql-transactions"]
+    "label": "Wireshark, tcpdump & tshark",
+    "labelUk": "Wireshark, tcpdump і tshark",
+    "description": "Packet capture below HTTP: capture and display filters, Follow Stream, TLS decryption with SSLKEYLOGFILE, Expert Information, statistics and server-side capture.",
+    "descriptionUk": "Захоплення пакетів нижче за HTTP: фільтри захоплення й відображення, Follow Stream, розшифрування TLS через SSLKEYLOGFILE, Expert Information, статистика й захоплення на серверах.",
+    "sourceIds": [
+      "wireshark-guide",
+      "wireshark-display-filters",
+      "wireshark-follow-stream",
+      "wireshark-tls-wiki",
+      "tshark-docs",
+      "tcpdump-docs"
+    ]
   },
   {
-    "id": "packet-analysis",
+    "id": "mqtt-tools",
     "order": 6,
-    "label": "Network packet analysis",
-    "labelUk": "Аналіз мережевих пакетів",
-    "description": "Use Wireshark, tshark and tcpdump when the question sits below HTTP: TCP behavior, DNS, TLS visibility and packet timing.",
-    "descriptionUk": "Wireshark, tshark і tcpdump для перевірки TCP, DNS, TLS та часових характеристик пакетів.",
-    "sourceIds": ["wireshark-guide", "tshark-docs", "tcpdump-docs"]
+    "label": "MQTT tools",
+    "labelUk": "Інструменти MQTT",
+    "description": "Testing MQTT/IoT systems with MQTT Explorer, MQTTX and mosquitto_pub/sub: topics, QoS, retained messages, Last Will, test scenarios and wire-level debugging.",
+    "descriptionUk": "Тестування MQTT/IoT через MQTT Explorer, MQTTX і mosquitto_pub/sub: топіки, QoS, retained-повідомлення, Last Will, тестові сценарії й налагодження на рівні мережі.",
+    "sourceIds": [
+      "mqtt-explorer",
+      "mqttx-docs",
+      "mosquitto-sub",
+      "mosquitto-pub",
+      "mqtt-v5-spec",
+      "postman-mqtt"
+    ]
   },
   {
-    "id": "mobile-diagnostics",
+    "id": "browser-extensions",
     "order": 7,
-    "label": "Mobile & device diagnostics",
-    "labelUk": "Діагностика мобільних застосунків і пристроїв",
-    "description": "Use adb, Logcat and Apple Simulator/Instruments as device-level evidence bridges without duplicating the full Mobile curriculum.",
-    "descriptionUk": "adb, Logcat, Simulator та Instruments для отримання діагностичних даних пристрою.",
-    "sourceIds": ["android-adb-docs", "android-logcat-docs", "apple-simulator-docs", "apple-instruments-docs"]
+    "label": "Browser extensions for QA",
+    "labelUk": "Розширення браузера для QA",
+    "description": "Safe installation plus Requestly, ModHeader, axe DevTools, WAVE, Bug Magnet, GoFullPage, Jam and Cookie-Editor with exact steps.",
+    "descriptionUk": "Безпечне встановлення та Requestly, ModHeader, axe DevTools, WAVE, Bug Magnet, GoFullPage, Jam і Cookie-Editor з точними кроками.",
+    "sourceIds": [
+      "requestly-modify-headers",
+      "axe-devtools-extension",
+      "axe-core-docs",
+      "wave-extension",
+      "bug-magnet",
+      "gofullpage",
+      "jam-extension",
+      "cookie-editor"
+    ]
   },
   {
-    "id": "specialist-bridges",
+    "id": "dbeaver",
     "order": 8,
-    "label": "Specialist-tool bridges",
-    "labelUk": "Перехід до спеціалізованих інструментів",
-    "description": "Recognize when to hand off to performance, security, accessibility, automation or integration tooling without duplicating those curricula.",
-    "descriptionUk": "Перехід до спеціалізованих перевірок продуктивності, безпеки, доступності, автоматизації та інтеграцій.",
-    "sourceIds": ["k6-docs", "jmeter-docs", "owasp-zap-docs", "burp-suite-docs", "axe-core-docs", "lighthouse-docs", "appium-inspector-docs", "grpcurl-docs", "mdn-websockets", "kafka-docs"]
+    "label": "DBeaver",
+    "labelUk": "DBeaver",
+    "description": "Database verification with DBeaver: connections, Production connection type and read-only safety, SQL editor, data editor, execution plans and exports.",
+    "descriptionUk": "Перевірка баз даних у DBeaver: підключення, тип Production і read-only, SQL-редактор, редактор даних, плани виконання й експорт.",
+    "sourceIds": [
+      "dbeaver-docs",
+      "dbeaver-connection-types",
+      "dbeaver-sql-execution",
+      "dbeaver-execution-plan",
+      "postgresql-sql-tutorial",
+      "postgresql-transactions"
+    ]
+  },
+  {
+    "id": "mobile-tools",
+    "order": 9,
+    "label": "Mobile: adb, Logcat & Xcode Simulator",
+    "labelUk": "Мобільні: adb, Logcat і Xcode Simulator",
+    "description": "Android and iOS device evidence: adb setup and daily commands, Logcat queries, Xcode Simulator, simctl automation and iOS logs in Console.",
+    "descriptionUk": "Докази з Android- та iOS-пристроїв: налаштування й щоденні команди adb, запити Logcat, Xcode Simulator, автоматизація simctl і логи iOS у Console.",
+    "sourceIds": [
+      "android-adb-docs",
+      "android-studio-logcat",
+      "android-logcat-docs",
+      "apple-simulator-docs",
+      "apple-simulator-wwdc",
+      "apple-console-guide"
+    ]
   }
 ]

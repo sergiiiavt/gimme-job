@@ -46,9 +46,9 @@ export default function TestingToolsPage({ mode }: TestingToolsPageProps) {
       mode={mode}
       personalHref="/workspace/learn/testing-tools"
       publicHref="/learn/testing-tools"
-      secondaryTitle="Testing & diagnostic tools"
+      secondaryTitle="Testing tools: hands-on guides"
       section={null}
-      sourceStatusLabel={({ language }) => language === "uk" ? "Перевірено 16 серпня 2026" : "Verified 16 Aug 2026"}
+      sourceStatusLabel={({ language }) => language === "uk" ? "Перевірено 22 листопада 2026" : "Verified 22 Nov 2026"}
     />
   );
 }
