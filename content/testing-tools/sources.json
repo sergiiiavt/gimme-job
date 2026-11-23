@@ -216,8 +216,8 @@
     "kind": "Official documentation",
     "status": "verified",
     "url": "https://www.charlesproxy.com/documentation/proxying/breakpoints/",
-    "role": "Intercepting and editing requests and responses in the Breakpoints window",
-    "checkedAt": "2026-11-22"
+    "role": "Intercepting and editing requests and responses, and the Execute, Abort and Cancel actions",
+    "checkedAt": "2026-11-23"
   },
   {
     "id": "charles-throttling",
@@ -386,8 +386,8 @@
     "kind": "Official reference",
     "status": "verified",
     "url": "https://mosquitto.org/man/mosquitto_pub-1.html",
-    "role": "Publishing messages with QoS, retain, files, empty payloads and protocol versions",
-    "checkedAt": "2026-11-22"
+    "role": "Publishing with QoS, retain, files and empty payloads; TLS key logging and CONNACK exit codes",
+    "checkedAt": "2026-11-23"
   },
   {
     "id": "mqtt-v5-spec",
@@ -401,13 +401,23 @@
   },
   {
     "id": "requestly-modify-headers",
-    "title": "Requestly: Modify Headers rule",
+    "title": "Requestly HTTP Interceptor: Modify Headers rule",
     "publisher": "Requestly (BrowserStack)",
     "kind": "Official documentation",
     "status": "verified",
-    "url": "https://docs.requestly.com/general/rule-types/modify-headers",
+    "url": "https://interceptor-docs.requestly.com/http-rules/rule-types/modify-headers",
     "role": "Creating HTTP rules that add, remove or override request and response headers",
-    "checkedAt": "2026-11-22"
+    "checkedAt": "2026-11-23"
+  },
+  {
+    "id": "requestly-rule-types",
+    "title": "Requestly HTTP Interceptor: Rule types",
+    "publisher": "Requestly (BrowserStack)",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://interceptor-docs.requestly.com/http-rules/rule-types",
+    "role": "Current rule names such as Redirect Request, Modify API Response, Cancel Request and Delay Network Requests",
+    "checkedAt": "2026-11-23"
   },
   {
     "id": "axe-devtools-extension",
@@ -418,6 +428,16 @@
     "url": "https://docs.deque.com/devtools-for-web/4/en/devtools-extension",
     "role": "Installing and opening axe DevTools and running full and partial page scans",
     "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "axe-devtools-chrome",
+    "title": "axe DevTools Chrome extension",
+    "publisher": "Deque Systems",
+    "kind": "Official product page",
+    "status": "verified",
+    "url": "https://www.deque.com/axe/devtools/extension/chrome/",
+    "role": "Getting-started steps (Scan all of my page) and results screenshots for the free extension",
+    "checkedAt": "2026-11-23"
   },
   {
     "id": "axe-core-docs",
@@ -498,6 +518,16 @@
     "url": "https://dbeaver.com/docs/dbeaver/Connection-Types/",
     "role": "Development, Test and Production defaults for auto-commit, confirmations and colours",
     "checkedAt": "2026-11-22"
+  },
+  {
+    "id": "dbeaver-sql-editor",
+    "title": "DBeaver: SQL Editor",
+    "publisher": "DBeaver Corp",
+    "kind": "Official documentation",
+    "status": "verified",
+    "url": "https://dbeaver.com/docs/dbeaver/SQL-Editor/",
+    "role": "Opening new SQL scripts, switching the active connection and schema, and the editor layout",
+    "checkedAt": "2026-11-23"
   },
   {
     "id": "dbeaver-sql-execution",

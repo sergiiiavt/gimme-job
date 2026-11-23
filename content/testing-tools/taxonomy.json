@@ -110,7 +110,9 @@
     "descriptionUk": "Безпечне встановлення та Requestly, ModHeader, axe DevTools, WAVE, Bug Magnet, GoFullPage, Jam і Cookie-Editor з точними кроками.",
     "sourceIds": [
       "requestly-modify-headers",
+      "requestly-rule-types",
       "axe-devtools-extension",
+      "axe-devtools-chrome",
       "axe-core-docs",
       "wave-extension",
       "bug-magnet",
@@ -129,6 +131,7 @@
     "sourceIds": [
       "dbeaver-docs",
       "dbeaver-connection-types",
+      "dbeaver-sql-editor",
       "dbeaver-sql-execution",
       "dbeaver-execution-plan",
       "postgresql-sql-tutorial",
