@@ -1,5 +1,12 @@
 import agenticCatalog from "./agentic-learning/catalog";
-import { claudeCertificationCatalog, githubCopilotCertificationCatalog } from "./ai-engineering-certifications/catalog";
+import {
+  claude101Catalog,
+  claudeCertificationCatalog,
+  claudeCode101Catalog,
+  claudeDeveloperCertificationCatalog,
+  claudePlatform101Catalog,
+  githubCopilotCertificationCatalog,
+} from "./ai-engineering-certifications/catalog";
 import apiIntegrationCatalog from "./api-integration/catalog";
 import automationCurriculum from "./automation-learning/catalog";
 import { automationTrackAliases, automationTrackForModule } from "./automation-learning/tracks";
@@ -72,7 +79,11 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
   { key: "ctfl-certification", route: "/learn/certifications", track: "ctfl-v4", value: ctflCertificationCatalog },
   { key: "ct-genai-certification", route: "/learn/certifications", track: "ct-genai-v1", value: ctGenAiCertificationCatalog },
+  { key: "claude-101-course", route: "/learn/certifications", track: "claude-101", value: claude101Catalog },
+  { key: "claude-code-101-course", route: "/learn/certifications", track: "claude-code-101", value: claudeCode101Catalog },
+  { key: "claude-platform-101-course", route: "/learn/certifications", track: "claude-platform-101", value: claudePlatform101Catalog },
   { key: "claude-certification", route: "/learn/certifications", track: "claude-architect", value: claudeCertificationCatalog },
+  { key: "claude-developer-certification", route: "/learn/certifications", track: "claude-developer", value: claudeDeveloperCertificationCatalog },
   { key: "github-copilot-certification", route: "/learn/certifications", track: "github-copilot-gh-300", value: githubCopilotCertificationCatalog },
 ] as const;
 

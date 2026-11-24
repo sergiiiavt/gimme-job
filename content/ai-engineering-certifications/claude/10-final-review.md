@@ -30,7 +30,7 @@ Pick the smallest fix that removes the root cause and is deterministic wherever 
 
 ## Readiness checklist
 
-- [ ] All five domain chapters and the developer API chapter read
+- [ ] All five domain chapters read
 - [ ] At least three hands-on labs done
 - [ ] Mock exam score of 32 or more, with every wrong answer explained
 - [ ] Official practice exam at 900 or more

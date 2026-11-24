@@ -26,10 +26,30 @@ export interface SubnavItem {
   statusLabel?: string;
 }
 
+export interface SecondarySwitcherOption {
+  id: string;
+  label: string;
+  /** Optional heading; consecutive options with the same group render under it. */
+  group?: string;
+}
+
 export interface SecondarySwitcher {
   activeId: string;
   onSelect: (id: string) => void;
-  options: Array<{ id: string; label: string }>;
+  options: SecondarySwitcherOption[];
+  /** Optional heading above the subsection list, separating it from the switcher. */
+  itemsTitle?: string;
+}
+
+function groupSwitcherOptions(options: SecondarySwitcherOption[]) {
+  const groups: Array<{ group: string; options: SecondarySwitcherOption[] }> = [];
+  for (const option of options) {
+    const group = option.group ?? "";
+    const last = groups.at(-1);
+    if (last && last.group === group) last.options.push(option);
+    else groups.push({ group, options: [option] });
+  }
+  return groups;
 }
 
 interface SidebarProps {
@@ -471,15 +491,27 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
             <span>Quick reference</span><small>one page</small>
           </Link>
         )}
-        {secondarySwitcher && (
-          <div className="kb-subnav-switch" role="group" aria-label={`${secondaryTitle} catalog`}>
-            {secondarySwitcher.options.map((option) => (
-              <button className={secondarySwitcher.activeId === option.id ? "active" : ""} key={option.id} onClick={() => secondarySwitcher.onSelect(option.id)} type="button">
-                {option.label}
-              </button>
-            ))}
-          </div>
-        )}
+        {secondarySwitcher && (() => {
+          const switchButtons = (options: SecondarySwitcherOption[]) => options.map((option) => (
+            <button className={secondarySwitcher.activeId === option.id ? "active" : ""} key={option.id} onClick={() => secondarySwitcher.onSelect(option.id)} type="button">
+              {option.label}
+            </button>
+          ));
+          if (!secondarySwitcher.options.some((option) => option.group)) {
+            return <div className="kb-subnav-switch" role="group" aria-label={`${secondaryTitle} catalog`}>{switchButtons(secondarySwitcher.options)}</div>;
+          }
+          return (
+            <div className="kb-subnav-switch-groups" role="group" aria-label={`${secondaryTitle} catalog`}>
+              {groupSwitcherOptions(secondarySwitcher.options).map(({ group, options }) => (
+                <section aria-label={group || undefined} className="kb-subnav-switch-group" key={group || options[0]?.id}>
+                  {group && <h3>{group}</h3>}
+                  <div className="kb-subnav-switch">{switchButtons(options)}</div>
+                </section>
+              ))}
+            </div>
+          );
+        })()}
+        {secondarySwitcher?.itemsTitle && <h2 className="kb-subnav-items-title">{secondarySwitcher.itemsTitle}</h2>}
         {secondaryEmptyState ? (
           <div className="kb-subnav-empty" aria-live="polite">
             <span className="kb-construction-badge">Under construction</span>

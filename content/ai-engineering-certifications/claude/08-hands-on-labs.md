@@ -36,7 +36,7 @@ Turn job descriptions into JSON: title, seniority, skills, salary (nullable), an
 - Run the nightly backlog through the Message Batches API with a `custom_id` per posting.
 - Measure per-field accuracy on 30 hand-labelled postings, split by source.
 
-Trains: the structured data extraction scenario and the CCDV-F integration domain.
+Trains: the structured data extraction scenario.
 
 ## Lab 5: Multi-agent job researcher
 

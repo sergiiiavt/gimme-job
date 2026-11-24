@@ -27,7 +27,11 @@ type Catalog = (typeof certificationTracks)[number];
 const expectedMockQuestions: Record<string, number> = {
   "ctfl-v4": 40,
   "ct-genai-v1": 40,
+  "claude-101": 15,
+  "claude-code-101": 15,
+  "claude-platform-101": 15,
   "claude-architect": 40,
+  "claude-developer": 30,
   "github-copilot-gh-300": 30,
 };
 
@@ -111,13 +115,25 @@ test("certification mock exam answers cannot be guessed by position or option le
   }
 });
 
-test("the Claude track opens on the free Claude Academy 101 chapter", () => {
-  const claude = certificationTracks.find((catalog) => catalog.trackId === "claude-architect");
-  assert.ok(claude);
-  const first = claude.taxonomy[0];
-  assert.ok(first);
-  assert.equal(first.id, "claude-academy-101s");
-  for (const course of ["Claude 101", "Claude Code 101", "Claude Platform 101"]) {
-    assert.ok(first.markdown.includes(course), `free chapter covers ${course}`);
+test("each Claude exam and course badge has its own self-contained track", () => {
+  const byId = new Map(certificationTracks.map((catalog) => [catalog.trackId, catalog]));
+  const text = (trackId: string) => byId.get(trackId)?.taxonomy.map((chapter) => chapter.markdown).join("\n") ?? "";
+  const opening = (trackId: string) => byId.get(trackId)?.taxonomy[0]?.markdown ?? "";
+
+  for (const [trackId, course] of [["claude-101", "Claude 101"], ["claude-code-101", "Claude Code 101"], ["claude-platform-101", "Claude Platform 101"]]) {
+    assert.match(opening(trackId), new RegExp(`^# ${course}: course map`), `${trackId} opens on its own course`);
+    assert.match(opening(trackId), /Claude Academy/);
+    assert.doesNotMatch(text(trackId), /720 passes/, `${trackId} holds no proctored-exam rules`);
+  }
+
+  assert.match(opening("claude-architect"), /Claude Certified Architect – Foundations \(CCAR-F\)/);
+  assert.doesNotMatch(text("claude-architect"), /CCDV-F API delta|## CCDV-F domains|developer API chapter/, "CCAR-F holds no CCDV-F prep");
+  assert.doesNotMatch(text("claude-architect"), /free Claude Academy certificates/, "the 101 courses live in their own tiles");
+
+  assert.match(opening("claude-developer"), /Claude Certified Developer – Foundations \(CCDV-F\)/);
+  assert.ok(byId.get("claude-developer")?.taxonomy.some((chapter) => chapter.id === "developer-api"), "the developer-api topic id moved with its content");
+
+  for (const trackId of ["claude-101", "claude-code-101", "claude-platform-101", "claude-architect", "claude-developer"]) {
+    assert.ok(byId.get(trackId)?.taxonomy.some((chapter) => isMockExamModuleId(chapter.id)), `${trackId} has practice questions`);
   }
 });

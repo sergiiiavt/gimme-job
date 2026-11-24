@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { claudeCertificationCatalog, githubCopilotCertificationCatalog } from "@/content/ai-engineering-certifications/catalog";
+import {
+  claude101Catalog,
+  claudeCertificationCatalog,
+  claudeCode101Catalog,
+  claudeDeveloperCertificationCatalog,
+  claudePlatform101Catalog,
+  githubCopilotCertificationCatalog,
+} from "@/content/ai-engineering-certifications/catalog";
 import { isMockExamModuleId, type CertificationMockExamSettings } from "@/content/certification-catalog";
 import istqbAiTestingCatalog from "@/content/istqb-ai-testing/catalog";
 import { ctflCertificationCatalog, ctGenAiCertificationCatalog } from "@/content/istqb-certifications/catalog";
@@ -64,19 +71,41 @@ const certificationCatalogs: Record<string, CertificationCatalog> = {
   [ctflCertificationCatalog.trackId]: ctflCertificationCatalog,
   [DEFAULT_TRACK_ID]: istqbAiTestingCatalog,
   [ctGenAiCertificationCatalog.trackId]: ctGenAiCertificationCatalog,
+  [claude101Catalog.trackId]: claude101Catalog,
+  [claudeCode101Catalog.trackId]: claudeCode101Catalog,
+  [claudePlatform101Catalog.trackId]: claudePlatform101Catalog,
   [claudeCertificationCatalog.trackId]: claudeCertificationCatalog,
+  [claudeDeveloperCertificationCatalog.trackId]: claudeDeveloperCertificationCatalog,
   [githubCopilotCertificationCatalog.trackId]: githubCopilotCertificationCatalog,
 };
 
-const certificationTracks = [
-  { id: ctflCertificationCatalog.trackId, label: ctflCertificationCatalog.trackLabel, available: true },
-  { id: DEFAULT_TRACK_ID, label: "CT-AI v2.0", available: true },
-  { id: ctGenAiCertificationCatalog.trackId, label: ctGenAiCertificationCatalog.trackLabel, available: true },
-  { id: claudeCertificationCatalog.trackId, label: claudeCertificationCatalog.trackLabel, available: true },
-  { id: githubCopilotCertificationCatalog.trackId, label: githubCopilotCertificationCatalog.trackLabel, available: true },
-  { id: "cloud", label: "Cloud", available: false, emptyState: "Cloud certification learning paths are under construction." },
-  { id: "security", label: "Security", available: false, emptyState: "Security certification learning paths are under construction." },
+const ISTQB_GROUP = "ISTQB";
+const CLAUDE_FREE_GROUP = "Claude · free course badges";
+const CLAUDE_EXAM_GROUP = "Claude · proctored exams";
+const GITHUB_GROUP = "GitHub";
+const COMING_SOON_GROUP = "Coming soon";
+
+/** One tile per exam or course badge, grouped so each tile opens one self-contained preparation path. */
+const certificationTracks: Array<{ id: string; label: string; available: boolean; group: string; emptyState?: string }> = [
+  { id: ctflCertificationCatalog.trackId, label: ctflCertificationCatalog.trackLabel, available: true, group: ISTQB_GROUP },
+  { id: DEFAULT_TRACK_ID, label: "CT-AI v2.0", available: true, group: ISTQB_GROUP },
+  { id: ctGenAiCertificationCatalog.trackId, label: ctGenAiCertificationCatalog.trackLabel, available: true, group: ISTQB_GROUP },
+  { id: claude101Catalog.trackId, label: claude101Catalog.trackLabel, available: true, group: CLAUDE_FREE_GROUP },
+  { id: claudeCode101Catalog.trackId, label: claudeCode101Catalog.trackLabel, available: true, group: CLAUDE_FREE_GROUP },
+  { id: claudePlatform101Catalog.trackId, label: claudePlatform101Catalog.trackLabel, available: true, group: CLAUDE_FREE_GROUP },
+  { id: claudeCertificationCatalog.trackId, label: claudeCertificationCatalog.trackLabel, available: true, group: CLAUDE_EXAM_GROUP },
+  { id: claudeDeveloperCertificationCatalog.trackId, label: claudeDeveloperCertificationCatalog.trackLabel, available: true, group: CLAUDE_EXAM_GROUP },
+  { id: githubCopilotCertificationCatalog.trackId, label: githubCopilotCertificationCatalog.trackLabel, available: true, group: GITHUB_GROUP },
+  { id: "cloud", label: "Cloud", available: false, group: COMING_SOON_GROUP, emptyState: "Cloud certification learning paths are under construction." },
+  { id: "security", label: "Security", available: false, group: COMING_SOON_GROUP, emptyState: "Security certification learning paths are under construction." },
 ];
+
+/** The available track that owns a topic id; topic ids are unique across tracks, so old links follow moved chapters. */
+function trackOwningTopic(topicId: string | null) {
+  if (!topicId) return undefined;
+  return certificationTracks.find((track) => track.available
+    && certificationCatalogs[track.id]?.taxonomy.some((chapter) => chapter.id === topicId))?.id;
+}
 
 const certificationTrackLayout = `
 .kb-subnav-switch {
@@ -103,15 +132,14 @@ export default function IstqbAiTestingPage() {
   const [language, setLanguage] = useState<LearningLanguage>("en");
   const [mobileNav, setMobileNav] = useState(false);
   const requestedTrackId = searchParams.get("track");
-  const activeTrackId = requestedTrackId && certificationTracks.some((track) => track.id === requestedTrackId)
-    ? requestedTrackId
-    : DEFAULT_TRACK_ID;
+  const requestedModuleId = searchParams.get("topic");
+  const activeTrackId = trackOwningTopic(requestedModuleId)
+    ?? (requestedTrackId && certificationTracks.some((track) => track.id === requestedTrackId) ? requestedTrackId : DEFAULT_TRACK_ID);
   const selectedTrack = certificationTracks.find((track) => track.id === activeTrackId) ?? certificationTracks[0];
   const trackAvailable = selectedTrack.available;
   const activeCatalog = certificationCatalogs[selectedTrack.id] ?? istqbAiTestingCatalog;
   const modules = trackAvailable ? activeCatalog.taxonomy : [];
   const firstModuleId = modules[0]?.id ?? "";
-  const requestedModuleId = searchParams.get("topic");
   const activeModuleId = requestedModuleId && modules.some((chapter) => chapter.id === requestedModuleId)
     ? requestedModuleId
     : firstModuleId;
@@ -171,7 +199,8 @@ export default function IstqbAiTestingPage() {
 
   const switcher: SecondarySwitcher = {
     activeId: activeTrackId,
-    options: certificationTracks.map(({ id, label }) => ({ id, label })),
+    options: certificationTracks.map(({ id, label, group }) => ({ id, label, group })),
+    itemsTitle: trackAvailable ? `${selectedTrack.label} · ${effectiveLanguage === "uk" ? "теми" : "topics"}` : undefined,
     onSelect: (trackId) => {
       const option = certificationTracks.find((candidate) => candidate.id === trackId);
       if (!option) return;

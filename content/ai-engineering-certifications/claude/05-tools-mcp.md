@@ -1,6 +1,6 @@
 # Tool design & MCP integration
 
-18% of CCAR-F and about 11% of CCDV-F. Most questions start with an agent choosing the wrong tool or mishandling a tool failure.
+18% of CCAR-F. Most questions start with an agent choosing the wrong tool or mishandling a tool failure.
 
 ## Descriptions drive tool choice
 

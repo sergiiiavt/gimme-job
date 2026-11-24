@@ -1,6 +1,6 @@
 # Exam map & study plan
 
-This track prepares you for **Claude Certified Architect – Foundations (CCAR-F)** and adds the API depth for **Claude Certified Developer – Foundations (CCDV-F)**. Both are proctored Anthropic exams. Study the material even if you cannot sit them yet: it is exactly what senior AI-agent interviews probe. New to Claude? Earn the free 101 badges in the previous chapter first.
+This track prepares you for **Claude Certified Architect – Foundations (CCAR-F)**, Anthropic's proctored exam for architects who design agent systems. Study the material even if you cannot sit the exam yet: it is exactly what senior AI-agent interviews probe. New to Claude? Start with the free Claude 101 and Claude Code 101 tiles. The developer exam, CCDV-F, has its own tile.
 
 ## Who can sit the exams
 
@@ -17,7 +17,7 @@ If you are not eligible, the free **Claude Academy** courses award completion ba
 | Claude Certified Associate – Foundations | CCAO-F | Consultants and delivery staff using Claude daily | 60 | 99 |
 | Claude Certified Architect – Professional | CCAR-P | Enterprise-scale architects | 63 | 175 |
 
-Question counts for CCDV-F, CCAO-F and CCAR-P come from prep providers rather than Anthropic.
+Question counts for CCDV-F, CCAO-F and CCAR-P come from prep providers rather than Anthropic. Only CCAR-F is covered in this tile; CCDV-F has a full prep path in its own tile.
 
 ## Exam facts to memorise
 
@@ -41,16 +41,12 @@ Question counts for CCDV-F, CCAO-F and CCAR-P come from prep providers rather th
 
 Each sitting draws **4 of 6** published production scenarios, with roughly 15 questions each: customer support resolution agent, code generation with Claude Code, multi-agent research system, developer productivity with Claude, Claude Code for CI/CD, and structured data extraction. Study all six; they overlap heavily in the skills they test.
 
-## CCDV-F domains
-
-CCDV-F is an API exam. Its weights, as reported from the July 2026 candidate guide, are: applications and integration 33.1%, model selection and optimisation 16.8%, agents and workflows 14.7%, prompt and context engineering 11.0%, tools and MCPs 10.6%, security and safety 8.1%, Claude Code 3.1%, and evaluation, testing and debugging 2.6%. Pearson announced updated content from **7 December 2026**, so recheck the guide before booking.
-
 ## How to use this track
 
-1. Earn the Claude 101 and Claude Code 101 badges on Claude Academy.
-2. Read the five domain chapters in order, then the developer API chapter.
+1. Earn the free Claude 101 and Claude Code 101 badges; their tiles have study notes and practice quizzes.
+2. Read the five domain chapters in order.
 3. Do at least three of the hands-on labs; hands-on time is what separates a pass from a near miss.
 4. Take the 40-question mock exam under an 80-minute timer.
 5. Use the final review's distractor patterns to explain every wrong answer.
 
-A realistic pace is four weeks for CCAR-F at about an hour a day, plus two weeks for the CCDV-F delta.
+A realistic pace is four weeks at about an hour a day.
